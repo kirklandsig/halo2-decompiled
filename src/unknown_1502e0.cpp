@@ -235,9 +235,15 @@ struct s_flag_word_bits
 // pointer/reference rounding inputs 114/114; tick-result output pointer/reference
 // 114/114; result-first named scalar homes 114. All restored; player/root,
 // duration, tick/effect homes and expanded tail remain.
+// AC512: Readonly player/header/object-tag input contracts, seven subsets
+// 114 each; complete readonly graph with native flag-byte admission 124.
+// All restored; player/root allocation, tick/effect homes and expanded tail remain.
 // B397: Duration-field pointer/reference inputs to the existing rounding producer,
 // direct/duration/rate/named-rate graphs 114/114/114/114/114/114/114/114. All restored;
 // scalar frame agrees, player/root ownership, separate SSE input and expanded tail remain.
+// Y567: Complementary available bool/byte/short/long with default-true
+// then exhaustive arms: 116/116/126/122/125/125/131/130. NOT kept: no byte match; original flag
+// producer and body restored, player/root ownership and tail expansion remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -279,6 +285,7 @@ void function_151ea0(long player_index, long object_index)
 	}
 }
 
+// MiniMax H (11-04): no new form, no lower score; the equal-priority branch still picks the other epilogue.
 // score 1 (was 1): only the jne of the equal-priority test differs: retail jumps to the epilogue after the copy
 // block (al still holds the initial false) and keeps a separate `xor al, al` + epilogue for the not-closer
 // arm; ours jumps to the epilogue after that `xor`. Tried (fast, base 1): `return false;` in the else arm
@@ -299,6 +306,9 @@ void function_151ea0(long player_index, long object_index)
 // memcpy then success 4.
 // Original executable body restored;
 // no exact match from these ownership forms.
+// Round 103: equality as an else-if 1; nested <=/== priority tests 12; an explicit not-equal
+// else-if to done 1; separate distance-failure/copy/done labels 75; split result declaration 1;
+// result declared last 1; byte result 32; a named closer flag 1. Original body restored.
 // @retail 0x151320
 bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
 {
@@ -1070,9 +1080,15 @@ struct s_tail_transfer_traits
 // 157/158/162/162/152/160/151; complete conditional slot producers 151.
 // NOT kept: at most two points and unmatched lifetime interaction. Original
 // defaults and body restored; selected-traits/unit/NONE homes and reloads remain.
+// AC512: Readonly player/main-unit/no-seat-unit contracts, seven subsets 153
+// each; complete graph with selected-output lexical identity 153. All restored;
+// selected-traits/unit/NONE homes and native no-seat pool reloads remain.
 // B397: Native traits-element/player-identifier domains and complete inner choice
 // eligibility subsets, then complete rejection complement 153/153/153/153/153/153/153/153.
 // Original layouts/tests restored; traits/unit/NONE homes and pool reloads remain.
+// N355: Returned-player canonical for traversal with independent bounded selection/slot domains:
+// 373/378/413/373/284/284/373/283. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Selected-traits/unit/NONE homes and pool reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1311,6 +1327,7 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
+// MiniMax H (11-04): no new form, no lower score; the unit index and the object table still swap registers.
 // score 17 (was 17):
 // Logic and structure match; only the callee-saved registers differ: retail keeps player->unit_index in
 // edi and the object data pointer in esi, this build uses esi and edi. Tried (scores): unit_index in a local
@@ -1326,6 +1343,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // Round 51 (m3 lane 15): mode arms swapped 27; `primary ? 0 : 1` hand 17; result declared before the player 35;
 // e68c0 code from hand 60; unit index local inside the dispatch block 17; dispatch outcome in its own success flag
 // copied to result (0x152bf0's matching form) 17. Diagnostic: 1-8 unused entry locals 17 each (not symbol numbering).
+// Round 104: unit declared at entry 17; slot declared at entry 17; unit then result before player 35;
+// read-only player/unit receivers 17 each; nested slot/weapon tests 17; held-slot array pointer 17;
+// weapons array pointer 17. NOT kept: no byte match or gain; original body restored, EDI/ESI still exchanged.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1410,6 +1430,9 @@ void function_150820(dword *bits, bool local_only)
 // M350: Immutable captured hand/slot/weapon values, seven subsets: 43 each;
 // initialized four-byte mode output 86. Original body and calls restored;
 // native ESI player/EDI hand ownership remains.
+// Y567: One-return failed unit/slot/eligibility admissions, seven subsets
+// and separately tested complete eligibility: 60/63/60/63/60/63/60/60. Original body restored;
+// native player/hand and entry temporary ownership remain.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -2106,6 +2129,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // B397: Complete four-slot transfer admission in bool/byte/short/long, then
 // rejection complement 202/202/202/202/202/202/202/202. Original call/rounds/loop graph restored;
 // player-data ownership and the scaled header-offset spill remain.
+// Y567: Existing complete object getter for unit/pickup/transferred weapon,
+// seven subsets, then complete shared object/header acquisition: 202/202/202/202/202/202/202/202.
+// Original helper uses and body restored; player/header-offset homes remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

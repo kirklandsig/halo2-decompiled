@@ -678,6 +678,9 @@ done:
 // B393: Actual external UI/variant/tag identity references, subsets 1-7,
 // then all with one shared copy tail: 32/32/32/45/45/45/45/45. NOT kept: no exact match;
 // original complete body restored; early EDI save, tag/selector schedule and scratch cache remain.
+// B422: Outer UI-definition admission in bool/byte/short/long, positive/complementary:
+// 32/32/32/32/32/32/32/32. NOT kept: no byte match; all canonicalize to the original complete body.
+// Early EDI save, tag/selector scheduling and the shared scratch-address cache remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

@@ -322,6 +322,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
 // then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
 // executable body and helpers restored; success/input/minimum/hit homes remain.
+// F365: Native vector cross/point translation/in-place rotation receivers, masks 1/2/4/3/5/6/7, then ordinary inline:
+// 628/628/628/630/630/630/633/633 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// B412: Four-query termination from the real origin/length/hit/distance array extent,
+// native long/short ordinal from the cursor: 697/690/700/709/639/719/707/703.
+// All regress and move the frame; original traversal, helpers and in-place captures restored.
 // DH342: Shared lower-first root/output clamps and real root API, seven subsets
 // 618/626/618/626/618/626/626; all with real rotation trig API 624.
 // Original scalar producers, observations and body restored; success/input/minimum/hit homes remain.

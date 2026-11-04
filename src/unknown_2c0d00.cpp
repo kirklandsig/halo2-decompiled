@@ -341,6 +341,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // in retail's slot order 931f (no slot moves); self unit by a ternary 916f, 899 plain (3721 bytes);
 // enemy as `false` plus `if (actor)` 900f, 934 plain; object/marker buffers at entry 931f; combined
 // flags as `moving | (sphere_flags | obstacle_flags)` (retail's or order) 931f.
+// Lane 18 r41 (plain; fast 931 misleads): straight left uninitialized and set true at the top of the actor block and in
+// an `else` 882 (VC merges both stores ahead of the branch; retail keeps the second); the or order above 882 plain; the
+// previous-direction dot as one expression 893 (3694 bytes); the object lookup moved after the unit/ignore skip 918;
+// plain location with the raised point in the else block 925 again (3702 bytes). Retail keeps actor_index/unit_index/
+// self_unit in EBX/EDI/EBP and reloads them at the object loop's back edge; the count reuses location's slot.
 // J246: Complete paired vertical bounds, whole velocity projection and expanded-radius
 // producer subsets 1/2/4/3/5/6/7, then all with radius square:
 // 882/882/924/882/924/924/924/924. NOT kept: shared radius grows frame to 0x2cbc
@@ -1481,6 +1486,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // 418 (same code); edge declared and initialised at the untyped branch scope 439 (1754 bytes);
 // copied_last/used/index declarations reversed 418 (same code); edge renamed (name-order tip) 418
 // (same code); emitted type from the type local instead of the step 421 (1755 bytes).
+// Lane 18 r41 (fast; frame 0x114 against 0x10c: ours keeps edge in a stack slot where retail has it in EBX, and our
+// byte flags sit four bytes higher): loop-top declarations in retail's store order (edge, next, found, link, type,
+// then the step) 418; origin declared at function scope 418; output_index declared before the loop-top locals 418;
+// the outer loop as `for (...; index < count; index = next)` 418; the typed branch storing link before type 418.
 // Corrected two-radius graph: native first/second trace and whole-source
 // receiver subsets 1/2/4/3/5/6/7, 418/418/429/418/429/429/429; native
 // positioned-point receiver 418. All restored; no frame/zero/home recovery.
@@ -1508,6 +1517,12 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // DH338: Existing normalizer early-zero/positive-first/zero-result/magnitude-result
 // 418/418/441/418; each with the planar setter 434. Setter forms raise the other
 // normalizer user 68 to 98/91; all restored, frame/radius/zero/metadata homes remain.
+// P315: Retained two-radius/pointer graph, existing complete data getter with all entry ordinal/emitted-count/fallback-result zero-lifetime subsets: 418/401/401/401/430/401/401/438.
+// P315: NOT kept: no byte match or supported gain; original full body restored.
+// P315: NOT kept: 401 places loop-zero stores above native availability/count guards; frame 0x114 and count BX remain.
+// P317: Joint unconditional corner success/rejection accumulators bool/byte/short/long
+// 426/426/406/435/473/473/452/452. NOT kept: no match; short success 406 grows to 1754 bytes and
+// uses a wider result than native tests. Original two results and complete body restored.
 // DH345: Native component-array displacement loops in direct/converted/both phases,
 // long then dword, complete short/word: 428/418/429/428/418/429/451/451. No gain;
 // original scalar producers, both radii, signed traversal and complete body restored.

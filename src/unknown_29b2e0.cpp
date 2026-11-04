@@ -307,6 +307,18 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // acos result and sqrt temporaries with local_11 at +0x10). Both arg_2 copies declared before the arg_3 copy 375;
 // the yaw in a branch-local copied to local_8 at the arm's end 272 (1727 bytes); result declarations reversed 176
 // (same code); the failure arm first 176 (same code); the up vector read through the field at each use 178.
+// Y571: In-place graph with actual two-use gain/bound and symmetric per-policy rate captures,
+// seven subsets 212/270/258/269/261/254/269; complete common numeric normalizer result 264.
+// All regress; original helpers and complete body restored; unity, root/yaw and rotation homes remain.
+// DL258: Existing vector-union array access in planar normalizer/rotation/caller,
+// all seven region subsets, 176 each; complete array graph with shared XY magnitude
+// 176; shared magnitude independently on the opening graph 176. Root/yaw homes,
+// unity register and rotation homes remain; all other calibrated scores unchanged.
+// Original helper contracts, alias-safe reads/publications and complete body restored.
+// P320: Sequential magnitude/yaw and target/final-pitch scalar ownership, expired argument
+// P320: pitch storage and complete phase combinations 176/179/271/179/271/271/271/271.
+// P320: NOT kept: no byte match for explicit scalar/parameter-home reuse; original
+// P320: complete body restored. Unity register, root/yaw and rotation homes remain.
 // DH342: Existing vector setter at target/current/rotation input construction,
 // seven subsets 413/378/211/418/431/403/441; all plus final output setter 436 (sibling 46).
 // Original copies, helper contracts and body restored; unity/root/yaw homes remain.
