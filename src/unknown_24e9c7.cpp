@@ -345,6 +345,9 @@ struct s_24e9c7_bounds
 // subsets, then all with the perpendicular pair: 125/125/125/125/125/125/125/144.
 // NOT kept: no exact vector-storage or early-spill recovery; original types/body restored.
 // Early across spill, eight-byte-high return/metadata homes and SSE scheduling remain.
+// B439: Output-origin transfers from the first real vertex, seven nonempty receiver
+// subsets then a successive output-copy chain: 129/129/129/129/129/129/129/129.
+// Original complete body restored; early across spill and scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

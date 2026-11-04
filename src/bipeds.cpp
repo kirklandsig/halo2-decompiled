@@ -2041,6 +2041,9 @@ void function_dfd70(long arg_159e6d)
 // P321: Initial zero/one crouch with ternary/complete/crouch-default/zero-default
 // switch results: 233/233/252/233/233/233/264/234. NOT kept: no gain;
 // crouch-default and zero-default also raise shared users. Helpers restored.
+// B439: Second-ray hit/clear result in bool/byte/short/long storage:
+// 233/233/233/233/233/233/233/233. NOT kept: one-use query results do not
+// match; both helpers restored, native mode-three and basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)

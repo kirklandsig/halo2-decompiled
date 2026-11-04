@@ -303,6 +303,9 @@ real normalize2d(point2f *arg_0);
 // F375: Actual direct/adjusted mode selector at its byte observation, bool/byte/short/long:
 // 180/180/180/180/180/180/180/180. NOT kept: no byte match; original body restored.
 // Early object mask, copied-input/SSE and query-success schedules remain.
+// B439: First/second perpendicular sign outcomes in bool/byte/short/long:
+// 180/180/180/180/180/180/180/180. NOT kept: one-use predicates do not match;
+// original body restored, early mask and copied-input/SSE/query homes remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
