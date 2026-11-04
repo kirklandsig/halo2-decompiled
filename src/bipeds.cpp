@@ -2038,6 +2038,10 @@ void function_dfd70(long arg_159e6d)
 // P321: Initial zero/one crouch with ternary/complete/crouch-default/zero-default
 // switch results: 233/233/252/233/233/233/264/234. NOT kept: no gain;
 // crouch-default and zero-default also raise shared users. Helpers restored.
+// F384: Actual side-vector setter/point-setter/mutable/immutable initializer,
+// native or memmove origin transfer: 235/235/233/233/256/256/253/253. NOT kept:
+// no gain; memmove with either initializer also raises a shared user. Original
+// shared helpers and target restored; mode-three placement and basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2475,6 +2479,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M366: Direct lower/upper body admission without selected sentinel, long/short/char/read-only-long,
 // combined/nested query: 70/64/65/70/70/64/65/70. NOT kept: no exact/native-sentinel repair;
 // original full body restored; extra EBP, count/body transport and flag schedules remain.
+// F384: Complete admission-time object getter graph, retained/at-use count and
+// explicit long/short/shared-promoted/shared-short body contracts:
+// 80/85/101/91/85/86/104/100. NOT kept: all regress and grow; original body restored.
+// Extra EBP, native count/body transport and flag schedules remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
