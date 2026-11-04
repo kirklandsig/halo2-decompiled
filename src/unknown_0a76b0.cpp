@@ -4767,6 +4767,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
 // 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
 // output lifetime and full body restored; frame and basis/point homes remain.
+// DH348: Actual last-consumer world/relative-frame/quaternion regions, seven subsets
+// then all with entry result default: eight at 175. Original declaration scopes and
+// full body restored; frame 0x110/0x11c and basis/point homes remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

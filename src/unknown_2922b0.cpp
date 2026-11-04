@@ -328,6 +328,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH345: Complete final scalar projections before all three stores, six row orders,
 // then immutable ijk/kji results: eight at 613 (2830 bytes). NOT kept: five-point
 // gain is below the eight-point threshold; original body and in-place snapshots restored.
+// DH348: Complete cross/rotation native aggregate/member-result storage pairs
+// 847/847/561/561/944/944/944/944. NOT kept: 561 groups scalar results into a
+// vector and does not match. Original scalar producers and in-place snapshots restored;
+// success/input/minimum/hit homes and inactive-exit layout remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
