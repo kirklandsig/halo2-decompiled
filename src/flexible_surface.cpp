@@ -565,6 +565,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // N370: Input-owned cross result, old/axis native copies and component aggregates, projection-first copies and readonly aggregates:
 // 181/196/164/159/180/234/164/159. NOT kept: no equality; original complete body restored.
 // Frame 0x28/0x20 and old-direction/cross/seed/time homes remain.
+// N377: Incremental row/complete-phase rotation outputs, partial-sum and first-product
+// construction, then genuine local partial results/native setter/consumed old workspace:
+// 117/153/116/183/182/205/182/182. NOT kept: unmatched publication/lifetime forms;
+// original complete body restored. Frame 0x28/0x20 and direction/cross/seed homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

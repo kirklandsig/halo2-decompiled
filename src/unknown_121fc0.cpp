@@ -285,6 +285,10 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N375: Global mapping initialization by endpoint cursors, fill/fill_n, unsigned ordinal,
 // ordinary cursor/ordinal while and advancing cursor/count: 128/128/253/253/128/128/128/128.
 // NOT kept: no gain; standard fills shorten to 741/773. Original whole body restored.
+// N377: Standard first-equal predecessor ranges with existing string comparison,
+// first/second binding, pointer/ordinal result and original/post-search publication:
+// 253/244/262/254/253/244/262/254. NOT kept: all regress/shorten and grow frame to 0xa58;
+// original whole body restored. Outer EBP preservation and read-size/cursor homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

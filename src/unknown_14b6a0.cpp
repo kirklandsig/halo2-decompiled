@@ -453,6 +453,10 @@ void function_14bac0()
 // N375: Entry request admission in positive/complementary bool/byte/short/long
 // storage, eight forms 222 each. NOT kept: no frame/home or byte-match gain; original
 // request, point/iterator/readiness graph and complete executable body restored.
+// N377: Standard backward native-coordinate marker-input and accepted-point transfers,
+// isolated/paired/complete families, then complete with native result-tested recipients:
+// 259/260/267/260/240/268/284/272. NOT kept: every form regresses/shortens; all original
+// point storage, observations and traversals restored. Frame/recipient overlap remains.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

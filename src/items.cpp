@@ -1316,6 +1316,10 @@ struct s_item_flags_view_10b850
 // N375: Actual collision impact-prefix member with direct/pointer/reference ownership
 // and consistent point/normal fields: 911/887/887/887/887/904/858/858. NOT kept:
 // all regress; original record, field observations, helpers and complete body restored.
+// N377: Complete scaled-additive aggregate/shared-scaler/standard-range/copied-range
+// producers, each with existing or standard vector sum: 864/924/865/924/1124/997/1214/1087.
+// NOT kept: all regress/lengthen; every frame stays 0x154 versus native 0x12c.
+// Original accumulator, helpers, observations and complete executable body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1793,6 +1797,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N375: Complete post-decrement mode/count expiry admission in positive/complementary
 // native truth domains, eight valid forms 140 each; original full body restored.
 // NOT kept: no byte match or frame/home gain; return byte and release/event homes remain.
+// N377: Existing release producer time/gain root pointers, both and native references,
+// then release-completion success at first/second/both sites and accumulated completion:
+// 140/140/171/171/140/140/140/140. NOT kept: no equality or gain; full helper and body restored.
+// Return byte +0xe/+0xf, release RMW/tail and event/contact homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
