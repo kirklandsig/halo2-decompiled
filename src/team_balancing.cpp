@@ -665,6 +665,16 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // for both tests 80 (512 bytes), as `long const &` 80; a plain `long const` for the first test only 67 (same code);
 // `long const &` for the first test written reference-left 64 (512 bytes: that pair runs candidate first but folds
 // `cmp eax, [esp + 0x30]` where retail reloads into ECX; the equality pair stays reference first).
+// F362: Existing signed-dword query results as int, count/total/rank subsets
+// 1..7 and cost alone: 67 each at 514/512 bytes. NOT kept: reference-first
+// query ownership and extra receiver move remain; all result contracts restored.
+// B408: Complete post-swap best/current selection outcomes bool/byte/short/long:
+// positive 67/67/67/67, complementary 70/70/70/70 (control 67). All 21 peer
+// measurements unchanged; NOT kept: one-use captures do not match or recover candidate-first
+// query order. Original selector, four spread calls, costs and complete body restored.
+// P306: Complete current/best solution receivers, pointer/reference singles and pairs:
+// 67/67/84/84/84/84/84/84. NOT kept: best bindings reach 512 bytes but regress;
+// original record observations, selection, publication and complete body restored.
 // M358: Original less-first acceptance byte/short/word/long and complementary rejection
 // bool/byte/short/long: 67 each. NOT kept: one-use decision carriers do not match;
 // original query graph restored; reference-first spread calls and two extra bytes remain.

@@ -1063,9 +1063,6 @@ void function_1d1540(s_havok_component *component);
 // N344: Actual two-use slot lexical homes array_slot/body_slot/current_slot/entry_slot,
 // constructor then existing aligned setter: 65/65/65/65/90/90/90/90.
 // NOT kept: aligned setters grow to 231/220 and miss. Original constructor, slot and fresh lookup restored.
-// M353: Existing rotation-part getter with aggregate/member/translation-set/library
-// copies, inverse at use then entry: 106/90/130/116/106/90/130/116.
-// All grow and regress; original constructor, slot, fresh refetch and full body restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2428,9 +2425,6 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // B389: Complete final-speed factor/numerator/denominator nodes, masks 1/2/4/3/6/5/7,
 // then original speed with division in place: 91/91/278/91/99/88/99/91. NOT kept: factor plus
 // denominator gains only three and only together; original body restored, early velocity j/k and zero homes remain.
-// M346: Material-query success owned at its original call, immediately tested before fallback,
-// bool/byte/char/signed-char/short/word/int/long: 91 each. All retain frame 0x34 and
-// 1459/1454 bytes; early velocity j/k and property-zero homes remain. Original body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
