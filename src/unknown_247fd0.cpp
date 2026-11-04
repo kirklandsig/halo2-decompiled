@@ -375,6 +375,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // point-direction pairs, then all five: 55 each. NOT kept: no exact boundary-contract
 // form or gain. Original signature, sole caller and full body restored; split post-sample
 // cache comparison and evaluator/child scratch homes remain.
+// B434: Post-link positive/complementary duration-admission results in bool/byte/short/long:
+// eight 55. NOT kept: no exact result form or gain; original live field reads, reciprocals
+// and full body restored. Split post-sample compare and child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

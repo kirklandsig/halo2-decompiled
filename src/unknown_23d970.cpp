@@ -817,6 +817,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // B432: Caller-visible inline declarations for the existing staged cross, normalizer
 // and perpendicular producers, seven subsets, then staged-cross forceinline: eight 45s.
 // Original declarations and callback restored; right i/j, forward.k and angle bases remain.
+// B434: Missing-object/missing-target/ordinary-orientation arms first, seven
+// subsets 361/219/222/250/367/333/337; nullable acquisition with common fallback 358.
+// NOT kept: all regress; original branches, products and full body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

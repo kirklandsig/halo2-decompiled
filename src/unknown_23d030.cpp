@@ -467,6 +467,9 @@ extern byte g_51ec11;
 // B432: Existing normalizer native for/while/do scales 108/108/332; immutable
 // reciprocal forms 108/108/332; pointer for/while 352/352. NOT kept: no exact scaling
 // graph; original shared header and camera restored. Zero/side/up homes remain.
+// B434: Actual camera/input/output callback formals, seven typed-owner subsets,
+// then complete read-only input: 275/282/111/91/91/91/91/91. NOT kept: none matches;
+// original three-pointer signature, declaration, table entry and whole body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
