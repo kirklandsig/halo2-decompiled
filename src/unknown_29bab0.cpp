@@ -247,6 +247,13 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // the gap is loaded before them); with the distance on the left of the compare 818; float squares and the
 // distance on the left in the original two tests 785; the square root written in the conditional's test 831
 // (frame 0x8c).
+// Round 41 (m3 lane 17, fast with 0x1f9e70/0x110ab0, control 750): the +0x290 pointer written at each use 905 (3578
+// bytes); the input copy before the position query 758; the three velocity dots named before the reciprocal 748
+// (retail divides after the dots, ours still schedules the divide first); the signed-root scale by reference 833
+// (3475 bytes: retail's `fmul [esi+0x6c]`, a parameter change, diagnostic only); the 0x654 arm's two false exits
+// in one test 800 (3501), with the named dots 798 (3499); a named blend complement 801; one radial test with the
+// dot tests in both arms 825. Retail also keeps `0 - heading.j` in a register for its three uses and tail-merges
+// every false exit of the steering flag into two `xor al, al` blocks.
 // DH321: Direct-input ordinary inline declarations for existing mode/query/trace/response/turn/
 // direction/transform/velocity providers individually: 804/804/804/804/804/804/804/804. All declarations,
 // input storage, arithmetic helpers and complete executable body restored.
