@@ -248,6 +248,9 @@
 // then all with ordinary w transfer: 676/736/661/739/719/749/765/803. Full basis
 // recovers frame 0x60 but grows to 2712 bytes. NOT kept: all regress; original
 // native copies, helpers, integer conversion and complete body restored.
+// Y585: Complete first/second/combined branch-owned maximum result subsets
+// 1/2/4/3/5/6/7: 581 each; all with fallback-first arms 662. NOT kept:
+// no frame recovery or eligible gain; original maxima and complete body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -865,6 +868,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Y582: On current paired-point geometry, original/shared normalizer pairs for camera side
 // and surface normal, all eight nonoriginal pairs: 270/270/377/377/377/377/377/377.
 // NOT kept: no byte match; original roots/scales, shared crosses and full body restored.
+// Y585: Current paired geometry, initial/next/blend output-stream cursor subsets
+// 1/2/4/3/5/6/7: 265/265/265/268/268/352/350; all with tint cursor 265.
+// NOT kept: no native frame recovery or eligible gain; original counters and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1291,6 +1297,9 @@ void __stdcall function_43720(s_43740_input *input)
 // Y583: Actual texture-return pointer/bool/byte/long ownership, original image local
 // then direct image expression: 62/62/62/62/62/62/62/62. NOT kept: one-use return
 // carriers miss equality; complete body restored; early tag/EBP and slot/shader homes remain.
+// Y585: External tag/frame-pair/point-index field bindings, seven subsets and
+// all read-only, eight 62s. NOT kept: exact-only identities do not match;
+// original captured tag, field observations, complete body and matched caller preserved.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
