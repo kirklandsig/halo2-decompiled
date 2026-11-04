@@ -377,6 +377,10 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // P295: Actual enclosing special-pair/first-scalar/last-scalar/vertex-array entry ownership,
 // masks 1/2/4/8/3/5/9/15: 138/138/138/138/138/138/138/138. Original external views
 // and complete body restored; restore-header, packed-key and listener ordering remain.
+// P318: Existing tree constructor owns child-key resolution by value/field reference/field
+// pointer/source object, initializer/body publication: 415/122/122/122/415/122/122/122.
+// NOT kept: unmatched constructor-input/alias steering; native packed-key stack transport,
+// restore header and listener lifetime remain. Original complete source restored.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {

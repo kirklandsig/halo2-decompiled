@@ -1450,6 +1450,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // NOT kept: no gain, join forms move frame/length away, and one-use field pointers
 // require equality. Original integer carrier and complete body restored; frame
 // 0xf8/0xfc and material/airborne/animation homes remain.
+// P318: Gravity captured before/after turning in real/const real/double/const double
+// on the retained animation/output graph: 579/579/497/497/461/461/497/497.
+// Native frame 0xfc recovers; real captures grow to 2832 bytes, double stays 2828.
+// NOT kept: one-use field capture and type-dependent allocation require equality;
+// the six-point 579 form also misses the gain threshold. Original full body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4802,6 +4807,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // graph, masks 1/2/4/3/5/6/7 then all with support-bound success:
 // 143/144/144/236/143/70/233/211. NOT kept: no gain; final early-success form
 // also loses both exact callers. Original full body restored; support/result homes remain.
+// P318: Positive support in signed byte/unsigned short/long/unsigned long on the
+// recovered state-call/dot graph, original then support-bound success:
+// 68/148/151/151/143/136/142/142. NOT kept: no byte match; native support/result
+// homes remain. Original complete body restored; both exact callers survive.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

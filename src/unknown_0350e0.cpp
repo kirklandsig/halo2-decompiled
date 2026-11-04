@@ -1722,6 +1722,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // DH337: Native two-coordinate point/array projections at four declaration boundaries:
 // 192/192/192/192/192/192/192/192, 788/812 bytes. NOT kept: one-point gain,
 // grouped storage needs equality and length moves farther; independent result home remains.
+// P318: Whole double projection producers, double result/test/conditional consumers:
+// 262/235/262/262; mixed producer domains at the original float atan2 boundary,
+// real/double result: 185/262/322/246. NOT kept: the 185 form moves frame to 0x1c
+// and caller to 610; native dword result/projection homes remain. All source restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3836,6 +3840,10 @@ bool __stdcall function_391f0(void *state);
 // DH337: Native cluster/portal/plane field subsets and complete read-only geometry
 // 251/251/251/251/251/251/251/251. Original views/body restored; frame 0x74
 // versus 0x70, early zero and loop homes remain.
+// P318: One phase-success accumulator for update/render in bool/byte/short/long,
+// selected-tag then function-entry declaration: 251/251/281/286/251/251/281/286.
+// All retain frame 0x74 versus 0x70; no gain. Original independent flags and complete
+// body restored; every calibrated control survives.
 // @retail 0x36b50
 void function_36b50()
 {
