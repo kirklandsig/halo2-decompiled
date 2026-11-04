@@ -1522,6 +1522,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH337: Read-only returned-actor for ownership and displacement-output lifetimes:
 // 276/276/276/276/276/276/276/276, frame 0x6b0 and 975 bytes. NOT kept: regressions;
 // original iterator/body restored, iterator/leave-request/publication homes remain.
+// DH341: Actual returned seat-count long/int/dword/unsigned-int/word/byte/char
+// storage 171/171/171/171/187/207/180; immutable short at the producer 32.
+// NOT kept: no iterator/request recovery; wider or narrower domains lengthen. Original body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2796,6 +2799,10 @@ struct s_scenario_scripting_view
 // DH338: Full-word long/dword winners with short traversal after actor/data,
 // admitted-set/for ownership: 92/92/92/93 each. No equality; original winner,
 // traversal and body restored, actor/counter/selector and data homes remain.
+// DH341: Per-branch metric outputs with direct/resolved displacement and function-owned
+// distance lifetimes, seven subsets then all with the counter after actor lookup:
+// 100/100/100/80/100/100/100/100. NOT kept: branch-local vectors lengthen to 389 bytes.
+// Original vector/metric lifetimes and complete search restored; register/data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

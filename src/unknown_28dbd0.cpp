@@ -282,6 +282,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH339: Native accumulation through three advancing component cursors, long/dword/short/byte
 // bounds 229/229/315/315; output-end for/while/do walks 316/316/314; split adds 316.
 // NOT kept: frame/length move away from retail; original scales, helper and complete body restored.
+// DH341: Immutable heading-angle/launch-speed/tilt-angle draw storage, seven subsets
+// then all five draws, 173 each. Original draw storage and complete body restored;
+// frame 0x11c/0x118 and cross/trig homes remain.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

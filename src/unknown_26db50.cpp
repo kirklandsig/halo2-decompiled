@@ -704,6 +704,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // DH339: Trace/world/collision declared at native spoke scope, seven subsets then all
 // with the actual point workspace, eight at 90. Original declaration scopes and complete
 // body restored; radius schedule, SSE ring conversion and rotation spill remain.
+// DH341: Bounded spoke !=8 / <=7 termination in short/long/word/byte storage:
+// 90/91/232/232/91/92/232/232. NOT kept: no gain or native ring/rotation recovery.
+// Original signed-short bound, two-ring traversal and complete body restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
