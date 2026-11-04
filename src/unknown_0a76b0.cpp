@@ -331,6 +331,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // P296: Constant case outputs completed after callbacks in state/action/separate-both/paired
 // dispatch, each with original/early result constants: 455/456/406/408/496/496/378/380.
 // All restored; native unit/name/actions ranks and shared-call threading remain.
+// M361: Existing count-output/active-bit helper producers, seven subsets then entry count storage:
+// 269/271/269/271/269/271/269/269. NOT kept: no eligible byte match or supported closer.
+// Original complete body restored; frame 8, incoming unit/name/actions ranks and shared calls
+// remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -971,6 +975,11 @@ extern vector3f *g_4687b0;
 // Round 81 (m3 lane 16, fast): the definition local renamed to sort before/after the projectile index
 // (two spellings) and the projectile index renamed 309/309/309 (names move no slot); velocity declared
 // first in the function 309 (same code); one function-scope origin for both throw branches 312.
+// M361: Existing component-array relative-velocity difference producer alone, then parent-
+// add/speed-scale/staged-cross subsets:
+// 328/328/306/306/321/321/299/299. NOT kept: no eligible byte match or supported closer.
+// The 299 form shrinks the body to 1687 versus native 1699; NOT kept. Original full body and helper
+// definitions restored; tag/index/type/direction homes and scheduling remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2943,6 +2952,12 @@ long function_c8f60(long unit_index, short seat_index);
 // and the transform pointer's swap; renaming the transform pointer 306/306); on it the 0x3dc state in a long
 // 304, `1u <<` for is_vehicle 306, the unit read through a header pointer kept from the first lookup 305.
 // Original body restored.
+// M361: Original receivers with complete position/quaternion assignment, memcpy or memmove
+// boundaries, eight non-original pairs:
+// 293/277/293/293/277/285/285/279. NOT kept: no eligible byte match or supported closer.
+// Quaternion memmove grows frame to 0x100 versus 0xf0; position memmove at 285 adds a non-retail
+// call and gains only length. Original full body restored; entry vehicle/unit/ordinal residence
+// remains.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)

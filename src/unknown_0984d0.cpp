@@ -542,6 +542,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // then entered by a jump as in retail, but onto the volatile items read); with the count-one reads in retail's load order
 // c, b, count 115; with the notify loop reusing the counter 115; reads b, c, count 110 (544 bytes); the counter declared
 // before the validity flag 117. Body restored.
+// M361: Later-case entry/release/chain predicate-result producers, seven subsets then native long
+// validation ordinal:
+// 80/80/80/80/80/80/80/115. NOT kept: no eligible byte match or supported closer.
+// Original full body restored; validity/cursor homes and loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

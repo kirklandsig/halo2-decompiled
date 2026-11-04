@@ -1207,6 +1207,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // DH333: Standard player extrema/member maximum/histogram clears, seven subsets
 // 824/836/861/828/829/848/825; typed three-word identity transfers 895. Frame 0xd4/0xb4
 // persists. NOT kept: regressions; original word table, observations and complete body restored.
+// M361: Immediately overwritten maximum/minimum/average defaults elided in seven subsets, then
+// success declared at its first test region:
+// 771/771/771/776/771/771/851/851. NOT kept: no eligible byte match or supported closer.
+// Original initializations and full body restored; frame/session/initial lookup remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
