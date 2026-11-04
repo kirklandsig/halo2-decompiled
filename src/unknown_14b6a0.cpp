@@ -457,6 +457,9 @@ void function_14bac0()
 // isolated/paired/complete families, then complete with native result-tested recipients:
 // 259/260/267/260/240/268/284/272. NOT kept: every form regresses/shortens; all original
 // point storage, observations and traversals restored. Frame/recipient overlap remains.
+// N379: Existing complete scalar displacement constructor, with relocation/marker-input/accepted-output
+// point constructor families, masks 0..7: 222/222/254/254/263/263/296/296. NOT kept: ties or regressions;
+// original inputs, outputs, helpers and body restored; frame/recipient overlap remains.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
