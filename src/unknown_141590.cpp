@@ -337,6 +337,11 @@ static inline void quaternion_transform_vector(
 // N343: Complete cross first-product/subtraction lifetimes, vector/scalar storage crossed
 // with shared dot and independent halves: 210/261/203/270/266/251/257/243. Original helper/body restored.
 // NOT kept: no qualifying gain; native frame/quaternion/cross spill homes remain.
+// M3 lane 7 r126 (fast): retail stores the doubled scalar to two homes (the matrix parameter's +0x38 and +0x10) as if
+// each inlined transform kept its own copy. Named forward/left/up row pointers for the transforms, the 0x143120 test
+// and the repair 322 (1294 bytes); `rotation.w = 0.f` before the 0x11d000 call 213 (1324); plain cross3f in the
+// repair path 238 (1322); `cross` declared ahead of the helper's scalars 200 (same code); the helper's scalars `const`
+// 200 (same code). Body restored.
 // N346: Immutable transform dot/doubled-scalar/quadratic coefficient masks 1..7, then complete
 // immutable coefficients/cross: 200/200/200/200/200/200/200/200. Original helper and all three users restored;
 // NOT kept: unmatched lifetime/combination forms. Native frame/quaternion/cross spill homes remain.
@@ -1072,6 +1077,14 @@ void function_143250(
 // N343: Real storage for both second-band roots, each third-band root, all third-band roots
 // and all roots: 1762/1766/1766/1766/1769/1766/1769/1769. Original double roots and full body restored.
 // NOT kept: unmatched precision/storage changes; native frame/input/basis homes remain.
+// M3 lane 7 r126 (fast): the /Gd first pass loads each parameter once (rotation EAX at entry, result ESI, coefficients
+// EDI, order EBX after the first call), so that rule predicts retail's EAX rotation. Diagnostics: a body cut after band
+// one still pushes rotation, under five parameter orders and with a void return; the cut body without the 0x143250
+// call (out EAX, n EBX) takes rotation in ECX, so that call keeps rotation on the stack in our build. Trials: all nine
+// doubles as real 1813 (10825 bytes, frame 0x308, ret 8); the terms as plain locals and a `real matrix[49]` 2114
+// (10412, frame 0x2fc, ret 8); `result[0] = coefficients[0]` just before band one's call 1766 (same code); band one in
+// retail's store order (each matrix entry after its term) 1794 (10740); the matrix pointer declared first 1766 (same
+// code). Retail keeps the nine rotation terms as scattered separate locals and the matrix at the frame top. Restored.
 // N346: Isolated matrix/workspace/rotation/result/coefficients/term_9/term_8/term_11 names:
 // 1766/1766/1766/1766/1766/1766/1766/1766. Original identifiers and complete scalar graph restored;
 // NOT kept: unmatched lexical allocation. Frame, rotation admission and basis/matrix homes remain.

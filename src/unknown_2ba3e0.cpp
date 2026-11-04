@@ -503,6 +503,11 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // normalize_inline in the maximum branch 230; the velocity normalizer then the file scale helper there
 // 32 (1521); the velocity normalizer's sum through length_sq3f, in both branches 29 (1521); its sum as
 // i,j,k statements in both 41 (1520); as k + (i + j) in both 75.
+// Round 135: k-first velocity sum in maximum/vector in minimum 26 (1517 bytes);
+// k-first velocity sum in maximum/direction in minimum 26 (1517 bytes);
+// properties/cache/next declarations 10; next/cache/properties 10; cache/next/properties 10;
+// the same three declaration orders with original properties/next assignments 10 each.
+// All restored; back-edge reloads and the maximum squared producer are unchanged.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {

@@ -287,6 +287,10 @@ bool g_47f05b;
 // block with `&block[0x30]` and the pool built with `()` 34 (same code); the stores ordered g_479880,
 // g_479884, g_479890 39; header: the size mask moved from the fixed base into the derived constructor's
 // base argument 34 (all 57 functions of the header's ten files unchanged).
+// DL257: Called pool constructor ordinary/forced inline, alone and with forced reference-
+// count/fixed-base/fixed-derived constructor expansion: 34/1058/34/34/34/1058/1058/1058. Ordinary
+// policies retain the omitted intermediate vtable store; forced policies expand the native call.
+// Original declarations and complete body restored; the store and successful-arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {

@@ -645,6 +645,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // normalize as `0.0f < ...` 77 (all same code); the k copy before the turned pair's normalize 174 (788
 // bytes). Retail rematerialises the test zero (xorps after the scale products) and multiplies the
 // rotation's cosine from memory; ours keeps one zero in XMM6 from above the divide through the rotation.
+// Round 145 (m3 lane 5, fast with 0x1ecf50 and 0x2b400): the horizontal pair as two component stores 170 (827 B);
+// the sine passed straight into the rotation 141 (842 B); `0.0f < normalize2d(...)` 77 (same code); the up axis
+// read into a pointer before the turned copy 94; the side test inside the sine expression 130 (835 B). A
+// compile-only probe puts the zero in XMM0 after the scale products (retail's) when the rotation is a call, and
+// in XMM6 above the divide (ours) once its body is inlined, so the hoist follows the rotation's register pressure.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {

@@ -462,6 +462,15 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Original complete body restored; fallback EDX, stage/pass and unfused loads remain.
 // Round 131 (m3 lane 8): the type-14 search through the shared vertex_input_index (include/vertex_inputs.h, the
 // search 0x116b00 makes four times) in place of the hand-written loop: identical code, 117.
+// Round 59 (m3 lane 13, fast; 0x2243c0 and 0x224d90 checked each time): m3 lane 1 round 59's score-8 chain rebuilt (8; the four
+// cache zeros must stay in field order, 12 otherwise); a permuter run on it found nothing below 8 in 49 tries. On the
+// chain: the record pointer formed after its +0x232 read (named pointer advanced) 132; the cache zeros before the
+// material lookup 13 (the stores then precede the loads); the material record as element 1 of a 0x1c-byte block 8
+// (same code); the material definition bound from the by-value tag accessor, with that record 92 and inside its own
+// block 92 (552 bytes: the definition takes EDI as retail, but the 0x1c620 and 0x1bbf0 argument registers swap and a
+// loop pad appears); that with the 0x1c590 index unbound 90 (0x224d90 lost), the head unbound 38 (544 bytes: material
+// and pass definitions as retail, the head block's registers differ), the fallback unbound 47, the head bound in its own
+// block 92, head and stage unbound 135, the tag definition unbound 94, the stage unbound 124. Original body restored.
 // Round 50 (m3 lane 15, fast; 0x224d90 and 0x2243c0 matched each time): the first two cache zeros together
 // ahead of the material lookups 150; the group constants tested 'prt3' first 119; the search loop as
 // `!= 14` continue 117 (same code); the cache pointers compared field first 119; the context's definition

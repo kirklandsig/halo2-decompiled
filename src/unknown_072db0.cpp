@@ -1234,6 +1234,14 @@ long function_1931a0(long count, s_surface_description *variant);
 // around it): this function matches (0x7e210 then takes the session in EAX, retail's head) while 0x7e210
 // goes 766 -> 1593. Ours inlines 0x192e60 into 0x7e210 and calls 0x193300 from an inlined callee; retail
 // calls 0x192e60 and never 0x193300. The body here is complete; the fix is in 0x7e210's inlining.
+// Round 146 (m3 lane 5, fast control 8, plain 6): session on the stack comes from 0x7e210 giving the session EBP and
+// the inlined getter's pointer EDI. In 0x7e210: the output pointer's address taken 8, read through its address 8; the
+// getter in the player loop, the capacity helper force-inline, a long histogram and their combinations 8 each. Diagnostic
+// (not kept): the top getter call inside `if (1)` or a constant-true local test stays out of line, this function matches,
+// 0x7e210 942 (2700 bytes); the call in both arms of the state test matches too, 0x7e210 915, with the capacity
+// helper force-inline 856 (2828 bytes). Diagnostic in a scratch copy of 0x192e60's file (not kept): the getter's
+// element pointer computed first gives the session EAX while still inlined, this function matches, but 0x192e60 31,
+// 0x63220 102, 0x73ca0 148. More source in the getter with the same bytes, or `inline` on it, changes nothing.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1369,270 +1377,6 @@ struct s_rating_summary
 };
 
 #pragma inline_depth(0)
-// score 31 (was 31): the player loop matches since round 49 (m3 lane 1); round 27 below fixed the team loop's arms and registers. Earlier 61: left: the summary block's key
-// the player loop matches since round 49 (m3 lane 1); left: the summary block's key
-// and session order and the identity formatter called before strncpy's count is pushed, and in the team loop
-// the counters/team cursor slots (ours 0x14/0x18, retail 0x18/0x14; retail carries the counters cursor in
-// ECX into the loop head and stores it there, ours keeps it in memory) and the lower zero (retail sets it
-// in the else arm, ours before the test). Earlier, at 92: frame 0xfc and length (1212) agree. Left: level
-// and the group-compare cursor take
-// each other's slots (ours 0x18/0x14, retail 0x14/0x18); retail loads the key before the collection
-// fields and calls the identity formatter before pushing strncpy's count; in the team loop retail keeps
-// the counters cursor in a stack slot and the collection, then level, in EBX (ours: cursor in EBX,
-// level spilled). Round 29: the per-player and per-team counters declared in the collection and the
-// player counts read straight from `collection->player_counters[i]` (retail's +0xf44 cursor), the team
-// fields and identity read from `collection->teams[i]` at each use (retail's +0xdc8 cursor), 177 -> 130;
-// the identity declared just before the strncpy with the group compare reading the player address
-// 108; the name character as `word` 92 (kept). Tried: counters through record pointers (same code),
-// read orders 179-181, identity as a team-loop local 295, identity before the summary 125, word
-// character with a short countdown 139, the formatted identity in a local 105, the team counters
-// pointer formed at the call (same code), a copy-and-terminate helper for the strncpy 225 (strncpy
-// expanded inline), level or all four shared locals per loop 108/108, renaming level (no change).
-// Round 67: the team count switch with one statement per hopper
-// type (0x66050's form; retail's jump table) 202 -> 177 (kept); on it: word character 183; `key`
-// renamed (slot order by name) 177, no slot moved; statistics reads third/second/first 179; the
-// statistics pointer computed at its use without the copy 174 (three points, not kept), with the
-// team pointer too 179.
-// Forms tried before (on 202 unless noted): live key/player/team/both skills 348/320/199/317; key plus
-// player/team/both 379/374/388; player-only key phase 266; existing converter 371; converter inline
-// boundary 367; native summary fields 231; native skill snapshot 302; immutable query inputs 231;
-// native counter bits 231; native session fields 231; frame pointer 412; team value snapshots 225; team
-// promoted skill snapshot 239; native player statistics array 231; native statistics arrays 231;
-// external player/team/both record references 225/220/220; early player identity 234; native records
-// plus formatted identity 219; UTF-16 input 220; shared eligibility 353; bounded name conversion 332;
-// direct native team pointer 220; native team pointer/reference plus formatted identity 219/219;
-// byte/word player ordinal 335/335; byte group 319; both byte 339; word/byte character budget 215/239;
-// dword key 220; shared value/change/level/lower declarations: value 220, change 220, level 206,
-// lower 220, value/change 220, level/lower 206, value/level 206, change/lower 220; shared short/promoted
-// skill 284/220; entry/shared statistics 206/206; entry group 206; shared statistics with short/promoted
-// skill 284/220; statistics plus entry group 206; shared identity/statistic views 206/206, both 206;
-// name-source advance at load 218, with the views 218/218/218; shared outer statistics cursor 206;
-// bounded character countdown 326; group guards 206; player admission scope 206; team guards 206;
-// guards plus countdown 326; player/team admission 206; all admissions plus countdown 326; negative-first
-// lower selection 212; unsigned name capacity 207; capacity-first continuation 216; ordinary-slot-first
-// output 213; capacity/continuation, capacity/output, continuation/output, all three 241/214/220/248;
-// copied-character ordinal with native pointers 207.
-// Round 138: player/team/both adjusted values 206/206/206; player table loop 206; zero chain 205;
-// table/player result 206; current player value 206; early summary ratings 303; summary count/lookup/
-// formatter/completion call declarations 206 each; dword group/player/character 314/206/202; all three
-// 316 (full-width character kept at 1167 bytes). Round 148: existing bound helper in a bounded for,
-// caller ordinary/force-inline/inline 323/323/323; direct bound-helper break 224; native player pointer
-// 325; whole summary clear 353; outer summary workspace 323; native player plus summary clear 353;
-// definition-side force-inline with bounded for/direct break 323/216.
-// Round 317: late player/team/both statistic producers 199/207/204; late player plus native indexing
-// 199; ascending/descending reads on late player 203/201; both late with ascending/native indexing
-// 208/204; on late player: key first 199, shared carrier names 199, word character 203, positive
-// character budget for 320. Player-change/rating/group-add/group-set inline and noinline declarations
-// 202 each. Signed full-width character 203; entry query-table workspace 202; test-derived translated
-// character 264; signed character plus query workspace 203; signed/entry/both with translation
-// 264/264/264; entry name-capacity workspace 202. Native unsigned masked statistics 202; shared
-// player/team ordinal 220 (key home recovered); contiguous summary prefix fill 217; counts/ordinal 220;
-// counts/prefix 217; ordinal/prefix 214; all three 214; read-only query table 202.
-// Round 230: promoted membership 335; group/team identity-first tests 350/202; membership with
-// group/team/both identity-first 345/336/345; both identity-first without membership 349; native-byte
-// membership with both 343. Round 366: native fifteen-bit player/team/both statistic fields 195/207/200
-// fast; word/short player results 279/279, with both arrays 283/283; native statistic receiver 199; on
-// the recovered +0xf44 cursor: native player indexing/shared counts/query-key name 195/195/195; entry
-// statistic receiver 202. Round 130: stored summary change/count-set/level consumers, individually and
-// all combinations, 202 each; complete stored consumers with word character 206. Native fifteen-bit
-// fields with one player/team ordinal: late receiver with dword/word character 216/202;
-// completed-summary consumers 216/202; early receiver with dword/word character 220/206; completed-
-// summary consumers 220/206; direct native fields with dword/word character 213/199 (the last restores
-// key +0x1c and cursor +0xf44). Native full-width unsigned/signed status fields 202/202; native word/
-// bitfield admission with full sentinel 350/350; split sentinel halves 335/335; native status with
-// player indexing 202, with fifteen-bit counters 199. Round 188: variant-lookup/team-change/query-
-// emission/group-bound inline and noinline declarations 202 each. DL159: uniform name-input field
-// observations, crossed with shared pass ordinal, shared three-count results and two-word prefix clear,
-// 234-236. Round 210: query-count table publication 123/132/213/231/312/321 202/206/213/344/214/345;
-// entry table with 123/321 202/345. Round 194: on native fifteen-bit player statistics and a shared
-// pass ordinal, byte/short/word/dword group counters with dword or word characters all 311.
-// Round 187: Native indexed group pointer, array cursor, body-stepped cursor, record reference, each with dword/word character: 300/295, 321/322, 286/294, 300/295. All restored; key/statistics/change/group homes remain.
-// Round 417: on separate real team cases, shared ordinal/native fifteen-bit player fields/both
-// 195/170/188; ordinal+word character/fields+word/both+word 181/176/174; all stored summary
-// inputs with ordinal+fields, dword/word character 188/174. On fields alone, actual 0..64
-// name budget word/short/byte/dword 174/181/230/170; word/short/byte budget with word character
-// 170/174/211. Seven-point leads rejected; original types, loops and complete body restored.
-// DL190: Native status alone/statistics/both with aggregate zero 177/170/365; status with aggregate zero 365; status with word character 183, with statistics 176, with statistics/aggregate 369; statistics/aggregate without status 365. Native full-width unsigned-long/int/unsigned-int count results on status/statistics 170 each. Seven-point best rejected; original types, loops and body restored.
-// Round 12 (m3 lane 2; kept: the team statistics pointer formed in the inner block instead of a loop-top
-// pointer copied into it, byte-identical 92): the formatted identity in a local before the strncpy 89
-// (retail's call-before-count order); with it identity renamed player_identity or level renamed
-// adjusted_level/rating_level 89 (names never move the level/compare-cursor slots); with it the summary's
-// key stored before the two collection fields 83 (fixes that block except the identity slot), the two
-// fields swapped 87, key between them 89; the key first alone 88; with the inner statistics pointer 88;
-// the statistics read through collection->team_counters[i] at the call 212; level declared per loop 108,
-// all four shared values per loop 108, each with the formatted local and key first 100. Left after 83:
-// level and the compare cursor/identity slot swapped (ours 0x18/0x14), and in the team loop retail keeps
-// the collection then level in EBX and the counters cursor in a stack slot (ours the reverse).
-// Round 47 (lane 16; kept: the summary as `= { 0 }` with a 64-bit first field, byte-identical 92, in
-// place of two zero stores and a hand-written memset of the rest): the team loop bounded by a
-// team-count helper in the for condition 331 (loop rotated); a team entry pointer in the team loop
-// 245 (1192 bytes); a force-inline terminating copy helper for the identity 225 (it stays a
-// register-argument call under the inline_depth(0) region); on the kept form, the key stored before the
-// session copy 88 (the summary block then differs only in the formatter call/count push order).
-// Slot sharing: retail packs {level, team cursor} and {group-compare cursor, identity, counters
-// cursor}; ours spills level in both loops and keeps the counters cursor in EBX, so the slot swap
-// likely follows the team loop's register choice (diagnostic: with constant counter arguments level
-// takes EBX, but the collection is still reloaded from its parameter slot rather than kept in EBX).
-// Round 134 (m3 lane 4): retail's team loop keeps the collection in EBX (pushed for 0x74720, reloaded
-// at the loop end), level in EBX after it, and both cursors in slots 0x14/0x18; ours turns EBX into the
-// counters cursor, so level spills to 0x18 in both loops, which is likely the level/compare-cursor slot
-// swap as well. The four shared values declared level first 92; the key stored before the session 88
-// (the summary block then differs only in the formatter call/count push order; 4 points, not kept); on
-// it, the group compare against `&g_509454[group].owner` 88 (same code); the team counters as a walking
-// pointer (diagnostic) 213 (the collection moves to EDI from entry); a typed collection copy for the
-// team loop (diagnostic) 88 (copy-propagated). All restored.
-// Round 37 (lane 10, fast): in retail's team loop both cursors are memory-homed (stored at the loop head
-// each pass, reloaded at the bottom) and the collection is reloaded into EBX at the bottom, level taking
-// EBX after the change call; ours keeps the counters cursor in EBX. The counters pointer defined at the
-// top of the team-loop body 92 (same code); the team tests as an early continue 92; a team identity
-// pointer used by the compare and the call 245 (1192 bytes); the shared locals declared level, lower,
-// value, change 92; the counters read from the collection at the call 212 (as before); the team loop through
-// a `const s_match_rating_collection *` view of the collection (entries for the team reads, passed to the
-// change call) 92; without the inline_depth(0) region (diagnostic) 407 (1268 bytes).
-// Round 30 (lane 14, fast): the key stored before the session copy 88 again (the summary block then differs
-// only in the formatter call/count push order; 4 points, not kept); on it: a named group-entry pointer for
-// the state test and the owner compare 279 (1196 bytes); level declared per loop 105 (every slot reshuffles,
-// the team loop still gives EBX to the counters cursor); lower declared per loop 88; the team statistics
-// pointer formed before the change call 88; the team counters read into first/second/third locals
-// (diagnostic) 212 (the collection moves to EDI from entry, the counters cursor still EBX).
-// On the original source: lower as `lower = 0; if (value >= 0) lower = ...;` in both loops 274.
-// Round 35 (lane 13, fast): the team loop's level computed inside the change-call argument list 131 (MSVC calls it
-// in place during the pushes, after lower; retail calls it right after the change), level and lower both there
-// 138; the team loop as the `type == 5` if-branch 317; the key stored before the session copy 88 (as before);
-// with the key read from the collection at that store 90.
-// Round 103 (m3 lane 7): the player entry's id typed as an XUID at +2 (guest test and 0xbad00000 compare on
-// xuid.dwUserFlags, identity as &player->xuid) 92 (same code); the team statistics pointer formed before the
-// change call 92; a typed 64-bit session field at +0x130 92; level renamed updated_level (sorts after the
-// compiler's tv temporaries) 92; the team entry's id typed as an XUID 92. Diagnostic: constant team statistics
-// arguments 212 (level then takes EBX in the team loop, the collection stays in memory).
-// Round 47 (m3 lane 1, fast): the player entry as plain `&collection->players[i]` in place of the
-// +0x41e byte cursor and its -0x9a step back 92 (byte-identical code; kept); the identity written at
-// both uses with no named local 92 (no slot moves: the level/compare-cursor order is not the identity
-// local's name); with the key stored first as well 88; the team count switched once before a plain
-// counted team loop 157 (1192 bytes); the team skill as a sign-extended long 102.
-// Lane 12 r72 (fast): on the key stored before the session copy (88, 4 points, not kept): lower declared
-// in each loop 88; the team statistics pointer formed before the change call 88; both 88; level declared
-// in each loop 105 (every slot reshuffles).
-// Round 49 (m3 lane 1): the team loop's lower as `lower = 0; if (value >= 0) lower = ...;` 61 (kept; the
-// team loop then gives EBX to the collection and level as retail, and the player-loop slots fall into
-// place); the same as if/else 92, reversed ternary/if-else 96/96, the zero before the level call 118
-// (1228 bytes), the arms swapped (`type == 5` first) 317, team-loop value/change/level/lower 108, level
-// alone 108 (lower/change/value alone 92), one index shared by both loops 127, the count declared before
-// the loop 92, both rating calls written as the 0x73e00 arguments 131. On the 61 form: key stored before
-// the session 57; skill and value tested in nested ifs (value then loaded after the skill test, as
-// retail) 60, both 56; with the identity formatter's result in a local as well 50 (aligned 18: the
-// summary block then matches; match-only), on that: team value read at each use 228, a team entry pointer
-// 70, a walking counters pointer 51 (its base is the struct, retail's cursor points at +6), the counters
-// pointer at the loop top 50, long skill 66, early continue 50, skill read at the loop top 232, the four
-// shared declarations in four other orders 50 each. Diagnostics: without the file-scope inline_depth(0)
-// region only the variant getter 0x192e60 inlines (407); a terminating-copy inline helper for the identity
-// (strncpy then terminate, as other files have) then gives retail's formatter-before-count order but the
-// getter still inlines, 388, also at inline_depth(1) and through a forwarding helper 388: retail's
-// identity copy was an inlined helper, which this region cannot reproduce.
-// Round 53 (m3 lane 1): team skill/value nested with a ternary lower 92; key first, formatter local
-// and a ternary team lower 83 (the ternary always gives the counters cursor EBX); the team counters
-// pointer renamed (same code); the team value read before the skill 65; the team value tested before
-// the skill 64. Diagnostic without the
-// inline_depth(0) region: the existing unicode_string_to_ascii (0x13fb90) for the name, a
-// strncpy-and-terminate inline copy for the identity and the existing team-count accessor 0x193440 in
-// the team loop's condition all inline as retail's code (formatter before the count push, the 0x7f
-// loop, a per-iteration jump table), 407 at 1260 bytes, fast and plain: only the getter 0x192e60
-// inlines where retail calls it (0x73ca0 in this file keeps it out of line); with a null test after
-// it 441, without __stdcall 407. Lead: retail's source is that helper form; what keeps the getter
-// out of line is still unknown.
-// Round 27 (lane 17, fast; harness of this file reproduces the team loop): 61 -> 31, kept: the team value
-// read inside the skill test, the key stored before the session, and a named `adjusted` (value + change)
-// used by both rating calls with the lower rating as a ternary (retail's arm layout: EBX stays the collection,
-// then level). `value += change` before the calls with the ternary 92; `value = value + change` 94 (harness);
-// the sum written at each use, `change + value` same code. Left: the identity formatter runs after pushing
-// strncpy's count (one-use local for its result, match-only: 25) and the team loop's cursors: retail stores
-// both at the head (tail-merged from the preheader and latch, the counters cursor in ECX at the latch) and homes
-// them teams +0x14, counters +0x18; ours takes the counters cursor into ESI at the latch and stores it there
-// (1216 bytes, 4 long), homes swapped. No effect on that: per-loop value/change/level/lower declarations, one
-// index declared outside, count outside, reordered switch cases, the counters read directly or into locals
-// (+1), the counters pointer at the loop top, identity local, early continues (harness 38 each, control 38).
-// Switch with merged case labels 64 (1190 bytes; harness).
-// Round 443: native complete team-counter value, original/admission storage,
-// crossed with key-before-session and per-arm lower results, 383/383/389/389
-// in either scope. Original pointer, summary order, lower and full body restored.
-// Round 290: On explicit team lower-result production, separate team value/change/level carriers,
-// all seven subsets, 61 each; all four team results separated 61. Original shared results restored;
-// summary scheduling and team counter/cursor homes remain, with exact frame and length.
-// Round 322: Native team receiver shared by player-summary/team passes, crossed with copy-result
-// termination, counter declaration scope and full lower-result arms: 65/68/65/68/65/68/65/68 at
-// retail length; first gap moves to +0x4c. Original complete body restored; summary scheduling and
-// team/counter homes remain.
-// Round 307: native indexed team/counter/both receivers on the adjusted-value graph 47/31/41 (counter is calibration);
-// Round 307: body-stepped team/counter/both 116/38/116; indexed-team with stepped counters 44;
-// Round 307: stepped team with indexed counters 116. Original body restored; formatter/count scheduling
-// Round 307: and the swapped team/counter homes remain.
-// Round 307: complete native team-record snapshot at admission 224 (1268 bytes); restored.
-// M310: Actual team admission snapshots before identity comparison; gate orders ASIV/AVIS/ASVI/AVSI/SAIV/VAIS/SVAI/VSAI [223, 231, 127, 126, 214, 211, 253, 253]. Original body restored.
-// Round 273: joint team-statistics/ordinal/bound role names, seven subsets 31 each;
-// all three with an uninitialized iteration-entry statistics declaration 31. Original
-// complete body restored; formatter/count schedule and team/counter homes remain.
-// M316: On adjusted-value graph: native word team-count snapshots in all six declaration orders, dword counts, and loop-entry word storage; each also with copy-return termination 32/32/32/32/32/32/32/32/35/35/35/35/35/35/35/35.
-// One-use field forms are exact-match-only; formatter/count scheduling and team/counter homes remain. Original executable body restored.
-// P276: Shared value/change/level/lower, summary and identity lexical roles, then
-// joint result roles and all six roles on adjusted-value graph: 31 each. Complete body
-// restored; formatter/count schedule and team/counter homes remain.
-// DH300: Equality-only team/group comparator operand ownership and multiply-used identity output
-// receiver subsets 1/2/4/3/5/6/7, all with early receiver: 33/34/31/36/33/34/36/36.
-// Original comparisons, copy destination and full body restored; formatter/count scheduling and cursor homes remain.
-// Round 376: On adjusted-value team graph, shared player/team first/second/third statistic
-// carriers in seven long-valued subsets 31/31/31/31/31/31/31; complete native word carriers 275.
-// Original statistic scopes, producers and body restored; formatter/count scheduling and team/counter
-// homes remain. Existing reduced unresolved-global caveat persists.
-// Round 378: Actual dynamic team-bound admission at the loop head, bool/byte/short/long,
-// within and past truth, 31 in all eight. Exact-only one-use admission results restored;
-// original per-iteration switch, loops and complete body retained. Formatter/count schedule
-// and team/counter homes remain; existing reduced unresolved-global caveat persists.
-// P278: Native name-source/output/capacity/code-unit, query-key table, player and group lexical
-// roles independently, then all: 31 each. Original body restored; formatter/count setup and
-// team/counter homes remain.
-// Round 345: completed name-conversion/summary-publication/adjusted-rating phases, seven subsets; all
-// phases with immutable query table: 31/52/52/31/31/52/52/52. Original body and contracts restored.
-// Formatter/count schedule and team/counter homes remain.
-// M3 lane 13 r54 (fast, on the one-use identity-string local, control 25; match-only, not kept): team index
-// short 143 (1228 bytes); counters as a const reference 25 (same code); the bound test as `!(i < count)` 25;
-// team skill read at each use 237 (1200 bytes); counters pointer declared at function scope 25. Retail's team
-// loop keeps both cursors stored at the head (teams +0x14, counters +0x18, counters in ECX at the latch).
-// F347: Native session memcpy with byte/XUID identity source, aggregate/library summary initialization
-// and scalar/stored query consumers: 31/31/210/210/31/31/210/210. Native copy and identity forms tie;
-// library clears recover extent but regress. Original body restored; formatter/count setup and
-// team/counter homes remain.
-// Round 554: Native team/counter cursor as primary induction, derived real-array ordinal,
-// indexed/walking secondary record, iteration/pass-owned bound result:
-// 274/362/387/407/274/362/387/407. Original integer induction and full body restored;
-// formatter/count scheduling and team/counter homes remain.
-// Round 44 (m3 lane 2, fast): retail's team-loop head is the tail-merge target of preheader and latch (both
-// cursors arrive in ECX/EDX and are stored there); ours keeps the counters cursor in memory and steps it in ESI
-// at the latch, so the store does not merge (the 4 bytes). A walking team pointer declared before the team loop
-// and stepped at the body's end 116 (collection register changes from +0x45; named team/entry/zteam alike); a
-// walking counters pointer 38 (base at the struct, not +6; homes unchanged), named zcounters 38 (names do not
-// move these homes); the switch without its `default: __assume(0)` 105 (1197 bytes); the formatter's result
-// in a local 25 again (match-only; only the team latch left).
-// Round 206 (m3 lane 3, fast): with the formatter's result in a local (match-only) 25 again (only the team
-// latch left: retail stores both cursors at the head, counters from ECX; ours steps counters in ESI and stores it
-// at the latch, homes swapped); on that, the team loop bounded by the existing accessor 0x193440 under the region
-// 163 (1191 bytes, it stays a call); the stats pointer before the two rating calls 25 (same code); the team skill
-// as `long` 55 (1212 bytes, but only because the skill compare moves; the latch is unchanged). Diagnostics without
-// the inline_depth(0) region: unicode_string_to_ascii for the name and the 0x193440 accessor 412 (1264 bytes), with
-// a strncpy-and-terminate inline copy as well 412: 0x192e60 still inlines at entry. Original body restored.
-// Round 141 (m3 lane 6, fast): a strncpy-and-terminate helper (as font_loading.cpp has) declared __forceinline
-// or inline ahead of the region 214 (1200 bytes: the inline_depth(0) region keeps even a __forceinline helper out
-// of line); the team counters read directly at the call 32; the team identity named (`const XUID *`) for the
-// memcmp and the call 47 at 1212 bytes (the team-loop latch then stores both cursors from ECX/EDX at the head with
-// retail's homes, teams +0x14, counters +0x18, but the team cursor is based at the identity, +0xdd0, where
-// retail's is +0xdc8); a team element pointer 47, with the identity pointer 46; the identity named only for the
-// call 47. Retail's prologue/epilogue is `ret 8` too (the queue's `ret 0` was jump-table data).
-// Round 206 (m3 lane 3, fast): with the formatter's result in a local (match-only) 25 again (only the team
-// latch left: retail stores both cursors at the head, counters from ECX; ours steps counters in ESI and stores it
-// at the latch, homes swapped); on that, the team loop bounded by the existing accessor 0x193440 under the region
-// 163 (1191 bytes, it stays a call); the stats pointer before the two rating calls 25 (same code); the team skill
-// as `long` 55 (1212 bytes, but only because the skill compare moves; the latch is unchanged). Diagnostics without
-// the inline_depth(0) region: unicode_string_to_ascii for the name and the 0x193440 accessor 412 (1264 bytes), with
-// a strncpy-and-terminate inline copy as well 412: 0x192e60 still inlines at entry. Original body restored.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1680,7 +1424,8 @@ void __stdcall function_741f0(s_match_player_rating_collection *collection, s_qu
                 summary.values[2] = key;
                 summary.session = *(const ULONGLONG *)((byte *)collection + 0x130);
                 const XUID *identity = (const XUID *)((const byte *)player + 2);
-                strncpy(summary.identity, function_1537a0((const byte *)identity), 64);
+                const char *identity_string = function_1537a0((const byte *)identity);
+                strncpy(summary.identity, identity_string, 64);
                 summary.identity[63] = 0;
                 const word *source = (const word *)((const byte *)player + 0x10);
                 char *destination = summary.name;
@@ -1729,18 +1474,19 @@ void __stdcall function_741f0(s_match_player_rating_collection *collection, s_qu
                 break;
             if (collection->teams[i].active && memcmp(collection->teams[i].unknown0c, g_440070, 12) != 0)
             {
-                short skill = collection->teams[i].skill;
-                if (skill != NONE)
+                const s_match_rating_entry *team = &collection->teams[i];
+                if (team->skill != NONE)
                 {
-                    value = collection->teams[i].value;
+                    value = team->value;
                     if (value != NONE)
                     {
+                        short skill = team->skill;
                         change = function_74720((const s_match_rating_collection *)collection, i);
                         long adjusted = value + change;
                         level = function_74970(adjusted, skill);
                         lower = adjusted >= 0 ? function_74970(adjusted, 0) : 0;
                         const s_rating_counters_team *stats = &collection->team_counters[i];
-                        function_73e00(lower, batch, (const XUID *)collection->teams[i].unknown0c, change,
+                        function_73e00(lower, batch, (const XUID *)team->unknown0c, change,
                             stats->first, stats->second, stats->third, level, 3, players);
                     }
                 }
@@ -2006,6 +1752,11 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M3 lane 4 r161 (fast): the existing xuid getter 0x647a0 as the users-loop test 757 (2862 B; called, not
 // inlined); a const user reference for the users loop 754; that with online_logon_connected() 775 (2846 B);
 // the identity flag tests before the slot test 711; team declared before valid 709 (same code).
+// Round 146 (m3 lane 5, fast): a user record pointer defined inside the valid test 754 (aligned 364 against 344), with
+// a named xuid pointer also used by the later copy 754, defined before the test 754; the pointer with the identity
+// or the later copy read directly 709/709 (same code); online_logon_connected() 729 (2862 bytes, aligned 343). Retail's
+// `mov ecx, 0; cmovne ecx, eax` is one line shorter than ours, so every later line shifts: the slot test needs
+// /arch:SSE (a file-flag decision), and the positional count cannot fall far before that.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
