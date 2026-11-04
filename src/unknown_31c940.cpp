@@ -602,7 +602,7 @@ static __forceinline void solve_linear_error_kernel(float target, float mass,
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
 	__m128 delta_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
 	__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
-	linear_a = _mm_add_ps(linear_a, delta_a);
+	linear_a = _mm_add_ps(_mm_load_ps((float const *)&linear_a), delta_a);
 	_mm_store_ps(linear_b, _mm_sub_ps(_mm_load_ps(linear_b), delta_b));
 	__m128 angular_change_a = _mm_mul_ps(change_a, axis_a);
 	__m128 angular_change_b = _mm_mul_ps(change_b, axis_b);
