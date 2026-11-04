@@ -1379,6 +1379,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // DH358: Branch-set capacity result with empty/full defaults in bool/byte/word/dword:
 // eight scores 395 at 1162/1171 bytes. NOT kept: every form regresses and loses native extent;
 // original predicate, removed-index producer, bounds, copy loops and full tail restored.
+// N384: Actual returned insertion ordinal at entry/post-removal/immutable-bound/
+// completed-shift lifetimes, two result-role names: 378/377/377/66 twice. Original
+// mutable input/result and full body restored; count/upper/copy allocation remains.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

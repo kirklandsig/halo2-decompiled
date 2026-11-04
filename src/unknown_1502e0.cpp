@@ -1308,6 +1308,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // N372: Initial/attached chained false stores and absent-held continuation, seven subsets,
 // then complete flag rejection: 284 each at 1006 bytes with frame 0x18. Original body
 // restored; retained pool/player and lazy tag-table homes remain.
+// N384: Existing whole-metadata pointer/reference result, mutable/read-only and
+// captured/direct object input: eight 284. No field-address result is introduced, but
+// native pool/player/tag homes remain. Original getter and entire body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1772,6 +1775,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // DH359: Full-width signed option/user/controller masks, seven subsets 285 each;
 // word option mask 297; existing release-helper inline/forced declarations 285/285.
 // NOT kept: no gain; scalar homes and release expansion remain. All bodies and declarations restored.
+// N384: Actual controller/user/option array role names, seven subsets and alternate complete
+// names: 285 each. Original names and full body restored; mask/index homes and missing
+// release expansion remain. NOT kept: no byte match or gain.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
