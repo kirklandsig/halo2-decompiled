@@ -3093,14 +3093,22 @@ struct s_component_frame_map
 
 byte *__fastcall function_30c170(hkWorld *world);
 
-// score 173 (was 206), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
-// caller, the reduced image gives another convention: 344). 0x1d83e0 now MATCHES, so the call
-// registers (component EAX, index EDX, matrix ESI, two stack words) and the frame agree. What is left
-// is scheduling and one register: in the equal-node arms the zero stores of the matrix copy's fourth
-// words run ahead of the column stores (retail keeps the source order: eax = [esi+0xc] first, stores
-// in column order), and in the second half the node_b word goes to EDX where retail uses EAX (retail
-// stores the sign-extended word to its slot after the compare, ours before). The first (relative)
-// arm and the first half of the function agree instruction for instruction.
+// score 15 (was 173), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
+// caller, the reduced image gives another convention: 344). 0x1d83e0 MATCHES, so the call registers
+// (component EAX, index EDX, matrix ESI, two stack words) and the frame agree. The node_b word is now
+// read inside the `pair->node_b != NONE` test (the guard compares the short, the sign extension and its
+// slot store come after it, in EAX as in retail): 173 -> 15, and the whole second half matches. What is
+// left is the first equal-node arm only (frame_a, columns 0-2): ours hoists the zero stores of the
+// columns' fourth words (and in column 0 the k store) ahead of the i/j stores, and loads k,j,i where
+// retail loads k,i,j and stores i,j,k,w; the identical copy in the frame_b arm and this arm's
+// translation already match. The same helper call gives retail's order in the second half, so only this
+// block's scheduling differs.
+// Round 1 (c2A) tried, on the 15 form: operand order `pair->node_a != first->node` 16; arms swapped
+// (equal arm first) 74; per-column loop with k,i,j locals 15 (same code); columns and translation
+// as direct set() calls 324; const reference to the pair 15; one source pointer (&matrix or the pair)
+// feeding a single converter call 546; node_a read after the first link 281; node_a assigned inside a
+// NONE guard like node_b 311; first link before the count 214; relative/matrix declared once at
+// function scope 15; node_b initialized to NONE (kept, same code) 15.
 // Round 90 tried: the equal arm copied into a local matrix first 352 (changes the frame); the pair
 // pointer through a local in that arm 173; node_b declared after index_b 173; node_b read after the
 // index search 308.
@@ -3164,7 +3172,7 @@ void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     else
         component_matrix_frame(&pair->frame_a, frame_a);
     *body_a = component->rigid_bodies.data[index_a].rigid_body;
-    long node_b;
+    long node_b = NONE;
     long index_b = NONE;
     if (pair->node_b != NONE)
     {
