@@ -1214,6 +1214,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // result, ours keeps a separate slot. The substitution loop in a forceinline helper taking the squad pointer 389
 // (1307 bytes); the squad pointer `byte const *` 253 (same code); `bool flag = squad && (bit 10)` 252; the squad
 // lookup ahead of the 0x1e4990 call 264; the loop's probability declared before its bools 253 (same code).
+// AC522: Six remaining substitute/squad/squad-index admission partitions,
+// then complete/default optional-squad pointer arms on the goto-free graph:
+// 392/436/408/452/420/392/353/341. NOT kept: entry/layout regressions; original body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

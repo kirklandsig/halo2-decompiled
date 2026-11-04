@@ -1711,6 +1711,9 @@ bool function_17afd0(long effect_index, long value);
 // AC515: Actual two-use view classification on the shifted-word/effect-index/owner-arm graph,
 // long/dword/short/byte with default-query then conditional producers: 139/139/141/129/139/139/141/125.
 // NOT kept: unmatched classification storage; original Boolean result and complete body restored.
+// AC522: Coupled availability/same-view outputs, complete and success-owned
+// producers with bool/byte/short/long same-view domains 142/135/132/135/125/133/138/141.
+// NOT kept: unmatched result residence; original observations and body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

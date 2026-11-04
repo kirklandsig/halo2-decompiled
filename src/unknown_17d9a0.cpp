@@ -388,6 +388,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC520: Existing four-use corner pointer/reference outputs with pointer/reference/native
 // value returns, then native returned point: 46/46/42/46/46/46/42/246. NOT kept:
 // four-point value-return leads below threshold; native result grows frame/length; original helper/body restored.
+// AC522: Actual normal-copy result plane/normal pointer/reference receivers,
+// memcpy then memmove 91/91/91/91/211/211/211/211. NOT kept: EDI receiver and
+// dot/product regressions; original library/copy boundaries and body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -966,6 +969,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC520: Complete signed-distance boundaries, real/double, immediate/paired fabs and
 // ordering-result forms: 539/533/539/533/831/843/831/843. NOT kept: six-point leads
 // grow frame to 0x21e4; double forms lose the native prologue; original body/helpers restored.
+// AC522: Complete selected-edge acceptance bool/byte/short/long, then
+// complementary rejection 533/533/533/533/606/606/606/606. NOT kept: six-point lead below
+// gate and frame 0x21e4 versus 0x21dc; original complete body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

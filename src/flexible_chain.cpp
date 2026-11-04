@@ -446,6 +446,9 @@ void __stdcall function_1160c0(real dt)
 // AC518: Complete normalization admission bool/byte/short/long, direct predicate
 // and success-owned result, 292/292/292/292/292/292/292/292 (1355 bytes).
 // NOT kept: decision-result lifetime does not match; original body restored.
+// AC522: Plain axis scaling long/int/short/word/byte/signed-byte loops,
+// native component cursor and long loop with complete shared cross:
+// 187/187/212/212/212/212/212/198. NOT kept: regressions; original body and homes restored.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
