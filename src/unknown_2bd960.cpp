@@ -663,6 +663,10 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // 2; step products as `32 * (i + 1)` and `32 * i` 2; the count stored as one expression and halved from the field 2;
 // the parity test as `== 0` 2; half declared at its assignment 2. Diagnostic: a float literal for the call's last
 // argument keeps the pair (it flips 0x281b60's pair).
+// Round 84 (plain): the steps loop as `while` with the index step last 2; the first term negated and written second 2; a nested polygon
+// test 2; half and i declared at the top of the found block 2; the even count as its own local 2. A compile-only copy with `__stdcall`
+// parameters reproduces the swapped pair. There a division by 3, 5, 7 or 100 anywhere in the function flips it (a division by 4 or 8, or
+// a `% 3`, does not), and 12 extra reads of either parameter do not, so reference counts do not decide it. 102 no-extra-code forms keep the pair.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {

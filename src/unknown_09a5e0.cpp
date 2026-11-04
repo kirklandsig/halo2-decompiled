@@ -2344,6 +2344,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // M347: Optional tag-count availability, direct bool/byte/short/long then
 // test-produced bool/byte/short/long: 155/155/155/155/155/155/155/155.
 // NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
+// DH347: Low-mask lifetime ends before independently gated high-state update, with native
+// record fields, child-handle extraction scope and whole traversal scope: eight at 240/1081.
+// NOT kept: allocation regresses earlier (+0x16); original complete body and mask updates restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

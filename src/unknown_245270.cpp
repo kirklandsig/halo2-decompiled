@@ -584,6 +584,15 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 50 (m3 lane 15, fast; 0x245aa0 checked): the side flags as `(code & 0x8000) != 0` 209 (same code); the
 // facing arms inverted on `!=` 209 (same code); the facing test as one ternary condition 211; the equal-material
 // case as an early return 209 (same code); short codes with `< 0` sides 224 (762 bytes, 0x245aa0 lost to 6).
+// B412: Complete ordered-facing rejection to the sole void exit, bool/byte/short/long
+// sides with original/staged cross: 211 each. Original body restored; frame 0x24/0x2c,
+// material/side homes and delayed matrix acquisition remain.
+// B415: Decoded-plane phase ending before transform, with cross-ending/native-code/side storage
+// B415: masks 0..7: 209/209/240/240/209/209/240/240. Native short codes lose caller 0x245aa0 at 6; all original
+// B415: code/side homes and full body restored; frame 0x24/0x2c, material/table spills and late matrix remain.
+// B417: Plane-table acquisition ends after native plane pointers, with completed endpoint/cross
+// regions and earlier bare point workspace, eight forms: 209/209/209/209/209/209/209/209.
+// Original body restored; frame 0x24/0x2c, side homes and delayed matrix acquisition remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
