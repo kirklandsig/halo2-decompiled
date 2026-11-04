@@ -3281,6 +3281,9 @@ struct s_voice_route_choice
 // Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
 // actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
 // byte agreement; original independent decisions and complete body restored.
+// Y560: Zero-empty one-based selected ordinal in long/dword/int64, then count sentinel,
+// with bitwise/conditional radio: 420/420/473/485/415/415/487/435. NOT kept: optional-state
+// representations do not match retail; original independent decisions and full body restored.
 // Round 50 (m3 lane 15, fast; both callers matched each time): retail computes the talker's XUID once for both
 // radio-arm engine calls (ESI:EDI reused). Named XUID re-measured 375 (1288 bytes); with a named talker bit before
 // the loop 381 at retail's 1287 bytes (frame 0x58: the bit gets a stack home, retail hoists it only in the unrolled
@@ -3289,6 +3292,12 @@ struct s_voice_route_choice
 // Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
 // actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
 // byte agreement; original independent decisions and complete body restored.
+// Y562: Native signed-int count/loop/selected ordinal contracts, subsets 1/2/4/3/5/6/7,
+// then complete talker identity: 363/363/363/363/363/363/363/363. Original full-width declarations and full body restored.
+// Y564: Original calls with radio/nearest/empty completion and engine-rejection exits:
+// radio first 363; nearest first 383; empty first 391; both routes complete 363;
+// mapping rejection 363; both radio engine rejections 363; empty-first rejections 391;
+// both completed with final rejection 363. NOT kept: no gain; original full body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

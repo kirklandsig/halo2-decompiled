@@ -4463,6 +4463,9 @@ long function_14de70(long local_player_index);
 // as retail, both compares immediate, pool read ahead of the masked index); on it both tests against the weapon
 // local 71; the index term first in the unit address sum 73 (same code); a dead else `weapon = NONE` 42 and a ternary
 // re-assigning the default 42 (the dead default is dropped, original code).
+// Y563: One object handle for the unit then its weapon, raw/native view, tail/entry
+// declaration and ternary/branch result: 42/73/42/73/42/73/42/73. NOT kept: ties or
+// regressions; original independent unit/weapon carriers and complete body restored.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {

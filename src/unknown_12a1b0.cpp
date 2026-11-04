@@ -1416,6 +1416,9 @@ struct s_looping_detail_request
 // B389: Positive branch-assigned completion without an entry default, bool/byte/short/long,
 // with original then early audible completion: 152/159/174/176/152/159/174/176. All regress;
 // original completion and full body restored; first-player call and detail/offset homes remain.
+// Y560: Complete camera const-pointer/reference/const-reference/value at the lookup,
+// original audible output then temporary/copy: 124/124/124/137/137/137/137/150. NOT kept:
+// no byte match; original camera and complete body restored; first-player expansion remains.
 // M343: One admitted-request graph from the reused attached-source outcome, bool/byte/short/long,
 // with native audible offset 154/154/156/156, with temporary/copy 182/182/183/183. Original
 // complete body restored; query expansion and detail/offset homes remain.

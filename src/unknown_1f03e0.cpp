@@ -1031,6 +1031,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // reference reaches 346 at 3052 bytes by changing existing product scheduling; retail
 // does not show that new field-alias lifetime or its projection load pattern. Exact-only
 // identities and complete body restored; damping and raw/bounded homes remain.
+// Y562: Planar/eight-normalization branch-owned damping/flying/direct admission, subsets
+// 1/2/4/3/5/6/7, then late damping: 574/530/629/658/633/639/652/659. Original entry observations and whole body restored.
+// NOT kept: all regress; combined predicate scopes also lose the exact caller.
+// Y564: Planar/eight-normalization initial/fallback/both scalar direct copies
+// 497/593/594; initial/fallback/both library copies 433/433/433; both scalar
+// copies with native raw aggregate 594; both overlap-safe copies 586. NOT kept:
+// no gain; original full body, raw/bounded homes, helpers and observations restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

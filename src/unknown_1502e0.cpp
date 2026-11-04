@@ -460,12 +460,12 @@ struct s_tail_player_identifier
 // F353: Complete player record with native entry/options-root/traits-result/alternate-truth lifetimes
 // 32/68/56/56/32/67/67/56.
 // NOT kept: no gain; original full body/helpers restored.
-// N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
-// and the CRT int comparison result: all eight 31. Original body restored; options
-// acquisition, delayed saves and comparison register ownership still differ.
 // Y559: Complementary first-set storage bool/byte/short/long, branch-cleared then
 // test-produced: 32/32/68/67/67/67/68/67. NOT kept: no byte match; native
 // delayed saves and identifier/options/comparison allocation remain.
+// N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
+// and the CRT int comparison result: all eight 31. Original body restored; options
+// acquisition, delayed saves and comparison register ownership still differ.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1169,6 +1169,12 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // Y559: Bounded slot count char/short/int/dword, entry then count-phase zero
 // declaration: 287/283/284/284/305/293/294/294. NOT kept: one-point lead below
 // the keep gate; retained pool/player and lazy tag-table ownership remain.
+// Y561: Initial hand selector char/short/word/dword 345/345/345/284;
+// final hand selector char/short/word/dword 283/282/282/284. NOT kept:
+// two-point best below the gate; native full-width selectors/body restored.
+// Y563: Count-slot rejection guards/held guard/Boolean accumulation/rejection plus
+// accumulation, final guarded/early-exit tail: 284/284/318/318/284/284/318/318. NOT kept:
+// no gain; original count admission, field observations and complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1338,12 +1344,12 @@ void function_150820(dword *bits, bool local_only)
 // F353: Native hand arm/default producers, original then actual mode/result storage names
 // 43/45/45/43/43/45/45/43.
 // NOT kept: no gain; original full body/helpers restored.
-// N345: Isolated player/hand/unit/held-slot/held-weapon/selector/parameter role names
-// and the int hand-negation result: all eight 43. Original body and calls restored;
-// ESI/EDI player/hand ownership still differs.
 // Y559: Complementary final failure bool/byte/short/long, conditional then
 // guarded command clearing: 85/85/87/89/73/73/87/89. NOT kept: no byte match;
 // native ESI player/EDI hand and temporary entry registers remain.
+// N345: Isolated player/hand/unit/held-slot/held-weapon/selector/parameter role names
+// and the int hand-negation result: all eight 43. Original body and calls restored;
+// ESI/EDI player/hand ownership still differs.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1545,6 +1551,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // M344: Complete default-owned acceptance/rejection pass outcomes in bool/byte/short/long
 // storage 668 each (1850/1992 bytes). NOT kept: outcome flags do not match and shorten
 // the body; original switch, masks, traversal state, helpers and complete body restored.
+// Y563: Eight existing pass-switch case orders, including 2/1/default/0: 587 each.
+// Original Boolean result and mask/index homes persist; complete source restored.
+// NOT kept: no gain or byte match; native memory cursor and inline expansion remain.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

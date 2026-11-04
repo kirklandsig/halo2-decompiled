@@ -1746,6 +1746,9 @@ bool __stdcall function_110ab0(long unit_index)
 // 0x600008c as `result = interruptible;` then an inner switch with no default 451; the state name read
 // into a local at entry 530 (1865 B); the overlay read into a local at entry 464 (1793 B, but the unit
 // index then arrives in EDI); a headers local for the unit, first slot and both weapon lookups 476.
+// Y561: Complete uninitialized result short/word/long/dword at original
+// declaration 574/574/554/554; before lookups 574/574/554/554. NOT kept:
+// all regress and grow away from retail; original Boolean result/body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2129,6 +2132,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // g_4687c4 856; definition looked up right after the unit 795. On 776: id copied inside the index test
 // 842; final slot test inverted with arms swapped 776 (same code); overlay loop as `for` 869 (first
 // 0x11df30 inlined as retail, frame 0xc8); `for` with the id inside the test 873; ratio `0.5f + 0.5f * x` 776.
+// Y565: Existing channel_start at each direct set site, early/late pairs/all, then all with
+// the original graph guard: 775/775/775/776/776/775/775/776. NOT kept: at most one
+// point; frame stays 0xcc and first-angle/overlay expansion remains. Original body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

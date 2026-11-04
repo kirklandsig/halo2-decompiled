@@ -2543,6 +2543,9 @@ dword __cdecl function_131fc0(real alpha);
 // AC506: Common post-arm first-constant/final-ABCD/final-EFG publication, seven subsets
 // and all results declared at entry: 155/180/181/175/193/187/197/197. NOT kept: every
 // one-use output form regresses; original branch stores and complete body restored.
+// Y563: Common output workspace across shader arms, shader/function scope, original/shared
+// raw workspace and ternary/upper-default short alpha: 140/145/140/145/140/145/140/145.
+// NOT kept: no gain or byte match; original workspace scopes and complete body restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2869,7 +2872,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 }
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
+// score 211 (was 247): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
+// the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
+// Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
 // trigonometric scheduling remain; both normalized scales now use their native parameter results.
 // Earlier 279 (was 282): Frame 0x58 agrees; six excess bytes, sampler constants,
 // bitmap-call transport and scale/trig homes remain.
@@ -2989,6 +2994,13 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // rounding with mutable/immutable and first-producer scopes: eight at 331 (1972/2022 bytes).
 // NOT kept: precision/transport forms regress and move the extent away; original float
 // carriers, helper inputs, rounding and complete body restored.
+// Y563: Native real cosine/sine/both APIs with reused and independent pairs,
+// then both with late output/immutable pairs: 250/250/250/249/249/250/250/250.
+// NOT kept: all regress; original APIs, trig carriers, helper and complete body restored.
+// Y565: Paired half extents on native normalized-parameter results, retained diameters/direct
+// products and joint/axis-local production, original array/native box outputs: eight at 211,
+// 2022/2022 bytes. Keep direct paired half extents (plain 211); each has two original bounds
+// consumers and retail retains both products. Original grouping, calls, trig and arrays retained.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3056,13 +3068,13 @@ void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
         first_scale *= inverse_scale;
         second_scale *= inverse_scale;
     }
-    real scaled_width = scale * width;
-    real scaled_height = scale * height;
+    real half_width = (scale * width) * 0.5f;
+    real half_height = (scale * height) * 0.5f;
     real bounds[4];
-    bounds[0] = 320.0f - scaled_width * 0.5f;
-    bounds[1] = 320.0f + scaled_width * 0.5f;
-    bounds[2] = 240.0f - scaled_height * 0.5f;
-    bounds[3] = 240.0f + scaled_height * 0.5f;
+    bounds[0] = 320.0f - half_width;
+    bounds[1] = 320.0f + half_width;
+    bounds[2] = 240.0f - half_height;
+    bounds[3] = 240.0f + half_height;
     if (first_scale == 0.0f) first_scale = 1.0f;
     if (second_scale == 0.0f) second_scale = 1.0f;
     real first_coordinates[8], second_coordinates[8];

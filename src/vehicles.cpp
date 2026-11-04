@@ -606,6 +606,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // F353: Existing shared 2D speed/helper magnitudes and paired angular dots, subsets 1-7; all with real
 // vector workspaces 225/126/225/126/225/126/225/225.
 // NOT kept: no gain; original full body/helpers restored.
+// Y560: Complete weighted-forward blend products, row/staged scalar then row/staged
+// vector, y/x then x/y publication: 126/126/131/131/210/126/211/131. NOT kept: no byte match;
+// original coefficient/products and whole body restored; velocity/unity and SIMD/x87 homes remain.
 // F355: Complete perpendicular and heading-blend point initializers, seven subsets, then the complete fallback copy:
 // 126/126/126/126/126/126/126/277. NOT kept: no gain; original body restored.
 // @retail 0xef070
@@ -1240,6 +1243,13 @@ long function_10f5f0(long object_index);
 // masks 1/2/4/3/5/6/7, then six-real output: 575/599/565/617/575/599/617/617.
 // Word-load/shift prefix partly recovered; predicate stores and native frame still miss.
 // Original tests, load widths, API buffer and entire body restored.
+// Y562: Existing six-real API record with long/int count and counter, indexed/remaining
+// traversal: 565/596/565/596/565/596/565/596. Original byte buffer, signed reduction and entire body restored.
+// NOT kept: native record leaves frame 0x1990/0x1984; countdown grows to 2292/2264 bytes.
+// Y564: Actual three-entry request-array initializer at original/entry/post-stop/
+// pre-damage phases 565/629/614/587; entry declaration with late stores 565;
+// post-first-result initializer 565; original/entry initializers with six-real API
+// output 565/629. NOT kept: no gain; original full body and array values restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4326,12 +4336,12 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // bool/byte/short/long sound result: 176/176/185/185/289/289/291/291.
 // Original body/result restored; native split writer epilogues, found-index retest,
 // world/zero/fallback allocation and scalar homes remain. No qualifying gain.
-// M342: Selected override ordinal serves both threshold fields; NONE/count defaults,
-// for/while scans and producer/entry declaration scopes: 262/261/262/261/262/261/262/261. NOT kept:
-// no exact selected-result graph. Original search/body restored; found-index/world/fallback homes remain.
 // Y559: Complementary silent then unchanged carriers, each bool/byte/short/long:
 // 188/188/289/293/177/177/283/285. NOT kept: no byte match; native positive flag
 // producers, found-index retest and world/fallback/final-writer homes remain.
+// M342: Selected override ordinal serves both threshold fields; NONE/count defaults,
+// for/while scans and producer/entry declaration scopes: 262/261/262/261/262/261/262/261. NOT kept:
+// no exact selected-result graph. Original search/body restored; found-index/world/fallback homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

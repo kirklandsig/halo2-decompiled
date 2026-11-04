@@ -1546,6 +1546,9 @@ void function_1f86a0(long actor_index);
 // (862 B), its two halves swapped 237, the ternary negated with arms swapped 231 (862 B); a flags byte local
 // read before the slot-bool test for both arms' 0x20 tests 141; the entry declared in the while condition 134
 // (same code).
+// Y561: Read-only actor/unit/loop-candidate/all receiver contracts,
+// each through member/original payload, eight at 134. Original mutable
+// receivers and payload restored; mask spill and EBX entry remain.
 // AC506: Concrete-slot/untyped/byte/header callback pointer formals, each paired
 // with indexed native member payload first and original payload: eight at 134.
 // NOT kept: alias contracts do not recover the mask spill or EBX entry; original

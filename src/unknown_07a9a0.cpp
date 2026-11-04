@@ -1194,6 +1194,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // loop getter 956, plus a long histogram 915 (frame 0xb4); `do {} while (0)` or a bare block around the call 766; the call in
 // both arms of the state test 915, with the capacity helper force-inline 856 (2828 bytes; the NONE arm folds, so not
 // retail's shape). A natural enclosing test that emits no code is the lead.
+// Y561: Existing capacity/imbalance/party-mode provider subsets 1..7,
+// then all plus limited provider: 766/903/903/766/766/903/903/903.
+// Original selectors/workspaces restored; frame/session/lookup remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
