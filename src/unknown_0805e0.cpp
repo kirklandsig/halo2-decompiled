@@ -809,6 +809,9 @@ void function_1537f0(s_profile_record *record);
 // copied from each other, links and heads through by-value helpers: all 44h (same code); heads after the loop 69h. Diagnostics, value-wrong:
 // the hoist ends at 4 links + 2 heads (37h, 258 bytes) or 3 links + 4 heads (39h with two flag stores); with the hoist gone and two flag
 // stores 29h, left the byte-store schedule around the record's `rep movsd`. Retail does not hoist NONE: it reloads `or eax, -1` in the loop.
+// DH358: Existing unused eight-byte source field as signed integer, native SDK integer/time
+// records, dword/word/byte field arrays and double: eight scores 53; every file control unchanged.
+// NOT kept: identity homes still fold and frame 0x98/end-bound remain; original record and body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1355,6 +1358,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // stores, so none is kept. Upper in ECX still comes only from the stepped cursor.
 // The scaled index in its own local before a cast cursor 40h (same three-placement result), `from` and `to` from the index 404h (1203 bytes),
 // `to` as `&g[i] - 1` per pass 349h (1178 bytes). In the 40h forms the tail's head repairs rotate EAX/ECX as well.
+// DH358: Branch-set capacity result with empty/full defaults in bool/byte/word/dword:
+// eight scores 395 at 1162/1171 bytes. NOT kept: every form regresses and loses native extent;
+// original predicate, removed-index producer, bounds, copy loops and full tail restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
