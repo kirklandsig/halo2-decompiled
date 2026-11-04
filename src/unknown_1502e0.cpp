@@ -1433,6 +1433,9 @@ void function_150820(dword *bits, bool local_only)
 // F373: Native query-return admission/failure in bool/byte/short/long,
 // at the original call boundary: 43/43/43/43/43/43/43/43. NOT kept:
 // no byte match; original body restored, player/hand ownership remains.
+// F375: Actual selected-mode byte availability/failure after the query, bool/byte/short/long:
+// 43/43/43/43/43/43/43/43. NOT kept: no byte match; original body restored.
+// Saved player/hand ESI/EDI and entry temporary allocation still differ.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

@@ -2018,6 +2018,9 @@ void function_dfd70(long arg_159e6d)
 // paired products with sum, complement with products/unscaled/scaled sum:
 // 233/233/233/233/233/233/233/233. NOT kept: no byte match; original
 // shared helpers restored, mode-three placement and basis/ray homes remain.
+// F375: Default stance-query standing/crouch returns, bool/byte/short/long:
+// 233/233/233/233/233/233/233/233. Complementary forms also raise shared users.
+// NOT kept: no byte match; original helpers restored, mode-three/basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4914,6 +4917,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // individual, paired and complete lifetimes, then support at its producer:
 // 68/68/68/68/68/68/68/68. NOT kept: byte homes and early success remain;
 // original body restored, both exact callers survive.
+// F375: Existing relative/kick/actor-ground producers, seven subsets then complete raw library copies:
+// 143/68/68/68/143/70/143/143 on the state-call/dot graph. NOT kept: no byte match.
+// Original body restored; native support/result byte homes remain, exact callers survive.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
