@@ -1031,6 +1031,13 @@ real normalize2d(point2f *v);
 // DH373: Original-site facing-height zero/nonzero outcomes in bool/byte/short/long:
 // eight at 135. NOT kept: no native DL/return recovery or equality; original fallback
 // admission, result, outputs and complete body restored. Frame 0x48 still agrees.
+// DL262: Successful movement-producer identity long/dword/short/byte, zero then invalid-index absence:
+// 189/189/182/192/184/184/185/176. NOT kept: no byte equality; original independent result/validity
+// producers and complete body restored; DL retention and movement/request returns remain.
+// M389: Double queried/chosen/retry speed receivers, seven subsets, then all
+// with double base speed: 257/188/279/135/257/191/277/266. NOT kept: ties/regressions;
+// queried/chosen domains disturb native frame setup. Original real speed producers,
+// numerical predicates, address-passed outputs, calls and complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

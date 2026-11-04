@@ -2834,6 +2834,13 @@ struct s_scenario_scripting_view
 // DH346: Immutable native scenario/data/set pointer bindings, seven subsets, then all
 // with immutable actor receiver: 80/80/80/80/80/80/80/80. Original complete search restored;
 // actor/counter/set homes and early scripting-data observation remain.
+// B432: Existing difference/squared-length/both native for loops 80/82/82;
+// while loops 80/82/82; difference/squared-length do loops 136/112. Original shared
+// helpers and complete search restored; actor/counter/set and guarded-data homes remain.
+// P341: Actual point-payload/complete candidate-record lvalue references, mutable/read-only and
+// original/traversal-owned short counter: 80/87/80/87/91/87/91/87. NOT kept: native
+// actor/counter/selector and delayed data homes remain; original complete search restored. Exact wrapper
+// and both callees survive.
 // DH370: Actual dynamic loop-bound result declared in the condition, bool/byte/
 // signed-char/short/word/int/long/dword: eight at 80, exact 367-byte extent.
 // NOT kept: no exact loop-result form; original dynamic reads, short wrapping,

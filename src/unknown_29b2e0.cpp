@@ -322,6 +322,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // DH342: Existing vector setter at target/current/rotation input construction,
 // seven subsets 413/378/211/418/431/403/441; all plus final output setter 436 (sibling 46).
 // Original copies, helper contracts and body restored; unity/root/yaw homes remain.
+// Y584: Existing normalizer/rotation ordinary-inline and unannotated contracts on
+// the retained in-place graph, eight pairs 176 each. Original forced contracts,
+// scalar snapshots and full body restored; unity/root/yaw and rotation homes remain.
 // J252: Existing rotation output identity and helper expansion contracts: 176/176/176/176/176/176/176/176.
 // NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
 // DH349: Complete scalar cosine/projection/sine-cross parts on retained in-place
@@ -332,6 +335,16 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // bool/byte/short/long direct then common results: 403/403/406/396/405/405/408/398.
 // NOT kept: all regress and raise the matched sibling to 64-70; original numeric
 // contract, alias-safe helper publications and complete body restored.
+// Round 586: Paired yaw/pitch rate-policy table traversal, long/dword/short/word
+// ordinals with repeated/captured current-angle values: 426/426/434/434/343/343/337/337. NOT kept:
+// nonexact array/field-pointer residence; first four also lose sibling 0x29b990 (48); body restored.
+// F385: Paired signed-pitch observation lifetimes, bool/byte/short/long negative then
+// complementary truths at their original comparisons: 284/284/284/284/285/285/285/285.
+// NOT kept: no exact predicate form; original helper and complete body restored.
+// M386: Existing complete XY normalizer with original K tail, common/failure-first/
+// success-first/early numeric output, direct then native-planar input: 423/441/441/423/515/544/544/515.
+// NOT kept: no byte equality with native unity/root/yaw and all shared users;
+// original numeric helper, alias-safe rotations and complete body restored.
 // DH362: Native planar epsilon truth bool/byte/short/long, positive then complementary,
 // 262/262/262/262/263/263/263/263. NOT kept: all regress and lengthen to 1719/1706;
 // original numeric/optional results, every helper and complete body restored.

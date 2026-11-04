@@ -292,6 +292,9 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // at 1409 bytes, first pair grouped 49 [49]; unnamed reads 37 [44]; one-expression rows 24; named subsets j,k 50 [45],
 // k,j 47 [31], i,j 50 [45]; name orders j,i,k and j,k,i 24, k,i,j, k,j,i and i,k,j 111 [55]; cosine first 44 [29];
 // names after the sine or before it 24.
+// Round 144: the direction copy before the coordinate draws 112; read-only selected-entry, angle and vector snapshots
+// 30 each; vector-input, axis and output union array views 30 each; unsigned field_18 38 (1407 B). All original
+// declarations, input views, store order and complete helper/body restored.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {
