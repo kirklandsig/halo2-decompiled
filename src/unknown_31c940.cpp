@@ -889,6 +889,12 @@ static __forceinline float const &capture_writeback_time(solver_step_31c940 *con
 {
 	return step->inverse_time;
 }
+// Solving and publication use this pointer storage in separate phases.
+union solver_pointer_phase_31c940
+{
+	solver_velocity_31c940 *volatile body_b;
+	float const *volatile inverse_time;
+};
 // Main solver reconstruction; the ordinary checker determines its current score.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
@@ -896,6 +902,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 	solver_velocity_31c940 *bodies, float *impulses)
 {
 	solver_phase_state_31c940 state;
+	solver_pointer_phase_31c940 pointer_phase;
 
 	if (!g_480c60)
 	{
@@ -911,7 +918,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		__m128 *terms;
 		solver_velocity_31c940 *a;
 
-		solver_velocity_31c940 *volatile b;
+		solver_velocity_31c940 *volatile &b = pointer_phase.body_b;
 		float *result = impulses;
 		goto read_header;
 		for (;;)
@@ -1443,7 +1450,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		case 2: case 5: case 6: case 11: case 13:
 		{
 			// Keep the coefficient address across the cursor calls.
-			float const *volatile inverse_time_pointer = &step->inverse_time;
+			float const *volatile &inverse_time_pointer = pointer_phase.inverse_time;
+			inverse_time_pointer = &step->inverse_time;
 			do
 			{
 				*(float *)destination = *result;
@@ -1490,7 +1498,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 			*(float *)friction_result = result[0];
 			*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
-			float const *volatile inverse_time_pointer = &step->inverse_time;
+			float const *volatile &inverse_time_pointer = pointer_phase.inverse_time;
+			inverse_time_pointer = &step->inverse_time;
 			destination = 0;
 			friction_result += friction_stride;
 			*(float *)friction_result = result[1];
