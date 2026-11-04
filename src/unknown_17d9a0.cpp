@@ -403,6 +403,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC524: Complete two-edge eligibility bool/byte/short/long, then complementary
 // rejection, 48 each at 983 bytes on the by-value/component-array graph. NOT kept:
 // dot-product divergence moves earlier to +0x67; original predicate and body restored.
+// AC526: Whole inverse result if/else/default/conditional, successful/failed/nested
+// publication returns, default field and nested result: 63/98/63/46/46/46/108/98. NOT kept: no gain;
+// original corner producer and tail restored; plane base, selector/product ranks remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -995,6 +998,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC524: Complete bitwise normal identity bool/byte/short/long, then complementary
 // mismatch results, 535 each at 3647 bytes. NOT kept: four-point gain below eight;
 // original helper and complete body restored; tag/count/plane homes and rotation spills remain.
+// AC526: Complete normalized-axis admission bool/byte/short/long, then complementary
+// rejection results, 533 each at 3647 bytes. NOT kept: six-point lead below eight and
+// frame grows to 0x21e4; original body/helpers restored; tag/count/plane homes remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

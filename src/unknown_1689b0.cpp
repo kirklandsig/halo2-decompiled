@@ -1720,6 +1720,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // AC524: Standalone count-produced success bool/byte/short/long before averaging,
 // then after output: 654/657/653/654/630/654/660/657. NOT kept: all regress and
 // move extent away from retail; original result, word counts, geometry and body restored.
+// AC526: Entry-radius admission bool/byte/short/long, then complementary exclusion:
+// 620/620/620/620/619/619/619/619. NOT kept: all regress, frame shrinks to 0xb958 versus
+// 0xb964; original body/helper restored; sum homes, query zero and prism anchor remain.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
