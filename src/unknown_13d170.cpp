@@ -419,6 +419,9 @@ struct s_block_candidate
 // masks 1..7 and immutable complete graph: 347/350/350/347/347/350/350/350.
 // Original signed cursors, modulo and full body restored; NOT kept:
 // no native signed-remainder/frame recovery or byte match.
+// N376: Complete best-record memmove/range-copy/backward-copy contracts, with native
+// zeroed/aggregate ring insertion, eight forms 370/369/369/372/391/392/392/404. NOT kept: no exact
+// record/frame recovery; original transfers, signed ring and complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

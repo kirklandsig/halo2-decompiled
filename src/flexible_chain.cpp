@@ -471,6 +471,9 @@ void __stdcall function_1160c0(real dt)
 // DH354: Complete outer fixed/timestep admission result in bool/char/signed-char/
 // byte/short/word/int/long: 171/171/171/171/171/171/171/171. NOT kept: no exact admission residence;
 // direct guard/body restored; segment EDX and scalar/axis/previous/rest-offset homes remain.
+// N376: Separate raw/normalized rotation axes with complete scalar setters and staged-cross
+// producers, eight forms 308/307/291/303/291/303/239/263. NOT kept: no exact match; original
+// axis storage, body and homes restored. Segment EDX and mirrored vector/scalar homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
