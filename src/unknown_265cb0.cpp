@@ -548,6 +548,9 @@ real function_30bf0(vector3f *vector);
 // DH341: Complete sole-result defaults on mode/settings/post-projection/distance/outer-radius/
 // inner-radius/post-facing/leaf outcomes 321/328/363/363/363/372/327/325.
 // NOT kept: native result home not recovered; frames or lengths regress. Original body restored.
+// DH344: Existing complete setters at initial delta/motion/projected delta and their
+// pairs/all, then all with staged basis crosses: 164/154/152/166/164/154/165/165.
+// NOT kept: native result/range/projection homes and SIMD groups remain; original body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

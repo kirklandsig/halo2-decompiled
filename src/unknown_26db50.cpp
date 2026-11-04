@@ -707,6 +707,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // DH341: Bounded spoke !=8 / <=7 termination in short/long/word/byte storage:
 // 90/91/232/232/91/92/232/232. NOT kept: no gain or native ring/rotation recovery.
 // Original signed-short bound, two-ring traversal and complete body restored.
+// DH344: Existing complete point setters at trace/elevation/collision and their pairs/all,
+// then all with the outer ring phase:
+// 92/90/90/92/92/90/92/144. NOT kept: no exact publication form; radius schedule, ring conversion and rotation spill remain.
+// Original complete executable source restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
