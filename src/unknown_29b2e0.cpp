@@ -319,6 +319,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // P320: pitch storage and complete phase combinations 176/179/271/179/271/271/271/271.
 // P320: NOT kept: no byte match for explicit scalar/parameter-home reuse; original
 // P320: complete body restored. Unity register, root/yaw and rotation homes remain.
+// DH342: Existing vector setter at target/current/rotation input construction,
+// seven subsets 413/378/211/418/431/403/441; all plus final output setter 436 (sibling 46).
+// Original copies, helper contracts and body restored; unity/root/yaw homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

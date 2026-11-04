@@ -1874,6 +1874,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // lookups 132/157/164/166; after selected lookup 150/167/171/173. NOT kept:
 // 132 gains six above 30 and grows to 539/538 bytes; other forms regress.
 // Original body restored; same-block pool reload and weapon/mode homes remain.
+// DH343: Signed slot/hand domains char-long/long-char/char-char/short-long/short-char/
+// char-short/short-short/char-word: 144/146/146/136/143/134/131/134. NOT kept: short slot/hand 131
+// gains seven below the gate. Original body restored; pool reload and weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {

@@ -2025,6 +2025,9 @@ void function_269250(long clump_index, long actor_index);
 // selection stored first 128 (480 B); team mismatch `continue` then the compare 126; the common graph with the
 // selection stored first 89 (same code as fast control); the score as a ternary on the team test 128 (484 B);
 // in-arm compare ending in `continue` 126.
+// DH339: Immutable activity/created handle/created receiver, seven subsets and all with
+// readonly actor, eight at 89 fast (unchanged preview 89; full baseline 87).
+// Original mutable storage and full body restored; pool/selection and x87 homes remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2313,6 +2316,9 @@ void function_269250(long clump_index, long actor_index)
 // are not merged and the pools are no longer hoisted); `changed` set only in the replace arm 92; the group flag
 // assigned from the data test and tested in place of `data` 206; the type as a long 135; the unit flag inverted
 // (`single`, cleared for units) 89 (same code, slots unchanged).
+// DH339: Actual group/prop/node current pointers declared in their while conditions, seven
+// subsets then all with the member result condition, eight at 89. Original declarations,
+// result tests and complete body restored; category homes and deletion completion remain.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

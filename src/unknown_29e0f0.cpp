@@ -292,6 +292,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // B412: Predicate-owned first-record search, short/long ordinal and cursor-ordinal,
 // actual pointer-difference while/for, conditional short/long result: 390/425/412/425/434/434/434/410.
 // Original scan/body restored; selected-default, root, bitmap/endpoint and x87 homes remain.
+// DH342: Immutable existing squared-delta/length-delta/metric-result producers,
+// seven subsets and all with the immutable candidate record index: eight at 390.
+// Original declarations and body restored; default/root/bitmap/endpoint homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

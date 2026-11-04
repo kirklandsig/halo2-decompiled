@@ -1257,6 +1257,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // inline iterator-setup helper for both twins (siblings' store order) 828; `for (long i = 0; ...)` 828; the outputs
 // declared type, class, mode 828 (stores reorder; iterator_mode keeps found_mode's home); the per-type lookup as an
 // inline helper returning the id, as the siblings do, for both twins 828. All restored.
+// DH347: Iterator record lifetime ends after search/output publication, with guarded/entry
+// scalar defaults and member/native aggregate initialization: 828/828/979/979/828/828/979/979.
+// Original full body restored; frame agrees, class/NONE and result/output homes plus late zero remain.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

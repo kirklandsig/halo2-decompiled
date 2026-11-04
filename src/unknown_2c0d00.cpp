@@ -1523,6 +1523,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // P317: Joint unconditional corner success/rejection accumulators bool/byte/short/long
 // 426/426/406/435/473/473/452/452. NOT kept: no match; short success 406 grows to 1754 bytes and
 // uses a wider result than native tests. Original two results and complete body restored.
+// DH345: Native component-array displacement loops in direct/converted/both phases,
+// long then dword, complete short/word: 428/418/429/428/418/429/451/451. No gain;
+// original scalar producers, both radii, signed traversal and complete body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

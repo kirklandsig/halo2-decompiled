@@ -320,6 +320,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // B423: Existing aggregate helper scale-admission result, required/unit in bool/byte/short/long,
 // 213/213/213/213/213/213/213/213 at 1143/1136 bytes. NOT kept: no exact match;
 // original aggregate defaults, shared scale call, helper and complete body restored.
+// DH340: Complete raw-vector capture aggregate/native/setter/CRT with native scaled defaults
+// 345/391/342/391; shared-setter scaled defaults 252/336/252/336. NOT kept: all regress
+// and lengthen the body; original aggregate-scaled helper and complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
