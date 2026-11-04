@@ -1020,6 +1020,9 @@ extern long *g_51e9cc;
 // M372: Actual contact point/normal/final-position CRT memcpy transfers, seven site
 // subsets: 42 each; complete memmove 108 at 1462/1481 bytes. Original aggregate
 // transfers and complete body restored; lookup receiver and crouch/contact schedules remain.
+// M383: Actual contiguous contact-field CRT fills at initial/object/instance phase subsets
+// 1/2/4/3/5/6/7, then fallback too: 255/214/204/259/275/221/266/272. NOT kept:
+// lookup receiver/store schedule not recovered; original scalar clears and complete body restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -3271,6 +3274,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M364: Original early-return changed result in char/signed-
 // char/byte/short/word/int/long/dword storage: 610/610/610/623/623/625/625/625. NOT kept: no
 // native result-byte/flight-home match; original result domain and complete body restored.
+// M383: Actual trig-input double carriers at walking/yaw/pitch phase subsets 1/2/4/3/5/6/7,
+// then all const: 600/623/602/623/602/611/611/611 (reduced control 600; full 561). NOT kept:
+// no native flight/result-home repair; original input/result domains and complete body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

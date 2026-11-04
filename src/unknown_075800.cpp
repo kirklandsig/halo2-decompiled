@@ -1294,6 +1294,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M379: Intact native-input family priorities QSPDC/QSPCD/QPSDC/QPSCD/SQPCD/SQPDC/SPQDC/SPQCD
 // 195/202/195/202/202/195/195/201 reduced (control 196, full 153). NOT kept: no qualifying gain;
 // original classifiers, all handler tuples and body restored; delayed ESI/late expansion remain.
+// M383: Native-input peer-first primary priorities PDQCS/PDSCQ/PDCQS/PDCSQ/PQDSC/
+// PQDCS/PQSDC/PQSCD: 198/194/204/201/197/204/195/202 (reduced control 196; full 153).
+// NOT kept: at most two points; original classifiers, all handler tuples and body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
