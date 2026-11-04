@@ -435,32 +435,6 @@ void __fastcall function_24cdaf(void)
 	}
 }
 
-// score 6 (was 6): the tick counter's address is kept in ECX where retail keeps it in EAX, so the
-// counter is read into EAX and written back from there.
-// register value/ticks/both 6 each; const value/ticks/player 6 each;
-// existing player accessor 6; function-scope message/index 6 each; short index 6.
-// Indexed player fields 26; tick address from state and index 16; tick address from global 56;
-// tick pointer name 6; increment result name 6; both role names 6; minimum intrinsic 6;
-// nested countdown guards 6; messages indexed at each use 6; the field read twice in the
-// saturation 27; a short reference for the ticks 6; nested expiry tests 6; a named elapsed time 6.
-// Round 19: the countdown as a forceinline helper 6; the tick and expiry update as a forceinline
-// helper taking the player 6; early-return guards 6; the tick address from a forceinline accessor 6;
-// the tick locals declared at the function top 6. Diagnostics: one pointer variable for both
-// counters 18 (the pointer takes ECX in both); without the message loop the tick block keeps
-// ECX/EAX; the value variable shared with the countdown 40 (split again, tick block unchanged).
-// Round 57 (m3 lane 1): player from g_5023f4 directly 6; player declared before hud 6; countdown
-// read once into a long 43; saturation on the old value + 1 27; `value += 1` with an if clamp 6;
-// `hud->players + player_index` 6; `!= NULL` / `-= 1` countdown 6. Diagnostics: 1-8 unused locals
-// before the tick block 6 each; no countdown block 84 (tick roles unchanged); no saturation 54.
-// Round 77: assignment in the saturation condition 6; nested saturation assignment 6; pointer
-// assignment in the read/store 6/6; direct read with pointer store 6; pointer read with direct
-// store 6; tick update before the countdown 34; constant-first comparison 6.
-// Round 60: the field written directly with an if clamp 6, with a named limit 6, with a ternary 6; a min helper over the
-// field 6; incremented and clamped values named 6; a saturating helper on a short pointer 6; a short reference 6; a
-// by-value saturating add 6; a short current value 6; the clamp as its own statement 6; two stores in if/else arms 38; a
-// guarded `(*ticks)++` 11. Retail's clamp pattern occurs nowhere else in the image, so no shared helper exists. A ticks
-// helper in the loop 6, with the player accessor 6; the player accessor alone 6; the expiry update as a forceinline
-// helper per message 6, or for the whole loop 6; an expiry test helper 145 (the loop falls away).
 // @retail 0x24cdd8
 void function_24cdd8(long player_index)
 {
@@ -478,7 +452,9 @@ void function_24cdd8(long player_index)
 
 		ticks = &player->ticks_446;
 		value = *ticks + 1;
-		*ticks = (short)(value > 0x7fff ? 0x7fff : value);
+		if (*ticks + 1 > 0x7fff)
+			value = 0x7fff;
+		*ticks = (short)value;
 
 		for (long i = 0; i < 4; i++)
 		{

@@ -287,6 +287,9 @@ struct s_spawn_scenario_23aea0
 // globals local, 61 (same code); vector3f_assign fed through a `vector3f const *` view of the record 61 (same code).
 // So the round 55 match needs the field assignments (or its dword reads) and the 0x502250 symbol together.
 // BLOCKED-BY 0x157450 (src/unknown_157450.cpp, held by F356 in r59).
+// Round 140: typed per-record setter/scalar copies 100/140; raw batch setter/scalar copies 82/140;
+// typed batch setter/scalar copies 89/140; typed record-reference setter/scalar copies 100/140.
+// The byte-offset setters grow to 486 bytes and every scalar form loses retail's unroll/addressing.
 // MiniMax B (11-03), not kept: a 0xac-byte struct declared at 0x502248 (four words, the two shared values, the twelve
 // records, the table), with a byte-offset loop 0x18..0xa8 by 0x48 and the source from definition + 0x184, matched in
 // the lane, but 0x502248 is the mission-objective pointer (`long *g_502248`, src/unknown_29f5b0.cpp), so the tree no

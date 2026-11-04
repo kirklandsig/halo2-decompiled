@@ -210,6 +210,8 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
+// kept, the original body is restored.
 // score 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
 // rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
@@ -394,6 +396,9 @@ struct s_object_damage_view
 // DH336: Two real award buffers/counts in array and record ownership forms:
 // 353/353/353/385/385/385/385/385; pointer-difference controls repeat the earlier form.
 // NOT kept: grouped storage needs equality; original complete body restored.
+// DH350: Both award-prefix searches own duplicate/unique outcomes,
+// bool/byte/short/long: 366/366/366/366/366/366/366/366. NOT kept: test-set outcomes need equality;
+// original ordinal searches, scalar homes and complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -985,6 +990,11 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // the horizontal offsets 39; four scalar short edges copied into the piece 238 (1129 bytes, frame
 // 0x64); each edge inset then offset as two statements 207 (1162 bytes); insets left, right, top,
 // bottom 20 (top/right registers swap as well).
+// Round 53 (m3 lane 15, fast): the four offset statements in all 23 other orders 2 to 49 (left, right,
+// top, bottom 2); the four insets in all 23 other orders 20 to 170; the window shorts of the camera
+// storage as one rectangle member 2; inner and piece declared together with piece assigned 2; the
+// coordinates or the points declared at the top of the block 2/2. Unused-local probes (1 to 16) at
+// the top leave it at 2, so the load order is no numbering tie.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {
