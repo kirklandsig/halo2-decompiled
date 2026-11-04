@@ -2029,6 +2029,9 @@ void function_269250(long clump_index, long actor_index);
 // DH339: Immutable activity/created handle/created receiver, seven subsets and all with
 // readonly actor, eight at 89 fast (unchanged preview 89; full baseline 87).
 // Original mutable storage and full body restored; pool/selection and x87 homes remain.
+// DH355: Strict improvement truth at the common score join, positive/complementary
+// bool/byte/short/long: 89/89/89/89/89/89/89/89 (reduced control 89; full 87).
+// NOT kept: no exact one-use decision; original pool/selection and complete body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

@@ -4905,6 +4905,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
 // 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
 // output lifetime and full body restored; frame and basis/point homes remain.
+// DH348: Actual last-consumer world/relative-frame/quaternion regions, seven subsets
+// then all with entry result default: eight at 175. Original declaration scopes and
+// full body restored; frame 0x110/0x11c and basis/point homes remain.
 // B414: Away, normalized-side and world-point scopes end at their last consumers, seven subsets;
 // all with frame ending at its final conversion: 175/175/175/175/175/175/175/175.
 // Original complete body restored; frame 0x110 versus 0x11c and basis/point scheduling remain.

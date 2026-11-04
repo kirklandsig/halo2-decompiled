@@ -1745,6 +1745,9 @@ bool function_17afd0(long effect_index, long value);
 // B421: Owner/view identity before the status query, bool/byte/short/long,
 // positive/complementary results 133/133/159/158/133/133/159/158. NOT kept:
 // all regress and exceed retail length; original snapshot/query graph restored.
+// DH350: Independent visibility/drawing getter lifetimes, availability default
+// after getter/owner/view, joined/nested success, view-default and conditional:
+// 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

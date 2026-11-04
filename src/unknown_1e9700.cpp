@@ -394,6 +394,9 @@ struct s_object_damage_view
 // DH336: Two real award buffers/counts in array and record ownership forms:
 // 353/353/353/385/385/385/385/385; pointer-difference controls repeat the earlier form.
 // NOT kept: grouped storage needs equality; original complete body restored.
+// DH350: Both award-prefix searches own duplicate/unique outcomes,
+// bool/byte/short/long: 366/366/366/366/366/366/366/366. NOT kept: test-set outcomes need equality;
+// original ordinal searches, scalar homes and complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

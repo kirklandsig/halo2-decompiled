@@ -470,8 +470,9 @@ struct s_tail_player_identifier
 	byte identifier[12];
 };
 
-// score 22 (was 66): early player/scenario/options acquisition and delayed saves remain;
-// the comparison loop, carrier registers and both return epilogues now agree with retail.
+// score 17 (was 66): delayed options acquisition restores the native late register saves;
+// player/scenario carriers and selector/entry scheduling remain at 168 bytes.
+// Earlier at 22: the complete comparison loop and both return epilogues agreed.
 // Earlier at 31: logic walk against retail found no behaviour difference (same player identifier
 // at +4, scenario entry 0 value 0x2c == 1 selects the second traits set, 16 options players of 0xe4
 // bytes at +0x2dc, 12-byte identifier compare at +0xe, traits at +0xac + 0x1c * set). Still differs:
@@ -516,16 +517,28 @@ struct s_tail_player_identifier
 // body pointer step alone 32; original comma step with sole result 22 (NOT kept).
 // Plain counted while with sole result 22 (plain confirmed); while alone 31. Native
 // identifier/options/comparison homes and both epilogues; scratch word and 168-byte extent agree.
+// DH349: On retained sole-result graph, player-first 22; late entry 17 (plain confirmed);
+// result/alternate first 30/34; direct truth 28; full player 22; comparison scope 22;
+// indexed root 27. Retain only the single retail-shaped delayed entry acquisition.
+// DH353: Positive selector byte/char/int 17/17/30; complete pointer conditional
+// and result arms 23/23; count-owned comparison and count arms 67/67; signed-byte
+// direct index 26. NOT kept: no gain or match; original selector and sole result restored.
+// DH355: Scenario last-use scope 17; count-owned assignment, complete count arms,
+// failure-first arms and conditional producer, unscoped/scoped: 17/67/67/67/67/67/67/67.
+// NOT kept: no match; selector forms shrink the native extent; original body restored.
+// DH357: Actual matched-entry result before traits publication, scan/entry-owned
+// defaults, break/sole-exit transfers and ordinary/conditional results: 60/62/60/62
+// in each lifetime. NOT kept: no byte match; original complete body restored.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
-	s_tail_options_player *entry = ((s_tail_options *)g_4e6948)->players;
 	s_tail_player_identifier *player = (s_tail_player_identifier *)tail_player_get(player_index);
 	s_tail_scenario *scenario = (s_tail_scenario *)g_4e0350;
 	bool alternate = false;
 
 	if (scenario->entry_count > 0 && scenario->entries[0].value2c == 1)
 		alternate = true;
+	s_tail_options_player *entry = ((s_tail_options *)g_4e6948)->players;
 	s_tail_traits *result = 0;
 	long i = 0;
 	while (i < 16)
@@ -1261,6 +1274,12 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // plain-step graph: 275/275/284/208/275/275/208/208. NOT kept: the 275 forms grow
 // to 1012 bytes; paired 208 forms keep 1006 bytes but grow frame 0x18 to 0x1c and
 // add a one-use pending receiver. Original indexed producers and full body restored.
+// DH349: Existing nested player/object getter policies ordinary/forced/unhinted,
+// eight nonbaseline pairs, all 284. Original getters and full body restored;
+// native pool/player retention and delayed tag-table acquisition remain.
+// DH351: Existing raw flag pointer/reference returns with local/direct object input
+// 284 each; native bit-field pointer/reference returns 253 each; bit-field value return
+// 290. NOT kept: pointer forms add a flag-address calculation absent in retail; value form regresses.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1682,6 +1701,23 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // DH340: Matching-pass short/word/int/dword carriers 618/618/285/286; controller-pass
 // counterparts 297/299/285/288. NOT kept: no gain or byte match; native full-width
 // pass declarations, retained controller iterator and complete body restored.
+// DH349: Decoded ordinal short in matching/fallback/release/binding 451/591/359/280;
+// all short 585; immutable full-width ordinals 285; option-mask last-use scope 288;
+// shared full-width ordinal 285. NOT kept: five-point 280 below gate; native mask/index
+// homes and release expansion remain. Original per-traversal full-width ordinals restored.
+// DH351: Assignment workspace ends after fallback; nested option/mask endings
+// 285/288/286/288; late user result on those scopes and separate search names
+// 605/608/608/608. NOT kept: no gain; native mask/index homes and release expansion remain.
+// DH353: Inner option ordinal int/dword/short/word 285/286/642/642;
+// per-player declaration 285; ordinal/entry role names 285/285; complete indexed
+// option view 596. NOT kept: no gain; original scalar masks and entry view restored.
+// DH355: Decoded ordinal declared before matching/pass/fallback/release/binding
+// traversal, then phase pairs/all four: 285/285/285/285/285/285/285/285. NOT kept: all tie;
+// original scopes/body restored; native mask/index homes and release expansion remain.
+// DH357: First matching-pass repeated option-user/controller/player-user captures,
+// seven subsets then admitted-option user lifetime: 285/668/669/674/260/628/612/636.
+// NOT kept: 260 combines tying/regressing parts, hoists separate pass tests and
+// shortens away from retail; every field observation and full body restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

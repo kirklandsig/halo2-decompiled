@@ -724,6 +724,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // P314 further: Existing normalizer with ordered-positive trace admission, original/shared
 // 2D difference: 712/714, frames 0x1f8c against 0x1f88, lengths 2986/2988 against 2986.
 // NOT kept: both regress; unordered working-value changes require equality. All restored.
+// DH352: Entry radius/height/outgoing-mask lexical identities, seven subsets 675 each;
+// complete graph with Boolean success 754. Original entry scalars and full body restored;
+// byte success, radius/pathfinding schedule and scalar/geometry homes remain.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

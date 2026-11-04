@@ -383,6 +383,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 642/642/663/665; complementary admission 652/652/683/684; joint direction/sample
 // formal role names 642/642. Native sample EBX ownership at entry still differs;
 // all other calibrated scores unchanged. Original body restored.
+// DH353: Existing double-factor publishers at displacement/impulse/all tick scales,
+// subsets 1/2/4/3/5/6/7: 716/716/724/783/783/766/817; complete sample graph 830.
+// NOT kept: native SSE/frame/extent disagree; original products and caller restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

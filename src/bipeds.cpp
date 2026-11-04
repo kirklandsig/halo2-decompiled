@@ -5382,6 +5382,12 @@ void __stdcall function_b8600(long object_index, long unknown);
 // carriers: 594/594/594/581/581/578/578/578 (fast control 594, full 588).
 // NOT kept: wider carriers retain the result in EDI/DI rather than retail
 // byte storage; original bool, predicate and complete body restored.
+// DH350: Common returned result, call-owned/test-owned bool/byte/short/long
+// on the native entry-bit graph: 594/645/608/604/611/602/623/624 (fast control
+// 594, full 588). NOT kept: no match or gain; original early/final returns restored.
+// DH354: Native branch-produced early still, original direct exits and entry-bit graph;
+// bool/char/signed-char/byte/short/word/int/long: 660/667/667/667/674/674/677/677. NOT kept: no match.
+// Body restored; truth-byte, tag/state/animation homes and completion expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
