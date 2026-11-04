@@ -699,6 +699,8 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH356: Plain coordinate-copy induction at paired/actor/trace publications, seven
 // subsets then all with ordinary result: 356/344/357/351/353/345/347/363. All restored;
 // native root/actor ingress remains; original record fallback and all helpers retained.
+// P333: Native direction/point-publication/parent-record/all transfers through memcpy/memmove:
+// 270/354/270/433/270/414/270/396. NOT kept: no match or gain; original copies, helper and full body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

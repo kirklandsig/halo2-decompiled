@@ -560,6 +560,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // AC530: Bound-only ordered intersection/separation results in byte/char/short/long, keeping
 // both original marking sites: eight 182s. NOT kept: no equality or gain; original comparison
 // and full body restored. Entry/index spill and center/query/bound homes remain.
+// P333: Standard copies at initial/query/bound point producers, seven subsets then
+// complete backward copy: 227/209/195/243/233/213/254/254. NOT kept: all regress; initial/query
+// transfers also lose the matched caller. Original copies, includes and full body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

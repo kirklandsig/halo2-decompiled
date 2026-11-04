@@ -388,6 +388,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // M373: Real side-ordinal while traversal consumed at dispatch, long/dword/short/word
 // 508/508/402/402; each with ordinary outer while 508/508/402/402 (reduced control 336).
 // NOT kept: all regress and lengthen; original loops, helpers and full body restored.
+// P333: Last-consumer pitch-cosine/selected-axis/paired-remainder phases, seven subsets,
+// then all with angle-snapshot end scope: eight 336s (reduced control 336; full 295).
+// NOT kept: byte-neutral; original lifetimes, helper and complete body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

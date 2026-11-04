@@ -342,6 +342,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // M373: Complete scale/copy branch-owned scaled workspace, native/setter/memcpy/memmove,
 // nonunit-first 327/288/327/374; unit-first 331/288/331/370. NOT kept: all regress;
 // original aggregate-default helper and full body restored; frame/coefficient homes remain.
+// P333: Standard binary differences with one captured origin, seven producer subsets
+// then complete raw copy: 324/328/260/304/300/297/277/386. NOT kept: no match or gain; original helper/body restored.
+// Excluded standard-transform global-array arguments; uncredited and restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

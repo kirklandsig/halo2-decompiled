@@ -1234,6 +1234,8 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // DH356: Common Boolean query-default chains in both directions, probability zero
 // before/after, inner/outer query storage: eight at 253. Original body restored;
 // sentinel EDI/ESI, squad/query homes and rotated substitution head remain.
+// P333: Complete initial substitution admission, allowed/blocked in bool/byte/short/long:
+// eight 389s at 1307/1272. NOT kept: entry/query homes and extent regress; full body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
