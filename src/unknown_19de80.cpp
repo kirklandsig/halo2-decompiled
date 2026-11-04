@@ -505,6 +505,10 @@ static inline bool teams_enabled_19e1c0()
 // Round 143 (m3 lane 5, fast): every clamp as `if (remaining <= result)` 390 (same code); text
 // declared before the result 390 (same code); `best_score <= function_1587f0(team)` with the short
 // team 388; local-team value long 393 (1436 bytes); engine text returned early 390 (same code).
+// AC512: Name-length/formatter/replacement results acquired in their consuming
+// tests, seven family subsets 390 each; complete ordinary result 691. All restored.
+// NOT kept: embedded assignments remain unmatched; native frame/capacity/result
+// homes and separate name-copy tails remain.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

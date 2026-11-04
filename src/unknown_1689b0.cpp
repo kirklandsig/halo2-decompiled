@@ -1702,6 +1702,10 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // AC504: Radial/side/nearest loop continuations, masks 1/2/4/3/5/6/7:
 // 552 each; complete continuation graph with native long accepted counts 572.
 // Original full body restored; sum homes, query zero and prism anchor remain.
+// AC512: Aggregate-declaration sum initialization with word/long accepted counts,
+// counts after/before construction 553/553/573/573; independent point declaration
+// initialization 594/594/578/578. All restored; native sum homes/query zero/prism
+// anchor remain. Coordinate-table owner stays matched in every trial.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
