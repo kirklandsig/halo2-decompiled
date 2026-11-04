@@ -46,12 +46,28 @@ PRIVATE inline long swizzle_log2(dword value)
 	long result = 0;
 	if (value > 0)
 	{
-		while ((value >>= 1) != 0)
-			++result;
+		result = 0;
+		if (value != 1)
+		{
+			do
+			{
+				value >>= 1;
+				++result;
+			} while (value != 1);
+		}
 	}
 	return result;
 }
 
+// MiniMax B (11-04b): no new form, no lower score; a 16-bit row copy with the widening deferred scores 66/84 but pushes the row argument onto the stack, so the matched caller 0x136140 no longer matches.
+// MiniMax B (11-04): the 57 form is the local optimum; the y parameter used directly, a
+// short y or x copy, both copies short, the minimum compared the other way round, the
+// minimum seeded from the height count, a long or unsigned common count and the y lookup
+// first all score 58/59/120/136/150 with 0x136140 still matched.
+// score 57 (was 82): both logarithms now have retail's loop and the common count is
+// taken by retail's branch, so the height count sits in ebx as in retail; left: the row
+// coordinate (retail keeps it 16-bit in si and widens it late), the column (retail
+// widens dx only after the mask) and the two bit registers (retail x in edi, ours in edx).
 // score 82 (was 82): the coordinates now take retail's registers (the second in
 // cx, the third in dx) with the column local declared first; retail still keeps
 // the row coordinate 16-bit in si, promotes the column one after the mask, uses
@@ -253,7 +269,9 @@ void function_358d0(short width, short x, short y, short height, dword *out)
 	long x_value = x;
 	short width_bits = (short)swizzle_log2(width);
 	short height_bits = (short)swizzle_log2(height);
-	short common_bits = width_bits > height_bits ? height_bits : width_bits;
+	short common_bits = width_bits;
+	if (width_bits > height_bits)
+		common_bits = height_bits;
 	short mask = (short)((1 << common_bits) - 1);
 	dword x_bits;
 	dword y_bits;

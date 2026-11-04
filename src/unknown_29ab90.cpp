@@ -366,6 +366,20 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // the vector homes stay swapped); saved direction as a planar vector copied before the call 351 (1841, frame 0x60); planar copy before the call with no
 // saved vector 370 (1810, frame 0x58). Left on the 302 form: the working and output vector homes swapped (+0x38/+0x44), planar #2's x-first order and #1's load-first y,
 // floor registers, the zero web apart from the turn floor, and row order of the blend.
+// DH360: Explicit epsilon-test truth in existing magnitude/planar helpers, bool/byte/short/long,
+// eight at 345. NOT kept: unmatched one-use predicates do not recover the 0x64 frame or separate
+// magnitude/query homes; original helpers, all native copies and complete body restored.
+// DH362: Magnitude output-only/numeric-plus-output, pointer/reference, common/complete-arm
+// publication on the retained native-input/result-join graph: eight at 345. NOT kept: frame
+// 0x58 and query/magnitude overlap remain; original helper contract and complete body restored.
+// DH364: Native magnitude/planar/movement coordinate-union consumer subsets
+// 1/2/4/3/5/6/7, then float root/absolute APIs on complete result joins: eight at 345.
+// Original copies, helpers, expression trees and full body restored; frame/query
+// overlap remains.
+// DH367: Overlap-safe CRT working/secondary/history transfers, seven subsets,
+// then paired final public transfers: 447/363/376/440/501/388/473/480. History-only and secondary/history
+// recover frame 0x64 and first +0x42 but grow to 1907/1894 versus 1863. NOT kept: all regress;
+// original copies, helpers and complete body restored; frame/query-magnitude homes remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

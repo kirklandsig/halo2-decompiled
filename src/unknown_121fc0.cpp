@@ -282,6 +282,23 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // F377: Separate duplicate-equality outcome across the ordinal search, bool/byte/char/word/
 // short/int/long/dword: 203/203/203/203/203/203/203/203. NOT kept: unmatched flag carriers;
 // original complete body restored; outer EBP preservation and read-size homes remain.
+// N375: Global mapping initialization by endpoint cursors, fill/fill_n, unsigned ordinal,
+// ordinary cursor/ordinal while and advancing cursor/count: 128/128/253/253/128/128/128/128.
+// NOT kept: no gain; standard fills shorten to 741/773. Original whole body restored.
+// N377: Standard first-equal predecessor ranges with existing string comparison,
+// first/second binding, pointer/ordinal result and original/post-search publication:
+// 253/244/262/254/253/244/262/254. NOT kept: all regress/shorten and grow frame to 0xa58;
+// original whole body restored. Outer EBP preservation and read-size/cursor homes remain.
+// N379: Existing tokenizer tail through delimiter-span producer, accumulated/explicit/selected/
+// end-tested outputs, original/zero read count: 217/223/262/217/211/216/254/211. NOT kept: alternate library
+// boundary does not recover native EBP/clamp homes; original tokenizer and loader restored.
+// N381: Existing tokenizer returns complete token/cursor pair by direct/named/default-member/factory
+// production, original/zero read count: 275/232/250/181/274/219/253/233. NOT kept: no byte match,
+// larger frame and changed extent; original scalar outputs, tokenizer, read/wait and entire loader restored.
+// N383: Canonical token update with overflow continue, long/dword results and long/dword/short/word
+// predecessor ordinals: 128/128/213/213/128/128/213/213. Single read/write tokenizer cursor, pointer/reference
+// and original/token-owned/nested/cursor-owned producers: 128/220/193/248/128/220/193/248.
+// NOT kept: ties/regressions; original scalar channels, helper, loader and full body restored.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

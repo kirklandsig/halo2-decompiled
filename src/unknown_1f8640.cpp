@@ -603,16 +603,32 @@ struct s_1f8a70_actor
 // AC530: Uniform complete frame-member pointer at active/route/unit/reset phase boundaries
 // 506/505/505/505; corresponding real frame references 506/505/505/505 (fast control 188).
 // NOT kept: all regress and lose native entry order; original field observations and full body restored.
+// AC532: Shared destination case-family producers 2/3, 4/5, both: conditional nodes
+// 373/384/409, branch nodes 370/380/411; both with wide selected mode 441/411.
+// NOT kept: no match; original cases, live observations, results and body restored.
 // Y576: Full-record/fallback/failure-first branch subsets 187/211/305/210/304/305/304;
 // all with shared modes-two/three destination prefix 369. NOT kept: one-point best gain;
 // route dispatch, expired unit/result home and failure-result storage still differ. Original body restored.
 // P325: On the two-result graph, inner-result declarations after unit/reset/destination,
 // at entry and at route selection all tie 188; unit-output declarations at active phase/entry
-// score 206/206; outer failure result assigned before cleanup 188. All restored;
+// scored 206/206; outer failure result assigned before cleanup 188. All restored;
+// gave 206/206; outer failure result assigned before cleanup 188. All restored;
 // unit/result packing and the native memory-result cleanup remain.
 // N367: Early active/arrival/mode success joins on the two-result word-selector graph, seven subsets
 // 424/418/425/446/443/441/316; complete joins with terminal literals 306. NOT kept: all regress; original
 // early exits and result assignments restored. Unit/result +0x10/+0x12 and late route-result home remain.
+// Y585: Scratch admission owns inner route outcome, bool/byte/short/long, success-first
+// 226/226/302/291; failure-first 249/249/302/291. NOT kept: all regress;
+// original two results, scratch default, scopes and full body restored. Unit/result packing and dispatch remain.
+// B437: Actual radius-first route admission in bool/byte/short/long valid storage
+// 309/309/308/308, complementary invalid storage 309/309/308/308. NOT kept:
+// all regress; unit/result packing, dispatch adjacency and memory-result cleanup remain.
+// P337: Current two-result word-selector lexical unit/selector/inner-result home subsets
+// 1/2/4/3/5/6/7, then all with outer-result name, each 188. NOT kept: no byte match;
+// native unit/result +0x12 and late memory result remain. Original full body restored.
+// M381: Independent outer byte/short/long/dword completion after terminal stores/cleanup,
+// route-result copies then branch facts: 435/429/432/432/435/429/432/432. NOT kept: result-home
+// diagnostics regress; original outer/inner results, native-word selector and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

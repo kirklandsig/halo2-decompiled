@@ -272,6 +272,15 @@ struct s_visibility_bound_record
 // Y582: Actual fallback sphere-query return in bool/byte/word/long, success publication
 // or failed-query continue: 406 each. NOT kept: one-use results miss equality; original
 // call, direct test, input observations and full body restored; entry/table/plane homes remain.
+// Y585: Initialized containment false at unseen/bound-index/bound/transform/local-point/
+// scaled-point/first-center/completed-center boundaries: 406/406/406/406/406/417/417/417.
+// NOT kept: no eligible gain; original producer and full body restored; entry/table and plane/query homes remain.
+// Y587: Fallback-center component for traversal long/dword/short/word/byte/
+// signed-char, then long/short while: 406/406/502/502/502/502/406/502.
+// NOT kept: narrow traversal stays rolled and shortens away from retail; original full body restored.
+// Y589: Actual composed-node/frustum-plane/fallback-center input last-use scopes,
+// seven subsets then all with immutable query, eight at 406. NOT kept: no exact
+// entry/table or plane/query-home recovery; original complete body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

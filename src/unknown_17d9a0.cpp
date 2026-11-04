@@ -406,6 +406,14 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC526: Whole inverse result if/else/default/conditional, successful/failed/nested
 // publication returns, default field and nested result: 63/98/63/46/46/46/108/98. NOT kept: no gain;
 // original corner producer and tail restored; plane base, selector/product ranks remain.
+// AC531: Plain two-edge validation traversal, long/short/dword/word ordinal,
+// completed-ordinal publication then immediate failed publication/return:
+// 141/115/141/115/126/121/126/121. NOT kept: dot divergence moves to +0x67
+// and every extent shortens away from retail; original helper and whole body restored.
+// AC534: One caller-owned three-coordinate workspace across all four corner calls,
+// array pointer/reference and vector/point pointers, first-corner then entry declarations:
+// 54/54/54/54/54/54/54/54. NOT kept: dot divergence moves earlier to +0x67; original
+// helper and full body restored. Plane base, first selectors and product memory sides remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -995,6 +1003,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // seven subsets then ordinary complete expansion, 539 each. NOT kept: tag/count/plane
 // homes and rotation spills remain; original helpers and body restored. All rotation
 // inputs still precede the first output store. Shared-angle sum changes were not applied.
+// Y584: Axis normalizer numeric-length result, zero-default/branch-owned with
+// bool/byte/short/long epsilon admission: 548 each. NOT kept: frame 0x21e4
+// and extent 3631 lose retail 0x21dc/3647; original full body and helpers restored.
 // AC524: Complete bitwise normal identity bool/byte/short/long, then complementary
 // mismatch results, 535 each at 3647 bytes. NOT kept: four-point gain below eight;
 // original helper and complete body restored; tag/count/plane homes and rotation spills remain.
@@ -1003,6 +1014,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // frame grows to 0x21e4; original body/helpers restored; tag/count/plane homes remain.
 // AC529: Complete forward-edge role, bool/byte/word/long direct then false-default publication:
 // 555/555/621/578/624/624/624/630. NOT kept: no equality or gain; native tag/count/plane/topology homes remain.
+// AC535: Complete candidate-plane grouping acceptance, positive then complementary
+// bool/byte/short/long: 529/529/529/529/531/531/531/531 at 3647 bytes. NOT kept:
+// frame grows to 0x21e4 versus native 0x21dc; original body/helpers restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
