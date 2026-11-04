@@ -524,6 +524,9 @@ static inline bool teams_enabled_19e1c0()
 // F372: Entry declaration lifetimes for the opponent iterator, mode and local-team
 // value, seven subsets then all with the actual local-player receiver: eight at 390.
 // Original branch declarations, result storage and complete body restored.
+// AC537: Complete absent-team eligibility at both name branches, bool/byte/short/long
+// with inherited/native result: 390/390/390/390/691/691/691/691. NOT kept: no match; original admission,
+// result qualifier, all name-copy/format paths and complete body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

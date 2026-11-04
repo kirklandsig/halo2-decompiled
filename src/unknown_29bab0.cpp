@@ -281,6 +281,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // 797/a420/3474; arm const reference + copies 750/a438/3499, + normalize3d 771/a428/3499 (masked 136), both 797/a419/3474; arm plain copy + copies 760/a443/3485, + normalize3d
 // 785/a440/3485 (masked 138), both 802/a433/3469. Two definitions of the arm's input (diagnostic) 748/a442/3501, with normalize3d 785/a440/3485. Volatile read at the copy and arm
 // (diagnostic, reverted at once) 790/a447/3479.
+// B433: Library transfers at history/working-direction/pre-blend copies, seven subsets,
+// then all with the initial heading: eight at 804 on direct input. NOT kept: frame
+// grows to 0x8c despite retail length; original transfers, input storage and body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

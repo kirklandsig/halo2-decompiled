@@ -511,6 +511,10 @@ s_1a8a10 g_4453c0[] =
 // address-taken is not what re-reads j; the point and four values in one record with the values passed on 27 (frame
 // moves, j still folded); the y store placed after the facing copy, y carried in a local through the switch 24 (j still
 // folded), in the one record 88.
+// K148: both leading products with stores [3], [1], [2], [0] 21; dead score store 17;
+// successive leading-product accumulators 17; those accumulators with a four-value initializer 18;
+// separate score declarations 17; one-use second i copy 17; direct actor second i 38;
+// second vector snapshot 146. NOT kept: no equality; original float block restored.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

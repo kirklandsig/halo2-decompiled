@@ -292,6 +292,19 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // byte/short candidate count: 428/428/428/428/419/464/464/464. NOT kept: all regress;
 // short/word/long results on short count regress caller 389 to 699. Original emitter,
 // counters and whole body restored; entry and native XY/magnitude homes remain.
+// DH361: Existing normalizer epsilon decision as rejection/normalization bool/byte/short/long,
+// eight at 395; the other normalizer user stays 719 and scoring stays exact. NOT kept: no match
+// or native XY/magnitude-home recovery; original comparison, shared helper and full body restored.
+// DH363: Actual candidate-record flags bool/bool, byte/byte, bool/byte, signed-char/bool, byte/signed-char,
+// bool/signed-char, signed-char/byte, signed-char/signed-char: 395/401/401/395/401/401/401/401. NOT kept: no match;
+// original byte/Boolean declarations, record layout, publications and complete body restored.
+// DH365: Original-site complete endpoint-distance admission, bool/byte/char/signed-char/
+// short/word/int/long: 395/395/395/395/395/395/395/395. NOT kept: nonexact one-use predicate forms; original
+// body restored. Frame 0x64 and cleanup agree; entry and normalized XY/magnitude homes remain.
+// DH368: Forward/backward standard copies at original input/positive-evaluation boundaries,
+// eight non-original pairs: 410/494/517/410/494/517/517/517. NOT kept: all regress;
+// five additional candidate-publication copy graphs excluded for added shared-global addresses.
+// Original input/evaluation copies, global assignment, emitter and complete body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -654,6 +667,21 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DH357: Actual advancing obstacle-entry cursor, short/long/int/word ordinal,
 // consumed/explicit head steps: 785/779/779/781/785/779/779/781.
 // NOT kept: all regress and lengthen; original traversal and whole body restored.
+// DH359: Conditional owner query excluded bool/byte/short/long 719/719/752/750;
+// admitted counterparts 738/738/737/735. NOT kept: no gain or byte match;
+// original query guards, outcome, geometry, helpers and complete body restored.
+// DH361: Sweep/obstacle ordinals and selected-obstacle/maximum-ratio declarations at function
+// scope, seven subsets, then the sweep bound too: eight at 719. Original declaration scopes,
+// initializers, geometry and body restored; frame 0x124/0x114 and radius/trace/pivot homes remain.
+// DH363: Actual count/table record fields, direct/const/mutable receivers with original guard,
+// const/mutable conditional, const/mutable/direct default-result getters: 719/719/719/719/719/775/775/775.
+// NOT kept: no native-frame or score gain; original getter, helpers and complete body restored.
+// DH366: Original annular admission, inside/outside bool/byte/short/long outcomes:
+// 719/719/719/719/720/720/720/720. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
+// DH368: Standard center/forward/reverse sweep-history transfers, seven subsets then
+// the initial center copy too: 768/768/771/767/767/790/789/744. NOT kept: all regress;
+// original point transfers, helpers and complete body restored; frame/radius/trace homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

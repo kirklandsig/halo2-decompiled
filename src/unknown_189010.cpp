@@ -149,6 +149,11 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax G (11-04): the priority read from the request and stored before the location copy 106 (a gain of
+// four, dropped by the review rule); the end test split into the 0x100 and the 0x800 masks, or written as a
+// shift, 106; the class test as nested ifs 106; the class lookup nested under the sound-flag test 160 (446
+// bytes: both lookups stay out of line, but the tag parameter is then copied into the frame); an always-true
+// test around the first class lookup 157. Body restored to the original.
 // MiniMax A (11-03): no new form, no lower score: the priority and the flags are still formed after the
 // location copy, and our link still expands the first 0x221810 call.
 // MiniMax S (11-01): no new form, no lower score; the priority and the flags are still formed after the location copy, and our link still expands the first 0x221810 call, so the state flags are forwarded across it where retail reloads them.

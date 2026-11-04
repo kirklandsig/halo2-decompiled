@@ -2551,6 +2551,12 @@ dword __cdecl function_131fc0(real alpha);
 // NOT kept: no gain or byte match; original workspace scopes and complete body restored.
 // N353: Separate caller-side scalar/color/finalizer inline declarations, seven subsets,
 // and all force-inline declarations: 140 each. NOT kept: no gain; original declarations restored.
+// F380: Isolated short-arm final-alpha branch/default stores and expression-owned nibble/word
+// results 145/250/252/161/162/140/140/145. NOT kept: regressions or ties;
+// original flag reads, shader stores, fallbacks and complete body restored.
+// DH358: Nested test-set admission results, rejected/admitted defaults in bool/byte/word/dword,
+// 140/140/140/140/140/140/140/140. NOT kept: no byte match; original admission predicate,
+// flags, shader workspaces and complete body restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -3010,6 +3016,13 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // products and joint/axis-local production, original array/native box outputs: eight at 211,
 // 2022/2022 bytes. Keep direct paired half extents (plain 211); each has two original bounds
 // consumers and retail retains both products. Original grouping, calls, trig and arrays retained.
+// F380: Zero/nonzero comparison results spanning vertical bounds, bool/byte/short/long,
+// 240/240/244/243/240/240/244/243. NOT kept: regressions and longer extent;
+// original comparison/default points, half extents, trig and complete body restored.
+// DH358: Complete zero-result lifetimes before half extents/bounds and at horizontal/vertical
+// consumers 246/239/217/234; stream-boundary pairs 150/146/208/223. NOT kept:
+// 150/146 move extent from 2022 to 2026; 208 gains only three and shrinks to 1972.
+// Original tests, half extents, trig carriers and whole body restored.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3515,6 +3528,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // N350: Immutable shift/clip/center parameter subsets and all with immutable
 // state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
 // selector, reload-pair and six quantizer input-home differences remain.
+// P332: Native quantizer lower/upper/both conversion producers 32/31/32;
+// split lower arms alone/with upper producer 31/31; both with single-exit,
+// positive-default and split/conditional results 30/790/646. NOT kept:
+// one-point lead or regression, no byte match; original helper and body restored.
+// DH358: Existing quantizer double transport with explicit real-rounded callers and a multi-use
+// real sample, long/int/short/word results with mutable/immutable input: 660/660/1001/1001 twice.
+// NOT kept: all regress and lengthen to 4836/4856; original helper and whole body restored.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

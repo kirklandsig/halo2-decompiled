@@ -814,6 +814,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // B430: Counted component-array prior-up/forward/default-vector transfers, masks
 // 1/2/3/4/5/6/7: 106/233/272/259/275/254/286; all with chained equal defaults 300.
 // NOT kept: no byte match; original aggregate transfers, products and body restored.
+// B432: Caller-visible inline declarations for the existing staged cross, normalizer
+// and perpendicular producers, seven subsets, then staged-cross forceinline: eight 45s.
+// Original declarations and callback restored; right i/j, forward.k and angle bases remain.
+// B434: Missing-object/missing-target/ordinary-orientation arms first, seven
+// subsets 361/219/222/250/367/333/337; nullable acquisition with common fallback 358.
+// NOT kept: all regress; original branches, products and full body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
