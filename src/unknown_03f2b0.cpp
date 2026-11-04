@@ -739,10 +739,10 @@ void *function_44940(short index, bool instance)
 	return *(byte **)(structure + 0x13c) + definition_index * 0xc8;
 }
 
-__declspec(noinline) void *function_449e0(short index, bool load, bool instance);
+__declspec(noinline) void *function_449e0(short index, bool instance, bool load);
 
 // @retail 0x449e0
-void *function_449e0(short index, bool load, bool instance)
+void *function_449e0(short index, bool instance, bool load)
 {
 	bool const *instance_reference = &instance;
 	s_44940_entry *entry = &g_4ba138[index];

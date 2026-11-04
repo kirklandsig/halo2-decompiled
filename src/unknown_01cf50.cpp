@@ -6025,7 +6025,7 @@ struct s_render_part_context;
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
     dword and_mask, dword or_mask);
-__declspec(noinline) void *function_449e0(short index, bool load, bool instance);
+__declspec(noinline) void *function_449e0(short index, bool instance, bool load);
 s_index_cache_storage g_4c62f8;
 bool function_460d0(dword const *mask, short index, long part_index);
 
@@ -6067,8 +6067,7 @@ void __stdcall function_44ac0(long group, dword selection_mask, long level)
         byte material_index = g_4c0b78.material_indices[(short)index];
         long material = NONE;
         if (material_index != 0xff) material = g_4c0b78.materials[material_index];
-        byte *geometry = (byte *)function_449e0((short)index, false,
-            (bool)((entry->unknown00 >> 12) & 1));
+        byte *geometry = (byte *)function_449e0((short)index, (bool)((entry->unknown00 >> 12) & 1), false);
         if (!geometry) continue;
         for (long part = 0; part < *(long *)geometry; ++part)
         {

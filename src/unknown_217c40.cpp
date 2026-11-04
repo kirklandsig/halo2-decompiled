@@ -51,47 +51,7 @@ PRIVATE real const g_4570a0[4] =
 
 PRIVATE __forceinline real function_217c41(real arg_0)
 {
-    if (arg_0 < -1.0f)
-        arg_0 = -1.0f;
-    if (arg_0 > 1.0f)
-        arg_0 = 1.0f;
-    return arg_0;
-}
-
-PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2, double arg_3, real arg_4)
-{
-    real local_0 = *arg_0;
-    real local_1 = *arg_1;
-    long local_2 = (local_0 < 0.0f ? 1 : 0) | (local_1 < 0.0f ? 2 : 0);
-    real local_3 = arg_2 - g_4570a0[(short)local_2];
-    real local_4 = (real)sqrt(local_1 * local_1 + local_0 * local_0);
-    real local_5 = (real)fabs(local_3);
-    if (local_5 < arg_4)
-    {
-        real local_6 = (real)fabs(arg_3);
-        if (local_6 < 0.7853981852531433f || local_6 > 2.356194496154785f)
-        {
-            local_0 = (local_0 < 0.0f ? -1 : 1) * local_4;
-            local_1 = (1.0f - local_5 * 1.6370222568511963f) * (local_1 < 0.0f ? -1 : 1) * local_4;
-        }
-        else
-        {
-            local_1 = (local_1 < 0.0f ? -1 : 1) * local_4;
-            local_0 = (1.0f - local_5 * 1.6370222568511963f) * (local_0 < 0.0f ? -1 : 1) * local_4;
-        }
-    }
-    else if (fabs(local_0) > fabs(local_1))
-    {
-        local_0 = (local_0 < 0.0f ? -1 : 1) * local_4;
-        local_1 = 0.0f;
-    }
-    else
-    {
-        local_1 = (local_1 < 0.0f ? -1 : 1) * local_4;
-        local_0 = 0.0f;
-    }
-    *arg_0 = function_217c41(local_0);
-    *arg_1 = function_217c41(local_1);
+    return arg_0 < -1.0f ? -1.0f : (arg_0 > 1.0f ? 1.0f : arg_0);
 }
 
 /* standard marker before the body matches (frame alignment): retail's
@@ -102,7 +62,9 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
    address, and its caller 0x12b450 is LTCG code. With the marker 0x12b450 and
    0x12b690 match; without it they don't. The body itself doesn't match yet. */
 // MiniMax B (11-04): no new form, no lower score.
-// score 474 (was 474): Frame 0x38 versus 0x40; angle homes and snap-work lifetimes still differ.
+// score 25 (was 474): the x87 order of the first offset (retail keeps `angle - table` on the stack past both magnitudes), then the two hoisted
+// constant loads (retail loads the coordinate scale first; ours 1.0, which
+// the D3D library defines; retail's copy of the scale lies in the Bink object's data at 0x43ba70). Earlier: frame 0x38 versus 0x40; angle homes and snap-work lifetimes differed.
 // Earlier 501 from 541.
 // Role names 564; four-controller bound 541; ordinary snap inline 1438; short quadrant 564; shared default 548; combined 562.
 // Iteration-wide axes 541; direct double-angle helper 541; offset before magnitude 556;
@@ -187,34 +149,47 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // 474/474/473/475/474/474/475/475. NOT kept: the one-point angle-array gain
 // and grouped storage need equality; original helpers and complete body restored.
 // F367: Complete snap squared components/norm in real or double storage: six forms 474; rounded magnitude in double with component or sum node 616 each (native 0x40 frame, 1932/2012 bytes). NOT kept: storage/precision nonmatches; original helpers, full body and standard alignment evidence restored.
+// Round 149 (m3 lane 5; fast at 2012 bytes unless marked, kept forms marked): the structure, read from retail: loop on a NONE
+// sentinel with a named next (kept) 113; prepared snap (both quadrants, offsets, magnitudes first) with an apply helper 568 (2040),
+// with the clamp as one conditional expression 309 (1996), macro or if/else if 309/568; flat apply, no pointer helper (kept)
+// 149; fabs written at each use of the offset (kept) 140, a named absolute with early fabs 381-384; field_38 stored after the first
+// subtraction in cases 0, 2, default (kept) 103; coordinates read at each use, so they are defined after the scale (kept; product
+// loads the coordinate) 89; separate scale per stick 569 (1972); the two sticks as point2f (kept; every slot retail's) 4; an array of
+// two pairs 21; real angles straight from atan2, no doubles (kept; fixes the qword/dword `fst` order) 2 plain, as `(real)fabs(first_offset)` at each
+// use of the offset, not kept without a match (a named absolute 25, kept; in place on the offset 88, first only 25; named in the branch 404
+// at 2024 bytes). Named constant at
+// 0x43ba70 (private, extern or local static) 2 plain, MATCH only on a one-function reduced image: not retail's code (a literal
+// from a library object), so a literal is kept. Also the constant in the Bink stub (diagnostic) 2 plain. Lead: load order follows
+// where the constant's COMDAT comes from at link; it needs a non-LTCG object holding it ahead of the D3D library's object. Identity pointers 1-5/6-7 ahead
+// of the first angle, an input-bytes pointer: 2/3/2. Consecutive retail constant loads run both ways (208 ascending, 249 descending), so address order is no general rule.
+// On the kept body: the apply step as a by-value or reference helper 629 (2148 bytes)/538 (1996); offsets written at their use, both/first only 405 (1996)/25.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {
-    for (long local_0 = 0; local_0 < 4; local_0++)
+    long local_0 = 0;
+    while (local_0 != NONE)
     {
         s_input_state *local_1 = NULL;
         if (g_4e61cc[(short)local_0])
             local_1 = g_4e61b9 ? &g_4e630c : &g_4e61dc[(short)local_0];
         if (local_1)
         {
+            point2f first_axes;
+            point2f second_axes;
             s_217c40 *local_21 = &((s_217c40 *)(g_51ea18 + 0x70))[local_0];
             s_gamepad_preferences *local_20 = &((s_gamepad_preferences *)g_51ea18)[local_0];
-            real local_3 = (real)*(short *)((byte *)local_1 + 0x42);
-            real local_2 = (real)*(short *)((byte *)local_1 + 0x40);
-            double local_4 = atan2(local_3, local_2);
-            real local_6 = (real)fabs(sin(local_4));
-            real local_7 = (real)fabs(cos(local_4));
+            real first_angle = (real)atan2((real)*(short *)((byte *)local_1 + 0x42), (real)*(short *)((byte *)local_1 + 0x40));
+            real local_6 = (real)fabs(sin(first_angle));
+            real local_7 = (real)fabs(cos(first_angle));
             real axis_scale = 1.0f / (local_6 > local_7 ? local_6 : local_7);
-            real local_9 = function_217c41(local_2 * axis_scale * 0.000030518509447574615f);
-            real local_10 = function_217c41(local_3 * axis_scale * 0.000030518509447574615f);
-            real local_12 = (real)*(short *)((byte *)local_1 + 0x46);
-            real local_11 = (real)*(short *)((byte *)local_1 + 0x44);
-            double local_13 = atan2(local_12, local_11);
-            real local_15 = (real)fabs(sin(local_13));
-            real local_16 = (real)fabs(cos(local_13));
+            first_axes.x = function_217c41((real)*(short *)((byte *)local_1 + 0x40) * axis_scale * 0.000030518509447574615f);
+            first_axes.y = function_217c41((real)*(short *)((byte *)local_1 + 0x42) * axis_scale * 0.000030518509447574615f);
+            real second_angle = (real)atan2((real)*(short *)((byte *)local_1 + 0x46), (real)*(short *)((byte *)local_1 + 0x44));
+            real local_15 = (real)fabs(sin(second_angle));
+            real local_16 = (real)fabs(cos(second_angle));
             axis_scale = 1.0f / (local_15 > local_16 ? local_15 : local_16);
-            real local_18 = function_217c41(local_11 * axis_scale * 0.000030518509447574615f);
-            real local_19 = function_217c41(local_12 * axis_scale * 0.000030518509447574615f);
+            second_axes.x = function_217c41((real)*(short *)((byte *)local_1 + 0x44) * axis_scale * 0.000030518509447574615f);
+            second_axes.y = function_217c41((real)*(short *)((byte *)local_1 + 0x46) * axis_scale * 0.000030518509447574615f);
             for (long local_22 = 0; local_22 < 16; local_22++)
             {
                 long local_23 = (byte)local_20->button_map[local_22];
@@ -251,8 +226,66 @@ void function_217c40(void)
             short local_27 = local_20->unknown18;
             if (local_27 == 2 || local_27 == 3)
             {
-                function_217c42(&local_9, &local_10, (real)local_4, local_4, 0.6108652353286743f);
-                function_217c42(&local_18, &local_19, (real)local_13, local_13, 0.1745329201221466f);
+                short first_quadrant = (first_axes.x < 0.0f ? 1 : 0) | (first_axes.y < 0.0f ? 2 : 0);
+                short second_quadrant = (second_axes.x < 0.0f ? 1 : 0) | (second_axes.y < 0.0f ? 2 : 0);
+                real first_offset = first_angle - g_4570a0[first_quadrant];
+                real second_offset = second_angle - g_4570a0[second_quadrant];
+                real first_magnitude = (real)sqrt(first_axes.y * first_axes.y + first_axes.x * first_axes.x);
+                real second_magnitude = (real)sqrt(second_axes.y * second_axes.y + second_axes.x * second_axes.x);
+                real first_absolute_offset = (real)fabs(first_offset);
+                if (first_absolute_offset < 0.6108652353286743f)
+                {
+                    real first_absolute_angle = (real)fabs(first_angle);
+                    if (first_absolute_angle < 0.7853981852531433f || first_absolute_angle > 2.356194496154785f)
+                    {
+                        first_axes.x = (first_axes.x < 0.0f ? -1 : 1) * first_magnitude;
+                        first_axes.y = (1.0f - first_absolute_offset * 1.6370222568511963f) * (first_axes.y < 0.0f ? -1 : 1) * first_magnitude;
+                    }
+                    else
+                    {
+                        first_axes.y = (first_axes.y < 0.0f ? -1 : 1) * first_magnitude;
+                        first_axes.x = (1.0f - first_absolute_offset * 1.6370222568511963f) * (first_axes.x < 0.0f ? -1 : 1) * first_magnitude;
+                    }
+                }
+                else if (fabs(first_axes.x) > fabs(first_axes.y))
+                {
+                    first_axes.x = (first_axes.x < 0.0f ? -1 : 1) * first_magnitude;
+                    first_axes.y = 0.0f;
+                }
+                else
+                {
+                    first_axes.y = (first_axes.y < 0.0f ? -1 : 1) * first_magnitude;
+                    first_axes.x = 0.0f;
+                }
+                first_axes.x = function_217c41(first_axes.x);
+                first_axes.y = function_217c41(first_axes.y);
+                real second_absolute_offset = (real)fabs(second_offset);
+                if (second_absolute_offset < 0.1745329201221466f)
+                {
+                    real second_absolute_angle = (real)fabs(second_angle);
+                    if (second_absolute_angle < 0.7853981852531433f || second_absolute_angle > 2.356194496154785f)
+                    {
+                        second_axes.x = (second_axes.x < 0.0f ? -1 : 1) * second_magnitude;
+                        second_axes.y = (1.0f - second_absolute_offset * 1.6370222568511963f) * (second_axes.y < 0.0f ? -1 : 1) * second_magnitude;
+                    }
+                    else
+                    {
+                        second_axes.y = (second_axes.y < 0.0f ? -1 : 1) * second_magnitude;
+                        second_axes.x = (1.0f - second_absolute_offset * 1.6370222568511963f) * (second_axes.x < 0.0f ? -1 : 1) * second_magnitude;
+                    }
+                }
+                else if (fabs(second_axes.x) > fabs(second_axes.y))
+                {
+                    second_axes.x = (second_axes.x < 0.0f ? -1 : 1) * second_magnitude;
+                    second_axes.y = 0.0f;
+                }
+                else
+                {
+                    second_axes.y = (second_axes.y < 0.0f ? -1 : 1) * second_magnitude;
+                    second_axes.x = 0.0f;
+                }
+                second_axes.x = function_217c41(second_axes.x);
+                second_axes.y = function_217c41(second_axes.y);
             }
             bool local_28 = local_20->unknown1a;
             if (!local_28 && local_20->unknown1b)
@@ -260,39 +293,39 @@ void function_217c40(void)
             switch (local_27)
             {
             case 0:
-                local_21->field_38 = local_10;
-                local_21->field_3c = 0.0f - local_9;
-                local_21->field_40 = 0.0f - local_18;
-                local_21->field_48 = local_19;
-                local_21->field_44 = (local_28 ? -1.0f : 1.0f) * local_19;
+                local_21->field_3c = 0.0f - first_axes.x;
+                local_21->field_38 = first_axes.y;
+                local_21->field_40 = 0.0f - second_axes.x;
+                local_21->field_48 = second_axes.y;
+                local_21->field_44 = (local_28 ? -1.0f : 1.0f) * second_axes.y;
                 break;
             case 1:
-                local_21->field_40 = 0.0f - local_9;
-                local_21->field_48 = local_10;
-                local_21->field_44 = (local_28 ? -1.0f : 1.0f) * local_10;
-                local_21->field_3c = 0.0f - local_18;
-                local_21->field_38 = local_19;
+                local_21->field_40 = 0.0f - first_axes.x;
+                local_21->field_48 = first_axes.y;
+                local_21->field_44 = (local_28 ? -1.0f : 1.0f) * first_axes.y;
+                local_21->field_3c = 0.0f - second_axes.x;
+                local_21->field_38 = second_axes.y;
                 break;
             case 2:
-                local_21->field_38 = local_10;
-                local_21->field_40 = 0.0f - local_9;
-                local_21->field_3c = 0.0f - local_18;
-                local_21->field_48 = local_19;
-                local_21->field_44 = (local_28 ? -1.0f : 1.0f) * local_19;
+                local_21->field_40 = 0.0f - first_axes.x;
+                local_21->field_38 = first_axes.y;
+                local_21->field_3c = 0.0f - second_axes.x;
+                local_21->field_48 = second_axes.y;
+                local_21->field_44 = (local_28 ? -1.0f : 1.0f) * second_axes.y;
                 break;
             case 3:
-                local_21->field_3c = 0.0f - local_9;
-                local_21->field_48 = local_10;
-                local_21->field_44 = (local_28 ? -1.0f : 1.0f) * local_10;
-                local_21->field_40 = 0.0f - local_18;
-                local_21->field_38 = local_19;
+                local_21->field_3c = 0.0f - first_axes.x;
+                local_21->field_48 = first_axes.y;
+                local_21->field_44 = (local_28 ? -1.0f : 1.0f) * first_axes.y;
+                local_21->field_40 = 0.0f - second_axes.x;
+                local_21->field_38 = second_axes.y;
                 break;
             default:
-                local_21->field_38 = local_10;
-                local_21->field_3c = 0.0f - local_9;
-                local_21->field_40 = 0.0f - local_18;
-                local_21->field_48 = local_19;
-                local_21->field_44 = (local_28 ? -1.0f : 1.0f) * local_19;
+                local_21->field_3c = 0.0f - first_axes.x;
+                local_21->field_38 = first_axes.y;
+                local_21->field_40 = 0.0f - second_axes.x;
+                local_21->field_48 = second_axes.y;
+                local_21->field_44 = (local_28 ? -1.0f : 1.0f) * second_axes.y;
                 break;
             }
             if (!g_51ebcc[local_0])
@@ -300,5 +333,9 @@ void function_217c40(void)
         }
         else
             g_51ebcc[local_0] = false;
+        long next = NONE;
+        if (local_0 >= 0 && local_0 < 3)
+            next = local_0 + 1;
+        local_0 = next;
     }
 }

@@ -728,8 +728,8 @@ struct s_visibility_bsp
 	s_visible_instance *instances;
 };
 
-short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
-    long arg_5, dword arg_6, long arg_7, byte *arg_8, short arg_9, byte arg_10,
+short function_2cbf0(long arg_1, short arg_2, dword arg_3,
+    long arg_4, dword arg_5, long arg_6, long arg_7, byte *arg_8, short arg_9, byte arg_10,
     void *arg_11, long arg_12, real arg_13, long arg_14, long arg_15,
     bool arg_16, bool arg_17, bool arg_18, real arg_19, real arg_20,
     real arg_21, word arg_22, point3f const *arg_23, real arg_24);
@@ -758,7 +758,7 @@ void function_133390(s_bit_vector_pool const *arg_1)
 			local_11 = 0.1f;
 		real local_12 = (g_4b9ed0 / local_11) * local_10 * 2.0f;
 		short local_13 = ((signed char const *)arg_1->indices)[(short)local_4];
-		function_2cbf0(local_4, 0, NONE, local_3 | 0x40, NONE, NONE, 0, NULL,
+		function_2cbf0(local_4, NONE, local_3 | 0x40, NONE, NONE, 0, 0, NULL,
 			local_13, 0xff, NULL, NONE, local_12, NONE, NONE, false, false,
 			false, 0.0f, 0.0f, 0.0f, 0, g_468788, 0.0f);
 		local_1 = arg_1->lists[0];
@@ -803,7 +803,7 @@ void __stdcall function_133520(s_bit_vector_pool *arg_1)
 			local_6 |= 1;
 		if (local_11 > 0)
 		{
-			function_2cbf0(0, 0, local_4, local_6 | 0x1008, NONE, 0xffffffff,
+			function_2cbf0(0, local_4, local_6 | 0x1008, NONE, 0xffffffff, 0,
 				0, NULL, local_8, local_11, local_5, NONE, local_9, NONE, NONE,
 				false, false, false, 0.0f, 0.0f, 0.0f, 0, local_12, local_5->radius);
 		}
