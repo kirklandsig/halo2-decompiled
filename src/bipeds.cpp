@@ -1014,6 +1014,9 @@ extern long *g_51e9cc;
 // 42 each; real shared lookup/getter prefix base with implicit conversion 42.
 // Original record views, declarations and complete body restored; lookup receiver
 // retention and crouch/contact schedules remain.
+// M372: Actual contact point/normal/final-position CRT memcpy transfers, seven site
+// subsets: 42 each; complete memmove 108 at 1462/1481 bytes. Original aggregate
+// transfers and complete body restored; lookup receiver and crouch/contact schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -3604,6 +3607,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // seven subsets then immutable point input: 853/866/858/823/817/820/781/781.
 // NOT kept: native aggregate contracts miss byte equality. Original helper and
 // complete body restored; matrix/origin and paired pivot/property homes remain.
+// M372: Origin/matrix/false-result declarations at function entry, seven
+// subsets then all with the original collision declared at entry: 368 each.
+// Original declarations and complete body restored; native matrix/origin and
+// paired pivot/property homes remain; frame 0x12c still agrees.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4376,6 +4383,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // M364: Complete parallel projection scalar input captures, axis/vector/both in both
 // declaration priorities, mutable then const: 175/190/177/177/175/190/177/177. NOT kept: one-
 // use captures do not match; normalization SIMD ranks and trig/basis homes remain.
+// M372: Row-local cosine/projection/cross product parts inside the existing
+// publication loop, seven subsets then complete immutable parts:
+// 179/176/196/154/181/170/190/190. NOT kept: all regress; original twice-used helper
+// and body restored; normalization SIMD and trigonometric/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

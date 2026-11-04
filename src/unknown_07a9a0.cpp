@@ -1227,6 +1227,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // M370: Complete initial-admission truth bool/byte/short/long, rejection then acceptance,
 // all 948 at 2956/2828 bytes. NOT kept: no frame or opening lookup recovery; original
 // full gate, body and selectors restored. Frame 0xd4/0xb4 and stacked session remain.
+// M372: Plain while identity/player/group traversal, seven phase subsets 766;
+// all plus initial histogram while 907, 2764/2828 bytes, frame 0xd8/0xb4. Original
+// loops/body restored; frame 0xd4, stacked session and initial lookup remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

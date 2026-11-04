@@ -701,6 +701,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // second removal or first addition, conditional/current-default/best-default forms:
 // 147/117/121/116/122/115/77/103. NOT kept: all regress; one conditional form also
 // loses the caller. Original selection restored; reference-first queries and two extra bytes remain.
+// M372: Outer/inner while induction and positive flag admission, seven subsets
+// then all with entry selector declaration: 67/132/67/132/67/132/132/132. NOT kept:
+// inner advance regresses to 523/512 bytes and first +0x3e; original body restored;
+// reference-first spread queries and two extra bytes remain.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
