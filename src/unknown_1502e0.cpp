@@ -443,7 +443,9 @@ struct s_tail_player_identifier
 	byte identifier[12];
 };
 
-// score 31 (was 66): logic walk against retail found no behaviour difference (same player identifier
+// score 22 (was 66): early player/scenario/options acquisition and delayed saves remain;
+// the comparison loop, carrier registers and both return epilogues now agree with retail.
+// Earlier at 31: logic walk against retail found no behaviour difference (same player identifier
 // at +4, scenario entry 0 value 0x2c == 1 selects the second traits set, 16 options players of 0xe4
 // bytes at +0x2dc, 12-byte identifier compare at +0xe, traits at +0xac + 0x1c * set). Still differs:
 // retail keeps the options pointer in ebx, the identifier in eax and the compare result in edx; ours
@@ -483,6 +485,10 @@ struct s_tail_player_identifier
 // M350: Immutable player/scenario/full-comparison storage, seven subsets, then
 // fixed read-only player identity: 31 each. Original lookup phases and upward
 // scan restored; options acquisition and identifier/comparison homes remain.
+// DH340: Sole-result break/goto with four zero lifetimes 32/32/24/24 each;
+// body pointer step alone 32; original comma step with sole result 22 (NOT kept).
+// Plain counted while with sole result 22 (plain confirmed); while alone 31. Native
+// identifier/options/comparison homes and both epilogues; scratch word and 168-byte extent agree.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -493,14 +499,21 @@ s_tail_traits *function_1529a0(long player_index)
 
 	if (scenario->entry_count > 0 && scenario->entries[0].value2c == 1)
 		alternate = true;
-	for (long i = 0; i < 16; i++, entry++)
+	s_tail_traits *result = 0;
+	long i = 0;
+	while (i < 16)
 	{
 		long difference = memcmp(entry->identifier, player->identifier, sizeof(entry->identifier));
 
 		if (difference == 0)
-			return &entry->traits[alternate ? 1 : 0];
+		{
+			result = &entry->traits[alternate ? 1 : 0];
+			break;
+		}
+		++i;
+		++entry;
 	}
-	return 0;
+	return result;
 }
 
 /* the units and their definitions as the census of 0x152580 reads them */
@@ -1198,6 +1211,10 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // N353: Existing complete slot selector at held/pending/inventory subsets 1-7
 // 288/294/295/337/337/351/346; all with direct slot arguments 346.
 // NOT kept: no qualifying gain; original pool/player/tag acquisition and body restored.
+// DH340: Initial held/pending/modes array walks, subsets 1/2/4/3/5/6/7 then complete
+// plain-step graph: 275/275/284/208/275/275/208/208. NOT kept: the 275 forms grow
+// to 1012 bytes; paired 208 forms keep 1006 bytes but grow frame 0x18 to 0x1c and
+// add a one-use pending receiver. Original indexed producers and full body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1599,6 +1616,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // N353: Existing controller iterator/user release/controller release subsets 1-7
 // 285/587/285/587/285/587/285; complete release graph with a bounded controller loop 604.
 // Keep only the existing controller iterator (plain 285, 1914/1992 bytes); release calls and bounded loop restored.
+// DH340: Matching-pass short/word/int/dword carriers 618/618/285/286; controller-pass
+// counterparts 297/299/285/288. NOT kept: no gain or byte match; native full-width
+// pass declarations, retained controller iterator and complete body restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

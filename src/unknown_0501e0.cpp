@@ -310,6 +310,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // tree in both views; alone, without the fresh clamp, 211); the same as a struct copy 330 (1198), set through
 // vector3f_assign 252 (1146). On the kept body: offsets and views in their own block 206 (same code); shared scale
 // 255; indexed output rows 213; three row statements 304 (1084); depth limits written in the condition 214.
+// DH340: Complete raw-vector capture aggregate/native/setter/CRT with native scaled defaults
+// 345/391/342/391; shared-setter scaled defaults 252/336/252/336. NOT kept: all regress
+// and lengthen the body; original aggregate-scaled helper and complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

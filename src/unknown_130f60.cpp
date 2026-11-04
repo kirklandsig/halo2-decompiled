@@ -355,6 +355,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // bounded traversal (excluding fields/fields): 360/360/357/361/361/357/361/361
 // (fast control 336, full 324). NOT kept: all regress; original component operations
 // and full body restored. Entry ESI, unit/reciprocal and accumulation schedules remain.
+// DH340: Actual accumulation-output parameter homes, seven nonempty subsets and complete
+// graph with the existing helper output renamed: eight 336 (fast control 336; full 295).
+// NOT kept: no byte match or gain; original parameter/helper names and complete body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
