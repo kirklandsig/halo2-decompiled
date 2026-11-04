@@ -4372,6 +4372,8 @@ extern vector3f *g_4687bc;
 // pointer 90; both 89; result declared first 54; unknown14 stored first/second/last 51/51/56;
 // x + (y + z) 54; x + (z + y) 48; with unknown14 second 45; rigid body by pointer arithmetic 45;
 // the material NONE store back after function_d6660 148 (retail stores it first; d6660 then overwrites it).
+// Round 145: material declaration/assignment split, direct initialization and renamed material; rigid-body
+// reference, base then index, const component and first-node dereference all 45; shared array base 58. Original restored.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {

@@ -1534,6 +1534,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Round 207 (lane 3, fast with 0x56380): the clamp written inline in the test, no local, 135; a short
 // clamped value 180 (0x56380 2); entry size as `11` plus `sizeof(word)` under include_mask 191 (486
 // bytes); a long player bit 134 (same code); `entry_size * written + 2` 134 (same code).
+// Round 145: direct membership mask 140 (446 bytes); staged player bit, split written initialization and staged
+// retained decrement 134 each; direct membership with retained mask in the capacity scope, also with staged bit,
+// with per-arm first-byte stores, and with both 142 each (449/449/446/449 bytes). Original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
