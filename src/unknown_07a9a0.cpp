@@ -1224,6 +1224,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // M366: Closed ID/initial/eligible histogram phase lifetimes, six new word-table subsets 766;
 // full dword scopes 849/2780 bytes, scoped word first CRT clear 820/2812 (retail 2828).
 // NOT kept: no eligible ingress/lookup repair; original complete body restored; dword frame alone is insufficient.
+// M370: Complete initial-admission truth bool/byte/short/long, rejection then acceptance,
+// all 948 at 2956/2828 bytes. NOT kept: no frame or opening lookup recovery; original
+// full gate, body and selectors restored. Frame 0xd4/0xb4 and stacked session remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

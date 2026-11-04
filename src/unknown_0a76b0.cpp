@@ -998,6 +998,10 @@ extern vector3f *g_4687b0;
 // 328/328/306/306/321/321/299/299. NOT kept: no eligible byte match or supported closer.
 // The 299 form shrinks the body to 1687 versus native 1699; NOT kept. Original full body and helper
 // definitions restored; tag/index/type/direction homes and scheduling remain.
+// M370: Actual saved/restored bit truth byte/signed-char/short/long at outer scope
+// 309/309/378/370; the same closed release/restore scopes 309/309/378/370.
+// NOT kept: ties or regressions; original Boolean producer, full body and all helpers
+// restored. Frame 0xcc agrees; tag/index/type/direction homes and scheduling remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -4869,6 +4873,10 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // 175/175/175/175/175/175; both with actual late relative output 201/201 (1406 bytes).
 // NOT kept: ties or regressions. Both original helpers and entire body restored; other
 // helper user stays exact. Frame 0x110 versus 0x11c and basis/point schedules remain.
+// M370: Complete point-row publication via existing scalar setter, forward/inverse/both
+// 175/175/175; completed scalar rows 175/175/175; both with late relative output 201/201.
+// NOT kept: no target gain; paired helper edits also raise the other user to 6/18.
+// Original helper bodies and target restored; frame 0x110/0x11c and basis/point schedules remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

@@ -697,6 +697,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // M366: Complete three-way spread result from original less/equal tests, signed char/short/long/int64:
 // branch production 67/67/67/67; conditional production 96/103/102/122. NOT kept: no exact
 // candidate-first query repair; original complete body restored; reference-first calls and two extra bytes remain.
+// M370: Reference selection inside the four candidate mutations, after first removal,
+// second removal or first addition, conditional/current-default/best-default forms:
+// 147/117/121/116/122/115/77/103. NOT kept: all regress; one conditional form also
+// loses the caller. Original selection restored; reference-first queries and two extra bytes remain.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
