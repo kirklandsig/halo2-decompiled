@@ -855,6 +855,9 @@ bool function_e4050(long object_index);
 // local read after it 44 (same code); the parent test inverted with the vehicle arm first 114 (408 bytes); the vehicle
 // test as nested ifs 44 (same code); the no-parent exits through one found value 106 (409). Retail's datum/unit
 // EDI/EBX colouring follows its inlined 0xbaf80 walk (BLOCKED-BY 0xbaf80, still pinned in src/unknown_0bad50.cpp).
+// Round 105: on the unsigned unit-start/NONE-root walk, current before root / existing typed getter in the walk /
+// root before the unit object / const unit object / const player / const unit / typed getter for all three lookups
+// 171 each (405); a retained root object 182 (390). Original body and declarations restored.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
