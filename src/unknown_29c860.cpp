@@ -178,6 +178,12 @@ __forceinline void function_29c9ee(vector3f const *arg_0, vector3f const *arg_1,
 // Round 99: one-use tag value, split settings/actor/angle declarations, separate angle result,
 // angle declared before the lookup, combined tag/angle lifetimes and a const object-field read: eight 2s.
 // NOT kept: no exact match or eligible gain; original lookup, angle result and declarations restored.
+// Round 127 (lane 7, fast): `inline` on 0x1e5450's definition 2; a named byte settings pointer 2; named from/to
+// pointers for the angle call 46; a pointer to the 0x654 field at the top 42 (692 bytes), after the lookup 42, after the
+// angle 40, before its use 40; a pointer to the 0x65c field at the top 42, after the lookup 42, after the angle 40; both
+// after the lookup 123; 0x654 at the top with 0x65c after the angle 121; 0x65c at the top with 0x654 late 42. Diagnostics:
+// the tag `& 0xfffff` 155, `+ arg_0` 154 give retail's pair. It follows the function's integer tuples, not point
+// lifetime (a float tuple does nothing), but a tuple ahead of the call flips the dot and the rotation too.
 // @retail 0x29c860
 void function_29c860(long arg_0, long arg_1, point2f const *arg_2,
 	point2f const *arg_3, real arg_4, vector3f *arg_5)
