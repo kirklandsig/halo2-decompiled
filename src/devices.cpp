@@ -848,6 +848,15 @@ struct s_device_machine_view
 // flags pointer local, a const group and value: the pushed ESI. Reading the group through the macro as well as the local (`(group->flags & 1) &&
 // (DEVICE_GROUP_GET(i)->flags & 2)`, or a value local for one test and the macro for the other) does put the pointer in EAX, retail's `lea eax`, but both
 // tests then read memory (`test byte [eax+2], bl`) with no word load.
+// F362: Existing callback as static device member, ordinary/inline, masked/word
+// flags and original/active-velocity zero: 34/34/120/120/117/117/122/122.
+// NOT kept: word-load/EAX sharing and zero join remain; original callback/table restored.
+// B407: Complete native short-unit 16-bit flag fields, unsigned/signed, masked/full
+// consumption and native velocity zero: 34/117/120/122 twice. No word-load/EAX recovery;
+// every other file score preserved. Original scalar field and complete callback restored.
+// P307: Actual machine bitfields with logical/bitwise admission, original/native group masks,
+// and absent/present velocity zero: 34/142/120/131/117/146/122/137. NOT kept: no exact native
+// observation/type graph; original view, word/masked result and entire callback restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1221,6 +1230,16 @@ bool function_108530(long device_index, long name)
 // N345: Direct scalar truth at divisor/derivative tests, seven nonempty subsets,
 // 121 each; nonzero admission on bounded nonnegative ramp-up 132. NOT kept: no
 // gain. Both callers stay 31/13; original predicates and complete body restored.
+// J248: Paired destructive derivative/phase-distance producers, local/field
+// ownership, separate assignments and actual output-field receivers, then callee-pop
+// and caller-clean declarations: 121/121/121/121/121/121/132/121/123. Original phase producers, convention
+// and body restored; initial-speed XMM6 and ramp-down stack residency remain.
+// F362: Existing initializer as motion instance/static member, ordinary/inline,
+// local/field cruise speed: 121/121/121/121/134/134/134/134. NOT kept:
+// initial-speed/ramp-down residency unchanged; original routine and both callers restored.
+// P306: Mutable acceleration/deceleration/cruise-speed producers, seven subsets,
+// then separately initialized derivatives: 121 each. NOT kept: no gain or match.
+// Original phase producers restored; XMM6 initial-speed/ramp-down stack residency remains.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1769,6 +1788,21 @@ bool function_0b6760(s_index_pair const *pair);
 // F354: Complete channel-array receiver across manual and group phases, ordinary
 // index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
 // NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
+// F362: Existing state getter as actual device member, ordinary/forced expansion,
+// with inherited/ordinary index and saved-pointer storage: 285/285/411/411/382/382/442/442.
+// NOT kept: no frame/state/index repair or byte match; original getter, callers and body restored.
+// Round 404: Repeated position/power velocity cursors 294/372/379; complete position/power/both output
+// pairs 373/403/398; both with ordinary index/saved pointer 406/371. Original receivers and qualifiers
+// restored; frame/index/state/result homes remain.
+// P308: Flattened pending-manual power/position decisions and closing refresh-bit admission,
+// subsets 1/2/3/4/5/6/7: 377/286/377/292/381/291/381; both direct conjunctions 408.
+// NOT kept: no match or gain; original nested decisions, qualifiers and full body restored.
+// P310: Reached/reversal shared event dispatch as value+pending/offset/field/admission:
+// 285/331/327/291; ordinary-index forms 399/392/340/400. NOT kept: no match;
+// original event observations, both inherited qualifications and full body restored.
+// DH338: First-channel receiver across manual/group phases, pointer/reference,
+// inherited/ordinary index and saved-pointer domains: 376/376/393/393/392/392/441/441.
+// All restored; frame/index/header/state/result homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

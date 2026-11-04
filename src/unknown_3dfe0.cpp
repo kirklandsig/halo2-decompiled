@@ -17,7 +17,7 @@ s_object *function_badc0(long object_index, dword mask);
 void function_3e5a0(vector3f *current, vector3f const *target, real step);
 void function_3e4e0(dword *current, dword const *target, real step);
 
-// score 23 (was 27): the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
+// score 23 (was 23): the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
 // force 0x10), update's false store sits after the force test, and special takes esi for edi.
 // update = false before force 218 (homes as retail, sample/update timestamps swap esi/edi);
 // that plus update elapsed after the object 186; update before the object 216;
@@ -49,6 +49,13 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // the swapped esi/edi follow 0xd1850's EDI and 0xd4080's ESI arguments, so the lead above comes first).
 // Also round 121 (fast): the stationary test as one `!valid || !(dot < limit)` with the difference above it 120 (831 bytes); the
 // lighting record through a named pointer 27, with special declared before type 26.
+// Round 49 (m3 lane 2, fast = plain 23): the 0xd4080 lead above is applied (its definition and every declaration take
+// (type, query, flag, record), and this call's setup is retail's), so that BLOCKED-BY no longer holds. Update assigned
+// in both arms rebuilt: 221, aligned 9 (object/force homes and the object's EBX load as retail; left are the early
+// false store, retail's EBX reload in the force arm and the special/type tail order). `if (!force && flag) return;`
+// ahead of `if (force) update = true;` 27; the elapsed clamp right after the zero-elapsed return 32; the force test
+// inverted with its arms swapped 27, with `update = false` before force as well 218; a 600 s permuter run (44 tries)
+// none below 23.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

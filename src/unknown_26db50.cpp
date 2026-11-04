@@ -692,6 +692,12 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 64 (lane 10, fast; masked = aligned, registers and stack offsets ignored, 37 here): ring conversion as one in-place ring angle in the outer loop 142 (1088, cvtsi2ss as retail, radius through
 // integer registers, masked 37); cross terms named, j and k first 90 (same code), with the angle 142; rows written j, k, i 189 (1088, masked 44); dot written (j + i) + k from the read components 93
 // (masked 37), with the angle 144 (masked 33); the k*i and i*j subtrahends named before the dot 215 (1092, masked 36), with the angle 237 (1095, masked 35), named after the dot 237.
+// Round 59 (m3 lane 13, fast): rebuilt the 96 form (j/k cross terms in a vector first, ring phase named before the
+// distance; 1090 bytes). There the sector index is read after the radius, so the radius copies through EDX where
+// retail reads the sector into EDX first and copies the radius through XMM0 (every general register is busy at that
+// point), and the integer register names cascade from that. On the 96 form: the radius read before the record pointer 108;
+// the ring counters declared first 97; the origin pointer at function scope 96; the record pointer as an array
+// element 96; the ring phase named in the spoke loop 100 (1081 bytes, conversion back to fild). Original body restored.
 // DH320: Existing bitmap activation ordinal char/signed-char/byte/short/word/int/
 // unsigned-int/dword domains: 91/91/92/90/92/90/91/91. Both producer users checked;
 // byte domains lose the matched peer. Original helper/body restored; ring conversion/spill remain.
