@@ -971,6 +971,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 258/258/327/327; shared/test-owned real/const-real/double/const-double 258/258/327/327.
 // NOT kept: one-use scalar/result residence did not match; double forms grow to 1480/1444.
 // Original comparison producers, calls and complete body restored (fast control 258; full 257).
+// P345: Movement/attention/object admission-produced return results, subsets
+// 1/2/4/3/5/6/7 then separate false defaults: 378/335/335/369/369/323/358/356
+// (reduced control 341; full 257). NOT kept: extra SETG/SETNE result stores absent from
+// retail; original body restored; byte homes and direction-tail predecessor remain.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

@@ -1311,6 +1311,9 @@ long function_10f5f0(long object_index);
 // P330: Plain raw light cursor/indexed scan, native Boolean bit-four test and
 // branch-owned mask: 565/566/571/565/565/565/571/571. NOT kept: no gain; frame 0x19ac
 // and predicate/reduction homes remain. Original full body, buffer and array values restored.
+// P345: Real point-array endpoints, less-than/equality and native/double totals,
+// with original/six-real API output: 668/648/600/609/668/648/600/609. NOT kept: all regress;
+// native frame, predicate bytes and rolled reduction remain; original complete body restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3945,6 +3948,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M388: Existing return-valued coordinate setters at forward/up/fallback, masks
 // 1/2/4/3/5/6/7, then initial up: 136/136/136/136/136/136/136/207. NOT kept:
 // no projection/cross/trig equality; original complete body and all helpers restored.
+// P344: Isolated normalizer return with original entry flip truth, mutable/immutable real/double at
+// producer, then real/double declarations before fraction/basis: 159/159/217/217/159/217/159/217. NOT
+// kept: no byte match; original whole body restored. Projection/cross ranks and angle/trig homes
+// remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

@@ -2093,6 +2093,9 @@ void function_dfd70(long arg_159e6d)
 // then complete backward ranges: 236/239/244/270/267/272/263/259. NOT kept: target and shared users
 // regress; original helpers and complete wrapper restored. Native mode-three
 // placement and forward/up/second-ray homes remain.
+// P344: Actual first-ray fraction and hit/head projection declarations at the collision workspace,
+// seven subsets then reversed declarations: 233/233/233/233/233/233/233/233. NOT kept: no byte match;
+// both original helpers and complete target restored. Mode-three placement and basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -5100,6 +5103,7 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // success: 144/144/146/146/160/160/167/167. NOT kept: no equality; original state observation,
 // call criterion and complete body restored. Support/result byte homes and
 // native early success remain.
+// Matches with a false result, success after the support query and one return.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -5112,15 +5116,16 @@ bool __stdcall function_e4770(long arg_159e6d)
 	vector3f velocity;
 	vector3f relative;
 	bool riding;
-	bool result;
+	bool result = false;
 	real along;
 
 	if (function_e4050(arg_159e6d) || biped->unknown34c == 1)
 	{
-		return false;
+		goto done;
 	}
 	jump = *(real *)(definition + 0x1f8);
 	riding = function_109e00(arg_159e6d, &ground, false);
+	result = true;
 	if (biped->unknown13c != NONE)
 	{
 		byte *globals = *(byte **)((byte *)g_4e034c + 0x134);
@@ -5145,7 +5150,6 @@ bool __stdcall function_e4770(long arg_159e6d)
 		velocity.j += biped->up.j * kick;
 		velocity.k += biped->up.k * kick;
 	}
-	result = true;
 	if (biped->actor_index != NONE)
 	{
 		long name = *(long *)(state + 0x7c);
@@ -5153,7 +5157,7 @@ bool __stdcall function_e4770(long arg_159e6d)
 		result = function_1f5560(biped->actor_index, &velocity, name == 0xa00003e || name == 0xd00003f);
 		if (!result)
 		{
-			return false;
+			goto done;
 		}
 		if (riding)
 		{
@@ -5173,6 +5177,7 @@ bool __stdcall function_e4770(long arg_159e6d)
 		function_b7360(arg_159e6d);
 		function_bba20(arg_159e6d);
 	}
+done:
 	return result;
 }
 

@@ -1534,6 +1534,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // at entry/controlled scope: 347/347/347/347/344/344/344/344. NOT kept: all regress
 // and lengthen to 1300/1299 versus 1286; original lookup observations and body restored.
 // Native pool/displacement ownership, SETLE/default homes and byte normalization remain.
+// P345: Joint false-default chain, success/depletion/interruptibility-owned defaults,
+// byte then bool success: 164/165/165/164/194/193/195/194. NOT kept: no byte match;
+// original complete body restored; pool/displacement, SETLE/default homes and normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
