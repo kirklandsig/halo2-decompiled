@@ -316,6 +316,13 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // AC520: Ordered lazy depth/first-cone/second-cone admission, nested-success/early-failure
 // stage masks 0-7: 279/279/279/279/279/279/279/279. NOT kept: all regress and lengthen;
 // original aggregate transform, gate, input observations and complete body restored.
+// F367: On the retained aggregate-scaled helper, complete caller vector/orthographic/weight/span/cone names, helper workspace/formal names and all caller names: 206 each. NOT kept: eight byte-neutral home trials; original complete helper and body restored.
+// B423: Existing aggregate helper scale-admission result, required/unit in bool/byte/short/long,
+// 213/213/213/213/213/213/213/213 at 1143/1136 bytes. NOT kept: no exact match;
+// original aggregate defaults, shared scale call, helper and complete body restored.
+// DH340: Complete raw-vector capture aggregate/native/setter/CRT with native scaled defaults
+// 345/391/342/391; shared-setter scaled defaults 252/336/252/336. NOT kept: all regress
+// and lengthen the body; original aggregate-scaled helper and complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

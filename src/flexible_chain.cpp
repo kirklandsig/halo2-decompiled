@@ -438,6 +438,9 @@ void __stdcall function_1160c0(real dt)
 // velocity through scaled_difference3f 193; blend as vector3f_scale then vector3f_add_scaled 240
 // (1369); blend complement named and used three times 275 (1347); `previous = node->position =
 // position` 179 (on 179, same code); segment indexed by i and stepped back for the last node 292.
+// B413: Complete constraint/normalization/rotation temporary end scopes, seven subsets,
+// then all with the two-use angle scoped to paired trig: 171/171/171/171/171/171/171/171.
+// Original complete body restored; segment/previous/axis homes and rotation scheduling remain.
 // Round 49 (m3 lane 2, fast): the physics tag through a private inline getter 171 (same code: retail's late
 // tag-address formation follows its EDX/ECX allocation, not the argument's position); the rotation in place
 // on the offset copy with named projection and cross scalars (0x11d180's form), then predicted = offset +
@@ -449,6 +452,16 @@ void __stdcall function_1160c0(real dt)
 // AC522: Plain axis scaling long/int/short/word/byte/signed-byte loops,
 // native component cursor and long loop with complete shared cross:
 // 187/187/212/212/212/212/212/198. NOT kept: regressions; original body and homes restored.
+// B421: Root-node classification across metadata/tick producers, bool/byte/short/long,
+// positive/complementary results 277/277/289/288/277/277/289/288. NOT kept: early
+// cmp/sete differs from retail; original direct word test and complete body restored.
+// P316: Complete normalization/trigonometric/constraint scalar declarations at loop
+// entry, seven phase subsets, then all at function entry: 171 each. Every initializer
+// stays at its original computation. No gain; complete body restored. Segment EDX
+// and scalar/axis/previous/rest-offset homes remain.
+// N355: Existing early-return normalizer with native square/projection/staged-cross and complete setters:
+// 174/186/174/174/174/186/187/187. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Segment EDX and axis/previous/rest-offset homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

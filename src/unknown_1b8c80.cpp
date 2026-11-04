@@ -368,6 +368,11 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax H (11-03): the seat scan walks the seat indices up to the last one, so the seat count
+// is in ESI and the short index in EBP as retail has them; what is left is the loop's preamble (a
+// sign test on the decremented count where retail compares the count against the index register)
+// and the home of the loop's zero (a constant in EAX where retail stores the index register's own
+// zero)
 // score 11 (was 11), coordinator review 11-01: MiniMax R put the seat count minus one in a local declared
 // after the seat pointer again (8: the seat count in ESI and the short index in EBP as retail; left
 // are the guard's shape and the home of the loop's zero); a one-use local is kept only with a match,
@@ -385,6 +390,8 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // score 8 (was 11): the seat count minus one goes into a local, which puts the count in ESI and
 // the index in EBP as retail does; what is left is the guard's shape (a sign test on the
 // decremented count where retail compares the count against the index) and the loop's zero
+// (a constant in EAX where retail stores the index register's own zero); the permuter's 179
+// tries found nothing below 8
 // score 11 (was 6), coordinator review: the `tag->seat_count > 0` guard repeats the loop's own first test, so it is
 // kept only with a match (6 with it); the loop is back to its earlier form
 // score 6 (was 11): the seat scan is now guarded by an explicit
@@ -431,7 +438,7 @@ bool function_1b9200(long object_index, long prop_index)
 		{
 			s_vehicle_seat_definition *seat = NULL;
 
-			for (short i = 0; i < tag->seat_count; i++)
+			for (short i = 0; i <= tag->seat_count - 1; i++)
 			{
 				if (TEST_FIELD_BIT(tag->seats[i].flags.bit3))
 					seat = &tag->seats[i];

@@ -376,6 +376,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
 // `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
 // store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
+// Y566: Plain coordinate loops in the existing corner producer, forward-first/left-first/
+// planar subtotal/running point, long then short: 50/730/50/730/60/730/240/730.
+// All regress; short loops leave the helper outlined. Original whole body and
+// four-use helper restored; plane-store base, first selectors and product ranks remain.
 // Round 68 (m3 lane 1; "h" = a one-link LTCG harness of this file with unknown_22bbca and unknown_120850, whose listing equals the
 // full build's and whose score tracks the check's, 46 here; --fast calls point2f_set and is unfaithful, 258): a named-field vector3f
 // corner point read through .n 54h (.n[0..2] stores: same code); the determinant named 48 plain; rows x,z,y / y,z,x / z,x,y 70h/85h/83h;
@@ -391,6 +395,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC522: Actual normal-copy result plane/normal pointer/reference receivers,
 // memcpy then memmove 91/91/91/91/211/211/211/211. NOT kept: EDI receiver and
 // dot/product regressions; original library/copy boundaries and body restored.
+// J250: Existing corner destination pointer/reference returns 46/46; complete bound/output
+// references 46; bound-reference destination pointer/reference returns 46/46; output-reference
+// destination pointer/reference returns 46/46; bound-reference point-value result 246 (1039 B).
+// NOT kept: no live-plane store, first-selector or product-memory-side recovery; the point
+// value moves away from native extent. Original four-use helper, all corner calls and body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -972,6 +981,14 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC522: Complete selected-edge acceptance bool/byte/short/long, then
 // complementary rejection 533/533/533/533/606/606/606/606. NOT kept: six-point lead below
 // gate and frame 0x21e4 versus 0x21dc; original complete body restored.
+// Y566: Float sine/cosine/inverse-cosine API families 1/2/4/3/5/6/7, then
+// float sine/cosine with a double angle: 539/539/562/539/582/582/570/840.
+// Original complete body and helpers restored; tag/count/plane homes and rotation
+// spills remain. Float inverse cosine shortens below retail; wide angle loses the prologue.
+// J250: Complete decoder/angle/alias-safe rotation formal-reference contracts,
+// seven subsets then ordinary complete expansion, 539 each. NOT kept: tag/count/plane
+// homes and rotation spills remain; original helpers and body restored. All rotation
+// inputs still precede the first output store. Shared-angle sum changes were not applied.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

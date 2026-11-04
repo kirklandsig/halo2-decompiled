@@ -1723,6 +1723,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // results, subsets 1..7 then complete iteration-owned declarations:
 // 220/277/277/225/225/276/276/276 fast (control 220, full 218). NOT kept:
 // no match; original counters, signed wrap, callbacks and complete body restored.
+// P312: Fixed two-weapon !=2 and <=1 exhaustion, long/short/dword/word ordinals:
+// 220/421/220/421/221/421/221/421 fast (control 220, full 218). NOT kept: no match; original loop/body restored.
+// Frame 0x28/0x2c, unit/mode homes and independent look divisions/homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
