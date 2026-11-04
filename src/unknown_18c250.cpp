@@ -360,6 +360,14 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// MiniMax H (11-04): the curve address is built from the samples' address, copied into a dword with memcpy, plus
+// the entry's data offset, and the scale goes straight to the callee; the sum then lands in EDX as retail has
+// it, the curve set's address is computed with lea ecx and the object index is loaded after the pushes. A
+// second sweep of about sixty spellings of the sum (the offset copied out, both copied out, an unsigned or
+// punned index, the two loads in either order) still swaps the two registers: copying the offset's bits keeps
+// retail's pointer add, but that load is then scheduled first and coalesces with the entry pointer's register.
+// score 2 (was 7): the two loads of the curve address still swap registers -- ours puts the samples in EDI and
+// the entry offset in EDX, where retail puts the samples in EDX and the offset in EDI.
 // MiniMax D (11-01): no new form, no lower score; the sample sum still puts the entry offset in EDX and the
 // samples in ESI where retail has the samples in EDX and the offset in the dying EDI, the object index still
 // loads before the pushes, and the permuter's 1806 tries never beat 7.
@@ -396,12 +404,11 @@ void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permut
 	if (count > 0 && g_4ed28c->valid && function_badc0(object_index, 3))
 	{
 		s_sound_promotion_state curves;
-		union { dword field_0; real field_4; } local_0;
-		dword const volatile *local_1 = (dword const volatile *)&scale;
-		local_0.field_0 = *local_1;
-		curves.data = entry->data_offset + data->samples;
+		dword samples_address;
+		memcpy(&samples_address, &data->samples, sizeof(samples_address));
+		curves.data = (byte const *)(samples_address + entry->data_offset);
 		curves.count = count;
-		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, local_0.field_4);
+		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, scale);
 	}
 }
 
