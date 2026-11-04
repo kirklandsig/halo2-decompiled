@@ -764,6 +764,10 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // DH347: Last-consumer input/factor/acceleration, sampled-scale and direction/projection
 // scopes, seven subsets then complete scopes with descriptive limit naming: eight at 132.
 // Original body restored; frame 0x28 agrees, unity/limit/direction ownership and jitter homes remain.
+// DL263: Ordinary native sample with reused on/sign/half three-bit groups, seven subsets then
+// complete immutable groups: 161/156/158/150/149/153/150/150. NOT kept: no eligible native keeper;
+// original sample qualifier and complete body restored. Unity/limit/direction registers and jitter
+// spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

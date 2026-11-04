@@ -257,6 +257,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // B426: Existing SDK C entry points at first/later query, volume, status, playback,
 // mixbin, pitch and complete call phases: 532/532/532/532/532/532/532/532. Original SDK receivers,
 // workspaces and complete body restored; frame/stream/gain and mixed math remain.
+// DL263: Actual stream/voice/effects object reference boundaries, seven subsets then complete
+// input reference: 545/545/545/545/545/545/545/545. NOT kept: unmatched alias contracts; original
+// receiver forms, existing helper and complete body restored. Frame 0x22c versus 0x224,
+// stream/gain carriers and mixed math remain.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
