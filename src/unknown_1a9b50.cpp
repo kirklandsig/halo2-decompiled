@@ -588,6 +588,10 @@ extern point2f *g_468778;
 // AC519: Planar normalization-return residence, facing/request/fallback subsets
 // 1..7 and one shared planar-length carrier: 375 each. NOT kept: no byte match;
 // original normalization calls, early distance, result and complete body restored.
+// AC523: Partial-metadata returned result, bool/byte/short/long with
+// original/actor-first acquisition pairs: 440/413/429/403/401/412/403/414.
+// NOT kept: results regress and shorten away from retail; original admission,
+// lookups, early distance, result, request and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -960,6 +964,10 @@ static __forceinline long real_to_long(real value);
 // AC520: Planar normalizer returns at query-pair/facing/request-pair producers, subsets
 // 1/2/4/3/5/6/7 then phase-owned uninitialized storage: 382/382/382/382/382/382/382/382.
 // NOT kept: one-use call-result residence does not match; original calls, aliases and full body restored.
+// AC523: Uniform magnitude-square/sum domains, native terms with real/double sum,
+// real terms with native/real/double sum, double terms with native/real/double sum:
+// 382/381/382/468/381/381/468/381. NOT kept: best gain one and arithmetic storage
+// unmatched; original magnitude, query aliases and complete body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

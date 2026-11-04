@@ -1719,6 +1719,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC518: Complete countdown/pause expiry bool/byte/short/long at producer or
 // in iteration-owned storage: 220/220/220/220/220/220/220/220 fast (control 220, full 218).
 // NOT kept: one-use result unmatched; frame, unit/mode and look homes remain.
+// AC523: Signed-short countdown/idle-increment/pause-decrement store-and-test
+// results, subsets 1..7 then complete iteration-owned declarations:
+// 220/277/277/225/225/276/276/276 fast (control 220, full 218). NOT kept:
+// no match; original counters, signed wrap, callbacks and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

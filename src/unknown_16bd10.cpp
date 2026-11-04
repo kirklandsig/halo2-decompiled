@@ -921,6 +921,12 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // AC518: Complete nonzero-length admission bool/byte/short/long at producer
 // or declared before plane workspace: 236/236/236/236/236/236/236/236 (control 236).
 // NOT kept: one-use predicate unmatched; original projection and body restored.
+// AC523: Remaining complete case orders, point-pan-first-animation 262;
+// pan-animation-first-point 468; pan-first-animation-point 464;
+// animation-pan-point-first 457; animation-pan-first-point 458;
+// animation-first-point-pan 456; animation-first-pan-point 459;
+// first-point-animation-pan 440. NOT kept: all regress; original whole cases,
+// projection, helpers, observations and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
