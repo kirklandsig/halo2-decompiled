@@ -123,6 +123,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // B409: Paired cross-coefficient construction, original/late diagonal squares and reused sine
 // parts, interleaved/grouped diagonal phases: 364/409/362/385/411/441/355/391.
 // NOT kept: one-point lead at native length below gate; original builder and complete body restored.
+// Y571: Existing builder/returned-vector producer ordinary-inline and plain-private policies,
+// eight non-original pairs 356 each; original force-inline declarations and bodies restored.
+// Frame 0x98 versus 0x90, concurrent x87 inputs and scalar publication homes remain.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1855,6 +1858,10 @@ real game_time_get_seconds();
 // transfers and paired field/library forms: 543/507/555/497/507/515/534/507.
 // NOT kept: saved position fields at 497 emit SSE transfers instead of native integer-word capture;
 // frame 0x90 versus 0x94 and output homes remain. Original complete body restored.
+// Y571: Shared exit, twice-used saved-entry index and draw displacement, seven subsets
+// 507/505/531/505/531/520/520; complete unsigned displacement 520. Index plus displacement
+// reaches retail frame 0x94 and 2285-byte extent. NOT kept: index-only two-point lead below gate;
+// native-frame graphs regress. Complete original body restored; output and definition/NONE homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2750,6 +2757,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // domains, seven subsets, then complete byte found graph:
 // 315/376/330/374/328/389/387/374. NOT kept: two-point key gain below gate; elapsed forms enlarge; complete original body restored;
 // prefix/state and ordinal homes plus first decay-copy rotation remain.
+// Y571: Creation-removal cursor, admitted creation/duplicate tail bindings, seven subsets
+// 440/317/317/440/440/317/440; complete graph with loop-entry tail addresses 440.
+// NOT kept: cursor shortens to 1289 bytes and frame 0x2c; one-use tail bindings miss equality.
+// Original body restored; prefix/state and ordinal homes plus decay rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

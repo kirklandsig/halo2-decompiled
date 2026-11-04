@@ -1398,6 +1398,9 @@ static inline s_players_globals *players_globals_14f2e0()
 // unit initialised NONE 46; kept-unit success as a goto to the tail with no result test 182 (1035 bytes); `if (result)
 // {} else if (mode != 4)` 46. Retail scan: matched `mov reg, -1` after a folded byte test takes the register of the
 // byte temp (0x240300 ECX, 0xc5eb0 EAX, 0x2413c0 ECX), so retail's temp here avoids AL though its pointer is EDX.
+// Y571: Separate native word library clears, alias-safe up copy and color transfer, seven
+// subsets 46/94/149/94/149/169/169; complete graph with field_198 library clear 169.
+// Original copies, clears and full body restored; NONE materialization and final zero/flag order remain.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
