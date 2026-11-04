@@ -2,6 +2,146 @@
 
 The newest entry comes first.
 
+## 2026-11-04: 10411 functions match
+
+```
+matched 10411 of 11326 game functions (1903246 of 2786206 bytes, 68.31%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @coldspear's #1056: closer scores and notes, no new match.
+
+## 2026-11-04: 10411 functions match
+
+```
+matched 10411 of 11326 game functions (1903246 of 2786206 bytes, 68.31%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+1 new matches, none lost:
+- @coldspear's #1055: `0xc49b0` match.
+
+## 2026-11-04: 10410 functions match
+
+```
+matched 10410 of 11326 game functions (1901473 of 2786206 bytes, 68.25%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @@coldspear's #1054: closer scores and notes, no new match.
+
+## 2026-11-04: 10410 functions match
+
+```
+matched 10410 of 11326 game functions (1901473 of 2786206 bytes, 68.25%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+1 new matches, none lost:
+- @@coldspear's #1053: `0xc5eb0` match.
+
+## 2026-11-04: 10409 functions match
+
+```
+matched 10409 of 11326 game functions (1900960 of 2786206 bytes, 68.23%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+1 new matches, none lost:
+- @@coldspear's #1052: `0xc9e70` match.
+
+## 2026-11-04: 10408 functions match
+
+```
+matched 10408 of 11326 game functions (1900386 of 2786206 bytes, 68.21%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+2 new matches, none lost:
+- @coldspear's #1050: `0xcb500` and `0xce520` match.
+
+## 2026-11-04: 10406 functions match
+
+```
+matched 10406 of 11326 game functions (1899538 of 2786206 bytes, 68.18%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+7 new matches, none lost:
+- Machine 3's batch 216 (#1051): `0xdb810`, `0xe4a20`, `0x18bb80`, `0x1a7cc0`, `0x1ea9c0`, `0x1f55e0` and `0x2adb10` match.
+
+## 2026-11-04: 10399 functions match
+
+```
+matched 10399 of 11326 game functions (1893553 of 2786206 bytes, 67.96%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @alosec's #858: closer scores and notes, no new match.
+
+## 2026-11-04: 10399 functions match
+
+```
+matched 10399 of 11326 game functions (1893553 of 2786206 bytes, 67.96%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @coldspear's #1048: closer scores and notes, no new match.
+
+## 2026-11-03: 10399 functions match
+
+```
+matched 10399 of 11326 game functions (1893553 of 2786206 bytes, 67.96%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @coldspear's #1047: closer scores and notes, no new match.
+
+## 2026-11-03: 10399 functions match
+
+```
+matched 10399 of 11326 game functions (1893553 of 2786206 bytes, 67.96%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @alosec's #1009: closer scores and notes, no new match.
+
+## 2026-11-03: 10399 functions match
+
+```
+matched 10399 of 11326 game functions (1893553 of 2786206 bytes, 67.96%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @alosec's #1008: closer scores and notes, no new match.
+
+## 2026-11-03: 10399 functions match
+
+```
+matched 10399 of 11326 game functions (1893553 of 2786206 bytes, 67.96%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+2 new matches, none lost:
+- @coldspear's #1046: `0x1d3d20` and `0x1d83e0` match.
+
+## 2026-11-03: 10397 functions match
+
+```
+matched 10397 of 11326 game functions (1892138 of 2786206 bytes, 67.91%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @alosec's #1010: closer scores and notes, no new match.
+
 ## 2026-11-03: 10397 functions match
 
 ```

@@ -106,6 +106,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // direct 9; equal-case actor lookup assigned to the existing actor pointer 9; search result assignment
 // rather than copy initialization 9; saved reference assignment 9; Boolean output explicit predicate 169;
 // source pointer declaration split 9; actor pointer declaration split 9. Original body restored.
+// Round 162 (lane 4, plain; fast control 209): the three homes rotate because the bool output sorts with the
+// address-taken locals in ours and with the spilled pointers in retail. The output as long, byte or char with a cast
+// at the call 179/169/169; a named copy of it for 0x2626b0 9; a bare scope around the three outputs 57, around the bool
+// alone 9. Still BLOCKED-BY 0x260670 (its stub keeps the bool's address escaped).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

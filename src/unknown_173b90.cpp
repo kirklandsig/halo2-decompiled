@@ -664,6 +664,15 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // with scale first formed inside the list block 130 (1136 bytes); the first particle read from the emitter at the
 // guard and again for the loop 293 (1145 bytes); the position rotated through the existing
 // vector3f_rotate_into_axes, the motion through the shared helper 129 (1140 bytes).
+// AC515: Cache invalidation mask-before-identity stores at system/location/particle, subsets 1..7,
+// then all native mask computations before the original identity/mask stores: 283/279/286/169/285/282/289/53.
+// NOT kept: no exact result from store/result diagnostics; original invalidations and body restored.
+// AC517: Both shared unit-default assignment chains with both scalar declaration priorities:
+// original offset 120/122/120/122; native row index 115/117/115/117. NOT kept: all regress and lengthen.
+// Original defaults, offset walk, shared rotations and body restored; offset/default/reload and row-i order remain.
+// AC519: Complete nonempty/empty emitter outcomes, bool/byte/short/long,
+// 109/109/109/109/109/109/109/109. NOT kept: regressions from native admission
+// storage; original gate, offset, defaults, shared rotations and body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1186,6 +1195,14 @@ public:
 // Round 85 (m3 lane 12, fast): spawn location index stored before the scale 182, the dt store first 183; the position
 // copy before the 1.0 scale store 184; the tag count test as `tag->count() > child->unknown24` 185, with the location
 // index first 183. Body unchanged.
+// Lane 18 r41 (fast): retail loads forward.j into XMM2 right after its x87 store, above the normalization branch
+// (its scale is then `mulss xmm2, xmm0`, the else arm loads only k and i); written out by hand (diagnostic, any product
+// order, fields or pointer) all three loads hoist, 276 (1338 bytes). normalize_inline in the fallback 190; one velocity
+// pointer for both negations 184; the matrix declared at the top of the child-loop body 178 (the default case then
+// loads the velocity before the -1.0 constant as retail), with xyz magnitudes 248, with the spawn declared beside it
+// 178, with normalize_inline 184, with the spawn location stored first 177, plus the position copy before the 1.0
+// scale 177; the matrix before the child loop with the location first 177; parent colour local on that 253 (1367);
+// on the 177 form: spawn dt stored before the scale 179, the fallback cross through cross3f_staged 177.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1537,7 +1554,10 @@ long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
 // score 47 (was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
-// flag width, availability and view carriers remain.
+// availability clear/result and the post-attachment view refresh remain.
+// availability clear/production and the post-attachment view observation remain.
+// frame 0x14, eligibility width, NONE/owner and Boolean homes agree;
+// availability production and the post-attachment view observation remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
 // bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
@@ -1699,6 +1719,18 @@ bool function_17afd0(long effect_index, long value);
 // in EBP, NONE in EBX, availability in AL); the view local with availability false right after the view read and
 // set on success 131 (504; availability spilled, NONE in EBX, owner in EDI); the view local with one-expression
 // availability 125 (492). Every branchy availability form moves NONE out of EBP and the flag out of BL.
+// AC515: Actual two-use view classification on the shifted-word/effect-index/owner-arm graph,
+// long/dword/short/byte with default-query then conditional producers: 139/139/141/129/139/139/141/125.
+// NOT kept: unmatched classification storage; original Boolean result and complete body restored.
+// F366: Phase-specific post-attachment view observation with original/complete/refined/logical/
+// success-only/complete-query/invalidation/complementary availability producers: 111/119/118/119/129/119/79/112.
+// Exact-only observation diagnostics restored; original snapshots, query gates and full body retained.
+// B419: Complete draw-arm/rejection/final-admission results on the recovered owner/Boolean graph,
+// conditional/direct camera result: 107/96/110/136/106/96/110/136. All regress; original
+// availability, input snapshots, query gates, draw tuple and complete body restored.
+// B421: Owner/view identity before the status query, bool/byte/short/long,
+// positive/complementary results 133/133/159/158/133/133/159/158. NOT kept:
+// all regress and exceed retail length; original snapshot/query graph restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

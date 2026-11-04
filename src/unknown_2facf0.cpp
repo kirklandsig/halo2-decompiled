@@ -4,13 +4,16 @@
 // a collector of the nearest result; and a second copy of 0x2f99d0's query.
 #include "child_query_2f9950.h"
 #include "swapped_query_2ed2a0.h"
+#include "lane_b_flip_collectors.h"
 
 void __cdecl function_2ea640(void const *a, void const *b, void const *input, void *collector, void *second_collector);
 
 // @retail 0x2facf0
 void __cdecl function_2facf0(body_2ea940 const *a, body_2ea940 const *b, input_2ea940 const *input, long value)
 {
-	nearest_value_2f9950 collector(value);
+	/* the caller's collector, wrapped in the one that turns what the
+	   swapped query finds back (retail table 0x412970) */
+	lane_b_flip_point_collector collector((lane_b_cd_point_collector *)value);
 	body_2ea940 child(a, a->placement, (wrapper_2f9950 const *)a->shape);
 	function_2ea940(b, &child, input, &collector);
 }
