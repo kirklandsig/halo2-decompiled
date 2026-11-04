@@ -593,6 +593,9 @@ struct s_1f8a70_actor
 // mode share a slot at +0x10 for retail's +0x12, route's byte neighbour +0x14 for +0x16); `result = false;` after the
 // 0x1f86a0 call 366; with the route default storing false 388 (1672 B); with case 3 in case 5's order and route_mode = 1
 // 413 (1624 B, aligned 99).
+// AC521: Independent inner route outcome on the two-result/native-word-selector graph,
+// byte/signed-byte/short/long with converted or test-arm outer results: 191/191/191/191/300/300/306/306.
+// NOT kept: no exact memory-result home; original outer/inner results, unit scope and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

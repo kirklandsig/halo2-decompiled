@@ -2306,6 +2306,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // AC517: Shared normalization valid-arm/small-length returns and separate result 40/40/40;
 // twice-used bool/byte/short/long admission and short-length classification 40/40/40/40/40.
 // Original shared helper restored; second-component product fold and post-fstp count split remain.
+// AC521: Initial three-direction sample loop in long/int/short/byte, without/with the final-three
+// loop: 66/66/66/66/288/386/288/386. Full-width folds component two but spills/reloads Z; narrow loops roll.
+// NOT kept: all regress; original samples, live x87 norm chain, loop count and complete body restored.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2582,6 +2585,9 @@ s_cached_input_list g_5234e8[4];
 // AC517: Complete index/query/capacity admission in bool/byte/short/long at computation
 // or shape-scope declarations: eight 147 on reduced control 147 (full 113). NOT kept: no exact predicate result.
 // Original body restored; native 0xa0 frame, spilled list and output/index homes remain.
+// AC521: Direct three-guard/nested/query-pair/index-first admission partitions at the original
+// post-query output lifetime: 146/146/146/146 fast; each with once-read list 139/139/139/139.
+// NOT kept: seven-point reduced lead below gate; original body and full 113 retained (fast control 146).
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3633,6 +3639,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // AC517: Existing full/in-place point transforms and scaled-vector transforms, scalar alpha:
 // 1016/894/496/796; native color 1016/894/511/813. NOT kept: no exact helper expansion; lengths move away.
 // Original corner helper, four-point array, inputs and body restored; native frame/scalar homes remain.
+// AC521: Native RGBA vector, four separate/chained channel forms at producer/entry storage:
+// eight 232 at 1832/1819; frame 0xe0 recovers but opacity is +0x84 versus +0x78, radius +0xc versus +8.
+// NOT kept: wrong homes and regression; original scalar alpha, alias-safe helper and full body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
