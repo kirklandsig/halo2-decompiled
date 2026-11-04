@@ -346,6 +346,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // nonoriginal pairs: 584/585/426/657/657/426/657/657. NOT kept: all regress and grow;
 // magnitude-only forms change ret 0x18 to 0x1c and lose seven matched callers. Original
 // helpers/body restored; frame 0x5c/0x64, normal overlap and byte/output tails remain.
+// DH369 revisit: Full-normal magnitude-admission positive/complementary results,
+// bool/byte/short/long, eight at 416 (1611/1605). NOT kept: all regress; frame
+// stays 0x5c versus 0x64. Original admission and complete body restored; normal/planar
+// homes and byte/tail state remain. All calibrated file/caller/provider scores hold.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

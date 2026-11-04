@@ -339,6 +339,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // subsets 1/2/4/3/5/6/7, then backward copies: 341/437/456/457/448/483/488/488.
 // NOT kept: all regress and lengthen; seven forms also lose the matched sibling. Original
 // copies, helpers and complete body restored; unity/root/yaw and rotation homes remain.
+// DH369 revisit: Void in-place rotation input/axis/output references, subsets
+// 1/2/4/3/5/6/7, all 176; full references with the angle also referenced 178.
+// NOT kept: no byte match; original helper and both in-place calls restored;
+// unity/root/yaw and rotation homes remain. The numeric helper and sibling stay fixed.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

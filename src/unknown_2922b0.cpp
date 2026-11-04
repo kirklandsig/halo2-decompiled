@@ -358,6 +358,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // nonoriginal pairs: 789/789/710/917/917/696/919/919. NOT kept: all regress and grow
 // beyond native 2886; original helpers, sum trees, in-place captures and body restored.
 // Success/input/minimum/hit homes and inactive-exit/basis/rotation scheduling remain.
+// DH369 revisit: Root-input lower-clamp positive/complementary comparison results,
+// bool/byte/short/long, eight at 630 (2813/2886). NOT kept: all regress and
+// shorten away from retail; original root helper and complete body restored. Frame
+// 0x108, success/input/minimum/hit homes and inactive-exit/rotation scheduling remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
