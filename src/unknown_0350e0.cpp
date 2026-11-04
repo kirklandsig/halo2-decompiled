@@ -2657,6 +2657,10 @@ s_cached_input_list g_5234e8[4];
 // Y578: Accepted-record count post-increment, four shape-storage scopes without/with
 // a once-read list: 147/147/147/147/141/141/141/141 fast (control 146, full 113).
 // NOT kept: no equality or frame recovery; original count-publication phase and body restored.
+// Y580: Actual long/byte source cursors with ordinal/remaining/end !=/end < termination:
+// 143/143/161/161/143/143/161/161 (fast control 146, full 113). NOT kept: three-point
+// leads below gate, retained source base lacks native shape, extents 536/562 versus 548;
+// original live source reads, scan and complete body restored; frame/list/output homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
