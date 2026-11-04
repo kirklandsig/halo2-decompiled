@@ -1545,6 +1545,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH368: Standard scalar transfers at iterator-handle/load-request/enter-slot fields,
 // seven subsets then backward transfers: 227/105/96/243/241/124/263/305. NOT kept: all regress
 // and lengthen; original stores, existing helper, memset and complete body restored.
+// DH370: Actual inner seat-validity, suitability-call and strict-score improvement
+// producers, subsets 1/2/4/3/5/6/7 then all complementary: eight at 32.
+// NOT kept: no exact selection-result form; original full body and helper restored.
+// Iterator scaling, leave-selector and request/publication schedules remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2830,6 +2834,10 @@ struct s_scenario_scripting_view
 // DH346: Immutable native scenario/data/set pointer bindings, seven subsets, then all
 // with immutable actor receiver: 80/80/80/80/80/80/80/80. Original complete search restored;
 // actor/counter/set homes and early scripting-data observation remain.
+// DH370: Actual dynamic loop-bound result declared in the condition, bool/byte/
+// signed-char/short/word/int/long/dword: eight at 80, exact 367-byte extent.
+// NOT kept: no exact loop-result form; original dynamic reads, short wrapping,
+// separate point branches and full body restored; actor/set/counter homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
