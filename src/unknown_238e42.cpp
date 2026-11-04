@@ -1090,6 +1090,9 @@ bool __stdcall function_2399da(long controller_index)
 // Round 208 (m3 lane 3, fast with 0xac050/0xac360/0x2399da): own rank read from membership at each use 90;
 // `xuid != NULL && xuid->qwUserID != 0` 90; the own-rank comparisons swapped 92; `own_rank >= rank` 90;
 // `long task_index = NONE;` 90; task_index at function scope 90.
+// B416: Membership output ends after exporting its native twice-used privilege value;
+// query-buffer/selected-member/privilege role-name domains on that completed-buffer graph,
+// eight at 90. Original body restored; identity/rank EAX/ECX ownership and removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

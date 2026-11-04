@@ -332,6 +332,9 @@ struct s_24e9c7_bounds
 // B413: Reverse/side/upper/full geometry scopes ending at final corner consumption,
 // with original/immutable complete scalar inputs: 125/125/125/125/125/125/125/125.
 // Original complete body restored; early across spill and shifted scalar homes remain.
+// B416: Plain two-coordinate corner traversal, long/int/short/unsigned-short indices
+// and successive/original-tree equations: 214/214/214/214/209/209/209/209. NOT kept: frame grows and
+// extent shrinks away from retail; original point type, equations and complete body restored.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

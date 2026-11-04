@@ -271,6 +271,9 @@ short __stdcall function_2551c0(long actor_index)
 // differs): the dot through the file's accumulating helper (0x255741's), either operand order, 120/120; the direction copy
 // before the angle 6; trace declared first in the loop 6; forward and best direction declared before the best score and
 // found 6; best direction declared before forward 6; a 600 s permuter run (53 tries) none below 6. Body restored at 43.
+// B416: Plain native three-coordinate rotation-output traversal with staged cross,
+// indexed/original slot view, projection/cross order and row accumulators: 168/161/170/206/161/144/170/187.
+// NOT kept: all regress and enlarge the retail frame or extent; original helper and body restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

@@ -2323,6 +2323,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // at the case top 485; the result declared after the other locals 485; the state local for case 1's point and the facing
 // call, declared after the flag 485. Retail's actor (EBX) is spilled to [esp+0x10] and that slot is shared with the case
 // 1/4/20 points; ours keeps the actor in EDI, which 0x210b60's EDI argument clobbers in case 1, so its slot cannot be shared.
+// B416: Completed search-scan/candidate-geometry/selected-target-geometry lifetimes,
+// seven subsets then all with complete search role names: 485 each (fast control 485;
+// full baseline 469). Original complete body restored; actor/state and first-point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

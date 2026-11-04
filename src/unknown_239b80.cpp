@@ -825,6 +825,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B403: Indexed-output prospective accepted-count decisions, reject/accept/conditional/negated
 // rejection, native short then signed-short-normalized long: 217/255/255/255/238/260/236/260.
 // NOT kept: all regress; original incremental count, indexed outputs and complete body restored.
+// B416: Entry-distance/crossing-math/current-distance last-consumer regions, seven
+// subsets then all with complete geometric role names: 129 each. Original body restored;
+// count ECX, prior-side byte and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
