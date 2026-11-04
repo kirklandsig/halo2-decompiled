@@ -1807,6 +1807,9 @@ bool function_0b6760(s_index_pair const *pair);
 // DH338: First-channel receiver across manual/group phases, pointer/reference,
 // inherited/ordinary index and saved-pointer domains: 376/376/393/393/392/392/441/441.
 // All restored; frame/index/header/state/result homes remain.
+// B429: Existing shared power/position/activity flag writers, subsets 1/2/4/3/5/6/7,
+// then all plus the refresh clear 367/285/387/367/371/387/371/371. NOT kept: no gain;
+// original frame, scalar homes, flag publications and complete callback restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

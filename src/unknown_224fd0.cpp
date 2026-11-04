@@ -239,6 +239,17 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // B419: Native unit-circle coefficient pair, direct/sine-first/cosine-first/complete-scalar
 // acquisition, mutable then readonly: 254/489/254/489/254/489/254/489. NOT kept: grouped coefficients
 // do not match and move frame/extent away from retail; original helper and whole body restored.
+// B424: Incremental square/sine/mixed-product workspaces, subsets 1/2/4/3/5/6/7,
+// then all with diagonal field accumulations: 403/491/219/495/403/491/495/491.
+// NOT kept: no qualifying match or gain; original producers and complete body restored.
+// B427: Both complete square/sine product families as scalars in original producer order,
+// real/real, double/real, real/double, double/double, then immutable counterparts:
+// 489/596/534/455/489/596/534/455. NOT kept: no exact precision/frame match or gain; original helper/body restored.
+// Axis-specific product/cosine spills, basis ranks and table placement remain.
+// B431: Existing union component-array observations for axis/square/sine subsets
+// 1/2/4/3/5/6/7, then all with native output-row arrays: 219 each. NOT kept: no exact
+// observation contract or gain. Original helper/body restored; axis-specific product/cosine
+// spills, basis homes and table placement remain.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

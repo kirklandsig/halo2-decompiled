@@ -3040,6 +3040,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // geometry, view scalar/random fields, complete view and complete state/view fields: 486 each on
 // the retained inline-normalization graph. Original body and field accesses restored; frame 0x60
 // versus 0x38 and stored-velocity/projection homes remain.
+// B425: Existing random-helper standard lower/upper clamp boundaries, direct and named,
+// composed and sequential: 587/590/587/587/504/507/637/626. All regress; native frame 0x38
+// and velocity/projection homes remain. Original helper, include list and body restored.
 // Y568: Actual position-transform/moved-point/acceleration-add component loops, seven subsets,
 // then all with the divisor loop: 548/542/547/549/565/580/593/579. All regress and
 // shorten away from retail; original scalars, vector statements, helpers and body restored.

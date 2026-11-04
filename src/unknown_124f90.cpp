@@ -1374,6 +1374,9 @@ long function_2197f0(real gain);
 // copy), `gain.value` sum spellings and a sum local 128, staged time, a named product or a named first term 128; an if-form clamp in arm 1 145 (681).
 // AC529: Composite-fade clamp partial/completed predicates in bool/byte/short/long: 168/168/170/169/168/168/170/169.
 // NOT kept: predicate residence grows the body without equality; native reciprocal/elapsed and gain-load schedules remain.
+// B429: Complete native compound/scalar compound/scalar assignment/constructor
+// addition boundaries 105/105/105/105 at 678 bytes; each with disabled early
+// return 188 at 652. NOT kept: sums/tails regress; original body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

@@ -371,6 +371,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // AC528: Native parent-list slot identities on the current reconciliation graph
 // 55/55/55/55/55/55/136/136. NOT kept: no exact match or eligible gain; original complete body restored.
 // Split post-sample comparison and evaluator/child scratch homes remain. One-use field bindings require equality; no retained candidate.
+// B431: Actual cache/header/parent/point/direction reference formals, header-parent and
+// point-direction pairs, then all five: 55 each. NOT kept: no exact boundary-contract
+// form or gain. Original signature, sole caller and full body restored; split post-sample
+// cache comparison and evaluator/child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

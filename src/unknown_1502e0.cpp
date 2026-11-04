@@ -247,6 +247,9 @@ struct s_flag_word_bits
 // F377: Complete byte/word/long/dword success results, original/native-byte flag pairs:
 // 87/106/96/81/90/78/90/78. NOT kept: unmatched result flags; native-byte long/dword
 // reach 340 bytes. Original body restored; player/root/tick homes remain.
+// B426: Actual masked player/object slot and byte-offset components, separate/paired,
+// then word slot and unsigned paired offsets: 114/114/114/114/114/114/123/114. Seven tie at 366/340; word slot regresses;
+// original lookups and complete body restored. Player/root and tail expansion remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
