@@ -1186,6 +1186,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // same; diagnostic only, /arch:SSE on 0x63220's file the same. The clamp as a max of 0x1931a0 908 (2748 B, both calls
 // out of line); the highest rating through 0x631f0 964 (2684 B); the loop variant through 0x192e60 plus that max 987;
 // through 0x192e60 plus 0x631f0 1011. BLOCKED by our link not inlining 0x63220 here.
+// Round 146 (m3 lane 5, fast; body unchanged, 0x73530 is the target): the session takes EBP (so the stack) because the
+// output pointer has EBX, the state ESI and the inlined getter's pointer EDI. The output pointer's address taken 766, read
+// through its address 766; none of the loop-getter, capacity and long-histogram combinations gives the session EAX. Diagnostic,
+// not kept: the top getter call inside `if (1)` or a constant-true local test stays out of line with retail's head, session
+// EAX and 0x73530 byte for byte, 942 (2700 bytes), with the capacity helper force-inline 911 (aligned 471), plus the
+// loop getter 956, plus a long histogram 915 (frame 0xb4); `do {} while (0)` or a bare block around the call 766; the call in
+// both arms of the state test 915, with the capacity helper force-inline 856 (2828 bytes; the NONE arm folds, so not
+// retail's shape). A natural enclosing test that emits no code is the lead.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

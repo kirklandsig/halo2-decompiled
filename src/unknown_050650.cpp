@@ -1612,6 +1612,10 @@ struct s_actor_looking_turn_request
 // m3 lane 9 r76 (plain): the turn block reading actor->unit_index at each use 442; forced declared with the top
 // flags 445; the aiming output as `valid ? direction : reference_vector` plus `aiming = valid != 0` 548 (2040 B);
 // the target-point output stores swapped 457 (2008 B); the override decrement as nested ifs 442 (same code).
+// Round 145 (m3 lane 5, plain): the override arm's `if (valid) forced = true;` as `forced = valid != 0;` 551 (1992 B);
+// looking_valid declared with valid at the block top 442; the marker workspace at the block top 442; case 0's
+// movement request at the block top 442; the turn request at the turn block's top 442 (all same code). Retail
+// never inlines 0x1fdd90 anywhere (its byte pattern occurs only at 0x1fdd90), so BLOCKED-BY 0x1fdd90 stands.
 // @retail 0x298370
 void function_298370(long actor_index)
 {
