@@ -5587,8 +5587,13 @@ struct s_interface_function_context;
 void function_2c3b0(s_interface_function_context *context);
 void function_3e420(long tag, long object_index, signed char *output, byte level);
 bool function_3e320(long tag, byte const *indices);
-long function_3e380(long model_index, byte lod, transform4x3f const *nodes,
-    byte const *permutations, long *node_count, long extra_bytes);
+/* the permutation of each of a model's regions, as 0x3e420 chooses them */
+struct s_model_permutations
+{
+    signed char indices[16];
+
+    long function_3e380(long model_index, byte lod, transform4x3f const *nodes, long *node_count, long extra_bytes);
+};
 struct s_matrix_workspace
 {
     long size;
@@ -5599,29 +5604,30 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
-// MiniMax H (11-03): no new form, no lower score; ours keeps the ebx zero register where retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax at 0x3e380, whose declaration is in another file.
 // score 223 (was 241): the handle now goes into the context's dword at offset 8 and the availability
 // flag drives the table test, as retail does; left is our ebx zero register against retail's
-// edi, the loop counter in edi against retail's esi, and the permutations in eax at 0x3e380.
-// score 241 (was 241): retail's frame is 0xac bytes and ours 0xb4, and our locals sit eight bytes
+// edi and the loop counter in edi against retail's esi. Round 61: the permutations now arrive in ecx at
+// 0x3e380, a member of s_model_permutations, as retail; the count stays 223.
+// MiniMax H (11-03): no new form, no lower score; ours keeps the ebx zero register where retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax at 0x3e380, whose declaration is in another file.
+// Earlier at 241 (was 241): retail's frame is 0xac bytes and ours 0xb4, and our locals sit eight bytes
 // higher (the context buffer at [esp+0x44] against retail's [esp+0x3c], the indices at [esp+0x38]
 // against [esp+0x30]), so every reference in the body is at another offset.
-// score 241 (was 260): the length is retail's 877 bytes now, but retail keeps the tag-instance
+// Earlier at 241 (was 260): the length is retail's 877 bytes now, but retail keeps the tag-instance
 // pointer in ebp and saves ebx only where it starts to use it, while ours saves ebx in the
 // prologue and compares the handle against a zero register.
 // @retail 0x4c690
 void function_4c690(long tag, transform4x3f const *nodes)
 {
     byte context[0x78];
-    signed char indices[16];
+    s_model_permutations permutations;
     long node_count;
     byte *definition = g_4e3b44[tag & 0xffff].bytes;
     D3DDevice_SetRenderState(D3DRS_DEPTHCLIPCONTROL, 16);
     function_2c3b0((s_interface_function_context *)context);
-    function_3e420(tag, NONE, indices, 4);
-    if (function_3e320(tag, (byte const *)indices))
+    function_3e420(tag, NONE, permutations.indices, 4);
+    if (function_3e320(tag, (byte const *)permutations.indices))
     {
-        long handle = function_3e380(tag, 4, nodes, (byte const *)indices, &node_count, 0);
+        long handle = permutations.function_3e380(tag, 4, nodes, &node_count, 0);
         *(long *)(context + 8) = handle;
         bool available = handle != NONE;
         if (available)
@@ -5633,7 +5639,7 @@ void function_4c690(long tag, transform4x3f const *nodes)
             function_1bd50(context);
             for (long index = 0; index < *(long *)(definition + 0x1c); ++index)
             {
-                long section_index = (byte)indices[index];
+                long section_index = (byte)permutations.indices[index];
                 if (section_index == 255) continue;
                 byte *section = *(byte **)(definition + 0x28) + section_index * 0x5c;
                 if (!*(word *)(section + 4) || !*(word *)(section + 6) || !*(word *)(section + 8)) continue;

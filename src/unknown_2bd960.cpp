@@ -7,6 +7,7 @@
 #include "engine_peer.h"
 #include "unknown_1523c0.h"
 #include "game_engine_events.h"
+#include "engine_object_definition.h"
 #include "unknown_13927e.h"
 #include "data_array.h"
 #include "unknown_07f720.h"
@@ -1504,50 +1505,6 @@ struct s_territory_item
 	short territory;
 };
 
-struct s_territory_tag_data
-{
-	long unknown00;
-	long item_tag;
-};
-
-struct s_territory_tag
-{
-	byte unknown00[0xc];
-	s_territory_tag_data *data;
-};
-
-// score 24 (was 24): the tag's data pointer is loaded into ecx where retail
-// keeps it in eax, the marker index is kept in edx where retail uses eax, and
-// the colour mask is read at the top of the function instead of just before
-// it is changed.
-// Tried: the player lookup before the position copy 29; the mask update first
-// 50, or between the copy and the player lookup 32; the tag chain as byte
-// offsets 24; a const player pointer 24; a 600 s permuter run, none below 24.
-// Round 16: the existing position-copy helper 43; game_engine_get() 24; the tag index as
-// a ternary 41; placement declared first 24; tag index at function scope 48; placement at
-// function scope 24; the test without the short cast 51; player declared at the block top
-// 24; the created object in its own local 24; an early NONE return 62.
-// Round 56: inline definition 24; copy helper with masked player index 43, with
-// marker-globals/tag-table/tag-header locals 43/43/43; direct copy with masked player
-// index 24; helper with tag reference 43; helper/else/tag reference 65 (271 bytes).
-// Round 11 (lane 18), fast: the copy helper with the tag index set per arm 65 (271 bytes; every line
-// after the 0xb7930 call is retail's, the NONE lands after the test); the helper with the initialised
-// index 43 (the chain's middle pointer takes ECX and every later scratch register rotates by one); the
-// chain in a small inline getter 43; the condition as a conditional 0xb7930 argument 65; the chain
-// walked through one reassigned byte pointer 43; the chain's last step as data[0].item_tag 43; the
-// marker index read once into a short local for the test and the copy 84 (281 bytes).
-// Round 71, fast: the whole test in a getter with its own result, as the argument or into a local 24/24; named
-// tag, data, or both 24/24/24, with the copy helper 43/43/43; the peer in a local before or after the NONE
-// 24/24, with the helper 43/43; the helper alone 43; the index set in an else arm 41, with the helper 65 (271
-// bytes), inverted test with the helper 65 (271); the chain through one reassigned pointer 24, with the helper
-// 43; through tag_index itself with the helper 43; a named globals index with the helper 43; a getter for the
-// tag 24, with the helper 43; a getter for the data 24, with the helper 43; nested getters with the helper 43,
-// forceinline 24. Registers rotate from the chain on: fixing the middle pointer fixes all of the second half.
-// Round 156 (fast): the tag index through an inline out parameter 24; the test in a named bool 24; a named engine
-// index 24; a named masked definition index 24; named data and item locals 24; a two-use data pointer (a second
-// read of its first field multiplied away) 24. All keep the middle pointer in ECX.
-// Round 100: outer data, tag, or both declarations 24/24/24; data or tag references 24/24;
-// outer or branch item addresses 24/24; a condition-scoped peer 24. The middle pointer stays ECX.
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {
@@ -1555,15 +1512,10 @@ long territory_create_item(long player_index, long territory)
 
 	if ((short)g_51eccc->w60[territory] != NONE)
 	{
-		long tag_index = NONE;
 		s_territory_placement placement;
 
-		if (g_55e4d0[g_4e9ae8->engine_index])
-		{
-			tag_index = ((s_territory_tag *)g_4e3b44[g_4e034c->index & 0xffff].bytes)->data->item_tag;
-		}
-		function_b7930(&placement, tag_index, NONE, 0);
-		placement.position = g_4e0350->marker_entries[(short)g_51eccc->w60[territory]].position;
+		function_b7930(&placement, engine_object_definition(_engine_object_flag), NONE, 0);
+		territory_marker_position_copy(&placement.position, &g_4e0350->marker_entries[(short)g_51eccc->w60[territory]].position);
 		s_player_2be *player = player_get_2be(player_index);
 		placement.color_mask |= 15;
 		function_15f330((s_player_appearance const *)((byte *)player + 0x84), player->team, placement.colors);
