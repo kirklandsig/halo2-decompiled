@@ -242,6 +242,10 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // Round 32 (lane 17, fast): the component index in a local under a nested NONE test 70 (221 bytes); a named
 // `1 << type` mask 11; the physics bit without TEST_FIELD_BIT 48; a byte type 49. Kept: the two `goto update`
 // jumps replaced by a final `if (!disable)` block 4 (same code).
+// Round 135: forced-inline component getter 4; forced-inline getter without target noinline 4;
+// const local object pointer 4; activation result reference 4; final type arms reversed 6;
+// inverted outer type test 17; existing object in only the 0x1c arm 80 (217 bytes);
+// unsigned component-get parameter 4. All restored; the pool data load schedule is unchanged.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {

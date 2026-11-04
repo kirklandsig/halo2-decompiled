@@ -245,6 +245,8 @@ bool function_25d9b0(long prop_index);
 // the prop-index fallback 50; a short result zeroed at the label 92.
 // NOT kept (review): the 30 needs the fallback to test the prop index (`cmp esi, -1`) where retail tests the node
 // (`test ebp, ebp`), a form picked by score against retail's test; the && chain alone is 65. Body restored at 49.
+// Round 402: Single complete outcome including iterator exhaustion, short/long/word/dword, default-zero or complete busy branches.
+// Scores 132/135/132/135/136/170/136/170. NOT kept: unmatched outcome forms; original complete body restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

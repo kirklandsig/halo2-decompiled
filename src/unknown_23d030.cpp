@@ -431,6 +431,21 @@ extern byte g_51ec11;
 // length, `!(0.0001f > fabs)` scale, `else length = 0`, then the constant fallback) on this body 270 (1326 bytes);
 // the up vector through the existing cross3f(&side, &forward, &up) 137; a `forward` pointer for the side fill and the
 // up rows 248; that with the up rows staged into up_i/up_j/up_k and stored i, j, k 267. Body restored.
+// AC507: Opposite-order direct/staged up cross with complete scale/setter negation,
+// original/alternate normalization: 334/322/335/320/328/323/308/313. NOT kept: sign/grouping
+// diagnostics do not match and grow the body; original up producer and full body restored.
+// F363: Shared direction producer owned by camera state, instance/static,
+// pointer/reference output and forced/ordinary inline: eight forms 89 each.
+// Original state type, helper, both calls and body restored; zero/side/up homes remain.
+// B397: Twice-consumed matrix-scale predicate in bool/byte/short/long, then
+// unit-scale complement 324/324/319/321/324/324/319/321. Original separate scale tests restored;
+// zero/side normalization and up/roll allocation remain.
+// B399: Plain native projection/roll-row traversals on the shared-state graph, scalar/
+// existing direct/staged cross and consumed row workspace: 455/448/448/448/448/448/448/448.
+// All regress and lengthen; original body restored. Zero/side/up allocation remains.
+// P303: Existing shared normalizer live i/j/k captures before stores, subsets
+// 1/2/4/3/5/6/7: 332/332/332/352/352/352/352; complete immutable captures 352.
+// NOT kept: all regress and shorten away from retail; shared header and complete original body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

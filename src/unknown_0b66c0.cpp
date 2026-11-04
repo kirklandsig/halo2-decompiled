@@ -350,6 +350,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // a plain string parameter with one own-parameter volatile read at the `start +=` 40; result set in an else arm
 // 48 (95 bytes, 0xb5f10 41); the helper's counter initialised in the for 40; `count >= 1` 38 (`cmp esi, 1`, no
 // register change; not kept). Retail pushes EDI in the prologue (start lives there) and EBX only around the scan.
+// P311: Shared bounded scanner !=511 / <=510 exhaustion, unsigned-long/long/word/short counters:
+// P311: eight forms 40 at exact 100 bytes; shared find loses its match in every form.
+// P311: NOT kept: no target gain and shared-user regressions. Original helper/body restored; saved-start and scan register split remain.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

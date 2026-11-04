@@ -1502,6 +1502,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // file handle (as unknown_2141f0.cpp declares the same global) with the view pointer from it, with `file->handle` at every
 // use, or only at the write: 161 each (917 bytes, the early file addressing changes); the write's handle read from the
 // indexed global 7; the header initializer returning its header and called in the write's buffer argument 7 (same code).
+// F363: Existing initializer owned by its native header, instance/static and
+// void/returned-receiver with inline/forceinline: eight forms 33 each. Original
+// helper, header and complete body restored; count homes and write/checksum joins remain.
+// P303: Existing shared completion provider on the failure-only count graph, open/query/resize
+// masks 1/2/4/3/5/6/7, then all five asynchronous boundaries: 33/33/33/33/33/33/33/33.
+// Original local completion expansion and complete body restored; query/count and write/header joins remain.
 // @retail 0x213970
 void function_213970(void)
 {
