@@ -2134,6 +2134,9 @@ bool function_1e11b0(long actor_index, bool active);
 // local declared after the squad 13; the depth pair around both 0x203ed0 and 0x203f60 13; `(void)&actor_index` 13;
 // the second lookup in the flag test instead of the +0x7e test 13, with the address read at the +0x34 store 13;
 // the squad re-fetched for the return 80 (218 B: any index use after the loop ends the pointer's liveness there).
+// P314: Formal/current-handle/walk lexical identities on the original receiver graph, seven
+// subsets and the complete actor receiver roles: 64 each. Original names and body restored;
+// EBP handle, receiver spill/common loop head and full-width return remain.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2409,6 +2412,10 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // elapsed as a dword, gets the late pushes and the pool reloaded per pass in EDI; the frame stays 0x48); on that,
 // a word wake read 312, `while ((squad = function_200d83(&squads)) != NULL)` 318, a long index without word casts
 // 312 (aligned 109).
+// DL259: Declared cluster array/shared scaled point/native movement fields,
+// seven subsets then readonly movement state: 275/275/275/275/275/275/275/275.
+// Original producers, includes and complete body restored; frame, iterator pool,
+// point/current-handle homes and intersection spill remain.
 // B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
 // complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
 // Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
@@ -2912,6 +2919,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // Round 143 (m3 lane 6, fast): the compute arm's found/count test nested 50; local_4 left uninitialised and set to
 // NONE inside the pending arm 50; the follow-up (0x202e90 + 0x1fb8a0) as a forceinline helper taking the index,
 // task and event 50; the 0x290cd0 index argument as `(word)arg_1` 117 (582 B); the index parameter as dword 50.
+// AC514: Actual mapped trigger-event long/int/dword/word results with conditional
+// then default-first producers: 35/35/35/59/50/50/50/60. NOT kept: unmatched width/producer
+// allocation forms; original event domain, wrapped scan, calls and body restored.
+// First-event index reload and displaced actor-loop alignment remain.
+// Wide conditional results 35 grow to 582/578 and add sign extension; the first index reload remains.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3353,6 +3365,13 @@ void function_2011f0(long arg_0);
 // as is 322 (retail's `cmp di, -1`, one byte shorter, but the splice loop's pad grows a byte; aligned 141 ->
 // 140); the final 0x2011f0 call with arg_1 unmasked (retail pushes the full dword) 350 (1344 bytes); a scenario
 // local for its three reads 348. Retail keeps the chain head in EDX through the splice; ours keeps it in memory.
+// J250: Actual signed palette member, placement member and complete typed row,
+// seven subsets 318 each; all with native scalar one-word masks 318. NOT kept:
+// no allocation or extent gain. Original alignment-two row, masks and body restored;
+// narrowed-input/placement, seat and final-chain homes remain.
+// P319: Early validation/count producer nested/conditional/disjunction/complete-failure,
+// then bool/byte/short/long availability: 318 each. Original count threading persists;
+// NOT kept: no match or gain. All validation, narrow inputs and complete body restored.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

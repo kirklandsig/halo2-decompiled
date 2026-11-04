@@ -267,6 +267,12 @@ short __stdcall function_2551c0(long actor_index)
 // Round 40 (lane 17, fast): single product operands swapped in the cross terms (no vector_k): cross_j's
 // second product axis-first 43, its first product axis-first 43, both 43; cross_k's second product
 // axis-first 43, its first 43 (all the same code: VC canonicalises the operand order). Restored.
+// N354: Normalization admission: native payload plus real 120; real 70; terminal
+// rejection 43; real plus rejection 70; positive/negative bool 56/56; promoted
+// double 195; early true-result lifetime 110. On the earlier exact-only partial
+// component/score graph, those admissions give 82/72/6/72/133/133/185/91.
+// NOT kept: no new qualifying gain; the six needs partial component naming and
+// equality. Original helper, observations and complete callback restored.
 // Round 40 (m3 lane 18, fast), on lane 9's match-only 6 form rebuilt (vector_k, alignment, reach; only the score dot
 // differs): the dot through the file's accumulating helper (0x255741's), either operand order, 120/120; the direction copy
 // before the angle 6; trace declared first in the loop 6; forward and best direction declared before the best score and
@@ -856,6 +862,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 47 (lane 15, fast, on the match-only 17 form): adjusted projection in the length variable 17 (slot groups retail's, 0x14/0x18
 // swapped); with a named reach 197, reach alone 196 (951 bytes); one final subtraction into it, `= length - x`, `x = x - y` 17/17/17;
 // length and second side renamed either way, six forms 17 each (names do not reorder these slots). XMM2/XMM3 and the swap remain.
+// F364: Native vector-owned projection, instance/static and ordinary/forced
+// boundaries, original/recovered entry graphs: 89/89/89/89/25/25/17/17. NOT kept: recovered
+// graph needs a one-use unit snapshot and mixed radius reads without a match. Original body restored.
 // Round 40 (m3 lane 18, fast), on lane 17's match-only 17 form rebuilt (named unit before 0x110ab0, target lookup first,
 // request stores short/long/type, named size in both sums): the location outputs declared before the side outputs 17;
 // the timing outputs declared real first 17; the timing outputs declared before the side block 17; the timing default as

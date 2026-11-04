@@ -446,9 +446,19 @@ void __stdcall function_1160c0(real dt)
 // on the offset copy with named projection and cross scalars (0x11d180's form), then predicted = offset +
 // position, 235 (1370 bytes, frame 0xa8); node as `record->nodes + i` 171; sine-first cross products 171;
 // `(1.f - cosine) * dot` 171 (all same code); the inverse step computed just before the velocity rows 297.
+// AC518: Complete normalization admission bool/byte/short/long, direct predicate
+// and success-owned result, 292/292/292/292/292/292/292/292 (1355 bytes).
+// NOT kept: decision-result lifetime does not match; original body restored.
 // B421: Root-node classification across metadata/tick producers, bool/byte/short/long,
 // positive/complementary results 277/277/289/288/277/277/289/288. NOT kept: early
 // cmp/sete differs from retail; original direct word test and complete body restored.
+// P316: Complete normalization/trigonometric/constraint scalar declarations at loop
+// entry, seven phase subsets, then all at function entry: 171 each. Every initializer
+// stays at its original computation. No gain; complete body restored. Segment EDX
+// and scalar/axis/previous/rest-offset homes remain.
+// N355: Existing early-return normalizer with native square/projection/staged-cross and complete setters:
+// 174/186/174/174/174/186/187/187. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Segment EDX and axis/previous/rest-offset homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

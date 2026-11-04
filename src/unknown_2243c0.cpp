@@ -217,6 +217,7 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax H (11-03): no new form, no lower score; the fallback lookup masks the tag into a fresh register where retail masks it in place in edx, and the in-place form scores 152 against 117, so it was dropped.
 // score 117 (was 117): retail keeps the masked index in EDX where ours reuses EAX for the table
 // entry, and the fallback path's call order and the element loads still differ; the file handle
 // comes in through a declaration outside this file.
@@ -478,6 +479,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // B417: Completed stream-input region with mask-phase ending, callback-context producer storage
 // and native cache/context role-name subsets: 117/117/117/117/117/117/117/117 at 544/544.
 // Original full body restored; fallback EDX masking and stage/pass/unfused-load homes remain.
+// N355: Actual head-address receiver with stage/pass/material-definition receiver subsets:
+// 117/117/117/117/117/117/117/117. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Fallback EDX normalization and stage/pass/unfused-load homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
