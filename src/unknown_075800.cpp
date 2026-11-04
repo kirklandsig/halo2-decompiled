@@ -1281,6 +1281,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // DH329: Primary priorities DQCPS/DSQCP/DSPCQ/DSCQP/DPQCS/DPSCQ/DCQPS/QSDPC
 // 207/198/198/208/202/198/206/197 reduced, control 196 (full 153). Original classifiers restored;
 // NOT kept: all regress; delayed ESI save and late-handler expansion remain.
+// M374: Partial late-handler ownership, only 18/11 at entry, early-return/else
+// remainder and terminal/default remaining handler: 195/195/195/195/189/189/189/189 fast (control 196, full 153).
+// NOT kept: seven-point best is below the gate and entry/save shape still differs;
+// original classifiers, all handler tuples and matched caller restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

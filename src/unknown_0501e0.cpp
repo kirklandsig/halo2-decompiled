@@ -310,6 +310,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // tree in both views; alone, without the fresh clamp, 211); the same as a struct copy 330 (1198), set through
 // vector3f_assign 252 (1146). On the kept body: offsets and views in their own block 206 (same code); shared scale
 // 255; indexed output rows 213; three row statements 304 (1084); depth limits written in the condition 214.
+// M369: Complete basis-axis values before/after the scaler on the aggregate-scaled graph:
+// forward/up/right 278/280/268 and 281/283/271; all axes 446/444.
+// NOT kept: all regress and grow; original helper/body restored; frame and coefficient homes remain.
 // AC516: Aggregate-scaled/native-row-sum graph, first/second/both in-place views, early first view,
 // early first/both overlap, second-first overlap and native segment reuse: 281/258/271/305/287/259/287/271.
 // NOT kept: overlap/lifetime diagnostics unmatched; original two-call helper and complete body restored.
@@ -330,6 +333,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Y582: On the aggregate-scaled helper, live forward/up/right coefficient streams, seven
 // nonempty subsets and all streams with indexed output: 252/253/253/252/252/252/254/252.
 // NOT kept: all regress; original helper/body restored; frame and coefficient/input homes remain.
+// M371: Scaler-return parameter/mutable-source/conditional-source/complete-value producers,
+// cursor rows 295/292/297/379; indexed rows 298/294/299/377. NOT kept: all regress
+// and lengthen; original aggregate defaults, helper and complete body restored.
+// M373: Complete scale/copy branch-owned scaled workspace, native/setter/memcpy/memmove,
+// nonunit-first 327/288/327/374; unit-first 331/288/331/370. NOT kept: all regress;
+// original aggregate-default helper and full body restored; frame/coefficient homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

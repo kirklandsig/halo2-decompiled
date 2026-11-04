@@ -355,6 +355,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // bounded traversal (excluding fields/fields): 360/360/357/361/361/357/361/361
 // (fast control 336, full 324). NOT kept: all regress; original component operations
 // and full body restored. Entry ESI, unit/reciprocal and accumulation schedules remain.
+// M369: Post-angle sample/range admission, positive/complementary bool/byte/short/long:
+// 343/343/343/343/343/343/343/343 (fast control 336; full 295).
+// NOT kept: all regress to 1898 bytes; original guard, helper and complete body restored.
 // AC516: Complete direction-length admission on the shared-normalizer graph, bool/byte/short/long
 // at computation or with iteration-owned uninitialized storage: 343/343/343/343/343/343/343/343.
 // NOT kept: one-use predicate storage unmatched; original comparison, helpers and body restored.
@@ -376,6 +379,12 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // original planar negation 496/496/496/498; standard unary planar transform 476/476/476/516
 // (fast control 336, full 295). NOT kept: native copy/normalization residence not recovered;
 // original complete body, helper and includes restored.
+// M371: Both case-owned descriptor-count admissions, populated/empty truth in
+// bool/byte/short/long: eight 336 (reduced control 336; full 295). NOT kept:
+// all byte-neutral; original direct acquisitions, helper and complete body restored.
+// M373: Real side-ordinal while traversal consumed at dispatch, long/dword/short/word
+// 508/508/402/402; each with ordinary outer while 508/508/402/402 (reduced control 336).
+// NOT kept: all regress and lengthen; original loops, helpers and full body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

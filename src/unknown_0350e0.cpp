@@ -2358,6 +2358,10 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // P311: Complete independent normalization receiver, native/library/component captures with native/library publication:
 // P311: 322/322/322/322/307/307; native/library capture with full component publication 311/311.
 // P311: NOT kept: all regress and grow beyond retail. Original in-place helper and body restored; product fold and final count split remain.
+// M368: Existing normalizer/scale/dot force-inline contracts, seven subsets,
+// then all with the target forced inline: 40/40/40/40/40/40/40/40.
+// NOT kept: no target gain; the last form loses the exact caller. All contracts
+// restored; second-product memory fold and post-fstp count comparison remain.
 // AC517: Shared normalization valid-arm/small-length returns and separate result 40/40/40;
 // twice-used bool/byte/short/long admission and short-length classification 40/40/40/40/40.
 // Original shared helper restored; second-component product fold and post-fstp count split remain.
@@ -2664,6 +2668,10 @@ s_cached_input_list g_5234e8[4];
 // P311: Native external source/object-slot layouts and complete existing position setter, subsets 1/2/4/3/5/6/7:
 // P311: 146/146/156/146/156/156/156, fast control 146 versus full 113; complete graph with list snapshot 157.
 // P311: NOT kept: no calibrated gain; setter/list forms shrink away from retail. Original body restored; frame and register homes remain.
+// M368: Advancing actual output formal, with original base at both final calls,
+// four shape scopes without/with one list observation: 141/141/141/141/145/145/145/145 fast.
+// NOT kept: five-point reduced lead is below the bar; original output/list observations and body restored.
+// Native list/total spills and output/index/object allocation remain.
 // AC517: Complete index/query/capacity admission in bool/byte/short/long at computation
 // or shape-scope declarations: eight 147 on reduced control 147 (full 113). NOT kept: no exact predicate result.
 // Original body restored; native 0xa0 frame, spilled list and output/index homes remain.
@@ -3791,6 +3799,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // P311: Existing device member color/position/UV API families on native color, subsets 1/2/4/3/5/6/7:
 // P311: 225/382/225/382/225/376/376; all member families with scalar alpha 394.
 // P311: NOT kept: six-point forms grow to 1826; native-length 376 regresses. Original APIs, color and full body restored; frame/scalar homes remain.
+// M368: Actual object layout/vector displacement identity, without/with native
+// color, then complete fade producer graphs: 231/231/231/225/225/225/225/225.
+// NOT kept: six-point leads grow to 1826/1819; original source fields, point input,
+// scalar alpha and helper restored. Frame and radius/zero homes remain.
 // AC517: Existing full/in-place point transforms and scaled-vector transforms, scalar alpha:
 // 1016/894/496/796; native color 1016/894/511/813. NOT kept: no exact helper expansion; lengths move away.
 // Original corner helper, four-point array, inputs and body restored; native frame/scalar homes remain.

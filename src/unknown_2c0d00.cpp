@@ -365,6 +365,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // DH332: Standard coordinate differences, seven subsets then reverse sphere traversal; reduced control 931:
 // 935/935/917/896/904/959/920/1022. NOT kept: lower previews grow frames away from 0x2cac; one joint gain has regressing parts. Full 882 retained.
 // Original complete body and contracts restored.
+// M371: Paired object/sphere ordered-radius overlap/exclusion truth in
+// bool/byte/short/long: eight 931 (reduced control 931; full 882). NOT kept:
+// byte-neutral decisions; original tests, qualifiers and complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

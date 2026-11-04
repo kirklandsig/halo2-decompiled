@@ -2920,6 +2920,10 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // Y579: Actual quaternion return nested/received, original/relative/inverse-current/
 // inverse-desired output graphs: 690/689/698/698/700/700/699/699.
 // NOT kept: best gain three; native 0xfc frame remains missing. Original full body restored.
+// M376: Existing friction complete tested result, initialized result, repeated negative
+// bound/result and entry-result declaration; original then distinct relative output:
+// 692/722/741/692/700/730/749/700. NOT kept: no gain; frames stay 0xd0/0x104 versus native 0xfc.
+// Original helper and complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3235,6 +3239,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // NOT kept: 1042 shortens to 4639/4666, away from retail; all retain frame 0x80. Original full body restored.
 // Y579: Existing limiter inline summary removed: 1052, other user 433 -> 514.
 // NOT kept: shared-user regression; original declaration and complete body restored.
+// M376: Existing float CRT initial-angle/paired-heading/body-magnitude producers,
+// Seven subsets, then angle-helper magnitude: 1053/1053/1056/1057/1053/1068/1050/1053.
+// NOT kept: best 1050 gains only two; frame stays 0x80 versus 0x74.
+// Original APIs, private helper and complete body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3828,6 +3836,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // P329: Projection/axis/up receiver identities, seven subsets then both vector declarations:
 // 136/136/136/136/136/136/136/136. NOT kept: no byte match; original complete body restored.
 // Projection/cross operand ranks and angle/trig homes remain.
+// M374: Actual physics/orientation/index parameter-home identities, seven role graphs,
+// then all with input basis identity: 136/136/136/136/136/136/136/136. NOT kept: no native
+// projection/trig home repair; original complete body and all contracts restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4444,6 +4455,11 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Y579: Remaining-record cursor, signed/normalized unsigned count, direct/selected
 // admission and post-search/pre-search defaults: 237/259/237/259/248/261/248/261.
 // NOT kept: no gain; native ascending search/world/fallback gaps remain. Original full body restored.
+// M376: Selected override receiver with cached-default/collision-clamp/sound-clamp
+// producer subsets, then all with repeated delta: 117/151/168/163/147/151/169/169.
+// Original indexed search with cached/collision, cached/sound, all, all/delta:
+// 182/165/177/177. NOT kept: selected receivers require equality; original-index 165 is 1353/1361, farther from retail.
+// Original indexed search, scalar producers and complete body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

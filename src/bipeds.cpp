@@ -1017,6 +1017,9 @@ extern long *g_51e9cc;
 // 42 each; real shared lookup/getter prefix base with implicit conversion 42.
 // Original record views, declarations and complete body restored; lookup receiver
 // retention and crouch/contact schedules remain.
+// M372: Actual contact point/normal/final-position CRT memcpy transfers, seven site
+// subsets: 42 each; complete memmove 108 at 1462/1481 bytes. Original aggregate
+// transfers and complete body restored; lookup receiver and crouch/contact schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -2932,6 +2935,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // M346: Returned-result ownership across every existing exit, with actual case-one success
 // at admission, bool/byte/char/signed-char/short/word/int/long: 530 each. No common-exit
 // rewrite; all retain frame 0x44 and 1834/1908 bytes. Original body restored.
+// M369: Existing centroid/hit transfers, native/memcpy/memmove pairs except native/native:
+// 530/528/530/530/528/514/514/512. NOT kept: two-point leads fail the gate; seed memmove
+// adds a CRT call absent from the native three-word inline copy; original transfers/body restored.
 // DL259: Progressive actual impulse completion at both normalizers,
 // bool/byte/char/signed-char/short/word/int/long: 530/530/530/530/530/530/530/530.
 // NOT kept: no native result/frame repair; original result, scans and body restored.
@@ -3615,10 +3621,17 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // P302: Existing pivot-helper actual matrix/input/output references, seven subsets then forced-inline
 // complete reference graph: 368/368/368/368/368/368/368/368. All tie; original pointer contracts/helper/body restored;
 // native matrix/origin and paired pivot/property homes remain.
+// M369: Completion-owned common matrix setter, bool/byte/short/long, original/entry default:
+// 406/403/400/401/406/403/400/401. NOT kept: all regress and shorten away from retail;
+// original result, admission and publication restored; matrix/origin and paired pivot homes remain.
 // DL259: Existing pivot helper point/matrix/returned-point value ownership,
 // seven subsets then immutable point input: 853/866/858/823/817/820/781/781.
 // NOT kept: native aggregate contracts miss byte equality. Original helper and
 // complete body restored; matrix/origin and paired pivot/property homes remain.
+// M372: Origin/matrix/false-result declarations at function entry, seven
+// subsets then all with the original collision declared at entry: 368 each.
+// Original declarations and complete body restored; native matrix/origin and
+// paired pivot/property homes remain; frame 0x12c still agrees.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4391,6 +4404,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // M364: Complete parallel projection scalar input captures, axis/vector/both in both
 // declaration priorities, mutable then const: 175/190/177/177/175/190/177/177. NOT kept: one-
 // use captures do not match; normalization SIMD ranks and trig/basis homes remain.
+// M372: Row-local cosine/projection/cross product parts inside the existing
+// publication loop, seven subsets then complete immutable parts:
+// 179/176/196/154/181/170/190/190. NOT kept: all regress; original twice-used helper
+// and body restored; normalization SIMD and trigonometric/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
