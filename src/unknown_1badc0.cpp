@@ -276,6 +276,8 @@ real normalize2d(point2f *arg_0);
 // P311: Existing planar difference over full vector/point storage with native/library captures,
 // P311: each with full/planar actor-direction production: eight forms 180 at exact 1025 bytes.
 // P311: Original full helper and body restored; object-mask/copy/SSE scheduling and query-success ordering remain.
+// P315: Full 3D in-place graph, third-input memcpy/memmove/vector-setter/point-setter producers, without/with center memcpy: 180/272/248/248/180/272/248/248.
+// P315: NOT kept: no byte match or supported gain; original full body restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

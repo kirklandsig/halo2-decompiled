@@ -1508,6 +1508,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // DH338: Existing normalizer early-zero/positive-first/zero-result/magnitude-result
 // 418/418/441/418; each with the planar setter 434. Setter forms raise the other
 // normalizer user 68 to 98/91; all restored, frame/radius/zero/metadata homes remain.
+// P315: Retained two-radius/pointer graph, existing complete data getter with all entry ordinal/emitted-count/fallback-result zero-lifetime subsets: 418/401/401/401/430/401/401/438.
+// P315: NOT kept: no byte match or supported gain; original full body restored.
+// P315: NOT kept: 401 places loop-zero stores above native availability/count guards; frame 0x114 and count BX remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
