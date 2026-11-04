@@ -108,6 +108,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
+// MiniMax B (11-03): no new form, no lower score. The entry still loads the sixth parameter into ECX
+// and the fourth into EAX against retail's EAX for the sixth and ECX for the fourth (the two stack
+// homes agree, so this is the allocator's choice, not the parameter order); the guard split into three
+// separate returns gives 650 and the negated guard compiles identically, so both were reverted.
 // score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // creation-call setup and transform scratch ranks differ.
 // Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in

@@ -17,6 +17,10 @@ s_object *function_badc0(long object_index, dword mask);
 void function_3e5a0(vector3f *current, vector3f const *target, real step);
 void function_3e4e0(dword *current, dword const *target, real step);
 
+// 0x3dfe0 score 21 (was 23): the tail's flag local is declared before the type local, so the zero
+// store comes before the NONE store as in retail; the object pointer and force flag still swap
+// stack homes (retail object 0x14 in ebx, force 0x10) and the object is loaded into eax instead of
+// ebx.
 // score 23 (was 23): the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
 // force 0x10), update's false store sits after the force test, and special takes esi for edi.
 // update = false before force 218 (homes as retail, sample/update timestamps swap esi/edi);
@@ -121,8 +125,8 @@ void function_3dfe0(long cache_index, long object_index, real priority)
     }
     else
         cache->current = cache->target;
-    long type = NONE;
     long special = 0;
+    long type = NONE;
     if (cache->parent != NONE)
     {
         byte *parent = ((s_3dd10_object_header *)g_4e0300->data)[cache->parent & 0xffff].object;

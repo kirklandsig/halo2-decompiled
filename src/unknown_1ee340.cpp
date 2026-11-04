@@ -103,6 +103,12 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// MiniMax B (11-03): no new form, no lower score. The entry still loads the index before the radius
+// constant and the loop still materialises the vertex address before its x store. This round: the x
+// store written through the array element while y and z go through the pointer gives 110 (the count is
+// reloaded after the store and the y and z stores become dword copies), and forming that pointer
+// before the store gives 112 but moves the index parameter to another stack home, which would break
+// the matched callers 0x1ee4d0, 0x1ee500 and 0x1ef950; both were reverted.
 // MiniMax R (11-01, fourth round): no new form, no lower score. The x store still does not fold
 // the vertex address into the store. This round: the x store through the array element while y
 // and z go through the pointer scores 112; three separate stores through the pointer score 106;
@@ -195,6 +201,11 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax B (11-03): no new form, no lower score. Retail still keeps the ray's components and the two
+// edge vectors in xmm registers while ours spills the edge vectors to the stack and reloads them; the
+// cause is that `first` and `second` are address-taken locals that cross3f takes by reference, so
+// they need a home. The caller 0x23a220 passes its arguments in retail's order, but its definition
+// lives in another lane's file, so nothing here was changed.
 // MiniMax S (10-31): no new form, no lower score. Retail keeps the shape's edges and the ray direction
 // in xmm1-xmm7 and computes the three edge vectors in registers, storing only four floats; ours spills
 // every component of every difference to the stack and re-reads them, so the frame is 0x84 against 0x90.

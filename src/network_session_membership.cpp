@@ -720,6 +720,9 @@ union s_60403
  long field_00;
 };
 
+// MiniMax B (11-03): no new form, no lower score. The entry still keeps current in EBX and previous
+// in EBP against retail's EBX previous and EBP current, and the mapping, removal and member loops keep
+// their old shapes; swapping the two header stores (previous first) gives 163 and was reverted.
 // MiniMax I (11-01): no new form, no lower score; the entry's EBX/EBP choice follows which of the
 // two pointers the body weighs more, and no source order I tried flips it.
 // score 149 (was 149): the member's changed test is one condition, so the body has retail's
