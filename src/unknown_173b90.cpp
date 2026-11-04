@@ -1749,6 +1749,9 @@ bool function_17afd0(long effect_index, long value);
 // DH350: Independent visibility/drawing getter lifetimes, availability default
 // after getter/owner/view, joined/nested success, view-default and conditional:
 // 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
+// F380: Complete visibility/rejection results on the shifted-word/owner-arm graph,
+// bool/byte/short/long: eight 47. NOT kept: ties; original admission,
+// availability, view snapshot, query gates and complete body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

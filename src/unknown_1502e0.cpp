@@ -1128,6 +1128,9 @@ struct s_tail_transfer_traits
 // 1..7 all tie 153; the complete graph with both no-seat slot declarations also ties 153.
 // All initializers and observations stayed at their original producers. Complete original
 // body restored; selected-traits/unit/NONE homes and native pool reloads remain.
+// F380: Direct primary/other winner publication, scalar arms/conditional destinations with
+// long/dword/short/byte passes: 176/176/185/177/171/171/180/184. NOT kept: regressions
+// and nonnative frame/extent; original chosen results, defaults, observations and body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -2210,6 +2213,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // P328: Saved parent rejection and complete branch-owned parent admission in
 // bool/byte/short/long: 202/202/211/210/231/231/211/211. Original body restored;
 // native frame agrees, player/header-offset ownership and rounds/mode homes remain.
+// F380: Complete distance/transfer/pickup workspace endings, seven subsets and all plus
+// parent validation: eight 202. NOT kept: ties; original declarations, observations,
+// signed scan, request clear, callback tuples and complete body restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

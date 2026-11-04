@@ -2551,6 +2551,9 @@ dword __cdecl function_131fc0(real alpha);
 // NOT kept: no gain or byte match; original workspace scopes and complete body restored.
 // N353: Separate caller-side scalar/color/finalizer inline declarations, seven subsets,
 // and all force-inline declarations: 140 each. NOT kept: no gain; original declarations restored.
+// F380: Isolated short-arm final-alpha branch/default stores and expression-owned nibble/word
+// results 145/250/252/161/162/140/140/145. NOT kept: regressions or ties;
+// original flag reads, shader stores, fallbacks and complete body restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -3010,6 +3013,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // products and joint/axis-local production, original array/native box outputs: eight at 211,
 // 2022/2022 bytes. Keep direct paired half extents (plain 211); each has two original bounds
 // consumers and retail retains both products. Original grouping, calls, trig and arrays retained.
+// F380: Zero/nonzero comparison results spanning vertical bounds, bool/byte/short/long,
+// 240/240/244/243/240/240/244/243. NOT kept: regressions and longer extent;
+// original comparison/default points, half extents, trig and complete body restored.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
