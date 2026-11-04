@@ -2080,6 +2080,10 @@ void function_dfd70(long arg_159e6d)
 // M386: Plain indexed/pointer start and clearance component producers, independent,
 // paired and crossed: 237/240/240/257/468/454/468/257. NOT kept: no byte equality or
 // qualifying native/shared-user gain; original shared helpers and complete body restored.
+// N380: Standard complete head/forward/fallback object-copy boundaries, subsets 1..7,
+// then complete backward ranges: 236/239/244/270/267/272/263/259. NOT kept: target and shared users
+// regress; original helpers and complete wrapper restored. Native mode-three
+// placement and forward/up/second-ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -5070,6 +5074,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // success timing, bool/byte/word/long result: 68/88/154/153/92/95/147/146.
 // NOT kept: no byte match; original body restored. Support/result byte homes and
 // early success store remain; both exact callers and providers survive.
+// N380: Complementary state criterion bool/byte/short/long, original/support-bound
+// success: 144/144/146/146/160/160/167/167. NOT kept: no equality; original state observation,
+// call criterion and complete body restored. Support/result byte homes and
+// native early success remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

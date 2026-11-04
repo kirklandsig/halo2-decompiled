@@ -570,6 +570,20 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // immutable component aggregate and existing setter: 154/154/155/134/153/132/154/157.
 // NOT kept: all regress; original full capture, products and body restored.
 // Native 0x20 frame, seed/time order and old/cross homes remain; exact peers survive.
+// N370: Input-owned cross result, old/axis native copies and component aggregates, projection-first copies and readonly aggregates:
+// 181/196/164/159/180/234/164/159. NOT kept: no equality; original complete body restored.
+// Frame 0x28/0x20 and old-direction/cross/seed/time homes remain.
+// N377: Incremental row/complete-phase rotation outputs, partial-sum and first-product
+// construction, then genuine local partial results/native setter/consumed old workspace:
+// 117/153/116/183/182/205/182/182. NOT kept: unmatched publication/lifetime forms;
+// original complete body restored. Frame 0x28/0x20 and direction/cross/seed homes remain.
+// N380: Initial envelope/rotation sine/rotation cosine real APIs, masks 1..7, then
+// all with complete angle accumulation: 117 each. NOT kept: no byte match; original
+// producers and body restored. Frame 0x28/0x20 and seed/direction/cross homes remain.
+// N382: All output rows read their original global component while shared cross/dot retain
+// the complete old snapshot; staged-cross/projection-first/projection-accumulator masks 0..7:
+// 159/159/157/157/159/159/157/157. NOT kept: unmatched mixed observations; original complete body restored.
+// Frame 0x28/0x20 and seed/time/direction/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

@@ -424,6 +424,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // M387: Actual forward end cursors !=/< with lower/upper/conditional/sequential clamps:
 // 515/520/512/515/515/520/644/515. NOT kept: frame remains 0x60 but entry and extents regress;
 // original callback and alias-safe encoder restored, tint/secondary-UV and blend homes remain.
+// N373: Actual tint/input RGB subobject pointer/reference ownership, eight ordered forms
+// 211/211/211/211/211/211/211/211. NOT kept: no equality; original complete color object, callback,
+// clamp, input observations and alias-safe UV captures restored. Tint/secondary-UV homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

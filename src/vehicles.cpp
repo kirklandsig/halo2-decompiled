@@ -2991,6 +2991,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // M381: Actual projected-up/force/torque aggregate construction, subsets 1..7, then
 // all with independent relative output: 692/692/692/692/692/692/692/699. NOT kept: ties or regression;
 // original vector producers, inverse/relative ownership and complete body restored.
+// N378: Existing complete basis constructors current/desired/both/distinct output, inline then force-inline:
+// 742/734/755/763/742/734/755/763. NOT kept: no byte equality or qualifying native-shape gain;
+// original executable source restored; other constructor users regress; native frame 0xfc and scalar/transform homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

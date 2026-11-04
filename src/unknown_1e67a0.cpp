@@ -768,6 +768,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // complete immutable groups: 161/156/158/150/149/153/150/150. NOT kept: no eligible native keeper;
 // original sample qualifier and complete body restored. Unity/limit/direction registers and jitter
 // spill homes remain.
+// N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
+// forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
+// body restored; unity/limit/direction ownership and jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

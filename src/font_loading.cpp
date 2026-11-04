@@ -700,6 +700,17 @@ static inline word font_character_pixel(long alpha, long color)
 // B437: Pure command-pixel producers before output guards, pair/single/fill
 // subsets 1/2/4/3/5/6/7 then numeric parity: 180/207/180/211/180/222/230/235.
 // NOT kept: all regress; original helper, alpha/literal/two-run graph restored.
+// N378: Complete default run pixel, color/opaque, long/word and byte/numeric parity:
+// 231/216/231/216/231/182/231/182. NOT kept: no byte equality or qualifying native-shape gain;
+// original executable source restored; alpha extension, literal assembly and run-two reuse remain.
+// N380: Complete per-command emitted-count result, long/dword/short/word/byte/signed-char,
+// then word fills/full-width pixel helper: 164/164/150/150/153/153/173/173.
+// NOT kept: no native count/parity match; original helper and complete decoder restored.
+// Frame 0xc agrees; alpha widening, literal assembly and run-two reuse remain.
+// N382: Pixel-before-run producers in cases 2/4/5/6, joint 2456/12456, then
+// 12456/2456 with word packed pixels: 86/85/85/85/86/162/162/86. NOT kept: unmatched schedules; original
+// helper, literal, case order, fills and complete decoder restored. Alpha widening, literal
+// assembly and two-run reuse remain; frame 0xc agrees.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

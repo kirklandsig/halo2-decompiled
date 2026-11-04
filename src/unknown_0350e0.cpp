@@ -3921,6 +3921,12 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // B442: Existing input scalar capture/declaration orders yxz/yzx/zxy/zyx, scalar color:
 // 388/377/396/390; native color 385/367/393/386. NOT kept: no equality, wrong
 // scalar homes and regression. Original captures, helper, color and full body restored.
+// N381: Complete alpha-first color aggregate, writable/readonly and direct/parameter-owned fade,
+// original/three-use negative radius: 225/225/225/225/379/379/379/379. NOT kept: six-point gains
+// grow to 1826/1819; native-length forms regress. Original scalar alpha, radius, helper and body restored.
+// N383: Full existing collision-output fields with scalar/alpha-first/SDK RGBA/const SDK RGBA
+// colors: 231/225/232/232; genuine three-use negative radius: 398/379/375/375.
+// NOT kept: ties/regressions or gain six with larger extent; original view, geometry and body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

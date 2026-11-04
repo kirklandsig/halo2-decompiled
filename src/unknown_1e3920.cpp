@@ -1224,6 +1224,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // B421: Post-creation success bool/byte/short/long and complementary failure
 // results 253/253/253/253/253/253/253/253. NOT kept: no byte match; condition
 // residence does not recover sentinel ESI or squad/query homes. Original body restored.
+// N370: Two-use optional squad-index availability/absence results, bool/byte/short/long:
+// 356/356/352/354/356/356/352/354. NOT kept: no equality; original complete body restored.
+// Sentinel EDI/ESI, squad/query/result homes and rotated substitution head remain.
 // F374: Post-substitution settings presence/absence results in bool/byte/short/long:
 // 253/253/253/253/253/253/253/253. NOT kept: condition residence does not recover
 // native sentinel/squad/query homes; original admission and complete body restored.

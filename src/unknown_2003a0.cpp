@@ -2436,6 +2436,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // B444: Complete point/raised/location zero construction, seven subsets at native
 // output scopes then all at entry: 331/315/343/304/340/320/352/351. NOT kept: frame/layout still misses
 // retail and initialization extends code; original complete outputs and body restored.
+// N372: Actual current-cursor/saved-successor for/while graphs, raw and existing typed
+// actor receiver: 318/318/300/300/318/318/300/300. Original body restored; all retain
+// frame 0x48 versus 0x54. Iterator pool, point/area homes and intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -2950,6 +2953,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // P343: Accumulated trigger-count zero lifetime before squad/input/trigger/task/list/threshold/scan,
 // then entry declaration with original seed: 176/176/105/61/50/50/57/50. NOT kept: no equality; original
 // whole body restored; first-event index reload and shifted actor-loop alignment remain.
+// N372: Delay-owned pending conditional/exhaustive results 135/50; computed candidate
+// admission joins 156/50/50; complete graphs 156/50/50. NOT kept: no byte match; original
+// word/result graph restored. The first-event index reload and actor-loop pad remain.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3420,6 +3426,9 @@ void function_2011f0(long arg_0);
 // M389: Both actual request completions in short/word/long/dword receivers,
 // producer-local then shared: eight 318s. NOT kept: no exact result-transport
 // repair; original requests, narrowed values, count/splice loops and complete body restored.
+// N372: Range/reuse/category continuation guards at the common attempt latch, seven subsets
+// and complete tail completion guard: 318 each. Original body restored; native 0x134 frame
+// agrees, but masked-input/placement, seat and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

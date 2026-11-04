@@ -687,6 +687,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH347: Last-consumer first/second receiver and projection scopes, seven subsets then
 // all with a descriptive trace name: 271/346/270/346/271/346/346/346. All restored;
 // frame 0x40 and extent agree, but early root/actor ingress and vector scheduling remain.
+// N370: Persistent root/actor, parent and actual-output lexical families, seven
+// subsets then complete native local identities: 270 each. NOT kept: no equality
+// or gain; early root/actor retention and paired-vector scheduling remain.
 // F372: Paired-case normalized-length/projection/distance declaration lifetimes,
 // seven complete subsets and all with margin: 270/270/270/270/270/270/270/270.
 // Producers never moved; original declarations and complete body restored.

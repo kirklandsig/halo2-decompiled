@@ -1819,6 +1819,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // AC533: Test-produced post-scan selected-support/fallback handoff, bool/byte/short/long:
 // 279/279/282/280/288/288/292/291. NOT kept: frame moves from native 0x28 to 0x24 and
 // code grows; motion/reset, cold height arms and second material expansion remain. Body restored.
+// N373: Supported-contact thickness rejection/acceptance in bool/byte/short/long
+// 209/209/209/209/213/213/213/213. NOT kept: unmatched one-use decisions; original full body restored.
+// Reset/velocity ownership, cold height joins and second material expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

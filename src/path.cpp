@@ -606,6 +606,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // DH365: Original-site first-predecessor outcome, bool/byte/char/signed-char/short/word/int/long:
 // 282/282/282/282/282/282/282/282. NOT kept: four-point lead below eight; both predecessor histories,
 // original point copies, link memcpy and full body restored. Frame/zero/flag homes remain.
+// N376: Paired conversion success/fallback outcomes, independent/shared carriers and
+// expression/branch producers: 282/282/282/305/282/282/282/305. NOT kept: four-point leads
+// fall below the margin and no form matches; original conversion graph/body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
