@@ -69,7 +69,6 @@ struct s_shader_cache;
 void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
 
-// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax D (11-01): no lower score: our build puts the constant one into edi for the two
 // combiner-count stores where retail stores the immediate; the permuter timed out.
 // MiniMax D (10-30): the stage states through the existing sampler_state_write plus one more
@@ -3897,7 +3896,6 @@ void function_12fa0(byte const *camera, real const *projection, bool scaled, lon
 real *table_entry_data(long handle);
 long function_184000(long index, long bit);
 
-// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 332 (was 332): our body is 53 bytes shorter than retail's (944 against 997); the
 // transform lookup and the outlined helper's argument order still differ from retail's.
@@ -4283,7 +4281,6 @@ extern dword g_4b82e8, g_4b82f4, g_4b82f8;
 dword g_4b8438, g_4b82e0, g_4b82fc, g_4b82ec;
 void function_48010(real const *color);
 
-// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 244 (was 244): retail copies the mode parameter into ebp in the prologue and keeps the
 // flag scratch in esi, while we keep the flag scratch in ebp and load the mode into esi later;
@@ -5106,7 +5103,6 @@ void function_141ce0(real first, real second, real third, transform4x3f *out);
 real g_5259b4;
 dword g_4b8430;
 
-// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax D (11-01): no new form, no lower score.
 // score 544 (was 544): our body is 90 bytes shorter than retail's (2316 against 2406) and the
 // setup of the draw calls still differs in the order of the operands and the stores.
@@ -6666,7 +6662,6 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
-// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax D (11-01): 309 (was 312) with the two integer comparisons against zero written against
 // one (the zero literal is no longer promoted into ebp and the frame loses its extra push); not kept
 // (gain under 8, still above 30). The call to 0x4f7e0 passes all nine arguments on the stack, one
