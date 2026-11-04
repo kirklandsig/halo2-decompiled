@@ -736,6 +736,9 @@ bool sound_driver_voice_create_buffer(
 // B391: Split low-byte capture then spatial mask at entry/clear/count/input boundaries,
 // canonical bool then byte playback: 71/80/80/73/71/80/80/73. Original complete
 // body restored; spatial/play homes and descriptor zero/input scheduling remain.
+// B393: Both SDK creation outcomes bool/byte/word/long, success then failure polarity,
+// with original descriptor phases and modes: 71/71/71/71/71/71/71/71. NOT kept: no exact match;
+// original complete body restored; spatial/play carriers and descriptor zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

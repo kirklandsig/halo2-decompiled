@@ -782,6 +782,15 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // Round 64 (lane 10, plain): a forward pointer in the else arm 43 (retail's ecx-based j and k stores; two points, not kept without a match). On that form the second product k first, as retail schedules it:
 // cross3f_staged 217 (1270, masked aligned 9), the global force-inline k-first helpers of src/unknown_2900b0.cpp and src/impacts.cpp 217 (1270, masked 9), the same with 0x1f087b's or the k-first helper for the first
 // product 221 (1272, masked 13); written out k, j, i with retail's operand sides 225 (1270, masked 17), through a forward pointer 221 (1272, masked 15). All move up.k's load ahead of the distance store and rotate the first product's colours.
+// Round 68 (m3 lane 10, fast with 0x1f0870 and each helper's own file listed): untried out-of-file cross helpers.
+// Second product through 0x206090's k-first helper (copies the second operand, stores k, j, i as it goes) 218 (1270
+// bytes: previous_up.k loads before the distance store again), through 0x441b0's staged k-first helper 217 (1270),
+// through 0x2922b0's staged i-first helper 45 (same code as function_1f087b). First product (with function_1f087b
+// second) through 0x1f2a80's, 0x1703f0's or 0xf4800's plain inline cross 45/45/45 (same code), through 0x441b0's
+// staged helper 49 (1264). Original calls restored.
+// Round 82 (m3 lane 16, fast with 0x1f0870): the distance named before its store 45 (same code); one function-scope
+// forward pointer for both arms 322 (1266 bytes, prologue changes); named yaw/pitch locals in the else arm 157 (1264);
+// right declared at function scope 45 (same code); the cosine computed before the distance store 49.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

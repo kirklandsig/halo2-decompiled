@@ -342,6 +342,9 @@ static inline void quaternion_transform_vector(
 // and the repair 322 (1294 bytes); `rotation.w = 0.f` before the 0x11d000 call 213 (1324); plain cross3f in the
 // repair path 238 (1322); `cross` declared ahead of the helper's scalars 200 (same code); the helper's scalars `const`
 // 200 (same code). Body restored.
+// N346: Immutable transform dot/doubled-scalar/quadratic coefficient masks 1..7, then complete
+// immutable coefficients/cross: 200/200/200/200/200/200/200/200. Original helper and all three users restored;
+// NOT kept: unmatched lifetime/combination forms. Native frame/quaternion/cross spill homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1082,6 +1085,9 @@ void function_143250(
 // (10412, frame 0x2fc, ret 8); `result[0] = coefficients[0]` just before band one's call 1766 (same code); band one in
 // retail's store order (each matrix entry after its term) 1794 (10740); the matrix pointer declared first 1766 (same
 // code). Retail keeps the nine rotation terms as scattered separate locals and the matrix at the frame top. Restored.
+// N346: Isolated matrix/workspace/rotation/result/coefficients/term_9/term_8/term_11 names:
+// 1766/1766/1766/1766/1766/1766/1766/1766. Original identifiers and complete scalar graph restored;
+// NOT kept: unmatched lexical allocation. Frame, rotation admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

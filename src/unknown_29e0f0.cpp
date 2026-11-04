@@ -269,6 +269,23 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // first 436; byte endpoint with the flag declared first 390 (same code).
 // M339: Actual output-array extent owns traversal and produces short/word/long/dword count, posttested
 // then pretested: 412/412/411/411/430/430/429/429. Original output ordinal and complete body restored.
+// Round 68 (m3 lane 10, fast; aligned difflib counts in brackets, base 390 [428]): the output loop indexed
+// `&arg_4->field_30[count]` with a separate point cursor stepped by `local_2 > local_1` (retail's imul and
+// unchanged-start compare) 394 [395] (local_1/local_2 homes move to 0x20/0x1c, retail 0x28/0x24); with the
+// selected group record named before the loop 391 [380] (hoisted, but spilled to arg_3's home where retail keeps
+// EDI). On that output form (O): memset group bitmap + long group + bit_vector_test/set 446 [360] (1570 bytes),
+// with the point bits through them too 446 [360], memset + bit helpers 410 [341] (1572), memset + long 458 [355]
+// (1559): the test's mask still CSEs into the set. All restored.
+// Round 206 (m3 lane 3, fast; aligned counts from a difflib pass, base 287): the group bitmap cleared by
+// memset 387 (aligned 276: retail's two zero registers, separate xor for the loop index); on it, the output
+// loop indexing &arg_4->field_30[count] with a separate walking point stepped by `local_2 > local_1` (retail
+// compares against the unchanged start, [esp+0x38]) 391 (aligned 268, that loop then as retail's but for the
+// hoisted point-list base); with the point-list pointer formed before the loop 388 (267); with `long local_15`
+// 459 (1556 bytes, aligned 259: the outer loop entry then falls into the body as retail, no jmp/stub), same
+// with bit_vector_test/bit_vector_set 459 (same code: our test and set share the word address and mask,
+// retail recomputes both); the pass-start point and endpoint `short` (retail compares the endpoint as a word)
+// 432 (frame 0x68), the pass-start alone 424. Retail keeps the per-pass found flag in the arg_2 slot (0x80).
+// Original body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
