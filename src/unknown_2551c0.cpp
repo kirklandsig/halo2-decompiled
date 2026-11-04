@@ -865,6 +865,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // B420: Complete lateral-clearance and heading admissions, positive/negative
 // bool/byte/short/long values at both original tests: 89/89/89/89/89/89/89/89.
 // NOT kept: no exact match; original complete body restored.
+// B424: Standard two-probe maximum, direct/real/double conditional then default
+// side result, direct/named conditional expression: 120/120/152/155/155/162/120/120.
+// NOT kept: no exact match; original maximum, result ownership, includes and body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -450,6 +450,9 @@ extern byte g_51ec11;
 // B419: Existing shared normalizer two-use threshold result at scale admission and common
 // numeric return, bool/byte/short/long rejection then success: 278/278/278/278/228/228/228/228. All regress;
 // original shared header and full body restored. Zero/normalization/up allocation remains.
+// B424: Standard min/max pitch saturation, nested lower/upper, sequential lower/upper,
+// named lower/upper and single standard lower/upper boundary: 360/360/378/378/378/378/359/359.
+// NOT kept: no exact match; original saturation, include set and complete body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
