@@ -135,6 +135,9 @@ void function_254200(void)
 
 #undef program_words_254200
 
+// MiniMax G (11-04): the point's x and y taken through parallel pointers 341 (the point copy is
+// retail's shape); the permuter did not reach a variant on this loaded machine, so it was stopped:
+// no lower score.
 // MiniMax I (11-01): the member 4f form and the swapped y operands keep 4, the constant as a helper parameter 8, the point and size swapped 15, the y sum as a named local 151, the point and size below the colour call 214 and the free 2s form 392; no new form, no lower score.
 // score 4 (was 4): in the two records that follow the second reservation retail loads the
 // 16777215 constant before it reloads the spilled y+h from the stack, ours reloads y+h

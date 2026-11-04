@@ -583,6 +583,8 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
  return inverse;
 }
 
+// MiniMax G (11-04): no new form; the fast check cannot score this function (its callees fall outside
+// the reduced image, so the diff misaligns from the first instruction), so it stands at 132.
 // score 132 (was 132): 1.0 sits in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
 // y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
