@@ -845,6 +845,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // addss xmm6, xmm5), so everything after case 4 shifts. Side only 374, both 374; with case 1/2's first.x before
 // second.x 374 (VC copies the product instead); with normalize2d_fast on a case 1/2 side vector and normalize3d
 // on case 0's normal 368; that with the x pair before the y pair 372. All restored.
+// Y574: Current paired-point callback completion false/true at entry/chain boundary and default-
+// case first/last: 609/609/609/609/609/609/634/634. NOT kept: all regress; false entry completion
+// recovers frame 0xac but grows to 2608 bytes and changes homes; original 265 body restored.
+// Original complete body and helpers restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

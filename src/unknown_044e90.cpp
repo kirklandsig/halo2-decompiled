@@ -254,6 +254,10 @@ struct s_visibility_bound_record
 // repeated capacity observations/entry and plane homes not recovered; body restored.
 // Remaining three capacities before the first release 446; fourth-only 406 is
 // a prior-form control, not one of eight new forms. Original full body restored.
+// Y574: Actual fallback bit consumers, direct/shared test/shared set/both, each with nested
+// unseen/visible continue admission: 403/403/403/403/403/403/403/403. NOT kept: three-point lead
+// below keep gate; repeated computed masks miss equality and native retained bit ownership;
+// entry/table and plane/query homes remain. Original complete body and helpers restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

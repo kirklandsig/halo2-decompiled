@@ -1059,6 +1059,9 @@ struct s_tail_transfer_traits
 // B397: Native traits-element/player-identifier domains and complete inner choice
 // eligibility subsets, then complete rejection complement 153/153/153/153/153/153/153/153.
 // Original layouts/tests restored; traits/unit/NONE homes and pool reloads remain.
+// Y574: Actual weapon-output zero-first arms, seven subsets, then two-byte library grenade
+// publication: 153/153/153/155/153/153/155/152. NOT kept: no gain; native traits/unit/NONE homes
+// and object-table reloads remain. Original complete body and helpers restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
