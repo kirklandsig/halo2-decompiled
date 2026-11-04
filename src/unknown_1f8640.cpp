@@ -596,6 +596,9 @@ struct s_1f8a70_actor
 // AC521: Independent inner route outcome on the two-result/native-word-selector graph,
 // byte/signed-byte/short/long with converted or test-arm outer results: 191/191/191/191/300/300/306/306.
 // NOT kept: no exact memory-result home; original outer/inner results, unit scope and full body restored.
+// AC530: Uniform complete frame-member pointer at active/route/unit/reset phase boundaries
+// 506/505/505/505; corresponding real frame references 506/505/505/505 (fast control 188).
+// NOT kept: all regress and lose native entry order; original field observations and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
