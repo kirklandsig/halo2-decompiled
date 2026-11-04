@@ -1502,6 +1502,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // target-position input, masks 1-7: 820/800/895/659/820/800/957; complete target
 // advance loop 617. NOT kept: all regress and grow beyond retail length; original
 // native copies, row expressions and complete body restored. Shared helpers unchanged.
+// P337: Default boost before tag/component/airborne/position, then after position/
+// velocity/facing/speed: 659/659/659/660/651/631/613/603, 2816 bytes, frame 0xf8.
+// NOT kept: all regress; original default branch and complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2942,6 +2945,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // bool/byte/char/signed-char/short/word/int/long: 530/530/530/530/530/530/530/530.
 // NOT kept: no native result/frame repair; original result, scans and body restored.
 // Native final-loop size observation remains a possible unretained correction.
+// P337: Complementary returned outcome at original exits, bool/byte/char/signed-char/
+// short/word/int/long: 530 each. NOT kept: no native frame/result repair; original
+// positive result, all exits, observations and complete body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {

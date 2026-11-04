@@ -1118,6 +1118,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // calls absent from retail, including the retail-length form. Original direction copies, shared rotation
 // and full body restored; j/k products, side-dot and exit scheduling remain. Scores
 // 100/110/100/303/308/307/312/318. NOT kept: unmatched result-ownership forms.
+// P337: Complementary moved-away bool/byte/short/long, complete logical producers
+// 95/95/101/99; exhaustive arms 115/115/119/118. NOT kept: inverted result/test
+// branches miss native early zero; j/k multiplicands and eager final copies remain.
+// Original complete body and every existing helper restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

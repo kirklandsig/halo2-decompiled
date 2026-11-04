@@ -1749,6 +1749,9 @@ bool function_17afd0(long effect_index, long value);
 // DH350: Independent visibility/drawing getter lifetimes, availability default
 // after getter/owner/view, joined/nested success, view-default and conditional:
 // 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
+// P337: Whole-iteration same-view/attachment/camera output declarations, masks
+// 1/2/4/3/5/6/7 then all with draw, each 47. NOT kept: no match; original
+// producer sites, snapshots and complete body restored. Early clear/conversion remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
