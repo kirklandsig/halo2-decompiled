@@ -870,6 +870,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // P327: API-returned file/signing handles, original/mutable/const producer pairs
 // excluding both original: 34/34/34/161/161/34/161/161. NOT kept: ties or larger
 // 689-byte bodies; original API publications, field observations and full body restored.
+// DH370: Actual successful-read transfer-count equality producers, header/body/signature
+// subsets 1/2/4/3/5/6/7 and all complementary incompleteness: eight at 34.
+// NOT kept: no exact comparison-result form; original body, getter, API boundaries
+// and cleanup restored. Entry total and seek/size carriers remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

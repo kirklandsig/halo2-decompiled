@@ -1746,6 +1746,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // B434: Failure-first release admission, enclosed binding/matching lifetimes and
 // all seven subsets, then enclosed active-option acceptance: eight 285. NOT kept:
 // no gain; native mask/index homes and release expansion remain; full body restored.
+// DH359: Full-width signed option/user/controller masks, seven subsets 285 each;
+// word option mask 297; existing release-helper inline/forced declarations 285/285.
+// NOT kept: no gain; scalar homes and release expansion remain. All bodies and declarations restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

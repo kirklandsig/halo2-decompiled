@@ -339,6 +339,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // M386: Complete native-order four-buffer query record, full-width query/choice
 // and count-before-existing-list subsets 0..7: 873/926/961/949/866/922/945/946.
 // NOT kept: unmatched local grouping/domain graph; original arrays, counters and helpers restored.
+// DH370: Original raw converter contracts with ordinary expansion, decibel/linear/
+// logarithmic subsets 1/2/4/3/5/6/7, then all with forced pin: eight at 866.
+// NOT kept: no exact expansion form; original declarations, helpers and full body
+// restored. Entry zero, target/primary/query homes and exponent staging remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

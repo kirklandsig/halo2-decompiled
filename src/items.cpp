@@ -736,6 +736,9 @@ struct s_item_collision_bsp
 // B443: Independent complete axial scalar inputs, six capture/declaration orders,
 // then spin-phase/entry reservations: 272/272/272/272/272/272/272/272. NOT kept: all regress,
 // frame grows to 0xa8 and extent to 1383; original axis/body restored.
+// DH365: Existing plane-normal/matrix-rotation/marker-coordinate views, seven subsets,
+// then all with native spin/output coordinates: 202/202/202/202/202/202/202/202. NOT kept: no equality
+// or gain; original complete body restored. Protected width and plane/spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

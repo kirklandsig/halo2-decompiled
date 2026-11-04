@@ -324,6 +324,10 @@ real normalize2d(point2f *arg_0);
 // with second-input/center library-copy subsets: memcpy four 180s; memmove
 // four 245s (1029 bytes, all three caller conventions lost). NOT kept:
 // no gain; original captures, helper inputs and complete body restored.
+// DH370: Coordinated object-index formal int/dword/unsigned-int/short/word/
+// const-long/const-short/const-word: 180/180/180/203/203/180/203/203.
+// NOT kept: full-width contracts tie; 16-bit contracts grow and lose three callers.
+// Original long contract and every declaration restored; mask/copy/SSE schedules remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

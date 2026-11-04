@@ -603,6 +603,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // B445: Actual signed link capacity consumed at successful copy, long/short totals,
 // indexed/advancing receivers and consumption after/before memcpy: 331/331/344/350/359/335/344/350.
 // NOT kept: all regress; original total, limits, memcpy and body restored. Frame/flag homes remain.
+// DH365: Original-site first-predecessor outcome, bool/byte/char/signed-char/short/word/int/long:
+// 282/282/282/282/282/282/282/282. NOT kept: four-point lead below eight; both predecessor histories,
+// original point copies, link memcpy and full body restored. Frame/zero/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -1084,6 +1087,21 @@ bool function_2715a0(byte *buffer)
 // NOT kept: all tie; original fresh reads, sum trees and complete body restored.
 // Y595: Per-iteration 64-link output at iteration/after-sift/after-sentinel/query boundaries, inherited/descriptive names:
 // 486/486/486/486/486/486/486/486. NOT kept: no byte equality; original complete body restored.
+// DH359: Separate terminal reached result bool/byte/short/long with inherited fallback
+// 486/495/542/538; missed counterparts 521/521/567/563. NOT kept: no gain or
+// byte match; original returns, fallback qualifier, heap operations and whole body restored.
+// DH361: Heap-root/link/collision-lookup ordinals declared at function scope, seven subsets,
+// then the actual child receiver too: eight at 486. Original observation/initializer sites,
+// declarations and body restored; native state/node/link registers and scalar homes remain.
+// DH363: Existing penalty-switch label orders 1265/1526/2156/5612 all 486;
+// those four with the positive-penalty guard owned by the grouped cases all 487.
+// NOT kept: no match or state/root-home recovery; original dispatch and complete body restored.
+// DH366: Direct native state-member accesses on the retained split-root graph, input/destination/lookup
+// seven subsets then closest/location pair: 486/486/486/486/486/486/486/498. NOT kept: no byte match or
+// qualifying native repair; original complete body restored.
+// DH368: Direct named link/root/child array elements, seven subsets then collision candidate:
+// 624/528/486/659/624/528/659/684. NOT kept: child-only ties, others regress or grow;
+// original array receivers, inherited fallback qualifier and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

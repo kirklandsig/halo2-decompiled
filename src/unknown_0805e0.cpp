@@ -819,6 +819,9 @@ void function_1537f0(s_profile_record *record);
 // P334: Existing three-word identity standard fill/fill_n/construct-range contracts,
 // forward and backward: 100/101/134/120/106/102/140/116. NOT kept: frames 0xa8/0xb0 versus native
 // 0xa0 and 281–310 bytes versus 258; both original initializers and complete body restored.
+// DH358: Existing unused eight-byte source field as signed integer, native SDK integer/time
+// records, dword/word/byte field arrays and double: eight scores 53; every file control unchanged.
+// NOT kept: identity homes still fold and frame 0x98/end-bound remain; original record and body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1368,6 +1371,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // M379: Per-iteration forward/reverse/both memcpy, then forward/reverse/both memmove,
 // then memcpy/memmove and memmove/memcpy: 49/49/49/386/371/333/371/386. NOT kept: ties/regressions;
 // original copies, direct head repairs and entire body restored; admission/upper homes remain.
+// DH358: Branch-set capacity result with empty/full defaults in bool/byte/word/dword:
+// eight scores 395 at 1162/1171 bytes. NOT kept: every form regresses and loses native extent;
+// original predicate, removed-index producer, bounds, copy loops and full tail restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

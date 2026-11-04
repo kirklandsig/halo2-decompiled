@@ -1778,6 +1778,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // AC544: Direction/mode/scale formal lexical identities, seven subsets then all
 // with position identity: 193/193/193/193/193/193/193/193. NOT kept: no native result-home or frame
 // repair; original inputs, helper, switch, arithmetic and whole body restored.
+// DH366: Original final projection zero/nonzero admission, bool/byte/short/long outcomes:
+// 193/193/193/193/193/193/193/193. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3542,6 +3545,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // AC544: Entry declarations for alpha, existing qualified kind and paired query bytes,
 // seven subsets then reversed complete declarations: 177/177/177/177/177/177/177/177. NOT kept: no
 // native frame repair or match; original producers, scopes, qualifiers and whole body restored.
+// DH366: Original-site first raw/clamped fade equality, accepted/rejected bool/byte/short/long outcomes:
+// 177/177/177/177/177/177/177/177. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4973,6 +4979,10 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // AC544: Original two-stage enabled result in bool/char/signed-char/short/word/long/dword,
 // then bool with the raw mode-eight gate: 138/138/138/187/187/222/222/138. NOT kept: target ties or
 // regresses; wide results also regress both shared users. Original helper and full caller restored.
+// DH366: Existing provider forced-inline contract, original caller then configured
+// culled/gated/both/unculled/culled-unculled/gated-unculled/all families:
+// 1445/1683/1635/1841/1772/1984/1937/2137. NOT kept: every graph expands and worsens shared users;
+// original full contract and caller restored. Late pass bytes and mode loads remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
