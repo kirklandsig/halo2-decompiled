@@ -260,6 +260,9 @@ struct s_flag_word_bits
 // the complete graph with the later definition-index declaration also ties 114.
 // Every initializer stays at its original producer; original complete body and rounding
 // helper restored. Player/root, tick/effect homes and expanded notification tail remain.
+// N372: Existing rounding forced/unhinted; complete admission/notification scopes with
+// ordinary/forced/unhinted producer, then the one-use object receiver removed: 114 each.
+// Original producer/body restored; player/root, scalar homes and expanded tail remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1286,6 +1289,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // DH351: Existing raw flag pointer/reference returns with local/direct object input
 // 284 each; native bit-field pointer/reference returns 253 each; bit-field value return
 // 290. NOT kept: pointer forms add a flag-address calculation absent in retail; value form regresses.
+// N372: Initial/attached chained false stores and absent-held continuation, seven subsets,
+// then complete flag rejection: 284 each at 1006 bytes with frame 0x18. Original body
+// restored; retained pool/player and lazy tag-table homes remain.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

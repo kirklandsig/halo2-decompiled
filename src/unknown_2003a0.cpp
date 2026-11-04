@@ -2424,6 +2424,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
 // complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
 // Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
+// N372: Actual current-cursor/saved-successor for/while graphs, raw and existing typed
+// actor receiver: 318/318/300/300/318/318/300/300. Original body restored; all retain
+// frame 0x48 versus 0x54. Iterator pool, point/area homes and intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -2929,6 +2932,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // allocation forms; original event domain, wrapped scan, calls and body restored.
 // First-event index reload and displaced actor-loop alignment remain.
 // Wide conditional results 35 grow to 582/578 and add sign extension; the first index reload remains.
+// N372: Delay-owned pending conditional/exhaustive results 135/50; computed candidate
+// admission joins 156/50/50; complete graphs 156/50/50. NOT kept: no byte match; original
+// word/result graph restored. The first-event index reload and actor-loop pad remain.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3381,6 +3387,9 @@ void function_2011f0(long arg_0);
 // P319: Early validation/count producer nested/conditional/disjunction/complete-failure,
 // then bool/byte/short/long availability: 318 each. Original count threading persists;
 // NOT kept: no match or gain. All validation, narrow inputs and complete body restored.
+// N372: Range/reuse/category continuation guards at the common attempt latch, seven subsets
+// and complete tail completion guard: 318 each. Original body restored; native 0x134 frame
+// agrees, but masked-input/placement, seat and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
