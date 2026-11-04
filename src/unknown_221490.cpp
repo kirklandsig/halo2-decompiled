@@ -742,6 +742,9 @@ bool sound_driver_voice_create_buffer(
 // end of each success arm 182 (599). Whichever bool is defined first is computed from a copy of flags and the other
 // in place, so retail's source defines the 3D flag first; the open question is why its short result/voice index
 // then loses the last callee-saved register to the 3D flag in retail and wins it here.
+// B393: Both SDK creation outcomes bool/byte/word/long, success then failure polarity,
+// with original descriptor phases and modes: 71/71/71/71/71/71/71/71. NOT kept: no exact match;
+// original complete body restored; spatial/play carriers and descriptor zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

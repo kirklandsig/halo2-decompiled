@@ -586,6 +586,13 @@ struct s_1f8a70_actor
 // Left: retail lays the route test and chain directly after case 5 (cases 6, 7, zero test and failure block after it, `jne`
 // to case 5's store from case 6); mode 7's node store before the radius; `setne al; test al, al` in the zero test; the failure
 // block's memory store and reload of the result (ours folds to BL) and the unit mode's slot (+0x10 for retail's +0x12).
+// Round 143 (m3 lane 6, fast; aligned base 82): no initializer, the first exit `result = false;` + 0x1f86a0 + `goto
+// done;`, `!result` jumping to a `release:` label past `failed: result = false;`, one `done: return result;`, success
+// `return result;` 429 (1656 B, aligned 71); success `goto done;` 366 (1656 B, frame 0x80, aligned 66: the first exit
+// stays its own tail and no longer folds to `xor al, al`, but keeps the result in a stack byte, not BL; result and unit
+// mode share a slot at +0x10 for retail's +0x12, route's byte neighbour +0x14 for +0x16); `result = false;` after the
+// 0x1f86a0 call 366; with the route default storing false 388 (1672 B); with case 3 in case 5's order and route_mode = 1
+// 413 (1624 B, aligned 99).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

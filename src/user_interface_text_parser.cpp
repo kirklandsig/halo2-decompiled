@@ -675,6 +675,9 @@ done:
 // 47 (178, aligned 12), a tag local 41 (178, aligned 12; the address is then hoisted in that arm into ESI, the tag takes EAX and
 // the selector ECX); the getter written out, tag read before its fallback (diagnostic) 42 (178), one translator after the switch and
 // the default copying and returning 33 (178, aligned 10), per-case translator with one tail 42 (171).
+// B393: Actual external UI/variant/tag identity references, subsets 1-7,
+// then all with one shared copy tail: 32/32/32/45/45/45/45/45. NOT kept: no exact match;
+// original complete body restored; early EDI save, tag/selector schedule and scratch cache remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

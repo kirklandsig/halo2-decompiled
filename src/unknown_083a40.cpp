@@ -731,6 +731,11 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // i * size` 28/11, `i * size + (byte *)players` 28/11, a dword-pointer index 28/11 (all same code); a named occupant
 // pointer at the top of the occupied block 45/29. Reading: the key's tree has the product on the left here, so its
 // offset + cursor stays grouped; retail groups the base with the offset, as if the product were a shared temporary.
+// Round 125 (m3 lane 7, fast; positional/aligned/masked, base 28/8/4): on the swap order 32/16/5: occupied block through a
+// forceinline helper taking the update or the update pointer, key copy through a forceinline helper, collection taken
+// only in the else arm, `(collection->players + i)->key`, a named occupant pointer, a second collection local in the
+// occupied block, a const collection pointer: 32 each (same code); without the swap order: helpers 28/8/4, named
+// occupant 41/20/7, second collection local 28/8/4.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
