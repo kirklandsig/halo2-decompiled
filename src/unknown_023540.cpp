@@ -2540,12 +2540,17 @@ dword __cdecl function_131fc0(real alpha);
 // producers 406/406/390/414; branched producers 406/406/390/414.
 // NOT kept: all regress and disturb the matched prefix; original flag reads,
 // state stores, fallback arrays and complete body restored.
+// F357: Complete shader-admission truth in bool/byte/word/dword, logical
+// producers 140/140/140/140; eager Boolean producers 243/243/243/243.
+// NOT kept: no gain; original flag reads, shader arms, fallback arrays and body restored.
 // AC506: Common post-arm first-constant/final-ABCD/final-EFG publication, seven subsets
 // and all results declared at entry: 155/180/181/175/193/187/197/197. NOT kept: every
 // one-use output form regresses; original branch stores and complete body restored.
 // Y563: Common output workspace across shader arms, shader/function scope, original/shared
 // raw workspace and ternary/upper-default short alpha: 140/145/140/145/140/145/140/145.
 // NOT kept: no gain or byte match; original workspace scopes and complete body restored.
+// N353: Separate caller-side scalar/color/finalizer inline declarations, seven subsets,
+// and all force-inline declarations: 140 each. NOT kept: no gain; original declarations restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2990,6 +2995,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // immutable pairs, first-producer scope and late second-output declaration, all
 // eight forms 246 at 2027/2022 bytes. NOT kept: one-point gain below eight;
 // original trig carriers, output declarations and complete body restored.
+// F357: Float trig APIs at both angle producers, cosine/sine/both with
+// reused pairs 250/250/250, independent pairs 249/249/250; complete immutable
+// pairs and complete producer scopes 250/250.
+// NOT kept: all regress; original real results, helper, normalized parameters and body restored.
 // AC506: Both trigonometric pairs in double result carriers, explicit-real/helper-input
 // rounding with mutable/immutable and first-producer scopes: eight at 331 (1972/2022 bytes).
 // NOT kept: precision/transport forms regress and move the extent away; original float
@@ -3486,6 +3495,16 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // seven subsets, then all with the skip-state role name: 31 each at 4828 bytes.
 // Original parameter symbols restored; selector scheduling, post-bias reload
 // order and six quantizer inputs in shift rather than clip home remain.
+// DH325: Existing quantizer inline/natural expansion, immutable value/direct
+// input subsets 0-3 in each: 1201 each, 4420/4828 bytes. All restored; native
+// expansion still needs force-inline. Selector/reload/sample homes remain.
+// DH327: Existing quantizer writes native integer outputs, pointer/reference
+// destinations with nested/guard/default/conditional clamp graphs:
+// 31/31/787/31 twice. Original output contract, helper and complete body
+// restored; selector scheduling, post-bias reloads and shift/clip homes remain.
+// N350: Immutable shift/clip/center parameter subsets and all with immutable
+// state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
+// selector, reload-pair and six quantizer input-home differences remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

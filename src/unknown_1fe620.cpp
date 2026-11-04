@@ -169,6 +169,12 @@ static __forceinline long real_to_long(real value);
 // P262: Uniform side/first-output/second-output component orders ikj/jik/jki/kij/kji
 // 437/424/425/443/442; early output workspaces with ikj/jik/kji 437/424/442.
 // Original publication, workspace lifetimes, all arithmetic and complete body restored.
+// Round 131 (m3 lane 8, fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0): the random-state local declared
+// right after the 0x1fe410 test (retail loads 0x4e7408 into ECX there) 373 (same code); the point-record copy through
+// local_3 380; the output vector through a pointer local read back for the final sums (retail reads [eax], [eax+4],
+// [eax+8]) 376 at 1854 bytes; the sign test as `random_next(...) & 0x8000` 417, as `(short)random_next(...) < 0` 429.
+// 0x210850 sits in the /Ob1 src/unknown_20fe20.cpp, but 38 of its 52 retail callers are matched /O2 code that calls it
+// out of line, so its flags alone do not explain retail inlining it only here.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {
