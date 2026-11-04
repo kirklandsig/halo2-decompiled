@@ -503,6 +503,11 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // normalize_inline in the maximum branch 230; the velocity normalizer then the file scale helper there
 // 32 (1521); the velocity normalizer's sum through length_sq3f, in both branches 29 (1521); its sum as
 // i,j,k statements in both 41 (1520); as k + (i + j) in both 75.
+// Round 135: k-first velocity sum in maximum/vector in minimum 26 (1517 bytes);
+// k-first velocity sum in maximum/direction in minimum 26 (1517 bytes);
+// properties/cache/next declarations 10; next/cache/properties 10; cache/next/properties 10;
+// the same three declaration orders with original properties/next assignments 10 each.
+// All restored; back-edge reloads and the maximum squared producer are unchanged.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
@@ -909,6 +914,12 @@ real g_55e618;
 // NOT kept: only three points gained; all ten other same-file users unchanged.
 // Original full type layout, raw flag observations, projection and complete body restored;
 // sweep/collision homes and cross-placement tangent/perpendicular spills remain.
+// Lane 17 r42 (fast; all match-only, body restored): round 75's form rebuilt (dot written at each product, normal
+// locals, velocity pointer, typed flags/+8/+0x34, collision word before the start stores, position setter) with the
+// j/k final rows through the pointer 60 (aligned 24), all three final rows through the particle 44 (aligned 18); named
+// sums nested in the call 44 (aligned 14); a named `short` last argument read before the sums, named `surface_index` or
+// `a_value` 61 each (1535 bytes: the load moves to the block's top but in EAX whatever the name, so same-size name order
+// does not pick its register); that read with plain position stores after the impact index 234 (frame 0x12c).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

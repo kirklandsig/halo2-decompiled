@@ -67,6 +67,9 @@ struct s_emitter_248340
 // moved to the group 35 (caller 138); a `register` tag without the volatile 27 (caller 138); the volatile
 // moved to the definition index 27 (caller still matched: the tag then takes edi, the definition index the
 // emitter's home); the system definition named before its tag index 4.
+// Round 87 (m3 lane 12, fast, all without the volatile; caller 0x247140 138 in each): a compiler barrier between
+// the two queries 27; the group query inline in the call 27; tag, group and call in an inner block 27; a dword
+// tag 27; the emitter decrement as `field_02 = field_02 - 1` 27. `register` parameters do not compile here.
 // @retail 0x248340
 void function_248340(s_particle_system_datum *system, s_object_246eb0 *particle,
 	s_emitter_248340 *emitter)

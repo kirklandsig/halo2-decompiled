@@ -49,7 +49,7 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
-// score 17 (was 17): left: the first word's OR order (retail ORs flags and category before the
+// score 15 (was 15): left: the first word's OR order (retail ORs flags and category before the
 // kept top bits), the intensity spill slot (level is pushed as a word by 0x133390 and 0x133520; 0x2cbf0
 // declares it a word since r644, #1015, so this cause is open again; not re-measured), the kind-word block (retail shifts the kind in eax, copies it to esi and
 // stores the word after the loader's argument setup, just before the call) and the pool register
@@ -221,6 +221,13 @@ static __forceinline long floor_to_long_inline(real value)
 // added test 19 (its load moves above the branch); load named before the object tag (ahead of the 0x2d000
 // call) 214 (1006 bytes).
 // 17. The intensity spill slot then waited on 0x133390 and 0x133520 (level pushed as a word there; r644).
+// Round 145 (m3 lane 6, fast; compile-only reproduces the first word): word stored before the 0x449e0 call 77;
+// byte-cast category 282; `~0x1fffffff` mask 15; old word in a local before the tag store / at the word 15/15;
+// old word read through `g_4ba138[(short)index]` 16 (first word now retail's order, but the second word's
+// material/kept-bits order flips and the entry address becomes `lea`), the same with a long index 288, as a
+// local 16; both words read that way 368; first word stored and read that way 25 (both orders right, the
+// store moves up); plus the second word stored that way 371 (every access global-addressed); tag/key stored
+// that way before the entry pointer is formed 375 (1125 bytes).
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, long category, short instance, dword flags,
     long tag, dword key, long material, byte *object, short mask, byte mode,

@@ -75,6 +75,7 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// MiniMax H (11-04): no new form, no lower score; the tail still needs 0x2b5d0's own body.
 // score 109 (was 109): the tail call still needs 0x2b5d0's own body (it takes the mode
 // in EAX and the count on the stack), which is disabled here and stubbed in src/stubs/lane_k.cpp,
 // a file this lane may not edit: BLOCKED-BY 0x2b5d0.

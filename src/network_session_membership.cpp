@@ -720,6 +720,9 @@ union s_60403
  long field_00;
 };
 
+// MiniMax B (11-03): no new form, no lower score. The entry still keeps current in EBX and previous
+// in EBP against retail's EBX previous and EBP current, and the mapping, removal and member loops keep
+// their old shapes; swapping the two header stores (previous first) gives 163 and was reverted.
 // MiniMax I (11-01): no new form, no lower score; the entry's EBX/EBP choice follows which of the
 // two pointers the body weighs more, and no source order I tried flips it.
 // score 149 (was 149): the member's changed test is one condition, so the body has retail's
@@ -853,6 +856,9 @@ union s_60403
 // plain bool alone 278 (1513); old_members with the plain bool alone 289; at-each-use with the late mask 368, with
 // old_members and the late mask 273. Original body restored (146 is -3). The 146 base uses a one-use pointer local
 // (old_members) and writes a three-use value out at each use: both are kept only on a byte match.
+// Round 40 (m3 lane 18, fast): the mapping loop's two counts named before it (previous_count/current_count or old_count/
+// new_count, either name order) 155; a long retained mask 149 (same code); a plain bool discriminator with 0x609e0's
+// if/else header local 167; a plain bool declared at the member loop top 167; at function scope 167. Body restored.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

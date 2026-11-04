@@ -431,6 +431,20 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 143 (m3 lane 6, fast): retail's sum operands re-measured 195 (same code); the point default moved after
 // the camera and scale defaults 207; displaced sums written z, x, y 216 (982 B), z, y, x 213 (979 B); the origin
 // transform ahead of the displaced sums 270 (994 B); fa/fb declared before ta/tb 195 (same code).
+// Round 66 (m3 lane 11, fast): retail packs inv_a, inv_b, b, ta, tb at frame +0/+4/+8/+0x14/+0x20; ours
+// inv_a +8, b +0xc, tb +0x18, ta +0x24, inv_b in the scale slot, +0/+4 unused. ta/tb as two declarations
+// 195; the inverses in one declaration 195; ta/tb declared at the top 195; the inverse defaults declared
+// after the displaced point 204 (974 bytes), after both transforms 261 (926 bytes).
+// Y562: Existing same-camera vector transform, distinct/in-place vector result, scalar/setter
+// point publication, original/direct inverse factors: 222/221/222/221/240/239/240/239. Original alias-safe helper and body restored.
+// Y564: Factor selection deferred until both native reciprocals, independent conditional/
+// independent branches/joint branch/perspective-default/orthographic-default/immutable
+// conditional: 195/195/197/295/293/195; deferred conditional/joint with late inverse
+// defaults 283/280. NOT kept: no gain; original helper, defaults and complete body restored.
+// Y573: Complete source direction/origin and immutable displaced-input ownership, masks
+// 1/2/3/4/5/6/7: 285/336/364/195/285/336/364; full graph with native direction 341.
+// NOT kept: no gain; input-record copies and changed observation timing miss equality.
+// Original alias-safe helper and full body restored; frame and inverse/point homes remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
