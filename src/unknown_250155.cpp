@@ -1507,6 +1507,8 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // restored.
 // Round 402: Ordinary inline producer/eligibility/output-query declarations, singles/pairs/all; indexed tails on the all-inline graph.
 // Scores 83/83/83/83/83/83/83/172. NOT kept: no lower count; declarations restored; original complete body restored.
+// Round 106: fixed-bound do scans first/second/both and a shared maximum 83 each;
+// guarded do fills first/second/both 110/103/127; guarded output do 83. Original body restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2588,6 +2590,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax A (11-04): the four widget-index shorts' declaration order (seven orders) 95 each; the players[i] address kept in a local (function scope and loop scope) 95 each; no lower score.
 // MiniMax I (11-01): no new form, no lower score.
 // score 95 (was 95): the locals live in the other stack slots (shown count, the first
 // loop's player, the second loop's four widget indices), retail reloads players[i] after the
@@ -2710,6 +2713,9 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // Round 66 (m3 lane 1, fast): second loop's colour array declared first 95; its bitmap pointer declared first
 // 95; the search result left unstored (call kept) 95; the voice state as `? 0 : 1` 95; a screen pointer local
 // for the last loop's lookup and first call 95 (all the same code).
+// Round 107: single-output helper returns text_a/text_b/bitmap_a/bitmap_b 95 each; first-loop
+// item/player/local declaration orders player-item-local, local-player-item, local-item-player and
+// item-local-player 95 each. All the same code; original helper and declarations restored.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

@@ -268,6 +268,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // 24 form (o object_index, h headers, r rigid body, a absolute_index, t type): o,h,r,a,t and h,o,r,a,t 21 [13] (the
 // component arrives in ECX and the index in EAX), o,r,h,a,t 94 [13], h,r,o,a,t 94 [13], r first (r,o,a,h,t /
 // r,o,h,a,t / r,h,o,a,t) 96 [13], o,h,a,t,r 106 (264 B) [9], h,o,a,t,r 106 (264 B) [11].
+// N369: Native handle-field references readonly/mutable, repeated/shared type,
+// direct/captured header base: 97/97/136/136/93/93/95/95. NOT kept: every form loses
+// the matched caller (146/213/13); best gain three is below the gate.
+// Original handle capture, dispatch observations and complete body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -592,6 +596,9 @@ struct s_physics_component_walk : s_havok_component
 // __forceinline scan helper rebuilt 168, with the no-next-group arm ending in `continue` 168; the next-group arms
 // swapped 192 (901 B); one `connected` result set by the kind-7 test and the scan 151 (910 B); the group fields read
 // at each use for the admission test and next selection 146 (same code).
+// N369: Persistent input/output/recursive-operand lexical families, seven subsets
+// and full-family common names: 146 each. No latch or carrier change;
+// NOT kept: all tie. Original identities and complete method restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

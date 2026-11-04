@@ -571,6 +571,19 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // AC521: Existing shared scaled-point publication with conditional clamp/distance-difference/short-link
 // masks 0..7: 286/286/283/283/359/359/359/359. NOT kept: three-point gain only; bounded forms
 // recover frame 0xe4 but shorten away from retail. Original projection, loops, memcpy and body restored.
+// AC530: One bounded word ordinal owns both capacity and link-copy indexing, signed/unsigned,
+// node/function scope, increment after/before memcpy: 361/361/359/359/361/361/359/359.
+// NOT kept: all regress at 1375/1388 despite frame 0xe4; original total, memcpy and body restored.
+// Y576: Link-metadata library memmove with long/short/word post-increment counts
+// 356/361/346; separate increments 356/361/346; copy-owned long/short ordinals 345/348.
+// NOT kept: all regress. Narrow transports recover frame 0xe4 but initial/flag homes still differ.
+// P325: Current-node pointer while traversal, separate/shared initial receiver and long/short
+// links: 405/385/402/372; corresponding canonical pointer for traversal 405/405/402/402.
+// All regress and lengthen to 1407-1423 bytes; original current-index traversal, both predecessor
+// histories and metadata memcpy restored. Native frame/zero/flag homes remain.
+// N367: Capacity-owned link eligibility reused for surface work, expression bool/byte/short/long
+// 286/286/290/289; branch producers 359/359/370/366. NOT kept: no equality or gain; original predicates,
+// flags and indexed memcpy restored. Extra frame word, predecessor and flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -1044,6 +1057,12 @@ bool function_2715a0(byte *buffer)
 // individuals, three projection pairs and all four: 486 each; existing actual magnitude
 // producer 498 (2064 bytes, unresolved reduced call). Original declarations and body restored.
 // NOT kept: no gain or native register/root recovery; state/node/link and scalar homes remain.
+// DH351: Complete positive/complementary exclusion-test outcomes in bool/byte/short/long
+// storage: 486 each. NOT kept: no gain; original search, inherited result qualifier,
+// heap operations and body restored; state/node/link and scalar homes remain.
+// DH357: Fresh post-conversion denominator squares, with complete segment,
+// projection and collision operation families in eight forms: 486 each.
+// NOT kept: all tie; original fresh reads, sum trees and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

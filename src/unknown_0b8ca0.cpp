@@ -246,6 +246,13 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // const local object pointer 4; activation result reference 4; final type arms reversed 6;
 // inverted outer type test 17; existing object in only the 0x1c arm 80 (217 bytes);
 // unsigned component-get parameter 4. All restored; the pool data load schedule is unchanged.
+// Round 147 (lane 5, fast): one header local for the object and its type 18; a typed pointer add on the
+// pool data 4; the component pointer local before the `disable` test 4 (sunk into the arm); the
+// component index read into a local at entry 13. Diagnostics: 1-16 unused locals at entry 4 each (not a
+// symbol-count tie); unused mentions of the pool data/pool/index ahead of the lookup 4/4/4/4. Lead: a
+// compile-only copy reproduces our order for every lookup spelling, and only a second use of the pool
+// data after the add (diagnostic store, 75 at 210 bytes) gives retail's exact data-first sequence, so
+// retail's register allocator saw the data live past the add.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -650,6 +657,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // MiniMax A (11-03): no new form, no lower score.
 // score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
+// MiniMax R (11-01): no new form, no lower score: our frame is still 0xac against retail's self-aligned 0xb4; the alignment is decided by LTCG from the call chain (callers 0xbf2c0 and 0x268c90), not by this body.
 // Earlier round: the root-walk loop and the table read are the only places
 // left that could give retail's frame shape, so each was tried alone and together: the table
 // read moved inside the root loop 216 fast (237 plain), a bool result instead of the dword
@@ -757,6 +765,18 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // Round 126 (lane 8, fast, both callers matched): unit index local at every use 232; player pool global read at
 // each use 229; that as a for loop 260 (926 bytes); pool at each use with the range zero as the model-NONE else arm
 // 227; centre pointer declared after the radius square 230.
+// Round 147 (lane 5, fast, both callers in the image; without them every form below reads 243): the
+// range's zero as the model-NONE else arm 228; that plus a single-result query step (`long result = NONE;
+// if (absolute != NONE) result = ...`) 273 (927 bytes; frame 0xb4 and the player index spilled as
+// retail's); the single-result step alone 276 (927 bytes); else-arm zero + the step's ternary as
+// `index != NONE ? ... : 0` + the model index read at each use 224 (895 bytes, aligned 170 -> 108: the
+// lead, six under the keep bar); on it a bool result 272 (862 bytes), the player pool global at each use
+// 229, the near test reversed 224, the link iterator at function scope 224, the outer scope block removed
+// 224, the marker at function scope 229, the centre pointer before the marker 224, the unit index read
+// from the player at the marker call 224; else-arm zero + ternary 227; else-arm zero + model index at each
+// use 225; else-arm zero + ternary with the radius square before the model index 227; the rest of the
+// body inside the cluster loop's found branch 230 (the found path then skips the `cluster == NONE`
+// re-test as retail's does), with the 224 forms 239.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -1576,6 +1596,10 @@ done:
 // 23/23, the global passed to them 25/21/23/23, 23, scenario local kept for the name 25/21 (21: scenario
 // EBX and a dead block add); inline datum helpers over the definition 26/26/27/27/27/27, over the type
 // 31/27, an elements helper with an out size 31/27.
+// Round 147 (lane 5, fast): the type read from the name entry at each use, no type local, 17 (same code);
+// every placement read at the call with only the definition local 67 (236 bytes, EBX pushed lazily); the
+// type at each use with the palette added at the call 37 (240 bytes), with a long size 27 (236 bytes);
+// the type local with the definition table read at each use, all at the call, 67 (236 bytes).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1901,6 +1925,11 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // from the fresh data load it uses for the parent; the header with the index recomputed 303; header declared before
 // the parent 285 (identical); the parent read through `pool->data` 298 (1240 bytes); header and saved activity ahead of
 // the parent 294 (1240 bytes); `node` read at each use with no node_index local 295 (1249 bytes). Restored.
+// Round 147 (lane 5, fast): slot_handler.h's existing object_node_matrix/object_get can be used here once
+// this file's header view is renamed (the two views clash); with that rename: the parent's node matrix
+// through object_node_matrix(object_get(parent_index), node_index) at the call 342 (1269 bytes); the same
+// pointer taken before the link stores, as retail reads it, 358 (1288 bytes); that with `index` not
+// volatile 340 (1254 bytes). Without it: node_index read at entry 346 (1260 bytes); `allowed` as a long 297.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

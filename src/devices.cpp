@@ -634,6 +634,8 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
+// with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
 // score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
@@ -1080,6 +1082,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax A (11-04, run 41): no new form, no lower score (121); the initial velocity is still stack-passed
+// where retail keeps it in xmm6, and the ramp-down time still takes a register through the clamps.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // Earlier: retail keeps the initial velocity in xmm6 for the whole function and leaves
 // the ramp-down time in its stack slot; ours keeps the ramp-down time in xmm1 through the clamps
@@ -1244,6 +1248,10 @@ bool function_108530(long device_index, long name)
 // P306: Mutable acceleration/deceleration/cruise-speed producers, seven subsets,
 // then separately initialized derivatives: 121 each. NOT kept: no gain or match.
 // Original phase producers restored; XMM6 initial-speed/ramp-down stack residency remains.
+// Y580: Paired endpoint squares at entry/floors/bounds/pins, local/field cruise ownership:
+// 169/185/168/184/168/184/175/191. Post-pin pair recovers ret 0x14 and both callers in
+// preview, but grows a frame and 558/571-byte bodies. NOT kept: early one-use nodes lack
+// equality and regress; original complete body restored at 121, native 523 bytes.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1807,6 +1815,9 @@ bool function_0b6760(s_index_pair const *pair);
 // DH338: First-channel receiver across manual/group phases, pointer/reference,
 // inherited/ordinary index and saved-pointer domains: 376/376/393/393/392/392/441/441.
 // All restored; frame/index/header/state/result homes remain.
+// B429: Existing shared power/position/activity flag writers, subsets 1/2/4/3/5/6/7,
+// then all plus the refresh clear 367/285/387/367/371/387/371/371. NOT kept: no gain;
+// original frame, scalar homes, flag publications and complete callback restored.
 // M375: Complete closing refresh admission, bool/byte/short/long positive then complementary
 // result: 285/285/285/285/285/285/285/285. NOT kept: one-use decisions did not match; original frame,
 // observations, both inherited scalar qualifications and complete body restored.

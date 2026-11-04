@@ -244,6 +244,10 @@
 // Y572: Coherent existing cross/sum forced/ordinary/plain declaration pairs,
 // all eight nonoriginal policies: 581 each. NOT kept: frame remains 0x58/0x60;
 // complete target and both helper bodies unchanged, original declarations restored.
+// Y582: Standard array transfers for existing v2/v3/v4, seven nonempty subsets,
+// then all with ordinary w transfer: 676/736/661/739/719/749/765/803. Full basis
+// recovers frame 0x60 but grows to 2712 bytes. NOT kept: all regress; original
+// native copies, helpers, integer conversion and complete body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -845,9 +849,22 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // addss xmm6, xmm5), so everything after case 4 shifts. Side only 374, both 374; with case 1/2's first.x before
 // second.x 374 (VC copies the product instead); with normalize2d_fast on a case 1/2 side vector and normalize3d
 // on case 0's normal 368; that with the x pair before the y pair 372. All restored.
+// Y574: Current paired-point callback completion false/true at entry/chain boundary and default-
+// case first/last: 609/609/609/609/609/609/634/634. NOT kept: all regress; false entry completion
+// recovers frame 0xac but grows to 2608 bytes and changes homes; original 265 body restored.
+// Original complete body and helpers restored.
 // DH346: On retained paired geometry, staged side/normal/both crosses, shared chain difference,
 // immutable source/definition/outer/all pointer bindings: 265/265/265/266/265/265/265/265.
 // NOT kept: no native frame/spill recovery; original complete body and helpers restored.
+// Y576: One shared current/next/transition channel ordinal, long/short/word/byte
+// 265/754/754/754; also owning RGB tint 265/756/756/756. NOT kept: long forms
+// canonicalize; narrow forms disrupt unrolling. Original frame 0xa8 and scalar/spill homes remain.
+// Y578: Actual V interval in existing bounds, field/aggregate/native/library publication
+// at producer/entry storage: 267/267/573/573/267/651/573/573. NOT kept: interval
+// residence misses equality; native-frame copy forms grow. Original separate scalars and body restored.
+// Y582: On current paired-point geometry, original/shared normalizer pairs for camera side
+// and surface normal, all eight nonoriginal pairs: 270/270/377/377/377/377/377/377.
+// NOT kept: no byte match; original roots/scales, shared crosses and full body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

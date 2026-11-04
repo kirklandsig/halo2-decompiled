@@ -961,6 +961,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// MiniMax A (11-04, run 41): no new form, no lower score (196 in the 16-address set, 153 in the wider one);
+// the switch's cases still take their arguments in registers other than retail's (it pushes edi where ours
+// pushes esi), so the callee conventions decide this one.
 // score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
