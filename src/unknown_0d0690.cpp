@@ -2289,6 +2289,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // DH338: Complete RGB pin index loops in long/short/word/byte 542/1111/1111/1111;
 // advancing-channel loops 542/1111/1111/1111. Narrow loops remain rolled and shorten
 // away from retail; original helper/body restored, status/mesh/sample homes remain.
+// J253: Coordinated ordinary inline contracts for mesh lookup, both UV outputs, normal,
+// vertex color, bitmap/base samplers and dynamic interpolation: 542 each. Original
+// declarations/definitions restored; status/mesh homes and selective expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
