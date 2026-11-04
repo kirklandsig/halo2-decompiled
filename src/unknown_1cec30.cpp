@@ -1082,6 +1082,8 @@ void function_1d1540(s_havok_component *component);
 // component, index) on the 27 form 27 (same). Of 31 matched game functions with aligned SSE stack stores none
 // takes an EBX argument, so there is no matched precedent for this shape. Callees 0x1d1260/0x1d1540 each save
 // EBX, ESI and EDI, so their save sets do not explain it. Original body restored.
+// Permuter (25 min on #1044 round 3, about 470 variants): only a volatile short copy of m_fixed with a char
+// cast in the test and the arms swapped gave 60 (frame 0x94); not kept (volatile without a match).
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2460,6 +2462,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // sum (addss xmm4, [contact]) as well: 359/326/376/359 with the old setter (1454 bytes), 281/371/275/281/
 // 275 with the setter building its word first (1454 bytes, the three setter sites then agree); only j/k
 // scalars with velocity.i scaled in memory 159/153 (1467-1470 bytes). Not kept.
+// Permuter (25 min on #1044 round 3, about 1050 variants): nothing below its own baseline (87 in its render).
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
