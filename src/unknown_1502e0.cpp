@@ -509,6 +509,9 @@ struct s_tail_player_identifier
 // DH355: Scenario last-use scope 17; count-owned assignment, complete count arms,
 // failure-first arms and conditional producer, unscoped/scoped: 17/67/67/67/67/67/67/67.
 // NOT kept: no match; selector forms shrink the native extent; original body restored.
+// DH357: Actual matched-entry result before traits publication, scan/entry-owned
+// defaults, break/sole-exit transfers and ordinary/conditional results: 60/62/60/62
+// in each lifetime. NOT kept: no byte match; original complete body restored.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1671,6 +1674,10 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // DH355: Decoded ordinal declared before matching/pass/fallback/release/binding
 // traversal, then phase pairs/all four: 285/285/285/285/285/285/285/285. NOT kept: all tie;
 // original scopes/body restored; native mask/index homes and release expansion remain.
+// DH357: First matching-pass repeated option-user/controller/player-user captures,
+// seven subsets then admitted-option user lifetime: 285/668/669/674/260/628/612/636.
+// NOT kept: 260 combines tying/regressing parts, hoists separate pass tests and
+// shortens away from retail; every field observation and full body restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

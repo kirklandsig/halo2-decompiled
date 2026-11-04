@@ -1043,6 +1043,9 @@ bool function_2715a0(byte *buffer)
 // DH351: Complete positive/complementary exclusion-test outcomes in bool/byte/short/long
 // storage: 486 each. NOT kept: no gain; original search, inherited result qualifier,
 // heap operations and body restored; state/node/link and scalar homes remain.
+// DH357: Fresh post-conversion denominator squares, with complete segment,
+// projection and collision operation families in eight forms: 486 each.
+// NOT kept: all tie; original fresh reads, sum trees and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

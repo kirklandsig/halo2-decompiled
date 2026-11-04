@@ -644,6 +644,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DH332: Standard real sine/cosine overloads across the sweep and obstacle phases,
 // seven subsets then native absolute/count overloads: 719/719/719/719/719/719/719/719.
 // All canonicalize; original APIs and body restored. Frame/radius/trace homes remain.
+// DH357: Actual advancing obstacle-entry cursor, short/long/int/word ordinal,
+// consumed/explicit head steps: 785/779/779/781/785/779/779/781.
+// NOT kept: all regress and lengthen; original traversal and whole body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
