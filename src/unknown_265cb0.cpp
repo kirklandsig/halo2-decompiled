@@ -557,6 +557,10 @@ real function_30bf0(vector3f *vector);
 // DH346: Projected displacement in motion via native stores/setter, independent vector, complete
 // mutable/immutable scalar results via stores/setter, then scalar-to-motion transfer: 316/316/316/150/150/150/150/316.
 // NOT kept: 150 gains only two; native result/range/projection homes remain. Original body restored.
+// DH371: Actual outer/scaled/secondary/primary/near/secondary-improvement/primary-improvement/
+// player-eligibility Boolean test results: 188/188/152/152/152/152/152/191.
+// NOT kept: no equality or gain; original complete body restored. Result/range/projection
+// homes and inverse delta/motion SIMD groups remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

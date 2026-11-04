@@ -1749,6 +1749,10 @@ bool function_17afd0(long effect_index, long value);
 // DH350: Independent visibility/drawing getter lifetimes, availability default
 // after getter/owner/view, joined/nested success, view-default and conditional:
 // 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
+// DH371: Partial owner-equality/attachment/camera-admission/camera-test/rejection/view-guard/
+// owner-validity/location-admission Boolean results: 47 each on the recovered owner-arm graph.
+// NOT kept: no match or gain; original snapshots, query gates and complete body restored.
+// Native availability clearing/branch production and later current-view observation remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
