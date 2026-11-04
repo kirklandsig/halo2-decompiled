@@ -276,6 +276,7 @@ real normalize2d(point2f *arg_0);
 // P311: Existing planar difference over full vector/point storage with native/library captures,
 // P311: each with full/planar actor-direction production: eight forms 180 at exact 1025 bytes.
 // P311: Original full helper and body restored; object-mask/copy/SSE scheduling and query-success ordering remain.
+// F368: Actual first/second/both normalizer completion as real, then bool, and entry-owned real/bool pairs: 180 each at 1025 bytes. NOT kept: one-use completion captures do not match or recover early mask/copy/SSE scheduling. Original body and inherited local qualifier restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

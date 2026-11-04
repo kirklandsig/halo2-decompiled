@@ -288,6 +288,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Original body restored.
 // F365: Point-owned squared/ordinary metrics and output-record initializer, masks 1/2/4/3/5/6/7, then ordinary inline:
 // 390/390/390/390/390/390/390/503 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// F368: Existing squared/length nominal double carriers with original real rounding and output-reference contract, subsets 1/2/4/3/5/6/7, then full graph with pointer output result: 390 each at 1596 bytes. NOT kept: no byte match; original helper contracts, casts and complete body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

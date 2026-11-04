@@ -2309,6 +2309,7 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // P311: Complete independent normalization receiver, native/library/component captures with native/library publication:
 // P311: 322/322/322/322/307/307; native/library capture with full component publication 311/311.
 // P311: NOT kept: all regress and grow beyond retail. Original in-place helper and body restored; product fold and final count split remain.
+// F368: Existing scale complete scalar input/products/setter/native input/index loop/native-input loop/scalar-input setter/native output: 40/40/40/340/16/340/40/340. Plain loop 16 at 967/965; NOT kept: shared users worsen and 25 matches are lost. Shared header restored; final count split remains.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2582,6 +2583,7 @@ s_cached_input_list g_5234e8[4];
 // P311: Native external source/object-slot layouts and complete existing position setter, subsets 1/2/4/3/5/6/7:
 // P311: 146/146/156/146/156/156/156, fast control 146 versus full 113; complete graph with list snapshot 157.
 // P311: NOT kept: no calibrated gain; setter/list forms shrink away from retail. Original body restored; frame and register homes remain.
+// F368: Native complete projection axis/products and existing setter variants, without/with once-read list: 135/142/142/135/129/121/121/129 fast (control 147, full 113). List forms recover frame 0xa0; NOT kept: grouped or one-use producer captures lack byte equality and a reduced-only lead is not a full gain. Original body restored.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3630,6 +3632,7 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // P311: Existing device member color/position/UV API families on native color, subsets 1/2/4/3/5/6/7:
 // P311: 225/382/225/382/225/376/376; all member families with scalar alpha 394.
 // P311: NOT kept: six-point forms grow to 1826; native-length 376 regresses. Original APIs, color and full body restored; frame/scalar homes remain.
+// F368: Existing corner output reference/pointer result/reference result/value result, scalar/native-color frames: 231/231/231/701/225/225/225/707. NOT kept: contracts do not match; color gains six and grows to 1826/1819; value returns grow to 2086/2092. Original helper and complete body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
