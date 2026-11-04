@@ -7472,6 +7472,31 @@ real function_50650(real cosine);
 // to-frame rows through dot3f 1067 (2846): extra inline levels in this body do not use up the inliner's budget. On
 // the current 0xc7750: both rotations through matrix_transform_vector 566 (2450 bytes); the target's in-place
 // rotation alone 566 (2450). All restored; still BLOCKED-BY 0xc7750's inlining.
+// Round 7 of #1049 (full statement walk of all 612 retail lines against this body, fast 563 unchanged): no logic
+// difference. Verified: the to-frame rows (i,k,j / i,j,k / i,k,j orders and frame offsets 4/8/0xc, 0x10/0x14/0x18,
+// 0x1c/0x20/0x24), wraps (limits[1]-limits[0]-2pi > -0.0001), the yaw/pitch clamp tails (retail jumps straight to the
+// target construction when the pitch clamp fires, same as `unchanged = false`), cos(p)cos(y) / cos(p)sin(y) / sin(p),
+// the in-place frame rotation of target then 0x30bf0, the speed test (|speed| < 0.0001 or == 0 zeroes both speeds,
+// retail only on that path), the prediction rows (all three cross terms and operand orders), both atan2/sqrt
+// pitch terms, `(x - current) * (1/rate)` with 1/rate divided late, the +-pi offset wrap, the five c7300 arguments
+// (offset, speed, max_speed, acceleration, &motion), 0xc75d0's (yaw, pitch, acceleration), 0xc7750's arguments
+// (motion in ECX, new speed pointer in EDX, offset pointer on the stack, XMM3 rate / XMM4 speed / XMM5 offset),
+// both calls running before the `yaw_done && pitch_done` test, the done path (current = target, velocity =
+// *0x4687a4), the yaw/pitch clamps without the `unchanged` flag, direction and next (speed * rate + angle),
+// clamped dot in operand order i,k,j, the cross product signs, 0x30bf0, acos(dot) / rate capped at max_speed
+// (0x322bd8 behind function_50650), the velocity scaling and the frame/no-frame tail. Constants checked in the XBE:
+// 2pi 0x43f17c, pi 0x45dddc, -pi 0x45df50, 1.0 0x45dbc0, -1.0 0x45dbcc, +-0.0001 0x45dbdc/0x45ddfc. The 9 missing
+// bytes are encodings (ours folds [edi] loads into mulss memory operands where retail preloads XMM0-2; stack
+// layout 0x8c vs 0x80), not a statement. Retail's slot map (offsets after its `push ebx`): wraps byte 7; offsets 8/0xc;
+// current-in-frame 0x10..0x18 reused for the speeds and later yaw/pitch; desired angles 0x1c/0x20; current angles
+// 0x24/0x28 reused for the new speeds; velocity copy 0x2c..0x34 reused for next; desired-in-frame 0x38..0x40 reused for
+// target then direction; motions 0x44/0x64.
+// Inlining probes (accumulator 0xc7750, 28, 227 bytes): `static` on 0xc7750 1103 (same); 40 dead statements
+// before the calls 1098 (2866, still inlined); 60 live statements (4059 bytes, still inlined: the caller's size does not
+// matter); file flag /Ob1 1204 (1889 bytes: the static helpers and trig stop inlining); the c7300..c7750 sequence
+// duplicated into the wraps and else arms (no inlining, 2575 bytes, the compiler does not merge them) 718. The inliner
+// keeps the calls out of line only when they sit in a conditional block (round 197's tests), never from the size
+// of the caller or the callee's linkage.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
