@@ -617,6 +617,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // and forced inline, then both with bulk fallback copy or float root: 126 each.
 // Original helper, callers and complete body restored; velocity-copy receivers,
 // early unity SIMD residence and later angular x87/SSE homes remain.
+// AC528: Initial speed acceptance/rejection in bool/byte/short/long
+// 225/225/225/225/225/225/225/225. NOT kept: no exact match or eligible gain; original complete body restored.
+// Velocity-copy receivers, early unity and SIMD/x87 homes remain. No retained candidate.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
