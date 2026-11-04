@@ -260,6 +260,21 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // first arm 431 (1695 bytes); each emission's y written before x 421 (1743 bytes); diagnostic: the arg_0 address
 // read removed 401 (1728 bytes, cleanup 0x18, caller 0x29a190 697). Retail spills the first arm's cosine to
 // [esp+0x28] and takes the y product in SSE before the sine; ours keeps both on x87. Original body restored.
+// AC507: Existing point setter at sum/endpoint/fixed-rotation producers, subsets
+// 1/2/4/3/5/6/7 then general rotation too: 457/458/489/485/524/541/561/593.
+// NOT kept: all regress and grow; original producers, setter declaration and full body restored.
+// Unified endpoint-side predicate for all orientation consumers, second/first polarity
+// as bool/byte/short/long: 415/436/437/436/438/438/446/430. All regress;
+// original predicates, counters, helpers, publication and whole body restored.
+// P305: Twice-used fixed-turn sine angle, double/real, near-arm/endpoint lifetime,
+// conditional/test-produced: 414/414/417/417/407/410/408/411. All regress; original
+// whole body, normalizer, emitter and double trig inputs restored; native XY homes remain.
+// M352: First-trig product pairs before second trig at positive/negative/general rotations,
+// masks 1/2/3/4/5/6/7 397/399/414/395/397/399/414; complete paired products 497.
+// NOT kept: early one-use products and changed real rounding do not match; original whole body restored.
+// M359: Fixed-pair sine-first/general-pair cosine-first producer subsets 1-7,
+// then all with a separate negative fixed pair: 405/405/405/421/403/403/419/419.
+// NOT kept: unmatched schedules regress; original trig producers and complete body restored.
 // DH324: Whole native output-record references at first/second/repeated emission,
 // seven subsets then all native pointers: 413/413/431/432/450/450/468/468. Original destinations,
 // helper, publication graph and complete body restored; entry/normalized homes remain.
@@ -607,6 +622,19 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // setting only the three scales, the three point2f built after 868 (3287); the sweep points declared in the
 // loop body 719 (same code); the reversed direction negated by component 822 (3355); the obstacle distance
 // through the existing magnitude2d 719 (same code). Frame 0x124/0x114 and the cached radius (XMM5) remain.
+// DL254: Current ordinary-result graph with byte/short/word/dword edge-center outcomes, then obstacle facing:
+// 719/744/744/761/719/787/787/751. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
+// J248: Completed three-dimensional direction/reverse/pivot workspaces for
+// late obstacle deltas, rotated direction or both: 753/734/761/719/763/739/773/747.
+// NOT kept: these native-workspace lifetime forms do not match; original
+// independent workspaces, scalar observations, helpers and complete body restored.
+// P302: Existing sweep-rotation actual offset/pivot references, subsets 1/2/3/5/6/7 then
+// ordinary-inline input-pair/full graph: 719/719/719/719/719/719/719/719. Original contracts and whole body restored;
+// frame/radius/trace and pivot homes remain.
+// P304: Native settings/actor backing members and shared normalizer, masks 1/2/4/3/5/6/7,
+// then all with direct actor-position uses: 719/719/756/719/756/756/756/790. Original types, helper and body restored;
+// frame 0x124/0x114, radius and trace/pivot homes remain.
 // DH332: Standard real sine/cosine overloads across the sweep and obstacle phases,
 // seven subsets then native absolute/count overloads: 719/719/719/719/719/719/719/719.
 // All canonicalize; original APIs and body restored. Frame/radius/trace homes remain.

@@ -405,6 +405,25 @@ union s_185be7
 // AC497: Entry index presence/absence retained across the output clear,
 // bool/byte/short/long, eight forms 690 each. Original admission, reset,
 // root observations and complete body restored; root/NONE and scalar homes remain.
+// AC509: Existing reset returns its actual action subobject, pointer/reference inputs
+// and pointer/reference results, ignored then consumed: 622 each (eight forms). Original
+// reset, receiver, six stores and complete body restored; control-root/NONE homes remain.
+// B396: Final auxiliary-input eligibility bool/byte/short/long at consumption 622/622/622/622;
+// admitted-branch source/result 623/623/627/626. NOT kept: no exact one-use/branch-result form;
+// original complete body restored. Control-root/NONE, settings/zero and flag schedules remain.
+// Round 404: Main/secondary direct flag macros 806/657; low/high/all word-input publications
+// 616/616/603; with main/secondary/both 801/645/774. NOT kept: 603 widens native byte stores. Consistent
+// byte macros 616 (six-point gain below eight). Original flag widths/helper/body restored; root/NONE and
+// scalar homes remain.
+// P308: Existing reset as a native subobject/whole-output member, forced/ordinary expansion,
+// 622/1013/622/1013; complete clear owned by output, without/with actual returned output,
+// 1013/1013/1013/1013. NOT kept: no gain; original free reset, clears and full body restored.
+// P310: Plain two-axis turn/attachment-scale/object-scale array loops, subsets 1..7:
+// 991/616/991/616/991/616/1185; complete loops with shared axis 1185.
+// NOT kept: six-point best gain is below gate; original array producers and full body restored.
+// M351: Immutable existing range minimum/span/exponent, all seven subsets, then all with
+// a read-only range-record binding: 622 each. Original observations and complete body restored;
+// control-root/NONE, settings/zero homes and clamp/flag joins remain.
 // DH326: Existing flag mutator with short/word/dword canonical predicates, pointer then
 // native reference destinations: 626/626/625/626/626/625; ignored pointer/reference destination
 // results with Boolean predicates 622/622. Original helper and full body restored; root/NONE

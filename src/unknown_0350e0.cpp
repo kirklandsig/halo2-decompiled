@@ -120,6 +120,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 465; scalar in-place helper (i, j, k read once; k re-read as retail) as one expression, running sum or staged 377/377/377 (aligned 276,
 // frame 0x64). On that: squares before trig 376; named sine products 411; hoisted angles 394; squares+products 420; squares+angles 396;
 // products+angles 434; all three 440; with rows in retail's pair order 481. Retail's matrix slots: first at 0x60, second at 0x2c.
+// B409: Paired cross-coefficient construction, original/late diagonal squares and reused sine
+// parts, interleaved/grouped diagonal phases: 364/409/362/385/411/441/355/391.
+// NOT kept: one-point lead at native length below gate; original builder and complete body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1844,6 +1847,10 @@ real game_time_get_seconds();
 // retail's j, i, k order (507; product operands still global-first where retail loads delta.i/delta.k
 // first); with the j product's cast on the global 507 (same code). Also tried: `color` renamed 507
 // (no slot moves); camera sums through dot3f 507; their terms respelled k, i, j 507 (same code).
+// B409: Full sampled-color field/library/overlap-safe transfers, then saved-position
+// transfers and paired field/library forms: 543/507/555/497/507/515/534/507.
+// NOT kept: saved position fields at 497 emit SSE transfers instead of native integer-word capture;
+// frame 0x90 versus 0x94 and output homes remain. Original complete body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2293,6 +2300,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // Round 64 (fast): only motion[1]'s product and the count compare differ (their 3 bytes are the length gap). Motion record
 // struct 40; group struct 40; both 40; while loop 40; normalize_inline 48; `*(long *)group > i` 40; motion[7] from
 // motion[1] 137; pointer local to motion[1] 40; byte-offset stores of motion[0]/motion[2] 40; vector3f view pointer 40.
+// P311: Complete independent normalization receiver, native/library/component captures with native/library publication:
+// P311: 322/322/322/322/307/307; native/library capture with full component publication 311/311.
+// P311: NOT kept: all regress and grow beyond retail. Original in-place helper and body restored; product fold and final count split remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2415,6 +2425,10 @@ real magnitude3d(vector3f const *v);
 // moving angle/sine/cosine homes); acos on a fresh dot3f 198 (1039 bytes); arms swapped under the
 // inverted test 171; sine, projection dot, cosine, then the product 170; fallback `-step > delta` 170
 // (identical); fallback delta through the nested ternary clamp 188 (1025 bytes). Body restored.
+// DL257: Complete native/shared/staged tangent producers with a plain rotation loop 191/191/191;
+// consuming the first vector 186/186/186; direct cyclic rotation loop 178; tangent and rotation
+// loops 191. All retain the raw-length/promoted-dot home mismatch. Original complete body
+// restored; shared tangent forms also raise two other scores.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2492,7 +2506,7 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 109 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
+// score 113 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
 // top) and the total on the stack, the index in EBX and the cursor in EBP; ours holds the total in EBP.
 // Earlier at 132: frame 0xa0 and loop constants agree; first +0xb saves
 // Round 55 (plain): the three sibling 0x33400 forms 130; with const list/table reads 130; with a bool object
@@ -2559,6 +2573,9 @@ s_cached_input_list g_5234e8[4];
 // view declared before count 109; shape declared before index 109; object read before the definition
 // 109; the loop bound read from g_547f98 at each test 140 (551 bytes); output[count] written at each
 // store instead of the result pointer 109.
+// P311: Native external source/object-slot layouts and complete existing position setter, subsets 1/2/4/3/5/6/7:
+// P311: 146/146/156/146/156/156/156, fast control 146 versus full 113; complete graph with list snapshot 157.
+// P311: NOT kept: no calibrated gain; setter/list forms shrink away from retail. Original body restored; frame and register homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2903,6 +2920,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // projection helper with an output pointer 514 (frame 0x44); speed test as sqrt(dot3f) 519, as
 // normalize_inline's float sum 527, its double sum grouped j + (i + k) 486 (same code); acceleration
 // as a vector3f with vector3f_scale and vector3f_add 513, with vector3f_scale only 513.
+// DL257: Actual state scalar fields, scalar arrays, velocity vectors, complete state, view
+// geometry, view scalar/random fields, complete view and complete state/view fields: 486 each on
+// the retained inline-normalization graph. Original body and field accesses restored; frame 0x60
+// versus 0x38 and stored-velocity/projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3256,6 +3277,11 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // 144, kind as signed char 220. On the if-form graph: `!(alpha > 0.0f)`, `0.0f >= alpha`, a ternary, the getter's
 // return tested, the header unnamed, result initialised false 231 each; kind as signed char 211 (773 bytes),
 // short 226, declared after alpha 233. Body restored.
+// DL257: Complete failure outcome in bool/byte/short/long, branch-set 167/167/210/208; entry-
+// default 213/213/219/217. NOT kept: 167 reaches 773 bytes by an inverted failure carrier with
+// recursive neg/sbb/inc and a final test/sete; retail copies and returns its positive byte
+// directly. The other forms regress. Original complete body and positive result restored; frame
+// and fade scratch homes remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -3595,6 +3621,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // spill homes stay x 4 / z 8 / radius 0xc / -radius 0x10 where retail has x 4 / radius 8 / -radius 0xc / z 0x10;
 // on that: corner helper locals renamed three ways 225/225/225 (names move no slot), offsets passed by value
 // 400 (1805 bytes), offset declared first 225, colour declared at function scope 225.
+// P311: Existing device member color/position/UV API families on native color, subsets 1/2/4/3/5/6/7:
+// P311: 225/382/225/382/225/376/376; all member families with scalar alpha 394.
+// P311: NOT kept: six-point forms grow to 1826; native-length 376 regresses. Original APIs, color and full body restored; frame/scalar homes remain.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -4598,6 +4627,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F340: Complementary rejection state in bool/byte/short/long, sequential selected-bit
 // then gate versus complete admission: 218/218/228/231/210/210/242/247.
 // Every shared user regresses; original helper and complete caller restored.
+// B409: Extra-gate-first pass state, initial-gate rejection and admitted-gate conditional
+// selection in byte/bool/short/long: 248/248/219/213/205/237/231/238. Both peer users regress;
+// original shared producer and complete caller restored; native late bytes/mode loads remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

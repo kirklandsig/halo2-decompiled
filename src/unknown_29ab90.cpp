@@ -316,6 +316,12 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // local_5 366; that with local_4 as a struct copy of the +0x290 vector 442 (1887 bytes); local_6 declared before
 // local_5 412 (1864 bytes); the input magnitude taken inside `if (local_2)` 353. Retail copies local_4 whole (k
 // included) into +0x5c..+0x64 before 0x29b2e0 and builds local_20 from that copy after the call. Original body restored.
+// P305: Native library working/output/secondary entry transfers, seven subsets
+// 449/345/366/449/442/366/442; all with the later requested-vector transfer 442.
+// Original whole body and helpers restored; magnitude/query overlap and native frame remain.
+// M359: Query outcome after escaped output production, positive/complementary
+// bool/byte/short/long: 345/345/345/345/345/345/345/345. NOT kept: one-use call
+// result is unmatched; original query guard, output lifetimes and complete body restored.
 // DH324: Full pre-update saved direction owns the later in-place planar workspace:
 // native/aggregate/setter/library copies, original then single-root planar result
 // 363/332/366/363/325/366/332/325. NOT kept: 325 at 1874/1863 bytes moves length away from the starting 1866;

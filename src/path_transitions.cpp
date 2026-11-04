@@ -671,6 +671,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH339: Direct result returns at native paired/actor/trace case ends, seven subsets then
 // complete success exits, eight at 270 fast; full form 270 plain, 1280 bytes.
 // Kept complete per-case returns; early root/actor ingress and paired vector scheduling remain.
+// Round 145 (m3 lane 5, fast; 0x270d90 286): a shared forceinline wrapper over 0x270400 for cases 5 and 2 278;
+// an inline vertex accessor for all eight vertex lookups 278; case 5's test as a named `found` bool 278 (all same
+// code); the register parameters declared pathfinding, entry, surface_index everywhere 278 (same code); the
+// surface read through the table at each use 429 (1336 B). A cdecl compile-only first pass loads actor_index
+// only at its uses even with uses added to every case, so no body form here gives retail's entry load.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

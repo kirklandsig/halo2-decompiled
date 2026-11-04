@@ -1416,10 +1416,27 @@ struct s_looping_detail_request
 // B389: Positive branch-assigned completion without an entry default, bool/byte/short/long,
 // with original then early audible completion: 152/159/174/176/152/159/174/176. All regress;
 // original completion and full body restored; first-player call and detail/offset homes remain.
+// Y560: Complete camera const-pointer/reference/const-reference/value at the lookup,
+// original audible output then temporary/copy: 124/124/124/137/137/137/137/150. NOT kept:
+// no byte match; original camera and complete body restored; first-player expansion remains.
 // M343: One admitted-request graph from the reused attached-source outcome, bool/byte/short/long,
 // with native audible offset 154/154/156/156, with temporary/copy 182/182/183/183. Original
 // complete body restored; query expansion and detail/offset homes remain.
 // NOT kept: unmatched admission outcomes; every form regresses.
+// J246: Actual mode value reused for admission/publication, char/byte/short/long:
+// request output 131/131/132/132; native temporary/copy 158/158/160/160.
+// NOT kept: sign extension replaces the native mask, lengths grow to 518/540,
+// and the first-player query still expands. Original whole body restored.
+// B406: Final output-mode completion, bool/byte/short/long positive 146/146/146/146;
+// complementary output-mode completion 145/145/145/145. Original carried AL result
+// and entire body restored; native first-player call and offset/detail homes remain.
+// B410: Native input-detail/pooled-sound/output-source lexical homes, seven subsets,
+// then the complete request/tag/player/camera/completion identities: 110 each.
+// Original names and whole body restored; first-player call expansion and native
+// detail/offset transport still differ.
+// M353: Shared admission/traversal remaining count, long/short with while/for,
+// native audible output 110/110/113/113; temporary/copy 130/130/141/141.
+// No gain; original separate count/skip, output and complete body restored.
 // DH332: Typed source/offset/velocity copies, seven subsets then complete backward ranges:
 // 172/181/202/114/165/175/196/182. NOT kept: all regress; query expansion and detail/offset transport remain.
 // Original complete body and contracts restored.
@@ -1603,6 +1620,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // with an entry pointer and flags local 138 [22], with 0x21cc30 inline 122 [19] and 150 [21], the set path written out as well 53 [20],
 // 138 [22] and 150 [21], with the result moved 51 [18]. Diagnostics, 0x2194c0's parameters swapped everywhere (0x21cb90 0): 49 [30], with
 // the result moved 47 [28], with the twice-indexed take 144 [28], with 0x21cc30 inline 65 [25]. BLOCKED-BY 0x2194c0 for that arm's registers.
+// F361: Entry-declared result, false initialization after playing/tag/offset/track/
+// handle/playback/pitch/take producers: 50/48/48/48/48/48/50/56, all at 616 bytes.
+// NOT kept: two-point gain below threshold; original initializer and complete body restored.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {
@@ -1805,9 +1825,26 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // B387: Native detail-time/entry cursors and read-only detail, seven subsets, then immutable
 // parent binding: 479/491/479/491/479/491/491/491 (reduced control 479, full 305).
 // Original full body restored; request/frame, playback/NONE and range/ring homes remain.
+// P298: Detail-query acceptance in bool/byte/short/long, complete short-circuit results
+// 305/305/305/305; query-failure completion 442/442/444/443. Exact-only carriers restored;
+// native frame and playback/NONE/range/request homes remain.
 // M343: Canonical inactive-range predicate bool/byte/short/long with original request
 // 417/417/414/416; actual full request 417/417/411/416. NOT kept: retail keeps the raw mask
 // in EDI and no predicate form matches. Original mask, request and full body restored.
+// J247: Coordinated query/preparation/stop/scanner inline contracts, original/full request:
+// 305/305/305/305/305/305/305/305. NOT kept: no gain; scanner raises 73 other scores.
+// Original complete body, request and every contract restored; frame and range/ring homes remain.
+// F358: Class gain-rate snapshot/zero-rate-first/read-only receiver, seven subsets, then immutable pitch modifier:
+// 478/479/479/495/478/479/495/495 (unchanged fast 479; full 305). NOT kept: snapshot 478 versus preview 479 gains only one and grows to 1924/1923 bytes; original observations, providers, request, loops and body restored.
+// B400: One reused range-sound handle with producer/entry declarations, independent pass counts
+// and native complete request: 482/482/465/465/480/480/465/465 fast (control 479, full 305).
+// Native request/producer handle restores frame 0x128 and first +0x39, plain 439 at 1923 bytes.
+// NOT kept: no exact match or full gain; original observations, arrays, request and body restored.
+// B408: Independent first/second range ordinals word/long, long/word, word/word,
+// byte/long, long/byte, byte/byte, signed-byte/long, long/signed-byte:
+// 508/525/503/510/524/520/380/482f (control 479f, full 305). First signed byte
+// plain 426 at 1907/1923 bytes, frame 0x11c; NOT kept: no full gain or native frame.
+// Original long ordinals, count reads, request and complete body restored.
 // DH334: Named computed gain difference/pitch interval/detail milliseconds, seven subsets,
 // then complete stages with a named pitch offset: 479 each reduced (control 479, full 305).
 // NOT kept: no gain or native frame recovery; original complete body restored.
@@ -2182,6 +2219,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // track-gain and scale locals 465 at 1937 [237]; both 502 at 1958 [240]; `primary` after the clear 345 at 1932 [213], with the early
 // locals 485 at 1942 [276], with the gain sum ahead of the clear 345 at 1932 [217]; `pitch` after the clear 466 at 1935 [244]; the total
 // gain in its own local 349 at 1936 [263]. Retail tests `primary` before the clear, so the 213 is not its shape.
+// P304: Native gain/flag-byte/effect views, subsets 1/2/4/3/5/6/7 then readonly modifier:
+// 339/411/339/411/339/411/411/411. Flag-byte forms reach 1929/1929 but retain frame 0x4b4/0x4bc and regress.
+// Original types/views, receivers and full body restored; early scalar/clear/query homes remain.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
@@ -2464,6 +2504,13 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // B387: Existing byte-flag writer at all three final publication sites, seven subsets,
 // then all with masked native truth arguments: 694 each (reduced control 694, full 597).
 // Original complete body restored; entry true/flags, record/track homes and loop padding remain.
+// P298: Independent energy/output ordinals, two do/do identities 597/597;
+// for/do, do/for, for/for and while counterparts 672/724/769/672/724/769.
+// Original loops and complete body restored; entry true/flags and record/track homes remain.
+// M343: Complete pending-valued return graph, bool/byte/short/long direct initial state test
+// 668/668/799/793; default-true state-test counterparts 755/755/800/794.
+// All regress; original completion polarity, sole exit and complete body restored.
+// NOT kept: all outcomes regress; wider domains grow the frame to 0x40.
 // Lane 14 r57 (plain, from 597): `alternate` declared inside the definition guard 615 at 2500 bytes (the entry is
 // then retail's to +0x6c: result first, EBX = 1 shared by the alternate mask and the true stores; the source copy
 // keeps the pointer in ESI where retail copies it from EDX, which shifts the energy loops' padding); with `distance`
@@ -2473,6 +2520,24 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 668/668/799/793; default-true state-test counterparts 755/755/800/794.
 // All regress; original completion polarity, sole exit and complete body restored.
 // NOT kept: all outcomes regress; wider domains grow the frame to 0x40.
+// J246: Actual lookup-missing/existing outcomes own dispatch and track creation,
+// bool/byte/short/long channels: 740/740/736/748 and 740/740/736/748.
+// NOT kept: all regress at 2518 bytes/frame 0x3c; entry flags/true and record/track
+// homes remain. Original branch-owned creation flag and complete body restored.
+// B406: Completed acquisition supplies admission and return, bool/byte/short/long
+// success 749/734/778/782; complementary pending outcomes 732/732/775/780. All regress;
+// original branch-owned result, persistent input truth and complete body restored.
+// B408: Actual primary definition/sound/input record reference subsets 1..7: 694f each;
+// complete bindings with overlap-safe source transfer 780f (control 694f, full 597).
+// NOT kept: entry true/flags and record/track homes do not recover; transfer grows frame
+// to 0x40. Original roots, copy, qualifiers and complete body restored.
+// P306: Actual track/track-tag/pitch-entry references, seven subsets, then read-only
+// selected tag/pitch receivers: 694 each, tying reduced control (full 597). NOT kept:
+// no gain or match; original body restored. Entry true/flags and record/track homes remain.
+// M353: Complete per-track availability bool/byte/short/long conjunction results
+// 680/680/671/680; conditional values 679/679/685/685 fast (control 694; full 597).
+// NOT kept: retail first copies alternate, then clears only the unavailable path;
+// complete-result stores differ. Original producer, widths and whole body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

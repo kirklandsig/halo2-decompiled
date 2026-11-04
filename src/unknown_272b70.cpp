@@ -1488,19 +1488,27 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH316: Genuine collection/selection pointer-receiver lexical identities, seven subsets
 // then the complete iterator identity: eight 32s, 846/846 bytes. Original entire body
 // restored; iterator scaling, leave-selector and request/slot publication homes remain.
-// DH320: Existing request producer returns canonical submission in byte/signed-char/char/
-// short/word/int/long/dword domains: 77/77/77/77/77/77/77/77. Original bool helper
-// and complete body restored; iterator/leave-selector/request homes remain.
 // AC503: Native sorted-row pointer/count traversal, short/word/long/dword counters, mutable/read-only
 // receivers 36/36/75/75/36/36/75/75. Original ordinal loop and complete body restored; iterator load, leave-selector
 // and request/publication allocation remain. NOT kept: unmatched traversal/domain forms.
+// M344: Winning-seat presence/absence produced by all original score improvements,
+// bool/byte/short/long 147/147/143/147/147/147/147/151. NOT kept: unmatched selection
+// flags grow the frame and body; original short winner, requests and complete body restored.
+// P309: Existing request builder split from submission: void-pointer/pointer-result/void-reference/
+// unit-result, forced/ordinary expansion, 72/72/72/32/72/72/72/32. Original helper and
+// complete body restored; iterator/leave-selector/request homes remain; no exact builder split.
+// DH320: Existing request producer returns canonical submission in byte/signed-char/char/
+// short/word/int/long/dword domains: 77/77/77/77/77/77/77/77. Original bool helper
+// and complete body restored; iterator/leave-selector/request homes remain.
+// M355: Appended row pointer/reference, count release after actor/geometry/distance
+// or at acquisition on the retained slot graph: 153/153/153/153/153/153/153/153.
+// NOT kept: no exact append lifetime; retail increments after the busy query. Full body restored.
+// M357: Complete actor/capacity admission at collection, positive then complementary bool/byte/short/long:
+// 32/32/32/32/32/32/32/32. NOT kept: no exact producer/contract form; original complete body restored.
 // DH323: Actual collection/sorted-candidate/selected-seat record lvalues, seven
 // subsets 150/32/150/32/150/32/150; all four seat/candidate roles 150.
 // NOT kept: no handle/scaling, leave-selector or publication-home recovery;
 // comparator remains exact. Original pointers and complete body restored.
-// M344: Winning-seat presence/absence produced by all original score improvements,
-// bool/byte/short/long 147/147/143/147/147/147/147/151. NOT kept: unmatched selection
-// flags grow the frame and body; original short winner, requests and complete body restored.
 // DH325: Entry/no-seat completion and no-winner continuation, seven subsets,
 // then split entry exits: 32/32/32/32/32/32/32/32. Original complete body restored;
 // iterator acquisition, leave-selector and request/publication homes remain.
@@ -2768,6 +2776,14 @@ struct s_scenario_scripting_view
 // B394: Complete packed winner in long/dword storage, winner-produced/retained set bits;
 // and admitted/entry result lifetime; original low-word NONE test retained: 96/94/91/101/96/94/91/101.
 // NOT kept: no exact match; original complete executable source restored.
+// B407: Positive/complementary scenario-data count admission in bool/byte/short/long
+// domains: 80 each. Exact-only condition results restored; actor/set/counter homes and
+// delayed scripting-data observation remain. Original complete search restored.
+// M355: Winner presence/absence published at each strict improvement with exact
+// short-NONE handling, bool/byte/short/long: 92/92/104/105/92/92/99/100.
+// NOT kept: no exact selected-state graph; original short winner and full search restored.
+// M357: Entry actor-presence admission, positive then complementary bool/byte/short/long:
+// 80/80/80/80/80/80/80/80. NOT kept: no exact producer/contract form; original complete body restored.
 // DH325: Native output-present/absolute resolver-branch predicates in bool/byte/short/long
 // storage: 80/80/80/80/80/80/80/80. Exact-only predicate forms restored;
 // actor/counter/set homes and the early scripting-data observation remain.
