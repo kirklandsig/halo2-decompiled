@@ -7204,7 +7204,7 @@ struct s_unit_turn_state_view
    is in state 1 at +0x1bc), within its aim and look limits when they are
    on (0xc7840); records the aim's turn speeds (+0x243, +0x1f8); whether
    either moved */
-// score 401 (was 640): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
+// score 395 (was 401): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`
 // in a stack slot ([esp+0xb], 0 stored up front, reloaded on the all-close path, BL=1 on the moved path)
@@ -7214,6 +7214,20 @@ struct s_unit_turn_state_view
 // `volatile bool moved` (397: stack slot and frame match, but stores/loads are not retail's), scale*rate
 // operand order (no change), declaring old_flat/new_flat in the other order or at function scope (no change;
 // 0x11ce20 takes the new aim first, as retail passes it in ECX at 0xc63be; the other order also scores 401).
+// Round 7 of #1049 (401 -> 395): both 0x11f0d0 calls had the vectors in the wrong parameter order (aim, desired,
+// velocity). Retail's callee writes the zero vector through its first register (EBX), copies the target into
+// the second (ESI) and reads the third (EDI), and retail's call sites load EBX = &velocity (0x174 / 0x198),
+// ESI = &aim (0x168 / 0x18c), EDI = &desired (0x15c / 0x180): the arguments are (velocity, aim, desired), so
+// the old source zeroed the aim and copied the velocity over the desired vector (a behaviour bug). Remaining:
+// `moved` sits in EBX for the whole function (xor bl,bl) where retail keeps it in a stack byte ([esp+0xb],
+// reloaded at the all-close return; EBX holds &aim), the reciprocal ours makes of the shared `step` division
+// (retail divides twice by the stored step), and schedulings. Tried (0xc60c0 with callers and callees in one
+// check): all-close as the single `return moved` after `if (!(close)) { moved = true; ... }` 419 (slot and
+// register assignment as retail but every callee-saved register is pushed at entry, frame 0x80); the same
+// with an early return for the two start tests 440; early return for the start tests alone 410; moved as a
+// one-field struct / one-element array / through a pointer 395 (all fold the same); `return false` at the
+// all-close point 395; byte *state declared before the rates 397; both turn shares written out in place
+// (no helper) 399; &aim as a named pointer (no change).
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
@@ -7254,7 +7268,7 @@ bool __stdcall function_c60c0(long unit_index)
 		}
 		else
 		{
-			function_11f0d0(&unit->unknown168, &unit->unknown15c, &unit->unknown174, g_510c54->rate, arg_3097c5_2, pitch_rate);
+			function_11f0d0(&unit->unknown174, &unit->unknown168, &unit->unknown15c, g_510c54->rate, arg_3097c5_2, pitch_rate);
 		}
 		real yaw_share;
 		real pitch_share;
@@ -7307,7 +7321,7 @@ bool __stdcall function_c60c0(long unit_index)
 		}
 		else
 		{
-			function_11f0d0((vector3f *)&unit->unknown18c, &unit->unknown180, &unit->unknown198, g_510c54->rate,
+			function_11f0d0(&unit->unknown198, (vector3f *)&unit->unknown18c, &unit->unknown180, g_510c54->rate,
 				look_yaw_rate, look_pitch_rate);
 		}
 		if (0.0001f > (real)fabs(old_aim.i - unit->unknown168.i) && 0.0001f > (real)fabs(old_aim.j - unit->unknown168.j) &&
@@ -7458,6 +7472,31 @@ real function_50650(real cosine);
 // to-frame rows through dot3f 1067 (2846): extra inline levels in this body do not use up the inliner's budget. On
 // the current 0xc7750: both rotations through matrix_transform_vector 566 (2450 bytes); the target's in-place
 // rotation alone 566 (2450). All restored; still BLOCKED-BY 0xc7750's inlining.
+// Round 7 of #1049 (full statement walk of all 612 retail lines against this body, fast 563 unchanged): no logic
+// difference. Verified: the to-frame rows (i,k,j / i,j,k / i,k,j orders and frame offsets 4/8/0xc, 0x10/0x14/0x18,
+// 0x1c/0x20/0x24), wraps (limits[1]-limits[0]-2pi > -0.0001), the yaw/pitch clamp tails (retail jumps straight to the
+// target construction when the pitch clamp fires, same as `unchanged = false`), cos(p)cos(y) / cos(p)sin(y) / sin(p),
+// the in-place frame rotation of target then 0x30bf0, the speed test (|speed| < 0.0001 or == 0 zeroes both speeds,
+// retail only on that path), the prediction rows (all three cross terms and operand orders), both atan2/sqrt
+// pitch terms, `(x - current) * (1/rate)` with 1/rate divided late, the +-pi offset wrap, the five c7300 arguments
+// (offset, speed, max_speed, acceleration, &motion), 0xc75d0's (yaw, pitch, acceleration), 0xc7750's arguments
+// (motion in ECX, new speed pointer in EDX, offset pointer on the stack, XMM3 rate / XMM4 speed / XMM5 offset),
+// both calls running before the `yaw_done && pitch_done` test, the done path (current = target, velocity =
+// *0x4687a4), the yaw/pitch clamps without the `unchanged` flag, direction and next (speed * rate + angle),
+// clamped dot in operand order i,k,j, the cross product signs, 0x30bf0, acos(dot) / rate capped at max_speed
+// (0x322bd8 behind function_50650), the velocity scaling and the frame/no-frame tail. Constants checked in the XBE:
+// 2pi 0x43f17c, pi 0x45dddc, -pi 0x45df50, 1.0 0x45dbc0, -1.0 0x45dbcc, +-0.0001 0x45dbdc/0x45ddfc. The 9 missing
+// bytes are encodings (ours folds [edi] loads into mulss memory operands where retail preloads XMM0-2; stack
+// layout 0x8c vs 0x80), not a statement. Retail's slot map (offsets after its `push ebx`): wraps byte 7; offsets 8/0xc;
+// current-in-frame 0x10..0x18 reused for the speeds and later yaw/pitch; desired angles 0x1c/0x20; current angles
+// 0x24/0x28 reused for the new speeds; velocity copy 0x2c..0x34 reused for next; desired-in-frame 0x38..0x40 reused for
+// target then direction; motions 0x44/0x64.
+// Inlining probes (accumulator 0xc7750, 28, 227 bytes): `static` on 0xc7750 1103 (same); 40 dead statements
+// before the calls 1098 (2866, still inlined); 60 live statements (4059 bytes, still inlined: the caller's size does not
+// matter); file flag /Ob1 1204 (1889 bytes: the static helpers and trig stop inlining); the c7300..c7750 sequence
+// duplicated into the wraps and else arms (no inlining, 2575 bytes, the compiler does not merge them) 718. The inliner
+// keeps the calls out of line only when they sit in a conditional block (round 197's tests), never from the size
+// of the caller or the callee's linkage.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
