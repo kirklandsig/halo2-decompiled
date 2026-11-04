@@ -3207,13 +3207,13 @@ void function_c6810(long unit_index)
    (0xce920); retail has 0xe6900 expanded in the first branch only, so that
    branch is written out and inline_depth(0) keeps the second a call */
 #pragma inline_depth(0)
-// score 60 (was 150): the written-out request-9 branch matches retail's bytes except where the player slot's data
-// pointer lives: retail keeps it in esi and adds the +0x28 read separately, ours uses ecx and folds it into the
-// address. Tried: both branches calling 0xe6900 179 (second also inlined); a noinline declaration of 0xe6900 150
-// (not honoured); the call sites reordered 179; a shared request local 179; the player slot as a local byte
-// pointer, a struct view or an array element 60 (same); the requester unit and its player index re-read 60.
+// MATCH (was 150, 60). The request-9 branch is written out (0xe6900 expanded there only) and the player's
+// controller is read twice through one player pointer: retail does not fold the +0x28 into the address, which a
+// single read (60) or a pointer to the field (60, 30) does. Tried: both branches calling 0xe6900 179; a noinline
+// declaration of 0xe6900 150 (not honoured); the call sites reordered 179; a shared request local 179; the
+// requester unit and its player index re-read 60.
 // @coldspear (#104, 2026-10-30): reading the request definition g_4677c8[9] through a volatile pointer gives 26,
-// not kept (no match), but it shows retail re-reads the definition there.
+// not kept: retail re-reads the definition there.
 // @retail 0xce520
 void function_ce520(long weapon_index, long unit_index, bool flag)
 {
@@ -3245,12 +3245,12 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 
 			if (requester->unknown13c != NONE)
 			{
-				short controller =
-					*(short *)((byte *)g_4e8c24->data + (requester->unknown13c & 0xffff) * 0x21c + 0x28);
+				byte *player = (byte *)g_4e8c24->data + (requester->unknown13c & 0xffff) * 0x21c;
 
-				if (controller != NONE)
+				/* two reads of the controller: retail keeps the player pointer and loads +0x28 from it */
+				if (*(short *)(player + 0x28) != NONE)
 				{
-					function_1e6980((s_time_entry *)((byte *)g_51e9c0 + controller * 0x1b0 + 0x150),
+					function_1e6980((s_time_entry *)((byte *)g_51e9c0 + *(short *)(player + 0x28) * 0x1b0 + 0x150),
 						(short)request.type, result);
 				}
 			}
