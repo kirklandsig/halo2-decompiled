@@ -2063,8 +2063,21 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 /* detonates a projectile: (once) its sound, contrail, direct and area
    damage, impact or airburst effects, and the effects of the material
    under it */
-// score 527 (was 527): Frame 0x184 agrees; header-offset home, cached flags and probe/material homes differ.
-// Native definition bit 533; projectile/child flag bits 527; definition bit plus parent field reads 527;
+// score 519 (was 535; 527 before round 1): Frame 0x184 agrees; the stack slots and the flag word differ, see below.
+// Round 1 of #1061: full statement walk against retail found no behaviour difference (every offset, constant, condition,
+// callee and argument order agrees). Kept: `switch (mode) { case 2: case 4: ... }` for the a84e0 test (retail's movsx/sub/sub
+// chain; also settles the damage tail, 535 -> 527), native flag bits for the +0x12c tests and stores (child stores stay two
+// separate or/store pairs), the definition bit 3 as `flag_bits.unknown3`, `if (attached) |= 2 else |= 1`, the
+// random-seed pointer in a local (retail loads 0x4e7408 once into esi), the probe index `dword` with a `probe` pointer
+// (retail's edi += 0xc / esi += 0xc / cmp edi, 0xc; 527 -> 518/519), and the area-damage object lookup after d6660 (same score).
+// Remaining: retail re-reads [ebp+0x12c] for the first set, each test and each set (ours reuses the loaded word, 5 sites), the
+// parent +0x10a bit 2 is `mov al; shr al, 2; test al, 1` (ours test byte, 4), the centre scale loads each component and
+// multiplies by the inverse (ours scales the inverse), material_index lives in a 16-bit slot shared with attached_parent (ours
+// stores it as a dword), and the home of attached (0x18)/attached_parent (0x14), owner/point/block position (all 0x30) and up
+// (0x54). Tried: declaration orders of the Booleans/parent/probe/material 527 (no change), owner and current in their own
+// block (no change), `inverse * center.x` (no change), unsigned index without the pointer 518, a word bit view for +0x10a not
+// tried (layout-only struct).
+// Earlier: native definition bit 533; projectile/child flag bits 527; definition bit plus parent field reads 527;
 // common exit 527; saved-position role name 527; distinct direct/area damage names 527;
 // probe-table pointer loop 530; probe declarations reversed 527; all native flag tests/stores 533;
 // unsigned table index 539; material declared at entry 527; parent/Boolean declarations first 527.
@@ -2073,7 +2086,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 {
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
 
-	if (TEST_FIELD_BIT((*(dword *)&projectile->flags >> 12) & 1))
+	if (TEST_FIELD_BIT(projectile->flags.unknown12))
 		return;
 
 	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
@@ -2084,8 +2097,8 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 	bool airburst = true;
 	long parent_index = *(long *)((byte *)projectile + 0x14);
 
-	*(dword *)&projectile->flags |= 0x1000;
-	if ((definition->flags & 8) && !(TEST_FIELD_BIT((*(dword *)&projectile->flags >> 6) & 1)) && parent_index != NONE)
+	projectile->flags.unknown12 = true;
+	if (TEST_FIELD_BIT(definition->flag_bits.unknown3) && !(TEST_FIELD_BIT(projectile->flags.unknown6)) && parent_index != NONE)
 	{
 		byte *parent = (byte *)PROJECTILE_GET(parent_index);
 		long stuck_count = 0;
@@ -2096,7 +2109,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 			{
 				s_projectile *child = PROJECTILE_GET(child_index);
 
-				if (child->tag_index == projectile->tag_index && !(TEST_FIELD_BIT((*(dword *)&child->flags >> 6) & 1)))
+				if (child->tag_index == projectile->tag_index && !(TEST_FIELD_BIT(child->flags.unknown6)))
 					stuck_count++;
 				child_index = *(long *)((byte *)child + 0xc);
 			}
@@ -2113,14 +2126,14 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 			{
 				s_projectile *child = PROJECTILE_GET(child_index);
 
-				if (child->tag_index == projectile->tag_index && !(TEST_FIELD_BIT((*(dword *)&child->flags >> 6) & 1)))
+				if (child->tag_index == projectile->tag_index && !(TEST_FIELD_BIT(child->flags.unknown6)))
 				{
 					if ((short)stuck_count <= *(short *)(definition_bytes + 0xe6))
 					{
 						point3f point;
 
-						*(dword *)&child->flags |= 0x40;
-						*(dword *)&child->flags |= 0x1000;
+						child->flags.unknown6 = true;
+						child->flags.unknown12 = true;
 						child->unknown158 = 0.0f;
 						child->unknown160 = 0.0f;
 						function_b9dd0(child_index, &point);
@@ -2130,8 +2143,10 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 					}
 					else
 					{
-						child->unknown158 = function_259a0(&g_4e7408->unknown0) * child->unknown158;
-						child->unknown160 = function_259a0(&g_4e7408->unknown0) * child->unknown160;
+						dword *seed = &g_4e7408->unknown0;
+
+						child->unknown158 = function_259a0(seed) * child->unknown158;
+						child->unknown160 = function_259a0(seed) * child->unknown160;
 					}
 					stuck_count--;
 				}
@@ -2183,7 +2198,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 	{
 		long damage_index;
 
-		if (TEST_FIELD_BIT((*(dword *)&projectile->flags >> 10) & 1))
+		if (TEST_FIELD_BIT(projectile->flags.unknown10))
 			damage_index = *(long *)(definition_bytes + 0x160);
 		else if (attached)
 			damage_index = *(long *)(definition_bytes + 0x130);
@@ -2221,14 +2236,15 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 	else
 	{
 		material_index = g_47d8e0;
-		for (long i = 0; i < 1; i++)
+		for (dword i = 0; i < 1; i++)
 		{
 			s_collision_result_1697c0 collision;
 			vector3f vector;
+			vector3f const *probe = &g_45326c[i];
 
-			vector.i = g_45326c[i].i * probe_length;
-			vector.j = g_45326c[i].j * probe_length;
-			vector.k = g_45326c[i].k * probe_length;
+			vector.i = probe->i * probe_length;
+			vector.j = probe->j * probe_length;
+			vector.k = probe->k * probe_length;
 			collision.unknown24 = NONE;
 			if (function_1697c0(0x2480000f, &position, &vector, projectile_index, NONE, &collision))
 			{
@@ -2254,22 +2270,33 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 	owner.unknown4 = *(long *)((byte *)current + 0xc8);
 	owner.unknown0 = *(long *)((byte *)current + 0xc4);
 	owner.unknown8 = *(short *)((byte *)current + 0xc2);
-	if (material_index != NONE && !(TEST_FIELD_BIT((*(dword *)&projectile->flags >> 9) & 1)))
+	if (material_index != NONE && !(TEST_FIELD_BIT(projectile->flags.unknown9)))
 	{
-		*(dword *)&projectile->flags |= 0x200;
+		projectile->flags.unknown9 = true;
 		effect_flags = 4;
 		function_fcea0(projectile->tag_index, &position, &forward, &owner, material_index,
 			(vector3f const *)((byte *)projectile + 0x134));
 	}
 	if (effect_index != NONE)
 	{
-		effect_flags |= attached ? 2 : 1;
+		if (attached)
+			effect_flags |= 2;
+		else
+			effect_flags |= 1;
 		function_fcbc0(projectile->tag_index, &position, &forward, &owner, attached, airburst);
 	}
 	if (*(long *)(definition_bytes + 0x124) != NONE)
 		effect_flags |= 8;
-	if (g_4e6948->mode != 2 && g_4e6948->mode != 4 && effect_flags)
-		function_a84e0(projectile_index, &material_index, (vector3f const *)((byte *)projectile + 0x134), effect_flags);
+	switch (g_4e6948->mode)
+	{
+	case 2:
+	case 4:
+		break;
+	default:
+		if (effect_flags)
+			function_a84e0(projectile_index, &material_index, (vector3f const *)((byte *)projectile + 0x134), effect_flags);
+		break;
+	}
 
 	if (g_4e6948->mode != 4)
 	{
@@ -2277,7 +2304,7 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 
 		if (attached)
 			area_index = *(long *)(definition_bytes + 0x11c);
-		else if (TEST_FIELD_BIT((*(dword *)&projectile->flags >> 10) & 1))
+		else if (TEST_FIELD_BIT(projectile->flags.unknown10))
 			area_index = *(long *)(definition_bytes + 0x158);
 		else
 			area_index = *(long *)(definition_bytes + 0x104);
@@ -2285,11 +2312,12 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 		if (area_index != NONE)
 		{
 			s_type_1e6529 data;
-			s_projectile *object = PROJECTILE_GET(projectile_index);
-
 			data.material_index = NONE;
 			function_d6660(&data, area_index);
 			data.unknown84 = *(definition_bytes + 0x128) & 0x3f;
+
+			s_projectile *object = PROJECTILE_GET(projectile_index);
+
 			data.owner.object_index = *(long *)((byte *)object + 0xc8);
 			data.owner.player_index = *(long *)((byte *)object + 0xc4);
 			data.owner.team = *(short *)((byte *)object + 0xc2);
@@ -2355,6 +2383,13 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // with separate bases 1099; native count 1050, plus complete inputs 990 (four-point tail restored); caller noinline magnitude
 // 1050/1131; all rotation inputs 1099; free-axis inputs 1011; complete inputs plus shared basis crosses 997;
 // consistent dot/output inputs 946 (kept); consistent free-axis/all rotations 1011/1101; inputs before sine/cosine 1006.
+// Round 1 of #1061: statement-by-statement walk of all 1055 retail instructions against this source (control flow, loop
+// rotation, field offsets, 1.0/0.5/0.0/0.0001/0.3 constants read from the XBE, condition directions, callee argument
+// registers and stack order, the end switch and its fall-through): no behaviour difference found. What differs is
+// layout (retail frame 0x118, collision at +0xcc, own slots for guidance forward/up/aim point/movement; ours 0x110)
+// and register/scheduling. Retail expands 0xfaa30 inline at only two of its six uses (the 1.0 test before the loop and
+// the predicted case at the end, both re-reading the data array with the saved index * 12 in [esp+0x7c]); a local
+// inline copy of it at the first use 1040, at both 1055 (4750 bytes), so all six stay calls to 0xfaa30.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
@@ -2746,7 +2781,16 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 /* a projectile's collision: damage to what it hit, the response of the
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
-// score 1190 (was 1190): Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
+// score 1180 (was 1190): Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
+// Round 1 of #1061 (logic walk against retail, all blocks): no statement-level behaviour difference found except the
+// two below. collision_count is a dword in retail (`cmp dword ptr [esp+0x23c], 1`; the caller does `movsx edx, ax;
+// push edx`): `long collision_count` 1190 -> 1180 (4848 -> 4836 bytes) and caller 0xf8eb0 then pushes it as retail
+// does, but scores 946 -> 1037 (4691 -> 4718 bytes, positional shift), so it is not kept (the type changes no behaviour).
+// Retail stores NONE to the damage record's material (+0x7c) BEFORE calling 0xd6660 in both damage scopes, and
+// 0xd6660 then overwrites it with g_47d8e0: the store before the call 1180 (same, instruction now as retail), not kept
+// (dead-looking store; ours leaves NONE where retail leaves g_47d8e0 until 0xd7b80 writes it). A goto to share the
+// `*velocity = *g_4687a4` tail 1180 (same bytes). Retail inlines function_faa30 at three of its four sites (the
+// unknowndc^2 test and both action-switch arms) and calls it only in the 0.09 block; ours calls all four.
 // Earlier 1162 (was 1185): frame 0x220 versus 0x218, velocity on the stack versus eax, input normalization and effect scheduling remain.
 // Independent damage scopes 1162 (kept); direct sound/late effects/both/scoped both 1223/1185/1223/1199; role names/chains/external normalization 1185/1185/1323.
 // Full count/potential conjunction/input aggregate/assignment helper/uninitialized direction 1201/1216/1198/1198/1185; array aggregates/plain loop/unsigned index 1166/1348/1185.
