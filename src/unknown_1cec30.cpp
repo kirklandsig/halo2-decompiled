@@ -2902,9 +2902,11 @@ PRIVATE __forceinline bool velocity_limit_length(vector3f *v, real maximum)
     return limited;
 }
 
-// score 7 (was 7): the saves are staged as retail's; the five rigid-body reads address
-// [offset + data] where retail has [data + offset], and the 0x1d1010 call copies the component to ESI
-// before the index to ECX. The entry saves came from this function's own double-typed scale: with a
+// score 2 (was 7): the time step and gravity are read into their own locals before the change vector
+// (found by the permuter, round 2 of #1044); that gives retail's [data + offset] at the five rigid-body
+// reads, where the product written inline or as one local keeps [offset + data] (7). What is left: the
+// 0x1d1010 call copies the component to ESI before the index to ECX, where retail copies the index
+// first. The entry saves came from this function's own double-typed scale: with a
 // named double here, any image holding 0x2056e0's double cap or unknown_0350e0.cpp pins the saves at
 // entry. Round 17: both caps through the existing scale_vector_by_double 50; real scales 77 (folds the
 // last multiply); quotient per component 77; the two-caller cap helper with the quotient as
@@ -3040,9 +3042,11 @@ void function_1ced00(s_havok_component *component)
     if (TEST_FIELD_BIT(component->flag5) && havok_component_any_rigid_body_active(component))
     {
         vector3f change;
+        real dt = g_510c54->rate;
+        real gravity = g_51e9c4->unknown0;
         change.i = 0.0f;
         change.j = 0.0f;
-        change.k = 0.0f - g_510c54->rate * g_51e9c4->unknown0;
+        change.k = 0.0f - dt * gravity;
         function_bba20(component->object_index);
         if (!TEST_FIELD_BIT(component->flag2) &&
             ((1 << ((s_component_transform_header *)g_4e0300->data)[component->object_index & 0xffff].type) & 2))
