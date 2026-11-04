@@ -681,6 +681,10 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // with scalar stores 85 (288); split extent declarations before the array 85, reversed declarations 85;
 // retail's corner store sequence (both right x stores before the y stores) 17 (285), width computed first
 // 19 (285), split declarations on the 17 form 17 and reversed declarations 17. Original body restored.
+// Round 88 (fast): extents first, then corner 0 in order, with: a named top read after the right x stores and
+// `height +=` 25 (284 bytes); corner 2's x read back from corner 1 and corner 2's y from corner 1's y 86 (280 bytes);
+// named right, top, left and bottom 86 (280 bytes); `width +=` and `height +=` in place 86 (280 bytes); chained right x
+// and bottom y stores 86 (282 bytes). A single-use extent sinks to its use, so retail's top-of-body width has two uses.
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {
