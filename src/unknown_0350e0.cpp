@@ -2575,6 +2575,10 @@ real magnitude3d(vector3f const *v);
 // B442: Existing complete axis-angle matrix with returned/axis/output/in-place
 // vector application, matrix at producer/entry: 388/248/327/242/388/248/327/242.
 // NOT kept: changed floating expansion misses equality and grows; original full body restored.
+// AC549: Common final vector across rotation/fallback, separate/consumed rotation
+// receivers with native/setter/memcpy publication, then native copies with entry
+// declarations: 179/179/180/180/179/179/179/179. NOT kept: raw-length/promoted-dot
+// homes persist at frame 0x38; 1054/1033 versus 1045 bytes. Original body restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2756,6 +2760,10 @@ s_cached_input_list g_5234e8[4];
 // M387: Radius-first position native/memcpy/memmove/setter captures, without/with list:
 // 147/147/136/162/136/136/132/150 fast (control 147, full 113). NOT kept: native/library
 // copies equal preview/list-only controls; memmove adds a call and 0xa4/0xa8 frames, setter shrinks. All restored.
+// AC549: Progressive object classification long/dword/bool/byte, without/with
+// once-read list: 143/132/143/132/142/140/142/140 fast (control 146; full 113).
+// NOT kept: isolated full-width lead only three; snapshot retains list EBP and
+// adds a validity Boolean absent natively; narrow forms miss equality. Original body restored.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3166,6 +3174,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // M387: Existing projection producer as two genuine matrix-row iterations, long/int/dword/uint,
 // full expressions then complete accumulators: 498/498/498/498/510/510/510/510. NOT kept:
 // frames 0x68/0x70 grow beyond native 0x38; original helper/body restored, velocity/projection homes remain.
+// AC549: Complete actual input fields, scalar/vector/array/named-record triples,
+// each with direct typed accesses or one typed receiver: eight 486s, frame 0x60
+// versus 0x38, 2036/2035 bytes. NOT kept: no velocity/frame/projection repair;
+// original raw input observations, types and entire body restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

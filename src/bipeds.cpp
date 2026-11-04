@@ -3015,6 +3015,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // M388: Actual bound-selected push, maximum-distance result and side-factor producers,
 // masks 1/2/4/3/5/6/7, then named reciprocal: eight fast 530s, 1834/1908 bytes.
 // NOT kept: no frame/result-home repair; original complete body restored.
+// AC549: Independent lexical identities for direction/center/hit/along/change/query value/
+// hit ordinal/completion result: eight 520s, 1844/1908 bytes. NOT kept: no native
+// frame or stack-home repair; original names and complete body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {

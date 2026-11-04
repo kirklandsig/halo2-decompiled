@@ -1548,6 +1548,10 @@ void function_1f86a0(long actor_index);
 // AC547: Existing root/iterator/accept-decline/all ordinary-inline declaration
 // policies, native member payload first in each pair: eight at 134. NOT kept:
 // no frame/mask/entry recovery; original declarations, payload and body restored.
+// AC549: Selected handle absent throughout search, conditional/exhaustive/default
+// post-search producers, then conditional with direct fallback; native member/full-slot pairs:
+// 134/134/134/134/235/235/233/233. NOT kept: no frame/mask/entry recovery;
+// original handle lifetime, fallback, payload and complete body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
