@@ -342,6 +342,14 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // M373: Complete scale/copy branch-owned scaled workspace, native/setter/memcpy/memmove,
 // nonunit-first 327/288/327/374; unit-first 331/288/331/370. NOT kept: all regress;
 // original aggregate-default helper and full body restored; frame/coefficient homes remain.
+// AC537: Actual projected-radius square-root admission/rejection truth in
+// bool/byte/short/long: 207/207/207/207/207/207/207/207. NOT kept: no match; original transform helper,
+// ordered test, alias-sensitive outputs, memset and complete body restored.
+// DL263: Native origin value with existing shared scaled-displacement producer on retained
+// aggregate-scaled transform, first/second/segment subsets then native segment point producer:
+// 206/209/209/213/206/206/213/213. NOT kept: unmatched complete-value contracts; original
+// observations, helper and complete body restored. Frame 0x20 versus 0x14 and
+// coefficient/input/result homes remain.
 // P333: Standard binary differences with one captured origin, seven producer subsets
 // then complete raw copy: 324/328/260/304/300/297/277/386. NOT kept: no match or gain; original helper/body restored.
 // Excluded standard-transform global-array arguments; uncredited and restored.

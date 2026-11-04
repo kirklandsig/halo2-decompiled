@@ -499,6 +499,7 @@ void function_e5930(long unit_index);
 
 /* resets the biped's state: its flags, landing and melee timers, its ground
    contact and its physics mode */
+// MiniMax A (11-04): no new form, no lower score; the reset call still expands here.
 // MiniMax A (11-03): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) still
 // expands here, so the reset dispatch keeps its extra instructions.
 // MiniMax R (11-01): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) still expands here, so the reset dispatch keeps its extra instructions.
@@ -1020,12 +1021,18 @@ extern long *g_51e9cc;
 // M372: Actual contact point/normal/final-position CRT memcpy transfers, seven site
 // subsets: 42 each; complete memmove 108 at 1462/1481 bytes. Original aggregate
 // transfers and complete body restored; lookup receiver and crouch/contact schedules remain.
+// Y590: Complete switch-default discovery ownership, found/missing channels in
+// bool/byte/short/long storage: 42 each. NOT kept: no receiver-retention or
+// contact-schedule gain; original complete body restored.
 // P340: Recent-component height output, exhaustive/conditional real/double, immutable real/double and
 // explicit-query real/double results: 121/121/137/144/121/144/121/144. NOT kept: no equality; original
 // height observation, branch and full body restored. Lookup rematerialization and crouch/contact
 // publication schedules remain.
 // P346: Complete query/decoder contact admission, valid/invalid bool/byte/short/long results:
 // 42/42/42/42/42/42/42/42. NOT kept: no native lookup retention or equality; original callback restored.
+// M383: Actual contiguous contact-field CRT fills at initial/object/instance phase subsets
+// 1/2/4/3/5/6/7, then fallback too: 255/214/204/259/275/221/266/272. NOT kept:
+// lookup receiver/store schedule not recovered; original scalar clears and complete body restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1508,6 +1515,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // target-position input, masks 1-7: 820/800/895/659/820/800/957; complete target
 // advance loop 617. NOT kept: all regress and grow beyond retail length; original
 // native copies, row expressions and complete body restored. Shared helpers unchanged.
+// B437: Airborne char/signed-char/byte/short/word/int/dword/long domains on the
+// retained animation graph 599/599/599/632/632/627/627/627. NOT kept: all regress;
+// frame 0xf8 versus 0xfc and material/airborne/animation homes remain.
 // P337: Default boost before tag/component/airborne/position, then after position/
 // velocity/facing/speed: 659/659/659/660/651/631/613/603, 2816 bytes, frame 0xf8.
 // NOT kept: all regress; original default branch and complete body restored.
@@ -2065,6 +2075,24 @@ void function_dfd70(long arg_159e6d)
 // P346: Unified adjusted-head result with one final eye publication, original/final setter,
 // start setter and returned-up call ownership: 238/239/239/248/245/240/240/249.
 // NOT kept: native output/frame schedule not recovered and shared users regress. Both helpers restored.
+// F384: Actual side-vector setter/point-setter/mutable/immutable initializer,
+// native or memmove origin transfer: 235/235/233/233/256/256/253/253. NOT kept:
+// no gain; memmove with either initializer also raises a shared user. Original
+// shared helpers and target restored; mode-three placement and basis/ray homes remain.
+// F390: Complete joined final-point producer after the second query, hit in bool/byte/short/long,
+// record then scalar-setter publication: 226/226/226/226/278/278/278/278. NOT kept: seven-point
+// lead grows to 1044/1041 bytes; setters reach 1077. Every form raises shared users and loses
+// exact 0xde9d0. Both original helpers and full target restored; mode-three/basis/ray homes remain.
+// B439: Second-ray hit/clear result in bool/byte/short/long storage:
+// 233/233/233/233/233/233/233/233. NOT kept: one-use query results do not
+// match; both helpers restored, native mode-three and basis/ray homes remain.
+// M386: Plain indexed/pointer start and clearance component producers, independent,
+// paired and crossed: 237/240/240/257/468/454/468/257. NOT kept: no byte equality or
+// qualifying native/shared-user gain; original shared helpers and complete body restored.
+// N380: Standard complete head/forward/fallback object-copy boundaries, subsets 1..7,
+// then complete backward ranges: 236/239/244/270/267/272/263/259. NOT kept: target and shared users
+// regress; original helpers and complete wrapper restored. Native mode-three
+// placement and forward/up/second-ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2502,6 +2530,16 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M366: Direct lower/upper body admission without selected sentinel, long/short/char/read-only-long,
 // combined/nested query: 70/64/65/70/70/64/65/70. NOT kept: no exact/native-sentinel repair;
 // original full body restored; extra EBP, count/body transport and flag schedules remain.
+// F384: Complete admission-time object getter graph, retained/at-use count and
+// explicit long/short/shared-promoted/shared-short body contracts:
+// 80/85/101/91/85/86/104/100. NOT kept: all regress and grow; original body restored.
+// Extra EBP, native count/body transport and flag schedules remain.
+// B442: Complementary signed body rejection, direct/default-true producers in
+// bool/byte/short/long: 63/63/63/63/85/85/76/75. NOT kept: no equality or qualifying
+// native count/EBP/flag repair. Original validation, count, stores and full body restored.
+// B444: Explicit flag read/modify/write assignments at pre-call/post-call/failure
+// boundaries, seven subsets then all mask-first: 63/63/63/63/63/63/63/63. NOT kept: no byte equality
+// or native EBP/body/flag repair; original complete body and word fields restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -2969,9 +3007,18 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // bool/byte/char/signed-char/short/word/int/long: 530/530/530/530/530/530/530/530.
 // NOT kept: no native result/frame repair; original result, scans and body restored.
 // Native final-loop size observation remains a possible unretained correction.
+// B437: Actual body byte offsets stepped inside mass/farthest/push loop subsets
+// 1/2/4/3/5/6/7 and complete unsigned offsets: 530 each. Original signed ordinals,
+// base observations and body restored; frame/result/state/point homes remain.
 // P337: Complementary returned outcome at original exits, bool/byte/char/signed-char/
 // short/word/int/long: 530 each. NOT kept: no native frame/result repair; original
 // positive result, all exits, observations and complete body restored.
+// M386: Genuine hit-to-difference in-place vector, component/difference-helper/vector-setter/
+// point-setter producers with native/library input transfers: 529/530/529/529/529/530/529/529.
+// NOT kept: no native frame/result-home byte equality; original separate point and direction restored.
+// M388: Actual bound-selected push, maximum-distance result and side-factor producers,
+// masks 1/2/4/3/5/6/7, then named reciprocal: eight fast 530s, 1834/1908 bytes.
+// NOT kept: no frame/result-home repair; original complete body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3301,6 +3348,23 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M364: Original early-return changed result in char/signed-
 // char/byte/short/word/int/long/dword storage: 610/610/610/623/623/625/625/625. NOT kept: no
 // native result-byte/flight-home match; original result domain and complete body restored.
+// Y590: Actual wall-projection/axial-scalar/matrix-conversion last-use scopes,
+// seven subsets then all with planar temporary termination: 600 each (fast control
+// 600, full 561). NOT kept: no byte change; complete original body restored.
+// Changed-result/flight homes and vector scheduling remain.
+// F388: Whole facing/turned/axis component-array views, subsets 1/2/4/3/5/6/7:
+// fast 604/604/611/614/605/605/613; all with side/aim/look views 619
+// (control 600, full 561). NOT kept: regressions and growth; original body
+// restored, result/flight-scalar homes and vector scheduling remain.
+// M383: Actual trig-input double carriers at walking/yaw/pitch phase subsets 1/2/4/3/5/6/7,
+// then all const: 600/623/602/623/602/611/611/611 (reduced control 600; full 561). NOT kept:
+// no native flight/result-home repair; original input/result domains and complete body restored.
+// M388: Final four copies via memcpy/memmove/vector setter, native byte writer, then
+// transfers plus writer and point setter plus writer: 600/593/659/593/593/593/659/659
+// (fast control 600). NOT kept: seven-point leads below gate; memmove adds four calls.
+// Original publications/body restored; result/flight homes and vector schedule remain.
+// Direct flight-rate argument on the current full-width-special graph, alone/with byte writer:
+// 610/603 (control 600); both regress. Original scalar producer and whole body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3662,6 +3726,15 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // subsets then all with the original collision declared at entry: 368 each.
 // Original declarations and complete body restored; native matrix/origin and
 // paired pivot/property homes remain; frame 0x12c still agrees.
+// Round 588: Position/property/collision last-use scopes, seven subsets, then all with
+// earlier inner rotation declaration: 368 each. NOT kept: no native-home repair; original
+// complete body restored. Matrix/origin and paired pivot/property homes remain.
+// F386: Static existing component-array observations of scaled pivot, transform rows
+// and full geometry, seven subsets then all forced: 369/368/369/369/369/369/369/369.
+// NOT kept: tie/regressions; original helper/body restored, matrix/origin/pivot homes remain.
+// B442: Root-first parent/root order, bool/byte/short/long completion results,
+// false-default 383/417/414/415; true-default 443/444/437/437. NOT kept: all regress;
+// true-default frame grows to 0x130. Original order, result and full body restored.
 // P342: Complete offset/delta squared products, alone/both, real-root overload and complete immutable
 // products: 369/369/369/368/369/369/369/369. NOT kept: no byte match or eligible native allocation gain;
 // original reductions, root expression and whole body restored. Matrix/origin and paired pivot/property
@@ -3987,6 +4060,7 @@ void function_e4300(long arg_159e6d)
 }
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
+// MiniMax A (11-04): no new form, no lower score; the reset call still expands here.
 // MiniMax A (11-03): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) is still
 // inlined at this straight-line call site, so the function is 113 bytes against retail's 61.
 // MiniMax R (11-01): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) is still inlined at this straight-line call site, where retail keeps the call.
@@ -4442,6 +4516,12 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // publication loop, seven subsets then complete immutable parts:
 // 179/176/196/154/181/170/190/190. NOT kept: all regress; original twice-used helper
 // and body restored; normalization SIMD and trigonometric/basis homes remain.
+// Round 588: Angle/rotation/basis last-use scopes, seven subsets, then all with double angle:
+// 145/145/145/145/145/145/145/151. NOT kept: no exact scope/domain repair; original
+// complete body restored. Normalization SIMD ranks and coefficient/basis homes remain.
+// F386: Existing vector/axis projection component-array observations, three subsets
+// ordinary/forced inline, then complete readonly projections ordinary/forced: 145 each.
+// NOT kept: no gain; original helper/body restored, normalization SIMD/trig homes remain.
 // P340: Tick-rate scalar ownership at the normalization product, mutable/immutable real rate and
 // magnitude carriers at two producer boundaries: 210/210/210/210/157/157/157/157. NOT kept: unmatched
 // one-use carrier graph; original product, coefficients, helper and complete body restored. Native 0x24
@@ -4876,6 +4956,139 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 /* jumps: an upward kick to the definition's jump speed (less for a tired
    player), relative to what the biped stands on; an actor may refuse. */
 // Matches with a false result, success after the support query and one return.
+// MiniMax A (11-03): no new form, no lower score: retail keeps the riding flag at [ebp-0x25] and writes a
+// dead 1 into the 0x109e00 argument slot, while ours keeps the flag in that slot.
+// score 68 (was 68): 683 bytes and frame 0x28 agree; only result=true's position and result/riding's swapped slots left. Earlier (640 bytes against retail 683, frame 0x24 versus 0x28): Walked against retail block by block
+// (callees, argument order, offsets, constants, condition directions, return values, store paths): behaviour agrees.
+// Remaining difference: on the actor path retail (0xe490c-0xe4929) reads the animation state name at
+// biped + *(short *)(biped + 0x12a) + 0x7c (the base is computed at entry into EBX, 0xe4799/0xe47af, and kept
+// across the whole function) and stores name == 0xa00003e || name == 0xd00003f into the result slot [esp+0x3c]
+// (the stack argument's own slot) before 0x1f5560, whose AL overwrites it at 0xe4934 with nothing reading it in
+// between: dead in effect, so the 55-byte gap and EBX taken by that base (riding then spills to [esp+0x13], EDI is
+// the definition) are not a behaviour difference. Plain forms (expression, if/else, via a local pointer) are compiled
+// away (224/229); only `volatile bool result` (174) or writing through the parameter's address (166) keeps it, both
+// refused for not matching. The ba1d0 output is its own local `raw`, copied to `velocity` (kicked and passed on, as
+// retail's [esp+0x14] copy) and `relative` (retail's re-stored ba1d0 slot [esp+0x20]); earlier: kicking the ba1d0
+// output itself with relative a copy (224). Natural parameter (no `reference`) 228; relative as scalars 207
+// (without the shared slot, restored). Tried earlier: late success 221 (subthreshold), shared vector producers 224;
+// CRT relative copy 224; common result exit 222 (subthreshold); all velocity names 224; late/shared 221;
+// natural parameter/common result/shared/CRT 234. All executable forms restored.
+// Round 289: long result/contact/both 211/212/211; native up/scalar up/actor observations 202/219/210;
+// native up plus long contact 193 (ordinary; rejected while depending on the inherited parameter-address
+// receiver), full scalar graph 222. Direct parameter on up/contact 213; direct up with bool/short/byte
+// contact 215/210/215; one result exit with bool/long/short contact 210/209/206 (four-point gain rejected).
+// All executable forms restored; the 0x24/0x28 frame and overwritten state-base lifetime remain.
+// Round 313: Natural-parameter component loops for relative/kick/actor-ground subsets
+// 240/228/176/228/240/228/167; complete dot/norm products 228.
+// All three loops reach 167 plain at 683 bytes, but lose matched callers; restored.
+// The 176 form also uses a register argument and ret instead of retail ret 4; restored.
+// DL239: Natural parameter with native complete relative/kick/actor-ground vector producer subsets
+// 1..7, all plus common result exit: 174/204/191/204/191/178/222/222. Original complete body
+// restored; frame 0x24/0x28, state-base/result and vector homes remain.
+// Ordinary lower-score forms lose matched 0xe4680 and 0xecfc0; all restored.
+// Round 359: Natural input with all three twice-used ground components, reversed raw copies,
+// existing kick producer and bool/short contact: 191/196/191/195/191/196/191/195.
+// Actual admission/actor result with one exit and bool/short contact 190/192. All lose matched
+// callers 0xe4680 and 0xecfc0 through the input convention; complete original body restored.
+// Round 361: Natural-input velocity setter/direct actor test/separate impulse,
+// subsets 1-7 and all with relative setter: 216/241/229/229/217/241/229/262.
+// Every corrected form loses matched callers through the input convention; original
+// body restored. An unused-address preparation 198 is excluded, not a gain.
+// M313: Natural input/direct relative-query output with CRT copy/direct success/short contact subsets; callers lose 61/14; restored;
+// fast 239/239/253/253/238/238/254/254.
+// Round 535: natural parameter with complementary actor-rejection result, bool/byte/short/long
+// storage and original/short contact: 232/232/235/233/230/230/235/231. Original body restored;
+// frame/state-result lifetime and input convention remain.
+// Complementary bool/byte results recover frame 0x28 at 232, but lose the two
+// matched callers at 61/14 through the natural register input; restored.
+// Round 537: natural input with complementary support result bool/byte/short/long,
+// entry success 229/229/217/219; query-bound success 225/225/213/215. Original complete body
+// restored; native stack input, state/result lifetime and 0x28 frame remain unresolved.
+// NOT kept: natural-input forms lose matched callers through the input convention.
+// M317: Natural input/existing velocity-wake helper; complete jump/up/square parts 1/2/4/3/5/7; all with
+// long/short contact truth: 317/228/228/228/228/228/228/231/228.
+// State-base/result lifetime, frame 0x24/0x28 and input convention remain. Original executable body restored.
+// F340: Natural-input last-consumer scopes for definition/raw/relative, seven subsets,
+// then all with admitted success: 228/228/228/228/228/228/228/224. Frame 0x28 recovers, but
+// length is 626/683 and exact callers lose 61/14; original complete body restored.
+// Lane 1 round 62, kept (210 -> 68 at 683 bytes): retail's name test is the argument of an unused third parameter of
+// 0x1f5560 (LTCG drops the parameter and keeps the argument's stores, retail's dead [esp+0x3c] store) with the state
+// base at entry 162, which also removes the parameter-address read (the natural parameter, callers still match);
+// `result = true` just before the actor test 145; dot3f(&relative, &biped->up) 68. Tried: 0x1f5560 taking &result 210
+// (compiled away); state before definition 162; long riding 174; no name local (two reads) 162; `result = true`
+// after 0x109e00 143 (slot and store as retail, but riding takes BL and the state spills), ahead of it 143, ahead of
+// 0xba1d0 133 (686 bytes), at its declaration 160; on the after-0x109e00 form two reads, declaration order and riding
+// at its assignment 143 each; dot3f(&biped->up, &relative) 144; written orders 145; vector3f_add_scaled kick 144;
+// velocity/relative copies swapped 145; ba1d0 into relative 154; relative from raw 161.
+// Review: the state base stays a local at entry: retail loads it there and keeps it in EBX across the calls (a load
+// the compiler cannot move above calls), and inlined at the use it gives 167 and loses matched 0xe4680 (61) and 0xecfc0 (14).
+// M340: Positive support ownership const bool/const byte/test/conditional, original/query-bound success: 68/143/68/143/146/182/146/182. NOT kept: no exact result/slot graph; original body restored.
+// Lane 18 round 34 (fast): riding renamed to sort after result 68; result renamed to sort first 68; `result = true`
+// right after 0x109e00 on the dot3f body 143 (686 bytes); result declared before riding 68; no result local, `return
+// true` 151 (672 bytes); riding declared at its assignment 68. The result/riding slot swap (result in the argument slot) remains.
+// Y553: Explicit state criterion with success before/after support or velocity query
+// 143/143/133/133; complementary support with late/query-bound success and branched
+// criterion 156/155/155; sole actual result exit 92. All preserve both exact callers.
+// NOT kept: result/support lifetime forms regress; original complete body restored.
+// P290: Tested actor-result return 68; explicit state criterion in result and branched criterion
+// 62/62; one actual result exit 158; byte/short support 68/148; long result 153;
+// actual admission result 83. NOT kept: six-point criterion gain is below eight; all
+// executable forms restored. Native support/result byte homes and early success store remain.
+// N346: Independent state-criterion argument in bool/byte/short/long, mutable/const,
+// 144/144/144/144/146/146/146/146. NOT kept: one-use argument producers remain unmatched;
+// original support/result lifetimes and complete body restored. Native byte homes remain.
+// Y557: State criterion assigned to the returned result within the existing
+// call argument, with success at actor/support/velocity/entry boundaries:
+// OR criterion 62/143/133/160; conditional criterion 141/145/135/159.
+// NOT kept: the six-point best is below eight and an embedded assignment
+// requires byte equality. Original result/support lifetimes and full body restored.
+// N350: Separate positive actor authorization in bool/const bool/byte/const byte,
+// original and support-bound success: 155 each at 668/683 bytes. NOT kept: result
+// lifetime loses native extent and byte homes; both exact callers survive; body restored.
+// B395: Byte/signed-byte success accumulators, actor/support/velocity/entry producers:
+// 88/150/140/149 in either domain. NOT kept: all regress; canonical return conversion
+// and native support/result homes remain. Original Boolean result and complete body restored.
+// Native state/offset/jump field-domain subsets 1/2/4/3/5/6/7:
+// 68/68/68/68/68/68/68; complete graph with native early success 143.
+// All native record views and original result timing restored; support/result
+// byte homes and early success remain unresolved.
+// Y572: Joint original handle/support/result lexical owners, eight complete
+// behavioral-name triples: 68 each. NOT kept: support/result byte homes and
+// early success store remain; original complete body and parameter name restored.
+// P316: Plain relative/kick/actor-ground coordinate loops on the recovered state-call
+// graph, masks 1/2/4/3/5/6/7 then all with support-bound success:
+// 143/144/144/236/143/70/233/211. NOT kept: no gain; final early-success form
+// also loses both exact callers. Original full body restored; support/result homes remain.
+// P318: Positive support in signed byte/unsigned short/long/unsigned long on the
+// recovered state-call/dot graph, original then support-bound success:
+// 68/148/151/151/143/136/142/142. NOT kept: no byte match; native support/result
+// homes remain. Original complete body restored; both exact callers survive.
+// F373: Ground/raw/velocity/relative declarations at their actual producers,
+// individual, paired and complete lifetimes, then support at its producer:
+// 68/68/68/68/68/68/68/68. NOT kept: byte homes and early success remain;
+// original body restored, both exact callers survive.
+// F375: Existing relative/kick/actor-ground producers, seven subsets then complete raw library copies:
+// 143/68/68/68/143/70/143/143 on the state-call/dot graph. NOT kept: no byte match.
+// Original body restored; native support/result byte homes remain, exact callers survive.
+// P321: Query directly into velocity/relative, record/CRT copy, actor/query-bound
+// success on the recovered state-call/dot graph: 150/150/148/148/136/136/135/135.
+// NOT kept: all regress and shorten to 671/683; full body restored.
+// AC538: Complete upward-kick admission, positive/complementary bool/byte/short/long:
+// 144/144/144/144/144/144/144/144. NOT kept: unmatched decision/storage forms; original complete body
+// restored.
+// Native support/result byte homes and early success store remain.
+// F390: Support query through the existing result before its riding copy, bool/byte/short/long,
+// original then support-bound success: 68/68/148/151/143/143/136/142. NOT kept: no gain;
+// the early Boolean graphs grow to 686/683. Original complete body restored, both exact callers
+// survive; native support/success byte homes and early success publication remain.
+// P339: Structured actor-success restoration/completion tail with original/native
+// success timing, bool/byte/word/long result: 68/88/154/153/92/95/147/146.
+// NOT kept: no byte match; original body restored. Support/result byte homes and
+// early success store remain; both exact callers and providers survive.
+// N380: Complementary state criterion bool/byte/short/long, original/support-bound
+// success: 144/144/146/146/160/160/167/167. NOT kept: no equality; original state observation,
+// call criterion and complete body restored. Support/result byte homes and
+// native early success remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -5078,6 +5291,8 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 
 /* a walking biped's footstep effect: at its foot marker (or its origin),
    with the material it stands on */
+// MiniMax A (11-04): the material as a four-byte carrier scores 151, under the retention margin and not kept;
+// the material class still needs 0x188180's own file.
 // MiniMax A (11-03): no new form, no lower score: 0x188180 (src/unknown_187ec0.cpp, not my file) is still
 // unmatched, so its argument order and the material homes stay as they are.
 // MiniMax R (11-01): no new form, no lower score: 0x188180 is still unmatched, so its argument order and the material homes stay as they are.

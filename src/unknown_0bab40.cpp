@@ -120,6 +120,11 @@ bool function_ba8c0(s_object_function_ab const *function, long object_index, rea
 // bytes; under LTCG the inline boundary still merges the early return into the 1.0 block); a register bool set
 // true before the 1.0 store and returned 117; the override bit in a named bool 23; the override index scoped to
 // the flag test with the call nested 23; enabled set before the 1.0 store 23.
+// Round 147: value store in a comma return 117; early result through enabled with a direct 1.0 return 164;
+// shared native-long query result 113; value store plus enabled assignment in a comma return 117; enabled/index
+// declarations swapped with a direct 1.0 return 117; index scoped around the unchanged short-circuit with a
+// direct 1.0 return 117; early result through enabled with the original 1.0 arm, in the condition or nested,
+// 164/164. Repeat, not counted: shared bool query result with a direct 1.0 return 115. Original restored.
 // @retail 0xbab40
 bool __stdcall function_bab40(long object_index, long name, real *value)
 {

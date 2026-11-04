@@ -2203,12 +2203,21 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // clamps 776/841/841; complete overlay center-admission bool/byte/short/long/dword
 // storage 776 each. NOT kept: no gain or exact predicate/branch-layout form.
 // Original body restored; frame 0xcc/0xd4 and first-angle/overlay expansion remain.
+// F378: Secondary relative-sample eligibility after positive-weight admission, sample then skip
+// bool/byte/short/long: 807/807/807/807/776/776/776/776. NOT kept: one-use decisions remain unmatched;
+// original projection captures, angle tests, helpers and complete body restored.
 // P326: Existing primary blend scalars/secondary weight/overlay ratio declarations at their
 // owning phase, subsets 1..7, then all at entry: 776 each. Assignments stayed at their
 // producers. NOT kept: no gain; original body restored, frame and first-angle expansion remain.
 // N368: Nested persistent-valid/direct-set/default-and-overlay admissions, seven family
 // subsets, then all with split outer definition/graph guard: 776 each. NOT kept: no gain;
 // original admission graph restored, frame 0xcc/0xd4 and opposite selective expansion remain.
+// AC533: Test-produced whole terminal paired-slot gate, missing/present bool/byte/short/long:
+// 724 each (3413/3403; frame 0xcc). NOT kept: one-use/test-produced state needs equality;
+// first-angle/overlay calls stay 2/4 versus native 1/5. Original complete body restored.
+// N373: Ordered primary/secondary null-or-found screen producers, conditional/default/total-if forms
+// 830/775/835/830/775/835/835/835. NOT kept: at most one point; original full body restored.
+// Frame 0xcc/0xd4, entry computation and first-angle/overlay expansion remain.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

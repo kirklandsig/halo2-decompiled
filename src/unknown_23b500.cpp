@@ -61,6 +61,7 @@ struct s_spawn_scenario_23aea0
 	s_spawn_settings_23aea0 *settings;
 };
 
+// MiniMax G (11-04): no new form, no lower score: the integer-offset destination still needs the g_502250 symbol, which lives in src/unknown_157450.cpp.
 // score 61 (was 61): prologue and 438-byte extent agree; the default-copy destination still
 // uses pointer induction instead of integer offset 0x18..0xa8; staged scalar loads differ.
 // Earlier at 97 (was 105): the prologue is retail's; what differs is the destination, still a pointer

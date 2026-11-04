@@ -247,6 +247,9 @@ struct s_flag_word_bits
 // Y567: Complementary available bool/byte/short/long with default-true
 // then exhaustive arms: 116/116/126/122/125/125/131/130. NOT kept: no byte match; original flag
 // producer and body restored, player/root ownership and tail expansion remain.
+// N370: Actual player/header/object-tag reference ownership, seven subsets and native byte admission:
+// 114/114/114/114/114/114/114/124. NOT kept: no equality; original complete body restored.
+// Player/root ownership, tick/effect carriers and expanded notification tail remain.
 // F377: Complete byte/word/long/dword success results, original/native-byte flag pairs:
 // 87/106/96/81/90/78/90/78. NOT kept: unmatched result flags; native-byte long/dword
 // reach 340 bytes. Original body restored; player/root/tick homes remain.
@@ -257,6 +260,12 @@ struct s_flag_word_bits
 // the complete graph with the later definition-index declaration also ties 114.
 // Every initializer stays at its original producer; original complete body and rounding
 // helper restored. Player/root, tick/effect homes and expanded notification tail remain.
+// F382: Actual byte-owned header flag, test-produced bool/byte/short/long
+// 124/124/129/128; direct producers 113/113/113/113 at 354 bytes.
+// NOT kept: at most one point, and the expanded notification tail remains. Original word view and body restored.
+// N372: Existing rounding forced/unhinted; complete admission/notification scopes with
+// ordinary/forced/unhinted producer, then the one-use object receiver removed: 114 each.
+// Original producer/body restored; player/root, scalar homes and expanded tail remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1118,6 +1127,9 @@ struct s_tail_transfer_traits
 // N355: Returned-player canonical for traversal with independent bounded selection/slot domains:
 // 373/378/413/373/284/284/373/283. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; Selected-traits/unit/NONE homes and pool reloads remain.
+// N370: Actual handle-field/unit-record/selected-output references, seven subsets and complete scalar role identities:
+// 153/153/153/153/153/153/153/153. NOT kept: no equality; original complete body restored.
+// Selected traits/unit/NONE homes and native no-seat pool reloads remain.
 // Y576: Winning weapon as long/short/signed-byte slot or element receiver, original
 // for traversal 199/217/206/253; plain while 199/217/206/253. NOT kept: alternate
 // winner producers grow beyond retail and leave traits/unit/NONE homes and reloads unresolved.
@@ -1128,6 +1140,12 @@ struct s_tail_transfer_traits
 // 1..7 all tie 153; the complete graph with both no-seat slot declarations also ties 153.
 // All initializers and observations stayed at their original producers. Complete original
 // body restored; selected-traits/unit/NONE homes and native pool reloads remain.
+// F380: Direct primary/other winner publication, scalar arms/conditional destinations with
+// long/dword/short/byte passes: 176/176/185/177/171/171/180/184. NOT kept: regressions
+// and nonnative frame/extent; original chosen results, defaults, observations and body restored.
+// F382: Selected-traits, unit-receiver and selection-scalar lexical home groups,
+// seven subsets then all with the transfer parameter role name: eight 153 at 826 bytes.
+// NOT kept: no gain; original names, initializer sites, helpers and complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1280,6 +1298,12 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // DH351: Existing raw flag pointer/reference returns with local/direct object input
 // 284 each; native bit-field pointer/reference returns 253 each; bit-field value return
 // 290. NOT kept: pointer forms add a flag-address calculation absent in retail; value form regresses.
+// F382: Direct held/pending array-element producers, default-valid/exhaustive-valid/
+// exhaustive-sentinel arms at individual sites and asymmetric pairs: 293/279/283/277/283/277/287/289.
+// NOT kept: best gain seven is below the gate; original ternaries and full body restored.
+// N372: Initial/attached chained false stores and absent-held continuation, seven subsets,
+// then complete flag rejection: 284 each at 1006 bytes with frame 0x18. Original body
+// restored; retained pool/player and lazy tag-table homes remain.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1495,6 +1519,10 @@ void function_150820(dword *bits, bool local_only)
 // P332: Terminal game-mode equality/inequality producers at the original
 // observation, bool/byte/short/long: eight 43 at 210 bytes. NOT kept:
 // no byte match; original body and calls restored, player/hand homes remain.
+// N374: Hand lifetime after slot/slot admission/weapon/query, selected slot
+// indexed then conditional on primary: 70/70/70/70/81/82/104/86. Original selector,
+// lifetimes and full body restored; NOT kept: unmatched shorter extents
+// and native ESI-player/EDI-hand ownership remains.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1728,6 +1756,15 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // seven subsets then admitted-option user lifetime: 285/668/669/674/260/628/612/636.
 // NOT kept: 260 combines tying/regressing parts, hoists separate pass tests and
 // shortens away from retail; every field observation and full body restored.
+// AC536: Actual option/user/controller zero-mask initialization after array filling,
+// seven subsets and entry declarations with chained late zero: 288/287/288/287/288/287/338/338.
+// NOT kept: no equality or qualifying supported gain; original full body restored.
+// B434: Failure-first release admission, enclosed binding/matching lifetimes and
+// all seven subsets, then enclosed active-option acceptance: eight 285. NOT kept:
+// no gain; native mask/index homes and release expansion remain; full body restored.
+// DH359: Full-width signed option/user/controller masks, seven subsets 285 each;
+// word option mask 297; existing release-helper inline/forced declarations 285/285.
+// NOT kept: no gain; scalar homes and release expansion remain. All bodies and declarations restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
@@ -2216,9 +2253,16 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // P328: Saved parent rejection and complete branch-owned parent admission in
 // bool/byte/short/long: 202/202/211/210/231/231/211/211. Original body restored;
 // native frame agrees, player/header-offset ownership and rounds/mode homes remain.
+// F380: Complete distance/transfer/pickup workspace endings, seven subsets and all plus
+// parent validation: eight 202. NOT kept: ties; original declarations, observations,
+// signed scan, request clear, callback tuples and complete body restored.
 // P330: Persistent transfer completion controls notification and loop termination,
 // bool/byte/short/long expression producers 292/292/276/275, guarded producers
 // 284/284/261/258. NOT kept: no match, larger frame/extent; original break and full body restored.
+// N374: Complete sole-exit graph with actual squared-distance/radius/parallel-square
+// producer masks 0..7: 202/202/202/202/202/202/202/202. Original returns,
+// arithmetic and full body restored; NOT kept: no byte match or native
+// player/header-offset recovery. Native frame 0x28 remains.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
