@@ -557,6 +557,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // brace-initialized from the center fields 27, the list headers initialized as this body does (first's pointer
 // first, counts and capacities chained) 21. At 12 only the tree load differs (retail EAX after the center
 // loads, ours EDX after the zero stores): every form without the struct forward-substitutes it to the push.
+// AC530: Bound-only ordered intersection/separation results in byte/char/short/long, keeping
+// both original marking sites: eight 182s. NOT kept: no equality or gain; original comparison
+// and full body restored. Entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

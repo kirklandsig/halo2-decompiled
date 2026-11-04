@@ -567,6 +567,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // AC521: Existing shared scaled-point publication with conditional clamp/distance-difference/short-link
 // masks 0..7: 286/286/283/283/359/359/359/359. NOT kept: three-point gain only; bounded forms
 // recover frame 0xe4 but shorten away from retail. Original projection, loops, memcpy and body restored.
+// AC530: One bounded word ordinal owns both capacity and link-copy indexing, signed/unsigned,
+// node/function scope, increment after/before memcpy: 361/361/359/359/361/361/359/359.
+// NOT kept: all regress at 1375/1388 despite frame 0xe4; original total, memcpy and body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

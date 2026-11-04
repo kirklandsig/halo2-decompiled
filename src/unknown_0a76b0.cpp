@@ -342,6 +342,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // action first 314; late actions 327; split state 312; split action 326.
 // NOT kept: 268 gains only three; native receiver acquisition precedes these snapshots.
 // Original body restored; incoming unit/name/actions ranks and shared callback threading remain.
+// AC526: Complete two-use optional-output admissions bool/byte/short/long, then
+// complementary absence: 335/335/332/331/335/335/332/331. NOT kept: all regress and
+// caller 0x111650 rises 666 -> 713/719; original pointer tests and full body restored.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {

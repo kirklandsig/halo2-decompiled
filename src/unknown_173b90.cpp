@@ -673,6 +673,12 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC519: Complete nonempty/empty emitter outcomes, bool/byte/short/long,
 // 109/109/109/109/109/109/109/109. NOT kept: regressions from native admission
 // storage; original gate, offset, defaults, shared rotations and body restored.
+// AC524: Actual particle-loop continuation bool/byte/short/long, then complementary
+// completion results, 42 each at 1130 bytes. NOT kept: offset/default/reload and
+// row-i schedules remain; original guards, shared rotations and complete body restored.
+// AC527: Shared actual alpha/color/scale property receivers, subsets 1/2/4/3/5/6/7,
+// then complete receivers after the frame query: 247/117/117/258/258/135/257/240. NOT kept:
+// pointer residence unmatched and extent grows; original observations, rotations and body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1727,6 +1733,9 @@ bool function_17afd0(long effect_index, long value);
 // AC515: Actual two-use view classification on the shifted-word/effect-index/owner-arm graph,
 // long/dword/short/byte with default-query then conditional producers: 139/139/141/129/139/139/141/125.
 // NOT kept: unmatched classification storage; original Boolean result and complete body restored.
+// AC522: Coupled availability/same-view outputs, complete and success-owned
+// producers with bool/byte/short/long same-view domains 142/135/132/135/125/133/138/141.
+// NOT kept: unmatched result residence; original observations and body restored.
 // F366: Phase-specific post-attachment view observation with original/complete/refined/logical/
 // success-only/complete-query/invalidation/complementary availability producers: 111/119/118/119/129/119/79/112.
 // Exact-only observation diagnostics restored; original snapshots, query gates and full body retained.

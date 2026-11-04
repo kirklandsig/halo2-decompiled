@@ -517,6 +517,9 @@ static inline bool teams_enabled_19e1c0()
 // volatile result with the per-case returns and the teams at each use 429 (1427 bytes). Diagnostic (reverted): one
 // `remaining &&` added to the second compare on the plain result 655 in the real build (homes unchanged), although
 // a compile-only build (no LTCG) of the same source flips to retail's homes; that harness misleads here.
+// AC526: Complete signed formatter-failure truths bool/byte/short/long, inherited
+// result then native result: 418/418/427/424/691/691/691/691. NOT kept: native frame alone still
+// merges name-copy tails; original full result, clamps, cases and body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
