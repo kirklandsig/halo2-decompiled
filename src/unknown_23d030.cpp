@@ -444,6 +444,9 @@ extern byte g_51ec11;
 // B415: Separate complete world-coordinate scalar phase with original/branch/per-use/shared speed
 // B415: and original/captured matrix scale: 304/351/346/304/351/350/309/351. Original scalar phases, field observations
 // B415: and full body restored; zero/side normalization and up/roll allocation remain.
+// B417: Existing shared normalizer computed square/inner-sum/whole-squared-length stages,
+// seven subsets then immutable complete stages: 245/89/89/245/109/89/109/109. Original header/body restored.
+// NOT kept: computed-stage temporaries do not match; zero/normalization/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

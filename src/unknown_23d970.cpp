@@ -791,6 +791,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // Round 82 (m3 lane 16, fast with 0x1f0870): the distance named before its store 45 (same code); one function-scope
 // forward pointer for both arms 322 (1266 bytes, prologue changes); named yaw/pitch locals in the else arm 157 (1264);
 // right declared at function scope 45 (same code); the cosine computed before the distance store 49.
+// B417: Prior-up/normalized-direction/right last-consumer regions, seven subsets then complete
+// geometric workspace names: 45/45/45/45/45/45/45/45 at 1262/1261. Original body restored;
+// right i/j carriers, second-product forward.k reuse and ordinary-angle store bases remain.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
