@@ -176,7 +176,7 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
-// score 295 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
+// score 295 (was 295): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
 // Round 121 (fast control 336, aligned 103): the helper's clamp as if/else if 336 (103); remaining first 348 (156); weight before
 // height 345 (129); remaining before weight 348 (144); a named inverse weight 337 (108).
 // Round 291: Paired double-square terms, complete direction-square terms, both, ordered accumulator
@@ -385,6 +385,10 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // M373: Real side-ordinal while traversal consumed at dispatch, long/dword/short/word
 // 508/508/402/402; each with ordinary outer while 508/508/402/402 (reduced control 336).
 // NOT kept: all regress and lengthen; original loops, helpers and full body restored.
+// Round 62 (m3 lane 14; fast control 336 at 1885 bytes, plain 295): the helper's clamp through the PIN macro 336 (same
+// code); a pointer to the three sample factors 336 (same code); height accumulated first 336 (aligned 116 -> 144); colour
+// last 335 (1874 bytes, aligned 236); red, height, green, blue, weight, intensity, distance 332 fast at retail's 1892
+// bytes, plain 342. Original helper order restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

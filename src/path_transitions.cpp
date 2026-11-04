@@ -471,7 +471,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 270 (was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
+// score 219 (was 270): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// colours and the projection sum's order differ.
+// Earlier (270, was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
 // Round 132 (m3 lane 5, fast): case 5's success stores with the output index first 341; case 5's direction
 // negated field by field from a vertex pointer 382 (1252 B); case 2's node-index store before the point copies
 // 299; case 5 fallback's node-index store before the point copy 307; result declared before the surface 278.
@@ -699,6 +701,16 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH356: Plain coordinate-copy induction at paired/actor/trace publications, seven
 // subsets then all with ordinary result: 356/344/357/351/353/345/347/363. All restored;
 // native root/actor ingress remains; original record fallback and all helpers retained.
+// Round 62 (m3 lane 14, fast): 219 (was 270): corners b, a, c, d, vector3d_from_points3d for both edges and dot3f for
+// the projection and origin 266 (aligned 181 -> 143); case 5's direction first 264 (110); case 2 through a `vertices`
+// local (no `data`) 219 (70; case 2 is retail's byte for byte, kept). Tried on the way: the reciprocal multiplied in
+// place by the radius 270/266 (same code); `first_length * fraction` 266; dot3f taking &first first 266; a named
+// parent position 266; origin before projected 266; a named difference 266; case 2's position first 266; case 2's
+// state pathfinding read at each use 219 (same code); the trace through `data` 272; a case-5 `vertices` local 264.
+// On 219: projection and origin written out, staged with `+=`, or one of each 366 (1288 bytes); `second, first`
+// declared 219; `second` declared in its block 219; both reciprocal forms 219; both products turned 219; the radius
+// product turned 219. Left: the entry (actor loaded at entry, pathfinding moved to EBX), which colours case 5, and
+// the projection sum (retail (j + k) + i with j in XMM3, ours (k + j) + i).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
@@ -717,26 +729,21 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
         if (parent_point && (long)surface->vertices[0] != NONE && (long)surface->vertices[1] != NONE &&
             (long)surface->vertices[2] != NONE && (long)surface->vertices[3] != NONE)
         {
-            point3f const *c = &pathfinding->vertices[surface->vertices[2]];
             point3f const *b = &pathfinding->vertices[surface->vertices[1]];
             point3f const *a = &pathfinding->vertices[surface->vertices[0]];
+            point3f const *c = &pathfinding->vertices[surface->vertices[2]];
             point3f const *d = &pathfinding->vertices[surface->vertices[3]];
             vector3f first, second;
-            first.i = b->x - a->x;
-            first.j = b->y - a->y;
-            first.k = b->z - a->z;
+            vector3d_from_points3d(a, b, &first);
             real first_length = function_30bf0(&first);
             if (first_length > 0.f)
             {
-                second.i = d->x - c->x;
-                second.j = d->y - c->y;
-                second.k = d->z - c->z;
+                vector3d_from_points3d(c, d, &second);
                 real second_length = function_30bf0(&second);
                 if (second_length > 0.f)
                 {
-                    real projected = parent_point->point.y * first.j + parent_point->point.z * first.k +
-                        parent_point->point.x * first.i;
-                    real origin = first.j * a->y + a->z * first.k + a->x * first.i;
+                    real projected = dot3f((vector3f const *)&parent_point->point, &first);
+                    real origin = dot3f((vector3f const *)a, &first);
                     real inverse = 1.f / first_length;
                     real fraction = (projected - origin) * inverse;
                     if (first_length > state->source.radius * 2.f)
@@ -769,8 +776,8 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
         return result;
     case 5:
         {
-            point3f const *position = &pathfinding->vertices[surface->vertices[2]];
             vector3f direction = *(vector3f const *)&pathfinding->vertices[surface->vertices[3]];
+            point3f const *position = &pathfinding->vertices[surface->vertices[2]];
             direction.i = direction.i * -1.f;
             direction.j = direction.j * -1.f;
             direction.k = direction.k * -1.f;
@@ -793,9 +800,9 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
         return result;
     case 2:
         {
-            s_pathfinding_data *data = (s_pathfinding_data *)state->pathfinding;
-            point3f const *direction_point = &data->vertices[surface->vertices[2]];
-            point3f const *position = &data->vertices[surface->vertices[1]];
+            point3f const *vertices = ((s_pathfinding_data *)state->pathfinding)->vertices;
+            point3f const *direction_point = &vertices[surface->vertices[2]];
+            point3f const *position = &vertices[surface->vertices[1]];
             out->point = *position;
             out->output_index = parent_point->output_index;
             *out_node_index = parent_node_index;
