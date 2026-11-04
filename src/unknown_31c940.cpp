@@ -648,13 +648,21 @@ static __forceinline void solve_linear_error_kernel(float target, float mass,
 	__m128 const &inverse_a, __m128 inverse_b,
 	solver_step_31c940 *const volatile &step, float *result)
 {
-	__m128 relative = _mm_sub_ps(linear_a, _mm_load_ps(linear_b));
-	__m128 angular = _mm_add_ps(_mm_mul_ps(angular_a, axis_a), _mm_mul_ps(*angular_b_pointer, axis_b));
-	__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, axis_linear));
-	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
-	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+	// Retain the projection contributions before reducing their sum.
+	__m128 work_a = linear_a;
+	__m128 work_b = axis_b;
+	__m128 work_c = _mm_load_ps((float const *)&(*angular_b_pointer));
+	work_b = _mm_mul_ps(work_c, work_b);
+	work_c = _mm_mul_ps(angular_a, _mm_load_ps((float const *)&axis_a));
+	__m128 work_d = _mm_mul_ps(_mm_sub_ps(work_a,(*(__m128 const *)linear_b)), axis_linear);
+	__m128 work_e = _mm_add_ps(_mm_add_ps(work_c, work_b), work_d);
+	__m128 work_f = _mm_shuffle_ps(work_e, work_e, 0x55);
+	work_a = _mm_shuffle_ps(work_e, work_e, 0xaa);
+	work_e = _mm_add_ss(work_f, work_e);
+	work_d = _mm_add_ss(work_a, work_e);
 	float projected;
-	_mm_store_ss(&projected, xyz);
+	_mm_store_ss(&projected, work_d);
+
 	float impulse = mass * (target * load_error_scale(step) - projected * load_velocity_scale(step));
 	// Give the rounded SIMD input a scalar object; keep the extended impulse
 	// live for result accumulation. Retail reads this copy directly with MOVSS.
