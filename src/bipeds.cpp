@@ -3632,6 +3632,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // subsets then all with the original collision declared at entry: 368 each.
 // Original declarations and complete body restored; native matrix/origin and
 // paired pivot/property homes remain; frame 0x12c still agrees.
+// Round 588: Position/property/collision last-use scopes, seven subsets, then all with
+// earlier inner rotation declaration: 368 each. NOT kept: no native-home repair; original
+// complete body restored. Matrix/origin and paired pivot/property homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4408,6 +4411,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // publication loop, seven subsets then complete immutable parts:
 // 179/176/196/154/181/170/190/190. NOT kept: all regress; original twice-used helper
 // and body restored; normalization SIMD and trigonometric/basis homes remain.
+// Round 588: Angle/rotation/basis last-use scopes, seven subsets, then all with double angle:
+// 145/145/145/145/145/145/145/151. NOT kept: no exact scope/domain repair; original
+// complete body restored. Normalization SIMD ranks and coefficient/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

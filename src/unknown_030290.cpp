@@ -458,6 +458,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 586: Two-transform source-table/destination-array traversal, long/dword/short/word
 // ordinals with indexed/body-advanced destination: 289/289/337/337/195/195/322/322. NOT kept: nonexact
 // traversal/grouped residence; original direct calls, helper and full body restored.
+// Round 588: Standard scaled-point multiplication, branch/copy input, factor/component
+// first and direct/native output: 693/691/693/691/693/691/693/691; forced expansion of
+// the four direct outputs 525/527/525/527. NOT kept: helper outlines or frame/length
+// regress. Original alias-safe helper/body restored; inverse homes and X/Z spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

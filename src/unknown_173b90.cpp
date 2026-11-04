@@ -1749,6 +1749,10 @@ bool function_17afd0(long effect_index, long value);
 // DH350: Independent visibility/drawing getter lifetimes, availability default
 // after getter/owner/view, joined/nested success, view-default and conditional:
 // 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
+// Round 588: Separate eligibility/drawing getters, complete eligibility producer scope
+// and immutable drawing data, seven graphs then early drawing declaration:
+// 47/219/47/219/47/219/219/219. NOT kept: no equality; original snapshots and body
+// restored. Availability clear/result and post-attachment view observation remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
