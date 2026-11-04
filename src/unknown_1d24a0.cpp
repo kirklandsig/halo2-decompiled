@@ -343,6 +343,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // only LTCG shows remains. Forms: long counter 933 (rolled, cmp/jl); dword counter 933; the entry test wrapping the
 // body (single exit) 902 (same code); the attached object index in a named local right after the element pointer
 // (retail reads it first) 951; the attached component set in an if/else 901 (one point, not kept). All restored.
+// DL260: Existing scale/add/subtract kernels with deduced actual vector input types, seven subsets, then existing planar kernel: 1087/1140/1099/1327/1320/1295/1505/1644.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

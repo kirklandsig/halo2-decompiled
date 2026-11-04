@@ -1503,6 +1503,8 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P303: Existing shared completion provider on the failure-only count graph, open/query/resize
 // masks 1/2/4/3/5/6/7, then all five asynchronous boundaries: 33/33/33/33/33/33/33/33.
 // Original local completion expansion and complete body restored; query/count and write/header joins remain.
+// DL260: Native header checksum/dependency/persistent layouts and native handle fields: ten executions, eight distinct source/header bundles, all 33; mask-only t03/t06 and t05/t07 repeated.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
 // @retail 0x213970
 void function_213970(void)
 {

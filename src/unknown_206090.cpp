@@ -377,6 +377,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // without the snapshot, products in double 1548 (frame 0x590, but the double loads are shared: `fld` once and `fmul
 // st(i)`, where retail reloads with `fld m; fmul m`); the component index read after the 0x81 flag test (retail's
 // order) 1474 (6195 bytes). All restored.
+// DL260: Current-float complete dot/magnitude/second-normalizer product parts, seven subsets, then complete squared length: 1381/1415/1415/1394/1394/1387/1424/1395.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
