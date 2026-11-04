@@ -567,6 +567,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // AC521: Existing shared scaled-point publication with conditional clamp/distance-difference/short-link
 // masks 0..7: 286/286/283/283/359/359/359/359. NOT kept: three-point gain only; bounded forms
 // recover frame 0xe4 but shorten away from retail. Original projection, loops, memcpy and body restored.
+// N367: Capacity-owned link eligibility reused for surface work, expression bool/byte/short/long
+// 286/286/290/289; branch producers 359/359/370/366. NOT kept: no equality or gain; original predicates,
+// flags and indexed memcpy restored. Extra frame word, predecessor and flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

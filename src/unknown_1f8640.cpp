@@ -596,6 +596,9 @@ struct s_1f8a70_actor
 // AC521: Independent inner route outcome on the two-result/native-word-selector graph,
 // byte/signed-byte/short/long with converted or test-arm outer results: 191/191/191/191/300/300/306/306.
 // NOT kept: no exact memory-result home; original outer/inner results, unit scope and full body restored.
+// N367: Early active/arrival/mode success joins on the two-result word-selector graph, seven subsets
+// 424/418/425/446/443/441/316; complete joins with terminal literals 306. NOT kept: all regress; original
+// early exits and result assignments restored. Unit/result +0x10/+0x12 and late route-result home remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
