@@ -464,6 +464,14 @@ extern byte g_51ec11;
 // B430: Counted camera-position/command-position/offset component transfers, masks
 // 1/2/3/4/5/6/7: 323/322/338/162/318/286/341; all with chained position 341.
 // NOT kept: no byte match; original copies, geometry and full body restored.
+// M3 lane 10 r71 (fast, 0x23d790/0x23d030 stay matched; aligned in brackets, base 89 [74]): round 158's lead rebuilt on this body: normalize3d, a forward pointer and staged up rows, declared and stored
+// i,j,k 191 (1330) [41], first difference +0x11e, zero and the whole side block retail's; rows j,i,k or j,k,i the same; stored i,k,j the same; every other row or store order loses the zero register
+// (264-274, 1326); plain rows through the pointer k,j,i 127 [80]. On 191: the else arm's speed local 190 (1329) [36]; that with movement.k assigned first 51 (1327) [36] (the x87 movement block is then retail's,
+// only the load of movement.k lands ahead of the first fld). Movement.k second, or j before i 190/194; yaw cosine/sine locals 334-351 (1346-1354). On 51: roll axis through the forward pointer 57 [40]; v and axis
+// declared the other way round 240 (1326) [38] (three cross pairs flip to retail's, four others away from it); projection through dot3f 241 [63]; roll block on the fields directly 131 [106]; identity
+// pointer chains 1-8 ahead of v 191-341; all 36 orders of the projection's and the cross's statements, best 51 (i,j,k first; the rest 74-245). Left on 51: the up rows' product order (retail A, B, C, D of
+// fj*si, fk*si, fk*sj, sj*fi before any subtraction) and three operand pairs in the roll block. Not kept: the staged rows are one-use locals, match only. Kept nothing on the current body: speed local 274, movement.k
+// first 237, both 117, forward pointer 248, forward pointer and speed 248, normalize3d with speed and movement.k 263.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

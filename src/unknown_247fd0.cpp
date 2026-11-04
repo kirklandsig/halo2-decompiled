@@ -375,6 +375,15 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // point-direction pairs, then all five: 55 each. NOT kept: no exact boundary-contract
 // form or gain. Original signature, sole caller and full body restored; split post-sample
 // cache comparison and evaluator/child scratch homes remain.
+// M3 lane 10 r71 (fast; aligned in brackets, base 55 [54]): the child loop as a plain while 55 [54]; the cache block's cleared mask named and stored
+// after the record 55 [54]; the child pool in a named pointer 55 [54]; a parent local for both link arguments and the parent store 55 [54]; the
+// owner's flags read once for mask and update, on the current graph, 60 [50]. Re-measured: 0x173ba0's record read back from field_50 133 (876)
+// [19], which is the real closest form: only the split compare, its loop pad and the child loop's rotation are left. Harness (one file, entry in the
+// source; nothing folds): the compare or the store under an implied test, the store through a one-pass for/do, switches on the store or compare, a
+// bool result. A retail-wide scan of `fstp m` followed by an ALU operand finds 5 folds and no split of this shape: two folds are jump targets, and all
+// three non-target folds (0x39e24, 0x18700b, 0x2481bf) sit in unmatched functions, so no matched function shows this fold under the build's tuning.
+// Diagnostic only: in the one-file link /G7 on the entry object alone folds it (file-level /G7 does not), so tuning is link-wide, but it also turns
+// `inc` into `add r, 1`, which retail does not do; /G6 and /Ot on every object still split, /Os folds at 175 instructions. No flag change proposed.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
