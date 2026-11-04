@@ -1556,6 +1556,8 @@ bool function_17afd0(long effect_index, long value);
 // score 47 (was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
 // availability clear/production and the post-attachment view observation remain.
+// frame 0x14, eligibility width, NONE/owner and Boolean homes agree;
+// availability production and the post-attachment view observation remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
 // bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
@@ -1723,6 +1725,12 @@ bool function_17afd0(long effect_index, long value);
 // F366: Phase-specific post-attachment view observation with original/complete/refined/logical/
 // success-only/complete-query/invalidation/complementary availability producers: 111/119/118/119/129/119/79/112.
 // Exact-only observation diagnostics restored; original snapshots, query gates and full body retained.
+// B419: Complete draw-arm/rejection/final-admission results on the recovered owner/Boolean graph,
+// conditional/direct camera result: 107/96/110/136/106/96/110/136. All regress; original
+// availability, input snapshots, query gates, draw tuple and complete body restored.
+// B421: Owner/view identity before the status query, bool/byte/short/long,
+// positive/complementary results 133/133/159/158/133/133/159/158. NOT kept:
+// all regress and exceed retail length; original snapshot/query graph restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

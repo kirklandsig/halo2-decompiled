@@ -271,6 +271,12 @@ short __stdcall function_2551c0(long actor_index)
 // differs): the dot through the file's accumulating helper (0x255741's), either operand order, 120/120; the direction copy
 // before the angle 6; trace declared first in the loop 6; forward and best direction declared before the best score and
 // found 6; best direction declared before forward 6; a 600 s permuter run (53 tries) none below 6. Body restored at 43.
+// B416: Plain native three-coordinate rotation-output traversal with staged cross,
+// indexed/original slot view, projection/cross order and row accumulators: 168/161/170/206/161/144/170/187.
+// NOT kept: all regress and enlarge the retail frame or extent; original helper and body restored.
+// B418: Winning-score search success on the recovered rotation frame, indexed/
+// original slot, direct/named score factors and early/late zero: 143/145/137/143/146/148/140/146.
+// NOT kept: no exact match; original success byte, slot view and full body restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -856,6 +862,12 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // an if/else into a local 17; the first test as `length + (size + radius)` 17. Slots there: ours sum+side0+timing0 at
 // 0x10, length+side1+timing3 at 0x14, index+timing2 at 0x18, adjusted alone at 0x1c; retail side0+timing0 at 0x10,
 // sum+side1+timing3 at 0x14, length+adjusted at 0x18, index+timing2 at 0x1c. Body restored at 89.
+// B418: Complete product/planar-sum/final-projection stages in the existing
+// projection helper, seven subsets and immutable complete stages: 87/87/87/87/87/87/87/87.
+// NOT kept: at most two fewer differences; original helper and full body restored.
+// B420: Complete lateral-clearance and heading admissions, positive/negative
+// bool/byte/short/long values at both original tests: 89/89/89/89/89/89/89/89.
+// NOT kept: no exact match; original complete body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -1404,6 +1404,9 @@ static inline s_players_globals *players_globals_14f2e0()
 // F369: Complete kept-unit failure ownership at all edges/state phase/admitted unit/full state
 // admission: 69/46/46/46; each with complete timer clear 66/43/43/43. NOT kept: no
 // byte match; the three-point clear is below the bar. Original body and observations restored.
+// B413: Kept-unit existence/admission result predicates, then the native two-short timer
+// model in all combinations, and the complete timer memset: 278/258/280/91/287/267/287/280.
+// Exact-only result-then-test forms and the timer model restored; NONE and tail scheduling remain.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

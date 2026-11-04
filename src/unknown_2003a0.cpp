@@ -2413,6 +2413,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // seven subsets then readonly movement state: 275/275/275/275/275/275/275/275.
 // Original producers, includes and complete body restored; frame, iterator pool,
 // point/current-handle homes and intersection spill remain.
+// B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
+// complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
+// Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -3351,6 +3354,9 @@ void function_2011f0(long arg_0);
 // pointer as a ternary 351; long difficulty by if/else switched as short 344. Left on 344: the options
 // if/else (retail stores NULL in its own arm), the memset's fresh `(word)arg_1` row read, arg_0's threaded
 // `xor esi, esi` after a failed 0x201400.
+// B413: Complete creation-record/customization/mask-attempt lifetime end scopes,
+// seven subsets, then all with readonly options: 318/318/318/318/318/318/318/318.
+// Original body restored; narrowed-index/placement and final-chain homes remain.
 // Round 49 (m3 lane 2, fast = plain 318): the options pointer by if/else with NULL in its own arm 361; the spawn
 // index assigned in each arm of `arg_2 == NONE` 358; the +0x3c word as a short compared with NONE and passed
 // as is 322 (retail's `cmp di, -1`, one byte shorter, but the splice loop's pad grows a byte; aligned 141 ->

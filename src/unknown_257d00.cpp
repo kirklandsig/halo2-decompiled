@@ -1800,6 +1800,12 @@ void function_b7360(long object_index);
 // Y570: Full-width initial/recording point and set indices 303/303/301/303/303/301,
 // both complete 301, both with one full reference capture 301. Original whole
 // callback restored; pool/actor/output carriers and the 24-byte gap remain.
+// B420: Existing completion receives secondary/primary/recording validations,
+// subsets 1/2/4/3/5/6/7, then all as short: 301/301/301/479/301/301/479/526.
+// NOT kept: no exact match; original complete body restored.
+// B423: Both bounded orientation/recording slot admissions classified as valid/invalid
+// bool/byte/short/long, 301 each at 1824/1848. NOT kept: no exact match;
+// original word tests, slot publications, case graph and complete body restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2336,6 +2342,18 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // at the case top 485; the result declared after the other locals 485; the state local for case 1's point and the facing
 // call, declared after the flag 485. Retail's actor (EBX) is spilled to [esp+0x10] and that slot is shared with the case
 // 1/4/20 points; ours keeps the actor in EDI, which 0x210b60's EDI argument clobbers in case 1, so its slot cannot be shared.
+// B416: Completed search-scan/candidate-geometry/selected-target-geometry lifetimes,
+// seven subsets then all with complete search role names: 485 each (fast control 485;
+// full baseline 469). Original complete body restored; actor/state and first-point homes remain.
+// B418: Real state bitfields at dispatch/tail/secondary observations, seven subsets
+// and all with raw member tests: 485 each (fast control 485; full 469). Original
+// type and body restored; actor/state registers and first-point home remain.
+// B420: Complete structured outcome gates the post-dispatch continuation,
+// completed/pending in bool/byte/short/long: 766/766/726/718/694/694/672/668.
+// NOT kept: no exact match; original complete body restored.
+// B423: Both nearest-candidate/selected-target range admissions classified as in/out
+// bool/byte/short/long, 469 each at 2400/2396. NOT kept: no exact match;
+// original thresholds, squared sums, iterator, publications and full body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

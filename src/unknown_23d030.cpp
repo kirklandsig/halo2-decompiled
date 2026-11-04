@@ -446,6 +446,15 @@ extern byte g_51ec11;
 // P303: Existing shared normalizer live i/j/k captures before stores, subsets
 // 1/2/4/3/5/6/7: 332/332/332/352/352/352/352; complete immutable captures 352.
 // NOT kept: all regress and shorten away from retail; shared header and complete original body restored.
+// B415: Separate complete world-coordinate scalar phase with original/branch/per-use/shared speed
+// B415: and original/captured matrix scale: 304/351/346/304/351/350/309/351. Original scalar phases, field observations
+// B415: and full body restored; zero/side normalization and up/roll allocation remain.
+// B417: Existing shared normalizer computed square/inner-sum/whole-squared-length stages,
+// seven subsets then immutable complete stages: 245/89/89/245/109/89/109/109. Original header/body restored.
+// NOT kept: computed-stage temporaries do not match; zero/normalization/up allocation remains.
+// B419: Existing shared normalizer two-use threshold result at scale admission and common
+// numeric return, bool/byte/short/long rejection then success: 278/278/278/278/228/228/228/228. All regress;
+// original shared header and full body restored. Zero/normalization/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

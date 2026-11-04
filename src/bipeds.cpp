@@ -1971,6 +1971,9 @@ void function_dfd70(long arg_159e6d)
 // AC518: Complete normalized head-separation admission bool/byte/short/long
 // at producer or before head workspace: 233/233/233/233/233/233/233/233.
 // NOT kept: one-use admission result unmatched; bool forms also raise a shared user.
+// B421: First-ray hit/clear bool/byte/short/long results 233/233/233/233/233/233/233/233.
+// NOT kept: no match; Boolean clear also raises shared user 0xdc5c0 585 -> 589.
+// Both original helpers and complete target restored; mode-three/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
