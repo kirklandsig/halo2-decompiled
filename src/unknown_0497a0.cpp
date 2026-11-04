@@ -244,6 +244,10 @@
 // Y572: Coherent existing cross/sum forced/ordinary/plain declaration pairs,
 // all eight nonoriginal policies: 581 each. NOT kept: frame remains 0x58/0x60;
 // complete target and both helper bodies unchanged, original declarations restored.
+// Y582: Standard array transfers for existing v2/v3/v4, seven nonempty subsets,
+// then all with ordinary w transfer: 676/736/661/739/719/749/765/803. Full basis
+// recovers frame 0x60 but grows to 2712 bytes. NOT kept: all regress; original
+// native copies, helpers, integer conversion and complete body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -858,6 +862,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Y578: Actual V interval in existing bounds, field/aggregate/native/library publication
 // at producer/entry storage: 267/267/573/573/267/651/573/573. NOT kept: interval
 // residence misses equality; native-frame copy forms grow. Original separate scalars and body restored.
+// Y582: On current paired-point geometry, original/shared normalizer pairs for camera side
+// and surface normal, all eight nonoriginal pairs: 270/270/377/377/377/377/377/377.
+// NOT kept: no byte match; original roots/scales, shared crosses and full body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

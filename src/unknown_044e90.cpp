@@ -269,6 +269,9 @@ struct s_visibility_bound_record
 // Y578: Actual mutable visibility-word reference at part/admission, direct/shared test/set/both
 // consumers relative to that word: 406/432/441/449/406/436/441/449. NOT kept: native
 // element ownership does not match; helper forms grow. Original bit mask, observations and body restored.
+// Y582: Actual fallback sphere-query return in bool/byte/word/long, success publication
+// or failed-query continue: 406 each. NOT kept: one-use results miss equality; original
+// call, direct test, input observations and full body restored; entry/table/plane homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

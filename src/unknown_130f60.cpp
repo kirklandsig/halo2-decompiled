@@ -372,6 +372,10 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // walking pointer, case-produced pointer and indexed reference, long/dword side ordinals:
 // 468/468/424/424/364/364/468/468 (fast control 336, full 295). NOT kept: all regress;
 // original case acquisitions, helper and full body restored; ESI/unit/accumulation homes remain.
+// Y582: Existing direction transfer by standard copy/backward-copy/uninitialized-copy/memmove,
+// original planar negation 496/496/496/498; standard unary planar transform 476/476/476/516
+// (fast control 336, full 295). NOT kept: native copy/normalization residence not recovered;
+// original complete body, helper and includes restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
