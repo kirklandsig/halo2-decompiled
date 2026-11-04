@@ -1024,6 +1024,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // P335: Standard component-array inner products at nearest/projection/opposite distance,
 // seven subsets then complete graph with anchor transform: 845/1136/1138/1444/1417/1088/1402/1438. NOT kept:
 // all regress and suppress native scan expansion. Original reductions, includes and complete body restored.
+// P342: Standard binary component transforms at nearest/anchor/opposite producers, seven subsets then
+// scan-phase output declarations: 876/598/1237/912/1533/1362/1554/1554. NOT kept: no native frame/scan
+// recovery or byte match; original producers, includes and whole body restored. Frame 0x18 versus 0x2c,
+// query/vector/ordinal/fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

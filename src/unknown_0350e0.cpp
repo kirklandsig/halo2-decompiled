@@ -1901,6 +1901,10 @@ real game_time_get_seconds();
 // F372: Internal hash, animation/sample and draw workspace role names, seven
 // subsets then all with offset/reflection names: eight at 507. Native frame and
 // output homes remain; original names, scopes, APIs and complete body restored.
+// P342: Complete distance/angular endpoint observations and branch-produced animation-time results,
+// seven subsets then immutable original clock: 547/560/533/547/539/542/539/539. NOT kept: all regress;
+// native 0x94 frame, output homes and definition/NONE roles remain. Original field reads, time updates,
+// vector transfers, APIs and whole body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
