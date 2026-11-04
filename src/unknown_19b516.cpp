@@ -252,6 +252,10 @@ void c_widget::v16()
 // else arm) 2; the eligibility read into a bool local 2; a for loop with `!= NULL` and a `continue` on the
 // ineligible widget 2. Diagnostic: `#pragma optimize("t", on)` 62 (the eligibility call is inlined). Retail's
 // copy-then-test heads follow iterator calls everywhere except these four widget walks.
+// Round 139: current declared in the condition 2; a base result converted in that condition 2; a const current
+// copied at the body's head 2; the step assigned in a do-while condition 2; a function-scope current assigned in
+// the while condition 2; the direct two-arm step with a condition-declared current 2; native base traversal and
+// calls with that condition 2; base entry/step with a derived condition value 2. Original body restored.
 // @retail 0x22ec1b
 void c_widget::v17()
 {
