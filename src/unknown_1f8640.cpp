@@ -367,7 +367,8 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
-// score 228 (was 228): Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
+// score 188 (was 228): Frame 0x80, prologue and first exit agree; the route test's layout, case 7's stores and the result's home differ.
+// Earlier at 228: Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
 // MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
 // 0x80 frame and prologue exactly (the first difference moves from +0x0 to +0x33), but the aligned body
 // then differs in ~417 instructions, so the 228 body is kept.
@@ -565,6 +566,26 @@ struct s_1f8a70_actor
 // function_1f8750(actor_index); return result; failed: result = false; function_1f8750(actor_index); return
 // result;` with no initializer and the first exit `return false` 417 (1644 bytes, frame 0x80, prologue as retail,
 // aligned 69), with `result = false;` before the first exit's call 417 (still folded to `xor al, al`).
+// Round 52 (m3 lane 15, fast; aligned counts from a difflib listing, base 65): VALUE BUG fixed (case 3 stores node NONE, radius 0
+// and route_mode = 1, as case 5's tail). A new cause: retail's first exit (`xor bl, bl`, call, `mov al, bl`) comes from two
+// variables, an outer result (false in the first arm, assigned from the route result at the end of the `else` arm, one
+// final return) and an inner route result; first difference +0x0 -> +0x55 and frame 0x80, with early `return true`s kept.
+// On that graph: the tail joined `result = route_found` once after the if/else 382 (aligned 51), in each arm with a goto past
+// the failure block 382 (82); a flag for the failures, tests `<0 || >2` 409 (57) / plain 409; short route_mode with a long
+// copy for the tests and the route switch 402 at aligned 53 (route spills with dword stores and word reads, EDI holds NONE,
+// as retail); mode 7's radius before its node 343 (cases 2/4 and 3/5 merge their tails as retail; node first 361, aligned 39,
+// with case 2, case 3 or a radius local reordered 363-371); a failure flag with the result set in each arm 199 (aligned 46); with
+// the unit mode tested through 0xe70b0's returned pointer in its own block 188 (aligned 37, masked 34; without the block frame
+// 0x84, 206); the flag replaced by `route_found = false;` under an else on the route test, reached by the existing gotos, 188 (kept,
+// same code). Case 6 nested or with breaks 188/188;
+// the route switch's `__assume(0)` default 327 (retail stores false there); `result = route_found;` once after the
+// if/else 327; a `bool route_found = false;` initializer 427 (frame 0x84); the failure block after the final return 453
+// (first exit folds); case 6's `route_mode = 1` jumping to case 5's store (goto, diagnostic) 361, VC copies the store back;
+// cases 6, 7 first in the switch 383 (laid out first); 0x1caa40 called in both arms of the owner test 185 (retail's `lea esi` before the
+// branch; a gain of 3, not kept); address-taken or volatile route result (diagnostics) 188/322/337: no slot change.
+// Left: retail lays the route test and chain directly after case 5 (cases 6, 7, zero test and failure block after it, `jne`
+// to case 5's store from case 6); mode 7's node store before the radius; `setne al; test al, al` in the zero test; the failure
+// block's memory store and reload of the result (ours folds to BL) and the unit mode's slot (+0x10 for retail's +0x12).
 // Round 143 (m3 lane 6, fast; aligned base 82): no initializer, the first exit `result = false;` + 0x1f86a0 + `goto
 // done;`, `!result` jumping to a `release:` label past `failed: result = false;`, one `done: return result;`, success
 // `return result;` 429 (1656 B, aligned 71); success `goto done;` 366 (1656 B, frame 0x80, aligned 66: the first exit
@@ -575,188 +596,204 @@ struct s_1f8a70_actor
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
-	bool result = false;
+	bool result;
 	if (actor_get(actor_index)->unknown267)
 	{
+		result = false;
 		function_1f86a0(actor_index);
-		return result;
 	}
-	s_actor_view *actor = actor_get(actor_index);
-	if (*((byte *)actor + 0x480))
-		return true;
-	if (actor->unknown504 == 2 && function_1f3230(actor_index, function_1e3920(actor_index) * 3.0f))
+	else
 	{
-		function_1f8780(actor_index, false);
-		return true;
-	}
-	if (actor->unknown4ac == 0 || actor->unknown4ac == 1)
-	{
-		function_1f86a0(actor_index);
-		return true;
-	}
-
-	short unit_mode;
-	long unit_index = actor->unknown018;
-	dword route_mode = actor->unknown229 ? 1 : 0;
-	function_e70b0(unit_index, &unit_mode);
-	if (unit_mode == 5)
-	{
-		byte *properties = (byte *)function_1e4990(actor->unknown054);
-		byte *movement = (byte *)function_1e4a50(actor->unknown054);
-		if (properties && !(*properties & 2) && movement && (*movement & 0x20))
-			route_mode = 1;
-	}
-	{
-		s_actor_view *reset = actor_get(actor_index);
-		reset->unknown50c = false;
-		reset->unknown5ac = NONE;
-		reset->unknown5b0 = NONE;
-	}
-	actor->unknown504 = 0;
-	*((bool *)actor + 0x5d2) = false;
-	s_type_f17a25 *path = (s_type_f17a25 *)unknown;
-	switch (((s_1f8a70_actor *)actor)->frame.mode)
-	{
-	case 2:
-		((s_1f8a70_actor *)actor)->frame.destination = ((s_1f8a70_actor *)actor)->frame.target.point;
-		((s_1f8a70_actor *)actor)->frame.destination_node = ((s_1f8a70_actor *)actor)->frame.source_node;
-		((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
-		break;
-	case 3:
-		((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
-		((s_1f8a70_actor *)actor)->frame.destination = ((s_1f8a70_actor *)actor)->frame.target.point;
-		((s_1f8a70_actor *)actor)->frame.destination_node = NONE;
-		break;
-	case 4:
-	{
-		s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
-		if (!target)
-			goto failed;
-		((s_1f8a70_actor *)actor)->frame.destination = *(s_type_c3b527 *)target;
-		((s_1f8a70_actor *)actor)->frame.destination_node = *(long *)((byte *)target + 0x14);
-		((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
-		break;
-	}
-	case 5:
-	{
-		s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
-		if (!target)
-			goto failed;
-		((s_1f8a70_actor *)actor)->frame.destination = *(s_type_c3b527 *)target;
-		((s_1f8a70_actor *)actor)->frame.destination_node = NONE;
-		((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
-		route_mode = 1;
-		break;
-	}
-	case 6:
-	{
-		s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
-		if (!target)
-			goto failed;
-		byte *movement = (byte *)function_1e4a50(actor->unknown054);
-		if (!movement)
-			goto failed;
-		if (*movement & 0x10)
+		bool route_found;
+		s_actor_view *actor = actor_get(actor_index);
+		if (*((byte *)actor + 0x480))
+			return true;
+		if (actor->unknown504 == 2 && function_1f3230(actor_index, function_1e3920(actor_index) * 3.0f))
 		{
+			function_1f8780(actor_index, false);
+			return true;
+		}
+		if (actor->unknown4ac == 0 || actor->unknown4ac == 1)
+		{
+			function_1f86a0(actor_index);
+			return true;
+		}
+
+		short route_mode = actor->unknown229 != 0;
+		{
+			short unit_mode;
+			if (*function_e70b0(actor->unknown018, &unit_mode) == 5)
+			{
+				byte *properties = (byte *)function_1e4990(actor->unknown054);
+				byte *movement = (byte *)function_1e4a50(actor->unknown054);
+				if (properties && !(*properties & 2) && movement && (*movement & 0x20))
+					route_mode = 1;
+			}
+		}
+		{
+			s_actor_view *reset = actor_get(actor_index);
+			reset->unknown50c = false;
+			reset->unknown5ac = NONE;
+			reset->unknown5b0 = NONE;
+		}
+		actor->unknown504 = 0;
+		*((bool *)actor + 0x5d2) = false;
+		s_type_f17a25 *path = (s_type_f17a25 *)unknown;
+		switch (((s_1f8a70_actor *)actor)->frame.mode)
+		{
+		case 2:
+			((s_1f8a70_actor *)actor)->frame.destination = ((s_1f8a70_actor *)actor)->frame.target.point;
+			((s_1f8a70_actor *)actor)->frame.destination_node = ((s_1f8a70_actor *)actor)->frame.source_node;
+			((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
+			break;
+		case 3:
+			((s_1f8a70_actor *)actor)->frame.destination = ((s_1f8a70_actor *)actor)->frame.target.point;
+			((s_1f8a70_actor *)actor)->frame.destination_node = NONE;
+			((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
+			route_mode = 1;
+			break;
+		case 4:
+		{
+			s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
+			if (!target)
+				goto failed;
 			((s_1f8a70_actor *)actor)->frame.destination = *(s_type_c3b527 *)target;
 			((s_1f8a70_actor *)actor)->frame.destination_node = *(long *)((byte *)target + 0x14);
 			((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
-			if (*movement & 0x20)
-				route_mode = 1;
-			else if (route_mode == 0 && function_1f9580(actor_index, ((s_1f8a70_actor *)actor)->frame.target.reference))
-				route_mode = 2;
+			break;
 		}
-		break;
-	}
-	case 7:
-	{
-		long prop_index = ((s_1f8a70_actor *)actor)->frame.target.index;
-		s_prop_node_view *node = prop_node_get(prop_index);
-		function_26c2d0(prop_index);
-		s_prop_state_view *state = prop_node_state(node);
-		if (route_mode == 1)
+		case 5:
 		{
-			((s_1f8a70_actor *)actor)->frame.destination.point = *(point3f *)((byte *)state + 0x10);
-			((s_1f8a70_actor *)actor)->frame.destination.output_index = NONE;
+			s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
+			if (!target)
+				goto failed;
+			((s_1f8a70_actor *)actor)->frame.destination = *(s_type_c3b527 *)target;
+			((s_1f8a70_actor *)actor)->frame.destination_node = NONE;
+			((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
+			route_mode = 1;
+			break;
 		}
-		else
-			((s_1f8a70_actor *)actor)->frame.destination = state->unknown48;
-		((s_1f8a70_actor *)actor)->frame.destination_node = *(long *)((byte *)state + 0x44);
-		((s_1f8a70_actor *)actor)->frame.destination_radius = ((s_1f8a70_actor *)actor)->frame.radius;
-		break;
-	}
-	default:
-		goto failed;
-	}
-	if (route_mode == 0 && ((s_1f8a70_actor *)actor)->frame.destination_radius == 0.0f && ((s_1f8a70_actor *)actor)->frame.destination_node == NONE)
-		goto failed;
-	if (route_mode < 0 || route_mode > 2)
-		goto failed;
-	switch (route_mode)
-	{
-	case 2:
-		result = function_1f9490(actor_index, ((s_1f8a70_actor *)actor)->frame.target.reference, (s_actor_move_request *)((byte *)actor + 0x50c));
-		break;
-	case 1:
-	{
-		s_reference reference = g_470fa0;
-		long root_index = NONE;
-		if (((s_1f8a70_actor *)actor)->frame.mode == 4 || ((s_1f8a70_actor *)actor)->frame.mode == 5 || ((s_1f8a70_actor *)actor)->frame.mode == 6)
-			reference = ((s_1f8a70_actor *)actor)->frame.target.reference;
-		else if (((s_1f8a70_actor *)actor)->frame.mode == 7)
-			root_index = function_baf80(prop_node_get(((s_1f8a70_actor *)actor)->frame.target.index)->object_index);
-		if (((s_1f8a70_actor *)actor)->frame.root_index != NONE)
-			root_index = ((s_1f8a70_actor *)actor)->frame.root_index;
-		point3f position;
-		function_1caa40(actor->unknown26c == NONE ? actor->unknown018 : actor->unknown26c, &position);
-		s_29de21 *context = path ? (s_29de21 *)((byte *)path + 0x140d4) : NULL;
-		result = function_29e730((s_29e730 *)&((s_1f8a70_actor *)actor)->frame, actor_index, &position, &((s_1f8a70_actor *)actor)->frame.destination,
-			reference, context, root_index, (s_29e0f9 *)((byte *)actor + 0x50c));
-		break;
-	}
-	case 0:
-		if (path)
+		case 6:
 		{
-			function_2713c0(path, &((s_1f8a70_actor *)actor)->frame.destination, ((s_1f8a70_actor *)actor)->frame.destination_node, ((s_1f8a70_actor *)actor)->frame.destination_radius);
-			result = function_270930(actor_index, path, (s_path_result_view *)((byte *)actor + 0x50c));
-		}
-		else
-		{
-			s_path_source source;
-			s_path_settings settings;
-			result = false;
-			function_1f90f0(actor_index, &source);
-			if (((s_1f8a70_actor *)actor)->frame.root_index != NONE)
-				source.unknown0c = ((s_1f8a70_actor *)actor)->frame.root_index;
-			if (actor->unknown358 > 0 && !actor->unknown35e)
-				function_2705c0(&source, &actor->unknown370, actor->unknown36c, actor->unknown360, 10.0f, true);
-			function_1f9240(actor_index, &settings);
-			byte *buffer = ai_scratch_buffer_get();
-			s_type_f17a25 *state = (s_type_f17a25 *)buffer;
-			function_271300(state, (s_path_location *)((byte *)actor + 0x5b4), &settings, &source, 0);
-			function_2713c0(state, &((s_1f8a70_actor *)actor)->frame.destination, ((s_1f8a70_actor *)actor)->frame.destination_node, ((s_1f8a70_actor *)actor)->frame.destination_radius);
-			if (function_2715a0(buffer))
+			s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
+			if (!target)
+				goto failed;
+			byte *movement = (byte *)function_1e4a50(actor->unknown054);
+			if (!movement)
+				goto failed;
+			if (*movement & 0x10)
 			{
-				result = function_270930(actor_index, state, (s_path_result_view *)((byte *)actor + 0x50c));
-				if (!result && actor->unknown5b2[0] && ((s_1f8a70_actor *)actor)->frame.mode == 4)
-					function_262800(actor_index, ((s_1f8a70_actor *)actor)->frame.target.reference, false);
+				((s_1f8a70_actor *)actor)->frame.destination = *(s_type_c3b527 *)target;
+				((s_1f8a70_actor *)actor)->frame.destination_node = *(long *)((byte *)target + 0x14);
+				((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
+				if (*movement & 0x20)
+					route_mode = 1;
+				else if (route_mode == 0 && function_1f9580(actor_index, ((s_1f8a70_actor *)actor)->frame.target.reference))
+					route_mode = 2;
+			}
+			break;
+		}
+		case 7:
+		{
+			long prop_index = ((s_1f8a70_actor *)actor)->frame.target.index;
+			s_prop_node_view *node = prop_node_get(prop_index);
+			function_26c2d0(prop_index);
+			s_prop_state_view *state = prop_node_state(node);
+			if (route_mode == 1)
+			{
+				((s_1f8a70_actor *)actor)->frame.destination.point = *(point3f *)((byte *)state + 0x10);
+				((s_1f8a70_actor *)actor)->frame.destination.output_index = NONE;
 			}
 			else
-				*(s_path_location *)((byte *)actor + 0x5b4) = *(s_path_location *)(buffer + 0x70);
-			ai_scratch_buffer_release(buffer);
+				((s_1f8a70_actor *)actor)->frame.destination = state->unknown48;
+			((s_1f8a70_actor *)actor)->frame.destination_radius = ((s_1f8a70_actor *)actor)->frame.radius;
+			((s_1f8a70_actor *)actor)->frame.destination_node = *(long *)((byte *)state + 0x44);
+			break;
 		}
-		break;
-	default:
-		__assume(0);
-	}
-	actor->unknown506 = true;
-	if (!result)
-		goto failed;
-	actor->unknown504 = 1;
-	actor->unknown5e8 = 0;
-	return result;
+		default:
+			goto failed;
+		}
+		long route;
+		route = route_mode;
+		if (route == 0 ? (((s_1f8a70_actor *)actor)->frame.destination_radius != 0.0f || ((s_1f8a70_actor *)actor)->frame.destination_node != NONE) : (route > 0 && route <= 2))
+		{
+			switch (route)
+			{
+			case 2:
+				route_found = function_1f9490(actor_index, ((s_1f8a70_actor *)actor)->frame.target.reference, (s_actor_move_request *)((byte *)actor + 0x50c));
+				break;
+			case 1:
+			{
+				s_reference reference = g_470fa0;
+				long root_index = NONE;
+				if (((s_1f8a70_actor *)actor)->frame.mode == 4 || ((s_1f8a70_actor *)actor)->frame.mode == 5 || ((s_1f8a70_actor *)actor)->frame.mode == 6)
+					reference = ((s_1f8a70_actor *)actor)->frame.target.reference;
+				else if (((s_1f8a70_actor *)actor)->frame.mode == 7)
+					root_index = function_baf80(prop_node_get(((s_1f8a70_actor *)actor)->frame.target.index)->object_index);
+				if (((s_1f8a70_actor *)actor)->frame.root_index != NONE)
+					root_index = ((s_1f8a70_actor *)actor)->frame.root_index;
+				point3f position;
+				function_1caa40(actor->unknown26c == NONE ? actor->unknown018 : actor->unknown26c, &position);
+				s_29de21 *context = path ? (s_29de21 *)((byte *)path + 0x140d4) : NULL;
+				route_found = function_29e730((s_29e730 *)&((s_1f8a70_actor *)actor)->frame, actor_index, &position, &((s_1f8a70_actor *)actor)->frame.destination,
+					reference, context, root_index, (s_29e0f9 *)((byte *)actor + 0x50c));
+				break;
+			}
+			case 0:
+				if (path)
+				{
+					function_2713c0(path, &((s_1f8a70_actor *)actor)->frame.destination, ((s_1f8a70_actor *)actor)->frame.destination_node, ((s_1f8a70_actor *)actor)->frame.destination_radius);
+					route_found = function_270930(actor_index, path, (s_path_result_view *)((byte *)actor + 0x50c));
+				}
+				else
+				{
+					s_path_source source;
+					s_path_settings settings;
+					route_found = false;
+					function_1f90f0(actor_index, &source);
+					if (((s_1f8a70_actor *)actor)->frame.root_index != NONE)
+						source.unknown0c = ((s_1f8a70_actor *)actor)->frame.root_index;
+					if (actor->unknown358 > 0 && !actor->unknown35e)
+						function_2705c0(&source, &actor->unknown370, actor->unknown36c, actor->unknown360, 10.0f, true);
+					function_1f9240(actor_index, &settings);
+					byte *buffer = ai_scratch_buffer_get();
+					s_type_f17a25 *state = (s_type_f17a25 *)buffer;
+					function_271300(state, (s_path_location *)((byte *)actor + 0x5b4), &settings, &source, 0);
+					function_2713c0(state, &((s_1f8a70_actor *)actor)->frame.destination, ((s_1f8a70_actor *)actor)->frame.destination_node, ((s_1f8a70_actor *)actor)->frame.destination_radius);
+					if (function_2715a0(buffer))
+					{
+						route_found = function_270930(actor_index, state, (s_path_result_view *)((byte *)actor + 0x50c));
+						if (!route_found && actor->unknown5b2[0] && ((s_1f8a70_actor *)actor)->frame.mode == 4)
+							function_262800(actor_index, ((s_1f8a70_actor *)actor)->frame.target.reference, false);
+					}
+					else
+						*(s_path_location *)((byte *)actor + 0x5b4) = *(s_path_location *)(buffer + 0x70);
+					ai_scratch_buffer_release(buffer);
+				}
+				break;
+			default:
+				route_found = false;
+				break;
+			}
+			actor->unknown506 = true;
+		}
+		else
+		{
 failed:
-	function_1f8750(actor_index);
+			route_found = false;
+		}
+		if (route_found)
+		{
+			actor->unknown504 = 1;
+			actor->unknown5e8 = 0;
+			result = route_found;
+		}
+		else
+		{
+			function_1f8750(actor_index);
+			result = route_found;
+		}
+	}
 	return result;
 }
 

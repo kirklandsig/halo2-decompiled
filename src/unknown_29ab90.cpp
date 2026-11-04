@@ -322,6 +322,26 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // (same code); local_6 alone whole 366 (frame 0x58, no-home 231); local_4 alone whole 449 (frame 0x60, no-home 272), with the
 // non-const pointer 449 (same code); the query output vector at function scope 345 (same code), with all three whole 442, with
 // local_6 alone whole 366.
+// P305: Native library working/output/secondary entry transfers, seven subsets
+// 449/345/366/449/442/366/442; all with the later requested-vector transfer 442.
+// Original whole body and helpers restored; magnitude/query overlap and native frame remain.
+// M359: Query outcome after escaped output production, positive/complementary
+// bool/byte/short/long: 345/345/345/345/345/345/345/345. NOT kept: one-use call
+// result is unmatched; original query guard, output lifetimes and complete body restored.
+// DH324: Full pre-update saved direction owns the later in-place planar workspace:
+// native/aggregate/setter/library copies, original then single-root planar result
+// 363/332/366/363/325/366/332/325. NOT kept: 325 at 1874/1863 bytes moves length away from the starting 1866;
+// native XY transfer/homes remain. Original helpers and complete body restored.
+// DH326: Consistent native-pointer/direct history reads 361/360; history pointer with
+// full pre-update native/coordinate/setter/library direction and separate later XY 362/356/356/362;
+// native/coordinate saves with shared planar normalization 385/380. Full saves recover frame 0x64
+// and first +0x42, but grow to 1895/1897 versus 1863 bytes. Original full body/helpers restored.
+// DH328: Existing by-value magnitude over its native component table in K/J/I order,
+// long/short ordinals and direct/named squares 442/442/513/513; input-updated root
+// 434/434/502/502. NOT kept: regressions and longer code; full helpers/body restored.
+// DH333: Typed coordinate-range copies at working/constant/history producers, seven subsets
+// 438/376/459/378/498/402/501; complete backward ranges 501. History-only recovers frame 0x64
+// and first +0x42 but grows to 1909/1863 bytes. NOT kept: regressions; original full body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
