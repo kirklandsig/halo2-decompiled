@@ -957,6 +957,9 @@ static __forceinline long real_to_long(real value);
 // AC516: Complete post-query planar-facing admission, bool/byte/short/long at computation
 // or with the direction-workspace declaration: 382/382/382/382/382/382/382/382.
 // NOT kept: one-use predicate storage unmatched; original gate, query aliases and complete body restored.
+// AC520: Planar normalizer returns at query-pair/facing/request-pair producers, subsets
+// 1/2/4/3/5/6/7 then phase-owned uninitialized storage: 382/382/382/382/382/382/382/382.
+// NOT kept: one-use call-result residence does not match; original calls, aliases and full body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
