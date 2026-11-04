@@ -5762,7 +5762,7 @@ extern dword g_4e6494;
 // retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax
 // at 0x3e380, whose declaration is in another file.
 // MiniMax H (11-03): no new form, no lower score; ours keeps the ebx zero register where retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax at 0x3e380, whose declaration is in another file.
-// score 223 (was 241): the handle now goes into the context's dword at offset 8 and the availability
+// score 199 (was 241): the handle now goes into the context's dword at offset 8 and the availability
 // flag drives the table test, as retail does; left is our ebx zero register against retail's
 // edi and the loop counter in edi against retail's esi. Round 61: the permutations now arrive in ecx at
 // 0x3e380, a member of s_model_permutations, as retail; the count stays 223.
