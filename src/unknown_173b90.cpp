@@ -1702,6 +1702,9 @@ bool function_17afd0(long effect_index, long value);
 // B419: Complete draw-arm/rejection/final-admission results on the recovered owner/Boolean graph,
 // conditional/direct camera result: 107/96/110/136/106/96/110/136. All regress; original
 // availability, input snapshots, query gates, draw tuple and complete body restored.
+// B421: Owner/view identity before the status query, bool/byte/short/long,
+// positive/complementary results 133/133/159/158/133/133/159/158. NOT kept:
+// all regress and exceed retail length; original snapshot/query graph restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
