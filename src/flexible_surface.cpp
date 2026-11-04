@@ -555,6 +555,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // producers, then complete wave accumulation: 117 each; complete wave/strength
 // accumulation 118. NOT kept: no equality or gain; original expression graph restored.
 // Frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// N370: Input-owned cross result, old/axis native copies and component aggregates, projection-first copies and readonly aggregates:
+// 181/196/164/159/180/234/164/159. NOT kept: no equality; original complete body restored.
+// Frame 0x28/0x20 and old-direction/cross/seed/time homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

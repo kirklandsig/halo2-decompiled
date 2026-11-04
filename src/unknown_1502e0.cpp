@@ -244,6 +244,9 @@ struct s_flag_word_bits
 // Y567: Complementary available bool/byte/short/long with default-true
 // then exhaustive arms: 116/116/126/122/125/125/131/130. NOT kept: no byte match; original flag
 // producer and body restored, player/root ownership and tail expansion remain.
+// N370: Actual player/header/object-tag reference ownership, seven subsets and native byte admission:
+// 114/114/114/114/114/114/114/124. NOT kept: no equality; original complete body restored.
+// Player/root ownership, tick/effect carriers and expanded notification tail remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1085,6 +1088,9 @@ struct s_tail_transfer_traits
 // N355: Returned-player canonical for traversal with independent bounded selection/slot domains:
 // 373/378/413/373/284/284/373/283. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; Selected-traits/unit/NONE homes and pool reloads remain.
+// N370: Actual handle-field/unit-record/selected-output references, seven subsets and complete scalar role identities:
+// 153/153/153/153/153/153/153/153. NOT kept: no equality; original complete body restored.
+// Selected traits/unit/NONE homes and native no-seat pool reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
