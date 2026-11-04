@@ -388,6 +388,7 @@ struct s_damage_owner
 	long player_index;
 	long object_index;
 	short team;
+	short unknown0a;
 };
 
 /* a damage event (0x88 bytes, damage.cpp) */
@@ -6068,7 +6069,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
    (4 also changing weapons), 5 to 7 into the second hand beside a
    matching first (6 lowering it first, 7 readying it); tells the player
    code */
-// score 333 (was 279): the single exit with `default: __assume(0)` gives retail's stack convention
+// score 280 (was 333): the single exit with `default: __assume(0)` gives retail's stack convention
 // (all three arguments pushed), which matches 0xc4820, 0xccab0, 0xcce00 and 0x19ef40; frame 0x54
 // versus 0x50 (the main hands array keeps its own slot), weapon/mode in EBX/EDI versus EDI/EBX,
 // and the two weapon flag tests are not stored in the ready byte as in retail.
@@ -6082,6 +6083,20 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // `default: __assume(0)` 302; blocked local for the flag tests 320; one ready check after the mode
 // chain 329. Without it: either request renamed 333; hands declared at the top 333; hands in a bare
 // block 332 (frame 0x50).
+// Round 6 of #1049 (332 -> 300): most of the 32 extra bytes were the hand index: with `hand = ...` assigned in the
+// mode-2 branch and the mode 3-7 branch, LTCG threaded the mode tests and duplicated the chain (and put mode/weapon in
+// EDI/EBX, 333). One `hand = mode == 5 || mode == 6 || mode == 7;` after the mode branches gives 300 (1056 bytes).
+// `hand = 0; if (mode == 5 || mode == 6 || mode == 7) hand = 1;` there gives retail's register homes (weapon EDI,
+// mode BX) and size (280, 1052 bytes) but is not kept: a value set before a test, without a match. The three request locals are block-
+// scoped (modes 4, 6, 7 then share retail's [esp+0x40]; the case-1 one is [esp+0x20]), as is retail's frame.
+// Still differing: retail threads only mode 2 (`xor esi, esi; jmp` past the chain; `hand = 0` in the mode-2 branch
+// does it but then the chain is duplicated and mode/weapon swap registers: 318/312), retail's mode-6 request joins
+// mode 4's shared `test al, al; mov [ready], al; je done` (ours has its own, so the done block is laid out early
+// and the epilogue duplicated, the final `result = true` stored at [esp+0xb]); the frame order (ours: hands at
+// 0x14, unit 0x18, weapon 0x1c; retail: unit 0x14, weapon 0x18, hands 0x1c) and retail's two flag tests stored to
+// the shared ready/hands slot (ready as a scalar drops them; `hands[0]` as ready keeps them but takes the param
+// home for `result`, 274, 1056 bytes: not kept). Tried: ternary `hand` after the branches (300, as the plain form); `second_hands`
+// or `ready_request` declared at the top (no change); hand chain inside the else (318).
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -6090,7 +6105,6 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 	bool result = false;
 	bool ready;
 	short hand;
-	s_unit_request request;
 
 	if (TEST_FIELD_BIT((weapon->object_flags >> 7) & 1) || *((byte *)weapon + 0x12c) & 1 ||
 		!function_cd6a0(unit_index, NONE, weapon_index))
@@ -6101,7 +6115,6 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 	if (mode == 2)
 	{
 		function_ccff0(unit_index);
-		hand = 0;
 	}
 	else
 	{
@@ -6122,6 +6135,8 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 			{
 				if (function_cbe60(unit_index) != NONE)
 				{
+					s_unit_request request;
+
 					memset(&request, 0, sizeof(request));
 					request.type = 9;
 					request.type17.unknown4 = true;
@@ -6152,6 +6167,8 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 			ready = true;
 			if (mode == 6)
 			{
+				s_unit_request request;
+
 				memset(&request, 0, sizeof(request));
 				request.type = 0x13;
 				request.type17.unknown4 = true;
@@ -6162,8 +6179,8 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 				}
 			}
 		}
-		hand = mode == 5 || mode == 6 || mode == 7 ? 1 : 0;
 	}
+	hand = mode == 5 || mode == 6 || mode == 7;
 	if (!ready)
 	{
 		goto done;
@@ -6211,6 +6228,8 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 		function_e68c0(0x12, unit_index);
 		break;
 	case 7:
+		s_unit_request request;
+
 		memset(&request, 0, sizeof(request));
 		unit->unknown217 = (char)slot_index;
 		request.type = 0x12;
@@ -7643,6 +7662,21 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // Tried: definition written out at every use (605), unit declared after the other locals (353), total as one sum
 // expression (367; it loads +0x44 first, so total is built with += to load +0x48 first), a (bool) cast on the
 // function_15cbf0 argument (343, no change).
+// Round 6 of #1049 (full statement walk against retail: the 19 calls, their order, every field offset, constant,
+// condition direction and the switch table (cases 0-4, 6, 8, 9) agree; the 12 missing bytes are encodings, not a
+// statement: 3 for `and edx, 0xffffff01` vs ours `and edx, 1` on the function_15cbf0 argument, the rest register moves).
+// Two real differences, neither kept. (1) Retail passes function_ca700's last argument as the raw byte
+// `report->unknown00` (`xor ecx, ecx; mov cl, [ebp]`; ca700 stores that byte at unit+0x330+i unchanged), ours
+// converts it to a bool (`test cl, cl; setne cl`), so a nonzero byte other than 1 is stored as 1. Declaring ca700's
+// `flag` as `byte` and `unknown330` as `byte[4]` fixes the call (ca700 stays 140, d9640 stays MATCH) but this function
+// goes 344 -> 379: the call is one instruction shorter and the positional score shifts; without the array change
+// ca700 grows to 517. (2) Retail's function_15cbf0 takes a bool (`and 0xffffff01`); unknown_157450.cpp declares it long.
+// What decides the rest: retail enregisters unit_index in ebx from entry (`mov ebx, [esp+0xc0]`; the non-grenade path
+// reaches the badc0 call with it, only the grenade path reloads it) and spills the definition (reloaded from [esp+0x10]
+// in five places, edi holds attacker_index); ours loads the argument straight into eax, uses bl for the hard temp,
+// reloads ebx at the join and keeps the definition in edi. Retail also loads the flags byte twice (hard, then the sign
+// test) where ours shares one load. Tried: all 24 orders of the unit/definition/hard/total declarations (with the byte
+// flag: 379-390; 379 for unit first with definition before hard), `hard` as `(flags & 1) != 0` (344) or `== 1` (442).
 // @retail 0xca0b0
 void __stdcall function_ca0b0(long unit_index, s_damage_report const *report)
 {
@@ -8108,17 +8142,33 @@ struct s_unit_melee_collision
    the attack's name (or the seat's, for a seat group), damages what it
    hit (through the player code when it asks), plays the impact and
    applies the second damage to the striker */
-// score 504 (was 507): the melee damage and self damage are set only when the melee table entry exists
+// score 493 (was 504; 507 before): the melee damage and self damage are set only when the melee table entry exists
 // (retail reaches the weapon's defaults with NONE still in both), hit_t is not initialised (retail has no store
 // for it), and the damage data's material_index is set to NONE before 0xd6660 (retail order). Retail's tail
 // shapes (the controller as a long, the player pointer taken before the rounding) cost 7 through slot offsets
-// (511), so they are not kept.
+// (511) at the time; they are kept since round 6 (below), when they stopped costing.
 // Still differs: register allocation (retail: EBX unit, ESI weapon definition, EDI &aim, EBP scratch, the
 // unit index read from the stack each time; ours keeps the unit index in EDI and the unit in EBP), short
 // locals copied as words by retail (material_index) but as dwords by ours, and the callee-saved registers
 // retail pops before the player-timer tail. Tried: aim read as unit->unknown168 (548 with range inlined, 518
 // otherwise), range read at each use (+30), hit_t = 0.0f (+6).
 // Round 180: the impact's material test through the existing global_material_get 504 (2209 bytes, kept).
+// Round 6 of #1049 (504 -> 493, 2220 bytes vs retail 2229): a statement walk found these logic differences:
+// (1) the biped-preference test is `type == 0 && hit_type == 0 && hit_t > t` OR `type == 0 && hit_type != 0`
+// (retail tests the type twice and the hit_t compare comes first), with hit_type taken as a signed char (movsx);
+// (2) s_damage_owner has a zero short after the team that retail writes (`owner.unknown0a = 0`, as the
+// damage.cpp layout has); (3) the melee hit's seat group byte is stored as a plain byte (the header types it bool,
+// so a plain assignment adds a setne); (4) the rounding tail's controller is a long (movsx) and the player
+// pointer is taken first (the tail's instructions now equal retail's). Not kept, to avoid raising the score:
+// TEST_FIELD_BIT around the two seat-flag tests (retail loads the dword, shr 11, test 1 at both: those exact
+// instructions, but the score goes 493 -> 526, 2229 bytes; only one of the two: 504/525); `long weapon_index =
+// NONE; if (index != NONE) weapon_index = ...` (retail does set eax = ebp = NONE before its je; 514); position
+// before origin (493, same); aim read from the unit for ray.j/.k as retail's addressing does ([ebx+0x16c] while
+// i goes through edi=&aim; 533-543, with unit in ebx but j in a register and -1 no longer in ebp); aim declared
+// before the weapon definition (543); an unknown26 short in the collision struct (no change).
+// Still differs (register allocation, frame 0x180 vs 0x17c): retail keeps the unit in ebx, the weapon definition
+// in esi, &aim in edi and -1 in ebp with both loop counters on the stack; ours spills the unit and keeps j in ebx.
+// Retail also loads g_4e3b44 and g_4e0300 into esi/edi up front and compares the weapon slot with `cmp cx, bp`.
 // @retail 0xcf3d0
 void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale)
 {
@@ -8204,10 +8254,11 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 						object_index = object->parent_index;
 						object = UNIT_GET(object_index);
 					}
-					if (hit_index == NONE || (object->type == 0 && (hit_type != 0 || hit_t > collision.t)))
+					if (hit_index == NONE || (object->type == 0 && hit_type == 0 && hit_t > collision.t) ||
+						(object->type == 0 && hit_type != 0))
 					{
 						hit_index = object_index;
-						hit_type = object->type;
+						hit_type = (char)object->type;
 						material_index = collision.material_type;
 						hit_t = collision.t;
 					}
@@ -8293,8 +8344,9 @@ void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale
 		hit.unknown08 = surface_a;
 		hit.unknown0c = surface_b;
 		hit.material_index = material_index;
+		/* the header types this byte as a bool, but retail stores the seat group byte unchanged */
+		*(char *)&hit.unknown18 = hit_seat;
 		hit.unknown14 = 0.0f > scale ? 0.0f : (scale > 1.0f ? 1.0f : scale);
-		hit.unknown18 = hit_seat;
 		if (unit->parent_index != NONE && unit->parent_seat_index != NONE &&
 			!((*(dword *)&UNIT_SEATS(UNIT_DEFINITION_GET(UNIT_GET(unit->parent_index)))[unit->parent_seat_index].flags >>
 				11) & 1))
@@ -8341,7 +8393,7 @@ impact:
 				{
 					object = (s_unit *)function_badc0(unit_index, 3);
 					long player_index = object ? object->unknown13c : NONE;
-					short controller = *(short *)((byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x28);
+					long controller = *(short *)((byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x28);
 
 					if (controller != NONE)
 					{
@@ -8350,6 +8402,7 @@ impact:
 						owner.player_index = NONE;
 						owner.object_index = NONE;
 						owner.team = NONE;
+						owner.unknown0a = 0;
 						function_153d10(controller, self_damage_index, &owner, &damage.direction, 0, 1.0f, 1.0f, 0);
 					}
 				}
@@ -8358,8 +8411,9 @@ impact:
 	}
 	if (unit->unknown13c != NONE)
 	{
-		*((byte *)g_4e8c24->data + (unit->unknown13c & 0xffff) * 0x21c + 0x40) =
-			(byte)unit_round(g_510c54->field_2_3 * 0.5f);
+		byte *player = (byte *)g_4e8c24->data + (unit->unknown13c & 0xffff) * 0x21c;
+
+		player[0x40] = (byte)unit_round(g_510c54->field_2_3 * 0.5f);
 	}
 }
 
