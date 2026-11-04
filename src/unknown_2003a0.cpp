@@ -2144,6 +2144,9 @@ bool function_1e11b0(long actor_index, bool active);
 // EBP handle, receiver spill/common loop head and full-width return remain.
 // Y595: Full-width long/dword/int/unsigned-int result contracts, Boolean/direct zero-one mask production:
 // 65/65/65/65/65/65/65/65. NOT kept: no byte equality; original complete body restored.
+// DL262: Coherent matched predicate/removal/return-provider inline declaration subsets, then
+// explicit predicate expansion on the complete graph: 64/64/64/64/64/64/64/64.
+// NOT kept: no exact native form; original complete body and all provider contracts restored.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {

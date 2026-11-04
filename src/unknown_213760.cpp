@@ -1515,6 +1515,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // N358: Complete invalidity result on failure-only resize-count graph, eight native scalar domains:
 // 159/159/159/141/141/140/140/140. NOT kept: unmatched source/representation forms; original executable body restored.
 // Query/write count homes, write setup and checksum/validation joins remain.
+// DL262: Actual resize-output repair success, assigned/cleared/short-circuit/conditional,
+// original then native successful-header producer: 112/165/188/190/165/172/188/195.
+// NOT kept: result-flow forms require byte equality; original outputs, count producer and body restored.
 // @retail 0x213970
 void function_213970(void)
 {
