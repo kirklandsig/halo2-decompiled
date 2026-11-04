@@ -36,6 +36,26 @@ files; 0xdc370, at the start of the range, is c_a's destructor
 
 /* the biped (the unit fields, then the biped's own from +0x334; the fields
    read here) */
+struct s_biped_flags_348
+{
+	word field_0 : 1;
+	word field_1 : 1;
+	word field_2 : 1;
+	word field_3 : 1;
+	word field_4 : 1;
+	word field_5 : 1;
+	word field_6 : 1;
+	word field_7 : 1;
+	word field_8 : 1;
+	word field_9 : 1;
+	word field_a : 1;
+	word field_b : 1;
+	word field_c : 1;
+	word field_d : 1;
+	word field_e : 1;
+	word field_f : 1;
+};
+
 struct s_biped
 {
 	long definition_index;
@@ -83,7 +103,11 @@ struct s_biped
 	byte unknown2e8[0x33e - 0x2e8];
 	short unknown33e;
 	byte unknown340[0x348 - 0x340];
-	word flags_348;
+	union
+	{
+		word flags_348;
+		s_biped_flags_348 flags_348_bits;
+	};
 	byte unknown34a;
 	byte unknown34b;
 	short unknown34c;
@@ -3179,6 +3203,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // subsets then immutable values: fast 599/599/611/599/611/601/609/609 (control 600, full 561).
 // NOT kept: 599 gains only one against reduced 600. Original field observations and
 // complete body restored; result/flight/vector homes remain.
+// P320: Parallel axial projection/cosine/sine-cross parts, P/C/S/PC/PS/CS/all/const-all:
+// P320: fast 610/610/612/614/614/614/587/587 (control 605, full 561). NOT kept:
+// P320: 587 lengthens 2733 to 2748 against retail 2712, and only the complete
+// P320: combination gains while its parts regress. Original complete body restored;
+// P320: result/flight scalar homes and vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4286,6 +4315,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // F359: Complete projection reductions in four source phases, original/early cross capture:
 // 181/175/188/169/190/179/192/177. NOT kept: no exact projection-phase repair.
 // Original complete body and helpers restored.
+// P320: Complete projection declaration orders ikj/jik/jki/kij/kji 145 each;
+// P320: immutable ijk/kij and early dot storage on the indexed graph 145/145/145.
+// P320: NOT kept: no exact producer/home repair. Original helper and complete body
+// P320: restored; normalization SIMD ranks, trig homes and rotation/basis carriers remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -5156,7 +5189,7 @@ void __stdcall function_b8600(long object_index, long unknown);
 /* applies the biped's character physics move: its facing and up, its
    animation names, its movement animation's rate, crouching and grabbing,
    and its new velocity (or, asleep, its new position) */
-// score 648 (was 648): frame 0xd0 agrees; tag/state/animation homes, byte/result residency
+// score 588 (was 648): frame 0xd0 agrees; tag/state/animation homes, byte/result residency
 // and completion-call expansion remain.
 // Earlier: the logic was walked against retail block by block and agrees (callees, argument order,
 // field offsets, condition directions, constants 0.1/0.15/0.5/0/+-32768/4/6/+-1). The later velocity is
@@ -5234,6 +5267,11 @@ void __stdcall function_b8600(long object_index, long unknown);
 // DH324: Native flag-word/timer-array/output forward-push fields, seven subsets,
 // then direct native push reads: fast 655/655/655/655/655/655/655/655 (control 655, full 648).
 // Original actual record declaration, field accesses and complete body restored.
+// P320: Native flag-member entry/motion/high stores, combinations and high reads:
+// P320: fast 594/655/666/594/602/662/599/599 (control 655, opening full 648). Keep entry bit 4 only:
+// P320: 588 plain at 2271/2190 bytes; native direct byte mask and +0x5e prefix
+// P320: agree. No other measurement changes. Other forms restored; tag/state/
+// P320: animation homes, byte results and completion-call expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
@@ -5246,7 +5284,7 @@ bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_outp
 	bool grabbing;
 	real change;
 
-	*(byte *)&biped->flags_348 &= ~0x10;
+	biped->flags_348_bits.field_4 = false;
 	still = function_ddfb0(arg_159e6d);
 	if (still)
 	{

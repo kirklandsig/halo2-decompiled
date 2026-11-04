@@ -278,6 +278,10 @@ real normalize2d(point2f *arg_0);
 // P311: Original full helper and body restored; object-mask/copy/SSE scheduling and query-success ordering remain.
 // P315: Full 3D in-place graph, third-input memcpy/memmove/vector-setter/point-setter producers, without/with center memcpy: 180/272/248/248/180/272/248/248.
 // P315: NOT kept: no byte match or supported gain; original full body restored.
+// P320: Existing object-header producer, raw/const/native/const-native views 180 each;
+// P320: header-derived object before input copy, raw/native 185/185; native object/header
+// P320: receivers at both radius/center uses 180/180. Original complete body restored;
+// P320: early object mask, second-copy SIMD schedule and query success transport remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
