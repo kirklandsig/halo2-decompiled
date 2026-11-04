@@ -3350,6 +3350,9 @@ void function_2011f0(long arg_0);
 // as is 322 (retail's `cmp di, -1`, one byte shorter, but the splice loop's pad grows a byte; aligned 141 ->
 // 140); the final 0x2011f0 call with arg_1 unmasked (retail pushes the full dword) 350 (1344 bytes); a scenario
 // local for its three reads 348. Retail keeps the chain head in EDX through the splice; ours keeps it in memory.
+// P319: Early validation/count producer nested/conditional/disjunction/complete-failure,
+// then bool/byte/short/long availability: 318 each. Original count threading persists;
+// NOT kept: no match or gain. All validation, narrow inputs and complete body restored.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

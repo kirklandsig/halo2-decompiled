@@ -977,6 +977,10 @@ extern vector3f *g_4687b0;
 // P313: Existing scalar setter at blend/parent-add/projectile-subtract boundaries, seven subsets,
 // then all with the initial velocity setter: 309/309/309/309/309/309/309/314. All original
 // component producers and full body restored; tag/index/type/direction homes remain.
+// P319: Saved type promotion / unsigned projectile / unsigned marker domains, masks
+// 1/2/4/3/5/6/7, then all with integral attach: 332/309/309/332/332/309/332/390.
+// NOT kept: domains tie or regress; wide saved type shortens away from retail, integral
+// attach loses the entry. Original scalar types, observations and complete body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)

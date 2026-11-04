@@ -2435,6 +2435,9 @@ real magnitude3d(vector3f const *v);
 // consuming the first vector 186/186/186; direct cyclic rotation loop 178; tangent and rotation
 // loops 191. All retain the raw-length/promoted-dot home mismatch. Original complete body
 // restored; shared tangent forms also raise two other scores.
+// P319: Conditional absolute formation, direct negative/nonnegative, real conditional/
+// positive/branch and double conditional/positive/branch: 195/195/195/195/195/215/215/199.
+// NOT kept: every form regresses and loses the native frame; original fabs and full body restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3294,6 +3297,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // recursive neg/sbb/inc and a final test/sete; retail copies and returns its positive byte
 // directly. The other forms regress. Original complete body and positive result restored; frame
 // and fade scratch homes remain.
+// P319: Existing distance producer through native/shared-difference magnitude, point
+// distance and squared-length graphs: forced 177/236/236/177; ordinary inline
+// 234/310/310/234. NOT kept: no gain; point snapshots grow the frame, ordinary
+// expansion loses native arithmetic. Original distance helper and whole body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
