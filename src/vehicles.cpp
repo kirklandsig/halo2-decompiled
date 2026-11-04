@@ -617,6 +617,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // and forced inline, then both with bulk fallback copy or float root: 126 each.
 // Original helper, callers and complete body restored; velocity-copy receivers,
 // early unity SIMD residence and later angular x87/SSE homes remain.
+// M378: Complete forward/heading/both memcpy, velocity with forward/heading/both,
+// then all and forward/heading memmove: 128/132/134/132/136/138/404/407. NOT kept: all regress;
+// original complete scalar copies, helpers and body restored; entry velocity/unity homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3809,6 +3812,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M374: Actual physics/orientation/index parameter-home identities, seven role graphs,
 // then all with input basis identity: 136/136/136/136/136/136/136/136. NOT kept: no native
 // projection/trig home repair; original complete body and all contracts restored.
+// M378: Complete default placements 1/D/2, 2/D/1, D/1/2, D/2/1; paired real cases
+// in both label/default orders: 136/136/136/136/165/165/165/165. NOT kept: no native projection/
+// trig repair or byte equality; original cases, precision and complete body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4427,6 +4433,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Original indexed search with cached/collision, cached/sound, all, all/delta:
 // 182/165/177/177. NOT kept: selected receivers require equality; original-index 165 is 1353/1361, farther from retail.
 // Original indexed search, scalar producers and complete body restored.
+// M378: Complete ray point/up library transfers, memcpy alone/both, memmove alone/both,
+// and mixed transfers: 176/176/176/269/267/277/267/269. NOT kept: no native
+// first-match/world/result repair; original complete copies and body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
