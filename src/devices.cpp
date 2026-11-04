@@ -857,6 +857,10 @@ struct s_device_machine_view
 // P307: Actual machine bitfields with logical/bitwise admission, original/native group masks,
 // and absent/present velocity zero: 34/142/120/131/117/146/122/137. NOT kept: no exact native
 // observation/type graph; original view, word/masked result and entire callback restored.
+// M375: Bounded missing-bit byte/word/long/dword without/with active-velocity zero:
+// 95/93/93/93/17/17/17/17. NOT kept: 17 uses a byte load, complement and one combined
+// mask test instead of the native word load and two tests; only its zero-default combination
+// gains. Wider carriers grow to 655 bytes. Original whole callback, masks and result restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1803,6 +1807,9 @@ bool function_0b6760(s_index_pair const *pair);
 // DH338: First-channel receiver across manual/group phases, pointer/reference,
 // inherited/ordinary index and saved-pointer domains: 376/376/393/393/392/392/441/441.
 // All restored; frame/index/header/state/result homes remain.
+// M375: Complete closing refresh admission, bool/byte/short/long positive then complementary
+// result: 285/285/285/285/285/285/285/285. NOT kept: one-use decisions did not match; original frame,
+// observations, both inherited scalar qualifications and complete body restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
