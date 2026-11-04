@@ -2046,6 +2046,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // M367: Direct successful return with admission/mode/pickup rejection subsets
 // 0-7: 128 each, 364/388 bytes. NOT kept: all regress and shorten away from retail.
 // Original stored result and complete body restored; request/weapon homes and getter expansion remain.
+// M373: Result/mode-buffer/selection role names, seven subsets, then complete
+// request/weapon receiver names: 60/60/60/60/60/60/60/60. NOT kept: no gain or match;
+// original names and complete body restored; request/weapon homes and getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -2624,6 +2627,9 @@ __forceinline char unit_action_round(real value)
 // at entry 350/350/348/358. NOT kept: four-point short lead below gate; long 214
 // adds cached ECX/sete before the active test where retail compares mode in each
 // selection path. Original full body restored; pool/name/result homes remain.
+// M373: Unit/actions/weapon/selection role names eight 235; whole-function success default,
+// bool/byte at original/entry declarations 286/338/287/336. NOT kept: ties or regressions;
+// original names, false default, exits and full body restored; pool/name/result homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -3046,6 +3052,9 @@ long function_c8f60(long unit_index, short seat_index);
 // each with guarded full-width activity 280/280/294/335. NOT kept: frame 0xec versus native 0xf0;
 // integer clears replace native interleaved SSE stores. Original body restored;
 // entry vehicle/unit/ordinal residence remains.
+// M373: Initial-unit/header/refreshed-unit semantic receiver names, seven subsets,
+// then complete node-transform/seat receiver names: eight 293. NOT kept: byte-neutral;
+// original names and full body restored; vehicle/unit/ordinal residence remains.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)

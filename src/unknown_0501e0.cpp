@@ -329,6 +329,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // M371: Scaler-return parameter/mutable-source/conditional-source/complete-value producers,
 // cursor rows 295/292/297/379; indexed rows 298/294/299/377. NOT kept: all regress
 // and lengthen; original aggregate defaults, helper and complete body restored.
+// M373: Complete scale/copy branch-owned scaled workspace, native/setter/memcpy/memmove,
+// nonunit-first 327/288/327/374; unit-first 331/288/331/370. NOT kept: all regress;
+// original aggregate-default helper and full body restored; frame/coefficient homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
