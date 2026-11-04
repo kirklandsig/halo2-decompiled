@@ -316,10 +316,20 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // bytes, frame 0x64 and retail's integer-move planar copy at 0x34/0x38, aligned 255, but the success tail is
 // duplicated), with the constant tails 432 (1566), with the blocked result without its temporary 462.
 // Original body restored.
+// DH349: Complete sole-return outcome on native short-count/initial-store graph,
+// default-owned long/bool/byte/short 428/449/480/435; terminal-owned counterparts
+// 454/486/466/443. NOT kept: all regress; independent normal homes, frame and byte
+// tails remain. Original result sources, early return, helpers and full body restored.
 // N361: Common accepted-block state/result publication, long/bool/byte/short result,
 // original planar transfer 422/444/424/412; native planar record transfer 436/375/402/441.
 // NOT kept: 375 combines individually regressing storage forms and adds a redundant blocked store;
 // retail has distinct accepted epilogues. Original geometry, state, transfers and full body restored.
+// DH351: Existing shared planar products at origin/first endpoint/second endpoint,
+// seven subsets, then complete immutable projection distance with unused overload removed:
+// 410 each. NOT kept: no gain; full/planar normal homes, frame and byte/output tails remain.
+// DH356: Planar components initialized before the full-normal magnitude consumer,
+// scalar/aggregate crossed with long/bool/byte/short success: 410/432/414/419 twice.
+// Original body restored; no independent normal homes or native frame recovered; all peers hold.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

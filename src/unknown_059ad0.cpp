@@ -3546,6 +3546,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax G (11-04): no new form, no lower score; retail reads the member state through its own
+// address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
+// session+0x10 into the reply id's stack slot before the timeout call, and returns through two
+// epilogues (1 and 0) where ours keeps the peer result in EBX.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
@@ -3640,6 +3644,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // Round 49 (m3 lane 15, fast): state range as `state >= 3` 102; the leave test with the flag byte first 101; the
 // value44 reset before the member index store 100 (one point, not kept); announcement flags stored 2, 1, 0 101; the
 // host index read from the session at each use (no assignment inside the condition) 104 (421 bytes).
+// Round 141 (KIMI1, fast): leave assigned from the host result under its guard 131 (413 bytes); shared defaults
+// original/reversed 101/103; chained defaults original/reversed 101/103; neutral defaults with the reply member
+// state before the id 94 (reply exact, seven under the bar), with a const member pointer 94 and a member reference
+// 94. Original executable body restored; held timeout owner spill and announcement/return layout remain.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3699,6 +3707,8 @@ struct s_network_session_list;
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, const s_session_id *id);
 bool function_07ab10(long key_index, s_type_99af70 *address, long local, word port, const XNADDR *xnaddr);
 
+// MiniMax G (11-04): no new form, no lower score; the host/session staging at the 0x7ab10 call
+// (retail reloads the session and keeps the host in ESI) and the cleanup placement still differ.
 // score 136 (was 136): host/session staging, clock boundary and cleanup placement differ;
 // size preference 233; gated identity 142; long result 160; failure-path result 192; address name 136.
 // host/session homes, cleanup placement and clock expansion differ;
@@ -3769,6 +3779,10 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // with channel failure first 152 [19] (554 bytes), with the transport local too 163 [19]; a local copy of session for the part after the loopback test 136 [34]
 // (coalesced, no second register), on the flag/channel form with a host copy too 152 [19]; that part as a forceinline bool helper taking session and host 145 [25]
 // (581 bytes, session still in ESI). No retail call path leads from 0x5fb00, 0x5fb60 or 0x7ab10 back here. BLOCKED-BY the same host/session staging.
+// Round 142: on the loopback-helper/forceinline-clock/channel-failure-first composite (138): host read through
+// its parameter home 138; long resolver result 138; session read through its parameter home 138; inline resolver
+// wrappers with host before local/host first 168/168 (559 bytes); entry remote 138; loopback helper by reference/
+// scalar fields 138/138. Original body restored; host/session staging remains.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -4378,6 +4392,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
+// MiniMax h (11-04): no new form, no lower score; the result byte stays at +0xa where retail keeps it at +0xb.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.

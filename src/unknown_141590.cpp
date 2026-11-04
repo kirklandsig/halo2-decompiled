@@ -348,6 +348,15 @@ static inline void quaternion_transform_vector(
 // N361: Half-angle root-input double addition/factor/both/post-addition promotion, paired
 // outputs 211/202/211/202, independent real outputs 278/269/278/269. Original root inputs,
 // paired storage and body restored. NOT kept: unmatched precision-only forms; native spill homes remain.
+// N363: Existing shared scaled-add owns final cross contribution, crossed with shared
+// initial scale/projection/staged cross: 352/352/351/325/307/307/309/311. Original private helper and body restored;
+// NOT kept: unmatched staged stores. Native frame/quaternion/cross spill homes remain.
+// N365: Existing complete vector setter output with staged-cross/shared-dot/independent-half
+// masks 0..7, 333/346/340/351/344/360/333/368. Paired output restores frame 0x24
+// but grows code. Original helper/body restored; NOT kept: unmatched output ownership.
+// N368: Caller initial-dot/sine/axis-scale adjacent producers, seven family subsets
+// 263/253/253/221/221/249/214; all with entry declarations 214. Original producers restored.
+// NOT kept: unmatched storage/producer forms regress; native half/quaternion/transform homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1094,6 +1103,15 @@ void function_143250(
 // N361: Actual band-table aggregate initialization, band masks 1..7 and all immutable,
 // 1976/1930/1880/2123/2126/2166/2187/2187. Original assignment-based tables and full scalar
 // graph restored. NOT kept: unmatched table lifetime/publication forms; frame, admission and homes remain.
+// N363: Complete arithmetic-role scalar identities, product/sum-difference/copy-literal
+// masks 1/2/4/3/5/6/7 then all scalar roles: 1766 each. Original names and full body restored;
+// NOT kept: unmatched home allocation. Native frame, rotation admission and basis homes remain.
+// N365: Complete actual-result copy/compound multiply/add/subtract producer families,
+// seven subsets and all with producer declarations, 1766 each. Original scalar graph
+// restored. NOT kept: unmatched producer ownership; native frame/admission/homes remain.
+// N368: Final-consumer lexical homes for real/double/both families, forward/reverse,
+// then both within producer bands, forward/reverse: 1766 each. Original names restored.
+// NOT kept: unmatched home allocation; native frame, rotation admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
