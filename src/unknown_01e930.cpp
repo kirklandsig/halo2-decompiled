@@ -526,6 +526,18 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // finished store/mode decision/size store/used clear/pointer clear:
 // 251/252/256/256/264/264/264/264. Original zero lifetime and full body restored;
 // frame 0x3c/0x40, status/clock/output homes and instruction policy remain.
+// P302: Natural allocation-result for producer, original/byte output and entry/post-clock
+// zero lifetime, with long/short bounded pump ordinal: 269/269/283/283/286/286/289/289. Original while producer,
+// pointer, clock, ordinal and body restored; status/clock/output homes remain.
+// P304: Surround/stereo volume arrays at their own consumer, delayed or consumer-scoped
+// in eight lifetime pairs: 264/264/263/263/263/263/263/263; all 1115/1098 bytes. NOT kept: regressions and
+// nonnative delayed initialization. Original arrays/body restored; frame and clock/output homes remain.
+// P307: Native unsigned timestamp return with signed/native start, immediate signed/unsigned
+// second-tick producers and original/selected nonnegative elapsed: eight body forms 246 each;
+// return-only calibration 246. Original clock contract, scratch and complete body restored.
+// DH335: Native surround-bin stores, paired surround-gain chains and complete
+// stereo publications, subsets 1..7 and complete interleaved form, 246 each.
+// Original arrays and whole body restored; frame/status/clock and SSE gaps remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

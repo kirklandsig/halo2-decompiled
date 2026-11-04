@@ -1541,6 +1541,11 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // B414: Actual metadata animation-admission outcome, positive/negative bool/byte/short/long:
 // 177/170/178/176/179/179/179/178. NOT kept: all regress, including 170 at 604 bytes.
 // Original complete body restored; early pool, second unit load and hand storage remain.
+// Round 208 (m3 lane 3, fast): a compile-only LTCG probe gives retail's entry (unit load, hand store, unit reload
+// through a copy of the data register) only when `hand` is a memory local whose store sits between the two lookups
+// (its address passed to a call); every lookup spelling without that shares one load. Diagnostics, reverted at once:
+// `(void)&hand` 95, with a long hand 198; a local pointer to hand read at the 0xd0870 argument 95 (short) / 198 (long),
+// at the slot store 95/198 (LTCG resolves the pointer away). Retail passes no local's address anywhere here.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {

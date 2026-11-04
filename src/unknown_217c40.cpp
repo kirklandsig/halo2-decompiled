@@ -173,6 +173,18 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // bound-predicate/lower-expression/upper-first results: 577/474/483/545/549/826/558/538.
 // NOT kept: neutral or nonretail result/compare shape and frame/length regressions.
 // Original six-use clamp, snap helper, complete body and alignment evidence restored.
+// P304: Existing snap-input observations at quadrant/magnitude/dominance-sign consumers,
+// masks 1/2/4/3/5/6/7, and immutable input/output separation: eight forms 474 each.
+// Original helper and body restored; frame 0x38/0x40 and angle/snap homes remain.
+// M358: Two-mode snap admission, positive/complementary bool/byte/short/long:
+// 474 each. NOT kept: one-use admission predicates do not match; original helpers
+// and complete body restored; frame 0x38/0x40, angle and snap-work homes remain.
+// DH332: Standard lower/upper clamps and paired divisor selection, seven subsets then real magnitude API:
+// 980/1001/1211/555/982/992/1250/1250. NOT kept: all regress and miss native frame/length; original helper and standard alignment evidence retained.
+// Original complete body and contracts restored.
+// DH336: Native coordinate/axis/double-angle array subsets, then point pairs:
+// 474/474/473/475/474/474/475/475. NOT kept: the one-point angle-array gain
+// and grouped storage need equality; original helpers and complete body restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

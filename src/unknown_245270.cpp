@@ -575,6 +575,12 @@ void function_245400(s_source_245400 const *source, long index,
 // branch/conditional facing producers: 201/201/231/230/201/201/231/230.
 // NOT kept: state set in a test needs a match; every extent grows away from 783.
 // Original body restored; frame 0x24/0x2c, material/side homes and late matrix remain.
+// Round 59 (m3 lane 13, fast; 0x245400, 0x245aa0 and 0x245850 checked): retail keeps the edge vector in XMM3-5 and
+// scales a copy into XMM0-2 (a select), holds the matrix in EDX only inside the transform block, and reloads both full
+// codes from their stack copies for the side bits after forming the plane pointers. The second material bound to a
+// `const &` record and read first 208 (no dead lea); with the plane pointers inside the plane test 222 (767 bytes,
+// 0x245aa0 43); with the code test written second-first 208; with the code copies and side bits made second-first 207;
+// that with the plane table read after the edge vector 204 (0x245aa0 3). Original body restored.
 // Round 50 (m3 lane 15, fast; 0x245aa0 checked): the side flags as `(code & 0x8000) != 0` 209 (same code); the
 // facing arms inverted on `!=` 209 (same code); the facing test as one ternary condition 211; the equal-material
 // case as an early return 209 (same code); short codes with `< 0` sides 224 (762 bytes, 0x245aa0 lost to 6).

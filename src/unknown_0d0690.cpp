@@ -1499,6 +1499,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // scan 565; the block count read at each use 567; the normal copied after the length store 528 (as round 222);
 // the luminance's 2.0 written last 529; count declared before the parameters pointer 529 (same code). Ours now
 // returns `ret 0xc` like retail; the block/query registers (ours edx/eax, retail eax/edx) and frame 0x2c remain.
+// DL254: Existing shared clamp/negation/rotation output-pointer contracts, seven subsets then ordinary inline:
+// 529/529/529/529/529/529/529/529. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
 // M344: Scan-produced found/missing outcomes in bool/byte/short/long storage
 // 597/534/561/560/538/538/562/560. NOT kept: unmatched scan flags enlarge the
 // body; five native-frame forms also regress the caller 363 -> 440. Original
@@ -1506,6 +1509,15 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // B407: Early degenerate normalizer exit, native/readonly output pointer, direct/existing
 // scaler and forced/ordinary inline: 529/529/608/608/529/529/608/608. NOT kept: no gain;
 // shared user 363 -> 368/364. Original helper, calls and complete body restored.
+// P302: Existing RGB clamp actual lower/upper/input/output record references,
+// graphs 1/2/3/5/6/7/15 then ordinary-inline full graph: 529/529/529/529/529/529/529/529. Original
+// clamp/body restored; frame, selection-result spill and block/query homes remain.
+// M353: Common failure exit with completed bool/byte/short/long results,
+// retained count guard then early count exit: 573/579/575/576/573/579/575/576.
+// All regress and lose matched caller 0x3db00; original full body and helpers restored.
+// M356: One-past-entry forward !=/< and reverse !=/> scans, direct/reused flags:
+// 559/562/564/564/535/536/535/536. NOT kept: all regress; original selection,
+// complete body and helpers restored. Frame, result spill and block/query homes remain.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2244,9 +2256,30 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // N347: Structure per-vertex provider first; failure/success defaults before/after lookup;
 // conditional status after/before sampling; missing-block first: 575/704/702/553/551/727/717/552.
 // NOT kept: unmatched status/layout forms. Original complete body restored; native result/mesh homes remain.
+// AC509: Existing decoder returns mutable/readonly output references through pointer/reference
+// formals: four ignored results 542, four directly consumed interpolation results 545. Original
+// decoder and three samples restored; status/mesh/sample homes and helper expansion remain.
 // Round 404: Actual decoder input/output/paired-input/paired-output cursors 1100/756/984/855 with
 // ordered ends, 826/756/763/855 with equality ends. Original decoder, three independent samples and body
 // restored; native status/mesh/color/UV homes and selective expansion remain.
+// P308: Existing five-value decoder as a native decoded/encoded member, void/reference
+// results with forced expansion 542/542/542/542; ordinary expansion 1039/1039/1039/1039.
+// NOT kept: ties/outlining regressions; original free decoder, samples, offsets and body restored.
+// P310: Shared combined-fallback/single-valid color-normal publication and final packed-color
+// result, subsets 1..7: 714/720/1012/601/749/758/1051; complete conditional receivers 1029.
+// NOT kept: all regress; original publication paths, independent samples and body restored.
+// M351: Immutable existing first/second/third sample offsets, all seven subsets, then all with
+// fixed model metadata/mesh/index/data bindings: 542 each. Original body restored; native
+// status/mesh homes and selective material/magnitude expansion remain.
+// DH326: Branch-owned bitmap UV, texture-region base UV and publication-ended combined color,
+// subsets 1..7 then all with aggregate color initialization: 629/677/798/542/629/677/798/798.
+// Original output lifetimes and full body restored; status/mesh homes and helper expansion remain.
+// DH330: Native three-sample output array with long/dword/short/word indexed decoding,
+// encoded-format scope 656/656/877/877; model scope 664/664/877/877.
+// NOT kept: unmatched grouped outputs; original independent samples and body restored.
+// DH338: Complete RGB pin index loops in long/short/word/byte 542/1111/1111/1111;
+// advancing-channel loops 542/1111/1111/1111. Narrow loops remain rolled and shorten
+// away from retail; original helper/body restored, status/mesh/sample homes remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

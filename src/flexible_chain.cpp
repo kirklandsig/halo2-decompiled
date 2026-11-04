@@ -234,7 +234,7 @@ void __stdcall function_1160c0(real dt)
 }
 
 // MiniMax S (11-01): the segments and segment-index locals leave the first difference at +0x37; no lower score.
-// score 171 (was 179): previous/axis homes, segment ownership and rotation scheduling differ;
+// score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
 // scaled difference 212, all vector helpers 285.
@@ -441,6 +441,11 @@ void __stdcall function_1160c0(real dt)
 // B413: Complete constraint/normalization/rotation temporary end scopes, seven subsets,
 // then all with the two-use angle scoped to paired trig: 171/171/171/171/171/171/171/171.
 // Original complete body restored; segment/previous/axis homes and rotation scheduling remain.
+// Round 49 (m3 lane 2, fast): the physics tag through a private inline getter 171 (same code: retail's late
+// tag-address formation follows its EDX/ECX allocation, not the argument's position); the rotation in place
+// on the offset copy with named projection and cross scalars (0x11d180's form), then predicted = offset +
+// position, 235 (1370 bytes, frame 0xa8); node as `record->nodes + i` 171; sine-first cross products 171;
+// `(1.f - cosine) * dot` 171 (all same code); the inverse step computed just before the velocity rows 297.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

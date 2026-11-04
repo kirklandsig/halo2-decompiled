@@ -991,10 +991,25 @@ real normalize2d(point2f *v);
 // request with all guards 73 (901/935 bytes), recovering DL. NOT kept: length moves away and
 // gain appears only with combined forms. Original full body restored; separate facing/default
 // and invalid return paths remain.
+// J247: Native request-point/direction/facing memcpy subsets on the retained 3D graph:
+// 135/135/135/135/135/135/135; all three memmove 234 (873 bytes, frame 0x54).
+// NOT kept: no gain; original complete body restored. AL/DL force-result and return homes remain.
+// F360: Initial trajectory true-default/exhaustive result producers in bool/byte/short/long:
+// 182/195/169/175/120/156/168/176. NOT kept: no exact initial-result/DL repair; retail does not materialize a query predicate.
+// Original complete body and helpers restored.
 // B408: Existing final planar setter first/facing/both, ordinary then forced expansion:
 // 165/186/222/165/186/222; both with existing complete facing construction 223/223
 // (provider-rooted control 135; exact provider survives). Initial omitted-provider previews
 // excluded. NOT kept: DL/return graph remains; original copies, declarations and body restored.
+// M345: Trajectory result char/word/unsigned-int/dword at its call or before all
+// trajectory outputs: 186/186/159/159/153/153/153/153. Native request/facing graph retained.
+// NOT kept: scalar carrier domains miss; original Boolean result and complete body restored.
+// M347: Request-state admission outcome, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 135/135/135/135/135/135/135/135.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
+// DH334: Standard typed request-point/normalized-planar/facing-planar record ranges,
+// seven subsets then complete backward ranges: 144/180/194/185/197/198/202/205. NOT kept: all regress;
+// original publications and complete body restored; retained DL and return transport remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

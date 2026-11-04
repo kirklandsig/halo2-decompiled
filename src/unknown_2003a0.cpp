@@ -3348,6 +3348,11 @@ void function_2011f0(long arg_0);
 // B413: Complete creation-record/customization/mask-attempt lifetime end scopes,
 // seven subsets, then all with readonly options: 318/318/318/318/318/318/318/318.
 // Original body restored; narrowed-index/placement and final-chain homes remain.
+// Round 49 (m3 lane 2, fast = plain 318): the options pointer by if/else with NULL in its own arm 361; the spawn
+// index assigned in each arm of `arg_2 == NONE` 358; the +0x3c word as a short compared with NONE and passed
+// as is 322 (retail's `cmp di, -1`, one byte shorter, but the splice loop's pad grows a byte; aligned 141 ->
+// 140); the final 0x2011f0 call with arg_1 unmasked (retail pushes the full dword) 350 (1344 bytes); a scenario
+// local for its three reads 348. Retail keeps the chain head in EDX through the splice; ours keeps it in memory.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

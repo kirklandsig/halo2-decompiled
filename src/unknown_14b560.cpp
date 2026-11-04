@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "unknown_123b30.h"
 #include "data_array.h"
+#include "data_iterator.h"
 #include "engine_peer.h"
 #include "unknown_067e10.h"
 #include <string.h>
@@ -785,29 +786,6 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
-/* data_datum_iterator_next (0x6b380), which retail inlines here */
-static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *iterator)
-{
-	s_record_pool *data = iterator->data;
-	long index = data_next_absolute_index_inlined(data, iterator->index + 1);
-	byte *datum;
-
-	if (index != NONE)
-	{
-		datum = data->data + data->size * index;
-		iterator->index = index;
-		iterator->datum_index = (*(short *)datum << 16) | index;
-	}
-	else
-	{
-		iterator->index = data->maximum_count;
-		iterator->datum_index = NONE;
-		datum = 0;
-	}
-	iterator->datum = datum;
-	return datum != 0;
-}
-
 // score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // Earlier: the datum address is still computed in EBX where retail computes it in EDI, and the
 // walk is still 0xbaf80 called out of line because another lane's file pins it noinline: BLOCKED-BY 0xbaf80.
@@ -871,6 +849,11 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 // from the field with the unit only tested 109 (431, no entry test); one of lookup/0xe4050 from the field 171/171; that
 // all-field form with a named parent 109; named parent with dword current 171/171/171. What is left in the 405 family:
 // the unit must leave EAX (0xe4050's argument) for EBX, which pushes the iterator index back to the frame.
+// Round 49 (m3 lane 2, fast 44 = plain 43): the private copy of the datum-iterator step replaced by the existing
+// data_datum_iterator_next_inlined (data_iterator.h) 44 (same code, kept); the NONE test on the field with the unit
+// local read after it 44 (same code); the parent test inverted with the vehicle arm first 114 (408 bytes); the vehicle
+// test as nested ifs 44 (same code); the no-parent exits through one found value 106 (409). Retail's datum/unit
+// EDI/EBX colouring follows its inlined 0xbaf80 walk (BLOCKED-BY 0xbaf80, still pinned in src/unknown_0bad50.cpp).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -879,7 +862,7 @@ bool __stdcall function_14df40(long *unit_index)
 	iterator.data = g_4e8c24;
 	iterator.index = NONE;
 	iterator.datum_index = NONE;
-	while (player_datum_iterator_next_inlined(&iterator))
+	while (data_datum_iterator_next_inlined(&iterator))
 	{
 		s_player *player = (s_player *)iterator.datum;
 		long unit = player->unit_index;

@@ -147,6 +147,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // `neg; sbb; and; add` where retail has the switch's `dec eax; je`. object_index, type, then rigid body with the
 // kind-7 ternary 96 at 256 bytes with the caller still matching (retail's three pushes); with case 0 through
 // object_index 141 (212 bytes, caller 213); one-read switch form 96 (256, caller 13); one header pointer read by
+// Earlier: one type read shared by both kind routes and case 0 through the same header data in retail.
 // one type read shared by both kind routes and case 0 through the same header data in retail.
 // both switches 125 (284 bytes, caller 194).
 // Round 63 (lane 12, fast): one type read with case 0 through component (retail's unshared index arithmetic, which
@@ -242,6 +243,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // the case 0 object through a pointer in its own block 28.
 // Retail's `xor eax, eax; mov al; shr al, 2; and eax, 1` comes from none of 27 compile-only spellings (byte and dword
 // bitfields, byte/bool locals, byte results); only 0x9d250's `not al` form keeps `shr al` next to `and eax, 1`.
+// DL256: Full type-first dispatch with result-first level/body/object policy groups, masks 0-7:
+// 121/117/123/121/96/97/112/97 (232/236/228/232/256/256/240/256 bytes). All move the
+// component to the stack, use ret 4 and lose the matched caller to 213; 0x1d5940 rises 9 to 116.
+// NOT kept: ingress/caller regressions; native-length forms do not improve score. Original full body restored.
 // B401: Level-layer preclassification before handle/after selected body, byte/short/long/dword:
 // 105/107/107/107/93/128/125/125; caller 6/6/6/6/6/194/194/194. NOT kept: unmatched
 // one-use outcomes and every caller loss; three-point reduction also below gate. Full body restored.
@@ -552,6 +557,20 @@ struct s_physics_component_walk : s_havok_component
 // graph, seven subsets, then distinct terminal/neighbor predicate and selected-result
 // names: 146 each. Original names and complete method restored; latch reload order,
 // promoted-neighbor/key carriers and cold exits remain.
+// M354: Entry-table base/cursor, mutable/const view and common body/entry ordinal:
+// 304/304/304/304/221/221/221/221. NOT kept: entry transport does not reproduce the native reload/allocation.
+// M356: Persistent terminal-key/neighbor-key/object-field references, seven subsets,
+// then all mutable: 146 each. NOT kept: no gain. Original field reads, queries
+// and complete method restored; latch reload order and neighbor/key homes remain.
+// M358: Original clamp-identity admission, positive/complementary bool/byte/short/long:
+// 146 each. NOT kept: one-use validity predicates do not match; original statuses,
+// clamp and full method restored; latch reload order and neighbor/key homes remain.
+// DH328: Direct replacement range on completed-section predicates, exclusive/inclusive
+// and complementary tests 305/290/305/290; availability produced directly 312 each.
+// NOT kept: regressions and 900-byte extent versus 922; original full method restored.
+// DH336: Shared complete two-query predicate, open/closed bool/byte/short/long
+// results: 146/146/146/146/146/146/146/146. Original complete method and
+// both scans restored; native frame agrees, latch reload and neighbor/key homes remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

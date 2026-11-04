@@ -309,6 +309,16 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // `local_4 = local_19 < local_4 ? local_19 : local_4` 618; hit flag stored before the distance 619; the clamp test
 // as `local_19 / local_6 < 0.1f` 618; success cleared before the clamped distance 618. Retail reloads and negates the
 // half-width again for the fourth offset point (ours reuses the third's negation).
+// Round 59 (m3 lane 13, fast; aligned = difflib opcode count, 236 here): the ray loop is retail's instruction for
+// instruction up to stack offsets (point cursor F+0x20 for retail's F+0x4, index F+0x4 for F+0xc, minimum F+0x8 for
+// F+0x10, success F+0xf for F+0xb, side vector F+0x10 for F+0x18). Retail's offset-point half-width reloads come from
+// register pressure (XMM0 is the z product's destination), not aliasing. The definition pointer without const 618
+// (same code); the ray loop as a plain counted `for` 755 (2768 bytes, unrolled); the first range product written
+// minimum first 618 (same code); as `0.7f * ((1.0f / range) * minimum) + 0.3f` 612 (2833 bytes, aligned 231; the
+// product is still shared, the gain is scheduling elsewhere, under the keep bar); on that, the second product
+// written minimum first 612, `0.3f + 0.7f * (...)` 612, the cross helper in retail's product operand order 612,
+// the output components named for the basis product 627 (2816, aligned 219); a named inverse range used by both
+// products 626 (2816). Original body restored.
 // DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
 // then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
 // executable body and helpers restored; success/input/minimum/hit homes remain.

@@ -356,12 +356,35 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // entry 223 (same code); uv_b's default bounds copied from uv_a 347 (1956 bytes); the tint and its clamps in their own
 // block ending at the pack 249 (1906 bytes); `uv_b,uv_a` declaration order 223 (same code); the flip read before the
 // extents 250 (1949 bytes). Original body restored.
+// DL256: Existing one-object in-place UV encoder, encoder/selector expansion pairs inline/inline,
+// forced/inline, inline/forced, forced/forced, ordinary/inline, inline/ordinary, ordinary/forced,
+// forced/ordinary: 223 each. Complete alpha/RGB record and whole-color/RGB union views: 223/223.
+// All remain 1948/1937 bytes, first +0x5b, with every control unchanged. Original restored;
+// NOT kept: unmatched encoder or color representation; tint/UV homes and XMM5 blend lifetime remain.
+// F361: Existing UV encoder as native output member, pointer/reference bounds,
+// ordinary/forced inline and long/dword selector: 223/223/223/223/223/223/223/223.
+// NOT kept: tint/secondary-UV homes and blend residence unchanged; original encoder restored.
 // B409: Wrapped first/next/both frame indices, successor ordinal and its complete
 // combinations, adjacent modulo stage and updated successor index: 223 each.
 // Original index producers/body restored; tint/secondary-UV and blend homes remain.
 // B411: Persistent input/clamp-cursor/selected-frame lexical identities, subsets 1-7,
 // then complete scalar-stage identities: 223 each. Original observations, expressions,
 // workspaces and body restored; tint/secondary-UV homes and blend residence remain.
+// M348: Native two-axis UV defaults primary/secondary/separate/joint loops
+// 407/410/434/408; library zero defaults primary/secondary/both/upper loop
+// 351/351/376/432. NOT kept: no byte match; original body and alias-safe captures restored.
+// M350: Uninitialized angle/complement/width entry declarations, seven subsets,
+// then paired primary-aspect storage at entry: 223 each. All producers stay at
+// their original phases; complete body restored, tint/secondary-UV homes remain.
+// DH331: Oriented start/end UV endpoints before subtraction, conditional then paired branches,
+// bounds pointer/reference and four-real pointer/reference: 473/473/473/473/541/541/541/541.
+// NOT kept: smaller frames and regressed extents/scores; original alias-safe encoder and callback restored.
+// N348: Native box storage for geometry/primary/secondary UV, seven subsets, then
+// native box encoder output, on the current frame/plain-pivot graph: 223 each.
+// Original union views and all input-before-store captures restored; tint/UV homes remain.
+// N350: Common geometry-arm flip result after packing, long/dword/word/byte carriers,
+// original/reference producer inputs: 458/458/437/445/458/458/437/445.
+// NOT kept: frame/extent and exchanged tint/UV homes regress; original body restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

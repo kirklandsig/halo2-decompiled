@@ -436,15 +436,26 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // DH316: Unsigned-word/signed-64-bit pass, long/bool departure and memcpy/memmove:
 // 257/254/187/264/319/299/299/292. NOT kept: all regress; two word CRT forms lose the
 // caller. Original pass, state, copy, helpers and entire executable body restored.
+// AC508: Actual unrounded distance/angle/delta domains, wide subsets 1/2/4/3/5/6/7:
+// 234/216/255/249/263/265/259; native float CRT pair 170. NOT kept: no exact precision match;
+// original body restored. Extra frame word and count/departure/compaction homes remain.
+// F356: Existing equality predicate with shared/native/scalar/absolute coordinate producers, original long then Boolean departure:
+// 208/208/170/170/254/254/248/248. NOT kept: no qualifying match or gain; original complete body restored.
 // Lane 13 r58 (fast): one retail-shaped body (short hull count, `while (hull_count < count)` with
 // `indices[hull_count++] = current`, bool departure and heading declared ahead of the lowest scan, memmove
 // compaction) 265 (759 B; frame 0x14 as retail, but points in EBP and indices in EBX where retail has ESI/EBP, and
 // the zeroed count via a zero register); on it departure declared first 265, `current` declared first 264, a
 // separate `hull_count++` 265, memcpy 275 (751 B), the `||` departure update 273 (748 B).
+// F363: Native point-owned predicate, instance/static with bool/byte/short/long
+// results: 170/164/171/170/170/164/171/170. NOT kept: six-point byte gain below
+// threshold; extra frame word remains. Original helper, point type and body restored.
 // B399: Complete scalar distance producers on the native output-ordinal graph: double
 // displacements 172; native/wide squared length 170/172; native/wide paired squares 170/172;
 // double displacements with native/wide sum or wide squares 173/172/172. Original body
 // restored; extra frame word, count/departure homes and compaction remain.
+// P303: Native-width lowest/candidate/compaction ordinals on the retained output-ordinal graph,
+// subsets 1/2/4/3/5/6/7: 654/262/180/642/651/259/635; unsigned native candidate 262.
+// NOT kept: every form regresses, some lose caller 0x239d50; original scans, output ordinal and body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
