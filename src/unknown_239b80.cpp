@@ -470,6 +470,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B424: Exact endpoint termination of admitted lowest/pass/candidate scans,
 // subsets 1/2/4/3/5/6/7 then all with duplicate outer scan: 170/170/170/170/170/170/170/170.
 // NOT kept: no exact match; original signed bounds and complete body restored.
+// B427: First-hit duplicate search completed before copying, short/native outer and
+// inner ordinals with memcpy/memmove: 251/251/248/255/252/264/252/262. NOT kept: no match or gain;
+// complete original body restored. Extra frame word and count/departure homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

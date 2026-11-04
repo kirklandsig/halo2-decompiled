@@ -458,6 +458,9 @@ extern byte g_51ec11;
 // B424: Standard min/max pitch saturation, nested lower/upper, sequential lower/upper,
 // named lower/upper and single standard lower/upper boundary: 360/360/378/378/378/378/359/359.
 // NOT kept: no exact match; original saturation, include set and complete body restored.
+// B427: Existing shared normalizer actual double component inputs, i/j/k subsets
+// 1/2/4/3/5/6/7 then complete immutable inputs: 332/332/332/327/327/327/330/330. NOT kept: precision
+// forms do not match; entire shared header/body restored. Zero/side/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

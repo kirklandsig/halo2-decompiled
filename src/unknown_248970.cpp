@@ -416,6 +416,10 @@ public:
 // B425: Immutable original head/count/pool declarations, seven subsets, then all with
 // immutable allocation result: 54/54/54/54/54/54/54/54. Original declarations and body restored;
 // child preheader, pool/sentinel ranks, allocation retest and salted index remain.
+// B427: Native child input-record table, indexed/advancing cursor, for/while traversal,
+// mutable/readonly metadata: 59/59/243/243/59/59/243/243. NOT kept: native indexing loses the
+// frame and cursors regress; original type, field, declarations and body restored.
+// Child preheader, pool/sentinel ranks, allocation retest and salted index remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

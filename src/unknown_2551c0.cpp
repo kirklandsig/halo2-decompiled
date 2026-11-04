@@ -880,6 +880,10 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // B424: Standard two-probe maximum, direct/real/double conditional then default
 // side result, direct/named conditional expression: 120/120/152/155/155/162/120/120.
 // NOT kept: no exact match; original maximum, result ownership, includes and body restored.
+// B427: Actual external unit/target/radius scalar references, subsets 1/2/4/3/5/6/7,
+// then complete references with readonly actor: 89/89/87/89/123/123/95/95. NOT kept: radius-only
+// gains two, below threshold; original field observations, receiver and complete body restored.
+// Unit-call scratch and first-length/projection/query homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
