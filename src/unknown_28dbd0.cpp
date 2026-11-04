@@ -294,6 +294,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH352: Existing double-factor axis/cross/direction publishers, subsets 1/2/4/3/5/6/7,
 // then all with the double-factor launch publisher: 233/217/236/278/238/230/298/300. NOT kept:
 // no exact precision/API form; original helper, real products and full body restored.
+// DH360: Existing native axis/direction/point-output coordinate-array contracts, seven subsets
+// and complete interfaces with immutable angle: eight at 173. NOT kept: unmatched interface casts;
+// original vector contracts, consumed-axis stages, ordinary pooled reads and full body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -340,6 +340,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH352: Complete lateral/forward/up product parts across all three basis-reconstruction
 // rows, subsets 1/2/4/3/5/6/7 then immutable full parts: 635/635/635/624/624/624/624/624.
 // Original sum trees, scalar producers, helpers and in-place snapshots restored.
+// DH360: Collision record plus material-reset lifetime at success/object/settings/input/minimum/clearance/guard/basis boundaries,
+// eight forms 647/647/646/632/632/632/631/628. NOT kept: all regress and shrink to 2815/2886;
+// original late reset, complete frame, helper inputs and in-place snapshots restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -1535,6 +1535,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH352: Complete parent/seat departure predicate in bool/byte/char/short/word/int/long/dword
 // storage: eight at 32. NOT kept: no exact predicate-owner form. Original guard,
 // leave/load/walk requests and body restored; iterator and publication homes remain.
+// DH360: Busy-query presence/absence truth at its original publication, bool/byte/short/long,
+// eight at 32; constrained 600s search, 53 proposals, best 32. NOT kept: no exact result;
+// original direct busy store, iterator, geometry, requests, slot publication and full body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

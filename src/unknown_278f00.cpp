@@ -331,6 +331,9 @@ bool function_a7670(long object_index);
 // DH355: Retry success/count continuation in the existing do-while, long/int/dword/
 // short/word/signed-char/byte/char: 153/153/153/259/259/262/262/262. NOT kept: ties or regressions;
 // byte-width frame shrinks to 0x420; original body and 0x424 frame restored.
+// DH360: Complete first/deferred initialized-prefix membership reductions in bool/byte/short/long,
+// 235/235/265/264/278/278/320/317. NOT kept: regressions; retail stops at the first match.
+// Original eager stopping searches, live bounds, retries, releases and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {

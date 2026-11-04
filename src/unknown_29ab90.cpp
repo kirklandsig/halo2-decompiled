@@ -345,6 +345,9 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // DH355: Plain indexed working/constant/history coordinate-copy subsets and all
 // with full pre-update direction: 345/502/355/502/355/490/490/550. NOT kept: ties/regressions and
 // nonnative extents; original vectors, observations, helpers and complete body restored.
+// DH360: Explicit epsilon-test truth in existing magnitude/planar helpers, bool/byte/short/long,
+// eight at 345. NOT kept: unmatched one-use predicates do not recover the 0x64 frame or separate
+// magnitude/query homes; original helpers, all native copies and complete body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
