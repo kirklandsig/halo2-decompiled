@@ -855,6 +855,38 @@ def test_contact_pair_groups_then_friction(solver_images, precision):
 
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_normal_pair_cursors_across_redispatch(solver_images, precision):
+    # Three and five pairs reenter the first unrolled kernel with advanced row
+    # cursors. Distinct angular axes expose stale cursors even with shared bodies.
+    # Zero velocity scale keeps both impulses positive, so every update executes.
+    for rounding in range(4):
+        control = precision | (rounding << 10)
+        for pair_count in (1, 3, 5):
+            for shared in (False, True):
+                for seed in range(16):
+                    data = contact_group_case(pair_count, seed)
+                    put(data, STEP + 4, '2f', 1, 0)
+                    put(data, STEP + 28, 'i', 1)
+                    put(data, OPS + 16, 'I', HEAP if shared else HEAP + 0x80)
+                    for pair in range(pair_count):
+                        put(data, OPS + 24 + pair * 8 + 4, 'f', 0.125)
+                        for row in range(2):
+                            terms = TERMS + pair * 96 + row * 48
+                            index = 2 * pair + row
+                            put(data, terms + 12, 'f', 0.25 + index * 0.125)
+                            put(data, terms + 16, '4f',
+                                0.25 + index * 0.125, -0.25, 0.5, 0.75)
+                            put(data, terms + 32, '4f',
+                                -0.5, 0.25 + index * 0.0625, 0.125, 0.5)
+                    visits = {0x31cadb: 0, 0x31ce74: 0}
+                    context = ('normal cursor redispatch', pair_count, shared, seed)
+                    snapshots = compare_case(solver_images, data, control, context, visits)
+                    assert visits[0x31cadb] == (pair_count + 1) // 2, (context, visits)
+                    assert visits[0x31ce74] == pair_count // 2, (context, visits)
+                    assert snapshots[0] == snapshots[1], (context, hex(control))
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_shared_body_in_both_header_slots(solver_images, precision):
     for kind in OP_LAYOUT:
         for seed in range(8):
