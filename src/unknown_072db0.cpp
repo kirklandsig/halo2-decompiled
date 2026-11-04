@@ -1760,6 +1760,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M366: Shared initial-pass clear/availability/fallback ordinals, pairwise/all lifetimes:
 // signed 709/709/709/709, unsigned 729/709/729/729. NOT kept: no exact cursor-home repair;
 // original independent ordinals and full body restored; initial cursor/slot and later homes remain.
+// M369: Existing availability boundary receives the actual descriptor by pointer/reference,
+// ordinary/forced inline and long/bool truth: 709/719/709/719/709/719/709/719.
+// NOT kept: all tie or regress; original ordinal helper, all three calls and whole body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
