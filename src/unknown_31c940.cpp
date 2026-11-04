@@ -645,7 +645,7 @@ static __forceinline void update_angular_values(float impulse,
 static __forceinline void solve_linear_error_kernel(float target, float mass,
 	__m128 const &axis_a, __m128 const &axis_b, __m128 const &axis_linear,
 	__m128 &angular_a, __m128 *const volatile &angular_b_pointer, __m128 &linear_a, float *linear_b,
-	__m128 const &inverse_a, __m128 const &inverse_b,
+	__m128 const &inverse_a, __m128 inverse_b,
 	solver_step_31c940 *const volatile &step, float *result)
 {
 	__m128 relative = _mm_sub_ps(linear_a, _mm_load_ps(linear_b));
