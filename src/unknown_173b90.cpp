@@ -1537,7 +1537,7 @@ long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
 // score 47 (was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
-// flag width, availability and view carriers remain.
+// availability clear/production and the post-attachment view observation remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
 // bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
@@ -1699,6 +1699,9 @@ bool function_17afd0(long effect_index, long value);
 // in EBP, NONE in EBX, availability in AL); the view local with availability false right after the view read and
 // set on success 131 (504; availability spilled, NONE in EBX, owner in EDI); the view local with one-expression
 // availability 125 (492). Every branchy availability form moves NONE out of EBP and the flag out of BL.
+// F366: Phase-specific post-attachment view observation with original/complete/refined/logical/
+// success-only/complete-query/invalidation/complementary availability producers: 111/119/118/119/129/119/79/112.
+// Exact-only observation diagnostics restored; original snapshots, query gates and full body retained.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

@@ -123,6 +123,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // B409: Paired cross-coefficient construction, original/late diagonal squares and reused sine
 // parts, interleaved/grouped diagonal phases: 364/409/362/385/411/441/355/391.
 // NOT kept: one-point lead at native length below gate; original builder and complete body restored.
+// F366: Real two-turn/three-vector tables, both, vector traversal, turn traversal, turn plus
+// vector table, both traversals, head-tested turn traversal: 364/372/391/396/675/625/626/626.
+// Grouped-storage diagnostics rejected; original builders, arithmetic, snapshots and body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1851,6 +1854,9 @@ real game_time_get_seconds();
 // transfers and paired field/library forms: 543/507/555/497/507/515/534/507.
 // NOT kept: saved position fields at 497 emit SSE transfers instead of native integer-word capture;
 // frame 0x90 versus 0x94 and output homes remain. Original complete body restored.
+// F366: Complete reflection/displacement/both product parts, size/opacity/both spans,
+// distance ratio parts and angular normalization parts: 539/507/539/507/572/572/507/507.
+// All restored; native 0x94 frame and output homes remain, without altered arithmetic grouping.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4630,6 +4636,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // B409: Extra-gate-first pass state, initial-gate rejection and admitted-gate conditional
 // selection in byte/bool/short/long: 248/248/219/213/205/237/231/238. Both peer users regress;
 // original shared producer and complete caller restored; native late bytes/mode loads remain.
+// F366: Homogeneous unculled/configured/both mode-table traversals, then head-tested pair,
+// positive fixed-count pair and advancing cursors: 277/263/296/277/263/277/263/290.
+// All regress and shorten; original callback and shared helpers restored; late pass stores remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
