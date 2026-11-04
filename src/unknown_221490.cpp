@@ -760,6 +760,10 @@ bool sound_driver_voice_create_buffer(
 // bool/byte/short/long: 71/71/71/71/71/71/71/71. NOT kept: unmatched decision/storage forms; original
 // complete body restored.
 // Spatial/play carriers and descriptor zero/input homes remain.
+// M3 lane 10 r71 (fast with 0x191420; one-file harness in brackets for screens): the flags tested as `(bool)((flags >> n) & 1)`, play first 71 (same code), 3D flag first 182 (599);
+// a bitfield view of the flags word, play first 71 (same code); a byte copy of the flags for both tests, 3D flag first 173 (603, 0x191420 1); both flags as bytes of a local option record,
+// 3D flag first 182 (599). Reading: in the play-first form it is the flags word kept for play's late shift (`mov ebx, ecx`) that outranks the voice index, so the voice index spills as
+// retail; with the 3D flag first the word dies in ECX and the voice index takes EBP, so whatever retail's source is, it must keep a register busy until the first creation.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

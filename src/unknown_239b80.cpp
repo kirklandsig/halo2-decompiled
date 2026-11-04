@@ -100,6 +100,13 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // Round 124 (m3 lane 7, fast): the copy as `output[result] = ...; result++;` 5; the arms swapped (`!= 0` arm
 // first) 93; the helper's points as references 5; plane, points and output all references 5; a point pointer in
 // the classification loop 9. Original body restored.
+// Round 70 (lane 10; a one-file LTCG harness that reproduces the real build's hunks, 64 loop-top pointer placements
+// with 0-15 probe locals): retail's setup store order appears only with a side local plus a current-point pointer
+// used by the second intersection and the copy (6: the first intersection then sums x first; with 4 probe locals 4);
+// probe locals rotate only the second intersection's products. Tried (--fast): current- and previous-point pointers
+// for both intersections and the copy 28; a current-point pointer for the first intersection only 5; a side local
+// only 7; a current-point pointer for the second intersection only 7. Numerator spellings and probes in the helper
+// or the first arm never change the first intersection's term order.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)

@@ -821,6 +821,10 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
 // to an opaque symbol gives retail's reload (2, only that call's target and argument register differ). One storage
 // struct over g_4858c4 and g_485a58 with macros: no result, the compiler front end did not finish on the first two
 // including files. That lead needs another spelling and src/unknown_03f2b0.cpp's declaration.
+// Round 70 (lane 10, fast): 0x1bd50 storing four more distinct globals (diagnostic) 26, so the reload is not a
+// mod-set size limit; retail never takes 0x4858c4's address. Tried: the tag in a local for the tests 26; NULL and 1/0
+// spellings 26; a const shader pointer for the tests 26; the call's tag named after 0x1bd50 26; an early return 26.
+// The storage merge also needs src/unknown_03f2b0.cpp's declaration changed with the other declaring files.
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -4381,6 +4385,11 @@ long __stdcall function_3ddd0(long object_index);
 // struct with a levels member, element form / record pointer 46/46 (491 bytes); uninitialized slot declared at
 // the top / before / after the previous byte 1/1/1; one-byte element struct 1; pointer to a one-byte row 1; read
 // through a cast of the element address 1; slot as long 1. Original body restored.
+// Round 70 (lane 10): the SIB order follows how many locals the body references before `slot` (compile-only
+// screens, confirmed in --fast): 9 more probe locals anywhere before it give retail's [edi+eax] and a byte match,
+// 8 do not; probes after it, globals, temporaries, field accesses, parameters and an inlined helper's locals do not
+// count. Tried: named offset/range parts of the fraction 1; the definition test in a bool local 1; a distances
+// pointer for the copy 1; all three 1; a distances pointer for the test and the copy with the named parts 1.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
