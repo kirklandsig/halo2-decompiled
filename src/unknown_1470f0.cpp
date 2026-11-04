@@ -289,6 +289,9 @@ void *c_game_havok_memory::allocate16(long size, long memory_class)
 // Round 159 (fast): early return with each arm returning and the three-way macro on all ranges 43 (127 bytes); early return head only 8
 // (same code); allocator local shared by the first two arms 43 (127 bytes); third end `size + buffer` with the macro 43 (127 bytes);
 // fixed-memory local with the macro 34 (126 bytes); one bound local reassigned in the test 70 (151 bytes).
+// Round 137: distributed lower/upper tests 47, with equality first 48; equality outside the lower test 45;
+// bitwise upper tests 99; begin plus remaining extent 8; function-scope end 8; first/third receiver sharing 44;
+// first dispatch through one done exit 44. Original body restored.
 // @retail 0x147320
 void c_game_havok_memory::deallocate16(void *address, long size, long memory_class)
 {
