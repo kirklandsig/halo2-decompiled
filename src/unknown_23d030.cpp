@@ -426,6 +426,11 @@ extern byte g_51ec11;
 // rows' products commuted, j row / i row / k row each, 89/89/89 (same code); the projection scale as
 // `projection = (1.f - cosine) * projection` 118 (1326 bytes); the pitch sum written controls first 89 (same code).
 // Zero XMM3 and the side/up homes remain.
+// Lane 17 r42 (fast, with 0x23d790/0x23d030, both stay matched): `side` renamed `right` / `a_side` 89/89 (same code:
+// name order does not move the zero/side registers); the side normalized in matched 0x11d090's own form (j-first
+// length, `!(0.0001f > fabs)` scale, `else length = 0`, then the constant fallback) on this body 270 (1326 bytes);
+// the up vector through the existing cross3f(&side, &forward, &up) 137; a `forward` pointer for the side fill and the
+// up rows 248; that with the up rows staged into up_i/up_j/up_k and stored i, j, k 267. Body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

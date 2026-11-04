@@ -665,6 +665,14 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // for both tests 80 (512 bytes), as `long const &` 80; a plain `long const` for the first test only 67 (same code);
 // `long const &` for the first test written reference-left 64 (512 bytes: that pair runs candidate first but folds
 // `cmp eax, [esp + 0x30]` where retail reloads into ECX; the equality pair stays reference first).
+// Lane 17 r42 (fast with 0x91dd0, which stays matched; a compile-only /FAs screen without /GL reproduces the order):
+// the spreads in a `long spreads[2] = { candidate, reference }` initializer (the only plain spelling the screen queries
+// candidate first) 81, both pairs that way 82 (frame homes move); a named candidate spread with _ReadWriteBarrier()
+// (intrinsic) before the reference's query 67 (the pure query still moves); round 121's `long const &` lead with the
+// value copied to a plain local, first pair only, 64; both pairs that way as `if (a < b) goto improve;` then
+// `if (!(equal && cost)) continue;` 65 (aligned 6), with the cost written `candidate.cost() < reference->cost()` 65
+// (aligned 4: one real difference, the first pair compares `[esp+0x30]` from memory where retail reloads it into ECX);
+// the copy dropped or the reference's spread named too 65/65. Not kept: const-reference temporaries and the goto.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

@@ -1497,6 +1497,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // (same code); one close-handle local for the close test and argument 168 (946 bytes); `written = bytes_written ==
 // 0x800;` 107 (930 bytes, sete join); `bool written = resized;` cleared when the count differs 114. All restored: the 7
 // needs match-only forms.
+// Lane 17 r42 (fast; on round 53's 7 form, all match-only, body restored): reproduced at 7 (aligned 6: the write's
+// handle loaded after the flags zero, the checksum compare in EDX); the cache record's first member typed as the by-value
+// file handle (as unknown_2141f0.cpp declares the same global) with the view pointer from it, with `file->handle` at every
+// use, or only at the write: 161 each (917 bytes, the early file addressing changes); the write's handle read from the
+// indexed global 7; the header initializer returning its header and called in the write's buffer argument 7 (same code).
 // @retail 0x213970
 void function_213970(void)
 {
