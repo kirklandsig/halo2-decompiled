@@ -198,11 +198,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 	}
 }
 
-// score 18 (was 18): the texture-coordinate sums are computed at the first vertex and reused for
+// score 2 (was 18): the texture-coordinate sums are computed at the first vertex and reused for
 // the other three, and the colour is read through a pointer with the alpha as a byte; what is left
-// is that in the last quad's third and fourth vertices retail loads y into a register before it
-// adds the offset, where ours copies the offset and folds the load into the addition, and that
-// after the second reservation retail reloads the lower coordinate before the 16777215 constant.
+// is that after the second reservation retail reloads the lower coordinate before the 16777215
+// constant (0x254490 has the same swap, in the same evaluation-order direction). The last quad's
+// y sums now load y first, as retail does, through pointers to the point's two coordinates.
 // The pool address of the constant is masked by the check; only the order of the two loads differs.
 // Round 34 (lane A, machine 3): the y sums of the third and fourth vertices are folded by the
 // commutative-operand canonicalisation of the whole-program build: swapping their operand order
@@ -390,6 +390,14 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // move nothing: 18 each. The size as an if/else 18 (same code); computed before the third pass's
 // memset 525 (2270 bytes) or at the top 563 (2282 bytes); a point pointer local for the last quad 18;
 // a non-const point parameter (definition and the caller's declaration) 18.
+// Round 162 (lane 4, fast; the plain check agrees on the kept form): pointers to the point's x and y for the last
+// quad's four vertices 2 (kept; y alone 2, y and x in either declaration order 2, one pointer to both coordinates 18,
+// a const reference to y 2, y's pointer at the size or at the block head 2). Before it: 10-64 unused locals 18, the size
+// declared at the function or block top 18, y or x of the first vertex named 18, a const size 18. On the 2 form: named
+// upper and lower 380, named half 408, half, upper and lower 380, lower alone 390, upper alone 423, constant-first sum
+// or half 2, plain 2f calls 467, either or both 4f calls through the class 2, the scale through a pointer or reference
+// 408, the scale in a local 2, the half as `arg_1 / 2.f` 2, the lower as `-arg_1 * 0.5f + 0.5f` 2, a named depth
+// constant at the top or before Begin 2; a 600 s permuter run (53 tries), best 2.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
@@ -511,16 +519,18 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			g_484f68.PSFinalCombinerInputsEFG = 0x1800;
 			function_15180(&g_484f68);
 			real local_7 = g_4ba04c > 1 ? 32.f : 42.f;
+			real const *point_x = &arg_0->x;
+			real const *point_y = &arg_0->y;
 			function_1cf50();
 			D3DDevice_Begin(D3DPT_TRIANGLEFAN);
 			D3DDevice_SetVertexData2s(1, 0, 0);
-			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, arg_0->x - local_7, arg_0->y - local_7, 16777215.f, 16777215.f);
+			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, *point_x - local_7, *point_y - local_7, 16777215.f, 16777215.f);
 			D3DDevice_SetVertexData2s(1, 1, 0);
-			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, arg_0->x + local_7, arg_0->y - local_7, 16777215.f, 16777215.f);
+			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, *point_x + local_7, *point_y - local_7, 16777215.f, 16777215.f);
 			D3DDevice_SetVertexData2s(1, 1, 1);
-			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, arg_0->x + local_7, arg_0->y + local_7, 16777215.f, 16777215.f);
+			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, *point_x + local_7, *point_y + local_7, 16777215.f, 16777215.f);
 			D3DDevice_SetVertexData2s(1, 0, 1);
-			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, arg_0->x - local_7, arg_0->y + local_7, 16777215.f, 16777215.f);
+			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, *point_x - local_7, *point_y + local_7, 16777215.f, 16777215.f);
 			D3DDevice_End();
 			#pragma inline_depth(255)
 		}

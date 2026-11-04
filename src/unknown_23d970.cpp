@@ -795,6 +795,15 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // all seven nonempty families, 45 each; direct native saved-point member alone 45.
 // NOT kept: no gain. Right I/J colors, repeated forward K and ordinary-angle store
 // bases remain. Original record layouts, snapshots, products and complete body restored.
+// B417: Prior-up/normalized-direction/right last-consumer regions, seven subsets then complete
+// geometric workspace names: 45/45/45/45/45/45/45/45 at 1262/1261. Original body restored;
+// right i/j carriers, second-product forward.k reuse and ordinary-angle store bases remain.
+// B419: Native geometric-basis ownership of prior-up/normalized-forward/perpendicular-left,
+// seven role subsets then complete forward-setter graph: 70/77/45/70/70/77/70/249. NOT kept: grouped
+// workspace does not match. Original scalar/vector owners, helpers and complete body restored.
+// B423: Native reset-completion decision at the geometric branch, ready/waiting
+// bool/byte/short/long, 45 each at 1262/1261. NOT kept: no exact match;
+// original direct comparison, staged helper and complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

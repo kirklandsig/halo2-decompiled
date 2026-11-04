@@ -369,6 +369,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // the final loop's member count read through the element pointer local 1359 (6238); that with the magnitude form
 // 1390 (6211). Retail places the duplicate-contact search out of line after the impact loop (rotated, entered by a
 // forward jump when the list is non-empty); ours keeps it inline.
+// P312: Native value-input magnitude/first-normalizer/second-normalizer masks 1/2/4/3/5/6/7,
+// then immutable complete inputs: 1355/1357/1390/1357/1390/1410/1410/1410. NOT kept: no match;
+// original pointer kernels/captures restored. Second-normalizer values enlarge frame to 0x5dc.
 // Round 84 (m3 lane 9, fast control 1355): retail ends with `return a && b && c && d;` (two exits, `mov eax, 1` and
 // `xor eax, eax`, registers popped before the tests); that return alone gives retail's exact tail but 1366 (6252
 // bytes). Retail tests the impact list's count in the final loop's head, as impacts.cpp's sibling loop does (`for (i
@@ -379,6 +382,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // order) 1474 (6195 bytes). All restored.
 // DL260: Current-float complete dot/magnitude/second-normalizer product parts, seven subsets, then complete squared length: 1381/1415/1415/1394/1394/1387/1424/1395.
 // NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// F365: Vector-owned captured magnitude and paired normalizers, masks 1/2/4/3/5/6/7, then ordinary inline:
+// 1354/1354/1355/1354/1354/1354/1354/1354 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// F367: Complete pointer-boundary aggregate magnitude/first-normalizer/second-normalizer input captures, masks 1/2/4/3/5/6/7, then all via existing setter: 1608/1413/1395/1618/1569/1453/1641/1666. NOT kept: all regress and miss native storage/extent; original captures, private helpers, APIs and full body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
