@@ -3588,27 +3588,35 @@ long __stdcall function_c7160(long unit_index, short seat_index, long a, long ve
 
 /* throws away all the unit's grenades: outside mode 4 each one becomes a
    grenade object that is dropped (0xce470) */
-// score 148 (was 364): the 0xce470 drop is written out at the call site (retail has it inline). What differs is
-// frame 0xd0 versus 0xd8: retail keeps the type index (indexed count test) beside the stepped count pointer and
-// the offset, with the count base and grenade pointer spilled (five loop slots against our three).
+// score 49 (was 148): the 0xce470 drop is written out at the call site (retail has it inline). Round 3 of #1049: a
+// hand-stepped byte offset for the grenade pointer (grenade_offset += 0x2c) beside the stepped count pointer, with the
+// count tested through the unit by type index, keeps the type index apart from the count pointer: the compiler no longer
+// merges them, the frame is retail's 0xd8 and the size 423. Left: retail tests the loop on the offset (cmp ecx, 0x58)
+// where ours tests the type (cmp edx, 2), and its entry keeps the count base in EAX with the offset in ECX (ours puts the
+// base in ECX/EAX the other way round and the type in EDX). No behaviour difference found in a statement walk.
 // Tried: inline drop 364 (kept the call); pointer body step 364; indexed counts 364; entry placement 364;
 // with the inline drop: pointer or indexed counts, separate base plus stepped pointer, test by pointer and
 // decrement by index, all 148 (the compiler merges the index into the pointer); forced split count base 148;
-// forced body step 148.
+// forced body step 148. Round 3: test on the offset (offset < 0x58) in any spelling 146-148 (the type folds into the
+// count pointer again, 390-400 bytes); type or offset declared before the loop 146; short type with the offset test 54
+// (movsx where retail loads a dword); count < counts + 2 test 114; type and count tests together 107; unit lookup
+// or counts base declared in other orders 49-52.
 // @retail 0xceb30
 void __stdcall function_ceb30(long unit_index)
 {
-	char *count = UNIT_GET(unit_index)->grenade_counts;
+	s_unit *unit = UNIT_GET(unit_index);
+	char *count = unit->grenade_counts;
+	long grenade_offset = 0;
 
-	for (long type = 0; type < 2; type++, count++)
+	for (long type = 0; type < 2; type++, count++, grenade_offset += 0x2c)
 	{
 		byte *globals = (byte *)g_4e034c;
 
 		if (*(void **)(globals + 0x100))
 		{
-			byte *grenade = *(byte **)(globals + 0x104) + type * 0x2c;
+			byte *grenade = *(byte **)(globals + 0x104) + grenade_offset;
 
-			if (grenade && *count > 0)
+			if (grenade && unit->grenade_counts[type] > 0)
 			{
 				do
 				{
