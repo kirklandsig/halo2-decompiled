@@ -823,6 +823,10 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // the reload) still give BL 52, so a shared first body load is not what takes DL. In every form our
 // build never loads the fixed byte into the dying base register (ECX base -> DL, EDX/EAX base -> BL),
 // where retail does (`mov edx, [eax]; mov dl, [edx + 0x40]`).
+// Round 140 (c1C): the slot as a `hkRigidBody *volatile *` (diagnostic, not kept) gives retail's two separate body
+// loads and the late reload, but the byte still goes to BL (`mov edx,[eax]; mov bl,[edx+0x40]`, push ebx) 46,
+// 141 bytes: the byte register is not chosen by the base register dying, so source cannot reach DL here. Callers
+// pass the same registers as retail (index EAX, velocity ECX), so their setup is not the cause.
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -1606,6 +1610,11 @@ PRIVATE __forceinline real const &component_time_step()
 // `mulss xmm0, [mem]` with the scaled value in xmm0, but it is spilled across the power call (`mulss xmm0,
 // [esp+8]`, 160, 490 bytes); read after the exponent result 50; a constant multiplier also puts the scaled
 // value in xmm0. Retail loads the global right at the product, so its step read must rank earlier in another way.
+// Round 140 (c1C): retail's three extra instructions are only the memory operands: `mulss xmm0,[eax+4]` then
+// `add eax,4` (the step's address kept) and `movaps xmm7,xmm4; mulss xmm7,[eax]`; no statement is missing. Same
+// code (26, 470 bytes) for: product operands swapped, the step as a `real const *` local, the step read as
+// `g_510c54->rate` at the first product with the reference bound after it, the stop distance in a helper taking
+// the step by reference. Both products through a helper taking `&g_510c54->rate` 138 (462 bytes).
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -3283,6 +3292,11 @@ struct s_1cf531
 // as an __m128 with the product in a new vector 107 (frame 0x64, the copy forwarded from the scaled
 // vector), also with the copy in its own block 107; the surface components in named x/y/z locals
 // 27; the surface vector through havok_from_vector3d 27.
+// Round 140 (c1C): the corrected vector computed in place in the impulse, with the final product splat-first, in a
+// named splat, or after a no-op self-assignment: 46 (908 bytes; the reload after get_inverse_scale is a separate
+// hoisted load, retail folds it as `mulps xmm1,[esp+0x34]`); the early copy as an __m128 snapshot and the impulse
+// declared late: frame grows to 0x64+. Element as `data + index`, pointer arithmetic on bytes, or a long index
+// local: 27 (same code).
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
