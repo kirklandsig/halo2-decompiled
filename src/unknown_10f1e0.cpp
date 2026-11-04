@@ -1798,6 +1798,10 @@ bool __stdcall function_110ab0(long unit_index)
 // P327: Complete base/depletion/overlay true-false result producers, masks 1/2/4/3/5/6/7,
 // then all with result at entry: 465/430/450/465/465/430/465/465. NOT kept: 430
 // still has 424 code differences; only table/extent improves. Original full body restored.
+// Y599: Terminal first/second/both overlay decisions return directly, original/Boolean
+// overlay, then both with Boolean depletion: 450/560/560/466/567/567/575/581. NOT kept:
+// no verified native frame/result-join gain; original full body restored.
+// Best code prefix stays 424 differences; all frames remain eight versus twelve.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

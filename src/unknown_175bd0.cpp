@@ -2135,6 +2135,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // AC535: Positive tint/multiplication query results with false/true-default publication,
 // single queries then four pairs: 190/190/189/189/189/189/189/189 at 572 bytes. NOT kept:
 // all regress/lengthen; original complete body restored, early color/query/cursor homes remain.
+// Y599: Complete early color/direct-final-query graph with actual cursor, matrix and
+// spawn lexical-home priorities: 178/178/178/178/178/178/178/178. NOT kept: no exact
+// color/query home recovery; original complete body and observations restored.
+// Frame 0x44 recovers but all eight grow to 572/552 bytes; input-home reuse remains.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3314,6 +3318,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // AC535: Positive tint result with false/true default publication, bool/byte/short/long:
 // 113/112/117/116/113/112/117/116. NOT kept: all regress and lose matched caller
 // 0x176f60 (25); original full body restored, native frame and system/successor homes remain.
+// Y599: Incoming system handle advanced to saved successor, effect/system lookup order,
+// cached/live mode and direct/native node word: 120/120/128/128/117/117/124/124.
+// NOT kept: no exact residence/frame recovery; original full body restored.
+// Frames 0x48/0x50 versus 0x54; every form loses the exact update caller.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

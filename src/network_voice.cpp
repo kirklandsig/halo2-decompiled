@@ -3322,6 +3322,10 @@ struct s_voice_route_choice
 // ordinal/difference selection and bitwise/conditional radio: 393/1074/474/1083/
 // 430/1080/474/1081. NOT kept: native frame/entry fail and both callers lose;
 // original full body restored; stream-end forms suppress four-way expansion.
+// Y599: Fixed-base local range cursor, end inequality/equality, selected ordinal/pointer,
+// bitwise/conditional radio: 1090/468/1099/459/1157/530/1137/549. NOT kept: no verified exact
+// traversal/frame recovery; original complete body restored. Entry/cursor roles remain.
+// All lose both matched callers (13/14, seventh 19/23); native 0x54 frame also regresses.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

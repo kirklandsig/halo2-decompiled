@@ -432,6 +432,10 @@ public:
 // two invalid-link chains, two zero flag/age chains, then all four pairs: 54 each.
 // NOT kept: no exact initialization or allocation gain; original stores/body restored.
 // Native child preheader, pool/NONE ranks, allocation retest and salted index remain.
+// Y599: Nonnegative child visitation limit, long/int/dword/unsigned-int with
+// conditional/branch construction and equality ordinal: 108/161/108/161/108/161/108/161.
+// NOT kept: no exact child-preheader recovery; original complete body restored.
+// First differences retreat to +0x17/+0x1d; matching entry/viewer prefix is lost.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
