@@ -165,6 +165,10 @@ void c_widget::v15(c_widget *widget)
 // `following` local (the link, then the first sibling when NULL) 2; a guarded do-while with the if/else step
 // 35 (92 bytes); the base class's next_wrapped made an out-of-line function (plain check: LTCG keeps the
 // call, 74 at 53 bytes; 0x2c8f56 76).
+// Round 53 (m3 lane 15, fast): next_wrapped at the entry with a ternary step 35 (92 bytes); a ternary entry
+// with next_wrapped at the step 42 (90); the base helpers as `result = next; if (!result) result = first
+// sibling` 42 (90; the twins 42/44/44); the search in the loop condition with the focus after it 37 (94);
+// the step through a block-scoped `following` local 2.
 // @retail 0x22ebc3
 void c_widget::v16()
 {
@@ -252,6 +256,10 @@ void c_widget::v16()
 // else arm) 2; the eligibility read into a bool local 2; a for loop with `!= NULL` and a `continue` on the
 // ineligible widget 2. Diagnostic: `#pragma optimize("t", on)` 62 (the eligibility call is inlined). Retail's
 // copy-then-test heads follow iterator calls everywhere except these four widget walks.
+// Round 139: current declared in the condition 2; a base result converted in that condition 2; a const current
+// copied at the body's head 2; the step assigned in a do-while condition 2; a function-scope current assigned in
+// the while condition 2; the direct two-arm step with a condition-declared current 2; native base traversal and
+// calls with that condition 2; base entry/step with a derived condition value 2. Original body restored.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

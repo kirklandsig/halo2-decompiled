@@ -365,6 +365,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // DH332: Standard coordinate differences, seven subsets then reverse sphere traversal; reduced control 931:
 // 935/935/917/896/904/959/920/1022. NOT kept: lower previews grow frames away from 0x2cac; one joint gain has regressing parts. Full 882 retained.
 // Original complete body and contracts restored.
+// M371: Paired object/sphere ordered-radius overlap/exclusion truth in
+// bool/byte/short/long: eight 931 (reduced control 931; full 882). NOT kept:
+// byte-neutral decisions; original tests, qualifiers and complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1517,6 +1520,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // DH338: Existing normalizer early-zero/positive-first/zero-result/magnitude-result
 // 418/418/441/418; each with the planar setter 434. Setter forms raise the other
 // normalizer user 68 to 98/91; all restored, frame/radius/zero/metadata homes remain.
+// F370: Actual outer input/output/both cursors 448/516/487; input span advance 439;
+// output publication advance without/with input cursor 558/558; input for-latch
+// without/with output cursor 448/487. NOT kept: all regress; output cursors also
+// regress the checked caller. Original ordinal addressing and full body restored.
 // P315: Retained two-radius/pointer graph, existing complete data getter with all entry ordinal/emitted-count/fallback-result zero-lifetime subsets: 418/401/401/401/430/401/401/438.
 // P315: NOT kept: no byte match or supported gain; original full body restored.
 // P315: NOT kept: 401 places loop-zero stores above native availability/count guards; frame 0x114 and count BX remain.
@@ -1526,6 +1533,16 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // DH345: Native component-array displacement loops in direct/converted/both phases,
 // long then dword, complete short/word: 428/418/429/428/418/429/451/451. No gain;
 // original scalar producers, both radii, signed traversal and complete body restored.
+// F372: Existing two-use location address at entry/data/multi-step/traversal/step/
+// selected-step/corner-pair/pre-endpoint phases: 470/431/463/470/465/416/414/418.
+// NOT kept: two-/four-point leads below gate; original address phase and full body restored.
+// P325: Existing normalizer mutable/readonly squared-length results crossed with
+// magnitude/inverse entry declaration lifetimes all tie 418 (eight forms); every user stays calibrated.
+// NOT kept: no byte match for the one-use call-result intermediate. Original complete helper
+// and body restored; frame 0x114/0x10c and zero/count/metadata homes remain.
+// P328: Complete final squared-distance expression/compound/separate/partial reductions,
+// point then vector displacement: 418/418/418/418/418/418/418/418. Original body restored;
+// frame 0x114/0x10c, radius/zero/count and metadata/trace homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

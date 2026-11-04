@@ -1175,6 +1175,10 @@ done:
 // back inline); `found` tested after the lightmap call with `!found && !excluded` 182 at 428 (found arm after the
 // lightmap, jumped over; the flag still threads), that with found before lightmap 174, as else-if 182, the flag set by if 183;
 // for(;;) with breaks on the 112 form 144 (505 bytes).
+// N369: Pass-owned false-result initialization with independent availability,
+// generation and retry scopes, masks 0..7: 146/146/146/171/146/146/146/171.
+// NOT kept: all lose the matched caller (14), regress and miss native extent;
+// original entry-result lifetime, guards and complete body restored.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
