@@ -1794,6 +1794,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH354: Immutable component/velocity/contact-normal receiver bindings, seven
 // subsets and complete receiver identities: eight at 213. Original observations,
 // body and material-call graph restored; early motion/reset and cold arms remain.
+// DH356: Complete three-arm candidate-quality conditional, direct/named acceptance/rejection,
+// original/early material-speed skip: eight at 211. NOT kept: gain two; original full body
+// restored. Native motion/reset order, separate cold height tests and material expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

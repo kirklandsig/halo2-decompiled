@@ -2042,6 +2042,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // DH353: Slot-owned established/sentinel-owned visibility/complete retention arms,
 // subsets 1/2/4/3/5/6/7: 195/710/710/710/701/718/707; failure-first full graph 707.
 // NOT kept: no gain; original decisions, frame, observations and query calls restored.
+// DH356: Complete facing/distance/speed score-contribution producers, seven subsets,
+// then all zero lifetimes at the score region: 687/283/261/744/736/281/738/731.
+// NOT kept: one-use result forms regress; original full body restored; query remains exact.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

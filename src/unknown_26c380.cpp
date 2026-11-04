@@ -327,6 +327,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH351: Existing shared planar products at origin/first endpoint/second endpoint,
 // seven subsets, then complete immutable projection distance with unused overload removed:
 // 410 each. NOT kept: no gain; full/planar normal homes, frame and byte/output tails remain.
+// DH356: Planar components initialized before the full-normal magnitude consumer,
+// scalar/aggregate crossed with long/bool/byte/short success: 410/432/414/419 twice.
+// Original body restored; no independent normal homes or native frame recovered; all peers hold.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
