@@ -385,7 +385,6 @@ bool function_17ce60(void)
 long function_17cfa0(long first_index, long definition_index, short cluster_index, short decal_type, bool permanent)
 {
 	bool first = false;
-	long *first_index_reference = &first_index;
 	s_record_pool *decals = g_4ea950;
 	long decal_index = record_pool_allocate(decals);
 
@@ -394,10 +393,10 @@ long function_17cfa0(long first_index, long definition_index, short cluster_inde
 		s_decal_datum *decal = DECAL(decal_index);
 
 		decal->definition_index = definition_index;
-		if ((*first_index_reference) != NONE)
+		if (first_index != NONE)
 		{
-			decal->first_index = (*first_index_reference);
-			if (DECAL((*first_index_reference))->flag0)
+			decal->first_index = first_index;
+			if (DECAL(first_index)->flag0)
 			{
 				decal->flag0 = true;
 				g_4ea94c->fading_count++;
