@@ -1793,6 +1793,9 @@ void function_b7360(long object_index);
 // B420: Existing completion receives secondary/primary/recording validations,
 // subsets 1/2/4/3/5/6/7, then all as short: 301/301/301/479/301/301/479/526.
 // NOT kept: no exact match; original complete body restored.
+// B423: Both bounded orientation/recording slot admissions classified as valid/invalid
+// bool/byte/short/long, 301 each at 1824/1848. NOT kept: no exact match;
+// original word tests, slot publications, case graph and complete body restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2335,6 +2338,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B420: Complete structured outcome gates the post-dispatch continuation,
 // completed/pending in bool/byte/short/long: 766/766/726/718/694/694/672/668.
 // NOT kept: no exact match; original complete body restored.
+// B423: Both nearest-candidate/selected-target range admissions classified as in/out
+// bool/byte/short/long, 469 each at 2400/2396. NOT kept: no exact match;
+// original thresholds, squared sums, iterator, publications and full body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

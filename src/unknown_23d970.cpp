@@ -797,6 +797,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // B419: Native geometric-basis ownership of prior-up/normalized-forward/perpendicular-left,
 // seven role subsets then complete forward-setter graph: 70/77/45/70/70/77/70/249. NOT kept: grouped
 // workspace does not match. Original scalar/vector owners, helpers and complete body restored.
+// B423: Native reset-completion decision at the geometric branch, ready/waiting
+// bool/byte/short/long, 45 each at 1262/1261. NOT kept: no exact match;
+// original direct comparison, staged helper and complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

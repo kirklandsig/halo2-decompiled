@@ -355,6 +355,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // bounded traversal (excluding fields/fields): 360/360/357/361/361/357/361/361
 // (fast control 336, full 324). NOT kept: all regress; original component operations
 // and full body restored. Entry ESI, unit/reciprocal and accumulation schedules remain.
+// B423: Complete zero-direction construction decision, positive/complementary
+// bool/byte/short/long results, 343 each at 1898/1892 (reduced control 336/1885).
+// NOT kept: no exact match; original direct decision and complete body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
