@@ -628,6 +628,11 @@ PRIVATE __forceinline void function_2417a1(s_marker_entry const *arg_0, long arg
 // declared first in its block 2; dx and dy declared before the copy 2; `continue` on a failed marker test 2 (all
 // three identical). The compile-only harness schedules this block differently (fld before the z load), so it is no
 // guide here. Original body restored.
+// Round 108: both squares named before accumulation 8; only the x square named 2; only the y square named,
+// or assigned in the accumulation expression, 8; a two-use other-z local 23; the inner copy through memcpy 2;
+// the inner getter/structure copy 2; the existing three-component setter 176 (716 bytes); reversed second-sum
+// operands 2; getter/structure copies for both points 2; both z differences named after the distance 108 (694 bytes).
+// The named y square moves the z store to retail's position but changes the x87 operations. All forms restored.
 // @retail 0x243c00
 void function_243c00(long slot)
 {

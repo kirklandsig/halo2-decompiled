@@ -748,6 +748,14 @@ bool sound_driver_voice_create_buffer(
 // B422: Complementary playback with the original positive spatial predicate, bool/byte/short/long,
 // playback-first then spatial-first: 154/154/150/125/153/153/153/154. NOT kept: no byte match; all regress.
 // Original complete body restored; spatial/play carriers and descriptor zero/input homes remain.
+// B426: Zero-extended word/dword count bits with signed capacity/index/publication
+// uses, short/long result and playback/spatial-first producers: 71/182/158/158/159/182/158/158.
+// NOT kept: no byte match; original signed index, result, SDK phases and body restored.
+// B428: Complete routing-pair tables with memcpy first/spatial/both 212/181/242,
+// memmove first/spatial/both 247/224/294, both with spatial-first modes 250/294.
+// NOT kept: no exact match; tables shorten away from retail and regress. Original
+// arrays, direct stores and full body restored; spatial/play and zero/input homes remain.
+// Both playback-first complete-table forms also lose 0x191420 by one instruction.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
@@ -904,6 +912,9 @@ extern "C" void _ReadWriteBarrier(void);
 // Compile-only (decibels stay in ecx, the truncated value in edx): a decibels local, with a pointer `__assume` before the
 // call's block; locals for either or both of the first two volumes; the barrier ahead of the second store; `__assume` after
 // each of the first two stores; the attenuation through a local.
+// Round 105: the memset result as a multi-use environment pointer 182 (667); clearing from lDirect 21;
+// both voice HF conversions before attenuation 127 (679), obstruction only / occlusion only 96/96 (672);
+// nine explicit aggregate zeros 96 (662); const attenuation / const room 21/21. Original body restored.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

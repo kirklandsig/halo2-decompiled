@@ -18,6 +18,14 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax B (11-04): no lower score; the new forms tried and dropped are the flags and mode
+// placements, the width and height limit types and the mode's own block, all worse or identical.
+// score 174 (was 178): the far plane's near distance goes into a named local so the three
+// point components share one load; the mode bit still loads the flags into edx where retail
+// uses eax, and the size stays in a register across the rounding calls where retail reloads it.
+// score 178 (was 197): the width is rounded before the height, the overflow fix-up compares
+// the width against the height the other way round and the near-plane distance is read from
+// the tag; the mode bit still loads the flags into edx where retail uses eax.
 // score 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
 // MiniMax lane E (11-01): no new form, no lower score.
 // Earlier: the mode bit loads the flags into edx where retail uses eax, so
@@ -215,12 +223,12 @@ void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
         (maximum - 128.0f) * g_485a34 + 128.0f;
     if (size < 128.0f) size = 128.0f;
     else if (size > maximum) size = maximum;
-    long height = (function_48e70(size * aspect) + 63) & ~63;
     long width = (function_48e70(size / aspect) + 63) & ~63;
+    long height = (function_48e70(size * aspect) + 63) & ~63;
     if (width * height > max_width * max_height)
     {
-        if (height > width) height = (max_width * max_height / width) & ~63;
-        else width = (max_width * max_height / height) & ~63;
+        if (width > height) width = (max_width * max_height / height) & ~63;
+        else height = (max_width * max_height / width) & ~63;
     }
     g_485a47 = (byte)mode;
     g_51f3c8[1][0] = 0;
@@ -269,13 +277,14 @@ void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
     plane->j *= 100.0f;
     plane->k *= 100.0f;
     plane->d *= -100.0f;
-    real lower = *(real const *)(tag + 0x2c);
-    real upper = *(real const *)(tag + 0x30);
-    real scale = upper > lower ? 1.0f / (upper - lower) : 1000.0f;
+    real scale = *(real const *)(tag + 0x30) > *(real const *)(tag + 0x2c)
+        ? 1.0f / (*(real const *)(tag + 0x30) - *(real const *)(tag + 0x2c))
+        : 1000.0f;
     plane = (plane3f *)&g_4c9798[20];
-    point.x = direction.i * lower + origin.x;
-    point.y = direction.j * lower + origin.y;
-    point.z = direction.k * lower + origin.z;
+    real near_distance = *(real const *)(tag + 0x2c);
+    point.x = direction.i * near_distance + origin.x;
+    point.y = direction.j * near_distance + origin.y;
+    point.z = direction.k * near_distance + origin.z;
     normal = direction;
     plane->n = normal;
     plane->d = dot3f(&normal, (vector3f const *)&point);

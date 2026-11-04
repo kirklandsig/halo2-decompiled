@@ -70,6 +70,10 @@ struct s_emitter_248340
 // Round 87 (m3 lane 12, fast, all without the volatile; caller 0x247140 138 in each): a compiler barrier between
 // the two queries 27; the group query inline in the call 27; tag, group and call in an inner block 27; a dword
 // tag 27; the emitter decrement as `field_02 = field_02 - 1` 27. `register` parameters do not compile here.
+// Round 139: a named particle field with a plain tag 27 (caller 138), with the existing volatile 4;
+// a plain tag with an initial lookup local, a guard-query local, the group declared before it, the definition
+// index at function scope, or a const definition index 27 each (caller 138); a plain tag with a const emitter
+// pointer 27 (caller 137). Original declaration and body restored.
 // @retail 0x248340
 void function_248340(s_particle_system_datum *system, s_object_246eb0 *particle,
 	s_emitter_248340 *emitter)

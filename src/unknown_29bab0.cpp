@@ -269,6 +269,10 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // DH345: Direct-input complete direction results: logical/conditional admission and
 // equality/inequality side completion, eight graphs 776/814/813/822/783/811/800/757.
 // All regress; original input storage, decisions, helpers and complete body restored.
+// DH348: Direct-input immutable initial/planar magnitudes, half-span, lateral radius,
+// side width, response reciprocal, complete residuals and correction distance: eight at
+// 804/3499, frame 0x8c. Original input storage and body restored; early input/object/
+// heading retention and normalizer memory products remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
