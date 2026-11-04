@@ -262,6 +262,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 57 (m3 lane 13, fast): the normalizer's products as i*inv, j*inv, inv*k 110 (same code); `transform4x3f
 // local_1[6]` declared before `local_0` 110; the normalizer returning the length, both pointers taken after the two
 // calls 110; the header normalize3d for forward only 233 (839 bytes); the projection rows in k, j, i order 110.
+// J249: Complete normalizer vector results, pointer/reference/value inputs with published
+// matrix axes 501/501/501, or local axis values 541/541/541; in-place value results
+// 110/349. NOT kept: no match or gain; aggregate ownership expands frame/length except
+// the 110 tie. Original helper/body restored; late forward-k and reciprocal carriers remain.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

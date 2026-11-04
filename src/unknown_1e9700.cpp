@@ -358,6 +358,12 @@ struct s_object_damage_view
 // Round 390: External amount-field identity after timestamp acceptance, original/whole
 // record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
 // Original body restored; scalar homes, amount-biased cursor and attribution remain.
+// J249: Existing recorded-event byte/streak long/final-event long/paired first two contracts
+// 354/354/355/353. Final-event long loses matched 0x1ea770 (19). NOT kept: paired contracts
+// lower the streak provider 107 -> 76 but replace its native byte flag-home store with a
+// full-width flag test. Coherent long/word caller event carriers with the streak contract,
+// without/with the recorded-event byte formal: 423/423/453/453; all lose matched 0xd9640 (61).
+// Original body, code domains and every provider restored; scalar homes and biased cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

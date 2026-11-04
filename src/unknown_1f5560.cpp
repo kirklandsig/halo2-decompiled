@@ -994,6 +994,10 @@ real normalize2d(point2f *v);
 // J247: Native request-point/direction/facing memcpy subsets on the retained 3D graph:
 // 135/135/135/135/135/135/135; all three memmove 234 (873 bytes, frame 0x54).
 // NOT kept: no gain; original complete body restored. AL/DL force-result and return homes remain.
+// J249: Coordinated long/dword force formals, original/complete OR producers with
+// assigned/terminal request results 141/256/186/255 and 141/256/186/255.
+// NOT kept: all regress; OR forms lose a matched caller, and full-width input differs
+// from native byte admission. Original Boolean formal/body and both declarations restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
