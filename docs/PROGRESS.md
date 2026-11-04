@@ -2,6 +2,46 @@
 
 The newest entry comes first.
 
+## 2026-11-04: 10399 functions match
+
+```
+matched 10399 of 11326 game functions (1893553 of 2786206 bytes, 67.96%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @coldspear's #1048: closer scores and notes, no new match.
+
+## 2026-11-03: 10399 functions match
+
+```
+matched 10399 of 11326 game functions (1893553 of 2786206 bytes, 67.96%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @coldspear's #1047: closer scores and notes, no new match.
+
+## 2026-11-03: 10399 functions match
+
+```
+matched 10399 of 11326 game functions (1893553 of 2786206 bytes, 67.96%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @alosec's #1009: closer scores and notes, no new match.
+
+## 2026-11-03: 10399 functions match
+
+```
+matched 10399 of 11326 game functions (1893553 of 2786206 bytes, 67.96%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
+- @alosec's #1008: closer scores and notes, no new match.
+
 ## 2026-11-03: 10399 functions match
 
 ```
