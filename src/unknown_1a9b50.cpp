@@ -582,6 +582,9 @@ extern point2f *g_468778;
 // 375/375/413; actor-first direct completion 393; metadata-owned admission and
 // single failure-result join 374/374; direct request direction 375; every-use facing
 // 401. NOT kept: best gain 1 and no exact match; original getter, include set and body restored.
+// AC516: Actual request-submission call result, bool/byte/short/long at its producer
+// or with the request-owned uninitialized declaration: 375/375/375/375/375/375/375/375.
+// NOT kept: one-use call-result storage unmatched; original call, state stores and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -948,6 +951,9 @@ static __forceinline long real_to_long(real value);
 // DH322: Sequential magnitude/query speed, prediction/flight duration and limit/direction distance,
 // seven subsets then entry declarations: 384/445/382/446/384/445/446/446. NOT kept:
 // storage nonmatches; original scalar lifetimes/body restored, early exit and query homes remain.
+// AC516: Complete post-query planar-facing admission, bool/byte/short/long at computation
+// or with the direction-workspace declaration: 382/382/382/382/382/382/382/382.
+// NOT kept: one-use predicate storage unmatched; original gate, query aliases and complete body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

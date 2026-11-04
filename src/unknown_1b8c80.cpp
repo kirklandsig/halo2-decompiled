@@ -1561,6 +1561,9 @@ void function_1f86a0(long actor_index);
 // direct nested-member observations full/payload 189/238; native member with positive
 // admission 134, early declaration 137, late full/payload receiver 233/233.
 // NOT kept: no exact match or qualifying gain; original types, payload and body restored.
+// AC516: Complete raw matching identity mask across root calls, byte/word/dword/long,
+// native slot-member payload first in each pair: 139/139/251/251/248/248/248/248.
+// NOT kept: assigned mask does not match; original Boolean, payload and complete body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
