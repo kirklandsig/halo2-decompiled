@@ -240,6 +240,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // outer `if` around the record tests 43 (same code); the machine-local test on the high xuid dword
 // (`xuid[1] >> 16`) 71 (110 bytes, both callers lose); the machine-local test as a 64-bit mask compare 44; as a
 // `(word)` of the shifted xuid 49.
+// Round 50 (m3 lane 2, fast, with 0x1a303b/0x2b393c; al = aligned count, this body's 30 by the same count): two iterate-helper expansions around the loop: a for loop with early returns 64 (134 bytes,
+// al 59, callers 17/29), with result/break 56 (139, al 37, callers 17/74); `while (entry && !result)` 83 (150, al 51, callers 3/76); a guarded do-while 56 (139, al 37, callers 17/74). The helper's NULL stays
+// a live value and its test is not threaded away. Per-pass result with a successor local 59 (135, al 40), with the successor carried and copied to an inner index at the top 59 (135, al 32:
+// flags and high identity dword as retail, next in EDX and low dword in EBX where retail has them the other way round); the successor read through the table, then the iterator store and the entry, then the entry
+// and the iterator store, or after the entry, 62/62/62 (138, al 28, callers keep): next in EBX, flags in ECX, identity in EDX:ECX, mask in AL as retail, the index still in ECX through `lea esi` and the head still padded.
+// Lead: retail's index, its product and the entry are one web in ESI, so the successor stays apart; the back-edge `mov esi, ebx; jmp` looks like a tail-merged copy of the entry computation.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

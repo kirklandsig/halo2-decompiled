@@ -3474,6 +3474,16 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // seven subsets, then all with the skip-state role name: 31 each at 4828 bytes.
 // Original parameter symbols restored; selector scheduling, post-bias reload
 // order and six quantizer inputs in shift rather than clip home remain.
+// Round 50 (m3 lane 2, fast; not kept, body restored at 31): round 137's shared function-scope value repeated without its macro: assigned before each call of the
+// by-value or by-reference helper 19/19 (the helper's parameter does not keep modes one to three in shift's home once its argument is that value); per-expansion block-scope
+// values by reference 31. On that base: the four selector/split orders, all 24, wari 18, wria 939 (aligned 15), awri 19, iwar 23, iawr 23, others 231..976; input or alpha typed dword,
+// short, byte, char on wria 939/939, 934/477, 945/960, 945/960, on wrai alpha 19/958/957/957; small typed byte/char/long on wria 939/939/496, on wrai 19/19/1179; a named bool or byte selector
+// copy at three positions 939/939/939 (forward-substituted), alpha first 19/19; selector and split force-inline helpers, flag parameter first or second, or selectors alone, 939 with
+// input first, 19 with alpha first; declarations apart from assignments in whole, input, fraction, alpha order 976 in six declaration orders; gain as one expression, two statements over
+// the ratio, or one expression plus the span 95/19/95, a separate 1.0f start 19; the span named ahead of the gain in both/zero/one modes 837/51/53, the span term first 118; span or
+// shared value declared at the top, before the maximum or after the inverse distance 19; small set after the switch with wria 31 (aligned 6: only that store's place and the two reload
+// pairs differ, the selector block is exact); that store right before the switch, after low or after the inverse distance 998/997/996 (aligned 24), declared after high or the inverse
+// distance 998/996; a false-valued local before the switch copied after it 31 (constant-propagated). Any store before the switch loses retail's `mov cl, [small]`.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

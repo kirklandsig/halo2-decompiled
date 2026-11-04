@@ -181,6 +181,14 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void *arg_2,
 // projection accumulator 2; effect-table pointer in case 9/10/both 2/2/2 (NOT kept: one-use
 // locals without a match); explicit fraction truncation 2; result declared last/middle 2/2.
 // Opening helper graph and complete body restored; the same two case-12 operands differ.
+// Round 50 (m3 lane 2, fast): a private dot helper in term orders j,i,k k,j,i j,k,i i,k,j k,i,j i,j,k with either argument
+// order 2 each (same code: a plain sum's source order never moves it); a cast-product sum 2; accumulated statements in that helper
+// k,j,i 4 (retail's order, but the j and i terms' sides stay reversed), k+j then i 4, k then j+i 2, i,j,k 5, i,k,j 3; the same
+// accumulated k,j,i written in the case 67, a written sum with casts 68; a helper over the camera's forward taking only the direction,
+// sum/accumulated in k,j,i k,i,j j,k,i i,j,k 65/67, 65/65, 65/68, 65/68; a forward pointer local with sum/accumulated 12/12, 12/13, 12/12,
+// 12/13 (global operand first in all three products, and case 13's registers move); a whole-camera pointer in case 12 10, in case 13 65,
+// both 65, at function scope 65; those through an inline camera getter 65/65; a camera-parameter dot helper in case 12 10.
+// Diagnostic, not kept: 1 to 24 extra initialized dead locals at the head never move case 12 on this form (8-10 add a third difference).
 // @retail 0x248df0
 real function_248df0(long arg_0, void *arg_1, void *arg_2, void const *arg_3)
 {

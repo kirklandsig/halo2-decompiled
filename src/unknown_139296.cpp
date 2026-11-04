@@ -1255,6 +1255,12 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // output in the parameter's own home 118; one element pointer or colour buffer at function scope 118/118;
 // offset-compared do without naming the count in the guard 1; an index counted in a rotated `for` over the
 // count, in later loops or all three, with explicit or `i < count` first loops (SSI SIS SII JSI JIS JII III) 118 each.
+// Round 50 (m3 lane 2, fast, with 0x13a532): all three loops indexed through per-block inline element getters (plain or
+// force-inline) 118/118; all sibling or all indexed with the draw result stored as the failed value 118/118, ignored 120/120, as a
+// ternary 166/166; all sibling with the flag typed byte/char/signed char/short/word/long/dword/unsigned long 125/125/122/136/136/135/135/135;
+// the flag declared after the masks or after the setup call 123/127; split from its initial value 123; compared with `== false` 118.
+// Diagnostic, not kept: all sibling and all indexed behave alike, one/two/three masks uninitialised 119/111/123, with retail's loops from the first.
+// 0x13a532 keeps the zero with the same ten uses, so what lowers the count here is still unknown.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

@@ -412,6 +412,9 @@ struct s_surface_object_header
 // object 8; no object local 8; list and owner locals in the other cases 8; the value read as one sum 8. Diagnostic: a
 // region defined before the object read with a second use gives retail's `lea edx` for the record, because it then
 // overlaps the record's range; a one-use region is substituted back to its use however it is spelled.
+// Round 50 (m3 lane 2, fast): the whole of case 3/4 as a helper of (object index, surface index) returning the test, force-inline with
+// `if (!helper) result = false;` 86, with `result = helper;` 22 (the block keeps these colours), plain inline 168/156; the value test
+// as a helper of (object, position) force-inline 8 (same colours), plain inline 125.
 /* the first argument is the caller's shape owner (or its object reference); the body
    never reads it, but every retail caller still computes it before the call */
 // @retail 0x1ef3e0
