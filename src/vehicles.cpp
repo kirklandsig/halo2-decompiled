@@ -4768,6 +4768,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // B445: Actual recognized-name return on direct-active graph, failure/success defaults in
 // bool/byte/short/long: 790/757/752/752/749/774/764/761. NOT kept: ties or regressions; whole body restored.
 // Frame 0x18 agrees; native entry definition and zero/result/one residence remain.
+// B447: Complete dispatch/normalization boundary, caller/provider entry receiver,
+// pointer/reference scalar outputs: forced inline 1034/1034/1034/1034; ordinary
+// inline 3616/3616/3597/3597. NOT kept: entry/later lookups still merge; forced
+// forms shorten to 2700 bytes and ordinary providers stay called. Original full
+// body restored; native zero/result/one and definition ownership remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5334,6 +5339,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // B445: Discarded query-output workspace reused by drift/side-input/both-axis producer
 // subsets, then late angular acceleration: 1087/1087/1096/1107/1085/1064/1066/1066. NOT kept: unsupported combined workspace
 // ownership; 1064 is 5104 bytes, 1066 is 5107, with frame still 0xf8. Whole body restored.
+// B447: Complete orientation/tensor/torque/spin boundary, state/torque pointer
+// and reference contracts: forced inline 1087/1087/1087/1087; ordinary inline
+// 3746/3746/3746/3746. NOT kept: forced forms retain frame 0xf8; ordinary
+// providers stay called, frame 0x94. Original complete body restored; native
+// frame 0xd8, handle/offset and matrix/vector ownership remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

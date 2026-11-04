@@ -3312,6 +3312,10 @@ struct s_voice_route_choice
 // Y579: One-based visitation with original/one-based selection, element receiver
 // and bitwise/conditional radio: 427/376/427/369/371/390/371/390.
 // NOT kept: no gain; cursor/entry repair fails despite three retail-length forms. Original body restored.
+// B447: Whole ordered scan provider with headset/nearest/radio/all-output completion,
+// forced inline 363/363/363/363; ordinary inline 1347/1344/1343/1339. NOT kept:
+// no exact match; ordinary providers suppress native expansion and stay called.
+// Original complete body restored; talker/zero, cursor and priority merge remain.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

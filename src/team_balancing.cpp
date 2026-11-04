@@ -1098,6 +1098,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // endpoints, original excess 67/66/66/66; expression excess 70/69/69/69.
 // NOT kept: all regress and grow to 196/198 versus native 190 bytes; original
 // combined scan, assignment fill, clamp, includes and full body restored.
+// B447: Complete copy/maximum/fill boundary, pointer/actual-array reference,
+// forced inline consuming total 34/34, returning computed total 71/71; ordinary
+// inline 144/144/143/143. NOT kept: no exact match; ordinary providers stay called.
+// Original complete body restored; frame/count/fill-value and clamp roles remain.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

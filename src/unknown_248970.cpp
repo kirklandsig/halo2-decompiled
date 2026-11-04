@@ -432,6 +432,11 @@ public:
 // two invalid-link chains, two zero flag/age chains, then all four pairs: 54 each.
 // NOT kept: no exact initialization or allocation gain; original stores/body restored.
 // Native child preheader, pool/NONE ranks, allocation retest and salted index remain.
+// B447: Complete child traversal/allocation/link/update boundary, location/metadata
+// pointer/reference receivers: forced inline 58/58/58/58; ordinary inline
+// 505/505/505/505. NOT kept: forced forms disturb the matching viewer x87
+// schedule; ordinary providers stay called. Original full body restored;
+// child preheader, pool/NONE, allocation retest and salted index remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
