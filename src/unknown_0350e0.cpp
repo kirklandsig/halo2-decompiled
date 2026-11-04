@@ -2329,6 +2329,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // Round 64 (fast): only motion[1]'s product and the count compare differ (their 3 bytes are the length gap). Motion record
 // struct 40; group struct 40; both 40; while loop 40; normalize_inline 48; `*(long *)group > i` 40; motion[7] from
 // motion[1] 137; pointer local to motion[1] 40; byte-offset stores of motion[0]/motion[2] 40; vector3f view pointer 40.
+// M360: Explicit entry/motion/both byte displacements 55/57/45; entry/motion/both
+// declared before the group 55/57/45; both at entry 78; both stepped at derivation 253.
+// Original body restored; second normalized product and post-fstp count fold remain.
 // P311: Complete independent normalization receiver, native/library/component captures with native/library publication:
 // P311: 322/322/322/322/307/307; native/library capture with full component publication 311/311.
 // P311: NOT kept: all regress and grow beyond retail. Original in-place helper and body restored; product fold and final count split remain.
@@ -2620,6 +2623,9 @@ s_cached_input_list g_5234e8[4];
 // view declared before count 109; shape declared before index 109; object read before the definition
 // 109; the loop bound read from g_547f98 at each test 140 (551 bytes); output[count] written at each
 // store instead of the result pointer 109.
+// M360: Branch-owned view clamps 147/147/158/144 fast (control 147); with the
+// once-read source list 136/136/149/148. First clamp/list form plain 132 versus
+// baseline 113, restored; frame/list/output allocation remains. NOT kept: no full gain.
 // P311: Native external source/object-slot layouts and complete existing position setter, subsets 1/2/4/3/5/6/7:
 // P311: 146/146/156/146/156/156/156, fast control 146 versus full 113; complete graph with list snapshot 157.
 // P311: NOT kept: no calibrated gain; setter/list forms shrink away from retail. Original body restored; frame and register homes remain.
@@ -2999,6 +3005,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // then all with the divisor loop: 548/542/547/549/565/580/593/579. All regress and
 // shorten away from retail; original scalars, vector statements, helpers and body restored.
 // Frame 0x60 versus 0x38 and stored-velocity/projection homes remain.
+// M365: Existing projection helper with scalar pointer/reference/returned-x/returned-y outputs,
+// original rows then parallel row accumulation: 600/600/596/595/600/600/595/595.
+// NOT kept: all regress and shorten to 1920-1925/2035 bytes. Original helper and complete
+// body restored; frame, stored-velocity acquisition and projection/loop homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3704,6 +3714,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // spill homes stay x 4 / z 8 / radius 0xc / -radius 0x10 where retail has x 4 / radius 8 / -radius 0xc / z 0x10;
 // on that: corner helper locals renamed three ways 225/225/225 (names move no slot), offsets passed by value
 // 400 (1805 bytes), offset declared first 225, colour declared at function scope 225.
+// M360: Four independent corner points at geometry/matrix/producer/entry scopes
+// 410/410/410/410; all with native color 377/377/377/377. Original array and body
+// restored; native radius/zero homes and the color-sized frame gap remain.
 // P311: Existing device member color/position/UV API families on native color, subsets 1/2/4/3/5/6/7:
 // P311: 225/382/225/382/225/376/376; all member families with scalar alpha 394.
 // P311: NOT kept: six-point forms grow to 1826; native-length 376 regresses. Original APIs, color and full body restored; frame/scalar homes remain.

@@ -1757,6 +1757,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // or the later copy read directly 709/709 (same code); online_logon_connected() 729 (2862 bytes, aligned 343). Retail's
 // `mov ecx, 0; cmovne ecx, eax` is one line shorter than ours, so every later line shifts: the slot test needs
 // /arch:SSE (a file-flag decision), and the positional count cannot fall far before that.
+// M366: Shared initial-pass clear/availability/fallback ordinals, pairwise/all lifetimes:
+// signed 709/709/709/709, unsigned 729/709/729/729. NOT kept: no exact cursor-home repair;
+// original independent ordinals and full body restored; initial cursor/slot and later homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

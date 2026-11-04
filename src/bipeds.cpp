@@ -2444,6 +2444,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // six fresh subsets, complete native selected short and complete native getter graph:
 // 63/63/63/63/63/63/67/75. NOT kept: no qualifying native repair; complete original body restored;
 // extra EBP, count/body transport and flag stores remain.
+// M366: Direct lower/upper body admission without selected sentinel, long/short/char/read-only-long,
+// combined/nested query: 70/64/65/70/70/64/65/70. NOT kept: no exact/native-sentinel repair;
+// original full body restored; extra EBP, count/body transport and flag schedules remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3229,6 +3232,14 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // P320: 587 lengthens 2733 to 2748 against retail 2712, and only the complete
 // P320: combination gains while its parts regress. Original complete body restored;
 // P320: result/flight scalar homes and vector scheduling remain.
+// M362: Existing yaw cross ordinary/staged 600/600; complete indexed yaw
+// publication with original/ordinary/staged cross 617/617/617; existing
+// scale/add-scaled with ordinary/staged cross 600/600; weighted staged cross
+// and existing sum 605 (reduced control 600, full 561). NOT kept: no gain;
+// original yaw helper, flight/result homes and complete body restored.
+// M364: Original early-return changed result in char/signed-
+// char/byte/short/word/int/long/dword storage: 610/610/610/623/623/625/625/625. NOT kept: no
+// native result-byte/flight-home match; original result domain and complete body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4344,6 +4355,13 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // P320: immutable ijk/kij and early dot storage on the indexed graph 145/145/145.
 // P320: NOT kept: no exact producer/home repair. Original helper and complete body
 // P320: restored; normalization SIMD ranks, trig homes and rotation/basis carriers remain.
+// M362: Existing rotation owns cosine/sine/both from real then double angle formals,
+// 227/200/227/237/190/236; both float trig producers in that graph 228/235.
+// NOT kept: native once-computed coefficients and frame are lost; no exact match.
+// Original helper contract, coefficient lifetimes and complete body restored.
+// M364: Complete parallel projection scalar input captures, axis/vector/both in both
+// declaration priorities, mutable then const: 175/190/177/177/175/190/177/177. NOT kept: one-
+// use captures do not match; normalization SIMD ranks and trig/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -5304,6 +5322,13 @@ void __stdcall function_b8600(long object_index, long unknown);
 // P320: 588 plain at 2271/2190 bytes; native direct byte mask and +0x5e prefix
 // P320: agree. No other measurement changes. Other forms restored; tag/state/
 // P320: animation homes, byte results and completion-call expansion remain.
+// M362: Existing grabbing predicate helper with bool/byte/char/short/word/int/long/dword
+// result domains 715/715/715/710/710/706/706/706 (fast control 655, full 648).
+// NOT kept: helper-result storage lengthens the body and regresses; native homes
+// and completion expansion remain. Original predicate and complete body restored.
+// M364: Original multi-use still call result in char/signed-
+// char/byte/short/word/int/long/dword storage: 683/683/683/688/688/685/685/685. NOT kept: no
+// native truth-byte/animation-home match; original result domain and complete body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

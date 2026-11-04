@@ -591,6 +591,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // B415: Full validation byte in byte/word/long/dword storage, at the test then bare entry declaration:
 // B415: 49/49/49/49/49/49/49/49. NOT kept: one-use field storage does not match. Original validity result,
 // B415: virtual calls and complete body restored; false BL and independent header lookups remain.
+// M363: Actual input-info and both repeated virtual-argument formal lexical roles,
+// seven subsets, then all with complete incoming roles:
+// 49/49/49/49/49/49/49/49. NOT kept: no eligible byte match or native-supported closer.
+// Original complete body restored; false BL, temporary EBP and independent header/object lookup remain.
+// M367: Complete output/index/result declarations split from original assignments,
+// six ranks then coherent names at both endpoint ranks: 49 each at 176/176 bytes.
+// NOT kept: no byte match; original initialized declarations and complete body restored.
+// False BL, temporary EBP and independent header/object computations remain.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
