@@ -356,6 +356,9 @@ struct s_24e9c7_bounds
 // rejection-first/success-first arm masks: 186/186/186/186/186/186/186/186. NOT kept: all grow
 // to 748 bytes at frame 0x48; original entry zero/full body restored.
 // Early across spill, eight-byte-high scalar homes and SSE scheduling remain.
+// B445: Complete opacity producer at global-copy/corner/reverse/side/upper/width/height/basis boundaries:
+// 139/173/172/185/166/171/171/172. NOT kept: moved one-use producers do not match; original whole body restored.
+// Early across spill and eight-byte-high scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -584,6 +584,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // N367: Capacity-owned link eligibility reused for surface work, expression bool/byte/short/long
 // 286/286/290/289; branch producers 359/359/370/366. NOT kept: no equality or gain; original predicates,
 // flags and indexed memcpy restored. Extra frame word, predecessor and flag homes remain.
+// B445: Actual signed link capacity consumed at successful copy, long/short totals,
+// indexed/advancing receivers and consumption after/before memcpy: 331/331/344/350/359/335/344/350.
+// NOT kept: all regress; original total, limits, memcpy and body restored. Frame/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

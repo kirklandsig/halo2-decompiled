@@ -4765,6 +4765,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P326: Selected-velocity blend/reverse speed and limit/combined speed-turn scalar
 // declarations before dispatch, subsets 1..7, then all before object lookup: 749 each.
 // Initializers stayed at case producers. NOT kept: no gain; original body and SSE homes remain.
+// B445: Actual recognized-name return on direct-active graph, failure/success defaults in
+// bool/byte/short/long: 790/757/752/752/749/774/764/761. NOT kept: ties or regressions; whole body restored.
+// Frame 0x18 agrees; native entry definition and zero/result/one residence remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5328,6 +5331,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // F376: Existing drift/side dot and spin-squared-length boundaries, subsets 1/2/4/3/5/6/7,
 // then complete projection dot: 1086/1087/1087/1086/1087/1087/1087/1087. NOT kept: one-point
 // lead grows to 5104/5094; frame stays 0xf8/0xd8. Original complete body and helpers restored.
+// B445: Discarded query-output workspace reused by drift/side-input/both-axis producer
+// subsets, then late angular acceleration: 1087/1087/1096/1107/1085/1064/1066/1066. NOT kept: unsupported combined workspace
+// ownership; 1064 is 5104 bytes, 1066 is 5107, with frame still 0xf8. Whole body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
