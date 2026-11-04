@@ -382,15 +382,27 @@ static __forceinline solver_projection_31c940 project_linear_axis(solver_linear_
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b, __m128 const &axis_linear)
 {
 	__m128 relative = _mm_sub_ps(a->linear, b->linear);
-	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(b->angular, row->b));
-	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, axis_linear)));
+	// Retain the three contributions before reducing the projected velocity.
+	__m128 projection_contribution[3] =
+	{
+		_mm_mul_ps(a->angular, row->a),
+		_mm_mul_ps(b->angular, row->b),
+		_mm_mul_ps(relative, axis_linear)
+	};
+	__m128 angular = _mm_add_ps(projection_contribution[0], projection_contribution[1]);
+	return sum_three_projection(_mm_add_ps(angular, projection_contribution[2]));
 }
 
 static __forceinline solver_projection_31c940 project_second_pair_second_row(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, __m128 const &linear_b, __m128 const &angular_b, __m128 const &axis_linear)
 {
 	__m128 relative = _mm_sub_ps(a->linear, linear_b);
-	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(angular_b, row->b));
+	__m128 projection_contribution[2] =
+	{
+		_mm_mul_ps(a->angular, row->a),
+		_mm_mul_ps(angular_b, row->b)
+	};
+	__m128 angular = _mm_add_ps(projection_contribution[0], projection_contribution[1]);
 	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, axis_linear)));
 }
 
