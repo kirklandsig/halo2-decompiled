@@ -365,6 +365,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // DH332: Standard coordinate differences, seven subsets then reverse sphere traversal; reduced control 931:
 // 935/935/917/896/904/959/920/1022. NOT kept: lower previews grow frames away from 0x2cac; one joint gain has regressing parts. Full 882 retained.
 // Original complete body and contracts restored.
+// M371: Paired object/sphere ordered-radius overlap/exclusion truth in
+// bool/byte/short/long: eight 931 (reduced control 931; full 882). NOT kept:
+// byte-neutral decisions; original tests, qualifiers and complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1536,6 +1539,13 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // F379: Actual emission/continuation departure-limit outcomes, bool/byte/short/long,
 // positive/complementary 456/456/456/456/456/456/456/456. NOT kept: regressions; original
 // whole body restored, frame 0x114 versus 0x10c and zero/radius/metadata homes remain.
+// P325: Existing normalizer mutable/readonly squared-length results crossed with
+// magnitude/inverse entry declaration lifetimes all tie 418 (eight forms); every user stays calibrated.
+// NOT kept: no byte match for the one-use call-result intermediate. Original complete helper
+// and body restored; frame 0x114/0x10c and zero/count/metadata homes remain.
+// P328: Complete final squared-distance expression/compound/separate/partial reductions,
+// point then vector displacement: 418/418/418/418/418/418/418/418. Original body restored;
+// frame 0x114/0x10c, radius/zero/count and metadata/trace homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

@@ -398,6 +398,9 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // or half 2, plain 2f calls 467, either or both 4f calls through the class 2, the scale through a pointer or reference
 // 408, the scale in a local 2, the half as `arg_1 / 2.f` 2, the lower as `-arg_1 * 0.5f + 0.5f` 2, a named depth
 // constant at the top or before Begin 2; a 600 s permuter run (53 tries), best 2.
+// N369: Complete endpoint compound upper/lower/shared-half producer subsets 346 each;
+// native two-coordinate compound output 343. NOT kept: no equality and extent grows;
+// original two-reload body restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

@@ -73,6 +73,8 @@ void function_1d6ad0(s_havok_component *arg_0, s_physics_model_owner *arg_1);
 // result and body-count zero stores moved up to the clear 194 (696 bytes); clear ahead of the section
 // call 17; second loop bound read through the node-list local 59; first body slot passed as the bare
 // array 9.
+// Round 88 (plain): `do {} while (false);` after the section call 9, after the node list local 9, after the clear 9;
+// first update written as `local_0 <= local_1` 9; first loop as a while 9.
 // @retail 0x1d5940
 long __stdcall function_1d5940(s_havok_component *arg_0, bool arg_1, bool arg_2, bool arg_3)
 {

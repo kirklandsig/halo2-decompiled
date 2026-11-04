@@ -1063,6 +1063,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // DH328: Existing staged force-inline cross at disabled/flying/ground subsets
 // 436/473/429/436/431/479/431; shared staged cross at every remaining site 431.
 // NOT kept: four/two-point leads fall below threshold; length regresses or ties. Full body restored.
+// M371: Existing coordinate-difference helper at history input/anchor/relative,
+// subsets 1/2/4/3/5/6/7, then all with general raw delta: 423/433/435/423/435/441/441/465.
+// NOT kept: 423 shortens farther from retail (3034/3047); remaining forms tie or regress.
+// Original whole body and helpers restored; damping and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1800,6 +1804,12 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // F378: Cold unsupported-contact eligibility isolated after supported admission, accept then reject
 // bool/byte/short/long: 207/207/207/207/207/207/207/207. NOT kept: one-use decisions remain unmatched;
 // original observations, magnitude, reset/selection graph and both material call sites restored.
+// DH354: Immutable component/velocity/contact-normal receiver bindings, seven
+// subsets and complete receiver identities: eight at 213. Original observations,
+// body and material-call graph restored; early motion/reset and cold arms remain.
+// DH356: Complete three-arm candidate-quality conditional, direct/named acceptance/rejection,
+// original/early material-speed skip: eight at 211. NOT kept: gain two; original full body
+// restored. Native motion/reset order, separate cold height tests and material expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

@@ -1010,10 +1010,16 @@ extern long *g_51e9cc;
 // coordinated initializer inline contract alone 42. All helper users unchanged.
 // NOT kept: seven-point flag gain is below the gate; field receiver misses.
 // Original body/contracts restored; lookup address and crouch/contact schedules remain.
+// P322: Actual lookup initialization result bool/byte/short/long at consumer
+// then lookup-scope declarations: 42 each. NOT kept: one-use result misses equality;
+// lookup receiver rematerialization and crouch/contact schedules remain. Full body restored.
 // DL259: Native contact key/surface/fallback-geometry field subsets 1/2/4/3/5/6/7:
 // 42 each; real shared lookup/getter prefix base with implicit conversion 42.
 // Original record views, declarations and complete body restored; lookup receiver
 // retention and crouch/contact schedules remain.
+// M372: Actual contact point/normal/final-position CRT memcpy transfers, seven site
+// subsets: 42 each; complete memmove 108 at 1462/1481 bytes. Original aggregate
+// transfers and complete body restored; lookup receiver and crouch/contact schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1488,6 +1494,14 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Native frame 0xfc recovers; real captures grow to 2832 bytes, double stays 2828.
 // NOT kept: one-use field capture and type-dependent allocation require equality;
 // the six-point 579 form also misses the gain threshold. Original full body restored.
+// P322: Actual grounded-call result bool/byte/short/long, consumer then entry declarations:
+// 456/567/610/611/456/567/610/611. Bool recovers frame 0xfc and 2828 bytes; NOT kept:
+// one-use call-result transport needs equality. Original whole body restored; material,
+// airborne and animation homes remain on the retained graph.
+// P324: Plain actual-component loops for all velocity defaults, selected facing and
+// target-position input, masks 1-7: 820/800/895/659/820/800/957; complete target
+// advance loop 617. NOT kept: all regress and grow beyond retail length; original
+// native copies, row expressions and complete body restored. Shared helpers unchanged.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2021,6 +2035,9 @@ void function_dfd70(long arg_159e6d)
 // F375: Default stance-query standing/crouch returns, bool/byte/short/long:
 // 233/233/233/233/233/233/233/233. Complementary forms also raise shared users.
 // NOT kept: no byte match; original helpers restored, mode-three/basis/ray homes remain.
+// P321: Initial zero/one crouch with ternary/complete/crouch-default/zero-default
+// switch results: 233/233/252/233/233/233/264/234. NOT kept: no gain;
+// crouch-default and zero-default also raise shared users. Helpers restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2918,6 +2935,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // M346: Returned-result ownership across every existing exit, with actual case-one success
 // at admission, bool/byte/char/signed-char/short/word/int/long: 530 each. No common-exit
 // rewrite; all retain frame 0x44 and 1834/1908 bytes. Original body restored.
+// M369: Existing centroid/hit transfers, native/memcpy/memmove pairs except native/native:
+// 530/528/530/530/528/514/514/512. NOT kept: two-point leads fail the gate; seed memmove
+// adds a CRT call absent from the native three-word inline copy; original transfers/body restored.
 // DL259: Progressive actual impulse completion at both normalizers,
 // bool/byte/char/signed-char/short/word/int/long: 530/530/530/530/530/530/530/530.
 // NOT kept: no native result/frame repair; original result, scans and body restored.
@@ -3601,10 +3621,17 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // P302: Existing pivot-helper actual matrix/input/output references, seven subsets then forced-inline
 // complete reference graph: 368/368/368/368/368/368/368/368. All tie; original pointer contracts/helper/body restored;
 // native matrix/origin and paired pivot/property homes remain.
+// M369: Completion-owned common matrix setter, bool/byte/short/long, original/entry default:
+// 406/403/400/401/406/403/400/401. NOT kept: all regress and shorten away from retail;
+// original result, admission and publication restored; matrix/origin and paired pivot homes remain.
 // DL259: Existing pivot helper point/matrix/returned-point value ownership,
 // seven subsets then immutable point input: 853/866/858/823/817/820/781/781.
 // NOT kept: native aggregate contracts miss byte equality. Original helper and
 // complete body restored; matrix/origin and paired pivot/property homes remain.
+// M372: Origin/matrix/false-result declarations at function entry, seven
+// subsets then all with the original collision declared at entry: 368 each.
+// Original declarations and complete body restored; native matrix/origin and
+// paired pivot/property homes remain; frame 0x12c still agrees.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4377,6 +4404,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // M364: Complete parallel projection scalar input captures, axis/vector/both in both
 // declaration priorities, mutable then const: 175/190/177/177/175/190/177/177. NOT kept: one-
 // use captures do not match; normalization SIMD ranks and trig/basis homes remain.
+// M372: Row-local cosine/projection/cross product parts inside the existing
+// publication loop, seven subsets then complete immutable parts:
+// 179/176/196/154/181/170/190/190. NOT kept: all regress; original twice-used helper
+// and body restored; normalization SIMD and trigonometric/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4920,6 +4951,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // F375: Existing relative/kick/actor-ground producers, seven subsets then complete raw library copies:
 // 143/68/68/68/143/70/143/143 on the state-call/dot graph. NOT kept: no byte match.
 // Original body restored; native support/result byte homes remain, exact callers survive.
+// P321: Query directly into velocity/relative, record/CRT copy, actor/query-bound
+// success on the recovered state-call/dot graph: 150/150/148/148/136/136/135/135.
+// NOT kept: all regress and shorten to 671/683; full body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -5348,6 +5382,12 @@ void __stdcall function_b8600(long object_index, long unknown);
 // carriers: 594/594/594/581/581/578/578/578 (fast control 594, full 588).
 // NOT kept: wider carriers retain the result in EDI/DI rather than retail
 // byte storage; original bool, predicate and complete body restored.
+// DH350: Common returned result, call-owned/test-owned bool/byte/short/long
+// on the native entry-bit graph: 594/645/608/604/611/602/623/624 (fast control
+// 594, full 588). NOT kept: no match or gain; original early/final returns restored.
+// DH354: Native branch-produced early still, original direct exits and entry-bit graph;
+// bool/char/signed-char/byte/short/word/int/long: 660/667/667/667/674/674/677/677. NOT kept: no match.
+// Body restored; truth-byte, tag/state/animation homes and completion expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

@@ -560,6 +560,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // F379: Guarded large/small-query dispatch outcomes, bool/byte/short/long,
 // 182/182/182/182/182/182/182/182. NOT kept: ties; original complete body restored,
 // entry/index spill and center/query/bound homes remain at the native 0x1094 frame.
+// AC530: Bound-only ordered intersection/separation results in byte/char/short/long, keeping
+// both original marking sites: eight 182s. NOT kept: no equality or gain; original comparison
+// and full body restored. Entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

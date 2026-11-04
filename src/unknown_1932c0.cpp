@@ -967,6 +967,9 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // null result 3; the page count in a named local 3; the result by a ternary on the write 3. Compile-only: the reader's stores take retail's order
 // only when they are not volatile and still survive, and only an asm reference to the local does that (banned steer); a pointer, a reference,
 // memset, a union, an array, `__assume`, `__noop` or a `T *` parameter of an inner reader all drop the stores.
+// Round 109: unnamed parameter 3; explicit unused-parameter statement 3; direct result initialization 3;
+// direct allocation initialization 3; explicit null-return else 98 (237 bytes); double-negated write test 3;
+// write test against zero 3; explicit false assignment in the write's else 47 (250). Opening body restored.
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {

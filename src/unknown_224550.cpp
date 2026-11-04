@@ -403,6 +403,12 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // F378: Interpolation-admission outcome at frame-fraction production, positive then complementary
 // bool/byte/short/long: 284/284/284/284/285/285/285/211. NOT kept: one-use decisions remain unmatched,
 // exchanged tint/secondary-UV homes persist and other forms grow; original complete body restored.
+// B429: Native lower-clamp comparison results in bool/byte/short/long 211/211/211/211;
+// paired lower/upper outcomes 579/579/636/628. NOT kept: one-use result forms
+// do not match; original tint/UV homes, complete loop and alias-safe captures restored.
+// M375: Native secondary encoded-UV library transfers, object/array/bounds/encoder-result,
+// memcpy then memmove: 211/211/211/211/366/366/366/366. NOT kept: no byte match or native home repair;
+// original whole callback, encoder result contract and all alias-safe input captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
