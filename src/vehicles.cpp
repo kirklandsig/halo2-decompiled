@@ -617,6 +617,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // and forced inline, then both with bulk fallback copy or float root: 126 each.
 // Original helper, callers and complete body restored; velocity-copy receivers,
 // early unity SIMD residence and later angular x87/SSE homes remain.
+// P329: Reused speed/heading-weight/angle declarations, six orders then reciprocal scope/role names:
+// 126/126/126/126/126/126/126/126. NOT kept: no byte match; original complete body restored.
+// Velocity-copy receivers and unity SIMD/x87 homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3804,6 +3807,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // transfers and original/shared subtraction: 271/271/271/271/257/252/257/252.
 // NOT kept: all regress, grow the native one-word frame to 0x10/0x14 and lengthen
 // code. Original workspace, shared helpers, precision and complete body restored.
+// P329: Projection/axis/up receiver identities, seven subsets then both vector declarations:
+// 136/136/136/136/136/136/136/136. NOT kept: no byte match; original complete body restored.
+// Projection/cross operand ranks and angle/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

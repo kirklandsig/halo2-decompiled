@@ -1947,6 +1947,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // B421: Shared three-consumer options admission bool/byte/short/long, positive/
 // complementary results 310/310/321/308/310/310/321/308. NOT kept: all regress
 // and exceed retail length; original pointer tests, queries and complete body restored.
+// P329: Equipment/grenade/unit receiver identities, seven subsets then actor identity:
+// 251/251/251/251/251/251/251/251. NOT kept: no byte match; original complete body restored.
+// Actor/options and retained-pool homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
