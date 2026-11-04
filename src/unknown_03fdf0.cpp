@@ -495,6 +495,10 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 127: const first, selection, index, entry pointer, weight, shape, material index and
 // geometry pointer 2 each; the first spill remains in the retired mode-parameter home.
 // Original body restored.
+// Round 52 (m3 lane 15, fast): the selection as if / else if / else statements 2 (same code); the selection
+// computed at the block top before first 167 (491 bytes); mode read once through its address for the selection 2
+// (the indirection folds); entry declared at the block top before first 2; n declared at the block top 2; a 600 s
+// permuter run (44 tries) none below 2. The cursor and first still share mode's home (no range conflict).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
