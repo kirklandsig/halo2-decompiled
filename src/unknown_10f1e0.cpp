@@ -554,6 +554,19 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // still called out of line), with `inline` on its definition instead (diagnostic, plain check too) 216,
 // 0x1253d0 unchanged at 3; each arm's iterator stores before its graph lookup 110 (523 bytes); `found`
 // declared before the loop 37 (same code); the mask test written out with bit_vector_set 42 (545 bytes).
+// Round 209 (m3 lane 3, fast; masked = difflib count with branch targets masked, baseline 25): with the
+// mask test (bit_vector_test, 42, masked 19) everything matches retail except the back-edge reload order
+// and the second lookup, where ours loads target_index into ECX ahead of the pushes (retail: EAX after
+// them); that one register choice also shifts the 0x1d90e0 setup's scratch registers and gives the
+// mask-first load/OR/store set. Lead: the mask test with the pair's target name as a two-use local
+// (`long target_name = iterator->b;` for the pair test and the second lookup) 49 at 539 bytes, masked 12:
+// the set is then retail's fused `or [eax], edx` and the 0x1d90e0 setup is retail's exactly; left are
+// the name held in ESI across the first lookup (retail reads it into EAX for the test and re-reads
+// [ebp + 4] before the second lookup, one instruction more) and the back-edge reload order. Tried: the
+// existing bit_vector_fill with a prototype identical to its definition 213 (still out of line, 466 B); a
+// forceinline copy of it (diagnostic) 42, so an inlined fill does not give the fused set (the 0x12afc0
+// lead is closed); with the mask test a byte `found` 42, each arm breaking on its own call 42, the source
+// name as a two-use local 48 (both names 51); unused initialised locals at four positions (probes) 42.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1498,6 +1511,15 @@ long function_cbd50(long unit_index, short weapon_index);
 // query on the global, 349 (1302 B); with both weapon-object lookups through it 349; plus the if-form
 // depletion 325 (frame four, the three flags at retail's +0x11..+0x13, unit not re-derived, data in EDI);
 // with the controlling field tested directly 325; with the overlay read at its switch 346 (1264 B).
+// Round 209 (m3 lane 3, fast; masked = difflib count over the listing with branch targets masked, baseline
+// 85): the pool's data as a headers local at entry used for both weapon-object counts, if-form depletion and
+// a bool result 349 [65] (round 77's form: the first query then re-derives the unit through the headers
+// copy as retail does); the headers local scoped to the controlled block 341 [72]; the depletion written
+// through a pointer to it 349 (identical code: the address is resolved before allocation, so it is not
+// what reloads the data in retail's second query); interruptible declared before depleted 351 [57]
+// (depleted then in BL and interruptible in memory, as in retail; left: no memory home for depleted's
+// initial false, retail's controlling field in EBX, the second query's fresh data load, result slot);
+// the controlling field tested directly 351 (same code); with a byte result 322 [65].
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1742,6 +1764,17 @@ bool __stdcall function_110ab0(long unit_index)
 // 0x600008c as `result = interruptible;` then an inner switch with no default 451; the state name read
 // into a local at entry 530 (1865 B); the overlay read into a local at entry 464 (1793 B, but the unit
 // index then arrives in EDI); a headers local for the unit, first slot and both weapon lookups 476.
+// Round 209 (m3 lane 3, fast; masked = difflib count with branch targets masked, baseline 217): retail
+// also keeps the result in DL (`mov al, dl` at the exits) and re-reads `requested` from its stack slot at
+// every use, where ours holds `requested` in EDI and builds the result in AL. Tried: the pool's data as a
+// headers local for both weapon counts with the parameter kept on the stack as in 0x110ab0 (address local
+// plus the volatile read at the 0xc7070 call; a volatile diagnostic, not keepable) 454 (1793 B, masked 212;
+// the first query then re-derives the unit; callers unchanged); that with `bool result = true;` and no
+// state-switch default 480 (1801 B); that
+// with interruptible declared before depleted 456; the headers local with `controlling` read before the
+// control/state pointers 482 (unit index in ECX, ret 8; 0x10ff40 157, 0x111650 673); `result` declared
+// first 450 (same code). A local record holding the three flags (diagnostic on 0x110ab0) is scalar-replaced
+// with no memory home, so retail's flag homes are not an aggregate's.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -1961,7 +1994,7 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
-// score 776 (was 790): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
+// score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // (0x1cb490) out of line at five sites and expands only the final animation_10c start, ours expands the
 // overlay loop's call. At entry retail also loads an otherwise unused render-model tag into a stack slot.
 // Earlier at 790: frame 0xcc versus 0xd4 and first angle expansion remain. At entry retail also
@@ -2125,6 +2158,15 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // g_4687c4 856; definition looked up right after the unit 795. On 776: id copied inside the index test
 // 842; final slot test inverted with arms swapped 776 (same code); overlay loop as `for` 869 (first
 // 0x11df30 inlined as retail, frame 0xc8); `for` with the id inside the test 873; ratio `0.5f + 0.5f * x` 776.
+// Round 209 (m3 lane 3, fast; masked = difflib count with branch targets masked, baseline 423): retail's
+// call list differs from ours only in the first 0x11df30 (inlined in retail) and the overlay loop's
+// channel_play (inlined two levels deep in ours, a call in retail); retail's dead entry store of the render
+// model's tag shares its frame slot with the overlay loop's `id`, whose own store is dead too. Tried: `id`
+// declared before the loop 776 (same code); named unit fields for +0x168/+0x18c/+0x208/+0x212/+0x288 776
+// (same code); `for` loop with the id copied inside the index test and the projection reading its input in
+// place 928 (3312 B, frame 0xb8, masked 420: the first 0x11df30 inlines but the loop's channel_play stays
+// inlined); the aiming channels renamed to sort after `channel` 776 (same code); both vector2f values
+// declared together after the basis vectors 776 (same code).
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -2879,6 +2921,16 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
 // the existing vector3d_from_points3d for the node offset 699. Retail also re-tests the state's frozen bit
 // before each channel update (ours drops it as already tested) and threads each block's frozen exit to the
 // end; the four-block pattern is the same knowledge difference as in 0x113980.
+// Round 209 (m3 lane 3, fast with the six queue functions and both callers; masked = difflib count with
+// branch targets masked, baseline 333): no pointer to 0x111650 exists in the retail image, so its
+// all-stack convention is LTCG's own choice. Retail holds the control pointer in ESI through the opening
+// block and re-reads both parameters from their stack homes at each use; ours receives the request
+// pointer in EAX and keeps it in ESI. Tried: the request through a const reference to the parameter
+// (ret 8; a parameter-address form, keepable only with a match) with the +8/+9 flags read as bools 684 (callers 0xdd360 224 -> 223, 0xefde0 565 -> 562); the
+// reference with the threaded channel-clear test `((local_5 == 0x7000101 && unknown7c == 0x400000c) ||
+// local_5 == 0x400000c)` 665 (callers 223/562; the request is still loaded into ESI at entry); all three
+// 692; bool flags with the threaded test 698; the definition pointer computed second with the threaded
+// test 685. BLOCKED-BY 0xe6a20 (contributor) and 0xe6b00 (held file) as before.
 // @retail 0x111650
 bool __stdcall function_111650(long arg_0, long *arg_1)
 {
@@ -3291,6 +3343,12 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // Round 65 (m3 lane 1, plain): overlay initialised to NULL at its declaration 46; `*flag = false` after the
 // three table reads 65; the action short in the innermost else block 44 (same code); the force flag in the
 // set block 46, with the action short there too 46. The 0xe70b0 two-byte return still waits on held files.
+// Round 209 (m3 lane 3, fast with all six queue functions; a fast check of this address alone builds it
+// differently, 204-218 for any edit): still BLOCKED-BY 0xe70b0 (its file was held again). Tried: the
+// e4050 test's header byte read through the object-header struct 44 (same code); the overlay-busy test
+// on the bit field without TEST_FIELD_BIT 204 (681 B); `mode != NONE` tested before the parent/seat test
+// 97; the definition as the typed definition struct with fields at +0x108/+0x110 44 (same code); the
+// overlay pointer declared with the entry pointers 44 (same code).
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)
