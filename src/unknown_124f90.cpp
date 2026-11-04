@@ -2934,6 +2934,9 @@ static inline short sound_voice_find_available_channel(char type)
 // N379: Existing finder produces admission plus the narrowed channel; selected-local, direct-output,
 // found-return and exhaustion-result forms with byte/bool body results: 96/96/130/134/113/113/129/104.
 // NOT kept: ties or regressions; private finder signature, saved byte result and complete body restored.
+// N381: Existing finder receives native voice/member pointer or reference, byte/Boolean body result:
+// 125/125/128/128/105/105/128/128. NOT kept: no byte match; original private input,
+// signed scan, byte result, status/error calls and complete body restored. Frame/result/failure joins remain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3855,6 +3858,9 @@ struct s_128ca0
 // N379: Incoming parameter owns raw and processed gain through both submissions; nested, sequential,
 // native-real and mixed sums 223/223/312/269; with coherent twice-used scale 273/273/299/246.
 // NOT kept: all regress; original parameter lifetime, gain homes, packet, helpers and body restored.
+// N381: Existing incoming gain-value contract with scalar/member/operator/parameter-owned raw sums,
+// without/with coherent scale: 222/306/275/275/277/295/287/287. NOT kept: no byte match;
+// original incoming type, caller, gain homes, helpers and entire body restored. Frame and pin joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

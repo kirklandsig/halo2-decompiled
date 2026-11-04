@@ -292,6 +292,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N379: Existing tokenizer tail through delimiter-span producer, accumulated/explicit/selected/
 // end-tested outputs, original/zero read count: 217/223/262/217/211/216/254/211. NOT kept: alternate library
 // boundary does not recover native EBP/clamp homes; original tokenizer and loader restored.
+// N381: Existing tokenizer returns complete token/cursor pair by direct/named/default-member/factory
+// production, original/zero read count: 275/232/250/181/274/219/253/233. NOT kept: no byte match,
+// larger frame and changed extent; original scalar outputs, tokenizer, read/wait and entire loader restored.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

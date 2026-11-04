@@ -3829,6 +3829,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // before/after geometry, without/with native color: 368/368/453/453/382/382/465/465.
 // NOT kept: no equality; scalar-color frames recover 0xe0 but grow, native color
 // grows the frame again. Original helper, point array, scalar alpha and body restored.
+// N381: Complete alpha-first color aggregate, writable/readonly and direct/parameter-owned fade,
+// original/three-use negative radius: 225/225/225/225/379/379/379/379. NOT kept: six-point gains
+// grow to 1826/1819; native-length forms regress. Original scalar alpha, radius, helper and body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
