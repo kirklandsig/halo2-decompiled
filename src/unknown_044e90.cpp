@@ -266,6 +266,9 @@ struct s_visibility_bound_record
 // Y576: Descriptor-count six-plane do traversal, long/short/word/byte ordinals
 // 425/438/438/457; ordinary while 465/463/463/464. NOT kept: all regress;
 // native entry/table and plane/query homes remain. Original fixed-six traversal and body restored.
+// Y578: Actual mutable visibility-word reference at part/admission, direct/shared test/set/both
+// consumers relative to that word: 406/432/441/449/406/436/441/449. NOT kept: native
+// element ownership does not match; helper forms grow. Original bit mask, observations and body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

@@ -855,6 +855,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Y576: One shared current/next/transition channel ordinal, long/short/word/byte
 // 265/754/754/754; also owning RGB tint 265/756/756/756. NOT kept: long forms
 // canonicalize; narrow forms disrupt unrolling. Original frame 0xa8 and scalar/spill homes remain.
+// Y578: Actual V interval in existing bounds, field/aggregate/native/library publication
+// at producer/entry storage: 267/267/573/573/267/651/573/573. NOT kept: interval
+// residence misses equality; native-frame copy forms grow. Original separate scalars and body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
