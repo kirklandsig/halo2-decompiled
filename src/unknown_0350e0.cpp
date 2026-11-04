@@ -2379,6 +2379,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // NOT kept: no byte equality; reverse order differs from native i/j/k, narrow loops
 // roll, and unsigned-domain source selection adds no supported shared repair.
 // Original shared header and full body restored; post-fstp count split remains.
+// M385: Complete shared scale compound accumulators, factor/input ownership, phased/interleaved
+// producers and existing setter publication: 27/27/27/27/27/27/27/27. NOT kept: no product-fold
+// repair or byte equality; original shared scaler restored, native frame and final count fold preserved.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2698,6 +2701,9 @@ s_cached_input_list g_5234e8[4];
 // the retained list snapshot: 147/147/147/147/136/136/136/136 fast (control 147, full 113).
 // NOT kept: no exact result-home repair; reduced-only list lead is not a full gain.
 // Original complete body restored; native list/frame and output/index ownership remain.
+// M385: Twice-used final state receiver after view/total or entry declarations, without/with
+// retained list: 153/153/153/153/140/139/140/139 (fast control 147, full 113). NOT kept: early receiver
+// multiply is absent in retail and 532/533-byte extents move away; original complete body restored.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3088,6 +3094,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // P328: Complete double speed-squared expression/compound/separate/partial reductions,
 // original named root then root at the comparison: 486/486/486/486/497/486/486/486. Original body
 // restored; frame 0x60/0x38 and stored-velocity/projection homes remain.
+// M385: Actual loop old-point receiver advanced in place, native/library/setter/initializer
+// captures with direct/existing scaled-add updates: 535/556/535/556/495/558/570/570.
+// NOT kept: all regress and shorten away from retail; original point receivers and full body restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
