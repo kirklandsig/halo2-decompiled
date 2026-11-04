@@ -260,6 +260,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // DH321: Direct-input ordinary inline declarations for existing mode/query/trace/response/turn/
 // direction/transform/velocity providers individually: 804/804/804/804/804/804/804/804. All declarations,
 // input storage, arithmetic helpers and complete executable body restored.
+// DH342: Existing vector component arrays throughout normalization/projection/body,
+// seven subsets 750/750/807/750/807/807/807; all plus marker point components 807.
+// Original fields, parameter storage, helpers and body restored; early input/heading and norm homes remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

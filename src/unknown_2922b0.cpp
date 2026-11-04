@@ -322,6 +322,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
 // then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
 // executable body and helpers restored; success/input/minimum/hit homes remain.
+// DH342: Shared lower-first root/output clamps and real root API, seven subsets
+// 618/626/618/626/618/626/626; all with real rotation trig API 624.
+// Original scalar producers, observations and body restored; success/input/minimum/hit homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

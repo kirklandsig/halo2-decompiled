@@ -286,6 +286,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // retail recomputes both); the pass-start point and endpoint `short` (retail compares the endpoint as a word)
 // 432 (frame 0x68), the pass-start alone 424. Retail keeps the per-pass found flag in the arg_2 slot (0x80).
 // Original body restored.
+// DH342: Immutable existing squared-delta/length-delta/metric-result producers,
+// seven subsets and all with the immutable candidate record index: eight at 390.
+// Original declarations and body restored; default/root/bitmap/endpoint homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

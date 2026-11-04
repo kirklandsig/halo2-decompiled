@@ -676,6 +676,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // code); the register parameters declared pathfinding, entry, surface_index everywhere 278 (same code); the
 // surface read through the table at each use 429 (1336 B). A cdecl compile-only first pass loads actor_index
 // only at its uses even with uses added to every case, so no body form here gives retail's entry load.
+// DH342: On the retained direct-case-return graph, five alternate whole-case orders
+// 342/293/381/345/381; explicit default result returns first/middle/last 270/270/270.
+// Original case order and complete body restored; early root/actor ingress remains.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
