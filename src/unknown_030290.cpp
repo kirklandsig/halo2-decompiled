@@ -466,6 +466,8 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // direction-first both and seeded initial/reverse/both: 270/270/280/314/293/294/318/360.
 // NOT kept: allocation or extent regresses; original complete helper/body restored.
 // Native inverse homes and second-transform X/Z spill remain.
+// Y592: Existing transform with separate scalar outputs, pointer/reference, native/scalar result storage, native/scalar input:
+// 195/195/259/259/228/228/242/242. NOT kept: no native frame/spill recovery; original alias-safe helper and body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

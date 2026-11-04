@@ -584,6 +584,8 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // N367: Capacity-owned link eligibility reused for surface work, expression bool/byte/short/long
 // 286/286/290/289; branch producers 359/359/370/366. NOT kept: no equality or gain; original predicates,
 // flags and indexed memcpy restored. Extra frame word, predecessor and flag homes remain.
+// Y592: Standard edge fill_n/fill before/after step clearing, short/long remaining steps:
+// 297/383/404/423/382/400/309/309. NOT kept: native-frame range-fill forms regress in score/extent; original clearing, metadata memcpy and body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

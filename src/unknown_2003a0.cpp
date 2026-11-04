@@ -3384,6 +3384,8 @@ void function_2011f0(long arg_0);
 // P319: Early validation/count producer nested/conditional/disjunction/complete-failure,
 // then bool/byte/short/long availability: 318 each. Original count threading persists;
 // NOT kept: no match or gain. All validation, narrow inputs and complete body restored.
+// Y592: Both function exits to sole return, or whole active-body/result finalization, bool/byte/short/long accumulated outcome:
+// 318/318/318/354/318/318/318/354. NOT kept: no exact whole-result ownership; original validation, narrowed inputs and complete body restored.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

@@ -2556,6 +2556,8 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // P328: Actual torque/magnitude/turn-product declarations in six orders, then entry-owned
 // and role-named: 42/42/42/42/42/42/42/42. Original declarations and body restored;
 // native frame agrees, turn-product and spin scratch/store schedules remain.
+// Y592: Complete two-side torque result as native vector/actual pair array, entry/producer declarations and mutable/readonly initializers:
+// 48/48/48/48/48/48/48/48. NOT kept: grouped storage lacks equality; original scalar results, spin helper and complete body restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
