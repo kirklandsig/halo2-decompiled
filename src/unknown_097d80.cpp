@@ -314,6 +314,10 @@ struct c_aggregate : c_child
 // DH330: Cleanup null guard with completed-query scope/shared scalar query output/
 // actual block reference, masks 0-7: 31/31/31/31/31/31/31/31. Shared outputs recover
 // 0x8020 but exchange the low loop homes; original independent outputs/body restored.
+// Round 60 (m3 lane 13, fast; what LTCG knows of the virtual callee): `v5` declared const 31, its output
+// parameter `long *const` 31, the base `v5` writing its output 31 (all same code); `__declspec(novtable)` on the
+// child interface 31 (0x97f00/0x97f30 lose their matches); `produced` declared and zeroed at the loop-body top with
+// `if (child && !error)` 141 (389 B); a pure virtual `v5` does not compile (the aggregate is instantiated).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

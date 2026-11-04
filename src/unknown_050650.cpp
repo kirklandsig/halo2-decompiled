@@ -673,6 +673,11 @@ struct s_collision_result_buffer_1697c0
 // admission bool/const-bool: 303/303/350/350/303/303/307/307. Original private normalizer and sampler restored;
 // NOT kept: unmatched intermediate/predicate ownership. The rejection Boolean recovers root/axis homes,
 // but grows to 1460/1423; later random/sine scratch and rotation lifetime remain.
+// Round 60 (m3 lane 13, fast; 0x297d30 tracked): `sinf`/`cosf` in the rotate helper 304 (0x297d30 145); the
+// rotation rows with the projection term first 303 (same code); that with the single-exit normalizer 307 (1460 B:
+// frame-bottom temp and every home through both random draws retail's; first difference +0x31, where retail loads
+// the axis j into its own register and multiplies by the scale, ours multiplies a scale copy by memory); on it the
+// normalizer products all `vector->x * scale` or compound `*=` 307/307 (same code).
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -944,6 +949,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // Round 85 (m3 lane 12, plain): the weapon fallback as `vector3d_from_points3d(...); goto normalize_direction;` 283
 // (1420 B); the output stores swapped 257; point_valid folded into the output test 257 (same code); point_valid set
 // before the state lookup in cases 1 and 2 261; before the point copies in cases 3 and 5 257. Body unchanged.
+// Round 60 (m3 lane 13, plain): the object index read from the reference at each use in both cases' object arms
+// 257, case 2's player test as nested ifs with the `cafc0` call's own `goto direction_from_actor` 257, the
+// remembered branches' `if (aiming)` jumping to `aim_at_point` with the weapon label dropped 257, case 2's aiming
+// arm jumping straight to the weapon label 257 (all four byte-identical); the flags cleared in two statements 259.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

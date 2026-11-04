@@ -947,6 +947,11 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // src/unknown_1c2b10.cpp 1, in src/unknown_1c3d30.cpp 1; function_1c3770 declared before function_e18d0 in
 // src/unknown_1c38a0.cpp 1. Under the default /Gr convention the second argument is always DL, so only a
 // custom convention for function_1c4040 can give AL.
+// Round 102: function_1d1540 before function_1d1260 1; between function_1d1260 and function_1d01c0 1;
+// function_146bf0 before function_278f00 1; that swap with function_1d1540 first of the three 1;
+// function_1d1540 before 0x278f00/0x146bf0 1; between them 1; before the reversed 0x1d01c0/0x1d1260
+// pair 1; the swapped pair with function_1d1540 between function_1d1260 and function_1d01c0 1.
+// Every control stayed unchanged; original declarations restored.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1149,6 +1154,9 @@ struct s_1c4040
 // m3 lane 9 r76 (fast): the world read through g_51e9a4 at each use 8; one physics_object_get shared by the detach
 // steps 116 (521 B); the mode case and the detach path as if/else with one success store after 8 (kept: drops the
 // goto and its label); object and unknown declared in the detach block 8; the three initial stores reversed 103.
+// Round 103: forward declaration before/after the cycle callees 8 each; fixed-island direct global read 8;
+// shared island/entity/priority locals 8 each; block-scoped world with the direct fixed read 8;
+// effect pointer at function scope 8. Original body and declaration order restored.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
