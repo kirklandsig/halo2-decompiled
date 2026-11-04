@@ -1654,7 +1654,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 // the speed product's operand order and the 0x190 store before the `and [esi+0x12c], 0xfffffeff` RMW;
 // the plane dot product's operand order; retail's two separate object_flags RMWs (0x10000, 0x20000)
 // where ours merges to one `or 0x30000`; retail's two separate seat-bit tests where ours has `test dl, 6`.
-// Earlier rounds (before the speed update was written out and the definition read once):
+// Earlier rounds (before the definition was read once):
 // HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
 // #9, so it waits for their OK) with a definition local at entry gives 304: the speed update expands where
 // retail expands it, the definition goes to EDI and the body is retail's 1261 bytes; the definition local
@@ -1974,8 +1974,8 @@ real function_17c900(short function_type, real input);
 // differences are the three output stores (retail stores straight to the output in each exit; ours copies the point
 // once, same values) and the angle/cosine reusing the dead index slot (esp+0x40). The retail caller (call at 0xf91a6: `push
 // index; lea ebx, [esp+0xc4]; call`) proves the callee convention (index on the stack, output in ebx); only the salt
-// written at both uses plus the three exits gives it (328, caller 0xf8eb0 946 -> 969, so the pair stays 1294 -> 1297
-// and the form is not kept). On that form: the three wander components computed into locals before the point set 328
+// written at both uses plus the three exits gives it (328, caller 0xf8eb0 946 -> 969, so the pair rises by 3,
+// 1294 -> 1297, and the form is not kept). On that form: the three wander components computed into locals before the point set 328
 // (same code); `game_time` named in the wander branch 328 (same); wander direction vector 362 (1482 bytes, its tail is
 // retail's); the drift rotation as a named vector then scaled and stored 330 (stores land last as retail, schedule still
 // differs). Remaining as before: the early xmm4 zero, to_target kept in xmm1-3 across the lead merge, the rotation's
@@ -2849,10 +2849,10 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // two below. collision_count is a dword in retail (`cmp dword ptr [esp+0x23c], 1`; the caller does `movsx edx, ax;
 // push edx`): `long collision_count` 1190 -> 1180 (4848 -> 4836 bytes) and caller 0xf8eb0 then pushes it as retail
 // does, but scores 946 -> 1037 (4691 -> 4718 bytes, positional shift), so it is not kept (the type changes no behaviour).
-// Behaviour fix (round 2 of #1061): retail stores NONE to the damage record's material (+0x7c) BEFORE calling 0xd6660
-// in both damage scopes, and 0xd6660 then overwrites it with g_47d8e0; the source stored NONE after the call, and
-// 0xd7b80 writes +0x7c only on some paths, so on the others ours left NONE where retail leaves g_47d8e0. The store now
-// comes first (score unchanged). A goto to share the
+// Source order (round 2 of #1061): retail stores NONE to the damage record's material (+0x7c) BEFORE calling 0xd6660
+// in both damage scopes, and 0xd6660 then overwrites it with g_47d8e0; the store now comes first, as retail's. No
+// behaviour change: g_47d8e0 is a constant NONE (src/unknown_187ec0.cpp, never written), so either order leaves NONE
+// (score unchanged). A goto to share the
 // `*velocity = *g_4687a4` tail 1180 (same bytes). Retail inlines function_faa30 at three of its four sites (the
 // unknowndc^2 test and both action-switch arms) and calls it only in the 0.09 block; ours calls all four.
 // Earlier 1162 (was 1185): frame 0x220 versus 0x218, velocity on the stack versus eax, input normalization and effect scheduling remain.
