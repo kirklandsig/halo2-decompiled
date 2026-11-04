@@ -557,6 +557,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // brace-initialized from the center fields 27, the list headers initialized as this body does (first's pointer
 // first, counts and capacities chained) 21. At 12 only the tree load differs (retail EAX after the center
 // loads, ours EDX after the zero stores): every form without the struct forward-substitutes it to the push.
+// F379: Guarded large/small-query dispatch outcomes, bool/byte/short/long,
+// 182/182/182/182/182/182/182/182. NOT kept: ties; original complete body restored,
+// entry/index spill and center/query/bound homes remain at the native 0x1094 frame.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

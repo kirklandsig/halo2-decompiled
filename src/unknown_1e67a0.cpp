@@ -1113,6 +1113,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // the side crosses: 140/140/140/140/172/172/176/175. NOT kept: no match;
 // original body restored, rotation multiplicands, side-dot residence and
 // final load-all copies remain.
+// F379: Isolated oriented-side crossing/complement outcomes, bool/byte/short/long,
+// 140/140/140/140/140/140/140/140 at retail length. NOT kept: regressions;
+// original complete body restored, native j/k multiplicands and final copy scheduling remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

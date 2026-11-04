@@ -2905,6 +2905,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // P299: Planar facing/velocity/paired copies and paired existing 2D product, original
 // then independent relative output: 737/737/764/764/745/745/769/769. NOT kept: native
 // planar copy staging does not recover frame 0xfc; every form regresses. Original full body restored.
+// F379: Exhaustive turn-rate policy results, default/branch bank ownership,
+// special/normal arm priority and full/conditional control arms: 718/718/718/718/689/689/689/689.
+// NOT kept: best gain three is below the gate; original body restored, frame 0xd0 versus 0xfc remains.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3215,6 +3218,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // DH325: Native force/torque/working-velocity memcpy subsets 1/2/4/3/5/6/7:
 // 1052/1052/1052/1052/1052/1052/1052; complete memmove 1093. All restored;
 // frame 0x80 versus 0x74 and original force/velocity homes remain.
+// F379: Direct two-use driving/braking outcomes from the original control test,
+// bool/byte/short/long and complements: 1057/1057/1056/1057/1057/1057/1056/1057.
+// NOT kept: regressions; original whole body restored, frame 0x80 versus 0x74 and force/velocity homes remain.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {

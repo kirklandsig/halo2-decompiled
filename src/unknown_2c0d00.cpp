@@ -1533,6 +1533,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // F372: Existing two-use location address at entry/data/multi-step/traversal/step/
 // selected-step/corner-pair/pre-endpoint phases: 470/431/463/470/465/416/414/418.
 // NOT kept: two-/four-point leads below gate; original address phase and full body restored.
+// F379: Actual emission/continuation departure-limit outcomes, bool/byte/short/long,
+// positive/complementary 456/456/456/456/456/456/456/456. NOT kept: regressions; original
+// whole body restored, frame 0x114 versus 0x10c and zero/radius/metadata homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
