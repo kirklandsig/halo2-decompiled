@@ -2523,6 +2523,9 @@ real magnitude3d(vector3f const *v);
 // named double inverse-cosine result 196; named cosine complement, existing bounded
 // helper in fallback, named axis projection: 170/170/170. Original body restored;
 // raw-length/promoted-dot homes remain. NOT kept: no eligible gain.
+// J256: Complete admission/axis dot loops, parallel product parts, immutable and separated producers:
+// 184/170/184/170/170/170/170/170. NOT kept: admission loops regress and every other form ties 170; raw-length and promoted-dot homes do not recover
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2698,6 +2701,9 @@ s_cached_input_list g_5234e8[4];
 // the retained list snapshot: 147/147/147/147/136/136/136/136 fast (control 147, full 113).
 // NOT kept: no exact result-home repair; reduced-only list lead is not a full gain.
 // Original complete body restored; native list/frame and output/index ownership remain.
+// J256: Coherent cache-update/filter/queued-producer inline contracts and forced updater expansion:
+// 123/113/123/113/123/113/123/1561. NOT kept: no target gain; updater inline loses a matched caller and forced expansion loses two, with length growing to 1660
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3088,6 +3094,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // P328: Complete double speed-squared expression/compound/separate/partial reductions,
 // original named root then root at the comparison: 486/486/486/486/497/486/486/486. Original body
 // restored; frame 0x60/0x38 and stored-velocity/projection homes remain.
+// J256: Native maximum/divisor/projection-scale observation subsets and complete projection initialization:
+// 508/490/518/495/496/515/504/504. NOT kept: every form regresses from 486; maximum observations recover only four frame bytes, while scale capture enlarges it
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

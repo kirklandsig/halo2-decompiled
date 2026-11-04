@@ -1020,6 +1020,9 @@ extern long *g_51e9cc;
 // M372: Actual contact point/normal/final-position CRT memcpy transfers, seven site
 // subsets: 42 each; complete memmove 108 at 1462/1481 bytes. Original aggregate
 // transfers and complete body restored; lookup receiver and crouch/contact schedules remain.
+// J256: Sparse contact-kind exclusive comparisons in six orders, named kind and independent tests:
+// 260/135/260/110/139/136/261/276. NOT kept: all sparse dispatch forms regress from 42; lookup address rematerialization persists and the independent tests also grow the frame
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -4408,6 +4411,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // publication loop, seven subsets then complete immutable parts:
 // 179/176/196/154/181/170/190/190. NOT kept: all regress; original twice-used helper
 // and body restored; normalization SIMD and trigonometric/basis homes remain.
+// J256: Twice-used cosine complement at cosine/sine boundaries, mutable/immutable and ordinary/forced rotation:
+// 163/163/163/163/163/163/163/163. NOT kept: all eight common-factor forms regress from 145 to 163; the added inline formal and hoisted factor miss required byte equality
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
