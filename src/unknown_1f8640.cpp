@@ -596,6 +596,9 @@ struct s_1f8a70_actor
 // AC521: Independent inner route outcome on the two-result/native-word-selector graph,
 // byte/signed-byte/short/long with converted or test-arm outer results: 191/191/191/191/300/300/306/306.
 // NOT kept: no exact memory-result home; original outer/inner results, unit scope and full body restored.
+// Y576: Full-record/fallback/failure-first branch subsets 187/211/305/210/304/305/304;
+// all with shared modes-two/three destination prefix 369. NOT kept: one-point best gain;
+// route dispatch, expired unit/result home and failure-result storage still differ. Original body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

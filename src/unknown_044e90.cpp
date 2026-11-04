@@ -263,6 +263,9 @@ struct s_visibility_bound_record
 // unseen/visible continue admission: 403/403/403/403/403/403/403/403. NOT kept: three-point lead
 // below keep gate; repeated computed masks miss equality and native retained bit ownership;
 // entry/table and plane/query homes remain. Original complete body and helpers restored.
+// Y576: Descriptor-count six-plane do traversal, long/short/word/byte ordinals
+// 425/438/438/457; ordinary while 465/463/463/464. NOT kept: all regress;
+// native entry/table and plane/query homes remain. Original fixed-six traversal and body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

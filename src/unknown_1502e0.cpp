@@ -1088,6 +1088,9 @@ struct s_tail_transfer_traits
 // N355: Returned-player canonical for traversal with independent bounded selection/slot domains:
 // 373/378/413/373/284/284/373/283. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; Selected-traits/unit/NONE homes and pool reloads remain.
+// Y576: Winning weapon as long/short/signed-byte slot or element receiver, original
+// for traversal 199/217/206/253; plain while 199/217/206/253. NOT kept: alternate
+// winner producers grow beyond retail and leave traits/unit/NONE homes and reloads unresolved.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {

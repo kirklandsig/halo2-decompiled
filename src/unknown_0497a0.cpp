@@ -852,6 +852,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // DH346: On retained paired geometry, staged side/normal/both crosses, shared chain difference,
 // immutable source/definition/outer/all pointer bindings: 265/265/265/266/265/265/265/265.
 // NOT kept: no native frame/spill recovery; original complete body and helpers restored.
+// Y576: One shared current/next/transition channel ordinal, long/short/word/byte
+// 265/754/754/754; also owning RGB tint 265/756/756/756. NOT kept: long forms
+// canonicalize; narrow forms disrupt unrolling. Original frame 0xa8 and scalar/spill homes remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
