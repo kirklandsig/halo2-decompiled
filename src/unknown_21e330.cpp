@@ -764,7 +764,8 @@ PRIVATE __forceinline real function_21ece1(real arg_0, real arg_1)
 // Round 149: the bit-level helper for the first sum 62 (411); gain bits with a real field 119 (431);
 // helper arguments reversed 25; the first sum direct into the clamp 81; const bit-view gain 25;
 // const result values 25; double-return helper rechecked 26; real first three/double last 29;
-// diffusion before reverb delay 24 (NOT kept: one point); diffusion and density before delay 29. Restored.
+// diffusion before reverb delay 24 (restored by the round as one point, then kept by the coordinator: any gain at 30
+// or below is kept); diffusion and density before delay 29.
 // @retail 0x21ece0
 void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 {
@@ -789,8 +790,8 @@ void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 	real reverb_value = function_21ece1(gain, reverb->reverb);
 	description.I3DL2Reverb.lReverb = (long)(function_12aff0(-64.0f, 20.0f,
 		reverb_value, true) * 8400.0f - 6400.0f);
-	description.I3DL2Reverb.flReverbDelay = reverb->reverb_delay;
 	description.I3DL2Reverb.flDiffusion = reverb->diffusion * 100.0f;
+	description.I3DL2Reverb.flReverbDelay = reverb->reverb_delay;
 	description.I3DL2Reverb.flDensity = reverb->density * 100.0f;
 	description.I3DL2Reverb.flHFReference = reverb->hf_reference;
 	XAudioSetEffectData(effect_index, &description, NULL);

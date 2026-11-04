@@ -399,7 +399,9 @@ void c_class_2c9e69::select_last_variant()
 // a_text 13 each; the name-arm copy without the qualifier 36 (154 bytes). Restored.
 // Round 149: const entry 23; icon declared before text with split assignment 23; top-level const text 23;
 // base text with the inherited qualifier 23; name-arm base/const receiver with direct empty text 13/13 (159);
-// name buffer before that receiver 13; with returned-name local 17; plain renamed original receiver 36 (154). Restored.
+// name buffer before that receiver 13; with returned-name local 17; plain renamed original receiver 36 (154). Restored by
+// the round; the coordinator kept the name-arm base receiver with direct empty text (13 at 159 bytes; any gain at 30 or
+// below is kept, whatever the length).
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {
@@ -413,18 +415,21 @@ void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 
 		if (entry->variant == NONE)
 		{
-			c_text_widget_45a5e0 *empty_text = text;
-			if (empty_text)
+			if (text)
 			{
-				empty_text->function_253b1a(0x120001db);
+				text->function_253b1a(0x120001db);
 			}
 		}
-		else if (text)
+		else
 		{
-			word name[0x80];
+			c_class_1a2c81 *name_text = text;
+			if (name_text)
+			{
+				word name[0x80];
 
-			function_215b50(entry->variant, name);
-			text->function_22f52e()->set_text(name);
+				function_215b50(entry->variant, name);
+				name_text->function_22f52e()->set_text(name);
+			}
 		}
 		if (icon)
 		{
