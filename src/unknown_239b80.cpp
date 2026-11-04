@@ -476,6 +476,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B430: Complete coordinate-bound producers on the retained native output ordinal,
 // four producer orders, without/with paired angle bounds: 179 each. NOT kept: no
 // match or gain; original body restored. Frame remains 0x18 versus native 0x14.
+// F393: Actual classifier result short/long/int/dword, then complementary admission bool/byte/short/long:
+// 170/170/170/170/170/170/170/170. NOT kept: no byte match; original complete body/helpers restored;
+// extra frame word and produced-length/departure/count/compaction homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

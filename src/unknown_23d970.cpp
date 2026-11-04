@@ -820,6 +820,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // B434: Missing-object/missing-target/ordinary-orientation arms first, seven
 // subsets 361/219/222/250/367/333/337; nullable acquisition with common fallback 358.
 // NOT kept: all regress; original branches, products and full body restored.
+// F393: Masked target ordinal long/dword/int/word, then actual reset-capability decision bool/byte/short/long:
+// 45/45/45/185/55/55/55/45. NOT kept: no byte match; original complete body/helpers restored;
+// right i/j carriers, forward.k reuse and ordinary-angle store bases remain.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
