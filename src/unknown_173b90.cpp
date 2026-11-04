@@ -685,6 +685,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC535: Actual outer-emitter continuation bool/byte/short/long, guard-owned then
 // entry/latch-owned: eight at 109, 1130 bytes/frame 0x98. NOT kept: premature row-offset
 // zero store and row-i/default/reload gaps remain; original complete body restored.
+// AC537: Actual cache-mask/property-flags/emitter-mask signed 32-bit field domains,
+// seven subsets then all int: 42/44/44/42/42/44/44/44. NOT kept: no gain; original fields,
+// shared alias-safe rotations and entire body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

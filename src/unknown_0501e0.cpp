@@ -339,6 +339,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // M373: Complete scale/copy branch-owned scaled workspace, native/setter/memcpy/memmove,
 // nonunit-first 327/288/327/374; unit-first 331/288/331/370. NOT kept: all regress;
 // original aggregate-default helper and full body restored; frame/coefficient homes remain.
+// AC537: Actual projected-radius square-root admission/rejection truth in
+// bool/byte/short/long: 207/207/207/207/207/207/207/207. NOT kept: no match; original transform helper,
+// ordered test, alias-sensitive outputs, memset and complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
