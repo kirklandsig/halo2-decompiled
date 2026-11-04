@@ -682,6 +682,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC531: Complete six-use cache-value array reference/pointer, entry/post-invalidation/
 // emitter/post-frame acquisition: 113/113/113/122/113/113/113/122. NOT kept:
 // property-input residence grows length; original observations, helpers and body restored.
+// AC535: Actual outer-emitter continuation bool/byte/short/long, guard-owned then
+// entry/latch-owned: eight at 109, 1130 bytes/frame 0x98. NOT kept: premature row-offset
+// zero store and row-i/default/reload gaps remain; original complete body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

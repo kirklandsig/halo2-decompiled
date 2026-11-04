@@ -1732,6 +1732,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC527: Shared idle-animation selection as long/dword/int/unsigned-int, at consumption
 // or iteration scope: eight at 220 fast (control 220, full 218). NOT kept: selected-result
 // residence unmatched; original draws, counters, setter paths and complete body restored.
+// AC535: Peer processing/final activation-resource phases gated by one entry result,
+// positive/complementary bool/byte/short/long: 542/542/573/571/542/542/573/571 fast
+// (control 220, full 218). NOT kept: frame 0x28 and native unit/mode/look/save gaps
+// remain; original complete body and every observation/call restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

@@ -2132,6 +2132,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // AC531: Actual plane-field pointer/reference at entry lookup or after index admission,
 // ordinary/forced existing zone expansion: eight at 129/556 bytes. NOT kept: no frame
 // or color-home recovery; original producer, all live reads and complete body restored.
+// AC535: Positive tint/multiplication query results with false/true-default publication,
+// single queries then four pairs: 190/190/189/189/189/189/189/189 at 572 bytes. NOT kept:
+// all regress/lengthen; original complete body restored, early color/query/cursor homes remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3308,6 +3311,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // AC531: Complete immutable color pair, dword/long/unsigned-int/int, active/query-owned
 // scopes: eight at 93/338 bytes. NOT kept: color residence canonicalizes; native
 // frame, definition spill and system/successor roles remain. Original whole body restored.
+// AC535: Positive tint result with false/true default publication, bool/byte/short/long:
+// 113/112/117/116/113/112/117/116. NOT kept: all regress and lose matched caller
+// 0x176f60 (25); original full body restored, native frame and system/successor homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
