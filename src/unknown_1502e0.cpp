@@ -257,6 +257,9 @@ struct s_flag_word_bits
 // the complete graph with the later definition-index declaration also ties 114.
 // Every initializer stays at its original producer; original complete body and rounding
 // helper restored. Player/root, tick/effect homes and expanded notification tail remain.
+// F382: Actual byte-owned header flag, test-produced bool/byte/short/long
+// 124/124/129/128; direct producers 113/113/113/113 at 354 bytes.
+// NOT kept: at most one point, and the expanded notification tail remains. Original word view and body restored.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1131,6 +1134,9 @@ struct s_tail_transfer_traits
 // F380: Direct primary/other winner publication, scalar arms/conditional destinations with
 // long/dword/short/byte passes: 176/176/185/177/171/171/180/184. NOT kept: regressions
 // and nonnative frame/extent; original chosen results, defaults, observations and body restored.
+// F382: Selected-traits, unit-receiver and selection-scalar lexical home groups,
+// seven subsets then all with the transfer parameter role name: eight 153 at 826 bytes.
+// NOT kept: no gain; original names, initializer sites, helpers and complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1283,6 +1289,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // DH351: Existing raw flag pointer/reference returns with local/direct object input
 // 284 each; native bit-field pointer/reference returns 253 each; bit-field value return
 // 290. NOT kept: pointer forms add a flag-address calculation absent in retail; value form regresses.
+// F382: Direct held/pending array-element producers, default-valid/exhaustive-valid/
+// exhaustive-sentinel arms at individual sites and asymmetric pairs: 293/279/283/277/283/277/287/289.
+// NOT kept: best gain seven is below the gate; original ternaries and full body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

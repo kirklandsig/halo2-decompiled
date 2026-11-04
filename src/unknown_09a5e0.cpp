@@ -2351,6 +2351,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // 155/182/155/155/182/154/154/181. NOT kept: one-point upper-first leads are below
 // threshold and lack native bound order; lower-first ties. Original field PIN producers
 // and whole body restored; indexed lookup, object/offset and low-mask homes remain.
+// F382: Complete three-component position field with short-circuit comparison traversal,
+// long/dword/short/byte ordinals, break/condition admission: 293/293/297/298 repeated.
+// NOT kept: regressions and shorter extents; original scalar fields, comparisons and body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
