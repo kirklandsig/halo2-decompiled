@@ -55,9 +55,20 @@ static __forceinline solver_projection_31c940 project_second_linear_velocity(sol
 static __forceinline solver_projection_31c940 linear_velocity(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
 {
-	__m128 relative = _mm_sub_ps(a->linear, b->linear);
-	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(b->angular, row->b));
-	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, row->linear)));
+	// Retain the projection inputs, reusing each work vector after its last use.
+	__m128 work_a = a->linear;
+	__m128 work_b = row->a;
+	__m128 work_c = _mm_load_ps((float const *)&(row->b));
+	__m128 work_d = b->linear;
+	__m128 work_e = _mm_load_ps((float const *)&(a->angular));
+	work_a = _mm_sub_ps(work_a, work_d);
+	work_b = _mm_mul_ps(work_e, work_b);
+	work_d = _mm_load_ps((float const *)&(row->linear));
+	work_d = _mm_mul_ps(work_a, work_d);
+	work_e = _mm_mul_ps(b->angular, work_c);
+	work_a = _mm_add_ps(work_b, work_e);
+	work_b = _mm_add_ps(work_a, work_d);
+	return sum_three_projection(work_b);
 }
 
 static __forceinline void apply_angular(float const &impulse, solver_angular_row_31e7b0 const *row,
