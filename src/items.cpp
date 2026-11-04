@@ -701,6 +701,9 @@ struct s_item_collision_bsp
 // N356: Bare contact distance/offset storage at plane/marker/entry boundaries, with fallback-speed storage:
 // 211/211/211/211/211/211/211/211. NOT kept: unmatched storage/result-lifetime forms.
 // Original executable source restored; Protected plane width, plane joins and speed/factor/spin homes remain.
+// N358: Complete common spin scaling with separate/direct axial source, private/shared float/shared double/plain component producers:
+// 306/306/331/306/282/282/305/282. NOT kept: unmatched source/representation forms; original executable body restored.
+// Protected plane width, plane joins and speed/factor/spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1278,6 +1281,9 @@ struct s_item_flags_view_10b850
 // N356: Isolated late spin admission, bool/byte/short/long with positive/complementary truth:
 // 880/880/880/880/863/863/863/863. NOT kept: unmatched storage/result-lifetime forms.
 // Original executable source restored; Frame 0x154/0x12c, entry Boolean and carrier/collision/rotation homes remain.
+// N358: One actual gate-test result reused across active/anchored/attached admissions, eight native scalar domains:
+// 887/887/887/887/887/887/887/887. NOT kept: unmatched source/representation forms; original executable body restored.
+// Frame 0x154/0x12c and entry Boolean/carrier/collision/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1736,6 +1742,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N356: Pre-admission countdown truth, bool/byte/short/long with post/pre-processing accumulation:
 // 184/191/298/293/177/180/186/181. NOT kept: unmatched storage/result-lifetime forms.
 // Original executable source restored; Return byte, release RMW/tail and event/location homes remain.
+// N358: Complementary two-consumer damping admission, bool/byte/char/signed-char/short/word/long/dword, original positive return:
+// 177/177/177/177/176/176/176/176. NOT kept: unmatched source/representation forms; original executable body restored.
+// Return byte, release RMW/tail and contact/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

@@ -681,6 +681,9 @@ static inline word font_character_pixel(long alpha, long color)
 // N356: Canonical consumed-span for loop, long/byte/signed-char/short with word/long pixel result:
 // 87/90/90/100/104/100/100/101. NOT kept: unmatched storage/result-lifetime forms.
 // Original executable source restored; Alpha parity widening, literal fusion and constant-two reuse remain.
+// N358: Existing color formal owns complete pixel assembly, packed OR/add and high/low-first bit publication, byte/numeric parity:
+// 226/230/226/226/172/178/172/172. NOT kept: unmatched source/representation forms; original executable body restored.
+// Alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

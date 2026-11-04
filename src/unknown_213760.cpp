@@ -1503,6 +1503,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P303: Existing shared completion provider on the failure-only count graph, open/query/resize
 // masks 1/2/4/3/5/6/7, then all five asynchronous boundaries: 33/33/33/33/33/33/33/33.
 // Original local completion expansion and complete body restored; query/count and write/header joins remain.
+// N358: Complete invalidity result on failure-only resize-count graph, eight native scalar domains:
+// 159/159/159/141/141/140/140/140. NOT kept: unmatched source/representation forms; original executable body restored.
+// Query/write count homes, write setup and checksum/validation joins remain.
 // @retail 0x213970
 void function_213970(void)
 {
