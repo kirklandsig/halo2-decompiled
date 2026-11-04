@@ -249,6 +249,11 @@ struct s_visibility_bound_record
 // Y570: Native entry/range/frustum displacement producers, seven subsets and all with
 // selection-owned flags, 406 each. Original indexed addresses and body restored;
 // entry/table roles and plane/query homes remain.
+// Y572: Simultaneous cleanup capacity values, each field, natural pairs, all,
+// then immutable all: 406/450/448/439/445/450/446/446. NOT kept: native
+// repeated capacity observations/entry and plane homes not recovered; body restored.
+// Remaining three capacities before the first release 446; fourth-only 406 is
+// a prior-form control, not one of eight new forms. Original full body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

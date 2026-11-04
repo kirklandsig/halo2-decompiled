@@ -4793,6 +4793,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // 68/68/68/68/68/68/68; complete graph with native early success 143.
 // All native record views and original result timing restored; support/result
 // byte homes and early success remain unresolved.
+// Y572: Joint original handle/support/result lexical owners, eight complete
+// behavioral-name triples: 68 each. NOT kept: support/result byte homes and
+// early success store remain; original complete body and parameter name restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

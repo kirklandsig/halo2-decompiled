@@ -1005,6 +1005,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // P310: Existing coefficient copier returns native direction pointer/reference or sample
 // pointer/reference: forced 547/547/547/547; ordinary 621/621/620/620. NOT kept: ties or
 // outlining regressions; original full copier, direction consumer and complete body restored.
+// Y572: Complete scalar query inputs at nearest/anchor/opposite boundaries, seven
+// subsets then immutable full inputs: 605/547/615/605/585/615/585/585. NOT kept:
+// no byte match; native query reloads and 0x2c frame remain. Original full body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
