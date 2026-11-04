@@ -632,6 +632,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // M384: Actual reverse-angle/absolute-result/steering-angle return storage, real/double
 // at producer or entry-declared: 126/126/126/126/126/126/126/126. NOT kept: no equality for
 // result materialization; original full body restored; entry velocity/unity and angular homes remain.
+// M388: Squared-norm inputs to sqrt, initial/helper real and double carriers:
+// 225/128/126/126/225/225/128/309. NOT kept: no gain or precision equality; last form
+// grows to 1150/1144. Original helper/body restored; velocity/unity and angular homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3863,6 +3866,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M386: One sequential projection/flip-axis vector, native then entry angle/cosine/sine
 // declaration subsets 0..7: 179/179/179/179/179/179/179/179. NOT kept: no byte equality for
 // reused-workspace/scalar lifetimes; original separate vectors and complete body restored.
+// M388: Existing return-valued coordinate setters at forward/up/fallback, masks
+// 1/2/4/3/5/6/7, then initial up: 136/136/136/136/136/136/136/207. NOT kept:
+// no projection/cross/trig equality; original complete body and all helpers restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

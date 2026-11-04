@@ -2951,6 +2951,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // M386: Genuine hit-to-difference in-place vector, component/difference-helper/vector-setter/
 // point-setter producers with native/library input transfers: 529/530/529/529/529/530/529/529.
 // NOT kept: no native frame/result-home byte equality; original separate point and direction restored.
+// M388: Actual bound-selected push, maximum-distance result and side-factor producers,
+// masks 1/2/4/3/5/6/7, then named reciprocal: eight fast 530s, 1834/1908 bytes.
+// NOT kept: no frame/result-home repair; original complete body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3283,6 +3286,12 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M383: Actual trig-input double carriers at walking/yaw/pitch phase subsets 1/2/4/3/5/6/7,
 // then all const: 600/623/602/623/602/611/611/611 (reduced control 600; full 561). NOT kept:
 // no native flight/result-home repair; original input/result domains and complete body restored.
+// M388: Final four copies via memcpy/memmove/vector setter, native byte writer, then
+// transfers plus writer and point setter plus writer: 600/593/659/593/593/593/659/659
+// (fast control 600). NOT kept: seven-point leads below gate; memmove adds four calls.
+// Original publications/body restored; result/flight homes and vector schedule remain.
+// Direct flight-rate argument on the current full-width-special graph, alone/with byte writer:
+// 610/603 (control 600); both regress. Original scalar producer and whole body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
