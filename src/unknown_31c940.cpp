@@ -558,11 +558,17 @@ static __forceinline float select_angular_limit(double velocity, float const &ta
 static __forceinline void update_angular_values(float impulse,
 	__m128 const &axis_a, __m128 const &axis_b,
 	__m128 &velocity_a, __m128 &velocity_b,
-	__m128 const &inverse_a, __m128 inverse_b, float *result)
+	__m128 const &inverse_a, __m128 const &inverse_b, float *result)
 {
 	__m128 scalar = _mm_set_ss(impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	// Form both inertia-weighted impulses before either velocity write.
+	__m128 inertia_contribution[2] =
+	{
+		_mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a),
+		_mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b)
+	};
+	__m128 change_a = inertia_contribution[0];
+	__m128 change_b = inertia_contribution[1];
 	velocity_a = _mm_add_ps(velocity_a, _mm_mul_ps(change_a, axis_a));
 	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
 	*result += impulse;
