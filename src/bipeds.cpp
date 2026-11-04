@@ -984,6 +984,10 @@ extern long *g_51e9cc;
 // coordinated initializer inline contract alone 42. All helper users unchanged.
 // NOT kept: seven-point flag gain is below the gate; field receiver misses.
 // Original body/contracts restored; lookup address and crouch/contact schedules remain.
+// DL259: Native contact key/surface/fallback-geometry field subsets 1/2/4/3/5/6/7:
+// 42 each; real shared lookup/getter prefix base with implicit conversion 42.
+// Original record views, declarations and complete body restored; lookup receiver
+// retention and crouch/contact schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -2849,6 +2853,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // M346: Returned-result ownership across every existing exit, with actual case-one success
 // at admission, bool/byte/char/signed-char/short/word/int/long: 530 each. No common-exit
 // rewrite; all retain frame 0x44 and 1834/1908 bytes. Original body restored.
+// DL259: Progressive actual impulse completion at both normalizers,
+// bool/byte/char/signed-char/short/word/int/long: 530/530/530/530/530/530/530/530.
+// NOT kept: no native result/frame repair; original result, scans and body restored.
+// Native final-loop size observation remains a possible unretained correction.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3515,6 +3523,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // P302: Existing pivot-helper actual matrix/input/output references, seven subsets then forced-inline
 // complete reference graph: 368/368/368/368/368/368/368/368. All tie; original pointer contracts/helper/body restored;
 // native matrix/origin and paired pivot/property homes remain.
+// DL259: Existing pivot helper point/matrix/returned-point value ownership,
+// seven subsets then immutable point input: 853/866/858/823/817/820/781/781.
+// NOT kept: native aggregate contracts miss byte equality. Original helper and
+// complete body restored; matrix/origin and paired pivot/property homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
