@@ -1517,6 +1517,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P341: Actual selected-root/header/ground-body record lvalues, seven subsets then complete read-only
 // graph: 585/585/585/585/585/585/585/585. NOT kept: missing native frame word and
 // material/airborne/animation homes remain; original receivers, helper graph and whole body restored.
+// P343: Initial speed-constant lifetime before
+// object/tag/component/state/animation/airborne/ground/facing boundaries:
+// 589/585/585/585/585/585/600/618. NOT kept: no equality; original whole body restored; frame 0xf8
+// versus 0xfc and material/airborne/animation homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

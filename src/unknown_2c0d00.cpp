@@ -368,6 +368,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M371: Paired object/sphere ordered-radius overlap/exclusion truth in
 // bool/byte/short/long: eight 931 (reduced control 931; full 882). NOT kept:
 // byte-neutral decisions; original tests, qualifiers and complete body restored.
+// P343: Actual first/second marker and sphere element lvalues, seven subsets then mutable records:
+// 931/931/931/931/931/931/931/931 reduced (unchanged control 931; full 882). NOT kept: no equality;
+// original buffers, observations, query, qualifiers, helpers and full body restored; native
+// frame/actor/unit and priority/query/marker homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
