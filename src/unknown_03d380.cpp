@@ -314,6 +314,8 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
+// byte is read, and the special, remove, ordinary and keep blocks stay in our order.
 // MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
 // block order still needs 0x221810 kept out of line.
 // score 36 (was 36): the address of the record is built here with an imul
