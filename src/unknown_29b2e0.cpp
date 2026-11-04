@@ -322,6 +322,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // DH342: Existing vector setter at target/current/rotation input construction,
 // seven subsets 413/378/211/418/431/403/441; all plus final output setter 436 (sibling 46).
 // Original copies, helper contracts and body restored; unity/root/yaw homes remain.
+// Y584: Existing normalizer/rotation ordinary-inline and unannotated contracts on
+// the retained in-place graph, eight pairs 176 each. Original forced contracts,
+// scalar snapshots and full body restored; unity/root/yaw and rotation homes remain.
 // J252: Existing rotation output identity and helper expansion contracts: 176/176/176/176/176/176/176/176.
 // NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
 // DH349: Complete scalar cosine/projection/sine-cross parts on retained in-place
@@ -343,6 +346,27 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // (x and z load first, y a memory operand), left: dot terms run k first in retail, then the early cross products; with the single-exit
 // normalizer and XY vector 233 (1694). dot3f in the helper with axis links 0-7 186/232/181/181/185/185/234/232. Cross statement orders ikj/jik/jki/kij/kji
 // on the chain state 185 each (masked 102/100/100/102/102); grouped dot spellings 185, flat ones 181 (masked 113); chains split by dot/cross/rows 185/187/184/237/232/231/192/189/187. Body restored.
+// Round 586: Paired yaw/pitch rate-policy table traversal, long/dword/short/word
+// ordinals with repeated/captured current-angle values: 426/426/434/434/343/343/337/337. NOT kept:
+// nonexact array/field-pointer residence; first four also lose sibling 0x29b990 (48); body restored.
+// F385: Paired signed-pitch observation lifetimes, bool/byte/short/long negative then
+// complementary truths at their original comparisons: 284/284/284/284/285/285/285/285.
+// NOT kept: no exact predicate form; original helper and complete body restored.
+// M386: Existing complete XY normalizer with original K tail, common/failure-first/
+// success-first/early numeric output, direct then native-planar input: 423/441/441/423/515/544/544/515.
+// NOT kept: no byte equality with native unity/root/yaw and all shared users;
+// original numeric helper, alias-safe rotations and complete body restored.
+// DH362: Native planar epsilon truth bool/byte/short/long, positive then complementary,
+// 262/262/262/262/263/263/263/263. NOT kept: all regress and lengthen to 1719/1706;
+// original numeric/optional results, every helper and complete body restored.
+// DH369: Standard input range copies at desired/current/rotation boundaries,
+// subsets 1/2/4/3/5/6/7, then backward copies: 341/437/456/457/448/483/488/488.
+// NOT kept: all regress and lengthen; seven forms also lose the matched sibling. Original
+// copies, helpers and complete body restored; unity/root/yaw and rotation homes remain.
+// DH369 revisit: Void in-place rotation input/axis/output references, subsets
+// 1/2/4/3/5/6/7, all 176; full references with the angle also referenced 178.
+// NOT kept: no byte match; original helper and both in-place calls restored;
+// unity/root/yaw and rotation homes remain. The numeric helper and sibling stay fixed.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

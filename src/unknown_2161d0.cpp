@@ -98,6 +98,9 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // record declared at function scope 10; the read's result returned directly from the else arm 102 (271 bytes;
 // 0x2161d0 33). Retail's other callers of 0x122810 (0x2164c0, 0x216f80, 0x2ad020) do not reuse the string
 // register after it either, but none passes the path again before other code.
+// Round 115: explicit cached exit 10; branch-local cache pointer 10; helper result in result/named bool 10/10;
+// separate read result 10; named cached predicate 10; result before the copy 46; result from done 10.
+// NOT kept: no gain; the one-use result forms were exact-only and the original body is restored.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

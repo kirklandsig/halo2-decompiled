@@ -513,6 +513,15 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // subsets then all with the chain-count identity: 80 each at 540/540 bytes.
 // NOT kept: no byte match; original complete body, helper and local-slot reads restored.
 // Native validity/cursor homes and validation-loop entry remain.
+// P336: Actual validator inline/inline-stdcall/inline-cdecl/forced boundaries with
+// forced then ordinary input producer on the byte ordinal: 80/80/181/494/80/80/181/205.
+// NOT kept: no gain; cdecl loses the validator match. Both complete sources and contracts restored.
+// M380: Actual failure/success cardinality in long/dword/short/word storage:
+// 199/199/160/160/203/203/203/204. NOT kept: all regress and grow to 552/556 bytes;
+// original validity, byte ordinal, inherited local-slot reads, helper and complete body restored.
+// M382: Complete request-family if dispatch, all six family priorities, then shared type and native long ordinal:
+// 228/205/219/203/208/209/228/218. NOT kept: all regress and lose native dispatch/prologue; original switch,
+// validity, ordinal, cursor observations, existing helper and complete body restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

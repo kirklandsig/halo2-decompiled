@@ -1728,6 +1728,18 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // `shapes.prisms + index` 552 (same code). The cap reading the count once 554, as `if (count > 8)` 605; (edge_index + 1) % point_count named before both reconstructions, retail's early idiv, 602
 // (2909, masked 400), with the single read 602; short index locals in the reconstruction 621; combinations 622/662/661/657; a long axis 593 at retail's 2882 bytes. Retail's sum homes are not contiguous
 // (+0x5c/+0x64/+0x68, +0x50/+0x54/+0x60), but plain scalar sums 630 (2897), face first 630, with the named index 619/630, two point3f locals 594.
+// AC537: Complete near-plane/interior direction-admission truth, positive and
+// complementary bool/byte/short/long: 553/553/553/553/553/553/553/553. NOT kept: no match; original
+// normal selection, sums, word counters, geometry and whole body restored.
+// AC539: Nearest-edge improvement result, positive bool/byte/short/long 553 each,
+// complementary forms 554 each (control 552). NOT kept: unmatched decision storage;
+// original nearest commits, sums, word counts, geometry and full body restored.
+// AC542: Existing paired normalization/contact and edge/separation squared-length producers,
+// paired side/projection dot producers, seven subsets and full-width accepted counts: 554/552/554/554/554/554/554/573.
+// NOT kept: no byte equality for changed reduction associations; original full body restored.
+// AC544: Exact-association plane-dot offset, paired root operands and perpendicular-dot
+// negation boundaries, seven subsets then immutable parts: 554/554/554/553/554/554/554/554.
+// NOT kept: all regress; original reductions, counters, observations and whole body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

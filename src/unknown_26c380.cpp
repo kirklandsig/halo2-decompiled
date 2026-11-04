@@ -343,6 +343,26 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // any tail 532 (no merge change). On the 427 form: bool forward 480 (1535), with the first edge in a long local 481, long vertex arms 486, all 487. The current layout with bool success and constants 472 (1535, frame 0x58, 0x26c4e0 16), long/byte 502/502, count at entry 467. Loop condition `hit && next != NONE` with `if (hit) final else no-hit` after it (retail's tail order, last tail no-hit) and an `if (hit)` block after
 // the edge loop 586, single exit 520 (masked 276), first edge local 520 (masked 269); hit block inside the edge loop with a goto into the final arm 587, 551, 586, 556. The current long success and
 // (dword)NONE in the third tail (a value retail does not store) both only stop tails merging. Still open: why tails 1/3 and 2/no-hit stay unmerged at retail's frame 0x64, and pathfinding EBP against EBX.
+// DH359: Complementary whole-trace outcome long/bool/byte/short, entry seed
+// 583/568/568/572; post-output seed 584/569/569/573. NOT kept: no byte match;
+// original positive result, normal homes, tails, helpers and complete body restored.
+// DH361: Pending-sector reset after node/metadata/destination/iterator/fetch/empty-exit/
+// nonempty-entry phases 410/449/436/440/442/432/432; traversal-header declaration 411.
+// NOT kept: no native-frame or score gain; original reset, normal homes, tails and body restored.
+// DH363: Native coordinate unions at magnitude/planar product/full-to-planar stores,
+// subsets 1/2/4/3/5/6/7: 410/410/425/410/425/425/425; all with staged cross 425.
+// NOT kept: planar stores grow to 1611 bytes without native frame recovery; original full body restored.
+// DH367: Actual edge flag high/low byte views, unsigned/signed metadata and low sign test:
+// 410/406/410/404/410/410/406/406. NOT kept: best six-point gain is below the eight-point gate;
+// original edge word, frame 0x5c/0x64, overlapping normal homes and complete body restored.
+// DH369: Standard magnitude/point-projection reductions, native/direct/named
+// nonoriginal pairs: 584/585/426/657/657/426/657/657. NOT kept: all regress and grow;
+// magnitude-only forms change ret 0x18 to 0x1c and lose seven matched callers. Original
+// helpers/body restored; frame 0x5c/0x64, normal overlap and byte/output tails remain.
+// DH369 revisit: Full-normal magnitude-admission positive/complementary results,
+// bool/byte/short/long, eight at 416 (1611/1605). NOT kept: all regress; frame
+// stays 0x5c versus 0x64. Original admission and complete body restored; normal/planar
+// homes and byte/tail state remain. All calibrated file/caller/provider scores hold.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

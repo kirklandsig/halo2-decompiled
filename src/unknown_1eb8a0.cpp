@@ -388,6 +388,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // DH353: Existing double-factor publishers at displacement/impulse/all tick scales,
 // subsets 1/2/4/3/5/6/7: 716/716/724/783/783/766/817; complete sample graph 830.
 // NOT kept: native SSE/frame/extent disagree; original products and caller restored.
+// AC538: Complete settling-alignment admission, positive/complementary bool/byte/short/long:
+// 642/642/642/642/642/642/642/642. NOT kept: unmatched decision/storage forms; original complete body
+// restored.
+// Native sample/direction homes and coefficient schedules remain.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

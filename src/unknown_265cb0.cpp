@@ -363,6 +363,8 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
+// no new form, no lower score.
 // score 152 (was 152): Frame 0x350 agrees; result/range/projection homes and inverse delta/motion SIMD groups remain.
 // Earlier: result/range homes and inverse SIMD groups remain; seat thresholds now stay in memory.
 // result/range homes, inverse SIMD groups and seat-threshold reloads remain.
@@ -557,6 +559,9 @@ real function_30bf0(vector3f *vector);
 // DH346: Projected displacement in motion via native stores/setter, independent vector, complete
 // mutable/immutable scalar results via stores/setter, then scalar-to-motion transfer: 316/316/316/150/150/150/150/316.
 // NOT kept: 150 gains only two; native result/range/projection homes remain. Original body restored.
+// P331: Geometry admission results at endpoint/length/query, masks 1/2/4/3/5/6/7 then complementary
+// all: 188/189/189/197/197/197/190/230. NOT kept: no equality or gain; original complete body
+// restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1382,6 +1387,9 @@ long function_146650(void);
 // aggregate initializer 14 (same code); offset zeroed by a chained assignment after its declaration 18; a state_position
 // pointer for the three queries 125; an origin pointer for the actor position at all four uses 36. Permuter (600 s):
 // its reduced image scores 248 against the full 14, nothing better in 49 tries.
+// Round 144: actor-reference reads at entry/all behavior queries/final callback, then direct actor_index at the
+// direction producer/iterator setup/movement callback, and split proximity/projected declarations: 14 each,
+// identical listings. NOT kept: no allocation change; the original parameter observations and declarations restored.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
@@ -2048,6 +2056,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // N356: Signed-octet established/visible/retain storage, seven subsets and complete plain-char family:
 // 194/194/194/194/194/194/194/194. NOT kept: unmatched storage/result-lifetime forms.
 // Original executable source restored; Entry index operands, exchanged Boolean homes and direction SIMD residence remain.
+// P331: Post-search player/unit, slot-conflict and unseated-unit admission results, masks
+// 1/2/4/3/5/6/7 then complementary all: 194/790/194/194/194/790/194/194. NOT kept: no
+// equality/gain; original body restored.
 // DH351: Explicit distance/absolute/relative normalization outcomes, all seven
 // subsets, then both speed-result locals: 194 each. NOT kept: no gain; original
 // tests and full body restored; entry operands, Boolean homes and direction SIMD residence remain.
