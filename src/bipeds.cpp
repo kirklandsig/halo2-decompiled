@@ -1024,6 +1024,8 @@ extern long *g_51e9cc;
 // explicit-query real/double results: 121/121/137/144/121/144/121/144. NOT kept: no equality; original
 // height observation, branch and full body restored. Lookup rematerialization and crouch/contact
 // publication schedules remain.
+// P346: Complete query/decoder contact admission, valid/invalid bool/byte/short/long results:
+// 42/42/42/42/42/42/42/42. NOT kept: no native lookup retention or equality; original callback restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -2060,6 +2062,9 @@ void function_dfd70(long arg_159e6d)
 // P344: Actual first-ray fraction and hit/head projection declarations at the collision workspace,
 // seven subsets then reversed declarations: 233/233/233/233/233/233/233/233. NOT kept: no byte match;
 // both original helpers and complete target restored. Mode-three placement and basis/ray homes remain.
+// P346: Unified adjusted-head result with one final eye publication, original/final setter,
+// start setter and returned-up call ownership: 238/239/239/248/245/240/240/249.
+// NOT kept: native output/frame schedule not recovered and shared users regress. Both helpers restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)

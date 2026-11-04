@@ -4128,6 +4128,9 @@ void function_db670(long object_index, long vehicle_index)
 // B392: Owner/accumulator CRT zeroing subsets, null early return, entry owner/accumulator declarations,
 // chained defaults and existing default record: 52/45/32/28/52/45/28/55. Original body restored; late EDI
 // save and callee transport remain.
+// P346: Actual marker-placement bit as enabled/disabled bool/byte/short/long call inputs:
+// 28/28/28/28/28/28/28/28. NOT kept: no native callee transport or EDI-save recovery;
+// original body, owner initialization, parameter order and every callee interface restored.
 // @retail 0xdb760
 void function_db760(long region_index, long object_index, long permutation_index, long mode)
 {
