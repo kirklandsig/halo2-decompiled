@@ -758,6 +758,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // pointer 128 (gain 4, not kept); dot3f, plain-long jitter and `limits.k = limits.j` 257 (1010 bytes, m 47,
 // closest structure: the limits/factor products, the j/k copies, the projection/movement stores and the
 // jitter spills remain).
+// DL254: Native jitter coefficient/offset phase passes, inherited then ordinary sample:
+// 168/180/165/204/220/220/177/197. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

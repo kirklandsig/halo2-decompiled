@@ -1499,6 +1499,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // scan 565; the block count read at each use 567; the normal copied after the length store 528 (as round 222);
 // the luminance's 2.0 written last 529; count declared before the parameters pointer 529 (same code). Ours now
 // returns `ret 0xc` like retail; the block/query registers (ours edx/eax, retail eax/edx) and frame 0x2c remain.
+// DL254: Existing shared clamp/negation/rotation output-pointer contracts, seven subsets then ordinary inline:
+// 529/529/529/529/529/529/529/529. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
 // M344: Scan-produced found/missing outcomes in bool/byte/short/long storage
 // 597/534/561/560/538/538/562/560. NOT kept: unmatched scan flags enlarge the
 // body; five native-frame forms also regress the caller 363 -> 440. Original

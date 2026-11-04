@@ -519,6 +519,19 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
 // divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
 // if/else inverted with the fallback arm first 32 (same code).
+// DL253: one plain tick/delta component loop with long/dword counters 59/59;
+// short/word counters 140/140 (403 bytes); full prediction/tick/delta loop
+// with long/dword counters 98/98 (374 bytes), short/word 96/96 (366 bytes).
+// NOT kept: all regress; counter-width selections require equality. Tick reuse still differs.
+// DL255: Ordinary inline update-provider metadata, complete rate/tick/delta producer
+// masks 0..7: 102/117/102/117/94/105/94/105. Tracked-pointer result with original/direct
+// argument storage: 32/99. NOT kept: metadata changes ingress and regresses; result
+// contract ties or regresses. Original complete body, providers and caller declarations restored.
+// DL257: Exact widened rate/tick/rounded-length carriers (rate, ticks, length, rate+ticks,
+// rate+length, ticks+length, all), then all plus rounded correction scale:
+// 98/127/91/106/109/121/108/108. NOT kept: no gain; width/precision selections require native
+// shape or equality. Original complete body, real carriers, helper and parameter storage restored;
+// dying-rate/tick register reuse remains.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

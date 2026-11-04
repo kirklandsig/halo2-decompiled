@@ -3608,6 +3608,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // cursor; 164) the member mask declared at function scope 164; a named word member bit used for the test and the
 // clear 168 (471 bytes); the route zeroed as `= { 0 }` 164; the size debited right after the size test 169; on the
 // original form the mask at function scope 139 (same code). Retail's EBP channel / spilled member still not reached.
+// DL254: Matched current-member/incoming-packet/channel-enqueue inline subsets; then all three with an independent cursor:
+// 139/139/139/139/139/139/139/164. Original complete body and helper contracts restored;
+// channel/cursor/member and route homes remain; no qualifying provider change.
 // Y556: Payload-relative consumed result, long/int/dword/short, original/independent
 // packet traversal: 169/169/169/164/154/154/154/153. NOT kept: exact-only induction/domain forms do not match;
 // original header-inclusive result, live counts and complete body restored.

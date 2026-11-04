@@ -654,6 +654,10 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // B389: One failed-request edge to the sole exit, byte/char/bool/word/short/dword/long/int
 // success domains: 348/348/478/545/545/496/496/496. Original byte guard and body restored;
 // destructive graph-base/reload ownership and low-byte return remain.
+// DL253: Original resource API with coherent force-inline outer/middle/leaf subsets 1/2/4/3/5/6/7,
+// then all with Boolean status: 1788/1887/1895/1579/1788/1895/348/478. Full expansion reproduces
+// the original graph/base homes and still loses eight matches; all forms regress other users.
+// NOT kept: all original provider declarations, shared expansion call and complete body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

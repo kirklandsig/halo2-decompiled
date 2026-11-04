@@ -1138,6 +1138,11 @@ done:
 // reference pointer 158 (454 bytes, 0xd2a50 72); that with the state struct split into three locals 157 (456,
 // 0xd2a50 97); the split alone 157 (0xd2a50 97); a named cluster pointer for the 0xbf9a0 output and its read 138
 // (473); the exclusion preset false and assigned the definition test inside `if (type == 6)` 133 (470 bytes, setne).
+// DL255: Fixed-three forward attempt counters, long/dword/short/word: 122/122/118/118;
+// reverse remaining counters: 123/140/119/139. Extents 470/470/470/470/470/460/470/461.
+// NOT kept: gains at most seven; narrow counter/layout forms require equality. Frames
+// stay 0x64, first +3 and exclusion/result/NONE ownership remain. Original complete
+// body, grouped workspace, triangle reference, retry state and query operands restored.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

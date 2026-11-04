@@ -355,6 +355,10 @@ struct s_object_damage_view
 // Round 390: External amount-field identity after timestamp acceptance, original/whole
 // record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
 // Original body restored; scalar homes, amount-biased cursor and attribution remain.
+// DL253: existing streak/final/secondary provider ordinary-inline singles 353/353/353;
+// ordinary-inline pairs 353/353/353 and all three 353 on the native-frame graph;
+// forced streak expansion 962 (1949 bytes), loses a matched caller; NOT kept: shared regression.
+// Original providers and calls restored; scalar homes, history cursor and attribution still differ.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -262,6 +262,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 57 (m3 lane 13, fast): the normalizer's products as i*inv, j*inv, inv*k 110 (same code); `transform4x3f
 // local_1[6]` declared before `local_0` 110; the normalizer returning the length, both pointers taken after the two
 // calls 110; the header normalize3d for forward only 233 (839 bytes); the projection rows in k, j, i order 110.
+// DL256: Complete normalized forward/up/left field-reference consumers, subsets 1/2/4/3/5/6/7,
+// then mutable forward on all three: 110/110/119/110/119/119/119/119. Left-reference forms
+// grow to 923/922 bytes and move the first gap to +0x44; other forms retain +0x159.
+// No control score changes. Original four-use normalizer and entire body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

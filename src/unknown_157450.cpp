@@ -678,6 +678,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // the engine-index load then hoists as retail's); word mask with the added mask written into the second loop's test
 // 90 (396 B); `word const` mask 77 (same as word); word mask with the change tests as XORs 86; word mask with the
 // present test as `present & ~old` 86 (diagnostic, not equivalent).
+// DL255: Residual notification bitmaps, dword/byte carriers and dword/word saved masks,
+// full eight-ordinal then bounded-exhaustion traversal: 97/81/97/81/92/79/92/79.
+// NOT kept: all regress; the saved-word form still reloads for compare and update.
+// Original iterator, masks, callbacks, qualifier and complete body restored.
 // @retail 0x158140
 void function_158140(void)
 {

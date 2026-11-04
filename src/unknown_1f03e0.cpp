@@ -1026,6 +1026,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // B389: Complete native aggregate producers: direct rotation/raw/working, general working/raw,
 // direct raw+working, general raw+working and all: 433/433/497/551/433/497/551/584.
 // Original raw-first body restored; damping and raw/bounded homes remain.
+// DL253: Independent shared general/history output sums 473/435; history difference/offset/relative
+// setters 431/433/433; flying desired setter 428; direct two-point difference 572; general unity
+// scaled difference 463. NOT kept: gains two/five below the bar; flying setter also shortens away
+// from retail. Original raw-first body restored; damping and raw/bounded homes remain.
 // B391: Actual external normal/facing/input identities, subsets 1/2/4/3/5/6/7, then
 // all with up identity: 346/509/533/477/511/587/513/511. NOT kept: the normal-field
 // reference reaches 346 at 3052 bytes by changing existing product scheduling; retail
@@ -1038,6 +1042,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // 497/593/594; initial/fallback/both library copies 433/433/433; both scalar
 // copies with native raw aggregate 594; both overlap-safe copies 586. NOT kept:
 // no gain; original full body, raw/bounded homes, helpers and observations restored.
+// DL256: Existing cross/dot expansion pairs forced-inline/inline, inline/forced-inline, both forced,
+// ordinary/inline, inline/ordinary, ordinary/forced-inline, forced-inline/ordinary and both ordinary:
+// 433 each (3037/3047 bytes); every shared user unchanged. Original annotations and full body restored;
+// damping ECX/EDX, raw/bounded homes and cross/history schedules remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

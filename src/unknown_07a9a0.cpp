@@ -1197,6 +1197,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Y561: Existing capacity/imbalance/party-mode provider subsets 1..7,
 // then all plus limited provider: 766/903/903/766/766/903/903/903.
 // Original selectors/workspaces restored; frame/session/lookup remain.
+// DL255: Direct descending group/initial-histogram/validation ordinals, subsets 1..7,
+// then separate reverse native ID transfer: 831/794/831/917/852/824/852/845. NOT kept: all regress,
+// frames 0xd4/0xd8 versus 0xb4 and stack ingress remain. Original complete body,
+// histogram phases, selector contracts, observations and call operands restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

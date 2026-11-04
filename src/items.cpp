@@ -682,6 +682,12 @@ struct s_item_collision_bsp
 // DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
 // 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
 // all controls unchanged. Original body, pending-k join and protected plane contract restored.
+// DL255: Contact/angular provider ordinary/inline/forced policies, eight pairs:
+// 211/386/211/712/211/712/386/734. NOT kept: ties/regressions; forced expansion loses
+// 0xd9640 and/or 0x10b190 and raises other users. On the shared spin-k graph, existing
+// staged cross/linear add/both: 205/211/209 (1366 bytes). NOT kept: gains six/zero/two,
+// below threshold; 0x1c4590 6 -> 11 and 0x24cf66 114 -> 115 also rise.
+// Original complete body, vector expressions and both provider declarations restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
