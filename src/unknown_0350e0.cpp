@@ -4521,6 +4521,8 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
 // eax-then-ecx and 0x494b0 still matches, but only 86); pass 11's dead g_485898 load and late `enabled` store (BLOCKED-BY
 // 0x44370). Also tried (88 unless noted): `counter` declared first (97), direct g_4c1a48[1] field accesses, a named
 // `group_index = first_group + i`, the `group` reference declared before the loop.
+// Y596: Actual body-stepped entry/group cursors and short list result, seven subsets then all in while:
+// 177/170/179/176/127/173/171/174. NOT kept: no equality or gain; original full loop/pass body restored; scratch registers and pass-11 staging remain.
 // @retail 0x30ed0
 void function_30ed0()
 {

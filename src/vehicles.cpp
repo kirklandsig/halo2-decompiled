@@ -2558,6 +2558,8 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // native frame agrees, turn-product and spin scratch/store schedules remain.
 // Y592: Complete two-side torque result as native vector/actual pair array, entry/producer declarations and mutable/readonly initializers:
 // 48/48/48/48/48/48/48/48. NOT kept: grouped storage lacks equality; original scalar results, spin helper and complete body restored.
+// Y596: Complete side-result conditionals/branches, positive/complement, joint branches/defaults:
+// 142/123/142/123/107/107/104/104. NOT kept: no exact result selection; native turn/spin schedules remain; original body/helper restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3267,6 +3269,8 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // normalization traversals: 1125/1125/1114/1114/1125/1125/1114/1114. NOT kept:
 // frames 0x84/0x88 and lengths 4706/4694 move away from native 0x74/4666.
 // Original complete body restored; incoming velocity and force homes remain.
+// Y596: Complete planar projection pair/array, assigned/entry/initialized/readonly outputs:
+// 1057/1057/1057/1057/1057/1057/1057/1057. NOT kept: no equality; frame stays 0x80 versus 0x74; original full body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4491,6 +4495,8 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // for/while scans: 173/173/198/197/173/173/198/197. NOT kept: inside-search
 // decision requires a byte match; best gain three is below the gate and 1359 bytes
 // is farther from native 1361. Original whole search and body restored.
+// Y596: Identity/validity hit flag before the original later threshold, positive/complement bool/byte/short/long:
+// 161/161/161/161/161/161/161/161. NOT kept: search flag needs equality; 1354/1361 bytes moves away from native; full original body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
