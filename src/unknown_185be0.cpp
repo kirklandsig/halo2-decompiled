@@ -438,6 +438,10 @@ union s_185be7
 // ownership: 1031/1018/754/1096/1048/1059/1132/1077. NOT kept: all regress; destination aliases
 // and own-record indirection miss equality; native root/NONE and scalar homes remain. Original
 // complete body and helpers restored.
+// J250: Actual sampled-input auxiliary/movement/look/auxiliary-movement native pairs
+// 622/622/622/622; opaque auxiliary formal with typed/direct pointer access 622/622;
+// complete vector/point input pairs 622/622. NOT kept: no root/NONE, settings, frame
+// or flag improvement. Original input record, body and outside declaration restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
