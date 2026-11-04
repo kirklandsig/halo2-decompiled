@@ -312,6 +312,10 @@ void function_151ea0(long player_index, long object_index)
 // Round 103: equality as an else-if 1; nested <=/== priority tests 12; an explicit not-equal
 // else-if to done 1; separate distance-failure/copy/done labels 75; split result declaration 1;
 // result declared last 1; byte result 32; a named closer flag 1. Original body restored.
+// P323: equality-owned point/vector/point+vector/distance/point+distance/
+// vector+distance/all declarations 1/1/1/1/1/1/1; all declarations at their
+// computation phase 1. Native 0x24 frame, 259 bytes and the wrong
+// lower-priority jump to the other epilogue remain. Original body restored.
 // @retail 0x151320
 bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
 {
