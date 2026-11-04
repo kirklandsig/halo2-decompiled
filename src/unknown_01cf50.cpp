@@ -5712,6 +5712,12 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
+// MiniMax G (11-04): score 199 (was 223): the material pointer is loaded before the part type is
+// tested and the cull-mode global is no longer zeroed; the handle's sign test as (handle & 0x80000000)
+// == 0 gives retail's test/js but scores 224-240, and ours still keeps the ebx zero register where
+// retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax
+// at 0x3e380, whose declaration is in another file.
+// MiniMax H (11-03): no new form, no lower score; ours keeps the ebx zero register where retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax at 0x3e380, whose declaration is in another file.
 // score 223 (was 241): the handle now goes into the context's dword at offset 8 and the availability
 // flag drives the table test, as retail does; left is our ebx zero register against retail's
 // edi and the loop counter in edi against retail's esi. Round 61: the permutations now arrive in ecx at
@@ -5765,9 +5771,10 @@ void function_4c690(long tag, transform4x3f const *nodes)
                 {
                     byte *part = *(byte **)(geometry + 4) + part_index * 0x48;
                     short material_index = *(short *)(part + 4);
-                    word type = *(word *)part;
-                    if (material_index == NONE || type == 0 || type == 5 || type == 1) continue;
+                    if (material_index == NONE) continue;
                     byte *material = *(byte **)(definition + 0x64) + material_index * 0x20;
+                    word type = *(word *)part;
+                    if (type == 0 || type == 5 || type == 1) continue;
                     long material_tag = *(long *)(material + 0xc);
                     if (material_tag == NONE) continue;
                     byte *shader = g_4e3b44[material_tag & 0xffff].bytes;
@@ -5789,7 +5796,6 @@ void function_4c690(long tag, transform4x3f const *nodes)
                                 function_1cdd0(*(real **)(definition + 0x18), (byte)*(word *)(section + 0x1a));
                             else function_1cdd0(0, 0);
                             function_1bbf0(material_tag, 0, 15, pass, 0, 1024.0f);
-                            g_4b8448 = 0;
                             D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
                             word const *vertices = *(word **)(geometry + 0x24) + *(word *)(part + 6);
                             long count = *(word *)(part + 8);
