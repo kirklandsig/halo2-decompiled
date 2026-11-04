@@ -1908,6 +1908,10 @@ real game_time_get_seconds();
 // F372: Internal hash, animation/sample and draw workspace role names, seven
 // subsets then all with offset/reflection names: eight at 507. Native frame and
 // output homes remain; original names, scopes, APIs and complete body restored.
+// F390: Actual position/direction/color eight-byte alignments, seven subsets, then sampled-color
+// alignment: 584/584/594/564/567/567/568/568. NOT kept: each introduces a frame-pointer prologue
+// absent from retail; complete original output alignments, API and body restored. Native
+// frame/output homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2892,6 +2896,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // seven subsets then natural while fallback: 396/331/385/448/374/340/409/409. NOT kept:
 // all regress; several shorten to 1273-1310/1324. Original complete body restored; native
 // prefix/state and removal-ordinal homes plus decay rotation remain, both controls stable.
+// F390: Existing four-use swap first/second/both actual-record references with default/ordinary
+// expansion, complete forced expansion and complete clamp reference input: eight at 317. Original
+// alias-safe copies, pointer contracts, helpers and whole body restored; frame 0x30, native
+// prefix/state and ordinal homes plus decay rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4070,6 +4078,10 @@ bool __stdcall function_391f0(void *state);
 // snapshot/per-use index base: 251/276/300/306/251/276/300/306. NOT kept: no gain; frame
 // stays 0x74 versus 0x70, wide counts grow to 1036/1014. Original complete body and header
 // contract restored; early zero and visible/portal/fog homes remain, all callee controls stable.
+// F390: Actual two-side standard find/count/search producers, direct mutable and const table
+// views, then find/search iterator results: 353/352/394/353/352/394/353/394. NOT kept: frames
+// 0x84/0x8c versus native 0x70 and extents 1087/1119 versus 1014; original side loop, whole body
+// and include set restored. Early zero and portal/fog homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
