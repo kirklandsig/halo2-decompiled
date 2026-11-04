@@ -1443,6 +1443,10 @@ struct s_looping_detail_request
 // DH336: Declared byte/char/word/long completion with original bool storage,
 // request output then native temporary/copy: 110/110/129/128/127/127/153/152.
 // Original Boolean contract and complete body restored; first-player expansion remains.
+// Y581: Serial attached-completion then fallback dispatch, bool/byte/short/long,
+// original request offset 110/131/135/134; native temporary/copy 134/151/188/187.
+// NOT kept: tested completion requires equality; first-player query still expands.
+// Original whole body restored; native detail/offset transport remains.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1855,6 +1859,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // DH334: Named computed gain difference/pitch interval/detail milliseconds, seven subsets,
 // then complete stages with a named pitch offset: 479 each reduced (control 479, full 305).
 // NOT kept: no gain or native frame recovery; original complete body restored.
+// Y581: Actual playing/playback/modifier track-owned workspace subsets 1..7:
+// 479 reduced each; all with complete native request 477 (control 479; full 305).
+// NOT kept: two reduced points without equality or ordinary gain; original
+// acquisitions, pointer scopes, request and full body restored. Frame/range homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2552,6 +2560,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 680/680/671/680; conditional values 679/679/685/685 fast (control 694; full 597).
 // NOT kept: retail first copies alternate, then clears only the unavailable path;
 // complete-result stores differ. Original producer, widths and whole body restored.
+// Y581: Raw zero/one alternate mask, mutable byte/word/long/dword
+// 674/749/675/675; immutable counterparts 674/749/675/675 reduced (control 694,
+// full 597). NOT kept: frame grows from 0x3c to 0x40/0x44; entry true/flags and
+// record/track homes remain. Original Boolean producer and complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
