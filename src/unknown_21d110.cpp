@@ -319,6 +319,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0. Codex F (11-01): no new in-file form either.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
+// Round 112: definition/effect declarations swapped, branch-defined effect index, sound result
+// before attachment and at function scope, private output declarations reversed, result after
+// outputs, initialized outputs, and negated rate admission without the redundant NONE assignment
+// all 181; all eight sensitive callers remain matched. Original executable source restored.
 // Earlier (204): no new in-file form moves it; the request has to reach 0x189fe0 in EAX or eight
 // matched callers lose their match, and that body is in src/unknown_189010.cpp: BLOCKED-BY 0x189fe0.
 // Round 102: the Round 72 form again 52 (429 B), 0x189fe0 110 -> 135 and its eight callers lost
