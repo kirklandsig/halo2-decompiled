@@ -2389,6 +2389,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // P298: Existing dword fallback setter with native word setters at pre-call/post-call/failure
 // clear boundaries, masks 0..7: 73/78/78/100/73/78/78/100. The fallback memory OR agrees;
 // extra EBP and count/body transport remain. Original complete body restored.
+// M366: Direct lower/upper body admission without selected sentinel, long/short/char/read-only-long,
+// combined/nested query: 70/64/65/70/70/64/65/70. NOT kept: no exact/native-sentinel repair;
+// original full body restored; extra EBP, count/body transport and flag schedules remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {

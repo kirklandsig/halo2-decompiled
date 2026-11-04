@@ -357,6 +357,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // formal, long/unsigned-long/int/unsigned-int sizes: eight 53s at 90/100 bytes.
 // NOT kept: target regresses and shared users rise (caller 13, constructor 29,
 // formatter 1, connector 90); original copier, scanner and full body restored.
+// M366: Canonical success signed-byte/short/word/int64 storage, false default then true-default rejection:
+// 41/47/47/48/62/64/64/48. NOT kept: all regress; false defaults and true int64 also lose
+// the matched caller. Original Boolean body restored; saved-start/scan register split remains.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

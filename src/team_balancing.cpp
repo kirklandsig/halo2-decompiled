@@ -686,6 +686,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // admissions; reused copy-initialized records outside the inner loop:
 // 180/180/178/157/152/152/174/174. NOT kept: no exact candidate-first query graph; early copy
 // lifetimes also lose the matched caller; original lifetime, queries and body restored.
+// M366: Complete three-way spread result from original less/equal tests, signed char/short/long/int64:
+// branch production 67/67/67/67; conditional production 96/103/102/122. NOT kept: no exact
+// candidate-first query repair; original complete body restored; reference-first calls and two extra bytes remain.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

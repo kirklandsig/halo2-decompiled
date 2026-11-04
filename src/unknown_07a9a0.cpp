@@ -1215,6 +1215,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // or positive-body forms: word 954/954/954/954; dword 982/982/982/982. NOT kept:
 // frames 0xd8/0xb8 versus 0xb4, late lookup and session ECX; caller reduced 8 -> 1.
 // Original complete body restored; frame/session/initial lookup remain.
+// M366: Closed ID/initial/eligible histogram phase lifetimes, six new word-table subsets 766;
+// full dword scopes 849/2780 bytes, scoped word first CRT clear 820/2812 (retail 2828).
+// NOT kept: no eligible ingress/lookup repair; original complete body restored; dword frame alone is insufficient.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
