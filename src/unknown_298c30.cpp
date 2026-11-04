@@ -249,6 +249,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // (1694; caller 698), with the `(double)` differences 513 (1646), plus a short outer counter 504 (1651); short
 // inner-angle counter 395 (same code), with the short candidate count 464; all three short with double dx/dy
 // 488 (1669; caller 698).
+// M3 lane 9 r83 (fast): the point locals renamed by role (center/direction/endpoints/offset/angles/candidate) 395
+// (same code: names move no slot here); the far branch's difference through the existing vector2d_from_points2d 407
+// (1743 bytes); the loop distance through a file-local accumulating distance2d 451 (1751); the root summed y-first
+// 395 (same code). Retail negates the inner sine's angle on x87 (`fld [angle]; fchs`), ours with SSE `0 - x`: the
+// sine argument as `-(double)a : (double)a` 425 (1709 bytes, fchs as retail but the entry moves to +0x2); the sine
+// as an if/else of two calls 419 (1715 bytes).
 // M3 lane 6 r142 (fast; both now `ret 0x1c`): local_2 renamed `direction` 395 (same code); the loop distance's
 // squared sum built in two statements before the root 395 (same code); a pointer to the emission entry in the
 // first arm 431 (1695 bytes); each emission's y written before x 421 (1743 bytes); diagnostic: the arg_0 address
@@ -586,6 +592,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // seven subsets 784/719/784/719/784/719/784; all with separate phase cosines 783.
 // NOT kept: staging nonmatches; original helper inputs, scalar precision and whole body
 // restored. Frame 0x124/0x114, eager radius and trace/trig/pivot homes remain.
+// Round 50 (m3 lane 15, fast): the rotated obstacle offset as two scalars 853 (3285 bytes); the sweep arms
+// setting only the three scales, the three point2f built after 868 (3287); the sweep points declared in the
+// loop body 719 (same code); the reversed direction negated by component 822 (3355); the obstacle distance
+// through the existing magnitude2d 719 (same code). Frame 0x124/0x114 and the cached radius (XMM5) remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

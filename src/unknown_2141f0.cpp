@@ -280,6 +280,9 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // state 10 completed size stored before the transfer count 39; state 2 handle tested against NONE 37 (same code).
 // Retail's 0x214db0 body touches neither EDI nor EBX (its only library call is strrchr), yet the state 0 caller
 // re-forms 0x55bf28 after it: the path call takes g_55be24[1] before the request copy.
+// Round 58 (lane 14, fast; aligned counts in brackets, this body [44]): state 9 without the file pointer local 304 [50], state 13 220 [52], both 302 [57]; state 16 with the state set before
+// the flag 37 [44]; state 19 buffer release first with the handle store ahead of the path clear 43 [43]; state 7 with a handle local 267 [62] (1724 bytes). The one-struct lead (0x55b4f0..0x55c02c)
+// needs 0x55bd04 and 0x55bd08 moved into it: BLOCKED-BY their definitions in a contributor's finished file. Not tried for that reason.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

@@ -337,6 +337,10 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // B388: Complete opposite/direction squared-norm nodes and rounded magnitude in double,
 // subsets 1/2/4/3/5/6/7, then both sums in double: 337/338/400/338/399/388/388/459
 // (fast control 336; full 324). All regress; original norm expressions and storage restored.
+// N345: Native component-array loops, negation/scale as fields or signed/unsigned
+// bounded traversal (excluding fields/fields): 360/360/357/361/361/357/361/361
+// (fast control 336, full 324). NOT kept: all regress; original component operations
+// and full body restored. Entry ESI, unit/reciprocal and accumulation schedules remain.
 // m3 lane 14 r56 (plain, 324): the third remaining read at both uses (no local) 379 (1874 bytes); `real yaw`
 // 503 (1917 bytes); the magnitude test as `fabs(magnitude) >= 0.0001f` 422 (1901 bytes); the third tail as
 // `count <= 0` weight first 355 (1892 bytes, retail keeps accumulate first); `opposite` declared before
@@ -347,6 +351,10 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // call). On those: vector3f_assign for the opposite vector 298; `opposite.k = 0` before i/j 397 (1882); the zero
 // test inverted with its arms swapped 295 (same code); a const source pointer 295 (same code). Retail's
 // load-first j row costs ours one byte before the j loop, so its 4-byte loop-head pad is missing here.
+// N345: Native component-array loops, negation/scale as fields or signed/unsigned
+// bounded traversal (excluding fields/fields): 360/360/357/361/361/357/361/361
+// (fast control 336, full 324). NOT kept: all regress; original component operations
+// and full body restored. Entry ESI, unit/reciprocal and accumulation schedules remain.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
