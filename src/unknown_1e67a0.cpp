@@ -764,6 +764,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // DH347: Last-consumer input/factor/acceleration, sampled-scale and direction/projection
 // scopes, seven subsets then complete scopes with descriptive limit naming: eight at 132.
 // Original body restored; frame 0x28 agrees, unity/limit/direction ownership and jitter homes remain.
+// N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
+// forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
+// body restored; unity/limit/direction ownership and jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

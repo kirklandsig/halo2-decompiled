@@ -1112,6 +1112,9 @@ void function_143250(
 // N368: Final-consumer lexical homes for real/double/both families, forward/reverse,
 // then both within producer bands, forward/reverse: 1766 each. Original names restored.
 // NOT kept: unmatched home allocation; native frame, rotation admission and basis/matrix homes remain.
+// N371: Complete scalar lexical homes by fanout/depth/live-span, forward/reverse,
+// then band-fanout-depth/band-depth-fanout: 1766/1766/1766/1766/1766/1766/1766/1766. Original names restored.
+// NOT kept: unmatched spill-priority forms; native frame, input admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -1260,6 +1260,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // DH347: Iterator record lifetime ends after search/output publication, with guarded/entry
 // scalar defaults and member/native aggregate initialization: 828/828/979/979/828/828/979/979.
 // Original full body restored; frame agrees, class/NONE and result/output homes plus late zero remain.
+// N371: Actual selector/output-pointer/search-key formal lexical families, seven
+// subsets then complete result/local roles: 828/828/828/828/828/828/828/828. NOT kept: unmatched
+// parameter-home forms; original body restored; class/NONE, result/output/candidate homes and zero remain.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

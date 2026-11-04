@@ -718,6 +718,9 @@ struct s_item_collision_bsp
 // complete normal scalar inputs mutable/const 207/207, all four inputs 209/209;
 // safe in-place result with captured normals mutable/const 216/216.
 // NOT kept: no equality or gain; in-place extent grows. Original body restored.
+// N371: Single-marker spin lifetime after contact, factor-first/enclosed-phase/scalar-role-name
+// subsets 0..7: 202/202/202/202/202/202/202/202. NOT kept: unmatched storage-only forms;
+// original complete body restored; protected plane width, plane joins and spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

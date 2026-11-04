@@ -412,6 +412,9 @@ struct s_block_candidate
 // N367: Joined callback/expiry busy result, expression bool/byte/short/long 360/360/365/365; branch
 // producers before oldest admission 347/347/365/367. NOT kept: ties or regressions, wider forms grow beyond
 // retail. Original busy/oldest graph restored; missing frame dword and page/ring homes remain.
+// N371: Saved ring successor in the ordinary inner for increment, bare scan/segment/
+// admitted/entry lifetimes, original then semantic cursor names: 347/347/347/347/347/347/347/347.
+// NOT kept: unmatched successor-slot forms; full body restored; missing frame dword and page/ring homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
