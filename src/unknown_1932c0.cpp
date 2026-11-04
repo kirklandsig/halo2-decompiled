@@ -963,6 +963,10 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // Round 30 (lane 17, fast; a compile-only build gives the same order): the reader's ticks declared, then zeroed 3;
 // file declared first, then the result 3; result zeroed after the allocation 70 (221 bytes); braced success
 // assignment 3; braced asm block 3; harness: `__int64 volatile`, LARGE_INTEGER QuadPart, forceinline reader 3 each.
+// Round 84 (fast): the reader's ticks as a struct of two volatile dwords 3; rdtsc in its own inner reader 3; the allocator's start read before its
+// null result 3; the page count in a named local 3; the result by a ternary on the write 3. Compile-only: the reader's stores take retail's order
+// only when they are not volatile and still survive, and only an asm reference to the local does that (banned steer); a pointer, a reference,
+// memset, a union, an array, `__assume`, `__noop` or a `T *` parameter of an inner reader all drop the stores.
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {
