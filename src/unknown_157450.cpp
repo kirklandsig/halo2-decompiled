@@ -691,6 +691,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // N351: Mask-field reference/immutable pointer, original/condition-owned immutable player, saved dword/word:
 // 32/77/32/77/32/77/32/77. NOT kept: no exact match or qualifying gain; complete original body restored.
 // Remaining: native word entry and shared post-loop mask reload.
+// N357: Added-team set at playing producers, bit union/cumulative difference with full/word saved mask and signed/unsigned added set:
+// 89/113/79/79/89/113/79/79. NOT kept: no byte match from these source forms.
+// Original executable source restored; Native word entry storage and shared post-loop mask reload remain.
+// N359: Left-shifting notification bit with long/dword/short/byte ordinals, full then word saved mask:
+// 95/87/65/65/89/83/56/56. NOT kept: no byte match; complete original body restored.
+// Native saved-word entry and shared post-loop mask reload remain.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2615,6 +2621,7 @@ void function_15b980(bool skip_event)
 void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics, long field, long delta, bool by_team);
 
+// MiniMax H (11-04): no new form, no lower score; the two blockers below still stand.
 // MiniMax R (11-01): no new form, no lower score; beyond the parameter-order block noted below,
 // retail's three 0x1967d0 switch arms use rotated temp registers (case 9 -> ECX, 3 -> EDX,
 // 1 -> EAX) and reload g_4e6948 into EAX/ECX at each use where ours keeps it in EBX.
@@ -4309,11 +4316,16 @@ void function_15fe20(long team_index, color3f *color);
 // unit index and the -1 compares) and the zone-progress tail's byte load order.
 long function_14de70(long local_player_index);
 
-// score 42 (was 42): frame 0x48c agrees; four bytes long. Zone byte shift, shared NONE/unit/slot
+// score 42 (was 42): frame 0x48c agrees, four bytes long; zone CL shift acquisition, late unit/slot
+// ESI NONE sharing, pool-load order, branch joins and progress/result transport remain.
+// Earlier team-color transfers load all three words before stores through ESI/EDI; the copies
+// are retail's when 0x7f720 returns color3f by
+// frame 0x48c agrees; four bytes long. Zone byte shift, shared NONE/unit/slot
 // registers and progress/result transport remain. Earlier: two team-color copies (retail loads
 // all three words, then stores through ESI/EDI), NONE reuse, byte shift and scratch registers differed.
 // The copies are retail's when 0x7f720 returns color3f by value (compile-only), or with each copy
 // through a color3f local initialised from the call: 46
+// frame 0x48c agrees; four extra bytes, late weapon NONE reuse,
 // frame 0x48c agrees; four extra bytes, late weapon NONE reuse,
 // the shift-count read width, format-mode branch and charge/progress allocation remain.
 // Earlier: frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
@@ -4495,6 +4507,10 @@ long function_14de70(long local_player_index);
 // as retail, both compares immediate, pool read ahead of the masked index); on it both tests against the weapon
 // local 71; the index term first in the unit address sum 73 (same code); a dead else `weapon = NONE` 42 and a ternary
 // re-assigning the default 42 (the dead default is dropped, original code).
+// AC512: Readonly native late unit with original/per-use slot fields, original/readonly
+// progress/player/both receivers: 42/28/42/28/42/28/42/28. All restored.
+// NOT kept: 28 changes the slot test to a byte compare; retail sign-extends
+// into a word and shares the ESI sentinel. Native shift/NONE/result transport remains.
 // P314: Decoded absent slot as the absent weapon result, conditional/branch-owned with raw/typed
 // receiver and short/byte slot: 42/42/28/28/42/42/28/28. NOT kept: byte-domain forms compare a
 // byte where retail sign-extends to a word; native-word forms tie. Original body restored.
@@ -4504,6 +4520,12 @@ long function_14de70(long local_player_index);
 // N353: Actual terminal unit rejection, progress-first classifier, charge/mode/progress
 // rejection and charge/progress completion exits 171/63/171/171/171/171/171;
 // complete admitted terminal selection 195. NOT kept: all regress; native NONE/shift/result homes remain.
+// AC519: Actual late unit presence/absence results in bool/byte/short/long,
+// 42/42/42/42/42/42/42/42. NOT kept: unmatched one-use predicate storage;
+// original native word-slot comparison, observations and complete body restored.
+// N357: Complete rejection outcome in bool/byte/char/signed-char/short/word/int/long:
+// 98/98/98/98/372/372/372/372. NOT kept: no byte match from these source forms.
+// Original executable source restored; Late ESI NONE, byte shift acquisition and progress/result transport remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5454,6 +5476,7 @@ void function_36580(void);
 void function_36880(s_short_rectangle const *rectangle, color4f const *color);
 void function_161420(long player_index, real alpha);
 
+// MiniMax H (11-04): no new form, no lower score; the x87 store still comes after the player register.
 // MiniMax R (11-01): no new form, no lower score; the single difference is that retail stores the
 // x87 power argument (`fstp dword ptr [esp]`) before it loads the player index into EDX, while
 // ours loads EDX first.
@@ -5704,6 +5727,12 @@ void __stdcall function_d6bc0(long object_index);
 // F360: Both squared-distance j/i tails as plain real-vector reverse loops, four signed for/while inductions:
 // 265/265/199/199/265/265/199/199. NOT kept: no native frame/timer repair.
 // Original complete body and helpers restored.
+// N357: Positive mode/time-slice/eligibility admissions, seven subsets and complete graph with outer timer declaration:
+// 144/144/144/144/144/144/144/144. NOT kept: no byte match from these source forms.
+// Original executable source restored; Frame 0x14/0x18, independent timer spill and entries-base reloads remain.
+// N359: Complete expiry-deferral/removal/creation join in bool/byte/char/signed-char/short/word/int/long:
+// 144/144/144/144/144/144/144/144. NOT kept: no byte match; complete original body restored.
+// Frame 0x14/0x18 and independent timer/entry-base ownership remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

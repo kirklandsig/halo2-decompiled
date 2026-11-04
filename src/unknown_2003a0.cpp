@@ -2412,6 +2412,13 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // elapsed as a dword, gets the late pushes and the pool reloaded per pass in EDI; the frame stays 0x48); on that,
 // a word wake read 312, `while ((squad = function_200d83(&squads)) != NULL)` 318, a long index without word casts
 // 312 (aligned 109).
+// DL259: Declared cluster array/shared scaled point/native movement fields,
+// seven subsets then readonly movement state: 275/275/275/275/275/275/275/275.
+// Original producers, includes and complete body restored; frame, iterator pool,
+// point/current-handle homes and intersection spill remain.
+// B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
+// complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
+// Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -2912,6 +2919,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // Round 143 (m3 lane 6, fast): the compute arm's found/count test nested 50; local_4 left uninitialised and set to
 // NONE inside the pending arm 50; the follow-up (0x202e90 + 0x1fb8a0) as a forceinline helper taking the index,
 // task and event 50; the 0x290cd0 index argument as `(word)arg_1` 117 (582 B); the index parameter as dword 50.
+// AC514: Actual mapped trigger-event long/int/dword/word results with conditional
+// then default-first producers: 35/35/35/59/50/50/50/60. NOT kept: unmatched width/producer
+// allocation forms; original event domain, wrapped scan, calls and body restored.
+// First-event index reload and displaced actor-loop alignment remain.
+// Wide conditional results 35 grow to 582/578 and add sign extension; the first index reload remains.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3345,11 +3357,18 @@ void function_2011f0(long arg_0);
 // pointer as a ternary 351; long difficulty by if/else switched as short 344. Left on 344: the options
 // if/else (retail stores NULL in its own arm), the memset's fresh `(word)arg_1` row read, arg_0's threaded
 // `xor esi, esi` after a failed 0x201400.
+// B413: Complete creation-record/customization/mask-attempt lifetime end scopes,
+// seven subsets, then all with readonly options: 318/318/318/318/318/318/318/318.
+// Original body restored; narrowed-index/placement and final-chain homes remain.
 // Round 49 (m3 lane 2, fast = plain 318): the options pointer by if/else with NULL in its own arm 361; the spawn
 // index assigned in each arm of `arg_2 == NONE` 358; the +0x3c word as a short compared with NONE and passed
 // as is 322 (retail's `cmp di, -1`, one byte shorter, but the splice loop's pad grows a byte; aligned 141 ->
 // 140); the final 0x2011f0 call with arg_1 unmasked (retail pushes the full dword) 350 (1344 bytes); a scenario
 // local for its three reads 348. Retail keeps the chain head in EDX through the splice; ours keeps it in memory.
+// J250: Actual signed palette member, placement member and complete typed row,
+// seven subsets 318 each; all with native scalar one-word masks 318. NOT kept:
+// no allocation or extent gain. Original alignment-two row, masks and body restored;
+// narrowed-input/placement, seat and final-chain homes remain.
 // P319: Early validation/count producer nested/conditional/disjunction/complete-failure,
 // then bool/byte/short/long availability: 318 each. Original count threading persists;
 // NOT kept: no match or gain. All validation, narrow inputs and complete body restored.

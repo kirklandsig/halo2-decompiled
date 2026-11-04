@@ -437,6 +437,14 @@ union s_185be7
 // DH338: Actual range-lower/angular-bound/curve-count/curve-pointer/paired-curve/
 // lower-angular/lower-curve/all native field bindings: 927/622/622/622/622/927/927/927.
 // Original body restored; root/NONE and scalar homes remain; lower reload lacks equality.
+// Y573: CRT return-owned output/button/duration destinations, seven subsets, then input record
+// ownership: 1031/1018/754/1096/1048/1059/1132/1077. NOT kept: all regress; destination aliases
+// and own-record indirection miss equality; native root/NONE and scalar homes remain. Original
+// complete body and helpers restored.
+// J250: Actual sampled-input auxiliary/movement/look/auxiliary-movement native pairs
+// 622/622/622/622; opaque auxiliary formal with typed/direct pointer access 622/622;
+// complete vector/point input pairs 622/622. NOT kept: no root/NONE, settings, frame
+// or flag improvement. Original input record, body and outside declaration restored.
 // P319: Existing clamp promoted value/lower/upper formal domains, masks 1/2/4/3/5/6/7,
 // then complete double result: 1211/1129/1205/1211/1211/1314/1211/1286. NOT kept:
 // no match, wider x87 domains enlarge frame/length. Original helper and whole body restored.

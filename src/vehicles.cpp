@@ -1256,6 +1256,10 @@ long function_10f5f0(long object_index);
 // pre-damage phases 565/629/614/587; entry declaration with late stores 565;
 // post-first-result initializer 565; original/entry initializers with six-real API
 // output 565/629. NOT kept: no gain; original full body and array values restored.
+// Y566: Damping real-input power overload/float power/exact float base/shared timestep:
+// 565/566/565/515; each with the six-real API extent 565/566/565/515.
+// NOT kept: timestep sharing grows to 2276/2264 bytes; native extents still leave
+// frame 0x1990 versus 0x1984. Original complete body and observations restored.
 // P298: Control-call accumulation by test/logical/conditional/named-result forms
 // 533/621/533/533; request-call accumulation 614/619/614/614. Original body restored.
 // NOT kept: 533 grows to 2300/2264 bytes; frame and native predicate stores still differ.
@@ -1691,6 +1695,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // pointers 13; value-initialized cross output 13; three-statement forward sum 11, with reversed final i product 11;
 // k+j initializer plus i 15. NOT kept: the two-point staged gains are below the retention threshold. Original body
 // restored; header SIB, join reloads, shared cross loads and the final forward i load remain.
+// Round 43 (lane 17, fast): the overlay-kind loop with its own counter 17 (the cross's up.i products then load
+// forward: the product operands follow numbering); both small loops with for-scoped counters 17; the overlay
+// fields declared as animation-id arrays in s_vehicle 13 (identical); the overlay channel declared before `state`
+// 32; the forward speed as dot3f(velocity, forward) 15. Original body restored.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2699,6 +2707,10 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // (975 bytes); the contact's torque and brake stores through a two-statement inline helper 10; the wrap's sign
 // test as `*spin < 0.0f` 10. A compile-only (no /GL) listing shares torque with the throttle as retail does and
 // homes the loop offset in a parameter slot, so it does not reproduce the LTCG frame.
+// Round 43 (lane 17, fast), at 10: torque named to sort after the compiler's `tv` temporaries (`wheel_torque`) 10
+// (identical: names do not order this frame); both steering bits read from the element expression (no pointer)
+// 242 (frame 0x34); a const contact-definition pointer 10; the gear read at each use in an else-if chain 176; the
+// braking test reading the vehicle lookup at each use (no `current`) 10. Original body restored.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4683,6 +4695,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P291: Reverse-case zero/complete-arm/existing-ratio-helper/magnitude-owned results,
 // conditional then branched reverse selection: 753/751/797/751/753/751/797/751.
 // All restored; frame 0x18, entry definition and zero/result/one residence remain.
+// Y566: Existing up/selected-forward/lateral/forward dot producers on the direct-active
+// graph, individual masks 1/2/4/8, paired 10/13, all, all with staged lateral cross:
+// 749 each at 2974/2974. Original complete body restored; zero/result/one and entry definition homes remain.
 // AC511: Actual lateral/projection/rejection vector output entry lifetimes, seven
 // subsets and complete graph with existing staged lateral cross: 749/749/749/749/749/749/749/749.
 // NOT kept: frame 0x18 and 2974-byte extent agree but entry definition and zero/result/one
@@ -5239,6 +5254,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // weighted-driver graph, seven subsets then consumed flip output:
 // 1090/1087/1140/1090/1140/1140/1140/1205. Sharing reaches frame 0xd4 rather
 // than native 0xd8; original complete body restored at frame 0xf8 and retail length.
+// Y566: Complete lift maximum with native repeated magnitudes: nested macro/ternary,
+// inner maximum retained, wide flip, repeated horizontal root, facing/current reuse,
+// wide flip with separate point ordinal, both lifetime interactions:
+// 1185/1185/1118/1271/1217/1132/1271/1202. All regress and grow beyond 5094 bytes;
+// original complete body restored. Native frame and handle/matrix homes remain.
 // J245: Existing bank/scaled-angular/force producers after driver weighting,
 // subsets 1/2/4/3/5/6/7, then all three cached up inputs with original magnitude tree: 1114/1069/1109/1100/1114/1109/1100/1087.
 // NOT kept: 1069 grows to 5104/5094 bytes; other producers regress and cached up inputs tie 1087. Every frame stays 0xf8 versus 0xd8; all original producers restored.

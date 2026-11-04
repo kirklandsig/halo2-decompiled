@@ -141,6 +141,10 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // Round 60, on the bounds-record pointer (12): named left/right/top/bottom 37; named top/bottom after the x step 30,
 // before it 23; advance named between the half extents 26; named advance 53; scalar center copies 12; a corners
 // rectangle 37. Named values flip the running position's XMM6/XMM7 before they reach XMM3/XMM4.
+// Round 50 (m3 lane 2, fast): half extents through a force-inline (span, size) helper 85 (846 bytes), through force-inline rectangle width and
+// height helpers 85 (846 bytes); the delay's seconds through a force-inline ticks helper 14 (same code); the corners through a force-inline
+// (quad, x, y, half width, half height) helper or a (quad, center pointer, ...) helper 14/14 (same code); the two x steps through a force-inline
+// (position, half width, pulse) helper 14 (same code); named advance with/without the bounds-record pointer 53/55.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

@@ -545,6 +545,18 @@ real function_30bf0(vector3f *vector);
 // plain long result is still spilled to +4); on that: occupant and player tests merged 152; facing branch on
 // the negated condition 150; short result 152; amount renamed to sort after result 152 (amount/count keep +0);
 // clamp into a named clipped fraction by ternary 263.
+// B414: Basis, first-query-output and plane lifetimes end at their last consumers, seven subsets;
+// complete graph with negative projection outcome: 152/152/191/152/191/191/191/191. NOT kept: ties or regressions.
+// Original complete body restored; result/range/amount homes and inverse delta/motion SIMD groups remain.
+// DH341: Complete sole-result defaults on mode/settings/post-projection/distance/outer-radius/
+// inner-radius/post-facing/leaf outcomes 321/328/363/363/363/372/327/325.
+// NOT kept: native result home not recovered; frames or lengths regress. Original body restored.
+// DH344: Existing complete setters at initial delta/motion/projected delta and their
+// pairs/all, then all with staged basis crosses: 164/154/152/166/164/154/165/165.
+// NOT kept: native result/range/projection homes and SIMD groups remain; original body restored.
+// DH346: Projected displacement in motion via native stores/setter, independent vector, complete
+// mutable/immutable scalar results via stores/setter, then scalar-to-motion transfer: 316/316/316/150/150/150/150/316.
+// NOT kept: 150 gains only two; native result/range/projection homes remain. Original body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2018,6 +2030,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 208 (m3 lane 3, fast with 0x25d810): strongest's zero after the prop-iterator start 194, best_level's 195,
 // both 195; the iterator start from the first actor lookup 729 (2843 bytes); `(short)p` in the first search 194;
 // the players iterator declared at the top 194.
+// DH343: Existing native component-array identity throughout direction/velocity/relative/forward,
+// direction+velocity/direction+relative/direction+forward/all: 194/194/194/194/194/194/194/194.
+// Original body restored; entry operand order, Boolean homes and direction SIMD residence remain.
+// N356: Signed-octet established/visible/retain storage, seven subsets and complete plain-char family:
+// 194/194/194/194/194/194/194/194. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Entry index operands, exchanged Boolean homes and direction SIMD residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
