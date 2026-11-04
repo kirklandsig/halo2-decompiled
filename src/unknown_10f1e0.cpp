@@ -2855,6 +2855,9 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
+// score 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
+// pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
+// costs both callers in other lanes' files.
 // score 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // (663) costs both callers in other lanes' files.
