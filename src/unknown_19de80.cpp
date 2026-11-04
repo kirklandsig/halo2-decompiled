@@ -509,6 +509,14 @@ static inline bool teams_enabled_19e1c0()
 // tests, seven family subsets 390 each; complete ordinary result 691. All restored.
 // NOT kept: embedded assignments remain unmatched; native frame/capacity/result
 // homes and separate name-copy tails remain.
+// M3 lane 14 r59 (fast): on the plain result with the event teams read at each use and `remaining <=` clamps (661
+// re-measured: event EBX and result ESI as retail, token EDI and token_length EBP where retail has token_length EDI
+// and remaining EBP): every format failure as `return remaining;` 665 (1199 bytes); each case its own `if` closing on
+// `return result;` (no else chain) 581 (1280 bytes), plus the failure returns 557 (1306 bytes; homes turn over again:
+// token EBX, token_length ESI, event EBP, result EDI), with the text buffer declared first 581 (same code); the
+// volatile result with the per-case returns and the teams at each use 429 (1427 bytes). Diagnostic (reverted): one
+// `remaining &&` added to the second compare on the plain result 655 in the real build (homes unchanged), although
+// a compile-only build (no LTCG) of the same source flips to retail's homes; that harness misleads here.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

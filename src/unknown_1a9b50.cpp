@@ -938,6 +938,16 @@ static __forceinline long real_to_long(real value);
 // returned admission, original-object receiver, query-output names or shared squared length:
 // 469/469/469/469/519/478/469/471. NOT kept: retail reloads the limit; no exact
 // match, frames/lengths move away. Original observations and whole body restored.
+// P299: Input-only actor/metadata/paired prop receivers on the current velocity graph,
+// seven subsets and immutable bindings: 382 each. Original complete body restored;
+// early rejection island and magnitude/object/query homes remain.
+// P301: Threaded admitted result plus native complete object-base receiver, acquired
+// after magnitude/weight, each with retained/direct facing reads, bool then byte:
+// 534/571/522/554/551/588/543/585. NOT kept: all regress and enlarge code; original
+// result, velocity/facing receivers, query aliases and full body restored.
+// DH322: Sequential magnitude/query speed, prediction/flight duration and limit/direction distance,
+// seven subsets then entry declarations: 384/445/382/446/384/445/446/446. NOT kept:
+// storage nonmatches; original scalar lifetimes/body restored, early exit and query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

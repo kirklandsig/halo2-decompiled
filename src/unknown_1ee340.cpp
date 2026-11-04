@@ -386,6 +386,12 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // directions from the copies 212; plus fraction by if/else 236; plus a dword count local for the loop and call
 // 249 (1020 bytes). On the original body: a literal 0.0f for field_c 192; the result normal through a local
 // pointer 192 (same code). The chain only gains on top of the swap. Original body restored.
+// Round 84 (m3 lane 9, fast control 192; 0x23a220's definition still in another lane's file, so no parameter
+// swap): the hit block now has retail's code apart from homes, the dead second `movsx` after the axis call and the
+// first product's operand order. Forms: the hit point accumulated onto a copy of the ray start 301 (1039 bytes); a
+// named side row `axis * 2 + (n[axis] > 0)` for all four table reads 251; the projected point as an aggregate
+// initializer 192 (same code); the polygon array declared before the hit point 192 (same code); the hit-point sums
+// written start-first in all three rows 192 (same code). All restored; still BLOCKED-BY 0x23a220.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {
