@@ -360,7 +360,7 @@ static __forceinline void apply_second_pair_second_impulse(float const &source,
 		unsigned long bits;
 		float value;
 	} rounded;
-	rounded.bits = *(unsigned long const *)&source;
+	rounded.bits = *(unsigned long const volatile *)&source;
 	__m128 scalar = _mm_set_ss(rounded.value);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
