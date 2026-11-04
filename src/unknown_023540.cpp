@@ -2540,9 +2540,17 @@ dword __cdecl function_131fc0(real alpha);
 // producers 406/406/390/414; branched producers 406/406/390/414.
 // NOT kept: all regress and disturb the matched prefix; original flag reads,
 // state stores, fallback arrays and complete body restored.
+// F357: Complete shader-admission truth in bool/byte/word/dword, logical
+// producers 140/140/140/140; eager Boolean producers 243/243/243/243.
+// NOT kept: no gain; original flag reads, shader arms, fallback arrays and body restored.
 // AC506: Common post-arm first-constant/final-ABCD/final-EFG publication, seven subsets
 // and all results declared at entry: 155/180/181/175/193/187/197/197. NOT kept: every
 // one-use output form regresses; original branch stores and complete body restored.
+// Y563: Common output workspace across shader arms, shader/function scope, original/shared
+// raw workspace and ternary/upper-default short alpha: 140/145/140/145/140/145/140/145.
+// NOT kept: no gain or byte match; original workspace scopes and complete body restored.
+// N353: Separate caller-side scalar/color/finalizer inline declarations, seven subsets,
+// and all force-inline declarations: 140 each. NOT kept: no gain; original declarations restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2869,7 +2877,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 }
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
+// score 211 (was 247): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
+// the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
+// Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
 // trigonometric scheduling remain; both normalized scales now use their native parameter results.
 // Earlier 279 (was 282): Frame 0x58 agrees; six excess bytes, sampler constants,
 // bitmap-call transport and scale/trig homes remain.
@@ -2985,10 +2995,21 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // immutable pairs, first-producer scope and late second-output declaration, all
 // eight forms 246 at 2027/2022 bytes. NOT kept: one-point gain below eight;
 // original trig carriers, output declarations and complete body restored.
+// F357: Float trig APIs at both angle producers, cosine/sine/both with
+// reused pairs 250/250/250, independent pairs 249/249/250; complete immutable
+// pairs and complete producer scopes 250/250.
+// NOT kept: all regress; original real results, helper, normalized parameters and body restored.
 // AC506: Both trigonometric pairs in double result carriers, explicit-real/helper-input
 // rounding with mutable/immutable and first-producer scopes: eight at 331 (1972/2022 bytes).
 // NOT kept: precision/transport forms regress and move the extent away; original float
 // carriers, helper inputs, rounding and complete body restored.
+// Y563: Native real cosine/sine/both APIs with reused and independent pairs,
+// then both with late output/immutable pairs: 250/250/250/249/249/250/250/250.
+// NOT kept: all regress; original APIs, trig carriers, helper and complete body restored.
+// Y565: Paired half extents on native normalized-parameter results, retained diameters/direct
+// products and joint/axis-local production, original array/native box outputs: eight at 211,
+// 2022/2022 bytes. Keep direct paired half extents (plain 211); each has two original bounds
+// consumers and retail retains both products. Original grouping, calls, trig and arrays retained.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3056,13 +3077,13 @@ void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
         first_scale *= inverse_scale;
         second_scale *= inverse_scale;
     }
-    real scaled_width = scale * width;
-    real scaled_height = scale * height;
+    real half_width = (scale * width) * 0.5f;
+    real half_height = (scale * height) * 0.5f;
     real bounds[4];
-    bounds[0] = 320.0f - scaled_width * 0.5f;
-    bounds[1] = 320.0f + scaled_width * 0.5f;
-    bounds[2] = 240.0f - scaled_height * 0.5f;
-    bounds[3] = 240.0f + scaled_height * 0.5f;
+    bounds[0] = 320.0f - half_width;
+    bounds[1] = 320.0f + half_width;
+    bounds[2] = 240.0f - half_height;
+    bounds[3] = 240.0f + half_height;
     if (first_scale == 0.0f) first_scale = 1.0f;
     if (second_scale == 0.0f) second_scale = 1.0f;
     real first_coordinates[8], second_coordinates[8];
@@ -3484,6 +3505,16 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // shared value declared at the top, before the maximum or after the inverse distance 19; small set after the switch with wria 31 (aligned 6: only that store's place and the two reload
 // pairs differ, the selector block is exact); that store right before the switch, after low or after the inverse distance 998/997/996 (aligned 24), declared after high or the inverse
 // distance 998/996; a false-valued local before the switch copied after it 31 (constant-propagated). Any store before the switch loses retail's `mov cl, [small]`.
+// DH325: Existing quantizer inline/natural expansion, immutable value/direct
+// input subsets 0-3 in each: 1201 each, 4420/4828 bytes. All restored; native
+// expansion still needs force-inline. Selector/reload/sample homes remain.
+// DH327: Existing quantizer writes native integer outputs, pointer/reference
+// destinations with nested/guard/default/conditional clamp graphs:
+// 31/31/787/31 twice. Original output contract, helper and complete body
+// restored; selector scheduling, post-bias reloads and shift/clip homes remain.
+// N350: Immutable shift/clip/center parameter subsets and all with immutable
+// state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
+// selector, reload-pair and six quantizer input-home differences remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
