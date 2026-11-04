@@ -547,6 +547,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // N359: Original elapsed-time timeout comparison result in bool/byte/char/signed-char/short/word/int/long:
 // 246/246/246/246/246/246/246/246. NOT kept: no byte match; complete original body restored.
 // Frame 0x3c/0x40, status/clock/output homes and instruction policy remain.
+// DH365: Complete allocation admission at its original phase, bool/byte/char/signed-char/
+// short/word/int/long: 246/246/246/246/246/246/246/246. NOT kept: nonexact one-use predicate forms; original
+// body restored. Frame 0x3c/0x40, status/clock/output homes and SSE scheduling remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

@@ -310,6 +310,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH363: Native indexed coordinates in squared/length metrics and actual output triplet loop,
 // subsets 1/2/4/3/5/6/7: 390/390/393/390/393/393/393; full graph with indexed length delta 428.
 // NOT kept: no match or native-home recovery; original metrics, copy and whole body restored.
+// DH365: One append-capacity outcome owns the marker append and output flag,
+// bool/byte/char/signed-char/short/word/int/long: 414/409/409/409/404/404/406/406. NOT kept: no exact
+// result/join recovery; original body restored. Selected-default/root/bitmap homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

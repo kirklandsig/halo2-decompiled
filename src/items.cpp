@@ -718,6 +718,9 @@ struct s_item_collision_bsp
 // complete normal scalar inputs mutable/const 207/207, all four inputs 209/209;
 // safe in-place result with captured normals mutable/const 216/216.
 // NOT kept: no equality or gain; in-place extent grows. Original body restored.
+// DH365: Existing plane-normal/matrix-rotation/marker-coordinate views, seven subsets,
+// then all with native spin/output coordinates: 202/202/202/202/202/202/202/202. NOT kept: no equality
+// or gain; original complete body restored. Protected width and plane/spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
