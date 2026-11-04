@@ -385,6 +385,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 }
 
 /* the rotation a spinning projectile makes each tick */
+// MiniMax A (11-03): no new form, no lower score.
 // score 3 (was 3): this round: the rate computed after the flag write scores 10, and the axis stored
 // after both trigonometry calls scores 21 with a shorter body (283 bytes); both were reverted.
 // score 3 (was 3): retail completes the rotating-flag OR and store before the angle duplicate and
@@ -899,6 +900,7 @@ real function_30bf0(vector3f *v);
 /* aims a falling projectile along an arc: the slowest speed that reaches
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
+// MiniMax A (11-03): no new form, no lower score.
 // score 232 (was 232): the convention now agrees with retail (target EAX, origin ECX, direction
 // ESI, the rest on the stack, `ret 0x2c`): the forced-speed and time-scale pointers are each read
 // once through their addresses, which keeps them on the stack as retail reads them at their uses
@@ -1198,6 +1200,7 @@ extern vector3f *g_4687ac;
 
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
+// MiniMax A (11-03): no new form, no lower score.
 // score 163 (was 163): simultaneous offset endpoints recover 757/756 bytes; frame 0x48
 // versus 0x34 and endpoint/query homes still differ. Shared input differences 220;
 // radius at use 224; both 233; simultaneous endpoints 163 plain (kept); endpoints with
@@ -1336,6 +1339,7 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 
 /* the effects and sounds of an effects block (a material's response) at
    a point */
+// MiniMax A (11-03): no new form, no lower score.
 // score 4 (was 4): only the four register arguments of the 0xfd740 call differ: retail passes
 // effect index 1 in ecx, effect index 2 in edx, sound 0 in esi and sound 1 in edi, ours passes
 // the same four addresses in ebx, edi, esi and edx; that choice comes from 0xfd740's own body.
@@ -1425,6 +1429,7 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 
 /* a projectile's detonation effects and sounds at a point, attached to an
    object's node when it stuck to one */
+// MiniMax A (11-03): no new form, no lower score.
 // score 115 (was 115): frame 0x150 and extent agree; point EBX/EDI, zero lifetime and selector call registers differ.
 // Round 196: array-size bounds, unsigned shared ordinal and distinct unsigned ordinals 148 each;
 // word index 115; long node 148; both widths 115 (kept); both widths with array bounds

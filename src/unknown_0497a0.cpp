@@ -241,6 +241,9 @@
 // sines through a named pointer to the global point 578; s1 from the local copy with s0 from the global 652 (2587 bytes);
 // staged first/second cross 575/575; a separate vector for the second wave 575; the first-wave vector declared after its
 // add 575; the vector locals renamed so retail's low-to-high slot order sorts by name, ascending and descending, 575/575.
+// Y572: Coherent existing cross/sum forced/ordinary/plain declaration pairs,
+// all eight nonoriginal policies: 581 each. NOT kept: frame remains 0x58/0x60;
+// complete target and both helper bodies unchanged, original declarations restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -842,6 +845,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // addss xmm6, xmm5), so everything after case 4 shifts. Side only 374, both 374; with case 1/2's first.x before
 // second.x 374 (VC copies the product instead); with normalize2d_fast on a case 1/2 side vector and normalize3d
 // on case 0's normal 368; that with the x pair before the y pair 372. All restored.
+// DH346: On retained paired geometry, staged side/normal/both crosses, shared chain difference,
+// immutable source/definition/outer/all pointer bindings: 265/265/265/266/265/265/265/265.
+// NOT kept: no native frame/spill recovery; original complete body and helpers restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1262,6 +1268,9 @@ void __stdcall function_43720(s_43740_input *input)
 // that, eight fill orders with the shader, normal, tag and position in retail's sequence 62-64 (0x42b20 4 each);
 // with the normal through the stored shader 66 (213 bytes, 0x42b20 62); the fill in a force-inline helper reading the
 // normal through the stored shader 67 (213 bytes, 0x42b20 62).
+// Y572: Joint original source/definition/slot formal-name priorities, seven
+// subsets then complete tag/bitmap role names: eight 62s. NOT kept: native
+// tag EAX/EBP split and signed-slot/shader homes stay wrong; body restored.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

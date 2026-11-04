@@ -434,6 +434,9 @@ void function_14bac0()
 // forms with uniform cached/per-use headers, 256 each at 1050/1043 bytes. NOT kept:
 // read/storage steering without a match. Original complete handle walk and body restored;
 // frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
+// Y567: Combined readiness byte/word/dword/long masks, original then native
+// result-tested recipients: 248/246/246/246/246/252/252/252. Native forms reach frame 0x4c, still
+// above 0x3c. NOT kept: no byte match; original flags, points and iterators restored.
 // N357: Final query result owns destination/alternate/both readiness, original/native recipients and byte/word complete results:
 // 250/237/247/244/236/256/247/279. NOT kept: no byte match from these source forms.
 // Original executable source restored; Frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
