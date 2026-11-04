@@ -313,12 +313,17 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
+// MiniMax b (11-04): no new form, no lower score; retail still takes the state pointer in EAX and the tag on the stack where ours takes the tag in EAX and the state on the stack, and the only form that fixes that changes src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0.
 // MiniMax R (11-01): no new form, no lower score; retail still takes the state pointer in EAX and
 // the tag on the stack where ours takes the tag in EAX and the state on the stack, and the only
 // form that fixes that moves 0x189fe0's request into EDX and loses its eight matched callers in
 // src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0. Codex F (11-01): no new in-file form either.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
+// Round 112: definition/effect declarations swapped, branch-defined effect index, sound result
+// before attachment and at function scope, private output declarations reversed, result after
+// outputs, initialized outputs, and negated rate admission without the redundant NONE assignment
+// all 181; all eight sensitive callers remain matched. Original executable source restored.
 // Earlier (204): no new in-file form moves it; the request has to reach 0x189fe0 in EAX or eight
 // matched callers lose their match, and that body is in src/unknown_189010.cpp: BLOCKED-BY 0x189fe0.
 // Round 102: the Round 72 form again 52 (429 B), 0x189fe0 110 -> 135 and its eight callers lost
@@ -970,6 +975,11 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // function scope, loop index at function scope, call outputs at function scope, outputs reversed,
 // location declared first, and controller value declared first: 147 reduced each against 153,
 // with no slot movement. Original body restored.
+// Round 43 (lane 17, plain; --fast builds this differently, 153 for the plain 30): the definition declared at the
+// top and assigned in place 30; the controller chosen by if/else 40; the tag pointer looked up just before its
+// first use 175; the bool declared first with the state captured first 191; `(looping->flags & 0x10) != 0` 30.
+// Compile-only frame probe (our frame): none of these moves the bool out of the bottom byte unit; a short or long
+// flag lands just above repeat_state (retail's place) but reorders tag_index and widens the code.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

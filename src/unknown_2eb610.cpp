@@ -4,6 +4,7 @@
 // result; and a cast of a box through a grid.
 #include "timer_mark_2ebc80.h"
 #include <xmmintrin.h>
+#include "lane_b_flip_collectors.h"
 
 struct body_2ea940;
 struct input_2ea940;
@@ -31,7 +32,9 @@ public:
 // @retail 0x2eb610
 void __cdecl function_2eb610(body_2ea940 const *a, body_2ea940 const *b, input_2ea940 const *input, long value)
 {
-	nearest_value_2eb610 collector(value);
+	/* the caller's collector, wrapped in the one that turns what the
+	   swapped query finds back (retail table 0x412970) */
+	lane_b_flip_point_collector collector((lane_b_cd_point_collector *)value);
 	function_2ea940(b, a, input, &collector);
 }
 

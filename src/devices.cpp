@@ -634,6 +634,8 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
+// with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
 // score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
@@ -825,6 +827,42 @@ struct s_device_machine_view
 // AC484: Native byte/signed-byte second-bit masks after the machine test 120/120;
 // before it 132/132; with velocity zero 122/122 and 64/64. Original word read,
 // masked bits, zero lifetime and body restored; word-load/EAX sharing remains.
+// Round 42 (m3 lane 2, fast; each with the 0x1200055f zero store): a two-value dispatch on `group->flags & 3`
+// 120 (diagnostic); the group pointer formed after the machine test with direct field masks 127 (657 bytes); word
+// masks with a dead `else group_flags = 0;` 122 (diagnostic); `function_value = (f & 1) && (f & 2) ? 1.0f :
+// function_value;` 122; the word flags read at the declaration before the machine flags, nested tests 115 (the
+// load folds into `mov ax, [eax + edx*4 + 2]` ahead of the machine test, no pushed ESI).
+// N336: Failure-owned power-velocity zero at cruise/disabled/power/paired/all leaves
+// 103/49/49/104/103/41/104; including stopped default 108. Original callback restored;
+// native group-word sharing and velocity-zero join remain.
+// N345: Immediate velocity-magnitude nodes at three guarded divisions, seven
+// subsets, then all with immutable bounded publication: all eight 34. NOT kept:
+// single-use library results do not match. Original callback and observations restored.
+// Round 81 (m3 lane 9, fast; on the 0x1200055f zero store; /FAs screen of 18 spellings: a read-only word value
+// always puts the group pointer in a pushed ESI, only an in-place `shr al, 1` keeps it in EAX): `bool second =
+// (group_flags >> 1) & 1` 114 (656 bytes); a `both` bool 122; `(bool)(f & 1) && (bool)(f & 2)` 114; first/second
+// bools tested second-first 152 (655); `f & 1 ? (f & 2) != 0 : false` 116 (657).
+// N345: Immediate velocity-magnitude nodes at three guarded divisions, seven
+// subsets, then all with immutable bounded publication: all eight 34. NOT kept:
+// single-use library results do not match. Original callback and observations restored.
+// Round 85 (m3 lane 9, fast; each with the 0x1200055f zero store): a byte cast on the first flag test 122, on both 122; a byte low local with a word second
+// test 122; a long flags local with a byte cast 122 (movzx); char casts on both 122. Screen: `(bool)` on the first test, the bits tested second first, a word
+// flags pointer local, a const group and value: the pushed ESI. Reading the group through the macro as well as the local (`(group->flags & 1) &&
+// (DEVICE_GROUP_GET(i)->flags & 2)`, or a value local for one test and the macro for the other) does put the pointer in EAX, retail's `lea eax`, but both
+// tests then read memory (`test byte [eax+2], bl`) with no word load.
+// F362: Existing callback as static device member, ordinary/inline, masked/word
+// flags and original/active-velocity zero: 34/34/120/120/117/117/122/122.
+// NOT kept: word-load/EAX sharing and zero join remain; original callback/table restored.
+// B407: Complete native short-unit 16-bit flag fields, unsigned/signed, masked/full
+// consumption and native velocity zero: 34/117/120/122 twice. No word-load/EAX recovery;
+// every other file score preserved. Original scalar field and complete callback restored.
+// P307: Actual machine bitfields with logical/bitwise admission, original/native group masks,
+// and absent/present velocity zero: 34/142/120/131/117/146/122/137. NOT kept: no exact native
+// observation/type graph; original view, word/masked result and entire callback restored.
+// M375: Bounded missing-bit byte/word/long/dword without/with active-velocity zero:
+// 95/93/93/93/17/17/17/17. NOT kept: 17 uses a byte load, complement and one combined
+// mask test instead of the native word load and two tests; only its zero-default combination
+// gains. Wider carriers grow to 655 bytes. Original whole callback, masks and result restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1044,6 +1082,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax A (11-04, run 41): no new form, no lower score (121); the initial velocity is still stack-passed
+// where retail keeps it in xmm6, and the ramp-down time still takes a register through the clamps.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // Earlier: retail keeps the initial velocity in xmm6 for the whole function and leaves
 // the ramp-down time in its stack slot; ours keeps the ramp-down time in xmm1 through the clamps
@@ -1172,6 +1212,46 @@ bool function_108530(long device_index, long name)
 // reset, with original parameter arithmetic 128/123/123/126; consistent stored-speed
 // arithmetic 128/123/123/126. NOT kept: early publication/disabled-path clears add
 // stores absent in retail and grow length; original complete body and callers restored.
+// Round 63 (m3 lane 10, fast, both callers 31/13): retail stores the zero straight into the ramp-down slot at its
+// clamp and compares the minimum against memory, never touching xmm6 before the inner block. The three zero clamps
+// written `0.0f < x ? x : 0.0f` 121 (same code); both ramp-down clamps as one PIN(ramp_down_time, 0.0f, remaining) 127;
+// the zero-denominator velocity as `(target - position) / duration` 149 (533 bytes); the position pinned at the top
+// before the time clamps 139 (525 bytes, the fast image changes both callers' conventions); the ramp-down zero clamp
+// after `remaining`, right before its minimum 123.
+// Round 34 (lane 17, fast, with both callers): the initial velocity moved to the second parameter
+// (definition and both calls; diagnostic, no retail order evidence) 123 (callers 25/23, still six
+// stack floats); the ramp-down minimum written `ramp_down_time < remaining ? ...` 121; the target
+// pinned before the position 141 (507 bytes, a `push ecx` frame and ret 0x14: one float leaves the
+// stack, callers 26/28); the initial-velocity store first among the inner stores 122 (a repeat); the
+// denominator summed cruise, half ramp-up, half ramp-down 121 (same code). Original body restored.
+// N345: Direct scalar truth at divisor/derivative tests, seven nonempty subsets,
+// 121 each; nonzero admission on bounded nonnegative ramp-up 132. NOT kept: no
+// gain. Both callers stay 31/13; original predicates and complete body restored.
+// Round 123 (m3 lane 7, fast with both callers, which stay 31/13): both ramp-down clamps as `<=`/`>=` ifs 122;
+// the ramp-up zero clamp as an if 122; the initial-velocity store first in the inner block 122; an early
+// `return` on the tiny duration 121 (same code); one nested ternary for both ramp-down clamps 127.
+// Round 81 (m3 lane 9, fast with both callers 31/13; /Gd /FAs screen of 48 combinations of inner-local order,
+// pin order, delta/distance naming and duration-first reset: the initial velocity always loads into an xmm
+// register written earlier, never a free XMM6): the duration stored first among the reset fields 121; the
+// distance named first with delta copied from it 123; duration first with the half ramp-down time named first
+// 123; distance first with the cruise time after the half times 123; that with the duration first 123.
+// N345: Direct scalar truth at divisor/derivative tests, seven nonempty subsets,
+// 121 each; nonzero admission on bounded nonnegative ramp-up 132. NOT kept: no
+// gain. Both callers stay 31/13; original predicates and complete body restored.
+// J248: Paired destructive derivative/phase-distance producers, local/field
+// ownership, separate assignments and actual output-field receivers, then callee-pop
+// and caller-clean declarations: 121/121/121/121/121/121/132/121/123. Original phase producers, convention
+// and body restored; initial-speed XMM6 and ramp-down stack residency remain.
+// F362: Existing initializer as motion instance/static member, ordinary/inline,
+// local/field cruise speed: 121/121/121/121/134/134/134/134. NOT kept:
+// initial-speed/ramp-down residency unchanged; original routine and both callers restored.
+// P306: Mutable acceleration/deceleration/cruise-speed producers, seven subsets,
+// then separately initialized derivatives: 121 each. NOT kept: no gain or match.
+// Original phase producers restored; XMM6 initial-speed/ramp-down stack residency remains.
+// Y580: Paired endpoint squares at entry/floors/bounds/pins, local/field cruise ownership:
+// 169/185/168/184/168/184/175/191. Post-pin pair recovers ret 0x14 and both callers in
+// preview, but grows a frame and 558/571-byte bodies. NOT kept: early one-use nodes lack
+// equality and regress; original complete body restored at 121, native 523 bytes.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1544,7 +1624,7 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
-// score 294 (was 294): our frame is 0x1c and retail's 0x20, and the index, header, state and result
+// score 285 (was 285): our frame is 0x1c and retail's 0x20, and the index, header, state and result
 // homes still differ; the group path reloads the definition pointer from three base registers.
 // Earlier (294, was 294): our frame is 0x1c and retail's 0x20; the index, header, state and result
 // homes still differ, and the group path reloads the definition pointer from three base registers.
@@ -1689,6 +1769,58 @@ bool function_0b6760(s_index_pair const *pair);
 // 294/294/369/294/369/369/369; all explicit-bool tests 458. Other 29 file scores
 // unchanged; frame stays 0x1c versus 0x20. NOT kept: activity stores and bool
 // extraction grow nonretail code; original word layout and complete body restored.
+// Round 42 (m3 lane 2): retail's channel-0 tests are 0x0b6760's shape inlined (`mov ecx, [ebp + 0x18c]; cmp ecx, -1;
+// lea reg, [ebp + 0x18c]; cmp word [reg + 6], -1`, the pointer then `this` in ESI), so a `power_channel` pointer to
+// channels[0] serves both tests and both calls: 294 -> 285 (1496 bytes; kept). Tried: the two channel-0 tests as calls
+// to function_0b6760 383 (plain index 376; all four sites stay out of line); the pointer on the plain index with
+// both event-id selects 302 (1476 bytes); the pointer with a direct `if` for the first test 292; a second pointer
+// for channels[1] 287; the definition read after the state block 286; event ids as selects between two field
+// reads, both/either 331/317/317 (1506/1501 bytes); a plain (non-volatile) definition pointer 386.
+// Round 144 (m3 lane 6, fast; [LCS-aligned / register-masked aligned] this body [172 / 122], 398 instructions
+// against 394): plain index with both event-id selects re-measured 302 [137 / 72] (1476 bytes); that with
+// block-scoped `previous` locals (one per phase, as retail's separate +0x14 / +0x1c homes) 298 [121 / 53]; that with
+// a plain definition pointer 431 [154 / 90] (1449 bytes); plain index, selects, scoped `previous` and the 0x8 path
+// as `if (finished) flags |= 0x20; else flags &= ~0x20; function_107520(device_index);` 343 [110 / 48] (1470 bytes;
+// VC then hoists the flags load and duplicates the call into both arms, as retail); on this body the 0x8 path as
+// that single call 364 [167 / 122], scoped `previous` alone 290 [179 / 130]. The 48-row form leaves the callee-saved
+// roles (ours index*12 ESI, device_index EDI, group EBX, velocity pointer ESI; retail EBX, ESI, ESI, EBX), the result
+// in DL (retail a stack byte), the state offset loaded once (retail compares memory and re-reads it), the volatile
+// definition re-read four times in the acceleration block (retail once into EDX) and the group pointer's spill
+// around the 0x1c6620 call.
+// F354: Complete channel-array receiver across manual and group phases, ordinary
+// index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
+// NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
+// Round 81 (m3 lane 9, fast): the header type byte read through s_device_header (DEVICE_GET's own shape) 285
+// (same code); with a plain index 411 (1466 bytes: retail's 0x20 frame and the index*12 CSE spilled at
+// [esp+0x1c], but in ESI/EDI where retail has EBX/ESI); the state test through the existing
+// device_has_animation_state on this body 393 (1512); on the plain index 384 (1469 bytes: retail's entry from
+// the state test on, `cmp word [ebp+0x12a], -1` then a second movsx read, state at [esp+0x14]; left: the result
+// in DL where retail keeps a stack byte at [esp+0xf], index*12 in ESI not EBX); that without the volatile
+// definition 426 (1437); with the result declared first 384.
+// F354: Complete channel-array receiver across manual and group phases, ordinary
+// index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
+// NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
+// F362: Existing state getter as actual device member, ordinary/forced expansion,
+// with inherited/ordinary index and saved-pointer storage: 285/285/411/411/382/382/442/442.
+// NOT kept: no frame/state/index repair or byte match; original getter, callers and body restored.
+// Round 404: Repeated position/power velocity cursors 294/372/379; complete position/power/both output
+// pairs 373/403/398; both with ordinary index/saved pointer 406/371. Original receivers and qualifiers
+// restored; frame/index/state/result homes remain.
+// P308: Flattened pending-manual power/position decisions and closing refresh-bit admission,
+// subsets 1/2/3/4/5/6/7: 377/286/377/292/381/291/381; both direct conjunctions 408.
+// NOT kept: no match or gain; original nested decisions, qualifiers and full body restored.
+// P310: Reached/reversal shared event dispatch as value+pending/offset/field/admission:
+// 285/331/327/291; ordinary-index forms 399/392/340/400. NOT kept: no match;
+// original event observations, both inherited qualifications and full body restored.
+// DH338: First-channel receiver across manual/group phases, pointer/reference,
+// inherited/ordinary index and saved-pointer domains: 376/376/393/393/392/392/441/441.
+// All restored; frame/index/header/state/result homes remain.
+// B429: Existing shared power/position/activity flag writers, subsets 1/2/4/3/5/6/7,
+// then all plus the refresh clear 367/285/387/367/371/387/371/371. NOT kept: no gain;
+// original frame, scalar homes, flag publications and complete callback restored.
+// M375: Complete closing refresh admission, bool/byte/short/long positive then complementary
+// result: 285/285/285/285/285/285/285/285. NOT kept: one-use decisions did not match; original frame,
+// observations, both inherited scalar qualifications and complete body restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
@@ -1732,12 +1864,13 @@ bool __stdcall function_106790(long volatile device_index)
 		}
 		else
 		{
+			c_animation_channel *power_channel = &device->channels[0];
 			bool power_channel_animates = false;
 			if (state)
-				power_channel_animates = device->channels[0].graph_tag_index != NONE &&
-					device->channels[0].animation_id.index != NONE;
+				power_channel_animates = power_channel->graph_tag_index != NONE &&
+					power_channel->animation_id.index != NONE;
 			if (power_channel_animates)
-				device->channels[0].set_frame_ratio(device->power);
+				power_channel->set_frame_ratio(device->power);
 			real position_acceleration = *(real const *)(saved_definition + 0xcc) * device->position;
 			real remaining_acceleration = *(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
 			real acceleration = position_acceleration + remaining_acceleration;
@@ -1770,8 +1903,8 @@ bool __stdcall function_106790(long volatile device_index)
 				if (previous != device->power || (device->flags & 0x80))
 				{
 					function_107520(device_index);
-					if (state && device->channels[0].graph_tag_index != NONE && device->channels[0].animation_id.index != NONE)
-						device->channels[0].set_frame_ratio_and_advance(device->power, state,
+					if (state && power_channel->graph_tag_index != NONE && power_channel->animation_id.index != NONE)
+						power_channel->set_frame_ratio_and_advance(device->power, state,
 							(animation_event_callback)function_bf600, device_index);
 				}
 			}

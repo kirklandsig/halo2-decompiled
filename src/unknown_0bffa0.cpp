@@ -799,7 +799,7 @@ byte g_55e708;
 
 #define PIN(x, low, high) ((x) < (low) ? (low) : ((x) > (high) ? (high) : (x)))
 
-// score 38 (was 128): the loop, frame and clamp are retail's; left are scratch register picks only (object argument and
+// score 38 (was 38): the loop, frame and clamp are retail's; left are scratch register picks only (object argument and
 // count in the fallback arm, the loop's amount/index loads, the single-marker arm, the opacity reload). 0x2dba0's order is
 // now applied: earlier BLOCKED-BY 0x2dba0 (parameter order): with its parameters declared (tag, alternate, kind,
 // index, marker_index, position, direction, color, alpha, amount, scale) at its definition and every call (0x2dba0 and
@@ -881,6 +881,14 @@ byte g_55e708;
 // 115; short count 131; short index 51; both short 77 (610 bytes); per-pass amount local 118 (613); const
 // light/definition 38. Original body restored; fallback/count scratch, loop load schedule, single-marker arm and
 // opacity reload remain.
+// Round 64 (m3 lane 1, fast with the same list): dword absolute index 38 (same code); count zeroed in an else of the
+// first-person test 38; unsigned loop index 39; unsigned count 39; count = 1 before the flag test 107. Permuter
+// (600 s, annealing): reduced image scores this body 141 (frame 0xec), nothing better in 47 tries.
+// Round 131 (m3 lane 8, fast with the same list): the flag test as an early return inside the 0x31520 test 38; the
+// count clamped before the warning flag 107 (retail stores it after); the fallback test `count < 1` 42; the absolute
+// index computed after the light and definition 38 (same code); the clamp test `count >= 2` 38. The rotations left
+// (fallback object EAX/count EDX, loop amount EAX/absolute EDX/index ECX, single-arm amount ECX/colour EDX/position EAX,
+// opacity ECX) do not move with any of these.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -1047,7 +1055,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
     result->y = scale * transformed.j;
 }
 
-// score 315 (was 482): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
+// score 290 (was 315; 482 before round 68): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
 // now agree; retail stores the +radius vertex group first (so 1.0 lands in XMM2, not XMM1) and
 // computes each projection's forward row first. Kept: the file's cross helper for both crosses
 // (it sets the +0x4c base; the shared cross3f for the forward one gives +0x50), normalize3d for
@@ -1114,6 +1122,36 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // extents read first, scale after, `*=` steps 315 (same code); bounds stored after the corners in retail's x0, y0, x1, y1
 // order 315 (aligned 279 -> 276); both 603; extents-first with bounds last 315; centre read into named x/y 568; plane
 // distance through dot3f 315; depth stored after has_plane 377.
+// Lane 17 r36 (fast): the file's direction_normalize_c0840 for the left vector 315 (same code as normalize3d: our
+// scale keeps left.i in XMM5 from the cross where retail reloads it); reference picked by a ternary copy 647 (2793
+// bytes); scale stored before position 331; orthogonal/has_plane stored after the matrix 589; the count as an
+// if/else 323. Original body restored.
+// Round 61 (m3 lane 10, fast): in the cone arm retail stores the four points, then the bounds as x0, y0, x1, y1,
+// then the point count, and divides for the scale only after the centre projection: the bounds stores moved after
+// the points in that order 315 (retail's store sequence there, same count); on it the far edges as `half + centre`
+// 315; the scale computed before the centre projection 601 (2776 bytes); the edges declared x0, y0, x1, y1 315,
+// with the far edges as `half + centre` 315. Retail's normalize sums i, k, j (normalize_inline's grouping, which
+// earlier rounds found worse overall).
+// Round 79 (m3 lane 9, plain): the plane distance as dot(plane point, normal) 290 (kept, 2830 bytes: the dot's
+// loads and products are now retail's; left: the plane point is computed x, z, y where retail computes y, z, x,
+// and the distance is stored through [esi + 0x80] where retail stores through the normal's pointer). Before it
+// (315): the normal copied before the plane point 564. On 290: a plane3f pointer for n and d 543; plane point
+// declared at the cone arm's top 290; the point scaled by the shape's offset field 554; projection products
+// written point-first 290 (same code); the left vector through direction_normalize_c0840 290 (same code).
+// Round 82 (m3 lane 16, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): the plane distance as dot(normal,
+// plane point) 315 (2826 bytes); one `offset` local for the plane offset, has_plane, depth and scale 486 (2807 bytes);
+// `orthogonal = has_plane = false` 292; half extents as `width * 0.5f * scale` 290 (same code); the centre point declared
+// at the cone arm's top 290 (same code). Retail stores the plane distance through the plane's own pointer ([ecx + 0xc]).
+// Round 81 (m3 lane 9, fast): the first cross through the file's cross_product_c1a80 (operands swapped) 290 (same
+// code); both crosses through it 433 (2821 bytes); only the second 433; a one-caller cross with the i term written
+// `b->k * a->j` (diagnostic, removed) 290 (same code: the operands re-sort; retail's first cross differs only in
+// xmm colours, ref.i/ref.j/ref.k in xmm1/xmm4/xmm1 where ours has xmm4/xmm3/xmm4); a one-caller plane-point add
+// computing y, z, then x as `scale * v->i` (diagnostic, removed) 297 (retail computes x last as `movaps xmm0,
+// scale; mulss xmm0, [forward.i]` but in xmm0, y/z in xmm1/xmm2).
+// Round 82 (m3 lane 16, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): the plane distance as dot(normal,
+// plane point) 315 (2826 bytes); one `offset` local for the plane offset, has_plane, depth and scale 486 (2807 bytes);
+// `orthogonal = has_plane = false` 292; half extents as `width * 0.5f * scale` 290 (same code); the centre point declared
+// at the cone arm's top 290 (same code). Retail stores the plane distance through the plane's own pointer ([ecx + 0xc]).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
@@ -1175,7 +1213,7 @@ void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab co
             point3f plane_point;
             point_add_scaled_c35a0(&entry->matrix.position, &frame->forward, entry->plane_offset, &plane_point);
             entry->plane.n = frame->forward;
-            entry->plane.d = dot_product_c1a80(&entry->plane.n, (vector3f const *)&plane_point);
+            entry->plane.d = dot_product_c1a80((vector3f const *)&plane_point, &entry->plane.n);
             entry->depth = shape->cone_render.far_distance + shape->origin_offset;
             point2f center;
             light_projection_point_ab(&entry->matrix, &shape->cone_render.direction, &center);

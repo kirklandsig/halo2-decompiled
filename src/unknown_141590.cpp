@@ -325,6 +325,45 @@ static inline void quaternion_transform_vector(
 // 315/315/350/350; paired initial-vector dot reduction 276/276/402/402.
 // Original helper, initial dot and full body restored; quaternion/cross spill overlap remains.
 // NOT kept: indexed reductions regress and fail the exact-match gate.
+// M336: Transform dot/quadratic/doubled-scalar accumulators, seven subsets then all with
+// a positive-validation return: 251/249/253/196/219/210/243/243. NOT kept: four-point
+// combined gain below margin; original helper/body restored, frame 0x1c versus 0x24 remains.
+// N337: Complete running helper-dot accumulation with caller-dot/staged-cross/
+// independent-half subsets 0..7: 251/210/297/309/283/276/256/256. Original helper,
+// paired halves and complete body restored; frame/quaternion/cross homes remain.
+// Round 85 (m3 lane 12, fast): the initial dot as the existing dot3f(a, b)/dot3f(b, a) 205/205 (1326 B); the transform
+// helper's dot as dot3f(q, v) * 2/dot3f(v, q) * 2 246/246 (1308 B); the clamp as one nested ternary 297 (1317 B, first
+// +0x0); the halves through sqrtf 249 (1309 B). Original body and helper restored.
+// N343: Complete cross first-product/subtraction lifetimes, vector/scalar storage crossed
+// with shared dot and independent halves: 210/261/203/270/266/251/257/243. Original helper/body restored.
+// NOT kept: no qualifying gain; native frame/quaternion/cross spill homes remain.
+// M3 lane 7 r126 (fast): retail stores the doubled scalar to two homes (the matrix parameter's +0x38 and +0x10) as if
+// each inlined transform kept its own copy. Named forward/left/up row pointers for the transforms, the 0x143120 test
+// and the repair 322 (1294 bytes); `rotation.w = 0.f` before the 0x11d000 call 213 (1324); plain cross3f in the
+// repair path 238 (1322); `cross` declared ahead of the helper's scalars 200 (same code); the helper's scalars `const`
+// 200 (same code). Body restored.
+// N346: Immutable transform dot/doubled-scalar/quadratic coefficient masks 1..7, then complete
+// immutable coefficients/cross: 200/200/200/200/200/200/200/200. Original helper and all three users restored;
+// NOT kept: unmatched lifetime/combination forms. Native frame/quaternion/cross spill homes remain.
+// N361: Half-angle root-input double addition/factor/both/post-addition promotion, paired
+// outputs 211/202/211/202, independent real outputs 278/269/278/269. Original root inputs,
+// paired storage and body restored. NOT kept: unmatched precision-only forms; native spill homes remain.
+// N363: Existing shared scaled-add owns final cross contribution, crossed with shared
+// initial scale/projection/staged cross: 352/352/351/325/307/307/309/311. Original private helper and body restored;
+// NOT kept: unmatched staged stores. Native frame/quaternion/cross spill homes remain.
+// N365: Existing complete vector setter output with staged-cross/shared-dot/independent-half
+// masks 0..7, 333/346/340/351/344/360/333/368. Paired output restores frame 0x24
+// but grows code. Original helper/body restored; NOT kept: unmatched output ownership.
+// N368: Caller initial-dot/sine/axis-scale adjacent producers, seven family subsets
+// 263/253/253/221/221/249/214; all with entry declarations 214. Original producers restored.
+// NOT kept: unmatched storage/producer forms regress; native half/quaternion/transform homes remain.
+// N374: Paired root division, doubled helper-scalar addition and doubled
+// half-angle-product addition, masks 1..7 and all with independent halves:
+// 200/200/200/252/252/252/252/254. Original roots, factors, halves, helper and body
+// restored; NOT kept: no native frame/spill recovery or byte match.
+// N376: Actual quaternion vector-prefix construction/all transform reads/staged cross,
+// seven subsets then shared prefix dot, 200/200/252/200/252/252/252/254. NOT kept: no exact frame/spill
+// recovery; original union, helper, input safety and complete body restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1036,6 +1075,60 @@ void function_143250(
 // band sharing recovers ret 4 but frame 0x324 and length grow; double-only frame 0x30c regresses
 // by one. NOT kept: unmatched shared-storage forms; all 84 typed outputs agree, original body
 // restored.
+// N337: Last-use same-type second/third-band subtraction and zero-minus accumulators,
+// family subsets 1..7: 1766/1788/1788/1766/1766/1788/1788; all with right-first ownership 1774.
+// All 84 typed outputs agree. NOT kept: unmatched storage reuse ties or regresses and changes
+// length away from retail; original scalar graph and complete body restored.
+// Round 47 (lane 15, plain): nested single-exit order tests 1766; matrix read directly on the workspace, no pointer, 2027 (10501 bytes,
+// frame 0x304); term_10 dropped 1766; term_9 in the workspace 1777 (10791, frame 0x318); first two workspace terms swapped 1766.
+// N339: Explicit real narrowing owned by consumers, second-band product/third-band
+// roots/third-band product family masks 1..7, then all with immutable reused double root:
+// 1767/1781/1780/1771/1771/1775/1774/1774. All 84 typed outputs agree.
+// NOT kept: unmatched repeated-value/precision-storage forms regress and move length;
+// original polynomial, conversion producers and complete body restored.
+// Round 85 (m3 lane 12, plain): retail passes rotation in EAX, coefficients in ECX and result in ESI with order on the
+// stack (ret 4); ours pushes rotation (ret 8) although the /Gd first pass loads it once into EAX at entry. Parameters as
+// (result, rotation, coefficients, order), retail's call-setup order, 1766 (same code); rotation reads in index order
+// 1784 (10754 B); `result[0] = coefficients[0];` first 1766; term_9 read before the matrix pointer 1766; the workspace
+// struct as plain locals and a 49-real array 2228 (10304 B, frame 0x300). Body and parameter order restored.
+// Round 47 (lane 15, plain): nested single-exit order tests 1766; matrix read directly on the workspace, no pointer, 2027 (10501 bytes,
+// frame 0x304); term_10 dropped 1766; term_9 in the workspace 1777 (10791, frame 0x318); first two workspace terms swapped 1766.
+// N343: Real storage for both second-band roots, each third-band root, all third-band roots
+// and all roots: 1762/1766/1766/1766/1769/1766/1769/1769. Original double roots and full body restored.
+// NOT kept: unmatched precision/storage changes; native frame/input/basis homes remain.
+// M3 lane 7 r126 (fast): the /Gd first pass loads each parameter once (rotation EAX at entry, result ESI, coefficients
+// EDI, order EBX after the first call), so that rule predicts retail's EAX rotation. Diagnostics: a body cut after band
+// one still pushes rotation, under five parameter orders and with a void return; the cut body without the 0x143250
+// call (out EAX, n EBX) takes rotation in ECX, so that call keeps rotation on the stack in our build. Trials: all nine
+// doubles as real 1813 (10825 bytes, frame 0x308, ret 8); the terms as plain locals and a `real matrix[49]` 2114
+// (10412, frame 0x2fc, ret 8); `result[0] = coefficients[0]` just before band one's call 1766 (same code); band one in
+// retail's store order (each matrix entry after its term) 1794 (10740); the matrix pointer declared first 1766 (same
+// code). Retail keeps the nine rotation terms as scattered separate locals and the matrix at the frame top. Restored.
+// N346: Isolated matrix/workspace/rotation/result/coefficients/term_9/term_8/term_11 names:
+// 1766/1766/1766/1766/1766/1766/1766/1766. Original identifiers and complete scalar graph restored;
+// NOT kept: unmatched lexical allocation. Frame, rotation admission and basis/matrix homes remain.
+// N361: Actual band-table aggregate initialization, band masks 1..7 and all immutable,
+// 1976/1930/1880/2123/2126/2166/2187/2187. Original assignment-based tables and full scalar
+// graph restored. NOT kept: unmatched table lifetime/publication forms; frame, admission and homes remain.
+// N363: Complete arithmetic-role scalar identities, product/sum-difference/copy-literal
+// masks 1/2/4/3/5/6/7 then all scalar roles: 1766 each. Original names and full body restored;
+// NOT kept: unmatched home allocation. Native frame, rotation admission and basis homes remain.
+// N365: Complete actual-result copy/compound multiply/add/subtract producer families,
+// seven subsets and all with producer declarations, 1766 each. Original scalar graph
+// restored. NOT kept: unmatched producer ownership; native frame/admission/homes remain.
+// N368: Final-consumer lexical homes for real/double/both families, forward/reverse,
+// then both within producer bands, forward/reverse: 1766 each. Original names restored.
+// NOT kept: unmatched home allocation; native frame, rotation admission and basis/matrix homes remain.
+// N371: Complete scalar lexical homes by fanout/depth/live-span, forward/reverse,
+// then band-fanout-depth/band-depth-fanout: 1766/1766/1766/1766/1766/1766/1766/1766. Original names restored.
+// NOT kept: unmatched spill-priority forms; native frame, input admission and basis/matrix homes remain.
+// N374: Actual band-local matrix receiver lifetimes from first store through
+// application, band masks 1..7 and all immutable: 1766/1766/1766/1766/1766/1766/1766/1766.
+// Original shared receiver and full scalar/publication graph restored;
+// NOT kept: no native frame/admission recovery or byte match.
+// N376: Same-type copy contraction by actual input/product/root-or-literal/sum
+// producers within bands, eight forms 1947/1766/1766/1771/1761/1766/1925/1948. All typed outputs/call
+// phases agree. NOT kept: no exact native storage recovery; full scalar graph restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

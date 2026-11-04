@@ -169,6 +169,15 @@ void function_133720(s_bit_vector_pool *arg_1, bool arg_2)
 // Round 78 (fast): scratch first output 127; index at its consumer 147; mutable object pointer 13;
 // source point reference 175; object/index local names 13/13; explicit point assignment 13;
 // record radius reference 13; const object binding 13. Original body restored.
+// Round 120 (lane 7): diagnostic with the disabled 0xbd610 draft (src/unknown_0b7740.cpp) enabled and its
+// stub removed: this body 2 (as round 32 predicted), and with the index stored first in the record plus
+// `g_4ba028 * (local_8 * 2.0f)` it matches (fast, with 0x137800 in the image; index/point/radius alone 2,
+// point/index/radius 2, index/radius/point 5, the other product orders 2/2/126). Not keepable: any reachable
+// call from 0xbd610 into 0xbdb60 (even a minimal body; also with 0xbd090's call removed) gives 0xbdb60 a
+// two-register convention (63) and 0x10ec00 loses 0x1c6f60's EBX `this` (109); moving 0xbd610's body or
+// declarations or dropping the draft's noinline declarations changes nothing. BLOCKED-BY 0xbd610 (then
+// 0xbdb60/0x10ec00 conventions). Normal build: index-first record with that product 13 (aligned 3);
+// the product alone 13; index-first alone 13; point/index/radius with it 19; radius/point/index with it 19.
 // @retail 0x133790
 bool function_133790(s_bit_vector_pool *arg_1, short arg_2, bool arg_3, long *arg_4, long arg_5, bool arg_6)
 {

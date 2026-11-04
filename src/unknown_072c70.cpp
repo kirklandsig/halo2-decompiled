@@ -196,7 +196,7 @@ static inline bool game_is_team_game()
 }
 
 extern color3f *g_468714;
-color3f *function_7f720(color3f *color, short team_index);
+color3f function_7f720(short team_index);
 void function_10da60(long item_index, point3f *position);
 
 /* adds a point item of the color to the list (at most two) */
@@ -257,7 +257,8 @@ void team_marker_color(long team, s_color_bits *color)
 			color3f team_color;
 			long team_index = player_get(player_index)->c0;
 
-			*color = *(s_color_bits *)function_7f720(&team_color, team_index);
+			team_color = function_7f720(team_index);
+			*color = *(s_color_bits *)&team_color;
 		}
 		else
 		{

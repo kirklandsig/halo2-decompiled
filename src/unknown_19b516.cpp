@@ -165,6 +165,13 @@ void c_widget::v15(c_widget *widget)
 // `following` local (the link, then the first sibling when NULL) 2; a guarded do-while with the if/else step
 // 35 (92 bytes); the base class's next_wrapped made an out-of-line function (plain check: LTCG keeps the
 // call, 74 at 53 bytes; 0x2c8f56 76).
+// Round 53 (m3 lane 15, fast): next_wrapped at the entry with a ternary step 35 (92 bytes); a ternary entry
+// with next_wrapped at the step 42 (90); the base helpers as `result = next; if (!result) result = first
+// sibling` 42 (90; the twins 42/44/44); the search in the loop condition with the focus after it 37 (94);
+// the step through a block-scoped `following` local 2.
+// Round 114: direct base eligibility/focus calls 2/2; `!!widget` 2; eligibility `!= false` 2 and `== true` 4;
+// ternary null condition 2; guarded found loop with `!found && widget` 2; pre-tested `widget && !found` 62;
+// guarded `widget && !found` 63; pre-tested `!found && widget` 32 (84 bytes). Original body restored.
 // @retail 0x22ebc3
 void c_widget::v16()
 {
@@ -247,6 +254,15 @@ void c_widget::v16()
 // through a named `previous` local 2; `do { if (!widget) return; ... } while (true)` (diagnostic) 2; `break` with
 // the focus after the loop 37 (94 bytes). Retail's copy-then-test head is what follows a call result (13 such heads
 // in retail, all after calls); a test-before-copy head occurs only 4 times in all of retail.
+// Round 87 (m3 lane 12, fast): the c_widget previous_wrapped wrapper with a named base result 2; the eligibility
+// test inverted with the step in its then-arm 2; the found arm ending the loop with `widget = NULL` (step in an
+// else arm) 2; the eligibility read into a bool local 2; a for loop with `!= NULL` and a `continue` on the
+// ineligible widget 2. Diagnostic: `#pragma optimize("t", on)` 62 (the eligibility call is inlined). Retail's
+// copy-then-test heads follow iterator calls everywhere except these four widget walks.
+// Round 139: current declared in the condition 2; a base result converted in that condition 2; a const current
+// copied at the body's head 2; the step assigned in a do-while condition 2; a function-scope current assigned in
+// the while condition 2; the direct two-arm step with a condition-declared current 2; native base traversal and
+// calls with that condition 2; base entry/step with a derived condition value 2. Original body restored.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

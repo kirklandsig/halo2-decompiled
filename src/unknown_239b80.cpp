@@ -97,6 +97,9 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // without the defaulted distance 16, with an early defaulted projection 16; output base declared
 // after the previous index 9; staged point-first numerator 9. Original helper and loop restored;
 // the three setup stores and first intersection's x product remain.
+// Round 124 (m3 lane 7, fast): the copy as `output[result] = ...; result++;` 5; the arms swapped (`!= 0` arm
+// first) 93; the helper's points as references 5; plane, points and output all references 5; a point pointer in
+// the classification loop 9. Original body restored.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -418,6 +421,61 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // F346: Completed lowest-coordinate, candidate-ranking and hull-geometry lifetimes in
 // seven subsets 170 each; all with overlap CRT 259. NOT kept: 762/784 bytes, caller 80.
 // Original complete executable body restored.
+// Round 43 (m3 lane 2, fast): short hull count as `while (hull_count < count)` with
+// `indices[hull_count++] = current`, bool departure and direct `return hull_count` exits 243 (753 B;
+// frame 0x14 as retail, but the count stays in ESI and the departure byte lands in the points home);
+// that with previous_angle declared before the lowest scan 273, with a long count 271; the original
+// with previous_angle declared first 207; the original's pass loop as `while (hull_count < count)`
+// with `indices[hull_count] = current; hull_count++;` 267 (756 B). Original body restored.
+// B385: Existing complete 2D magnitude with component/aggregate displacement, scalar/native
+// angle producer and memcpy/memmove: 170/170/180/180/259/259/259/259. No byte match;
+// native vector grouping, shared header and complete original executable source restored.
+// B391: Actual lowest/current/candidate external point references, subsets 1-7, then
+// complete external coordinate references: 170/170/170/170/170/170/170/170. Original
+// complete body restored; extra frame word, count/departure and compaction homes remain.
+// DH316: Unsigned-word/signed-64-bit pass, long/bool departure and memcpy/memmove:
+// 257/254/187/264/319/299/299/292. NOT kept: all regress; two word CRT forms lose the
+// caller. Original pass, state, copy, helpers and entire executable body restored.
+// AC508: Actual unrounded distance/angle/delta domains, wide subsets 1/2/4/3/5/6/7:
+// 234/216/255/249/263/265/259; native float CRT pair 170. NOT kept: no exact precision match;
+// original body restored. Extra frame word and count/departure/compaction homes remain.
+// F356: Existing equality predicate with shared/native/scalar/absolute coordinate producers, original long then Boolean departure:
+// 208/208/170/170/254/254/248/248. NOT kept: no qualifying match or gain; original complete body restored.
+// Lane 13 r58 (fast): one retail-shaped body (short hull count, `while (hull_count < count)` with
+// `indices[hull_count++] = current`, bool departure and heading declared ahead of the lowest scan, memmove
+// compaction) 265 (759 B; frame 0x14 as retail, but points in EBP and indices in EBX where retail has ESI/EBP, and
+// the zeroed count via a zero register); on it departure declared first 265, `current` declared first 264, a
+// separate `hull_count++` 265, memcpy 275 (751 B), the `||` departure update 273 (748 B).
+// N354: Existing epsilon equality at departure/completion/both 171/170/171;
+// both with bool/byte/short/word departure 248/248/175/175, overlap CRT 259.
+// NOT kept: tie/regression; original helper bindings, state and complete body restored.
+// F363: Native point-owned predicate, instance/static with bool/byte/short/long
+// results: 170/164/171/170/170/164/171/170. NOT kept: six-point byte gain below
+// threshold; extra frame word remains. Original helper, point type and body restored.
+// B399: Complete scalar distance producers on the native output-ordinal graph: double
+// displacements 172; native/wide squared length 170/172; native/wide paired squares 170/172;
+// double displacements with native/wide sum or wide squares 173/172/172. Original body
+// restored; extra frame word, count/departure homes and compaction remain.
+// P303: Native-width lowest/candidate/compaction ordinals on the retained output-ordinal graph,
+// subsets 1/2/4/3/5/6/7: 654/262/180/642/651/259/635; unsigned native candidate 262.
+// NOT kept: every form regresses, some lose caller 0x239d50; original scans, output ordinal and body restored.
+// F365: Lowest/distance/ranking rejection on the retained native output ordinal, masks 1/2/4/3/5/6/7, then classifier early return:
+// 170/170/170/170/170/170/170/256 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// B418: Native lowest-point state, aggregate/component initialization and both
+// current-declaration priorities: 170 each; all four with prior heading before scan
+// 207/207/206/206. NOT kept: grouped state needs a match; original body restored.
+// B420: One spatial equality result serves departure and geometric completion,
+// bool/byte/short/long with long then Boolean departure: 301/301/298/301/313/313/297/297.
+// NOT kept: no exact match; original complete body restored.
+// B424: Exact endpoint termination of admitted lowest/pass/candidate scans,
+// subsets 1/2/4/3/5/6/7 then all with duplicate outer scan: 170/170/170/170/170/170/170/170.
+// NOT kept: no exact match; original signed bounds and complete body restored.
+// B427: First-hit duplicate search completed before copying, short/native outer and
+// inner ordinals with memcpy/memmove: 251/251/248/255/252/264/252/262. NOT kept: no match or gain;
+// complete original body restored. Extra frame word and count/departure homes remain.
+// B430: Complete coordinate-bound producers on the retained native output ordinal,
+// four producer orders, without/with paired angle bounds: 179 each. NOT kept: no
+// match or gain; original body restored. Frame remains 0x18 versus native 0x14.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -756,6 +814,52 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Actual output cursor at alias join: native/memcpy with rollback 286/286, deferred commit 342/342; at
 // entry: rollback 285/285, deferred commit 325/325. Count/prior-side and SIMD homes remain; original
 // indexed output body restored.
+// M339: Actual current/intersection/last-output element references, subsets 1/2/4/3/5/6/7 then previous
+// endpoint: 129/129/129/129/129/129/129/129. Original pointer/output forms and full body restored.
+// Round 202 (lane 3, harness exact, confirmed --fast): retail keeps both side flags in memory (current +0xc,
+// previous +0xd, the loop end copies through CL); ours keeps the previous side in CL, so count is not loaded once into
+// ECX. `long last = count - 1` index 129; `points + count` then `previous--` 129; the result/flags/mask declared after
+// the clipped reset 137; the current side as `= false; if (...) = true` 284 (923 bytes); the previous side as an
+// if/else 129; a `long original_count` copy for the previous point and the loop 293 (865); a forceinline side helper
+// writing the flag through a bool pointer, for both sides 131, previous only 131, loop only 129 (the flags are
+// promoted after inlining). Restored.
+// DH313: Crossing XOR/current-conditional/prior-conditional/complement predicates, original
+// fraction 184/268/279/250; denominator-produced zero 112/255/277/247. NOT kept:
+// 112 is a nonmatching predicate/fraction interaction; all exact-only forms restored. Count ECX,
+// prior-side byte and SIMD homes remain.
+// M339: Actual current/intersection/last-output element references, subsets 1/2/4/3/5/6/7 then previous
+// endpoint: 129/129/129/129/129/129/129/129. Original pointer/output forms and full body restored.
+// Lane 13 r58 (fast): a `short total = count` copy (as matched 0x23a160) for the previous point and the loop 133;
+// for the loop only 129 (same code); the previous side re-derived from `distance >= 0.f` at the loop end 258; the
+// previous distance folded into the side's initializer 133; `!(distance < 0.f)` for the side 130.
+// B395: Actual NONE result terminates the input walk, short/long ordinal, failure/success
+// capacity arms and tail/post-crossing prior-state publication: 282/282/284/284/250/309/257/311.
+// NOT kept: all regress; original capacity breaks, indexed walk and complete body restored.
+// F364: Native point-owned equality, instance/static and ordinary/forced boundaries,
+// original/recovered count-fraction graphs: 129/129/129/129/281/92/281/92. NOT kept: repeated loop
+// guard requires a match. Original helper and body restored; count/prior-side and SIMD homes remain.
+// B399: Pre-collector crossing with immediate prior-side publication plus four complete
+// denominator/fraction/clamp decisions, bool then byte: 239/241/239/241/239/241/239/241. NOT kept:
+// every exact-only combination regresses; original state, fraction and complete body restored.
+// Count/prior-side and SIMD homes remain.
+// B401: Crossing-only prior-side updates, inside/outside polarity, entry/intersection-completion
+// and copy/Boolean-transition owners: 163/223/209/219/219/224/214/220. NOT kept: unmatched
+// conditional state forms regress; original unconditional tail, complete body and helper restored.
+// B403: Indexed-output prospective accepted-count decisions, reject/accept/conditional/negated
+// rejection, native short then signed-short-normalized long: 217/255/255/255/238/260/236/260.
+// NOT kept: all regress; original incremental count, indexed outputs and complete body restored.
+// B416: Entry-distance/crossing-math/current-distance last-consumer regions, seven
+// subsets then all with complete geometric role names: 129 each. Original body restored;
+// count ECX, prior-side byte and SIMD homes remain.
+// B418: Normal pointer/reference, complete coefficient references and plane
+// reference before/after alias copying: 131/131/200/130/131/131/200/130. NOT kept:
+// no match or gain; original field observations and complete body restored.
+// B420: Wrapped predecessor from the real input ordinal, four natural address
+// producers with tail then completed-crossing prior-side publication: 326/326/386/333/318/318/381/324.
+// NOT kept: no exact match; original complete body restored.
+// B424: Standard min/max interpolation clamp, nested lower/upper, sequential lower/upper,
+// named lower/upper and single standard lower/upper boundary: 357/357/371/372/371/372/376/383.
+// NOT kept: no exact match; original fraction clamp, include set and complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

@@ -51,7 +51,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 176 (was 176): up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
+// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
+// Frame 0x2c agrees at 1711/1706 bytes; unity XMM5/XMM4, root +0x10/yaw +0xc and rotation product/register homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
@@ -274,6 +275,87 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // magnitude common, zero-result common, magnitude-result common, failure-first magnitude/result,
 // early success result, branch outputs with common return success/failure first: 171/403/412/182/212/417/203/212.
 // NOT kept: five-point best gain; common magnitude fixes early unity and first +0x84, but root/yaw homes remain.
+// Round 550: Existing vector setter at normalizer/rotation/pitch-axis output boundaries,
+// masks 1/2/4/3/5/6/7: 241/176/238/241/281/238/281; native rotation-result publication 251.
+// NOT kept: result/frame forms miss; normalizer setter also loses the matched sibling to 12.
+// Original helpers, alias-safe scalar outputs and complete body restored.
+// N340: Complete normalized scalar outputs in ijk/jik/kij/jki producer order,
+// magnitude publication after/before component stores: 241/241/241/241/363/363/401/363.
+// NOT kept: unmatched scalar staging/order; original helper and whole body restored.
+// The shared helper also raises sibling 0x29b990 to 12/15/41; no edit retained.
+// DH311: Plain native rotation component-array production, with complete cosine/projection/sine
+// phase masks 0-7: 218/269/285/340/269/368/315/410. Native output/phase records are exact-only;
+// all regress, original alias-safe helper/body restored; root/yaw and rotation homes remain.
+// Round 82 (m3 lane 9, fast): retail's acos result, the clamped yaw and the sqrt temporaries share +0xc (ours:
+// acos result and sqrt temporaries with local_11 at +0x10). Both arg_2 copies declared before the arg_3 copy 375;
+// the yaw in a branch-local copied to local_8 at the arm's end 272 (1727 bytes); result declarations reversed 176
+// (same code); the failure arm first 176 (same code); the up vector read through the field at each use 178.
+// m3 lane 16 r83 (fast, the 169 plain-confirmed; 0x29b990 matched in each but the 383): the normalizer single-exit
+// (`else local_0 = 0.0f;` then one `if (length) *length = local_0; return local_0;`) 171 (DH309's form: unity in XMM4
+// as retail); with the XY vector declared before the second copy 169 (retail's local_5.k/local_6.j store order; a
+// gain of 7, under the bar: the lead), its components assigned one by one 169 (same code); with the first length
+// from the return (no out-parameter) 267; the XY vector right after the first copy 365; the plain reciprocal in
+// the normalizer 383 (0x29b990 6); the half-pi limit as if/else 169 (same code); the else arm's zeros chained 172.
+// Left on 169: the x87 transfer temporaries (roots, acos) at +0x10 with local_11 where retail packs them at +0xc
+// with the yaw, the length/first-i/second-length XMM3/6/5 (ours 6/5/3), the yaw clamp's zero copy hoisted above
+// its branch, the pitch spilled into arg_4's home, and the rotations' slots/schedule. All restored.
+// J244: Existing staged rotation cross on the retained in-place angle/rotation graph,
+// with original/ordinary/staged pitch axis, result setter and shared dot:
+// 213/237/237/213/237/237/240/240. NOT kept: all regress; frames 0x24/0x28
+// versus 0x2c. Original helper, arithmetic, includes and body restored; unity/root/yaw homes remain.
+// Round 82 (m3 lane 9, fast): retail's acos result, the clamped yaw and the sqrt temporaries share +0xc (ours:
+// acos result and sqrt temporaries with local_11 at +0x10). Both arg_2 copies declared before the arg_3 copy 375;
+// the yaw in a branch-local copied to local_8 at the arm's end 272 (1727 bytes); result declarations reversed 176
+// (same code); the failure arm first 176 (same code); the up vector read through the field at each use 178.
+// Y571: In-place graph with actual two-use gain/bound and symmetric per-policy rate captures,
+// seven subsets 212/270/258/269/261/254/269; complete common numeric normalizer result 264.
+// All regress; original helpers and complete body restored; unity, root/yaw and rotation homes remain.
+// DL258: Existing vector-union array access in planar normalizer/rotation/caller,
+// all seven region subsets, 176 each; complete array graph with shared XY magnitude
+// 176; shared magnitude independently on the opening graph 176. Root/yaw homes,
+// unity register and rotation homes remain; all other calibrated scores unchanged.
+// Original helper contracts, alias-safe reads/publications and complete body restored.
+// P320: Sequential magnitude/yaw and target/final-pitch scalar ownership, expired argument
+// P320: pitch storage and complete phase combinations 176/179/271/179/271/271/271/271.
+// P320: NOT kept: no byte match for explicit scalar/parameter-home reuse; original
+// P320: complete body restored. Unity register, root/yaw and rotation homes remain.
+// DH342: Existing vector setter at target/current/rotation input construction,
+// seven subsets 413/378/211/418/431/403/441; all plus final output setter 436 (sibling 46).
+// Original copies, helper contracts and body restored; unity/root/yaw homes remain.
+// Y584: Existing normalizer/rotation ordinary-inline and unannotated contracts on
+// the retained in-place graph, eight pairs 176 each. Original forced contracts,
+// scalar snapshots and full body restored; unity/root/yaw and rotation homes remain.
+// J252: Existing rotation output identity and helper expansion contracts: 176/176/176/176/176/176/176/176.
+// NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
+// DH349: Complete scalar cosine/projection/sine-cross parts on retained in-place
+// graph, seven family subsets 178/195/176/178/176/194/178; all row-local scopes 178.
+// NOT kept: no gain; native unity/root/yaw and rotation homes remain. Original
+// scalar results, all input reads before output stores, helper and full body restored.
+// DH357: Usability return with unchanged optional magnitude and caller expressions,
+// bool/byte/short/long direct then common results: 403/403/406/396/405/405/408/398.
+// NOT kept: all regress and raise the matched sibling to 64-70; original numeric
+// contract, alias-safe helper publications and complete body restored.
+// Round 586: Paired yaw/pitch rate-policy table traversal, long/dword/short/word
+// ordinals with repeated/captured current-angle values: 426/426/434/434/343/343/337/337. NOT kept:
+// nonexact array/field-pointer residence; first four also lose sibling 0x29b990 (48); body restored.
+// F385: Paired signed-pitch observation lifetimes, bool/byte/short/long negative then
+// complementary truths at their original comparisons: 284/284/284/284/285/285/285/285.
+// NOT kept: no exact predicate form; original helper and complete body restored.
+// M386: Existing complete XY normalizer with original K tail, common/failure-first/
+// success-first/early numeric output, direct then native-planar input: 423/441/441/423/515/544/544/515.
+// NOT kept: no byte equality with native unity/root/yaw and all shared users;
+// original numeric helper, alias-safe rotations and complete body restored.
+// DH362: Native planar epsilon truth bool/byte/short/long, positive then complementary,
+// 262/262/262/262/263/263/263/263. NOT kept: all regress and lengthen to 1719/1706;
+// original numeric/optional results, every helper and complete body restored.
+// DH369: Standard input range copies at desired/current/rotation boundaries,
+// subsets 1/2/4/3/5/6/7, then backward copies: 341/437/456/457/448/483/488/488.
+// NOT kept: all regress and lengthen; seven forms also lose the matched sibling. Original
+// copies, helpers and complete body restored; unity/root/yaw and rotation homes remain.
+// DH369 revisit: Void in-place rotation input/axis/output references, subsets
+// 1/2/4/3/5/6/7, all 176; full references with the angle also referenced 178.
+// NOT kept: no byte match; original helper and both in-place calls restored;
+// unity/root/yaw and rotation homes remain. The numeric helper and sibling stay fixed.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -1569,7 +1569,6 @@ real function_204950(long squad_index, long actor_index, short mode)
 
 PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *arg_0);
 
-// @retail 0x204b20
 // score 2 (was 2): the record pool's pointer is reloaded after the branch on the index,
 // retail reloads it before, so the jump lands on the shared reload.
 // Pool read before the active test 2; record address size * index + data 2; not-found
@@ -1589,6 +1588,12 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // Round 41 (lane 2, fast): in the squad step, the pool read after the search 2, in each arm 2, the iterator field at each use 2,
 // read again after the search 2, a `found` local tested 2. In the shared index search (0x1c8700 alongside): direct returns 2;
 // while loop 2; result assigned after the loop 68 (380 bytes, 0x201df0, 0x200d80 lost); count local 2; mask local 2.
+// Round 132 (fast): in the squad step, a compiled-out `do {} while (false);` after the search 2, closing the found arm 2, closing the
+// not-found arm 2; not-found stores swapped with the bound read after 2; the pool re-read from the iterator at every use in both arms 2.
+// Harness (exact): that statement at the found arm's top, the not-found top, the join or both arm ends 2 each; a named offset 2; found
+// stores in either other order 2/2; named datum 2; named bound 2; two sequential index tests 2; datum NONE stored first 114; both
+// not-found stores first 111; `local_2 == NONE` first 80; pointer from a ternary then tested 86.
+// @retail 0x204b20
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
@@ -2107,6 +2112,41 @@ bool function_1e11b0(long actor_index, bool active);
 // 13 at 199 bytes, aligned 13: only EBX/EBP exchanged between the index and next (retail: index EBP, next EBX). On the
 // 13 form: actor index per use, late or loop-scoped 13; written-out loops 68/72/72. Standard marker (diagnostic) 30.
 // None kept: the address read and the in-body pair are only keepable on a match.
+// Round 140 (m3 lane 6, fast): rebuilt the 13 form (0x203d70's loop with the statement-level pair, squad_get
+// for the squad and again in the +0x7e test, one read of the index through its address, game time before a
+// word flag store; 199 B, only EBX/EBP exchanged between the index and next); byte flag store 40 (207 B),
+// without the address read 59 (0x203d70 105); on the 13 form: the +0x34 store from iterator.squad_index 79
+// (215 B), `(void)&squad_index;` 13, the address read at the 0x204d30 call 13, a copy `long index =
+// *&squad_index` 63 (0x203d70 105), iterator.actor_index at each use 13, a compiled-out `do {} while (false);`
+// after the loop or at the loop body's end 13/13; the permuter (anneal, 600 s, 51 variants) none below 13.
+// Round 63 (m3 lane 1, fast): squad_get plus a second squad_get in the +0x7e test 70 (0x203d70 105, 0x201ea0
+// 300: the index becomes a register argument); with one parameter read through its address at the 0x204d30 call
+// 61 (199 bytes, callers restored; match-only form); with the game time stored first 61; the 0x203d70 shift-form
+// return 75 (210), on the 61 form 70 (205).
+// Also round 63: the game time read into a local before the loop 75 (211); the +0x34 store through
+// actor_datum_get(actor_index) 71 (191, 0x203d70 105); the loop test with the NONE test first 66 (199).
+// Round 78 (m3 lane 9, fast; on the 13 form: squad_get plus a second squad_get in the +0x7e test, the
+// parameter read once through its address at the 0x204d30 call, 0x203d70's step loop with the statement
+// pair, game time before the word flag store, full-width return; 199 bytes, only index EBX/next EBP for
+// retail's EBP/EBX): the byte flag store 40 (207); the address read at the loop store, the first or the
+// second lookup 13/13/13; iterator, actor or the address local declared elsewhere 13/13/13; `(void)&` for
+// the read 63 (0x203d70 105); the store from iterator.squad_index 79 (215); one lookup 71 (191); a third
+// lookup in the flag test 75 (215); squad_get at every use 93 (225); the step written out 68 (214); the
+// header squad_actors_next 13; iterator.actor_index at each use 13; two address reads (diagnostic) 13; the
+// permuter (anneal, 600 s, 49 variants) nothing below 13.
+// Round 143 (m3 lane 6, fast): the 13 form rebuilt with retail's short-view shift return 13 (199 B; with the
+// byte full-width return 27, 192 B). On 13: word flag test 13; 0x1e11b0 given iterator.actor_index 13; the address
+// local declared after the squad 13; the depth pair around both 0x203ed0 and 0x203f60 13; `(void)&actor_index` 13;
+// the second lookup in the flag test instead of the +0x7e test 13, with the address read at the +0x34 store 13;
+// the squad re-fetched for the return 80 (218 B: any index use after the loop ends the pointer's liveness there).
+// P314: Formal/current-handle/walk lexical identities on the original receiver graph, seven
+// subsets and the complete actor receiver roles: 64 each. Original names and body restored;
+// EBP handle, receiver spill/common loop head and full-width return remain.
+// Y595: Full-width long/dword/int/unsigned-int result contracts, Boolean/direct zero-one mask production:
+// 65/65/65/65/65/65/65/65. NOT kept: no byte equality; original complete body restored.
+// DL262: Coherent matched predicate/removal/return-provider inline declaration subsets, then
+// explicit predicate expansion on the complete graph: 64/64/64/64/64/64/64/64.
+// NOT kept: no exact native form; original complete body and all provider contracts restored.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2368,6 +2408,37 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // body with 0x202720's walk and structure first 307 (1102), aligned 74, the next round's lead. Left there: the second
 // active test on the first pass, frame 0x44 against 0x54 (retail's areas shares with nothing), the 16-bit active mask,
 // the overlap loop's intersection in a stack home with overlap in DL, and the wake store order. Nothing kept.
+// Round 140 (m3 lane 6, fast): a compiled-out `do {} while (false);` after the squad's wake/timer tail, at the
+// overlap loop's end, after the area loop, after the +0x7c timer update or before the actor's 0x1e11b0 call:
+// 275 each (same code).
+// Round 63 (m3 lane 1, fast): 0x202720's squad_datum_walk_next walk + long elapsed + long index without word
+// casts + word wake read + `word active` else-if tail 312 (1103; aligned mnemonics 79 -> 36: retail's late
+// pushes, walk slots and block order); the same forms on the while(active) body 308 (1108), without the tail 312;
+// on the walk form areas/point/raised/location at function scope or renamed 312 each; the area overlap as a
+// forceinline helper 301. Diagnostic: an extra use of point inside the squad walk gives retail's frame 0x54 and
+// every slot (point 0x30, walk/raised 0x3c, areas 0x50), 299: retail's point is live across the walk.
+// Round 143 (m3 lane 6, fast): the state test through the existing 0x1f8660 call 324 (1092 B: it stays out of line,
+// so retail inlined it); elapsed without the `(short)` cast 312 (1104 B, aligned 114 against 160: retail reloads
+// elapsed as a dword, gets the late pushes and the pool reloaded per pass in EDI; the frame stays 0x48); on that,
+// a word wake read 312, `while ((squad = function_200d83(&squads)) != NULL)` 318, a long index without word casts
+// 312 (aligned 109).
+// DL259: Declared cluster array/shared scaled point/native movement fields,
+// seven subsets then readonly movement state: 275/275/275/275/275/275/275/275.
+// Original producers, includes and complete body restored; frame, iterator pool,
+// point/current-handle homes and intersection spill remain.
+// B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
+// complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
+// Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
+// J255: Coherent ordinary-inline squad-test, actor state update and actor-cluster
+// provider subsets, then squad-deactivation boundary: 275/275/275/275/275/275/275/275.
+// NOT kept: ties/regressions. Every provider contract and complete body restored;
+// frame, iterator/point homes and bitmap-intersection spill remain.
+// B444: Complete point/raised/location zero construction, seven subsets at native
+// output scopes then all at entry: 331/315/343/304/340/320/352/351. NOT kept: frame/layout still misses
+// retail and initialization extends code; original complete outputs and body restored.
+// N372: Actual current-cursor/saved-successor for/while graphs, raw and existing typed
+// actor receiver: 318/318/300/300/318/318/300/300. Original body restored; all retain
+// frame 0x48 versus 0x54. Iterator pool, point/area homes and intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -2854,6 +2925,37 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // nested guards 50; second-half index reads through the parameter's address everywhere, as a copy, in the loop or in the
 // tail 50 each (copy-propagated). Diagnostic: no second-half index uses at all 87 (578): gives `mov eax, ebp`, so the
 // reload comes from the index being live past the block.
+// Round 140 (m3 lane 6, fast): a compiled-out `do {} while (false);` closing the else-if arm, inside the
+// follow-up block, after the whole chain, after the first 0x202e90 call (braced) or before the follow-up
+// test: 50 each (same code).
+// Round 63 (m3 lane 1, fast): both halves as forceinline helpers taking the index and squad 50; only the order
+// part 50; only the trigger part 50; first parameter short 56 (580); short task local with uncast follow-up 50.
+// Also round 63: the squad as an s_squad_datum pointer with a byte view 50; the count test first in the
+// compute arm 54.
+// Round 78 (m3 lane 9, fast; aligned 2 = the reload and the pad it shifts): `arg_0 != NONE` tested
+// after the record tests 148 (580 bytes); the trigger guard as two nested ifs 50; the pending word
+// read at each use 50; `local_3 > 0` tested before the task 54; the pending arms swapped (compute arm
+// first, `else if (+0x64 <= 0)`) 145 at 578 bytes, aligned 11 (the reload stays).
+// Round 143 (m3 lane 6, fast): the compute arm's found/count test nested 50; local_4 left uninitialised and set to
+// NONE inside the pending arm 50; the follow-up (0x202e90 + 0x1fb8a0) as a forceinline helper taking the index,
+// task and event 50; the 0x290cd0 index argument as `(word)arg_1` 117 (582 B); the index parameter as dword 50.
+// AC514: Actual mapped trigger-event long/int/dword/word results with conditional
+// then default-first producers: 35/35/35/59/50/50/50/60. NOT kept: unmatched width/producer
+// allocation forms; original event domain, wrapped scan, calls and body restored.
+// First-event index reload and displaced actor-loop alignment remain.
+// Wide conditional results 35 grow to 582/578 and add sign extension; the first index reload remains.
+// Y590: Actual trigger-record null/count/count rejection exits, seven subsets
+// then complete pending/latch rejection ownership: 50 each. NOT kept: the first
+// event index reload and actor-loop alignment persist; original full body restored.
+// P340: Actual trigger-query bool/byte/char/signed-char/short/word/long/dword results at the original
+// call: 50/50/50/50/101/101/62/62. NOT kept: one-use result misses equality; original direct comparison,
+// calls, wrapped scan and complete body restored. First-event index reload and loop alignment remain.
+// P343: Accumulated trigger-count zero lifetime before squad/input/trigger/task/list/threshold/scan,
+// then entry declaration with original seed: 176/176/105/61/50/50/57/50. NOT kept: no equality; original
+// whole body restored; first-event index reload and shifted actor-loop alignment remain.
+// N372: Delay-owned pending conditional/exhaustive results 135/50; computed candidate
+// admission joins 156/50/50; complete graphs 156/50/50. NOT kept: no byte match; original
+// word/result graph restored. The first-event index reload and actor-loop pad remain.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3273,6 +3375,60 @@ void function_2011f0(long arg_0);
 // DL246 follow-up: early count guard, early real head/success defaults, both,
 // and both with the shared object receiver: 357/360/356/361. All regress;
 // original entry producers restored.
+// Round 63 (m3 lane 1, fast): typed placement-definition pointer 318 (same code); one squad byte pointer for
+// +0x2a/+0x76/+0x24 354 (1328); arg_1 unmasked to every long-parameter callee and the +0x3a0 store 378 (1352),
+// with the typed definition from `arg_1 & 0xffff` 347, with the squad pointer too 351 (1328: retail's raw
+// `and eax, 0xffff` entry, arg_2 in a register); on that the optional record by if/else 361, plus seat NONE
+// once 357; diagnostic fresh `squads[(word)arg_1].count` memset size on those 353/346.
+// Also round 63: difficulty cases 0 and 1 sharing one body 318 (same code), with the raw/typed/squad forms 351.
+// Round 205 (m3 lane 3, fast): typed definition from `arg_1 & 0xffff`, squad_get(arg_1) pointer, arg_1
+// unmasked to every call and the +0x3a0 store, squad_get(arg_1) in each splice pass, memset from the typed
+// count 351 (1328 bytes, retail's `and eax, 0xffff` entry); that with the squad pointer declared before the
+// definition 350 (entry is retail's for 25 instructions, but frame 0x130: the seat stays in EDI where retail
+// keeps it in its slot); on that the seat NONE once at its declaration 344 (frame 0x134 again); the options
+// pointer as a ternary 351; long difficulty by if/else switched as short 344. Left on 344: the options
+// if/else (retail stores NULL in its own arm), the memset's fresh `(word)arg_1` row read, arg_0's threaded
+// `xor esi, esi` after a failed 0x201400.
+// B413: Complete creation-record/customization/mask-attempt lifetime end scopes,
+// seven subsets, then all with readonly options: 318/318/318/318/318/318/318/318.
+// Original body restored; narrowed-index/placement and final-chain homes remain.
+// Round 49 (m3 lane 2, fast = plain 318): the options pointer by if/else with NULL in its own arm 361; the spawn
+// index assigned in each arm of `arg_2 == NONE` 358; the +0x3c word as a short compared with NONE and passed
+// as is 322 (retail's `cmp di, -1`, one byte shorter, but the splice loop's pad grows a byte; aligned 141 ->
+// 140); the final 0x2011f0 call with arg_1 unmasked (retail pushes the full dword) 350 (1344 bytes); a scenario
+// local for its three reads 348. Retail keeps the chain head in EDX through the splice; ours keeps it in memory.
+// F370: Reuse/attach/both request-completion lifetimes 318/336/336;
+// each with construction last-consumer scope 318/336/336; both as byte,
+// without/with construction scope 336/336. NOT kept: ties/regressions;
+// one-use request results require equality. Original complete body restored.
+// J250: Actual signed palette member, placement member and complete typed row,
+// seven subsets 318 each; all with native scalar one-word masks 318. NOT kept:
+// no allocation or extent gain. Original alignment-two row, masks and body restored;
+// narrowed-input/placement, seat and final-chain homes remain.
+// P319: Early validation/count producer nested/conditional/disjunction/complete-failure,
+// then bool/byte/short/long availability: 318 each. Original count threading persists;
+// NOT kept: no match or gain. All validation, narrow inputs and complete body restored.
+// Y592: Both function exits to sole return, or whole active-body/result finalization, bool/byte/short/long accumulated outcome:
+// 318/318/318/354/318/318/318/354. NOT kept: no exact whole-result ownership; original validation, narrowed inputs and complete body restored.
+// F384: Immutable group-row/selected-row/actor-record receivers, seven subsets,
+// then all with immutable options: 318 each. NOT kept: no gain; original body restored.
+// Native masked-input/placement, seat and final-chain homes remain.
+// F386: Whole active-body containment and common completion gate, persistent reuse
+// bool/byte/short/long success 318/318/318/354; missing polarity 318/318/357/357.
+// NOT kept: ties/regressions; original body restored, input/seat/chain homes remain.
+// F389: Shared narrowed row identity word/dword/long/int: word producer 318/394/394/394,
+// mask producer 318/356/356/356. Wide masks also demote 0x200d80 to 22. NOT kept: all tie/regress;
+// original narrowed observations and complete body restored; input/placement and chain homes remain.
+// B435: Reused absolute-index word/long/dword carriers, mutable then readonly,
+// followed by long/dword mask producers: 318/394/394/318/394/394/356/356.
+// NOT kept: no exact transport or gain; original narrow arguments/stores and body restored.
+// Frame 0x134 agrees; masked-index/placement, seat and final-chain homes remain.
+// M389: Both actual request completions in short/word/long/dword receivers,
+// producer-local then shared: eight 318s. NOT kept: no exact result-transport
+// repair; original requests, narrowed values, count/splice loops and complete body restored.
+// N372: Range/reuse/category continuation guards at the common attempt latch, seven subsets
+// and complete tail completion guard: 318 each. Original body restored; native 0x134 frame
+// agrees, but masked-input/placement, seat and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

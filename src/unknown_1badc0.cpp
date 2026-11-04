@@ -12,7 +12,9 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
-// score 211 (was 211): frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
+// score 180 (was 180): retail's length (1025), output in EBP and the input copy at +0x28 now agree; SSE scheduling of the
+// opening point copies and differences remains (retail reads the second copy back from memory for the actor difference).
+// Earlier: frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
 // Round 132 (m3 lane 5, fast): the output-parameter address read is what keeps the output on the stack
 // (without it 274, 996 B). That read at the 0x26d100 call instead of the entry self-assignment, reference at the
 // top/just before the call 211/211; the input point copied after the object lookup 211 (1005 B); the result-flag
@@ -246,13 +248,92 @@ real normalize2d(point2f *arg_0);
 // P280: Standalone existing scalar getter feeding the inherited state store,
 // with every entry scalar/collision/adjusted-point declaration subset: eight forms
 // 221. Original getter expansion, scalar stores and full body restored; output/vector homes remain.
+// Round 64 (m3 lane 1, fast, plain confirmed): retail stores the input's z at +0x30 but never subtracts it there, so the
+// point-to-center difference starts as a copy of the input and is differenced in place (kept), with one result for both
+// exits (kept) and the actor difference from the input (kept): 180; the entry self-address read of the output is then not
+// needed (removed, 180). On the way: single result alone 249; with a one-use input copy 182; copy for both differences
+// 234; in-place difference written out per component 231; in place without the single result 229; actor difference from
+// the copy 233; in-place difference after the actor one 181/180; actor difference from the copy after 228. On 180:
+// squared terms swapped 180; projection terms swapped 180; actor difference declared after the copy 226; plain local_15
+// (not volatile) 267; input copy after the object reads 238.
+// Round 80 (m3 lane 12, fast with 0x1ba5c0/0x1bdad0/0x1bff80, which stay matched): the actor-to-point vector
+// from `arg_2` instead of the copy 215 (1001 bytes); the found-flag store before the far-side vector 211; the
+// clearance `2.0f - local_11` named before the perpendicular 266 (996 bytes); the radius times 1.1 named once
+// for both components 211; the first perpendicular's y stored before x 211.
+// Lane 12 r86 (fast with 0x1ba5c0/0x1bdad0/0x1bff80, all still matching): retail forms the
+// center-minus-actor x/y early, before the squared-length test; an actor-to-center vector through
+// vector3d_from_points3d used in both projections 232 (1028 bytes); the clearance computed after
+// normalize2d 245 (1013 bytes); `result = true` before the out-pointer store 241 (1031 bytes);
+// local_11's squares written i, j, k 217; the actor-to-point vector from local_1 182.
+// M3 lane 2 r47 (fast, on 180): the to-center copy declared before the actor-difference call 226 (1027 bytes); the copy
+// taken right after the input copy, before the object lookup, 232; `2.0f - local_11` inside the normalize-success
+// block 245 (1013 bytes: that block then is retail's code, sqrt stored and re-read after the call; aligned 121 -> 119);
+// the actor difference from local_1 instead of arg_2 182 (1028), with the copy declared first 182.
+// DH319: Current in-place-copy graph, center-difference vector with original,
+// early-success, query-test and complete query arms 232/241/255/253;
+// uniform scalar terms 238/245/253/249. All restored; four query-result forms
+// change entry convention and lose callers; point/SSE and success ordering remain.
+// M360: Existing unit-scale component-array differences, seven direction subsets
+// and all with complete input copy publication: 180/180/180/180/180/180/180/180. Original body and
+// includes restored; early object masking, input-copy/SSE and query-success schedules remain.
+// P311: Existing planar difference over full vector/point storage with native/library captures,
+// P311: each with full/planar actor-direction production: eight forms 180 at exact 1025 bytes.
+// P311: Original full helper and body restored; object-mask/copy/SSE scheduling and query-success ordering remain.
+// Y574: Actual second in-place input supplies both differences, vector/point backing and
+// direct/in-place actor output, each with original/late clearance:
+// 233/257/233/257/182/245/182/245. NOT kept: all regress or miss byte equality; native early
+// object-mask and copy/SSE/query-success schedules remain. Original complete body and helpers
+// restored.
+// AC517: Scalar lifetime role names for radius, planar length/projection and adjusted distance/clearance,
+// phase subsets 1..7 then complete far-separation/state names: eight forms 180 at exact 1025 bytes.
+// Original names and full body restored; early object masking and copied-input/SSE schedules remain.
+// F368: Actual first/second/both normalizer completion as real, then bool, and entry-owned real/bool pairs: 180 each at 1025 bytes. NOT kept: one-use completion captures do not match or recover early mask/copy/SSE scheduling. Original body and inherited local qualifier restored.
+// P315: Full 3D in-place graph, third-input memcpy/memmove/vector-setter/point-setter producers, without/with center memcpy: 180/272/248/248/180/272/248/248.
+// P315: NOT kept: no byte match or supported gain; original full body restored.
+// P320: Existing object-header producer, raw/const/native/const-native views 180 each;
+// P320: header-derived object before input copy, raw/native 185/185; native object/header
+// P320: receivers at both radius/center uses 180/180. Original complete body restored;
+// P320: early object mask, second-copy SIMD schedule and query success transport remain.
+// P330: Optional collision-index output presence/complement at the successful-query
+// boundary, bool/byte/short/long: 180/180/180/180/180/180/180/180.
+// NOT kept: one-use admission does not match; original query/result and full body restored.
+// AC529: Second in-place copy from the adjusted snapshot, vector/point backing, original/captured actor input,
+// before/after actor production: 180/182/180/182/226/182/226/182. NOT kept: no equality or gain; native mask/copy/SSE schedules remain.
+// F373: Explicit object ordinal at branch/entry/after actor, parameter then long
+// ownership, and branch/entry dword: 180/193/193/180/193/193/180/193.
+// NOT kept: no match; early forms grow to 1029 bytes. Original body restored;
+// early mask, copied-input/SSE and query-success schedules remain.
+// F375: Actual direct/adjusted mode selector at its byte observation, bool/byte/short/long:
+// 180/180/180/180/180/180/180/180. NOT kept: no byte match; original body restored.
+// Early object mask, copied-input/SSE and query-success schedules remain.
+// AC543: Genuine point-pair/direction-trio/perpendicular-pair role-name groups on the
+// recovered in-place input graph, subsets 1..7 and complete collision/receiver names:
+// eight at 180, 1025 bytes. NOT kept: no equality; early mask/copy/SSE and query-success
+// schedules remain. Original identifiers, inherited local qualifier and full body restored.
+// F382: Direct-mode point2f/vector2f separation, existing/explicit difference
+// and existing/direct magnitude: 180/188/180/180/180/188/180/180. Frame 0x90 and extent 1025 agree.
+// NOT kept: ties/regressions; original scalar separation, includes and whole body restored.
+// F384: Independent actor-direction in-place point/vector backing, native/memcpy
+// capture at its producer or before object acquisition: 259/259/259/259/263/263/263/263.
+// NOT kept: all regress and grow to 1050/1025; original full body restored. Native
+// early object mask, independent copy/SSE and query-success schedules remain.
+// B439: First/second perpendicular sign outcomes in bool/byte/short/long:
+// 180/180/180/180/180/180/180/180. NOT kept: one-use predicates do not match;
+// original body restored, early mask and copied-input/SSE/query homes remain.
+// P332: Initial adjusted-point CRT capture on the full in-place graph,
+// with second-input/center library-copy subsets: memcpy four 180s; memmove
+// four 245s (1029 bytes, all three caller conventions lost). NOT kept:
+// no gain; original captures, helper inputs and complete body restored.
+// DH370: Coordinated object-index formal int/dword/unsigned-int/short/word/
+// const-long/const-short/const-word: 180/180/180/203/203/180/203/203.
+// NOT kept: full-width contracts tie; 16-bit contracts grow and lose three callers.
+// Original long contract and every declaration restored; mask/copy/SSE schedules remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
 {
-    s_type_c3b527 *const *output_reference = &arg_3;
-    arg_3 = *output_reference;
     s_actor_view *local_0 = actor_get(arg_0);
+    bool result = false;
     if (arg_6)
         *arg_6 = false;
     if (!arg_5)
@@ -262,9 +343,9 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
         real local_4 = *(real *)(local_2 + 0x3c);
         point3f local_3 = *(point3f *)(local_2 + 0x30);
         vector3f local_5;
-        vector3d_from_points3d(&local_0->position, &local_1, &local_5);
-        vector3f local_6;
-        vector3d_from_points3d(arg_2, &local_3, &local_6);
+        vector3d_from_points3d(&local_0->position, arg_2, &local_5);
+        vector3f local_6 = *(vector3f const *)arg_2;
+        vector3d_from_points3d((point3f const *)&local_6, &local_3, &local_6);
         real local_7 = local_5.j * local_5.j + local_5.i * local_5.i;
         if (local_7 > 0.0f)
         {
@@ -324,26 +405,29 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
         {
             if (arg_4)
                 *arg_4 = local_17;
-            return true;
+            result = true;
         }
-        return false;
-    }
-    real local_18 = local_0->position.x - arg_2->x;
-    real local_19 = local_0->position.y - arg_2->y;
-    real local_20 = (real)sqrt(local_19 * local_19 + local_18 * local_18);
-    if (local_20 > 2.0f)
-    {
-        arg_3->point.x = arg_2->x + g_4687b0->i;
-        arg_3->point.y = arg_2->y + g_4687b0->j;
-        arg_3->point.z = arg_2->z + g_4687b0->k;
-        arg_3->output_index = NONE;
-        if (arg_6)
-            *arg_6 = true;
     }
     else
     {
-        arg_3->point = *arg_2;
-        arg_3->output_index = NONE;
+        real local_18 = local_0->position.x - arg_2->x;
+        real local_19 = local_0->position.y - arg_2->y;
+        real local_20 = (real)sqrt(local_19 * local_19 + local_18 * local_18);
+        if (local_20 > 2.0f)
+        {
+            arg_3->point.x = arg_2->x + g_4687b0->i;
+            arg_3->point.y = arg_2->y + g_4687b0->j;
+            arg_3->point.z = arg_2->z + g_4687b0->k;
+            arg_3->output_index = NONE;
+            if (arg_6)
+                *arg_6 = true;
+        }
+        else
+        {
+            arg_3->point = *arg_2;
+            arg_3->output_index = NONE;
+        }
+        result = true;
     }
-    return true;
+    return result;
 }

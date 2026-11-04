@@ -333,6 +333,67 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // then all with the three coefficient lifetimes ended: 1355/1355/1355/1355/1355/1355/1355/1355. NOT
 // kept: no byte match; original complete body and every helper restored. Excess frame and
 // component/velocity/query homes remain.
+// Round 35 (m3 lane 17, fast): the second normalizer's accumulator as real 1380 (6211 bytes); the steering
+// magnitudes through fabs 1438 (6208 bytes); the three friction coefficients from one if/else on the dynamic
+// flag 1353 (two points, not kept); the twice-used dynamic/moving test named for both impact calls 1395 (6211
+// bytes, frame 0x5d0); the rest-length product computed before the other 1355 (same code).
+// F347: Existing shared normalizer at direction/friction/tangent, masks 1/2/4/3/5/6/7, then
+// all with the existing squared-length producer: 1385/1387/1414/1409/1421/1414/1457/1488. NOT kept: no match;
+// original floating trees, all captured inputs, private kernels and complete body restored.
+// Round 128 (lane 8, fast control 1355 = plain): retail recomputes `imul index, 0xd8/0x4c/0x3c` at the contact
+// loop's top each iteration (no pointer induction) and leaves the duplicate search straight for its found exit.
+// Tried: a contact pointer for the loop's element 1401 (6211 bytes, still walked); the result-record pointer
+// declared at the loop's top 1355 (same code); the component index read at each use in the ray test 1474; the
+// ray length named and used twice 1382; a collected flag for the duplicate search 1402.
+// Round 201 (fast; aligned = difflib count): the five 12-byte magnitude copies are the frame excess
+// (a compile-only frame probe lists one copy per inlined magnitude). The two buffers declared at the top
+// 1355 (same code); the magnitude read through its pointer 1608 (6022 bytes, frame 0x590, aligned 968
+// against 969); the contact element as a pointer local throughout the contact loop 1401 (frame 0x5c8,
+// aligned 962); both together give retail's exact frame 0x58c and first difference +0x4e (local_4/local_5
+// and the component homes) but 1689 (5942 bytes, aligned 933): our build still biases the element
+// pointers (edi - 0x50) where retail keeps the element base and `lea ebp, [edi + 0xa0]`, and the first
+// loop's per-element pointer starts at +0xe4 where retail's starts at +0xe0; on that form a single-exit
+// normalizer 1689 (same code). Original body restored.
+// Round 79 (m3 lane 16, fast): first-loop cross through cross3f_staged 1462 (6179 bytes); through the file's own
+// k/j/i cross helper 1426 (6238 bytes, retail's length: local_5 then preloads like retail, but the local_4 add folds
+// into the cross registers where retail stores the cross and re-adds); that plus vector3f_add(&local_4, v, v) 1426;
+// the contact cross written straight into field_4c and summed in place (retail's form there: no contact-velocity
+// local) 1388 (6238 bytes), with the first-loop helper too 1451. Aligned (difflib) counts stay 1340-1380 of 1455.
+// Round 144 (m3 lane 5, fast = full 1355): seven of the accumulations through the existing vector3f_add 1401
+// (6211 bytes); the crosses through the existing cross3f 1402 (6259 bytes); the dot product summed i, j, k 1355
+// (same code); the second normalizer's sum i, k, j -> i, j, k 1355; the scales through the existing vector3f_scale
+// 1433 (frame 0x5c8, 6211 bytes). Original body and helpers restored.
+// Round 49 (m3 lane 15, fast control 1355): the two steering magnitudes as `x >= 0.0f ? x : -x` 1375 (6238 bytes,
+// that block then exact: retail tests `jb` to the negation); the signed square grouped `(real)(l * l) * sign * f88`
+// with the casts on both factors or the square only 1427 (6211, retail's mulss order but the clamp above shortens);
+// the final loop's member count read through the element pointer local 1359 (6238); that with the magnitude form
+// 1390 (6211). Retail places the duplicate-contact search out of line after the impact loop (rotated, entered by a
+// forward jump when the list is non-empty); ours keeps it inline.
+// P312: Native value-input magnitude/first-normalizer/second-normalizer masks 1/2/4/3/5/6/7,
+// then immutable complete inputs: 1355/1357/1390/1357/1390/1410/1410/1410. NOT kept: no match;
+// original pointer kernels/captures restored. Second-normalizer values enlarge frame to 0x5dc.
+// Round 84 (m3 lane 9, fast control 1355): retail ends with `return a && b && c && d;` (two exits, `mov eax, 1` and
+// `xor eax, eax`, registers popped before the tests); that return alone gives retail's exact tail but 1366 (6252
+// bytes). Retail tests the impact list's count in the final loop's head, as impacts.cpp's sibling loop does (`for (i
+// = 0; i < (list == NONE ? 0 : count); i++)`): that gives retail's loop head and 6238 bytes but 1383; with the list
+// pointer local dropped (pool global read at each use) 1407; both with the direct return 1382. The magnitude helper
+// without the snapshot, products in double 1548 (frame 0x590, but the double loads are shared: `fld` once and `fmul
+// st(i)`, where retail reloads with `fld m; fmul m`); the component index read after the 0x81 flag test (retail's
+// order) 1474 (6195 bytes). All restored.
+// DL260: Current-float complete dot/magnitude/second-normalizer product parts, seven subsets, then complete squared length: 1381/1415/1415/1394/1394/1387/1424/1395.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// F365: Vector-owned captured magnitude and paired normalizers, masks 1/2/4/3/5/6/7, then ordinary inline:
+// 1354/1354/1355/1354/1354/1354/1354/1354 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// F367: Complete pointer-boundary aggregate magnitude/first-normalizer/second-normalizer input captures, masks 1/2/4/3/5/6/7, then all via existing setter: 1608/1413/1395/1618/1569/1453/1641/1666. NOT kept: all regress and miss native storage/extent; original captures, private helpers, APIs and full body restored.
+// Round 586: Magnitude input last-consumer scope at real/double squared-length or
+// real/double magnitude producer, direct/complete named products: 1395/1383/1395/1433/1355/1386/1355/1383.
+// NOT kept: nonexact lifetime/precision/staging; original helper and whole body restored.
+// F385: Existing vector-union component-array observations in dot/cross/magnitude,
+// seven producer subsets and the complete normalizer/add graph: eight at 1355.
+// NOT kept: byte-neutral frame/home diagnostics; original complete kernels/body restored.
+// P331: Point activity/query/compression admission results, masks 1/2/4/3/5/6/7 then complementary
+// all: 1355/1355/1354/1351/1350/1350/1350/1380. NOT kept: at most five points, below margin; no
+// exact predicate-storage match. Original helpers and body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

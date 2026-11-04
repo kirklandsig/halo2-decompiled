@@ -894,6 +894,55 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // DH308: Point-mode planar cosine/sine product pairs and distance-clamp subsets
 // 1/2/3/4/5/6/7, then all with enclosing product declarations: 245/245/236/236/245/245/236/236.
 // All retain frame 0x48 and 1696 bytes; executable rows tie or regress. Original body restored.
+// Round 65 (m3 lane 1, fast, control 236): length `(d.j*n.j + d.k*n.k) + d.i*n.i` with the direction operands
+// first 238; plane distance base as dot3f(&plane.n, position) 236 (same code); the direction pointer
+// initialised at its declaration ahead of the axis copies 255; length as dot3f(&plane.n, direction) 251;
+// the normal copied from camera->point.left directly 236 (same code). Original body restored.
+// Round 59 (m3 lane 11, fast): the timer through a `seconds` local at the call site 385; `t` as one ternary 236 (same
+// code); the direction pointer taken before the three axis stores 255; the axis stores of cases 1 and 2 through one
+// forceinline reset helper 236 (same code); the 0x40 flag set once before the point-type switch 426. All restored.
+// Round 78 (m3 lane 16, fast): length `dot3f(direction, &plane.n)` 251 (retail's d.j preload; the copied normal
+// loads i/j/k into XMM5/3/4 for retail's XMM3/4/5 and the plane-offset product copies n.i), with `0.0f !=
+// length_squared` 250, with plane.n copied from camera->point.left 251; `0.0f != length_squared` alone 235
+// (one point, not kept); the length written i,j,k direction-first 253; plane.d as dot3f(&plane.n, position)
+// 236 (same code), with the dot3f length either operand order 251/251.
+// AC509: Signed-distance/fraction real-double domains (-/double, real/-, real/real,
+// real/double, double/-, double/real, double/double) 407/256/245/413/410/413/413;
+// complete double factor 427. Archived real quotient 236 excluded. Original projection,
+// helpers and body restored; direction/normal/zero homes and flag scheduling remain.
+// AC511: Immutable complete plane with original/default-zero/conditional/zero-first
+// factors, original/producer direction declaration: 443/437/443/443/443/437/443/443.
+// NOT kept: readonly plane producers shorten to 1660/1668 versus 1696 and regress;
+// original plane, direction, factor, scopes and complete body restored.
+// AC513: Existing shared add-scaled projection; copied-normal squared length,
+// dot length in both input orders, per-use direction, source squared length, default-zero
+// and zero-first factor: 367/370/371/371/367/461/449/367. NOT kept: no exact match;
+// original header set, projection, factors, helper bodies and whole body restored.
+// AC518: Complete nonzero-length admission bool/byte/short/long at producer
+// or declared before plane workspace: 236/236/236/236/236/236/236/236 (control 236).
+// NOT kept: one-use predicate unmatched; original projection and body restored.
+// AC523: Remaining complete case orders, point-pan-first-animation 262;
+// pan-animation-first-point 468; pan-first-animation-point 464;
+// animation-pan-point-first 457; animation-pan-first-point 458;
+// animation-first-point-pan 456; animation-first-pan-point 459;
+// first-point-animation-pan 440. NOT kept: all regress; original whole cases,
+// projection, helpers, observations and complete body restored.
+// AC525: Complete FOV-target presence/absence results in bool/byte/short/long,
+// eight at 236. NOT kept: predicate residence unmatched; original target gate,
+// snapshots, projection and full body restored; direction/normal/zero homes remain.
+// AC539: Actual FOV transition-completion result, positive then complementary
+// bool/byte/short/long: eight at 236. NOT kept: unmatched one-use decision storage;
+// original duration/target observations, projection, helpers and full body restored.
+// AC541: Actual timer nonzero-scale decision, bool/byte/short/long at its consumer
+// 236/236/236/236; at the entry snapshot 365/365/439/323. NOT kept:
+// no equality/gain; original snapshot, projection, float trees and whole body restored.
+// AC543: Actual animation-matrix completion/pending call results at the original
+// call/test boundary, bool/byte/short/long: eight at 236. NOT kept: one-use call
+// outcomes unmatched; direction/normal/length/zero homes remain. Original projection,
+// output validity, helper calls, case order and complete body restored.
+// F383: Coherent existing basis-builder input order 234, but its matched callee becomes 2;
+// NOT kept. Immutable projection denominator/captured scale/pan fraction, seven
+// subsets, all 236. Original interfaces, copied plane and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -183,6 +183,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
+// constant there, ours multiplies first (642, same code).
 // score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // activation copies) and reads d from its stack slot at each use; ours keeps d in EBX from entry. Frame 0x24
 // and clock EDI agree; direction/sample homes and coefficient schedules remain.
@@ -350,6 +352,46 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 382: Complete angular direction-admission predicate, bool/byte/short/long
 // outside truth then inside complement: 642/642/642/642/642/642/642/642. Original dot/test, fallback and
 // full body restored; direction/sample homes and coefficient schedule remain.
+// Round 42 (m3 lane 2, fast, caller 0x1eb6f0 checked): the output copy from q moved to the entry 732 (2884
+// bytes, caller 0 -> 31); only the position pointer declared at the entry 718 (2895 bytes, caller 0 -> 11); the
+// 0.866 test's products written d first 642 (same code); the alignment dot written a first 642 (same code); the
+// zero-counter fallback as `vector3f qr = counter == 0 ? *g_4687a4 : *q;` (q not reassigned) 686 (2857 bytes,
+// caller kept). Original body restored.
+// Round 81 (m3 lane 12, fast, caller checked): the first length sum written i, j, k 642; the delta computed before
+// the scaled alignment 641 (one point); the 12/8 factor after t, before the 0.001 test 666 (2871 bytes, caller
+// 0x1eb6f0 22); v as `PIN(s->alignment * 1.5f, 0.f, 2.5f) * 0.4f` after the delta 681; the step clamp as one
+// ternary 645. Original body restored.
+// Round 129 (m3 lane 8, fast; caller 0x1eb6f0 checked each time): retail reloads q into EBX after the
+// update block's direction normalize (q is its register variable, clobbered and reloaded), d from the stack.
+// The first clamp as `if (0.001f > t) e = 0.001f; else ...` 704 (2880 bytes); the first step as one ternary
+// 645; the output position copy moved to function entry 732 (caller 31); a separate source pointer for the
+// counter-0 fallback 662 (2871); the alignment dot written i, j, k 642 (same code). Original body restored.
+// Round 83 (m3 lane 12, fast, caller 0x1eb6f0 MATCH in each): the step clamp as one ternary again 645 (a repeat);
+// the cap as `k * globals->rate` 642; the duration test as `t >= 0.001f` 642; `fail` declared before `globals`
+// 642; the first count as one ternary 683 (2877 bytes); both 12/8 factors as `k = 12.f; if (!s->fast) k = 8.f;`
+// 642. Original body restored.
+// Round 59 (m3 lane 13, fast, caller 0x1eb6f0 MATCH in each): retail's q is EBX from entry but unused until the update
+// block's integer copies borrow EBX, then reloaded after the refresh normalize and kept for the output copy, the dot
+// and `cmove ebx, [g_4687a4]` for the counter-zero fallback (ours stores the fallback to q's stack slot). The whole
+// `if (update)` body as a forceinline helper taking d 655 (2872 bytes; d still EBX, the parameter is coalesced); the
+// fallback as `q = counter == 0 ? g_4687a4 : q;` 642 (same code); the failure flag initialised after the update block
+// 687; d and q as const pointees (definition and declaration) 642 (same code); the settle alignment dot before the
+// first-settle block 653; the fallback dot with q's components first 642 (same code). Original body restored.
+// Round 50 (m3 lane 15, fast, caller 0x1eb6f0 matched in each): the distance stored as the clamped length
+// local 667 (2889 bytes); the step factor as `n * v * rate` 642 and `n * rate * v` 642 (same code); the limited
+// flag computed first and the clamped length taken from it 722 (2858 bytes); the duration sum written count
+// first 642 (same code). Retail's EBX holds the next stack parameter at entry (ours the one before it).
+// DL258: Shared completed-activation admission in bool/byte/word/long form
+// 642/642/663/665; complementary admission 652/652/683/684; joint direction/sample
+// formal role names 642/642. Native sample EBX ownership at entry still differs;
+// all other calibrated scores unchanged. Original body restored.
+// DH353: Existing double-factor publishers at displacement/impulse/all tick scales,
+// subsets 1/2/4/3/5/6/7: 716/716/724/783/783/766/817; complete sample graph 830.
+// NOT kept: native SSE/frame/extent disagree; original products and caller restored.
+// AC538: Complete settling-alignment admission, positive/complementary bool/byte/short/long:
+// 642/642/642/642/642/642/642/642. NOT kept: unmatched decision/storage forms; original complete body
+// restored.
+// Native sample/direction homes and coefficient schedules remain.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

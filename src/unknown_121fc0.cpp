@@ -46,6 +46,8 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 	return token;
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (128); EBP is still saved at the token traversal
+// rather than in retail's prologue, and the scalar homes still sit 4 below retail's.
 // score 128 (was 128): frame 0xa44 agrees; EBP is saved at token traversal rather than the
 // outer block, and read-size/count/cursor homes differ. Round 28: the scalar homes sit 4 below retail's (the token
 // array agrees); EBP is saved and restored around the token loop only. Clamp as a MIN macro / an if / a PIN macro
@@ -220,6 +222,83 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Actual insertion cursor, displacement bound with ordinal search and pre/post publication 211/218,
 // pointer search 235/250; endpoint bound with ordinal search 213/221, pointer search 242/256. Outer
 // EBP preservation and read-size/count/cursor homes remain; original body restored.
+// Round 77 (m3 lane 9, fast): the clamp in the subscript as file_read_string writes it (no write-back) 216 (763
+// bytes); the clamp as `if (size > 0x7ff) size = 0x7ff;` 128 (same code); as `size >= sizeof(buffer) ? ...` 128;
+// the size as a long passed through a `(dword *)` cast 128; diagnostic, the clamp and terminator moved ahead of the
+// success test 129 (not semantics-preserving). Retail reads the size from its slot three times around the clamp,
+// which only a volatile size reproduces (not allowed); EBP's late save remains.
+// Round 199 (fast): retail reads the size three separate times around the clamp (compare, select, index) with
+// one store, a pattern only a volatile-qualified size gives (two reads would CSE on a plain memory variable). The
+// token table as `char const *` 128; the delimiters as a named static array 128; diagnostic, the clamp, terminator
+// and first token merged into the success test with a do-while walk 127 (EBP still saved at the walk); the
+// table-full case as `if (count >= 11) { next token; continue; }` 251 (802 bytes); the clamp right after the wait,
+// ahead of the success test 129.
+// Round 56 (m3 lane 13, fast; 0x12000 matched each time): the whole uninitialised-table block as a forceinline
+// helper 128 (EBP still saved at the walk; diagnostic, one-caller helper); the size clamp as an if 128; the next
+// pointer declared at the block's top 128; next and token declared ahead of the token table 128; the unique
+// count post-incremented in the call 128 (all same code). Compile-only: a for walk and a non-zero size test leave
+// the save late; a NULL token compared after the block saves EBP at the top but adds `xor ebp, ebp` and a setcc.
+// Round 158 (m3 lane 4, fast): `register` on the token 128; the tokenizer cursor set to the buffer at the outer block and passed to the first call 128; the
+// token declared NULL at the outer block 128; the clamp as an if 128; clamp and terminator ahead of the success test 129 (aligned 60); the success flag copied to a local for the test 128.
+// N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
+// then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
+// result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
+// Round 48 (m3 lane 2, fast): the done/success/size out-locals declared before the three buffers 128; the
+// token walk as the matched font_table_parse's for loop (token declared before it) 128; the next-token cursor
+// declared at the block top 128; both counters at the `if (!g_4e3b40)` block top 127; the token table cleared by
+// memset 257 (724 B). EBP is still saved at the token walk.
+// N349: Actual mapping-slot ordinal shared across default initialization and token mapping, long/dword/short/word,
+// original ordinal search 128/128/232/232; predecessor-pointer search 205/205/203/203. Shared-storage forms
+// did not match; original complete body restored. Outer EBP preservation and read-size/count/cursor homes remain.
+// NOT kept: shared ordinal storage/domain forms did not match.
+// N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
+// then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
+// result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
+// Round 69 (m3 lane 10, fast): EBP's late save comes from where the walk's exits land. When the no-token exit and the
+// loop's exit reach one block, the restore goes on a block of its own around the walk; when the no-token exit jumps past
+// the success test's join and the loop's exit falls into that join, the restore lands in the join with ESI/EDI and the
+// save moves to the block top (retail's push order and `pop edi; pop esi; store; pop ebp`). `if (!token) goto out;
+// do ... while (token);` with `out:` before the flag store 63 (aligned 27; a goto and a hand-inverted loop: not kept); with
+// 0x1a1480's size and success swapped and the counters before the token array 59 (aligned 23; not kept). Diagnostic only,
+// reverted at once: the first form with a volatile size 6, and with the swap and counters too it matches byte for byte
+// (0x1a1480 still matches), so these are the only causes left; every cast read of the size (`*(long *)&size` and others)
+// folds and leaves the two-read clamp. Goto-free forms: the flag store in both arms of the success test 127 (aligned 49);
+// the flag store in the success arm ahead of the walk and in an else 114 (the save at the top, the store is not retail's place);
+// the flag store ahead of the success test 154 (766 bytes). Compile-only, the save stays late for: the guard's label inside the success
+// block, the success test as a goto too, for(;;) with a break or a goto at its end, `if (token) do` with or without
+// `else goto`, a do/while(0) with breaks, an empty else on the success test.
+// B401: Next-unused cache slot as provisional mapped search result, long/dword/short/word:
+// ordinal traversal 227/227/223/223; native pointer traversal 218/218/215/215. NOT kept:
+// unmatched result/control forms regress and shorten extent; original search, tokenizer and body restored.
+// P307: Initialization-failure result feeding guard/four stores, bool/byte/char/word/short/int/long/dword:
+// 101/229/229/226/226/227/227/227. NOT kept: 101 adds neg/sbb/inc absent in retail,
+// and leaves outer EBP and clamp homes unresolved. Original entire body restored.
+// DH331: Native next-cursor reference in existing tokenizer, original/early-null/nested-result/
+// output-owned graphs, pointer then fixed-array delimiter input: 128/232/193/248/128/232/193/248.
+// Original tokenizer and loader restored; early EBP preservation and read-size homes remain.
+// N351: One outer admission/cache-finalization exit, counter/table order, returned path and outer-buffer subsets 0..7:
+// 128/126/126/126/128/126/126/126. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: outer EBP preservation and read-size/count/cursor homes.
+// F377: Separate duplicate-equality outcome across the ordinal search, bool/byte/char/word/
+// short/int/long/dword: 203/203/203/203/203/203/203/203. NOT kept: unmatched flag carriers;
+// original complete body restored; outer EBP preservation and read-size homes remain.
+// N375: Global mapping initialization by endpoint cursors, fill/fill_n, unsigned ordinal,
+// ordinary cursor/ordinal while and advancing cursor/count: 128/128/253/253/128/128/128/128.
+// NOT kept: no gain; standard fills shorten to 741/773. Original whole body restored.
+// N377: Standard first-equal predecessor ranges with existing string comparison,
+// first/second binding, pointer/ordinal result and original/post-search publication:
+// 253/244/262/254/253/244/262/254. NOT kept: all regress/shorten and grow frame to 0xa58;
+// original whole body restored. Outer EBP preservation and read-size/cursor homes remain.
+// N379: Existing tokenizer tail through delimiter-span producer, accumulated/explicit/selected/
+// end-tested outputs, original/zero read count: 217/223/262/217/211/216/254/211. NOT kept: alternate library
+// boundary does not recover native EBP/clamp homes; original tokenizer and loader restored.
+// N381: Existing tokenizer returns complete token/cursor pair by direct/named/default-member/factory
+// production, original/zero read count: 275/232/250/181/274/219/253/233. NOT kept: no byte match,
+// larger frame and changed extent; original scalar outputs, tokenizer, read/wait and entire loader restored.
+// N383: Canonical token update with overflow continue, long/dword results and long/dword/short/word
+// predecessor ordinals: 128/128/213/213/128/128/213/213. Single read/write tokenizer cursor, pointer/reference
+// and original/token-owned/nested/cursor-owned producers: 128/220/193/248/128/220/193/248.
+// NOT kept: ties/regressions; original scalar channels, helper, loader and full body restored.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

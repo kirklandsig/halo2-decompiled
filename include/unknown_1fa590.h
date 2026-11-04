@@ -86,6 +86,6 @@ struct s_edge_iterator
 };
 
 s_pathfinding_edge *function_1fa720(s_edge_iterator *iterator);
-bool function_1fa6b0(s_pathfinding_node const *node, s_pathfinding_data const *pathfinding);
+bool function_1fa6b0(s_pathfinding_data const *pathfinding, s_pathfinding_node const *node);
 
 #endif

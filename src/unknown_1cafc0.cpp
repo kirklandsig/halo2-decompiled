@@ -644,6 +644,62 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // while all three providers inline to the unchanged 348 score and extent with no higher control scores.
 // No source form gains; every body and temporary inline declaration is restored. Original executable
 // source restored.
+// P293: Recovered twelve-byte request graph, native primary/alternate/both query-result ownership with
+// byte then Boolean success, both mutable with byte/Boolean: 387/402/491/508/518/548/491/548. Original
+// complete body and helpers restored; no qualifying gain.
+// DL251: Byte return with byte/bool/word/long status, char return with byte/bool/word status, then
+// native bool return with bool status on the twelve-byte expansion; NOT kept: all regress;
+// original graph/name ownership and return normalization remain: 478/478/564/556/478/478/564/478.
+// Original complete source restored; no eligible gain.
+// B389: One failed-request edge to the sole exit, byte/char/bool/word/short/dword/long/int
+// success domains: 348/348/478/545/545/496/496/496. Original byte guard and body restored;
+// destructive graph-base/reload ownership and low-byte return remain.
+// DL253: Original resource API with coherent force-inline outer/middle/leaf subsets 1/2/4/3/5/6/7,
+// then all with Boolean status: 1788/1887/1895/1579/1788/1895/348/478. Full expansion reproduces
+// the original graph/base homes and still loses eight matches; all forms regress other users.
+// NOT kept: all original provider declarations, shared expansion call and complete body restored.
+// B399: Graph-object reference on the retained twelve-byte shared expansion, with complete
+// input/found/result reference-view subsets 0/1/2/4/3/5/6/7: 348 each. NOT kept: unmatched
+// parameter aliases supply no graph/base recovery. Original entire body restored; graph/request
+// homes and final byte normalization remain.
+// B406: Retained actual fallback pointer with common test-produced byte/bool/short/long
+// status 635/640/593/602; conditional common success 643/648/614/613. All regress;
+// original fallback stores, graph/request homes, byte status and complete body restored.
+// B410: Actual fallback output-name results, long/dword scalar families with unconditional/
+// success-guarded publication 667/659/667/659; native record with aggregate/field publication
+// and both guards 665/679/647/665. NOT kept: one-use captures/native value copies and
+// nonretail publication/frame/extent; original outputs, shared request call and body restored.
+// P303: Corrected twelve-byte expansion, fallback mode/class/type fields uniformly at use,
+// subsets 1/2/4/3/5/6/7: 542/535/540/534/535/536/534; all with Boolean success 531.
+// NOT kept: every form regresses and disturbs the agreeing prefix; original snapshots and body restored.
+// M346: Ordered fallback availability owned immediately before each test, original success
+// stores retained, bool/byte/char/signed-char/short/word/int/long: 348 each. All retain
+// frame twelve and 1782/1761 bytes; graph/base homes and return normalization remain. Restored.
+// M354: Failure-owned fallback continuations, first-three subsets and all four:
+// 433/396/534/375/432/396/534/532. NOT kept: alternate branch ownership misses native request allocation.
+// M356: Persistent fallback type/class/mode field references, seven subsets,
+// then all mutable: 540/535/542/536/535/534/534/534. NOT kept: all regress;
+// original snapshots and complete body restored. Request graph/base homes remain.
+// DH336: Name/primary/alternate library publication on the twelve-byte shared
+// request graph, original output-index tests: 587/385/386/590/590/492/597/617.
+// Original complete body restored; graph-base/reload homes and byte normalization remain.
+// DL259: Primary success enters the sole request/return completion,
+// byte/bool/char/signed-char/short/word/int/long: 348/478/348/348/545/545/496/496.
+// NOT kept: no native graph/base or return-byte repair; original complete body restored.
+// Y591: Status after found publication/primary query on the twelve-byte expansion,
+// each byte/bool/short/long: 392/520/570/523/397/525/574/527. NOT kept: no native graph/base
+// repair; original status lifetime, queries, request expansion and body restored.
+// DL261: Actual shared-request full-word identifier formal domains, seven subsets then Boolean success result: 348/348/348/348/348/348/348/478.
+// NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
+// F385: Paired alternate/fallback policy extraction in bool/byte/short/long at entry
+// 592/592/600/536; after primary query 575/575/588/583. NOT kept: policy residence
+// misses native query/request homes; original parameters, byte status and complete body restored.
+// B444: Resolved request inputs in existing mode/class/type formals, seven subsets
+// then all in class/mode/type load order: 396/358/396/354/396/359/396/362. NOT kept: one-consumer field
+// captures miss byte equality and disturb query homes; original entire body restored.
+// B446: Late completed lookup truth, request guard and sole return, bool/byte/char/
+// signed-char/short/word/int/long: 645/640/640/640/629/629/615/615. NOT kept: changed result lifetimes
+// disturb the agreeing lookup prefix and native request homes; original complete body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -890,6 +946,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// MiniMax h (11-04): no lower score; a block around the lookup leaves the id homes swapped (retail animation id 0x18, transition id 0x14).
 // score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; the two id slots are swapped: retail keeps the
 // transition id at frame+0x04/0x06 with its -1 stores at the block entry and the animation id at frame+0x08/0x0a
 // with its -1 stores at the function entry, ours is the reverse. Moving the transition id to function scope gives

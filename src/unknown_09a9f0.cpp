@@ -546,6 +546,62 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // M325: Zero-notification completion guard with bool/byte/short/long creation-validity
 // results 63/93/68/65; entry-false success 70/68/73/71. All restored;
 // false BL, temporary EBP and independent header/object computations remain.
+// Round 200 (m3 lane 3, fast): retail shape (false result first, true after the attach, NONE in the
+// flagged else) with the header test on the stored entity field 77 (160 bytes); the header test indexed
+// with `(dword)object_index` 49 (same code: the lookup still shares); bool result 69 (178 bytes); the
+// result from the stored field 49 (same code); v29's output through `&d` (no copy) 69. All restored.
+// Round 124 (m3 lane 8, fast): the header test indexed through `(word)object_index` with the entity's index
+// stored again at the top of the unflagged arm 67 (188 bytes); the entity store after the result 49; the object
+// index declared before `value` 49; the entity's field read into a local before the header test 49; the header
+// test or the object read through the entity's stored index (long result) 49/49 (forwarded, same code).
+// m3 lane 11 r62 (fast): bool result false first, `result = true` right after the attach (retail's BL
+// sequence) 77 re-measured (160 bytes: EBP then caches the last argument for both virtual calls); with the
+// header flag tested through a bit-field view of the header's flags byte 77 (same code); the result set
+// after the value call 79; the entity's stored index at every use 82; the result set before the attach 72
+// (176 bytes).
+// Lane 18 round 36 (fast): on the long result, the flag read as the byte at +2 of the header 49 (same code); the
+// object store and attach through `entity->object_index` 52; the bool result cleared at entry and set after the
+// attach (re-measured) 80 (158 bytes: retail's BL and branches, the header address still shared); the validity
+// test written `object_index != NONE` beside the long result 76 (189 bytes); the entity's index and the local
+// assigned in one chained statement 49 (same code).
+// m3 lane 14 r56 (fast): the flag test through the existing object_header_get (slot_handler.h) 49 (same code);
+// bool result preset false with the flagged arm first and `result = true` before the value test 75 (160 bytes);
+// the long result with `if (result && flagged) { clear; result = false; }` then `if (result)` the attach block
+// 52; the flagged arm setting `result = false` before the clear 50; a long result preset false and set true
+// after the attach 67. All restored.
+// m3 lane 11 r62 (fast): bool result false first, `result = true` right after the attach (retail's BL
+// sequence) 77 re-measured (160 bytes: EBP then caches the last argument for both virtual calls); with the
+// header flag tested through a bit-field view of the header's flags byte 77 (same code); the result set
+// after the value call 79; the entity's stored index at every use 82; the result set before the attach 72
+// (176 bytes).
+// Round 208 (m3 lane 3; one-file LTCG harness, exact for this body; real-build figures in brackets): retail's
+// reloaded data pointer and recomputed index for the object (pool kept in EDX) is what a join before the object
+// lookup gives, as in the matched 0x10fa80/0xd1540: a memory re-test `if (entity->object_index != NONE)` after
+// `if (object_index != NONE && header flag) entity->object_index = NONE;` gives retail's lookup and BL result but
+// keeps the re-test 52 [53, 177 bytes]; with the entity's index everywhere 57; the local cleared and stored once
+// 60; a local re-test (`entity->object_index = object_index = NONE;`, five spellings) 59-61 [75] and a flag set in
+// the header test 64-75 [72] are threaded before CSE and share the lookup again; a compiled-out
+// `do {} while (false);` at the arm top/before the test/both 49 (same code), at the re-test's join 52; the header
+// test through same-file inline bool helpers (5 spellings) or link-inlined helpers in another file 49 (same code).
+// Round 67 (m3 lane 1, fast): the header test through a forceinline bool getter 49 (same code), on the retail shape
+// (false first, true after the attach) 77; retail shape with the flag test positive and the NONE arm first 75 (160
+// bytes); the positive test with the NONE arm first on the long result 52; a header pointer named for the test with
+// the object read through the macro 49. Lead: retail's reloaded table data and recomputed index look like an
+// out-of-line getter that LTCG inlines; no existing one was found in src/.
+// B415: Full validation byte in byte/word/long/dword storage, at the test then bare entry declaration:
+// B415: 49/49/49/49/49/49/49/49. NOT kept: one-use field storage does not match. Original validity result,
+// B415: virtual calls and complete body restored; false BL and independent header lookups remain.
+// M363: Actual input-info and both repeated virtual-argument formal lexical roles,
+// seven subsets, then all with complete incoming roles:
+// 49/49/49/49/49/49/49/49. NOT kept: no eligible byte match or native-supported closer.
+// Original complete body restored; false BL, temporary EBP and independent header/object lookup remain.
+// M367: Complete output/index/result declarations split from original assignments,
+// six ranks then coherent names at both endpoint ranks: 49 each at 176/176 bytes.
+// NOT kept: no byte match; original initialized declarations and complete body restored.
+// False BL, temporary EBP and independent header/object computations remain.
+// M380: Native index/attached-identity/both publications through memcpy 49/49/49,
+// memmove 109/76/122; both with early Boolean completion 77/94. NOT kept: no byte match;
+// original scalar stores, validity result, virtual tuples and complete body restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -884,6 +940,10 @@ bool c_projectile_type::v8(long a, long b)
 // read 12; a direct test with a reference index 12; a const object pointer 12; an un-named group
 // entry 15; const flags 12; a mutable handle reference 12; the entry predeclared in the flag scope
 // or the function scope 12/12. Original narrow-read body restored.
+// Round 88 (one-link LTCG screen, exact at 5), all with the full-width mask: `do {} while (false);` at each of 20 statement
+// boundaries 12 (47, 188 bytes, at the two after the 0x800 store); the power copied as long, both stores or the first only,
+// 12/12; the index by value 12; the power through a const pointer 12; a group index local before the entry 12; the NONE
+// test as `index + 1 != 0` 12; `b` throughout with no flags local 12.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

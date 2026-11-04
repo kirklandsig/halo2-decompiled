@@ -246,6 +246,67 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // with complete rotation-role names: 173 each. Only uninitialized declarations
 // move; cosine/dot/cross/sine and scale order stay fixed. All restored; frame
 // 0x11c versus 0x118 and cross/trig homes remain. Three exact controls survive.
+// DH317: Immutable native cosine/projection/sine values, seven subsets and all
+// with immutable angle input, eight at 173. Original helper and complete body
+// restored; frame 0x11c/0x118 and cross/trig homes remain.
+// Shared angle-to-direction heading with staged outer/rotation crosses and late
+// sine, eight at 277/273/277/273/277/273/277/273. NOT kept: extra zero-pitch
+// trig/products and longer body; original heading, includes and helper restored.
+// Round 64 (m3 lane 1, fast): the (vector, axis, sine, cosine) helper of matched 0x2551f0/0x1ecf50 (scalar cross
+// i/j/k, rows `v*cos + projection*axis - cross*sin`, called with sin then cos of the angle) 236 (1190 bytes, frame
+// 0x114: sine first as retail, but heading at +0x10 and cosine at +0x1c, retail cosine +0x10 and heading +0x14; only
+// the row-i result spills where retail spills cross j and k); with dot3f 236; cross terms declared j, k, i 236 (same
+// code); the cross through cross3f into a vector 226 (1209 bytes, frame 0x120), with dot3f 226.
+// Round 80 (m3 lane 12, fast, 0x259d0 listed): retail's rotation multiplies the zero k by the 0.0 constant from
+// memory (`mulss xmm3, [0.0]`) where ours keeps it in a register, and runs fsin, the dot, then fcos. In the
+// rotation helper: sine then cosine first, the dot after them 182 (frame 0x120); sine, a named dot, then cosine
+// 225 (frame 0x120); the cross scaled by the sine first 227; the final sums written cross + projection +
+// vector 173 (same code). The direction's zero k stored before i and j 173 (same code).
+// AC503: Shared moving/fixed offset and velocity producers on the added-cross graph, seven
+// subsets then the complete native point receiver 216/180/173/180/173/180/180/173. Original full file/helper restored;
+// frame 0x11c/0x118 and cross/trig homes remain. NOT kept: unmatched producer/field-pointer forms.
+// Round 68 (m3 lane 10, fast; aligned difflib counts in brackets, base 173 [183]): the rotation helper in the
+// matched 0x177d10's shape (sine, cosine, projection with the dot written out, vector x axis cross j, k, i, rows
+// `v*cos + axis*projection - cross*sin`) 231 [176] (1192 bytes, frame 0x114: sine +0x24, cosine +0x10 and heading
+// as retail, but one cross spill where retail spills X.j and X.k); rows axis term first 231; X.i written in row i
+// 231; dot3f for the dot 228 (1194); the cross through cross3f(vector, axis) into a vector 213 [159] (1209 bytes,
+// frame 0x11c), with axis-first rows or either dot3f order 213/213/213. Original helper restored.
+// Round 206 (m3 lane 3, fast): retail's rotation is the one 0x117dd0 inlines (sine first, X = vector x axis,
+// X.j/X.k spilled with the sine's home between them, X.i formed in row i). Sine, named dot, cosine, scalar X.j/X.k
+// with X.i inline 237 (1221 bytes); sine, dot, cosine, cross3f(vector, axis) subtracted 226 (frame 0x120), with
+// vector-first rows 226; that body as a (vector, axis, sine, cosine) helper 226; sine, cross3f, dot, cosine 233 (1196).
+// Original helper restored.
+// AC503: Shared moving/fixed offset and velocity producers on the added-cross graph, seven
+// subsets then the complete native point receiver 216/180/173/180/173/180/180/173. Original full file/helper restored;
+// frame 0x11c/0x118 and cross/trig homes remain. NOT kept: unmatched producer/field-pointer forms.
+// DH339: Native accumulation through three advancing component cursors, long/dword/short/byte
+// bounds 229/229/315/315; output-end for/while/do walks 316/316/314; split adds 316.
+// NOT kept: frame/length move away from retail; original scales, helper and complete body restored.
+// DH341: Immutable heading-angle/launch-speed/tilt-angle draw storage, seven subsets
+// then all five draws, 173 each. Original draw storage and complete body restored;
+// frame 0x11c/0x118 and cross/trig homes remain.
+// DH344: Real trig APIs at heading cosine/sine and rotation cosine/sine,
+// individually, paired, all, then all with sine after axis scale: 180/180/180/180/186/185/173/173.
+// NOT kept: no native frame/cross/trig-home recovery; original complete helper/body restored.
+// DH346: Immutable existing rotation-axis/output and position-input pointer bindings,
+// seven subsets, then all with immutable position-output binding: 173/173/173/173/173/173/173/173.
+// Original helpers and complete body restored; frame 0x11c/0x118 and cross/trig homes remain.
+// DH352: Existing double-factor axis/cross/direction publishers, subsets 1/2/4/3/5/6/7,
+// then all with the double-factor launch publisher: 233/217/236/278/238/230/298/300. NOT kept:
+// no exact precision/API form; original helper, real products and full body restored.
+// DH360: Existing native axis/direction/point-output coordinate-array contracts, seven subsets
+// and complete interfaces with immutable angle: eight at 173. NOT kept: unmatched interface casts;
+// original vector contracts, consumed-axis stages, ordinary pooled reads and full body restored.
+// DH362: Existing coordinate-union access at heading/rotation/request boundaries,
+// seven subsets 173 each; all with native fallback-point copy loop 209. NOT kept: no
+// native frame/cross-home gain; original helpers, draws, ordinary pooled reads and body restored.
+// DH364: Existing placement-source/output native references and point-pointer
+// return, subsets 1/2/4/3/5/6/7, then point-reference return: eight at 173.
+// Original query address, fallback copy, helper contracts and complete body restored;
+// frame 0x11c versus 0x118 and rotation cross/trig homes remain.
+// DH367: Standard coordinate transforms at axis/cross/direction scales, seven subsets,
+// then native two-stage sum transforms: 407/395/395/427/459/417/442/464. NOT kept: no byte match;
+// original scales, sums, draws and complete helper/body restored; frame/cross/trig homes remain.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -252,6 +252,44 @@ short __stdcall function_2551c0(long actor_index)
 // Round 343: Angle/trace-output last-consumer scopes 43/43/43; completed score/forward
 // search scope alone and with those scopes 45 each; joint scopes with library best-vector copy 45.
 // Original helper and complete body restored; early cross products and score-dot schedule remain.
+// Round 77 (lane 16, fast): found declared after the two vectors 43; the helper taking the input vector by value
+// with an output pointer (no direction copy) 143 (834 bytes); the loop counter declared at block scope 43; reach
+// then alignment named (no vector_k) 42 (814 bytes, first +0xf5: early cross products become retail's, but the
+// forward copy's loads and the projection dot reorder); that as `reach * alignment` 42.
+// Round 34 (lane 17, fast), on the vector_k helper (36, partial naming, kept only on a match): the
+// projection dot k-first 36; cross_k computed first 48; the k output written first 118 (814 bytes);
+// cross_i before the projection 36; `1 - cosine` named versine 36. Original helper restored.
+// Round 80 (m3 lane 9, fast), on the 6 form above (vector_k, alignment, reach; only the score dot differs, match-only):
+// dead reads before the dot: forward j,k 43 (816 bytes); forward j,k,i 121; direction j,k 74; forward j, direction j
+// 66; forward j, direction j, forward k, direction k 72. Pointer views of the dot's arguments: forward 72 (818),
+// direction 70 (818), both 25 (814, dot still not j,k,i, one rotation step moves), both swapped 25; swapped
+// with the forward view 72, with the direction view 70. The body stays at 43 without those names.
+// Round 40 (lane 17, fast): single product operands swapped in the cross terms (no vector_k): cross_j's
+// second product axis-first 43, its first product axis-first 43, both 43; cross_k's second product
+// axis-first 43, its first 43 (all the same code: VC canonicalises the operand order). Restored.
+// N354: Normalization admission: native payload plus real 120; real 70; terminal
+// rejection 43; real plus rejection 70; positive/negative bool 56/56; promoted
+// double 195; early true-result lifetime 110. On the earlier exact-only partial
+// component/score graph, those admissions give 82/72/6/72/133/133/185/91.
+// NOT kept: no new qualifying gain; the six needs partial component naming and
+// equality. Original helper, observations and complete callback restored.
+// Round 40 (m3 lane 18, fast), on lane 9's match-only 6 form rebuilt (vector_k, alignment, reach; only the score dot
+// differs): the dot through the file's accumulating helper (0x255741's), either operand order, 120/120; the direction copy
+// before the angle 6; trace declared first in the loop 6; forward and best direction declared before the best score and
+// found 6; best direction declared before forward 6; a 600 s permuter run (53 tries) none below 6. Body restored at 43.
+// B416: Plain native three-coordinate rotation-output traversal with staged cross,
+// indexed/original slot view, projection/cross order and row accumulators: 168/161/170/206/161/144/170/187.
+// NOT kept: all regress and enlarge the retail frame or extent; original helper and body restored.
+// B418: Winning-score search success on the recovered rotation frame, indexed/
+// original slot, direct/named score factors and early/late zero: 143/145/137/143/146/148/140/146.
+// NOT kept: no exact match; original success byte, slot view and full body restored.
+// B425: Complementary search state, bool/byte/short/long, native slot payload first
+// then original view: 92/46/92/46/145/106/122/77. NOT kept: no exact match. Original state, slot view,
+// helper and body restored; early cross products and score-dot schedule remain.
+// B431: Native startup/direction/winner component-copy loops, all with indexed payload first,
+// then subsets 1/2/4/3/5/6/7: 247/256/109/109/240/240/42/247. NOT kept: one-point gain
+// is below threshold; original payload, aggregate transfers, rotation/dot helpers and full body
+// restored. Early j/k cross products and score-dot allocation remain.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -812,6 +850,48 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // reach 25/197/19/197/197; side maximum named, reversed, inline, lateral named or if/else 17 each. Guard shapes
 // without the unit local (early return, nested, all in one) 92 at 964 bytes: the argument stays in ECX (one
 // scratch rotation step behind retail). Body unchanged at 89.
+// Round 125 (lane 8, fast, on the rebuilt 17 form): length, projection, index and timing locals renamed so they
+// sort first or last 17/17 (names do not move the slots); the side vector as an initializer 17; the existing
+// dot helper for the 0.95 test 17 (same code), for the lateral dot 29; the two length guards joined (no
+// heading_length) 17; the type radius named 17; the object size read before the dot 194 (975 bytes); the size
+// local in the adjusted subtraction too 185 (970 bytes: it takes its own slot). Body unchanged at 89.
+// P286: Native Boolean result owners at first probe/second probe/timing, seven subsets
+// and all with entry-only declarations, 89 each. NOT kept: one-use call-result and embedded
+// assignment forms need a match. Original body restored; unit scratch and scalar homes remain.
+// Round 80 (m3 lane 9, fast), on the match-only 17 form rebuilt (the object size named just before the first sum; named
+// at the radius read instead 194, 975 bytes): the adjusted projection in the length variable 17 (aligned 29); a named
+// reach used by both sums 196 (951 bytes: the radius call sinks to its use); with the length variable too 197; renamed
+// a_reach or z_reach 197 each (same code). Slots there: sum and side at one slot, length and adjusted at another, in
+// the opposite order to retail; lateral XMM3, maximum XMM2 (retail XMM2, XMM3). Body unchanged at 89.
+// Round 47 (lane 15, fast, on the match-only 17 form): adjusted projection in the length variable 17 (slot groups retail's, 0x14/0x18
+// swapped); with a named reach 197, reach alone 196 (951 bytes); one final subtraction into it, `= length - x`, `x = x - y` 17/17/17;
+// length and second side renamed either way, six forms 17 each (names do not reorder these slots). XMM2/XMM3 and the swap remain.
+// F364: Native vector-owned projection, instance/static and ordinary/forced
+// boundaries, original/recovered entry graphs: 89/89/89/89/25/25/17/17. NOT kept: recovered
+// graph needs a one-use unit snapshot and mixed radius reads without a match. Original body restored.
+// Round 40 (m3 lane 18, fast), on lane 17's match-only 17 form rebuilt (named unit before 0x110ab0, target lookup first,
+// request stores short/long/type, named size in both sums): the location outputs declared before the side outputs 17;
+// the timing outputs declared real first 17; the timing outputs declared before the side block 17; the timing default as
+// an if/else into a local 17; the first test as `length + (size + radius)` 17. Slots there: ours sum+side0+timing0 at
+// 0x10, length+side1+timing3 at 0x14, index+timing2 at 0x18, adjusted alone at 0x1c; retail side0+timing0 at 0x10,
+// sum+side1+timing3 at 0x14, length+adjusted at 0x18, index+timing2 at 0x1c. Body restored at 89.
+// B418: Complete product/planar-sum/final-projection stages in the existing
+// projection helper, seven subsets and immutable complete stages: 87/87/87/87/87/87/87/87.
+// NOT kept: at most two fewer differences; original helper and full body restored.
+// B420: Complete lateral-clearance and heading admissions, positive/negative
+// bool/byte/short/long values at both original tests: 89/89/89/89/89/89/89/89.
+// NOT kept: no exact match; original complete body restored.
+// B424: Standard two-probe maximum, direct/real/double conditional then default
+// side result, direct/named conditional expression: 120/120/152/155/155/162/120/120.
+// NOT kept: no exact match; original maximum, result ownership, includes and body restored.
+// B427: Actual external unit/target/radius scalar references, subsets 1/2/4/3/5/6/7,
+// then complete references with readonly actor: 89/89/87/89/123/123/95/95. NOT kept: radius-only
+// gains two, below threshold; original field observations, receiver and complete body restored.
+// Unit-call scratch and first-length/projection/query homes remain.
+// B431: Plain native component traversals for heading/motion/reverse producer subsets
+// 1/2/4/3/5/6/7, then all as plain while loops: 215/218/89/223/215/218/223/223.
+// NOT kept: no gain; original aggregate inputs, reverse products and full body restored.
+// Unit-call scratch and first-length/projection/query homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

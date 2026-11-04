@@ -75,12 +75,11 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
-// score 109 (was 109): the tail call still needs 0x2b5d0's own body (it takes the mode
-// in EAX and the count on the stack), which is disabled here and stubbed in src/stubs/lane_k.cpp,
-// a file this lane may not edit: BLOCKED-BY 0x2b5d0.
-// Earlier: one-dword frame agrees; the count block, the count/layout join and the layout
-// Earlier at 109: one-dword frame agrees; the count block, the count/layout join and the layout
-// Earlier at 109 (was 109): one-dword frame agrees; the count block, the count/layout join and the layout
+// MiniMax H (11-04): no new form, no lower score; the tail still needs 0x2b5d0's own body.
+// score 90 (was 109): one shared view count now feeds terminal indexing and the tail; the outer
+// pretest, loop-entry source zero and terminal registers still differ. The tail call still needs 0x2b5d0's
+// own body (it takes the mode in EAX and the count on the stack), which is disabled here and stubbed in
+// src/stubs/lane_k.cpp, a file this lane may not edit: BLOCKED-BY 0x2b5d0.
 // Earlier (109): one-dword frame agrees; the count block, the count/layout join and the layout
 // arms now have retail's code: the clamp is the ternary the other player-count clamps use, and the
 // loop counter's zero assigned before the layout test keeps the join from being jump-threaded (with
@@ -249,6 +248,15 @@ void function_2232a0(void)
 // Round 349: loop-entry source-availability predicate before the pure slot scan,
 // bool/byte/short/long with original/pretested traversal 126/177/126/177/125/182/124/181.
 // One-use predicate forms require a match; every form and original body restored.
+// Round 43 (m3 lane 2, fast): the layout as `if (count <= 1) 0; else if (...) 2; else 1` 146; the
+// increment in the do-while test 109 (same code); the g_485ac2 flag tested before the session test
+// 121; the clamp with the upper bound first 115; the found arm first with a nested source test 120
+// (577 B). Still BLOCKED-BY 0x2b5d0.
+// Round 66 (m3 lane 1, fast): found arm's slot data as a default-first ternary 107; one `local_1 < 4 && g_4686c4
+// != NONE` test with the NONE store nested in the else 121 (579 bytes); the terminal initializer indexed by the
+// loop counter 110, with the tail call's count from it too 128; timer decrements swapped 109 (same code).
+// Round 106: shared view count after layout 90 kept; entry declaration and pre-layout assignment 90 each;
+// view-count loop bound do/while 177/196; original-bound while after layout 150 each and before layout 164.
 // @retail 0x2234e0
 void function_2234e0(void)
 {
@@ -277,6 +285,7 @@ void function_2234e0(void)
 	}
 	else
 		local_3 = 0;
+	long view_count = local_2 + 1;
 	do
 	{
 		byte const *local_5;
@@ -298,8 +307,8 @@ void function_2234e0(void)
 			local_2, local_3, (s_223081 const *)local_5);
 		++local_0;
 	} while (local_0 < local_2);
-	function_2232a1(&g_47f0f8[local_2 + 1]);
-	function_2b5d0(local_2 + 1, 3, local_2, local_3, &g_47f0f8[1]);
+	function_2232a1(&g_47f0f8[view_count]);
+	function_2b5d0(view_count, 3, local_2, local_3, &g_47f0f8[1]);
 }
 
 // @retail 0x223240

@@ -258,6 +258,7 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
+// MiniMax b (11-04): no new form, no lower score; the one-copy form still matches retail's length, tag and late EDI save but hoists the buffer address 0x55c6e4 into EBX and scores 54, and the kept form still saves EDI early and keeps the tag in EDX with the selector in ECX; casting the one-copy form's copy source to const or to a non-const pointer keeps the hoist at 54, and reading the tag before the variant call puts the tag in EBX and scores 44.
 // score 32 (was 32): earlier, at 49: our size-optimized build hoists the buffer address 0x55c6e4 into EBX
 // Round 102 (lane 7, fast): the output parameter in a named local used by both copies 32; the selector
 // in a named engine local 32, with the tag read after it 32; on the one-copy form the output local 54
@@ -652,6 +653,41 @@ done:
 // availability and absence, 68/68/68/68/68/68/68/68. Exact-only post-test flags
 // restored with the complete original switch/body; early EDI save, tag/selector
 // schedule and scratch-address caching remain.
+// Round 76 (m3 lane 16, fast; parse_variant stays matched), on the kept form: name_id declared at the function
+// top 32, at the block top 32 (same code); const variant and const tag 32; the tag declared with name_id and
+// assigned after the variant 32; the variant getter called in the switch with the tag read first 44.
+// Round 61 (m3 lane 10, fast; parse_variant stays matched), on the 32 form: `(word *)&g_55c6e4` at the translator
+// 32; the success copy calling function_08cc20 directly 32; `&g_55c6e4[0]` at the success copy 32, at both 32; the
+// success path's copy moved after the `if` with an `else goto done` 32 (all identical code).
+// Round 81 (m3 lane 16, fast; parse_variant stays matched), on the kept form: the selector read from the
+// variant getter in the switch (no variant local) 44; const globals 32, a dword tag 32, a dword name 32 (same
+// code each); the tag declared and read after the switch, just before the translator call 45.
+// B391: Existing provider returns the actual external object by reference, fallback/positive/
+// default-first/conditional producers with repeated then shared copy: 32/48/53/48/54/54/59/54.
+// Default-first provider loses the matched variant parser (22); provider, callers and complete
+// original body restored. Early EDI save, tag/selector and scratch cache remain.
+// Round 141 (m3 lane 5, fast; parse_variant stays matched), on the natural one-copy form 54 (173 bytes): a const pointer
+// local for the translator's buffer 54; `&g_55c6e4[0]` 54; a named copy source 54; a named selector 54; the tag read in the
+// translator call 45 (171). The EBX hoist of the buffer stays in all of them.
+// Round 52 (m3 lane 15, fast; parse_variant stays matched; aligned counts, the natural one-copy form 22): the EBX load sits between
+// `test esi, esi` and `je`: the address is hoisted over the branch because both arms use it. The translator in each case: a tag
+// local 42 (171 bytes, aligned 15), the tag read in each case 45 (171, aligned 8: only the EBX load and the tag's load differ), that
+// with the getter in the switch 45. The copy in both arms of the definition test (no shared tail, no EBX): the tag read in each case
+// 47 (178, aligned 12), a tag local 41 (178, aligned 12; the address is then hoisted in that arm into ESI, the tag takes EAX and
+// the selector ECX); the getter written out, tag read before its fallback (diagnostic) 42 (178), one translator after the switch and
+// the default copying and returning 33 (178, aligned 10), per-case translator with one tail 42 (171).
+// B393: Actual external UI/variant/tag identity references, subsets 1-7,
+// then all with one shared copy tail: 32/32/32/45/45/45/45/45. NOT kept: no exact match;
+// original complete body restored; early EDI save, tag/selector schedule and scratch cache remain.
+// B422: Outer UI-definition admission in bool/byte/short/long, positive/complementary:
+// 32/32/32/32/32/32/32/32. NOT kept: no byte match; all canonicalize to the original complete body.
+// Early EDI save, tag/selector scheduling and the shared scratch-address cache remain.
+// B444: Explicit unsigned selector admission >9/>=10/<=9/<10, repeated/shared copy:
+// 32/64/32/64/54/61/54/61. NOT kept: redundant admission without byte equality; original complete parser restored.
+// Early EDI save, tag/selector schedule and scratch-address cache remain.
+// B446: Forced-inline complete selection/translation, scalar or record tag/selector inputs,
+// void/shared and admission/repeated completion: 54/54/54/54/32/32/32/32. NOT kept: no exact result;
+// original complete parser and helpers restored. Early EDI save, tag/selector schedule and scratch cache remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

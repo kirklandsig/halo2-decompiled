@@ -583,6 +583,8 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
  return inverse;
 }
 
+// MiniMax G (11-04): no new form; the fast check cannot score this function (its callees fall outside
+// the reduced image, so the diff misaligns from the first instruction), so it stands at 132.
 // score 132 (was 132): 1.0 sits in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
 // y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
@@ -738,6 +740,39 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // B381: complete normalization predicate, moving/stationary bool/byte/short/long,
 // 132/132/132/132/132/132/132/132. All tie; NOT kept: one-use truth carriers require an exact match.
 // Original frame 0x28, unity/limit/direction ownership and jitter spills remain.
+// DL252: Reciprocal ordinary/automatic inline boundaries on scalar/shared squared-length/shared
+// scale/shared dot graphs: 185/163/193/166/185/163/185/161. All relaxed contracts outline the
+// reciprocal; NOT kept: retail expands it. Original annotation, both roots, arithmetic and complete body
+// restored.
+// Round 80 (m3 lane 12, fast, 0x24590 listed): the second speed store read back from `state->speed` 132; the
+// jitter offsets as `0.2f * x * limits.i` 132; the definition's 0x90 factor named once and used three times 227
+// (1053 bytes); the definition read before the enable store 132; the direction declared beside the movement
+// output and assigned later 132 (all four 132s identical code).
+// Lane 17 r37 (fast, 0x24590 listed): the clamp as `1.0f < m ? 1.0f : m` 234 (1077 bytes); the speed and 0x148 stores
+// swapped 134; the angular rate declared before the movement 132; limits declared at the top 132; the jitter offsets as
+// `0.2f * x * limits.i` 132. Body restored.
+// Round 82 (m3 lane 16, fast, 0x24590 listed): one scale local for the limits, acceleration and movement 196 (1065
+// bytes); factor declared at the top 166 (first difference +0x3); `state->speed = field_148 = acceleration` 134; each
+// jitter value as one sign * on/off * scale product 162 (1057 bytes); the clamped control magnitude named 132 (same code).
+// Round 66 (m3 lane 11, fast, 0x24590 listed; m = register-masked aligned count, base 83): dot3f projection
+// 130 (m 85, repeat); retail-order plain-long jitter 233 (m 62, repeat); both 228 (1025 bytes, m 61); both
+// with the volatile long 196 (m 67); both with the scale factor on the left 228; dot3f plus a top velocity
+// pointer 128 (gain 4, not kept); dot3f, plain-long jitter and `limits.k = limits.j` 257 (1010 bytes, m 47,
+// closest structure: the limits/factor products, the j/k copies, the projection/movement stores and the
+// jitter spills remain).
+// DL254: Native jitter coefficient/offset phase passes, inherited then ordinary sample:
+// 168/180/165/204/220/220/177/197. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
+// DH347: Last-consumer input/factor/acceleration, sampled-scale and direction/projection
+// scopes, seven subsets then complete scopes with descriptive limit naming: eight at 132.
+// Original body restored; frame 0x28 agrees, unity/limit/direction ownership and jitter homes remain.
+// DL263: Ordinary native sample with reused on/sign/half three-bit groups, seven subsets then
+// complete immutable groups: 161/156/158/150/149/153/150/150. NOT kept: no eligible native keeper;
+// original sample qualifier and complete body restored. Unity/limit/direction registers and jitter
+// spill homes remain.
+// N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
+// forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
+// body restored; unity/limit/direction ownership and jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -848,12 +883,28 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
 // pointer in ECX and the output pointer in EDI, then the object index, the definition, the value
 // and the flags on the stack; this file's declaration describes another order and the callers are
 // in other files. Retail keeps the axis pointer in EBP, the sampled vector at [esp+0xc] and the
 // sine and the cosine in the dead argument slots.
-// score 155 (was 155): Frame 0x18 agrees; sampled-vector slot and rotation/output scheduling remain.
+// Earlier 114 (was 155): 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
+// Then (was 155): 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
+// separate copy of forward, with sin and cos as direct arguments and `!(fabs(angle) < 0.0001f)`, gives retail's sample
+// slot, guard, schedule and rotation registers except four products: retail copies v.j/v.k and multiplies by axis.j/axis.k
+// from memory, ours loads the axis (the same for goal.j against rotated.j/k in the turn block, and from them the
+// last dot's order). Tried on this body (fast with a local copy of the helper, the plain build inlines the existing one
+// the same): `moved_away` preset false and set in the test 92 at 1387 bytes (retail's `xor dl, dl`/`mov dl, 1`; a flag set in a
+// test, match only); the side dots as (up, new) * (up, old) 106 (aligned 51; NOT kept: an operand order picked by score, retail
+// forms the old-cross dot first at 0x1e607d; body restored at 114), (new, up) * (up, old) 107 (aligned 44), (old, up) * (new, up) 111,
+// named side values 150 (1382 bytes, the rotation products all load first), moved_away computed before the crosses 190, the
+// crosses declared apart or swapped 106 (same). Compile-only: parameter orders of the helper, cross or dot orders and
+// operand sides, component locals, named sine/cosine (worse), a named rotation or rate, `angle *= rate`, a named axis,
+// helper-returned pointers, indexed or cast access, by-value vector: about 6000 forms, none gives the four products with
+// retail's registers. Past a size limit of the tail block (15 extra one-field reads, diagnostic) the products come out
+// as retail's, but v.j/v.k take XMM1/XMM2 where retail has XMM5/XMM6.
+// Earlier: Frame 0x18 agrees; sampled-vector slot and rotation/output scheduling remain.
 // MiniMax R (10-31): shared sample/forward vector 160 with retail's `!(0.0001f > fabs(angle))` guard, 198 with `>=`; in-place rotated 166, old-body retail guard 173; turn block on the axis 227/210, cross dots on facing_goal 194; no lower score.
 // movement/rotation homes and cross/result lifetimes still differ.
 // Frame 0x18 agrees; sampled movement/rotation homes and SSE/output scheduling still differ.
@@ -1007,7 +1058,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // original/multiply-used uniform forward ownership: 266/268/268/268/255/256/256/256. Original
 // complete body, observations, arithmetic and ordered angle guard restored; sampled-vector and
 // rotation/output homes remain.
-// score 114 (was 155): 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
+// J242: Final direction pointer record/scalar 199/193; final bool/byte/long decision 184 each,
+// delayed publication arms 140; native vector result/common exit 114/114; coherent rotation
+// inline/force-inline 114/114. NOT kept: no gain. Original body and every declaration restored; j/k
+// rotation ownership and turn/output scheduling remain.
+// Earlier: 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
 // separate copy of forward, with sin and cos as direct arguments and `!(fabs(angle) < 0.0001f)`, gives retail's sample
 // slot, guard, schedule and rotation registers except four products: retail copies v.j/v.k and multiplies by axis.j/axis.k
 // from memory, ours loads the axis (the same for goal.j against rotated.j/k in the turn block, and from them the
@@ -1021,6 +1076,75 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // helper-returned pointers, indexed or cast access, by-value vector: about 6000 forms, none gives the four products with
 // retail's registers. Past a size limit of the tail block (15 extra one-field reads, diagnostic) the products come out
 // as retail's, but v.j/v.k take XMM1/XMM2 where retail has XMM5/XMM6.
+// B384: Current rotation-helper input with shared sample/rotation workspace, native/CRT/forward/backward
+// copies; independent CRT/forward/backward/setter copies: 176/176/193/189/114/188/188/205. Original helper input,
+// separate sample and rotated values and complete body restored; rotation product allocation remains.
+// AC502: Three nested animation admissions, four independent failure-prefix lengths and
+// complete admission with small-angle failure: 114 each. Original guard, shared rotation call,
+// vector storage and complete body restored; rotation multiplicands and exit scheduling remain.
+// F351: Exhaustive nested/conjunction moved-away results, bool/byte/short/long
+// 114/114/119/118/114/114/119/118. NOT kept: no match for result/domain forms;
+// original rotation graph and complete body restored; j/k products and output scheduling remain.
+// Lane 17 r37 (plain): `moved_away` as `alignment > 0.99f ? ... : false` 114; its dot as (rotated, goal) 114; the
+// side crosses declared with the sampled vector 114; both side crosses through the existing cross3f_staged 112 (1389
+// bytes, same cross schedule; gain 2, not kept); on that, `dot < alignment` 112. Body restored.
+// B394: Native first-channel fields, direct/reference/pointer ownership 114/140/140;
+// those with existing native physics input 140/150/150; native fields/output reference 114;
+// channel/input/output identities 150. NOT kept: ties or regressions; original complete body restored.
+// DH319: Complete final turn-test stop/continue results in bool/byte/short/long
+// storage: 140/140/140/140/140/140/140/140, all 1382 bytes. Original expression
+// restored; native j/k products, side-dot and output scheduling remain.
+// Round 66 (m3 lane 11, fast with 0x24590, 0x1cd6c0 and 0x1ecf50 listed): `turning && c` 116; the
+// alignment dot as (forward, goal) 116; `if (c) if (turning)` 114; `rate * angle` 114; the side crosses
+// declared at the top of the turn block 114; `0.5f < alignment` 114. Unused-local probes (1-8, diagnostic,
+// same counts anywhere before the rotation): 140/150/150/139/163/166/144/112, 1-6 at 1382 bytes; with the
+// moved-away flag preset and set in its test 94 (probes 145-167). Both exits: retail loads all three
+// forward dwords (ESI/EDX/EAX, flags in EBX) before its stores, ours copies interleaved.
+// Y562: Native real absolute/sine/cosine APIs, subsets 1/2/4/3/5/6/7, then all
+// with a double angle producer: 201/196/196/106/106/101/131/131. NOT kept: combined API gains need a byte match; isolated APIs regress. Original body restored.
+// Y564: Existing complete vector setter on the current rotation graph at goal/rotated/initial
+// copy boundaries, subsets 1/2/4/3/5/6/7: 122/176/205/171/197/203/195.
+// Both final overlap-safe library copies 99 at 1382 bytes (plain 99). NOT kept: adds
+// library calls where retail copies three components inline. Original entire body restored.
+// P298: Actual turn admission at entry/sample/scaled/rotation boundaries, short-circuit
+// 382/335/203/192; eager Boolean inputs 336/183/183/183. All restored; rotation
+// multiplicands and exit scheduling remain. NOT kept: early decision lifetimes did not match.
+// F371: Uniform side-cross row-local leading/trailing/both product parts
+// 112/112/93; complete product phases 112/112/93; complete i/j/k
+// component results mutable/const 112/112. NOT kept: the 93 product-lifetime
+// forms still miss native rotation multiplicands, side-product residence
+// and final load-all copies; allocation-only gain requires equality. Original
+// private producer and full body restored; rotation provider stays exact.
+// B422: Actual goal-alignment cutoff admission, bool/byte/short/long, positive/complementary:
+// 142/142/142/142/142/142/142/142, all 1382 bytes. NOT kept: no byte match; decision residence worsens rotation allocation.
+// Original complete body restored; vector/axis products, side dots and final copy scheduling remain.
+// F373: High-alignment predicate bool/byte/short/long, after/before
+// the side crosses: 140/140/140/140/172/172/176/175. NOT kept: no match;
+// original body restored, rotation multiplicands, side-dot residence and
+// final load-all copies remain.
+// F379: Isolated oriented-side crossing/complement outcomes, bool/byte/short/long,
+// 140/140/140/140/140/140/140/140 at retail length. NOT kept: regressions;
+// original complete body restored, native j/k multiplicands and final copy scheduling remain.
+// N366: Native direction-output copy ranges at goal/rotated/initial-forward boundaries and complete
+// backward ranges do not recover eager inline copies. The 100-point output forms add out-of-line copy
+// calls absent from retail, including the retail-length form. Original direction copies, shared rotation
+// and full body restored; j/k products, side-dot and exit scheduling remain. Scores
+// 100/110/100/303/308/307/312/318. NOT kept: unmatched result-ownership forms.
+// Round 588: Complete scalar captures at goal/turned final copies and rotation input,
+// seven subsets then all immutable: 150/174/192/181/206/223/221/221. NOT kept: one-use
+// input captures miss equality. Original shared rotation and complete body restored;
+// j/k rotation products, side-dot residence and final load-all copies remain.
+// P337: Complementary moved-away bool/byte/short/long, complete logical producers
+// 95/95/101/99; exhaustive arms 115/115/119/118. NOT kept: inverted result/test
+// branches miss native early zero; j/k multiplicands and eager final copies remain.
+// Original complete body and every existing helper restored.
+// P339: Complete absolute-angle producer at sample/scale boundaries, mutable/const
+// real/double: 144/144/172/172/144/144/172/172. NOT kept: all regress;
+// original complete body restored. Native rotation multiplicands, side dots and
+// eager final copies remain; shared rotation and movement providers stay exact.
+// P341: Existing native component getter/support input, pointer/reference and mutable/read-only, shifted
+// word/native bitfield: 114/114/114/114/114/114/114/114. NOT kept: no native rotation-product or
+// side/output allocation recovery; original raw input, include set and complete body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

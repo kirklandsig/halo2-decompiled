@@ -551,6 +551,53 @@ extern point2f *g_468778;
 // AC489: Absent-prop, unsubmitted-request and inactive final-processing phase ownership,
 // seven subsets 388/397/375/410/388/397/410; complete graph with separate secondary admission
 // guards 410. Original body restored; frame agrees and early actor/settings/prop carriers remain.
+// m3 lane 11 r63 (fast), on the actor-first form with `return !f14 && !f13 && !f2d;` in the arm (393
+// re-measured; retail passes arg_0 to the settings call in EBX from EDI, keeps the actor in EBP and spills
+// the settings pointer, ours spills the actor): settings test nested apart from the flag tests 393; prop-less
+// arm first 401; slot pointer before the settings call 393; prop lookup before the clock 393; a four-use
+// `&field_2d` pointer in the tail 393. All restored to the 375 body.
+// Round 139 (m3 lane 5, fast): actor first with constant exits 393; with a two-use settings distance local at the
+// final calls 403 (1554 bytes); with the default threshold before the clock 393; that threshold order alone 375 (same
+// code); the two-use distance local alone 425 (1567 bytes).
+// Round 47 (lane 15, fast): actor first with `return` of the expression 393, constant returns 413 (1523 bytes); settings rejected
+// early 410; all rejections early 393; prop declared at entry 395; slot read inside the settings arm 393. Retail keeps arg_0 in EDI,
+// actor EBP, slot ESI, prop EBX with settings only at +0x10; every actor-first form keeps arg_0 in EBX.
+// AC505: Branch-owned near/predicted request-kind and active-state stores, masks
+// 1/2/4/3/5/6/7, 378/374/375/375/378/374/375; all with bounded request admission 375.
+// NOT kept: best gain 1; original stores and complete body restored. Early carriers remain.
+// Round 139 (m3 lane 5, fast): actor first with constant exits 393; with a two-use settings distance local at the
+// final calls 403 (1554 bytes); with the default threshold before the clock 393; that threshold order alone 375 (same
+// code); the two-use distance local alone 425 (1567 bytes).
+// AC507: Active/inactive unit-admission call results in bool/byte/short/long storage,
+// 375/375/375/375 and 375/375/375/375. NOT kept: one-use results do not match;
+// original calls, observations and complete body restored. Early carriers remain.
+// AC509: Admission rejection to the sole result return, compound/negative-result/positive-result/
+// settings-owned gates: 374/407/407/374; actor-first versions 413/435/435/413. NOT kept:
+// best gain 1; original acquisition, result, admission and complete body restored. Early carriers remain.
+// AC511: Actual header-free slot-member record with entry/branch false result,
+// direct completion and early admission, original/actor-first acquisition:
+// 387/440/425/440/410/413/393/413. NOT kept: native receiver/return lifetime graphs
+// regress; original record, lookups, result and complete body restored.
+// AC513: Existing native actor-pool getter at original/readonly/actor-first producers
+// 375/375/413; actor-first direct completion 393; metadata-owned admission and
+// single failure-result join 374/374; direct request direction 375; every-use facing
+// 401. NOT kept: best gain 1 and no exact match; original getter, include set and body restored.
+// AC516: Actual request-submission call result, bool/byte/short/long at its producer
+// or with the request-owned uninitialized declaration: 375/375/375/375/375/375/375/375.
+// NOT kept: one-use call-result storage unmatched; original call, state stores and complete body restored.
+// AC519: Planar normalization-return residence, facing/request/fallback subsets
+// 1..7 and one shared planar-length carrier: 375 each. NOT kept: no byte match;
+// original normalization calls, early distance, result and complete body restored.
+// AC523: Partial-metadata returned result, bool/byte/short/long with
+// original/actor-first acquisition pairs: 440/413/429/403/401/412/403/414.
+// NOT kept: results regress and shorten away from retail; original admission,
+// lookups, early distance, result, request and complete body restored.
+// AC527: Complete distance-or-deadline stop result, positive/complementary bool/byte/short/long,
+// 383/383/383/383/383/383/383/383. NOT kept: result residence unmatched; original short circuit,
+// state-publication arms, clock/rounding observations and complete body restored; early carriers remain.
+// M384: Complete prediction/heading ready/blocked request results, bool/byte/short/long:
+// 375/375/375/375/375/375/375/375. NOT kept: no byte equality for the flag lifetime;
+// original request admission and full body restored; early actor/settings/prop homes remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -882,6 +929,71 @@ static __forceinline long real_to_long(real value);
 // Y547: Active-unit state publication, split/exhaustive-success/conditional/exhaustive-failure,
 // bool admitted result 398/470/384/470; byte result 445/500/429/500.
 // Original field-result graph and complete body restored; early rejection and scalar homes remain.
+// Round 33 (m3 lane 18, fast; 0x1a9d80 and 0x1a9e00 matched each time): the outer test inverted with
+// the false arm first 382 (same code); one goto to the single return, result preset false 496; the
+// game time read at its only use 441 (1907 bytes); the facing threshold as a 0.95 preset with an if
+// 381 (one count, not kept), as a full if/else 382; the distance zeroed in the facing arm 382; the
+// limit declared in the flag block 396, as a ternary there 400; the field_2e approach flag as an if /
+// else-if chain 455 (1912 bytes). All restored; the threaded false exit's place remains.
+// Round 35 (m3 lane 18, fast, 0x1a9d80/0x1a9e00 matched each time): the first goto replaced by nesting
+// (the approach arm in the threshold test's else, `field_2c` set in both arms, no near flag) 492 (1888
+// bytes); the near-limit comparison written `unknown28 < field_1c` 382; the timeout scale passed
+// straight to the rounding helper 382; the near flag declared before the facing pointer 382; kept: the
+// second goto (the near-limit stop) as an `else if` for the approach query 382 (plain, same code).
+// Y558: Shared add-scaled/difference prediction into a point or consumed direction,
+// squared-length boundary independently, 478/478/478/478; complete relative-velocity
+// input on each graph 474/474/474/474. NOT kept: all regress and change the frame or
+// length. Original prediction, helper set, query aliases and complete body restored.
+// Round 57 (m3 lane 13, fast; 0x1a9d80/0x1a9e00 matched each time): the prop-index test inverted (`== NONE`
+// clears field_2c first) 497; the inner admission test inverted with `local_6 = false` first 382 (same code);
+// local_6 dropped with the second test re-testing field_12/17/18 442 (1907 bytes); the second goto as
+// `local_10 = false;` 382 (same code); the query scalars renamed to sort in retail's slot order (local_20 <
+// local_19 < local_15 by address: flight_time/launch_speed/prediction_time) 382 and in the reverse order
+// (time_of_flight/rise_speed/lead_time) 382: names do not move these homes.
+// AC513: One metadata near-limit observation, with readonly metadata/prop/both,
+// returned admission, original-object receiver, query-output names or shared squared length:
+// 469/469/469/469/519/478/469/471. NOT kept: retail reloads the limit; no exact
+// match, frames/lengths move away. Original observations and whole body restored.
+// P299: Input-only actor/metadata/paired prop receivers on the current velocity graph,
+// seven subsets and immutable bindings: 382 each. Original complete body restored;
+// early rejection island and magnitude/object/query homes remain.
+// P301: Threaded admitted result plus native complete object-base receiver, acquired
+// after magnitude/weight, each with retained/direct facing reads, bool then byte:
+// 534/571/522/554/551/588/543/585. NOT kept: all regress and enlarge code; original
+// result, velocity/facing receivers, query aliases and full body restored.
+// DH322: Sequential magnitude/query speed, prediction/flight duration and limit/direction distance,
+// seven subsets then entry declarations: 384/445/382/446/384/445/446/446. NOT kept:
+// storage nonmatches; original scalar lifetimes/body restored, early exit and query homes remain.
+// AC516: Complete post-query planar-facing admission, bool/byte/short/long at computation
+// or with the direction-workspace declaration: 382/382/382/382/382/382/382/382.
+// NOT kept: one-use predicate storage unmatched; original gate, query aliases and complete body restored.
+// AC520: Planar normalizer returns at query-pair/facing/request-pair producers, subsets
+// 1/2/4/3/5/6/7 then phase-owned uninitialized storage: 382/382/382/382/382/382/382/382.
+// NOT kept: one-use call-result residence does not match; original calls, aliases and full body restored.
+// AC523: Uniform magnitude-square/sum domains, native terms with real/double sum,
+// real terms with native/real/double sum, double terms with native/real/double sum:
+// 382/381/382/468/381/381/468/381. NOT kept: best gain one and arithmetic storage
+// unmatched; original magnitude, query aliases and complete body restored.
+// F367: Complete facing-alignment/prediction-seconds/projected-distance nodes, masks 1/2/4/3/5/6/7, then all with remaining-distance node: 382 each. NOT kept: eight byte-neutral trials; original arithmetic, live observations, query aliases and full body restored.
+// AC525: Complete final dispatch eligibility/rejection results in bool/byte/short/long,
+// eight at 382. NOT kept: predicate residence unmatched; original final guards,
+// field observations, query aliases and full body restored; early rejection island remains.
+// AC527: Shared two-mode timeout publication, positive/complementary bool/byte/short/long,
+// 422/422/434/433/422/422/434/433. NOT kept: assigned-result residence unmatched and
+// extent grows; original comparisons, publication paths, query aliases and whole body restored.
+// AC531: Live unit-handle field references/pointers acquired at actor/metadata/prop/action
+// boundaries, eight at 382/1904 bytes. NOT kept: native field identity canonicalizes;
+// early rejection and magnitude/query homes remain. Original whole body restored.
+// AC534: Request-submission accepted/rejected results in bool/byte/short/long,
+// at the original call with the admitted return live: 382/382/382/382/382/382/382/382.
+// NOT kept: one-use call-result ownership lacks equality; original dispatch, state stores,
+// query aliases and whole body restored. Early rejection and magnitude/query homes remain.
+// AC536: Complete initial near-stop stop/continuation result in bool/byte/short/long:
+// 381/381/381/381/381/381/381/381. NOT kept: one-point gain below the gate and no equality;
+// original near gate, provider timing, query aliases and full body restored. Early rejection island remains.
+// F385: Existing vector-union component-array observations in target velocity, facing
+// and working vectors, seven subsets, then actual position arrays: eight at 382.
+// NOT kept: byte-neutral homes/exit diagnostic; original complete body and query aliases restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
@@ -963,9 +1075,8 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 					if (local_3->field_1c > local_17 && !function_25d9b0(local_1->prop_index) && !((s_prop_state_64 *)local_8)->unknown64)
 					{
 						local_0->field_14 = true;
-						goto local_18;
 					}
-					if (local_3->field_20 > local_17)
+					else if (local_3->field_20 > local_17)
 					{
 						real local_19 = local_3->field_28;
 						real local_20;
@@ -996,7 +1107,6 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 				else
 					local_10 = 0.5f > local_17 - (object_velocity->k * local_11.k + object_velocity->j * local_11.j + local_11.i * object_velocity->i) * local_15 * g_510c54->rate;
 			}
-		local_18:
 			if (local_0->field_18 || (local_10 && !local_0->field_2e))
 			{
 				point2f local_25 = *(point2f const *)&local_11;

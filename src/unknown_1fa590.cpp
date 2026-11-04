@@ -187,7 +187,7 @@ struct s_4e0348_view
 byte *function_183fc0(long index);
 
 // @retail 0x1fa6b0
-bool function_1fa6b0(s_pathfinding_node const *node, s_pathfinding_data const *pathfinding)
+bool function_1fa6b0(s_pathfinding_data const *pathfinding, s_pathfinding_node const *node)
 {
 	bool result = false;
 	long index;

@@ -353,6 +353,67 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC493: First/second/both plain two-corner row walks, long/short: 66/56/62/295/336/415;
 // both with continuous output cursor long/short 235/407. All original corner calls, helper and
 // complete body restored; plane-store base, first selectors and product memory sides remain.
+// m3 lane 11 r60 (plain): `short axis` local for the store and index 162; no axis local (quad->axis
+// read back) 174; determinant as e1.j*e0.i - e1.i*e0.j / e0.i*e1.j - e1.i*e0.j 46/46 (same code); axis taken
+// from matrix->up 209 (986 bytes); bounds copy after the plane 78.
+// AC495: Complete side-result lifetime through publication and all four corners, bool/byte/short/long,
+// 190/186/180/181; with the retained axis result at all four calls 241/199/194/195. Original
+// field observations, helper and complete body restored; plane base, first selectors and product ranks remain.
+// Round 83 (m3 lane 12, plain; --fast is unfaithful here, 258 for this body): `short axis` with
+// `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
+// `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
+// store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
+// AC497: Complete axis-result lifetime without a captured side, short/word/long/dword,
+// normal indexed by the result then by its published field: 186/187/179/179/181/164/191/191.
+// Exact-only later selector retention regresses; original observations and body restored;
+// plane-store base, first selectors and product memory sides remain.
+// Round 57 (m3 lane 13, fast with 0x120810/0x120850): the corner helper taking x and y by value 235 (1008 bytes);
+// its axis parameter short 271 (1009); `short axis = function_120850(...); quad->axis = axis;` with the corners
+// reading the field 257 (997); a `vector3f *normal` for the copy, dot and axis call 258 (1000); the helper
+// returning the point2f, assigned to each corner 275 (1044). Retail stores the first axis from AX (the short
+// return) and re-extends AX for the first corner; ours stores CX.
+// Round 83 (m3 lane 12, plain; --fast is unfaithful here, 258 for this body): `short axis` with
+// `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
+// `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
+// store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
+// Y566: Plain coordinate loops in the existing corner producer, forward-first/left-first/
+// planar subtotal/running point, long then short: 50/730/50/730/60/730/240/730.
+// All regress; short loops leave the helper outlined. Original whole body and
+// four-use helper restored; plane-store base, first selectors and product ranks remain.
+// Round 68 (m3 lane 1; "h" = a one-link LTCG harness of this file with unknown_22bbca and unknown_120850, whose listing equals the
+// full build's and whose score tracks the check's, 46 here; --fast calls point2f_set and is unfaithful, 258): a named-field vector3f
+// corner point read through .n 54h (.n[0..2] stores: same code); the determinant named 48 plain; rows x,z,y / y,z,x / z,x,y 70h/85h/83h;
+// the planar part named in every row 60h; rows starting at the position 46h (same code); a short row pointer with a short axis 186h
+// (1005 bytes). The sibling 0x245270's form (`field = f(); side = n.n[field] > 0.f ? 1 : 0`, by-value short/byte helper) over axis
+// long/short local/direct field x `> 0`/`? 1 : 0` x bool/byte field x helper axis long/short x side bool/byte: `? 1 : 0` same code as
+// `> 0`; byte field with `> 0` 50h; short local 163h (980 bytes, aligned 39 against 42: AX store as retail, the extended axis stays in
+// ECX); direct field 175h. Diagnostics, unused initialised locals: 1-15 at the top (period 8) and 0-7 at the top with 1-7 in the helper,
+// on the long and short bodies: best 4 of 24 corner products off, none reaches retail's ranks.
+// AC520: Existing four-use corner pointer/reference outputs with pointer/reference/native
+// value returns, then native returned point: 46/46/42/46/46/46/42/246. NOT kept:
+// four-point value-return leads below threshold; native result grows frame/length; original helper/body restored.
+// AC522: Actual normal-copy result plane/normal pointer/reference receivers,
+// memcpy then memmove 91/91/91/91/211/211/211/211. NOT kept: EDI receiver and
+// dot/product regressions; original library/copy boundaries and body restored.
+// J250: Existing corner destination pointer/reference returns 46/46; complete bound/output
+// references 46; bound-reference destination pointer/reference returns 46/46; output-reference
+// destination pointer/reference returns 46/46; bound-reference point-value result 246 (1039 B).
+// NOT kept: no live-plane store, first-selector or product-memory-side recovery; the point
+// value moves away from native extent. Original four-use helper, all corner calls and body restored.
+// AC524: Complete two-edge eligibility bool/byte/short/long, then complementary
+// rejection, 48 each at 983 bytes on the by-value/component-array graph. NOT kept:
+// dot-product divergence moves earlier to +0x67; original predicate and body restored.
+// AC526: Whole inverse result if/else/default/conditional, successful/failed/nested
+// publication returns, default field and nested result: 63/98/63/46/46/46/108/98. NOT kept: no gain;
+// original corner producer and tail restored; plane base, selector/product ranks remain.
+// AC531: Plain two-edge validation traversal, long/short/dword/word ordinal,
+// completed-ordinal publication then immediate failed publication/return:
+// 141/115/141/115/126/121/126/121. NOT kept: dot divergence moves to +0x67
+// and every extent shortens away from retail; original helper and whole body restored.
+// AC534: One caller-owned three-coordinate workspace across all four corner calls,
+// array pointer/reference and vector/point pointers, first-corner then entry declarations:
+// 54/54/54/54/54/54/54/54. NOT kept: dot divergence moves earlier to +0x67; original
+// helper and full body restored. Plane base, first selectors and product memory sides remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -909,6 +970,53 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // forced then ordinary inline: fast 795/795/795/875/795/795/795/963 against control
 // 795 (full 539). Every peer score agrees with its preview. Original decoder, plane
 // homes and body restored; native value returns move extent away from retail.
+// m3 lane 11 r60 (plain): tag pointer and face count renamed (zz_/a_ prefixes, diagnostic) 539, same slots: names
+// do not order these homes; the decal type read once into a `short type` used at its five uses 741; the quad
+// declared at the group's top 539; the first plane declared at the group's top 539; both counts declared above
+// the face arrays 539 (all same code).
+// AC495: Existing shared plane decoder at first/candidate/selected sites, masks 1/2/4/3/5/6/7,
+// 539/723/539/723/539/723/723; all with existing axis normalizer 715. Complete provider
+// preview agrees with full 539. Original decoders, helper and complete body restored; tag/count/plane homes remain.
+// Lane 17 r39 (plain): the definition renamed 539; the first loop's face read into a one-use local with the
+// index incremented before the call 528 (retail's `inc esi` ahead of the pushes; NOT kept: one-use local, no
+// match); the two counts declared face first 539; the definition declared ahead of the arrays 539; the quad
+// declared at the top of the group pass 539; the first loop as a do/while 562 (3631 bytes). Body restored.
+// AC497: Complete decoded-plane/rotation-result/fallback-quad memmove boundaries,
+// subsets 1/2/4/3/5/6/7, then plane+rotation memmove with fallback memcpy:
+// 742/592/803/741/781/819/826/741. NOT kept: all regress or move frame/extent away
+// from retail; original copies, complete input-before-output helper and body restored.
+// Round 67 (m3 lane 10, plain; `--fast` builds this body differently, 795 on unchanged source): the outer do-while
+// as `while (remaining > 0)` 545 (3631 bytes); the first plane decoded after the face is taken 758; the quad
+// branch inverted (fallback copy first) 574; the first loop stepping `++i` with `faces[i]` 552; the angle test as
+// `angle <= maximum` 539 (same code).
+// AC520: Complete signed-distance boundaries, real/double, immediate/paired fabs and
+// ordering-result forms: 539/533/539/533/831/843/831/843. NOT kept: six-point leads
+// grow frame to 0x21e4; double forms lose the native prologue; original body/helpers restored.
+// AC522: Complete selected-edge acceptance bool/byte/short/long, then
+// complementary rejection 533/533/533/533/606/606/606/606. NOT kept: six-point lead below
+// gate and frame 0x21e4 versus 0x21dc; original complete body restored.
+// Y566: Float sine/cosine/inverse-cosine API families 1/2/4/3/5/6/7, then
+// float sine/cosine with a double angle: 539/539/562/539/582/582/570/840.
+// Original complete body and helpers restored; tag/count/plane homes and rotation
+// spills remain. Float inverse cosine shortens below retail; wide angle loses the prologue.
+// J250: Complete decoder/angle/alias-safe rotation formal-reference contracts,
+// seven subsets then ordinary complete expansion, 539 each. NOT kept: tag/count/plane
+// homes and rotation spills remain; original helpers and body restored. All rotation
+// inputs still precede the first output store. Shared-angle sum changes were not applied.
+// Y584: Axis normalizer numeric-length result, zero-default/branch-owned with
+// bool/byte/short/long epsilon admission: 548 each. NOT kept: frame 0x21e4
+// and extent 3631 lose retail 0x21dc/3647; original full body and helpers restored.
+// AC524: Complete bitwise normal identity bool/byte/short/long, then complementary
+// mismatch results, 535 each at 3647 bytes. NOT kept: four-point gain below eight;
+// original helper and complete body restored; tag/count/plane homes and rotation spills remain.
+// AC526: Complete normalized-axis admission bool/byte/short/long, then complementary
+// rejection results, 533 each at 3647 bytes. NOT kept: six-point lead below eight and
+// frame grows to 0x21e4; original body/helpers restored; tag/count/plane homes remain.
+// AC529: Complete forward-edge role, bool/byte/word/long direct then false-default publication:
+// 555/555/621/578/624/624/624/630. NOT kept: no equality or gain; native tag/count/plane/topology homes remain.
+// AC535: Complete candidate-plane grouping acceptance, positive then complementary
+// bool/byte/short/long: 529/529/529/529/531/531/531/531 at 3647 bytes. NOT kept:
+// frame grows to 0x21e4 versus native 0x21dc; original body/helpers restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

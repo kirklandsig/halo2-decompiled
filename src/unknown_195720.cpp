@@ -49,6 +49,14 @@ bool function_1946f0(s_bitstream *stream)
 // (same code as the build here): no spelling, cast, integer address sum, scope, temp count or deleted
 // neighbour statement flips either lea; small probes give [index + data] only when the address is the
 // index's sole use (0x1957d0's shape) and [data + index] whenever the index is used again.
+// Round 87 (m3 lane 12, fast): 1, 2, 3, 5 or 8 unused initialised locals at the top, 1, 2 or 4 before the
+// index: 2 each (diagnostic: not a numbering tie); `byte_index[stream->data]` 2; `saved & 7` 42 (not the same
+// value for negative positions); clear start and count from a parenthesised `byte_index + 1` 2; the index
+// computed before the discard counter stores 17; `count >= 0 && count > 0` 2.
+// Round 139: data loaded then the index reassigned in the mask block 23 (141 bytes), in the clear block 2;
+// a distinct clear index after the data load 2; count formed by subtract then decrement, or size minus one
+// then subtract 2/2; clear start derived from size minus count 45 (142); index reread from the checkpoint 60;
+// saved declaration split from its assignment 2. Original body restored.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

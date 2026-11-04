@@ -100,10 +100,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
-// score 96 (was 96): no local frame; retail reads the type once before the kind test and keeps
-// the body array/body in EBP/ESI. Current component EAX, rigid index ECX, kind EDI and ret 8
-// agree with the matched caller. A single type read must preserve that incoming convention;
-// every prior one-read type form flips the component/index pair (the caller
+// score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
+// both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
+// component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
+// preserve that incoming convention; every prior one-read type form flips the component/index pair (the caller
 // 0x1d5bf0 then differs). Type read after the rigid body 94 at 256 bytes (caller 13), first
 // 117, after headers/body/index 94 (caller 13), body then type 136, kind 7 as a ternary 104;
 // case 0 through the object_index local 91 at 256 bytes (caller 146), with the one-read type
@@ -147,6 +147,8 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // `neg; sbb; and; add` where retail has the switch's `dec eax; je`. object_index, type, then rigid body with the
 // kind-7 ternary 96 at 256 bytes with the caller still matching (retail's three pushes); with case 0 through
 // object_index 141 (212 bytes, caller 213); one-read switch form 96 (256, caller 13); one header pointer read by
+// Earlier: one type read shared by both kind routes and case 0 through the same header data in retail.
+// one type read shared by both kind routes and case 0 through the same header data in retail.
 // both switches 125 (284 bytes, caller 194).
 // Round 63 (lane 12, fast): one type read with case 0 through component (retail's unshared index arithmetic, which
 // a case 0 through the object_index local loses to CSE) 94 (caller 13); the type read indexed by `(word)object_index`
@@ -219,6 +221,57 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // repeated type 125/72/95/83; shared byte type 129/88/81/92. NOT kept:
 // one-use getter pointer and early object-pointer read; several forms also lose
 // the matched caller. Original body, both observations and caller convention restored.
+// B388: Case-zero decoded-bit bool/byte/short/long producers, low/high result defaults,
+// 106/106/106/106/106/106/106/106 (276 bytes), caller 13. Original bit expression,
+// repeated dispatch, body acquisition and caller-compatible convention restored.
+// DH314: Cached model/body-array producer roots, native/readonly, repeated type:
+// 117/117/113/113; shared byte type: 104/104/98/98. All lose the matched caller
+// (215 or 14); original entry acquisition, selected body, type observations and body restored.
+// m3 lane 14 r56 (fast, caller in brackets), on round 118's 28 form (re-measured 28 [0]): a long type 89 [0];
+// headers declared first 83 [2]; the type read before the rigid body 111 (268 B) [9]; case 0 through
+// `headers[object_index & 0xffff]` 101 [0]; `long result` declared first 28 (same code); the kind-7 path as
+// `if (type == 1) return 0xc;` 94 [0]; the rigid body read at each use 97 (260 B) [122].
+// DH317: Borrowed native type-byte/header-record dispatch bindings, const/mutable,
+// after handle/body: 122/122/94/94/125/125/94/94. NOT kept: every form loses
+// matched 0x1d5bf0 (194 or 13); the 94 forms also gain only two. Original body,
+// both type observations and incoming convention restored.
+// Round 65 (m3 lane 11, fast; caller 0x1d5bf0 in brackets): round 118's 28 form rebuilt 28 [0]; 57 random declaration
+// orders, byte/long/dword/char/word type and three case-0 lookups on it: headers, object_index, rigid body, byte type
+// with the index masked at the type read 25 [13] (left: rigid body ECX for ESI, object index EDX for ECX, data ESI for
+// EDX; the index still arrives in EAX), `char` type 28 [0], others 64-137. On the 28 form: case 0 byte-typed shift 28,
+// the body array named first 96, a header element pointer 123 at 272 [194], the kind-7 switch with a default return 28,
+// the case 0 object through a pointer in its own block 28.
+// Retail's `xor eax, eax; mov al; shr al, 2; and eax, 1` comes from none of 27 compile-only spellings (byte and dword
+// bitfields, byte/bool locals, byte results); only 0x9d250's `not al` form keeps `shr al` next to `and eax, 1`.
+// DL256: Full type-first dispatch with result-first level/body/object policy groups, masks 0-7:
+// 121/117/123/121/96/97/112/97 (232/236/228/232/256/256/240/256 bytes). All move the
+// component to the stack, use ret 4 and lose the matched caller to 213; 0x1d5940 rises 9 to 116.
+// NOT kept: ingress/caller regressions; native-length forms do not improve score. Original full body restored.
+// B401: Level-layer preclassification before handle/after selected body, byte/short/long/dword:
+// 105/107/107/107/93/128/125/125; caller 6/6/6/6/6/194/194/194. NOT kept: unmatched
+// one-use outcomes and every caller loss; three-point reduction also below gate. Full body restored.
+// B403: Independent level/primary/object/secondary case returns and level-primary,
+// level-object, level-secondary, primary-secondary return pairs: 96 each. Original
+// result joins and full body restored; caller and all file controls retain their scores.
+// Round 60 (m3 lane 13, fast; caller 0x1d5bf0 in brackets): case 0 as 0x9d250 reads the bit, through the existing
+// word bitfield `TEST_FIELD_BIT(((s_object_view *)...)->flag2) ? 11 : 9` (unknown_0a58d0.h), gives retail's exact
+// `xor eax, eax; mov al; shr al, 2; ... and eax, 1; shl eax, 1; or eax, 9`: on the current body 96 [0]; on round 118's
+// form (object_index, absolute_index, rigid body, headers, byte type; case 0 through headers[component->object_index &
+// 0xffff]) 24 at 256 B [0], only the opening left: retail loads the header array first into EDX, moves the index to
+// ESI for the rigid body and keeps the object index in ECX; ours gives the object index EDX, the headers ESI and the
+// rigid body ECX, and loads the type `mov al` then `movzx` (not kept: the object_index local is used once). On 24:
+// headers first 83 [2] (the header load takes EAX, so the component arrives in EDX), headers second 83, rigid body
+// after absolute_index 88, after the type 111 (268 B) [9], before absolute_index 94 [13]; long type 89, char type 24;
+// no object_index local 101, case 0 through the object_index local 101, `(word)` absolute index 98 [208]; case 0
+// through havok_object_get 24; the existing object_header_get/object_get/havok_object_get getters for the type and
+// case 0 (with/without the object_index local, either order) 94-136 [13-213]. The other declaration orders of the
+// 24 form (o object_index, h headers, r rigid body, a absolute_index, t type): o,h,r,a,t and h,o,r,a,t 21 [13] (the
+// component arrives in ECX and the index in EAX), o,r,h,a,t 94 [13], h,r,o,a,t 94 [13], r first (r,o,a,h,t /
+// r,o,h,a,t / r,h,o,a,t) 96 [13], o,h,a,t,r 106 (264 B) [9], h,o,a,t,r 106 (264 B) [11].
+// N369: Native handle-field references readonly/mutable, repeated/shared type,
+// direct/captured header base: 97/97/136/136/93/93/95/95. NOT kept: every form loses
+// the matched caller (146/213/13); best gain three is below the gate.
+// Original handle capture, dispatch observations and complete body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -500,6 +553,58 @@ struct s_physics_component_walk : s_havok_component
 // DH307: Object formal first/middle/last in both section-query interfaces, all eight
 // nonoriginal consistent pairs: 146 each, 922/922 bytes. Original interfaces and call
 // tuples restored; body-latch groups/current reload order and neighbor/key homes remain.
+// J243: Per-use current-group count/element/both/first-body/count+first/element+first/all index
+// selection: 295/285/310/175/316/199/319; complete per-use receiver 291. NOT kept: all regress, extents
+// 898-932 versus retail 922, and entry saves rotate. Original value selections and complete method
+// restored; body-latch reload order, neighbor/key homes and cold exits remain.
+// DL250: Complete native entry admission, first-body rejection and neighbor-body availability
+// predicates, subsets 1..7 then method-scope predicate declarations:
+// 146/146/146/146/146/146/146/146.
+// Original complete source restored; no eligible gain.
+// Round 555: Neighbor scan-success bool/byte/short/long, then both scan-success
+// outcomes: 151/151/151/151/151/151/151/151. NOT kept: branch-set search outcomes need
+// an exact match. Original indexed scans, count tests and complete method restored.
+// F351: Split-open terminal/neighbor/both query results 200/152/220;
+// split-closed results 177/153/303; exhaustive open/closed results 192/177.
+// NOT kept: test-owned results do not match. Original predicates, complete body and callback tuples restored.
+// Round 66 (m3 lane 10, fast): a shared open-section scan helper (both scans, `return true` from the loop)
+// inline 500 (723 bytes, kept out of line), __forceinline 168 (the neighbor scan then branches straight to the
+// recursion and the latch as retail, but the latch moves after the cold blocks); that helper with the neighbor
+// branch first 179; the empty-section test's two body bytes as char locals 146 (same code); one entry-scope
+// section index for both scans 146 (same code); the section-count arms swapped (`!= 0` first) 153 (909 bytes).
+// B410: Native groups/current/component lexical homes on the complete-section-predicate
+// graph, seven subsets, then distinct terminal/neighbor predicate and selected-result
+// names: 146 each. Original names and complete method restored; latch reload order,
+// promoted-neighbor/key carriers and cold exits remain.
+// M354: Entry-table base/cursor, mutable/const view and common body/entry ordinal:
+// 304/304/304/304/221/221/221/221. NOT kept: entry transport does not reproduce the native reload/allocation.
+// M356: Persistent terminal-key/neighbor-key/object-field references, seven subsets,
+// then all mutable: 146 each. NOT kept: no gain. Original field reads, queries
+// and complete method restored; latch reload order and neighbor/key homes remain.
+// M358: Original clamp-identity admission, positive/complementary bool/byte/short/long:
+// 146 each. NOT kept: one-use validity predicates do not match; original statuses,
+// clamp and full method restored; latch reload order and neighbor/key homes remain.
+// DH328: Direct replacement range on completed-section predicates, exclusive/inclusive
+// and complementary tests 305/290/305/290; availability produced directly 312 each.
+// NOT kept: regressions and 900-byte extent versus 922; original full method restored.
+// DH336: Shared complete two-query predicate, open/closed bool/byte/short/long
+// results: 146/146/146/146/146/146/146/146. Original complete method and
+// both scans restored; native frame agrees, latch reload and neighbor/key homes remain.
+// Round 60 (m3 lane 13, fast): retail's neighbor scan never re-tests the section count (found goes straight to the
+// reload and recursion test, not-found to `continue`) and its `*active = true` block sits after that scan. The
+// recursion written in the found branch with `continue` after the loop 412 (1010 B, not merged); round 66's
+// __forceinline scan helper rebuilt 168, with the no-next-group arm ending in `continue` 168; the next-group arms
+// swapped 192 (901 B); one `connected` result set by the kind-7 test and the scan 151 (910 B); the group fields read
+// at each use for the admission test and next selection 146 (same code).
+// Y584: Loop-owned complete section rejection, terminal/neighbor bounded for/while
+// forms 301/288/310/301/288/310/310/310. NOT kept: completion observations
+// and native neighbor/key allocation do not match; original scans and full method restored.
+// N369: Persistent input/output/recursive-operand lexical families, seven subsets
+// and full-family common names: 146 each. No latch or carrier change;
+// NOT kept: all tie. Original identities and complete method restored.
+// P335: Readonly owner/group/opaque recursive-input contracts, seven subsets then
+// complete contracts with fixed component binding: 146/146/146/146/146/146/146/146. NOT kept: all tie;
+// original method interface and full body restored. Latch reload and neighbor/key homes remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

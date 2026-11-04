@@ -1201,6 +1201,8 @@ void __cdecl function_24970(s_histogram_state *state)
 // Round 54 (m3 lane 11, fast): a named divisor local 17; the top test as `!(g_509400 > 0.0f)` 101 (424 bytes);
 // the clamp compare written `end - begin < 0.0001f` 17; scale declared then assigned 17; the globals in the
 // compare and the locals in the value 17.
+// Round 138: case 3 zeros chained (`out[3] = out[1] = 0.0f`, out[3] re-stored) 53 (428 bytes); `real const scale` 17;
+// `default` written first in the switch 17; `out[3] = out[1];` 17; the top test as `0.0f >= g_509400` 17.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -1940,6 +1942,13 @@ struct s_filter_rows
 // constant, a one-pass loop. Retail has both shapes for this same inlined read: folded in 0x246a0, 0x26520,
 // 0x29080, 0x29b00, 0x351a0; unfolded here and in 0x34a90, 0x34d90, 0x391f0, 0x3bf20; 0x52040 has both for one
 // index. So a state of the caller picks it, not the helper's source.
+// Round 97 (fast): direct index bits 17; bottom-tested stage loop 403; loop-local definition 233;
+// direct first-color row 121; own context address 17; const definition 17; function-scope stage 17;
+// result-first 17; reversed shader branch 64. Original 17-difference body restored.
+// Round 67 (lane 10, fast): the existing 0x1cbe0 called with mode 0 and slot 12 26 (stays out of line); the
+// 0x1c590 call's selection from the existing 0x1cb20 with mode 0 27 (out of line); the existing 0x1cbb0 with
+// mode 0 on the slot's tag 16 (1039 bytes, out of line, the tag read still folds); the slot table read at the
+// function's top (diagnostic) 224; the cache pointer in a local used by both calls 17.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {
@@ -2422,7 +2431,9 @@ dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
+// score 140 (was 154): Frame and retail extent agree; caller flag residency and native
+// fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
+// Earlier 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
 // Earlier: 251 fast (was 252 fast): the pixel-shader RGB output mask is selected before the shift
 // ((inverse ? 8 : 0) << 8), which gives retail's and/shl pair instead of a single 0x800 mask.
 // Earlier: 252 fast (was 335 fast): the standard marker gives retail's stack convention (ret 0x34,
@@ -2512,6 +2523,40 @@ dword __cdecl function_131fc0(real alpha);
 // 156 (1729 bytes, first +0x280); two calls in order (tag, fallback, stage) 267; (fallback, tag, stage) 267;
 // (stage, tag, fallback) 154 (first +0x32b); (stage, fallback, tag) 154; (fallback, stage, tag) 156; with the
 // matching 0x144f0 154.
+// J242: Shared upper-default/if-ternary coverage clamps 140/140; independent-zero/default-input
+// 219/154. Separate producer counterparts 148/148/223/162. Coherent alpha inline/force-inline
+// 181/181, both raise 0x3a5c0 from 31 to 248; complete native fallbacks 156, with inline 204. Keep
+// only the plain-confirmed upper-default pair, 154 to 140 at retail length. NOT kept: all later
+// forms regress or worsen a helper user. Caller flag residency and fallback selection remain.
+// DH318: Complete packed register selectors, ternary/branch results in byte/word/dword/long:
+// 199/164/209/209/140/213/140/213. Flag residency and fallback parameter-home selection remain. All
+// restored.
+// Round 38 (lane 17, plain, base 140): both defaults built unconditionally, source first, then source
+// and destination selected 156 (1717 bytes); with half extents named once 150 (1723: retail's selection
+// except its write of each selected default into the parameter's home); with the vertex reads through
+// the parameters' addresses (diagnostic) 150; the arms swapped (`simple || preserve_alpha` first) 140;
+// preserve_alpha read through its address in the short arm 140 (retail reloads it after the call).
+// Y557: Shared actual combiner count, conditional long/dword/word/byte
+// producers 406/406/390/414; branched producers 406/406/390/414.
+// NOT kept: all regress and disturb the matched prefix; original flag reads,
+// state stores, fallback arrays and complete body restored.
+// F357: Complete shader-admission truth in bool/byte/word/dword, logical
+// producers 140/140/140/140; eager Boolean producers 243/243/243/243.
+// NOT kept: no gain; original flag reads, shader arms, fallback arrays and body restored.
+// AC506: Common post-arm first-constant/final-ABCD/final-EFG publication, seven subsets
+// and all results declared at entry: 155/180/181/175/193/187/197/197. NOT kept: every
+// one-use output form regresses; original branch stores and complete body restored.
+// Y563: Common output workspace across shader arms, shader/function scope, original/shared
+// raw workspace and ternary/upper-default short alpha: 140/145/140/145/140/145/140/145.
+// NOT kept: no gain or byte match; original workspace scopes and complete body restored.
+// N353: Separate caller-side scalar/color/finalizer inline declarations, seven subsets,
+// and all force-inline declarations: 140 each. NOT kept: no gain; original declarations restored.
+// F380: Isolated short-arm final-alpha branch/default stores and expression-owned nibble/word
+// results 145/250/252/161/162/140/140/145. NOT kept: regressions or ties;
+// original flag reads, shader stores, fallbacks and complete body restored.
+// DH358: Nested test-set admission results, rejected/admitted defaults in bool/byte/word/dword,
+// 140/140/140/140/140/140/140/140. NOT kept: no byte match; original admission predicate,
+// flags, shader workspaces and complete body restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2568,8 +2613,14 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     if (!simple && !preserve_alpha)
     {
         g_484f68.PSCombinerCount = 0x11002;
-        real alpha = 1.0f - *(real *)(g_4b99b0 + 0x30);
-        alpha = alpha < 0.0f ? 0.0f : alpha > 1.0f ? 1.0f : alpha;
+        real unclamped_alpha = 1.0f - *(real *)(g_4b99b0 + 0x30);
+        real alpha;
+        if (unclamped_alpha < 0.0f) alpha = 0.0f;
+        else
+        {
+            alpha = 1.0f;
+            if (!(unclamped_alpha > 1.0f)) alpha = unclamped_alpha;
+        }
 #pragma inline_depth(0)
         g_484f68.PSConstant0[0] = function_131fc0(alpha);
 #pragma inline_depth(255)
@@ -2579,8 +2630,13 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
         g_484f68.PSConstant0[1] = function_131f40(strength, color);
         g_484f68.PSRGBInputs[1] = 0x8011811;
         g_484f68.PSRGBOutputs[1] = 0xcd;
-        alpha = 1.0f - *(real *)(g_4b99b0 + 0x2c);
-        alpha = alpha < 0.0f ? 0.0f : alpha > 1.0f ? 1.0f : alpha;
+        unclamped_alpha = 1.0f - *(real *)(g_4b99b0 + 0x2c);
+        if (unclamped_alpha < 0.0f) alpha = 0.0f;
+        else
+        {
+            alpha = 1.0f;
+            if (!(unclamped_alpha > 1.0f)) alpha = unclamped_alpha;
+        }
 #pragma inline_depth(0)
         g_484f68.PSFinalCombinerConstant0 = function_131fc0(alpha);
 #pragma inline_depth(255)
@@ -2827,7 +2883,11 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 }
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 279 (was 282): Frame 0x58 agrees; six excess bytes, sampler constants,
+// score 211 (was 247): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
+// the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
+// Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
+// trigonometric scheduling remain; both normalized scales now use their native parameter results.
+// Earlier 279 (was 282): Frame 0x58 agrees; six excess bytes, sampler constants,
 // bitmap-call transport and scale/trig homes remain.
 // Round 139: the first difference (+0x194, the stage loop's constants 2/3 in EBP/EDI where retail
 // has EDI/EBP and 0 in EBX) follows from the 0x144f0 call: retail passes the fallback in EBX, so
@@ -2926,6 +2986,43 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // address-taken priority 280; direct without the volatile 283; two calls 366 (2044 bytes, a positional shift,
 // first still +0x17); two calls in order (tag, fallback, stage) 345; (fallback, tag, stage) 346; (stage, tag,
 // fallback) 366; (stage, fallback, tag) 366; (fallback, stage, tag) 365; with the matching 0x144f0 366.
+// J242: First-parameter native results 260/260; second 273/273, NOT kept: incomplete parallel
+// result contracts without a match. Both parameters 247/247, first form plain-confirmed 247 and
+// kept; branch-owned results 251/251. Frame 0x58 and packed-alpha prefix agree; five excess bytes
+// and maximum/reciprocal/bounds/trigonometric scheduling remain.
+// DH318: Maximum second-default/first-default/if-else/const results, mutable/const reciprocal on paired
+// parameter outputs: 258/258/255/255/247/247/247/247. Maximum/reciprocal allocation, five excess bytes and
+// trig scheduling remain. All restored.
+// Round 38 (lane 17, plain, base 247, aligned 107): the last bound written `scaled_height * 0.5f + 240.0f`
+// (retail adds 240 from memory) 247; the two zero-scale tests before the bounds 253 (2023 bytes); bounds[1]
+// before bounds[0] (retail's store order) 247; the maximum as `scale = second_scale; if (first > second)`
+// 258; the scaled products as `width * scale`/`height * scale` 247.
+// Y557: Independent angle pairs on the normalized-parameter graph, with
+// immutable pairs, first-producer scope and late second-output declaration, all
+// eight forms 246 at 2027/2022 bytes. NOT kept: one-point gain below eight;
+// original trig carriers, output declarations and complete body restored.
+// F357: Float trig APIs at both angle producers, cosine/sine/both with
+// reused pairs 250/250/250, independent pairs 249/249/250; complete immutable
+// pairs and complete producer scopes 250/250.
+// NOT kept: all regress; original real results, helper, normalized parameters and body restored.
+// AC506: Both trigonometric pairs in double result carriers, explicit-real/helper-input
+// rounding with mutable/immutable and first-producer scopes: eight at 331 (1972/2022 bytes).
+// NOT kept: precision/transport forms regress and move the extent away; original float
+// carriers, helper inputs, rounding and complete body restored.
+// Y563: Native real cosine/sine/both APIs with reused and independent pairs,
+// then both with late output/immutable pairs: 250/250/250/249/249/250/250/250.
+// NOT kept: all regress; original APIs, trig carriers, helper and complete body restored.
+// Y565: Paired half extents on native normalized-parameter results, retained diameters/direct
+// products and joint/axis-local production, original array/native box outputs: eight at 211,
+// 2022/2022 bytes. Keep direct paired half extents (plain 211); each has two original bounds
+// consumers and retail retains both products. Original grouping, calls, trig and arrays retained.
+// F380: Zero/nonzero comparison results spanning vertical bounds, bool/byte/short/long,
+// 240/240/244/243/240/240/244/243. NOT kept: regressions and longer extent;
+// original comparison/default points, half extents, trig and complete body restored.
+// DH358: Complete zero-result lifetimes before half extents/bounds and at horizontal/vertical
+// consumers 246/239/217/234; stream-boundary pairs 150/146/208/223. NOT kept:
+// 150/146 move extent from 2022 to 2026; 208 gains only three and shrinks to 1972.
+// Original tests, half extents, trig carriers and whole body restored.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -2986,35 +3083,33 @@ void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     function_1c590((s_shader_cache *)g_51f0f0,
         *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x64), 0);
     function_1c710(g_51f0f0);
-    real first_texture_scale = first_scale;
-    real second_texture_scale = second_scale;
-    real scale = first_texture_scale > second_texture_scale ? first_texture_scale : second_texture_scale;
+    real scale = first_scale > second_scale ? first_scale : second_scale;
     if (scale > 0.0f)
     {
         real inverse_scale = 1.0f / scale;
-        first_texture_scale *= inverse_scale;
-        second_texture_scale *= inverse_scale;
+        first_scale *= inverse_scale;
+        second_scale *= inverse_scale;
     }
-    real scaled_width = scale * width;
-    real scaled_height = scale * height;
+    real half_width = (scale * width) * 0.5f;
+    real half_height = (scale * height) * 0.5f;
     real bounds[4];
-    bounds[0] = 320.0f - scaled_width * 0.5f;
-    bounds[1] = 320.0f + scaled_width * 0.5f;
-    bounds[2] = 240.0f - scaled_height * 0.5f;
-    bounds[3] = 240.0f + scaled_height * 0.5f;
-    if (first_texture_scale == 0.0f) first_texture_scale = 1.0f;
-    if (second_texture_scale == 0.0f) second_texture_scale = 1.0f;
+    bounds[0] = 320.0f - half_width;
+    bounds[1] = 320.0f + half_width;
+    bounds[2] = 240.0f - half_height;
+    bounds[3] = 240.0f + half_height;
+    if (first_scale == 0.0f) first_scale = 1.0f;
+    if (second_scale == 0.0f) second_scale = 1.0f;
     real first_coordinates[8], second_coordinates[8];
     real cosine = (real)cos(first_angle), sine = (real)sin(first_angle);
-    texture_corner_rotate(-1.0f, -1.0f, cosine, sine, first_texture_scale, &first_coordinates[0]);
-    texture_corner_rotate(1.0f, -1.0f, cosine, sine, first_texture_scale, &first_coordinates[2]);
-    texture_corner_rotate(1.0f, 1.0f, cosine, sine, first_texture_scale, &first_coordinates[4]);
-    texture_corner_rotate(-1.0f, 1.0f, cosine, sine, first_texture_scale, &first_coordinates[6]);
+    texture_corner_rotate(-1.0f, -1.0f, cosine, sine, first_scale, &first_coordinates[0]);
+    texture_corner_rotate(1.0f, -1.0f, cosine, sine, first_scale, &first_coordinates[2]);
+    texture_corner_rotate(1.0f, 1.0f, cosine, sine, first_scale, &first_coordinates[4]);
+    texture_corner_rotate(-1.0f, 1.0f, cosine, sine, first_scale, &first_coordinates[6]);
     cosine = (real)cos(second_angle); sine = (real)sin(second_angle);
-    texture_corner_rotate(-1.0f, -1.0f, cosine, sine, second_texture_scale, &second_coordinates[0]);
-    texture_corner_rotate(1.0f, -1.0f, cosine, sine, second_texture_scale, &second_coordinates[2]);
-    texture_corner_rotate(1.0f, 1.0f, cosine, sine, second_texture_scale, &second_coordinates[4]);
-    texture_corner_rotate(-1.0f, 1.0f, cosine, sine, second_texture_scale, &second_coordinates[6]);
+    texture_corner_rotate(-1.0f, -1.0f, cosine, sine, second_scale, &second_coordinates[0]);
+    texture_corner_rotate(1.0f, -1.0f, cosine, sine, second_scale, &second_coordinates[2]);
+    texture_corner_rotate(1.0f, 1.0f, cosine, sine, second_scale, &second_coordinates[4]);
+    texture_corner_rotate(-1.0f, 1.0f, cosine, sine, second_scale, &second_coordinates[6]);
 #pragma inline_depth(0)
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
     D3DDevice_SetVertexData2f(1, first_coordinates[0], first_coordinates[1]);
@@ -3397,6 +3492,49 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // selector producers and shared quantizer restored; reload pairs and shift/clip homes remain.
 // Uniform parallel scale/gain product operand directions, seven subsets and all with the
 // cutoff product reversed, 31/31/31/31/31/31/31/31; original product inputs restored.
+// J242: Native truth-valued parameter carriers: clip/shift/center/skip-state byte singly,
+// clip+shift, with center, with all four, and signed clip+shift: 31 each at 4828/4828. NOT kept:
+// all neutral and equivalent input-type selection requires byte equality. Original complete body,
+// four bool inputs, every helper and call tuple restored; selector register production, post-bias
+// reciprocal/constant load order and six shift-versus-clip quantizer homes remain.
+// DH318: Existing quantizer direct-floor/rounded lower tests separated, nested/logical forms, bool/byte
+// flag and mutable/const sample: 31/31/31/31/31/31/31/31. Selector, reload-pair and six sample-home
+// differences remain. All restored.
+// Round 38 (lane 17): retail keeps the quantizer's temporary at [esp+0x58] apart from the clamped gain
+// product's at 0x54; ours shares 0x54. Renames for the slot order: the quantizer's input `amount` 31
+// (plain), the quantized locals `upper_byte`/`lower_byte` 31, `raw_offset` 31, `span_gain` 31 (fast,
+// slots unchanged); the input selector `4 + small` 961 (fast); permuter (41 variants) best 31.
+// Y557: Recyclable shift/clip/center parameter-symbol role names in
+// seven subsets, then all with the skip-state role name: 31 each at 4828 bytes.
+// Original parameter symbols restored; selector scheduling, post-bias reload
+// order and six quantizer inputs in shift rather than clip home remain.
+// Round 50 (m3 lane 2, fast; not kept, body restored at 31): round 137's shared function-scope value repeated without its macro: assigned before each call of the
+// by-value or by-reference helper 19/19 (the helper's parameter does not keep modes one to three in shift's home once its argument is that value); per-expansion block-scope
+// values by reference 31. On that base: the four selector/split orders, all 24, wari 18, wria 939 (aligned 15), awri 19, iwar 23, iawr 23, others 231..976; input or alpha typed dword,
+// short, byte, char on wria 939/939, 934/477, 945/960, 945/960, on wrai alpha 19/958/957/957; small typed byte/char/long on wria 939/939/496, on wrai 19/19/1179; a named bool or byte selector
+// copy at three positions 939/939/939 (forward-substituted), alpha first 19/19; selector and split force-inline helpers, flag parameter first or second, or selectors alone, 939 with
+// input first, 19 with alpha first; declarations apart from assignments in whole, input, fraction, alpha order 976 in six declaration orders; gain as one expression, two statements over
+// the ratio, or one expression plus the span 95/19/95, a separate 1.0f start 19; the span named ahead of the gain in both/zero/one modes 837/51/53, the span term first 118; span or
+// shared value declared at the top, before the maximum or after the inverse distance 19; small set after the switch with wria 31 (aligned 6: only that store's place and the two reload
+// pairs differ, the selector block is exact); that store right before the switch, after low or after the inverse distance 998/997/996 (aligned 24), declared after high or the inverse
+// distance 998/996; a false-valued local before the switch copied after it 31 (constant-propagated). Any store before the switch loses retail's `mov cl, [small]`.
+// DH325: Existing quantizer inline/natural expansion, immutable value/direct
+// input subsets 0-3 in each: 1201 each, 4420/4828 bytes. All restored; native
+// expansion still needs force-inline. Selector/reload/sample homes remain.
+// DH327: Existing quantizer writes native integer outputs, pointer/reference
+// destinations with nested/guard/default/conditional clamp graphs:
+// 31/31/787/31 twice. Original output contract, helper and complete body
+// restored; selector scheduling, post-bias reloads and shift/clip homes remain.
+// N350: Immutable shift/clip/center parameter subsets and all with immutable
+// state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
+// selector, reload-pair and six quantizer input-home differences remain.
+// P332: Native quantizer lower/upper/both conversion producers 32/31/32;
+// split lower arms alone/with upper producer 31/31; both with single-exit,
+// positive-default and split/conditional results 30/790/646. NOT kept:
+// one-point lead or regression, no byte match; original helper and body restored.
+// DH358: Existing quantizer double transport with explicit real-rounded callers and a multi-use
+// real sample, long/int/short/word results with mutable/immutable input: 660/660/1001/1001 twice.
+// NOT kept: all regress and lengthen to 4836/4856; original helper and whole body restored.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

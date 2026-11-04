@@ -6,6 +6,7 @@
 #include "object_markers.h"
 #include "object_queries.h"
 #include "unknown_211060.h"
+#include "vector_products.h"
 #include <math.h>
 
 // Layouts follow the pool and tag accesses in the retail callback group.
@@ -233,7 +234,7 @@ void __stdcall function_1160c0(real dt)
 }
 
 // MiniMax S (11-01): the segments and segment-index locals leave the first difference at +0x37; no lower score.
-// score 179 (was 179): previous/axis homes, segment ownership and rotation scheduling differ;
+// score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
 // scaled difference 212, all vector helpers 285.
@@ -413,6 +414,90 @@ void __stdcall function_1160c0(real dt)
 // Y547: Native double length-ratio/axis-reciprocal/paired-trig residence, seven subsets
 // then all with double returned angle: 328/236/348/317/430/372/440/494. Exact-only precision
 // forms restored; segment/previous/axis homes and rotation scheduling remain.
+// Round 38 (m3 lane 18, fast): axis renamed to sort last 179; length declared at the loop body top 179; length
+// and segment renamed to sort first 179; `point3f predicted, previous;` 179 (all identical code); previous stored
+// before the node position 179 (repeat of round 371); the retail-order angle call with the blend complement named
+// for the three rows 177 (the two listed 177s do not add up).
+// Round 201 (fast): retail's 12-byte rest offset sits below previous (0x50 against 0x5c) and its
+// length spill below the segment spill, ours the reverse; local names do not move them: segment,
+// axis, length (two names), offset and previous renamed 179 each. Rest offset as a const reference
+// 337 (1334 bytes); previous copied from the node's stored position 179; the step reciprocal ahead of
+// the loop 189; stiffness computed in the non-initial arm 316. Original body restored.
+// Round 79 (m3 lane 16, fast): the segment as a ternary of two element addresses 297 (1379 bytes); previous copied
+// before the node's position store 179; position/direction declared at the loop-body top 179; the velocity rows as
+// `inverse_dt * (...)` 179; the last-segment index as `i - 1` 183. The first real difference is the segments base:
+// retail loads it into EDX and keeps the segment in EDX (ours EDI, then ECX), which shifts the scratch rotation of
+// the physics call's argument setup (retail forms the tag address after pushing -1 and the location).
+// Round 35 (m3 lane 17, fast): `if (record->fixed || !(dt > 0.f)) return;` guard 179 (same code); position and
+// direction declared beside previous/predicted 179; location declared before origin/forward 179; a const vertical
+// 179; the const vertical with the angle call as (&vertical, &direction) 177 (two points, not kept).
+// Round 143 (m3 lane 5): the target through the existing vector3f_add_scaled together with the
+// angle call as function_11ce20(&vertical, &direction) (retail's ECX/EDX setup) 171 (kept, plain;
+// each alone was 173/177). On 171 (fast): physics index in a local for test and lookup 179 (on 179,
+// same code); direction through vector3d_from_points3d 171 (same code); delta through it 271 (1357);
+// velocity through scaled_difference3f 193; blend as vector3f_scale then vector3f_add_scaled 240
+// (1369); blend complement named and used three times 275 (1347); `previous = node->position =
+// position` 179 (on 179, same code); segment indexed by i and stepped back for the last node 292.
+// B413: Complete constraint/normalization/rotation temporary end scopes, seven subsets,
+// then all with the two-use angle scoped to paired trig: 171/171/171/171/171/171/171/171.
+// Original complete body restored; segment/previous/axis homes and rotation scheduling remain.
+// Round 49 (m3 lane 2, fast): the physics tag through a private inline getter 171 (same code: retail's late
+// tag-address formation follows its EDX/ECX allocation, not the argument's position); the rotation in place
+// on the offset copy with named projection and cross scalars (0x11d180's form), then predicted = offset +
+// position, 235 (1370 bytes, frame 0xa8); node as `record->nodes + i` 171; sine-first cross products 171;
+// `(1.f - cosine) * dot` 171 (all same code); the inverse step computed just before the velocity rows 297.
+// AC518: Complete normalization admission bool/byte/short/long, direct predicate
+// and success-owned result, 292/292/292/292/292/292/292/292 (1355 bytes).
+// NOT kept: decision-result lifetime does not match; original body restored.
+// AC522: Plain axis scaling long/int/short/word/byte/signed-byte loops,
+// native component cursor and long loop with complete shared cross:
+// 187/187/212/212/212/212/212/198. NOT kept: regressions; original body and homes restored.
+// B421: Root-node classification across metadata/tick producers, bool/byte/short/long,
+// positive/complementary results 277/277/289/288/277/277/289/288. NOT kept: early
+// cmp/sete differs from retail; original direct word test and complete body restored.
+// P316: Complete normalization/trigonometric/constraint scalar declarations at loop
+// entry, seven phase subsets, then all at function entry: 171 each. Every initializer
+// stays at its original computation. No gain; complete body restored. Segment EDX
+// and scalar/axis/previous/rest-offset homes remain.
+// N355: Existing early-return normalizer with native square/projection/staged-cross and complete setters:
+// 174/186/174/174/174/186/187/187. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Segment EDX and axis/previous/rest-offset homes remain.
+// J253: Actual shared rotation providers on rest offset 196/236/234, on recurrent
+// prediction 246/295/295; direct paired trig arguments 196/236. Explicit provider
+// units resolve every call. All regress or move frame/length away; original body restored.
+// F374: Optional-physics presence/absence at the original post-position test,
+// bool/byte/short/long: 171/171/171/171/171/171/171/171. NOT kept: no native
+// segment/home recovery; original field test and complete body restored.
+// DH350: Output-owned velocity difference/scale, interpolation contribution
+// and prediction translation phases, seven subsets then compound axis:
+// 171/171/171/171/171/171/171/171. NOT kept: no native byte match; original complete body restored.
+// DH354: Complete outer fixed/timestep admission result in bool/char/signed-char/
+// byte/short/word/int/long: 171/171/171/171/171/171/171/171. NOT kept: no exact admission residence;
+// direct guard/body restored; segment EDX and scalar/axis/previous/rest-offset homes remain.
+// AC540: Complete axial projection term staging, six producer orders, then direct/staged dot accumulators:
+// 171/171/171/171/171/171/171/171. NOT kept: unmatched product residence; segment/axis/previous/rest-offset
+// homes remain.
+// Y594: Persistent segment cursor with preceding-segment terminal selection,
+// for/while short/word/long/int node traversals: 252/252/317/317/252/252/317/317.
+// NOT kept: cursor/domain forms enlarge the frame to 0xa8 and body to
+// 1386/1380 bytes; native EDX/axis/previous homes remain. Original body restored.
+// F381: Existing complete setters at recurrent previous/rest offset/current and initial
+// position-direction boundaries, subsets 1/2/4/3/5/6/7, then node publication:
+// 345/277/367/336/352/354/339/345. NOT kept: regressions and nonnative
+// homes or extent; original complete copies/body restored, segment/axis homes remain.
+// F388: Existing axis/rest-offset/recurrent-previous component-array views,
+// subsets 1/2/4/3/5/6/7: 171 each; all with working direction/position/prediction 183.
+// NOT kept: no gain; original body restored, segment and mirrored homes remain.
+// P334: Native k-j-i distance/axis/projection reduction contracts, seven subsets
+// then plain component reductions: 380/384/306/507/471/469/589/614. NOT kept: regressions and larger
+// extents; original complete body restored; segment/axis/previous homes remain.
+// M389: Double blend/time/projection coefficient receivers, seven subsets, then
+// full graph with double axis root: 375/339/382/348/464/465/481/484.
+// NOT kept: all regress and lose native frame or extent. Original real coefficients,
+// axis root, arithmetic trees and complete body restored; segment and vector homes remain.
+// N376: Separate raw/normalized rotation axes with complete scalar setters and staged-cross
+// producers, eight forms 308/307/291/303/291/303/239/263. NOT kept: no exact match; original
+// axis storage, body and homes restored. Segment EDX and mirrored vector/scalar homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
@@ -444,7 +529,8 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 					function_211060(&node->velocity, 0, g_4e3b44[definition->physics_index & 0xffff].bytes, &location, NONE, &position, 0, 0, 0, .02f, dt);
 				vector3f delta = { position.x - previous.x, position.y - previous.y, position.z - previous.z };
 				real scale = (real)(segment->length / sqrt(delta.k * delta.k + delta.j * delta.j + delta.i * delta.i));
-				point3f target = { scale * delta.i + previous.x, scale * delta.j + previous.y, scale * delta.k + previous.z };
+				point3f target;
+				vector3f_add_scaled((vector3f *)&previous, &delta, scale, (vector3f *)&target);
 				position.x = (1.f - stiffness) * target.x + predicted.x * stiffness;
 				position.y = (1.f - stiffness) * target.y + predicted.y * stiffness;
 				position.z = (1.f - stiffness) * target.z + predicted.z * stiffness;
@@ -467,7 +553,7 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 				axis = *g_4687ac;
 			vector3f offset = segment->rest_offset;
 			vector3f vertical = { 0.f, 0.f, 1.f };
-			real angle = function_11ce20(&direction, &vertical);
+			real angle = function_11ce20(&vertical, &direction);
 			real sine = (real)sin(angle);
 			real cosine = (real)cos(angle);
 			real along = (axis.k * offset.k + axis.j * offset.j + axis.i * offset.i) * (1.f - cosine);

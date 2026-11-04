@@ -63,6 +63,9 @@ short *function_e70b0(long unit_index, short *value);
 long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax G (11-04): no new form, no lower score; the slot reference still loads into EDX after
+// the actor's index arithmetic where retail loads it into ECX before it, and the inlined action
+// lookup still scales the index in ECX where retail scales it into EDX.
 // score 13 (was 13): the slot reference is still loaded late into EDX where retail loads
 // it early into ECX, and the inlined action lookup still scales the index in ECX where
 // retail scales it into EDX and reads the unit table late; reading the reference into a
@@ -153,7 +156,7 @@ short __stdcall function_1bef40(long actor_index)
 
 static __forceinline long real_to_long(real value);
 
-// score 2 (was 17): the draw helper's seed store still precedes the delay's doubling
+// score 2 (was 2): the draw helper's seed store still precedes the delay's doubling
 // (retail doubles first; the draw helper is in include/unknown_0259d0.h). Round 30 (lane 17):
 // actor_reset_state now clears 0x4ac/0x504 through a second actor lookup made with the first,
 // which gives retail's reset order and registers here (17 -> 2, plain; matched 0x1b3ee0).
@@ -228,6 +231,10 @@ static __forceinline long real_to_long(real value);
 // sample reused for the second draw 17; forced outer/inner random declarations 17/17;
 // forced reset declaration 17; first/second/both sample scopes 17/17/17; delay and wait
 // declared before the slot view 17. All helper declarations were restored.
+// Round 87 (m3 lane 12, fast): `3.0f + 2.0f * sample` 4; `sample * 2.0f + 3.0f` 4; wait as `sample2 * 0.5f` 2;
+// `(sample + sample) + 3.0f` 2; first draw through function_259d0(3, 5) 53; second draw through function_259d0(0,
+// 0.5) 33; tick products value first 2; a 600 s permuter run (94 tries) best 2. Retail has this doubling-before-
+// seed-store order nowhere else.
 // @retail 0x1befd0
 bool __stdcall function_1befd0(long actor_index, s_slot *slot)
 {

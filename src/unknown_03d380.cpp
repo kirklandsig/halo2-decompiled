@@ -314,6 +314,8 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
+// byte is read, and the special, remove, ordinary and keep blocks stay in our order.
 // MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
 // block order still needs 0x221810 kept out of line.
 // score 36 (was 36): the address of the record is built here with an imul
@@ -432,6 +434,26 @@ void function_125a90(long value);
 // at each use with or without the index local 36 each; tag-byte subscript 36; direct global-array object
 // read 34 (416 bytes, -2 not kept); every record field direct with no element local 146 (398 bytes).
 // Original body restored.
+// Round 204 (fast): a declared before b 50; the special arm as `!a && type == 0x26` 36 (same code); the getter
+// argument as `(short)type` 36; a dword index 36; the after-loop calls as `if (b) ... else ...` 39. Restored.
+// Round 125 (lane 8, fast): `a` declared before `b` 50 (the two flag bytes swap stack slots: slot order follows
+// declaration order here); `a` declared in the flag78 block 57, at its use in the b arm 133; the flags as mask
+// tests (`(flags & 0x20) != 0`) 36 and the kind test as `(0x1e >> kind) & 1` 36 (same code each). Still
+// BLOCKED-BY 0x221810 (src/unknown_221490.cpp held this round) and the ESI multiply. Body unchanged.
+// M341: Actual kind-bitset producer byte/word/long/dword, negative/positive decision:
+// 48/48/36/36/48/48/36/36. Original expression and full policy loop restored;
+// element multiply/LEA, early policy load and decision-block order remain.
+// Round 84 (m3 lane 9, fast control 36): the arm whose flag is materialized is the one that falls into the
+// removal (retail: special arm with `sete`; ours: kind arm with `setne`). The stop decision as an inline predicate
+// with early returns (`if (!b || stops(element, a))`): a plain `inline` one stays out of line, 170 (342 bytes); as
+// `__forceinline` 47 (retail's `cmp eax, 0x26` and both arm bodies, but mirrored: kind arm, keep, special arm,
+// removal); the predicate in keep sense 87; its class test negated, kind case first 47 (same code); the caller's
+// keep branch first 47 (same code); the named class condition inside the forceinline predicate 153 (467 bytes,
+// 0x221810 inlined again). Original body restored; still BLOCKED-BY 0x221810 (its file held this round).
+// Round 104: named special with the callee declared inline 159 (472 bytes; declarations restored);
+// named element byte offset 36; keep result 36; keep arm first 86; type declared at loop top 36;
+// index declared only at the iterator 51; const element pointer 36; const type 36. All restored;
+// the element multiply/LEA, early policy load and decision-block placement remain.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

@@ -297,6 +297,35 @@ __forceinline bool function_184448(long arg_0)
 // AC489: Plain component traversals for normalization output, point input scale and world
 // bounds expansion, subsets 1/2/4/3/5/6/7: 984/986/969/987/969/991/971; complete graph
 // with short counters 1093. Original helpers and body restored; frame and geometry homes remain.
+// m3 lane 11 r60 (fast 965): record/list pointer declarations swapped 965; both chosen by ternaries 998
+// (4608 bytes); NULL/list defaults then `if (arg_0 != NONE)` 978; 0x23a220 with its two point parameters
+// swapped (retail's three callers set the single point up in EBX before the polygon in EDX; definition and every
+// call) 965, 0x23a220 still matched, 0x173910 69 -> 70, so not kept; point/plane arrays declared in the other
+// order 965; the per-face bounds pair set field by field 969 (4595 bytes).
+// AC495: Existing shared plane decoder with native polygon-count/edge-pair/selector carrier
+// masks 0/1/2/4/3/5/6/7: 969/1021/985/988/1044/1022/981/1031. Original decoder,
+// declarations, carriers and complete body restored; excess frame and initial geometry homes remain.
+// m3 lane 11 r63 (fast): the two-bounds aggregate initializer as four stores 969 (4595 bytes); the vertex and
+// planar arrays declared inside the loop 965; short queue count/cursor 969 (4595 bytes); the world bounds
+// declared after the definition lookup 965; the four arrays declared in reverse 965. Frame stays 0x11d4 in all;
+// original declarations restored.
+// Round 127 (lane 8, fast): record/surface pointers as two ternary initializers 998 (4608 B); axis selection as
+// if/else-if 965; vector copies, dots and bounds loop in an inner block 965; selector incremented when positive 976;
+// one falloff scalar shared by both force arms 994 (4564 B, frame 0x11cc as retail, first difference +0x1d).
+// AC497: Eligible effect, created resource and accepted sample regions, subsets
+// 1/2/4/3/5/6/7, then origin-owned zero-spacing fallback: 965/965/965/991/965/965/991/991.
+// Original admission, copies, random order and body restored; frame and geometry homes remain.
+// Round 130 (m3 lane 8, fast): the 2D sample point assigned by fields 965 (same code); both direction copies
+// before the two plane-distance calls 965 (same code); the force record pointer before the velocity copy 969
+// (4595 B); the four arrays declared in reverse order 965 (same code); the sample point copied after its two
+// random offsets 966. Ours still uses every slot to +0x1e0 where retail ends at +0x1d8 (frame 0x11d4/0x11cc).
+// Round 144 (m3 lane 6, fast; [LCS-aligned] this body [938]): the worklist seeded before its count 965, the world
+// bounds initialized after the seed 965, the neighbour test with the group compare first 965 (same code each); the
+// per-face projected bounds initialized by a two-pass loop 980 [1026], that loop at the top of each face iteration
+// 997 [975]. BLOCKED-BY 0x48e70: in the cell-bounds block retail spills the inverse spacing (+0xd8) and reloads it
+// after every 0x48e70 call, the pattern of a caller that does not see the callee's register usage (the 0x22750
+// effect on 0x22cf0, reproduced there by `inline` on that definition); ours keeps it in XMM2. 0x48e70's definition
+// is in machine 1's src/unknown_02b400.cpp.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

@@ -29,6 +29,9 @@ struct s_245850
 };
 
 #pragma inline_depth(0)
+// MiniMax B (11-03): a long plane index in this file's declaration leaves the callee unresolved in the
+// reduced image, so LTCG passes it by reference (117); the short load of the plane index remains.
+// MiniMax G (11-04): no new form, no lower score: retail's plane index is a long, so the sign extension needs bsp3d_get_plane's definition and its four other declarations changed.
 // score 1 (was 1): only the plane index is loaded with a 16 bit move where retail sign extends it.
 // Round 117: shared scalars with plane, point or matrix union views 11 each; the returned plane
 // pointer 100; the existing in-place rotation helpers 203 each; the existing point setter 145;

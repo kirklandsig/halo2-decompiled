@@ -768,6 +768,58 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // M320: First product native/const/library/overlap-safe result copies 289/289/289/391;
 // each with the existing staged second producer 301/301/301/400. NOT kept: native copies require a match.
 // Original frame, product inputs and complete body restored; colors and forward.k reuse remain.
+// Round 43 (m3 lane 2, fast with 0x1f0870): the second product from the direction local 224 (1268 B);
+// previous_up copied after the normalize 94; right from the direction before the forward copy 45 (1261 B,
+// both products then read stack copies), with the else-branch forward pointer 43; forward copy first, right
+// from direction, else pointer 41 (1261 B; products read the stack copy where retail reads command->forward).
+// None kept (gains under 3, different shape).
+// Round 205 (m3 lane 3, fast with 0x1f0870): previous_up copied straight into `right` and crossed in place with
+// cross3f_staged 56 (1262 B); in place with function_1f087b 63 at retail's 1261 bytes: the second product then has
+// retail's form (copies of right's registers, forward multiplied from memory) but the first product starts with
+// the j row and previous_up.k loads before the distance store; that copy made after the forward copy 130 (frame
+// moves); the in-place first product with cross3f for the second 217; the in-place form with the else-branch
+// forward pointer 216 (the camera colours move again).
+// Round 64 (lane 10, plain): a forward pointer in the else arm 43 (retail's ecx-based j and k stores; two points, not kept without a match). On that form the second product k first, as retail schedules it:
+// cross3f_staged 217 (1270, masked aligned 9), the global force-inline k-first helpers of src/unknown_2900b0.cpp and src/impacts.cpp 217 (1270, masked 9), the same with 0x1f087b's or the k-first helper for the first
+// product 221 (1272, masked 13); written out k, j, i with retail's operand sides 225 (1270, masked 17), through a forward pointer 221 (1272, masked 15). All move up.k's load ahead of the distance store and rotate the first product's colours.
+// Round 68 (m3 lane 10, fast with 0x1f0870 and each helper's own file listed): untried out-of-file cross helpers.
+// Second product through 0x206090's k-first helper (copies the second operand, stores k, j, i as it goes) 218 (1270
+// bytes: previous_up.k loads before the distance store again), through 0x441b0's staged k-first helper 217 (1270),
+// through 0x2922b0's staged i-first helper 45 (same code as function_1f087b). First product (with function_1f087b
+// second) through 0x1f2a80's, 0x1703f0's or 0xf4800's plain inline cross 45/45/45 (same code), through 0x441b0's
+// staged helper 49 (1264). Original calls restored.
+// Round 82 (m3 lane 16, fast with 0x1f0870): the distance named before its store 45 (same code); one function-scope
+// forward pointer for both arms 322 (1266 bytes, prologue changes); named yaw/pitch locals in the else arm 157 (1264);
+// right declared at function scope 45 (same code); the cosine computed before the distance store 49.
+// DL258: Actual output-basis pair, saved-point overlay and input-step fields,
+// all seven nonempty families, 45 each; direct native saved-point member alone 45.
+// NOT kept: no gain. Right I/J colors, repeated forward K and ordinary-angle store
+// bases remain. Original record layouts, snapshots, products and complete body restored.
+// B417: Prior-up/normalized-direction/right last-consumer regions, seven subsets then complete
+// geometric workspace names: 45/45/45/45/45/45/45/45 at 1262/1261. Original body restored;
+// right i/j carriers, second-product forward.k reuse and ordinary-angle store bases remain.
+// B419: Native geometric-basis ownership of prior-up/normalized-forward/perpendicular-left,
+// seven role subsets then complete forward-setter graph: 70/77/45/70/70/77/70/249. NOT kept: grouped
+// workspace does not match. Original scalar/vector owners, helpers and complete body restored.
+// B423: Native reset-completion decision at the geometric branch, ready/waiting
+// bool/byte/short/long, 45 each at 1262/1261. NOT kept: no exact match;
+// original direct comparison, staged helper and complete body restored.
+// B426: Existing reference direct/staged and pointer direct/staged cross producers,
+// each at the first/second product: 45/57/49/45/45/57/49/217. Original shared producers and
+// complete body restored; right i/j colors, forward.k reuse and angle stores remain.
+// B428: Complementary input-result lifetime, bool/byte/short/long with conditional/total
+// predicate producers: 74/75/74/75/95/96/89/103. NOT kept: no exact match; stack initialization
+// and lengths regress. Original complete body restored; right i/j colors, forward.k reuse
+// and ordinary-angle store bases remain.
+// B430: Counted component-array prior-up/forward/default-vector transfers, masks
+// 1/2/3/4/5/6/7: 106/233/272/259/275/254/286; all with chained equal defaults 300.
+// NOT kept: no byte match; original aggregate transfers, products and body restored.
+// B432: Caller-visible inline declarations for the existing staged cross, normalizer
+// and perpendicular producers, seven subsets, then staged-cross forceinline: eight 45s.
+// Original declarations and callback restored; right i/j, forward.k and angle bases remain.
+// B434: Missing-object/missing-target/ordinary-orientation arms first, seven
+// subsets 361/219/222/250/367/333/337; nullable acquisition with common fallback 358.
+// NOT kept: all regress; original branches, products and full body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

@@ -164,6 +164,10 @@ void __stdcall function_2562c0(long actor_index, s_slot *slot)
 // started return 113; the search arm first with and without else 84/84 (retail length; the started arm is
 // then laid out last and its jb reaches the after-loop epilogue); the started arm falling out to the outer
 // g_470be8 return 91, to a character-block g_470be8 return 84 (jae, be8 laid out last).
+// Round 199: the started arm as `return timer * rate < duration ? g_470bec : g_470be8;` 50 (362 bytes: cmovbe, so
+// retail's select is branchy); on the 70 form: result declared then assigned on its own line 70; the search loop
+// ending on `break` with `if (!object) state->started = true;` 70; the started byte in a bool local 70; `<` returning
+// result with an else returning g_470be8 75 (retail length, ja); `<` on a named elapsed product 75.
 // @retail 0x256300
 short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 {

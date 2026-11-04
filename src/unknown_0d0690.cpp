@@ -230,6 +230,15 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // and add on it) 181 at retail's 821 bytes (the power takes xmm7 and the strength spills), read just before
 // `if (i == 0)` 181; `byte const *entry` 30 (same code), with colour first 121; colour first with the
 // strength declared inside the lights branch 139.
+// Round 85 (m3 lane 9, fast; compile-only screen of the add on the colour-first body): colour first re-measured 121 (828 bytes); strength
+// first with the entry used after the copy (diagnostic) 187: the movss stays first, so the scheduler does not sink it and retail's source
+// order is colour first. Strength read into a local before the copy 30 (same code); pinned_real by value 30 and colour first 121; a typed
+// collision result 30 and colour first 121; colour first with both arm stores in a forceinline pointer helper 121; colour first with a power
+// local for the test and divide 121. Screen, colour first: the add turns strength-first with one added pointer read at offset 0 (point, sky,
+// record, the zero vector) or one store through record before the first-light arm, and a second added read turns it back; a dead read, global
+// reads and stores and +4 reads alone do nothing. No natural form moves it: memcpy for the seeds and the copy (all 8 subsets), count and lights
+// locals, tag-block views of the sky, light and scenario blocks (all 8 subsets), the blend as a repeated-expression PIN, inline helpers with
+// value, pointer or reference strength, a const entry, nested else and `<=` tests.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1488,6 +1497,44 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // final ambient clamp 556. Original complete body and all helper/caller contracts restored.
 // M321: Complete input/normal/limited squared-magnitude stages, masks 1/2/4/3/5/6/7, then complete products
 // 529/529/530/529/530/530/530/574. Original complete body restored; frame 0x2c versus 0x28, selection spill and block/query homes remain.
+// Lane 17 r36 (fast): `if (!parameters) return false;` with `return true` at the end 568 (frame 0x28 as retail,
+// 2168 bytes); that without the `count > 0` wrapper (one count test, as retail) 564 (2153); plus the lightmap
+// copied to a local and biased in place 569 (2189 bytes, 0x3db00 lost); single-test loop with `bool result = false;`
+// and `result = true;` first 595; early return with a named mask before the unwrapped loop 564. Block/query stay EDX/EAX.
+// P286: Complete cosine/axis/subtraction vector phases with existing setter/add-scaled
+// subsets 1/2/4/3/5/6/7 554/553/554/554/555/554/555; complete initial-scale helper 554.
+// All restored; frame/selection/query homes remain, both shared-user controls unchanged.
+// Round 79 (m3 lane 9, fast; 0x3db00 kept, 0xd4080 364 throughout): the entries array in a pointer local for the
+// scan 565; the block count read at each use 567; the normal copied after the length store 528 (as round 222);
+// the luminance's 2.0 written last 529; count declared before the parameters pointer 529 (same code). Ours now
+// returns `ret 0xc` like retail; the block/query registers (ours edx/eax, retail eax/edx) and frame 0x2c remain.
+// DL254: Existing shared clamp/negation/rotation output-pointer contracts, seven subsets then ordinary inline:
+// 529/529/529/529/529/529/529/529. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
+// M344: Scan-produced found/missing outcomes in bool/byte/short/long storage
+// 597/534/561/560/538/538/562/560. NOT kept: unmatched scan flags enlarge the
+// body; five native-frame forms also regress the caller 363 -> 440. Original
+// selection result, frame, helpers and entire body restored.
+// B407: Early degenerate normalizer exit, native/readonly output pointer, direct/existing
+// scaler and forced/ordinary inline: 529/529/608/608/529/529/608/608. NOT kept: no gain;
+// shared user 363 -> 368/364. Original helper, calls and complete body restored.
+// P302: Existing RGB clamp actual lower/upper/input/output record references,
+// graphs 1/2/3/5/6/7/15 then ordinary-inline full graph: 529/529/529/529/529/529/529/529. Original
+// clamp/body restored; frame, selection-result spill and block/query homes remain.
+// M353: Common failure exit with completed bool/byte/short/long results,
+// retained count guard then early count exit: 573/579/575/576/573/579/575/576.
+// All regress and lose matched caller 0x3db00; original full body and helpers restored.
+// M356: One-past-entry forward !=/< and reverse !=/> scans, direct/reused flags:
+// 559/562/564/564/535/536/535/536. NOT kept: all regress; original selection,
+// complete body and helpers restored. Frame, result spill and block/query homes remain.
+// M374: Native forward cursor/consumed positive count on the current scale graph,
+// tested-pointer/bool-completion/early-failure/branch-success results, original/combined
+// admission: 581/578/585/587/570/587/568/566. NOT kept: all regress; bool-completion also
+// loses the matched caller. Original scan, full body and helper contracts restored.
+// M377: Existing shared setter for initial/secondary/ambient vector copies,
+// seven subsets, then complete graph with existing same-tree dot: 529/578/562/582/562/559/563/563.
+// NOT kept: no gain; secondary/ambient forms grow frame to 0x30 and lose the
+// matched caller. Original native copies, all helpers and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1565,7 +1612,7 @@ real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 364 (was 364): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
+// score 363 (was 364): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // Round 52 (lane 13, fast; structural = LCS count with registers and offsets masked, base 212): in-place
 // rotation 435 (structural 143) as the base for: kij square with j/k normalize products as `*=` 429, all
 // three as `*=` 429 (identical); the shared normalize computing its own (i, j, k) magnitude with 0x30bf0's
@@ -1653,8 +1700,16 @@ real function_30bf0(vector3f *vector);
 // Round 207: staged cross/complete rotation setter/both 364/364/364; complete
 // normalizer setter with neither/cross/rotation/both 430 each (retail frame and length);
 // all three with native-value rotation input 490. Original helper/output graph restored.
+// Round 65 (m3 lane 10, fast): parameters reordered to (type, query, flag, record) everywhere, from retail 0x3dfe0's
+// call setup (`lea esi` record, then `push` flag; this function ends `ret 4` with record in ESI): 363, 0x3dfe0 27 -> 21
+// with its own declaration fix. On it: direction2 copied, negated and rotated in place 436 (1870 B, frame 0x40, aligned
+// 320 -> 293, masked 199 -> 164); plus (k, i, j) squared length 430 (aligned 285); plus the axis read through a
+// `vector3f const *` from g_4687b0 in lighting_rotate 464 (1842 B; 0x3db00 lost, 0xd37f0 610; retail reads the axis live
+// in both functions); (k, i, j) alone 357; with the colour2 positive checks as stored selects 433 (1878 B).
+// Round 402: Complete applied/fallback query outcomes, bool/byte/short/long, at the real query boundary.
+// Scores 450/450/450/450/450/450/450/450. NOT kept: unmatched outcome forms; original complete body restored.
 // @retail 0xd4080
-void function_d4080(long type, s_effect_color_query const *query, s_lighting_record *record, long flag)
+void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
 	long const *const flag_reference = &flag;
 	long flag_value = *flag_reference;
@@ -1803,6 +1858,10 @@ dword function_015cd0(long index, dword entry);
 // Round 129: callee-side inline sampling declaration 4; inline lock wrapper 4; tag/bitmap-scoped
 // temporary 4/4; tag-scoped UV 84 (303 B); partial aggregate UV 30 (316 B); unsigned result 4;
 // nested sampling guards 4; named palette predicate 4; split bitmap declaration 4.
+// Round 48 (m3 lane 2, fast): the sample/zero-store goto as one if/else at the tag scope 4 (same code,
+// kept); a permuter run on that body, 54 tries, best 4; texture-field test arms swapped 68 (312 B); the
+// conversion as `bitmap = convert ? temporary : NULL; if (bitmap) result = 3;` 39 (314 B); bitmap stored
+// before result = 3 in the success arm 6.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
@@ -1841,22 +1900,23 @@ long function_d2f90(long flags, short bitmap_index, long palette_index, real u, 
                     else
                         bitmap = NULL;
                 }
-                if (result != 1 && bitmap)
-                {
-                    point2f uv = { u, v };
-                    dword pixel = function_1362b0((s_type_7ba8e9 const *)bitmap, &uv, 1.0f);
-                    if (*(short *)((byte *)bitmap + 0xc) == 0x12)
-                        pixel = function_015cd0(palette_index, pixel);
-                    unpack_color3f(pixel, out);
-                    goto done;
-                }
             }
-            out->blue = 0.0f;
-            out->green = 0.0f;
-            out->red = 0.0f;
+            if (result != 1 && bitmap)
+            {
+                point2f uv = { u, v };
+                dword pixel = function_1362b0((s_type_7ba8e9 const *)bitmap, &uv, 1.0f);
+                if (*(short *)((byte *)bitmap + 0xc) == 0x12)
+                    pixel = function_015cd0(palette_index, pixel);
+                unpack_color3f(pixel, out);
+            }
+            else
+            {
+                out->blue = 0.0f;
+                out->green = 0.0f;
+                out->red = 0.0f;
+            }
         }
     }
-done:
     return result;
 }
 
@@ -2023,7 +2083,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
-// score 555 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// score 542 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // Round 52 (lane 13, fast): the format byte as a named byte local before/after the data pointer 555/555;
 // the result as `dynamic_valid ? 0 : 1` 687 (3040 bytes); the result test inverted 555; diagnostic, a flag
 // set in a test (`if (call) dynamic_valid = true;` in both format arms) 553. Retail after 0x24490 holds
@@ -2185,6 +2245,67 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Every initializer stayed at its producer. Original complete body restored; status/mesh homes remain.
 // M321: Dynamic-status-owned validity, phase/absent-block failure and ternary/branch status; direct/post-phase validity
 // 640/584/640/584/609/608/609/608. Original flag/result graph and full body restored; status/mesh/sample homes and helper expansion remain.
+// M335: First-sample-owned base validity, admitted overwrite/failure clearing,
+// bool/byte/short/long: 667/667/660/661/604/604/608/603. NOT kept: unmatched state/carrier forms;
+// original complete body restored; status/mesh/sample homes and helper expansion remain.
+// N336: Independent first-path mesh/part declaration scopes before the input view or after
+// status, individually and both pointer orders: eight forms 555. Every acquisition stayed at
+// its producer; original complete body restored. Status/part/mesh homes and helper expansion remain.
+// Round 64 (m3 lane 1, fast): `result = !dynamic_valid` 687 (3040 bytes); the result as a ternary 687; the
+// validity test inverted 555; the data base's two loads swapped 555; sample offsets written per arm at each
+// argument 595 (b/c sink into the arms as retail, but argument order c-first); per-arm sample pointers a/b/c 613
+// (both arms then equal retail's except the 0x24490 setup, retail's EBX zero and the colour home; one-use
+// pointers, not kept); those with `result = 1` before the lookup 616, with the test inverted 615.
+// Round 79 (m3 lane 9, fast with 0x24590): the final rescale's counter as long instead of short 542 (kept, 3130
+// bytes: that loop now unrolls exactly as retail's). On 542: the dynamic normal normalized first 622; one scale
+// local for both normalizations 542; the weighted sums with the base term first 542; the first arm's outputs
+// declared u, v, base_u, base_v 543; the second arm's material lookup before the u/v call 608. Before: one
+// base/normal pair at function scope for both arms 574; the record arm's u/v at its top 555; the first arm's
+// mesh renamed (diagnostic) 555, no slot moves. Left: frame homes, and our inlined second 0x24590 length.
+// Round 64 (m3 lane 1, fast): `result = !dynamic_valid` 687 (3040 bytes); the result as a ternary 687; the
+// validity test inverted 555; the data base's two loads swapped 555; sample offsets written per arm at each
+// argument 595 (b/c sink into the arms as retail, but argument order c-first); per-arm sample pointers a/b/c 613
+// (both arms then equal retail's except the 0x24490 setup, retail's EBX zero and the colour home; one-use
+// pointers, not kept); those with `result = 1` before the lookup 616, with the test inverted 615.
+// B396: One shared test-produced long/dword/short/word status, original special exit 832/832/836/836;
+// actual single completion 824/824/711/711. Original entry default and complete body restored;
+// frame/status/mesh homes and selective expansion remain.
+// N347: Structure per-vertex provider first; failure/success defaults before/after lookup;
+// conditional status after/before sampling; missing-block first: 575/704/702/553/551/727/717/552.
+// NOT kept: unmatched status/layout forms. Original complete body restored; native result/mesh homes remain.
+// AC509: Existing decoder returns mutable/readonly output references through pointer/reference
+// formals: four ignored results 542, four directly consumed interpolation results 545. Original
+// decoder and three samples restored; status/mesh/sample homes and helper expansion remain.
+// Round 404: Actual decoder input/output/paired-input/paired-output cursors 1100/756/984/855 with
+// ordered ends, 826/756/763/855 with equality ends. Original decoder, three independent samples and body
+// restored; native status/mesh/color/UV homes and selective expansion remain.
+// P308: Existing five-value decoder as a native decoded/encoded member, void/reference
+// results with forced expansion 542/542/542/542; ordinary expansion 1039/1039/1039/1039.
+// NOT kept: ties/outlining regressions; original free decoder, samples, offsets and body restored.
+// P310: Shared combined-fallback/single-valid color-normal publication and final packed-color
+// result, subsets 1..7: 714/720/1012/601/749/758/1051; complete conditional receivers 1029.
+// NOT kept: all regress; original publication paths, independent samples and body restored.
+// M351: Immutable existing first/second/third sample offsets, all seven subsets, then all with
+// fixed model metadata/mesh/index/data bindings: 542 each. Original body restored; native
+// status/mesh homes and selective material/magnitude expansion remain.
+// DH326: Branch-owned bitmap UV, texture-region base UV and publication-ended combined color,
+// subsets 1..7 then all with aggregate color initialization: 629/677/798/542/629/677/798/798.
+// Original output lifetimes and full body restored; status/mesh homes and helper expansion remain.
+// DH330: Native three-sample output array with long/dword/short/word indexed decoding,
+// encoded-format scope 656/656/877/877; model scope 664/664/877/877.
+// NOT kept: unmatched grouped outputs; original independent samples and body restored.
+// DH338: Complete RGB pin index loops in long/short/word/byte 542/1111/1111/1111;
+// advancing-channel loops 542/1111/1111/1111. Narrow loops remain rolled and shorten
+// away from retail; original helper/body restored, status/mesh/sample homes remain.
+// J253: Coordinated ordinary inline contracts for mesh lookup, both UV outputs, normal,
+// vertex color, bitmap/base samplers and dynamic interpolation: 542 each. Original
+// declarations/definitions restored; status/mesh homes and selective expansion remain.
+// P326: Model luminance weights/normal magnitudes/final rescale declaration lifetimes,
+// subsets 1..7 at model entry, then all at function entry: 542 each. Every initializer
+// stayed at its producer. NOT kept: no gain; original body, status/mesh homes and helpers remain.
+// M379: Complete default normal/base/lightmap memmove transfers, subsets 1/2/4/3/5/6/7,
+// then all normal publications: 589/599/561/744/736/732/757/773. NOT kept: all regress;
+// original copies and body restored; status/mesh/sample homes and selective expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
@@ -2341,7 +2462,7 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
                     out->k = dynamic_normal.k * dynamic_weight + normal.k * base_weight;
                     function_30bf0(out);
                     real length = dynamic_length > base_length ? dynamic_length : base_length;
-                    for (short component = 0; component < 3; ++component)
+                    for (long component = 0; component < 3; ++component)
                         out->n[component] *= length;
                 }
                 else if (dynamic_weight > 0.0001f)

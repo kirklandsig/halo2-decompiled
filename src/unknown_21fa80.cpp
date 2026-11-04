@@ -218,6 +218,56 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // before the phase or at entry, each original reference/plain gain value: eight at
 // 532 fast (control 532; full 545). Original body and lifetimes restored;
 // frame 0x22c versus 0x224 and stream/gain/mixed-math homes remain.
+// Round 128 (lane 8, plain; the fast image is unfaithful here): the gain difference named before the gain test
+// (`real gain_change = gain - stored;`) 542 (retail's SSE subss stored once for the x87 fabs, but computed ahead
+// of the changed test where retail computes it after); the difference cast to real inside the test 545 (same
+// code); mode/direct first with the named difference 546; the named difference with a real gain value 542;
+// fabsf on the gain test alone 545.
+// Round 42 (m3 lane 2, plain; fast builds this function differently, CAVEAT): the gain difference named
+// (`real gain_change = gain - stored;` tested as `fabs(gain_change)`) 542: retail's SSE `subss` and store appear
+// (hoisted above the `changed` test, where retail computes it after) but the /Op float fabs still rounds; that
+// with mode/direct read before the gain 546, with a value (not reference) gain 542, with `0.1f > fabs(...)` 542, with
+// the two-case mode switch for the voice sends 541 (1902 bytes). Original body restored.
+// Round 81 (m3 lane 12, plain unless noted): lane 18's fall-through switch for the mode sends rebuilt 542 (still
+// three under the bar); with one settings record for the voice branch 559 fast; direct and mode before the gain
+// 552 fast; `switch (mode) { case 0: add; break; case 1: add; add; break; }` 568 (1879 bytes, not tail-merged);
+// the voice pointer formed before the stream's voice-properties query 573 (1877). Original body restored.
+// Round 79 (m3 lane 16, fast control 532, full 545): the gain difference in a named real before its fabs 537;
+// direct read before the stream lookup 579 (1921 bytes); mode read before changed 570 (1917 bytes); the voice
+// branch's status declared in each arm 532 (same code); buffer/submix property declarations swapped 532 (same code).
+// Round 144 (m3 lane 5, plain; retail's six difference tests never round: `fld stored; fld input; fsub st(1); fabs;
+// fstp st(1)`, the /Op lead above): mixbin-branch send tests as `(bool)(flags >> n & 1)` 546; one twice-used
+// voice-output test for both branches 577 (1877 bytes); the voice mixbin gain through the gain reference 545 (same
+// code); the three field differences as stored minus input 545 (same code); direct read right after changed, mode
+// after the gain 546. Original body restored.
+// Round 49 (m3 lane 15, plain; fast has a CAVEAT here): the gain test through a `gain_changed` bool set from a
+// block-scoped named difference when not `changed` 545 (same code: still x87 fld/fsub, retail's SSE subss needs the
+// gain loaded with movss); that with a plain real gain value 545 (same code); the stream's 0x20 bit updated before
+// the send flags 576 (1863 bytes); the pitch delta compared without the `(real)` cast 545; the send flag set
+// before the two cached level stores 545.
+// M360: Extended scaled-value/linear-result producer with sample/energy/root
+// consumer widths, masks 0..7: 558/558/555/555/578/578/568/568 fast (control 532). NOT kept:
+// no exact match; original precision, helper, body and frame/gain homes restored.
+// Round 84 (m3 lane 9, fast control 532, full 545): `#pragma intrinsic(sqrt, exp, log10)` (the one diagnostic) 545
+// plain, same code: under /Op the three math calls stay library calls where retail expands them inline (fyl2x,
+// f2xm1, fsqrt). Retail also materializes each send bit as a bool in one dead stack byte (+0xe) and reloads the send
+// flags from memory after every store, the volatile-bool shape. Forms: stream declared before input 532 (same code);
+// gain bits read before `changed` 577 (1921 bytes); the first send bit cast to bool like the other three 550; the
+// three send-bit updates as ternary assignments 532 (same code); `direct` as a bool cast 532 (same code). Restored.
+// B426: Existing SDK C entry points at first/later query, volume, status, playback,
+// mixbin, pitch and complete call phases: 532/532/532/532/532/532/532/532. Original SDK receivers,
+// workspaces and complete body restored; frame/stream/gain and mixed math remain.
+// AC545: Existing real-pin input-first/complete-arm/lower-default/early-return
+// producers 545/532/543/532, then forced expansion 545/532/543/532
+// (fast control 532; full 545). NOT kept: ties or regressions; native frame,
+// stream/gain homes and mixed-math expansion remain. Original helper restored.
+// DL263: Actual stream/voice/effects object reference boundaries, seven subsets then complete
+// input reference: 545/545/545/545/545/545/545/545. NOT kept: unmatched alias contracts; original
+// receiver forms, existing helper and complete body restored. Frame 0x22c versus 0x224,
+// stream/gain carriers and mixed math remain.
+// M381: Actual voice/buffer/submix API-output zero initialization, seven subsets, then
+// all with initialized status: 566/615/591/615/591/621/607/608 (fast control 532, full 545).
+// NOT kept: unsupported extra stores and regressions; original outputs, helpers and full body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

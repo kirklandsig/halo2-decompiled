@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "slot_handler.h"
 #include "unknown_11cc90.h"
+#include "normalize3d.h"
 #include <math.h>
 
 struct s_29ab90
@@ -54,12 +55,6 @@ PRIVATE __forceinline real function_29ab92(vector2f *arg_0)
 PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 {
 	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
-}
-PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, vector3f *arg_2)
-{
-	arg_2->i = arg_0->i * arg_1;
-	arg_2->j = arg_0->j * arg_1;
-	arg_2->k = arg_0->k * arg_1;
 }
 
 // score 345 (was 345): frame 0x58 versus 0x64 (query output vector shares the magnitude copy slot) and magnitude/vector/query homes remain; actor EAX and stack input now agree.
@@ -273,6 +268,97 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // AC491: Forward-correction scalar result before fields/aggregate/setter vector publication,
 // default/complete arms; entry scalar with fields/aggregate: 352/354/352/354/352/354/352/352.
 // Original complete body and producers restored; native frame and homes remain.
+// M3 lane 4 r157 (fast; positional / LCS-aligned, base 345 / 230): LEAD: retail keeps a full copy of the working
+// vector made before 0x29b2e0 (i in ESI, j/k at +0x60/+0x64, sharing the query output's +0x5c home) and builds the
+// planar input from it after the call; `vector3f previous = local_4;` before the call with the planar input
+// from `previous` gives retail's frame 0x64 (first difference +0x2 -> +0x42) 386 / 216 (1915 bytes), the 0x668 store
+// after the planar copy 386; with the planar helper zeroed in place (scale arm first) 385 / 182 (1910 bytes); plus
+// magnitude terms ijk/kji/ikj 383/385/383 (aligned 175/182/179); plus the magnitude helper zeroed in place
+// 435 / 177 (1898 bytes; its block is retail's but for the 0x10/0x14 homes of the definition pointer and the
+// magnitude); on that, renaming the magnitude, the definition pointer or the query vector 435 each (same code).
+// The rest is the entry copies: retail struct-copies all three working vectors (dword moves, the +0x290 one through
+// `mov edx, ebx`); as struct copies here: all 479 (frame 0x68: arg_0 moves to ECX and arg_2 to EAX, so the query
+// bools lose arg_2's dead stack home), the +0x290 one only 484, the second constant one only 450; earlier forms
+// struct copies 513, +0x290 copied from the field 450, non-const +0x290 pointer 438. Also on the 435 form: the
+// history read through a pointer to its field (retail reads +0x678..0x680 in place) 413 / 175 (1878 bytes, 449
+// instructions; alone on the original 361 / 230, 1845 bytes); the correction vector written into the output vector
+// (retail's +0x38 home) 413 (same code); with the entry struct copies all/first/constants 430/460/423 (the struct copy of
+// +0x290 always moves the pointer out of EBX into ebp+0x290 addressing and passes arg_2 in EAX, ret 0x1c), with the
+// pointer declared at entry 442 or in the settings block 460, through a two-pointer copy helper 460. Restored.
+// DH311: Existing pointer-input scale as plain coordinate-array loop, long/dword/short/byte
+// with streaming stores 345/345/435/435; complete native output before publication 464/464/515/515.
+// Original helpers/body restored; frame 0x58/0x64 and magnitude/query overlap remain.
+// m3 lane 11 r62 (fast): the turn and squared-length floors as `x = x > c ? x : c` 345 (same code); the planar
+// dot product written j-first with operands swapped 345 (same code); the magnitude declared bare at entry 345
+// (same code); computed as the first statement inside `if (local_2)` 353; named requested_magnitude 345 (same
+// code). Retail gives the planar length, speed limit and floor the dead homes of arg_8/arg_7/arg_2 and the
+// magnitude a frame slot; ours gives the magnitude arg_8's home and shifts the rest by one.
+// Round 122 (lane 7, fast; base 345 [aligned 276]; retail keeps the planar copy's pre-call values in ESI and
+// the query slot, then stores them into the magnitude copy's slot after 0x29b2e0): the query outputs in their
+// own block 345 (same code); the planar vector declared at the top of the settings block 345 (same code);
+// planar components captured in named reals before 0x29b2e0 (diagnostic) 380 (1906 bytes, frame 0x5c);
+// all three working vectors as whole-struct copies 442 [406] (1887 bytes, frame 0x60); the working vector
+// alone as a whole-struct copy 449 [421] (1884 bytes, frame 0x60).
+// Y556: Zero-initialized discarded query vector, aggregate/library-clear/shared setter/
+// chained fields at query/entry scope: 345/345/345/345/345/345/345/345. NOT kept: added local initialization
+// fails byte agreement; original uninitialized output and complete body restored.
+// m3 lane 11 r62 (fast): the turn and squared-length floors as `x = x > c ? x : c` 345 (same code); the planar
+// dot product written j-first with operands swapped 345 (same code); the magnitude declared bare at entry 345
+// (same code); computed as the first statement inside `if (local_2)` 353; named requested_magnitude 345 (same
+// code). Retail gives the planar length, speed limit and floor the dead homes of arg_8/arg_7/arg_2 and the
+// magnitude a frame slot; ours gives the magnitude arg_8's home and shifts the rest by one.
+// M3 lane 9 r83 (fast): the private v*s scale copy replaced by the existing vector3f_scale 345 (identical code, kept);
+// the magnitude helper zeroing its own root in place 421 (1854 bytes); the planar steps through normalize2d_fast,
+// re-measured, 369 (1868); the blend rows with the weight complement written first 345 (same code); the weight
+// field read at each use (retail reads +0x64 twice) 345 (1865 bytes), plus the history read in place through a
+// pointer 361 (1845). Retail's blend computes the k row first and reads the history fields in place.
+// M3 lane 6 r142 (fast): local_5 by components and local_6 as the struct copy 493 (1913 bytes); local_6 copied from
+// local_5 366; that with local_4 as a struct copy of the +0x290 vector 442 (1887 bytes); local_6 declared before
+// local_5 412 (1864 bytes); the input magnitude taken inside `if (local_2)` 353. Retail copies local_4 whole (k
+// included) into +0x5c..+0x64 before 0x29b2e0 and builds local_20 from that copy after the call. Original body restored.
+// Lane 14 r60 (fast; "no-home" = aligned count ignoring stack offsets, base 174): retail holds &+0x290 in EBX and arg_2 in ESI and
+// copies the three working vectors whole through integer registers. All three whole copies 442 (1887 bytes, frame 0x60, no-home
+// 214: the pointer is copy-propagated into [ebp+0x290] uses, arg_2 moves to EBX and arg_0 to ECX), with a non-const pointer 442
+// (same code); local_6 alone whole 366 (frame 0x58, no-home 231); local_4 alone whole 449 (frame 0x60, no-home 272), with the
+// non-const pointer 449 (same code); the query output vector at function scope 345 (same code), with all three whole 442, with
+// local_6 alone whole 366.
+// P305: Native library working/output/secondary entry transfers, seven subsets
+// 449/345/366/449/442/366/442; all with the later requested-vector transfer 442.
+// Original whole body and helpers restored; magnitude/query overlap and native frame remain.
+// M359: Query outcome after escaped output production, positive/complementary
+// bool/byte/short/long: 345/345/345/345/345/345/345/345. NOT kept: one-use call
+// result is unmatched; original query guard, output lifetimes and complete body restored.
+// DH324: Full pre-update saved direction owns the later in-place planar workspace:
+// native/aggregate/setter/library copies, original then single-root planar result
+// 363/332/366/363/325/366/332/325. NOT kept: 325 at 1874/1863 bytes moves length away from the starting 1866;
+// native XY transfer/homes remain. Original helpers and complete body restored.
+// DH326: Consistent native-pointer/direct history reads 361/360; history pointer with
+// full pre-update native/coordinate/setter/library direction and separate later XY 362/356/356/362;
+// native/coordinate saves with shared planar normalization 385/380. Full saves recover frame 0x64
+// and first +0x42, but grow to 1895/1897 versus 1863 bytes. Original full body/helpers restored.
+// DH328: Existing by-value magnitude over its native component table in K/J/I order,
+// long/short ordinals and direct/named squares 442/442/513/513; input-updated root
+// 434/434/502/502. NOT kept: regressions and longer code; full helpers/body restored.
+// DH333: Typed coordinate-range copies at working/constant/history producers, seven subsets
+// 438/376/459/378/498/402/501; complete backward ranges 501. History-only recovers frame 0x64
+// and first +0x42 but grows to 1909/1863 bytes. NOT kept: regressions; original full body restored.
+// DH355: Plain indexed working/constant/history coordinate-copy subsets and all
+// with full pre-update direction: 345/502/355/502/355/490/490/550. NOT kept: ties/regressions and
+// nonnative extents; original vectors, observations, helpers and complete body restored.
+// DH360: Explicit epsilon-test truth in existing magnitude/planar helpers, bool/byte/short/long,
+// eight at 345. NOT kept: unmatched one-use predicates do not recover the 0x64 frame or separate
+// magnitude/query homes; original helpers, all native copies and complete body restored.
+// DH362: Magnitude output-only/numeric-plus-output, pointer/reference, common/complete-arm
+// publication on the retained native-input/result-join graph: eight at 345. NOT kept: frame
+// 0x58 and query/magnitude overlap remain; original helper contract and complete body restored.
+// DH364: Native magnitude/planar/movement coordinate-union consumer subsets
+// 1/2/4/3/5/6/7, then float root/absolute APIs on complete result joins: eight at 345.
+// Original copies, helpers, expression trees and full body restored; frame/query
+// overlap remains.
+// DH367: Overlap-safe CRT working/secondary/history transfers, seven subsets,
+// then paired final public transfers: 447/363/376/440/501/388/473/480. History-only and secondary/history
+// recover frame 0x64 and first +0x42 but grow to 1907/1894 versus 1863. NOT kept: all regress;
+// original copies, helpers and complete body restored; frame/query-magnitude homes remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -299,14 +385,14 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	if (local_2)
 	{
 		if (!*(bool *)(local_0 + 0x5d0) || *arg_7)
-			function_29ab94(local_3, 2.0f, arg_2);
+			vector3f_scale(local_3, 2.0f, arg_2);
 		bool local_10;
 		bool local_11;
 		vector3f local_12;
 		if (function_1f9760(arg_0, arg_1, &local_7, local_9, &local_10, &local_11, &local_12))
 		{
 			*arg_7 = true;
-			function_29ab94(local_3, 2.0f, arg_2);
+			vector3f_scale(local_3, 2.0f, arg_2);
 		}
 		function_26c180(arg_0);
 		vector2f local_13 = { arg_2->i, arg_2->j };

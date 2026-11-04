@@ -168,7 +168,7 @@ static inline real interpolate_linear(real a, real b, real t)
 	return (b - a) * t + a;
 }
 
-// score 1 (was 9): only the high-boundary test's miss differs: retail's plain-frame path jumps to the
+// score 1 (was 1): only the high-boundary test's miss differs: retail's plain-frame path jumps to the
 // restart test, ours (knowing the flag is clear there from its false start and the back edge) jumps past it.
 // Round 30 (lane 18): the fraction before the key table with the table read at each use 9 -> 1 (kept; the
 // unused key pointers dropped). Before that: an out-parameter restart helper at all three sites 9; restart
@@ -377,11 +377,30 @@ static inline real interpolate_linear(real a, real b, real t)
 // guarded do loop 9; split restart initialization 9; explicit restart branches 9; nested continuation 9;
 // combined two-point interpolation with staged scalars 26, with copied input records 151 (611 bytes).
 // Original index reads, helper contract and complete body restored; the boundary edge and table schedule remain.
+// AC496: Complete combined restart/disposal action, byte/word/dword/long,
+// conditional producers 310/330/318/318; test-produced results 265/288/267/267.
+// NOT kept: no exact match; original independent outcomes and whole body restored.
+// Single disposal-to-postprocessing exit 1; original guarded interpolation restored.
 // P285: Complete normalized Boolean policy producers, eager outer restart/inner restart/disposal
 // subsets 1..7, then complementary rejection predicates: 213/223/256/252/260/238/247/1.
 // All restored; the high-boundary miss still bypasses the common restart-byte test.
 // Additional loop-only/all-site compound/logical restart accumulation: 184/11/186/16.
 // NOT kept: redundant-state forms do not match; original false start and byte producers restored.
+// Round 99: restart through its own address, a pointer at the loop test, and that pointer at both
+// tests 1/1/1; nested type assignment 92; split bit tests 248; inverted continuation 1; single-exit
+// goto 1; high-boundary/both-advance case orders 1/1; restart in the loop condition 212;
+// disposal-or-restart exit 1; flag store conditioned before the exit 219; high comparison reversed 2.
+// NOT kept: no exact match or eligible gain; original body restored, including all policy outcomes.
+// Round 146 (fast): `do {} while (false);` ahead of the restart test 1; frame copied to `new_frame` at the join 1; frame
+// declared outside the loop 1; `restart && !dispose` 1; guarded `for (;;)` with a bottom break 1. One-file harness (exact at 1):
+// the empty statement after the test/after the store/in an else arm 1/1/1; frame copy in an else arm 241 (629 bytes); restart
+// copied to a named local 1; `!= false`, `!!`, `(long)`, `(byte) != 0` 1 each, `== true` 87 (659 bytes); declarations swapped, late,
+// all at the top, assigned apart, chained either way 1 each; `restart || dispose` either order 1; `restart && time >= next_time` 87
+// (659 bytes); `for (; cond; )`, guarded do, top-test `for (;;)` 1 each; an else arm with `dispose = false` (with/without the loop-top
+// store), `restart = restart`, `frame = frame` or an empty statement 1 each, `restart = false` 153 (663 bytes), `dispose = restart` 87,
+// the frame recomputed 192 (654 bytes). A dispose test at the join ahead of (or after) the restart test, with the arms' break kept 1/1;
+// the arms' break replaced by `if (!dispose) { restart...; switch }` with `if (dispose) break;` at the join, or `dispose || restart`
+// in either order, on one arm or both 1 each: the thread passes both tests.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

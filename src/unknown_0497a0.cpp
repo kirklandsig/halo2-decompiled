@@ -219,6 +219,41 @@
 // Round 545: Native indexed input scaling/copy producers, first-scale/second-pair/copy
 // subsets 1/2/4/3/5/6/7 and complete unsigned-counter graph 581/581/699/581/699/699/699/699.
 // Original scalar producers, helpers, sixth conversion and body restored; frame 0x58/0x60 remains.
+// Round 139 (m3 lane 5, fast; both ret 0x20 now): both shape pointers NULL then if/else 622 (2622 bytes), inv after
+// them 636, shape1 declared first 622; the 575 composite (plain sixth product, entry shapes, global sine arguments,
+// first wave through vector3f_add_scaled; six, under the bar) re-measured 575; on it the four trig factors as named
+// doubles 615 (forward-substituted), cos 7.75y first in the sum 575, the inner product parenthesised 575, wave_shift
+// declared before s1 575, second wave through vector3f_add_scaled too 642 (2600 bytes).
+// Round 548: Complete memmove history/point-publication/fallback-axis boundaries,
+// subsets 1/2/4/3/5/6/7, then all with both input snapshots: 709/688/677/675/725/698/659/694.
+// NOT kept: library/clobber/frame shape misses; every native copy, include and full body restored.
+// Round 160 (fast): both shape pointers NULL then if/else, either order, 622/622 (2622 bytes); plus the global sine
+// arguments 604 (2642), plus the first wave through vector3f_add_scaled 578 (2626), the second wave instead 622; the
+// sine arguments and first wave without the entry shapes 670; the 575 composite re-measured 575, on it amp written
+// into the call 629 (2606), k written into the call 583, both 642 (2595), the cross product between s1 and s0 575;
+// the plain sixth product alone 648. The composite stays out: its sines read the global while the waves use a copy.
+// Round 203 (fast): ret 0x20 agrees (frame 0x58/0x60 and the entry shape homes remain); both shape
+// pointers as entry ternaries with the default case reading shape0 708 (2650 bytes); the wave scales
+// written inside the two scale calls 670; the first cross product at function scope 581 (same code);
+// the inverse declared after shape1 583; the special flag computed first 715 (2657 bytes).
+// Round 146 (m3 lane 5, fast; aligned 461 at 581): the 575 composite (plain sixth product, entry shapes, global sine
+// arguments, first wave through vector3f_add_scaled; six, under the bar) re-measured 575 (2622 bytes, aligned 409); on it the
+// sines through a named pointer to the global point 578; s1 from the local copy with s0 from the global 652 (2587 bytes);
+// staged first/second cross 575/575; a separate vector for the second wave 575; the first-wave vector declared after its
+// add 575; the vector locals renamed so retail's low-to-high slot order sorts by name, ascending and descending, 575/575.
+// Y572: Coherent existing cross/sum forced/ordinary/plain declaration pairs,
+// all eight nonoriginal policies: 581 each. NOT kept: frame remains 0x58/0x60;
+// complete target and both helper bodies unchanged, original declarations restored.
+// Y582: Standard array transfers for existing v2/v3/v4, seven nonempty subsets,
+// then all with ordinary w transfer: 676/736/661/739/719/749/765/803. Full basis
+// recovers frame 0x60 but grows to 2712 bytes. NOT kept: all regress; original
+// native copies, helpers, integer conversion and complete body restored.
+// Y585: Complete first/second/combined branch-owned maximum result subsets
+// 1/2/4/3/5/6/7: 581 each; all with fallback-first arms 662. NOT kept:
+// no frame recovery or eligible gain; original maxima and complete body restored.
+// Y587: Actual two-axis cross table for traversal long/dword/short/word/byte/
+// signed-char, then long/short while: 728/728/803/803/803/803/728/803.
+// NOT kept: table/output residence regresses and grows; original direct calls and full body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -547,7 +582,8 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 265 (was 265). Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
+// score 265 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// Earlier: Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
 // dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing
 // normalize2d_fast, and case 0's second point takes XMM0-2 as retail; the first point's z/x/y and the half width take
 // XMM4/XMM5/XMM6 and XMM3 where retail has XMM3/XMM6/XMM5 and XMM4; the side's home is one slot above retail's (u and the side
@@ -798,6 +834,49 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 545: Native color/width default producers, aggregate/library color seeds,
 // separate/both defaults and positive state arms 336/577/561/615/336/578/558/616. All original
 // output producers and body restored; frame 0xa8/0xac and spill homes remain.
+// Round 139 (m3 lane 5, fast): with the 4-byte frame shift u_step and the first.y spill already sit in retail's slots;
+// retail's v + width lies at +0xac over a dead dword. v_width read before v 266; `v_width = v + v_width` 265; u_step
+// before u 265; width scale in its own local 265; `width` declared before `color` 265; `previous` before `index` 265.
+// Round 548: Complete double length residence in vertical/planar/camera-pair subsets
+// 1/2/4/3/5/6/7, then all with double reciprocals: 433/544/605/556/635/515/632/633.
+// NOT kept: precision/normalization shape misses; original float roots, reciprocals and full body restored.
+// Round 38 (m3 lane 18, fast): v_width renamed to sort first/last 265/265 (identical code); the colour stored
+// `outer->color = vertex[0].color = ...` 263 (retail's store order; a gain of 2, not kept); on it: source and u
+// renamed 263, transition declared at the top 263, a named pixel stored to vertex 0 then outer 263, a named strip
+// start for the tail 615 (2600 bytes), the next state's colour as a color4f 263. Retail leaves 0xa8/0xb0/0xb8
+// (after the pushes) unused and spills point y at 0xb4: its top homes sit eight bytes apart.
+// Round 552: branch-produced V endpoint; separate signed U producer with original/separate/branch
+// V; branch-produced U with original/separate/branch V; conditional signed U with branch V:
+// 615/265/265/615/286/286/632/632. Original texture values, geometry, helper and full body restored.
+// NOT kept: no score gain or byte match.
+// m3 lane 16 r83 (fast): case 4's side and normal lengths spelled i, j, k give retail's x87 order there (fst k,
+// fmul k, then j, i) but 374 (2588 bytes; as DH278's camera squares): ours is already one instruction short in
+// case 1/2, where retail keeps the x product live and loads point x into its own register (movss xmm6, [ecx];
+// addss xmm6, xmm5), so everything after case 4 shifts. Side only 374, both 374; with case 1/2's first.x before
+// second.x 374 (VC copies the product instead); with normalize2d_fast on a case 1/2 side vector and normalize3d
+// on case 0's normal 368; that with the x pair before the y pair 372. All restored.
+// Y574: Current paired-point callback completion false/true at entry/chain boundary and default-
+// case first/last: 609/609/609/609/609/609/634/634. NOT kept: all regress; false entry completion
+// recovers frame 0xac but grows to 2608 bytes and changes homes; original 265 body restored.
+// Original complete body and helpers restored.
+// DH346: On retained paired geometry, staged side/normal/both crosses, shared chain difference,
+// immutable source/definition/outer/all pointer bindings: 265/265/265/266/265/265/265/265.
+// NOT kept: no native frame/spill recovery; original complete body and helpers restored.
+// Y576: One shared current/next/transition channel ordinal, long/short/word/byte
+// 265/754/754/754; also owning RGB tint 265/756/756/756. NOT kept: long forms
+// canonicalize; narrow forms disrupt unrolling. Original frame 0xa8 and scalar/spill homes remain.
+// Y578: Actual V interval in existing bounds, field/aggregate/native/library publication
+// at producer/entry storage: 267/267/573/573/267/651/573/573. NOT kept: interval
+// residence misses equality; native-frame copy forms grow. Original separate scalars and body restored.
+// Y582: On current paired-point geometry, original/shared normalizer pairs for camera side
+// and surface normal, all eight nonoriginal pairs: 270/270/377/377/377/377/377/377.
+// NOT kept: no byte match; original roots/scales, shared crosses and full body restored.
+// Y585: Current paired geometry, initial/next/blend output-stream cursor subsets
+// 1/2/4/3/5/6/7: 265/265/265/268/268/352/350; all with tint cursor 265.
+// NOT kept: no native frame recovery or eligible gain; original counters and complete body restored.
+// Y587: Float root API at vertical/planar/camera-side/camera-normal/vertical-planar/
+// camera-pair/all/all with float epsilon consumers: eight 265s. NOT kept:
+// API boundaries canonicalize; native frame/spill homes remain; original body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1193,6 +1272,43 @@ void __stdcall function_43720(s_43740_input *input)
 // N334: Bitmap/texture phases share tag admission in bool/byte/short/long storage,
 // nested then combined consumer guards: 73/73/76/75/73/73/76/75. All extend the body; original
 // complete source restored. Early EAX/EBP tag admission and signed-slot/shader homes remain.
+// Round 33 (m3 lane 18, fast; 0x42b20 checked each time): a long slot index declared at entry for
+// both arrays 79 (223 bytes, 0x42b20 60); the record as one aggregate initializer 87 (229 bytes,
+// padding zeroed); the group lookup through `(word)tag` 67 (204 bytes, 0x42b20 4); the record
+// filled before the texture test 74 (218 bytes); the vertex count without the short cast 68
+// (203 bytes). All restored; the early EAX/EBP tag split remains.
+// Round 203 (fast; 0x42b20 checked each time): the tag field read at the test, the call and the lookup
+// (no local) 62 (same code); a short vertex-count local computed first, used by the record and the call
+// 64 (0x42b20 4); the position through a typed ribbon point pointer 62; the record declared at function
+// scope 62; the group lookup folded into the image address 62.
+// Round 35 (m3 lane 18, fast; 0x42b20 checked each time): the vertex count stored first 65; the slot
+// stored after the shader and normal 62; an early `return` when the tag is NONE 62; the record declared
+// at function scope 62; a block-local long point index for both arrays 62; the vertex count
+// pushed from its own expression (no short store) 66 (215 bytes). All restored.
+// Round 160 (fast; 0x42b20 checked each time): the tag test on the field with the tag local inside it 62 (same code);
+// a long slot index for both arrays 62, with the vertex count named first 64 (0x42b20 4), the shader local and
+// shader-relative normal too 65 (213 bytes, 0x42b20 62), the shader field-relative only 65 (213, 0x42b20 62); a named
+// short vertex count without the slot index 64 (0x42b20 4), a long one 65. Retail's definition stays in EBX and its
+// slot word in DX only without those; all restored.
+// Round 146 (m3 lane 5, fast; aligned 22 at 62): the tag through a force-inline lookup helper masking its by-value
+// parameter in place 62, with the test on the field and the tag local inside 62 (no split either way); the record's slot
+// stored ahead of the tag test 59 (210 bytes, aligned 30: three points, not kept); a long index and a named short count
+// ahead of the fill 64 (retail's slot/index/count opening, but source and definition swap EBX/ESI, 0x42b20 4); on
+// that, eight fill orders with the shader, normal, tag and position in retail's sequence 62-64 (0x42b20 4 each);
+// with the normal through the stored shader 66 (213 bytes, 0x42b20 62); the fill in a force-inline helper reading the
+// normal through the stored shader 67 (213 bytes, 0x42b20 62).
+// Y572: Joint original source/definition/slot formal-name priorities, seven
+// subsets then complete tag/bitmap role names: eight 62s. NOT kept: native
+// tag EAX/EBP split and signed-slot/shader homes stay wrong; body restored.
+// Y583: Actual texture-return pointer/bool/byte/long ownership, original image local
+// then direct image expression: 62/62/62/62/62/62/62/62. NOT kept: one-use return
+// carriers miss equality; complete body restored; early tag/EBP and slot/shader homes remain.
+// Y585: External tag/frame-pair/point-index field bindings, seven subsets and
+// all read-only, eight 62s. NOT kept: exact-only identities do not match;
+// original captured tag, field observations, complete body and matched caller preserved.
+// Y587: Tag producer ending at group/image, positive/NONE admission and positive/failure
+// texture admission: eight 62s. NOT kept: scoped lookup outputs do not recover
+// early EAX/EBP split or signed-slot/shader homes; original full body restored.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

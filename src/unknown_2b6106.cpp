@@ -658,7 +658,14 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
     widget->function_22f52e()->set_text(text);
 }
 
-// score 512 (was 512): Allocation 0x860 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain
+// score 512 (was 512): EBP is unbiased; allocation 0x860 versus retail 0x85c; flags/clock and score homes remain.
+// Earlier text-buffer/early-bit form 489 (not kept): EBP bias 0x70 and frame 0x85c agree (the text buffers as s_text_256, bit 7 taken before
+// Frame 0x860 versus 0x85c; EBP bias 0x70, early flag/clock and late score homes remain.
+// Earlier lane r83 form 489, not kept: EBP bias 0x70 and frame 0x85c agree (the text buffers as s_text_256, bit 7 taken before
+// the clock read: the flags stay in ESI); the clock in ESI (retail EDI), the small slots' order (row +0x6c,
+// active +0x6a, bit 7 +0x6b, clock +0x64; retail +0x64/+0x6f/+0x6e/+0x68), the long campaign word and the
+// campaign/state-5/7-8 arm tail merges remain.
+// Earlier at 512: Allocation 0x860 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain
 // (round 38 below: the bias, frame and every small slot are reproducible, but only with a clock mix).
 // Earlier: retail biases EBP by 0x70 (lea ebp,[esp-0x70]) and keeps the friend flags in
 // ESI and the timestamp in EDI; ours uses a plain frame, spills the flags to a slot and packs the six
@@ -828,6 +835,47 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // selection/admitted-score-pointer graph 540/540/509/509; native short count 556/556/528/528.
 // Three-point 509 forms rejected; original truth/count domains and complete body restored.
 // Signed-byte campaign with long/short count 540/556; original body retained.
+// AC498: Activity-owned player query and four canonical joinability producers,
+// bool/byte: 599/605/584/602/599/605/584/602. Original complete body restored;
+// unbiased EBP, allocation 0x860/0x85c and flag/clock homes remain.
+// N336: Ordinary main-buffer scopes at status/data alternatives, message/format/both,
+// 583 each; auxiliary arrays at data entry 512; all four there 583. Frame stays 0x860
+// without native EBP bias; original capacities, clear phases and complete body restored.
+// DL252: One caption table at clock/widget/task/data-admission phases, mutable then immutable on current
+// score-pointer/short-selection graph: 542/534/526/515/542/534/526/515. NOT kept: unsupported table
+// lifetimes require a byte match. Original table, buffers, clock observations, scans and complete body
+// restored.
+// DH315: Raw-buffer player/team body advancement and ordinal exclusion masks
+// 1/2/3/4/5/6/7: 512/512/512/519/519/519/519; both advances plus a named
+// team-array end 497, end alone 497. NOT kept: retail counts the fixed team
+// ordinal, with no retained end producer; the new end shifts unrelated scalar homes.
+// Original cursor progression, comparisons, buffers and complete body restored.
+// Round 82 (m3 lane 9, fast): the four buffers as the existing s_text_256 506 (EBP bias as retail, frame 0x860); with
+// `in_session == true` (retail's cmp byte, 1; jne) 504 (wrapped storage is exact-only, not kept); `in_session == true`
+// alone 510; on the 504 body: short count 509, bool campaign 530, `(flags & 0x80) != 0` 504 (same code), long widget
+// counter 505 (retail's jb), message alone wrapped 504, message and format 504. The friend flags still spill (retail
+// keeps them in ESI, the widget index then reuses ESI and the clock takes EDI).
+// m3 lane 16 r83 (fast; form plain 489, NOT kept at review: retail reads the clock before the bit-7 shift
+// (0x2b662e/0x2b6636), so the reorder is against retail, and s_text_256 alone is 506, gain 6 under the bar; the file's 20 matched functions still match, 0x2b642e 51): the four
+// text buffers as the existing s_text_256 (its constructor clears the first word, as the hand-written stores did)
+// 506 (retail's `lea ebp, [esp - 0x70]`); with bit 7 taken before the clock read 489 (kept: the flags then stay in
+// ESI and the frame is 0x85c); on 489: short count 514, bool campaign 504, both 526, `s_text_256 teams, game` 489
+// (same code), `in_session == true` 487 (-2, not kept), `long row` 489 (same code).
+// J251: Primary-caption default/conditional/complete/priority producers 546/535/535/550;
+// own stdcall/cdecl/inline/inline-stdcall 512/514/512/512; incoming formal roles
+// independently/together/selected 512/512/512/512. NOT kept: caption forms regress;
+// cdecl loses matched caller 0x2b6e55 (29); other contracts and names tie. Original
+// body/declarations restored; frame 0x860 versus 0x85c, EBP bias and flags/clock homes remain.
+// Status receiver and stack-input setup already agree with retail.
+// B412: Eight-team membership mask advanced with the score cursor: dword/long/word/byte
+// presence 508/508/512/508; absence 509/509/494/509. NOT kept: four-point leads below gate;
+// word absence shifts a narrow complement instead of an indexed dword mask. Full body restored.
+// Round 586: Actual output-slot cursor at entry/data/after-primary/before-name/before-game/
+// before-timer/final-list phases and explicit completed-publication advancement: 619/614/558/554/554/548/566/619.
+// NOT kept: retail retains the output ordinal; original frame, observations and body restored.
+// P336: First-character library clears at message/format/auxiliary producers,
+// seven subsets then complete typed fills: 577/575/571/581/638/636/626/612.
+// NOT kept: all regress; original arrays, clears, full body and includes restored. Frame/bias/flags remain.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

@@ -9,6 +9,7 @@
 #include "vector_products.h"
 #include "normalize3d.h"
 #include "bit_vector.h"
+#include "vertex_inputs.h"
 #include <math.h>
 #include <xtl.h>
 
@@ -528,6 +529,61 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // N332: Native clock-value and initial weighted-fraction producers, seven subsets
 // then all immutable: 117 each. Original entire body restored; frame 0x28/0x20,
 // seed/time scheduling and direction/axis/cross homes remain.
+// N339: Initial sampled-direction table receiver with field/native-copy/array/complete-value
+// transfers, direct then short sampled ordinal: 161/155/188/235/161/155/188/228.
+// Original initial acquisition and complete body restored; frame 0x28/0x20 and
+// seed/time/direction/cross storage remain.
+// NOT kept: transfer/one-use ordinal and value-copy forms regress beyond native length.
+// Round 199 (fast, with 0x118140): the convention already agrees (index EAX, wind EBX, plain ret); the 8 extra frame
+// bytes are the stack copy of `old` (retail reads the global's j/k straight into XMM5/XMM4). `old` declared before
+// the axis draw 121; the projection as `(1 - cosine) * dot3f(..)` 117; sine and cosine declared separately 117; `cross`
+// declared ahead of the trig values 117; the frame-count store as a plain `g_55e710 = g_4ba034;` 207 (886 bytes,
+// 0x118140 0 -> 53: the reload after the call is needed).
+// Round 47 (lane 15, fast): scalar j, k, i rotation on the global, cross j and k in locals as retail spills them, 175 (856 bytes, frame
+// 0x1c); casts on the sine argument and last cosine for retail's three float stores 164 (888); both 165 (864); both with the RNG first
+// 209 (861); the dot on the global with cross3f and both casts 163 (880). Body unchanged at 117.
+// N343: Initial definition record/tag-handle/tag-table receiver families, seven subsets then
+// table-first, 117/117/117/117/117/117/117/117. Original acquisition and full body restored;
+// frame, seed/time and direction/cross homes remain. NOT kept: unmatched one-use receivers.
+// Round 206 (m3 lane 3, fast): sine, axis draw, then cosine 117 (same code); cross3f(&axis, &old) added 134 (881
+// bytes); cross and dot on the global with the `old` copy after them 164 (893); diagnostic: 0x2551f0's unit-axis rotate
+// body on the `old` copy, copied back 201 (918); the fraction draw before the time 193. Retail ret is plain, as ours.
+// P322: Independent sine/cosine/projection entry declarations, seven subsets then
+// all with immutable time: 117 each. Every producer stays at its original point;
+// frame 0x28/0x20, seed/time and direction/cross homes remain. Original body restored.
+// B422: Current-frame rotation admission, bool/byte/short/long, positive/complementary:
+// 117/117/117/117/117/117/117/117. NOT kept: no byte match; all canonicalize to the original complete body.
+// Original observations restored; frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// P324: Independent clock/fraction, envelope/angle and wave/strength entry
+// declarations, masks 1-7, then all with the rotation scalar declarations:
+// 117 each. All producers stay at their original statements; original body
+// restored. Frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// N368: Complete double cosine-product/sum/full-wave boundaries and their sequential
+// producers, then complete wave accumulation: 117 each; complete wave/strength
+// accumulation 118. NOT kept: no equality or gain; original expression graph restored.
+// Frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// J254: Existing record/tag/limiter declaration contracts, force subsets 1/2/4/3/5/6/7 and ordinary
+// acquisition with inline limiter: 117/117/604/117/604/604/604/117. NOT kept: force-limiter forms
+// grow to 1247/880 and lose matched 0x3db00. All provider bodies, definitions/declarations and
+// complete target body restored; frame 0x28/0x20 and direction/cross homes remain.
+// P339: Complete old-direction scalar captures ijk/ikj/jik/jki/kij/kji,
+// immutable component aggregate and existing setter: 154/154/155/134/153/132/154/157.
+// NOT kept: all regress; original full capture, products and body restored.
+// Native 0x20 frame, seed/time order and old/cross homes remain; exact peers survive.
+// N370: Input-owned cross result, old/axis native copies and component aggregates, projection-first copies and readonly aggregates:
+// 181/196/164/159/180/234/164/159. NOT kept: no equality; original complete body restored.
+// Frame 0x28/0x20 and old-direction/cross/seed/time homes remain.
+// N377: Incremental row/complete-phase rotation outputs, partial-sum and first-product
+// construction, then genuine local partial results/native setter/consumed old workspace:
+// 117/153/116/183/182/205/182/182. NOT kept: unmatched publication/lifetime forms;
+// original complete body restored. Frame 0x28/0x20 and direction/cross/seed homes remain.
+// N380: Initial envelope/rotation sine/rotation cosine real APIs, masks 1..7, then
+// all with complete angle accumulation: 117 each. NOT kept: no byte match; original
+// producers and body restored. Frame 0x28/0x20 and seed/direction/cross homes remain.
+// N382: All output rows read their original global component while shared cross/dot retain
+// the complete old snapshot; staged-cross/projection-first/projection-accumulator masks 0..7:
+// 159/159/157/157/159/159/157/157. NOT kept: unmatched mixed observations; original complete body restored.
+// Frame 0x28/0x20 and seed/time/direction/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -652,7 +708,9 @@ static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].by
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
 // MiniMax C (11-01): no new form, no lower score.
-// score 422 (was 422): frame 0x44 versus 0x2c; descriptor scans, application convention and outer vertex API expansion remain.
+// score 322 (was 422): frame 0x2c, the attribute scans, the side loop and the outer vertex calls are retail's; left are
+// 0x1ccb0/0x1cd90 called where retail inlines them (BLOCKED-BY 0x1ccb0: its /Ob1 file), 0x4b2d0's convention (retail
+// tag EDX, first ECX, second EAX, third/fourth on the stack) and the stack homes of the scan results and the sign.
 // Earlier: frame 0x44 versus 0x2c; attribute scans and D3D call expansion differ.
 // Integer orientation 529; null-first lighting 522; per-scan results 530; real type
 // cursors 574; existing format/state helpers 473 (kept, full); cursors/orientation
@@ -723,6 +781,17 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // call; a gain of 7, under the keep bar), with the side loop 434, with the types read per scan 432 (1470), with the rest
 // pointer first 415, all three 435; each scan's NONE default declared just before it 424, with NULL-first lighting 480,
 // plus per-scan types 496. All restored.
+// Round 131 (m3 lane 8): the four scans through the shared vertex_input_index (include/vertex_inputs.h, also used by
+// 0x224db0) give retail's frame 0x2c, and LTCG then keeps both outer SetVertexData4f calls out of line as retail: 366
+// with a walked types pointer, 348 reading the element in the loop (kept); retail's 0..1 side loop 335 (kept; 441 on the
+// old body); the rest-vertex pointer before the vertex pointer 336 (kept: 412 without it on the final body); position
+// and binormal passed by field, no copies, 322 (kept). Not kept: lighting NULL before the lookup 315 (a gain of 7), after
+// it 318; `inline` on the 0x1ccb0 and 0x1cd90 definitions 476 (old body; 0x22a664 lost), 500 with the side loop;
+// `inline` on 0x1ccb0 alone 243 at 1339 bytes, but 0x47930 244 -> 341 and 0x19f680 316 -> 448; member-form strip calls
+// 422 (same code); the search with early returns 332. 0x19f680 has the same scan, for a later round.
+// M341: Actual typed descriptor on retained binormal/position graph, uniform type/count
+// observations and per-scan defaults, masks 0..7: 422/439/422/439/424/433/423/433. Original
+// descriptor/searches restored; frame, application convention and outer API expansion remain.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {
@@ -751,38 +820,30 @@ void __stdcall function_116b00(long tag_index, long unused, long group, long var
 	long shader_index = *(long *)(surface_pointer(groups, 0x14) + (variant_offset+pass)*10 + 4);
 	byte *shader = surface_pointer(surface_pointer(surface_tag(shader_index), 0x20), 4);
 	byte *attributes = surface_pointer(surface_tag(*(long *)(shader + 0x100)), 8);
-	long count = *(long *)(attributes + 4);
-	short *types = *(short **)(attributes + 8);
-	long normal = NONE, tangent = NONE, binormal = NONE, uv = NONE;
-	for (long i = 0; i < count; ++i) if (types[i] == 4) { normal = i; break; }
-	for (long i = 0; i < count; ++i) if (types[i] == 5) { tangent = i; break; }
-	for (long i = 0; i < count; ++i) if (types[i] == 6) { binormal = i; break; }
-	for (long i = 0; i < count; ++i) if (types[i] == 3) { uv = i; break; }
+	long normal = vertex_input_index(attributes, 4);
+	long tangent = vertex_input_index(attributes, 5);
+	long binormal = vertex_input_index(attributes, 6);
+	long uv = vertex_input_index(attributes, 3);
 	DWORD old_cull;
 	D3DDevice_GetRenderState(D3DRS_CULLMODE, &old_cull);
 	function_1ccb0(59);
 	function_1cd90();
 	function_1cf50();
-	for (long orientation = 1; orientation >= -1; orientation -= 2)
+	for (long side = 0; side < 2; ++side)
 	{
-		D3DDevice_SetRenderState(D3DRS_CULLMODE, orientation > 0 ? D3DCULL_CCW : D3DCULL_CW);
-		real sign = orientation;
+		real sign = (real)(side == 0 ? 1 : -1);
+		D3DDevice_SetRenderState(D3DRS_CULLMODE, side == 0 ? D3DCULL_CCW : D3DCULL_CW);
 		if (tangent != NONE) D3DDevice_SetVertexData4f(tangent, g_4687ac->i*sign, g_4687ac->j*sign, g_4687ac->k*sign, 1.0f);
-		if (binormal != NONE)
-		{
-			vector3f binormal_direction = *g_4687a8;
-			D3DDevice_SetVertexData4f(binormal, binormal_direction.i, binormal_direction.j, binormal_direction.k, 1.0f);
-		}
+		if (binormal != NONE) D3DDevice_SetVertexData4f(binormal, g_4687a8->i, g_4687a8->j, g_4687a8->k, 1.0f);
 		D3DDevice_Begin(D3DPT_TRIANGLESTRIP);
 		for (long i = 0; i < definition->strip_index_count; ++i)
 		{
 			long vertex_index = definition->strip_indices[i];
-			s_surface_vertex *vertex = &record->vertices[vertex_index];
 			s_surface_rest_vertex *rest = &definition->vertices[vertex_index];
+			s_surface_vertex *vertex = &record->vertices[vertex_index];
 			if (normal != NONE) D3DDevice_SetVertexData4f(normal, vertex->normal.i*sign, vertex->normal.j*sign, vertex->normal.k*sign, 1.0f);
 			if (uv != NONE) D3DDevice_SetVertexData2f(uv, rest->u, rest->v);
-			point3f position = vertex->position;
-			D3DDevice_SetVertexData4f(0, position.x, position.y, position.z, 1.0f);
+			D3DDevice_SetVertexData4f(0, vertex->position.x, vertex->position.y, vertex->position.z, 1.0f);
 		}
 		D3DDevice_End();
 	}

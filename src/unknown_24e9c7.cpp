@@ -115,6 +115,7 @@ struct s_24e9c7_bounds
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax b (11-04): no new form, no lower score; the result/kind/bitmap homes stay eight bytes above retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the geometric SSE schedule stays ours.
 // score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
 // left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
 // xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
@@ -290,6 +291,75 @@ struct s_24e9c7_bounds
 // subsets, then the complete graph with native quad point elements: eight at 125.
 // Original private record types and full body restored; early across spill,
 // eight-byte-high scalar homes and geometric SSE scheduling remain.
+// Lane 17 r36 (fast): across as a point local right after size 144 (746 bytes); side assigned the `0.0f -` across
+// products and then scaled `side.x = (real)half_width * side.x` 139 (742; retail's -8 slot is that across/side y),
+// with unary minus 144, with `*=` 139, with side declared at the top of the inner block 139 (same code). Original
+// body restored; side gets no frame home, so result stays at -8 (retail -0x10 under the side pair).
+// Round 33 (m3 lane 18, fast; 0x24e59f matched each time): the default bounds as one initializer
+// 125 (same code); the kinds table read once into a local 135 (744 bytes); the marker's kind in a
+// long local 130; the alpha preset to 0 without the hidden arm 125 (same code); the half width
+// computed before the height 131. All restored; early across spill and scalar homes remain.
+// Round 390: Actual four-real rectangle array with memcpy/memmove, producer/entry/
+// kind/group storage: 194 in all eight forms (760/743 bytes); caller also loses its match.
+// Original record, copy and full body restored; early across spill and scalar homes remain.
+// Round 82 (m3 lane 12, fast): forward_i named for the across j product and the upper x 140 (742 B); scale
+// read before the across products 125 (same code); first_bitmap and bounds declared before the group 125;
+// back as `half_width * -across` products 154 (753 B); upper vector before the half width 123 (gain
+// under four, not kept). Original body restored.
+// Round 129 (m3 lane 8, fast): retail reads placement->y once (EDX, copied to each corner) and x at each
+// corner; origin y read once into a local, x per corner 194 (699 bytes); scalar x/y corner copies 191 (695);
+// corners 0/1 as `back.x + (up.x + corner.x)` single sums 137 (749); early upper with y-first corner 0 126;
+// early upper with `0.0f -` across 134 (739). Original body restored.
+// Round 390: Actual four-real rectangle array with memcpy/memmove, producer/entry/
+// kind/group storage: 194 in all eight forms (760/743 bytes); caller also loses its match.
+// Original record, copy and full body restored; early across spill and scalar homes remain.
+// Round 68 (m3 lane 1; "h" = a one-link LTCG harness with unknown_22a664, unknown_24e59f, globals.cpp and the other globals defined and
+// their addresses taken, listing equal to the full build's, reads 123 for this body): retail's corner sums copy the offset and add the memory
+// corner, which says the corners are defined before the offsets. Grid of across `size * -j`/`size * (0.0f - j)`, up and back unary/`0.0f -`,
+// all four corner copies in place/before the height/after the result/after the half width, sums `+=`/`offset + corner`: `+=` and
+// `offset + corner` same code, unary and `0.0f -` on up same code; corners after the half width 128 plain (aligned 114 against 119, the
+// lowest aligned), after the result 129h, before the height 131h; `0.0f -` across 135h (739 bytes), after the result 133h, after the half width
+// 135h. Across in place into side scalars 136h (738 bytes), after the result 129h; separate side scalars and a side point with `0.0f -`
+// across 136h; back scalars with those 144h. forward_i named for the across product and up.x (retail's one read in XMM4) with
+// `0.0f -` across: scale first or last, half width before or after up, all corner places: best 131h; corners after the result with half width after
+// up 143 plain (748 bytes), the first form to put kind and bitmap at retail's -0x14/-0x18 with a 5-reference spill beside result, but
+// ours orders result -8, spill -0xc, unused -0x10 where retail has spill -8, unused -0xc, result -0x10. The across pair declared at the function's
+// top, ahead of result, in both orders, on all 32 of those forms: every home unchanged, best 131h.
+// Round 143 (m3 lane 6, fast): scale read before size and the across products 125 (same code); across_j before
+// across_i 125 (same code); across_i as `-forward_j` then `*= size` 138 (739 B: the across products are still
+// substituted into their single uses, after the height conversions); result renamed to sort first/last 125/125
+// (diagnostic). Retail computes both across products right after size (across_j spilled to -8), so they are not
+// single-use temporaries there.
+// B413: Reverse/side/upper/full geometry scopes ending at final corner consumption,
+// with original/immutable complete scalar inputs: 125/125/125/125/125/125/125/125.
+// Original complete body restored; early across spill and shifted scalar homes remain.
+// B416: Plain two-coordinate corner traversal, long/int/short/unsigned-short indices
+// and successive/original-tree equations: 214/214/214/214/209/209/209/209. NOT kept: frame grows and
+// extent shrinks away from retail; original point type, equations and complete body restored.
+// B419: Native two-axis fraction/pixel/scaled-pixel/raster-extent values, height-first
+// fields then readonly aggregates: 125/125/125/125/125/126/126/131. NOT kept: grouped dimensional values
+// do not match. Original scalar owners, integer conversions, corner equations and body restored.
+// M376: Signed-int selected-bitmap/height/half-width producer domains, seven subsets,
+// then all with signed-int bitmap handle: 125/125/125/125/125/125/125/125. NOT kept: no match or qualifying gain;
+// original domains/body restored; early across spill and shifted scalar homes remain.
+// B435: Existing vector2f component-array upper/side/reverse observations, seven
+// subsets, then all with the perpendicular pair: 125/125/125/125/125/125/125/144.
+// NOT kept: no exact vector-storage or early-spill recovery; original types/body restored.
+// Early across spill, eight-byte-high return/metadata homes and SSE scheduling remain.
+// B439: Output-origin transfers from the first real vertex, seven nonempty receiver
+// subsets then a successive output-copy chain: 129/129/129/129/129/129/129/129.
+// Original complete body restored; early across spill and scalar homes remain.
+// B441: Existing early perpendicular setter, separate/reused side ownership,
+// direct/pre-scaled complete inputs and unary/zero-minus negative direction:
+// 144/139/139/139/144/139/139/139. NOT kept: no equality; original scalar pair, full body and
+// declaration set restored. Early spill and eight-byte-shifted scalar homes remain.
+// B443: Exhaustive returned-height producers at three admission gates, all eight
+// rejection-first/success-first arm masks: 186/186/186/186/186/186/186/186. NOT kept: all grow
+// to 748 bytes at frame 0x48; original entry zero/full body restored.
+// Early across spill, eight-byte-high scalar homes and SSE scheduling remain.
+// B445: Complete opacity producer at global-copy/corner/reverse/side/upper/width/height/basis boundaries:
+// 139/173/172/185/166/171/171/172. NOT kept: moved one-use producers do not match; original whole body restored.
+// Early across spill and eight-byte-high scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

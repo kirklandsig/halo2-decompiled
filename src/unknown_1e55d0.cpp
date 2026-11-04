@@ -67,6 +67,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax B (11-04): no new form, no lower score.
 // score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // Earlier: Aligned frame 0x94 agrees; move/input ownership, physics reloads and native velocity guard remain.
 // MiniMax lane C (run 36, 10-31): no new form, no lower score; the move and input pointers still
@@ -182,6 +183,14 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // DL231: Existing aligned capsule helper complete bool/byte/short/long results, direct predicate then
 // result-first: 330/330/330/330/330/330/339/334. Move/input/physics ownership, case-3 convention and
 // native velocity guard remain; original executable source restored.
+// Round 43 (m3 lane 2, fast): the three alias locals in all six declaration orders 319 each (local
+// symbol order does not move the move/input registers); countdown as `if (state[1]) state[1]--;` 320;
+// the 0x54 flag stored after the 0x58 copy 323; the velocity test without `&velocity &&` 319 (same
+// code); case 6 as one expression 319 (same code). Still BLOCKED-BY 0x1ec690 (input in EDI).
+// Round 58 (lane 14; aligned counts in brackets, this body [215]): the draft of 0x1ec690 activated, plain, 349 [235] (input still EBX->EAX at entry; the draft inlines
+// 0x1ed340 where retail calls it; 0x2901e0 29, 0x1ed340 45, 0xb77d0 49, 0x1c4b00 133 stop matching, 0xfa100 holds); fast: state through a pointer to its parameter 319
+// at each use and read once 319, state written as the parameter at each use 319 (all same code); a named base pointer for the three position reads 319; with a named
+// component index too 319.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

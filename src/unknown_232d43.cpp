@@ -721,7 +721,7 @@ void function_232d77()
 	}
 }
 
-color3f *function_7f720(color3f *color, short team_index);
+color3f function_7f720(short team_index);
 hsv3f *function_1318d0(const color3f *rgb, hsv3f *hsv);
 color3f *function_131a00(const hsv3f *hsv, color3f *rgb);
 
@@ -937,36 +937,33 @@ void c_postgame_statistics_list_459750::fill_row(c_class_1a2c81 *item, long row)
 	c_class_1a2c81 *place = item->find_child(6, 1, false);
 	c_class_1a2c81 *score = item->find_child(6, 2, false);
 	c_class_1a2c81 *bitmap = item->find_child(8, 0, false);
-	struct
-	{
-		color3f bitmap_color;
-		color3f color;
-		hsv3f hsv;
-	} colors;
+	color3f bitmap_color = function_7f720(g_55dc30[row].color_index);
+	hsv3f hsv;
 
-	colors.bitmap_color = *function_7f720(&colors.color, g_55dc30[row].color_index);
-	function_1318d0(&colors.bitmap_color, &colors.hsv);
-	colors.hsv.saturation = 0.20833333f;
-	colors.hsv.value = 0.79166669f;
-	function_131a00(&colors.hsv, &colors.color);
+	function_1318d0(&bitmap_color, &hsv);
+	hsv.saturation = 0.20833333f;
+	hsv.value = 0.79166669f;
+	color3f color;
+
+	function_131a00(&hsv, &color);
 	if (name)
 	{
 		name->function_22f52e()->set_text(g_55dc30[row].name);
-		name->color = colors.color;
+		name->color = color;
 	}
 	if (place)
 	{
 		place->function_22f52e()->set_text(g_55dc30[row].place);
-		place->color = colors.color;
+		place->color = color;
 	}
 	if (score)
 	{
 		score->function_22f52e()->set_text(g_55dc30[row].score);
-		score->color = colors.color;
+		score->color = color;
 	}
 	if (bitmap)
 	{
-		bitmap->color = colors.bitmap_color;
+		bitmap->color = bitmap_color;
 		bitmap->value6e = true;
 	}
 }
@@ -1006,6 +1003,15 @@ struct s_string_buffer
 // 65 (aligned 10); the 1/3/4/7/8 chain with the `== 9` test nested in its else 65 (aligned 9: only
 // the 9 test is in line); the chain and a separate `if (== 9)` 76, with `>= 7 && <= 8` 77 (500 bytes,
 // not threaded).
+// Round 52 (lane 14, fast; unchanged source 34 at 475 bytes): retail's other after-the-return test (0x25762a in 0x257320) is the
+// last test of an else-if chain; here the arm has to stay unmerged until after layout. The chain with a backward goto to the loads,
+// a goto past them, the negated chain, `!chain && != 9`, chain `|| == 9` and six arms 65 each (480 bytes, 9 in line); the `== 9` arm's
+// loads reversed 65; a row pointer in the `== 9` arm or in the chain's arm 90/90 (504 bytes: unmerged, but the test stays in line and
+// its arm precedes the loads); with that arm, the negated nested test 90, De Morgan 90, six arms 88, an empty `!= 9` arm 90, the
+// chain inverted with `== 9` tested again 102 (511 bytes). Lead: a form that lays the loads directly after the 8 test.
+// Round 100 (plain): membership assigned in the condition 50 (481 bytes); split low/final assignments 87 (486);
+// a two-use value pointer in the final or low arm 68 each (500), in both 63 (478); staged final values 50;
+// an inline two-output loader in the final or both arms 50 each (481). All leave 9 in line; range body restored.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

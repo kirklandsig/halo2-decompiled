@@ -173,6 +173,12 @@ static __forceinline long real_to_long(real value);
 // (it reproduces the return order: ours g_46fbe4, pause, g_46fbe8, g_46fbe4; retail g_46fbe4, pause, g_46fbe4,
 // g_46fbe4, g_46fbe8) of 378 + 180 combinations of the count test, countdown, node failure, missing prop and final
 // return forms, gotos, one result, and casts or a local on any one return found none with retail's order.
+// Round 75 (fast, no caveat): the count test as `accepted + joint->participant_count < 2` 37; a long
+// participant sum 37; the prop view test as `!(view && ...)` 24; no participant pointer local 27;
+// `declined >= 2` 26. Retail never tail-merges the count failure's g_46fbe4 return with the countdown's.
+// Round 101: a countdown field pointer used for the test, decrement and reset 24; an actor reference 24;
+// a joint reference 24; const state, joint or actor pointers 24 each; const node and view pointers 24;
+// an explicit outer missing-prop else 24. Every form kept the same return graph and 445-byte length.
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {

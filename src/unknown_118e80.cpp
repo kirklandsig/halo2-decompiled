@@ -220,6 +220,8 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// MiniMax H (11-04): the temporary velocity scoped so the position copy reuses its slot 256 at
+// retail's 1030 bytes; not kept, the frame stays 0x78 and the score rises.
 // MiniMax E (11-01): no new form, no lower score; left: frame 0x78 against retail's 0x6c, the
 // basis/position homes and the early ESI save (the 36-point form needs 0x11f0d0 in
 // src/unknown_11eed0.cpp).
@@ -339,6 +341,14 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // Round 288: plain world-up component rows with long/short/dword/word counters,
 // scalar/native-vector captures 224/318/224/318/295/300/295/300.
 // Original producer and body restored; frame, early-save and basis homes remain.
+// Round 126 (lane 8, plain): 0x11ce20 called (&target_up, &up) 218 (re-measured; under the bar); on it: speed
+// scale read at each use 230; forward stored before up 219; frame rate read once into a local for its three uses
+// 279 (1052 bytes); the angle test inverted with the copy arm first 240. Still BLOCKED-BY 0x11f0d0's double local.
+// Round 207 (lane 3, fast): on 0x11f0d0's position step, the existing scale_vector_by_double into the
+// difference then vector3f_add 220 here (0x11f0d0 2 -> 162, 933 bytes: each product is rounded and stored);
+// the existing vector3f_add_scaled with a real quotient 220 (0x11f0d0 89, its `double angle` still pads
+// this frame); here: turn velocity declared before forward 224; world-up computed before the forward
+// branch 285 (1010 bytes); the second turn's scale as `acceleration + acceleration` 224.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1076,6 +1086,8 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax H (11-04): the squared length written as i*i + j*j + k*k 94; the component order
+// does not move.
 // score 94 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
 // publication differ; the force formal still requires a zero extension.
 // Earlier: retail pushes the whole found-flag dword to 0x1c4b00 and keeps its MOV/LEA
@@ -1158,6 +1170,18 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // Round 93: bool/dword force union 44; with component stores 51; existing vector/point setters 56/56;
 // memcpy/direct receiver 44/44; staged squares 42; preloaded-i component stores 49; complete updated vector 135.
 // NOT kept: the exact-only union wrapper, one-use velocity local and value snapshot. Original body restored.
+// Round 65 (m3 lane 1, fast, control 94): the 0x119bc0 result passed straight into the 0x1c4b00 call 101; the moving
+// test written into the flag-setter call 94; object flags read at each use (no snapshot) 156; the physics word at
+// 0xc0 read at each use 132; the requested up/forward copies swapped 98. The bool force flag still waits on files
+// other lanes hold.
+// M3 lane 14 r59: 0x1c4b00's last parameter as `bool force` (its `(byte)force` casts dropped, every declaration
+// changed) 44 plain at 1034 bytes: the 0x119bc0 result is then stored to its stack byte and pushed as a whole
+// dword as retail does, with 0x1c4b00 and all nine matched callers still matching (0xe24f0 648 -> 654). Not kept:
+// the declarations sit in files other lanes held this round (held change, BLOCKED-BY 0x1c4b00's declarations).
+// What remains at 44 is the scratch-register order of the forward copy into the object (Round 93's union forms).
+// On the current body (fast): the existing length_sq3f for the squared length 94 (same code: VC orders the
+// products itself); one physics-output pointer local for its six casts 94 (same code); up/forward pointer locals for
+// the stores and both 0x1e5af0 calls 289 (1042 bytes); the definition-flags pointer declared beside the tag 273.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

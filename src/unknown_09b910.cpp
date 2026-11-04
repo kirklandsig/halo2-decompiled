@@ -994,6 +994,9 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // and dword-to-word two-stage locals 20/20; word field reference and pointer 20/20; zeroed dword OR assignment 20.
 // Round 195 (lane 3): no new form; 0xfcea0's file is on another lane's list this round, so its index
 // width (the only difference here) could not be retried.
+// Round 120 (lane 7, fast): non-const payload pointer 20; flags read once into a long local 51 (145 bytes);
+// object name read once into a local 51 (142 bytes); the word field passed as short 20; `flags != 0` 20.
+// Still BLOCKED-BY 0xfd740 (contributor) and 0x1883e0 through 0xfcea0's index width.
 // @retail 0xa17d0
 bool c_projectile_effect_event::v11(long a, long const *entities, long c, void const *data)
 {

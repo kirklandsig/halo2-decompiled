@@ -73,6 +73,10 @@ extern byte *g_51eca8;
 extern short g_51ecb0;
 c_2d8ab0 *g_47f044;
 
+// MiniMax B (11-04): no new form, no lower score: the group loop still loads the entity list into EAX and the
+// index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where
+// retail uses EAX and ECX; the permuter was stopped by its time limit without a candidate.
+// MiniMax B (11-03): no new form, no lower score.
 // MiniMax R (11-01): no new form, no lower score; the element select still loads the field pointer
 // into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test
 // still uses EDX and EAX where retail uses EAX and ECX.

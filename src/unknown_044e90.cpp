@@ -205,6 +205,82 @@ struct s_visibility_bound_record
 // Round 545: Actual visibility-buffer capture before fallback tag/object/count/nodes
 // setup and function-entry uninitialized pointer with early/latest pre-loop producers:
 // 442/430/430/442/441/441/442/441. Original observation and body restored; entry/table and plane/query homes remain.
+// Round 63 (m3 lane 10, fast): retail stores each plane once after the transform/copy arms (i, j, k from xmm3/xmm5/xmm4,
+// then the negated distance), keeps the views pointer in its slot ([esp+0x2c]) and forms the source pointer in two
+// steps. A named state pointer for the views and active reads 411; the sibling 0x45560's chained count/capacity pairs
+// (no header change) 407; the plane transformed in place into its copy with `planes[j] = p` 440 (1742 bytes, the copy
+// stays in memory); the same with field-by-field stores 457 (1716 bytes, retail's transform block, views kept in ESI
+// with the source folded into one lea); the six-plane do/while as a plain for 2754 (fully unrolled, 3604 bytes).
+// Round 548: Real four-descriptor release table, long/dword/short/word/byte/signed-char
+// counter and pointer </!= walks: 522/522/520/520/520/520/511/511. NOT kept: changed release/frame
+// shape misses; original four releases, field reads, native workspace and full body restored.
+// Round 142 (fast; aligned count in brackets, control 406 [357]): flags read in each arm 442 at 1744 [395], with a (bool) bit test
+// 444 [389]; the (bool) bit test alone 419 [357]; a view count local 453 at 1748 [351]; a frustum count local 443 at 1748 [366]; both 474
+// at 1764 [373]; the loop index before the transform 406 [357].
+// Round 550: Actual fallback visibility-membership result, bool/byte/short/long,
+// nested unseen admission then already-visible continue: 406/406/406/406/406/406/406/406.
+// NOT kept: one-use predicates do not match; original direct bit test, containment
+// initialization and complete body restored. Entry/table and plane/query homes remain.
+// Y553: Independent fallback-center input scalars 448; part-entry storage 448;
+// branch-owned inputs 463; shared scale with update/branch inputs 462/462; existing
+// point setter on update/branch/all producers 448/463/462. All controls survive.
+// NOT kept: all forms regress and shrink away from 1742 bytes; original body restored.
+// M345: All four release-ownership results in bool/char/signed-char/byte/short/word/int/long,
+// immediate per release 406/406/406/406/406/406/406/406; together at cleanup entry
+// 507/507/507/507/511/511/528/528. NOT kept: new ownership carriers miss.
+// Original direct sign tests, capacity reloads, cleanup order and complete body restored.
+// B394: Inverse-transform scale reference/pointer, whole transform, translation and all-row references;
+// then transform/scale, translation/scale and complete subobject identities: 406/406/406/406/436/406/406/406.
+// NOT kept: no exact match; original complete executable source restored.
+// Round 82 (m3 lane 9, fast): retail tests bit 12 as `mov ecx, [ebx]; shr ecx, 0xc; test cl, 1` and keeps the table
+// in ESI from entry through the bottom arm (no reload). Flags read at each use 442 (1744 bytes); the bit-12 test through
+// TEST_FIELD_BIT 419; both 444 (retail's shr/test and tag in EAX, but no table preload); with the table read once into a
+// local 447; the table local and TEST_FIELD_BIT with the flags local 442.
+// AC514: Existing complete inverse-plane provider on copied/original inputs and
+// local/destination outputs, zero-scale preservation before/after the provider:
+// 815/835/816/817/518/499/479/467. NOT kept: complete-provider/grouping forms do not match; every
+// original plane, zero-scale output, declaration and complete body restored.
+// Entry/table and plane/query homes remain.
+// Y565: Actual outer/inner/both while traversals 406/406/406; live count-table cursor
+// with original/outer/inner/both while graphs 433/433/433/433; both real table cursors
+// 443. Original body restored; entry/table and plane/query homes remain.
+// M347: Shared nonunit-scale decision for both transform phases, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 422/422/443/445/427/427/447/450.
+// NOT kept: shared/test-produced decision does not reproduce the native repeated scale tests; original complete body restored.
+// Y568: Actual fallback node-input/composed-output/part-record cursors, seven subsets,
+// then all with a part while loop: 432/432/436/432/436/436/436/436. All regress;
+// original indexed buffers, observations and complete body restored. Frame 0x74a4,
+// entry/table roles and eight-byte plane/query displacement remain.
+// Y570: Native entry/range/frustum displacement producers, seven subsets and all with
+// selection-owned flags, 406 each. Original indexed addresses and body restored;
+// entry/table roles and plane/query homes remain.
+// Y572: Simultaneous cleanup capacity values, each field, natural pairs, all,
+// then immutable all: 406/450/448/439/445/450/446/446. NOT kept: native
+// repeated capacity observations/entry and plane homes not recovered; body restored.
+// Remaining three capacities before the first release 446; fourth-only 406 is
+// a prior-form control, not one of eight new forms. Original full body restored.
+// Y574: Actual fallback bit consumers, direct/shared test/shared set/both, each with nested
+// unseen/visible continue admission: 403/403/403/403/403/403/403/403. NOT kept: three-point lead
+// below keep gate; repeated computed masks miss equality and native retained bit ownership;
+// entry/table and plane/query homes remain. Original complete body and helpers restored.
+// Y576: Descriptor-count six-plane do traversal, long/short/word/byte ordinals
+// 425/438/438/457; ordinary while 465/463/463/464. NOT kept: all regress;
+// native entry/table and plane/query homes remain. Original fixed-six traversal and body restored.
+// Y578: Actual mutable visibility-word reference at part/admission, direct/shared test/set/both
+// consumers relative to that word: 406/432/441/449/406/436/441/449. NOT kept: native
+// element ownership does not match; helper forms grow. Original bit mask, observations and body restored.
+// Y582: Actual fallback sphere-query return in bool/byte/word/long, success publication
+// or failed-query continue: 406 each. NOT kept: one-use results miss equality; original
+// call, direct test, input observations and full body restored; entry/table/plane homes remain.
+// Y585: Initialized containment false at unseen/bound-index/bound/transform/local-point/
+// scaled-point/first-center/completed-center boundaries: 406/406/406/406/406/417/417/417.
+// NOT kept: no eligible gain; original producer and full body restored; entry/table and plane/query homes remain.
+// Y587: Fallback-center component for traversal long/dword/short/word/byte/
+// signed-char, then long/short while: 406/406/502/502/502/502/406/502.
+// NOT kept: narrow traversal stays rolled and shortens away from retail; original full body restored.
+// Y589: Actual composed-node/frustum-plane/fallback-center input last-use scopes,
+// seven subsets then all with immutable query, eight at 406. NOT kept: no exact
+// entry/table or plane/query-home recovery; original complete body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

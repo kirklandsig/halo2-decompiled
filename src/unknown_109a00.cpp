@@ -256,6 +256,11 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 // i, j, k declared before the cross 10; a two-use moved-position pointer 163; `result = true` before the rotate test 120;
 // definition read at its test 73; offset, velocity, then moved declared 10; displacement before the moved point 10;
 // change declared with displacement and built by statements 10.
+// Round 108: the existing scaled-add helper with a unit factor in either input order 10; change declared before
+// displacement and built by statements 10; a one-use second-point input pointer 163; a one-use change-input pointer
+// 163; plain inline on the private implementation leaves a 17-byte wrapper and loses the matched caller; the shared
+// point-velocity helper at the first site as well as the second 165 (1019 bytes); previous velocity declared before
+// the moved transform 10. Original body and forced-inline declaration restored.
 // @retail 0x109a00
 bool function_109a00(long object_index, vector3f *delta, bool rotate, vector3f *velocity)
 {
@@ -410,6 +415,8 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (112); the entry registers are still reversed (retail
+// object in eax, entry in ecx) and the physics pointer is still spilled early.
 // score 112 (was 112): Frame 0x48 agrees; object/entry registers, early physics-pointer spill and center/projection scheduling remain.
 // Earlier at 112 (was 112): retail takes the object index in eax and the entry
 // index in ecx (ours the other way round, which is also 0xb7060's last
@@ -571,6 +578,62 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 540: Common vector converter through shared scalar builder/returned output pointer/output
 // reference/native value, original center 112/112/112/214; the same producer for center
 // 149/149/149/262. Native value returns grow the body to 965/1007 bytes; all restored.
+// Round 56 (m3 lane 13, fast with 0xb7060): the inner search ending on `&& !found` with no break 256 (908 bytes,
+// 0xb7060 2); the center through carrier_vector_from_havok re-measured 149 (0xb7060 11; entry EBP, component EBX,
+// entry index on the stack); that with the entry after the component index and the no-break search 232; that with a
+// body local for the three body uses 192, with a body-entry pointer 230. All restored.
+// Round 158 (m3 lane 4, fast with 0xb7060): center through the converter re-measured 149 (aligned 119, against 75 unchanged); that with a named current-transform pointer for the matrix call 129 (928);
+// a named selected-body pointer for both velocity getters and the center 192, with the plain center copy 171 (905 bytes); the two closing clears swapped on the converter form 149.
+// Round 77 (m3 lane 9, fast with 0xb7060): the projection written `up->i -= forward->i * dot` without the scaled
+// locals 131; a rigid-body local for the two velocity getters with the center through carrier_vector_from_havok 192
+// (0xb7060 11); body_index declared short 197; the matrix through the existing havok_component_rigid_body_matrix_get
+// 112 (same code); the center read through the existing havok_component_rigid_body_get 112 (same code). Restored.
+// N347: Existing point/vector setters for current center, previous center and previous velocity pair,
+// seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
+// Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
+// restored; native input registers, early physics spill and center/projection remain.
+// Round 48 (m3 lane 2, fast with 0xb7060): the inner search tested `j < count && !found` without the break 256
+// (908 B); the model index folded into the physics lookup 135; the component pointer computed before the NONE
+// test 270; the center copy before the velocity getters 174; diagnostic, `entry->active = true` moved ahead of
+// the matrix call (not retail's order: retail stores it after the center) 218, but the head then equals retail
+// (object index EAX, entry index ECX, first difference +0x35) and 0xb7060 matches: the register arguments follow
+// where the entry flag store sits, so look for a retail-order form that changes the same first-pass liveness.
+// N349: Actual selected component-row result, immediate/deferred ordinal and original/row-owned
+// downstream inputs 247/268/237/277; with existing center conversion 222/256/249/286.
+// Original complete body restored; input roles, early physics spill and center/projection scheduling remain.
+// NOT kept: selected-row result forms did not match.
+// N347: Existing point/vector setters for current center, previous center and previous velocity pair,
+// seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
+// Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
+// restored; native input registers, early physics spill and center/projection remain.
+// Round 69 (m3 lane 10, fast with 0xb7060, aligned counts in brackets): the axis block written with no pointer locals (normalize,
+// dot3f(up, forward), vector3f_scale(forward, dot, &scaled), a subtract helper, normalize, cross3f_staged, each on
+// `&entry->transform.axis`) gives retail's dot, scale and subtract instruction for instruction, compile-only and on the full
+// listing; only four cross product sides differ. Forward first in the dot 16 lines off in that block; direct `up->i -= scaled.i` 16; every scale statement order and side 16.
+// That form alone 132 (aligned 57); with the center through carrier_vector_from_havok 120 (927 bytes, aligned 106, 264 lines as
+// retail, masked 33: only the entry/component EBX/EBP swap and entry index on the stack); with the search reading
+// `component->bodies[i].count` and `.indices[j]` directly 117 (928, masked 30, retail's offset temporary); that without the converter 235.
+// One hot memory reference decides the swap: compile-only, deleting either `= true` store flips entry to EBX, but deleting a failure
+// store, a previous-state copy or a flag test does not, and the two listings have the same references to entry and component.
+// No flip: the default body as a ternary or default-first, loop test order, a count local, a body pointer as pointer arithmetic, a named
+// havok pointer, valid or active in a local, entry/component declared in either order or at the top, byte flag fields or
+// found, active stored ahead of the center or a velocity getter (124), valid read before the active store (118), a named current transform (121).
+// F361: Existing default-body producer as component member, mutable/read-only receiver
+// and ordinary/forced inline: short result 112/112/112/112; long 267/267/267/267.
+// NOT kept: no native entry-register/spill repair; original helper, search and body restored.
+// DH331: Typed standard ranges for prior transform/velocity-pair/center, subsets 1..7,
+// then all with backward ranges: 228/242/235/210/219/253/281/285. Original copies, helpers,
+// body and caller inputs restored; native input registers, physics spill and projection remain.
+// DH334: Standard native-array inner products, forward/reverse and both product orientations,
+// each with original/shared add-scale projection: 180/185/180/185/262/264/262/264; caller 11/11/11/11/0/0/0/0.
+// NOT kept: no exact match; original complete body restored; native input roles, physics spill and center/projection remain.
+// N351: Native handle/ordinal domains dword-long/long-dword/dword-dword/int-long/long-int/int-int/dword-int/int-dword:
+// 112/112/112/112/112/112/112/112. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: entry registers, physics-pointer spill and center/projection schedule.
+// Y581: Existing full component/row model and main-body selector, direct/shared
+// acquisition and accessor/data, original center 112/112/112/112; converted
+// center 149/149/149/149 (frame 0x44, caller 2 -> 11). NOT kept: no gain or
+// native input/spill repair. Original views, helpers, center and full body restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

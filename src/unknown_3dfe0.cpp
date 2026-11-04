@@ -8,7 +8,7 @@ extern s_record_pool *g_509434;
 extern dword g_4ba034;
 extern bool g_467464;
 long function_d1850(long object_index, bool value, s_effect_color_query *query);
-void function_d4080(long type, s_effect_color_query const *query, s_lighting_record *record, long flag);
+void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record);
 void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
 real magnitude3d(vector3f const *vector);
 real distance3d(point3f const *first, point3f const *second);
@@ -17,7 +17,12 @@ s_object *function_badc0(long object_index, dword mask);
 void function_3e5a0(vector3f *current, vector3f const *target, real step);
 void function_3e4e0(dword *current, dword const *target, real step);
 
-// score 27 (was 27): the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
+// MiniMax G (11-04): no new form, no lower score: the object pointer and force flag keep their stack homes, and the object stays in eax.
+// 0x3dfe0 score 21 (was 23): the tail's flag local is declared before the type local, so the zero
+// store comes before the NONE store as in retail; the object pointer and force flag still swap
+// stack homes (retail object 0x14 in ebx, force 0x10) and the object is loaded into eax instead of
+// ebx.
+// score 23 (was 23): the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
 // force 0x10), update's false store sits after the force test, and special takes esi for edi.
 // update = false before force 218 (homes as retail, sample/update timestamps swap esi/edi);
 // that plus update elapsed after the object 186; update before the object 216;
@@ -42,6 +47,23 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // push, so 0xd4080's last two parameters swap (flag, then record; 0x3d2c0 stays matched, 0xd4080 364 -> 363): 23, special
 // declared first 21, with update assigned in both arms 222 (aligned 7: only the early false store and retail's object
 // reload in the force arm remain). All 24 entry orders with either arm on that lead: 21 is the lowest count, aligned 7.
+// Round 65 (m3 lane 10, fast): with 0xd4080 reordered to (type, query, flag, record) the call setup is retail's, 23;
+// `special` declared before `type` 21 (NOT kept (review): a declaration order picked by score). Left: object/force homes and the early update store.
+// Round 121 (fast; 0xd4080's definition is still in another lane's file): on `update = false` before force, sample and update
+// timestamps named 218, only sample named 218, only update named 218, the update test's two sides flipped 218 (aligned 34, control 18;
+// the swapped esi/edi follow 0xd1850's EDI and 0xd4080's ESI arguments, so the lead above comes first).
+// Also round 121 (fast): the stationary test as one `!valid || !(dot < limit)` with the difference above it 120 (831 bytes); the
+// lighting record through a named pointer 27, with special declared before type 26.
+// Round 49 (m3 lane 2, fast = plain 23): the 0xd4080 lead above is applied (its definition and every declaration take
+// (type, query, flag, record), and this call's setup is retail's), so that BLOCKED-BY no longer holds. Update assigned
+// in both arms rebuilt: 221, aligned 9 (object/force homes and the object's EBX load as retail; left are the early
+// false store, retail's EBX reload in the force arm and the special/type tail order). `if (!force && flag) return;`
+// ahead of `if (force) update = true;` 27; the elapsed clamp right after the zero-elapsed return 32; the force test
+// inverted with its arms swapped 27, with `update = false` before force as well 218; a 600 s permuter run (44 tries)
+// none below 23.
+// Round 137: the existing object getter for the initial, parent or both lookups 23 each; early update with the
+// immediate clamp 246 (816 bytes), with unsigned timestamp values or field references 218 each, with the initial
+// getter 218; the squared-length helper 34. Original body and declarations restored.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
@@ -107,8 +129,8 @@ void function_3dfe0(long cache_index, long object_index, real priority)
     }
     else
         cache->current = cache->target;
-    long type = NONE;
     long special = 0;
+    long type = NONE;
     if (cache->parent != NONE)
     {
         byte *parent = ((s_3dd10_object_header *)g_4e0300->data)[cache->parent & 0xffff].object;
@@ -117,6 +139,6 @@ void function_3dfe0(long cache_index, long object_index, real priority)
         if ((bool)(((*(dword *)(parent + 4)) >> 13) & 1)) special = 1;
         if ((bool)((*(word *)(definition + 2) >> 1) & 1)) special |= 1;
     }
-    function_d4080(type, &cache->current, &cache->lighting, special);
+    function_d4080(type, &cache->current, special, &cache->lighting);
     cache->initialized = true;
 }

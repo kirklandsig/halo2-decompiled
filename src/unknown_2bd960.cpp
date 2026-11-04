@@ -663,6 +663,13 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // 2; step products as `32 * (i + 1)` and `32 * i` 2; the count stored as one expression and halved from the field 2;
 // the parity test as `== 0` 2; half declared at its assignment 2. Diagnostic: a float literal for the call's last
 // argument keeps the pair (it flips 0x281b60's pair).
+// Round 84 (plain): the steps loop as `while` with the index step last 2; the first term negated and written second 2; a nested polygon
+// test 2; half and i declared at the top of the found block 2; the even count as its own local 2. A compile-only copy with `__stdcall`
+// parameters reproduces the swapped pair. There a division by 3, 5, 7 or 100 anywhere in the function flips it (a division by 4 or 8, or
+// a `% 3`, does not), and 12 extra reads of either parameter do not, so reference counts do not decide it. 102 no-extra-code forms keep the pair.
+// Round 143 (plain): explicit start/end numerators with end = start + 32 2; prefix increment 2; reversed bound 2;
+// a short query-group local 2; &ids[0] 2; return after the build 2; != loop bound 3; compound increment 2.
+// All restored; the post-loop hill/index reload order remains.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {
@@ -717,7 +724,7 @@ struct s_player_iterator_2be
 
 bool player_iterator_next_with_unit(long *iterator);
 extern color3f *g_468714;
-color3f *function_7f720(color3f *color, short team_index);
+color3f function_7f720(short team_index);
 
 static inline s_player_2be *player_get_2be(long index)
 {
@@ -808,7 +815,8 @@ void hill_color(long player_index, s_color_bits *color)
 			color3f team_color;
 			long team = player_get_2be(occupant)->team;
 
-			*color = *(s_color_bits *)function_7f720(&team_color, team);
+			team_color = function_7f720(team);
+			*color = *(s_color_bits *)&team_color;
 		}
 		else
 		{
@@ -1541,6 +1549,8 @@ struct s_territory_tag
 // Round 156 (fast): the tag index through an inline out parameter 24; the test in a named bool 24; a named engine
 // index 24; a named masked definition index 24; named data and item locals 24; a two-use data pointer (a second
 // read of its first field multiplied away) 24. All keep the middle pointer in ECX.
+// Round 100: outer data, tag, or both declarations 24/24/24; data or tag references 24/24;
+// outer or branch item addresses 24/24; a condition-scoped peer 24. The middle pointer stays ECX.
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {

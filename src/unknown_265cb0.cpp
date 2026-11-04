@@ -363,6 +363,8 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
+// MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
+// no new form, no lower score.
 // score 152 (was 152): Frame 0x350 agrees; result/range/projection homes and inverse delta/motion SIMD groups remain.
 // Earlier: result/range homes and inverse SIMD groups remain; seat thresholds now stay in memory.
 // result/range homes, inverse SIMD groups and seat-threshold reloads remain.
@@ -534,10 +536,36 @@ real function_30bf0(vector3f *vector);
 // DH309: Complete result/range, projection and addressed facing/seat-output lexical role
 // families, seven subsets and complete distance-role names: 152/152/152/152/152/152/152/152.
 // Native scalar homes and SIMD groups unchanged; original complete body restored.
+// Round 54 (m3 lane 14, fast): amount declared at the settings-block top 152; not-facing arm with secondary
+// stored first 161; facing arm copying primary first 152; seat array at function scope 152; occupant forward
+// pointer set before the player test 160. Retail's seat-loop cross product loads the up axis first in its
+// first product (ours the forward component); retail also lays the not-facing arm after the result exits.
+// M336: Pre-collection seat ordinal and facing-entry basis/query-output workspaces,
+// seven subsets: 152/152/152/152/152/152/152; all with cursor advanced after lookup 205.
+// Original scopes/cursor restored; result/range/amount homes and inverse SIMD groups remain.
+// Round 48 (m3 lane 2, fast with 0x263740): the `volatile` dropped from the result 152 (same score, kept: the
+// plain long result is still spilled to +4); on that: occupant and player tests merged 152; facing branch on
+// the negated condition 150; short result 152; amount renamed to sort after result 152 (amount/count keep +0);
+// clamp into a named clipped fraction by ternary 263.
+// B414: Basis, first-query-output and plane lifetimes end at their last consumers, seven subsets;
+// complete graph with negative projection outcome: 152/152/191/152/191/191/191/191. NOT kept: ties or regressions.
+// Original complete body restored; result/range/amount homes and inverse delta/motion SIMD groups remain.
+// DH341: Complete sole-result defaults on mode/settings/post-projection/distance/outer-radius/
+// inner-radius/post-facing/leaf outcomes 321/328/363/363/363/372/327/325.
+// NOT kept: native result home not recovered; frames or lengths regress. Original body restored.
+// DH344: Existing complete setters at initial delta/motion/projected delta and their
+// pairs/all, then all with staged basis crosses: 164/154/152/166/164/154/165/165.
+// NOT kept: native result/range/projection homes and SIMD groups remain; original body restored.
+// DH346: Projected displacement in motion via native stores/setter, independent vector, complete
+// mutable/immutable scalar results via stores/setter, then scalar-to-motion transfer: 316/316/316/150/150/150/150/316.
+// NOT kept: 150 gains only two; native result/range/projection homes remain. Original body restored.
+// P331: Geometry admission results at endpoint/length/query, masks 1/2/4/3/5/6/7 then complementary
+// all: 188/189/189/197/197/197/190/230. NOT kept: no equality or gain; original complete body
+// restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
-	volatile long result = 0;
+	long result = 0;
 	if (mode == 0 || mode == 1)
 	{
 		s_actor_view *actor = actor_get(actor_index);
@@ -1223,6 +1251,9 @@ struct s_equipped_object_view
 // 4, and for the held lookup too 4; a header pointer for both entry reads 33; a data local for them 28; a named
 // threshold table pointer 8 (18 on the NONE-after form, 31 on the plain form, 18 with the pool local); the count
 // test nested 15 on the NONE-after form.
+// Round 139 (lane 6): the comparison written definition >= threshold 12; a tag-instance pointer for
+// the held definition 6; the definition read inside the compare 6; thresholds read after the
+// definition 6; a real pointer to the definition field 6.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
@@ -1345,6 +1376,13 @@ long function_146650(void);
 // order needs target and ahead each above direction. Real (fast): ahead from a position copy, then its fields, 197 (1972
 // bytes; ahead's home right, the copy is not removed); target zeroed at its declaration 342 (1977); both 372 (1999);
 // the ahead copy with a library copy of the target 197 (1972); an ahead pointer for the fields and the query 14.
+// Round 65 (m3 lane 10, fast): target_direction copied field by field from the view 77 (1961 B, SSE copy); ahead as an
+// aggregate initializer 14 (same code); offset zeroed by a chained assignment after its declaration 18; a state_position
+// pointer for the three queries 125; an origin pointer for the actor position at all four uses 36. Permuter (600 s):
+// its reduced image scores 248 against the full 14, nothing better in 49 tries.
+// Round 144: actor-reference reads at entry/all behavior queries/final callback, then direct actor_index at the
+// direction producer/iterator setup/movement callback, and split proximity/projected declarations: 14 each,
+// identical listings. NOT kept: no allocation change; the original parameter observations and declarations restored.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
@@ -1986,6 +2024,43 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 537: acceptance-result false lifetime at player/admitted/geometry/distance
 // boundaries, bool 194/194/194/194; byte 194/194/194/194. Original complete body restored;
 // established/visible homes and normalized direction residence remain.
+// Round 54 (m3 lane 14, fast listed with 0x25d810 = plain 194): `if (established || (visible && !(far &&
+// slow))) { if (established) {...} positive = score > 0; }` (retail's one shared score test) 249 (2880 B;
+// ours tests established before visible, retail threads the visible test into both arms); the positive arm
+// with the NONE-slot case first 200; strongest declared before best_level 194; one positive expression after
+// the established block 262; facing dot as forward*direction 194. Original body restored.
+// N340: Whole actor/vehicle admission regions, original/failure-first/success-first
+// trees excluding the original pair: 194/194/194/194/194/194/194/194. All restored;
+// lookup operands, established/visible homes and direction residence remain.
+// P313: Existing shared dots at absolute/relative/facing consumers on the recovered-frame graph,
+// seven subsets, then all with the point-difference helper: 194/194/194/194/194/194/194/246. NOT kept:
+// no exact arithmetic-association result. Original body and shared helper definitions restored.
+// Round 208 (m3 lane 3, fast with 0x25d810): strongest's zero after the prop-iterator start 194, best_level's 195,
+// both 195; the iterator start from the first actor lookup 729 (2843 bytes); `(short)p` in the first search 194;
+// the players iterator declared at the top 194.
+// J251: On frame 0x80, real direction/velocity/all-dot array traversals 636/194/298;
+// direction+velocity, direction+dots, velocity+dots and all 636/643/298/643;
+// all with descending input axes 743. NOT kept: loops retain runtime traversal or
+// worsen homes/length; copy alone canonicalizes. Original body restored at 194;
+// first +0x5c, direction SIMD residence and established/visible byte homes remain.
+// DH343: Existing native component-array identity throughout direction/velocity/relative/forward,
+// direction+velocity/direction+relative/direction+forward/all: 194/194/194/194/194/194/194/194.
+// Original body restored; entry operand order, Boolean homes and direction SIMD residence remain.
+// N356: Signed-octet established/visible/retain storage, seven subsets and complete plain-char family:
+// 194/194/194/194/194/194/194/194. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Entry index operands, exchanged Boolean homes and direction SIMD residence remain.
+// P331: Post-search player/unit, slot-conflict and unseated-unit admission results, masks
+// 1/2/4/3/5/6/7 then complementary all: 194/790/194/194/194/790/194/194. NOT kept: no
+// equality/gain; original body restored.
+// DH351: Explicit distance/absolute/relative normalization outcomes, all seven
+// subsets, then both speed-result locals: 194 each. NOT kept: no gain; original
+// tests and full body restored; entry operands, Boolean homes and direction SIMD residence remain.
+// DH353: Slot-owned established/sentinel-owned visibility/complete retention arms,
+// subsets 1/2/4/3/5/6/7: 195/710/710/710/701/718/707; failure-first full graph 707.
+// NOT kept: no gain; original decisions, frame, observations and query calls restored.
+// DH356: Complete facing/distance/speed score-contribution producers, seven subsets,
+// then all zero lifetimes at the score region: 687/283/261/744/736/281/738/731.
+// NOT kept: one-use result forms regress; original full body restored; query remains exact.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

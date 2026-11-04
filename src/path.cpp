@@ -368,7 +368,11 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
-// score 295 (was 295): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// score 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// M3 lane 2 r47: the projection through the existing dot3f(&offset, &edge_vector) 286 plain (kept, 1389 bytes: retail's k, j, i
+// sum order; written out ours summed i first), dot3f(&edge_vector, &offset) 286. On 286 (fast): short link count 359 (1375);
+// the node type named once 345 (1400); count zeroed after the init loop 359 (1391); `special` false then set by an if 287
+// (1388 bytes); that with the short link count 362.
 // Round r4 (lane 17): our extra frame word is the links cursor (strength-reduced long link count); retail indexes
 // links[link_count] with a short count. Short link count 368 (1368 bytes, frame 0xe4); with count assigned after
 // the init loop and special set false-then-true 389; count after the init loop 379; separate increment after the
@@ -540,6 +544,71 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // DH303: Real eight-byte node metadata record with memcpy/aggregate transport
 // and long/short/int/word link counts 295/305/366/367/295/305/365/367. Original
 // layout and body restored; extra output cursor, initial zero and flag homes remain.
+// M3 lane 13 r54 (fast; 0x270930 kept): the edge array declared after the flags 295; the clamp as
+// `maximum_steps < initialize_count` 295; the converted points named begin/end 295; the output-index compare
+// swapped 295; margin declared at the top 295 (all same code). Retail's start/end conversion homes stay swapped.
+// B383: Predecessor retained only as its short/long index, direct array fields or
+// a branch-local multi-use receiver, crossed with long/short link count:
+// 294/391/378/399/295/373/382/386. NOT kept: the 294 form gains one point; retail retains
+// both predecessor histories; wide forms lose the matched caller. Original body restored; frame/flag homes remain.
+// DH312: Native coordinate-array projection with long/dword/short/byte ordinals
+// 295/295/335/335; with both complete distance-delta array producers 296/296/451/451.
+// The two narrow complete-delta forms also demote the parent. Original scalar producers,
+// indexed link memcpy and full body restored; frame/flags remain.
+// Round 554: Pointer-only predecessor on retained fill/difference/edge graph, all eight
+// bounded link/path/initialization carrier combinations 372/409/389/379/408/409/398/395.
+// NOT kept: nonexact single-history forms; each loses matched parent to 251. Original
+// two histories, counters, indexed memcpy and full body restored; frame/flag homes remain.
+// M3 lane 7 r126 (fast, 0x270930 kept): the distance sum as `(j*j + k*k) + i*i` 286 (same code); the distance
+// computed in each arm with 0x210a30's two sum orders 312 (1412 bytes); `origin = &input->start` for the delta block
+// 354 (1391), with the short link count 358 (1375); the existing 0x210850 for both conversions 356 (1320, called out
+// of line). Retail's delta block is 0x210a30 inlined with 0x210850 inlined inside it while its out-of-line 0x210a30
+// still calls 0x210850; ours cannot inline it across the /Ob1 file (a file-flags question, left to the user).
+// M368: Link-admission-only data receiver before/inside capacity, direct/result
+// predicate, long/short count: 282/282/282/282/359/359/359/359.
+// NOT kept: four-point lead is below the bar; word forms shrink away from retail.
+// Original memcpy, observations and body restored; frame and flag homes remain.
+// AC521: Existing shared scaled-point publication with conditional clamp/distance-difference/short-link
+// masks 0..7: 286/286/283/283/359/359/359/359. NOT kept: three-point gain only; bounded forms
+// recover frame 0xe4 but shorten away from retail. Original projection, loops, memcpy and body restored.
+// AC530: One bounded word ordinal owns both capacity and link-copy indexing, signed/unsigned,
+// node/function scope, increment after/before memcpy: 361/361/359/359/361/361/359/359.
+// NOT kept: all regress at 1375/1388 despite frame 0xe4; original total, memcpy and body restored.
+// AC532: Native signed clearing bound with indexed/edge-cursor/step-cursor/both
+// increasing walks 286/286/286/282; bounded short-link counterparts 359 each.
+// NOT kept: four-point best gain below gate, frame still 0xe8; original full body restored.
+// Y576: Link-metadata library memmove with long/short/word post-increment counts
+// 356/361/346; separate increments 356/361/346; copy-owned long/short ordinals 345/348.
+// NOT kept: all regress. Narrow transports recover frame 0xe4 but initial/flag homes still differ.
+// P325: Current-node pointer while traversal, separate/shared initial receiver and long/short
+// links: 405/385/402/372; corresponding canonical pointer for traversal 405/405/402/402.
+// All regress and lengthen to 1407-1423 bytes; original current-index traversal, both predecessor
+// histories and metadata memcpy restored. Native frame/zero/flag homes remain.
+// N367: Capacity-owned link eligibility reused for surface work, expression bool/byte/short/long
+// 286/286/290/289; branch producers 359/359/370/366. NOT kept: no equality or gain; original predicates,
+// flags and indexed memcpy restored. Extra frame word, predecessor and flag homes remain.
+// AC534: Positive-domain initialization with actual step/edge end pointers, range/equality
+// termination and separate/chained NONE stores: 413/413/380/380/393/393/407/407.
+// NOT kept: all regress and lengthen; original counters, signed empty domains, indexed
+// metadata memcpy and whole body restored. Extra frame word and predecessor/flag homes remain.
+// AC536: Complete geometry-scan edge acceptance/rejection result, bool/byte/short/long:
+// 282/282/282/282/282/282/282/282. NOT kept: four-point gain below eight and no equality;
+// original scan gates, indexed library copy and full body restored. Extra frame word and
+// predecessor/flag homes remain.
+// Y592: Standard edge fill_n/fill before/after step clearing, short/long remaining steps:
+// 297/383/404/423/382/400/309/309. NOT kept: native-frame range-fill forms regress in score/extent; original clearing, metadata memcpy and body restored.
+// F389: CRT memcpy destination/predecessor/paired conversion-fallback point transfers,
+// seven subsets 286 each; all with native short link count 359. NOT kept: no gain;
+// original aggregate transfers, metadata memcpy and complete body restored; frame/flag homes remain.
+// B445: Actual signed link capacity consumed at successful copy, long/short totals,
+// indexed/advancing receivers and consumption after/before memcpy: 331/331/344/350/359/335/344/350.
+// NOT kept: all regress; original total, limits, memcpy and body restored. Frame/flag homes remain.
+// DH365: Original-site first-predecessor outcome, bool/byte/char/signed-char/short/word/int/long:
+// 282/282/282/282/282/282/282/282. NOT kept: four-point lead below eight; both predecessor histories,
+// original point copies, link memcpy and full body restored. Frame/zero/flag homes remain.
+// N376: Paired conversion success/fallback outcomes, independent/shared carriers and
+// expression/branch producers: 282/282/282/305/282/282/282/305. NOT kept: four-point leads
+// fall below the margin and no form matches; original conversion graph/body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -637,8 +706,7 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 				real length = function_30bf0(&edge_vector);
 				if (length > margin * 2.0f)
 				{
-					real projection = offset.k * edge_vector.k + offset.j * edge_vector.j +
-						offset.i * edge_vector.i;
+					real projection = dot3f(&offset, &edge_vector);
 					if (margin > projection)
 						projection = margin;
 					else if (projection > length - margin)
@@ -983,6 +1051,60 @@ bool function_2715a0(byte *buffer)
 // DH303: Fresh projection numerator/denominator and native entry receiver,
 // producer-scoped or link-scoped root/direction workspace 485/486/485/486/485/486/485/486.
 // One-point reductions rejected; original body restored; state/scalar/root homes remain.
+// B383: Native branch-updated radius/pruning maxima and attraction minimum,
+// seven subsets, then the complete conditional projection clamp:
+// 488/502/486/504/488/502/504/504. All tie or regress; original scalar producers and body restored.
+// DH312: Actual coordinate-array midpoint, long/dword/short/byte ordinals
+// 579/579/591/591; paired projected-point array production 579/579/508/508.
+// Narrow pairs recover state EBP at frame 0xc54 but grow eight bytes and regress;
+// original scalar producers and complete body restored.
+// M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
+// 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
+// Round 44 (m3 lane 2, fast): the pop-or-NONE forceinline loop again 512 (diagnostic; retail's prologue and
+// un-rotated loop, state EBX); with the location order, `!(d > 0.09f)`, the setg flag and per-case depth
+// stores all together 526 (2056 bytes); with each alone 528 (2056)/517 (2064)/512/504. The diameter written
+// at each use, `(radius * 2.0f) * (radius * 2.0f)`, 481 (2084 bytes; retail reloads the radius and
+// re-multiplies in the second test, as this gives; five points, a computed value at each use, not kept).
+// The root stored back into the squared length (diagnostic) 486, same code: the fsqrt still sinks past the
+// 0x210be0 call.
+// M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
+// 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
+// M3 lane 9 r83 (fast): the node pointer taken after the NONE break 485 (one point, not kept); on it: a forceinline
+// declaration of the insertion 0x271fd0 579 (2152 bytes; matched 0x2713f0 inlines it too, 466 bytes); the edge margin
+// computed before the 0x210be0 call 486 (the root then precedes the call as retail, but the divide stays x87 ahead of
+// it); the diameter computed once at entry 510 (2084); the entry_distance copy dropped 485; the heap update arms
+// swapped (`!= NONE` first) 489.
+// M3 lane 6 r142 (fast): the pop-or-NONE forceinline loop with 0x271fd0 declared `__forceinline` (diagnostic) 556
+// (2116 bytes; 0x2713f0 108); `result` declared before the link penalty 486 (same code); the node pointer taken
+// before the pop and used for the NONE heap-index store 501; the NONE break before the node pointer 485 (one point,
+// not kept). Original body restored.
+// N361: Existing projection/distance/weight/heap-removal inline call visibility, four
+// individuals, three projection pairs and all four: 486 each; existing actual magnitude
+// producer 498 (2064 bytes, unresolved reduced call). Original declarations and body restored.
+// NOT kept: no gain or native register/root recovery; state/node/link and scalar homes remain.
+// DH351: Complete positive/complementary exclusion-test outcomes in bool/byte/short/long
+// storage: 486 each. NOT kept: no gain; original search, inherited result qualifier,
+// heap operations and body restored; state/node/link and scalar homes remain.
+// DH357: Fresh post-conversion denominator squares, with complete segment,
+// projection and collision operation families in eight forms: 486 each.
+// NOT kept: all tie; original fresh reads, sum trees and complete body restored.
+// Y595: Per-iteration 64-link output at iteration/after-sift/after-sentinel/query boundaries, inherited/descriptive names:
+// 486/486/486/486/486/486/486/486. NOT kept: no byte equality; original complete body restored.
+// DH359: Separate terminal reached result bool/byte/short/long with inherited fallback
+// 486/495/542/538; missed counterparts 521/521/567/563. NOT kept: no gain or
+// byte match; original returns, fallback qualifier, heap operations and whole body restored.
+// DH361: Heap-root/link/collision-lookup ordinals declared at function scope, seven subsets,
+// then the actual child receiver too: eight at 486. Original observation/initializer sites,
+// declarations and body restored; native state/node/link registers and scalar homes remain.
+// DH363: Existing penalty-switch label orders 1265/1526/2156/5612 all 486;
+// those four with the positive-penalty guard owned by the grouped cases all 487.
+// NOT kept: no match or state/root-home recovery; original dispatch and complete body restored.
+// DH366: Direct native state-member accesses on the retained split-root graph, input/destination/lookup
+// seven subsets then closest/location pair: 486/486/486/486/486/486/486/498. NOT kept: no byte match or
+// qualifying native repair; original complete body restored.
+// DH368: Direct named link/root/child array elements, seven subsets then collision candidate:
+// 624/528/486/659/624/528/659/684. NOT kept: child-only ties, others regress or grow;
+// original array receivers, inherited fallback qualifier and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
@@ -1051,8 +1173,8 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 				}
 			}
 			if (blocked || (!input->unknown04 && TEST_FIELD_BIT((link->flags >> 1) & 1) &&
-				function_1fa6b0(&((s_pathfinding_data *)state->pathfinding)->nodes[link->node_index],
-					(s_pathfinding_data *)state->pathfinding)))
+				function_1fa6b0((s_pathfinding_data *)state->pathfinding,
+					&((s_pathfinding_data *)state->pathfinding)->nodes[link->node_index])))
 			{
 				continue;
 			}

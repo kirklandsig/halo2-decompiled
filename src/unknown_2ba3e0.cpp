@@ -499,6 +499,19 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // use 10; the distance estimate named 10; the attraction scale and add as two statements 10; the separation
 // radius/scale named before the call 303 (1523 bytes); the 0x2b9a00 property named before its call 236
 // (1521 bytes); re-measured: a separate speed-squared value 10.
+// Round 120 (lane 7, fast): the two branches' normalizers swapped 35 (1520 bytes); the header's
+// normalize_inline in the maximum branch 230; the velocity normalizer then the file scale helper there
+// 32 (1521); the velocity normalizer's sum through length_sq3f, in both branches 29 (1521); its sum as
+// i,j,k statements in both 41 (1520); as k + (i + j) in both 75.
+// Round 135: k-first velocity sum in maximum/vector in minimum 26 (1517 bytes);
+// k-first velocity sum in maximum/direction in minimum 26 (1517 bytes);
+// properties/cache/next declarations 10; next/cache/properties 10; cache/next/properties 10;
+// the same three declaration orders with original properties/next assignments 10 each.
+// All restored; back-edge reloads and the maximum squared producer are unchanged.
+// Round 127 (lane 7, fast), on the one-caller k-first normalizer form 2: a head copy of first at the top 2, after next 2;
+// a definition copy for the properties and masks 34 (1521 bytes); both copies 129 (1518); a named index before the nearest
+// call 2; a per-particle mask 51 (1517), assigned to requested 2; a definition copy for the later mask only 2. The reload
+// order never moves; matched functions (0x1384a0, 0x168e20, 0x2c05f0) reload in reverse prologue order as retail does here.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
@@ -883,6 +896,37 @@ real g_55e618;
 // AC475: Canonical repeated mode-two truth bool/byte/short/word, original sentinel
 // 273/273/269/269; sentinel before start stores 271/271/269/269.
 // Original raw mode mask, sentinel order, reflection inputs and complete body restored.
+// Round 158 (m3 lane 4, fast): on round 75's form (dot written at each product, normal locals, velocity pointer, typed flags/+8/+0x34,
+// collision word before the start stores): setter statement 50 (1537, aligned 18), nested 50; named sums with plain stores after the impact
+// index 50 (y/z stores as retail, [ebp+0x20]); the first final row through the particle 44 (aligned 16, flags test hoists as retail). What is left is
+// one block: v.i first, the last argument above the stores, x sum first. Named last argument: `short` 59 (aligned 42), at the impact index 59,
+// through a collision pointer 59, `word` 59, dword view 59, `dword` from `word` 129 (1542), inline helper's by-value parameter 59: all land the load and
+// the stores as retail but in EAX, where the unnamed read gets EDX, and every later block rotates one step. Unused named read 44; const reference 44.
+// Position through vector3f_add_scaled before/after the impact 116 (1548), with the named last argument 155; assignments in a comma argument 236
+// (1554: the stores still precede the load); normal direct fields 60/54, with the named argument 82/76; impact at the block's top 50/65; helper
+// taking the collision point 156 (1547). Next: an unnamed read that sits ahead of the stores.
+// P289: Uniform scaled-response tangent/normal/both products, row-local then staged,
+// staged and row-local complete differences: 103/103/102/103/103/102/102/102. Original complete response
+// restored; sweep/collision homes and cross-placement projection spills remain.
+// Round 141 (m3 lane 6, fast): final rows from tangent and perpendicular each scaled in place through
+// vector3f_scale 101 (not kept, one point); tangent alone scaled in place 102; tangent scaled in place
+// right after it is formed 202 (1555 bytes); displacement/sweep/start and the collision call in their own
+// block with a bool result 102 (homes unmoved); `vector3f velocity = particle->velocity;` 223 (1556
+// bytes), with both in-place scales 223. Original body restored.
+// P292: Actual owning 16-bit flag record with contact/floor/stop bitfield subsets
+// 1/2/4/3/5/6/7, then all with native three-bit countdown: 99 each, 1549/1537 bytes.
+// NOT kept: only three points gained; all ten other same-file users unchanged.
+// Original full type layout, raw flag observations, projection and complete body restored;
+// sweep/collision homes and cross-placement tangent/perpendicular spills remain.
+// Lane 17 r42 (fast; all match-only, body restored): round 75's form rebuilt (dot written at each product, normal
+// locals, velocity pointer, typed flags/+8/+0x34, collision word before the start stores, position setter) with the
+// j/k final rows through the pointer 60 (aligned 24), all three final rows through the particle 44 (aligned 18); named
+// sums nested in the call 44 (aligned 14); a named `short` last argument read before the sums, named `surface_index` or
+// `a_value` 61 each (1535 bytes: the load moves to the block's top but in EAX whatever the name, so same-size name order
+// does not pick its register); that read with plain position stores after the impact index 234 (frame 0x12c).
+// M380: Displacement/sweep scalar, aggregate and immutable aggregate producers,
+// all eight non-original pairs: 129 each at 1549 bytes. NOT kept: all regress;
+// original interleaved travel products, reflection, collision extent and full body restored.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

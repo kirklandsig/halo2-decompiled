@@ -276,6 +276,92 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // product parts, eight non-original pairs: 616/622/614/628/624/627/624/627.
 // NOT kept: shared dots gain at most four and change the sum trees without a match.
 // Original body, helpers and all in-place copies restored; success/input/minimum/hit homes remain.
+// Round 35 (m3 lane 17, fast): the input copy after the hit clears 629; the hit clears before the minimum and
+// output zero 618 (same code); success declared after the object/settings lookups 631; the root clamp as
+// `1 - a/b < 0 ? 0 : ...` 618; the output scale stored before the origin copy 618. Retail's homes: success +0x17,
+// minimum +0x18, hit bytes +0x1c, input copy +0x40 (ours +0x1b, +0x10, +0x24, +0x4c); retail also reloads the
+// half-width for the fourth offset point, where ours reuses the third point's negation.
+// DH311: Joint actual equal-size retained-input/center, basis and final-projection lexical
+// identities, seven family subsets then complete alternate vocabulary: eight at 618. No native home
+// moves; original names/body restored. Success/input/minimum/hit and rotation homes remain.
+// Round 128 (lane 8, fast control 618): retail forms 1/range once but multiplies it by the minimum twice
+// (ours shares the product). Tried: the clamp's product written `minimum * (1/range)` 618 (same code); success,
+// minimum and hit flags renamed (other alphabetical order) 618 (same code); the rotation dot as i, j, k 618
+// (same code); the FLT_MAX minimum declared right after success 636; the hit flags from a brace initializer 630
+// (2813 bytes).
+// Round 201 (fast; aligned = difflib count, 346 here): retail rereads the half-width and negates it again
+// for each offset point and stores each point's components as it makes them (the escaped point array
+// treated as aliasing the definition), and loads the output's three components once for the basis
+// product and stores the three final components last. Tried: the output's components read into three
+// named amounts for the basis product 635 (2808 bytes, aligned 342); the final stores in k, j, i order
+// 615 (under the keep bar); amounts plus the three final components staged in locals and stored last 620
+// (retail's i, j, k stores at the end, aligned 345); the point helper as plain inline 618 (same code); the
+// point array declared ahead of the position copy 618 (same code). Original body restored.
+// Round 79 (m3 lane 16): the offsets read once into an `offsets` vector local before the basis sums 604 (plain).
+// NOT kept (review): a struct value copy where retail reads the three components through the pointer at the
+// basis sums (0x292ca9; our copy goes through integer registers); body restored at 618. That local declared before local_17 604; read before the arg_6 test 601; as three real
+// locals 635 (2808 bytes, aligned 461); the private cross with retail's product operand order 604 (identical code);
+// the hit flags as an aggregate initializer 605.
+// DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
+// then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
+// executable body and helpers restored; success/input/minimum/hit homes remain.
+// Round 49 (m3 lane 15, fast control 618): ray lengths as `range + half_width` 618 (same code); the minimum as
+// `local_4 = local_19 < local_4 ? local_19 : local_4` 618; hit flag stored before the distance 619; the clamp test
+// as `local_19 / local_6 < 0.1f` 618; success cleared before the clamped distance 618. Retail reloads and negates the
+// half-width again for the fourth offset point (ours reuses the third's negation).
+// Round 59 (m3 lane 13, fast; aligned = difflib opcode count, 236 here): the ray loop is retail's instruction for
+// instruction up to stack offsets (point cursor F+0x20 for retail's F+0x4, index F+0x4 for F+0xc, minimum F+0x8 for
+// F+0x10, success F+0xf for F+0xb, side vector F+0x10 for F+0x18). Retail's offset-point half-width reloads come from
+// register pressure (XMM0 is the z product's destination), not aliasing. The definition pointer without const 618
+// (same code); the ray loop as a plain counted `for` 755 (2768 bytes, unrolled); the first range product written
+// minimum first 618 (same code); as `0.7f * ((1.0f / range) * minimum) + 0.3f` 612 (2833 bytes, aligned 231; the
+// product is still shared, the gain is scheduling elsewhere, under the keep bar); on that, the second product
+// written minimum first 612, `0.3f + 0.7f * (...)` 612, the cross helper in retail's product operand order 612,
+// the output components named for the basis product 627 (2816, aligned 219); a named inverse range used by both
+// products 626 (2816). Original body restored.
+// DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
+// then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
+// executable body and helpers restored; success/input/minimum/hit homes remain.
+// F365: Native vector cross/point translation/in-place rotation receivers, masks 1/2/4/3/5/6/7, then ordinary inline:
+// 628/628/628/630/630/630/633/633 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// B412: Four-query termination from the real origin/length/hit/distance array extent,
+// native long/short ordinal from the cursor: 697/690/700/709/639/719/707/703.
+// All regress and move the frame; original traversal, helpers and in-place captures restored.
+// DH342: Shared lower-first root/output clamps and real root API, seven subsets
+// 618/626/618/626/618/626/626; all with real rotation trig API 624.
+// Original scalar producers, observations and body restored; success/input/minimum/hit homes remain.
+// DH345: Complete final scalar projections before all three stores, six row orders,
+// then immutable ijk/kji results: eight at 613 (2830 bytes). NOT kept: five-point
+// gain is below the eight-point threshold; original body and in-place snapshots restored.
+// DH348: Complete cross/rotation native aggregate/member-result storage pairs
+// 847/847/561/561/944/944/944/944. NOT kept: 561 groups scalar results into a
+// vector and does not match. Original scalar producers and in-place snapshots restored;
+// success/input/minimum/hit homes and inactive-exit layout remain.
+// DH352: Complete lateral/forward/up product parts across all three basis-reconstruction
+// rows, subsets 1/2/4/3/5/6/7 then immutable full parts: 635/635/635/624/624/624/624/624.
+// Original sum trees, scalar producers, helpers and in-place snapshots restored.
+// DH360: Collision record plus material-reset lifetime at success/object/settings/input/minimum/clearance/guard/basis boundaries,
+// eight forms 647/647/646/632/632/632/631/628. NOT kept: all regress and shrink to 2815/2886;
+// original late reset, complete frame, helper inputs and in-place snapshots restored.
+// DH362: Twice-used basis mode captured at entry/acquisitions/input/active boundaries,
+// positive bool 626/626/626/626; complementary bool 723/717/702/699. NOT kept: all regress;
+// original repeated mode tests, helpers, in-place snapshots and complete body restored.
+// DH364: Float root/sine/cosine API subsets 1/2/4/3/5/6/7, then complete graph with
+// published float root 618/610/610/610/610/616/616/614. NOT kept: the eight-point
+// lead requires asymmetric trig API types without a retail precision distinction;
+// complete float trigonometry gains only two. Original helpers and in-place snapshots restored.
+// DH367: Chained actual length/hit/output initializer subsets 1/2/4/3/5/6/7,
+// then complete chains with ascending length publication: 623/619/623/623/623/624/623/624.
+// NOT kept: all regress; original initializers, helpers and in-place captures restored;
+// native success/input/minimum/hit homes and inactive-exit placement remain.
+// DH369: Standard axial/final-projection coordinate reductions, native/direct/named
+// nonoriginal pairs: 789/789/710/917/917/696/919/919. NOT kept: all regress and grow
+// beyond native 2886; original helpers, sum trees, in-place captures and body restored.
+// Success/input/minimum/hit homes and inactive-exit/basis/rotation scheduling remain.
+// DH369 revisit: Root-input lower-clamp positive/complementary comparison results,
+// bool/byte/short/long, eight at 630 (2813/2886). NOT kept: all regress and
+// shorten away from retail; original root helper and complete body restored. Frame
+// 0x108, success/input/minimum/hit homes and inactive-exit/rotation scheduling remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

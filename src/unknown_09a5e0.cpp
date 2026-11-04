@@ -2057,7 +2057,15 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // that the keep rule drops); the head block's register split is not reachable from the source (short
 // casts, declaration order, else, ternary, literal -1, masking and the truncated 0x13c read: 155,
 // 201, 212 and 269).
-// score 155 (was 155): Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership differ.
+// MiniMax lane A (11-04): the 0x400 block's parent value re-read as a short instead of truncated
+// from the long matches retail's block exactly (135, from 155).
+// score 135 (was 155): The 0x400 block matches; the entry/unit stack homes, the 0x2000 block's dead
+// add, the loop's mask home and register split and the float constants still differ.
+// Lane 18 r37 (fast): plain 0x400000 mask test 168 (1070 B); a pointer to the 0x214 field used for
+// test and store 155; both tail compares written source-first 155; the 0x214 value named for test and
+// store 155; one compare-and-store template helper (reference target and value) for the 0x2000,
+// 0x400000 and all three 0x800000 updates, inline or forced inline, 240/240 at 1081 bytes (it stays an
+// out-of-line call under both). Original body restored.
 // Earlier: this round's head-block forms (the 0x13c value truncated to a short and
 // compared against both NONE forms, in nine source shapes) all score 149, and naming the object
 // index in a local, so the object address keeps retail's SIB base, scores 148 - a gain of seven
@@ -2301,6 +2309,54 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // M330: Complete missing-child metadata/count/fraction result arms, seven subsets,
 // then all with uninitialized declarations before the getter: 247/273/212/273/248/273/283/283.
 // Original defaults and body restored; object/offset and low-mask homes remain.
+// Lane 14 r53 (fast, baseline 155 aligned 95): the volatile `this` copy removed 285 (aligned 98); both slot masks
+// named at the loop top 268 (1043 bytes, aligned 170); the first masked test in a named local 155; 0x214 through a
+// scoped field pointer 155; 0x214 as a scoped named value 155; a named `local_5 - 4` shift 155 (all aligned 95).
+// M334: First/mapped-parent scalar identities, independent semantic lexical priorities
+// 10/01/11/20/02/22/12/21, all 155 at 1072/1081 bytes. Original complete body restored;
+// indexed lookup, object/offset homes and low-mask ownership remain.
+// Lane 14 r57 (fast, from 155): the 0x400000 tail as a plain mask with the unit field on the left 168 (1070 bytes);
+// a function-scope `long *` to the 0x214 field for the compare and the copy 155 (folded, no dead add); the parent
+// short as `local_5 != NONE ? (short)local_5 : NONE` 201; NONE declared after both parent reads 155; the unit
+// lookup declared before the state view 155. Retail's 0x400 block copies the parent into AX with `mov ax, dx`
+// before testing it (one byte more than ours), and the 0x2000 block's two loads and dead add make up the rest
+// of the 9 missing bytes.
+// M343: Complete approximate-position equality in bool/byte/short/long, direct initializer
+// or default-false test result: 155/155/155/155/155/155/155/155. Original full body restored;
+// object/offset and low-mask homes remain.
+// NOT kept: unmatched comparison-result lifetimes.
+// Round 84 (m3 lane 12, fast): the 0x400 flag update between the two stores 156 (ours still loads the
+// result first: retail must store 0x90 before it reuses EAX, which holds the NONE short there, so the order
+// follows the head block's EAX/EDX/ECX rotation, not the statements); the low request intersection named
+// once for the loop test and the first slot test 155; the child counts declared before the child
+// handle/slot defaults 155; the 0x23e compare with the unit field first 155; the child fraction declared
+// first 155.
+// M345: Per-child complete/separate metadata-state change masks, requested-child/iteration
+// scopes and dword/long carriers: 214/214/249/249/221/221/251/251.
+// NOT kept: deferred per-child mask joins miss; original per-store result updates and whole body restored.
+// Lane 14 r57 (fast, from 155): the 0x400000 tail as a plain mask with the unit field on the left 168 (1070 bytes);
+// a function-scope `long *` to the 0x214 field for the compare and the copy 155 (folded, no dead add); the parent
+// short as `local_5 != NONE ? (short)local_5 : NONE` 201; NONE declared after both parent reads 155; the unit
+// lookup declared before the state view 155. Retail's 0x400 block copies the parent into AX with `mov ax, dx`
+// before testing it (one byte more than ours), and the 0x2000 block's two loads and dead add make up the rest
+// of the 9 missing bytes.
+// Round 66 (m3 lane 11, fast): the slot loop's bit tests swapped 285 (1033 bytes); `(dword)1 << (local_5 - 4)`
+// 155; NONE declared after both parent reads 155 (a repeat); tail flags tested 10, 9, 8 177 (1081 bytes);
+// the 0x800 update before its stores 251 (1060 bytes, `or` on memory); the 0x1000 update before its
+// stores 164.
+// M347: Optional tag-count availability, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 155/155/155/155/155/155/155/155.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
+// DH347: Low-mask lifetime ends before independently gated high-state update, with native
+// record fields, child-handle extraction scope and whole traversal scope: eight at 240/1081.
+// NOT kept: allocation regresses earlier (+0x16); original complete body and mask updates restored.
+// M370: Existing tail clamp exhaustive native/lower/upper branch pairs, excluding native/native:
+// 155/182/155/155/182/154/154/181. NOT kept: one-point upper-first leads are below
+// threshold and lack native bound order; lower-first ties. Original field PIN producers
+// and whole body restored; indexed lookup, object/offset and low-mask homes remain.
+// F382: Complete three-component position field with short-circuit comparison traversal,
+// long/dword/short/byte ordinals, break/condition admission: 293/293/297/298 repeated.
+// NOT kept: regressions and shorter extents; original scalar fields, comparisons and body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
@@ -2311,11 +2367,11 @@ long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 	long local_4 = function_a5e70(arg_0, local_3 & 0x3ff, arg_3);
 	if (local_3 & 0x400)
 	{
-		short local_6 = NONE;
 		long local_5 = *(long *)(local_1 + 0x13c);
 		short local_7 = *(short *)(local_1 + 0x130);
+		short local_6 = NONE;
 		if (local_5 != NONE)
-			local_6 = (short)local_5;
+			local_6 = *(short *)(local_1 + 0x13c);
 		if (local_6 == NONE || local_7 == NONE)
 		{
 			if (local_2->field_90 != local_6 || local_2->field_92 != local_7)

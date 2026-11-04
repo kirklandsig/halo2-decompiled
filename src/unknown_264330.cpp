@@ -430,6 +430,7 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax B (11-04): no new form, no lower score.
 // score 412 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
 // index in EAX where ours loads the argument from the stack. The body is 1620 bytes
 // against retail's 1616.
@@ -604,9 +605,31 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // F336: Maximum dword/once-read twice-used priority/later constant acquisition,
 // seven subsets on the retained signed-state graph, then plain dword with priority:
 // 416/412/414/414/418/414/416/428. Original maximum, observations, cases and complete body restored.
+// Round 46 (m3 lane 15, fast): volatile sample/update flags (diagnostic, reverted) 424 (frame 0xa0; `index`
+// then takes EBX and the actor is still re-read from its stack slot; our loop holds the actor pointer in EDI
+// where retail spills it); loop actor fields through fresh actor lookups 457; plain word maximum 429 (1616
+// bytes); the current-target test as one named bool 438 (1616 bytes); the list head through the held actor
+// pointer 442 (1616 bytes); sample/update declared before the prior state 412 (same code).
 // DH310: Complete case orders 04123/04132/02413/02431/02314/03124/03142/03214 on the signed-state graph,
 // 422/448/426/433/416/444/451/431. All original case-body hashes agree; every new priority regresses.
 // Original cases, observations, qualifier and whole body restored; frame excess and stacked actor remain.
+// Round 80 (m3 lane 9, fast; positional/aligned, base 412/228; retail has one 0x25c820 call and inlines 0x2641c0):
+// iterator walk 442/211 (1616 bytes); with a long maximum 442/225; with a short saved state too 442/222; walk and a
+// local forceinline copy of 0x2641c0's body 492/195 (1672); with the short saved state 492/194; all three 496/198
+// (1676); case 1's 0x25c820 and the release one as a single call 457/226 (1592); with the walk 465/212 (1592); with
+// the walk and the inline copy 477/200 (1656); with the short saved state too 476/200. In all of them the actor stays
+// a stack argument, in EDI, with the index in EBX (retail actor EBX, index EDI).
+// Round 203 (fast with 0x1e34e0): `update = sample = true` 413; motion/context at function scope 412;
+// the prior state read after the flag declaration 412; a for loop over the node index with `next` 453
+// (1600 bytes); the sampler failure clearing the sample flag with the 0x264b50 test in its else 452.
+// BLOCKED-BY 0x2641c0 (retail inlines it here; its noinline declaration sits in src/unknown_265cb0.cpp,
+// another lane's file this round). Dropping that declaration inlines it into 0x264210 too (round 114), so
+// the lead is a form that inlines it here but not in 0x264210.
+// Round 35 (m3 lane 17, fast with 0x1e34e0): prior state as short 413; the sampler's result in its own
+// `context_valid` flag (initialised false, tested for the 0x264330 call) 415 (frame 0xa0 and 1616 bytes as
+// retail, but `update` still takes BL and the actor stays a stack argument; a flag tested later, not kept); that
+// with the short prior state 419 (1620 bytes); sampled_one declared after the two entry calls 414; sampled_one
+// declared before maximum 412 (same code).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -931,6 +954,7 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
+// MiniMax B (11-04): no new form, no lower score.
 // score 257 (was 257): frame 0x20 and actor EBX agree; squad/object, flag and root/hit homes differ.
 // Earlier: actor EBX, prop ESI, squad home, the type-15 arm and the 0x25c9d0
 // call are retail's; left: the object and table registers (ours EAX/ECX, retail ECX/EAX) and time
@@ -1059,6 +1083,22 @@ real function_296600(long actor_index, long prop_ref_index);
 // getter and null-first unit combinations 380/397/380/397/380/397/380/397 (fast control 372; full
 // baseline 257). Ordinary late-squad and late-squad/null-first forms 359/364; both regress.
 // Original source and include restored; squad/object, flag and root/hit homes remain.
+// Round 126 (lane 8, plain): unit NULL-first (`byte *unit = NULL;` before the suppression test, set when the
+// object type is 0) 267 at 1278 bytes: head as retail (squad spilled, NULL home, cmovne) but the current-record
+// argument of the first 0x1c8df0 call spills; on it: current renamed to sort after suppressed 267 (byte homes
+// unchanged); a named current-record pointer for both calls before/after the root lookup 272/270; a named
+// sight mode for both calls 326.
+// J247: 25c9d0/25cca0/263810/268c60 inline contracts, original/null-first unit pairs:
+// 257/267/257/267/257/267/257/267; frame 0x20, 1256/1278 bytes (retail 1268).
+// NOT kept: no gain; body/contracts restored. Squad, flag and root/hit homes remain.
+// DH334: Standard inner/outer/both short maxima, with/without null-first unit (fast 372, full 257);
+// then full maximum and secondary-result stages: 350/365/366/368/346/346/365/355.
+// NOT kept: new maximum call and larger frame absent in retail; original complete body restored.
+// Round 115 (fast control 372, full 257): scoped early squad 372; suppressed/unit/current 370;
+// current/unit/suppressed 390; unit/current/suppressed 381; suppression array 372; array with NULL-first unit 379;
+// array with object-first/null-override unit 352 (plain 295, 1255 bytes); scalar object-first/null-override 352.
+// NOT kept: scope/array forms have no effect, orders regress or gain too little, and object-first uses a branch
+// absent in retail and regresses plain. Original declarations and ternary restored; array forms were exact-only.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

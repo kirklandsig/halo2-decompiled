@@ -116,6 +116,12 @@ struct s_9cca0
 // reversed 13, both longs after the first vector 21, the second long after it 22. The second copy's i store stays late,
 // so more than the escape differs. Retail's 0x184440 passes `arg_2 + 0x1c` to the same self-recursive setter, so the
 // setter's summary is the open question; its file is on another lane's list this round. Still BLOCKED-BY 0x184440.
+// Round 85 (m3 lane 9, fast): the flag read as `*(byte const *)`, `*(bool *)`, `*(bool const *)` 9 each (same code); the event through a non-const
+// cast 9; a forceinline helper for the flag and tag tests and the call 9; one filling the event through a pointer 9; both 9; the callee's arguments
+// read before the flag test 9; `inline` on the recursive location setter's definition 9 (0x175180 and 0x175100 still match). Still BLOCKED-BY 0x184440.
+// Round 109: global guard before the tag and marker stores 11, with their order reversed 11; marker before the guard 11;
+// tag before the guard 12; guard between the vectors 16; guard before both vectors 26; guard before event initialization 55
+// (204 bytes); combined early global/tag guard 60 (208). Original body restored; still BLOCKED-BY 0x184440.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -215,7 +221,7 @@ struct s_damage_report;
 point3f *function_b9dd0(long arg_0, point3f *arg_1);
 void function_d6a70(long arg_0);
 void function_d9640(s_damage_report const *arg_0, long arg_1);
-void __stdcall function_e4a20(point3f const *arg_0, long arg_1, long arg_2, bool arg_3);
+void __stdcall function_e4a20(long arg_1, point3f const *arg_0, long arg_2, bool arg_3);
 
 struct s_9c610
 {
@@ -260,12 +266,14 @@ struct s_input_9c610
     byte field_34;
 };
 
-// score 13 (was 13): BLOCKED-BY 0xe4a20. The call to function_e4a20 at the end differs: retail
-// passes the point in eax and the object in ecx, ours the point in ecx and the object on the
-// stack, which follows from function_e4a20's own body. Flag 7 of +0x20 retail tests as
-// `mov al / test al, al / jns`: the plain `input->field_20 & 0x80` gives that test and retail's
-// length (429), but with the shorter call setup every later line shifts, 23 (also as a char < 0
-// test or a byte mask); use it once 0xe4a20 is fixed. TEST_FIELD_BIT((x >> 7) & 1) 13 (kept),
+// score 2 (was 13): with 0xe4a20's parameters in its handle-first order, the call passes the biped (local_1)
+// as the handle, as retail does (`mov ecx, ebx`, with input->field_2e pushed as the contact). The source had
+// passed field_2e as the handle and the biped as the contact. Flag 7 of +0x20 is the plain
+// `input->field_20 & 0x80`, retail's `mov al / test al, al / jns`, now that the call setup is retail's.
+// Left: the contact's movsx goes to EAX where retail uses ECX. Also tried: `!= 0` 2, `(char)x < 0` 3,
+// TEST_FIELD_BIT(x & 0x80) 29, a (long) cast on the contact 2.
+// Before 0xe4a20's order was fixed: the plain test 23 (also as a char < 0 test or a byte mask),
+// TEST_FIELD_BIT((x >> 7) & 1) 13 (kept),
 // TEST_FIELD_BIT(x & 0x80) 13; flag 1 rewritten the same way 56, both 63; one flags local for
 // the copy and both tests 49. Earlier (at 23): the flags store first of the second copy group
 // 23 (kept); before the vector copy 67; first of all 67; before field_3c 27. Shared absolute
@@ -329,8 +337,8 @@ bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, lon
             if (input->field_20 & 2)
                 function_d6a70(local_1);
             function_d9640((s_damage_report const *)&local_10, local_1);
-            if (g_4e0300->data[(local_1 & 0xffff) * 12 + 3] == 0 && TEST_FIELD_BIT((input->field_20 >> 7) & 1))
-                function_e4a20((point3f const *)&input->field_c, input->field_2e, local_1, false);
+            if (g_4e0300->data[(local_1 & 0xffff) * 12 + 3] == 0 && (input->field_20 & 0x80))
+                function_e4a20(local_1, (point3f const *)&input->field_c, input->field_2e, false);
         }
         local_0 = true;
     }

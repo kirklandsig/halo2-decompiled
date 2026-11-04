@@ -36,7 +36,11 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 	return memory;
 }
 
-// score 42 (was 42): retail tests the handle in ECX and copies it to EAX for the by-value
+// score 0 (was 42): matches (MiniMax H, 11-04). The read's success byte is written by the I/O
+// worker, like `done`, so it is volatile: retail stores the widened handle test to it and reads
+// the byte back before the branch. The array element is passed directly, so the handle is
+// compared in ECX and copied to EAX for the by-value argument.
+// Earlier rounds (42): retail tests the handle in ECX and copies it to EAX for the by-value
 // argument, builds the success byte with `xor edx, edx; setne dl`, stores it and re-reads it from
 // memory before the test, as a volatile flag would; ours tests a register copy. Only a volatile
 // success byte (not kept) gives the store and re-read: with the array element passed directly and
@@ -313,6 +317,30 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // DH308: Direct-file graph completion/success, outcome/ordinal and path lexical-home
 // subsets 1/2/4/3/5/6/7, then all with reversed byte declarations: 44 each. Original file value,
 // wide outcome, waits and body restored; ECX handle and stored-success memory test remain.
+// DL252: Native short/word/long/dword success destinations with wide then destination admission:
+// 74/74/74/74/73/73/74/74. NOT kept: wider result objects and pointer casts lack the native byte-storage
+// shape. Original outcome, result object, file, waits and complete body restored.
+// Round 78 (m3 lane 16, fast): `success = handle test; _ReadWriteBarrier(); if (success)` re-measured 50; with
+// the handle read into a scalar and the file built from it in the branch, the long assigned to success 50;
+// the copy kept with the long assigned 50 (one code each: no xor widening, handle in EAX); without a
+// barrier `success = opened == TRUE; if (opened == TRUE)` 43, `success = opened != FALSE; if (success !=
+// false)` 55 (351 bytes).
+// Lane 18 round 34 (fast): success straight from the handle test, `if (success != false)` 55 (351 bytes); a bool
+// opened copied to success 55 (351); `if (!opened) continue;` 42; the file declared at the loop top and assigned
+// after the wait 42; `success = opened ? true : false` 42.
+// Round 82 (m3 lane 9, fast): `success = handle test; if (success == true)` 54 (352 bytes); the long kept with
+// `if (success == true)` 54; `if (success != 0)` 55 (351); `if (opened != FALSE && success)` 41 (an implied
+// re-test: success then tested from DL, still no memory re-read; not kept); the handle compared as `(long) != NONE` 42.
+// M3 lane 4 r161 (fast): success straight from the handle test with `if (!success) continue;` 55, with
+// `if (success == false) continue;` 55 (351 B each); `long opened = success;` after the store 55; `if (success
+// & 1)` 54 (352 B); the resize wait moved after the open branch (shared with the failed path) 54.
+// DL258: Native bool callback storage with byte/signed-byte/one-bit/eight-bit/
+// boolean-bitfield consumer views 55/55/54/55/54; word/unsigned-long/signed-long
+// eight-bit views 81/80/80. NOT kept: ordinary views still forward the byte; wider
+// containers grow frame 0xfc to 0x100. Original long-outcome body restored.
+// DH353: Completion initialization/handle aggregate/immutable open result, subsets
+// 1/2/4/3/5/6/7: 86/42/42/86/86/42/86; complete direct-member form 86. NOT kept:
+// no gain or match; original object, result, completion declaration and waits restored.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
@@ -320,18 +348,18 @@ void game_state_cache_files_open(void)
 	{
 		char path[200];
 		bool volatile done;
-		bool success;
+		/* the read's result is written by the worker thread, so retail keeps
+		   the flag in memory: it stores the handle test and reads the byte
+		   back before branching on it */
+		bool volatile success;
 
 		function_11c9c0(path, sizeof(path), g_470050, i);
 		function_1a0b40(path, 3, 3, 0, 8, 6, &g_5020f8[i], &done);
 		function_120d50(&done, false);
-		s_file_handle file = g_5020f8[i];
-
-		long opened = file.handle != INVALID_HANDLE_VALUE;
-		success = opened != 0;
-		if (opened)
+		success = (long)(g_5020f8[i].handle != INVALID_HANDLE_VALUE);
+		if (success)
 		{
-			function_1a1310(file, 0x40b000, 8, 6, &success, &done);
+			function_1a1310(g_5020f8[i], 0x40b000, 8, 6, (bool *)&success, &done);
 			function_120d50(&done, false);
 		}
 	}

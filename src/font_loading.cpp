@@ -507,6 +507,14 @@ static inline word font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax B (11-04): no new form, no lower score: the alpha parity is still masked in 16 bits where retail
+// widens it to 32 bits; a `(long)(byte)` cast 85, a byte alpha parameter 201, a named long parity 176, a long
+// helper return 212 and a long alpha 105 keep the structure but not the parity bytes, and the best form found
+// (the case-1 pixel assigned before the run, with the permuter's four other edits) gives 83, below the keep
+// threshold, so the original body was restored.
+// MiniMax A (11-03): no new form, no lower score: the alpha parity is still masked in 16 bits where retail
+// widens it to 32 bits, and the literal word assembly and the run-two reuse still differ; dropping the byte
+// cast gives 204.
 // score 85 (was 85): the alpha parity is still masked in 16 bits (and cl, 1; movzx cx, cl) where
 // retail zeroes a 32-bit register first (xor ecx, ecx; mov cl, al; and ecx, 1); every 32-bit form of
 // the pixel helper reproduces retail's parity bytes but swaps the output and colour registers, so
@@ -650,6 +658,64 @@ static inline word font_character_pixel(long alpha, long color)
 // P280: Existing scalar pixel helper static force-inline/ordinary static/external
 // inline/external force-inline: original parity 85/85/85/85, numeric parity
 // 204/204/204/204. Original helper and decoder restored; parity/literal/two-run gaps remain.
+// N339: Existing alpha formal as complete expansion accumulator, byte/long parity before shift,
+// shifted-source parity and conditional low-bit publication, word then long result:
+// 179/222/169/227/136/230/216/236. Original helper and full decoder restored;
+// alpha extension, literal assembly and run-two reuse remain.
+// NOT kept: every accumulator form regresses and remains unmatched.
+// M341: Native literal word plus network-order conversion, direct/memcpy and word/long
+// values, original/numeric parity: 104/104/121/121/196/196/192/192. Original literal, helper and
+// decoder restored; alpha widening, literal assembly and two-run reuse remain.
+// N342: Single-first upper dispatch / lower-first dispatch / flat pair-single / flat single-pair,
+// original word then full-width pixel result: 139/172/182/183/163/166/174/175.
+// NOT kept: dispatch ownership regresses; original helper, cases, observations and body restored.
+// J248: Unsigned dword alpha with word/short/dword/unsigned-int color,
+// each with word/dword pixel result and the original byte-parity expression:
+// 85/106/85/106/85/105/85/105. NOT kept: promotion/interface nonmatches; original
+// helper and decoder restored; parity, literal assembly and run-two reuse remain.
+// Diagnostic scoped size preference 198; NOT kept: compiler setting.
+// F361: Complete command-class dispatch, shared 0/1 arm, PSR/SPR/RPS/RSP groups:
+// word pixel result 204/221/235/249; long result 196/214/220/225.
+// NOT kept: larger extents and unresolved alpha/literal/run-two schedule; original decoder restored.
+// DH331: C-runtime word fill at switch/ordinary/both boundaries, long then word fill values,
+// then both with full-width pixel result and long/word fills: 86/86/87/108/107/108/106/108.
+// Original fills, helper and body restored; alpha widening, literal assembly and two-run reuse remain.
+// N348: Stable write/count-only mode shared by all five output checks, bool/byte/short/long:
+// 206/206/241/241 in either truth channel. NOT kept: mode storage regresses the frame,
+// length and alpha/literal schedules. Original pointer checks, helper and body restored.
+// N351: Packed-run case orders 40162357/14062357/61402357/26140357/32614057/53261407/65432107/13502467:
+// 90/91/94/93/167/115/116/97. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: alpha extension, literal assembly and run-two reuse.
+// N356: Canonical consumed-span for loop, long/byte/signed-char/short with word/long pixel result:
+// 87/90/90/100/104/100/100/101. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Alpha parity widening, literal fusion and constant-two reuse remain.
+// N358: Existing color formal owns complete pixel assembly, packed OR/add and high/low-first bit publication, byte/numeric parity:
+// 226/230/226/226/172/178/172/172. NOT kept: unmatched source/representation forms; original executable body restored.
+// Alpha extension, literal assembly and run-two reuse remain.
+// N360: Separate expanded-alpha result accumulator, word/long, disjoint parity/color OR/add:
+// 226/226/226/226/226/230/226/226. NOT kept: unmatched source/result-storage forms; original executable source restored.
+// Alpha extension, literal assembly and run-two reuse remain.
+// N362: Full-width numeric pixel result with eight actual count/remaining/color/run
+// lexical families, the last two including source/output roles: 212/212/212/212/212/212/212/212.
+// NOT kept: unmatched home/representation forms; original helper and decoder restored.
+// Alpha parity widening, literal assembly and constant-two reuse remain.
+// N365: Actual byte output cursor with complete word-fill/numeric-parity/bounded-byte-run
+// masks 0..7: 85/107/204/208/179/161/172/156. Original word cursor, helper and decoder restored;
+// NOT kept: unmatched cursor/domain forms; parity/literal/two-run gaps remain.
+// B437: Pure command-pixel producers before output guards, pair/single/fill
+// subsets 1/2/4/3/5/6/7 then numeric parity: 180/207/180/211/180/222/230/235.
+// NOT kept: all regress; original helper, alpha/literal/two-run graph restored.
+// N378: Complete default run pixel, color/opaque, long/word and byte/numeric parity:
+// 231/216/231/216/231/182/231/182. NOT kept: no byte equality or qualifying native-shape gain;
+// original executable source restored; alpha extension, literal assembly and run-two reuse remain.
+// N380: Complete per-command emitted-count result, long/dword/short/word/byte/signed-char,
+// then word fills/full-width pixel helper: 164/164/150/150/153/153/173/173.
+// NOT kept: no native count/parity match; original helper and complete decoder restored.
+// Frame 0xc agrees; alpha widening, literal assembly and run-two reuse remain.
+// N382: Pixel-before-run producers in cases 2/4/5/6, joint 2456/12456, then
+// 12456/2456 with word packed pixels: 86/85/85/85/86/162/162/86. NOT kept: unmatched schedules; original
+// helper, literal, case order, fills and complete decoder restored. Alpha widening, literal
+// assembly and two-run reuse remain; frame 0xc agrees.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

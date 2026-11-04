@@ -320,6 +320,73 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // and hit-first result, producer/entry declarations: 135/123/132/135/135/123/132/135.
 // All 878/870 bytes; original complete body restored. Split post-sample cache comparison
 // and evaluator/child scratch homes remain. Branch-owned request would require an exact match.
+// J243: Fifth sample shared helper/return, distinct helper/return and actual-field output, first-four
+// direct returns with shared/field fifth outputs, and entry-owned shared output: 55 each. NOT kept: no
+// gain. Original output contracts restored; split post-sample comparison and evaluator/child scratch
+// homes remain.
+// DL250: Existing sample helper inline/unannotated contracts with shared, distinct, sample-scoped
+// and entry-owned output lifetimes: 55/55/55/55/55/55/55/55.
+// Original complete source restored; no eligible gain.
+// Round 48 (fast with 0x248cc0): a compiled-out `do {} while (false);` between the field_38 sample and the
+// compare 55 (same code, still split); 0x173ba0's record argument read back from field_50 (as 0x247950 does)
+// 133 (876 bytes); the seed bits by an explicit 0x1fff mask and shift 232 (876 bytes); `s_248000 *const` record
+// pointer 55 (same code); child result declared before the loop, on the 55 graph, 55 (same code).
+// Round 61 (m3 lane 11, fast): no matched function has the post-fstp fold yet (0x39a80, 0x186ab0 still differ). The cached-record compare as
+// `while` with the same body 140 (880 bytes); the compare in a bool ahead of the fifth sample's store 140 (878 bytes; its `test` schedules above the x87
+// ops, no folded cmp); the child counter dword 55 (same code); the tag index in a local for both child-loop uses 221 (872 bytes); the reciprocal declared
+// ahead of the loop 55 (same code). Compile-only: the compare inside a ternary or a short-circuit test still splits.
+// M342: Explicit refreshed virtual child count at the native latch, provider carry and
+// count/index declaration scopes: 55/55/55/55/55/55/55/55. NOT kept: no exact count/provider
+// handoff shape; original complete body restored. Split post-sample compare and child scratch homes remain.
+// B396: Post-sample equality hit/miss results in bool/byte/short/long domains, 55 each.
+// NOT kept: no exact one-use result form or gain; original complete body restored.
+// Split memory comparison and evaluator/spawn/child scratch registers remain.
+// N347: Read-only virtual count/element/both/both-interface, metadata/metadata-count/metadata-element/
+// complete contracts: 55/55/55/55/55/55/55/55. NOT kept: unmatched alias/contract combinations. Original
+// complete body and declarations restored; split post-sample comparison and child scratch homes remain.
+// Lane 14 r60 (fast; on the field_50 read-back form, 133, aligned 21): the six orders of 0x175070's parameters, every
+// call changed: (first,child,last) and (first,last,child) 133 aligned 21; the three with last or child in other places
+// 141 aligned 69 and 0x178eb0 2. Named first/last list pointers around the child pointer 133 aligned 21 (copy
+// propagated; the parent stays one load). Compile-only: the split also holds with the store nested under three ifs,
+// inside a loop, right after a call, and with most registers carrying values across the compare.
+// B398: Cache formal in positions 1..5 with the sole call updated, then explicit
+// stdcall in positions 6/1/4: 55 each at 870 bytes. NOT kept: no exact entry-contract
+// form or gain. Original signature/caller/body restored; post-sample split cache
+// comparison and evaluator/spawn/child scratch allocation remain.
+// M355: Native cache validity ranges, clear/publish/request masks 1/2/4/3/5/6/7,
+// then complete high-to-low publications: 55/55/135/55/135/135/135/135.
+// NOT kept: unmatched field representation; original validity and full body restored.
+// M357: Child admission produced after interface refresh, positive then complementary bool/byte/short/long:
+// 55/55/55/55/55/55/55/55. NOT kept: no exact producer/contract form; original complete body restored.
+// M359: Actual allocated-handle/spawn-input/child-ordinal home-name subsets 1-7,
+// then all with the child handle, on the retained reconciliation graph:
+// 55/55/55/55/55/55/55/55. NOT kept: no home or folded-compare gain; original body restored.
+// DH327: Child-creation admission retained across interface refresh, positive/
+// complementary bool/byte/short/long: 133/133/116/117 twice, 880/870 bytes.
+// Original child result/refresh order and complete body restored. NOT kept:
+// carried flags regress and lengthen; post-x87 fold and child scratch homes remain.
+// DH329: Six native own-input first-consumer reads 55 each; entry cache/parent input-slot
+// pointers 168/55. NOT kept: own-input forms lack equality; cache input also loses caller
+// (24). Original inputs, cache comparison and complete body restored.
+// Y584: Persistent validity/cached-record/value-array field references, seven subsets
+// and complete metadata-scope binding: 128/128/128/55/128/128/128/128. NOT kept:
+// post-sample compare stays split; other forms shorten to 863 bytes. Full original body restored.
+// AC528: Native parent-list slot identities on the current reconciliation graph
+// 55/55/55/55/55/55/136/136. NOT kept: no exact match or eligible gain; original complete body restored.
+// Split post-sample comparison and evaluator/child scratch homes remain. One-use field bindings require equality; no retained candidate.
+// B431: Actual cache/header/parent/point/direction reference formals, header-parent and
+// point-direction pairs, then all five: 55 each. NOT kept: no exact boundary-contract
+// form or gain. Original signature, sole caller and full body restored; split post-sample
+// cache comparison and evaluator/child scratch homes remain.
+// B434: Post-link positive/complementary duration-admission results in bool/byte/short/long:
+// eight 55. NOT kept: no exact result form or gain; original live field reads, reciprocals
+// and full body restored. Split post-sample compare and child scratch homes remain.
+// B436: Full-width signed int allocation/ordinal/child carriers, seven subsets, then
+// all with a native while pretest: eight 55 at 870/870. NOT kept: no exact type/control
+// form or gain; original complete body restored. Split cache compare and child homes remain.
+// B438: Allocator success/failure outcomes in bool/byte/short/long: eight 55 at 870/870.
+// NOT kept: no exact outcome-lifetime form or gain; original full body restored.
+// Post-sample split cache comparison and evaluator/child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -657,6 +724,54 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // Round 377: Original-RNG packed header, combined/named initial mask and native category/shifted-bit
 // producers, eight forms 356/359/359/359/359/359/360/360. Original header publications, helper graph and
 // complete body restored; late EBP save and random/geometry/getter homes remain.
+// AC501: Read-only descriptor count/entry/terminal query declarations, masks 1/2/4/3/5/6/7,
+// then all with read-only descriptor receiver: 356/356/356/356/356/356/356/356. Original interface and
+// full body restored; late EBP save and random/blend/getter homes remain.
+// B385: Record link/time scalar copies through memcpy/memcpy, memmove/memcpy,
+// memcpy/memmove and memmove/memmove 356/448/383/450; each with the complete
+// trace-direction setter 356/448/383/450. Original complete body/includes restored;
+// early EBP preservation and random/blend/geometry/getter homes remain.
+// B387: Read-only settings/immutable particle/immutable allocation identity, seven subsets,
+// then all with immutable effect identity: 356 each. Original complete body restored;
+// frame 0xb0 and late EBP save, escaped blend and random/getter homes remain.
+// B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
+// age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
+// original complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// Round 66 (m3 lane 1, fast): grouped workspace members in retail's frame order (probe point, direction, the
+// collision result moved in, blend, sample, placement) 355 at 1652 bytes (point/direction/collision/placement
+// land on retail's offsets; retail's unused 16 bytes are the blend and sample slots, both kept in registers); on
+// it the in-loop tag lookup through the inline particle_object_for_tag (retail inlines it here: the
+// 'PRTM'/'prt3' compare) 383 (1691 bytes), plus the `(short)` child index and if/else reciprocal 383; blend as
+// its own point3f 403 (frame 0xa4, blend in XMM2-4 as retail); and the first sample a plain real 432 (frame
+// 0xa0). A named double in callee 0x249170 (diagnostic) leaves the frame at 0xa0. All restored.
+// B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
+// age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
+// original complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// AC508 isolated trials: Existing random-output helper pointer/reference outputs, void/real/
+// reference/pointer returns, ignored and complete returned-output consumers: eight scores 356.
+// Original helper, every consumer and full body restored; late EBP save and sample/blend/getter homes remain.
+// M344: Allocated-record pointer results at producer/entry, conditional/default-owned,
+// positive guard/failure exit 409/410/409/410/409/410/409/410, all 1659/1652 bytes.
+// NOT kept: unmatched nullable admission adds a pointer test; original handle admission,
+// record observations, inherited qualifier, helpers and entire body restored.
+// J247: Actual probe-point/contact-normal copy boundaries (memcpy/memmove pairs):
+// 356/373/356/382/356/382/373/391; frame 0xb0 throughout. NOT kept: no gain;
+// move forms are 1643 or 1627 bytes. Original body restored; delayed EBP and sample/geometry homes remain.
+// B400: Geometry-kind/contact-query/terminal-dispatch decision results, masks 1/2/4/3/5/6/7,
+// 359/359/359/359/359/359/356; complete graph with native loop predicate 356.
+// NOT kept: no exact match or gain; original complete body restored; late EBP save and sample/blend/getter homes remain.
+// B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
+// age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
+// original complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// DH334: Standard native-array scaling/translated-position/probe-copy algorithms, seven subsets
+// then all with contact-normal array copy: 405/384/389/405/403/405/420/421.
+// NOT kept: no exact match; original complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// F377: Complete contact-position/normal/inherited-velocity setters, single/pair/all graphs,
+// then all with the probe-direction setter: 356/366/363/366/366/367/367/367. NOT kept: no gain;
+// original complete body restored; late EBP save and sample/blend/getter homes remain.
+// B436: Native constant-index blend/contact/velocity observations, seven subsets,
+// then complete initial-scale coordinates: 356/356/356/356/356/356/356/356. NOT kept: no exact form or eligible gain;
+// original complete body and helpers restored. Native frame/register differences remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

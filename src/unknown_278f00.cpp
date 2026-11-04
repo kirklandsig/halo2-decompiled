@@ -249,9 +249,101 @@ bool function_a7670(long object_index);
 // P277: Actual selector/list/island-index/island/first-count/second-count/admission
 // home identities separately and together on consumed-index/live-bound/indexed-cleanup
 // graph: 153 each. Original body restored; entry scratch phase and native homes remain.
+// M334: On consumed-index/live-bound/indexed-cleanup graph, standard first/deferred membership
+// find/original, original/find, find/find, count/original, original/count, count/count, find/count, count/find:
+// 276/275/265/280/260/256/276/264. Exact-only completed results restored; native homes remain.
 // DH310: Existing shared property query owns long/native-value/property-pointer results with break/single exit,
 // 277/277/277/277/276/276; completed ordinal 267; native cursor/common result 269. All regress and grow;
 // complete shared header and body restored. Selector/list/count homes and admission BL remain.
+// Round 84 (m3 lane 12, fast): plain `for` island loop 240 (958 bytes); the second scan setting the
+// first scan's found flag 96 at 954 bytes (match-only: a flag set in a test), and on it: the island
+// index renamed to sort before the selector 96 (same homes: ours index 0x28/selector 0x2c, retail
+// 0x2c/0x28), the plain `for` island loop 233 (957), that with the decrement at the end of the
+// flagged block 261 (958), the list as `(s_278f01 *)(g_51e9a4 + 8) + selector` 282 (936), the
+// record through the existing object_header_get 96 (same code). On 96 what is left: the entry
+// scratch rotation (selector EDX, retail EAX), the island index stored at each definition (retail
+// spills it only after the flagged path's `dec`), the header address folded after the `local_9 > 0`
+// branch, and one reload order before the 0xb4 store.
+// Lane 18 r37 (fast): second scan sets the first scan's found flag, `if (!found)` 96 (match-only, restored);
+// on it: plain `for` island index 233 (957 B); index stepped back at the flagged block's end 261 (958 B);
+// renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
+// continue;` 96. Retail keeps the index in ECX and the list in EDX on the unflagged path, storing the
+// index only after `dec` on the flagged one; ours stores it after the `inc` and keeps the list in EAX.
+// Lane 14 r53 (fast, baseline 153 aligned 65): final membership test with the index first, `==` or `>=`, 259/238
+// (954 B, aligned 61/64), found first with `>=` 153 (65); island for-loop with the step back inside, original test
+// 240 (958 B, aligned 77), index first `==`/`>=` 232/232 (71/72), found first `>=` 240 (77). On index first `==`:
+// a separate second index 259 (61), found declared first 296 (983 B), admission defaulted true then cleared 261
+// (60), admission as if/else 259 (61), the island flag named 259 (61); with the for-loop 232 (71) and 230 (70).
+// Left: admission in BL and found in CL where ours keeps a stack byte and the bound in ECX; retail reloads
+// the bound into ESI inside the second scan.
+// Lane 18 r37 (fast): second scan sets the first scan's found flag, `if (!found)` 96 (match-only, restored);
+// on it: plain `for` island index 233 (957 B); index stepped back at the flagged block's end 261 (958 B);
+// renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
+// continue;` 96. Retail keeps the index in ECX and the list in EDX on the unflagged path, storing the
+// index only after `dec` on the flagged one; ours stores it after the `inc` and keeps the list in EAX.
+// AC507: Retry-conditional positive/deferred category result in bool/byte/short/long,
+// 278/278/280/279/277/277/280/279. NOT kept: all regress and lengthen beyond retail;
+// original eager scans, live bounds, consumed index, releases and body restored.
+// M343: Native input-body cursor, retry/island declaration and mutable/read-only slots:
+// consumed at retrieval 266/266/266/266; advanced at body end 274/274/274/274, all 966 bytes.
+// Original consumed island index, signed live bound, indexed cleanup and complete body restored.
+// NOT kept: frame grows to 0x428 and every form regresses.
+// Lane 14 r57 (fast, from 153): plain `for` island index with the step back inside 240 (958 B); the second scan
+// setting the shared found flag 96 (match-only, restored); on it: the for-loop 233 (957 B: retail keeps the
+// index in ECX on the unflagged path and writes its home only after `dec`; ours homes it at the init and the
+// increment), with the flagged path as a nested block 233; admission assigned in if/else arms 96 (same code).
+// Retail also forms the type-record pointer before the `local_9 > 0` branch, where ours folds it into the load.
+// M343: Native input-body cursor, retry/island declaration and mutable/read-only slots:
+// consumed at retrieval 266/266/266/266; advanced at body end 274/274/274/274, all 966 bytes.
+// Original consumed island index, signed live bound, indexed cleanup and complete body restored.
+// NOT kept: frame grows to 0x428 and every form regresses.
+// Lane 14 r60 (fast, base 153 aligned 65): a separate second-scan found flag tested first 96 at 954 bytes, aligned 39 (match-only;
+// the same code as sharing the first flag), left: selector EDX/list EAX for retail's EAX/EDX, the index stored at each step, the
+// record address folded after the retry test, one reload order. On it: plain `for` index 233 (957 bytes, aligned 60), the flagged
+// body in a forced-inline helper 96 (same code), the helper with the `for` index 233 (same code). Alone: `for` index 240 (958
+// bytes, aligned 77); admission preset true with the type in a local 155, with the flag 264, with the flag and `for` 140 (958
+// bytes, aligned 75). At the guard selector, list and index take EAX, ECX and EDX: whichever of selector and list picks EAX
+// first decides the rest, and retail's list staying in EDX is what lets the unflagged path skip both reloads.
+// DL256: Existing cleanup provider, coherent definition/all declarations: inline/default 153,
+// forced/default 1456; ordinary/inline/forced cdecl 153/153/1456; stdcall 153/153/1456.
+// Ordinary/inline forms leave all controls unchanged. Forced forms grow to 1889/954 bytes,
+// frame 0x440 versus 0x424, and lose ten matched controls; NOT kept. All seven contracts
+// and original complete bodies restored; selector/island/count homes and admission BL remain.
+// B411: Actual two-list first/second phase do traversals, bool/byte/short/long,
+// 281/281/196/280/285/285/200/284. NOT kept: phase/domain nonmatches, longer extents
+// and byte-phase frame shrink. Original ordinal traversal and complete body restored.
+// P305: Native selected-list/body/header read-only receivers, seven subsets 153 each;
+// all three with the property source typed as its native entity 153. Original complete body
+// restored; selector/index/count homes and admission BL remain.
+// DH324: Native active-bit tests at component/primary/both releases, direct or Boolean-macro,
+// then paired nonzero/true equality: 234/211/255/153/153/153/255/255. NOT kept: word-field release
+// accesses grow beyond retail; original byte tests, stores and complete body restored.
+// DH326: Lazy second membership after first-list miss, original found flag then completed
+// first ordinal, bool/byte/short/long admission: 274/274/267/267/273/273/229/229.
+// NOT kept: regressions; native membership remains eager. Original body restored;
+// selector/island/count homes, scratch phase and admission register remain.
+// DH328: Last-completed island ordinal with original/first/second/both standard membership
+// searches 295/316/294/313; category acquired after both searches 321/315/314/347.
+// NOT kept: all regress, grow the frame and lengthen beyond retail; complete body restored.
+// DH337: Complete first/second private-prefix absence in bool/byte/short/long:
+// 270/270/270/270/278/278/298/278. NOT kept: unmatched result flags and longer
+// scans; original stopping searches/body restored, selector/count/admission homes remain.
+// DH355: Retry success/count continuation in the existing do-while, long/int/dword/
+// short/word/signed-char/byte/char: 153/153/153/259/259/262/262/262. NOT kept: ties or regressions;
+// byte-width frame shrinks to 0x420; original body and 0x424 frame restored.
+// DH360: Complete first/deferred initialized-prefix membership reductions in bool/byte/short/long,
+// 235/235/265/264/278/278/320/317. NOT kept: regressions; retail stops at the first match.
+// Original eager stopping searches, live bounds, retries, releases and complete body restored.
+// DH362: Root activation result bool/byte/short/long, positive then complementary,
+// eight at 153. NOT kept: native selector/island/count and admission homes do not move;
+// original short-circuit guard, eager searches, retry/release graph and full body restored.
+// DH364: Forward first-prefix cursor with remaining long/short/word/dword counts
+// 276/295/296/276; deferred-prefix counterparts 276/275/268/261. NOT kept:
+// all regress; original eager stopping searches, live bounds, consumed island
+// index, retry/release graph and complete body restored.
+// DH367: Eager stopping first/deferred searches via standard search_n and find_if,
+// eight boundary pairs 297/317/314/305/325/380/366/387. NOT kept: all regress and lengthen;
+// original eager membership, native bounds, consumed island index and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {

@@ -1063,6 +1063,39 @@ bool __stdcall function_2399da(long controller_index)
 // DH306: escaped flags/title/Boolean-output defaults, seven subsets
 // 131/90/136/131/140/136/140; all at entry 165. Original body restored;
 // identity/rank register ownership and the extra removal move remain.
+// Round 77 (m3 lane 9, fast): the identity and name pointers declared at their assignments 90; the over-rank
+// denial as the first else-if arm, then rank 3, then the set-rank arm 90; task_index declared at function scope
+// 90; the identity test inverted (`!xuid || !xuid->qwUserID` refusal first) 90; the set-rank arm tested first
+// (`rank != NONE && rank <= own_rank`) with the removal as the next arm 92. Identity ECX/rank EAX remain.
+// Round 199 (fast): the task index as DWORD 90; the removal test as a named `bool remove` 90; the over-rank test as
+// `!(rank > own_rank)` 90; the identity test split into a NULL test and a 64-bit test, each with its own 0x5c
+// denial 90 (merged back); `if (may_change && !have_member) copy; else if (!have_member) deny` 122 (438 bytes).
+// Round 158 (m3 lane 4, fast): the identity copied to a local after the membership call 90; the identity test as a forceinline bool helper 90; the
+// removal through a forceinline forwarder taking the identity 90; an unused identity argument on the set-rank call (one identity use more, LTCG drops it) 90; identity and name declared at assignment 90.
+// m3 lane 14 r56 (fast with 0xac050/0xac360/0x2399da): the permission compare as `dwPrivileges < own_rank` 91;
+// the permission test inverted with the 0x5d denial first 90; `NONE != task_index` 90; own_rank declared at
+// function scope 90; the identity declared first 90. Identity ECX/rank EAX remain.
+// Round 390: Two-stage selected-pointer presence then full identifier validity,
+// positive/negative bool/byte/short/long outcomes: 106/106/110/109 repeated.
+// Original complete body restored; identity/rank EAX/ECX ownership and extra move remain.
+// Round 67 (m3 lane 1, fast): own rank read right after the membership call, ahead of the identity test 90
+// (same code); a `controller_mask` local for the six dialog masks 176 (418 bytes); the identity test as
+// `xuid != NULL && xuid->qwUserID != 0` 90; `own_rank >= rank` 90; `rank != NONE` arm first with the
+// over-rank denial as its first test and the removal in the else 95 (437 bytes).
+// Round 158 (m3 lane 4, fast): the identity copied to a local after the membership call 90; the identity test as a forceinline bool helper 90; the
+// removal through a forceinline forwarder taking the identity 90; an unused identity argument on the set-rank call (one identity use more, LTCG drops it) 90; identity and name declared at assignment 90.
+// B413: Actual metadata/team-query/member-presence scopes ending at their last
+// consumers, seven subsets, then all with immutable own rank: 90/90/90/90/90/90/90/90.
+// Original complete body restored; selected-pointer/rank ownership and extra move remain.
+// Round 208 (m3 lane 3, fast with 0xac050/0xac360/0x2399da): own rank read from membership at each use 90;
+// `xuid != NULL && xuid->qwUserID != 0` 90; the own-rank comparisons swapped 92; `own_rank >= rank` 90;
+// `long task_index = NONE;` 90; task_index at function scope 90.
+// B416: Membership output ends after exporting its native twice-used privilege value;
+// query-buffer/selected-member/privilege role-name domains on that completed-buffer graph,
+// eight at 90. Original body restored; identity/rank EAX/ECX ownership and removal move remain.
+// B425: Complementary member/permission states singly/both as bool and byte, then
+// both short/long: 93/122/124/93/122/124/166/155. NOT kept: no exact match; original flags and body
+// restored. Selected identity/rank homes and the extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

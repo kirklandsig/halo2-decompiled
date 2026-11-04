@@ -323,6 +323,12 @@ struct s_z_state_world
 // Round 156 (fast): the active byte in a char local 11; the entity pointer declared before the identifier test 11;
 // the result assigned straight from the call 55 (122 bytes); a state local 11; a named masked entity index with
 // pointer addition 11.
+// Round 67 (fast): the type read before the active test 15 (the byte folds, but in DL with the database in ECX, and the
+// index arrives in EDX: callers 0xa9570/0xa9640/0xa96d0/0xa9770 1, 0xa98b0 14, 0xa9940 20); the identifier assigned in its
+// test 11; the state test as an early return of the result 41 (137 bytes); the formals reversed (all six calls with them)
+// 11 (same code); the inactive record as an early return of the result 30 (137 bytes). Compile-only, every one of 17
+// forms keeps the database in ECX (pointer reuse of one world variable, a database local, an entity index, record
+// reference, active local, object local, char/byte/bitfield active byte, unsigned type and identifier).
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {
@@ -345,7 +351,14 @@ bool function_a9820(long *block, long index)
 	return result;
 }
 
+// MiniMax B (11-04): no new form, no lower score: the database pointer is still loaded into ECX where retail
+// loads it into EDX, and the active byte is still read through the materialised record address; an active
+// byte in a local read before the record pointer 14, a database local with the byte read from the array 14,
+// the byte read from the array with the record taken inside the branch 14, the record pointer read before the
+// byte 14, and a world local used for both reads 18 (the database is then overwritten in place, but in ECX
+// with the world).
 // MiniMax I (11-01): the database pointer is still loaded into ECX where retail loads it into EDX, so the active byte is still read through the materialised record address; a world local in the inner block, a database local, a record reference, the record fields without any pointer and the active test read from the array element all leave the code as it was.
+// MiniMax A (11-03): no new form, no lower score.
 // score 11 (was 11): this round: the database as a byte pointer with the active byte read from the
 // array 14; the record address as an integer 11; a named world pointer 21; the database read
 // before the state test 11; the database as a long address 14; the database local with the record

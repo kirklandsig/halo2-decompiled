@@ -204,6 +204,24 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // the weapon query before the player queries 107 (378 bytes); the player test as `!= NONE` first 117; the
 // sound test with the zoom flag first 125. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, avoided): our
 // link knows it writes no memory and merges retail's second unit fetch into the entry fetch.
+// Round 46 (m3 lane 2, fast): weapon flag as `weapon_index != NONE && function_100f70(...)` 100 (376 bytes, but a
+// setcc-style flag where retail has the ternary's `xor al, al`; 7 points, not kept); the sound test with keep first
+// 108; long user index with the zoom flag declared just before the reset test 125; the zoom flag set by an `if`
+// 116; the globals' sound as the default, overridden for the weapon 104 (367 bytes); weapon through the entry unit
+// 107 (same code, the fetches are merged anyway). Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, avoided).
+// Round 125 (lane 8, fast): the existing event_player_get for the user index 107 (same code); the sound helper
+// plain `inline` 162 (318 bytes); the player helper __forceinline 107; the weapon flag as `weapon_index != NONE
+// && function_100f70(weapon_index)` 100 at 376 bytes (flag materialized with `mov cl, 1` where retail keeps the
+// call result in AL; a positional gain, not kept); the sound index as one ternary 107; the sound part behind an
+// early return 107. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, avoided).
+// Round 145 (m3 lane 5, fast): the `&&` weapon flag with the unit fetched in the reset block 130 (393 B); the
+// `&&` flag alone 100 (376 B, seven points: not kept); that with a long user index 104 (367 B); with the zoom flag
+// declared after the weapon flag 113 (361 B); the ternary flag with the late zoom flag and a long user index 125
+// (350 B). Retail uses the entry unit (EBP) for the reset and a second fetch (ESI) for the weapon lookup.
+// Round 107, on the full-width user ordinal base: weapon-slot early/conditional returns 97/110;
+// player/sound early returns 116/113; all three early 102; weapon flag if/else 114; default-first
+// sound 107; forceinline current-weapon helper 110. NOT kept: 97 combines edits whose parts alone
+// do not both gain, without a byte match; original producers, sound control and ordinal restored.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

@@ -12,7 +12,13 @@ void function_1fe410(point3f *arg_0, real arg_1);
 
 static __forceinline long real_to_long(real value);
 
+// MiniMax A (11-04): no new form, no lower score; the third input copied into a named local scores 415 and the +0x1c value
+// named 437 (both restored), and retail re-reads the third input from its stack slot after the 0x2104b0 call.
 // score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
+// Lane 18 r37 (fast): the +0x84 scale named for its test and product 430; unary negation for the side
+// flip 373 (same code); the +0x7c0 initial value as a ternary 430 (1844 B); the target-state pointer
+// declared before the prop test 373; the two limits read before +0xc 373. Ours caches the random-state
+// pointer in ESI from the first draw, where retail keeps the third input there and the state in ECX.
 // Round 28 lead (not kept: needs one-use locals): retail reads the third draw's bounds (+0x14/+0x18) before the
 // first draw and keeps them on the x87 stack; with them read into locals ahead of the draws, all three draws through
 // local_10 (the random-state local: one seed store after the third draw, as retail) and the lower bounds written as
@@ -165,6 +171,12 @@ static __forceinline long real_to_long(real value);
 // P262: Uniform side/first-output/second-output component orders ikj/jik/jki/kij/kji
 // 437/424/425/443/442; early output workspaces with ikj/jik/kji 437/424/442.
 // Original publication, workspace lifetimes, all arithmetic and complete body restored.
+// Round 131 (m3 lane 8, fast with 0x1fdce0/0x1fe410/0x2104b0/0x210850/0x259d0): the random-state local declared
+// right after the 0x1fe410 test (retail loads 0x4e7408 into ECX there) 373 (same code); the point-record copy through
+// local_3 380; the output vector through a pointer local read back for the final sums (retail reads [eax], [eax+4],
+// [eax+8]) 376 at 1854 bytes; the sign test as `random_next(...) & 0x8000` 417, as `(short)random_next(...) < 0` 429.
+// 0x210850 sits in the /Ob1 src/unknown_20fe20.cpp, but 38 of its 52 retail callers are matched /O2 code that calls it
+// out of line, so its flags alone do not explain retail inlining it only here.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

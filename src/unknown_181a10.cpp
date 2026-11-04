@@ -35,11 +35,25 @@ struct s_query_collector_entries
 	}
 };
 
+struct source_2df020;
+class class_2df020
+{
+public:
+	void function_2df020(source_2df020 const *source);
+};
+
 class c_query_array_collector : public c_query_collector
 {
 public:
 	virtual ~c_query_array_collector();
-	virtual void collect(s_batch_contact const *) {}
+	/* retail table 0x453b90 slot 1 (0x2df020): the contact appended to
+	   the array at +0x10; empty, every query here found nothing (0x183910
+	   gave explosions no closest point, so their damage fell off as if
+	   from far away) */
+	virtual void collect(s_batch_contact const *contact)
+	{
+		((class_2df020 *)this)->function_2df020((source_2df020 const *)contact);
+	}
 	byte unknown08[8];
 	s_query_collector_entries entries;
 };
@@ -396,6 +410,12 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // loop moves the slots to retail's j, first, i (it adds code and reverses second and the two scaled indices).
 // Round 118: four existing add-scaled/point reconstruction helpers 25 each; an explicit normal
 // copy with direct/shared/scalar reconstruction 95 each; the normal field address 8. Original restored.
+// Round 138: inner loop as while 68 (671 bytes); bodies by pointer add 8; context assigned after its declaration 8;
+// component guards nested 8; index guards nested 8.
+// Round 53 (m3 lane 15, fast): the second body read before the first 8; the query pointer named before the
+// call 8; entry pointers for both bodies 8; `result = true` first in the closer-contact arm 10; that test with
+// its operands swapped 8. Diagnostics: `(void)j`, `(void)i`, `(void)first` and unused initialised copies of
+// them (one or two) leave the slots, so no-code references do not order these spill homes.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -525,6 +545,7 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// MiniMax lane A (11-04): no new form, no lower score.
 // score 308 (was 308): frame 0x4c versus 0x44 (retail writes the transformed normal into the plane and has two
 // unused dwords below it); classifier clamp form, transformed-plane and output homes remain.
 // normal component loop 319; material-output scope 319; direct validity 351;
@@ -666,6 +687,63 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // short copy ordinal: 315/313/326/357/344/329/342/307. One-point lead rejected; original
 // aggregate copies, setters, plane math and body restored. Frame/point/plane homes remain.
 // M323: Native instance/mesh-surface/direct-surface layouts, seven subsets and complete readonly inputs, all 308. Original input observations, types and body restored; frame 0x4c versus 0x44 and classifier/plane/output homes remain.
+// Round 56 (m3 lane 13, fast): retail keeps origin as three scalars (x at +0x38, y and z in reused slots +0x14/+0x18)
+// and copies the hit point out with dword moves. Origin as three named reals through a position pointer 315 (1251
+// bytes, frame 0x48); read straight from the transform 312 (1248, frame 0x48); each with the hit copied out by
+// struct assignment 322/319 (1228/1231); the struct assignment alone 331 (1218, frame 0x4c). Every 0x14a300 call
+// here sign-extends the plane index in retail (a long parameter; needs src/unknown_17d9a0.cpp, avoided this round).
+// Round 44 (m3 lane 2, fast = plain): retail's slots: origin y/z at +0x14/+0x18 (reused by the material and
+// friction), hit +0x2c..+0x34, origin x +0x38, +0x3c/+0x40 never touched, plane +0x44..+0x50 (normal written
+// in place); the untouched pair looks like a reserved aggregate home. Origin and hit copied by components
+// 326 (1263 bytes); scalar origin read z/y/x with the hit by components 325; hit by components alone 313
+// (1250); that with the in-place normal 328 (frame 0x40), with the normal copied into the plane by components
+// 329; origin through real_point3d_set 315, with the in-place normal 344; the in-place normal on the kept form
+// 357 (1208 bytes, frame 0x40); all 18 origin/hit/normal combinations at or above 308.
+// Round 130 (m3 lane 8, fast): retail keeps first->next->shape in ECX for its test and the call (`mov ecx,
+// [eax]; test ecx, ecx; mov eax, ecx`), ours compares memory and reloads. A next pointer and next-shape local
+// assigned in the test 309 (gives the register load, EAX not ECX); a next pointer local alone 312; the clamp
+// helper comparing with its own `value` 332 (1232 B); the second shape in a local for the exclusion test 346;
+// the key range test as `key < 0 || key > count - 1` 308 (different code, aligned worse).
+// Round 144 (m3 lane 6, fast; register-masked aligned [169]): `plane3f plane`, the transformed normal, and
+// material/friction/restitution each declared at function scope 308 (same code); the classifier reading
+// `shape->data` at each use 308 (same code); the exclusion test as a single-exit bool helper on the shape (result =
+// byte test under the kind/data/classifier test) 320 [178] (retail's `setne al; test al, al`, but the shape stays in
+// ESI where retail re-reads [ebx] after the virtual call); that helper on the contact node, reading `node->shape` at
+// each use, 319 [162]. Retail's three loads of the data and its preloaded clamp constants are reproduced by no form;
+// both matched siblings (0x1c5400, 0x1d4880) use the single-load clamp.
+// P307: Existing plane-output returns at transformed/direct/both consumers, with original/returned
+// material and earlier native outputs: 341/306/346/343/325/348/346/348. Direct return 306 at 1243
+// bytes NOT kept: two-count gain and unmatched mixed receiver graph. Original body restored.
+// DH331: Native origin/hit/position library-copy subsets 1..7, then all with completed-normal
+// library publication: 308/308/308/331/331/331/331/331. Original copy boundaries and entire body restored;
+// frame 0x4c versus 0x44 and classifier/plane/output homes remain.
+// DH335: Standard backward origin/hit/normal transfers, subsets 1..7, then
+// complete final position transfer: 312/303/372/305/376/352/354/377. NOT kept:
+// hit-only gain five and paired gain three; original complete body restored.
+// AC515: Complete exclusion result on the aggregate origin/hit graph, bool/byte/short/long,
+// at computation or with entry-owned uninitialized storage: 308/308/308/308/308/308/308/308.
+// NOT kept: unmatched result storage; original guards, observations and complete body restored.
+// AC519: Standard forward origin/hit/completed-normal subsets 1..7, then final
+// position transfer: 312/303/305/378/382/355/357/383. NOT kept: best gain five
+// is below eight; normal forms shorten away from retail. Original body restored.
+// AC524: Complete root admission bool/byte/short/long, then complementary
+// rejection, 308 each at 1243 bytes. NOT kept: frame 0x4c versus 0x44, root-kind
+// transport and classifier/plane/output homes remain; original collector restored.
+// AC539: Post-clamp bounded-key rejection result, positive then complementary
+// bool/byte/short/long: eight at 308. NOT kept: unmatched one-use decision storage;
+// original clamp, snapshots, plane math and full collector restored.
+// Coordinated long plane-index formal/declarations: 308; callee matches but a caller
+// rises 1 -> 103 (580 -> 576 bytes). NOT kept: shared-user regression; all declarations restored.
+// AC541: Complete final validity/normal-threshold publication or rejection,
+// bool/byte/short/long: eight at 308. NOT kept: no equality/gain;
+// original guards, snapshots, plane math, publication and full body restored.
+// AC543: Strict distance-improvement admission/complement at the original capture
+// boundary, bool/byte/short/long: eight at 308, 1243 bytes. NOT kept: one-use
+// outcomes unmatched; frame 0x4c versus 0x44 and classifier/plane/output homes remain.
+// Original unordered rejection, snapshots, plane math, calls and full body restored.
+// M381: Explicit plane-side-produced admission/rejection, bool/byte/short/long on
+// the aggregate origin/hit graph: 325/325/311/309/328/328/315/316. NOT kept: all regress;
+// original implicit success, plane publication, material outputs and full body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -519,6 +519,11 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // rotation 29; force-inline declarations for the range and rotation helpers 13/13;
 // slot_random_range for the scale and both draws 189 (1053 bytes) and 232 (1009 bytes).
 // Original body restored.
+// Round 66 (m3 lane 11, fast with 0x170d70): the flag store before the final scale 22; scale and rotation
+// declared, then assigned 13; sine/cosine and the rotate call in their own block 13; the flag store before
+// the rotate call 81 (1109 bytes); sine/cosine before the normalize call 106. Unused-local probes (1-16,
+// diagnostic) repeat with period 8 (13/19/15/25/21/21/17/23) and move only the dot/cross operand orders;
+// the j/k rows stay in every residue, so they are no numbering tie.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -664,6 +669,11 @@ struct s_player_axes_153d10
 // Round 41 (lane 2, plain; --fast builds this function differently, 345 at 1335 bytes): delta through the point difference
 // helper 119 (1303 bytes); dots through the dot helper 2; both 119; relative declared before delta 2; cross declared before the
 // axes 2; slot vector through a real pointer 18.
+// Round 132 (plain): `vector3f basis[2]` in the axes struct 2; a sub-struct holding both axes 2; `(real)` casts on products 2-5 2;
+// the j row's first product up-first 2; all six products up-first 2. One-file harness, float window only (base 5, three of those
+// the slot register): all 63 sets of `(real)` casts on the six products 5 or above; dots before the cross 47; only the forward or
+// up dot before it 46/36; delta after the cross 47; rows jik/jki/kij/kji 48; six named products 48; three scalar cross locals 48;
+// negated j row 48; `real basis[2][3]` 48; a basis pointer 10; a pointer to the axes sub-struct 48, with the dots through it 10.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

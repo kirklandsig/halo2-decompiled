@@ -58,6 +58,7 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
+// MiniMax b (11-04): no new form, no lower score; the abstract allocator's base vtable store is still dropped (it comes from the header's inline constructor) and the pool placement still reloads g_479888 at the join.
 // score 34 (was 34): unchanged this round: retail still stores the abstract allocator's vtable at
 // the object before the two following stores (our build drops that store, which comes from the
 // header's inline constructor and so is out of reach from this file) and still reloads g_479888 on
@@ -257,9 +258,49 @@ bool g_47f05b;
 // J239: intermediate fixed-base storage with byte/next-object/sizeof buffer before reset [34, 34, 34];
 // after reset [34, 34, 34]; scoped next-object/sizeof with chained state [34, 34].
 // Original placements and body restored; intermediate vtable store and successful-arm reload remain.
+// Round 124 (m3 lane 8, fast with 0x146b80/0x22c3e0 matched): `void *const block` 34 (same code); `block` read
+// after the NONE store 34; the stores ordered g_479890, g_479884, g_479880 38; the pool constructed with `()`
+// 34; `g_479880 = true` moved to the end 48 (155 bytes).
 // B381: complete four-word constructor element result in long/int/short/signed-char,
 // terminal/nonterminal assignment: 34/34/34/34/34/34/34/34. NOT kept: one-use element results
 // require an exact match. Original intermediate-vtable store and arm reload gap remain.
+// m3 lane 11 r62 (fast with 0x146b80/0x146e30/0x22c3e0; header trials restored): the abstract loop with a
+// dword index 34 (same code); its test as `i != 4` 54 (loop kept; 0x146b80 49, 0x146e30 169, 0x22c3e0 231);
+// as `while (i < 4) { ...; i++; }` 34 (same code); the fixed constructors taking `byte *` 34 (same code);
+// `++g_4798b4` 34 (same code). The base vtable store stays dropped in all.
+// Round 62 (m3 lane 10): `byte *block` 34; placement through `(c_havok_fixed_memory *)block` 34;
+// `void *const block` 34; the pool address named before the first construction 43 (140 bytes);
+// `block ? new ... : NULL` 34. Original body restored.
+// Lane 18 round 36 (fast with 0x146b80/0x146e30/0x22c3e0): the abstract loop index `unsigned long` 34 (same
+// code); the three global stores first, then a `fixed` result cleared to NULL and constructed under `if (block)`
+// 39 (142 bytes); `g_479894 = block ? new (block) ... : NULL;` 34 (same code); the fixed base's size parameter as
+// `dword` 34 (same code); the count cleared in the derived fixed constructor's body 33 (0x146e30 120 -> 121; not kept).
+// Round 124 (m3 lane 7, fast with the file and 0x22c3e0): a `c_havok_fixed_memory *` block with the buffer as
+// `block + 1` 34; the fixed base's fields through a member-initializer list 34; the size as `long const &` in
+// both fixed constructors 34; the count cleared first in the fixed base body 32 (0x146e30 120 -> 121, not kept);
+// the abstract loop as `i < 3 ? 0 : NONE` 34. Header and body restored.
+// m3 lane 11 r62 (fast with 0x146b80/0x146e30/0x22c3e0; header trials restored): the abstract loop with a
+// dword index 34 (same code); its test as `i != 4` 54 (loop kept; 0x146b80 49, 0x146e30 169, 0x22c3e0 231);
+// as `while (i < 4) { ...; i++; }` 34 (same code); the fixed constructors taking `byte *` 34 (same code);
+// `++g_4798b4` 34 (same code). The base vtable store stays dropped in all.
+// Lane 12 r86 (fast with 0x146ac0/0x146b80/0x146e30/0x22c3e0): g_479884's NONE stored after both
+// constructions 44 (140 bytes); the buffer as `(void *)((dword)block + 0x30)` 34 (same code); a byte
+// block with `&block[0x30]` and the pool built with `()` 34 (same code); the stores ordered g_479880,
+// g_479884, g_479890 39; header: the size mask moved from the fixed base into the derived constructor's
+// base argument 34 (all 57 functions of the header's ten files unchanged).
+// DL257: Called pool constructor ordinary/forced inline, alone and with forced reference-
+// count/fixed-base/fixed-derived constructor expansion: 34/1058/34/34/34/1058/1058/1058. Ordinary
+// policies retain the omitted intermediate vtable store; forced policies expand the native call.
+// Original declarations and complete body restored; the store and successful-arm reload remain.
+// Round 42 (m3 lane 18, fast with 0x146b80/0x146e30/0x22c3e0/0x1c2690): testing the global while placing through
+// `block`, `g_479894 = g_479888 ? new (block) ... : NULL;`, gives retail's arm reload and the 1 in EDX together, so
+// only the vtable store differs: 35 (140 bytes, positional); as `if (g_479888) ... else g_479894 = NULL;` 35; on it the
+// method6/method7 overrides declared in the fixed base 35, `block` typed as the fixed allocator with `block + 1` 35,
+// the test inverted 36. Compile-only: a local placement always gives the 1 in a register and the join reload, a
+// g_479888 placement the arm reload and immediate 1s (13 spellings); the store is dropped in every form.
+// F377: Direct exhaustive constructor stores, terminal/zero-first arms and long/int/short/
+// signed-char ordinals: 34/34/34/34/43/54/43/54. NOT kept: narrow forms worsen other
+// constructor users; shared header and full body restored; base-vtable/arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {
@@ -453,6 +494,7 @@ void function_146de0(void)
 	}
 }
 
+// MiniMax b (11-04): no new form, no lower score; retail inlines the texture cache update (0x12c600) at this call site only, so the body stays 22 bytes short and keeps our size spill and counter registers.
 // score 120 (was 120): the function still misses retail's inline of the texture cache
 // update (0x12c600) at this one call site and stays 22 bytes short; unchanged this
 // round

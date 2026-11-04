@@ -230,6 +230,81 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // AC492: Emitter direction after facing/exhaustive facing/direct output formal
 // 412/398/395; their three pairs 408/412/398, all 408; native signed evaluation point 402.
 // Original emitter and whole body restored; entry sum and normalized XY/magnitude homes remain.
+// M3 lane 13 r54 (fast): the normalizer helper's locals named magnitude/inverse 395 (same code); the loop distance
+// through the existing vector2d_from_points2d + magnitude2d 450 (1751 bytes); the distance declared at function
+// scope 395; the negated radius written inline in the first endpoint 436 (1711 bytes); the centre assigned by
+// component 395. Retail keeps the loop distance in a stack home (fst, then fdiv from memory) and 16-bit counters.
+// F348: Existing shared 2D dot at input-facing, velocity, endpoint and signed-facing
+// consumers, then input pairs and all consumers: 410/395/395/395/410/410/410/410.
+// NOT kept: shared real-result/operand-order forms do not match; original expressions,
+// helpers and full body restored; entry sum and normalized XY/magnitude homes remain.
+// Round 554: On evaluation-first emission and recovered seven-word cleanup, complete
+// normalizer input/native-root/void-contract subsets 437/437/395/395/437/437/395;
+// all with complementary early rejection 395. Original helper and body restored; every
+// shared user unchanged. Entry sum and normalized XY/magnitude homes remain.
+// Round 44 (m3 lane 2, fast with caller 0x29a190 at 389): both now return with `ret 0x1c`. Retail stores the
+// centre's x at once (`movss [esp+0x50]`), takes dx/dy on x87 from it, and keeps 16-bit counters (outer in
+// EBX, compared through bx; candidate count in BP, stored as a word). The loop differences as `(double)c - p`
+// in the root 418 (1698 bytes); short candidate count 464 (1689; caller 699), with double dx/dy locals 445
+// (1694; caller 698), with the `(double)` differences 513 (1646), plus a short outer counter 504 (1651); short
+// inner-angle counter 395 (same code), with the short candidate count 464; all three short with double dx/dy
+// 488 (1669; caller 698).
+// M3 lane 9 r83 (fast): the point locals renamed by role (center/direction/endpoints/offset/angles/candidate) 395
+// (same code: names move no slot here); the far branch's difference through the existing vector2d_from_points2d 407
+// (1743 bytes); the loop distance through a file-local accumulating distance2d 451 (1751); the root summed y-first
+// 395 (same code). Retail negates the inner sine's angle on x87 (`fld [angle]; fchs`), ours with SSE `0 - x`: the
+// sine argument as `-(double)a : (double)a` 425 (1709 bytes, fchs as retail but the entry moves to +0x2); the sine
+// as an if/else of two calls 419 (1715 bytes).
+// M3 lane 6 r142 (fast; both now `ret 0x1c`): local_2 renamed `direction` 395 (same code); the loop distance's
+// squared sum built in two statements before the root 395 (same code); a pointer to the emission entry in the
+// first arm 431 (1695 bytes); each emission's y written before x 421 (1743 bytes); diagnostic: the arg_0 address
+// read removed 401 (1728 bytes, cleanup 0x18, caller 0x29a190 697). Retail spills the first arm's cosine to
+// [esp+0x28] and takes the y product in SSE before the sine; ours keeps both on x87. Original body restored.
+// Lane 14 r60 (fast with caller 0x29a190, base 395/389; "no-home" = aligned count ignoring stack offsets, base 277): the first
+// arm's y product named before the sine in both emissions 412 (1743 bytes, no-home 265); double difference locals in the
+// root, y-first or x-first, 437 (1712 bytes, no-home 284, frame moved); both counters short 471 (1680 bytes, no-home 262;
+// caller 699); short candidate count alone 464 (no-home 273; caller 699); short outer counter alone 402 (no-home 305);
+// double differences with both short 488 (no-home 312; caller 698); all three 464 (no-home 292; caller 698); short counters
+// with the named y product 449 (1695 bytes, no-home 243, the closest structure; caller 699).
+// AC507: Existing point setter at sum/endpoint/fixed-rotation producers, subsets
+// 1/2/4/3/5/6/7 then general rotation too: 457/458/489/485/524/541/561/593.
+// NOT kept: all regress and grow; original producers, setter declaration and full body restored.
+// Unified endpoint-side predicate for all orientation consumers, second/first polarity
+// as bool/byte/short/long: 415/436/437/436/438/438/446/430. All regress;
+// original predicates, counters, helpers, publication and whole body restored.
+// P305: Twice-used fixed-turn sine angle, double/real, near-arm/endpoint lifetime,
+// conditional/test-produced: 414/414/417/417/407/410/408/411. All regress; original
+// whole body, normalizer, emitter and double trig inputs restored; native XY homes remain.
+// M352: First-trig product pairs before second trig at positive/negative/general rotations,
+// masks 1/2/3/4/5/6/7 397/399/414/395/397/399/414; complete paired products 497.
+// NOT kept: early one-use products and changed real rounding do not match; original whole body restored.
+// M359: Fixed-pair sine-first/general-pair cosine-first producer subsets 1-7,
+// then all with a separate negative fixed pair: 405/405/405/421/403/403/419/419.
+// NOT kept: unmatched schedules regress; original trig producers and complete body restored.
+// DH324: Whole native output-record references at first/second/repeated emission,
+// seven subsets then all native pointers: 413/413/431/432/450/450/468/468. Original destinations,
+// helper, publication graph and complete body restored; entry/normalized homes remain.
+// DH326: Positive-default evaluation output; negative arm from original/stored input,
+// pointer/reference output formals and void/ignored-pointer result contracts:
+// 420/420/420/420/434/434/434/434. Original emitter and complete body restored;
+// entry sum and normalized XY/magnitude homes remain.
+// M374: Existing emitter returns next ordinal, byte/short/word/long result with
+// byte/short candidate count: 428/428/428/428/419/464/464/464. NOT kept: all regress;
+// short/word/long results on short count regress caller 389 to 699. Original emitter,
+// counters and whole body restored; entry and native XY/magnitude homes remain.
+// DH361: Existing normalizer epsilon decision as rejection/normalization bool/byte/short/long,
+// eight at 395; the other normalizer user stays 719 and scoring stays exact. NOT kept: no match
+// or native XY/magnitude-home recovery; original comparison, shared helper and full body restored.
+// DH363: Actual candidate-record flags bool/bool, byte/byte, bool/byte, signed-char/bool, byte/signed-char,
+// bool/signed-char, signed-char/byte, signed-char/signed-char: 395/401/401/395/401/401/401/401. NOT kept: no match;
+// original byte/Boolean declarations, record layout, publications and complete body restored.
+// DH365: Original-site complete endpoint-distance admission, bool/byte/char/signed-char/
+// short/word/int/long: 395/395/395/395/395/395/395/395. NOT kept: nonexact one-use predicate forms; original
+// body restored. Frame 0x64 and cleanup agree; entry and normalized XY/magnitude homes remain.
+// DH368: Forward/backward standard copies at original input/positive-evaluation boundaries,
+// eight non-original pairs: 410/494/517/410/494/517/517/517. NOT kept: all regress;
+// five additional candidate-publication copy graphs excluded for added shared-global addresses.
+// Original input/evaluation copies, global assignment, emitter and complete body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -545,6 +620,68 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 763/735/739/780/772/780/738; complete graph with both point-pair collections 739.
 // NOT kept: grouped-storage nonmatches; all regress. Original body/helpers restored;
 // frame, radius and trace/trig/pivot homes remain.
+// M3 lane 13 r54 (fast): one function-scope sine shared by the sweep and the obstacle rotation 730; the third
+// trace result scoped to the sweep loop 719; the side endpoints assigned by component 719; the two trace flags
+// declared at the top 749; the reversed direction formed after the NONE return 719. Frame 0x124 versus 0x114 remains.
+// DH312: Existing direction producer as native coordinate-array loops, long/dword/short/byte
+// ordinals, streaming 760/760/746/746; complete difference publication 785/785/828/828.
+// Original scalar producer and whole body restored; frame/radius/trace homes remain.
+// M3 lane 2 r47 (fast, on 719): the rotated points declared in the loop body 719 and the third trace result at its
+// call 719 (same code); the pathfinding getter as a single-exit result (retail's `xor eax, eax; test; jle; mov eax`,
+// g_4e0348 held in EBX for both calls) 775 (aligned 452 -> 443); with the body under `if (sector != NONE) { ... return
+// local_0; } return true;` (retail's last block is a separate `mov al, 1` epilogue) 782 (aligned 436); that with the
+// reverse vector in its own block around its trace 782 (frame stays 0x124). Retail packs the three bools at +0x11..+0x13
+// (ours puts the result at +0x3f; renamed `result` on the nested form 782, home unchanged) and has one 12-byte home fewer
+// between the pivot (+0x94) and the first trace (+0xb8).
+// Round 554: Complete scalar direction-input/rotation-input/squared-distance boundaries,
+// seven subsets 784/719/784/719/784/719/784; all with separate phase cosines 783.
+// NOT kept: staging nonmatches; original helper inputs, scalar precision and whole body
+// restored. Frame 0x124/0x114, eager radius and trace/trig/pivot homes remain.
+// DH322: Complete direction deltas in real/double with shared setter, named squared length,
+// magnitude before publication and named absolute length: 719/777/719/777/787/806/719/777.
+// NOT kept: precision/staging nonmatches; double forms also raise the shared user 389 to 405.
+// Original helper/body restored; frame/radius/trace homes remain.
+// Round 50 (m3 lane 15, fast): the rotated obstacle offset as two scalars 853 (3285 bytes); the sweep arms
+// setting only the three scales, the three point2f built after 868 (3287); the sweep points declared in the
+// loop body 719 (same code); the reversed direction negated by component 822 (3355); the obstacle distance
+// through the existing magnitude2d 719 (same code). Frame 0x124/0x114 and the cached radius (XMM5) remain.
+// DL254: Current ordinary-result graph with byte/short/word/dword edge-center outcomes, then obstacle facing:
+// 719/744/744/761/719/787/787/751. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
+// J248: Completed three-dimensional direction/reverse/pivot workspaces for
+// late obstacle deltas, rotated direction or both: 753/734/761/719/763/739/773/747.
+// NOT kept: these native-workspace lifetime forms do not match; original
+// independent workspaces, scalar observations, helpers and complete body restored.
+// P302: Existing sweep-rotation actual offset/pivot references, subsets 1/2/3/5/6/7 then
+// ordinary-inline input-pair/full graph: 719/719/719/719/719/719/719/719. Original contracts and whole body restored;
+// frame/radius/trace and pivot homes remain.
+// P304: Native settings/actor backing members and shared normalizer, masks 1/2/4/3/5/6/7,
+// then all with direct actor-position uses: 719/719/756/719/756/756/756/790. Original types, helper and body restored;
+// frame 0x124/0x114, radius and trace/pivot homes remain.
+// DH332: Standard real sine/cosine overloads across the sweep and obstacle phases,
+// seven subsets then native absolute/count overloads: 719/719/719/719/719/719/719/719.
+// All canonicalize; original APIs and body restored. Frame/radius/trace homes remain.
+// M374: Existing late annular endpoint producer in rotated/direction/forward-offset/
+// reverse-offset workspaces, original/shared planar differences: 719/749/719/749/719/749/719/749.
+// NOT kept: no native-frame or score gain; original workspaces, all math and body restored.
+// DH357: Actual advancing obstacle-entry cursor, short/long/int/word ordinal,
+// consumed/explicit head steps: 785/779/779/781/785/779/779/781.
+// NOT kept: all regress and lengthen; original traversal and whole body restored.
+// DH359: Conditional owner query excluded bool/byte/short/long 719/719/752/750;
+// admitted counterparts 738/738/737/735. NOT kept: no gain or byte match;
+// original query guards, outcome, geometry, helpers and complete body restored.
+// DH361: Sweep/obstacle ordinals and selected-obstacle/maximum-ratio declarations at function
+// scope, seven subsets, then the sweep bound too: eight at 719. Original declaration scopes,
+// initializers, geometry and body restored; frame 0x124/0x114 and radius/trace/pivot homes remain.
+// DH363: Actual count/table record fields, direct/const/mutable receivers with original guard,
+// const/mutable conditional, const/mutable/direct default-result getters: 719/719/719/719/719/775/775/775.
+// NOT kept: no native-frame or score gain; original getter, helpers and complete body restored.
+// DH366: Original annular admission, inside/outside bool/byte/short/long outcomes:
+// 719/719/719/719/720/720/720/720. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
+// DH368: Standard center/forward/reverse sweep-history transfers, seven subsets then
+// the initial center copy too: 768/768/771/767/767/790/789/744. NOT kept: all regress;
+// original point transfers, helpers and complete body restored; frame/radius/trace homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

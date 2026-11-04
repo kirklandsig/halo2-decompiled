@@ -108,6 +108,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
+// MiniMax B (11-03): no new form, no lower score. The entry still loads the sixth parameter into ECX
+// and the fourth into EAX against retail's EAX for the sixth and ECX for the fourth (the two stack
+// homes agree, so this is the allocator's choice, not the parameter order); the guard split into three
+// separate returns gives 650 and the negated guard compiles identically, so both were reverted.
 // score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // creation-call setup and transform scratch ranks differ.
 // Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
@@ -161,6 +165,17 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // ordinary each-use inputs 687/690/697/687; with emission count-pointer traversal
 // 659/678/664/659. Original helper and body restored; early mesh/count homes, creation
 // call and transform ranks remain. Earlier four-corner loop plan excluded before any trial.
+// Round 65 (m3 lane 10, fast; 0x17cfa0 still 70): the entry test as three guard returns 650 (2665 B); the luminance
+// counter declared in its for 145; the count loop index renamed apart from the later local_5 94; the scale declared
+// before the maximum distance 97; the colour scale stored before the counter declaration 145.
+// Round 77 (m3 lane 16, fast): the entry guard as a positive `if` around the body 122 (2664 bytes); the vertex
+// array declared inside the block after the guard 94 (same code); the maximum as one `first || greater` test 115;
+// the clamp helper without its volatile pointers (one named value) 687 (2551 bytes: the volatile reads are
+// load-bearing); the strip-count loop counter renamed 94 (same code). Still BLOCKED-BY 0x17cfa0 (contributor).
+// Round 141 (KIMI1, fast): split vertex/count declarations 94/94; descending short countdown on the new count
+// graph 165; outer maximum, early allocation handle and post-guard array on that graph 165 each; existing
+// scale/rotation/addition helpers in a plain corner loop 944 (2945 bytes), with the other matrix provider 784
+// (2821 bytes). Original executable body and helpers restored; entry/count homes and creation-call setup remain.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

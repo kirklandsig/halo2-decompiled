@@ -1362,7 +1362,9 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax H (11-03): no new form, no lower score; ours puts item_count at ebp-8 and index_count at ebp-0xc where retail puts index_count at ebp-8 and item_count at ebp-0xc, and the permuter's best candidate (the mode-one call to 0x199dc9 with its two arguments the other way round) gives 79 in both images, under the keep bar.
 // MiniMax I (11-01): no new form, no lower score.
+// MiniMax G (11-04): no new form, no lower score: the index_count/item_count homes stay swapped and the tail fill stays a pointer loop.
 // score 83 (was 83): the fills are pointer loops (retail: guarded rep stosd from an index loop) and the
 // index_count/item_count slots are swapped; branch two gives EDI to the 0x199ef8 result and keeps
 // index_count in memory (`inc dword ptr`), where retail keeps index_count in EDI through both scans and
@@ -1496,6 +1498,18 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // Round 349: branch-local append cursors with selected-end tail filling, first/second/both
 // 150/154/178; with indexed tails 151/146/164; both with count published after pointer/indexed
 // filling 168/155. Original array, counts and complete body restored.
+// Round 77 (m3 lane 16, fast): branch two's `item_count = player_count` moved ahead of its scan (no else) 148
+// (424 bytes); that with branch two's index fill 172 (417); both maxima declared at their assignment 83 (same
+// code); both maxima as one conditional expression 83 (same code); branch two's index fill with its maximum declared
+// at the assignment 107 (437).
+// Round 66 (m3 lane 1, fast; on branch two's index fill, 107): rows loop on its own counter 107;
+// index_count/indices/item_count declared before player_count 107; teams/values `bool const` with index_count
+// first 107; player_count zeroed in branch one 142; branch one's pointer fill ending on `<` 137 (442 bytes). All
+// restored.
+// Round 402: Ordinary inline producer/eligibility/output-query declarations, singles/pairs/all; indexed tails on the all-inline graph.
+// Scores 83/83/83/83/83/83/83/172. NOT kept: no lower count; declarations restored; original complete body restored.
+// Round 106: fixed-bound do scans first/second/both and a shared maximum 83 each;
+// guarded do fills first/second/both 110/103/127; guarded output do 83. Original body restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2577,7 +2591,9 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax A (11-04): the four widget-index shorts' declaration order (seven orders) 95 each; the players[i] address kept in a local (function scope and loop scope) 95 each; no lower score.
 // MiniMax I (11-01): no new form, no lower score.
+// MiniMax G (11-04): no new form, no lower score: the locals' homes and the players[i] reload after the voice-state query stay as they are.
 // score 95 (was 95): the locals live in the other stack slots (shown count, the first
 // loop's player, the second loop's four widget indices), retail reloads players[i] after the
 // voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
@@ -2693,6 +2709,15 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // Round 349: all first-loop player reads through the populated item value4, with separate
 // display ordinal/unsigned local-search/direct initial flags in eight subsets:
 // 284/285/284/285/274/275/274/275. The intervening range setter leaves value4 unchanged; all forms restored.
+// Round 77 (m3 lane 16, fast): the list-fill call given shown_count 95 (same code), also as the first loop's bound
+// 95 (same code); the first loop's players[i] named once for its two uses 275 (922 bytes); the loop counter declared
+// first 95; the valid test inverted (empty-list arm first) 180 (917 bytes).
+// Round 66 (m3 lane 1, fast): second loop's colour array declared first 95; its bitmap pointer declared first
+// 95; the search result left unstored (call kept) 95; the voice state as `? 0 : 1` 95; a screen pointer local
+// for the last loop's lookup and first call 95 (all the same code).
+// Round 107: single-output helper returns text_a/text_b/bitmap_a/bitmap_b 95 each; first-loop
+// item/player/local declaration orders player-item-local, local-player-item, local-item-player and
+// item-local-player 95 each. All the same code; original helper and declarations restored.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

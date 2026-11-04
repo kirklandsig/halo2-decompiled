@@ -275,6 +275,7 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
+// MiniMax B (11-04b): no new form, no lower score; retail still copies the source into esi at the entry and frames 0x2c against our 0x24, and its declaration and call live in src/unknown_245850.cpp, which this lane may not edit.
 // score 209 (was 209): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
 // source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
@@ -555,6 +556,65 @@ void function_245400(s_source_245400 const *source, long index,
 // DH306: native plane-receiver identity with bool/byte/short/long sides, original/staged
 // cross, 235 each (756 bytes); caller 0x245aa0 becomes 43. NOT kept: retail compares decoded
 // ordinals, shorter extent and caller loss. Original body restored; frame and side homes remain.
+// Round 390: Complete material-to-facing admission outcome, bool/byte/short/long,
+// branch/conditional facing producers: 201/201/231/230/201/201/231/230.
+// NOT kept: state set in a test needs a match; every extent grows away from 783.
+// Original body restored; frame 0x24/0x2c, material/side homes and late matrix remain.
+// M3 lane 4 r157 (fast): the scale test as `1.f != scale` 209; the transformed point declared in the transform block 209
+// (and it would dangle); the material table read before the surface's first index 209; the edge vector after the
+// side flags 203 (786 bytes, re-measured; 6 points, under the margin), with the second material read first 207, with the
+// sides before the plane pointers 203; the endpoint pointers and edge vector both after the sides 212 (aligned 171 -> 147).
+// Round 139 (m3 lane 6, fast): the plane table read after the edge vector, as retail schedules it, 203 (and
+// after the two point pointers 203), but the source then arrives in EDX and 0x245aa0 drops to 3, so not kept;
+// the existing cross3f_staged 209; the side flags before the plane pointers 209; the dot as i, j, k 209.
+// Round 129 (m3 lane 8, fast; 0x245aa0 MATCH each time): retail decodes the side bits with `shr` (unsigned): the
+// codes as dword 209 (gives retail's shr, the side bits still sink into the branch); with an inline plane decoder
+// writing the side through a pointer (diagnostic) 209; dword codes with the second material read first 208; dword
+// codes with the edge vector after the side flags 203 (786 bytes); that with the second material first 207 (784,
+// frame 0x28, source still ECX, matrix still EBP from entry). Original body restored.
+// Round 390: Complete material-to-facing admission outcome, bool/byte/short/long,
+// branch/conditional facing producers: 201/201/231/230/201/201/231/230.
+// NOT kept: state set in a test needs a match; every extent grows away from 783.
+// Original body restored; frame 0x24/0x2c, material/side homes and late matrix remain.
+// Round 59 (m3 lane 13, fast; 0x245400, 0x245aa0 and 0x245850 checked): retail keeps the edge vector in XMM3-5 and
+// scales a copy into XMM0-2 (a select), holds the matrix in EDX only inside the transform block, and reloads both full
+// codes from their stack copies for the side bits after forming the plane pointers. The second material bound to a
+// `const &` record and read first 208 (no dead lea); with the plane pointers inside the plane test 222 (767 bytes,
+// 0x245aa0 43); with the code test written second-first 208; with the code copies and side bits made second-first 207;
+// that with the plane table read after the edge vector 204 (0x245aa0 3). Original body restored.
+// Round 50 (m3 lane 15, fast; 0x245aa0 checked): the side flags as `(code & 0x8000) != 0` 209 (same code); the
+// facing arms inverted on `!=` 209 (same code); the facing test as one ternary condition 211; the equal-material
+// case as an early return 209 (same code); short codes with `< 0` sides 224 (762 bytes, 0x245aa0 lost to 6).
+// B412: Complete ordered-facing rejection to the sole void exit, bool/byte/short/long
+// sides with original/staged cross: 211 each. Original body restored; frame 0x24/0x2c,
+// material/side homes and delayed matrix acquisition remain.
+// B415: Decoded-plane phase ending before transform, with cross-ending/native-code/side storage
+// B415: masks 0..7: 209/209/240/240/209/209/240/240. Native short codes lose caller 0x245aa0 at 6; all original
+// B415: code/side homes and full body restored; frame 0x24/0x2c, material/table spills and late matrix remain.
+// B417: Plane-table acquisition ends after native plane pointers, with completed endpoint/cross
+// regions and earlier bare point workspace, eight forms: 209/209/209/209/209/209/209/209.
+// Original body restored; frame 0x24/0x2c, side homes and delayed matrix acquisition remain.
+// B425: External first/second material and surface bindings on source-ECX graph,
+// seven subsets, then all with first-material pointer: 209/209/209/209/209/209/209/209. NOT kept: no
+// exact match; original receivers/body restored, frame and independent side homes remain.
+// F381: Independent complete side producers, exhaustive bool/byte/short/long
+// 230/230/231/236; default-false results 202/202/212/223. NOT kept: no
+// exact classification residence; seven-point best fails the retention margin.
+// Original side tests and body restored; frame/table/matrix and side homes remain.
+// B436: Existing point-transform native input/coefficient/output array observations, seven subsets,
+// then one reused matrix scale: 209/209/209/209/209/209/209/213. NOT kept: no exact form or eligible gain;
+// original complete body and helpers restored. Native frame/register differences remain.
+// B439: Existing alias-safe rotation with bool/byte/short/long side carriers,
+// branch/entry cross storage: 253/253/253/253/253/253/253/253 (830/783 bytes).
+// NOT kept: longer extent; native frame and material/side homes remain. Body restored.
+// B441: Actual secondary material-index producer in short/long, at original/early
+// acquisition and producer/entry declaration boundaries: 209/209/209/209/209/209/209/209.
+// NOT kept: one-use index transport has no equality; original complete body restored.
+// Frame 0x24/0x2c, material/table/side homes and delayed matrix acquisition remain.
+// MiniMax B (11-04): no new form, no lower score; a named copy of the index and a named
+// copy of the source pointer each give 209 at retail's 783 bytes, and retail still copies
+// the source into esi and frames 0x2c against our 0x24; the declaration and the call live
+// in src/unknown_245850.cpp.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

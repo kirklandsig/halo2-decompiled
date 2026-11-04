@@ -840,6 +840,15 @@ void function_1c54b0(char const *variants, long object_index)
 // a force-inline helper for the whole per-island body returning the flag 4 (flag after the call 18, its
 // result added straight into the index 4); a world local read just before the count test 4; a world local
 // at the iteration top for the island and the discard 4. Original body restored.
+// Round 98, with the flag after discard and a world local before the count test except the pre-call control:
+// that world-local form 18; a guarded do inner loop 79; component_index declared at island scope 18; an
+// explicit walking entity pointer 20, with the flag before the call 8; a const island pointer 18; a per-element
+// entity local 18; the post-call flag assigned from `count == entity_count` 18. Original body restored.
+// Round 127 (lane 7, fast): the flag as the existing hkBool, after the call 25, before it 12; an inline island
+// getter with the flag after the call 321 (12 bytes); an inverted kept flag before the call 24, after it 36; the
+// flag declared at the count test 69, stored after the call 82; a world local reassigned on the back edge 37 (253
+// bytes). Compile-only, 31 forms (world getter, for-scoped index, while, guarded do, ternary and `== false` steps):
+// the reload pair never flips. Original body restored.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -938,6 +947,16 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // 0x146bf0 declared first 1; this body moved into src/unknown_1c39c0.cpp (diagnostic) 1; 0x1c4040's definition
 // moved to the end of this file 1. Its other caller 0x146bf0 stays built ahead of it; the declarations that move
 // that sit in src/unknown_278f00.cpp and src/unknown_146a20.cpp, both other lanes' files this round.
+// Round 204 (plain over the 720 cycle members, none lost): `force != false` at the call 24 (70 bytes, fast);
+// this body alone in a new file of its own 1; function_278f00 declared before function_146bf0 in
+// src/unknown_1c2b10.cpp 1, in src/unknown_1c3d30.cpp 1; function_1c3770 declared before function_e18d0 in
+// src/unknown_1c38a0.cpp 1. Under the default /Gr convention the second argument is always DL, so only a
+// custom convention for function_1c4040 can give AL.
+// Round 102: function_1d1540 before function_1d1260 1; between function_1d1260 and function_1d01c0 1;
+// function_146bf0 before function_278f00 1; that swap with function_1d1540 first of the three 1;
+// function_1d1540 before 0x278f00/0x146bf0 1; between them 1; before the reversed 0x1d01c0/0x1d1260
+// pair 1; the swapped pair with function_1d1540 between function_1d1260 and function_1d01c0 1.
+// Every control stayed unchanged; original declarations restored.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1137,6 +1156,24 @@ struct s_1c4040
 // the record 8. A static definition (diagnostic:
 // the other caller in src/unknown_146a20.cpp no longer links) gives the custom convention, attempt EAX and
 // active CL 13, with 0x1c51c0 at 2.
+// m3 lane 9 r76 (fast): the world read through g_51e9a4 at each use 8; one physics_object_get shared by the detach
+// steps 116 (521 B); the mode case and the detach path as if/else with one success store after 8 (kept: drops the
+// goto and its label); object and unknown declared in the detach block 8; the three initial stores reversed 103.
+// Round 127 (lane 7): `inline` on this definition 8, on 0x1c51c0's 8, on both 8 (fast); 0x1c3590 moved to src/unknown_1c2690.cpp
+// (the same flags, ahead of nothing on the walk) 8. In the custom regime (0x146bf0 first in src/unknown_278f00.cpp, fast): the array
+// store without its cast 27, as if/else 27, through a named array 55, `!active` 28; that store with the fixed island read through
+// g_51e9a4 17 (one real difference, 538 bytes): this gives retail's AL/ECX and both callers match. With that body, plain, by walk:
+// 0x1c3770 declared before havok_component_node_states_get in src/damage.cpp: this function, 0x1c51c0 and 0x146bf0 match, but 0xb8890,
+// 0x1c35f0, 0x1c3770, 0x1c39c0 are lost (0x1d1540 goes custom, 215). Adding 0x1d1540 before 0x1d1260 here and 0x278f00 before
+// 0x1c51c0 in src/unknown_1c39c0.cpp: 14, 0x1d1540 back at 97, 0x1d1260's callers lost. 0x1d1540 before 0x1d1260 here, 0x278f00 before
+// 0x1c51c0 in src/unknown_1c39c0.cpp, function_ba6f0 before function_d9d60 in src/damage.cpp and 0x1d1260 declared ahead of the
+// include in src/unknown_278f00.cpp: all three match with only 0xba6f0 and 0xba7f0 lost, because that entry passes through 0x1c54b0
+// and 0xba7f0 is then built before it, so 0x1c54b0 goes default (81) where retail has it custom: BLOCKED-BY 0x1c54b0's place on the
+// walk. Not kept (a matched function may not be lost); body and declarations restored. 0xba7f0 reached first through 0xd6800 and
+// 0xd6a70 keeps 0x1c54b0 custom but this function default 17 (0xd6bc0, 0xd9640, 0x1039a0 lost).
+// Round 103: forward declaration before/after the cycle callees 8 each; fixed-island direct global read 8;
+// shared island/entity/priority locals 8 each; block-scoped world with the direct fixed read 8;
+// effect pointer at function scope 8. Original body and declaration order restored.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
@@ -1200,36 +1237,36 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 		{
 			physics_object_get(local_0.field_8)->flags |= 0x20;
 			function_1c3770(local_0.field_8, 0);
-			local_0.field_3 = true;
-			goto local_0;
 		}
-		object = physics_object_get(local_0.field_8);
-		if (effect->effect_index != NONE)
+		else
 		{
-			function_1765e0(&((s_physics_object_detach_view *)object)->position, &((s_physics_object_detach_view *)object)->velocity,
-				g_4687b0, effect->effect_index, 0, true);
+			object = physics_object_get(local_0.field_8);
+			if (effect->effect_index != NONE)
+			{
+				function_1765e0(&((s_physics_object_detach_view *)object)->position, &((s_physics_object_detach_view *)object)->velocity,
+					g_4687b0, effect->effect_index, 0, true);
+			}
+			object = physics_object_get(local_0.field_8);
+			if (object->havok_component_index != NONE)
+			{
+				function_1d1260((s_havok_component *)havok_component_flags_get(object->havok_component_index));
+			}
+			object->bit6 = false;
+			unknown = TEST_FIELD_BIT(physics_object_get(local_0.field_8)->bit6);
+			if (unknown)
+			{
+				function_146bf0();
+			}
+			havok_object_detach(local_0.field_8);
+			if (unknown)
+			{
+				function_278f00();
+				function_146bf0();
+			}
+			function_b8540(local_0.field_8);
 		}
-		object = physics_object_get(local_0.field_8);
-		if (object->havok_component_index != NONE)
-		{
-			function_1d1260((s_havok_component *)havok_component_flags_get(object->havok_component_index));
-		}
-		object->bit6 = false;
-		unknown = TEST_FIELD_BIT(physics_object_get(local_0.field_8)->bit6);
-		if (unknown)
-		{
-			function_146bf0();
-		}
-		havok_object_detach(local_0.field_8);
-		if (unknown)
-		{
-			function_278f00();
-			function_146bf0();
-		}
-		function_b8540(local_0.field_8);
 		local_0.field_3 = true;
 	}
-local_0:
 	return local_0.field_3;
 }
 
@@ -1568,6 +1605,13 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // declared first 39 each; reversed guard and initialised count 39 each; guarded for 39. Guard only around
 // the mirror 5, braced 5, nonzero 143 (882 bytes), induction in the for initializer 147 (882), literal zero 5;
 // the same-scope while with 0x1d10b0 as a component member 3 (the member stays matched). Restored.
+// m3 lane 9 r76 (fast): the fill loop bounded by count itself 139 (872 B); count declared before the indices 3;
+// `local_0 = ++i;` 3; the mirror declared at the top of the component block and zeroed at the label 3; the node
+// guard as nested ifs 3. Restored.
+// Round 127 (lane 7, fast): no mirror 125 (858 bytes), the same with `inline` on 0x1d1160's definition 125, with
+// 0x1d1160's aligned locals in a force-inline helper 232 (0x1d1160 35); mirror declared at the function's top and
+// zeroed at the label 3; `i = 0` then `if (i < count)` around a mirror set from i 5; a named count before the mirror
+// 3; a named count with i declared before the mirror 3. Restored.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

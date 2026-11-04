@@ -87,6 +87,10 @@ static inline void *function_xc5914d(long thread_index, short size)
 // (no argument local) 21; an early `return NULL` and `return arguments` at the end, with/without the volatile
 // 88/90, without it returning a result copy 90. Diagnostics: the pointer's address taken (`(void)&arguments`,
 // or a pointer to it used for the element) without the volatile 95/95: VC still promotes it.
+// Round 58 (m3 lane 11, fast): the result copy after the other two allocations 93 (292 bytes); `return NULL`
+// in the evaluated arm with `return result` at the end 12 (identical); the element taken from `result` 32
+// (277 bytes); the frame reference declared after the result copy 25 (281 bytes); the type test nested in
+// the count test 12 (identical).
 // Round 130: result declared first and assigned after the second allocation 90 (293 bytes); direct allocation result
 // 71 (277 bytes, allocation/result still coalesce in EAX); one-pointer array 95 (266); allocator parameter order 71;
 // result before the frame 71; frame field reference 71; wide allocator size formal 71; one-pointer storage record 95

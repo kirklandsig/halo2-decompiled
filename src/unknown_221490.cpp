@@ -718,6 +718,48 @@ bool sound_driver_voice_create_buffer(
 // AC485: existing SDK member calls at submix/spatial creation and buffer operations,
 // subsets 1..7 then all with pre-clear count publication: 82/70/82/71/82/70/82/82;
 // caller stays matched. One-point form rejected; original API calls/body restored.
+// Round 80 (m3 lane 12, fast with 0x191420): retail keeps the 3D flag in BL and play in its byte home (BL
+// reloaded from it after the 3D test); ours the reverse. Play as `(flags >> 1) & 1` 71; the 3D flag as
+// `(flags & 1) != 0` 71; no 3D local, `if (flags & 1)` 182 (602 bytes, flags folded to the caller's 0,
+// 0x191420 1); the 3D test inverted with the buffer clear first 132; the result declared after the voice
+// index 71; the 3D flag declared before play 182 (599 bytes).
+// Lane 17 r37 (fast with 0x191420): the 3D flag as `(flags & 1) == 1` 178 (626 bytes; 0x191420 then differs, 1);
+// play as `flags & 2 ? true : false` 71, as `!!(flags & 2)` 71; the 3D flag as `!!(flags & 1)` 71 (same code each);
+// both bools in one declaration, 3D flag first, 182 (599). Body restored.
+// Round 81 (m3 lane 16, fast with 0x191420): the 3D select written CTRL3D first 71 (same code); both bools
+// tested as `!= false` 71 (same code); the NULL store as its own `if (!three_d)` before the 3D block 132; a
+// complemented 2D flag 154; the count stored at the block top before the voice reference 68 (retail's early
+// `lea eax, [esi + 1]` count store; the bools stay swapped, a gain of 3, not kept).
+// B389: Capacity-produced allocation outcome, bool/byte/short/long with playback-first
+// then spatial-first predicates: 106/106/161/162/103/103/159/160. All regress; original
+// signed result, SDK phases and body restored. Spatial/play and zero/input homes remain.
+// B391: Split low-byte capture then spatial mask at entry/clear/count/input boundaries,
+// canonical bool then byte playback: 71/80/80/73/71/80/80/73. Original complete
+// body restored; spatial/play homes and descriptor zero/input scheduling remain.
+// Round 52 (m3 lane 15, fast with 0x191420): a word result with the 3D flag first 178 (603 bytes), with play first 75;
+// a long result with the 3D flag first re-measured 158 (bools as retail, the result a sign-extended copy after the
+// range test); both bools const with the 3D flag first 182 (599); the 3D flag first with the result assigned at the
+// end of each success arm 182 (599). Whichever bool is defined first is computed from a copy of flags and the other
+// in place, so retail's source defines the 3D flag first; the open question is why its short result/voice index
+// then loses the last callee-saved register to the 3D flag in retail and wins it here.
+// B393: Both SDK creation outcomes bool/byte/word/long, success then failure polarity,
+// with original descriptor phases and modes: 71/71/71/71/71/71/71/71. NOT kept: no exact match;
+// original complete body restored; spatial/play carriers and descriptor zero/input homes remain.
+// B422: Complementary playback with the original positive spatial predicate, bool/byte/short/long,
+// playback-first then spatial-first: 154/154/150/125/153/153/153/154. NOT kept: no byte match; all regress.
+// Original complete body restored; spatial/play carriers and descriptor zero/input homes remain.
+// B426: Zero-extended word/dword count bits with signed capacity/index/publication
+// uses, short/long result and playback/spatial-first producers: 71/182/158/158/159/182/158/158.
+// NOT kept: no byte match; original signed index, result, SDK phases and body restored.
+// B428: Complete routing-pair tables with memcpy first/spatial/both 212/181/242,
+// memmove first/spatial/both 247/224/294, both with spatial-first modes 250/294.
+// NOT kept: no exact match; tables shorten away from retail and regress. Original
+// arrays, direct stores and full body restored; spatial/play and zero/input homes remain.
+// Both playback-first complete-table forms also lose 0x191420 by one instruction.
+// AC538: Independent capacity admission with the original signed result retained, positive/complementary
+// bool/byte/short/long: 71/71/71/71/71/71/71/71. NOT kept: unmatched decision/storage forms; original
+// complete body restored.
+// Spatial/play carriers and descriptor zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
@@ -864,6 +906,13 @@ extern "C" void _ReadWriteBarrier(void);
 // 99; `lRoom = lRoomHF = PIN(...)` 23; both barriers removed 28; memset of sizeof(DSI3DL2BUFFER) 21.
 // Compile-only (same registers as the full build): `= { }`, memset first, the voice pointer after the memset,
 // a forceinline memset wrapper and the zero-memory macro all keep the zero's allocation.
+// Round 32 (lane 18, fast): the shared volume helper's clamp as `volume = PIN(volume, -6400, 0)` 184 (699 bytes;
+// 0x220fd0 216); the rolloff and obstruction LF zeros chained 23; the room difference stored into lRoom and
+// pinned in place 21 (same code); the 0x12aff0 call ahead of the three float stores 49 (672 bytes); the second
+// barrier removed 22.
+// Round 105: the memset result as a multi-use environment pointer 182 (667); clearing from lDirect 21;
+// both voice HF conversions before attenuation 127 (679), obstruction only / occlusion only 96/96 (672);
+// nine explicit aggregate zeros 96 (662); const attenuation / const room 21/21. Original body restored.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

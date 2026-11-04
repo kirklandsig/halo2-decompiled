@@ -1687,6 +1687,54 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Round 528: paired radius result selections, point-before-nearest commit and both
 // 552/552/552; with long accepted counts 572/572/572; both with
 // independent sums 594; independent sums and long counts 578. Original whole body restored.
+// AC499: Both count-zero producers after query, word/short/long/dword, declarations
+// at producer or uninitialized before query: 552/552/572/585/552/552/572/585. Query zero stays EBX;
+// original counters, producer boundary, geometry, helper and complete body restored.
+// Round 129 (m3 lane 8, fast): retail's plane distance follows the text order (x*i, y*j, then z*k) and loads plane.j
+// early for the projected y; ours reassociates to x*i, k*z, j*y. The count clamp as an if statement 605 (2902 bytes);
+// the distance's third product written point-first 552 (same code); the nearest distance declared in the prism loop
+// 552; the existing plane_distance_to_point for the distance 620 (2895); count/radius declarations interleaved
+// (edge count, edge radius, face count, face radius) 552. Original body restored.
+// Round 64 (lane 10, fast only, under a CAVEAT for callee 0x16a440, so these are not plain scores): retail's table reads are 0x120790's inlined shape, `(edge_index + 1) % count` runs before the first reconstruction and axis
+// is read again for the second. The existing 0x120790 for both points 651 (2925, masked aligned 206, against 194 here); with long counters 640 (2917, masked
+// 202); the distance through plane_distance_to_point 620 (2895, masked 222); every prism read through shapes.prisms[index] 686 (2956, cursor still point_count);
+// a plane pointer local 554 (2896, masked 199); j product first 552 (same code); a point cursor for the first reconstruction 629 (2924); count before the inside flag 552 (masked 195).
+// Round 59 (m3 lane 13, fast): retail's direction length sums i*i, k*k, j*j after an fstp of k (ours keeps k on the x87
+// stack and starts with it in every form). The direction normalize through the existing normalize_inline 554; that
+// with the direction through vector3d_from_points3d 554; through normalize3d 554; vector3d_from_points3d for the
+// relative, edge, difference, direction and half vectors 680 (2951 bytes); for the half alone 554; the difference
+// alone 553; relative and edge 671 (2947). Original body restored.
+// AC504: Radial/side/nearest loop continuations, masks 1/2/4/3/5/6/7:
+// 552 each; complete continuation graph with native long accepted counts 572.
+// Original full body restored; sum homes, query zero and prism anchor remain.
+// AC512: Aggregate-declaration sum initialization with word/long accepted counts,
+// counts after/before construction 553/553/573/573; independent point declaration
+// initialization 594/594/578/578. All restored; native sum homes/query zero/prism
+// anchor remain. Coordinate-table owner stays matched in every trial.
+// AC515: Direction-length-owned normal-path decision bool/byte/short/long, with length at
+// direction phase or uninitialized radius scope: 613/613/613/613/613/613/613/613.
+// NOT kept: unmatched decision/storage graph; original flags, normalization and complete geometry restored.
+// AC519: Standard forward/backward edge/face/both initial-sum transfers, then
+// both with overlap-safe fallback copies: 655/650/591/655/650/591/623/623.
+// NOT kept: all regress and lengthen; original sum inputs and complete body restored.
+// AC524: Standalone count-produced success bool/byte/short/long before averaging,
+// then after output: 654/657/653/654/630/654/660/657. NOT kept: all regress and
+// move extent away from retail; original result, word counts, geometry and body restored.
+// AC526: Entry-radius admission bool/byte/short/long, then complementary exclusion:
+// 620/620/620/620/619/619/619/619. NOT kept: all regress, frame shrinks to 0xb958 versus
+// 0xb964; original body/helper restored; sum homes, query zero and prism anchor remain.
+// AC537: Complete near-plane/interior direction-admission truth, positive and
+// complementary bool/byte/short/long: 553/553/553/553/553/553/553/553. NOT kept: no match; original
+// normal selection, sums, word counters, geometry and whole body restored.
+// AC539: Nearest-edge improvement result, positive bool/byte/short/long 553 each,
+// complementary forms 554 each (control 552). NOT kept: unmatched decision storage;
+// original nearest commits, sums, word counts, geometry and full body restored.
+// AC542: Existing paired normalization/contact and edge/separation squared-length producers,
+// paired side/projection dot producers, seven subsets and full-width accepted counts: 554/552/554/554/554/554/554/573.
+// NOT kept: no byte equality for changed reduction associations; original full body restored.
+// AC544: Exact-association plane-dot offset, paired root operands and perpendicular-dot
+// negation boundaries, seven subsets then immutable parts: 554/554/554/553/554/554/554/554.
+// NOT kept: all regress; original reductions, counters, observations and whole body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

@@ -110,6 +110,12 @@ static inline void point_along_vector_1c19b0(point3f const *point, vector3f cons
 // from the existing vector3f_add_scaled 23; end declared first in the loop block 23; node_index declared at
 // its call 23; the direction read through a pointer to the parameter dropped 23 (same code, kept).
 // 0x26d100's file is on another lane's list this round, so its reorder was not retried.
+// Round 138: node_index/location/ahead-and-end at function scope 23/23/23; the collision buffer before origin 23;
+// the final distance from `scale` 217 (923 bytes). 0x26d100's file was again on another lane's list.
+// Round 103: all three point productions through the existing scaled-add helper 23; scale at function
+// scope 23; trace at function scope 23; result first 23; height/distance declarations swapped 23;
+// pathfinding declared after the points 23; counter declared before the points 23; direct final-call
+// return 234. Original body restored.
 // @retail 0x1c19b0
 bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_type_f17a25 *path)
 {
@@ -170,7 +176,7 @@ bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_ty
 		{
 			s_pathfinding_node *node = &pathfinding->nodes[node_index];
 
-			if ((node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(node, pathfinding)))
+			if ((node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(pathfinding, node)))
 			{
 				long ticks = real_to_long(g_510c54->field_2_3);
 				long ticks_extra = real_to_long(g_510c54->field_2_3 * 1.5f);

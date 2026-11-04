@@ -79,6 +79,8 @@ void cache_copy_forget(char const *map_name);
 bool map_copy_request(char const *map_name, long priority);
 void __stdcall cache_copy_record_use(char const *map_name);
 
+// MiniMax B (11-04): no new form, no lower score (the state 11 clamp as an in-place if, a min-clamp and a named-limit ternary all keep the same register rotation).
+// MiniMax B (11-03): no new form, no lower score.
 // MiniMax S (11-01): the state 11 clamp keeps the completed value in EDX and the limit in ECX; no lower score.
 // score 37 (was 37): Frame 0x110 and retail length agree; request-copy order, file-handle
 // and completed/limit registers, and state 16/19 store scheduling still differ.
@@ -275,6 +277,17 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // Round 284: complete total/completed/capacity producers with six scalar lexical priorities 36 each;
 // in-place and branch clamp results 38/36. One-point, exact-only forms rejected; original body restored.
 // Request/path order, outgoing file/transfer registers and terminal store scheduling remain.
+// m3 lane 11 r60 (fast 37): the priority read from the table at each use instead of the entry local 564
+// (1792 bytes); state 7 slot published before the file pointer 144; state 12 test as `g_55bcf0 == g_55bcf4` 38;
+// state 10 completed size stored before the transfer count 39; state 2 handle tested against NONE 37 (same code).
+// Retail's 0x214db0 body touches neither EDI nor EBX (its only library call is strrchr), yet the state 0 caller
+// re-forms 0x55bf28 after it: the path call takes g_55be24[1] before the request copy.
+// Round 58 (lane 14, fast; aligned counts in brackets, this body [44]): state 9 without the file pointer local 304 [50], state 13 220 [52], both 302 [57]; state 16 with the state set before
+// the flag 37 [44]; state 19 buffer release first with the handle store ahead of the path clear 43 [43]; state 7 with a handle local 267 [62] (1724 bytes). The one-struct lead (0x55b4f0..0x55c02c)
+// needs 0x55bd04 and 0x55bd08 moved into it: BLOCKED-BY their definitions in a contributor's finished file. Not tried for that reason.
+// Round 140: release-first with the handle read from the cleared slot 43; split slot declarations first/after
+// chunk 37/37; unsigned split slot 37; call-first with const priority/reordered entry declarations 432/432;
+// state 16 result read from success 37; state 7 split file-pointer declaration/assignment 144.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

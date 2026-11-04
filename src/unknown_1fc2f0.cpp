@@ -498,6 +498,58 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // Round 541: Existing scaler pointer/reference result contracts, discarded/scalar/shared-add/native-local
 // consumers, with direct update argument: 99/99/99/148/99/99/99/148. Original helper and
 // body restored. Two alias-sensitive output-first forms 150/150 excluded; no retained change.
+// Round 62 (m3 lane 10): correction adds `correction.c + state->velocity.c` 32; limit before the deltas
+// 46; the limit test inverted with its arms swapped 32; tick scale straight from the short field 32;
+// correction products inline in the output sums 101 (348 bytes). Original body restored.
+// Round 124 (m3 lane 8, fast): a game-time globals pointer local for the rate, ticks, limit and root 32
+// (same code); a pointer local for the state velocity at the copies and deltas 32; delta declared before
+// velocity 32; limit declared at its assignment 32; the correction written `s.c + d.c * scale` per row 101
+// (348 bytes), with retail's i row product-first 101.
+// m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
+// divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
+// if/else inverted with the fallback arm first 32 (same code).
+// Lane 18 round 36 (fast): tick products `velocity.c *= ticks` with the long count converted implicitly
+// (no tick_scale local) 73 (369 bytes); the three state-velocity copies before the rate and tick reads 94 (370
+// bytes); tick_scale declared bare and assigned after the count read 32 (same code); the call through `tracked`
+// without the parameter reference 99 (+0x2); the rate stage as `v.c = rate * v.c + p38.c; v.c -= p2c.c` 32 (same code).
+// m3 lane 14 r56 (fast): deltas assigned i, j, k 79 (first difference +0x2f: the chains follow); tick products i, j,
+// deltas i, j, then the k product and delta 79; the rate read from the global at each chain use 97 (375 bytes);
+// the delta scaled in place for the correction 32 (same code); the tick conversion placed after the chains 73
+// (369 bytes). Retail converts the ticks into the dead rate register (XMM3), ours into XMM4.
+// m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
+// divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
+// if/else inverted with the fallback arm first 32 (same code).
+// Round 85 (m3 lane 9, fast): chains j, i, k, scale j, i, k, deltas i, j, k 77; tick products in named values stored i, j 73; chains j, i, k then scale
+// and delta row by row i, j, k 73 (stores i, j and sum k, j, i as retail, ticks still XMM4); scale j, i, deltas i, j, then the k row 77; the correction
+// as `correction.i = delta.i * scale; delta.j *= scale; delta.k *= scale` 84 (368 bytes), on the row form 47 (delta.i spills, frame 0x1c). Rate and add,
+// the conversion, then rows (sub, scale, delta) i, j, k: rate i, j, k 54; j, k, i 49; j, i, k 48 (ticks in XMM3 as retail, first +0x5d). Rate i, j, k, the
+// conversion, subs, scales, deltas i, j, k 99 (378 bytes); rate j, i, k, subs j, i, k, rows 92 (378 bytes); the round-181 order 46, with the correction
+// scaled in the delta 46; rate i, j, k rows with that correction 54.
+// DL253: one plain tick/delta component loop with long/dword counters 59/59;
+// short/word counters 140/140 (403 bytes); full prediction/tick/delta loop
+// with long/dword counters 98/98 (374 bytes), short/word 96/96 (366 bytes).
+// NOT kept: all regress; counter-width selections require equality. Tick reuse still differs.
+// DL255: Ordinary inline update-provider metadata, complete rate/tick/delta producer
+// masks 0..7: 102/117/102/117/94/105/94/105. Tracked-pointer result with original/direct
+// argument storage: 32/99. NOT kept: metadata changes ingress and regresses; result
+// contract ties or regresses. Original complete body, providers and caller declarations restored.
+// DL257: Exact widened rate/tick/rounded-length carriers (rate, ticks, length, rate+ticks,
+// rate+length, ticks+length, all), then all plus rounded correction scale:
+// 98/127/91/106/109/121/108/108. NOT kept: no gain; width/precision selections require native
+// shape or equality. Original complete body, real carriers, helper and parameter storage restored;
+// dying-rate/tick register reuse remains.
+// P309: Existing scaler native-copy/library-copy/two-loop/fused-loop, ordinary/forced, with
+// direct update argument: 149/149/99/99/149/149/99/99. Copy/fused loops also lose its matched
+// user. NOT kept: larger frame/length and no exact target; original helper and full body restored.
+// M347: Limit-admission outcome, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 32/32/32/32/32/32/32/32.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
+// DH333: Standard native-array prediction/tick/delta transforms, seven subsets, then
+// complete graph plus correction addition, with direct tracked argument: 200/178/238/136/234/192/243/225.
+// NOT kept: regressing frame/code growth; original prediction, parameter storage and full body restored.
+// P327: Complete scalar prediction on the named-length graph, six declaration orders,
+// then producer definitions with original/late ticks, direct update argument: 117/117/117/117/117/117/117/117.
+// NOT kept: all regress and lose native frame/extent; original body and parameter storage restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

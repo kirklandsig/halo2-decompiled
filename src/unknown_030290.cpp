@@ -411,6 +411,71 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // 1/2/4/3/5/6/7; all with reversed inverse constants: 195/195/195/195/195/195/195/195. NOT kept: no
 // byte match; original complete body and every helper restored. Inverse homes and displaced-transform
 // spill remain.
+// Round 77 (m3 lane 9, fast): both factors as `fabs(z) < k_real_epsilon ? 0.f : 1.f / z` without the inverse
+// defaults 301 (890 bytes); fa/fb initialised 1.f with no orthographic arm 261 (906); the displaced inverse
+// computed before the origin one 239 (1004); b, ta and tb declared together 195 (same code); the success test as
+// `return dx != 0.f || dy != 0.f;` 195 (same code). Restored.
+// Round 549: Paired native double inverse/factor/delta residence, masks 1..7:
+// 264/262/276/232/238/266/260; all with double reciprocal producers 260.
+// Both inverse/factor pairs recover frame 0x2c at 276; delta forms reach 955 bytes
+// but regress. NOT kept: nonexact precision changes; original body restored.
+// Round 554: Native double transform input/scale/complete-row accumulation, seven
+// families 690/465/690/690/690/690/690; all with direct inverse factors 679.
+// NOT kept: nonexact precision forms outline or change scalar code; original alias-safe
+// helper and full body restored. Frame and inverse/displaced-transform homes remain.
+// Round 158 (m3 lane 4, fast): retail's sum operands (direction, origin, direction first by component) 195; with the inverses declared b, a 195; fa/fb initialised to 1 with no else arm 261 (906 bytes);
+// both inverse tests before the fa/fb copies 197; the inverses declared just above the perspective test 261 (926 bytes).
+// Round 141 (m3 lane 6, fast): transform_point as __forceinline 195 (same code); the displaced point as an
+// aggregate initializer 195; the displaced point in its own block around the second transform 270 (994 bytes),
+// with the initializer 270; the success test returned directly with the zero stores after the block (no else) 195.
+// Round 143 (m3 lane 6, fast): retail's sum operands re-measured 195 (same code); the point default moved after
+// the camera and scale defaults 207; displaced sums written z, x, y 216 (982 B), z, y, x 213 (979 B); the origin
+// transform ahead of the displaced sums 270 (994 B); fa/fb declared before ta/tb 195 (same code).
+// Round 66 (m3 lane 11, fast): retail packs inv_a, inv_b, b, ta, tb at frame +0/+4/+8/+0x14/+0x20; ours
+// inv_a +8, b +0xc, tb +0x18, ta +0x24, inv_b in the scale slot, +0/+4 unused. ta/tb as two declarations
+// 195; the inverses in one declaration 195; ta/tb declared at the top 195; the inverse defaults declared
+// after the displaced point 204 (974 bytes), after both transforms 261 (926 bytes).
+// Y562: Existing same-camera vector transform, distinct/in-place vector result, scalar/setter
+// point publication, original/direct inverse factors: 222/221/222/221/240/239/240/239. Original alias-safe helper and body restored.
+// Y564: Factor selection deferred until both native reciprocals, independent conditional/
+// independent branches/joint branch/perspective-default/orthographic-default/immutable
+// conditional: 195/195/197/295/293/195; deferred conditional/joint with late inverse
+// defaults 283/280. NOT kept: no gain; original helper, defaults and complete body restored.
+// Y573: Complete source direction/origin and immutable displaced-input ownership, masks
+// 1/2/3/4/5/6/7: 285/336/364/195/285/336/364; full graph with native direction 341.
+// NOT kept: no gain; input-record copies and changed observation timing miss equality.
+// Original alias-safe helper and full body restored; frame and inverse/point homes remain.
+// Y575: Shared final projected-point difference with native input construction, displaced
+// setter and unit-scale reverse difference, eight graphs: 197 each. NOT kept: all regress;
+// native frame/inverse homes and displaced-transform spill remain. Original full body restored.
+// Y577: Native final planar delta, field/aggregate producers, scalar/record/memcpy/memmove
+// publication: 195/251/251/272/195/251/251/272. NOT kept: no equality; grouped residence
+// and copies tie or regress. Original helper/body restored; inverse homes and displaced-transform spill remain.
+// AC545: Uniform final scale products, paired/row-local named parts and
+// paired/row-local delta ownership 195 each; on direct reciprocal ownership
+// 207 each. NOT kept: ties or regressions; native frame and second-transform
+// spill remain. Original helper, defaults and complete body restored.
+// Y583: Standard bounded transform input copy/backward-copy/uninitialized-copy
+// 282/282/282; output equivalents 295/295/295; paired copy/backward-copy 692/692.
+// NOT kept: nonexact record transfer and lost native frame/expansion; original
+// alias-safe helper/body restored; inverse homes and displaced X/Z spill remain.
+// Round 586: Two-transform source-table/destination-array traversal, long/dword/short/word
+// ordinals with indexed/body-advanced destination: 289/289/337/337/195/195/322/322. NOT kept: nonexact
+// traversal/grouped residence; original direct calls, helper and full body restored.
+// Round 588: Standard scaled-point multiplication, branch/copy input, factor/component
+// first and direct/native output: 693/691/693/691/693/691/693/691; forced expansion of
+// the four direct outputs 525/527/525/527. NOT kept: helper outlines or frame/length
+// regress. Original alias-safe helper/body restored; inverse homes and X/Z spill remain.
+// Y590: Standard binary displacement producers at initial/direction-first/reverse/both/
+// direction-first both and seeded initial/reverse/both: 270/270/280/314/293/294/318/360.
+// NOT kept: allocation or extent regresses; original complete helper/body restored.
+// Native inverse homes and second-transform X/Z spill remain.
+// Y592: Existing transform with separate scalar outputs, pointer/reference, native/scalar result storage, native/scalar input:
+// 195/195/259/259/228/228/242/242. NOT kept: no native frame/spill recovery; original alias-safe helper and body restored.
+// Y594: Plain paired transformed-point/inverse-depth reciprocal table traversal,
+// for/while with long/dword/short/word ordinals: 197/197/224/224/197/197/224/224.
+// NOT kept: native table residence is nonexact; narrow ordinals recover frame
+// 0x2c but shorten to 937/955. Original alias-safe helper and body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

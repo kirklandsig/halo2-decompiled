@@ -380,6 +380,58 @@ public:
 // M327: Separate allocation receivers with failure return / success-owned rejection / two-use allocation
 // admission / one exit: 54/54/102/54 with original for, 54/54/102/54 with plain while.
 // Original full body restored; child preheader, pool/NONE ranks, second allocation test and salted link remain.
+// Round 76 (m3 lane 16, fast with 0x175270/0x247470/0x1751d0/0x2483f0/0x248cc0/0x248d90): the emitter's
+// salt typed short and the link handle built in place from it 176 (716 bytes); that with `head = child_index`
+// before the break test 248 (723 bytes: the location becomes the register argument in EBX and the flag goes
+// to the stack, 0x175270 100; retail has the flag in AL kept in BL and the location stacked in EDI); on it the
+// location's first/last links through two field pointers 248, the element taken from the allocation result
+// 248; data_datum_index on `head & 0xffff` 155 (698 bytes).
+// Round 61 (m3 lane 10, fast with 0x175270): the head/offset set-up inside an `if (child_count > 0)` guard 51
+// (diagnostic only, it repeats the loop's own test: head and offset then load after the zero-trip test as retail,
+// but the counter's zero store moves after it too); the guard with the child table indexed by the counter 60
+// (frame changes); the guard with a pretested while and the increment first in the tail 100; the allocation's
+// break first and the initialization unconditional 54 (same code); `child_count > local_14` 55.
+// Round 81 (m3 lane 16, fast with 0x175270): the head step before the offset step 54; the child count read
+// just before the loop 243 (725 bytes); no position pointer (the field at the viewer call) 54; the link element
+// looked up by the allocation index 54 (same code each); the new element's fields set through the lookup at
+// each use 105 (754 bytes: the allocation retest comes back, retail's 743 is lost).
+// B391: Actual pool/initialized-child/linked-child external identity references, subsets
+// 1-7, then all with updated-child identity: 54/54/54/54/54/54/54/54. Original complete
+// body restored; child pretest, pool/sentinel ranks and salted-index construction remain.
+// Round 141 (m3 lane 5, fast with 0x175270): retest/salt in place/indexed table grid re-measured 54/59/176/176/118/120/248/248
+// (salt forms lose the frame: 0x8-0x0c against 0x14, location in EBX); location through its address with retest+salt 220,
+// plus indexed 221, retest only 118 (0x175270 21: the bool loses its register in the callee and leaves AL). Retail reloads
+// the location from its stack home in the link arm while EDI holds it only through the viewer loop.
+// Round 52 (m3 lane 15, fast with 0x175270): the counter declared before the `for` 54; a plain while with the increment
+// last 54; head alone in the for-init 54. local_0 walked as the head (no copy; retail's reload below the guard reads like
+// local_0 enregistered only in the loop) with the handle in place / the head set before the break test / the indexed
+// table: alone 243 (727 bytes), salt 272 (700), retest 111 (745, frame 0x10, local_0 stays in memory, NONE in ESI), retest +
+// salt 229 (743; 0x175270 100), indexed 243, indexed + salt 270 (702), indexed + retest 113 (747), all 231 (743; 0x175270 100).
+// B393: Integer allocation outcomes byte/word/long/dword, success then failure polarity,
+// reused by initialization/rejection: 102/107/106/106/102/107/106/106. NOT kept: no exact match;
+// original complete body restored. Child admission, pool/NONE ranks and salted link remain.
+// B422: Complete traversal success/failure in the natural loop admission, bool/byte/short/long,
+// 136/136/140/138/136/136/138/139. NOT kept: no byte match; completion state adds a frame word and grows the body.
+// Original whole body restored; child pretest, pool/NONE ranks, allocation retest and salted link remain.
+// B425: Immutable original head/count/pool declarations, seven subsets, then all with
+// immutable allocation result: 54/54/54/54/54/54/54/54. Original declarations and body restored;
+// child preheader, pool/sentinel ranks, allocation retest and salted index remain.
+// B427: Native child input-record table, indexed/advancing cursor, for/while traversal,
+// mutable/readonly metadata: 59/59/243/243/59/59/243/243. NOT kept: native indexing loses the
+// frame and cursors regress; original type, field, declarations and body restored.
+// Child preheader, pool/sentinel ranks, allocation retest and salted index remain.
+// B431: Selected existing/allocated handle owns initialization/link/update, signed/unsigned,
+// loop/child-phase declarations and for/while: 142 each, 726/743 bytes, frame 0x10/0x14.
+// NOT kept: result ownership loses the native frame and regresses; original body restored.
+// Child preheader, pool/NONE ranks, allocation retest and salted-link construction remain.
+// B433: Existing canonical index provider inline/forced; pointer-difference/allocation
+// ordinals and separate/shared initialization/link receivers: 261/261/287/287/268/268/291/291.
+// NOT kept: frame/length and matched caller regress; complete body/provider declarations
+// restored. Child preheader, pool/NONE ranks, retest and index construction remain.
+// B435: Equal-value child initialization chains on the original head-assignment graph,
+// two invalid-link chains, two zero flag/age chains, then all four pairs: 54 each.
+// NOT kept: no exact initialization or allocation gain; original stores/body restored.
+// Native child preheader, pool/NONE ranks, allocation retest and salted index remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

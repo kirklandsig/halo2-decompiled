@@ -8,6 +8,7 @@
 #include "globals.h"
 #include <math.h>
 #include <string.h>
+#include "vector2f_products.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -159,124 +160,22 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 
 		direction->x = inverse * direction->x;
 		direction->y = direction->y * inverse;
-		return distance;
 	}
-	return 0.0f;
+	else
+	{
+		distance = 0.0f;
+	}
+	return distance;
+}
+
+/* the z component of a vector given by its components crossed with the direction */
+static __forceinline real avoidance_cross2d(point2f const *direction, real x, real y)
+{
+	return x * direction->y - y * direction->x;
 }
 
 /* adds a node at the point, passing the obstacle on the side, unless it
    leads back around an obstacle on its way; returns its index or NONE */
-// score 92 (was 92): frame 0xc agrees; missing early Y load rotates normalized components and distance registers.
-// Earlier: the scaled components are kept in different registers and the length is
-// squared and summed in a different order. Retail loads y into XMM0 before the square root and
-// keeps `y * inverse` and `other.y * y` in source operand order; ours copies the register
-// operand and multiplies by memory. The compile-only build gives ours for every helper form.
-// Products x*inv/inv*y 92; compound scaling 92; tiny case first with one return 92; scalar
-// direction locals 165; y scaled first 93; helper reads both components first 156; dot test
-// through the node array 153; zero on the left of the dot test 92.
-// Normalized point returned with pointer/reference length outputs 280/280; whole input point
-// by value with pointer/reference outputs 216/216; scalar inputs with pointer/reference
-// outputs 156/156; distinct const-input/output pointers 156; const-reference input with
-// returned point 280. Original in-place normalizer restored.
-// Round 14: retail's early `movss xmm0, [y]` is the subtraction's y forwarded to both
-// normalize paths (y * inverse in place, and direction_y on the short path); x is re-read.
-// The existing normalize2d_fast through a cast 92 (arms swap); a vector2f direction with it
-// 177; y read into a local first in the normalizer 92 (same code); no direction locals 92;
-// x local first 92; cross term `direction_x * other.y` 92; dot terms local-first 92.
-// Round 191: shared subtraction with original/shared/captured/native-real-root normalizer
-// 91/92/155/155; complete native point with the same boundaries 92/92/156/156. One-point
-// gain rejected; original point, private normalizer and body restored. Early Y preload remains.
-// Lane 17 r1: normalizer through the file's scale helper with a zero-length else (0x294050's form,
-// which gets the preload there) 93; direction from vector2d_from_points2d 91 (x scaled and stored
-// first, as retail, but the squares start with x); both 93; with the sum written y first 91 (same
-// code); with the file's length helper too 155.
-// Round 232: Once-read node/goal/node-goal/heap/node-heap/goal-heap/all search scalars, then all with full-width captured counts
-// 170, 175, 175, 92, 170, 175, 175, 167. Original executable source restored.
-// Round 48: normalizer with one exit (distance zeroed in the tiny case) 92; with a result variable
-// 101; direction as an aggregate initializer 92; goal through a pointer 92; distance declared at
-// its assignment 92. A whole-file /Op build (diagnostic) makes the root a library call (far worse).
-// Round 108 (m3 lane 7, fast): the dot and cross tests through vector2f_products.h's existing dot_product2d
-// and cross_product2d (`dot(&other->direction, &direction) > 0`, `0 > cross(&other->direction,
-// &from->direction) * cross(&other->direction, &direction)`) give retail's whole dot/cross block (the loads
-// before the products, `mulss reg, reg` order and the dead `lea [from + 0x38]`) and retail's 630 bytes, but
-// without the early Y load every XMM register stays rotated: 150 (aligned 28/27 against 33/33); the cross
-// with `&search->nodes[parent].direction` 152 (634 bytes); the dot alone 147 (630); the cross alone 148 (632);
-// both with the normalizer through the file's scale helper 150. Compile-only, no normalizer form (scalar
-// direction locals, y read first, in-caller normalize, scale helper) loads y early: VC keeps y in its home and
-// folds it into `mulss inverse, [y]`.
-// Round 143 (lane 4, fast with the file, faithful 92): the node's direction copied field by field from the
-// struct 177 (608 bytes: the direction lives in registers, no store-back, and still no early Y load), from
-// the direction locals 177, with no direction locals 177; the direction from vector2d_from_points2d 91 (as
-// lane 17 r1: Y is then popped and the squares start with X), that with no direction locals 91. Matched
-// 0x294050 gets the early loads for every component but the first (j, k) under the same x87 sum.
-// Compile-only screen (/O2 /arch:SSE, reproduces our code): the early Y load (and retail's XMM4 zero)
-// appears only when the direction comes from vector2d_from_points2d and the walk reads it only through
-// the existing dot_product2d and cross_product2d (the dot and the second cross factor, any normalizer
-// form); it is then a hoisted load, so Y lands in XMM1 and the second factor loads other.x instead of
-// multiplying Y in place as retail does (real 106, 634 bytes). Direct reads, locals, scalar locals or a
-// helper copying into locals never give it. A hoisted load is never multiplied in place by a memory
-// operand (a Y-first cross helper, the sibling/cross check moved after the walk loop, or no node copy:
-// still `movss xmm5, [other.x]; mulss xmm5, y`), and the check after the loop adds an unthreaded
-// `index != NONE` test; retail's in-place `mulss xmm0, [edx+0xc]` needs Y as a variable.
-// Round 122 (lane 6, fast): the dot and both crosses through the existing dot_product2d/cross_product2d (vector2f
-// casts, direction locals dropped) 152 (634 bytes); with the subtraction through vector2d_from_points2d and the
-// normalizer's single exit (distance zeroed in an else) 106 (634: retail's early `movss xmm0, [y]` preload, its
-// distance/zero registers, dot, first cross and loop entry, but y and the inverse swap XMM0/XMM1 and the second
-// cross loads other.x where retail multiplies y in place); with the first cross by name 107; with the second
-// cross by name 149 (630 bytes, the preload is lost); with the normalizer's distance zeroed in the then-arm 114.
-// Compile-only screen: the preload appears only when y is read through the helpers' pointers after the
-// subtraction helper; product orders, store orders, sum order and the helpers' argument orders change nothing.
-// Round 258: Both captured normalized components used for native direction publication, y/x or
-// x/y capture order and publication after value08/position/distance/parent: 177/177/177/177/177/177/177/177.
-// Original native copy, captures and body restored; early Y preload and XMM allocation remain.
-// Round 27 (m3 lane 2, fast): the node's direction filled by components 177 (608 bytes: direction kept in
-// XMM0/XMM1 to the end), also without the direction locals 177; the direction locals declared first in the
-// function and assigned after the normalize 92 (same code); the cross factors named 92 (same code); direction
-// from vector2d_from_points2d with the locals x first 92. Compile-only (reproduces ours): no direction locals,
-// locals declared at the block top, dot operands swapped, a named dot: none preloads y.
-// Round 150 (compile-only screen is exact for this block): the y preload needs every reference to direction.y
-// to go through a pointer (a pointer local to the whole direction for the subtraction, the normalizer and the
-// direction locals gives it; not allowed); x is never preloaded either way. Real: vector2d_from_points2d +
-// dot_product2d/cross_product2d + single-exit normalizer 106 (634 bytes; y in XMM1, inverse in XMM0, the second
-// cross not in place), with the two-return normalizer 144; single-exit normalizer alone 92;
-// vector2d_from_points2d + single exit 91 (622); that with the dot through dot_product2d 146 (630 bytes, loop
-// entry layout as retail, no preload). Any direct read of direction.y (the cross written on the fields) drops it.
-// Round 129 (m3 lane 6, fast): the normalizer's body written in place (no helper), tiny case first 156 (634
-// bytes), the long case first 156, without the direction locals 156; scalar direction locals stored into
-// the point afterwards 165; on round 122's helper form (106, re-measured: the preload is there, but y and
-// the inverse take XMM1/XMM0 where retail has XMM0/XMM1) y scaled before x 145, the tiny case tested
-// first 114. (--fast builds 0x2c39f0 at 175 for every form, the unchanged file too: a reduced-image caveat.)
-// Round 111 (lane 8, fast; one-file LTCG harness exact, entry through 0x2c41b0): lane 6's round-122 form
-// rebuilt 106 (634 bytes; left: y XMM1/inverse XMM0, retail XMM0/XMM1, and the second cross loads
-// other.x where retail multiplies y in place); on it: the sign test flipped (`cross(other, from) *
-// cross(direction, other) > 0`) 106; y read into a local in the normalizer (in the sum, before it, after
-// it, or x and y both) 106 (same code); y stored before x 145; normalize2d_fast through a cast 145; the
-// second factor as `-cross_product2d(&direction, &other->direction)` 115 (641 bytes); harness only: the
-// normalizer's products in other operand orders or as `*=` 106, the inverse renamed 106, `(1.0f /
-// distance)` at each use 152, the normalizer `static inline` 106, the dot's arguments swapped 106, the
-// reaches flag declared last 106, a `vector2f` direction 106.
-// Round 291: normalizer common component stores, working/distinct output scalars,
-// large/tiny first and x/y or y/x publication, 142/142/142/142/160/160/160/160.
-// These promote the original subtraction to SSE and grow to 635/634 bytes; restored.
-// Round 261: complete source/goal/both point snapshots before normalization 178/177/205;
-// with existing subtraction 197/177/219; full snapshots with shared dot/cross and tiny-case-first
-// normalizer 215/215. All restored; added native input storage grows frame 0xc to 0x10-0x18.
-// Round 249: Complete paired square terms and named square-root argument, separately/together, with
-// common distance result and reciprocal declaration lifetime: eight forms all 156 at 634/630 bytes.
-// Original normalizer/body restored; early Y transport remains.
-// Round 454: Native destructive difference in the direction itself, goal/source seeds and
-// direct/shared subtraction 175/173/175/173; all four with shared dot/cross consumers
-// 189/187/189/187. Original native difference, normalizer and complete body restored; early Y load
-// and XMM roles remain.
-// Round 75 (m3 lane 9; one-file LTCG harness, control 92, lane 6's helper form 106): matched neighbour 0x2c2a70 has this same early y load through its normalizer (length helper, by-value scale
-// helper, tiny case first): that normalizer with the point/dot/cross helpers 113 (arms swap); the long case first with a scale helper, a named inverse or written out, with or without a length
-// helper, six forms 106 (same code); the inverse repeated at each use 159 (preload gone); a Y-first cross on both factors, on the second only, `< 0` 106 each; the two factors in both orders,
-// both comparison sides and named in both orders across all four helper pairings, 20 forms, 106 (same code); the neighbour's normalizer with the direction read into named locals, y/x or x/y,
-// harness positional 81/78/81/81 against the control's 81, no preload, squares starting at x (best 3 points lower, not kept). Left on the 106 form: y in XMM1 and the inverse in XMM0 (retail swaps them), and the second
-// cross's first product not multiplying y in place.
-// AC475: Existing in-place normalizer with distance output by pointer/reference, branch/common
-// publication and original/shared subtraction: 92/91/96/98/92/91/96/98. Complete shared dot/cross
-// consumers on the four subtraction/output graphs 144/160/144/160; original helper and body restored.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
@@ -291,11 +190,8 @@ short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool 
 		short index;
 		s_avoidance_node *node;
 
-		direction.x = search->goal.x - point->x;
-		direction.y = search->goal.y - point->y;
+		vector2d_from_points2d(point, &search->goal, &direction);
 		distance = avoidance_normalize2d(&direction);
-		real direction_y = direction.y;
-		real direction_x = direction.x;
 		for (index = parent; index != NONE; index = node->parent)
 		{
 			node = &search->nodes[index];
@@ -312,12 +208,12 @@ short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool 
 					{
 						s_avoidance_node *other = &search->nodes[sibling];
 
-						if (other->direction.y * direction_y + other->direction.x * direction_x > 0.0f)
+						if (dot_product2d((vector2f const *)&other->direction, (vector2f const *)&direction) > 0.0f)
 						{
 							s_avoidance_node *from = &search->nodes[parent];
 
-							if (0.0f > (from->direction.y * other->direction.x - other->direction.y * from->direction.x) *
-								(direction_y * other->direction.x - other->direction.y * direction_x))
+							if (0.0f > cross_product2d((vector2f const *)&other->direction, (vector2f const *)&from->direction) *
+								avoidance_cross2d(&direction, other->direction.x, other->direction.y))
 							{
 								goto done;
 							}
@@ -705,6 +601,11 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax A (11-04): pathfinding read after the radius block 674, final_complete below the height 697,
+// radius as one ternary (retail's load order) 704, pathfinding after the radius with a short frame
+// identifier 703, long step counter 764, bool result 736 and 756 with that order, the type guard split
+// into three sibling tests as retail does (setup, search-or-copy, object-index pass) 770; the permuter
+// (113 tries, annealed) found no variant below 675; no keepable gain.
 // score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
 // callees and the relocated globals); the frame 0x1f88 and the length agree, but retail keeps the
 // success result in a stack byte where ours keeps a dword, loads the source radius before the 0.2f
@@ -805,6 +706,35 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // 749/726/745/768/731/739/743/762. Original complete body restored; success/radius/pathfinding and workspace homes remain.
 // AC475: Native outgoing mask byte/signed-byte/word/dword with long success
 // 774/774/675/675; with Boolean success 775/775/754/754. Original mask, result and full body restored.
+// Round 200 (m3 lane 3, fast control 675): first_output zeroed at the top after flags 700, between actor
+// and flags 701, with bool result 773; actor through actor_get with the typed field 675 (same code);
+// radius ternary with early first_output 676, plus pathfinding read after the radius (retail's entry
+// order) 672, plus bool result 745 (2968 bytes: retail's NONE in EBX and result byte). All restored.
+// B384: Single actor-action predicate bool/byte/short/long, original/native shifted global
+// bit consumer: 773/773/783/782/773/773/783/782. NOT kept: new predicate storage is established inside a test
+// without an exact match. Original actor observations, bit consumer and full body restored.
+// m3 lane 11 r63 (fast): actor pointer declared first 757 (2995 B); `*complete` read after the actor/height
+// block 673, after the output clears 676, just before the step loop 704; that 673 form with bool result 755;
+// `ignored` set after the out-count test 675; `radius < source.radius` 675. All restored.
+// B388: Plain two-list transform table, long/short list ordinal, indexed/advancing
+// obstacle receiver and long/Boolean success: 827/861/827/861/794/806/794/806.
+// All regress and shorten away from retail; original distinct transform loops restored.
+// Round 67 (m3 lane 10, fast; aligned difflib counts in brackets, 601 at 675): the enabled-bit test written as the
+// matched 0x1b5aa0 writes it, `(bool)((g_557c40[9 >> 5] >> (9 & 31)) & 1)`, 702 [602] (retail's `shr eax, 9; test al,
+// 1` shape, ours in EDX); that without the outer parentheses 702 [602]; with the mask test as `(g_4ee4ec & mask)` 702
+// [602]; with a bool result 749 [610]; plus the radius ternary ahead of the pathfinding read 777 [607].
+// P314: Cache-versus-stack workspace producers, independent conditional/branch/default
+// obstacle/search assignments: 743/730/730/730/743/730/730/730. All regress; original
+// pointer initialization, once-read cache selection and complete body restored.
+// P314 further: Existing normalizer with ordered-positive trace admission, original/shared
+// 2D difference: 712/714, frames 0x1f8c against 0x1f88, lengths 2986/2988 against 2986.
+// NOT kept: both regress; unordered working-value changes require equality. All restored.
+// DH352: Entry radius/height/outgoing-mask lexical identities, seven subsets 675 each;
+// complete graph with Boolean success 754. Original entry scalars and full body restored;
+// byte success, radius/pathfinding schedule and scalar/geometry homes remain.
+// B437: Stored passthrough-point producers with four count/receiver contracts
+// 738/760/741/744; with bool success 766/783/773/755. NOT kept: all regress;
+// byte success, radius/path acquisition and scalar/geometry homes remain.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

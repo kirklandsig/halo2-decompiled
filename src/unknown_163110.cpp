@@ -623,6 +623,9 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // planes 2/3 as direct field stores 501 (2838); all four side planes direct 606 (2840); y + d * scale grouped
 // then z and x 36. The existing function_2477b1 for the normal rotation keeps the plane helper out of line
 // (six calls, compile-only).
+// Round 43 (lane 17, fast): the helper's x term normal-first 28 (identical); the helper taking one in-place plane
+// 66; the scale read before the normal rotation 617 (2857 bytes); the z term normal-first 28 (identical); the
+// distance accumulated in plane->d 648 (2897 bytes). Original helper and body restored.
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {
@@ -1001,6 +1004,38 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Y547: Complete projected-point memcpy/memmove publication, with native/library
 // intersection and initial bounds transfers: 115/419/115/363/115/419/115/475. All restored;
 // coefficient preload, zero XMM roles and projection staging remain.
+// Lane 17 r36 (fast): bounds copy after the planes 193; `use_plane1 &=` after the planes 209; memset after the
+// near clamp 172; near clamp as `near_distance = near_sum; if (1.52588e-5f > near_sum) ...` 120; `use_plane1 &=`
+// after the bounds copy 151. Original body restored; the vector_e4.i load still follows the normal copy (XMM3/XMM4 swap).
+// Round 33 (m3 lane 18, fast; 0x1648d0 and 0x320b0 matched each time): the clip parameter through
+// the file's existing ray_plane_distance_1648d0 232; no forward pointer, the view's vector read at
+// each use 264 (1867 bytes); the default bounds copied just before the point memcpy 193 (+0x41);
+// use_plane1 masked after the memcpy 209 (+0x6); the pass test as one condition with
+// `&planes[pass]` 258. All restored; the early e4.i load and the zero's XMM role remain.
+// Round 56 (m3 lane 13, fast): the negated forward vector as an aggregate initializer 115 (same code); plane 1's
+// normal negated straight from the forward pointer, no negated vector 465 (1803 bytes); `margin + view->margin`
+// 115 (same code); a plane-0 pointer for the whole plane-0 block 285 (1867 bytes); the near distance as an
+// if-clamp on the sum 266 (1867 bytes); plane 0's d as `near_distance + -d` 423. All restored.
+// AC500: Construction-only scalar scope, per-plane classification array and point-array declaration
+// at input-copy boundary, masks 1-7, then complete projected aggregate initialization: 115 each.
+// All original lifetimes and complete body restored; coefficient preload, zero XMM and projection homes remain.
+// Round 208 (m3 lane 3, fast): the delta vector at function scope / before p0 and p1 115/115; the intersection at
+// function scope 115; t at function scope 115; the denominator as dot3f(&plane->normal, &delta) 224 (aligned 58
+// against 64); the intersection rows `delta.i * t + p0->x` without the in-place scale 119, with that dot3f 226
+// (aligned 51). Lane 16 r72's 19 form re-measured 19 but writes out the existing point/scale helpers.
+// Round 48 (m3 lane 2, fast with 0x1648d0/0x320b0): lane 16 r72's 19 form rebuilt 19 (first +0x28a); on it, the
+// distance j product's operands swapped 19 (same code); the denominator staged i, k, j with delta_i 33; all three
+// deltas named (i, k, j or i, j, k declarations, rows from them) 118/118 (the near/zero swap at +0xb6 returns);
+// delta_j named with the denominator staged i, k, j 30 (retail's denominator roles; the deltas are computed z, x, y
+// where retail computes x, z, y, and the intersection's copied-t row is y where retail's is x). Body restored.
+// AC513: Native near/far coordinate-point field types singly/both, both with native
+// source-normal vector, each with native source-normal vector, and both with shared plane
+// storage without/with source-normal vector: eight at 115, 1851 bytes. NOT kept:
+// no exact match; coefficient preload and zero/classification/projection homes remain.
+// Original geometry types, reads, arithmetic and complete body restored.
+// AC528: Complete cumulative segment rejection/survival in bool/byte/short/long
+// 298/384/369/371/404/404/406/405. NOT kept: no exact match or eligible gain; original complete body restored.
+// Coefficient preload, zero SIMD roles and clipping/projection homes remain. The native memory-OR result was preserved logically; no retained candidate.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -212,6 +212,14 @@ void function_44720(void)
 // Round 453: Ordinary inline query/submission/both contracts 107/107/107;
 // with live level 135 each. Both inline contracts with native context, cached/live level 107/135.
 // Original contracts and context storage restored; frame, entry offset and geometry reloads remain.
+// MiniMax A (11-04): no new form, no lower score (107). What still differs: our frame is 0x44 where
+// retail's is 0x40 (the cached `use_level` bool takes a stack slot), our entry address is formed with
+// `add` (5 bytes) where retail uses a base+index `mov`/`lea` pair, retail reads the weight before the
+// `and eax, 0xf` transform and keeps the flags reload for the geometry lookup, and our LTCG hoists
+// g_4e0348 out of the helper's two arms. Moving the level test to the call fixes the frame but
+// scores 135 (the rest of the allocation shifts); an indexed first-word local scores 146.
+// BLOCKED-BY 0x41040 and 0x45ce0 (other owners' files): the inner loop's call setup follows those
+// callees.
 // Round 45 (lane 10; one-link harness exact for this function, fast agreeing): 1..32 unused locals before the
 // loop leave the current form and the level-at-call form unchanged (no numbering ties). On the level-at-call form
 // (135): transform index before the weight 136, after the geometry lookup 150; weight after the material 161;
@@ -268,6 +276,14 @@ void function_44720(void)
 // transform read as `g_4ba138[(short)index].flags & 0xf` 136 (503 bytes); the cached byte with that
 // transform read 147 (508); level at the call, that transform and the lookup given the indexed entry
 // 157 (515).
+// Lane 18 round 36 (fast): level at the call re-measured 135 (487 bytes); on it `geometry` declared at the
+// loop-body top 135 (same code), a `short` loop index 137 (503 bytes, frame still 0x44), the material index read
+// from the table at each use 135 (same code), `material` declared before the weight 136. 0x41040 (300) and
+// 0x45ce0 (332) now belong to this machine but stay far off; the BLOCKED-BY above stands.
+// Round 145 (m3 lane 5, fast with 0x44720/0x45560/0x458d0): the loop bounds in an if/else on group 151; the
+// selected material as `NONE` then `if (force || ...)` 136 (486 B); the parts under `if (geometry)` on the
+// current form 107 (same code); level at the call with that if/else selection 137 (485 B); the geometry lookup
+// with one exit and the structure global read per arm 132 (488 B, 0x45560 239). Original body restored.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
@@ -512,9 +528,66 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // N332: Existing dispatch-prefix/header/backing-storage inheritance, three native
 // graphs with chained or independent count/capacity producers: 182 each. Original
 // types and body restored; entry/index spill and center/query/bound homes remain.
+// AC496: NONE-tag-first shared selector, single/branch result exits with ordinary/instance
+// arm priority and native/live structure observations: 240/242/240/245/240/240/240/243.
+// NOT kept: target regresses and some shared-user scores rise; original selector,
+// complete body and all declarations restored. Entry/index and point homes remain.
 // P285: Actual query at eight-byte alignment, original/separate center and large-branch
 // producer/lifetime with native/eight-aligned point homes: 182/190/184/205/190/190/184/184.
 // NOT kept: no exact match; original alignments, native objects and whole body restored.
+// Round 159 (fast): round 50's shape without its grouping struct: one-result geometry helper, center copy at function scope, query in the
+// list branch, masks at each use, one `intersects` flag, list headers in constructor order, the tree read at the call: 27 (872 bytes);
+// with the center read through a field-filled local point (retail's three xmm loads), an array or a local sphere 12 (872 bytes). Only the
+// list block then differs: retail loads the tree pointer into EAX right after the center, ours sinks it to EDX, and two scratch registers
+// rotate. Tried from 12: the tree read before/after the center and across each header line (about 30 orders) 12/21/22/23; header store
+// orders with an early read 22; tree field pointer 12; pointer+count block copied 191/190, filled by field 12, through a pointer 12;
+// local sphere with the tree named first 12; inline-constructed list storage (second, first) 12, (first, second) 18, reads before the
+// declaration 22; by-value center helper 147; whole-sphere copy 221; whole-point copy 212; scalars 27. Keepable subsets: named bit,
+// no flag 165 (882 bytes, needs an always-true byte test on the node, which only steers), without that test 235 (879 bytes); flag kept,
+// tree at the call, named bit 93; without the byte test 106. Not kept: the 12 form rests on the flag and one-use copies, which need a match.
+// P289: Native complete geometry/part/bound fields on the positive-count graph,
+// seven subsets and read-only geometry: 182/182/182/182/182/182/182/182. Original body and representations
+// restored; entry/index spill and center/query/bound homes remain.
+// P296: Existing two-use release helper by mutable/const header reference, with bit/sign guards
+// and masked/native element extents: 182/182/209/209/208/208/224/224. Original helper,
+// call inputs and complete body restored; entry spill and center/query/bound homes remain.
+// Round 143 (m3 lane 5, fast): center copied to a function-scope point at entry (transform into it,
+// distances from it), the aligned query declared in the large branch, aligned/plain loop position
+// 191/191 (frame 0x10a4); with the branch query unaligned 184 (frame 0x1094, point +0x3c and query
+// +0x2c against retail's +0x30/+0x20), declared after the list storage 184, its center as one
+// struct copy 205.
+// Round 60 (m3 lane 13, fast): retail's own code compares the node byte with -1 (`movzx ecx, byte [ebx+0x10];
+// cmp ecx, -1; je`), so `bound[0x10] != NONE` is retail's test, not a steering one; its count test is `test; je`
+// (`if (count)`); retail's 0x44c90 also joins the geometry lookup through one stored result. Round 50's form without
+// the grouping struct (one-result lookup in this file's helper, center fill local, flag) 12 at 872 B, but 0x44c90
+// 107 -> 132 (488 B); that body with the early-return helper 227 (893 B); on 12: the query as the existing hkVector4
+// built by `set(x, y, z, radius)` 27, the tree read above the count test 12 (sunk into the branch), the query
+// brace-initialized from the center fields 27, the list headers initialized as this body does (first's pointer
+// first, counts and capacities chained) 21. At 12 only the tree load differs (retail EAX after the center
+// loads, ours EDX after the zero stores): every form without the struct forward-substitutes it to the push.
+// F379: Guarded large/small-query dispatch outcomes, bool/byte/short/long,
+// 182/182/182/182/182/182/182/182. NOT kept: ties; original complete body restored,
+// entry/index spill and center/query/bound homes remain at the native 0x1094 frame.
+// AC530: Bound-only ordered intersection/separation results in byte/char/short/long, keeping
+// both original marking sites: eight 182s. NOT kept: no equality or gain; original comparison
+// and full body restored. Entry/index spill and center/query/bound homes remain.
+// J255: Genuine displacement-array producers with long/dword/short/word ordinals,
+// native/shared squared-length consumers: 184/184/257/257, 182/182/257/257.
+// NOT kept: ties/regressions; narrow loops also enlarge the frame and extent. Original
+// whole body restored; entry/index spill and center/query/bound homes remain.
+// F390: CRT zero initialization of first/second/both real headers 259/258/277; corresponding count
+// fields 182/182/182; full/count mixed pairs 259/257. NOT kept: full-header clears retain extra
+// stores and grow away from native length; count clears tie. Original list initialization and
+// whole body restored; entry/index spill and point homes remain.
+// P333: Standard copies at initial/query/bound point producers, seven subsets then
+// complete backward copy: 227/209/195/243/233/213/254/254. NOT kept: all regress; initial/query
+// transfers also lose the matched caller. Original copies, includes and full body restored.
+// P335: Standard native point lifetime construction at initial/query/bound producers,
+// seven copy subsets then complete fill: 227/209/195/243/233/213/254/253. NOT kept: all regress;
+// construction copies canonicalize to initialized-copy output and disturb the caller. Original body restored.
+// P342: Actual provider-node and table-base matrix record lvalues, mutable/read-only alone and all four
+// pairs: 182/182/182/182/182/182/182/182. NOT kept: no equality; original matrix receivers and whole
+// body restored. Entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

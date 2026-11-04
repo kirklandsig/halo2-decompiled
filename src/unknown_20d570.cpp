@@ -96,6 +96,10 @@ void __stdcall function_1fbac0(long unknown, long unit_index, bool unknown2, lon
 // EDX, the record added in place). The entry as `tag->entries + arg_1` 23; the record block moved after the
 // event data clear 23 (both identical code); the entry computed after the record block 199; the index as
 // `(word)arg_0 * sizeof` 221; the tag as one ternary 195.
+// Round 46 (fast; 23 fast is the plain 21): the first record address with the scaled index written first
+// 23; the record as `&((s_cue_record *)data)[index]` 23 (both identical code); the entry as one ternary 64
+// (759 bytes); the entry initialised to NULL at its declaration 212 (747 bytes); the first lookup written
+// out at both uses without the record local 25 (756 bytes).
 // Round 95 (fast): the stride's operands reversed 23; a literal 0x54 stride 23; both together 23;
 // an unsigned mask 23 (target-only previews); an unsigned handle with that mask 21; an unsigned
 // handle alone 21; a const first-record pointer 21; `sizeof(*record)` 21; the flag stored as 1

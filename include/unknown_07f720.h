@@ -13,7 +13,7 @@ struct s_player_appearance
 	byte unknown04[0x10 - 0x04];
 };
 
-color3f *function_7f720(color3f *color, short team_index);
+color3f function_7f720(short team_index);
 void function_7f790(short team_index, bool use_default, s_player_appearance const *appearance, color3f *colors);
 
 #endif

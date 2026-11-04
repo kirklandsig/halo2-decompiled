@@ -97,7 +97,7 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 		{
 			s_pathfinding_node const *sector = &pathfinding->nodes[next];
 
-			result->blocked = !(sector->flags & 1) || ((sector->flags & 2) && function_1fa6b0(sector, pathfinding));
+			result->blocked = !(sector->flags & 1) || ((sector->flags & 2) && function_1fa6b0(pathfinding, sector));
 		}
 		result->sector_index = sector_index;
 		result->edge_index = edge_index;
@@ -277,6 +277,79 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH303: Common first-endpoint producer, native orientation/vertex-table ownership,
 // and planar memcpy 465/467/449/440/413/406/388/392. NOT kept: all lose four matched
 // callers. Original body restored; normal/planar homes and byte/output tails remain.
+// M3 lane 13 r54 (fast): `first = true` at the top of each sector iteration (retail's store before the flag
+// test) 412; the sector flags read without the sector pointer 425 (1611 bytes); the hit test without its bool cast
+// 410 (same code); the blocked result assigned directly without its bool temporary 425 (1611 bytes); the count
+// initialized at its declaration 410 (same code). Retail's separate planar normal copy and byte success remain.
+// B383: Standard forward/backward copy of the genuine two planar components,
+// each with long/bool/byte/short success: 432/550/529/437/432/550/529/437.
+// NOT kept: all forms lose ten matched callers and regress; original scalar transfer, result and whole body restored.
+// DH312: Terminal-point actual component-array loops with long/dword/short/byte
+// ordinals: streaming 478/478/549/549; complete native point publication 537 each.
+// NOT kept: every form regresses the other matched helper user. Original shared
+// producer and complete body restored; independent normal homes and byte/tail state remain.
+// M339: Raw edge-query positive/complementary test-owned hit in bool/byte/short/long:
+// 446/452/452/452/446/452/452/452. NOT kept: test-produced flags did not match; original full body
+// restored.
+// Round 202 (lane 3, fast): the full normal declared at function scope 410, the planar normal at function scope
+// 410, both 410 (frame stays 0x5c: retail keeps a separate planar copy made with integer moves at 0x34/0x38 from
+// the full normal at 0x40); last_distance declared with the entry locals 412; the count and next-sector locals
+// initialised at their declarations 410 (same code). Restored.
+// M3 lane 2 r47 (fast): `bool success` 432 (1568 bytes, frame 0x58, aligned 280 -> 260); with `first = true` at its
+// declaration 437; the no-edge exit's temporary dropped (`success = result->blocked;`) 425 (1611); `success = true;`
+// there 410 (1598, aligned 268); `success = true;` in the no-hit exit 409; both 412 (1605). Retail keeps the zero in
+// EBX (byte stores through BL) and pathfinding in EBP where ours swaps them.
+// M339: Raw edge-query positive/complementary test-owned hit in bool/byte/short/long:
+// 446/452/452/452/446/452/452/452. NOT kept: test-produced flags did not match; original full body
+// restored.
+// M3 lane 7 r126 (fast, plain-confirmed for the kept form): retail's EBX zero is `edge = NULL` (edge lives in EBX from
+// entry: `test ebx, ebx; je; test byte ptr [ebx + 5], 2`, spilled to +0x14 in the inner loop), which also feeds the BL
+// byte stores and the count store; pathfinding stays in EBP throughout. Ours keeps edge in memory, the zero in EBP and
+// shares EBX between pathfinding and edge (reloaded from its home twice). The file's private magnitude3d copy replaced
+// by the existing 0x24590 410 (same code, inlined; NOT kept: the new caller raised 0x15f3a0 41 -> 42 in the full check);
+// on it `bool success` with `short count = 0` at entry 550 (1472 bytes); `short count = 0` with the entry locals 425
+// (1615); `edge = NULL` declared first 427 (1615); `vector2f line_normal = { normal.i, normal.j };` 427 (1615).
+// Round 206 (m3 lane 3, fast; aligned = difflib count, base 280): 0x18c250's cross operand spelling (diagnostic)
+// 410 (same code: the x87 loads follow the pointer loads, retail loads `direction` before the global); constant
+// `return true` in the four blocked/no-edge tails 499 (1526 bytes); `first = true` before the first-edge fetch
+// 412; the planar normal as `{ normal.i, normal.j }` 410 (same code); as `*(vector2f const *)&normal` 462 (1667
+// bytes, frame 0x64 and retail's integer-move planar copy at 0x34/0x38, aligned 255, but the success tail is
+// duplicated), with the constant tails 432 (1566), with the blocked result without its temporary 462.
+// Original body restored.
+// DH349: Complete sole-return outcome on native short-count/initial-store graph,
+// default-owned long/bool/byte/short 428/449/480/435; terminal-owned counterparts
+// 454/486/466/443. NOT kept: all regress; independent normal homes, frame and byte
+// tails remain. Original result sources, early return, helpers and full body restored.
+// N361: Common accepted-block state/result publication, long/bool/byte/short result,
+// original planar transfer 422/444/424/412; native planar record transfer 436/375/402/441.
+// NOT kept: 375 combines individually regressing storage forms and adds a redundant blocked store;
+// retail has distinct accepted epilogues. Original geometry, state, transfers and full body restored.
+// DH351: Existing shared planar products at origin/first endpoint/second endpoint,
+// seven subsets, then complete immutable projection distance with unused overload removed:
+// 410 each. NOT kept: no gain; full/planar normal homes, frame and byte/output tails remain.
+// DH356: Planar components initialized before the full-normal magnitude consumer,
+// scalar/aggregate crossed with long/bool/byte/short success: 410/432/414/419 twice.
+// Original body restored; no independent normal homes or native frame recovered; all peers hold.
+// DH359: Complementary whole-trace outcome long/bool/byte/short, entry seed
+// 583/568/568/572; post-output seed 584/569/569/573. NOT kept: no byte match;
+// original positive result, normal homes, tails, helpers and complete body restored.
+// DH361: Pending-sector reset after node/metadata/destination/iterator/fetch/empty-exit/
+// nonempty-entry phases 410/449/436/440/442/432/432; traversal-header declaration 411.
+// NOT kept: no native-frame or score gain; original reset, normal homes, tails and body restored.
+// DH363: Native coordinate unions at magnitude/planar product/full-to-planar stores,
+// subsets 1/2/4/3/5/6/7: 410/410/425/410/425/425/425; all with staged cross 425.
+// NOT kept: planar stores grow to 1611 bytes without native frame recovery; original full body restored.
+// DH367: Actual edge flag high/low byte views, unsigned/signed metadata and low sign test:
+// 410/406/410/404/410/410/406/406. NOT kept: best six-point gain is below the eight-point gate;
+// original edge word, frame 0x5c/0x64, overlapping normal homes and complete body restored.
+// DH369: Standard magnitude/point-projection reductions, native/direct/named
+// nonoriginal pairs: 584/585/426/657/657/426/657/657. NOT kept: all regress and grow;
+// magnitude-only forms change ret 0x18 to 0x1c and lose seven matched callers. Original
+// helpers/body restored; frame 0x5c/0x64, normal overlap and byte/output tails remain.
+// DH369 revisit: Full-normal magnitude-admission positive/complementary results,
+// bool/byte/short/long, eight at 416 (1611/1605). NOT kept: all regress; frame
+// stays 0x5c versus 0x64. Original admission and complete body restored; normal/planar
+// homes and byte/tail state remain. All calibrated file/caller/provider scores hold.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

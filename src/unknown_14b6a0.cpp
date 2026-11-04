@@ -118,6 +118,7 @@ void function_14bac0()
 	s_record_pool_iterator *iterator_reference = &iterator;
 	players_pending_creation_process(iterator_reference);
 }
+// MiniMax B (11-04): no new form, no lower score.
 // MiniMax S (11-01): no new form, no lower score.
 // score 222 (was 222): Frame 0x50 versus 0x3c, exchanged player/scenario spills, point/recipient overlap and readiness homes remain.
 // Earlier at 222 (was 222): Frame 0x50 (original 0x44) versus retail 0x3c; centre/second-iterator slot sharing, readiness homes and the second scan's call remain.
@@ -430,6 +431,42 @@ void function_14bac0()
 // N331: Parent-record ancestry with cached/per-use headers, original/native result-tested
 // recipients and bounds-only scratch scope: 256/256/265/265/256/256/265/265. Original
 // handle walk, header observations, bounds lifetime and complete body restored; frame/point overlap remains.
+// N338: Root initialized from the admitted unit, four parent-producer/lifetime
+// forms with uniform cached/per-use headers, 256 each at 1050/1043 bytes. NOT kept:
+// read/storage steering without a match. Original complete handle walk and body restored;
+// frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
+// Y567: Combined readiness byte/word/dword/long masks, original then native
+// result-tested recipients: 248/246/246/246/246/252/252/252. Native forms reach frame 0x4c, still
+// above 0x3c. NOT kept: no byte match; original flags, points and iterators restored.
+// N357: Final query result owns destination/alternate/both readiness, original/native recipients and byte/word complete results:
+// 250/237/247/244/236/256/247/279. NOT kept: no byte match from these source forms.
+// Original executable source restored; Frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
+// N359: Actual unvisited-root admission in bool/byte/char/signed-char/short/word/int/long:
+// 222/222/222/222/222/222/222/222. NOT kept: no byte match; complete original body restored.
+// Frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
+// N362: Existing open probe/recipient-state/recipient-position inline declarations,
+// three individuals, three pairs and all three, plus final-processing inline declaration:
+// 222/222/222/222/222/222/222/222. Original complete source restored; frame and readiness homes remain.
+// Five protected bounds-query metadata forms excluded and restored; no provider definition changed.
+// N365: Complete real scenario-table/marker/origin field layouts, seven nonempty
+// subsets 222 each; all with native result-tested recipients 228. Original external
+// views and full body restored; NOT kept: unmatched layout/alias ownership.
+// N375: Entry request admission in positive/complementary bool/byte/short/long
+// storage, eight forms 222 each. NOT kept: no frame/home or byte-match gain; original
+// request, point/iterator/readiness graph and complete executable body restored.
+// N377: Standard backward native-coordinate marker-input and accepted-point transfers,
+// isolated/paired/complete families, then complete with native result-tested recipients:
+// 259/260/267/260/240/268/284/272. NOT kept: every form regresses/shortens; all original
+// point storage, observations and traversals restored. Frame/recipient overlap remains.
+// N379: Existing complete scalar displacement constructor, with relocation/marker-input/accepted-output
+// point constructor families, masks 0..7: 222/222/254/254/263/263/296/296. NOT kept: ties or regressions;
+// original inputs, outputs, helpers and body restored; frame/recipient overlap remains.
+// N381: Complete displacement aggregate, writable/readonly, original/native result-tested recipients,
+// original/complete first-iterator initial value: 222/222/228/228/222/222/228/228. NOT kept: ties or
+// regressions; original displacement writes, observations, iterators and complete body restored. Frame/point overlap remains.
+// N383: Existing typed player iterator at the first traversal, selected-player type, native
+// result-tested recipients and early uninitialized iterator declaration: 222/222/228/228/222/222/228/228.
+// NOT kept: ties/regressions; original fields, points, iterators, includes and full body restored.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

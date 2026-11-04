@@ -165,36 +165,11 @@ long sound_classes_match(long class_a, long class_b)
 #pragma inline_depth(255)
 
 /* whether a playing sound can share a voice */
-// score 2 (was 2): retail loads the source's compare callback into ebp after
-// the object index test, ours loads it before the test, so the load and the
-// branch that follows it differ.
-// Retry, 20 attempts: an earlier index guard, direct short-circuit callback,
-// delayed volatile callback read, in-condition assignment, positive index
-// guard, separate guards, moved callback declaration, const/reference capture,
-// voice-source read, conditional selection or saved call result score 3:
-// the load timing matches but the callback moves from EBP to EAX. Index locals
-// and split invocation with the original load score 2; sound-source lookup 77;
-// sourced-branch return expression 75; shared-failure draft did not compile.
-// Original retained; the direct callee matches. Round 88: the index guard as its own
-// return then the named callback 3; a long result with early returns of it 132 (direct or
-// named callback); the index test moved into the outer condition as `(!source || ...)` gives
-// retail's block order and load timing, but the callback still takes EAX 3 (named or direct).
-// Round 10: index test as a positive outer `if` with the named callback inside 3; the call result in a
-// named match flag 3; `return !g_55e780;` 13; index test with an `else return false` 3; a function-scope
-// long result with the late direct callback 132 (the callback then takes EBP after the index test as in
-// retail, but the result needs a stack slot: one-file LTCG probe).
-// Round 134 (fast): the source test as one positive condition `!(index == && callback && call)` 3; three
-// separate `return false` tests 3; the callback tested in an if/else 3; a matched flag set inside the index
-// test 3; the call's result named before its test 3. One-file LTCG harness (exact: 2): the source pointer
-// reassigned to its callback 3; both marker addresses named before or after the index test 3. With the load
-// after the index test the callback always takes EAX, though the source in EBP dies at that load.
-// Round 94: an initialized callback across a separate object guard 2; bool/byte return types 7/7;
-// non-const voice, sound or source pointees 2/2/2; a positive nested object/callback test 2; an inline
-// definition 2; an explicitly dereferenced initialized callback 2. Original body restored.
 // @retail 0x21e0b0
 long sound_voice_matches(s_voice_playing_sound const *sound, s_sound_voice const *voice)
 {
 	s_sound_source_callbacks const *source = voice->source;
+	bool matched = false;
 
 	if (source == sound->source &&
 		voice->ambient == TEST_BIT(sound->location.flags, 0) &&
@@ -202,29 +177,25 @@ long sound_voice_matches(s_voice_playing_sound const *sound, s_sound_voice const
 	{
 		if (source)
 		{
-			bool (__stdcall *local_0)(void const *, void const *) = source->compare;
-			if (voice->object_index != sound->object_index || !local_0 || !local_0(sound->marker, voice->marker))
+			if (voice->object_index == sound->object_index)
 			{
-				return false;
+				bool (__stdcall *local_0)(void const *, void const *) = source->compare;
+				matched = local_0 && local_0(sound->marker, voice->marker);
 			}
 		}
-		else if (sound->location.spatial.location.cluster_index != voice->position.location.cluster_index ||
-			sound->location.spatial.location.leaf_index != voice->position.location.leaf_index ||
-			!(fabs(sound->location.spatial.position.x - voice->position.position.x) < 0.0001f) ||
-			!(fabs(sound->location.spatial.position.y - voice->position.position.y) < 0.0001f) ||
-			!(fabs(sound->location.spatial.position.z - voice->position.position.z) < 0.0001f) ||
-			!(fabs(sound->location.spatial.velocity.i - voice->position.velocity.i) < 0.0001f) ||
-			!(fabs(sound->location.spatial.velocity.j - voice->position.velocity.j) < 0.0001f) ||
-			!(fabs(sound->location.spatial.velocity.k - voice->position.velocity.k) < 0.0001f))
+		else
 		{
-			return false;
-		}
-		if (!g_55e780)
-		{
-			return true;
+			matched = sound->location.spatial.location.cluster_index == voice->position.location.cluster_index &&
+				sound->location.spatial.location.leaf_index == voice->position.location.leaf_index &&
+				fabs(sound->location.spatial.position.x - voice->position.position.x) < 0.0001f &&
+				fabs(sound->location.spatial.position.y - voice->position.position.y) < 0.0001f &&
+				fabs(sound->location.spatial.position.z - voice->position.position.z) < 0.0001f &&
+				fabs(sound->location.spatial.velocity.i - voice->position.velocity.i) < 0.0001f &&
+				fabs(sound->location.spatial.velocity.j - voice->position.velocity.j) < 0.0001f &&
+				fabs(sound->location.spatial.velocity.k - voice->position.velocity.k) < 0.0001f;
 		}
 	}
-	return false;
+	return matched && !g_55e780;
 }
 
 // @retail 0x21dff0

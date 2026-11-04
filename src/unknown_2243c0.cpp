@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "unknown_224240.h"
 #include "effects.h"
+#include "vertex_inputs.h"
 
 struct s_particle_system_datum;
 struct s_particle_location_datum;
@@ -216,6 +217,7 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax H (11-03): no new form, no lower score; the fallback lookup masks the tag into a fresh register where retail masks it in place in edx, and the in-place form scores 152 against 117, so it was dropped.
 // score 117 (was 117): retail keeps the masked index in EDX where ours reuses EAX for the table
 // entry, and the fallback path's call order and the element loads still differ; the file handle
 // comes in through a declaration outside this file.
@@ -435,6 +437,65 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // DH310: Existing two-user cache constructor, member/body/chained/mixed defaults at entry/final lookup,
 // 172/172/172/172/120/120/120/120. Original record, object lifetimes and executable body restored;
 // all eight demote the matched sibling and are rejected; fallback EDX masking, stage/pass and unfused loads remain.
+// Lane 17 r36 (fast): all four cache zeros at the top 172; all four right after the pass element read 148;
+// the first zero before the first ordinal 151; the pass tag as dword 117 (same code); local_6 const 117 (same code).
+// Round 33 (m3 lane 18, fast; 0x224d90 and 0x2243c0 matched each time): the element helper's product
+// as `size * index` 117 (same code); the stage and pass ordinals as short 117 (same code); the tables
+// lookup as one ternary 117 (same code); the group tag in a named dword for both tests 165; the
+// search result stored straight into the record 136. All restored.
+// Round 390: Complete callback context after search, field/aggregate construction,
+// crossed with grouped cache zeros and in-place fallback: 147/149/158/154/147/149/158/154.
+// Original complete body restored; fallback EDX, stage/pass and unfused loads remain.
+// Round 82 (m3 lane 12, fast; 0x224d90 and 0x2243c0 matched each time): the context's definition stored
+// after the search loop 147, at the top of the draw block 117; the root tag local passed to 0x1bbf0 130
+// (first difference +0x2); first cache zero after the material record lookup 117; the search count read
+// once before the loop 117. Original body restored.
+// Round 129 (m3 lane 8, fast; 0x2243c0 and 0x224d90 matched each time): round 59's chain rebuilt with a by-value
+// forceinline tag-data accessor (fallback and tables bound by reference), head/stage/pass elements bound, grouped
+// zeros, flags read before 0x173ba0, the group test re-reading the tag and the 0x1c590 material index bound from a
+// by-value accessor: 8 (same seven lines: pass definition EDX where retail overwrites EAX, material index ECX/EDX,
+// definition EDX/EDI, late zero xor). On it: pass and material lookups through the accessor 8; material lookup
+// through both accessors 8; pass/material chains through block_element_224db0 (element 0) 8; local_10/local_11
+// declared at the top 8; first zero before the material lookup 23; the material index reference used for the
+// lookup as well 76. Match-only chain; original body restored.
+// Round 390: Complete callback context after search, field/aggregate construction,
+// crossed with grouped cache zeros and in-place fallback: 147/149/158/154/147/149/158/154.
+// Original complete body restored; fallback EDX, stage/pass and unfused loads remain.
+// Round 131 (m3 lane 8): the type-14 search through the shared vertex_input_index (include/vertex_inputs.h, the
+// search 0x116b00 makes four times) in place of the hand-written loop: identical code, 117.
+// Round 59 (m3 lane 13, fast; 0x2243c0 and 0x224d90 checked each time): m3 lane 1 round 59's score-8 chain rebuilt (8; the four
+// cache zeros must stay in field order, 12 otherwise); a permuter run on it found nothing below 8 in 49 tries. On the
+// chain: the record pointer formed after its +0x232 read (named pointer advanced) 132; the cache zeros before the
+// material lookup 13 (the stores then precede the loads); the material record as element 1 of a 0x1c-byte block 8
+// (same code); the material definition bound from the by-value tag accessor, with that record 92 and inside its own
+// block 92 (552 bytes: the definition takes EDI as retail, but the 0x1c620 and 0x1bbf0 argument registers swap and a
+// loop pad appears); that with the 0x1c590 index unbound 90 (0x224d90 lost), the head unbound 38 (544 bytes: material
+// and pass definitions as retail, the head block's registers differ), the fallback unbound 47, the head bound in its own
+// block 92, head and stage unbound 135, the tag definition unbound 94, the stage unbound 124. Original body restored.
+// Round 50 (m3 lane 15, fast; 0x224d90 and 0x2243c0 matched each time): the first two cache zeros together
+// ahead of the material lookups 150; the group constants tested 'prt3' first 119; the search loop as
+// `!= 14` continue 117 (same code); the cache pointers compared field first 119; the context's definition
+// stored before 0x1bbf0 117 (same code). (A chained zero of the three pointers does not compile: field_50 is const.)
+// B417: Completed stream-input region with mask-phase ending, callback-context producer storage
+// and native cache/context role-name subsets: 117/117/117/117/117/117/117/117 at 544/544.
+// Original full body restored; fallback EDX masking and stage/pass/unfused-load homes remain.
+// N355: Actual head-address receiver with stage/pass/material-definition receiver subsets:
+// 117/117/117/117/117/117/117/117. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Fallback EDX normalization and stage/pass/unfused-load homes remain.
+// B428: Ordinary inline caller declarations for 0x137bd0/12de70/1c590/1c620/
+// 1c710/1cdd0/2c3b0/1bd50: 117/117/117/117/117/117/117/117. NOT kept: no gain.
+// Every declaration and whole body restored; fallback EDX, stage/pass ownership,
+// unfused element loads and mask lifetime remain.
+// B441: Complete cache-phase mask/system/location scalar carriers, subsets 1/2/4/3/5/6/7,
+// then signed mask: 127/120/120/128/120/123/129/129. NOT kept: all regress from 117 at 544/544;
+// original field observations/publications and complete body restored. Fallback and stage/pass homes remain.
+// B443: Geometry admission in short/word/int/dword, positive then complementary
+// result domains at the original query: 117/117/117/117/117/117/117/117. NOT kept: no byte equality
+// from the one-use result; original gate/full body restored. Fallback EDX masking,
+// stage/pass homes and unfused element loads remain.
+// B445: Original root-tag carrier destructively normalized after full-handle dispatch,
+// signed/unsigned mask/word forms at producer/entry declarations: 152/117/152/117/152/117/152/117.
+// NOT kept: no equality or gain; whole body restored. Fallback EDX, stage/pass and unfused homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
@@ -475,16 +536,7 @@ void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long a
 		function_1bbf0(*(long const *)(local_2 + 0x1c), 0, arg_3, arg_4, 1, 10000.0f);
 		local_0.field_0 = arg_0;
 		dword local_16 = *(dword const *)(local_2 + 0xd8) & 0x107f0;
-		long local_17 = NONE;
-		for (long local_15 = 0; local_15 < *(long const *)(local_11 + 4); ++local_15)
-		{
-			if (*(word const *)block_element_224db0(local_11 + 4, local_15, 2) == 14)
-			{
-				local_17 = local_15;
-				break;
-			}
-		}
-		local_0.field_4 = local_17;
+		local_0.field_4 = vertex_input_index(local_11, 14);
 		if ((void *)arg_1 != local_1.field_48)
 		{
 			local_1.field_48 = (void *)arg_1;

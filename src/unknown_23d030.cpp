@@ -392,6 +392,90 @@ extern byte g_51ec11;
 // DH309: Existing shared normalizer magnitude/zero/separate/complete result ownership,
 // failure/success polarity and failure early return: 91/276/89/89/335/274/274/89.
 // Original shared body restored; zero/side normalization and up/roll allocation remain.
+// Round 77 (m3 lane 9, fast with 0x23d790/0x23d030, both stay matched): the zero fallback as two stores
+// `side.j = 0.f; side.k = 0.f;` 276 (1326 bytes; the up rows then store k, j, i as retail, but the x87 length still
+// squares i before j and every register is renamed), with normalize3d 261 (1326), with side filled i, j, k 276; the
+// fallback chained `side.k = side.j = 0.f` 274 (1326); `side` declared at the function's top 89 (same code); a
+// forward pointer local for the up cross 236 (1330). Retail's length keeps side.j on the x87 stack (fst) and
+// squares it first; zero XMM1 and the up/roll allocation remain.
+// Round 199 (fast, with 0x23d790): side assignment orders k/j/i, j/i/k, j/k/i, i/j/k on the current body 89 each;
+// diagnostic, a scratch normalizer with the length as `i*i + (j*j + k*k)` or `(j*j + k*k) + i*i` gives retail's
+// j-first squares and 1326 bytes but 266 (aligned 52, unchanged), `k*k + j*j + i*i` / `j*j + i*i + k*k` 271
+// (aligned 59): the square order is not what moves the zero/side registers. Fallback stores: separate i/j/k
+// 276 (1326 bytes, aligned 55), k/j/i 276, `side.j = side.k = 0.f; side.i = 1.f;` 86 (aligned 47, a gain of 3:
+// not kept), `side.k = side.j = 0.f; side.i = 1.f;` 274 (aligned 46), j/k/i separate 276 (aligned 55); that
+// 86 form with the scratch normalizer 264 (aligned 47).
+// Lane 17 r39 (fast, with 0x23d790): retail loads the other operand first in two cross products (`v->k * axis->j`,
+// `axis->i * v->k`); both written the other way round 89, each alone 89/89 (same code); fallback
+// `side.i = 1.f; side.k = side.j = 0.f;` 274, `side.i = 1.f; side.k = 0.f; side.j = 0.f;` 276 (both 1326
+// bytes). Original body restored.
+// AC501: Native input roll/horizontal/vertical field domains on the shared-state graph,
+// masks 1/2/4/3/5/6/7, then complete read-only controls: 274/89/89/118/274/89/118/118.
+// Original input layout, observations and full body restored; zero/side/up allocation remains.
+// Round 158 (m3 lane 4, fast): normalize3d with a forward pointer and the up rows staged, declared and stored i,j,k 52 (aligned 28); that with the else arm's own speed local 45 (aligned 23, 1330; plain
+// confirmed). NOT kept (review): the gain needs the staged up_i/up_j/up_k, one-use locals (match only); there the zero
+// and side block agree, and the up rows copy forward.i where retail copies side.j/side.k. Body restored at 89.
+// On the way: helper taking pointers, rows i,j,k stored k,j,i 68, rows k,i,j stored j,k,i 56; in the body without the pointer 259-269; with the pointer rows k,i,j stored j,k,i 63, stored i,j,k 53; shared with the roll axis
+// 232 (1326), 62, 95; forward.i through the command 227 (1326); speed at function scope 194; plain rows through the pointer 263-265; rows through a side pointer 136; forward pointer before the side fill 190, at the function top 44 (aligned 27: frame homes shift, not taken);
+// side filled j,k,i 281; product text flips in the rows and roll 53 (same code); cross rows k,j,i 79, j,i,k 52; one-expression rotated rows 52; cosine first 59; trig inside the roll block 47; v after axis 232; `cosine * v + rotated` 45.
+// M3 lane 9 r83 (fast, 0x23d790/0x23d030 stay matched): movement.k assigned before i/j 237 (1329 bytes); the free
+// position rows as `camera + speed * movement` 89; the command position stored before the camera state's 125 (1330);
+// the pitch clamp as an if/else chain into the local 274 (1326 bytes); the zero distance stored before the offset
+// copy 101. Zero XMM3/XMM1 and the side/up/roll allocation remain.
+// Round 66 (m3 lane 10, fast): side as an aggregate initializer `{ forward.j, -forward.i, 0.f }` 89 (same code); the up
+// rows' products commuted, j row / i row / k row each, 89/89/89 (same code); the projection scale as
+// `projection = (1.f - cosine) * projection` 118 (1326 bytes); the pitch sum written controls first 89 (same code).
+// Zero XMM3 and the side/up homes remain.
+// Lane 17 r42 (fast, with 0x23d790/0x23d030, both stay matched): `side` renamed `right` / `a_side` 89/89 (same code:
+// name order does not move the zero/side registers); the side normalized in matched 0x11d090's own form (j-first
+// length, `!(0.0001f > fabs)` scale, `else length = 0`, then the constant fallback) on this body 270 (1326 bytes);
+// the up vector through the existing cross3f(&side, &forward, &up) 137; a `forward` pointer for the side fill and the
+// up rows 248; that with the up rows staged into up_i/up_j/up_k and stored i, j, k 267. Body restored.
+// AC507: Opposite-order direct/staged up cross with complete scale/setter negation,
+// original/alternate normalization: 334/322/335/320/328/323/308/313. NOT kept: sign/grouping
+// diagnostics do not match and grow the body; original up producer and full body restored.
+// F363: Shared direction producer owned by camera state, instance/static,
+// pointer/reference output and forced/ordinary inline: eight forms 89 each.
+// Original state type, helper, both calls and body restored; zero/side/up homes remain.
+// B397: Twice-consumed matrix-scale predicate in bool/byte/short/long, then
+// unit-scale complement 324/324/319/321/324/324/319/321. Original separate scale tests restored;
+// zero/side normalization and up/roll allocation remain.
+// B399: Plain native projection/roll-row traversals on the shared-state graph, scalar/
+// existing direct/staged cross and consumed row workspace: 455/448/448/448/448/448/448/448.
+// All regress and lengthen; original body restored. Zero/side/up allocation remains.
+// P303: Existing shared normalizer live i/j/k captures before stores, subsets
+// 1/2/4/3/5/6/7: 332/332/332/352/352/352/352; complete immutable captures 352.
+// NOT kept: all regress and shorten away from retail; shared header and complete original body restored.
+// B415: Separate complete world-coordinate scalar phase with original/branch/per-use/shared speed
+// B415: and original/captured matrix scale: 304/351/346/304/351/350/309/351. Original scalar phases, field observations
+// B415: and full body restored; zero/side normalization and up/roll allocation remain.
+// B417: Existing shared normalizer computed square/inner-sum/whole-squared-length stages,
+// seven subsets then immutable complete stages: 245/89/89/245/109/89/109/109. Original header/body restored.
+// NOT kept: computed-stage temporaries do not match; zero/normalization/up allocation remains.
+// B419: Existing shared normalizer two-use threshold result at scale admission and common
+// numeric return, bool/byte/short/long rejection then success: 278/278/278/278/228/228/228/228. All regress;
+// original shared header and full body restored. Zero/normalization/up allocation remains.
+// B424: Standard min/max pitch saturation, nested lower/upper, sequential lower/upper,
+// named lower/upper and single standard lower/upper boundary: 360/360/378/378/378/378/359/359.
+// NOT kept: no exact match; original saturation, include set and complete body restored.
+// B427: Existing shared normalizer actual double component inputs, i/j/k subsets
+// 1/2/4/3/5/6/7 then complete immutable inputs: 332/332/332/327/327/327/330/330. NOT kept: precision
+// forms do not match; entire shared header/body restored. Zero/side/up allocation remains.
+// B430: Counted camera-position/command-position/offset component transfers, masks
+// 1/2/3/4/5/6/7: 323/322/338/162/318/286/341; all with chained position 341.
+// NOT kept: no byte match; original copies, geometry and full body restored.
+// B432: Existing normalizer native for/while/do scales 108/108/332; immutable
+// reciprocal forms 108/108/332; pointer for/while 352/352. NOT kept: no exact scaling
+// graph; original shared header and camera restored. Zero/side/up homes remain.
+// B434: Actual camera/input/output callback formals, seven typed-owner subsets,
+// then complete read-only input: 275/282/111/91/91/91/91/91. NOT kept: none matches;
+// original three-pointer signature, declaration, table entry and whole body restored.
+// B436: Native constant-index side-fill/up-input/roll coordinate observations, seven subsets,
+// then complete motion coordinates: 89/89/89/89/89/89/89/178. NOT kept: no exact form or eligible gain;
+// original complete body and helpers restored. Native frame/register differences remain.
+// B438: Object-relative/free-position admission in positive/complementary
+// bool/byte/short/long: eight 232 at 1329/1326. NOT kept: no exact outcome
+// lifetime; original body restored. Zero/normalization/up/roll homes remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

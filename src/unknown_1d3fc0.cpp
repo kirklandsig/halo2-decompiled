@@ -30,8 +30,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// MiniMax B (11-04): a second forceinline normalize twin (k, j, i summed in turn, used for up and left while forward keeps 0x1d3fc1) with the dot product written out 2; NOT kept: a score-picked helper twin (no new inline twins).
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// Round 34 (lane 17, fast): forward/up pointers taken first, then both normalized through them 150;
+// a const forward pointer 110; named i and j squares (real; retail's forward sum j, i, k but k still
+// preloaded) 111; all three squares named 154; the i and j squares summed j, i, k 111. Restored.
 // Round 150 lead (best 2, not kept: needs a match): forward's k preload follows how later code reads
 // forward.k. One read of the matrix field `local_1[0].forward.k` in the projection's k row (or the dot's k
 // term), with the i/j rows through `forward`, gives retail's whole forward block (j, i preloaded, `mulss
@@ -240,6 +244,45 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // producer orders: 110/110/110/110/110/110; each product named at its own row producer
 // 110; existing setter publication 188 (937 bytes). Original product expressions, stores,
 // four-use normalizer and complete body restored; forward late-k/reciprocal issue remains.
+// Round 38 (m3 lane 18, fast): dot3f over the address expressions `&local_1[0].forward/up` 110; the whole
+// orthonormalisation as a forceinline helper over a transform pointer 149; the dot written out j, i, k 110; the
+// helper's sum written `j_squared + i*i + k*k` 110; the axis pointers taken after both normalisations 110.
+// Round 139 (m3 lane 6, fast, 0x1c4a80 stays matched): the projection through the existing vector3f_add_scaled
+// with the negated dot 156 (929 B); the products scalar first 110; `up->x = up->x - ...` 110 (same code); the
+// header normalize_inline for up and left 151; a left pointer for the cross and its normalization 119 (923 B).
+// Round 121 (fast; on the 2 form, aligned count in brackets): dot3f through the matrix fields 152 (39), with the projection reading
+// forward through the fields 157 (22), up 163 (107), both 177 (108); the 2 form with the projection reading forward through the fields
+// 157 (12), up 147 (100), both 177 (98); the dot's i term as `up->i * local_1[0].forward.i` 148 (12): the i term stays up-first in all.
+// Round 65 (m3 lane 11; fast, on the 2 form): `up_i` local 2; dot's i term through the matrix field 126 at 929 (aligned 5: the
+// term flips but up.i loses its preload, `movaps xmm3, xmm0; mulss xmm3, [i]`, a jmp and a reload); cross3f_staged 181
+// at 936. Compile-only, i term or registers unchanged or worse (96-130 aligned, base 96): address of up.i as the helper's argument,
+// `*(real *)up` or `*(real *)forward` in the dot, a pointer or reference to up.i declared before forward, pointer reads
+// of up.i before the normalizations, partial sums named, a rotation sub-record pointer for forward, up or a term (102-118; real, for both vectors, 76 at 922).
+// A dead direct read of up.i anywhere flips the term and drops the preload the same way. No matched function has this
+// dot encoding (scan of retail for `movaps xmm7, xmm5; mulss xmm7, xmm3; addss xmm0, xmm7`).
+// Round 57 (m3 lane 13, fast): the normalizer's products as i*inv, j*inv, inv*k 110 (same code); `transform4x3f
+// local_1[6]` declared before `local_0` 110; the normalizer returning the length, both pointers taken after the two
+// calls 110; the header normalize3d for forward only 233 (839 bytes); the projection rows in k, j, i order 110.
+// J249: Complete normalizer vector results, pointer/reference/value inputs with published
+// matrix axes 501/501/501, or local axis values 541/541/541; in-place value results
+// 110/349. NOT kept: no match or gain; aggregate ownership expands frame/length except
+// the 110 tie. Original helper/body restored; late forward-k and reciprocal carriers remain.
+// DL256: Complete normalized forward/up/left field-reference consumers, subsets 1/2/4/3/5/6/7,
+// then mutable forward on all three: 110/110/119/110/119/119/119/119. Left-reference forms
+// grow to 923/922 bytes and move the first gap to +0x44; other forms retain +0x159.
+// No control score changes. Original four-use normalizer and entire body restored.
+// P305: Existing shared first-up/post-projection-up/left normalization subsets
+// 156/110/152/156/153/152/153; all with readonly forward 153. Original helper,
+// includes and complete body restored; reciprocal/late-K ownership and schedules remain.
+// M352: Four-use normalizer input-reference/returned-reference/both contracts, each
+// with original/short-vector exit, then input/both references with float absolute API:
+// 110/110/110/110/110/110/110/110. All canonicalize; original helper and complete body restored.
+// P327: Native-array squared-length reduction, long/dword/short/byte index, original
+// scale 221/221/311/311; indexed scale 221/221/391/391. NOT kept: all regress
+// and grow beyond 922 bytes; original four-use helper and complete body restored.
+// DL262: Four-use normalizer actual scaling-status bool/byte/short/long results, result-first
+// then exact short-vector return with post-call matrix receivers: 110/110/110/110/110/110/110/110.
+// NOT kept: no byte equality; original normalizer, receivers and complete body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

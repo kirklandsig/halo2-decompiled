@@ -142,7 +142,19 @@ union s_185be7
 };
 
 #pragma inline_depth(1)
-// score 690 (was 690): Frame 0xe0 and state/output carriers agree; control-root EBX versus NONE, settings/zero homes and flag joins remain.
+// score 622 (was 690): Frame 0xe0 and state/output carriers agree (3787/3777 B); control-root EBX versus NONE,
+// settings/zero homes, the range-fraction clamp (retail clamps in local_16's slot, upper arm out of line) and
+// the materialized `&&` flag arguments (retail threads them) remain.
+// Round 130 (m3 lane 8, fast, kept forms plain): the rigid-body index from 0x0b67a0 as `long` (retail's
+// `movsx eax, ax; cmp eax, -1`) 690 alone (aligned 268 -> 266); the 16-input copy indexed with no duration
+// cursor 731 alone (3766 B, aligned 258), both 648 (kept); the 0x218-table entry as `local_11 = NONE; if (index
+// != NONE) local_11 = ...;` 622 (kept, retail's `or edx, -1` preload); with the NONE default at the
+// declaration 656. On 622: the view entry as `&g_4ed284->entries[arg_1]` 690 on the old body (same code); view
+// entry before the settings pointer 730; `local_1->field_c` tested in the copy loop 733; named yaw/pitch clamps
+// 648 on 648 (aligned worse); the latch in a bool local 622 (same code); the latch as `? 1 : 0` 625 (gives
+// retail's `mov eax, 1`); every flag through a SET_FLAG/FLAG macro as 0x187b30's file 805 (3760 B; aligned 264
+// -> 228: retail's threaded flag tests and stores); the fraction assigned then clamped into itself 622 (same
+// code), with SET_FLAG 805.
 // Earlier 780 (was 780): Frame 0xe0 and state/output carriers agree; the flag bits are now set with retail's branches. Left: settings/zero homes, clamp-arm placement and unthreaded repeated flag tests.
 // Round 86 (fast, aligned counts in brackets, 383 at the start): turn rates assigned in both arms (retail loads
 // the stored rates on the else path) 788 [367] and the attachment index NONE per path (retail sets it on each
@@ -378,6 +390,97 @@ union s_185be7
 // masks 1/2/4/3/5/6/7, then byte held input: 751/698/986/739/1008/980/990/990.
 // NOT kept: extra old-value/common latch stores lack the native conditional shape.
 // Original complete body, helper calls, stores and all input observations restored.
+// Round 127 (lane 8, fast): entry test inverted with an empty then-arm 992; range fraction zeroed in an else arm
+// 948; exponent field read at each use 809; lower bound read at each use 927; clamp helper as two independent
+// ifs 690 (same code).
+// m3 lane 11 r60 (fast 690): diagnostic, taking the view global's address (in the body or a file-scope
+// pointer) 1019 at 3798 bytes: ours then loads it at entry into ECX and re-reads it at the flag test after the
+// pow call as retail, so retail's reload is an address-exposure kill, but NONE then leaves EBX entirely; the pow
+// exponent read from the field at both uses 809 (its loads become retail's `fld [esi+0x5c]`); the range fraction
+// declared before the minimum / above the second lookup 694/694; the fraction as a ternary or an if/else 948/948.
+// m3 lane 11 r63 (fast): retail places the range-fraction clamp's upper arm after the hot path (blocks at
+// 0x185f23); clamp helper forms: `lo > x ? lo : (x > hi ? hi : x)` (the sibling pitch-pin form) 748, early
+// returns with an if/else chain 748, const& value with early returns 854 (3798 bytes), const& value nested
+// ternary 855 (3798 bytes), `x >= lo ? (x <= hi ? x : hi) : lo` 951 (3801 bytes). Original helper restored.
+// AC497: Entry index presence/absence retained across the output clear,
+// bool/byte/short/long, eight forms 690 each. Original admission, reset,
+// root observations and complete body restored; root/NONE and scalar homes remain.
+// AC509: Existing reset returns its actual action subobject, pointer/reference inputs
+// and pointer/reference results, ignored then consumed: 622 each (eight forms). Original
+// reset, receiver, six stores and complete body restored; control-root/NONE homes remain.
+// B396: Final auxiliary-input eligibility bool/byte/short/long at consumption 622/622/622/622;
+// admitted-branch source/result 623/623/627/626. NOT kept: no exact one-use/branch-result form;
+// original complete body restored. Control-root/NONE, settings/zero and flag schedules remain.
+// Round 404: Main/secondary direct flag macros 806/657; low/high/all word-input publications
+// 616/616/603; with main/secondary/both 801/645/774. NOT kept: 603 widens native byte stores. Consistent
+// byte macros 616 (six-point gain below eight). Original flag widths/helper/body restored; root/NONE and
+// scalar homes remain.
+// P308: Existing reset as a native subobject/whole-output member, forced/ordinary expansion,
+// 622/1013/622/1013; complete clear owned by output, without/with actual returned output,
+// 1013/1013/1013/1013. NOT kept: no gain; original free reset, clears and full body restored.
+// P310: Plain two-axis turn/attachment-scale/object-scale array loops, subsets 1..7:
+// 991/616/991/616/991/616/1185; complete loops with shared axis 1185.
+// NOT kept: six-point best gain is below gate; original array producers and full body restored.
+// P312: Existing flag setter installed-state bool/byte/word/long returns, common and
+// branch-owned results: 622/622/622/622/622/622/622/622. NOT kept: no match or gain;
+// original void producer and full body restored; root/NONE and scalar/flag homes remain.
+// M351: Immutable existing range minimum/span/exponent, all seven subsets, then all with
+// a read-only range-record binding: 622 each. Original observations and complete body restored;
+// control-root/NONE, settings/zero homes and clamp/flag joins remain.
+// DH326: Existing flag mutator with short/word/dword canonical predicates, pointer then
+// native reference destinations: 626/626/625/626/626/625; ignored pointer/reference destination
+// results with Boolean predicates 622/622. Original helper and full body restored; root/NONE
+// ownership, settings/zero homes and flag joins remain.
+// DH330: Own-input homes at each of the six original first consumers 1031/622/622/622/622/622;
+// controller/action homes at all consumers 1031/623. NOT kept: unmatched own-input
+// indirections; original arguments, helpers and complete body restored.
+// DH338: Actual range-lower/angular-bound/curve-count/curve-pointer/paired-curve/
+// lower-angular/lower-curve/all native field bindings: 927/622/622/622/622/927/927/927.
+// Original body restored; root/NONE and scalar homes remain; lower reload lacks equality.
+// Y573: CRT return-owned output/button/duration destinations, seven subsets, then input record
+// ownership: 1031/1018/754/1096/1048/1059/1132/1077. NOT kept: all regress; destination aliases
+// and own-record indirection miss equality; native root/NONE and scalar homes remain. Original
+// complete body and helpers restored.
+// Y575: Complete button/duration copy then masked clearing, memcpy/memmove policies:
+// 1029/1006/1021/995/988/901/1001/1015. NOT kept: all regress; memcpy shrinks the frame
+// below 0xe0; memmove retains root/NONE mismatch. Original two scratch clears, filter
+// copy, helper contracts and full body restored.
+// J250: Actual sampled-input auxiliary/movement/look/auxiliary-movement native pairs
+// 622/622/622/622; opaque auxiliary formal with typed/direct pointer access 622/622;
+// complete vector/point input pairs 622/622. NOT kept: no root/NONE, settings, frame
+// or flag improvement. Original input record, body and outside declaration restored.
+// P319: Existing clamp promoted value/lower/upper formal domains, masks 1/2/4/3/5/6/7,
+// then complete double result: 1211/1129/1205/1211/1211/1314/1211/1286. NOT kept:
+// no match, wider x87 domains enlarge frame/length. Original helper and whole body restored.
+// AC525: Complete initial input-availability/unavailability results in bool/byte/short/long,
+// 624/624/624/624/624/624/624/624. NOT kept: predicate residence unmatched; original
+// gate, resets, observations and complete body restored; control-root/NONE homes remain.
+// AC529: Complete post-callback correction admission, allowed/blocked bool/byte/short/long:
+// 622/622/622/622/626/626/626/626. NOT kept: predicate residence does not match; control-root/NONE and scalar/flag homes remain.
+// AC532: Controlled/parent-tag/bounds expiry subsets 1/2/4/3/5/6/7:
+// 622/626/626/626/626/626/626; complete scopes with immutable index 626.
+// NOT kept: no match or gain; original observations, scopes and full body restored.
+// N366: Complete initial/interpolated angle and curve-response adjacent result producers, seven families
+// and complete duration-scaled outputs, all tie. Original body and helpers restored; control-root/NONE,
+// settings/zero homes and clamp/flag joins remain. Scores 622/622/622/622/622/622/622/622. NOT kept:
+// unmatched result-ownership forms.
+// AC534: First held-input scan collects released/retained word/dword masks for both
+// metadata words, indexed then source-cursor reads: 1099/1116/1039/1097/1026/1039/984/998.
+// NOT kept: deferred publication regresses, frame moves from 0xe0 and first gap to +2;
+// original two scans, per-bit stores and full body restored. Root/NONE and scalar homes remain.
+// AC536: Complete post-filter override-query allowed/blocked results in bool/byte/short/long:
+// 714/714/726/725/714/714/726/725. NOT kept: result residence lacks equality; original query,
+// short circuits, latch, helpers and full body restored. Control-root/NONE homes remain.
+// AC538: Complete positive-span admission before range-fraction production, positive/complementary
+// bool/byte/short/long: 624/624/624/624/624/624/624/624. NOT kept: unmatched decision/storage forms;
+// original complete body restored.
+// Control-root/NONE, settings/zero homes and clamp/flag joins remain.
+// AC540: Paired range-angle override/default decisions, bool/byte/short/long: 622/622/622/622/750/750/750/750.
+// NOT kept: unmatched result residence; control-root/NONE and settings/zero homes remain.
+// P340: Existing real truncation helper at hold-threshold conversion, direct/native real/immutable
+// real/rounded double/immutable double/seconds/seconds+milliseconds/immutable producers:
+// 638/638/638/709/709/638/638/638. NOT kept: unmatched conversion ownership; original cast and complete
+// body restored. Control-root/NONE, settings/zero and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
@@ -502,7 +605,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
                     if (local_19 != NONE)
                     {
                         s_havok_component *local_20 = (s_havok_component *)(g_51e9b8->data + (local_19 & 0xffff) * 0xa0);
-                        short local_24 = function_0b67a0((s_small_index *)local_20);
+                        long local_24 = function_0b67a0((s_small_index *)local_20);
                         if (local_24 != NONE)
                         {
                             transform4x3f local_21;
@@ -541,15 +644,13 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             }
         }
         local_8 = local_1->field_c;
-        word const *duration_source = local_2.field_10;
         for (long local_24 = 0; local_24 < 16; local_24++)
         {
             if (!(local_8 & (1 << local_24)))
             {
                 local_3[local_24] = local_2.field_0[local_24];
-                local_4[local_24] = *duration_source;
+                local_4[local_24] = local_2.field_10[local_24];
             }
-            ++duration_source;
         }
         bool local_9 = function_185be3(local_1->field_0) && function_e4050(local_1->field_0);
         if (local_3[10] == 1)
@@ -566,7 +667,8 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             {
                 byte *local_12 = function_185be2(local_1->field_0);
                 short local_13 = *(char *)(local_12 + 0x212);
-                local_11 = local_13 != NONE ? *(long *)(local_12 + local_13 * 4 + 0x218) : NONE;
+                local_11 = NONE;
+                if (local_13 != NONE) local_11 = *(long *)(local_12 + local_13 * 4 + 0x218);
             }
             else local_11 = NONE;
             if (((byte *)arg_4->field_0)[6] > 0x7f || ((byte *)arg_4->field_0)[7] > 0x7f) local_10 = false;

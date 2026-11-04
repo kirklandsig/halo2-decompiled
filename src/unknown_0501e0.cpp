@@ -4,6 +4,7 @@
 #include "camera_storage.h"
 #include "unknown_0259d0.h"
 #include "unknown_030290.h"
+#include "normalize3d.h"
 #include <math.h>
 #include <string.h>
 
@@ -19,23 +20,20 @@ struct s_501e0
 
 static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1, vector3f *arg_2)
 {
-    real local_0 = arg_1->i;
-    real local_1 = arg_1->j;
-    real local_2 = arg_1->k;
+    vector3f scaled = { arg_1->i, arg_1->j, arg_1->k };
     if (arg_0 != 1.f)
-    {
-        local_0 = arg_0 * local_0;
-        local_1 = arg_0 * local_1;
-        local_2 = arg_0 * local_2;
-    }
+        vector3f_scale(arg_1, arg_0, &scaled);
     real *output = arg_2->n;
     for (long component = 0; component < 3; ++component)
     {
-        *output = g_4b9e14.forward.n[component] * local_2 + g_4b9e14.up.n[component] * local_1 + g_4b9e14.right.n[component] * local_0;
+        *output = g_4b9e14.forward.n[component] * scaled.k + g_4b9e14.up.n[component] * scaled.j + g_4b9e14.right.n[component] * scaled.i;
         ++output;
     }
 }
-// score 221 (was 221): first transform sum/product order and register numbering (retail: forward*depth +
+// score 206 (was 221): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
+// raw offsets before the test) and the coefficients folded into the products. Earlier 221: first transform
+// sum/product order and register numbering (retail: forward*depth +
 // up*height first, coefficients loaded into registers, right.i kept in xmm7 for both views), frame 0x18 versus
 // 0x14 (retail spills the blend scale at [esp] where it is computed). Earlier: transform term order
 // right/up/forward written point first and
@@ -280,6 +278,81 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 545: Existing shared axis rotation with complete scalar/native/shared-scale
 // input producers, direct/in-place output: 309/309/283/283/414/456/560/560. All nonmatching
 // association/storage forms restored; original helper/body and extra frame word remain.
+// Round 63 (m3 lane 10, fast): retail computes each depth limit only after the two `k < 0` tests and the second only
+// after both tests on the first, and homes the blend scale at [esp] where it is computed (ours keeps it in xmm2 and
+// spills it at [esp+8] for the x87 tail). The cone test as a forceinline predicate with a named limit, called per view
+// 290 (1091 bytes); the second offset loop before the first 223; the blend scale initialised to 0.5f at its declaration
+// with only the perspective arm assigning it 260 (1151 bytes); the blended position as a component loop 222 (1146
+// bytes); the `k < 0` tests in an outer if with the named limits inside it, an early return and the clear at the end
+// 224. All restored.
+// Round 548: Complete post-view double weight-pair/reciprocal/both-radicand domains,
+// subsets 1/2/4/3/5/6/7, then all with normalized scalar results: 267/267/293/270/279/271/282/327.
+// NOT kept: precision/frame shape misses; original float producers, transform helper and full body restored.
+// Round 65 (m3 lane 1, fast, control 221): the second offset loop before the first 223; named first/second
+// point pointers for arg_0[0]/arg_0[1] 221 (1147 bytes); the view helper scaling into a copy and pointing
+// its input at it 294 (1174 bytes); both offsets in one fused loop 226 (1146 bytes); the depth limits
+// written into the condition with no limit locals 231 (1151 bytes). Original helper and body restored.
+// Round 550: Plain weighted-output coordinate walks on separate-offset/cursor-transform
+// graph: long/dword index 222/222; long/dword output cursor 221/221; first/second/both
+// input cursors 221/223/221; all cursors 221. NOT kept: no gain, 1146/1147 bytes and
+// extra frame word remain; original three publications, helper and complete body restored.
+// B394: Existing complete weighted-point setter with segment-difference helper, immediate clamp;
+// consumer and entry-owned reciprocal subsets: 272/272/272/272/272/272/272/272.
+// NOT kept: no exact match; original complete executable source restored.
+// Round 160 (fast): the view helper's input by value 348 (1215 bytes), as three reals 275 (1153); a copied input for the
+// first/second view 334/268 (1205/1151); the first view transformed in place then copied 279 (1104). All restored.
+// Round 41 (m3 lane 17, fast; plain confirmed): the view helper's locals renamed 221 (same code); a shared scale
+// local with the input re-read in the scale arm 252 (1136 bytes); a shared scale with a scaled vector 255 (frame
+// 0x20); the clamped value in a fresh local (retail clamps into a fresh value, written per arm) 215; that with
+// both offsets through vector3d_from_points3d 215 (1147 bytes), with i/k/j helper reads 214, with the shared scale
+// 252; that with the scaled values in a `vector3f scaled` initialised from the input and scaled by the existing
+// vector3f_scale under the test 206 (kept; 1140 bytes, retail's (forward*depth + up*height) + right*width sum
+// tree in both views; alone, without the fresh clamp, 211); the same as a struct copy 330 (1198), set through
+// vector3f_assign 252 (1146). On the kept body: offsets and views in their own block 206 (same code); shared scale
+// 255; indexed output rows 213; three row statements 304 (1084); depth limits written in the condition 214.
+// M369: Complete basis-axis values before/after the scaler on the aggregate-scaled graph:
+// forward/up/right 278/280/268 and 281/283/271; all axes 446/444.
+// NOT kept: all regress and grow; original helper/body restored; frame and coefficient homes remain.
+// AC516: Aggregate-scaled/native-row-sum graph, first/second/both in-place views, early first view,
+// early first/both overlap, second-first overlap and native segment reuse: 281/258/271/305/287/259/287/271.
+// NOT kept: overlap/lifetime diagnostics unmatched; original two-call helper and complete body restored.
+// AC520: Ordered lazy depth/first-cone/second-cone admission, nested-success/early-failure
+// stage masks 0-7: 279/279/279/279/279/279/279/279. NOT kept: all regress and lengthen;
+// original aggregate transform, gate, input observations and complete body restored.
+// F367: On the retained aggregate-scaled helper, complete caller vector/orthographic/weight/span/cone names, helper workspace/formal names and all caller names: 206 each. NOT kept: eight byte-neutral home trials; original complete helper and body restored.
+// B423: Existing aggregate helper scale-admission result, required/unit in bool/byte/short/long,
+// 213/213/213/213/213/213/213/213 at 1143/1136 bytes. NOT kept: no exact match;
+// original aggregate defaults, shared scale call, helper and complete body restored.
+// DH340: Complete raw-vector capture aggregate/native/setter/CRT with native scaled defaults
+// 345/391/342/391; shared-setter scaled defaults 252/336/252/336. NOT kept: all regress
+// and lengthen the body; original aggregate-scaled helper and complete body restored.
+// P331: Aggregate-scaled graph with branch-owned/unit-default/conditional/const-conditional
+// weights: 206/248/247/247; immediate clamp in each: 206/248/247/247. NOT kept: native eager
+// producer shape/equality absent; original helper and body restored.
+// Y580: Current aggregate-scaled/native-sum graph, actual endpoint traversal with long/dword
+// ordinals: separate/fused/iteration-owned/in-place displacement workspaces
+// 384/373/375/378/441/441/382/382. NOT kept: storage graphs miss equality and native extent;
+// original helper and complete body restored; frame 0x20 versus 0x14 remains.
+// Y582: On the aggregate-scaled helper, live forward/up/right coefficient streams, seven
+// nonempty subsets and all streams with indexed output: 252/253/253/252/252/252/254/252.
+// NOT kept: all regress; original helper/body restored; frame and coefficient/input homes remain.
+// M371: Scaler-return parameter/mutable-source/conditional-source/complete-value producers,
+// cursor rows 295/292/297/379; indexed rows 298/294/299/377. NOT kept: all regress
+// and lengthen; original aggregate defaults, helper and complete body restored.
+// M373: Complete scale/copy branch-owned scaled workspace, native/setter/memcpy/memmove,
+// nonunit-first 327/288/327/374; unit-first 331/288/331/370. NOT kept: all regress;
+// original aggregate-default helper and full body restored; frame/coefficient homes remain.
+// AC537: Actual projected-radius square-root admission/rejection truth in
+// bool/byte/short/long: 207/207/207/207/207/207/207/207. NOT kept: no match; original transform helper,
+// ordered test, alias-sensitive outputs, memset and complete body restored.
+// DL263: Native origin value with existing shared scaled-displacement producer on retained
+// aggregate-scaled transform, first/second/segment subsets then native segment point producer:
+// 206/209/209/213/206/206/213/213. NOT kept: unmatched complete-value contracts; original
+// observations, helper and complete body restored. Frame 0x20 versus 0x14 and
+// coefficient/input/result homes remain.
+// P333: Standard binary differences with one captured origin, seven producer subsets
+// then complete raw copy: 324/328/260/304/300/297/277/386. NOT kept: no match or gain; original helper/body restored.
+// Excluded standard-transform global-array arguments; uncredited and restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
@@ -335,8 +408,8 @@ void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
             real local_11 = function_30bf0(&local_10);
             real local_12 = dot3f(&g_4b9dac, &local_10);
             real local_13 = 1.f - local_12 * local_12;
-            local_13 = local_13 < 0.f ? 0.f : local_13 > 1.f ? 1.f : local_13;
-            arg_2->field_c = (real)(sqrt(local_13) * arg_2->field_c * local_11);
+            real local_14 = local_13 < 0.f ? 0.f : local_13 > 1.f ? 1.f : local_13;
+            arg_2->field_c = (real)(sqrt(local_14) * arg_2->field_c * local_11);
         }
     }
     else

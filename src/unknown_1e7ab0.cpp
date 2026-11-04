@@ -171,6 +171,8 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // state pointer into EDI (base + index * 0x1b0), then reuses ESI for the player index and the player
 // pointer; ours folds the base into the add and keeps the state in ESI. The 0x54 frame, the EDX type
 // argument and the 2308-byte length agree.
+// MiniMax A (11-04): no new form, no lower score; the getter's table/result rotation survives the declaration order, the
+// second table read and the nested seat test (117, one point, restored).
 // score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // Earlier: retail loads the state table into ESI and the state pointer into EDI, then reuses
@@ -358,6 +360,22 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // sum (118 each, before the order change), and early-return, if/else, ternary, written in the caller, nested ifs, force
 // inline (111 each); a named parent object, a named definition index, both (110 each). Rotations left: entry EAX/table ECX
 // at the getter, and each later case block's scratch. All restored.
+// Round 54 (m3 lane 14, fast): the entry through the existing out-of-line 0x1e8d50 (LTCG inlines it) gives
+// retail's getter exactly (table ECX, result EAX; every instruction to case 4 then has retail's size) but 166:
+// case 4's 0xd0590 rotation (BLOCKED-BY 0xd0590) grows one byte and the jump table moves 4; the file's inline
+// getter in 0x1e8d50's shape 118 (same code); on the 0x1e8d50 form, seat read before parent 171, case 4 flags
+// through seats[seat] without the seat pointer 434 (retail adds the pointer before loading), the player index
+// as 0x1e83c0's ternary 618. Retry the 0x1e8d50 call once 0xd0590's order is settled.
+// Round 132: table passed as the getter's second parameter 166 (2312 bytes: entry table ECX/result
+// EAX recovered, later cases and the switch table shift); parent-first on that graph 165; entries-base
+// local 118; read-only table parameter 166; branch-completed nullable result 612; independently
+// recomputed raw state view 491; parent object local 118; table parameter with direct returns 612.
+// NOT kept: the corrected table transport leaves four extra bytes and the one-use locals do not match.
+// Original helper, case graph and complete body restored.
+// Round 131 (m3 lane 8, fast with 0x1e83c0/0xd0590/0x1e8d50/0x1e6bd0; 0x1e83c0 matched each time): the entry lookup
+// before the player index 585; `result` declared first 118 (same code); `result` declared after the player index 124;
+// the player index as a ternary initialiser 618 (2312 bytes); the getter as `table != NULL ... table->entries + index`
+// 118 (same code). The getter's table/result rotation stays; BLOCKED-BY 0xd0590 (contributor) as round 197 found.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

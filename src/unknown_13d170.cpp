@@ -348,6 +348,80 @@ struct s_block_candidate
 // 350/350/366/360; true-default with the existing guarded policy: 347/347/355/354. All tie or
 // regress; complete original policy/result graph restored. Missing frame dword and page/ring
 // homes remain.
+// N337: Oldest-block replacement/retention expression results, bool/byte/short/long,
+// all eight 347. Original oldest selection and complete body restored; frame and page/ring homes remain.
+// m3 lane 11 r62 (fast): offset after the result with previous's NONE in the block 380; offset first with
+// previous's NONE in the block 357 (retail stores that NONE in the block, at +0x48); the page shift in a twice-used
+// local 347 (same code); head and tail as `head = tail = 0` 347 (same code); oldest declared first in the
+// block 379. Retail keeps offset's zero in EBX from before the type clamp (it is the clamp's zero) and stores
+// oldest's NONE from the result's register in the block.
+// Round 122 (lane 7, fast; base 347 [aligned 260]; retail keeps offset in EBX, current in EDI spilled
+// around the scan, previous on the stack and no entry stores for offset/previous): offset and previous
+// declared at the top of the admitted block 376 [243] (entry stores gone, prologue then pushes three);
+// offset after the result, previous in the block 380 [257]; previous alone in the block 357 [262];
+// offset after the limit clamp 378 [241]; current declared first in the block 347 (same code).
+// N339: Complete default-policy named products, staged products and sequential/paired
+// weight accumulators, each with original/single clock observation: 347 each (eight forms).
+// Original arithmetic, clock observations and full body restored; missing frame dword,
+// page/ring ownership and policy placement remain.
+// NOT kept: weighted storage/clock forms tie and retain the deficient frame.
+// Y556: One busy-callback pointer observation at occupied/segment/admitted/entry scope,
+// short-circuit/guarded result on original timestamp graph: 347/347/347/347/358/358/358/358.
+// NOT kept: no qualifying gain or missing-frame recovery; original body restored.
+// m3 lane 11 r62 (fast): offset after the result with previous's NONE in the block 380; offset first with
+// previous's NONE in the block 357 (retail stores that NONE in the block, at +0x48); the page shift in a twice-used
+// local 347 (same code); head and tail as `head = tail = 0` 347 (same code); oldest declared first in the
+// block 379. Retail keeps offset's zero in EBX from before the type clamp (it is the clamp's zero) and stores
+// oldest's NONE from the result's register in the block.
+// M3 lane 9 r83 (fast): the type clamp as an if/else chain 347 (same code); the matched block's time read before its
+// pages (retail reads pages first, ours reversed it) 344, with time-first in all three segment arms 344, plus the
+// ring insertion stored previous/offset/time/pages as retail 344 (three-point gain, not kept); on that: offset
+// declared at the top of the admitted block 384; switch cases ordered default/1/0 344 (same code: retail lays case 1
+// and case 0 after the default arm, ours moves both past the scan whatever the order); previous declared in the
+// block after current 357; the ring insertion indexed without the candidate pointer 345.
+// M3 lane 6 r142 (fast): the type clamp as an if/else-if on a copy of type 385; result declared first 395 (1227
+// bytes); oldest_time zero-initialised 392 (1228 bytes); best declared before the candidate ring 347 (same code);
+// the page remainder mask as `~(-1 << shift)` 347 (other code, same count).
+// Retail keeps result's NONE in EAX through the clamp and stores oldest's NONE from it. Original body restored.
+// Round 69 (m3 lane 10, fast; aligned and register-masked counts in brackets, base 260/139): the 4 missing frame bytes are the next index's home: retail
+// keeps offset in EBX, the forwarded candidate pages in EDI and spills next, tail and head, ours gives EDI to tail and EBX to next and keeps offset in memory. Pages, result, offset,
+// clamp, with previous's NONE in the block 380 (257/139); the policy switch as an inline helper with a return per case 343 (260/145), on that head 375 (258/152). 240
+// random declaration orders of the head, block and segment locals, compile-only: 289-295 against 295, frame never 0x1054. Diagnostics: unused
+// pointers to tail or head 347/380 (same code); tail in a scratch global 376 (1228 bytes, 262/120) still leaves offset in memory.
+// P305: Final predecessor/successor/both/all linked-record references, each with
+// mutable/fixed backing receiver: eight at 347. Original complete body and native
+// record accesses restored; missing frame dword and page/ring/policy allocation remain.
+// P309: Initial page/category-limit admission as positive/complementary bool/byte/short/long
+// producer outcomes: 347/347/347/347/347/347/347/347. NOT kept: one-use outcomes
+// do not match; original complete body restored, missing frame dword and page/ring homes remain.
+// M352: Final failure-limit observed/capped/branch-produced/complementary minimum,
+// compound/nested independent failure-category guards, eight forms 347/347/347/347/347/347/347/347.
+// All restored; frame 0x1050 versus 0x1054 and page/ring/policy ownership remain.
+// DH333: Standard age/segment/category selections in seven subsets
+// 393/388/419/384/433/366/435; final failure-limit minimum 410. The latter recovers
+// frame 0x1054 but grows to 1243/1213 bytes. NOT kept: regressions; full original body restored.
+// N348: Ring insertion admission in bool/byte/short/long, has-room/full truth,
+// 347 each. NOT kept: one-use decisions do not match or recover the missing frame
+// dword. Original ring insertion, page/tail allocation and complete body restored.
+// N350: Final-link successor handle captured for all consumers, long/const long/
+// dword/const dword, pointer/reference predecessor element: 347 each. NOT kept:
+// unchanged frame/page-ring homes; original pooled observations and body restored.
+// N352: Post-callback allocator-clock long/dword, occupied/segment/admitted/entry
+// declarations: 347 each. NOT kept: one-use clock forms remain unmatched and retain
+// frame 0x1050/0x1054 and page/ring homes; complete original body restored.
+// N367: Joined callback/expiry busy result, expression bool/byte/short/long 360/360/365/365; branch
+// producers before oldest admission 347/347/365/367. NOT kept: ties or regressions, wider forms grow beyond
+// retail. Original busy/oldest graph restored; missing frame dword and page/ring homes remain.
+// N371: Saved ring successor in the ordinary inner for increment, bare scan/segment/
+// admitted/entry lifetimes, original then semantic cursor names: 347/347/347/347/347/347/347/347.
+// NOT kept: unmatched successor-slot forms; full body restored; missing frame dword and page/ring homes remain.
+// N374: Full-width unsigned insertion successor/scan ordinal/saved successor,
+// masks 1..7 and immutable complete graph: 347/350/350/347/347/350/350/350.
+// Original signed cursors, modulo and full body restored; NOT kept:
+// no native signed-remainder/frame recovery or byte match.
+// N376: Complete best-record memmove/range-copy/backward-copy contracts, with native
+// zeroed/aggregate ring insertion, eight forms 370/369/369/372/391/392/392/404. NOT kept: no exact
+// record/frame recovery; original transfers, signed ring and complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

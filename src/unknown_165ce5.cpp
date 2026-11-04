@@ -1668,6 +1668,87 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC489: Inactive history, mismatching idle class and idle-motion rejection first, seven
 // phase-ownership subsets: 236/254/220/270/236/254/270; all with nested countdown admission 270
 // (fast control 220, full 218). Original body restored; frame, unit/mode and look homes remain.
+// m3 lane 11 r60 (fast control 220, full 218): the tail's flag tests under a second `unit_index != NONE`
+// block 213 (diagnostic, a repeated test; the saves still precede the unit test); the loop index declared
+// just above the loop 220; look values in a block around their two smoothing calls 220; look values declared
+// before the unit 220; active preset false then `!155760 && b6780` in an if 383 (2197 bytes, aligned 116 -> 112).
+// Retail spills `active` to [ebp-0x14] (false store before the unit test) and keeps the look values in their own
+// -0x2c/-0x28 slots; ours reuses the spring slots.
+// AC495: Post-loop user-activation result from both existing weapon-bit tests, bool/byte/short/long
+// at evaluation or with admission-owned uninitialized storage: eight at 220 fast (control 220, full 218).
+// Original compound test, declarations and complete body restored; frame, unit/mode and look homes remain.
+// AC497: Native duration/remainder call results, real/double at consumption,
+// eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
+// Original real argument domain and narrowing preserved; all one-use captures restored.
+// Frame, unit/mode homes and independent look divisions remain.
+// Round 205 (m3 lane 3, fast control 220, full 218), re-measured listed forms: the settings rate read once into a
+// named local for all six uses 526 (2178 B); the mode lookup after the spring defaults 236; the unit fetched after
+// the mode 573 (2189 B); a short weapon index 421 (2220 B); the look values declared at their computation 220 (same
+// code). New forms: the active result passed straight to first_person_weapon_set_active (no local) 406 (2189 B);
+// the orientation offset as user and weapon terms scaled separately 220 (same code); the view entry's yaw/pitch
+// read at each use with no look pointer 444 (2205 B); the spring overrides tested as `if (field)` 220 (same code);
+// the pitch rate product with its operands swapped 221. The ESI/EDI save region stays BLOCKED-BY the build's
+// stand-in caller (the round 98 finding, not re-verified here).
+// Round 83 (m3 lane 12, fast control 220, full 218): look_yaw/look_pitch declared after mode, at function
+// scope, or at their assignments 220 each; mode declared before the unit and assigned after it 220; the
+// pitch as `y * (-1.0f / rate)` 221. Retail divides `x / rate` and `-1.0f / rate` separately and reloads
+// g_510c54 after each clamped look store (-0x2c/-0x28), as if those stores could alias the global; ours
+// shares one reciprocal.
+// AC497: Native duration/remainder call results, real/double at consumption,
+// eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
+// Original real argument domain and narrowing preserved; all one-use captures restored.
+// Frame, unit/mode homes and independent look divisions remain.
+// Round 68 (m3 lane 10, fast control 220, full 218): ours rewrites both look divisions as products with one
+// shared 1/rate computed before the first clamp; retail divides x / rate, reloads g_510c54 after the first
+// clamp's stores, divides -1 / rate and reloads again after the second. Both look clamps through the existing
+// cross-file real_pin (0x2a0c90's file) 220; the two rates through a same-file inline getter by value, by const
+// reference, forceinline by const reference 220/220/220; through the existing cross-file forceinline time-step
+// getter (0x1d2280's file) 220 (all same code: small inline helpers are fully CSE'd). Restored.
+// Round 82 (m3 lane 16, fast control 220, full 218): the look values as one point2f local 216 (frame 0x30 against
+// 0x2c: the look values then take their own -0x2c slot as retail, but 1/rate is still shared, so the pitch division is
+// not retail's; a grouping struct, not kept); mode renamed weapon_mode 220 (slots do not move); the clamps through a
+// file-local pin taking `real const &` 220 (same code), through an in-place pin on `&look_yaw`/`&look_pitch` 223 (still one
+// shared reciprocal); the yaw as `1.0f / rate * x` 220; early return for a missing unit 220 (repeat, same code).
+// AC497: Native duration/remainder call results, real/double at consumption,
+// eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
+// Original real argument domain and narrowing preserved; all one-use captures restored.
+// Frame, unit/mode homes and independent look divisions remain.
+// AC515: Complete animation-update/event-bit result bool/byte/short/long at computation or
+// with iteration-owned uninitialized storage: 220/220/220/220/220/220/220/220 fast (control 220, full 218).
+// NOT kept: one-use result diagnostics unmatched; original body and all five smoothing tuples restored.
+// AC518: Complete countdown/pause expiry bool/byte/short/long at producer or
+// in iteration-owned storage: 220/220/220/220/220/220/220/220 fast (control 220, full 218).
+// NOT kept: one-use result unmatched; frame, unit/mode and look homes remain.
+// AC523: Signed-short countdown/idle-increment/pause-decrement store-and-test
+// results, subsets 1..7 then complete iteration-owned declarations:
+// 220/277/277/225/225/276/276/276 fast (control 220, full 218). NOT kept:
+// no match; original counters, signed wrap, callbacks and complete body restored.
+// P312: Fixed two-weapon !=2 and <=1 exhaustion, long/short/dword/word ordinals:
+// 220/421/220/421/221/421/221/421 fast (control 220, full 218). NOT kept: no match; original loop/body restored.
+// Frame 0x28/0x2c, unit/mode homes and independent look divisions/homes remain.
+// AC525: Post-setter per-weapon presence/absence results in bool/byte/short/long,
+// eight at 220 fast (control 220, full 218). NOT kept: predicate residence unmatched;
+// original post-call read and full body restored; frame, unit/mode and look homes remain.
+// AC527: Shared idle-animation selection as long/dword/int/unsigned-int, at consumption
+// or iteration scope: eight at 220 fast (control 220, full 218). NOT kept: selected-result
+// residence unmatched; original draws, counters, setter paths and complete body restored.
+// AC535: Peer processing/final activation-resource phases gated by one entry result,
+// positive/complementary bool/byte/short/long: 542/542/573/571/542/542/573/571 fast
+// (control 220, full 218). NOT kept: frame 0x28 and native unit/mode/look/save gaps
+// remain; original complete body and every observation/call restored.
+// AC537: Actual post-spring blend-completion/pending truth, bool/byte/short/long,
+// 220/220/220/220/220/220/220/220 (fast control 220, full 218). NOT kept: no equality/gain; original
+// completion test, all five smoothing tuples and complete body restored.
+// AC539: Independent zoom/idle channel-query return ownership, positive then
+// complementary bool/byte/short/long: eight at 220 fast (control 220, full 218).
+// NOT kept: one-use call results unmatched; original queries and full body restored.
+// AC541: All four early coefficient override/default-presence outcomes, bool/byte/short/long,
+// eight at 220 fast (control 220, full 218). NOT kept: no equality or gain;
+// original field tests, overrides, smoothing tuples and complete body restored.
+// AC543: Independent final resource-presence/complement results at the original
+// tail consumer, bool/byte/short/long: eight at 220 fast (control 220, full 218).
+// NOT kept: one-use outcomes unmatched; frame, unit/mode/look homes and late restores
+// remain. Original final gate, smoothing tuples, observations and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

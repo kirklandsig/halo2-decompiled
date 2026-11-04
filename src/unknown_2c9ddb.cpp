@@ -57,6 +57,8 @@ extern long g_55c154;
 
 // MiniMax R (11-01): no new form, no lower score; the permuter (900 s) found only 60, so the creation
 // classification spill and the expanded string copy remain.
+// MiniMax G (11-04): no new form, no lower score; the creation classification spill and the
+// expanded string copy remain.
 // score 61 (was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
 // `saved` in EDX, the selected arm out of line at 0x2ca467), each with its own g_54e49c store, its own copy into
 // g_54e4a0 and its own 0x238c69 call (mode 5 / mode 7); ours keeps one call site and materialises the choice in a
@@ -152,6 +154,18 @@ extern long g_55c154;
 // type read once into a local 160 (586: `this` EDI, the type in the item's stack home). Retail and our one-load body
 // colour saved EDI, entry ESI, `this` EBX; every two-arm body flips to `this` EDI, entry ESI, saved EBX, and EBX then
 // also takes the hoisted constant 1; the spill or home reuse goes with the unbiased frame. Original body restored.
+// Round 65 (m3 lane 10, fast): two load arms with a controller-index local 172 (589 B), with g_54e4a0 copied before the
+// g_54e49c store 181, plain 174 (595 B), with game-type and controller-index locals 162 (580 B); the one-load body with
+// a controller-index local 89 (569 B). Every two-arm form flips the frame to unbiased at +0x1.
+// Round 140 (m3 lane 5, fast; all on two load arms written `if (selected == NONE) { if (load(saved)) {...} } else if
+// (load(selected)) {...}` with the game type read once into a local for its three uses): with the controller index
+// read once into a local 161 (587 B); with the named destination for the copy 185 (571 B); selected arm first 160
+// (586 B); under a named `create_default` bool 160 (586 B); controller local and named destination 184 (572 B).
+// Round 145 (m3 lane 6, fast): two load arms 174 (595 bytes); with the saved-index store after each copy 195
+// (600); count as sizeof(name)/sizeof(name[0]) 61; arms on entry->variant directly 174; arms with their own
+// scoped variant 174. Compile-only (/O1 /Oi /Gr): every two-arm shape (either order, nested, no else, a mode
+// variable with one 0x238c69 call, one copy, fewer constant-1 uses) hoists the constant 1 into EBX and moves
+// `this` out of EBX; the one-load body with a second load call or per-branch copies does not.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
@@ -383,6 +397,11 @@ void c_class_2c9e69::select_last_variant()
 // qualifier, cast at the empty call 36 (154 bytes); name-arm copy only re-measured 13 (159 bytes: the empty
 // arm tests the stack home, the name arm takes EDI for EBX), with the copy named label/caption/variant_text/
 // a_text 13 each; the name-arm copy without the qualifier 36 (154 bytes). Restored.
+// Round 149: const entry 23; icon declared before text with split assignment 23; top-level const text 23;
+// base text with the inherited qualifier 23; name-arm base/const receiver with direct empty text 13/13 (159);
+// name buffer before that receiver 13; with returned-name local 17; plain renamed original receiver 36 (154). Restored by
+// the round; the coordinator kept the name-arm base receiver with direct empty text (13 at 159 bytes; any gain at 30 or
+// below is kept, whatever the length).
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {
@@ -396,18 +415,21 @@ void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 
 		if (entry->variant == NONE)
 		{
-			c_text_widget_45a5e0 *empty_text = text;
-			if (empty_text)
+			if (text)
 			{
-				empty_text->function_253b1a(0x120001db);
+				text->function_253b1a(0x120001db);
 			}
 		}
-		else if (text)
+		else
 		{
-			word name[0x80];
+			c_class_1a2c81 *name_text = text;
+			if (name_text)
+			{
+				word name[0x80];
 
-			function_215b50(entry->variant, name);
-			text->function_22f52e()->set_text(name);
+				function_215b50(entry->variant, name);
+				name_text->function_22f52e()->set_text(name);
+			}
 		}
 		if (icon)
 		{

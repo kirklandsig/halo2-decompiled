@@ -52,6 +52,7 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax B (11-04b): no new form, no lower score; the frame stays 0x8024 against retail's 0x8020 because the produced count keeps a slot of its own, and the two loop temps stay swapped; moving the produced count out of the loop scores 42/90.
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
@@ -279,6 +280,54 @@ struct c_aggregate : c_child
 // seven more instructions). The standing lead above is unchanged: this body built without /GL is byte-exact, and no /GL form shares the output's slot with the two loop spills (a flags decision).
 // M312: Native block-count field with shared query output/block reference/error-first gate
 // subsets 0-7: 31/31/31/31/37/38/37/38. Original body restored.
+// Round 200 (m3 lane 3, fast): produced renamed added 31; the query output renamed information 31;
+// pre-increments 31 (same code, frame 0x8024); the cleanup object read from the field at the query and
+// the release 67 (376 bytes); scalars before the arrays with produced at the loop-body top 46. Restored.
+// B384: CRT callback-zero/info-failure/both scalar stores with independent/shared query outputs,
+// then both with entry scalar CRT zeros: 31/31/31/31/31/31/31/31. Original scalar stores, independent
+// outputs and complete body restored; escaped output and the lowest loop homes remain.
+// Lane 17 r39 (fast): the error test ahead of the child test 37; the query result declared before the item
+// object 31; error and total in one declaration 31; `total = total + produced` 31; the cleanup block as
+// `blocks + k` 31. Frame 0x8024 in each; original body restored (the flags lead above stands).
+// AC501: Native callback output/capacity/source integer domains, masks 1/2/4/3/5/6/7,
+// then all with completion output after arrays: 31/31/31/31/31/31/31/42. Original interface,
+// outputs and full body restored; escaped output and the lowest loop homes remain.
+// Lane 18 round 36 (fast; local-name order): the dispatch child renamed `child` 31, the cleanup block renamed
+// `released` 31, the collection child and count renamed `collector`/`block_count` 31, the cleanup item and
+// output renamed `item`/`information` 31 (all identical listings: the swapped slots are compiler temporaries);
+// the dispatch inner loop over an `s_block *` range 129 (389 bytes). Still BLOCKED by the build flag.
+// Round 65 (m3 lane 11, fast): produced at the collection loop's for-init 42; the cleanup block at function scope 31;
+// `register` produced 31; the cleanup output before the object 31; `blocks + total` with `produced + total` 31 (frame
+// 0x8024 in all). Still BLOCKED by the build flag.
+// Round 66 (m3 lane 10, fast): the dispatch gate as `4 != request->type` 31 (same code); the callback status in a
+// local stored to error after the total is added 32; `total = produced + total` 31; the release output initialized
+// to 0 at its declaration 68 (381 bytes); total declared before error and error initialized from it 31. Frame 0x8024
+// in each; still BLOCKED by the build flag (frame 0x8020 needs `produced` to share a slot).
+// P306: Test-produced collection/dispatch/item admissions, seven subsets, then
+// native byte carriers: 31 each. NOT kept: no gain or match; the 0x8024 frame remains.
+// Original short circuits, independent outputs, signed traversals and full body restored.
+// M351: Immutable collection-child/cleanup-block/cleanup-object bindings, all seven subsets,
+// then all with the immutable dispatch end: 31 each. Independent escaped outputs and the
+// complete body restored; frame 0x8024 versus 0x8020 and exchanged low loop homes remain.
+// M358: Allocation-information query success/failure in byte/short/word/long: 31 each.
+// NOT kept: one-use query outcomes do not match; independent outputs and complete body
+// restored; frame 0x8024/0x8020 and exchanged low loop homes remain.
+// DH330: Cleanup null guard with completed-query scope/shared scalar query output/
+// actual block reference, masks 0-7: 31/31/31/31/31/31/31/31. Shared outputs recover
+// 0x8020 but exchange the low loop homes; original independent outputs/body restored.
+// Round 60 (m3 lane 13, fast; what LTCG knows of the virtual callee): `v5` declared const 31, its output
+// parameter `long *const` 31, the base `v5` writing its output 31 (all same code); `__declspec(novtable)` on the
+// child interface 31 (0x97f00/0x97f30 lose their matches); `produced` declared and zeroed at the loop-body top with
+// `if (child && !error)` 141 (389 B); a pure virtual `v5` does not compile (the aggregate is instantiated).
+// M376: Fixed collection/dispatch/both equal-end and inclusive-last latches, then
+// actual child-array collection/dispatch bounds: 32/32/33/33/33/35/32/32. NOT kept: no match or qualifying gain;
+// original signed latches/body restored; escaped output and lowest loop homes remain.
+// M379: Existing count-table outputs with deferred prefix conversion, next/current cells,
+// producer/aggregate zeros and before/inside dispatch admission: 184/167/209/227/155/152/183/186. NOT kept:
+// all regress and add a nonnative conversion pass; original independent outputs/body restored.
+// MiniMax B (11-04): this body is byte-exact when its file is built /GL- (the build's
+// per-file flag), but 0x97f60, 0x97fe0 and 0x980d0 then lose their matches (52/80/56)
+// because LTCG's rotated argument registers are gone, so the flag is not kept.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

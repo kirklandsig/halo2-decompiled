@@ -328,6 +328,41 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // Round 528: native int start/count and immutable destination formal, seven subsets
 // 40 each; complete native graph with exhaustive result arms 48. Original signature,
 // shared scanner/copy helper and whole body restored; saved-start/scan allocation remains.
+// Round 140 (m3 lane 6, fast with 0xb5f10/0xb61d0): the sign tests swapped 40 (same code); the length
+// in a local before the tests 46 (92 bytes, 0xb5f10 6); the inverted guard with a `result = false` arm 48
+// (95 bytes, 0xb5f10 41); a `size = count + 1` local clamped and passed 53 (90 bytes, 0xb5f10 104); the
+// result assigned from the whole test 44 (0xb5f10 41).
+// Round 78 (m3 lane 9, fast with 0xb5f10/0xb61d0): the clamp as `if (count >= 0x200) count = 0x200;
+// else count++;` 40, with `> 0x1ff` 40; the guard as `!(start < 0 || count <= 0 || ... > length)` 40;
+// the length test as a second nested if 40 (all same code); start added before the increment 36
+// (0xb5f10 6, as listed).
+// DH313: Native scanner char/signed-char/unsigned-char/byte captures with original
+// postincrement or separate pre-test advance: 40 each; shared find regresses to 15/70 bytes
+// in all eight. NOT kept: no target gain and shared-user loss. Original helper/body restored.
+// Lane 12 r86 (fast with 0xb5f10/0xb61d0): unused-local numbering probes (1-3, diagnostic) 40, so the
+// start/counter registers are not a symbol-order tie; the scan helper as `while (length < 0x1ff &&
+// *string++) length++` 40 (find still matches); indexed `string[length]` 60 (find 46, 0xb5f10 83);
+// the length test as `length - start >= count` 34 (0xb5f10 6); the clamp as a ternary 53 (90 bytes);
+// the copy source as `&string[start]` 28 (retail's shrink-wrapped EBX, but start arrives and stays
+// in EDX; 0xb5f10 6, as the listed `string + start`).
+// Round 124 (m3 lane 7, fast with 0xb5f10/0xb61d0): retail's 0xb5f10 calls set the count (EAX) before the start
+// (ECX), so the declared start-then-count order already fits. The length helper returning `long` 40 (0xb61d0 1);
+// a plain string parameter with one own-parameter volatile read at the `start +=` 40; result set in an else arm
+// 48 (95 bytes, 0xb5f10 41); the helper's counter initialised in the for 40; `count >= 1` 38 (`cmp esi, 1`, no
+// register change; not kept). Retail pushes EDI in the prologue (start lives there) and EBX only around the scan.
+// P311: Shared bounded scanner !=511 / <=510 exhaustion, unsigned-long/long/word/short counters:
+// P311: eight forms 40 at exact 100 bytes; shared find loses its match in every form.
+// P311: NOT kept: no target gain and shared-user regressions. Original helper/body restored; saved-start and scan register split remain.
+// M362: Existing copy helper terminator through direct CRT result/destination
+// formal, long/unsigned-long/int/unsigned-int sizes: eight 53s at 90/100 bytes.
+// NOT kept: target regresses and shared users rise (caller 13, constructor 29,
+// formatter 1, connector 90); original copier, scanner and full body restored.
+// M366: Canonical success signed-byte/short/word/int64 storage, false default then true-default rejection:
+// 41/47/47/48/62/64/64/48. NOT kept: all regress; false defaults and true int64 also lose
+// the matched caller. Original Boolean body restored; saved-start/scan register split remains.
+// M380: Shared copier short/word/int64/uint64 size contracts with native/void return:
+// 39/39/56/56/39/39/56/56. NOT kept: narrow forms gain one and grow to 103 bytes;
+// wide forms regress at 112 bytes. Original helper, scanner and complete body restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -640,6 +675,13 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // then arm 74 (226 bytes); gotos in both arms 10; `return result` / `return true` 20 (retail's block order, but the false exit
 // folds to `xor al, al` and BL takes the true result); `return false` then the restore and the goto 25; a `would_block` local
 // assigned to the result 74; the result from the sentinel, tested, then the restore 74.
+// Round 127 (lane 7, fast): `sent = -1` threaded from the failed call 10, with the `!= -2` test and two gotos 10; long
+// sent 33; `sent == -2` ahead of `sent < 0` 38; a named bool for the prepare call 10; `sent = 0` then `if (written)` 47.
+// Compile-only: direct returns fold with the result written through an inlined reference or pointer, a reference local,
+// an address-taken local, or as char/byte/long; the single-join form puts the false exit's compensation block after the restore.
+// Round 102: const position 10; the send count declared at the iteration top 10; position/written declarations
+// swapped 10; a direct completion return 67; direct builder and ordinary-failure returns 64; direct builder and
+// would-block returns 28; all three failure paths direct 64; an inline method declaration 10. Original body restored.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

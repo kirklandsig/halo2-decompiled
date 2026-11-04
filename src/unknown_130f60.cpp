@@ -95,6 +95,7 @@ local_1:
 }
 
 #include "unknown_0259d0.h"
+#include "normalize3d.h"
 #include <math.h>
 #include <string.h>
 
@@ -175,7 +176,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
-// score 324 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
+// score 295 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
+// Round 121 (fast control 336, aligned 103): the helper's clamp as if/else if 336 (103); remaining first 348 (156); weight before
+// height 345 (129); remaining before weight 348 (144); a named inverse weight 337 (108).
 // Round 291: Paired double-square terms, complete direction-square terms, both, ordered accumulator
 // clamp, and clamp combinations 410/414/420/402/410/414/420; all with disjoint clears before common
 // remaining initialization 454 (fast control 402; full 444).
@@ -324,6 +327,77 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // DH308: Native accumulation clamp ordered/successive/complete-result/copied-result/zero-owned/
 // upper-first/original-input/nested-result graphs: 336/336/421/421/433/349/421/342 (fast control 336; full 324).
 // Original helper and body restored; ESI/unit-constant/reciprocal and accumulation schedules remain.
+// N337: Direction/null-sample/invalid-range early-continue subsets 1..7 and complete
+// combined sample guard: all eight 336 (fast control 336; full baseline 324).
+// Original admission tests and complete body restored; full-image ESI/unit/scale homes remain.
+// DH317: Existing planar magnitude/normalizer producers with native/shared opposite
+// construction and mutable/readonly source: 336/468/336/467/336/468/336/467
+// (fast control 336, full 324). Magnitude forms tie; normalizer forms grow 45-46
+// bytes. Original helper, three-component scaling, includes and full body restored.
+// B388: Complete opposite/direction squared-norm nodes and rounded magnitude in double,
+// subsets 1/2/4/3/5/6/7, then both sums in double: 337/338/400/338/399/388/388/459
+// (fast control 336; full 324). All regress; original norm expressions and storage restored.
+// N345: Native component-array loops, negation/scale as fields or signed/unsigned
+// bounded traversal (excluding fields/fields): 360/360/357/361/361/357/361/361
+// (fast control 336, full 324). NOT kept: all regress; original component operations
+// and full body restored. Entry ESI, unit/reciprocal and accumulation schedules remain.
+// m3 lane 14 r56 (plain, 324): the third remaining read at both uses (no local) 379 (1874 bytes); `real yaw`
+// 503 (1917 bytes); the magnitude test as `fabs(magnitude) >= 0.0001f` 422 (1901 bytes); the third tail as
+// `count <= 0` weight first 355 (1892 bytes, retail keeps accumulate first); `opposite` declared before
+// `direction` 324 (same code). Retail's j loop head has a `lea esp, [esp]` pad that ours lacks.
+// Round 49 (m3 lane 2, plain): the existing normalize3d for the opposite vector's scale 295 at 1886 bytes (kept;
+// the scale itself compiles as before, the weight-sum adds of the accumulations change operand form, aligned
+// differences 112 -> 124); the existing length_sq3f for the direction test 295 (same code, kept as the helper
+// call). On those: vector3f_assign for the opposite vector 298; `opposite.k = 0` before i/j 397 (1882); the zero
+// test inverted with its arms swapped 295 (same code); a const source pointer 295 (same code). Retail's
+// load-first j row costs ours one byte before the j loop, so its 4-byte loop-head pad is missing here.
+// N345: Native component-array loops, negation/scale as fields or signed/unsigned
+// bounded traversal (excluding fields/fields): 360/360/357/361/361/357/361/361
+// (fast control 336, full 324). NOT kept: all regress; original component operations
+// and full body restored. Entry ESI, unit/reciprocal and accumulation schedules remain.
+// M369: Post-angle sample/range admission, positive/complementary bool/byte/short/long:
+// 343/343/343/343/343/343/343/343 (fast control 336; full 295).
+// NOT kept: all regress to 1898 bytes; original guard, helper and complete body restored.
+// AC516: Complete direction-length admission on the shared-normalizer graph, bool/byte/short/long
+// at computation or with iteration-owned uninitialized storage: 343/343/343/343/343/343/343/343.
+// NOT kept: one-use predicate storage unmatched; original comparison, helpers and body restored.
+// AC520: Complete updated scalar sums at the six-use accumulator, immediate/staged
+// RGB/scalar/totals group masks 0-7: 335/458/335/458/335/458/335/458 (fast control 336).
+// NOT kept: one-point leads below threshold; staged RGB grows the frame/length; original helper/body restored.
+// F367: Existing six-use accumulator output contracts: pointer/reference result, reference destination with void/pointer/reference result, reference color with pointer/reference result and value color with pointer result: seven 336, value color 594 (reduced control 336; full 295). NOT kept: no gain; original helper, six uses and full body restored.
+// B423: Complete zero-direction construction decision, positive/complementary
+// bool/byte/short/long results, 343 each at 1898/1892 (reduced control 336/1885).
+// NOT kept: no exact match; original direct decision and complete body restored.
+// DH340: Actual accumulation-output parameter homes, seven nonempty subsets and complete
+// graph with the existing helper output renamed: eight 336 (fast control 336; full 295).
+// NOT kept: no byte match or gain; original parameter/helper names and complete body restored.
+// P331: Final base-layer admission results, masks 1/2/4/3/5/6/7 then complementary all:
+// 336/336/336/336/336/336/335/335 (reduced control 336; full 295). NOT kept: one-point lead below
+// margin; original body restored.
+// Y580: On the shared-normalizer/case-specific graph, actual descriptor indexed pointer,
+// walking pointer, case-produced pointer and indexed reference, long/dword side ordinals:
+// 468/468/424/424/364/364/468/468 (fast control 336, full 295). NOT kept: all regress;
+// original case acquisitions, helper and full body restored; ESI/unit/accumulation homes remain.
+// Y582: Existing direction transfer by standard copy/backward-copy/uninitialized-copy/memmove,
+// original planar negation 496/496/496/498; standard unary planar transform 476/476/476/516
+// (fast control 336, full 295). NOT kept: native copy/normalization residence not recovered;
+// original complete body, helper and includes restored.
+// M371: Both case-owned descriptor-count admissions, populated/empty truth in
+// bool/byte/short/long: eight 336 (reduced control 336; full 295). NOT kept:
+// all byte-neutral; original direct acquisitions, helper and complete body restored.
+// M373: Real side-ordinal while traversal consumed at dispatch, long/dword/short/word
+// 508/508/402/402; each with ordinary outer while 508/508/402/402 (reduced control 336).
+// NOT kept: all regress and lengthen; original loops, helpers and full body restored.
+// Y589: Six-use RGB existing fused add-scaled / scale-add destination-first /
+// contribution-first / native color-capture scale-add, force/ordinary inline:
+// 274/514/514/731 twice (reduced control 336; full 295). NOT kept: fused
+// 1879/1892 grows the length gap; staging grows frames/lengths. Full helper/body restored.
+// P333: Last-consumer pitch-cosine/selected-axis/paired-remainder phases, seven subsets,
+// then all with angle-snapshot end scope: eight 336s (reduced control 336; full 295).
+// NOT kept: byte-neutral; original lifetimes, helper and complete body restored.
+// N375: Actual common input-record boundary at all six accumulations, base/member prefix,
+// pointer/reference input and output, eight forms 369 each (fast control 336; full 295).
+// NOT kept: all regress and shorten to 1874/1892; original record/helper/body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
@@ -356,16 +430,9 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 			opposite.i = -direction.i;
 			opposite.j = -direction.j;
 			opposite.k = 0.0f;
-			real magnitude = (real)sqrt(opposite.j * opposite.j + opposite.i * opposite.i);
-			if (!(0.0001f > fabs(magnitude)))
-			{
-				real reciprocal = 1.0f / magnitude;
-				opposite.i *= reciprocal;
-				opposite.j *= reciprocal;
-				opposite.k *= reciprocal;
-			}
+			normalize3d(&opposite);
 		}
-		if (direction.k * direction.k + direction.j * direction.j + direction.i * direction.i > 0.0f)
+		if (length_sq3f(&direction) > 0.0f)
 		{
 			for (long j = 0; j < 2; j++)
 			{

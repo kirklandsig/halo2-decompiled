@@ -61,6 +61,7 @@ struct s_spawn_scenario_23aea0
 	s_spawn_settings_23aea0 *settings;
 };
 
+// MiniMax G (11-04): no new form, no lower score: the integer-offset destination still needs the g_502250 symbol, which lives in src/unknown_157450.cpp.
 // score 61 (was 61): prologue and 438-byte extent agree; the default-copy destination still
 // uses pointer induction instead of integer offset 0x18..0xa8; staged scalar loads differ.
 // Earlier at 97 (was 105): the prologue is retail's; what differs is the destination, still a pointer
@@ -269,6 +270,31 @@ struct s_spawn_scenario_23aea0
 // and point setter 82 each; per-record real source cursor 148; per-element byte destination 100; flat byte
 // destination 253; inner byte offset 210; batch/byte offsets 226; dual type/byte counters 91; scalar or dword
 // fields on the byte-offset loop 140 each; aggregate record copy 145. Original 61 body restored.
+// Round 48 (fast with 0x157450/0x23ba10/0x23b060/0x23b500/0x2bf740): retail copies each record as three dword
+// moves through ESI in order; ours keeps the setter's SSE loads. A named `real const *source` record 66; the table
+// pointer after the scalar defaults 68; the definition as `byte const *` without the tag local 61 (same code);
+// source reals indexed `[type * 7 + k]` 61 (same code); zero-based records from +0x180 61 (same code); globals
+// declared before the scenario 61 (same code). BLOCKED-BY 0x157450 (round 55's g_502250 symbol lead).
+// Round 140 (m3 lane 5, fast, on the setter body): the setter's sources as `((real const *)(definition + 0x148))[type
+// * 7 + n]` 61; through a named `real const *values` for the three 61; the globals pointer declared before the
+// scenario pointer 61; the scenario pointer declared at its test 99 (its load moves below the stores); the sources as
+// `((real const *)(definition + 0x148 + type * 0x1c))[n]` 61. The integer-offset copy loop still needs the weights'
+// symbol at 0x502250 (the round 55 lead above), which lives in src/unknown_157450.cpp, held by another lane this round.
+// M3 lane 14 r59 (fast): each record as three real field assignments (`types[type - 2].value0 = ...`, value4,
+// value8) 102 (390 bytes): the copies become retail's interleaved dword moves through ESI, unrolled by six, so
+// only the destination induction differs (a pointer with small displacements, 3 bytes shorter per store); the same
+// with a `const` globals pointer 102 (same code). A twelve-byte record assignment in the type loop 256 (279 bytes,
+// not unrolled), memcpy re-measured 256 (same code); the weights addressed through the cast global at each use, no
+// globals local, 61 (same code); vector3f_assign fed through a `vector3f const *` view of the record 61 (same code).
+// So the round 55 match needs the field assignments (or its dword reads) and the 0x502250 symbol together.
+// BLOCKED-BY 0x157450 (src/unknown_157450.cpp, held by F356 in r59).
+// Round 140: typed per-record setter/scalar copies 100/140; raw batch setter/scalar copies 82/140;
+// typed batch setter/scalar copies 89/140; typed record-reference setter/scalar copies 100/140.
+// The byte-offset setters grow to 486 bytes and every scalar form loses retail's unroll/addressing.
+// MiniMax B (11-03), not kept: a 0xac-byte struct declared at 0x502248 (four words, the two shared values, the twelve
+// records, the table), with a byte-offset loop 0x18..0xa8 by 0x48 and the source from definition + 0x184, matched in
+// the lane, but 0x502248 is the mission-objective pointer (`long *g_502248`, src/unknown_29f5b0.cpp), so the tree no
+// longer links (batch 216: LNK2001 g_502248) and the struct would fold unrelated globals into the weights.
 // @retail 0x23aea0
 void function_23aea0()
 {

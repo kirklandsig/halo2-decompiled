@@ -171,7 +171,8 @@ static __forceinline bool structure_bsp_collision_available()
         *(long const *)((byte const *)g_4e0344->bsp + 4) == *(long const *)((byte const *)g_4e0348 + 8);
 }
 
-// score 53 (was 53): frame 0x60/prefix agree; exclusion BL and source-slot rewrite/reload remain absent.
+// score 53 (was 53): frame 0x60/prefix agree; exclusion BL and source-slot rewrite/reload remain absent; the byte result
+// is still normalized with setne at both exits.
 // Earlier at 53 (was 61): the 0xbf9a0 probe is inverted, so the 0x14a8e0 return is laid out after the requery as
 // in retail. MiniMax E (10-31): with the type-6 test also setting a named exclusion flag 51 (a test-set flag,
 // not kept without a match); VC still threads the flag on every edge (retail keeps it in BL) and the byte
@@ -400,6 +401,12 @@ static __forceinline bool structure_bsp_collision_available()
 // Minimal model-result assignment + a new goto to a new label before the shared return 45 plain: NOT kept
 // (goto, match only); assignment followed by its own return 46 NOT kept (gain seven, under the bar).
 // Body restored at 53; exclusion/source-slot join remains.
+// Round 138 (m3 lane 5): the model result stored in `result` with one `goto done` to the final return 45 plain: NOT kept
+// (coordinator: the function keeps two other early returns, so the goto only moves this return, as round 343's; body
+// restored at 53);
+// on it, a bool result 56, the excluded arm also `goto done` 67 (272 bytes), the && flag guarding 0xbf9a0 with
+// `if (excluded) return result;` 57 (287 bytes), a byte `found` 45 (same code), the 0xbf9a0 test positive with the
+// requery after its block 56; before it, a byte flag `excluded |= 1` with the model query as its else-if 62 (threaded).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -471,6 +478,13 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	return false;
 }
 
+// MiniMax A (11-04): no new form, no lower score (172). What still differs: the promoted clone of
+// function_11e800 hands the four pointers to different registers. Retail calls it with
+// ECX=arg1, EDX=arg2, EAX=arg3, ESI=arg4; our build calls it with ECX=arg1, EDX=arg2, ESI=arg3,
+// EAX=arg4 (checked at our 0x407628 against retail's 0x14aebb). The assignment comes from the
+// callee's own body in src/unknown_11cb00.cpp (126 off retail), which is not this machine's file,
+// so the call site cannot be fixed from here: BLOCKED-BY 0x11e800.
+// Also still different: the BSP/section carriers and the plane/instance stack homes.
 // MiniMax E (11-01): no new form, no lower score; the byte result set before the type branch gives
 // 197 and the range declared before the section 172 with identical code. Left: the BSP in EBX with the
 // section in its stack home, the rotated range/plane/instance homes and the 0x16e1b0 output homes.
@@ -598,6 +612,22 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // three compares, the 0x16e1b0 unknown/part-index homes and BLOCKED-BY 0x11e800 (its v0/v1/v2/point
 // registers). Any defined initial value adds a store retail lacks, and the flag is set in a test, so none of
 // these is kept.
+// Round 138 (m3 lane 5, fast; retail zeroes a byte at esp+0x13 and the definition in EDI at entry): `definition = NULL`
+// at its declaration with the byte result declared among the locals 209 (727 bytes); with the result declared first
+// 185 (726 bytes); with the BSP declared before the point 217; section before definition 209; a bool result 217.
+// Round 123 (m3 lane 7, fast; plain agrees): retail's vertex byte at esp+0x12 is one slot written on each
+// hit, tested only after the first miss and never initialised: the vertex getter's own result left unset on
+// a miss (`bool result; if (ok) { *point = ...; result = true; } return result;`), inlined once in the
+// `valid = valid && ...` loop and unrolled. With it the 66-instruction vertex block is exactly retail's:
+// alone 226 (751 bytes, aligned 40 against 75); with a bool result 212; with `definition = NULL` at its
+// declaration 219, bool 205; result, definition, section declared in that order after the instance index
+// 208 at 726 bytes (aligned 20; rsd/drs 208, dsr/sdr 137, srd 220); then unknown18 stored before
+// part_index 208 (aligned 16: the 0x16e1b0 output slots then as retail; the 22 other store orders worse).
+// On that: `unknown` renamed (7 names) 208; output declaration orders 208; `section != NULL` 208; range
+// declared first 208; declarations at the function top/after the BSP 220/220; result at the other entry
+// positions 220-221; field locals moved after the group 216-224; `!count` 208; section NULL as a statement
+// 208; permuter 198 (a volatile only). Left: VC keeps constant 0 in EBP (retail gives EBP to the range at the
+// join and tests with `test`), which shifts the positional score, and BLOCKED-BY 0x11e800's registers.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -826,12 +856,17 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // 0x11e800's registers), before the section pointer 223, before the region-list declarations (ahead of
 // 0xba690) 230, before the object lookup 78; the listed placement before the 0x12de70 test still gives 9.
 // Each moves a read ahead of calls (kept only with a match); BLOCKED-BY 0x11e800.
-// score 4 (was 70): the vertex-bounds read moved before the geometry-block call (retail reads it there
+// Earlier at 4 (was 70): the vertex-bounds read moved before the geometry-block call (retail reads it there
 // and spills it) and the lookup's address held in a named pointer (retail keeps it in ESI for the
 // second call); left: only 0x11e800's four argument registers (BLOCKED-BY 0x11e800, whose body decides
 // them: ours v0/v1/v2/point in eax/esi/edx/ecx, retail in eax/edx/ecx/esi).
 // R75: point address at call/before extraction 4/4; vertex base at call/through extraction 4/4; direct array
 // arithmetic 4; both input pointers through extraction 4; vertices before the reference loop 4; output-address locals 4.
+// Round 123 (m3 lane 7): listing re-read, still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
+// Round 116 (fast): failed-test continue 4; late success result 58 (879 bytes); early success result 4;
+// vertex-node declaration before the array 4; index declaration after the vertex ordinal 6; counter
+// preincrement in that context 6; exact-count exit 7; direct success return 335 (822). Original body restored;
+// the four triangle-test argument registers remain BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
@@ -950,6 +985,9 @@ done:
 
 #undef COLLISION_OBJECT_14A8E0
 
+// MiniMax G (11-04): the result as a local with the parameter kept alive by an unused pointer 125 and 127;
+// the entry order none/probe/flags/result 127; the exclusion flag assigned in the type-6 arm with the
+// requery after the join 149; the join test as !(excluded & 1) 138. Body restored to the original.
 // score 125 (was 125): frame 0x64 agrees; exclusion BL, NONE/EBX and spilled result allocation still differ.
 // Lane 15 r17: the pointers to the direction, ignored object and surface parameters removed (each
 // identical code; only the triangle pointer holds the convention: without it 158 and matched caller
@@ -1090,6 +1128,72 @@ done:
 // Round 343: BSP/header/object-handle last-consumer scope subsets 1..7 each 125;
 // joint object-phase scopes with the existing availability helper 149 (440 bytes).
 // Original availability, workspace, exclusions and body restored; NONE/result/exclusion homes remain.
+// Round 125 (lane 8, fast with 0xd2a50): the guards as one positive test around the body with `return false`
+// after it 125; `retry = true` before the probe advance 125; `bool retry = true; while (retry)` 125; the
+// direction copied to a local for every use (diagnostic) 125; the exclusion preset false and set by an if 125;
+// an empty excluded arm with the model query and requery as its else-if/else 125 (same code each: the flag is
+// still threaded, the result keeps EBX and the direction no register). Body unchanged.
+// Round 138 (m3 lane 5, fast): availability through the existing inline helper 149 (440 bytes), with `result = false`
+// after it 169; `result = false` after the inline availability tests 136; the requery flags assigned in the call
+// argument 125 (same code); diagnostic: the requery's lightmap call sharing the no-object call through a label 165
+// (0xd2a50 lost).
+// Round 123 (m3 lane 7, fast with 0xd2a50): both availability guards through the existing inline
+// structure_bsp_collision_available() 149 (440 bytes, a repeat re-measured); the flag declared beside `retry` and
+// assigned in the object arm 125; both flag tests as `excluded == false` 125; the direction read once into a
+// loop-top pointer for both queries and the step 125; the flag set in if/else arms 125; preset false and set
+// true under a nested policy test 125 (all the same code: VC still threads the flag).
+// DH315: One result exit on original exclusion/storage graph; shared sentinel,
+// entry attempt initialization and availability producer masks 0..7 give
+// 136/136/144/144/136/136/144/144, all 452/470 bytes. Original exits,
+// reset phases, exclusion, grouped workspace and complete body restored.
+// Round 81 (m3 lane 9, fast with 0xd2a50): retail holds NONE and then the exclusion flag in EBX (`mov bl, 1` /
+// `xor bl, bl`, re-set by `or ebx, -1` at the back edge), the direction in ESI and the result only in its parameter
+// slot; ours threads the flag, keeps NONE in ESI and the result in BL. The triangle used directly without the
+// reference pointer 158 (454 bytes, 0xd2a50 72); that with the state struct split into three locals 157 (456,
+// 0xd2a50 97); the split alone 157 (0xd2a50 97); a named cluster pointer for the 0xbf9a0 output and its read 138
+// (473); the exclusion preset false and assigned the definition test inside `if (type == 6)` 133 (470 bytes, setne).
+// DL255: Fixed-three forward attempt counters, long/dword/short/word: 122/122/118/118;
+// reverse remaining counters: 123/140/119/139. Extents 470/470/470/470/470/460/470/461.
+// NOT kept: gains at most seven; narrow counter/layout forms require equality. Frames
+// stay 0x64, first +3 and exclusion/result/NONE ownership remain. Original complete
+// body, grouped workspace, triangle reference, retry state and query operands restored.
+// Zero/one exclusion in signed-byte/short/word compound producers 125/125/125;
+// complete branch producers 133/133/133; short/word conditional producers 133/133.
+// Original Boolean exclusion, result parameter, grouped storage and complete body restored.
+// DH335: collision-selection input char/signed-char/byte 125 each; short/word 126,
+// int/long/dword 130. Wider inputs lose the matched caller. Original Boolean
+// contract and whole body restored; exclusion/result/NONE and direction homes remain.
+// N351: Native output long fields +08/+0c/+10, subsets 1/2/4/3/5/6/7, then model-output pointer:
+// 125/125/125/125/125/125/125/124. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: exclusion/result/NONE homes and direction reload.
+// Round 162 (lane 4, fast with 0xd2a50). LEAD, not kept (diagnostic forms): one lightmap call reached through a
+// `hit` flag (true, cleared in the object arm, set from the requery, `if (hit) result = lightmap`) gives retail's shared
+// `test al, al; mov [slot], al` tail and the result in memory, 164 at 448 bytes while the flag threads (0xd2a50 lost,
+// probe in ESI). With the join test as `!(excluded & 1)` (or `excluded ^ 1`) 139 at 471 bytes and retail's allocation;
+// plus the existing structure_bsp_collision_available() 150 at 461, entry order result, NONE short, probe copy, flags 112
+// (n,p,f,r 112; p,n,r,f 113; p,f,r,n 130; f,p,r,n 150); plus result a local and the unread parameter kept by an unused
+// `bool const *flag_reference = &parameter` 59 at 470 bytes, aligned 28, 0xd2a50 matching (a plain address cast, or an
+// empty inline taking it, drops the parameter: ret 0xc, 114). Only three things then differ: the NONE short's store
+// before the result's, `test bl, 1` for `test bl, bl`, and the found arm, inline in ours and after the step in retail.
+// So what is left is the join test staying unthreaded with a plain `test bl, bl`, and the found arm's place.
+// Threaded on that 59 form (167, 432 bytes; aligned 155): join test as `&` or `|` of itself, `&& itself`, `(long)` == 0, > 0,
+// a reference, a pointer or a copy of the flag at the join, `while`, `do/while(false)`, `for` or `switch` around
+// the requery, an empty inline before it, a known-false `hit` or `retry` as the compound's first element or second;
+// `-(long)excluded == 0` stays unthreaded 65 [24]. On the kept body: a statement in the else before the test 125; result
+// local 126 (parameter dropped, 0xd2a50 lost); the flag in the unread parameter 126 (dropped); `found` set in arms or
+// from the && test, then if/else-if, 125 each; the requery and found call in an inline taking the flag 155 at 486 bytes
+// (first test stays, second threads); negative dispatch with the found arm in the else 125, with `hit` 164; 16-128
+// unused locals 164 (no tracking limit); the found arm at a label after the step (goto, diagnostic) 59 (ours moves it
+// back inline); `found` tested after the lightmap call with `!found && !excluded` 182 at 428 (found arm after the
+// lightmap, jumped over; the flag still threads), that with found before lightmap 174, as else-if 182, the flag set by if 183;
+// for(;;) with breaks on the 112 form 144 (505 bytes).
+// N369: Pass-owned false-result initialization with independent availability,
+// generation and retry scopes, masks 0..7: 146/146/146/171/146/146/146/171.
+// NOT kept: all lose the matched caller (14), regress and miss native extent;
+// original entry-result lifetime, guards and complete body restored.
+// N378: Complete object completion chain with eligibility/model/fallback results in the actual return result:
+// 181/133/181/133/200/147/200/147. NOT kept: no byte equality or qualifying native-shape gain;
+// original executable source restored; exclusion/result/NONE and direction homes remain.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

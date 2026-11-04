@@ -530,6 +530,8 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // short team reassigned from the side 31; the side local first holding the team, long/short 70 (322 bytes)/31; prop
 // before the side call 26; in the direct argument an enum cast, unary plus, `& -1`, `& 0xffff`, `~~`, `<< 0`, `(&team)[0]`
 // and a dword cast 3 each (all still the 16-bit load).
+// Round 134: bool return 33; direct initial pool expression 31; one-use pool receiver 89; initial early return 132;
+// direct initial guard 121; found early return 144; both early exits 136; declared loop current 3. Opening body restored.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
@@ -1899,6 +1901,7 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax B (11-03): no new form, no lower score.
 // score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
 // ours keeps the pool in memory and the selection in edi.
@@ -2007,6 +2010,28 @@ void function_269250(long clump_index, long actor_index);
 // excluded: 87/87/87/87/87/87/87/87 (fast control 87). NOT kept: one-use admission requires an
 // exact match. Original common score graph and body restored; pool/selection and x87/SSE homes
 // remain.
+// Round 127 (lane 8, fast; body 89 fast): the walk as a `for` loop with the call in init and step 343, with the
+// in-arm compare 339 (624/625 B); in-arm with the score at function scope 126; in-arm with the previous clump read
+// once into a local 144 (plain 140); in-arm with the team test's operands swapped 126.
+// Round 63 (m3 lane 1, fast; this body 89 fast): in-arm compare 126 (480, retail's fcompi); with the datum index
+// 128; in-arm with `best < score` 126, score declared per actor 126, team test as `continue` 126.
+// Also round 63 (in-arm form): best/selected declared before the activity snapshot 126; best before selected 126;
+// the actor walk as a for loop 126.
+// F350: Native created-center memcpy/memmove, actual output pointer/reference,
+// original then shared selected/created result: 87/125/87/125/87/125/87/125.
+// memcpy retains 482 bytes; memmove moves away to 464 versus retail 480.
+// Original assignment, receiver and full body restored; pool/selection and
+// x87 score homes remain.
+// Round 82 (m3 lane 9, fast; this body 89 fast, 87 plain): in-arm compare as `if (!(score <= best))` with the
+// selection stored first 128 (480 B); team mismatch `continue` then the compare 126; the common graph with the
+// selection stored first 89 (same code as fast control); the score as a ternary on the team test 128 (484 B);
+// in-arm compare ending in `continue` 126.
+// DH339: Immutable activity/created handle/created receiver, seven subsets and all with
+// readonly actor, eight at 89 fast (unchanged preview 89; full baseline 87).
+// Original mutable storage and full body restored; pool/selection and x87 homes remain.
+// DH355: Strict improvement truth at the common score join, positive/complementary
+// bool/byte/short/long: 89/89/89/89/89/89/89/89 (reduced control 89; full 87).
+// NOT kept: no exact one-use decision; original pool/selection and complete body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2137,6 +2162,8 @@ void function_269250(long clump_index, long actor_index)
 	g_4de2f8 = false;
 }
 
+// MiniMax B (11-03): no new form, no lower score; the two flag homes stay swapped (0x12/0x13) whatever
+// the order the flags are declared in.
 // score 89 (was 89): frame 0x24 agrees; category-byte homes and deletion completion differ. With the removed
 // prop cleared and tested (3) only the hoisted prop/node pool registers differ: retail loads the prop pool
 // first into edi, ours always loads the node pool first; an extra prop lookup (93) or an index node loop (76)
@@ -2273,6 +2300,34 @@ void function_269250(long clump_index, long actor_index)
 // original whole-group result, categories, deletion, node and tracking walks restored.
 // DH304: Whole-group owner/child comparison-result accumulation, independent bool/byte producers then joint domains, 185/207/189/206/175/196/176/181.
 // Original whole-group result and all traversal restored; category homes, deletion completion and pool carriers remain.
+// Round 127 (lane 8, fast): the cleared-prop form re-measured 3 (pool registers only); completion test as
+// `!unit && changed` 89; deletion arm ending in the full completion test 89; deletion arm as `replacement == NONE`
+// before the store 94; `changed` declared outside the clump loop 89; `if (unit) continue; break;` with a char-typed
+// tracking test 89.
+// Round 63 (m3 lane 1, fast): the 3 form re-built 3 (pool roles only); node head through prop_get(props.index)
+// 89 (same code), on the 3 form 3; head from the current prop 208 (709); nodes through prop_ref_get 180 (759).
+// Also round 63: unit initialised once from `((1 << type) & 3) != 0` 211; unit declared before the group flag
+// 87 (only the two clears swap; slots stay), on the 3 form 5.
+// F350: Native final tracking/state receiver with same/other-object cleanup
+// predicates in bool/byte/short/long, eight forms 89 each at 743 bytes.
+// One-use predicates are exact-only and restored; original categories, mutation
+// result, deletion continuation, all shared pools and complete body retained.
+// Round 82 (m3 lane 9, fast): retail's deletion arm reloads both pools and joins the unit test after `test bl, bl`
+// (0x26b093), skipping the node scan. The node scan written in both live arms 295 (837 bytes, not merged); `if (unit)
+// continue; break;` 89 (same code); the deletion arm first as `match && replacement == NONE` with the rest in its else
+// (a repeated test) 196 (741 bytes, registers rotate); the 3 form re-measured 3 (ours: node pool EDI, prop pool EBP);
+// on it the node iterator declared beside/before the prop iterator 3/3.
+// M3 lane 4 r161 (fast): the prop loop split into a matched-object arm (deletion, or replace + node scan) and an
+// else arm (state clear + node scan) so only the bottom test reads the unit flag 295 (837 B: the two node scans
+// are not merged and the pools are no longer hoisted); `changed` set only in the replace arm 92; the group flag
+// assigned from the data test and tested in place of `data` 206; the type as a long 135; the unit flag inverted
+// (`single`, cleared for units) 89 (same code, slots unchanged).
+// DH339: Actual group/prop/node current pointers declared in their while conditions, seven
+// subsets then all with the member result condition, eight at 89. Original declarations,
+// result tests and complete body restored; category homes and deletion completion remain.
+// P327: Complete group-category definite assignment in bool/bool, byte/bool, bool/byte,
+// byte/byte domains 152 each; complete unit assignment as well 193 each. NOT kept:
+// all regress; original classification stores, deletion continuation and pools restored.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

@@ -91,6 +91,16 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // it here as retail does) 10, kept in place of its body written out, with its type argument named first 10;
 // the profile copied from the bounded index 110 (309 bytes); result set before the task stores 20; progress
 // stored first 13; state first 12; succeeded first 11.
+// Round 138: if on the path helper's bool 10; `&&` of helper and read 23 (290 bytes); cache pointer before the bit
+// test 17; inverted first test 10; separate result assignment 10.
+// Round 53 (m3 lane 15, fast): the read's path as `&local_0.field_44[0]` 10; the index and size tests nested
+// 10; the size test first 75 (291 bytes, re-measured); the profile copied from `&...profile` 10; the location
+// record declared at function scope 10; the read's result returned directly from the else arm 102 (271 bytes;
+// 0x2161d0 33). Retail's other callers of 0x122810 (0x2164c0, 0x216f80, 0x2ad020) do not reuse the string
+// register after it either, but none passes the path again before other code.
+// Round 115: explicit cached exit 10; branch-local cache pointer 10; helper result in result/named bool 10/10;
+// separate read result 10; named cached predicate 10; result before the copy 46; result from done 10.
+// NOT kept: no gain; the one-use result forms were exact-only and the original body is restored.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

@@ -69,6 +69,7 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax B (11-04): no new form, no lower score.
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
@@ -233,6 +234,26 @@ bool function_25d9b0(long prop_index);
 // Round 86 (KIMI2): evaluation result with busy goto/single exit 91; the same without goto 91;
 // scoped zero result 51; priority-initialized result 49; reversed branch-complete result 49;
 // that with velocity declared first 49; selected_priority/outcome result names 49/49. Original body restored.
+// Round 125 (lane 8, fast with the file): the existing length_sq3f for the speed 49; the existing magnitude3d 49;
+// `short priority = 0` at the declaration in place of the fallback's store 49; the busy test as `== false`
+// returning priority inside 65; the busy test as an if/else of the two returns 49 (still the select).
+// Round 128 (lane 8, fast with the file and its callees, faithful 49; plain confirmed): kept 49 -> 30: the busy test
+// (0x25d9b0) joined into the evaluation's && chain with `return priority` and the fallback's node test written as
+// `prop_index != NONE` (the && chain alone 65 swaps actor/node to EBP/EBX; the fallback test through the prop
+// index gives retail's actor EBX/node EBP and no select; `actor->prop_index != NONE` 30, same code). Tried: the busy
+// call through the prop_index local 143; `priority = 0; return priority;` at the end 30 (same code); the whole test
+// inverted returning 0 first 30 (same code); `return 0` for the loop's exit 123 (575 bytes); the old busy `if` with
+// the prop-index fallback 50; a short result zeroed at the label 92.
+// NOT kept (review): the 30 needs the fallback to test the prop index (`cmp esi, -1`) where retail tests the node
+// (`test ebp, ebp`), a form picked by score against retail's test; the && chain alone is 65. Body restored at 49.
+// Round 402: Single complete outcome including iterator exhaustion, short/long/word/dword, default-zero or complete busy branches.
+// Scores 132/135/132/135/136/170/136/170. NOT kept: unmatched outcome forms; original complete body restored.
+// Round 138: busy result in byte/short/long storage, Boolean at entry/evaluation scope 49 each;
+// evaluation-scope Boolean with priority cleared 82; unsigned-short result initialized from priority 49
+// (558 bytes), branch-complete unsigned-short result 49. Original tail restored; busy select and exits remain.
+// AC545: Native ordered admission in nested predicate groups, eight boundary
+// partitions, 49 each. Original busy call, zero/priority exits, iterator
+// exhaustion and fallback node test restored; the select and epilogues remain.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -297,6 +318,7 @@ evaluate:
 	return 0;
 }
 
+// MiniMax B (11-04): no new form, no lower score.
 // MiniMax R (11-01): no lower score; reading the slot's expected index into a local before the actor lookup
 // and the file's /Ob1 setting both leave it at 73 (0x25d740 is still inlined here); calling the view getter
 // twice (76) does not hold it out of line either.
@@ -447,6 +469,12 @@ evaluate:
 // Round 28 (m3 lane 18, fast; the call still inlined in every form): the node's distance field in a local for
 // both tests 78; the speed named before the final test 73; the near result in an if/else with the far tests in
 // its else 78; the prop compare as a guard return 73; the payload count as a guard return 79 (265 bytes).
+// Round 125 (lane 8, fast with the file; the call still inlined in every form): the far distance test as
+// `15.0f >= d`, `!(d > 15.0f)` and `!(15.0f < d)` 73 each; the speed cast to real 73; `view != NULL` 73.
+// Round 128 (lane 8, fast with the file and its callees; 0x25d740 still inlined in every form): both outer tests as
+// guard returns (`unknown20 <= 0`, `prop_index != unknown1c`) 74; with `if (!view) return result;` 74; with the
+// existing magnitude3d 74; with the far result assigned (`result = g_46fbe8;`) 72; the near/far arms as an if/else
+// assigning result with one return 88 (278 bytes).
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

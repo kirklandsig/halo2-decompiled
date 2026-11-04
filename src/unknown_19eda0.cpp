@@ -385,10 +385,16 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// MiniMax B (11-04): no new form, no lower score.
 // score 316 (was 316): the distance to the centre is now computed and compared in double, so the
 // MiniMax R (11-01): no new form, no lower score (the retail-shaped fade gives 390, the double
 // comparison 316; the call to 0x4b2d0 keeps three stack arguments where retail's takes two).
 // score 316 (was 316): Frame 0x34 versus 0x30; fade/radius homes and protected render-call transport/expansion remain.
+// Lane 18 r37 (fast): retail passes 0x4b2d0 tag/first/second in EDX/ECX/EAX and third/fourth on the stack
+// (ret 8); ours passes tag/fourth in EDX/EAX and three on the stack (ret 0xc). In 0x4b2d0: dropping its
+// `(void)&` reads (one or both) changes nothing; the entry offset computed in place, or named just before
+// the entry, gives ret 8 but passes first in EBX and third in EAX (0x4b2d0 91, 239 B; here 413); with the
+// variant read directly here as well 413. All restored.
 // Earlier at 316 (was 379): the distance to the centre is now computed and compared in double, so the
 // the distance to the centre is now computed and compared in double, so the
 // float copy lands in the dead radius slot and the fade block keeps retail's x87 shape; the fade
@@ -470,6 +476,10 @@ PRIVATE inline long polygon_round_19f(real value)
 // Round 496: Native data factor with early-real, explicit-real, upper-first and zero-first fade
 // results 415/390/391/397; expanded-bound pairs 377/388/391/402 (exact-only).
 // Original factor literal, bound, inherited parameter home, cursor and complete body restored.
+// Round 207 (lane 3, fast with both callers): the texture scale's second rounding read from the first
+// result 370; the top point as its own initializer with `center->z + height` 359; the alpha clamp as one
+// ternary 316 (same code); the wrapped index as `step < count ? step : 0` 316 (same code); the repetition
+// divisor as `1.2f * height` 316 (same code). BLOCKED-BY 0x4b2d0 and 0x1ccb0 as noted.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,

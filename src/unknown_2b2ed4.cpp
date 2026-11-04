@@ -74,7 +74,12 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// MiniMax H (11-04): declaration-order and scope moves compile identically; no lower score.
 // score 330 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
+// Lane 18 r37 (fast): received text preset then overridden 662 (2347 B); the text id as dword 330;
+// text set to NONE only at the top of the online block 330 (same code); set_text inside the online block
+// under `if (text == NONE)` 539 (2350 B); the invitation bit chosen by if/else after a `continue` 330
+// (same code). Retail sends every text arm straight to one function_253b1a call (no NONE test).
 // Stack homes, suffix address rederivation and block placement remain.
 // frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // merging the two XONLINE_FRIEND copies into one local in the status block
@@ -196,6 +201,10 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Original complete body restored; child/text/layout homes and suffix address rederivation remain.
 // Round 301: complete available/disabled/muted query-result arms, subsets 1-7,
 // 633/617/625/554/639/633/637; all with reused valid-player predicate 642. Original body restored.
+// Round 207 (lane 3, fast): the >= 10 invitation icon as one call with `received ? 28 : 17` 358 (2328 bytes);
+// the > 1 icon as one call with `invitations + (received ? 18 : 7)` 383 (2357 bytes); the status visibility
+// as `(empty || self) ? false : true` 330 (same code); a short invitation count 339 (2338 bytes); voice
+// availability as `player != NONE && ...` 631 (2325 bytes). Homes still BLOCKED-BY 0x230134 as noted.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

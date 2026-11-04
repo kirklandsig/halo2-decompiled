@@ -644,6 +644,71 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // P264: whole/header-team best publication via memcpy/memmove, native candidate
 // 67/83/79/95; default-built memmove candidate 185/173/197/186.
 // Native copies, original candidate lifetime, queries and complete body restored.
+// Round 124 (m3 lane 8, fast): both spread tests reference-left re-measured 65 (ours still queries the reference
+// first); the reference pointer `const *const` 67; the first test as `reference spread - candidate spread > 0` 72
+// (516 bytes); the candidate direct-initialised `candidate(current)` 67; `best = candidate;` before
+// `improved = true;` 71 (517 bytes); the loop counters declared before the loops 67 (same code).
+// Round 81 (m3 lane 12, fast): the reference selected before the candidate copy 128 (512 bytes); the
+// improvement as `if (less) ... else if (equal && cost) ...` with the same arm 150 (517); the candidate's
+// spread named once for both tests 80; named candidate team pointers for the swaps 150 (518); the candidate
+// declared at the top of the inner loop and assigned from current 224 (576). Original body restored.
+// Round 144 (m3 lane 6, fast): `improved` read into a `bool const` before the candidate copy and the reference
+// chosen from it 105; the whole test duplicated per `improved` arm against `best`/`current` 273 (609 bytes); the first
+// candidate spread named before the test with the cost written candidate first 67 (same code: the one-use local is
+// forwarded back into the compare); improve() defined above this function 67 (same code); `bool better` from the first
+// test refined by `if (!better && equal) better = candidate cost < reference cost` 82 (524 bytes). Diagnostic,
+// reverted: count_spread made impure (a store to a probe global) with the four queries named in candidate-first
+// statement order 89: the candidate is then queried first and the cost compare is retail's `cmp esi, edi; jge`, but
+// all four calls run before the first compare. So the order follows statements only for an impure count_spread.
+// M3 lane 2 r47 (fast): the spreads passed by value to forceinline (reference, candidate) compare helpers 65 (the
+// reference-left code: argument order does not move the stack candidate's call); the candidate spread named `long const`
+// for both tests 80 (512 bytes), as `long const &` 80; a plain `long const` for the first test only 67 (same code);
+// `long const &` for the first test written reference-left 64 (512 bytes: that pair runs candidate first but folds
+// `cmp eax, [esp + 0x30]` where retail reloads into ECX; the equality pair stays reference first).
+// Lane 17 r42 (fast with 0x91dd0, which stays matched; a compile-only /FAs screen without /GL reproduces the order):
+// the spreads in a `long spreads[2] = { candidate, reference }` initializer (the only plain spelling the screen queries
+// candidate first) 81, both pairs that way 82 (frame homes move); a named candidate spread with _ReadWriteBarrier()
+// (intrinsic) before the reference's query 67 (the pure query still moves); round 121's `long const &` lead with the
+// value copied to a plain local, first pair only, 64; both pairs that way as `if (a < b) goto improve;` then
+// `if (!(equal && cost)) continue;` 65 (aligned 6), with the cost written `candidate.cost() < reference->cost()` 65
+// (aligned 4: one real difference, the first pair compares `[esp+0x30]` from memory where retail reloads it into ECX);
+// the copy dropped or the reference's spread named too 65/65. Not kept: const-reference temporaries and the goto.
+// F362: Existing signed-dword query results as int, count/total/rank subsets
+// 1..7 and cost alone: 67 each at 514/512 bytes. NOT kept: reference-first
+// query ownership and extra receiver move remain; all result contracts restored.
+// B408: Complete post-swap best/current selection outcomes bool/byte/short/long:
+// positive 67/67/67/67, complementary 70/70/70/70 (control 67). All 21 peer
+// measurements unchanged; NOT kept: one-use captures do not match or recover candidate-first
+// query order. Original selector, four spread calls, costs and complete body restored.
+// P306: Complete current/best solution receivers, pointer/reference singles and pairs:
+// 67/67/84/84/84/84/84/84. NOT kept: best bindings reach 512 bytes but regress;
+// original record observations, selection, publication and complete body restored.
+// M358: Original less-first acceptance byte/short/word/long and complementary rejection
+// bool/byte/short/long: 67 each. NOT kept: one-use decision carriers do not match;
+// original query graph restored; reference-first spread calls and two extra bytes remain.
+// M362: Native signed int delta/parallel populations/final difference, seven
+// subsets then immutable complete inputs: 67 each at 514/512 bytes.
+// NOT kept: no exact candidate-first query repair; all file controls unchanged.
+// Original long intermediates, queries and complete body restored.
+// M364: Whole candidate copy lifetimes at entry, team roots, population difference and loop
+// admissions; reused copy-initialized records outside the inner loop:
+// 180/180/178/157/152/152/174/174. NOT kept: no exact candidate-first query graph; early copy
+// lifetimes also lose the matched caller; original lifetime, queries and body restored.
+// M366: Complete three-way spread result from original less/equal tests, signed char/short/long/int64:
+// branch production 67/67/67/67; conditional production 96/103/102/122. NOT kept: no exact
+// candidate-first query repair; original complete body restored; reference-first calls and two extra bytes remain.
+// M370: Reference selection inside the four candidate mutations, after first removal,
+// second removal or first addition, conditional/current-default/best-default forms:
+// 147/117/121/116/122/115/77/103. NOT kept: all regress; one conditional form also
+// loses the caller. Original selection restored; reference-first queries and two extra bytes remain.
+// M372: Outer/inner while induction and positive flag admission, seven subsets
+// then all with entry selector declaration: 67/132/67/132/67/132/132/132. NOT kept:
+// inner advance regresses to 523/512 bytes and first +0x3e; original body restored;
+// reference-first spread queries and two extra bytes remain.
+// M377: Actual memcpy/memmove destination as candidate query/all-use receiver,
+// ordinary/immutable bindings: 174/174/218/218/216/216/210/210. NOT kept: aliases do not match,
+// construction/receiver changes regress and lose the matched caller. Original
+// native copy, four spread queries, party edits and complete body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -840,6 +905,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // parties) 35; extra-first sum 35; copy before the maximum update 82; parties read back for
 // the maximum 75; fill as `while (i < total) parties[i++] = next;` 34; clamp as
 // `excess >= 0 ? excess : 0` 34; array and index declared first 34.
+// Round 130 (m3 lane 8, fast): the player-count parameter itself as the fill index 34; the maximum
+// update as a ternary 34; no total local (sums at each use) 74; open_slots computed after the call
+// 87 (170 bytes); 1-7 unused probe locals 34 each
+// (diagnostic: the player-count register does not follow the symbol count).
 // Round 116: open slots from the sum before the total 71; `party_indices[i] + 1 >= next_party` 35;
 // open slots written at their use 87 (170 bytes); next_party declared first 34; capacity as
 // `maximum_team_size * team_count` 34. In the all-stack first pass extra count is always loaded
@@ -1006,6 +1075,33 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // guarded do-while (two spellings) 64 (no rep stos), walking pointer to an end 54, `slot != end` 59; next_party declared after the index 34. Parameters on the register three, with the
 // entry updated: (extra, list, player) 35, (player, extra, list) 34, (extra, player, list) 35, (list, player, extra) 34, (list, extra, player) 35. The player count stays EDX in all of them.
 // Retail's caller loads EAX, ECX, EDX in that order; the 35s are `lea ebx, [edx + eax]` with no role change.
+// Round 38 (lane 17, fast with 0x91e30): local names as a tie-break for the roles (same-size slots are
+// ordered by name): extra_count renamed `requested_count` (sorting after player_count) 34; next_party
+// `unused_party` 34; parties `party_list` 34; total `combined_count` 34; i `index` 34 (same code each).
+// Round 144 (m3 lane 6, fast with 0x91e30): the fill through `long *extra_parties = &parties[player_count]` over
+// extra_count 67 (191 bytes); the clamp as an if/else of two results (`0 <= maximum` / `excess <= maximum`) 55 (199
+// bytes); `open_slots >= imbalance ? 0 : imbalance - open_slots` 65 (205 bytes); the imbalance lifted to the open
+// slots (`if (imbalance < open_slots) imbalance = open_slots;`) then `imbalance - open_slots <= maximum` 45;
+// re-measured: total and open slots after the copy loop 96 (162 bytes).
+// Round 200 (m3 lane 3, fast): clamp `(excess > 0 ? excess : 0)` 43, `(excess >= 0 ? excess : 0)` 34,
+// `maximum_imbalance >= (...)` 35; `extra_count + player_count` alone 34; per-loop index declarations
+// (`long i` / `long j`) 34. All restored.
+// M354: Standard forward/backward input copy before/after maximum reduction,
+// branch/conditional maxima 76/76/77/77/76/76/77/77.
+// NOT kept: split library-copy ownership misses the native combined scan/fill allocation.
+// M356: Reverse combined copy/maximum pass, indexed/cursor, direct/reused sample,
+// branch/conditional maximum: 41/41/73/73/64/64/64/64. NOT kept: all regress;
+// sampled/cursor forms also raise the caller. Original forward combined pass restored.
+// M358: Inclusive maximum-update admission, positive/complementary bool/byte/short/long:
+// 34 each. NOT kept: one-use predicates do not match. Original combined scan/fill restored;
+// player-count EAX/EDX, late fill-value load and clamp homes remain.
+// M364: Combined copy/maximum selection by input/output element pointer or slot ordinal,
+// branch/conditional producers: 116/116/96/96/120/120/98/98. NOT kept: no exact native
+// fill/count ownership; original scalar maximum, loops and complete body restored.
+// Y581: Standard trivial construction fill, difference/extra count and total/extra
+// endpoints, original excess 67/66/66/66; expression excess 70/69/69/69.
+// NOT kept: all regress and grow to 196/198 versus native 190 bytes; original
+// combined scan, assignment fill, clamp, includes and full body restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

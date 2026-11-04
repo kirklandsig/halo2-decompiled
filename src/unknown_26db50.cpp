@@ -463,6 +463,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
 // rotation's component spill, cross scheduling and register allocation remain.
 // The body is 1085 bytes versus retail 1089.
+// MiniMax G (11-04): ring block with a hoisted double scaled radius, the ring converted once
+// into a named local and its offset named, plus the rotation with cross j, k named and a
+// second name for axis (local_axis) mixed into the dot and rows: 76 (retail's cvtsi2ss ring
+// conversion, SSE offset and an unspilled rotation). The second name is a register steer,
+// kept only with a match; the same form without it 96. Not kept.
 // Lane 15 r17: collision marker store before the entry pointer 90 (it then precedes `lea esi`
 // as retail, but the point stores still come first); named ring phase 143 (ring conversion as
 // retail: cvtsi2ss, store, fld; frame 0xdc, radius copied through integer registers); the
@@ -672,10 +677,52 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // DH282: Complete repeated scalar-input immutable declaration orders ijk/ikj/jik/jki/kij/kji, then kij/jik
 // with the native outer ring phase [90, 90, 90, 90, 90, 90, 143, 143]. Original executable body restored.
 // N323: Immutable underlying radius/ring distance/complete angle-trigonometric storage, seven subsets then immutable projection/component inputs: 90/90/90/90/90/90/90/90. Original complete helper/body restored; ring SSE conversion and rotation spill remain.
+// Round 34 (lane 17, fast): trace.distance read at each use (no trace_distance local) 101 (1084 bytes); the
+// pathfinding as a ternary 217 (1086); the origin pointer before the pathfinding lookup 90 (same code); the
+// direction copy after sine and cosine 101 (1086); the half-axis offset added in the point's first statements 114.
 // P284: Real sine/cosine API subsets 215/215/215; each with the outer ring phase
 // 233/233/233; unrounded angle with original/real APIs 90/90. Complete original
 // body, angle carrier and helper restored; ring SSE conversion, rotation spill
 // and radius-save scheduling remain.
+// Round 121 (fast; aligned count, control 93): named ring value 90 (92); with a named ring phase above the spoke loop 143 (144);
+// direct sin/cos arguments 215 (81), with the named ring 218 (95), with the phase as well 231 (133).
+// Also: origin declared with the sector index 90 (93); trace distance read at each row 101 (98); origin first in the point rows 90 (93).
+// Round 205 (m3 lane 3, fast): distance computed in the spoke loop after the angle 240 (1082 B; cvtsi2ss as
+// retail but ring times radius moves to SSE); that with the ring product in double 248; ring phase named before
+// the distance 143 again (the ring block is then retail's instruction for instruction; left are frame 0xdc from
+// the rotation spill at +0x40, the radius copied through EDX and the sector load after the radius); the collision
+// marker and the entry pointer between the trace rows and the half-axis adds 216 (1092 B); the marker alone there
+// 89 (retail stores it before the last point stores; a one-point gain, not kept); the trace, world and collision
+// records declared at function scope 94; the trace record alone there 90 (same code).
+// Round 64 (lane 10, fast; masked = aligned, registers and stack offsets ignored, 37 here): ring conversion as one in-place ring angle in the outer loop 142 (1088, cvtsi2ss as retail, radius through
+// integer registers, masked 37); cross terms named, j and k first 90 (same code), with the angle 142; rows written j, k, i 189 (1088, masked 44); dot written (j + i) + k from the read components 93
+// (masked 37), with the angle 144 (masked 33); the k*i and i*j subtrahends named before the dot 215 (1092, masked 36), with the angle 237 (1095, masked 35), named after the dot 237.
+// Round 59 (m3 lane 13, fast): rebuilt the 96 form (j/k cross terms in a vector first, ring phase named before the
+// distance; 1090 bytes). There the sector index is read after the radius, so the radius copies through EDX where
+// retail reads the sector into EDX first and copies the radius through XMM0 (every general register is busy at that
+// point), and the integer register names cascade from that. On the 96 form: the radius read before the record pointer 108;
+// the ring counters declared first 97; the origin pointer at function scope 96; the record pointer as an array
+// element 96; the ring phase named in the spoke loop 100 (1081 bytes, conversion back to fild). Original body restored.
+// DH320: Existing bitmap activation ordinal char/signed-char/byte/short/word/int/
+// unsigned-int/dword domains: 91/91/92/90/92/90/91/91. Both producer users checked;
+// byte domains lose the matched peer. Original helper/body restored; ring conversion/spill remain.
+// DH339: Trace/world/collision declared at native spoke scope, seven subsets then all
+// with the actual point workspace, eight at 90. Original declaration scopes and complete
+// body restored; radius schedule, SSE ring conversion and rotation spill remain.
+// DH341: Bounded spoke !=8 / <=7 termination in short/long/word/byte storage:
+// 90/91/232/232/91/92/232/232. NOT kept: no gain or native ring/rotation recovery.
+// Original signed-short bound, two-ring traversal and complete body restored.
+// DH344: Existing complete point setters at trace/elevation/collision and their pairs/all,
+// then all with the outer ring phase:
+// 92/90/90/92/92/90/92/144. NOT kept: no exact publication form; radius schedule, ring conversion and rotation spill remain.
+// Original complete executable source restored.
+// DH348: Rotation scalar-input CRT captures in ijk/ikj/jik/jki/kij/kji order
+// 275 each; ijk/kji with native radius CRT capture 276/276. NOT kept: frame/length
+// regress and no exact boundary. Original helper, radius reference and full body restored;
+// radius schedule, ring SSE conversion and rotation spill remain.
+// N382: Native record/origin/entry object references, seven ownership subsets, then all
+// with outer ring phase: 90/90/90/90/90/90/90/143. NOT kept: no equality or gain;
+// original complete body restored. Radius schedule, ring conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

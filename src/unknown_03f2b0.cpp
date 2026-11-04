@@ -1326,6 +1326,7 @@ struct s_batch_cache_4b5d0
 
 struct s_133f70;
 
+// MiniMax h (11-04): no lower score; the 0x4bcc0 call takes the distance from the third stack slot where retail takes it from the second, and that slot layout follows the unmatched callers in src/unknown_133790.cpp.
 // score 175 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // Round 22 (lane G, machine 3; no code change kept): retail's byte home and its split record base
 // (add eax, ecx; lea ebx, [eax + 0xbc]/[eax + 0x44]) are reachable in the source but our compiler folds the
@@ -1474,6 +1475,15 @@ struct s_133f70;
 // Round 234: Complete twice-used encoded stamp, packed/expression or successive operations 359/359;
 // split/expression or successive parts 342/342; those four with native previous byte 283/283/286/286.
 // Original repeated stamp observations and body restored.
+// Round 56 (m3 lane 13, all plain): the cache lookup on *source_object with no drawn-object local 180; a short
+// previous level 194 (1312 bytes); `success` declared at the loop's top 173 (two-count gain, not kept); the type
+// as one ternary store 175 (same code); a short entry count 365; the top success with the ternary type 173;
+// `if (level_changed) reuse = false;` 371 (1295 bytes); `if (fallback) reuse = false;` 380 (1289 bytes).
+// The tail stays BLOCKED-BY 0x23690 (src/unknown_023540.cpp, avoided this round).
+// Round 145 (m3 lane 6, fast = plain 175, aligned 74): retail's 0x23690 loads its order as a dword (`mov esi,
+// [esp + 0x218]`); order declared long in both declarations 175 (caller `movsx eax`, still passed in EAX,
+// 0x23690 484); header via the existing object_header_get 175; initial level declared first 177; failure
+// count declared after the 0x4bcc0 call 370; a named active-flag pointer for the call and test 175.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

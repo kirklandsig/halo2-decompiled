@@ -135,6 +135,13 @@ static inline long bungienet_user_voice_setting(short kind)
 // form 4. Field pointers: kind 32, index 32, both 32, index with the volatile read 4, kind or index with the `: kind` arm 4/4.
 // `request->kind` written at each use (no local): index first 32, selector first 30, in both arms 32, `else if` setting 45 (110 bytes); a
 // second `kind == 1` in the else 4.
+// Round 159 (fast): plain read with the kind seeding the setting 31 (103 bytes; retail's ECX/AX pair, but a movsx survives);
+// `long setting = kind; if (setting == 1 && available)` 32 (95 bytes); seeded `setting = 1; if (kind == setting && available)` 30
+// (94 bytes); `setting = kind` first in the kind arm 12; inner `else setting = kind` with `available && kind == 1` 4 (same code).
+// The pair follows the kind's surviving references: it outranks the request only with a third use that reaches allocation.
+// Round 114: direct kind as the selector argument 5; register kind/request 4/4; pointer/reference request aliases 4/4
+// (NOT kept: aliases require a match); request-taking selector with the index before/after it 5/23;
+// request-member selector with a kind local/direct kind 4/5. Original helper and body restored.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

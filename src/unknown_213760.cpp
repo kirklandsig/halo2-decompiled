@@ -1461,6 +1461,74 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // 33 and all controls are unchanged; checksum locals and field-address copies fail their exact-match
 // requirement, and the existing checker inline contract gains nothing. Original executable source
 // restored.
+// Round 80 (m3 lane 12, fast): the swapped size/count homes come from the count's zero store: in retail a
+// failed resize jumps straight to the close's handle test. `!resized ||` in the close test 157 (frame 0x1140:
+// a third read of `resized` packs it with the byte flags); the write block ending in `if (bytes_written ==
+// 0x800) goto header_written;` past the close 83 (frame, every slot and the close copy retail's; first
+// difference +0x1e1, the header-read joins); that goto with round 53's header-read `else if` and `valid =
+// true` 7 (left: the write's handle loaded after the flags zero, the checksum compare in EDX); on that 7: a
+// write-handle local 114 (917 bytes, close copy dropped), the count declared inside the write block 7, the
+// header declared before the resize call 7, `bytes_written >= 0x800` 8. Restored: goto and else-if are both
+// exact-only. Permuter (anneal, 600 s, 54 tries) on the goto/else-if 7 form: best 7.
+// F347: Completed query/resize-write/header output phases, masks 1/2/4/3/5/6/7, then
+// all with native byte decisions: 33/33/33/33/33/33/33/33. All tie on failure-only count
+// initialization; original outputs, lifetimes, comparisons, waits and whole body restored.
+// m3 lane 11 r63 (fast): round 53's three match-only forms rebuilt on this body (count scoped in the write
+// block, write success set by its own test, `else if (cache_file_header_read(index))` with `valid = true`)
+// 7 (left: the write's handle loaded after the flags zero, the checksum compare in EDX: one scratch step,
+// consistent with retail loading the handle first). On the 7 form: permuter 54 tries, none below 7;
+// `bool written = resized;` cleared when the count != 0x800 7; `s_file_write_flags(false)` 7; `sizeof` for
+// the size and the count test 7; `handle[0]` 7. All restored to the 33 body.
+// Round 127 (lane 8, fast): `if (read) { valid = true; ...` 103 (932 B; the header-read tail then matches retail,
+// ESI = 1 and threaded); read result and range test in one condition 33; range test as nested ifs 33; `valid` at
+// function scope 33; write count declared before `resized` 33; validity array by initializer 263.
+// Lane 17 r37 (fast): bytes_written renamed write_count 33; prefixed names in both orders (diagnostic) leave the
+// size/count slots unchanged; the header-read validity test merged with the slot-range test 33; bytes_written declared
+// beside size, after or before it, 33/33 (slots do not move); `valid` declared at the loop top 33. Body restored.
+// Round 65 (m3 lane 11, fast; on the 7 form): flags local 7; handle through a const cast 7; header init inside the argument
+// 7; a forceinline by-value handle getter at the write, the write and close, all four calls 7/7/7; bytes_written
+// zero-initialised 153 (frame 0x1140); functional-cast handle copy 114 at 917, the same code as the write local: its two
+// real differences (close copy, checksum EAX) are one rotation step, the copy itself taking the next. Matched 0x7fb50 loads
+// its global handle before the flags zero, so a plain read loads first; `*handle` through the view does not.
+// Round 66 (m3 lane 10, fast): round 56's 7 form (header-read `else if` with `valid = true`, write success set by its
+// own test) reproduces at 7, and with a write handle local 114 (917 bytes; only the close call's `mov ecx, eax` copy is
+// missing: the flags zero takes ECX and the close copy then lands on EAX, where retail's copy takes ECX again, one
+// scratch step later). On that write-local form: the close argument as an explicit `s_file_handle(*handle)` copy 114
+// (same code); one close-handle local for the close test and argument 168 (946 bytes); `written = bytes_written ==
+// 0x800;` 107 (930 bytes, sete join); `bool written = resized;` cleared when the count differs 114. All restored: the 7
+// needs match-only forms.
+// Lane 17 r42 (fast; on round 53's 7 form, all match-only, body restored): reproduced at 7 (aligned 6: the write's
+// handle loaded after the flags zero, the checksum compare in EDX); the cache record's first member typed as the by-value
+// file handle (as unknown_2141f0.cpp declares the same global) with the view pointer from it, with `file->handle` at every
+// use, or only at the write: 161 each (917 bytes, the early file addressing changes); the write's handle read from the
+// indexed global 7; the header initializer returning its header and called in the write's buffer argument 7 (same code).
+// F363: Existing initializer owned by its native header, instance/static and
+// void/returned-receiver with inline/forceinline: eight forms 33 each. Original
+// helper, header and complete body restored; count homes and write/checksum joins remain.
+// P303: Existing shared completion provider on the failure-only count graph, open/query/resize
+// masks 1/2/4/3/5/6/7, then all five asynchronous boundaries: 33/33/33/33/33/33/33/33.
+// Original local completion expansion and complete body restored; query/count and write/header joins remain.
+// DL260: Native header checksum/dependency/persistent layouts and native handle fields: ten executions, eight distinct source/header bundles, all 33; mask-only t03/t06 and t05/t07 repeated.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// F365: File-owned completion wait, instance/static, pointer/reference and ordinary/forced inline:
+// 33/33/33/33/33/33/33/33 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// N358: Complete invalidity result on failure-only resize-count graph, eight native scalar domains:
+// 159/159/159/141/141/140/140/140. NOT kept: unmatched source/representation forms; original executable body restored.
+// Query/write count homes, write setup and checksum/validation joins remain.
+// DL262: Actual resize-output repair success, assigned/cleared/short-circuit/conditional,
+// original then native successful-header producer: 112/165/188/190/165/172/188/195.
+// NOT kept: result-flow forms require byte equality; original outputs, count producer and body restored.
+// J255: Coherent ordinary-inline cleanup, close, pair and cleanup/checker boundaries;
+// forced cleanup, forced checker and their mixed ordinary forms: 33/33/33/33/474/388/474/388.
+// NOT kept: ties/regressions. All provider contracts and complete bodies restored;
+// query/write homes and validation joins remain; forced expansion moves away from native extent.
+// B444: Equal-size validation first on failure-only count flow, resize-arm/
+// successful-read/checksum producer variants: 175/169/175/169/175/169/175/169. NOT kept: exact-only
+// block/result forms regress; original complete body, waits and API values restored.
+// Query/count homes and write/checksum/header joins remain.
+// B446: Complete resize/write/conditional-close inline workflow, handle pointer/reference,
+// cleanup in caller/boundary, original count/test-produced success: 33/33/33/33/83/83/83/83. NOT kept:
+// no exact result; original whole body, qualifier and helpers restored. Count homes, write setup and header/checksum joins remain.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -720,6 +720,9 @@ union s_60403
  long field_00;
 };
 
+// MiniMax B (11-03): no new form, no lower score. The entry still keeps current in EBX and previous
+// in EBP against retail's EBX previous and EBP current, and the mapping, removal and member loops keep
+// their old shapes; swapping the two header stores (previous first) gives 163 and was reverted.
 // MiniMax I (11-01): no new form, no lower score; the entry's EBX/EBP choice follows which of the
 // two pointers the body weighs more, and no source order I tried flips it.
 // score 149 (was 149): the member's changed test is one condition, so the body has retail's
@@ -823,6 +826,39 @@ union s_60403
 // Round 344: complete unchanged predicate in bool/byte/word/long storage, original and late
 // retained-mask lifetimes: 289/289/283/283/363/363/338/338. Original discriminator, mask,
 // mappings and body restored; previous/current residency and discriminator homes remain.
+// Round 78 (m3 lane 9, fast; positional/aligned, base 149/103): retail's retained loop reads
+// `old_to_new[old_player[0xc]]` at each use (no mapped_member value: the index is re-read in the
+// else-if) and keeps the mask in memory (`or [esp+0x18], eax`). The mapped member read at each use
+// gives that loop retail's code 285/103 (1513 bytes), with the mask declared after the member loop
+// 368/108; the old member computed before the NONE test 352 (1513); the emission test as
+// `i != *local_0 || changed` 175 (1498); member and local_0 declarations swapped 149 (same code).
+// Round 80 (m3 lane 9, fast; positional/aligned, base 149, aligned by a line diff): the lead: `old_members =
+// previous + 0xc` before the member loop, the old member from it, the mapped member read at each use, the mask
+// zeroed after the member loop and a plain bool flag, all together, 262/48 (1513 bytes, first +0x86): retail's
+// entry, mapping, removal, retained and emission loops, only the member loop's else arm and the slot of the
+// mapping count differ (ours loads the old index into EBX and rebuilds previous + 0xc, where retail keeps previous
+// in EBX and reloads it at the latch, with the old member in ESI, the memcmp zero and flag in EBX, i kept in EAX).
+// On it: the struct flag kept 273/71 (frame 0x90); old_members also used by the mapping loop 272/50 (declared in
+// the `if (previous)` block, with or without the removal loop, 399/98). Without old_members the entry goes back to
+// current EBX: 362/65; the old member at each use 362/66; the current count named for the mapping loop 367/72; a
+// second previous read in the memcmp 362/66; `old_member = previous + 0xc; old_member += ...` 362/65; a local
+// copy of previous before the member loop 362/65. A forceinline-free inline member-address helper at every site
+// on the base 149 (same code).
+// Round 59 (m3 lane 11, fast): round 148's `old_members` (declared before the member loop, used for the old
+// member) with the retained loop reading old_to_new[old player's member] at each use 167 (1497 bytes: retail's
+// entry, previous EBX/current EBP, frame 0x90); that with a plain bool discriminator 146 (1497 bytes, first
+// difference +0x7a: frame 0x94, entry and the mapping/removal loops as retail; left: the retained mask zeroed
+// before the member loop, its count/map-pointer homes, and the member loop rebuilding the old member from the
+// stack argument where retail keeps previous in EBX, `lea esi, [ecx + ebx + 0xc]`, map value ECX); with the
+// discriminator declared first 146 (same code); with the retained mask declared after the member loop 262 (1513
+// bytes; everything before the member loop then agrees); old_members also used by the mapping and removal loops
+// 155; old_members only inside the `if (previous)` mapping/removal block 397 (1513); at-each-use reads with the
+// plain bool alone 278 (1513); old_members with the plain bool alone 289; at-each-use with the late mask 368, with
+// old_members and the late mask 273. Original body restored (146 is -3). The 146 base uses a one-use pointer local
+// (old_members) and writes a three-use value out at each use: both are kept only on a byte match.
+// Round 40 (m3 lane 18, fast): the mapping loop's two counts named before it (previous_count/current_count or old_count/
+// new_count, either name order) 155; a long retained mask 149 (same code); a plain bool discriminator with 0x609e0's
+// if/else header local 167; a plain bool declared at the member loop top 167; at function scope 167. Body restored.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

@@ -249,6 +249,73 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // AC488: native candidate range/type, best-score/validator and final-selected admission
 // nesting subsets 1/2/4/3/5/6/7: 390/390/390/390/390/390/390; all with native long group 461.
 // Original body restored; selected defaults, root/group roles, point bitmap and pass homes remain.
+// M3 lane 13 r54 (fast): the structure table read before the root-table test 452; the group record pointer
+// formed right after the group bit is set 438 (1576 bytes); a link-count local for both link loops 439 (1576
+// bytes); the nearest-distance compare swapped 390 (same code); the path sum written last-to-first 390 (same code).
+// DH312: Single native input reads through own addresses, five direct consumers then
+// entry-owned point/reference/record pointers: eight forms 390 each. NOT kept:
+// own-address and one-use aliases did not match; the record alias also demotes
+// the caller. Original full body restored.
+// M339: Actual output-array extent owns traversal and produces short/word/long/dword count, posttested
+// then pretested: 412/412/411/411/430/430/429/429. Original output ordinal and complete body restored.
+// Round 202 (lane 3, fast): retail reads the group with `movsx ebx` (32-bit compares) and recomputes the set's word
+// address first, then the mask (bit_vector_set's shape). On this body: `long local_15` 461 (1560 bytes); long with
+// bit_vector_test for the test only 461; long with bit_vector_set for the set only 470 (1551); short with
+// bit_vector_set for the set only 424 (1567); the found flag declared once per group and cleared per pass 390 (same
+// code). Restored.
+// M3 lane 2 r47 (fast): the three NONE defaults renamed (selected group/point/end) 390, homes unchanged; retail keeps
+// the endpoint copy as a dword at +0x4c (copied to the result without extension) and its +0x80 byte is the found flag
+// in arg_2's home: endpoint `long` 436 (1579 bytes, frame 0x68), `short` 446 (1563), long with the flag declared
+// first 436; byte endpoint with the flag declared first 390 (same code).
+// M339: Actual output-array extent owns traversal and produces short/word/long/dword count, posttested
+// then pretested: 412/412/411/411/430/430/429/429. Original output ordinal and complete body restored.
+// Round 68 (m3 lane 10, fast; aligned difflib counts in brackets, base 390 [428]): the output loop indexed
+// `&arg_4->field_30[count]` with a separate point cursor stepped by `local_2 > local_1` (retail's imul and
+// unchanged-start compare) 394 [395] (local_1/local_2 homes move to 0x20/0x1c, retail 0x28/0x24); with the
+// selected group record named before the loop 391 [380] (hoisted, but spilled to arg_3's home where retail keeps
+// EDI). On that output form (O): memset group bitmap + long group + bit_vector_test/set 446 [360] (1570 bytes),
+// with the point bits through them too 446 [360], memset + bit helpers 410 [341] (1572), memset + long 458 [355]
+// (1559): the test's mask still CSEs into the set. All restored.
+// Round 206 (m3 lane 3, fast; aligned counts from a difflib pass, base 287): the group bitmap cleared by
+// memset 387 (aligned 276: retail's two zero registers, separate xor for the loop index); on it, the output
+// loop indexing &arg_4->field_30[count] with a separate walking point stepped by `local_2 > local_1` (retail
+// compares against the unchanged start, [esp+0x38]) 391 (aligned 268, that loop then as retail's but for the
+// hoisted point-list base); with the point-list pointer formed before the loop 388 (267); with `long local_15`
+// 459 (1556 bytes, aligned 259: the outer loop entry then falls into the body as retail, no jmp/stub), same
+// with bit_vector_test/bit_vector_set 459 (same code: our test and set share the word address and mask,
+// retail recomputes both); the pass-start point and endpoint `short` (retail compares the endpoint as a word)
+// 432 (frame 0x68), the pass-start alone 424. Retail keeps the per-pass found flag in the arg_2 slot (0x80).
+// Original body restored.
+// F365: Point-owned squared/ordinary metrics and output-record initializer, masks 1/2/4/3/5/6/7, then ordinary inline:
+// 390/390/390/390/390/390/390/503 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// F368: Existing squared/length nominal double carriers with original real rounding and output-reference contract, subsets 1/2/4/3/5/6/7, then full graph with pointer output result: 390 each at 1596 bytes. NOT kept: no byte match; original helper contracts, casts and complete body restored.
+// B412: Predicate-owned first-record search, short/long ordinal and cursor-ordinal,
+// actual pointer-difference while/for, conditional short/long result: 390/425/412/425/434/434/434/410.
+// Original scan/body restored; selected-default, root, bitmap/endpoint and x87 homes remain.
+// DH342: Immutable existing squared-delta/length-delta/metric-result producers,
+// seven subsets and all with the immutable candidate record index: eight at 390.
+// Original declarations and body restored; default/root/bitmap/endpoint homes remain.
+// DH348: Native immutable initial-root/membership-root/reference/provider/list/point-table/
+// current-group/candidate-point handles: eight at 390. Original handle declarations,
+// body and helpers restored; selected-default/root/bitmap/endpoint homes remain.
+// DH352: Read-only initial-root/membership-root/membership-group descriptor pointees,
+// seven subsets then the read-only current group: eight at 390. Original pointer
+// declarations and body restored; selected-default/root/bitmap/endpoint homes remain.
+// DH359: Whole-operation failed outcome bool/byte/short/long, cleared after output
+// 408/408/432/431; at output entry 410/410/432/431. NOT kept: no byte match;
+// original result, selected homes, roots, bitmaps, helpers and complete body restored.
+// DH361: Step-equality/polarity stopping tests 405/396; loop-owned ordinal/selected/step-equality/
+// step-polarity/complementary-ordinal/complementary-selected boundaries 390/389/405/396/390/389.
+// NOT kept: one-point leads below the gate; original directional predicate and full body restored.
+// DH363: Native indexed coordinates in squared/length metrics and actual output triplet loop,
+// subsets 1/2/4/3/5/6/7: 390/390/393/390/393/393/393; full graph with indexed length delta 428.
+// NOT kept: no match or native-home recovery; original metrics, copy and whole body restored.
+// DH365: One append-capacity outcome owns the marker append and output flag,
+// bool/byte/char/signed-char/short/word/int/long: 414/409/409/409/404/404/406/406. NOT kept: no exact
+// result/join recovery; original body restored. Selected-default/root/bitmap homes remain.
+// DH368: Standard coordinate-range squared/length delta and output-copy boundaries,
+// seven subsets then the complete graph with native float root: 437/507/435/555/443/501/537/537.
+// NOT kept: all regress and miss native homes/extent; original metrics, copies and whole body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

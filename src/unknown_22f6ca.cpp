@@ -133,6 +133,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // in the first loop 66; model animation without braces 23; model or text definition local 23; parent local for the model call
 // 23; `if (!pane) return;` 23; model loop as a while 23; text test nested 23; text loop's own counter 23; counter before the
 // pane lookup 25; screen pointer local in the model body or above its loop 23; animation type local 23, before the call 166.
+// Round 121 (fast; aligned 17 throughout): one inner counter declared with i and reused for the text loop 23, the model loop 23, both
+// 23; the old start_animation name for the model loop 23, the text loop 23, both 23; model declared apart from its assignment 23; declarations apart from assignments 23;
+// pane != NULL with animating assigned apart 23; model loop as a while with its own reset 23.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

@@ -99,7 +99,7 @@ static inline c_class_58d20 *network_session_get_live(void)
 
 /* compares two Xbox Live user ids, and their guest numbers if asked to */
 // @retail 0x63d00
-bool xuid_equal(XUID const *a, XUID const *b, bool compare_guest_number)
+inline bool xuid_equal(XUID const *a, XUID const *b, bool compare_guest_number)
 {
 	bool result = false;
 
@@ -1769,6 +1769,12 @@ struct s_summary_player_sort_entry
 // Round 284: all three map-query output identities, six lexical priorities 360 each;
 // two complete output declaration scopes 360 each, with the sorted cursor stepping in its body.
 // Original body restored; frame and saved metadata homes remain.
+// Round 77 (m3 lane 16, fast): the variant as an if/else 339 (same code); the four nested state guards as one
+// `&&` test 339 (same code); the variant pointer as one conditional expression 375; `statistics` declared at its
+// test 372; `return true` from the block with `return false` at the end 396 (1320 bytes). Still needs the cmovne.
+// Round 66 (m3 lane 1, fast): name pointer read after get_values_4d08 356 (1291 bytes); memset before
+// get_values_4d08 339 (same code); `statistics` declared at its test 372; team_mask beside the player count 375;
+// get_values, memset, then the name pointer 356 (1291 bytes).
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

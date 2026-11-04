@@ -308,6 +308,11 @@ struct s_pending_message_storage : s_pending_message_header
 // the stack, as for the pump count initialised at the helper's top 105); a pump count declared at the top and set
 // at the loop 14. Packing follows live ranges, not scope: that last form still gives the first time stamp's slot to
 // the pump count.
+// Round 52 (lane 14, fast, all in the shared helper, 0x862e0's score second): the timeout test as `timeout > seconds` 14/22, `seconds >= timeout`
+// 56/164 (282 bytes), a named seconds value 14/22; `now > start ? now - start : 0` 95/230; a timed-out flag ending the loop 60/212 (286 bytes); the
+// do loop as a while on the result 14/22. Reader: a live asm read of a non-volatile local 85/203 (287 bytes; the emitted mov shifts everything);
+// a volatile low/high struct 14/22; declaring that intrinsic by name in the file does not make it one of this compiler's intrinsics (plain external call: 109/221, with a volatile
+// 94/150, assigned to a volatile 136/282, assigned to a plain local 109/218); a C read of the local after the asm 123/250 (stores dropped).
 // @retail 0x80e10
 bool function_80e10(s_pending_message_storage *request, void **output, long *size)
 {
