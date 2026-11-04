@@ -221,6 +221,10 @@ void function_1d56f0(s_havok_component *component)
 // declarations ahead of the floating-point control calls 77; the query info at function scope without its block 195
 // (838 B), declared first at function scope 195. Diagnostic: one or two unused locals ahead of the lookup leave its
 // `[eax + edx + 0x40]` order unchanged, so that order is not a symbol-numbering tie.
+// Round 41 (m3 lane 17, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10/0x1d56f0): the component copied to a local at
+// entry 77 (same code), as a const pointer 77, with the rigid-body index copied too 77; the query info's transform
+// set from the body first and the pose copied from it 85, with the component local 85. The tail still waits on
+// BLOCKED-BY 0x1d0cf0 (component in EBX; src/unknown_1cec30.cpp avoid-listed again).
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

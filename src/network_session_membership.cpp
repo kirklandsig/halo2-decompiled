@@ -853,6 +853,9 @@ union s_60403
 // plain bool alone 278 (1513); old_members with the plain bool alone 289; at-each-use with the late mask 368, with
 // old_members and the late mask 273. Original body restored (146 is -3). The 146 base uses a one-use pointer local
 // (old_members) and writes a three-use value out at each use: both are kept only on a byte match.
+// Round 40 (m3 lane 18, fast): the mapping loop's two counts named before it (previous_count/current_count or old_count/
+// new_count, either name order) 155; a long retained mask 149 (same code); a plain bool discriminator with 0x609e0's
+// if/else header local 167; a plain bool declared at the member loop top 167; at function scope 167. Body restored.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

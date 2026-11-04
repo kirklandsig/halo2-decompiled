@@ -214,6 +214,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // && function_100f70(weapon_index)` 100 at 376 bytes (flag materialized with `mov cl, 1` where retail keeps the
 // call result in AL; a positional gain, not kept); the sound index as one ternary 107; the sound part behind an
 // early return 107. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, avoided).
+// Round 145 (m3 lane 5, fast): the `&&` weapon flag with the unit fetched in the reset block 130 (393 B); the
+// `&&` flag alone 100 (376 B, seven points: not kept); that with a long user index 104 (367 B); with the zoom flag
+// declared after the weapon flag 113 (361 B); the ternary flag with the late zoom flag and a long user index 125
+// (350 B). Retail uses the entry unit (EBP) for the reset and a second fetch (ESI) for the weapon lookup.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {
