@@ -36,9 +36,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 	return memory;
 }
 
-// score 0 (was 42): matches. Retail's success flag is a volatile byte: the widened handle test
-// is stored to it and the byte is read back before the branch, and the array element is used
-// directly so the handle is compared in ECX and copied to EAX for the by-value argument.
+// score 42. MiniMax H (11-04): `bool volatile success` (the read's result is written by the I/O worker,
+// like `done`) with the widened handle test stored to it and the array element passed directly MATCHES;
+// NOT kept (a new volatile on a local is outside the volatile rule), held for the user's ruling.
 // Earlier rounds (42): retail tests the handle in ECX and copies it to EAX for the by-value
 // argument, builds the success byte with `xor edx, edx; setne dl`, stores it and re-reads it from
 // memory before the test, as a volatile flag would; ours tests a register copy. Only a volatile
@@ -347,18 +347,18 @@ void game_state_cache_files_open(void)
 	{
 		char path[200];
 		bool volatile done;
-		/* the read's result is written by the worker thread, so retail keeps
-		   the flag in memory: it stores the handle test and reads the byte
-		   back before branching on it */
-		bool volatile success;
+		bool success;
 
 		function_11c9c0(path, sizeof(path), g_470050, i);
 		function_1a0b40(path, 3, 3, 0, 8, 6, &g_5020f8[i], &done);
 		function_120d50(&done, false);
-		success = (long)(g_5020f8[i].handle != INVALID_HANDLE_VALUE);
-		if (success)
+		s_file_handle file = g_5020f8[i];
+
+		long opened = file.handle != INVALID_HANDLE_VALUE;
+		success = opened != 0;
+		if (opened)
 		{
-			function_1a1310(g_5020f8[i], 0x40b000, 8, 6, (bool *)&success, &done);
+			function_1a1310(file, 0x40b000, 8, 6, &success, &done);
 			function_120d50(&done, false);
 		}
 	}
