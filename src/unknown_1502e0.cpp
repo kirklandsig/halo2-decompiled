@@ -1527,6 +1527,9 @@ void function_150820(dword *bits, bool local_only)
 // indexed then conditional on primary: 70/70/70/70/81/82/104/86. Original selector,
 // lifetimes and full body restored; NOT kept: unmatched shorter extents
 // and native ESI-player/EDI-hand ownership remains.
+// DH372: Isolated mode-success/command-success/actual-command exits, then both success-exit
+// pairs 90/86/110/112/110; sole-return common success in bool/byte/long 63/73/91.
+// NOT kept: no byte match or gain; original body restored, saved player/hand roles remain.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

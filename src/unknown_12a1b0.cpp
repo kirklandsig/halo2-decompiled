@@ -1882,6 +1882,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 479 reduced each; all with complete native request 477 (control 479; full 305).
 // NOT kept: two reduced points without equality or ordinary gain; original
 // acquisitions, pointer scopes, request and full body restored. Frame/range homes remain.
+// DH371: Actual release/stopped/gain-rate/update/range-blend/ring-match/pitch/detail
+// Boolean guard results: 479/479/479/479/452/479/479/479 reduced (control 479, full 305).
+// NOT kept: unmatched one-use outcomes; range-blend retains reduced frame 0x118/0x128.
+// Original request, observations and complete body restored; native frame/range/ring homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2585,6 +2589,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 674/749/675/675; immutable counterparts 674/749/675/675 reduced (control 694,
 // full 597). NOT kept: frame grows from 0x3c to 0x40/0x44; entry true/flags and
 // record/track homes remain. Original Boolean producer and complete body restored.
+// DH371: Actual definition/system/copy/listener/normalization/release/track-init/start
+// Boolean guard results: 694/694/734/694/694/694/694/670 reduced (control 694, full 597).
+// NOT kept: unmatched one-use outcomes, including the reduced-only 670; original complete
+// body restored. Entry true/flags, record/scalar homes and track/state ownership remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

@@ -2135,6 +2135,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // AC535: Positive tint/multiplication query results with false/true-default publication,
 // single queries then four pairs: 190/190/189/189/189/189/189/189 at 572 bytes. NOT kept:
 // all regress/lengthen; original complete body restored, early color/query/cursor homes remain.
+// DH372: Partial clipped-zone halfspace acceptance/rejection, bool/byte/short/long,
+// 131 each at 556 bytes. NOT kept: regressions; original helper and body restored.
+// Missing early color home and frame 0x40/0x44 remain; all checked controls survive.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3318,6 +3321,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // AC535: Positive tint result with false/true default publication, bool/byte/short/long:
 // 113/112/117/116/113/112/117/116. NOT kept: all regress and lose matched caller
 // 0x176f60 (25); original full body restored, native frame and system/successor homes remain.
+// DH372: Particle availability/exhaustion across the original transform call,
+// bool/byte/short/long 119/119/126/132/119/119/126/132. NOT kept: regressions; original body
+// restored, frame 0x4c/0x54 and system/successor/color homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

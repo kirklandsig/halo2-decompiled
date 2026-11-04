@@ -1030,6 +1030,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC535: Complete candidate-plane grouping acceptance, positive then complementary
 // bool/byte/short/long: 529/529/529/529/531/531/531/531 at 3647 bytes. NOT kept:
 // frame grows to 0x21e4 versus native 0x21dc; original body/helpers restored.
+// DH372: Partial angular/first-distance grouping decisions, bool/byte/short/long,
+// 529 each at 3647 bytes. NOT kept: one-use outcomes are unmatched and enlarge the
+// native 0x21dc frame to 0x21e4; original body/helpers restored, tag/count/plane homes remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

@@ -399,6 +399,10 @@ struct s_object_damage_view
 // DH350: Both award-prefix searches own duplicate/unique outcomes,
 // bool/byte/short/long: 366/366/366/366/366/366/366/366. NOT kept: test-set outcomes need equality;
 // original ordinal searches, scalar homes and complete body restored.
+// DH371: Actual engine/reported-source/selected-validation/fallback-validation/credit-hostility/
+// assist-admission/credit-pair/related-owner Boolean test results: 353 each.
+// NOT kept: no gain or equality; original validation, record observations and full body restored.
+// Native scalar homes and amount-biased history cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

@@ -562,6 +562,10 @@ real function_30bf0(vector3f *vector);
 // P331: Geometry admission results at endpoint/length/query, masks 1/2/4/3/5/6/7 then complementary
 // all: 188/189/189/197/197/197/190/230. NOT kept: no equality or gain; original complete body
 // restored.
+// DH371: Actual outer/scaled/secondary/primary/near/secondary-improvement/primary-improvement/
+// player-eligibility Boolean test results: 188/188/152/152/152/152/152/191.
+// NOT kept: no equality or gain; original complete body restored. Result/range/projection
+// homes and inverse delta/motion SIMD groups remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
