@@ -1821,6 +1821,10 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // AC505: Actual duplicate-type admission bool/byte/short/long result
 // 138/138/138/138; guarded complete outcomes 140/140/141/143.
 // NOT kept: no gain or byte match; original predicates, mode/flag, body and calls restored.
+// AC514: Existing native unit/weapon-view slot/selected/paired acquisition subsets
+// 1/2/4/3/5/6/7, then all with native short slot: 137/138/138/137/137/138/137/135.
+// NOT kept: unmatched alias/width forms; original complete body and include set restored.
+// Frame 0xc agrees; same-block pool reload and selected-weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2100,6 +2104,10 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // Round 81 (m3 lane 16, fast): the own weapon through the char-index unit_action_weapon_get 100, both weapons
 // through it 103; the player index read at its one use (no local) 97, an actor index local for the 12c test
 // and calls 97, `given` declared first 97 (same code each).
+// AC514: Existing native unit/weapon-view admission/offered/received getter subsets
+// 1/2/4/3/5/6/7, then all with nested admission: 97/97/97/97/97/97/97/122.
+// NOT kept: unmatched receiver/alias forms; original getter boundaries, include set,
+// transfer results and complete body restored. Frame/result and pool/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -2529,6 +2537,10 @@ __forceinline char unit_action_round(real value)
 // Lane 17 r39 (fast): the 0xe000607 fallback tested before the three-name/range arm 235 (same code); the range
 // as `>= 0xe000608` 235; name/type/first-person declarations reversed 235, type first 235; is_biped computed
 // before the weapon 307 (1191 bytes). Original body restored.
+// AC514: Strength-owned target producers default/explicit arms/conditional/per-use 254/234/278/254;
+// existing shared dot directions 235/235; complete longitudinal-speed/ratio parts 235/235.
+// NOT kept: gain one below gate; all unmatched helper/grouping and receiver forms restored.
+// Pool/index/type/name and completion-byte homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

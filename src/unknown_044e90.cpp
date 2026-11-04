@@ -232,6 +232,11 @@ struct s_visibility_bound_record
 // in ESI from entry through the bottom arm (no reload). Flags read at each use 442 (1744 bytes); the bit-12 test through
 // TEST_FIELD_BIT 419; both 444 (retail's shr/test and tag in EAX, but no table preload); with the table read once into a
 // local 447; the table local and TEST_FIELD_BIT with the flags local 442.
+// AC514: Existing complete inverse-plane provider on copied/original inputs and
+// local/destination outputs, zero-scale preservation before/after the provider:
+// 815/835/816/817/518/499/479/467. NOT kept: complete-provider/grouping forms do not match; every
+// original plane, zero-scale output, declaration and complete body restored.
+// Entry/table and plane/query homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
