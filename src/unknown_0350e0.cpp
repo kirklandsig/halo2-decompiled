@@ -2412,6 +2412,10 @@ real magnitude3d(vector3f const *v);
 // moving angle/sine/cosine homes); acos on a fresh dot3f 198 (1039 bytes); arms swapped under the
 // inverted test 171; sine, projection dot, cosine, then the product 170; fallback `-step > delta` 170
 // (identical); fallback delta through the nested ternary clamp 188 (1025 bytes). Body restored.
+// DL257: Complete native/shared/staged tangent producers with a plain rotation loop 191/191/191;
+// consuming the first vector 186/186/186; direct cyclic rotation loop 178; tangent and rotation
+// loops 191. All retain the raw-length/promoted-dot home mismatch. Original complete body
+// restored; shared tangent forms also raise two other scores.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2897,6 +2901,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // projection helper with an output pointer 514 (frame 0x44); speed test as sqrt(dot3f) 519, as
 // normalize_inline's float sum 527, its double sum grouped j + (i + k) 486 (same code); acceleration
 // as a vector3f with vector3f_scale and vector3f_add 513, with vector3f_scale only 513.
+// DL257: Actual state scalar fields, scalar arrays, velocity vectors, complete state, view
+// geometry, view scalar/random fields, complete view and complete state/view fields: 486 each on
+// the retained inline-normalization graph. Original body and field accesses restored; frame 0x60
+// versus 0x38 and stored-velocity/projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3250,6 +3258,11 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // 144, kind as signed char 220. On the if-form graph: `!(alpha > 0.0f)`, `0.0f >= alpha`, a ternary, the getter's
 // return tested, the header unnamed, result initialised false 231 each; kind as signed char 211 (773 bytes),
 // short 226, declared after alpha 233. Body restored.
+// DL257: Complete failure outcome in bool/byte/short/long, branch-set 167/167/210/208; entry-
+// default 213/213/219/217. NOT kept: 167 reaches 773 bytes by an inverted failure carrier with
+// recursive neg/sbb/inc and a final test/sete; retail copies and returns its positive byte
+// directly. The other forms regress. Original complete body and positive result restored; frame
+// and fade scratch homes remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
