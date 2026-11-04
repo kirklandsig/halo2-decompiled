@@ -318,6 +318,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P330: Final existing detail-tag obsolete/matching results in bool/byte/short/long,
 // eight forms 866 at 3329/3327 bytes. NOT kept: one-use comparison ownership does
 // not match; original detail tail, helpers and complete body restored.
+// P332: Initial cluster-admission bool/byte/short/long producers at the
+// branch and before entry workspaces: eight 866 at 3329 bytes. NOT kept:
+// no equality or gain; original body restored, entry zero and count/query homes remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
