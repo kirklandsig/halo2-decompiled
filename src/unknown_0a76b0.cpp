@@ -1560,6 +1560,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // declared uninitialized before the animation query: 144/143/95/159/144/143/95/159. NOT kept:
 // ties or regressions; original event result, observations and complete body restored.
 // Frame 0x18, early table/hand homes and second entry unit load remain.
+// M367: Optional ready-query completion/fallback result bool/byte/short/long:
+// 95/95/95/95/95/95/95/95. NOT kept: one-use result producers do not match.
+// Original terminal returns and complete body restored; early hand spill and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1843,6 +1846,10 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // AC505: Actual duplicate-type admission bool/byte/short/long result
 // 138/138/138/138; guarded complete outcomes 140/140/141/143.
 // NOT kept: no gain or byte match; original predicates, mode/flag, body and calls restored.
+// M367: True-default single-exit completion bool/byte/short/long, before entry
+// lookups 132/157/164/166; after selected lookup 150/167/171/173. NOT kept:
+// 132 gains six above 30 and grows to 539/538 bytes; other forms regress.
+// Original body restored; same-block pool reload and weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1999,6 +2006,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // pickup-test-owned success: 73/139/140/128/69/119/113/120. NOT kept: every form regresses.
 // Original Boolean result, mode graph, shared player observation and complete body restored;
 // request/weapon homes and getter expansion remain.
+// M367: Direct successful return with admission/mode/pickup rejection subsets
+// 0-7: 128 each, 364/388 bytes. NOT kept: all regress and shorten away from retail.
+// Original stored result and complete body restored; request/weapon homes and getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {

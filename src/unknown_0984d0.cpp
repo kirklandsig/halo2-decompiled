@@ -550,6 +550,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // declarations: all six orders at consumption, then case/entry storage, eight 207s
 // at 524/540 bytes. NOT kept: every form regresses and splits the parent handle.
 // Original complete body, helper and both inherited local-slot reads restored; homes and loop entry remain.
+// M367: Dead request/formal alias/real chain-buffer lexical priorities, seven
+// subsets then all with the chain-count identity: 80 each at 540/540 bytes.
+// NOT kept: no byte match; original complete body, helper and local-slot reads restored.
+// Native validity/cursor homes and validation-loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
