@@ -2045,7 +2045,8 @@ def mut_single_exit(body, rng, context=None):
     function that returns a value from more than one place and ends 'return
     x;' (x not a local), declare 'T result;' (T the function's return type)
     and end 'result = x; return result;'. mut_early_return then turns the
-    earlier returns into stores to result one at a time."""
+    earlier returns into stores to result one at a time. Not when that last
+    return is the unbraced body of a control statement."""
     returns = (context.returns if context else '').strip()
     if not returns or returns == 'void' or '&' in returns:
         return None
@@ -2054,8 +2055,8 @@ def mut_single_exit(body, rng, context=None):
     if len(exits) < 2 or not last or body[last.end():].strip() or exits[-1].start() != last.start() + len(last.group('ind')):
         return None
     declared = {m.group('name') for m in DECLARATION.finditer(body) if _is_declaration(m)}
-    if last.group('x').strip() in declared:
-        return None
+    if last.group('x').strip() in declared or _controlled(body, last.start() + len(last.group('ind'))):
+        return None                     # the last return the whole body of an unbraced while/if: two statements there
     name, n = 'result', 0
     while re.search(r'\b%s\b' % name, body) or (context and re.search(r'\b%s\b' % name, context.params)):
         n += 1
@@ -2088,8 +2089,40 @@ def _helper_params(params):
 
 
 def _param_name(name):
-    """A parameter name as a whole word that is not a member after '.' or '->'."""
-    return r'(?<![\w.>])%s\b' % re.escape(name)
+    """A parameter name as a whole word that is not a member after '.' or '->' ('a>b' still reads b)."""
+    return r'(?<![\w.])(?<!->)%s\b' % re.escape(name)
+
+
+def _volatile_names(body, context):
+    """The locals and parameters declared volatile."""
+    found = set()
+    for text in (context.params if context else '', body):
+        for m in VARIABLE.finditer(text):
+            if 'volatile' in m.group('type') + m.group('ptr'):
+                found.add(m.group('name'))
+    return found
+
+
+def _plain_arg(a, volatile, context):
+    """A name or literal that reads the same however often it is evaluated: not a volatile
+    local or parameter, and not a macro (an object-like macro can stand for anything)."""
+    if not SIMPLE_ARG.match(a):
+        return False
+    a = a.strip()
+    if a in volatile:
+        return False
+    return not (context and re.search(r'^[ \t]*#[ \t]*define[ \t]+%s\b' % re.escape(a), context.text, re.M))
+
+
+def _declared_more_than_once(name, text):
+    """Whether name has more than one definition or prototype in text (overloads, or a prototype
+    besides the definition): the call might not be the definition the helper table holds."""
+    n = 0
+    for m in re.finditer(r'^[ \t]*(?:[A-Za-z_][\w:]*[ \t*&]+)+\**[ \t]*%s[ \t]*\(' % re.escape(name), text, re.M):
+        words = re.findall(r'[A-Za-z_]\w*', m.group(0))
+        if len(words) >= 2 and words[-2] not in KEYWORDS:
+            n += 1
+    return n > 1
 
 
 def mut_inline_helper(body, rng, context=None):
@@ -2098,19 +2131,33 @@ def mut_inline_helper(body, rng, context=None):
     helper's return type, with each parameter replaced by its argument cast to
     the parameter's type (so a narrowing or a float conversion stays). An
     argument the expression reads other than exactly once must be a plain name
-    or literal, so nothing is evaluated twice and no call is dropped."""
+    or literal, so nothing is evaluated twice and no call is dropped; in an
+    expression with '?', '&&' or '||', where a read can be skipped, every
+    argument must be. A plain name is not a volatile local or a macro. Left
+    alone: a name with more than one definition or prototype (an overload
+    could be the one called), a helper whose expression has a comment, and
+    one whose expression reads a name the function has a local or parameter
+    of (it would read the local)."""
     own = getattr(context, 'own', None) if context else None
     if not own:
         return None
     helpers = {}
+    types = declared_types(body, context)
     for m in STATIC_HELPER.finditer(own):
         params = _helper_params(m.group('params'))
-        if params is not None:
-            helpers[m.group('name')] = (m.group('ret').strip(), params, m.group('expr').strip())
+        expr = m.group('expr').strip()
+        if params is None or '//' in expr or '/*' in expr or _declared_more_than_once(m.group('name'), context.text):
+            continue
+        names = {n for _, n in params}
+        free = set(re.findall(r'(?<![\w.])(?<!->)[A-Za-z_]\w*', expr)) - names - KEYWORDS
+        if free & set(types):
+            continue                                            # it would read the caller's local of that name
+        helpers[m.group('name')] = (m.group('ret').strip(), params, expr)
     if not helpers:
         return None
+    volatile = _volatile_names(body, context)
     cands = []
-    for m in re.finditer(r'(?<![\w.>])(?P<name>' + '|'.join(map(re.escape, helpers)) + r')\s*\(', body):
+    for m in re.finditer(r'(?<![\w.])(?<!->)(?P<name>' + '|'.join(map(re.escape, helpers)) + r')\s*\(', body):
         ret, params, expr = helpers[m.group('name')]
         got = _call_args(body, m.end() - 1)
         if got is None:
@@ -2121,11 +2168,13 @@ def mut_inline_helper(body, rng, context=None):
             args = []
         if len(args) != len(params):
             continue
-        if any(len(re.findall(_param_name(p), expr)) != 1 and not SIMPLE_ARG.match(a)
+        conditional = re.search(r'\?|&&|\|\|', expr) is not None
+        if any((conditional or len(re.findall(_param_name(p), expr)) != 1) and not _plain_arg(a, volatile, context)
                for (_, p), a in zip(params, args)):
             continue
         # substitute every parameter at once, so an argument naming another parameter stays put
-        lookup = {p: f'(({ty}){a})' if SIMPLE_ARG.match(a) else f'(({ty})({a}))' for (ty, p), a in zip(params, args)}
+        lookup = {p: f'(({ty}){a})' if _plain_arg(a, volatile, context) else f'(({ty})({a}))'
+                  for (ty, p), a in zip(params, args)}
         new = expr
         if params:
             new = re.sub('|'.join(_param_name(p) for _, p in params), lambda x: lookup[x.group(0)], expr)
@@ -2148,7 +2197,9 @@ def mut_test_field_bit(body, rng, context=None):
         return None
     cands = []
     for m in re.finditer(r'TEST_FIELD_BIT\(\s*(?P<f>' + FIELD + r')\s*\)', body):
-        cands.append((m.start(), m.end(), m.group('f')))
+        if body[:m.start()].endswith(('if (', 'while (', '!', '&& ', '|| ')) \
+                and re.match(r'\s*(?:\)|&&|\|\|)', body[m.end():]):   # only where it is tested, as the other way
+            cands.append((m.start(), m.end(), m.group('f')))
     for m in TESTED_FIELD.finditer(body):
         if body[max(0, m.start() - 15):m.start()].endswith('TEST_FIELD_BIT('):
             continue
