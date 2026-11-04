@@ -870,6 +870,9 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // B412: Eight-team membership mask advanced with the score cursor: dword/long/word/byte
 // presence 508/508/512/508; absence 509/509/494/509. NOT kept: four-point leads below gate;
 // word absence shifts a narrow complement instead of an indexed dword mask. Full body restored.
+// P336: First-character library clears at message/format/auxiliary producers,
+// seven subsets then complete typed fills: 577/575/571/581/638/636/626/612.
+// NOT kept: all regress; original arrays, clears, full body and includes restored. Frame/bias/flags remain.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

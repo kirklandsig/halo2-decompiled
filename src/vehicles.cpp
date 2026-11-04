@@ -2927,6 +2927,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // bound/result and entry-result declaration; original then distinct relative output:
 // 692/722/741/692/700/730/749/700. NOT kept: no gain; frames stay 0xd0/0x104 versus native 0xfc.
 // Original helper and complete body restored.
+// P336: Normalized up/lateral/bank-axis in actual matrix rows, seven separate-output
+// graphs then all with in-place output: 720/738/776/754/797/772/782/774. Bank-axis alone
+// recovers frame 0xfc but grows to 3311/3244 and regresses; all equality-only forms restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4770,6 +4773,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P334: Native component-range up/paired-forward/lateral projection contracts,
 // seven family subsets then complete reversed input ranges: 873/958/904/1078/950/1100/1219/1243.
 // NOT kept: no native entry-definition or zero/result/unit-constant residence; original complete body restored.
+// P336: Final/blend nested bound producers, forward MAX, reverse MIN, both bounds,
+// independent final/blend comparisons, staged final bounds: 748/751/749/749/749/749/749/749.
+// NOT kept: best gain one; original body restored. Entry definition and zero/result/one homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5336,6 +5342,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P334: Native backward/short-angle/target component-transform contracts,
 // seven subsets then complete mass-force producer: 1040/1172/1161/1143/1153/1253/1230/1285. NOT kept: backward
 // alone reaches 1040 but shortens to 5088/5094, frame 0xf0/0xd8; other forms regress. Original body restored.
+// P336: Float CRT boundaries at pitch atan/root, horizontal root, driver/bank trig,
+// rotation atan/root and desired-up root: 1064/1064/1087/1097/1097/1087/1087/1087.
+// NOT kept: pitch gains grow to 5104/5094; frame stays 0xf8. Original full body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
