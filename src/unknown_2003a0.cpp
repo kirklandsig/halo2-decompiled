@@ -2929,6 +2929,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // allocation forms; original event domain, wrapped scan, calls and body restored.
 // First-event index reload and displaced actor-loop alignment remain.
 // Wide conditional results 35 grow to 582/578 and add sign extension; the first index reload remains.
+// P340: Actual trigger-query bool/byte/char/signed-char/short/word/long/dword results at the original
+// call: 50/50/50/50/101/101/62/62. NOT kept: one-use result misses equality; original direct comparison,
+// calls, wrapped scan and complete body restored. First-event index reload and loop alignment remain.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

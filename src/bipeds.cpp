@@ -1020,6 +1020,10 @@ extern long *g_51e9cc;
 // M372: Actual contact point/normal/final-position CRT memcpy transfers, seven site
 // subsets: 42 each; complete memmove 108 at 1462/1481 bytes. Original aggregate
 // transfers and complete body restored; lookup receiver and crouch/contact schedules remain.
+// P340: Recent-component height output, exhaustive/conditional real/double, immutable real/double and
+// explicit-query real/double results: 121/121/137/144/121/144/121/144. NOT kept: no equality; original
+// height observation, branch and full body restored. Lookup rematerialization and crouch/contact
+// publication schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -4419,6 +4423,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // publication loop, seven subsets then complete immutable parts:
 // 179/176/196/154/181/170/190/190. NOT kept: all regress; original twice-used helper
 // and body restored; normalization SIMD and trigonometric/basis homes remain.
+// P340: Tick-rate scalar ownership at the normalization product, mutable/immutable real rate and
+// magnitude carriers at two producer boundaries: 210/210/210/210/157/157/157/157. NOT kept: unmatched
+// one-use carrier graph; original product, coefficients, helper and complete body restored. Native 0x24
+// frame, normalization SIMD and trig/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
