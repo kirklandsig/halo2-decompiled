@@ -2492,6 +2492,11 @@ event_done:
 // (564 bytes), with the deletion in the if arm and the live work in its else 198 (571 bytes); definition
 // lookup moved into the live arm 85; a `deleted` result flag in place of clearing `effect` 202 (589 bytes);
 // early `return false` without an object, then the validity test 198. Still BLOCKED-BY 0xbadc0.
+// Round 41 (m3 lane 17, fast): the validity result held as the object pointer it returns 202 (587 bytes); the
+// definition fetched in the live arm 85; the root index (retail's EAX argument to 0x1794a0) named and passed 197
+// (585); the object test split off as an empty first arm 198 (571); root index with the definition in the live arm
+// 206 (584). Retail reloads the object index from the effect after 0xbadc0 and 0xbaf80 (both in
+// src/unknown_0bad50.cpp, avoid-listed again): BLOCKED-BY 0xbadc0.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -3546,6 +3551,12 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // 252 at retail's 1525 bytes (scale block retail's; still no y copy, and the helper's product order is not
 // retail's); house scale with `scale * effect->scale_b` 270; node index named for the test and the call 74,
 // on the house scale form 270.
+// Round 41 (m3 lane 17, fast with 0x17aec0, 0x179fb0, 0x17a380, 0x176bb0; all four still match): on the house scale
+// form (re-measured 270, 1519 bytes): the point transformed into a fresh point and copied back 324 (1558); the
+// position copied after the scale block, just before the node test 305; the node matrix declared with the copies
+// at the loop top 270 (same code); forward and up transformed before the point 312 (1500); forward and up copied
+// before the position 282. The y copy (retail keeps raw y and scales into a fresh register) still appears only
+// with a by-name reference to position.y.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

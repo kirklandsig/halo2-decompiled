@@ -4,6 +4,7 @@
 #include "camera_storage.h"
 #include "unknown_0259d0.h"
 #include "unknown_030290.h"
+#include "normalize3d.h"
 #include <math.h>
 #include <string.h>
 
@@ -19,23 +20,20 @@ struct s_501e0
 
 static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1, vector3f *arg_2)
 {
-    real local_0 = arg_1->i;
-    real local_1 = arg_1->j;
-    real local_2 = arg_1->k;
+    vector3f scaled = { arg_1->i, arg_1->j, arg_1->k };
     if (arg_0 != 1.f)
-    {
-        local_0 = arg_0 * local_0;
-        local_1 = arg_0 * local_1;
-        local_2 = arg_0 * local_2;
-    }
+        vector3f_scale(arg_1, arg_0, &scaled);
     real *output = arg_2->n;
     for (long component = 0; component < 3; ++component)
     {
-        *output = g_4b9e14.forward.n[component] * local_2 + g_4b9e14.up.n[component] * local_1 + g_4b9e14.right.n[component] * local_0;
+        *output = g_4b9e14.forward.n[component] * scaled.k + g_4b9e14.up.n[component] * scaled.j + g_4b9e14.right.n[component] * scaled.i;
         ++output;
     }
 }
-// score 221 (was 221): first transform sum/product order and register numbering (retail: forward*depth +
+// score 206 (was 221): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
+// raw offsets before the test) and the coefficients folded into the products. Earlier 221: first transform
+// sum/product order and register numbering (retail: forward*depth +
 // up*height first, coefficients loaded into registers, right.i kept in xmm7 for both views), frame 0x18 versus
 // 0x14 (retail spills the blend scale at [esp] where it is computed). Earlier: transform term order
 // right/up/forward written point first and
@@ -300,6 +298,15 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // extra frame word remain; original three publications, helper and complete body restored.
 // Round 160 (fast): the view helper's input by value 348 (1215 bytes), as three reals 275 (1153); a copied input for the
 // first/second view 334/268 (1205/1151); the first view transformed in place then copied 279 (1104). All restored.
+// Round 41 (m3 lane 17, fast; plain confirmed): the view helper's locals renamed 221 (same code); a shared scale
+// local with the input re-read in the scale arm 252 (1136 bytes); a shared scale with a scaled vector 255 (frame
+// 0x20); the clamped value in a fresh local (retail clamps into a fresh value, written per arm) 215; that with
+// both offsets through vector3d_from_points3d 215 (1147 bytes), with i/k/j helper reads 214, with the shared scale
+// 252; that with the scaled values in a `vector3f scaled` initialised from the input and scaled by the existing
+// vector3f_scale under the test 206 (kept; 1140 bytes, retail's (forward*depth + up*height) + right*width sum
+// tree in both views; alone, without the fresh clamp, 211); the same as a struct copy 330 (1198), set through
+// vector3f_assign 252 (1146). On the kept body: offsets and views in their own block 206 (same code); shared scale
+// 255; indexed output rows 213; three row statements 304 (1084); depth limits written in the condition 214.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
@@ -355,8 +362,8 @@ void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
             real local_11 = function_30bf0(&local_10);
             real local_12 = dot3f(&g_4b9dac, &local_10);
             real local_13 = 1.f - local_12 * local_12;
-            local_13 = local_13 < 0.f ? 0.f : local_13 > 1.f ? 1.f : local_13;
-            arg_2->field_c = (real)(sqrt(local_13) * arg_2->field_c * local_11);
+            real local_14 = local_13 < 0.f ? 0.f : local_13 > 1.f ? 1.f : local_13;
+            arg_2->field_c = (real)(sqrt(local_14) * arg_2->field_c * local_11);
         }
     }
     else
