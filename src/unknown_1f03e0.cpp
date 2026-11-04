@@ -1807,6 +1807,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH356: Complete three-arm candidate-quality conditional, direct/named acceptance/rejection,
 // original/early material-speed skip: eight at 211. NOT kept: gain two; original full body
 // restored. Native motion/reset order, separate cold height tests and material expansion remain.
+// N373: Supported-contact thickness rejection/acceptance in bool/byte/short/long
+// 209/209/209/209/213/213/213/213. NOT kept: unmatched one-use decisions; original full body restored.
+// Reset/velocity ownership, cold height joins and second material expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
