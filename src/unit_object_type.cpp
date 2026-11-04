@@ -7788,11 +7788,12 @@ extern short g_47d8e0;
    scripted controls (+0x1ec, +0x1f0); for a vehicle, its driver's
    controls and its gunner's aim and triggers when their animations allow;
    then its boost charge (+0x334, +0x338); whether anything changed */
-// score 204 (was 419): only the gunner block's register allocation is left. Retail keeps the gunner's state in ebp
-// and `leaving` in bl, spills the gunner pointer to [esp+0x1c] and shares entering's slot [esp+0x13] with changed;
-// ours keeps the gunner in ebp and the state in ebx, and `leaving` shares changed's slot [esp+0x12].
-// Tried: leaving/entering declared in the other order (204), state read before the gunner (209), copy_aim and
-// copy_controls declared before the flags (204).
+// MATCH (was 204; 419 before round 4 of #1049). Round 5 of #1049: the gunner block's copy_controls in the
+// else arm is `!leaving && !entering` evaluated again, not a copy of copy_aim (retail recomputes the
+// two tests, which also put `leaving` in bl and the gunner pointer on the stack as retail), and entering is
+// declared before leaving (retail zeroes entering's byte first). Earlier attempts at the allocation by
+// declaration order (leaving/entering swapped, state before the gunner, copy flags first) were 204-209 while
+// the copy was still there.
 // @retail 0xc49b0
 bool __stdcall function_c49b0(long unit_index)
 {
@@ -7923,8 +7924,8 @@ bool __stdcall function_c49b0(long unit_index)
 				long state = function_10f5f0(gunner_index);
 				bool copy_aim;
 				bool copy_controls;
-				bool leaving = false;
 				bool entering = false;
+				bool leaving = false;
 
 				if (function_0c7070(gunner_index))
 				{
@@ -7946,7 +7947,7 @@ bool __stdcall function_c49b0(long unit_index)
 				else
 				{
 					copy_aim = !leaving && !entering;
-					copy_controls = copy_aim;
+					copy_controls = !leaving && !entering;
 				}
 				if (copy_aim)
 				{
