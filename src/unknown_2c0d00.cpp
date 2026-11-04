@@ -371,6 +371,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // Y591: Positive complete classification in bool/byte/short/long, entry/admitted defaults:
 // 939/939/919/933/936/936/919/933 reduced (control 931, full 882). NOT kept:
 // no byte match or native frame repair; original decisions, qualifiers and body restored.
+// F383: Paired normalized enemy results byte/short/word 931/902/902 fast;
+// complementary bool/byte/short/word/long 937/914/920/920/915 (control 931; full 882).
+// NOT kept: result domains/polarity do not recover native frame or byte-result transport;
+// original complete body, query storage, qualifiers and all consumers restored.
+// F385: Persistent actor-mode presence byte/char/word/short/long, reduced
+// 931/931/954/954/955; absence bool/byte/long 931/931/942 (control 931, full 882).
+// NOT kept: frames 0x2cb8/0x2cbc miss 0x2cac; original complete body/qualifiers restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1539,6 +1546,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // F372: Existing two-use location address at entry/data/multi-step/traversal/step/
 // selected-step/corner-pair/pre-endpoint phases: 470/431/463/470/465/416/414/418.
 // NOT kept: two-/four-point leads below gate; original address phase and full body restored.
+// F379: Actual emission/continuation departure-limit outcomes, bool/byte/short/long,
+// positive/complementary 456/456/456/456/456/456/456/456. NOT kept: regressions; original
+// whole body restored, frame 0x114 versus 0x10c and zero/radius/metadata homes remain.
 // P325: Existing normalizer mutable/readonly squared-length results crossed with
 // magnitude/inverse entry declaration lifetimes all tie 418 (eight forms); every user stays calibrated.
 // NOT kept: no byte match for the one-use call-result intermediate. Original complete helper

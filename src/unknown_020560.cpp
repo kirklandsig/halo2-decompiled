@@ -1025,6 +1025,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // standard transform subsets 876/598/1237/912/1533/1362/1554; direct loops throughout 1471.
 // NOT kept: all regress and shorten away from 2122 bytes. Original scalar/vector
 // producers, reduction trees, includes and full body restored; frame/query/ordinal/fraction homes remain.
+// F390: Existing three-use coefficient copier standard forward range copies at red/green/blue,
+// seven subsets, then complete backward copies: 615/676/569/580/672/572/579/622. NOT kept: all
+// regress; partial forms retain frame 0x18, complete forms shrink it to 0x14 versus native 0x2c.
+// Original CRT copies, direction, helper and complete body restored; native
+// query/vector/ordinal/fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

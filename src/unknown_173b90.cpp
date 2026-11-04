@@ -1784,6 +1784,9 @@ bool function_17afd0(long effect_index, long value);
 // Y593: Independent raw-slot cursor and iteration-local salted handle, long/dword/int/short
 // with while/for traversal: 166/166/166/117/166/166/166/117. NOT kept: no equality; original complete
 // traversal and body restored; availability production and later view observation remain.
+// F380: Complete visibility/rejection results on the shifted-word/owner-arm graph,
+// bool/byte/short/long: eight 47. NOT kept: ties; original admission,
+// availability, view snapshot, query gates and complete body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

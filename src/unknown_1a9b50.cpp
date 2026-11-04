@@ -988,6 +988,9 @@ static __forceinline long real_to_long(real value);
 // AC536: Complete initial near-stop stop/continuation result in bool/byte/short/long:
 // 381/381/381/381/381/381/381/381. NOT kept: one-point gain below the gate and no equality;
 // original near gate, provider timing, query aliases and full body restored. Early rejection island remains.
+// F385: Existing vector-union component-array observations in target velocity, facing
+// and working vectors, seven subsets, then actual position arrays: eight at 382.
+// NOT kept: byte-neutral homes/exit diagnostic; original complete body and query aliases restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

@@ -2041,6 +2041,14 @@ void function_dfd70(long arg_159e6d)
 // P321: Initial zero/one crouch with ternary/complete/crouch-default/zero-default
 // switch results: 233/233/252/233/233/233/264/234. NOT kept: no gain;
 // crouch-default and zero-default also raise shared users. Helpers restored.
+// F384: Actual side-vector setter/point-setter/mutable/immutable initializer,
+// native or memmove origin transfer: 235/235/233/233/256/256/253/253. NOT kept:
+// no gain; memmove with either initializer also raises a shared user. Original
+// shared helpers and target restored; mode-three placement and basis/ray homes remain.
+// F390: Complete joined final-point producer after the second query, hit in bool/byte/short/long,
+// record then scalar-setter publication: 226/226/226/226/278/278/278/278. NOT kept: seven-point
+// lead grows to 1044/1041 bytes; setters reach 1077. Every form raises shared users and loses
+// exact 0xde9d0. Both original helpers and full target restored; mode-three/basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2478,6 +2486,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M366: Direct lower/upper body admission without selected sentinel, long/short/char/read-only-long,
 // combined/nested query: 70/64/65/70/70/64/65/70. NOT kept: no exact/native-sentinel repair;
 // original full body restored; extra EBP, count/body transport and flag schedules remain.
+// F384: Complete admission-time object getter graph, retained/at-use count and
+// explicit long/short/shared-promoted/shared-short body contracts:
+// 80/85/101/91/85/86/104/100. NOT kept: all regress and grow; original body restored.
+// Extra EBP, native count/body transport and flag schedules remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3278,6 +3290,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // seven subsets then all with planar temporary termination: 600 each (fast control
 // 600, full 561). NOT kept: no byte change; complete original body restored.
 // Changed-result/flight homes and vector scheduling remain.
+// F388: Whole facing/turned/axis component-array views, subsets 1/2/4/3/5/6/7:
+// fast 604/604/611/614/605/605/613; all with side/aim/look views 619
+// (control 600, full 561). NOT kept: regressions and growth; original body
+// restored, result/flight-scalar homes and vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3642,6 +3658,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 588: Position/property/collision last-use scopes, seven subsets, then all with
 // earlier inner rotation declaration: 368 each. NOT kept: no native-home repair; original
 // complete body restored. Matrix/origin and paired pivot/property homes remain.
+// F386: Static existing component-array observations of scaled pivot, transform rows
+// and full geometry, seven subsets then all forced: 369/368/369/369/369/369/369/369.
+// NOT kept: tie/regressions; original helper/body restored, matrix/origin/pivot homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4421,6 +4440,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // Round 588: Angle/rotation/basis last-use scopes, seven subsets, then all with double angle:
 // 145/145/145/145/145/145/145/151. NOT kept: no exact scope/domain repair; original
 // complete body restored. Normalization SIMD ranks and coefficient/basis homes remain.
+// F386: Existing vector/axis projection component-array observations, three subsets
+// ordinary/forced inline, then complete readonly projections ordinary/forced: 145 each.
+// NOT kept: no gain; original helper/body restored, normalization SIMD/trig homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4971,6 +4993,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // 144/144/144/144/144/144/144/144. NOT kept: unmatched decision/storage forms; original complete body
 // restored.
 // Native support/result byte homes and early success store remain.
+// F390: Support query through the existing result before its riding copy, bool/byte/short/long,
+// original then support-bound success: 68/68/148/151/143/143/136/142. NOT kept: no gain;
+// the early Boolean graphs grow to 686/683. Original complete body restored, both exact callers
+// survive; native support/success byte homes and early success publication remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

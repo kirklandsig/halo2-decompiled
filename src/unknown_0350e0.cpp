@@ -142,6 +142,13 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Y593: Separate scalar i/j/k outputs, pointer/reference, record/scalar results and reused input
 // scalars: 470/470/414/414/470/470/450/450. NOT kept: no equality or native frame/extent;
 // original six-use helper, snapshots, arithmetic and complete body restored.
+// F387: Existing component-array views at axis observations, matrix-row stores,
+// rotation operands and returned components, masks 1/2/4/8/3/12/7/15: 356 each.
+// NOT kept: all tie at 1775/1779 bytes and frame 0x98/0x90. Original helpers/body restored.
+// F390: Existing builder with only sine/cosine supplied by its caller, direct/named part and
+// original/twice-used angle graphs: 355/355/368/368/357/357/362/362. NOT kept: one-point
+// lead below gate; every frame stays 0x98 versus 0x90. Both original helpers, real-angle contract
+// and full body restored; concurrent x87 inputs and scalar publication homes remain, caller exact.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1910,6 +1917,10 @@ real game_time_get_seconds();
 // F372: Internal hash, animation/sample and draw workspace role names, seven
 // subsets then all with offset/reflection names: eight at 507. Native frame and
 // output homes remain; original names, scopes, APIs and complete body restored.
+// F390: Actual position/direction/color eight-byte alignments, seven subsets, then sampled-color
+// alignment: 584/584/594/564/567/567/568/568. NOT kept: each introduces a frame-pointer prologue
+// absent from retail; complete original output alignments, API and body restored. Native
+// frame/output homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2890,6 +2901,17 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Y593: Original inclusive-tail missing-pair state, bool/byte/short/long with for/while
 // first scan: 320/320/327/326/320/320/327/326. NOT kept: all regress at native length;
 // original positive found state, full body and helpers restored; prefix/state homes remain.
+// F387: One-past retained-tail boundary with found in bool/byte/short/long, then
+// complemented missing state in those domains: 389/389/397/399/389/389/395/397.
+// NOT kept: all regress at native length; prefix/state and ordinal homes remain. Original body restored.
+// F390: Fallback zero-prefix scan start, fixed first-entry destination and completed prefix one,
+// seven subsets then natural while fallback: 396/331/385/448/374/340/409/409. NOT kept:
+// all regress; several shorten to 1273-1310/1324. Original complete body restored; native
+// prefix/state and removal-ordinal homes plus decay rotation remain, both controls stable.
+// F390: Existing four-use swap first/second/both actual-record references with default/ordinary
+// expansion, complete forced expansion and complete clamp reference input: eight at 317. Original
+// alias-safe copies, pointer contracts, helpers and whole body restored; frame 0x30, native
+// prefix/state and ordinal homes plus decay rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4071,6 +4093,17 @@ bool __stdcall function_391f0(void *state);
 // Y593: Found-side owns plane/minimum payload, for/while side traversal in long/dword/short/word:
 // 257/257/289/289/257/257/289/289. NOT kept: all regress; native frame and zero/portal homes remain.
 // Original complete body and every phase call restored.
+// F387: Complemented update/render failure predicates in bool (update/render/both), byte
+// (update/render/both), then both in short/long: 252/253/254/252/253/254/288/277.
+// NOT kept: all regress; frame 0x74 and early zero/portal homes remain. Original body restored.
+// F390: Existing visible-list native header, mutable/read-only receiver, signed short/long count,
+// snapshot/per-use index base: 251/276/300/306/251/276/300/306. NOT kept: no gain; frame
+// stays 0x74 versus 0x70, wide counts grow to 1036/1014. Original complete body and header
+// contract restored; early zero and visible/portal/fog homes remain, all callee controls stable.
+// F390: Actual two-side standard find/count/search producers, direct mutable and const table
+// views, then find/search iterator results: 353/352/394/353/352/394/353/394. NOT kept: frames
+// 0x84/0x8c versus native 0x70 and extents 1087/1119 versus 1014; original side loop, whole body
+// and include set restored. Early zero and portal/fog homes remain.
 // @retail 0x36b50
 void function_36b50()
 {

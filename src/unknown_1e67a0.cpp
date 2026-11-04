@@ -1117,6 +1117,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // the side crosses: 140/140/140/140/172/172/176/175. NOT kept: no match;
 // original body restored, rotation multiplicands, side-dot residence and
 // final load-all copies remain.
+// F379: Isolated oriented-side crossing/complement outcomes, bool/byte/short/long,
+// 140/140/140/140/140/140/140/140 at retail length. NOT kept: regressions;
+// original complete body restored, native j/k multiplicands and final copy scheduling remain.
 // N366: Native direction-output copy ranges at goal/rotated/initial-forward boundaries and complete
 // backward ranges do not recover eager inline copies. The 100-point output forms add out-of-line copy
 // calls absent from retail, including the retail-length form. Original direction copies, shared rotation

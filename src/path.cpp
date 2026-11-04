@@ -597,6 +597,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // predecessor/flag homes remain.
 // Y592: Standard edge fill_n/fill before/after step clearing, short/long remaining steps:
 // 297/383/404/423/382/400/309/309. NOT kept: native-frame range-fill forms regress in score/extent; original clearing, metadata memcpy and body restored.
+// F389: CRT memcpy destination/predecessor/paired conversion-fallback point transfers,
+// seven subsets 286 each; all with native short link count 359. NOT kept: no gain;
+// original aggregate transfers, metadata memcpy and complete body restored; frame/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

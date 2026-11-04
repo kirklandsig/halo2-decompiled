@@ -338,6 +338,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 586: Paired yaw/pitch rate-policy table traversal, long/dword/short/word
 // ordinals with repeated/captured current-angle values: 426/426/434/434/343/343/337/337. NOT kept:
 // nonexact array/field-pointer residence; first four also lose sibling 0x29b990 (48); body restored.
+// F385: Paired signed-pitch observation lifetimes, bool/byte/short/long negative then
+// complementary truths at their original comparisons: 284/284/284/284/285/285/285/285.
+// NOT kept: no exact predicate form; original helper and complete body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

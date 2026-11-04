@@ -388,6 +388,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 586: Magnitude input last-consumer scope at real/double squared-length or
 // real/double magnitude producer, direct/complete named products: 1395/1383/1395/1433/1355/1386/1355/1383.
 // NOT kept: nonexact lifetime/precision/staging; original helper and whole body restored.
+// F385: Existing vector-union component-array observations in dot/cross/magnitude,
+// seven producer subsets and the complete normalizer/add graph: eight at 1355.
+// NOT kept: byte-neutral frame/home diagnostics; original complete kernels/body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
