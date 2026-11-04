@@ -2015,6 +2015,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 208 (m3 lane 3, fast with 0x25d810): strongest's zero after the prop-iterator start 194, best_level's 195,
 // both 195; the iterator start from the first actor lookup 729 (2843 bytes); `(short)p` in the first search 194;
 // the players iterator declared at the top 194.
+// N356: Signed-octet established/visible/retain storage, seven subsets and complete plain-char family:
+// 194/194/194/194/194/194/194/194. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Entry index operands, exchanged Boolean homes and direction SIMD residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

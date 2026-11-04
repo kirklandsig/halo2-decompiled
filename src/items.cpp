@@ -698,6 +698,9 @@ struct s_item_collision_bsp
 // publications 211/317/211/317/211/317/211; copied point then scaled additions 282.
 // Original complete body restored; protected plane width, plane joins and spin/speed homes remain.
 // NOT kept: unmatched displacement/copy forms and frame/extent regressions.
+// N356: Bare contact distance/offset storage at plane/marker/entry boundaries, with fallback-speed storage:
+// 211/211/211/211/211/211/211/211. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Protected plane width, plane joins and speed/factor/spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1272,6 +1275,9 @@ struct s_item_flags_view_10b850
 // N352: Actual item/typed-tag/external-hit-header bindings, families 1..7 and
 // complete read-only views: 813 each. NOT kept: one-use/combined record forms
 // remain unmatched; original body/helpers restored, frame stays 0x154/0x12c.
+// N356: Isolated late spin admission, bool/byte/short/long with positive/complementary truth:
+// 880/880/880/880/863/863/863/863. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Frame 0x154/0x12c, entry Boolean and carrier/collision/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1727,6 +1733,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N352: Eight return/spin lexical home pairs on the paired-setter graph: 140 each.
 // NOT kept: return byte stays +0xe/+0xf and release/event homes remain; original
 // names, declaration sites, helper, paired setters and complete body restored.
+// N356: Pre-admission countdown truth, bool/byte/short/long with post/pre-processing accumulation:
+// 184/191/298/293/177/180/186/181. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Return byte, release RMW/tail and event/location homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
