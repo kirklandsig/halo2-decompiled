@@ -2230,6 +2230,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // N363: All failure edges join the sole persistent-result exit, admission plus empty-weapon/
 // rollback/missing-recipient masks 0..7: 122 each at 314 bytes. Original body and exits restored;
 // NOT kept: unmatched exit forms. Frame, result byte and pool/unit/weapon homes remain.
+// AC548: Literal failure returns at admission/empty-weapon/rollback edges, subsets 1-7, then direct accepted return
+// 97/117/117/103/103/111/111/122. NOT kept: no qualifying supported gain or byte match.
+// Native frame/result byte, unit/weapon homes and pool reloads remain. Original complete body restored.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

@@ -1765,6 +1765,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // DH359: Full-width signed option/user/controller masks, seven subsets 285 each;
 // word option mask 297; existing release-helper inline/forced declarations 285/285.
 // NOT kept: no gain; scalar homes and release expansion remain. All bodies and declarations restored.
+// AC548: Option/user/controller mask lexical homes, subsets 1-7, then player ordinal on the retained controller iterator
+// 285/285/285/285/285/285/285/285. NOT kept: no qualifying supported gain or byte match.
+// Native mask/index homes, release expansion and late binding homes remain. Original complete body restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
