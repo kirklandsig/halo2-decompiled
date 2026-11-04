@@ -843,6 +843,11 @@ struct s_device_machine_view
 // N345: Immediate velocity-magnitude nodes at three guarded divisions, seven
 // subsets, then all with immutable bounded publication: all eight 34. NOT kept:
 // single-use library results do not match. Original callback and observations restored.
+// Round 85 (m3 lane 9, fast; each with the 0x1200055f zero store): a byte cast on the first flag test 122, on both 122; a byte low local with a word second
+// test 122; a long flags local with a byte cast 122 (movzx); char casts on both 122. Screen: `(bool)` on the first test, the bits tested second first, a word
+// flags pointer local, a const group and value: the pushed ESI. Reading the group through the macro as well as the local (`(group->flags & 1) &&
+// (DEVICE_GROUP_GET(i)->flags & 2)`, or a value local for one test and the macro for the other) does put the pointer in EAX, retail's `lea eax`, but both
+// tests then read memory (`test byte [eax+2], bl`) with no word load.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {

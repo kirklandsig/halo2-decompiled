@@ -605,9 +605,9 @@ struct s_signed_file_read_parameters
 __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dword *size)
 {
 	g_4fa0c8.owner = task;
+	g_4fa0c8.external = g_4fa0c8.buffer != g_4fa0c8.storage;
 	*buffer = g_4fa0c8.buffer;
 	*size = g_4fa0c8.size;
-	g_4fa0c8.external = *buffer != g_4fa0c8.storage;
 }
 
 // score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
@@ -850,6 +850,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 66 (m3 lane 10, fast; 0x2adb10 102 throughout): the header read test as `header_size == bytes` 36; the body
 // progress sum offset first 34 (same code); the header case's open test as its own if around the read 34 (same code);
 // the scratch clamp as `MIN(remaining, size)` 35; the signature-state test as `!(offset < size)` 34 (same code).
+// Round 85 (m3 lane 9; compile-only count against retail, base 32): 0x2adb10 matched by reading the record's fields again for its memset and offset, so
+// the getter now stores owner, flag, buffer, size (same code here, 34). Same lead here: the scratch arm's clamp `MIN(g_4fa0c8.size, ...)` 20 (its registers
+// become retail's; left: total in EDX, the hoist needing the signature sum as `lea esi, [ecx + edx]`), exact-only since it reads the field beside a local
+// copy. On it: no total local 64 (total in EDX as retail, later registers rotate); the signature sum repeated 81/76, body first 20, through a body, header
+// or both locals 20; on the plain body: a named remaining 36, the clamp as an if 33, total body first 32.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1000,193 +1005,10 @@ struct s_signed_file_write_parameters
 };
 #pragma pack(pop)
 
-// score 102 (was 102): with the address-taken scratch record and the two-pointer getter (see
-// 0x2ad7c0) the header site loads the buffer straight into EDI as retail; left: retail loads the
-// scratch size into EAX and copies it to EBX after the memset count (ours loads it into EBX), and
-// the extend arm keeps the offset in EBX and the size in EBP with the buffer spilled (ours spills the
-// offset, buffer in EBP) and sums body first (ours header first in every spelling).
-// Round 14 (lane 2): the header loop's chunk as `MIN(buffer_size, header_size - offset)` 127 (aligned
-// 82 -> 88, a swap picked by score: not kept); the `void *` view here, with the size-returning
-// getter, 138 (no change);
-// compile-only: the 16 spellings of the extend arm's two sums compile the same; function-scope
-// buffer, size, byte count or success, all 16 combinations, no better; a getter-local buffer
-// (any order) gives 0x2ad7c0 156.
-// Earlier (134): frame 0x18 and length agree; scratch-owner versus header/minimum scheduling, opposite buffer/count homes and extension I/O residency remain.
-// Earlier: retail keeps every `parameters` load after the scratch getter's
-// stores, as if the scratch object were address-taken (its 0x8000-byte storage at
-// 0x4fa0c8 sits right before the owner/pointer/size words and the flag byte); ours
-// hoists the loads. Storage as the object's first member, init `pointer = storage`
-// 132; flag byte folded in as well 131 (0x2ad7c0 173); then the getter as size,
-// owner, flag returning a fresh read of the pointer: later cases' registers all
-// retail's but two copies per getter site, 279 at 944 bytes (0x2ad7c0 63); split
-// size/claim helpers 131/139; write count declared before the getter 147; named
-// body offset in the extend sum 131.
-// DL180: case order 2013 324; case order 3012 331; case order 0213 192; case order 0312 273; case
-// order 1203 313; case order 2103 314; case order 2301 332; case order 3210 328. Original
-// executable body restored.
-// Lane 13 r14 (with 0x2ad7c0's record form, claim/size helpers): 279 at 944 bytes, aligned 72 -> 32;
-// the getter sites copy the buffer and size between registers where retail loads them in place.
-// Round 187: body I/O fields at each use/parallel remaining-byte parts/both native API result
-// carriers/fields plus parts/fields plus carriers/parts plus carriers/all three/all plus native
-// signature value clear 261/271/163/275/269/279/283/340. Original getter, storage, observations,
-// success types, library clears, zero-capacity loop and complete body restored.
-// Lane 14 r11: the header arm's buffer goes to the parameters home and the byte count to the task
-// home (retail the other way round). Locals renamed (scratch buffer, scratch size, written count;
-// header arm or both arms) 134 each, identical code; one byte count shared by every case 150 (also
-// with it declared first). Diagnostic: the getter reaching the scratch object through its address
-// 132 (aligned 113 -> 109; 0x2ad7c0 68 -> 173 though its aligned count improves 55 -> 49), so both
-// bodies look compiled with the object address-taken; a natural source of that is not found yet.
-// Round 107 (fast; 0x2ad7c0 53 at the start): the record (storage, owner, pointer, size, flag, the
-// init setting the pointer to the storage; defined in this file, since defined after async_globals
-// its storage catches 0x120a90's node-loop end address) 131, 0x2ad7c0 159; with the getter storing
-// size, owner, then flag (0x2ad7c0's retail order) 129, 0x2ad7c0 160; that plus 0x2ad7c0's size
-// computed in each arm (MIN after the getter) 129, 0x2ad7c0 168 at 693 bytes (aligned 21/17); the
-// reordered getter alone 134, 0x2ad7c0 161; the record without the flag 132, 0x2ad7c0 160.
-// Retail schedules the getter differently at each site (site 1 flag, size, owner; site 2 owner,
-// size, flag; 0x2ad7c0 size, owner, flag), with every parameters load after its stores.
-// Lane 15 r17: the record defined in a /GL- file 134 (no change: LTCG still sees it); the getter
-// through a record pointer 132 (header_size now loaded after the owner store, the flag store still
-// sinks); the flag byte folded in as the record's fourth field (0x5020d4 = 0x5020c8 + 0xc) 131
-// (both getter stores now ahead of every parameters load, as retail); with the parameters view cast
-// from a `void *` parameter as this file's other work callbacks 130 (extend sum body first as
-// retail); the view alone 133. With the record 0x2ad7c0 53 -> 159; its view, per-arm size (scratch
-// arm clamps by the remaining count read after the claim) and one function-scope byte count take it
-// to retail's length, sum order and dispatch hoist but 156 (buffer through eax, size/position
-// registers swapped). Left: getter store/load order per site, extend offset spilled where retail
-// spills the buffer.
-// Lane 14 r20 (one record of storage, owner, buffer, size and flag, `buffer = storage` at init,
-// defined in this file; 0x2ad7c0 in brackets): the current getter 131 [159]; with the view 130
-// [157]; the getter returning the size, buffer through `byte **`, 139 [50], with the view 139
-// [49], plus 0x2ad7c0's per-arm size 139 [36]; claim (buffer read into a local, flag, owner) and
-// size helpers 138/130 by call order [156/156], owner first 137 [154], local read first 137 [154];
-// claim storing the owner then the flag and returning a fresh read 279/278 by call order (944
-// bytes, aligned 41) [34/34], flag first 280 [36]; the size/`byte **` getter with the flag from a
-// fresh read 280 (944, aligned 51) [36], also returning a fresh size 280 [36]; that getter as a
-// plain function in async.cpp 313 (called: /Ob1 file) [77, called], without `__forceinline` or with
-// `inline` here 139 [77, called]. In the 944-byte forms the header site loads the buffer into EAX
-// and copies it to EDI and puts the size in EBX, where retail loads the buffer straight into EDI
-// and the size into EAX (copied to EBX before the memset's zero); the 940-byte forms keep retail's
-// buffer register but give the buffer the parameters home (retail the task home).
-// Round 34 (aligned counts in brackets, opening [107]): getter as buffer, flag, size, owner 131 [113] (0x2ad7c0
-// 36); buffer, owner, size, flag 129 [111]; the extend arm's size as `size = buffer_size; if (remaining <= size)
-// size = remaining;` 264 [74] (944 bytes: the jump table moves; the offset is spilled where retail spills the
-// buffer); with the `void *parameters_view` cast 264 [74]; plus the extend-site getter order 264 [78].
-// Round 261: Shared WriteFile output for header+scratch/header+direct/header+publication/header+signat
-// ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
-// lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
-// original body restored.
-// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
-// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
-// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
-// Lane 12 r72 (fast; 0x2ad7c0 in brackets): the getter returning the buffer with the size through
-// `dword *` 279 (944 bytes) [34]; the extend arm's memset ahead of the offset 301 (948 bytes); the header
-// memset count as `MIN(header_size, buffer_size)` 129 (same code); one function-scope buffer and size for
-// both arms 129, with the `void *` parameters view as well 129.
-// Before round 23 the first line read 129 (was 134).
-// Round 23 (lane 17, fast; 0x2ad7c0 34 throughout): the `void *` view with the current getter 129
-// (byte-identical; the extend sums stay header first); the header memset's count from the record's size
-// field 272 (952 bytes); the extend arm's memset before its offset 301 (948); its chunk size before its
-// memset 262; the zero clamp as `if (offset < 0) offset = 0;` 268. Dead temps 1-7: identical code.
-// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
-// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
-// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
-// Round 64 (lane 16, fast): the header-site memset count read from the record's size field (diagnostic)
-// 272 (952 bytes); the extend arm's memset before its offset 301 (948 bytes); the extend clamp as
-// `if (offset < 0) offset = 0;` 268; the extend byte count declared at the block top 129 (same code); the
-// extend offset clamped from a named unclamped excess 129 (same code).
-// Round 69 (lane 16, fast; 0x2ad7c0 in brackets, 34 at the start): the getter's statements reordered so the flag
-// is computed before the size is read: owner, buffer, flag, size 138 [34]; buffer, flag, size, owner 131 [36];
-// buffer, flag, owner, size 139 [36]; also buffer, size, owner, flag 129 [34] and owner, size, buffer, flag
-// 129 [34]. Our scheduler hoists the size load into EBX at the header site in every order.
-// Round 484: native I/O header-failure/extension-admission/signature-admission joins,
-// subsets H/E/S/HE/HS/ES/HES and HES with explicit byte-count failure
-// 301/129/129/301/301/129/301/301; frame/capacity/offset homes remain. Original body restored.
-// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
-// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
-// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
-// Round 308: Direct successful header return 115 fast/plain at 928/940 bytes (kept);
-// scratch/direct-extension/body-publication returns 241/237/222; header with scratch/direct/body
-// 222/234/207; all four returns 307. The 0x18 frame stays; capacity staging and extension
-// buffer/offset residency still differ. Only the header success returns directly; all I/O,
-// empty-header and zero-capacity behavior and shared failure cleanup are preserved.
-// M293: Task result carries header completion: for assignment/for branches/while/failure break,
-// original then test-produced extension result:
-// 342/342/342/306/371/371/371/308. Original complete executable source restored.
-// Round 246: Byte/short zero-or-one task results crossed with full-width header/signature
-// success carriers, masks 0/H/S/HS, 161/147/160/150 and 151/162/161/167. Original
-// result, success carriers and body restored; capacity scheduling and extension homes remain.
-// Round 311: Entry-owned uninitialized signature workspace/output-count/success subsets
-// 1/2/3/4/5/6/7 and all with file-signature identity 115/136/136/115/115/136/136/136.
-// Original phase scopes, header return, getter and complete body restored; capacity and extension homes remain.
-// P258: Test-produced task failures for scratch/direct/publication phases,
-// subsets 1..7 then all with API-width signature success:
-// 241/237/244/319/323/312/338/339. Original phase results, header return and body restored.
-// Round 514: stable file handles shared by seek/write pairs, header/extension/
-// header+extension/publication/header+publication/extension+publication/all/shared-all
-// 154/238/279/294/312/312/332/332. Original complete body restored;
-// capacity acquisition and extension buffer/offset homes remain.
-// Round 314: Dispatch orders 0231/0321/1230/1302/1320/2031/2130/2310 on the
-// direct-header-return graph 294/292/320/327/314/326/317/320. Original complete cases
-// restored; early capacity acquisition and extension offset/buffer homes remain.
-// P260: Scratch extension file extent retained for offset and remaining bytes,
-// before/after getter, both sum orders and both minimum orders: 244 each.
-// Frame grows to 0x1c; original observations, getter and complete body restored.
-// P270: direct-header-return graph with live signed-body position/count/both/data/
-// position+data/count+data/all, then buffer-before-count: 102/109/300/305/220/224/215/119.
-// Live seek position 102 retained; count-only 109 is below threshold. Other forms
-// restored; capacity staging and extension offset/buffer/count homes remain.
-// Round 534: sequential clear/transfer byte amount in header/extension, scratch output
-// declarations beside getter outputs, seven subsets then complete amount roles:
-// 102/241/241/102/102/241/241/241. Original complete body restored; capacity EAX/EBX and
-// extension buffer/offset homes remain.
-// N321: Repeated phase header extents across API consumers on the retained header-return/live-seek
-// graph all regress; adding scratch body extent also regresses. Capacity scheduling and extension
-// homes remain. Scores 138/229/291/255/309/303/320/323.
-// Original executable source restored.
-// B374: separate getter output and multiuse header transfer stride, after getter/before-getter
-// declaration/after clear/loop-owned, original or separate extension capacity: 102 each (eight trials).
-// Native stride ownership does not recover the capacity copy or extension homes; original body restored.
-// N324: One real signed API seek-position workspace for header/scratch/signature, seven subsets then
-// declaration after publication 102/102/102/102/102/102/102/102. Original positions/body restored; capacity
-// staging and extension offset/buffer homes remain.
-// DH305: Header completion on the direct-return/live-seek graph, sequential API refinements,
-// nested success, seek conditional and failure-only update, bool/native BOOL:
-// 313/199/102/245/314/211/261/302. Original capacity stride and complete body restored;
-// capacity EAX/EBX and extension buffer/offset homes remain.
-// Round 542: Common header/signature success workspace on the direct-header-return/live-seek
-// graph, bool/BOOL with complete transfer/signature producers 102/100/102/100/261/261/261/261. Original phase
-// predicates, getter and complete body restored; capacity and extension homes remain.
-// NOT kept: the two-point 100 form is below the keep bar; full-width forms regress.
-// DH307: Header/scratch-extension clear outputs as original receiver, receiver assignment,
-// or clear-produced transfer pointer, eight nonoriginal pairs: 101/101/102/101/101/102/101/101.
-// NOT kept: one-point reductions and one-use call-result carriers without an exact match.
-// Original complete body restored; capacity EAX/EBX and extension buffer/offset homes remain.
-// J243: On the direct-header-return/live-seek graph, capacity-default minimum
-// clear/transfer/both/extension/clear+extension/transfer+extension/all: 95/101/96/229/226/230/227;
-// complete remaining-default producers 166. NOT kept: seven/one/six-point reductions are below the keep
-// bar; extension forms regress. Frame 0x18 agrees; capacity EAX-to-EBX staging and extension
-// buffer/offset homes remain. Original minima and complete body restored.
-// DL250: Native opened-file/valid-extent/signature-start admission results, subsets 1..7 then
-// callback inline metadata: 102/102/102/102/102/102/102/102.
-// Original complete source restored; no eligible gain.
-// Lane 16 r80 (fast; 0x2ad7c0 34 throughout): `success` declared ahead of the header getter 121; the header loop
-// tested `success && offset < header_size` 288 (920 bytes); buffer/size at the header case's top 102; the loop's byte
-// count declared outside the loop 102; the extend test `bytes == size` 102. Restored.
-// Round 61 (m3 lane 11, fast; compile-only aligned in brackets, base 59 on the 940 form): retail's header success is not a direct return: its tail
-// `mov [esp+8], 0; mov eax, [esp+8]` after the pops is `result = 0;` reaching the threaded `if (result)`, and that form is retail's 940 bytes: 125 [59]. Retail's
-// setle/dec/and with the sum loaded fresh is the expression repeated (`x > 0 ? x : 0`, no offset copy): on the direct return 103, on `result = 0` 129 (944 bytes) [52].
-// A local for the direct arm's header-size position 115, with `result = 0` 129 [65], position then body then size [69]. Compile-only on `result = 0` plus the repeated
-// expression, no change [52]: the sum as body + (header - size) or header + body - size, a body-first file-size test, body-first size clamp, 96 declaration and clamp
-// combinations (other offset spellings 54-125), a stride local, a separate capacity local for the clear count, the clear count named, the clamp as a written ternary.
-// Left on it: capacity EAX/EBX in the header site, extend arm offset EBX / size EBP / buffer spilled and body-first sum.
-// Round 66 (m3 lane 10, fast; 0x2ad7c0 in brackets): the scratch getter as buffer, flag, size, owner 107 [36]; buffer,
-// flag, owner, size 109 [36]; a header-size position local in the header extension arm (SetFilePointer argument and
-// compare), declared first / between / last 115/119/115 [34] (declared first that arm's saved homes become retail's,
-// header EDI, body EBX, size EBP, but every scratch register after it rotates one step); the `void *` parameters
-// view as 0x2ad7c0 takes it 102 (same code), with the position local 115.
 // @retail 0x2adb10
-PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
+PRIVATE long __stdcall signed_file_write_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
+	s_signed_file_write_parameters *parameters = (s_signed_file_write_parameters *)parameters_view;
 	long result = 1;
 
 	parameters->task->state = 4;
@@ -1226,7 +1048,7 @@ PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_
 			byte *buffer;
 			dword buffer_size;
 			job_thread_buffer_get(task, &buffer, &buffer_size);
-			memset(buffer, 0, MIN(buffer_size, parameters->header_size));
+			memset(g_4fa0c8.buffer, 0, MIN(g_4fa0c8.size, parameters->header_size));
 
 			bool success = true;
 			for (dword offset = 0; offset < parameters->header_size && success; offset += buffer_size)
@@ -1238,7 +1060,7 @@ PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_
 			}
 			if (success)
 			{
-				return 0;
+				result = 0;
 			}
 		}
 		break;
@@ -1247,12 +1069,12 @@ PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_
 		if (parameters->no_header)
 		{
 			byte *buffer;
-			dword buffer_size;
-			job_thread_buffer_get(task, &buffer, &buffer_size);
-			long offset = parameters->body_size - buffer_size + parameters->header_size;
+			dword size;
+			job_thread_buffer_get(task, &buffer, &size);
+			long offset = parameters->body_size - g_4fa0c8.size + parameters->header_size;
 			offset = offset > 0 ? offset : 0;
-			memset(buffer, 0, buffer_size);
-			dword size = MIN(parameters->body_size - offset + parameters->header_size, buffer_size);
+			memset(g_4fa0c8.buffer, 0, g_4fa0c8.size);
+			size = MIN(parameters->body_size - offset + parameters->header_size, size);
 			dword bytes;
 			if (SetFilePointer(parameters->file, offset, NULL, FILE_BEGIN) == offset &&
 				WriteFile(parameters->file, buffer, size, &bytes, NULL) && size == bytes)
@@ -1263,10 +1085,11 @@ PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_
 		}
 		else
 		{
-			dword body_size = parameters->body_size;
+			dword position = parameters->header_size;
 			const BYTE *body = (const BYTE *)parameters->body;
+			dword body_size = parameters->body_size;
 			dword bytes;
-			if (SetFilePointer(parameters->file, parameters->header_size, NULL, FILE_BEGIN) == parameters->header_size &&
+			if (SetFilePointer(parameters->file, position, NULL, FILE_BEGIN) == position &&
 				WriteFile(parameters->file, body, body_size, &bytes, NULL) && bytes == body_size &&
 				XCalculateSignatureUpdate(parameters->signature_handle, body, bytes) == ERROR_SUCCESS)
 			{
@@ -1352,7 +1175,7 @@ bool signed_file_write_begin(const char *path, void *header, dword header_size, 
 	parameters.task = task;
 	parameters.non_roamable = non_roamable;
 	parameters.no_header = header == NULL;
-	return async_task_add_work((async_task_work_function)signed_file_write_work, sizeof(parameters), &parameters, 2, &task->done) != NONE;
+	return async_task_add_work(signed_file_write_work, sizeof(parameters), &parameters, 2, &task->done) != NONE;
 }
 
 // @retail 0x2adf70

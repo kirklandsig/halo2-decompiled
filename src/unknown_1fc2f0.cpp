@@ -519,6 +519,12 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
 // divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
 // if/else inverted with the fallback arm first 32 (same code).
+// Round 85 (m3 lane 9, fast): chains j, i, k, scale j, i, k, deltas i, j, k 77; tick products in named values stored i, j 73; chains j, i, k then scale
+// and delta row by row i, j, k 73 (stores i, j and sum k, j, i as retail, ticks still XMM4); scale j, i, deltas i, j, then the k row 77; the correction
+// as `correction.i = delta.i * scale; delta.j *= scale; delta.k *= scale` 84 (368 bytes), on the row form 47 (delta.i spills, frame 0x1c). Rate and add,
+// the conversion, then rows (sub, scale, delta) i, j, k: rate i, j, k 54; j, k, i 49; j, i, k 48 (ticks in XMM3 as retail, first +0x5d). Rate i, j, k, the
+// conversion, subs, scales, deltas i, j, k 99 (378 bytes); rate j, i, k, subs j, i, k, rows 92 (378 bytes); the round-181 order 46, with the correction
+// scaled in the delta 46; rate i, j, k rows with that correction 54.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

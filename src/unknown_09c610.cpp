@@ -116,6 +116,9 @@ struct s_9cca0
 // reversed 13, both longs after the first vector 21, the second long after it 22. The second copy's i store stays late,
 // so more than the escape differs. Retail's 0x184440 passes `arg_2 + 0x1c` to the same self-recursive setter, so the
 // setter's summary is the open question; its file is on another lane's list this round. Still BLOCKED-BY 0x184440.
+// Round 85 (m3 lane 9, fast): the flag read as `*(byte const *)`, `*(bool *)`, `*(bool const *)` 9 each (same code); the event through a non-const
+// cast 9; a forceinline helper for the flag and tag tests and the call 9; one filling the event through a pointer 9; both 9; the callee's arguments
+// read before the flag test 9; `inline` on the recursive location setter's definition 9 (0x175180 and 0x175100 still match). Still BLOCKED-BY 0x184440.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

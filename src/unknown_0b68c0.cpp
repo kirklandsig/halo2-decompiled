@@ -273,6 +273,8 @@ static __forceinline s_object_visibility_header_ab *visibility_header_step(s_rec
 // EAX and the entry index in ECX (reached only with probes or three failure arms, see that function's note; 0xb7060 0 in
 // each). Natural callee forms that keep its count do not reach it. The call's arguments are not swapped: that would pass
 // wrong values to our callee.
+// Round 85 (m3 lane 9, fast; 0x109660's file was another lane's, so caller forms only): the callee declarations swapped 2; a const object index 2;
+// a flags byte local for both tests 67; the iterator declared before the first loop 2; `i != count` 4. Still BLOCKED-BY 0x109660.
 // @retail 0xb7060
 void function_b7060()
 {
