@@ -820,6 +820,10 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // arguments, 170 bytes; 0x13eeb0 18); the character stored before the font 15; the allocation tested as an
 // assignment in the condition 14; const flags 14; const parameters 14. Diagnostic: one to eight unused locals at
 // entry leave the EBX/EBP swap (not a symbol-count tie).
+// Round 113 (fast): the header tested against NULL 14; `__stdcall` with the existing wrappers 14; wrapper parameters
+// swapped at the definition and call 17 (0x13eeb0 2); for and pre-tested loops 114/114; the iterator datum initialized
+// 14; allocation in iterator.datum_index 14; the allocation pointer through iterator.data 38; the allocation call
+// through iterator.data 14.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

@@ -340,6 +340,28 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH352: Complete lateral/forward/up product parts across all three basis-reconstruction
 // rows, subsets 1/2/4/3/5/6/7 then immutable full parts: 635/635/635/624/624/624/624/624.
 // Original sum trees, scalar producers, helpers and in-place snapshots restored.
+// DH360: Collision record plus material-reset lifetime at success/object/settings/input/minimum/clearance/guard/basis boundaries,
+// eight forms 647/647/646/632/632/632/631/628. NOT kept: all regress and shrink to 2815/2886;
+// original late reset, complete frame, helper inputs and in-place snapshots restored.
+// DH362: Twice-used basis mode captured at entry/acquisitions/input/active boundaries,
+// positive bool 626/626/626/626; complementary bool 723/717/702/699. NOT kept: all regress;
+// original repeated mode tests, helpers, in-place snapshots and complete body restored.
+// DH364: Float root/sine/cosine API subsets 1/2/4/3/5/6/7, then complete graph with
+// published float root 618/610/610/610/610/616/616/614. NOT kept: the eight-point
+// lead requires asymmetric trig API types without a retail precision distinction;
+// complete float trigonometry gains only two. Original helpers and in-place snapshots restored.
+// DH367: Chained actual length/hit/output initializer subsets 1/2/4/3/5/6/7,
+// then complete chains with ascending length publication: 623/619/623/623/623/624/623/624.
+// NOT kept: all regress; original initializers, helpers and in-place captures restored;
+// native success/input/minimum/hit homes and inactive-exit placement remain.
+// DH369: Standard axial/final-projection coordinate reductions, native/direct/named
+// nonoriginal pairs: 789/789/710/917/917/696/919/919. NOT kept: all regress and grow
+// beyond native 2886; original helpers, sum trees, in-place captures and body restored.
+// Success/input/minimum/hit homes and inactive-exit/basis/rotation scheduling remain.
+// DH369 revisit: Root-input lower-clamp positive/complementary comparison results,
+// bool/byte/short/long, eight at 630 (2813/2886). NOT kept: all regress and
+// shorten away from retail; original root helper and complete body restored. Frame
+// 0x108, success/input/minimum/hit homes and inactive-exit/rotation scheduling remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

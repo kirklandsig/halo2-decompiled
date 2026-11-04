@@ -424,6 +424,9 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // shift. Bool helpers: a dword index 51; the new count stored after the copy 33 (a copy appears, `mov ecx,
 // eax` for the shift, but list EDX/count EAX/result CL stay rotated); a count local copied into an index
 // local 51; `list->entries + index` 51; copy into `entries[count]`, then `list->count++` 57 (656 bytes).
+// Round 147: pointer helper defined after its caller 20; bool helper after its caller 32, also plain and
+// force-inline 32/32; at that later position, entry/list order swapped 32, generic data input 32, explicit
+// data size 32, and a native list reference 32. The later bool family keeps EAX/CL/EDX, not retail's ESI/AL/ECX.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

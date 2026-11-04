@@ -3347,9 +3347,8 @@ void function_15c000(void)
 void function_1628f0(long player_index, char state);
 
 // @retail 0x15cbf0
-void function_15cbf0(long attacker_index, long player_index, long flags)
+void function_15cbf0(long attacker_index, long player_index, bool flags)
 {
-	long const *flags_reference = &flags;
 	if (!datum_get_inlined(g_4e8c24, attacker_index))
 		attacker_index = NONE;
 	if (!datum_get_inlined(g_4e8c24, player_index))
@@ -3358,7 +3357,7 @@ void function_15cbf0(long attacker_index, long player_index, long flags)
 		function_1628f0(player_index, 3);
 	c_engine_peer *engine = game_engine_get();
 	if (engine && player_index != NONE)
-		engine->p29(attacker_index, player_index, *flags_reference);
+		engine->p29(attacker_index, player_index, flags);
 }
 
 struct s_engine_border_state
