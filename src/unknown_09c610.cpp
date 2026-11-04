@@ -119,6 +119,9 @@ struct s_9cca0
 // Round 85 (m3 lane 9, fast): the flag read as `*(byte const *)`, `*(bool *)`, `*(bool const *)` 9 each (same code); the event through a non-const
 // cast 9; a forceinline helper for the flag and tag tests and the call 9; one filling the event through a pointer 9; both 9; the callee's arguments
 // read before the flag test 9; `inline` on the recursive location setter's definition 9 (0x175180 and 0x175100 still match). Still BLOCKED-BY 0x184440.
+// Round 109: global guard before the tag and marker stores 11, with their order reversed 11; marker before the guard 11;
+// tag before the guard 12; guard between the vectors 16; guard before both vectors 26; guard before event initialization 55
+// (204 bytes); combined early global/tag guard 60 (208). Original body restored; still BLOCKED-BY 0x184440.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

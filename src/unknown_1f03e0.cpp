@@ -1065,6 +1065,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // NOT kept: four/two-point leads fall below threshold; length regresses or ties. Full body restored.
 // DL261: Ordinary/forced cross templates; native response/history views; actual response/history/both formals: 1135/1135/1135/1135/1135/1135/426/417/433/433/433.
 // NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
+// M371: Existing coordinate-difference helper at history input/anchor/relative,
+// subsets 1/2/4/3/5/6/7, then all with general raw delta: 423/433/435/423/435/441/441/465.
+// NOT kept: 423 shortens farther from retail (3034/3047); remaining forms tie or regress.
+// Original whole body and helpers restored; damping and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1793,6 +1797,18 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH329: Separate highest-contact scan before/after selection or fallback-only, direct/named
 // height and before/after native cursors 776/788/872/888/580/572/894/929. NOT kept: all regress and
 // grow frame/extent; original shared scan and complete body restored.
+// F372: Flight-state char/signed-char/byte/short/word/int/unsigned/dword carriers
+// 213/213/213/305/305/303/303/303; native byte forms tie, wider forms grow.
+// Original bool, native movement, observations and complete body restored.
+// F374: Contact velocity-dot/request-dot/scaled-projection nodes, seven subsets,
+// then the full graph with guarded planar projection: 213/209/209/211/211/211/209/213.
+// NOT kept: gains below eight; original scalar expressions and complete body restored.
+// DH354: Immutable component/velocity/contact-normal receiver bindings, seven
+// subsets and complete receiver identities: eight at 213. Original observations,
+// body and material-call graph restored; early motion/reset and cold arms remain.
+// DH356: Complete three-arm candidate-quality conditional, direct/named acceptance/rejection,
+// original/early material-speed skip: eight at 211. NOT kept: gain two; original full body
+// restored. Native motion/reset order, separate cold height tests and material expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

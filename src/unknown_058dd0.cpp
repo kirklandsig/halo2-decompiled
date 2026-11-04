@@ -130,27 +130,6 @@ bool c_session_state_none::update()
 
 /* ---- pre-game ---- */
 
-// score 5 (was 5): in the type 2-4 arm retail loads the member index and the
-// member's kind into eax; ours puts the index in edx and the kind in ebp (the
-// session's register, which dies there). Retail's case table runs to type 18
-// (16-18 share the type 15 arm). Tried: the kind through a NONE default before
-// the test 5; the kind tests in the 0x58d70 condition 5; the kind read through
-// the member's parameters 5; a named member index 5. Round 60: an unsigned kind 5;
-// the member index read before the 0x58d70 call 5 (the load is sunk, same code); the
-// kind declared at function scope 5; the switch on a named type local 5; the
-// `default: __assume(0)` label first 65 (the case blocks follow source order).
-// Round 65: named 0x58d50, 0x58d70 and 0x58d20 results 5 each and combined 5;
-// a case-1 session pointer 5; the type-0 arm with an early break 5; case-1 results
-// from short-circuit tests 83, from conditional expressions 76.
-// Round 26: the kind read at each use 5 (the merged read still takes the session's register);
-// a switch on the kind 7 (jl/jg); nested result and failed tests 5; a kind getter 5, with named index
-// and kind 5; a kind predicate in the 0x58d70 condition 5, with its own result 5; 0x58d70 or 0x58d50
-// without inline 5 each.
-// A second session pointer read from the owner for the 2-4 arm, the kind or the switch 5 each; the session read
-// through the owner field directly 5, declared before the owner local 5.
-// Round 79 (fast): a member pointer for the kind read 5, const 5, read at both tests 81 (307 bytes); `long const kind` 5;
-// kind declared then assigned 5; index and kind in one variable 5; an early break on the 0x58d70 test 5. Diagnostics: the session
-// pointer used after the arm 84 (315 bytes) and as a call argument 77 (307 bytes) give the kind eax as in retail, the index stays in edx.
 // @retail 0x6e1e0
 bool c_session_state_pre_game::update()
 {
@@ -175,8 +154,8 @@ bool c_session_state_pre_game::update()
 		case 4:
 			if (function_058d70(a))
 			{
-				long kind = a->members[a->current_member].unknown88;
-				if (kind == 3 || kind == 4)
+				long member_index = a->current_member;
+				if (a->members[member_index].unknown88 == 3 || a->members[member_index].unknown88 == 4)
 				{
 					function_06df60(o, 2, 0, 0);
 				}

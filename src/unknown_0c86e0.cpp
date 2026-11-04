@@ -218,6 +218,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // `&&` flag alone 100 (376 B, seven points: not kept); that with a long user index 104 (367 B); with the zoom flag
 // declared after the weapon flag 113 (361 B); the ternary flag with the late zoom flag and a long user index 125
 // (350 B). Retail uses the entry unit (EBP) for the reset and a second fetch (ESI) for the weapon lookup.
+// Round 107, on the full-width user ordinal base: weapon-slot early/conditional returns 97/110;
+// player/sound early returns 116/113; all three early 102; weapon flag if/else 114; default-first
+// sound 107; forceinline current-weapon helper 110. NOT kept: 97 combines edits whose parts alone
+// do not both gain, without a byte match; original producers, sound control and ordinal restored.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {
