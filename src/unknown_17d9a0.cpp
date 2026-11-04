@@ -406,6 +406,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC526: Whole inverse result if/else/default/conditional, successful/failed/nested
 // publication returns, default field and nested result: 63/98/63/46/46/46/108/98. NOT kept: no gain;
 // original corner producer and tail restored; plane base, selector/product ranks remain.
+// AC531: Plain two-edge validation traversal, long/short/dword/word ordinal,
+// completed-ordinal publication then immediate failed publication/return:
+// 141/115/141/115/126/121/126/121. NOT kept: dot divergence moves to +0x67
+// and every extent shortens away from retail; original helper and whole body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
