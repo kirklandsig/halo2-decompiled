@@ -1230,6 +1230,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // M372: Plain while identity/player/group traversal, seven phase subsets 766;
 // all plus initial histogram while 907, 2764/2828 bytes, frame 0xd8/0xb4. Original
 // loops/body restored; frame 0xd4, stacked session and initial lookup remain.
+// M377: Whole native ID/output-identity library transfers before/after the
+// call-free group phase, singles and joint placements: 937/937/838/831/986/957/986/957.
+// NOT kept: all regress and shorten; ID transfers shrink frame to 0x50 rather
+// than native 0xb4. Original element copies, arrays and complete body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

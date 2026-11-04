@@ -52,6 +52,7 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax B (11-04b): no new form, no lower score; the frame stays 0x8024 against retail's 0x8020 because the produced count keeps a slot of its own, and the two loop temps stay swapped; moving the produced count out of the loop scores 42/90.
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
@@ -324,6 +325,12 @@ struct c_aggregate : c_child
 // Round 87 (m3 lane 16, fast): `produced` as a local of an inline collection helper returning the count or adding to a total by
 // reference, forceinline and plain, 146/146/146/146 (389 bytes, frame still 0x8024: an inlined local packs no better); the `get_info`
 // output as a local of a forceinline helper 31; both 146. Still BLOCKED by the build flag.
+// M379: Existing count-table outputs with deferred prefix conversion, next/current cells,
+// producer/aggregate zeros and before/inside dispatch admission: 184/167/209/227/155/152/183/186. NOT kept:
+// all regress and add a nonnative conversion pass; original independent outputs/body restored.
+// MiniMax B (11-04): this body is byte-exact when its file is built /GL- (the build's
+// per-file flag), but 0x97f60, 0x97fe0 and 0x980d0 then lose their matches (52/80/56)
+// because LTCG's rotated argument registers are gone, so the flag is not kept.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

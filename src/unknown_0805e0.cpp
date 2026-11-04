@@ -251,6 +251,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // (iterator, player) and all with the iterator in EBX, callers lose; a local index with the `!result` loop 57 in both orders;
 // per-pass result with a successor, with `index = *iterator` and as a guarded do-while 59 each (135); a guarded `for (;;)` or
 // `while (true)` ending `if (next == NONE) break; index = next;` 59 per-pass, 52 with `result = true; break;` (127); a done flag 54.
+// AC532: Complete complementary rejection in bool/byte/short/long, outer-result
+// 43/43/43/43 and direct-return 52/52/52/52. NOT kept: no exact mask/successor
+// allocation; original result, iterator, predicates and memcpy restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -814,6 +817,16 @@ void function_1537f0(s_profile_record *record);
 // copied from each other, links and heads through by-value helpers: all 44h (same code); heads after the loop 69h. Diagnostics, value-wrong:
 // the hoist ends at 4 links + 2 heads (37h, 258 bytes) or 3 links + 4 heads (39h with two flag stores); with the hoist gone and two flag
 // stores 29h, left the byte-store schedule around the record's `rep movsd`. Retail does not hoist NONE: it reloads `or eax, -1` in the loop.
+// P332: Named actual array endpoint, mutable/const pointer, strict/equality
+// termination and per-visit/outer input storage: eight 53 at 255 bytes; both
+// initializers stay exact. NOT kept: no gain; original body restored, identity
+// homes still fold, frame 0x98 and spilled countdown remain.
+// P334: Existing three-word identity standard fill/fill_n/construct-range contracts,
+// forward and backward: 100/101/134/120/106/102/140/116. NOT kept: frames 0xa8/0xb0 versus native
+// 0xa0 and 281–310 bytes versus 258; both original initializers and complete body restored.
+// DH358: Existing unused eight-byte source field as signed integer, native SDK integer/time
+// records, dword/word/byte field arrays and double: eight scores 53; every file control unchanged.
+// NOT kept: identity homes still fold and frame 0x98/end-bound remain; original record and body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1360,6 +1373,12 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // stores, so none is kept. Upper in ECX still comes only from the stepped cursor.
 // The scaled index in its own local before a cast cursor 40h (same three-placement result), `from` and `to` from the index 404h (1203 bytes),
 // `to` as `&g[i] - 1` per pass 349h (1178 bytes). In the 40h forms the tail's head repairs rotate EAX/ECX as well.
+// M379: Per-iteration forward/reverse/both memcpy, then forward/reverse/both memmove,
+// then memcpy/memmove and memmove/memcpy: 49/49/49/386/371/333/371/386. NOT kept: ties/regressions;
+// original copies, direct head repairs and entire body restored; admission/upper homes remain.
+// DH358: Branch-set capacity result with empty/full defaults in bool/byte/word/dword:
+// eight scores 395 at 1162/1171 bytes. NOT kept: every form regresses and loses native extent;
+// original predicate, removed-index producer, bounds, copy loops and full tail restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

@@ -58,6 +58,7 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
+// MiniMax b (11-04): no new form, no lower score; the abstract allocator's base vtable store is still dropped (it comes from the header's inline constructor) and the pool placement still reloads g_479888 at the join.
 // score 34 (was 34): unchanged this round: retail still stores the abstract allocator's vtable at
 // the object before the two following stores (our build drops that store, which comes from the
 // header's inline constructor and so is out of reach from this file) and still reloads g_479888 on
@@ -498,6 +499,7 @@ void function_146de0(void)
 	}
 }
 
+// MiniMax b (11-04): no new form, no lower score; retail inlines the texture cache update (0x12c600) at this call site only, so the body stays 22 bytes short and keeps our size spill and counter registers.
 // score 120 (was 120): the function still misses retail's inline of the texture cache
 // update (0x12c600) at this one call site and stays 22 bytes short; unchanged this
 // round

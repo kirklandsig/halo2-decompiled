@@ -368,6 +368,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // length 21, with an `end` local too 21; `long end` before the scan 49 (94 bytes); source after the compare 32; `start +=`
 // before the clamp 36; nested tests with the text read 27, named length with it 27, `length >= start + count` with it 28;
 // named length with `string + start` 28, with `start +=` 40.
+// M380: Shared copier short/word/int64/uint64 size contracts with native/void return:
+// 39/39/56/56/39/39/56/56. NOT kept: narrow forms gain one and grow to 103 bytes;
+// wide forms regress at 112 bytes. Original helper, scanner and complete body restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

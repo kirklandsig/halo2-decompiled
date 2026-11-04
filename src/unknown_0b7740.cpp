@@ -1285,6 +1285,9 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // top or the end, parent object != NULL, pool != NULL before or in the arm, data != NULL) 389 each (1399 bytes: any `__assume` unfolds
 // the entry's flag store, the no-model block stays the same); three parent lookups 20 (1399), two 20 (1399); a forceinline lookup taking
 // the index as `long const &`, one/two lookups 44/44, a plain inline one, two lookups 44. Original body restored.
+// Round 110: split parent base, a one-use parent-node local, pool[0]/dereferenced-pool member spellings,
+// parent object/index role names, a function-scope parent object and a parent-node array pointer 97 each
+// (same code). NOT kept: no gain; the one-use forms require a byte match. Opening body restored.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

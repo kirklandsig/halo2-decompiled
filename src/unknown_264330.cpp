@@ -1102,6 +1102,11 @@ real function_296600(long actor_index, long prop_ref_index);
 // after the object 163, before the reference 163; a named object table for the three lookups 163; an object index local (before the kept form) 267, the object through
 // an array of pointers 267, current declared before suppressed 267; a named record pointer before not_current 159 (one use, not kept); a named mode 258 at 1272 [85]; not_current
 // declared before root 163, at function scope 163; root declared bare 163; suppressed renamed to sort before current 163 (byte homes unchanged).
+// Round 115 (fast control 372, full 257): scoped early squad 372; suppressed/unit/current 370;
+// current/unit/suppressed 390; unit/current/suppressed 381; suppression array 372; array with NULL-first unit 379;
+// array with object-first/null-override unit 352 (plain 295, 1255 bytes); scalar object-first/null-override 352.
+// NOT kept: scope/array forms have no effect, orders regress or gain too little, and object-first uses a branch
+// absent in retail and regresses plain. Original declarations and ternary restored; array forms were exact-only.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

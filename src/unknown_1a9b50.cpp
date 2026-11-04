@@ -595,6 +595,9 @@ extern point2f *g_468778;
 // AC527: Complete distance-or-deadline stop result, positive/complementary bool/byte/short/long,
 // 383/383/383/383/383/383/383/383. NOT kept: result residence unmatched; original short circuit,
 // state-publication arms, clock/rounding observations and complete body restored; early carriers remain.
+// M384: Complete prediction/heading ready/blocked request results, bool/byte/short/long:
+// 375/375/375/375/375/375/375/375. NOT kept: no byte equality for the flag lifetime;
+// original request admission and full body restored; early actor/settings/prop homes remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -978,6 +981,19 @@ static __forceinline long real_to_long(real value);
 // AC527: Shared two-mode timeout publication, positive/complementary bool/byte/short/long,
 // 422/422/434/433/422/422/434/433. NOT kept: assigned-result residence unmatched and
 // extent grows; original comparisons, publication paths, query aliases and whole body restored.
+// AC531: Live unit-handle field references/pointers acquired at actor/metadata/prop/action
+// boundaries, eight at 382/1904 bytes. NOT kept: native field identity canonicalizes;
+// early rejection and magnitude/query homes remain. Original whole body restored.
+// AC534: Request-submission accepted/rejected results in bool/byte/short/long,
+// at the original call with the admitted return live: 382/382/382/382/382/382/382/382.
+// NOT kept: one-use call-result ownership lacks equality; original dispatch, state stores,
+// query aliases and whole body restored. Early rejection and magnitude/query homes remain.
+// AC536: Complete initial near-stop stop/continuation result in bool/byte/short/long:
+// 381/381/381/381/381/381/381/381. NOT kept: one-point gain below the gate and no equality;
+// original near gate, provider timing, query aliases and full body restored. Early rejection island remains.
+// F385: Existing vector-union component-array observations in target velocity, facing
+// and working vectors, seven subsets, then actual position arrays: eight at 382.
+// NOT kept: byte-neutral homes/exit diagnostic; original complete body and query aliases restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
