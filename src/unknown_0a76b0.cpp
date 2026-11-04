@@ -1826,6 +1826,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // AC505: Actual duplicate-type admission bool/byte/short/long result
 // 138/138/138/138; guarded complete outcomes 140/140/141/143.
 // NOT kept: no gain or byte match; original predicates, mode/flag, body and calls restored.
+// N363: Uninitialized completion result assigned by success/failure leaves, bool/byte/short/long
+// at entry 138/143/148/146, after hand observations 138/143/148/146. Original body restored;
+// NOT kept: unmatched result storage. Pool reload and selected-weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2108,6 +2111,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // N360: First-transfer call initializes actual arm-owned result, mutable/immutable bool/byte/short/long:
 // 116/116/137/137/121/121/116/116. NOT kept: unmatched source/result-storage forms; original executable source restored.
 // Frame 0x24/0x20, result byte and pool/unit/weapon homes remain.
+// N363: All failure edges join the sole persistent-result exit, admission plus empty-weapon/
+// rollback/missing-recipient masks 0..7: 122 each at 314 bytes. Original body and exits restored;
+// NOT kept: unmatched exit forms. Frame, result byte and pool/unit/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
