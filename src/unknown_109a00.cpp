@@ -410,6 +410,8 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (112); the entry registers are still reversed (retail
+// object in eax, entry in ecx) and the physics pointer is still spilled early.
 // score 112 (was 112): Frame 0x48 agrees; object/entry registers, early physics-pointer spill and center/projection scheduling remain.
 // Earlier at 112 (was 112): retail takes the object index in eax and the entry
 // index in ecx (ours the other way round, which is also 0xb7060's last

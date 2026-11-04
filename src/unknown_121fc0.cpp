@@ -46,6 +46,8 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 	return token;
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (128); EBP is still saved at the token traversal
+// rather than in retail's prologue, and the scalar homes still sit 4 below retail's.
 // score 128 (was 128): frame 0xa44 agrees; EBP is saved at token traversal rather than the
 // outer block, and read-size/count/cursor homes differ. Round 28: the scalar homes sit 4 below retail's (the token
 // array agrees); EBP is saved and restored around the token loop only. Clamp as a MIN macro / an if / a PIN macro
