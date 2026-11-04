@@ -97,7 +97,7 @@ long function_1e4a50(long character_index);
 long function_1e4990(long character_index);
 void *function_1e4ef0(long actor_index);
 bool __stdcall function_110ab0(long unit_index);
-short *function_e70b0(long unit_index, short *value);
+short *function_e70b0(short *value, long unit_index);
 bool function_114b60(short entry_index, short fallback_index, long unit_index, long priority, void const *extra);
 point3f *function_b9dd0(long object_index, point3f *result);
 void function_b9fc0(long object_index, vector3f *forward, vector3f *up);
@@ -218,7 +218,7 @@ void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f
 	{
 		long unit_index = actor->unknown018;
 		short action;
-		function_e70b0(unit_index, &action);
+		function_e70b0(&action, unit_index);
 		if (action == 0)
 		{
 			if (function_e68c0(0x33, unit_index))
@@ -673,7 +673,7 @@ void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f
 			else
 			{
 				short action;
-				function_e70b0(actor->unknown018, &action);
+				function_e70b0(&action, actor->unknown018);
 				lined_up = action == 5;
 			}
 			if (!lined_up || (surface && surface->type == 1 && (surface->flags & 1)))
