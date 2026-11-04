@@ -4767,6 +4767,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P326: Selected-velocity blend/reverse speed and limit/combined speed-turn scalar
 // declarations before dispatch, subsets 1..7, then all before object lookup: 749 each.
 // Initializers stayed at case producers. NOT kept: no gain; original body and SSE homes remain.
+// F381: Case-owned twice-used kind/gear/reverse-speed observations, subsets
+// 1/2/4/3/5/6/7 then const all: 749/749/773/749/773/773/773/773.
+// NOT kept: ties/regressions; reverse residence shortens to 2952/2974.
+// Original observations/body restored; native entry definition and SSE homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5330,6 +5334,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // F376: Existing drift/side dot and spin-squared-length boundaries, subsets 1/2/4/3/5/6/7,
 // then complete projection dot: 1086/1087/1087/1086/1087/1087/1087/1087. NOT kept: one-point
 // lead grows to 5104/5094; frame stays 0xf8/0xd8. Original complete body and helpers restored.
+// F381: Reverse limiter while/do, own int/short/word/byte ordinals, real cursor
+// and named signs: 1087/1112/1087/1113/1113/1113/1107/1105. NOT kept:
+// ties/regressions; do recovers the 0xc bound but frame stays 0xf8 versus 0xd8.
+// Original complete limiter/body restored; index and matrix/vector homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
