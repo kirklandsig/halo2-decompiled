@@ -2334,6 +2334,10 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // lookup declared before the state view 155. Retail's 0x400 block copies the parent into AX with `mov ax, dx`
 // before testing it (one byte more than ours), and the 0x2000 block's two loads and dead add make up the rest
 // of the 9 missing bytes.
+// Round 66 (m3 lane 11, fast): the slot loop's bit tests swapped 285 (1033 bytes); `(dword)1 << (local_5 - 4)`
+// 155; NONE declared after both parent reads 155 (a repeat); tail flags tested 10, 9, 8 177 (1081 bytes);
+// the 0x800 update before its stores 251 (1060 bytes, `or` on memory); the 0x1000 update before its
+// stores 164.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

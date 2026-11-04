@@ -431,6 +431,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 143 (m3 lane 6, fast): retail's sum operands re-measured 195 (same code); the point default moved after
 // the camera and scale defaults 207; displaced sums written z, x, y 216 (982 B), z, y, x 213 (979 B); the origin
 // transform ahead of the displaced sums 270 (994 B); fa/fb declared before ta/tb 195 (same code).
+// Round 66 (m3 lane 11, fast): retail packs inv_a, inv_b, b, ta, tb at frame +0/+4/+8/+0x14/+0x20; ours
+// inv_a +8, b +0xc, tb +0x18, ta +0x24, inv_b in the scale slot, +0/+4 unused. ta/tb as two declarations
+// 195; the inverses in one declaration 195; ta/tb declared at the top 195; the inverse defaults declared
+// after the displaced point 204 (974 bytes), after both transforms 261 (926 bytes).
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
