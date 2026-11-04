@@ -937,6 +937,10 @@ bool c_projectile_type::v8(long a, long b)
 // read 12; a direct test with a reference index 12; a const object pointer 12; an un-named group
 // entry 15; const flags 12; a mutable handle reference 12; the entry predeclared in the flag scope
 // or the function scope 12/12. Original narrow-read body restored.
+// Round 88 (one-link LTCG screen, exact at 5), all with the full-width mask: `do {} while (false);` at each of 20 statement
+// boundaries 12 (47, 188 bytes, at the two after the 0x800 store); the power copied as long, both stores or the first only,
+// 12/12; the index by value 12; the power through a const pointer 12; a group index local before the entry 12; the NONE
+// test as `index + 1 != 0` 12; `b` throughout with no flags local 12.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
