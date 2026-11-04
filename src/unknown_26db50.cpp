@@ -711,6 +711,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // then all with the outer ring phase:
 // 92/90/90/92/92/90/92/144. NOT kept: no exact publication form; radius schedule, ring conversion and rotation spill remain.
 // Original complete executable source restored.
+// DH348: Rotation scalar-input CRT captures in ijk/ikj/jik/jki/kij/kji order
+// 275 each; ijk/kji with native radius CRT capture 276/276. NOT kept: frame/length
+// regress and no exact boundary. Original helper, radius reference and full body restored;
+// radius schedule, ring SSE conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

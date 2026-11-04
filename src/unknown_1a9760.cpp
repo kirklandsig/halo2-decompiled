@@ -181,6 +181,8 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // 4/4/4; magnitude declared before the loop or at entry 4/4; read-modify-write flag 201;
 // reversed half-scale/addition operands 4/4; `+= 1` and plain `while` component loops 4/4.
 // NOT kept: no exact or eligible gain; original flag store, arithmetic and loop restored.
+// Round 146 (fast): the flag through a byte or char cast 4/4; half-step row accumulated in a local 4, in local_3 198 (1004 bytes);
+// half product named per row 4.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

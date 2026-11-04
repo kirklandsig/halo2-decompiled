@@ -669,6 +669,11 @@ struct s_player_axes_153d10
 // Round 41 (lane 2, plain; --fast builds this function differently, 345 at 1335 bytes): delta through the point difference
 // helper 119 (1303 bytes); dots through the dot helper 2; both 119; relative declared before delta 2; cross declared before the
 // axes 2; slot vector through a real pointer 18.
+// Round 132 (plain): `vector3f basis[2]` in the axes struct 2; a sub-struct holding both axes 2; `(real)` casts on products 2-5 2;
+// the j row's first product up-first 2; all six products up-first 2. One-file harness, float window only (base 5, three of those
+// the slot register): all 63 sets of `(real)` casts on the six products 5 or above; dots before the cross 47; only the forward or
+// up dot before it 46/36; delta after the cross 47; rows jik/jki/kij/kji 48; six named products 48; three scalar cross locals 48;
+// negated j row 48; `real basis[2][3]` 48; a basis pointer 10; a pointer to the axes sub-struct 48, with the dots through it 10.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

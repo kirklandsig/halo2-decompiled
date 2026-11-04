@@ -295,6 +295,12 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH342: Immutable existing squared-delta/length-delta/metric-result producers,
 // seven subsets and all with the immutable candidate record index: eight at 390.
 // Original declarations and body restored; default/root/bitmap/endpoint homes remain.
+// DH348: Native immutable initial-root/membership-root/reference/provider/list/point-table/
+// current-group/candidate-point handles: eight at 390. Original handle declarations,
+// body and helpers restored; selected-default/root/bitmap/endpoint homes remain.
+// DH352: Read-only initial-root/membership-root/membership-group descriptor pointees,
+// seven subsets then the read-only current group: eight at 390. Original pointer
+// declarations and body restored; selected-default/root/bitmap/endpoint homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

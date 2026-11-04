@@ -291,6 +291,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH346: Immutable existing rotation-axis/output and position-input pointer bindings,
 // seven subsets, then all with immutable position-output binding: 173/173/173/173/173/173/173/173.
 // Original helpers and complete body restored; frame 0x11c/0x118 and cross/trig homes remain.
+// DH352: Existing double-factor axis/cross/direction publishers, subsets 1/2/4/3/5/6/7,
+// then all with the double-factor launch publisher: 233/217/236/278/238/230/298/300. NOT kept:
+// no exact precision/API form; original helper, real products and full body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
