@@ -766,6 +766,9 @@ PRIVATE __forceinline real function_21ece1(real arg_0, real arg_1)
 // const result values 25; double-return helper rechecked 26; real first three/double last 29;
 // diffusion before reverb delay 24 (restored by the round as one point, then kept by the coordinator: any gain at 30
 // or below is kept); diffusion and density before delay 29.
+// Round 61: a by-value sum helper defined in an existing file without /arch:SSE and inlined under LTCG 119 (plain, 435 bytes: it compiles to
+// addss, so the caller's setting applies and retail's x87 is a double sum, not a non-SSE helper; closes round 52's lead). On the volatile copy (fast):
+// the gain by const reference 25; the sum in a double local 106 (395 bytes); the helper returning double 26; a double gain parameter 63 (415 bytes).
 // @retail 0x21ece0
 void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 {
