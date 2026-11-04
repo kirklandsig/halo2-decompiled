@@ -970,6 +970,11 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // function scope, loop index at function scope, call outputs at function scope, outputs reversed,
 // location declared first, and controller value declared first: 147 reduced each against 153,
 // with no slot movement. Original body restored.
+// Round 43 (lane 17, plain; --fast builds this differently, 153 for the plain 30): the definition declared at the
+// top and assigned in place 30; the controller chosen by if/else 40; the tag pointer looked up just before its
+// first use 175; the bool declared first with the state captured first 191; `(looping->flags & 0x10) != 0` 30.
+// Compile-only frame probe (our frame): none of these moves the bool out of the bottom byte unit; a short or long
+// flag lands just above repeat_state (retail's place) but reorders tag_index and widens the code.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
