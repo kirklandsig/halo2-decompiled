@@ -3636,8 +3636,11 @@ void __stdcall function_ceb30(long unit_index)
 // weapon (EDX) before the unit (EAX). The count declared first keeps the unit index in EBX from entry,
 // so LTCG passes it there as retail (with the NONE initialisers first: NONE in EBX, stack argument);
 // the unit through unit_at_masked_index and the definition/value declared before the weapon index
-// give the rest. Other orders 8-60; NONE in an else arm 117. With 0xcea70 declared (slot, weapon,
-// mode, unit) and 0xce520 (unit, weapon, flag) at every call it matches (contributor code: held).
+// give the rest. Other orders 8-60; NONE in an else arm 117. MATCH with 0xcea70 declared (slot, weapon,
+// mode, unit) AND 0xce520 (unit, weapon, flag) at every call (the 0xce520 order alone 2, the 0xcea70
+// order alone 2); both held: the retail setup orders are reg-to-reg copies or differ per caller, so they
+// are not retail evidence, and 0xcea70 is matched code in @Banshee64's range. The 0xce520 order also
+// changes its call in 0x15e360 (src/unknown_157450.cpp), which stays matched either way.
 // @retail 0xd09c0
 void __stdcall function_d09c0(long unit_index, long slot_index, long definition_index, short value, dword const *state)
 {
