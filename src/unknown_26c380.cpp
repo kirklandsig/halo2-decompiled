@@ -316,6 +316,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // bytes, frame 0x64 and retail's integer-move planar copy at 0x34/0x38, aligned 255, but the success tail is
 // duplicated), with the constant tails 432 (1566), with the blocked result without its temporary 462.
 // Original body restored.
+// DH349: Complete sole-return outcome on native short-count/initial-store graph,
+// default-owned long/bool/byte/short 428/449/480/435; terminal-owned counterparts
+// 454/486/466/443. NOT kept: all regress; independent normal homes, frame and byte
+// tails remain. Original result sources, early return, helpers and full body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

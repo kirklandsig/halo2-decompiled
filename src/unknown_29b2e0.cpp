@@ -310,6 +310,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // DH342: Existing vector setter at target/current/rotation input construction,
 // seven subsets 413/378/211/418/431/403/441; all plus final output setter 436 (sibling 46).
 // Original copies, helper contracts and body restored; unity/root/yaw homes remain.
+// DH349: Complete scalar cosine/projection/sine-cross parts on retained in-place
+// graph, seven family subsets 178/195/176/178/176/194/178; all row-local scopes 178.
+// NOT kept: no gain; native unity/root/yaw and rotation homes remain. Original
+// scalar results, all input reads before output stores, helper and full body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
