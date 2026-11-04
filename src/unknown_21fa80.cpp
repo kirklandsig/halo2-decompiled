@@ -235,6 +235,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // Round 79 (m3 lane 16, fast control 532, full 545): the gain difference in a named real before its fabs 537;
 // direct read before the stream lookup 579 (1921 bytes); mode read before changed 570 (1917 bytes); the voice
 // branch's status declared in each arm 532 (same code); buffer/submix property declarations swapped 532 (same code).
+// Round 144 (m3 lane 5, plain; retail's six difference tests never round: `fld stored; fld input; fsub st(1); fabs;
+// fstp st(1)`, the /Op lead above): mixbin-branch send tests as `(bool)(flags >> n & 1)` 546; one twice-used
+// voice-output test for both branches 577 (1877 bytes); the voice mixbin gain through the gain reference 545 (same
+// code); the three field differences as stored minus input 545 (same code); direct read right after changed, mode
+// after the gain 546. Original body restored.
 // Round 49 (m3 lane 15, plain; fast has a CAVEAT here): the gain test through a `gain_changed` bool set from a
 // block-scoped named difference when not `changed` 545 (same code: still x87 fld/fsub, retail's SSE subss needs the
 // gain loaded with movss); that with a plain real gain value 545 (same code); the stream's 0x20 bit updated before

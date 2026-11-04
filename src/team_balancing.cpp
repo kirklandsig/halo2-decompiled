@@ -652,6 +652,14 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // improvement as `if (less) ... else if (equal && cost) ...` with the same arm 150 (517); the candidate's
 // spread named once for both tests 80; named candidate team pointers for the swaps 150 (518); the candidate
 // declared at the top of the inner loop and assigned from current 224 (576). Original body restored.
+// Round 144 (m3 lane 6, fast): `improved` read into a `bool const` before the candidate copy and the reference
+// chosen from it 105; the whole test duplicated per `improved` arm against `best`/`current` 273 (609 bytes); the first
+// candidate spread named before the test with the cost written candidate first 67 (same code: the one-use local is
+// forwarded back into the compare); improve() defined above this function 67 (same code); `bool better` from the first
+// test refined by `if (!better && equal) better = candidate cost < reference cost` 82 (524 bytes). Diagnostic,
+// reverted: count_spread made impure (a store to a probe global) with the four queries named in candidate-first
+// statement order 89: the candidate is then queried first and the cost compare is retail's `cmp esi, edi; jge`, but
+// all four calls run before the first compare. So the order follows statements only for an impure count_spread.
 // M3 lane 2 r47 (fast): the spreads passed by value to forceinline (reference, candidate) compare helpers 65 (the
 // reference-left code: argument order does not move the stack candidate's call); the candidate spread named `long const`
 // for both tests 80 (512 bytes), as `long const &` 80; a plain `long const` for the first test only 67 (same code);
@@ -1026,6 +1034,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // Round 38 (lane 17, fast with 0x91e30): local names as a tie-break for the roles (same-size slots are
 // ordered by name): extra_count renamed `requested_count` (sorting after player_count) 34; next_party
 // `unused_party` 34; parties `party_list` 34; total `combined_count` 34; i `index` 34 (same code each).
+// Round 144 (m3 lane 6, fast with 0x91e30): the fill through `long *extra_parties = &parties[player_count]` over
+// extra_count 67 (191 bytes); the clamp as an if/else of two results (`0 <= maximum` / `excess <= maximum`) 55 (199
+// bytes); `open_slots >= imbalance ? 0 : imbalance - open_slots` 65 (205 bytes); the imbalance lifted to the open
+// slots (`if (imbalance < open_slots) imbalance = open_slots;`) then `imbalance - open_slots <= maximum` 45;
+// re-measured: total and open slots after the copy loop 96 (162 bytes).
 // Round 200 (m3 lane 3, fast): clamp `(excess > 0 ? excess : 0)` 43, `(excess >= 0 ? excess : 0)` 34,
 // `maximum_imbalance >= (...)` 35; `extra_count + player_count` alone 34; per-loop index declarations
 // (`long i` / `long j`) 34. All restored.

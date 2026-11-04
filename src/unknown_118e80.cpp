@@ -342,6 +342,11 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // Round 126 (lane 8, plain): 0x11ce20 called (&target_up, &up) 218 (re-measured; under the bar); on it: speed
 // scale read at each use 230; forward stored before up 219; frame rate read once into a local for its three uses
 // 279 (1052 bytes); the angle test inverted with the copy arm first 240. Still BLOCKED-BY 0x11f0d0's double local.
+// Round 207 (lane 3, fast): on 0x11f0d0's position step, the existing scale_vector_by_double into the
+// difference then vector3f_add 220 here (0x11f0d0 2 -> 162, 933 bytes: each product is rounded and stored);
+// the existing vector3f_add_scaled with a real quotient 220 (0x11f0d0 89, its `double angle` still pads
+// this frame); here: turn velocity declared before forward 224; world-up computed before the forward
+// branch 285 (1010 bytes); the second turn's scale as `acceleration + acceleration` 224.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
