@@ -728,6 +728,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // AC524: Complete root admission bool/byte/short/long, then complementary
 // rejection, 308 each at 1243 bytes. NOT kept: frame 0x4c versus 0x44, root-kind
 // transport and classifier/plane/output homes remain; original collector restored.
+// M381: Explicit plane-side-produced admission/rejection, bool/byte/short/long on
+// the aggregate origin/hit graph: 325/325/311/309/328/328/315/316. NOT kept: all regress;
+// original implicit success, plane publication, material outputs and full body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -257,6 +257,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // B426: Existing SDK C entry points at first/later query, volume, status, playback,
 // mixbin, pitch and complete call phases: 532/532/532/532/532/532/532/532. Original SDK receivers,
 // workspaces and complete body restored; frame/stream/gain and mixed math remain.
+// M381: Actual voice/buffer/submix API-output zero initialization, seven subsets, then
+// all with initialized status: 566/615/591/615/591/621/607/608 (fast control 532, full 545).
+// NOT kept: unsupported extra stores and regressions; original outputs, helpers and full body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

@@ -2927,6 +2927,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // bound/result and entry-result declaration; original then distinct relative output:
 // 692/722/741/692/700/730/749/700. NOT kept: no gain; frames stay 0xd0/0x104 versus native 0xfc.
 // Original helper and complete body restored.
+// M381: Actual projected-up/force/torque aggregate construction, subsets 1..7, then
+// all with independent relative output: 692/692/692/692/692/692/692/699. NOT kept: ties or regression;
+// original vector producers, inverse/relative ownership and complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

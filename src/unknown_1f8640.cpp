@@ -613,6 +613,9 @@ struct s_1f8a70_actor
 // N367: Early active/arrival/mode success joins on the two-result word-selector graph, seven subsets
 // 424/418/425/446/443/441/316; complete joins with terminal literals 306. NOT kept: all regress; original
 // early exits and result assignments restored. Unit/result +0x10/+0x12 and late route-result home remain.
+// M381: Independent outer byte/short/long/dword completion after terminal stores/cleanup,
+// route-result copies then branch facts: 435/429/432/432/435/429/432/432. NOT kept: result-home
+// diagnostics regress; original outer/inner results, native-word selector and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

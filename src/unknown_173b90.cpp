@@ -1749,6 +1749,9 @@ bool function_17afd0(long effect_index, long value);
 // DH350: Independent visibility/drawing getter lifetimes, availability default
 // after getter/owner/view, joined/nested success, view-default and conditional:
 // 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
+// M381: View-validity-produced availability then unavailability, bool/byte/short/long
+// on the recovered owner-arm graph: 124/124/146/143/121/121/152/149. NOT kept: all regress;
+// original query gates, view snapshot, Boolean homes and complete body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
