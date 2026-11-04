@@ -125,6 +125,11 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // Round 75 (fast; ours ends `ret 8` like retail): the blend source looked up without the field_c local 11;
 // the weight read from the array at each use 30; the sample stored before the sum 11; `local_7 *=` 29;
 // a sample-count local for both loops 173 (1175 bytes); previous index after the copy 16 (again).
+// Round 210 (fast): the cluster record re-read at each use, no record local 218; the output record named beside the
+// previous-index store and read through it in the blend 14 (the two parameter loads flip, homes do not); the blend
+// accumulator or all three addresses as `&((byte *)base)[offset]` 11/11; the blend products weight-first, entry term
+// first 11; the output record initialised `output + result` 11. Diagnostic: the previous-index store at the end of the
+// block beside the increment 109 (1178 bytes; the result moves to 0x2c).
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {
