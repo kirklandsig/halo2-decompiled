@@ -1098,6 +1098,9 @@ bool __stdcall function_2399da(long controller_index)
 // own return 90; the permission test as a named bool 90. Harness only (exact at 90): that local const 90, a reference 90;
 // a flat arm on the parameter 90; a `requested` local after the own-rank read 90; a const own rank 90. Extra identity
 // uses take ESI, not EAX (diagnostic, 154-163; 173 with extra zero uses). Original body restored.
+// B425: Complementary member/permission states singly/both as bool and byte, then
+// both short/long: 93/122/124/93/122/124/166/155. NOT kept: no exact match; original flags and body
+// restored. Selected identity/rank homes and the extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

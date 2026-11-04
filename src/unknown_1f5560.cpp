@@ -830,6 +830,8 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax H (11-04): the trajectory result hoisted to function scope 135, the invalid tail
+// returning the valid flag 135 and the comparison written as !(a >= b) 135; no lower score.
 // MiniMax R (11-01): no new form, no lower score; retail's trajectory call still passes eleven
 // stack operands where ours passes ten plus EDX, and retail keeps the trajectory result in DL
 // (`mov dl, al`, then `mov byte ptr [esp + 0x5c], dl`) where ours stores AL directly.
@@ -1024,6 +1026,8 @@ real normalize2d(point2f *v);
 // DH334: Standard typed request-point/normalized-planar/facing-planar record ranges,
 // seven subsets then complete backward ranges: 144/180/194/185/197/198/202/205. NOT kept: all regress;
 // original publications and complete body restored; retained DL and return transport remain.
+// DL260: Complete persistent/candidate outputs, directions and speed identities; matched initial-speed provider ordinary inline: 135/135/135/135/135/135/135/135/141.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1564,6 +1568,8 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax H (11-04): the left flag declared just before its comparison 287; not kept, the
+// original body is restored.
 // MiniMax R (10-31): origin read directly 255, plain origin copy 278, inlined direction normalization 272; permuter found no better variant; no lower score.
 // score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
 // direction sit in other SSE registers (xmm1/xmm5/xmm2-3; it keeps the result in xmm0 up to the type exit),

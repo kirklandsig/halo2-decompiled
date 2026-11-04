@@ -1048,6 +1048,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // tie); delta_k named as well 208; delta_i with twelve one-expression groupings 28-38; the name assigned after the denominator 244
 // (1835), before t 94; y named with x named late/early 244/36; a struct delta with direct fields 119/119, with the scale helper
 // 113, an array 119; rows `delta.i * t + p0->x` on the helpers 119. Permuter skipped: the 19 form already ran (73 tries).
+// AC528: Complete cumulative segment rejection/survival in bool/byte/short/long
+// 298/384/369/371/404/404/406/405. NOT kept: no exact match or eligible gain; original complete body restored.
+// Coefficient preload, zero SIMD roles and clipping/projection homes remain. The native memory-OR result was preserved logically; no retained candidate.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

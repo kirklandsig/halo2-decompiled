@@ -491,6 +491,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // definition bound with the head unbound, a pointer or direct 107 (index EDX, the `xor` and EDI as retail, but the registers above
 // them rotate). Ours rotates EDX, EAX, ECX, EDX through the pass and material definitions; retail reuses EAX over its dead `lea`.
 // Match-only chain; original body restored. A 600 s permuter run on the chain: 59 tries (24 failed to build), none below 8.
+// B428: Ordinary inline caller declarations for 0x137bd0/12de70/1c590/1c620/
+// 1c710/1cdd0/2c3b0/1bd50: 117/117/117/117/117/117/117/117. NOT kept: no gain.
+// Every declaration and whole body restored; fallback EDX, stage/pass ownership,
+// unfused element loads and mask lifetime remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

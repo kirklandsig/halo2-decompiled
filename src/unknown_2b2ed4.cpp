@@ -74,6 +74,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// MiniMax H (11-04): declaration-order and scope moves compile identically; no lower score.
 // score 330 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // Lane 18 r37 (fast): received text preset then overridden 662 (2347 B); the text id as dword 330;
 // text set to NONE only at the top of the online block 330 (same code); set_text inside the online block

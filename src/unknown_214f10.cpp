@@ -36,7 +36,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 	return memory;
 }
 
-// score 42 (was 42): retail tests the handle in ECX and copies it to EAX for the by-value
+// score 42. MiniMax H (11-04): `bool volatile success` (the read's result is written by the I/O worker,
+// like `done`) with the widened handle test stored to it and the array element passed directly MATCHES;
+// NOT kept (a new volatile on a local is outside the volatile rule), held for the user's ruling.
+// Earlier rounds (42): retail tests the handle in ECX and copies it to EAX for the by-value
 // argument, builds the success byte with `xor edx, edx; setne dl`, stores it and re-reads it from
 // memory before the test, as a volatile flag would; ours tests a register copy. Only a volatile
 // success byte (not kept) gives the store and re-read: with the array element passed directly and
@@ -338,6 +341,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // boundary with no code), branching on success: `(long)` test on the copy / on the element passed directly 55/55, plain
 // test on the copy / element 55/55, from the long on the copy 55 (351 bytes each, still forwarded). A scan of all game
 // functions for a register stored to a stack byte and re-read at once: the 8 matched hits are 6 joins and 2 volatile locals.
+// DH353: Completion initialization/handle aggregate/immutable open result, subsets
+// 1/2/4/3/5/6/7: 86/42/42/86/86/42/86; complete direct-member form 86. NOT kept:
+// no gain or match; original object, result, completion declaration and waits restored.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
