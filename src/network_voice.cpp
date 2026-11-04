@@ -3662,6 +3662,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y583: Separate original relay/direct remote-query return storage bool/byte/short/long,
 // original/independent cursor 139/139/139/139/164/164/164/164. NOT kept: one-use
 // return carriers do not match; complete original body restored; channel/cursor homes remain.
+// Y587: Complete parse-validation state bool/byte/short/long, indexed then independent
+// cursor: 207/207/215/214/221/221/230/230; caller stays matched. NOT kept:
+// test-produced state misses and adds a frame word; original direct failures and full body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

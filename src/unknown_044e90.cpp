@@ -275,6 +275,9 @@ struct s_visibility_bound_record
 // Y585: Initialized containment false at unseen/bound-index/bound/transform/local-point/
 // scaled-point/first-center/completed-center boundaries: 406/406/406/406/406/417/417/417.
 // NOT kept: no eligible gain; original producer and full body restored; entry/table and plane/query homes remain.
+// Y587: Fallback-center component for traversal long/dword/short/word/byte/
+// signed-char, then long/short while: 406/406/502/502/502/502/406/502.
+// NOT kept: narrow traversal stays rolled and shortens away from retail; original full body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

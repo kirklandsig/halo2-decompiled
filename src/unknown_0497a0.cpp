@@ -251,6 +251,9 @@
 // Y585: Complete first/second/combined branch-owned maximum result subsets
 // 1/2/4/3/5/6/7: 581 each; all with fallback-first arms 662. NOT kept:
 // no frame recovery or eligible gain; original maxima and complete body restored.
+// Y587: Actual two-axis cross table for traversal long/dword/short/word/byte/
+// signed-char, then long/short while: 728/728/803/803/803/803/728/803.
+// NOT kept: table/output residence regresses and grows; original direct calls and full body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -871,6 +874,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Y585: Current paired geometry, initial/next/blend output-stream cursor subsets
 // 1/2/4/3/5/6/7: 265/265/265/268/268/352/350; all with tint cursor 265.
 // NOT kept: no native frame recovery or eligible gain; original counters and complete body restored.
+// Y587: Float root API at vertical/planar/camera-side/camera-normal/vertical-planar/
+// camera-pair/all/all with float epsilon consumers: eight 265s. NOT kept:
+// API boundaries canonicalize; native frame/spill homes remain; original body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1300,6 +1306,9 @@ void __stdcall function_43720(s_43740_input *input)
 // Y585: External tag/frame-pair/point-index field bindings, seven subsets and
 // all read-only, eight 62s. NOT kept: exact-only identities do not match;
 // original captured tag, field observations, complete body and matched caller preserved.
+// Y587: Tag producer ending at group/image, positive/NONE admission and positive/failure
+// texture admission: eight 62s. NOT kept: scoped lookup outputs do not recover
+// early EAX/EBP split or signed-slot/shader homes; original full body restored.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
