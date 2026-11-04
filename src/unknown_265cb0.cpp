@@ -2033,6 +2033,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // DH343: Existing native component-array identity throughout direction/velocity/relative/forward,
 // direction+velocity/direction+relative/direction+forward/all: 194/194/194/194/194/194/194/194.
 // Original body restored; entry operand order, Boolean homes and direction SIMD residence remain.
+// N356: Signed-octet established/visible/retain storage, seven subsets and complete plain-char family:
+// 194/194/194/194/194/194/194/194. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Entry index operands, exchanged Boolean homes and direction SIMD residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

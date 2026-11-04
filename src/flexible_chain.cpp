@@ -456,6 +456,9 @@ void __stdcall function_1160c0(real dt)
 // entry, seven phase subsets, then all at function entry: 171 each. Every initializer
 // stays at its original computation. No gain; complete body restored. Segment EDX
 // and scalar/axis/previous/rest-offset homes remain.
+// N355: Existing early-return normalizer with native square/projection/staged-cross and complete setters:
+// 174/186/174/174/174/186/187/187. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Segment EDX and axis/previous/rest-offset homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

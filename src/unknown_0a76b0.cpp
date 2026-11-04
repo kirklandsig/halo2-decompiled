@@ -2176,6 +2176,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // Y570: Receiver/request formal-home reads, first/every use separately and
 // all four paired forms, 97 each. NOT kept: no byte match; all home reads
 // removed and original body restored. Frame/result and pooled roots remain.
+// N360: First-transfer call initializes actual arm-owned result, mutable/immutable bool/byte/short/long:
+// 116/116/137/137/121/121/116/116. NOT kept: unmatched source/result-storage forms; original executable source restored.
+// Frame 0x24/0x20, result byte and pool/unit/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

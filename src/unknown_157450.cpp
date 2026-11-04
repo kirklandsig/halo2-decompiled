@@ -691,6 +691,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // N351: Mask-field reference/immutable pointer, original/condition-owned immutable player, saved dword/word:
 // 32/77/32/77/32/77/32/77. NOT kept: no exact match or qualifying gain; complete original body restored.
 // Remaining: native word entry and shared post-loop mask reload.
+// N357: Added-team set at playing producers, bit union/cumulative difference with full/word saved mask and signed/unsigned added set:
+// 89/113/79/79/89/113/79/79. NOT kept: no byte match from these source forms.
+// Original executable source restored; Native word entry storage and shared post-loop mask reload remain.
+// N359: Left-shifting notification bit with long/dword/short/byte ordinals, full then word saved mask:
+// 95/87/65/65/89/83/56/56. NOT kept: no byte match; complete original body restored.
+// Native saved-word entry and shared post-loop mask reload remain.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4319,6 +4325,7 @@ long function_14de70(long local_player_index);
 // The copies are retail's when 0x7f720 returns color3f by value (compile-only), or with each copy
 // through a color3f local initialised from the call: 46
 // frame 0x48c agrees; four extra bytes, late weapon NONE reuse,
+// frame 0x48c agrees; four extra bytes, late weapon NONE reuse,
 // the shift-count read width, format-mode branch and charge/progress allocation remain.
 // Earlier: frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
 // stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
@@ -4515,6 +4522,9 @@ long function_14de70(long local_player_index);
 // AC519: Actual late unit presence/absence results in bool/byte/short/long,
 // 42/42/42/42/42/42/42/42. NOT kept: unmatched one-use predicate storage;
 // original native word-slot comparison, observations and complete body restored.
+// N357: Complete rejection outcome in bool/byte/char/signed-char/short/word/int/long:
+// 98/98/98/98/372/372/372/372. NOT kept: no byte match from these source forms.
+// Original executable source restored; Late ESI NONE, byte shift acquisition and progress/result transport remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5715,6 +5725,12 @@ void __stdcall function_d6bc0(long object_index);
 // F360: Both squared-distance j/i tails as plain real-vector reverse loops, four signed for/while inductions:
 // 265/265/199/199/265/265/199/199. NOT kept: no native frame/timer repair.
 // Original complete body and helpers restored.
+// N357: Positive mode/time-slice/eligibility admissions, seven subsets and complete graph with outer timer declaration:
+// 144/144/144/144/144/144/144/144. NOT kept: no byte match from these source forms.
+// Original executable source restored; Frame 0x14/0x18, independent timer spill and entries-base reloads remain.
+// N359: Complete expiry-deferral/removal/creation join in bool/byte/char/signed-char/short/word/int/long:
+// 144/144/144/144/144/144/144/144. NOT kept: no byte match; complete original body restored.
+// Frame 0x14/0x18 and independent timer/entry-base ownership remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

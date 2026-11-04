@@ -267,6 +267,12 @@ short __stdcall function_2551c0(long actor_index)
 // Round 40 (lane 17, fast): single product operands swapped in the cross terms (no vector_k): cross_j's
 // second product axis-first 43, its first product axis-first 43, both 43; cross_k's second product
 // axis-first 43, its first 43 (all the same code: VC canonicalises the operand order). Restored.
+// N354: Normalization admission: native payload plus real 120; real 70; terminal
+// rejection 43; real plus rejection 70; positive/negative bool 56/56; promoted
+// double 195; early true-result lifetime 110. On the earlier exact-only partial
+// component/score graph, those admissions give 82/72/6/72/133/133/185/91.
+// NOT kept: no new qualifying gain; the six needs partial component naming and
+// equality. Original helper, observations and complete callback restored.
 // Round 40 (m3 lane 18, fast), on lane 9's match-only 6 form rebuilt (vector_k, alignment, reach; only the score dot
 // differs): the dot through the file's accumulating helper (0x255741's), either operand order, 120/120; the direction copy
 // before the angle 6; trace declared first in the loop 6; forward and best direction declared before the best score and

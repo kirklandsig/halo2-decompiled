@@ -541,6 +541,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // F366: Actual decoder flags own both consumers, conditional/complete/default/paired producers
 // at the original phase then parameter-only entry: 263/263/275/275/293/293/302/295.
 // Original mode, status, clocks, retry, arrays, outputs and whole body restored; frame 0x3c/0x40 remains.
+// N359: Original elapsed-time timeout comparison result in bool/byte/char/signed-char/short/word/int/long:
+// 246/246/246/246/246/246/246/246. NOT kept: no byte match; complete original body restored.
+// Frame 0x3c/0x40, status/clock/output homes and instruction policy remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

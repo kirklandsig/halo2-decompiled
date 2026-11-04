@@ -678,6 +678,15 @@ static inline word font_character_pixel(long alpha, long color)
 // N351: Packed-run case orders 40162357/14062357/61402357/26140357/32614057/53261407/65432107/13502467:
 // 90/91/94/93/167/115/116/97. NOT kept: no exact match or qualifying gain; complete original body restored.
 // Remaining: alpha extension, literal assembly and run-two reuse.
+// N356: Canonical consumed-span for loop, long/byte/signed-char/short with word/long pixel result:
+// 87/90/90/100/104/100/100/101. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Alpha parity widening, literal fusion and constant-two reuse remain.
+// N358: Existing color formal owns complete pixel assembly, packed OR/add and high/low-first bit publication, byte/numeric parity:
+// 226/230/226/226/172/178/172/172. NOT kept: unmatched source/representation forms; original executable body restored.
+// Alpha extension, literal assembly and run-two reuse remain.
+// N360: Separate expanded-alpha result accumulator, word/long, disjoint parity/color OR/add:
+// 226/226/226/226/226/230/226/226. NOT kept: unmatched source/result-storage forms; original executable source restored.
+// Alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

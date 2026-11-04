@@ -1411,6 +1411,9 @@ static inline s_players_globals *players_globals_14f2e0()
 // success graph: 108 each; with complete timer clear 105 each, frame 0x11c versus 0x118.
 // NOT kept: all regress and enlarge the frame. Original Boolean full body restored;
 // NONE materialization and timer/flag scheduling remain.
+// N355: Actual reuse admission result producers, original/complete timer clear:
+// 86/231/231/227/83/232/232/228. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; NONE materialization and timer/flag scheduling remain.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
