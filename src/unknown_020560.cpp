@@ -1021,11 +1021,24 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the 587 forms lose the matched fraction provider and move away from native extent.
 // Query/frame/fraction homes remain; pointer-to-ordinal quotient also consumes EDX.
 // Original provider contract and target body restored; prior ordinal-loop forms not repeated.
+// J255: Coordinate-range subtraction at nearest/anchor/opposite producers, seven
+// standard transform subsets 876/598/1237/912/1533/1362/1554; direct loops throughout 1471.
+// NOT kept: all regress and shorten away from 2122 bytes. Original scalar/vector
+// producers, reduction trees, includes and full body restored; frame/query/ordinal/fraction homes remain.
 // F390: Existing three-use coefficient copier standard forward range copies at red/green/blue,
 // seven subsets, then complete backward copies: 615/676/569/580/672/572/579/622. NOT kept: all
 // regress; partial forms retain frame 0x18, complete forms shrink it to 0x14 versus native 0x2c.
 // Original CRT copies, direction, helper and complete body restored; native
+// P335: Standard component-array inner products at nearest/projection/opposite distance,
+// seven subsets then complete graph with anchor transform: 845/1136/1138/1444/1417/1088/1402/1438. NOT kept:
+// all regress and suppress native scan expansion. Original reductions, includes and complete body restored.
+// P342: Standard binary component transforms at nearest/anchor/opposite producers, seven subsets then
+// scan-phase output declarations: 876/598/1237/912/1533/1362/1554/1554. NOT kept: no native frame/scan
+// recovery or byte match; original producers, includes and whole body restored. Frame 0x18 versus 0x2c,
 // query/vector/ordinal/fraction homes remain.
+// M380: Actual offset/delta aggregate initializers at nearest/anchor/opposite,
+// seven subsets then immutable full vectors: 547 each at 2122 bytes. NOT kept: native
+// frame/query/search homes remain; original scalar producers and complete body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

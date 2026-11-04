@@ -574,6 +574,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // AC530: One bounded word ordinal owns both capacity and link-copy indexing, signed/unsigned,
 // node/function scope, increment after/before memcpy: 361/361/359/359/361/361/359/359.
 // NOT kept: all regress at 1375/1388 despite frame 0xe4; original total, memcpy and body restored.
+// AC532: Native signed clearing bound with indexed/edge-cursor/step-cursor/both
+// increasing walks 286/286/286/282; bounded short-link counterparts 359 each.
+// NOT kept: four-point best gain below gate, frame still 0xe8; original full body restored.
 // Y576: Link-metadata library memmove with long/short/word post-increment counts
 // 356/361/346; separate increments 356/361/346; copy-owned long/short ordinals 345/348.
 // NOT kept: all regress. Narrow transports recover frame 0xe4 but initial/flag homes still differ.
@@ -584,9 +587,28 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // N367: Capacity-owned link eligibility reused for surface work, expression bool/byte/short/long
 // 286/286/290/289; branch producers 359/359/370/366. NOT kept: no equality or gain; original predicates,
 // flags and indexed memcpy restored. Extra frame word, predecessor and flag homes remain.
+// AC534: Positive-domain initialization with actual step/edge end pointers, range/equality
+// termination and separate/chained NONE stores: 413/413/380/380/393/393/407/407.
+// NOT kept: all regress and lengthen; original counters, signed empty domains, indexed
+// metadata memcpy and whole body restored. Extra frame word and predecessor/flag homes remain.
+// AC536: Complete geometry-scan edge acceptance/rejection result, bool/byte/short/long:
+// 282/282/282/282/282/282/282/282. NOT kept: four-point gain below eight and no equality;
+// original scan gates, indexed library copy and full body restored. Extra frame word and
+// predecessor/flag homes remain.
+// Y592: Standard edge fill_n/fill before/after step clearing, short/long remaining steps:
+// 297/383/404/423/382/400/309/309. NOT kept: native-frame range-fill forms regress in score/extent; original clearing, metadata memcpy and body restored.
 // F389: CRT memcpy destination/predecessor/paired conversion-fallback point transfers,
 // seven subsets 286 each; all with native short link count 359. NOT kept: no gain;
 // original aggregate transfers, metadata memcpy and complete body restored; frame/flag homes remain.
+// B445: Actual signed link capacity consumed at successful copy, long/short totals,
+// indexed/advancing receivers and consumption after/before memcpy: 331/331/344/350/359/335/344/350.
+// NOT kept: all regress; original total, limits, memcpy and body restored. Frame/flag homes remain.
+// DH365: Original-site first-predecessor outcome, bool/byte/char/signed-char/short/word/int/long:
+// 282/282/282/282/282/282/282/282. NOT kept: four-point lead below eight; both predecessor histories,
+// original point copies, link memcpy and full body restored. Frame/zero/flag homes remain.
+// N376: Paired conversion success/fallback outcomes, independent/shared carriers and
+// expression/branch producers: 282/282/282/305/282/282/282/305. NOT kept: four-point leads
+// fall below the margin and no form matches; original conversion graph/body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -1066,6 +1088,23 @@ bool function_2715a0(byte *buffer)
 // DH357: Fresh post-conversion denominator squares, with complete segment,
 // projection and collision operation families in eight forms: 486 each.
 // NOT kept: all tie; original fresh reads, sum trees and complete body restored.
+// Y595: Per-iteration 64-link output at iteration/after-sift/after-sentinel/query boundaries, inherited/descriptive names:
+// 486/486/486/486/486/486/486/486. NOT kept: no byte equality; original complete body restored.
+// DH359: Separate terminal reached result bool/byte/short/long with inherited fallback
+// 486/495/542/538; missed counterparts 521/521/567/563. NOT kept: no gain or
+// byte match; original returns, fallback qualifier, heap operations and whole body restored.
+// DH361: Heap-root/link/collision-lookup ordinals declared at function scope, seven subsets,
+// then the actual child receiver too: eight at 486. Original observation/initializer sites,
+// declarations and body restored; native state/node/link registers and scalar homes remain.
+// DH363: Existing penalty-switch label orders 1265/1526/2156/5612 all 486;
+// those four with the positive-penalty guard owned by the grouped cases all 487.
+// NOT kept: no match or state/root-home recovery; original dispatch and complete body restored.
+// DH366: Direct native state-member accesses on the retained split-root graph, input/destination/lookup
+// seven subsets then closest/location pair: 486/486/486/486/486/486/486/498. NOT kept: no byte match or
+// qualifying native repair; original complete body restored.
+// DH368: Direct named link/root/child array elements, seven subsets then collision candidate:
+// 624/528/486/659/624/528/659/684. NOT kept: child-only ties, others regress or grow;
+// original array receivers, inherited fallback qualifier and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

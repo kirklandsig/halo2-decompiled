@@ -1515,6 +1515,20 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // N358: Complete invalidity result on failure-only resize-count graph, eight native scalar domains:
 // 159/159/159/141/141/140/140/140. NOT kept: unmatched source/representation forms; original executable body restored.
 // Query/write count homes, write setup and checksum/validation joins remain.
+// DL262: Actual resize-output repair success, assigned/cleared/short-circuit/conditional,
+// original then native successful-header producer: 112/165/188/190/165/172/188/195.
+// NOT kept: result-flow forms require byte equality; original outputs, count producer and body restored.
+// J255: Coherent ordinary-inline cleanup, close, pair and cleanup/checker boundaries;
+// forced cleanup, forced checker and their mixed ordinary forms: 33/33/33/33/474/388/474/388.
+// NOT kept: ties/regressions. All provider contracts and complete bodies restored;
+// query/write homes and validation joins remain; forced expansion moves away from native extent.
+// B444: Equal-size validation first on failure-only count flow, resize-arm/
+// successful-read/checksum producer variants: 175/169/175/169/175/169/175/169. NOT kept: exact-only
+// block/result forms regress; original complete body, waits and API values restored.
+// Query/count homes and write/checksum/header joins remain.
+// B446: Complete resize/write/conditional-close inline workflow, handle pointer/reference,
+// cleanup in caller/boundary, original count/test-produced success: 33/33/33/33/83/83/83/83. NOT kept:
+// no exact result; original whole body, qualifier and helpers restored. Count homes, write setup and header/checksum joins remain.
 // @retail 0x213970
 void function_213970(void)
 {
