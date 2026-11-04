@@ -1761,6 +1761,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // AC542: Complete projection sums as y/x/both accumulations 208/195/197,
 // y/x/both named two-product prefixes 219/195/195, then both graphs with CRT result clear
 // 282/282. NOT kept: no native frame/result-home repair or equality; original full body restored.
+// AC544: Direction/mode/scale formal lexical identities, seven subsets then all
+// with position identity: 193/193/193/193/193/193/193/193. NOT kept: no native result-home or frame
+// repair; original inputs, helper, switch, arithmetic and whole body restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3470,6 +3473,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // 177/175/176/176; property equality in bool/byte/short/long 168/168/168/170.
 // NOT kept: one-use output temporaries are unmatched; the equality forms materialize and
 // re-test a Boolean before publication. Original result/body and frame 0x18/0x1c remain.
+// AC544: Entry declarations for alpha, existing qualified kind and paired query bytes,
+// seven subsets then reversed complete declarations: 177/177/177/177/177/177/177/177. NOT kept: no
+// native frame repair or match; original producers, scopes, qualifiers and whole body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4877,6 +4883,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // AC542: Normal-cull input owns its completed decision, complete/conditional production in
 // bool/byte/short/long: 251/251/258/254/200/200/211/216. NOT kept: target and both shared users regress;
 // original helper, input contracts and full callback restored. Late enabled/mode/clear gaps remain.
+// AC544: Original two-stage enabled result in bool/char/signed-char/short/word/long/dword,
+// then bool with the raw mode-eight gate: 138/138/138/187/187/222/222/138. NOT kept: target ties or
+// regresses; wide results also regress both shared users. Original helper and full caller restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

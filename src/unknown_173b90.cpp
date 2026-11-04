@@ -1772,6 +1772,9 @@ bool function_17afd0(long effect_index, long value);
 // AC541: Both downstream same-view/attachment outcomes with availability-owned or complete
 // rejection-owned results, bool/byte/short/long: 120/115/126/133/120/99/127/133.
 // NOT kept: all regress; original availability, snapshots, query gates and complete body restored.
+// AC544: Availability/owner/view lexical identities on the recovered owner-arm graph,
+// seven subsets then complete predicate/result identities: 47/47/47/47/47/47/47/47.
+// NOT kept: allocation-only ties; original names, snapshots, queries and whole body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
