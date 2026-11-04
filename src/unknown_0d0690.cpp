@@ -2300,6 +2300,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // P326: Model luminance weights/normal magnitudes/final rescale declaration lifetimes,
 // subsets 1..7 at model entry, then all at function entry: 542 each. Every initializer
 // stayed at its producer. NOT kept: no gain; original body, status/mesh homes and helpers remain.
+// M379: Complete default normal/base/lightmap memmove transfers, subsets 1/2/4/3/5/6/7,
+// then all normal publications: 589/599/561/744/736/732/757/773. NOT kept: all regress;
+// original copies and body restored; status/mesh/sample homes and selective expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

@@ -321,6 +321,9 @@ struct c_aggregate : c_child
 // M376: Fixed collection/dispatch/both equal-end and inclusive-last latches, then
 // actual child-array collection/dispatch bounds: 32/32/33/33/33/35/32/32. NOT kept: no match or qualifying gain;
 // original signed latches/body restored; escaped output and lowest loop homes remain.
+// M379: Existing count-table outputs with deferred prefix conversion, next/current cells,
+// producer/aggregate zeros and before/inside dispatch admission: 184/167/209/227/155/152/183/186. NOT kept:
+// all regress and add a nonnative conversion pass; original independent outputs/body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

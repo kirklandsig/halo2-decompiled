@@ -1291,6 +1291,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M377: Individual connection cases 5/6/7 inserted after direct 0/2/3 on
 // native-input primary root (last 7-after-3 excluded): 199/197/198/199/197/198/199/199 fast, control 196.
 // NOT kept: all regress and grow to 448/444; original dispatch/caller restored.
+// M379: Intact native-input family priorities QSPDC/QSPCD/QPSDC/QPSCD/SQPCD/SQPDC/SPQDC/SPQCD
+// 195/202/195/202/202/195/195/201 reduced (control 196, full 153). NOT kept: no qualifying gain;
+// original classifiers, all handler tuples and body restored; delayed ESI/late expansion remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
