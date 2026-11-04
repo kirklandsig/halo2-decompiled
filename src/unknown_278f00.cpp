@@ -341,6 +341,9 @@ bool function_a7670(long object_index);
 // 276/295/296/276; deferred-prefix counterparts 276/275/268/261. NOT kept:
 // all regress; original eager stopping searches, live bounds, consumed island
 // index, retry/release graph and complete body restored.
+// DH367: Eager stopping first/deferred searches via standard search_n and find_if,
+// eight boundary pairs 297/317/314/305/325/380/366/387. NOT kept: all regress and lengthen;
+// original eager membership, native bounds, consumed island index and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {
