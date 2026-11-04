@@ -135,49 +135,6 @@ void function_133720(s_bit_vector_pool *arg_1, bool arg_2)
 }
 #pragma inline_depth(255)
 
-// score 13 (was 13): the radius load and point/index store schedule still differs.
-// Earlier projection operand/sum order 95; radius local 30; multiply from the
-// object 32; radius copy first 19; depth as one expression 19-30;
-// record fields read directly 28; position pointer local 172.
-// Native point value 168; point/radius values 173; existing point setter 172;
-// setter with shared radius 173; radius before setter 173; contiguous copy 107;
-// point value shared with distance 177; native vector copy 219.
-// early radius/point acquisition and index/radius store scheduling differ.
-// Earlier comparison: the float multiply reads its operands from the other two globals and the sum is added in the other order
-// Earlier forms: retail loads the radius into xmm2 before the point copy (and the copy's last
-// load before its middle store); ours loads it after the copy. Radius local 30; multiply from the
-// object 32; radius first in the record 19; depth as one expression 19-30; record fields read
-// directly 28; position pointer local 172.
-// Scalar point inputs shared by setter/projection: y/z/x 178/178/94; yz/xy/xz 101/173/173;
-// xyz/xyz with shared radius 178/178. All scalar-input forms restored.
-// Existing acquisition helper ordinary 206; inline with standalone noinline 206; inline without it 106;
-// early radius with delayed stores 30; delayed direct stores 19; early direct with delayed index 19;
-// radius pointer and two direct field uses 32 each.
-// Record stores point/index/radius, radius/point/index, radius/index/point, index/point/radius,
-// index/radius/point 19/19/20/13/21; radius local before the copy with the index stored first 30
-// (radius stored first 31, local after the record 30, index first 34); point read directly 24.
-// Round 32: BLOCKED-BY 0xbd610. The record's address reaches the 0xbd610 stub (built without /GL)
-// through 0x4b5d0 -> 0x137800's node-section argument, so LTCG treats the record as escaped and
-// will not move the object's radius/point loads above the record stores. One-file LTCG harness
-// diagnostic: with only that argument nulled at 0x137800's call, this body is 2 (only the
-// radius/index stores swapped) and index/point/radius or point/index/radius record order matches
-// byte for byte. Normal build: index/point/radius 13, radius local first 30, radius local stored
-// before the index 31, record declared first 13, source point through a pointer local 175.
-// Round 37 (fast): index stored before the object lookup 14; arg_2 used directly (no index copy) 13;
-// the mode flag computed after the depth division 183; the lists entry read once 157; index copy
-// declared before the lists entry 13. Still BLOCKED-BY 0xbd610 (stub).
-// Round 78 (fast): scratch first output 127; index at its consumer 147; mutable object pointer 13;
-// source point reference 175; object/index local names 13/13; explicit point assignment 13;
-// record radius reference 13; const object binding 13. Original body restored.
-// Round 120 (lane 7): diagnostic with the disabled 0xbd610 draft (src/unknown_0b7740.cpp) enabled and its
-// stub removed: this body 2 (as round 32 predicted), and with the index stored first in the record plus
-// `g_4ba028 * (local_8 * 2.0f)` it matches (fast, with 0x137800 in the image; index/point/radius alone 2,
-// point/index/radius 2, index/radius/point 5, the other product orders 2/2/126). Not keepable: any reachable
-// call from 0xbd610 into 0xbdb60 (even a minimal body; also with 0xbd090's call removed) gives 0xbdb60 a
-// two-register convention (63) and 0x10ec00 loses 0x1c6f60's EBX `this` (109); moving 0xbd610's body or
-// declarations or dropping the draft's noinline declarations changes nothing. BLOCKED-BY 0xbd610 (then
-// 0xbdb60/0x10ec00 conventions). Normal build: index-first record with that product 13 (aligned 3);
-// the product alone 13; index-first alone 13; point/index/radius with it 19; radius/point/index with it 19.
 // @retail 0x133790
 bool function_133790(s_bit_vector_pool *arg_1, short arg_2, bool arg_3, long *arg_4, long arg_5, bool arg_6)
 {
@@ -187,9 +144,9 @@ bool function_133790(s_bit_vector_pool *arg_1, short arg_2, bool arg_3, long *ar
     long local_3 = local_2->field_c[local_11];
     s_133791 const *local_4 = ((s_133792 *)g_4e0300->data)[local_3 & 0xffff].field_8;
     s_133f70 local_5;
+    local_5.field_0 = local_3;
     local_5.field_194 = local_4->field_30;
     local_5.field_1a0 = local_4->field_3c;
-    local_5.field_0 = local_3;
     // retail does these in SSE single precision: every product and sum is rounded to float
     point3f const *local_16 = &local_5.field_194;
     real local_13 = local_16->y * g_4b9e2c;
@@ -202,7 +159,7 @@ bool function_133790(s_bit_vector_pool *arg_1, short arg_2, bool arg_3, long *ar
     if (!(local_6 > 0.1f)) local_6 = 0.1f;
     real local_7 = g_4b9ed0 / local_6;
     real local_8 = local_7 * local_5.field_1a0;
-    local_5.field_1b4 = local_8 * 2.0f * g_4ba028;
+    local_5.field_1b4 = g_4ba028 * (local_8 * 2.0f);
     *(real *)local_5.field_1b8 = function_133791(&local_5.field_194, &g_4b9da0) * g_4b9dcc;
     byte local_15;
     function_4baf0(local_3, *(real *)local_5.field_1b8, &local_5.field_1bc, &local_15);
