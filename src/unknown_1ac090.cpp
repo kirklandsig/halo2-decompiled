@@ -699,87 +699,6 @@ s_slot_handler_2 g_47dc88 =
 void function_b9fc0(long arg_0, vector3f *arg_1, vector3f *arg_2);
 bool function_f47d0(long arg_0, long arg_1);
 bool function_1f8660(long arg_0);
-// score 7 (was 7): Frame 0x80c, all exits and every instruction but seven agree: the actor and
-// scratch-buffer spill homes are exchanged (+0x24/+0x28; retail keeps the actor at +0x28).
-// Round 144: the homes follow use weight (heavier is lower): three extra buffer releases put the
-// buffer below the actor, one or two do not, nor one actor use fewer. Getter for the entry test with
-// the actor declared inside 63; object index read once for both uses 211; reference test reversed
-// 137; prop index named for its two uses 13; object index read before the prop tests 235.
-// Round 62: the second point difference in its own vector 7 (kept: retail's direction loads in the
-// second dot product); a release in each arm 66; one position pointer for both differences 7;
-// status output scoped into the request block 11; separate first-call reference 7; early test
-// folded into the outer condition (no label) 7.
-// Result first 203; request outer scope 187; role names 181; shared point differences 179;
-// failure result before release 207; shared cross product 174.
-// Count name with shared cross 174; request-output declarations first 174;
-// outer vector workspaces 174; separate direction vectors 171; request defaults with overrides 186.
-// unsigned-byte result 224; direct shared reference equality 174; direct slot observations 174; separate selected alignment 174; range selection arms 174.
-// Short/native-long success 232/228; unsigned selection count 174; native zero/kind request
-// initialization 172/173; status-output name 174; const tag input 174; request through validation 174;
-// success from availability 217; direct exits with failure retained through release 232.
-// Round 358: Entry selection outputs 174; complete vector role names with cross output 174; failure-default
-// success paths 215; combined work guard 174; positive tag work 174. Actor/result/count and direction homes
-// remain in frame 0x80c; opening body restored.
-// Round 195: complete k-j-i projections/status 174/174; both shared differences 172/172;
-// every component product/status 173/173; both shared differences 172/172. Gains of one/two restored.
-// Round 197: read-only actor/state/both views 174/174/174; distinct selection/validation
-// reference lifetimes alone/actor/state/both 174/174/174/174; actor lookup at every use 230.
-// Round 204: shared release 204; native reference-produced result 226; absent-tag return
-// alone/reference result 226/220; skip return alone/reference result 223/229; both early
-// exits alone/reference result 221/222. Actor/result/count and direction homes remain.
-// Round 323: vehicle field at each use 174; radius read once 191; shared projections
-// 194; vehicle/radius 191; vehicle/projections 194; radius/projections 213; all 213; radius
-// and projections with native vehicle index 213. Original actor/result/count and direction homes remain.
-// Round 168: Shared complete position with original/split directions and actor/count role names 170
-// each; with entry result 193 each; three scalar coordinates original/split 182/185. Four-point
-// best rejected; snapshot frame 0x81c; opening body restored.
-// Round 199: Count/status scope 175; complete selected-point copy 182; both 180;
-// reference before selected output 174; scope/reference 175; point/reference 182;
-// all three 180; scoped count/status role names 175. Original output lifetimes restored.
-// Round 60 (kept): count output scoped to the request block 173; failure result stored through the
-// flag with one shared release 203; the rest nested under the tag test 95; dot3f for the three dot
-// products 44; vector3d_from_points3d for both differences 34. Not kept: count and status both
-// scoped 175; names sorting the buffer first 173; buffer declared at entry/after the actor 95/95;
-// dot3f argument orders (each, pairs, all) 34-44 unchanged; direction declared first 44; dot3f
-// tested directly 44; actor getter at the object/vehicle/second-difference use 60/135/238;
-// result first 68; slot first 34.
-// Round 49: const actor/buffer/both pointers 7/7/7; request/validation/release buffer aliases
-// 7/7/7; first/second position pointers 7/7. Starting body restored.
-// Round 16: the two homes are frame-relative +0x1c (actor) and +0x18 (buffer) in retail, the other
-// way round here; the request sits at +0xb4 in both. The buffer declared at function scope before
-// or after the actor (with 0, with no initializer, with a dummy initializer) 7/7/7/7; the buffer
-// declared after the entry/status/reference outputs 7/7/7; the actor typed as a long address 7;
-// redundant extra buffer uses (self-assign, self-compare) 7/7/7; the release written in both arms
-// 66; the actor declared inside the flag test with the getter in the test 63; the actor in a nested
-// block with the buffer outside 52; the actor looked up at every use 243; the slot and entry-guard
-// conditions written as nested ifs 7/7. Only the actor and buffer homes remain exchanged; the
-// opening body is restored.
-// Round 206: complete position after/before orientation 143/150; position plus post-clear buffer 215;
-// buffer after request clear/constants 198/198; each with real reference-field equality 224/224;
-// renewed actor view for the complete direction phase 223. Actor/buffer homes remain exchanged.
-// Round 69: actor named to sort after the buffer 7 (names do not order these homes); failure flag
-// after the actor store 7; prop test as its own if 7; third vector declared before the call 7;
-// untyped buffer pointer 7.
-// Round 41: entry flag test through a fresh actor lookup 33; buffer cleared after its release 7;
-// request outputs declared before the buffer 7; request before the count 7; reference output first 7.
-// Round 53: copied later actor view 7; actor copy with slot data view 7; actor copy, slot data view
-// and flattened request scope 34; slot data view alone 7; state scoped to the outer test 7;
-// flattened request scope alone 34; actor declaration split from its lookup 52; buffer declaration
-// split from acquisition 7. Actor/buffer homes remain exchanged; the opening body is restored.
-// Round 11 (lane 17): REFERENCE_EQUAL test with the failure store first and a `selected` copy for the
-// second call 7; radius if/else 7, default-then-override 43, `<= 0.0f` ternary 37; slot data view from
-// arg_1->unknownc in place/declared first 7/7; that view plus one position pointer 7; inverted tag test 188;
-// renames 7. Extra buffer releases before the first call or three after it give retail's homes but other
-// code (156-206); fresh actor lookups at the 270/26c/position reads keep the homes (140-235).
-// Round 49 (lane 14, fast): the failure store writing `false` directly 7; the slot flag named before the
-// prop test 7; the unit index declared then assigned 7; the reference compared against the global without
-// the copy 7; the side dot product scaled in its own statement's expression 7. Re-measured: the reference
-// test reversed (`!=` first, failure in the else) 137 (970 bytes).
-// Round 32 (lane 17, fast): the early `goto done` folded into the entry test 7; the slot cast at each use (no slot
-// local) 7; the 0x26c object index read once at entry into the later local 211; result and slot declared before
-// the actor 52 (968 bytes); the failure store through the actor local 206 (939 bytes).
-// Round 134: fresh actor after/before buffer 227/33; const argument, native object index, const
-// slot/tag/reference/radius 7 each. Opening body restored.
 // @retail 0x1ad6a0
 bool __stdcall function_1ad6a0(long arg_0, s_slot *arg_1)
 {
@@ -848,10 +767,13 @@ bool __stdcall function_1ad6a0(long arg_0, s_slot *arg_1)
 								cross3f(&local_16, &local_15, &side);
 								real local_20 = dot3f(&side, &local_21);
 								local_20 *= local_19;
+								long trick = 0;
 								if (local_20 > 1.0f)
-									function_f47d0(local_14, 1);
+									trick = 1;
 								else if (-1.0f > local_20)
-									function_f47d0(local_14, 2);
+									trick = 2;
+								if (trick)
+									function_f47d0(local_14, trick);
 							}
 						}
 					}
