@@ -673,6 +673,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC519: Complete nonempty/empty emitter outcomes, bool/byte/short/long,
 // 109/109/109/109/109/109/109/109. NOT kept: regressions from native admission
 // storage; original gate, offset, defaults, shared rotations and body restored.
+// AC524: Actual particle-loop continuation bool/byte/short/long, then complementary
+// completion results, 42 each at 1130 bytes. NOT kept: offset/default/reload and
+// row-i schedules remain; original guards, shared rotations and complete body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
