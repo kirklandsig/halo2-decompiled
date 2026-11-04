@@ -983,6 +983,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // seven subsets then ordinary complete expansion, 539 each. NOT kept: tag/count/plane
 // homes and rotation spills remain; original helpers and body restored. All rotation
 // inputs still precede the first output store. Shared-angle sum changes were not applied.
+// Y584: Axis normalizer numeric-length result, zero-default/branch-owned with
+// bool/byte/short/long epsilon admission: 548 each. NOT kept: frame 0x21e4
+// and extent 3631 lose retail 0x21dc/3647; original full body and helpers restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

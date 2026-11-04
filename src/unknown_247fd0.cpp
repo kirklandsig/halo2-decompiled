@@ -368,6 +368,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DH329: Six native own-input first-consumer reads 55 each; entry cache/parent input-slot
 // pointers 168/55. NOT kept: own-input forms lack equality; cache input also loses caller
 // (24). Original inputs, cache comparison and complete body restored.
+// Y584: Persistent validity/cached-record/value-array field references, seven subsets
+// and complete metadata-scope binding: 128/128/128/55/128/128/128/128. NOT kept:
+// post-sample compare stays split; other forms shorten to 863 bytes. Full original body restored.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

@@ -1947,6 +1947,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // Y577: Shared ammunition output at phase/query scope with end-bound do, bounded for,
 // short-ordinal cursor and fixed-count cursor: 278/278/251/251/278/278/251/251. NOT kept: ties
 // or regression; original full body restored. Native actor/options/pool and scalar homes remain.
+// Y584: Existing slot-query real-field reference/direct-read ownership, independent
+// current/secondary pairs and readonly pair: 251/258/251/251/258/251/251/251.
+// Original signed-word snapshots, both queries and full body restored; pool/actor/options homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

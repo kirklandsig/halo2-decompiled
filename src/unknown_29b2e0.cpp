@@ -322,6 +322,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // DH342: Existing vector setter at target/current/rotation input construction,
 // seven subsets 413/378/211/418/431/403/441; all plus final output setter 436 (sibling 46).
 // Original copies, helper contracts and body restored; unity/root/yaw homes remain.
+// Y584: Existing normalizer/rotation ordinary-inline and unannotated contracts on
+// the retained in-place graph, eight pairs 176 each. Original forced contracts,
+// scalar snapshots and full body restored; unity/root/yaw and rotation homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
