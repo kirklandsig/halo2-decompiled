@@ -1031,6 +1031,9 @@ extern long *g_51e9cc;
 // M383: Actual contiguous contact-field CRT fills at initial/object/instance phase subsets
 // 1/2/4/3/5/6/7, then fallback too: 255/214/204/259/275/221/266/272. NOT kept:
 // lookup receiver/store schedule not recovered; original scalar clears and complete body restored.
+// J256: Sparse contact-kind exclusive comparisons in six orders, named kind and independent tests:
+// 260/135/260/110/139/136/261/276. NOT kept: all sparse dispatch forms regress from 42; lookup address rematerialization persists and the independent tests also grow the frame
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -4527,6 +4530,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // magnitude carriers at two producer boundaries: 210/210/210/210/157/157/157/157. NOT kept: unmatched
 // one-use carrier graph; original product, coefficients, helper and complete body restored. Native 0x24
 // frame, normalization SIMD and trig/basis homes remain.
+// J256: Twice-used cosine complement at cosine/sine boundaries, mutable/immutable and ordinary/forced rotation:
+// 163/163/163/163/163/163/163/163. NOT kept: all eight common-factor forms regress from 145 to 163; the added inline formal and hoisted factor miss required byte equality
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

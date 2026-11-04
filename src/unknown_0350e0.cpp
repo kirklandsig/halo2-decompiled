@@ -2579,6 +2579,9 @@ real magnitude3d(vector3f const *v);
 // B442: Existing complete axis-angle matrix with returned/axis/output/in-place
 // vector application, matrix at producer/entry: 388/248/327/242/388/248/327/242.
 // NOT kept: changed floating expansion misses equality and grows; original full body restored.
+// J256: Complete admission/axis dot loops, parallel product parts, immutable and separated producers:
+// 184/170/184/170/170/170/170/170. NOT kept: admission loops regress and every other form ties 170; raw-length and promoted-dot homes do not recover
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2760,6 +2763,9 @@ s_cached_input_list g_5234e8[4];
 // M387: Radius-first position native/memcpy/memmove/setter captures, without/with list:
 // 147/147/136/162/136/136/132/150 fast (control 147, full 113). NOT kept: native/library
 // copies equal preview/list-only controls; memmove adds a call and 0xa4/0xa8 frames, setter shrinks. All restored.
+// J256: Coherent cache-update/filter/queued-producer inline contracts and forced updater expansion:
+// 123/113/123/113/123/113/123/1561. NOT kept: no target gain; updater inline loses a matched caller and forced expansion loses two, with length growing to 1660
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3170,6 +3176,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // M387: Existing projection producer as two genuine matrix-row iterations, long/int/dword/uint,
 // full expressions then complete accumulators: 498/498/498/498/510/510/510/510. NOT kept:
 // frames 0x68/0x70 grow beyond native 0x38; original helper/body restored, velocity/projection homes remain.
+// J256: Native maximum/divisor/projection-scale observation subsets and complete projection initialization:
+// 508/490/518/495/496/515/504/504. NOT kept: every form regresses from 486; maximum observations recover only four frame bytes, while scale capture enlarges it
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
