@@ -424,6 +424,12 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 // Further forms: shared output setter 81; shared input setter 68; both setters 90;
 // complete normalizer input snapshots 163, with output/both setters 147/125;
 // all squared terms named 3; plain array-index input copy 68.
+// Round 2 of #1061: still 3 (same on the 535-source image). The rotation axis stored through a
+// pointer local 3; the three components copied one by one, i/j/k order 71, k/j/i order 81; the flag
+// set through bit_vector_set 9; the angle declared after the flag store 10; the axis declared and
+// assigned separately 3. The three differences are unchanged: retail's flag OR and store precede the
+// angle duplicate (`fld st(0)`) and the first axis load.
+// Permuter (25 min on #1061, about 1180 variants): nothing below 3.
 // @retail 0xfbd40
 void function_fbd40(long projectile_index)
 {
@@ -1018,6 +1024,22 @@ real function_30bf0(vector3f *v);
 // (1012), with plain pointer reads too 278; the gravity scale read through its address on those 246 and 295 (1018; callers kept), plain
 // pointers 278 (0xfa6a0 34, 0x1f8100 5). The clamp alone 232 (986). Velocity written out instead of the scale helper 234 (983), with
 // the clamp 234 (986).
+// Round 2 of #1061: statement-by-statement logic walk against retail, no behaviour difference
+// found: gravity from the global times the scale, `0 > gravity` / `gravity > 0` and the two 0.0001 tests
+// (`ja`/`jbe`, same NaN senses), distance_squared = k*k + (j*j + i*i) order, a = g*g*0.25, discriminant base =
+// d2*a*4, two_a = a*2, root = -sqrt(base) rounded to float, optimal time = sqrt((-1/two_a)*root), minimum =
+// b - root clamped at 0 before its sqrt, minimum-speed store first, forced speed read once else speed with the
+// time-scale clamp [0.001, optimal] and `speed > sqrt(b - x)`, `chosen >= minimum`, c = b - v*v, `0 > c` and
+// `disc >= 0`, the sign via setne/lea and fimul, t2 unrounded in x87 with `t2 > 0`, the not-found exit (time =
+// optimal, chosen = minimum, result false), inverse time scaling of delta, horizontal speed before g*t/2 is added
+// to k, vertical stored before normalisation, the zero-length fallbacks (delta, then g_4687b0, result false) and
+// the stores in retail's order (direction, distance, speed out, vertical, horizontal, time). Only register homes,
+// the frame and the SSE reciprocal remain. New forms: two_a and the discriminant base as references to a
+// two-element array 232 (folds back); `volatile real two_a` as a diagnostic gives the two x87 divisions but 277
+// (1000 bytes) and loses every caller (0xfa6a0 44, 0x1f8100 8, 0x26f150 21, 0xecdc0 32, 0x2900b0 30): the
+// convention follows how two_a is produced, so the divisions and the convention cannot yet be had together.
+// Permuter (25 min on #1061, about 790 variants): 180 only with a volatile horizontal length and the found flag
+// as an unsigned long; not kept (volatile without a match).
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1274,6 +1296,18 @@ extern vector3f *g_4687ac;
 // Round 229: complete origin/target/both point values, native or library copies,
 // 196/181/221 in each family; both with bounded initial ray 221, shared query vector 218.
 // Every original input observation and executable body restored; native frame/tag/query homes remain.
+// Round 2 of #1061: logic walk against retail, no behaviour difference found: first query
+// (flags 0x2480000f, origin, point - origin, projectile+0x140, projectile index), radius test `0.0001 > radius`
+// then `+0xc4 != NONE`, side = cross(up, delta) in retail's component order, normalise and the g_4687ac fallback,
+// the four endpoints (side * radius, `0 - radius` for the negative pair; the negative products take radius first
+// on x and the side first on y, z), flags 0x4800008, ignore NONE for both side queries, the offset vector as end
+// - start. Retail's return-true block sits right after the first call and later hits jump back to it; ours puts
+// the merged block last. New forms: collision pointer read through its own address 163 (the load is still hoisted
+// into EBP), with the radius at each use 181 (745 bytes; EBP is then the definition and ESI reloads the
+// collision for the side queries as retail, but the frame stays 0x48 and the end points are still stored);
+// a local __forceinline helper with 0x16a040's body for the three queries 187 (735 bytes, frame 0x3c); side
+// queries joined as one `||` expression 163; early `return false` for the radius/tag test 181 (767 bytes).
+// Permuter (25 min on #1061, about 1140 variants): 160 only with vector3d_from_points3d's two points swapped; not kept.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -1364,6 +1398,11 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 // callers changed together; every order restored because gains are at most one.
 // Caller body: separate unsigned ordinals 4; array names/order combinations 4/4/4;
 // both plain pointer walks with array names/order combinations 114/114/114/114.
+// Round 2 of #1061: re-measured 4 (the four lea lines before `call 0xfd740`; every other instruction, the two loops
+// and the request fill agree). Retail 0xfd740 (a callee of this file, not touched here) takes its selector outputs in
+// eax (a stack argument loaded at entry), ecx, edx, esi, edi and ebp and null-tests them in that order at 0xfd783-0xfd7b5;
+// the caller's register choice (ecx = effect 1 at esp+0xa4, edx = effect 2 at +0xa8, esi = sound 0 at +0x94, edi = sound 1
+// at +0x98) is that callee's own convention, so nothing in this body moves it. BLOCKED-BY 0xfd740.
 // @retail 0xfcea0
 void function_fcea0(long effects_index, point3f const *point, vector3f const *direction,
 	s_effect_owner const *owner, long index, vector3f const *normal)
@@ -1474,6 +1513,16 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // Round 229: one done exit/exclusive arms with a twice-used selected effect result,
 // native unsigned ordinal and aggregate table defaults: 115/177/115/177/121/183/121/183.
 // Original exits, result reads, defaults and whole executable source restored; point/zero/selector homes remain.
+// Round 2 of #1061: logic walk against retail, no behaviour difference found: location from the
+// point, six NONE stores, markers from the direction/normal, default parameters, `attached` stores flags 1, the
+// object index and the word node index (retail loads a word), scales, markers, count 6, the selector call (the
+// index pushed as a raw dword where ours zero-extends the word), the alternate-tag early return with flags |= 4,
+// the unsigned-compared effect loop (`jb`), the final tag after flags |= 4, and the sound loop (point copy,
+// compressed forward, velocity, location, scale 1.0, bits 0x11, NONE playback, zero source/marker/variant).
+// Everything left is allocation around 0xfd740's five register pointer arguments (ours) against retail's four
+// (point in EDI, zero in EBX), so it stays BLOCKED-BY 0xfd740, which this lane does not touch. No new form tried.
+// Permuter (25 min on #1061, about 340 variants): 111 only with the flag set through an int temporary and the
+// sound index declared apart; the plain forms in it (tag before flag, unsigned index, declaration order) stay 115.
 // @retail 0xfd0e0
 void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f const *direction,
 	point3f const *point, vector3f const *normal, word index, bool attached, long object_index,
@@ -1589,13 +1638,30 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
-// score 307 (was 307): first +0 is entry scheduling; frame 0xc versus retail 4.
-// Pool/input and tag receiver allocation still differ.
-// Speed update is still called instead of expanded; 1239/1261 bytes.
+// score 296 (was 307; 535-source image; the 4-source reduced image allocates differently and scores
+// higher, so measure this with a big caller such as 0xfaa60 in the check).
+// Round 2 of #1061: statement-by-statement walk against retail: no behaviour difference (every
+// store, test, call and constant agrees); the differences are structural. (1) retail's callee list is
+// only 0xfbd40 and 0xfd8b0: it expands 0xfbfd0 after the 0xfbd40 call (pool and tag re-read, final speed
+// when object_flags bit 3 else initial speed), which written out here gives 230 at retail's 1261 bytes but is not kept: it copies another function's body without a match, so the call stays. (2) retail
+// reads the tag once at entry into EDI (definition local). (3) it reads the timer bounds straight from
+// the definition (frame 4, not 0xc) and tests flag bit 2 with shr/test (TEST_FIELD_BIT). (4) under water
+// is one `under_water = true` under `&& (!(water & 0x80) || 0 > dot)`, then bit_vector_set (the
+// `mov bl, 1; test bl, bl` pair). Scores on the 535-source image: definition local + inline speed update
+// reading the tag again 303; + single-store water 262; + timer/flag form 230 (all with the written-out speed update; with the call instead, 296, kept). Not kept: speed
+// update through the definition local 328 (311 with the water form), a second pool fetch like an inline
+// expansion (D,P) 314 / 310, seat tests as a word-bitfield view (retail's two shr/test) 246 at 1275
+// bytes, 0x190 stored from `speed` 215 at 1243 bytes (retail recomputes the product); named
+// object_flags bits 16/17, flags.unknown8 = false, a pool local with the root helper taking it, and
+// operand swaps of the speed product and the plane dot product all leave 230.
+// Left: retail loads the pool into EDX first and keeps index * 12 in EBP (ours keeps the pool in EBP, no
+// index * 12 as the speed update reads through ESI); retail reloads the tag for 0xfd8b0 where ours keeps
+// a copy; ours keeps NONE in a register for the 16-bit stores/compare where retail has immediates;
+// the speed product's operand order and the 0x190 store before the `and [esi+0x12c], 0xfffffeff` RMW;
+// the plane dot product's operand order; retail's two separate object_flags RMWs (0x10000, 0x20000)
+// where ours merges to one `or 0x30000`; retail's two separate seat-bit tests where ours has `test dl, 6`.
+// Earlier rounds (before the definition was read once):
 // HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
-// HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
-// HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
-// first +0 is entry scheduling; frame 0xc versus retail 4.
 // #9, so it waits for their OK) with a definition local at entry gives 304: the speed update expands where
 // retail expands it, the definition goes to EDI and the body is retail's 1261 bytes; the definition local
 // without the inline is 380. On that 304 form: retail keeps the pool pointer in EDX from the entry to the
@@ -1606,11 +1672,8 @@ PRIVATE inline long projectile_object_root(long object_index)
 // score 315 (was 315): retail expands the speed update inline after the 0xfbd40 call, keeping
 // index * 12 in EBP from entry and the definition in EDI; ours calls it, so the offset is never
 // kept and the entry differs at +0xb. Marking 0xfbfd0 `inline` expands it but scores 369.
-// score 315 (was 315): frame 4 agrees; pool/input and tag receiver allocation differ at +0xb.
+// Earlier (315): frame 4 agrees; pool/input and tag receiver allocation differ at +0xb.
 // Speed update is still called instead of expanded; 1226/1261 bytes.
-// first +0 is entry scheduling; frame 0xc versus retail 4.
-// Pool/input and tag receiver allocation still differ.
-// Speed update is still called instead of expanded; 1239/1261 bytes.
 // Native flag tests 380; complete water result 375; both 380; plain velocity-component
 // loop 364 fast, 360 plain (kept); loop/flags 381; loop/water 364; all three 381;
 // chained target initialization with all three 381. Unchanged reduced control 375.
@@ -1666,6 +1729,8 @@ PRIVATE inline long projectile_object_root(long object_index)
 bool __stdcall function_f8200(long projectile_index, byte const *data, long unused)
 {
 	s_projectile *projectile = PROJECTILE_GET(projectile_index);
+	// retail reads the tag once at entry (the definition lives in EDI from there on)
+	s_projectile_definition *definition = PROJECTILE_DEFINITION_GET(projectile->tag_index);
 
 	*(dword *)&projectile->flags |= 2;
 	projectile->target.object_index = NONE;
@@ -1679,52 +1744,49 @@ bool __stdcall function_f8200(long projectile_index, byte const *data, long unus
 	*(short *)((byte *)projectile + 0x1aa) = 0;
 	*(real *)((byte *)projectile + 0x16c) = function_fd8b0(projectile->tag_index, *(long const *)(data + 0x5c));
 
-	if (*(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0x184) == *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0x188))
+	if (*(real *)(((byte *)definition) + 0x184) == *(real *)(((byte *)definition) + 0x188))
 	{
-		*(real *)((byte *)projectile + 0x18c) = *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0x184);
+		*(real *)((byte *)projectile + 0x18c) = *(real *)(((byte *)definition) + 0x184);
 	}
 	else
 	{
 		*(real *)((byte *)projectile + 0x18c) =
-			projectile_random_range(*(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0x184), *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0x188));
+			projectile_random_range(*(real *)(((byte *)definition) + 0x184), *(real *)(((byte *)definition) + 0x188));
 	}
 
 	real ticks;
 
-	real timer_lower = *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xd4);
-	real timer_upper = *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xd8);
-
-	if ((PROJECTILE_DEFINITION_GET(projectile->tag_index))->flags & 4)
-		ticks = g_510c54->field_2_3 * timer_lower;
-	else if (timer_lower == timer_upper)
-		ticks = g_510c54->field_2_3 * timer_lower;
+	if (TEST_FIELD_BIT(definition->flag_bits.unknown2))
+		ticks = g_510c54->field_2_3 * *(real *)(((byte *)definition) + 0xd4);
+	else if (*(real *)(((byte *)definition) + 0xd4) == *(real *)(((byte *)definition) + 0xd8))
+		ticks = g_510c54->field_2_3 * *(real *)(((byte *)definition) + 0xd4);
 	else
-		ticks = projectile_random_range(timer_lower, timer_upper) *
+		ticks = projectile_random_range(*(real *)(((byte *)definition) + 0xd4), *(real *)(((byte *)definition) + 0xd8)) *
 			g_510c54->field_2_3;
 	if (ticks >= 1.0f)
 		*(real *)((byte *)projectile + 0x15c) = 1.0f / ticks;
 
-	real arming_ticks = g_510c54->field_2_3 * *(real *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0xcc);
+	real arming_ticks = g_510c54->field_2_3 * *(real *)(((byte *)definition) + 0xcc);
 
 	if (arming_ticks >= 1.0f)
 		*(real *)((byte *)projectile + 0x164) = 1.0f / arming_ticks;
 
 	projectile->attachment_index = NONE;
-	for (short i = 0; i < *(long *)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0x94); i++)
+	for (short i = 0; i < *(long *)(((byte *)definition) + 0x94); i++)
 	{
-		if (*(long *)(*(byte **)(((byte *)PROJECTILE_DEFINITION_GET(projectile->tag_index)) + 0x98) + i * 0x18) == 'cont')
+		if (*(long *)(*(byte **)(((byte *)definition) + 0x98) + i * 0x18) == 'cont')
 		{
 			projectile->attachment_index = i;
 			break;
 		}
 	}
 
-	real speed = *(real *)((byte *)projectile + 0x16c) * (PROJECTILE_DEFINITION_GET(projectile->tag_index))->unknown17c;
+	real speed = *(real *)((byte *)projectile + 0x16c) * definition->unknown17c;
 	vector3f *forward = (vector3f *)((byte *)projectile + 0x70);
 
 	for (long component = 0; component < 3; ++component)
 		projectile->linear_velocity.n[component] += forward->n[component] * speed;
-	*(real *)((byte *)projectile + 0x190) = *(real *)((byte *)projectile + 0x16c) * (PROJECTILE_DEFINITION_GET(projectile->tag_index))->unknown17c;
+	*(real *)((byte *)projectile + 0x190) = *(real *)((byte *)projectile + 0x16c) * definition->unknown17c;
 	*(dword *)&projectile->flags &= ~0x100;
 
 	bool under_water = false;
@@ -1738,30 +1800,18 @@ bool __stdcall function_f8200(long projectile_index, byte const *data, long unus
 		if (water != 0xff)
 		{
 			byte *plane = *(byte **)(bsp + 0x68) + (water & 0x7f) * 0x18;
+			point3f *center = (point3f *)((byte *)projectile + 0x30);
 
-			if (*(short *)(plane + 2) != NONE)
+			if (*(short *)(plane + 2) != NONE &&
+				(!(water & 0x80) ||
+				0.0f > *(real *)(plane + 0xc) * center->z + *(real *)(plane + 8) * center->y +
+					*(real *)(plane + 4) * center->x - *(real *)(plane + 0x10)))
 			{
-				if (!(water & 0x80))
-				{
-					under_water = true;
-				}
-				else
-				{
-					point3f *center = (point3f *)((byte *)projectile + 0x30);
-
-					if (0.0f > *(real *)(plane + 0xc) * center->z + *(real *)(plane + 8) * center->y +
-						*(real *)(plane + 4) * center->x - *(real *)(plane + 0x10))
-					{
-						under_water = true;
-					}
-				}
+				under_water = true;
 			}
 		}
 	}
-	if (under_water)
-		*(dword *)&projectile->object_flags |= 8;
-	else
-		*(dword *)&projectile->object_flags &= ~8;
+	bit_vector_set((dword *)&projectile->object_flags, 3, under_water);
 
 	function_fbd40(projectile_index);
 	function_fbfd0(projectile_index);
@@ -1919,6 +1969,23 @@ real function_17c900(short function_type, real input);
 // output at the three exits 377 (1477), with normalize3d 358 (1464); the salt in the wander branch 365 (1469), with normalize3d
 // 359 (1456); both 382 (1480), all three 345 (1467). Retail tests `ja` to the zero arm with j and k already in xmm2/xmm1 and
 // the zero in xmm4 from the entry; no plain form brings them there.
+// Round 2 of #1061: full statement walk against retail found no behaviour difference. Checked: the object and tag
+// lookups, the f86f0 call (target in ecx, output in edi), to_target i/j/k order, the normalizer's skip path (to_target
+// untouched, distance 0), the lead block (+0x198 > 0, speed > 0.0001, ba1d0 and 30bf0 arguments, the two 0..2 pins, the
+// lead field re-read, the i/j/k adds), the drift test (+0xbc bit 9 and distance > 0.0001; bit 7 tested separately for
+// the wander arm), the up x to_target cross products, the clock (null and active tests, game_time * rate * 6.5), the
+// 0.05 pin, the dot/cross/cos/sin terms of every component, the wander range, its 10/2 thresholds and 0.8 pin, the
+// 3/7 salts with the 0xffff masks, the two 17c900 calls (7*salt first, then 3*salt) and the cos/sin of yaw/pitch, and
+// every constant at its retail address (0.0001, 1, 2, 6.5, 0.05, 0.8, 0.1, 10, 1/3, 2pi, pi/2, pi). The only
+// differences are the three output stores (retail stores straight to the output in each exit; ours copies the point
+// once, same values) and the angle/cosine reusing the dead index slot (esp+0x40). The retail caller (call at 0xf91a6: `push
+// index; lea ebx, [esp+0xc4]; call`) proves the callee convention (index on the stack, output in ebx); only the salt
+// written at both uses plus the three exits gives it (328, caller 0xf8eb0 946 -> 969, so the pair rises by 3,
+// 1294 -> 1297, and the form is not kept). On that form: the three wander components computed into locals before the point set 328
+// (same code); `game_time` named in the wander branch 328 (same); wander direction vector 362 (1482 bytes, its tail is
+// retail's); the drift rotation as a named vector then scaled and stored 330 (stores land last as retail, schedule still
+// differs). Remaining as before: the early xmm4 zero, to_target kept in xmm1-3 across the lead merge, the rotation's
+// register homes.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
@@ -2387,9 +2454,11 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // rotation, field offsets, 1.0/0.5/0.0/0.0001/0.3 constants read from the XBE, condition directions, callee argument
 // registers and stack order, the end switch and its fall-through): no behaviour difference found. What differs is
 // layout (retail frame 0x118, collision at +0xcc, own slots for guidance forward/up/aim point/movement; ours 0x110)
-// and register/scheduling. Retail expands 0xfaa30 inline at only two of its six uses (the 1.0 test before the loop and
-// the predicted case at the end, both re-reading the data array with the saved index * 12 in [esp+0x7c]); a local
-// inline copy of it at the first use 1040, at both 1055 (4750 bytes), so all six stay calls to 0xfaa30.
+// and register/scheduling. Retail expands 0xfaa30 inline at two of its five uses (the 1.0 test before the loop and
+// the predicted case at the end, both re-reading the data array with the saved index * 12 in [esp+0x7c]); it emits
+// the range check's call twice (0xf97b4 and 0xf97ca, one per arm of the average_speed test), so its code has six
+// sites for the same five statements as ours (actions 1, 2, 1, 1 at collision_count == 10, 2). A local inline copy
+// at the first use 1040, at both 1055 (4750 bytes), so all five stay calls to 0xfaa30.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
@@ -2781,14 +2850,15 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 /* a projectile's collision: damage to what it hit, the response of the
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
-// score 1180 (was 1190): Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
+// score 1190: Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
 // Round 1 of #1061 (logic walk against retail, all blocks): no statement-level behaviour difference found except the
 // two below. collision_count is a dword in retail (`cmp dword ptr [esp+0x23c], 1`; the caller does `movsx edx, ax;
 // push edx`): `long collision_count` 1190 -> 1180 (4848 -> 4836 bytes) and caller 0xf8eb0 then pushes it as retail
 // does, but scores 946 -> 1037 (4691 -> 4718 bytes, positional shift), so it is not kept (the type changes no behaviour).
-// Retail stores NONE to the damage record's material (+0x7c) BEFORE calling 0xd6660 in both damage scopes, and
-// 0xd6660 then overwrites it with g_47d8e0: the store before the call 1180 (same, instruction now as retail), not kept
-// (dead-looking store; ours leaves NONE where retail leaves g_47d8e0 until 0xd7b80 writes it). A goto to share the
+// Source order (round 2 of #1061): retail stores NONE to the damage record's material (+0x7c) BEFORE calling 0xd6660
+// in both damage scopes, and 0xd6660 then overwrites it with g_47d8e0; the store now comes first, as retail's. No
+// behaviour change: g_47d8e0 is a constant NONE (src/unknown_187ec0.cpp, never written), so either order leaves NONE
+// (score unchanged). A goto to share the
 // `*velocity = *g_4687a4` tail 1180 (same bytes). Retail inlines function_faa30 at three of its four sites (the
 // unknowndc^2 test and both action-switch arms) and calls it only in the 0.09 block; ours calls all four.
 // Earlier 1162 (was 1185): frame 0x220 versus 0x218, velocity on the stack versus eax, input normalization and effect scheduling remain.
@@ -2936,8 +3006,8 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 		{
 			s_type_1e6529 damage;
 
+			damage.material_index = NONE; /* retail stores it first; 0xd6660 then writes its default */
 			function_d6660(&damage, damage_definition_index);
-			damage.material_index = NONE;
 			damage.flags |= 8;
 			damage.unknown84 = *((byte *)definition + 0x128) & 0x3f;
 			damage.scale = damage_scale;
@@ -3041,8 +3111,8 @@ no_effects:
 	{
 		s_type_1e6529 damage;
 
+		damage.material_index = NONE; /* retail stores it first; 0xd6660 then writes its default */
 		function_d6660(&damage, damage_definition_index);
-		damage.material_index = NONE;
 		damage.flags |= 8;
 		damage.origin = collision->point;
 		damage.position = collision->point;
