@@ -650,6 +650,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // read into a pointer before the turned copy 94; the side test inside the sine expression 130 (835 B). A
 // compile-only probe puts the zero in XMM0 after the scale products (retail's) when the rotation is a call, and
 // in XMM6 above the divide (ours) once its body is inlined, so the hoist follows the rotation's register pressure.
+// Round 138: split turn/direction declarations 77 each; sine after direction/at entry 77 each; outer side
+// predicate with entry sine 77; speed declared at entry/after direction with its read at the original point
+// 77 each; named second-normalization result 85 (842 bytes). Original body restored; zero lifetime remains.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
