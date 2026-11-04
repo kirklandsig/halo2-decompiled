@@ -3279,6 +3279,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M364: Original early-return changed result in char/signed-
 // char/byte/short/word/int/long/dword storage: 610/610/610/623/623/625/625/625. NOT kept: no
 // native result-byte/flight-home match; original result domain and complete body restored.
+// F388: Whole facing/turned/axis component-array views, subsets 1/2/4/3/5/6/7:
+// fast 604/604/611/614/605/605/613; all with side/aim/look views 619
+// (control 600, full 561). NOT kept: regressions and growth; original body
+// restored, result/flight-scalar homes and vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

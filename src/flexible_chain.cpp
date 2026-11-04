@@ -475,6 +475,9 @@ void __stdcall function_1160c0(real dt)
 // position-direction boundaries, subsets 1/2/4/3/5/6/7, then node publication:
 // 345/277/367/336/352/354/339/345. NOT kept: regressions and nonnative
 // homes or extent; original complete copies/body restored, segment/axis homes remain.
+// F388: Existing axis/rest-offset/recurrent-previous component-array views,
+// subsets 1/2/4/3/5/6/7: 171 each; all with working direction/position/prediction 183.
+// NOT kept: no gain; original body restored, segment and mirrored homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
