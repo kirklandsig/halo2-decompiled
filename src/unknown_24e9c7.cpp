@@ -312,6 +312,18 @@ struct s_24e9c7_bounds
 // Round 390: Actual four-real rectangle array with memcpy/memmove, producer/entry/
 // kind/group storage: 194 in all eight forms (760/743 bytes); caller also loses its match.
 // Original record, copy and full body restored; early across spill and scalar homes remain.
+// Round 68 (m3 lane 1; "h" = a one-link LTCG harness with unknown_22a664, unknown_24e59f, globals.cpp and the other globals defined and
+// their addresses taken, listing equal to the full build's, reads 123 for this body): retail's corner sums copy the offset and add the memory
+// corner, which says the corners are defined before the offsets. Grid of across `size * -j`/`size * (0.0f - j)`, up and back unary/`0.0f -`,
+// all four corner copies in place/before the height/after the result/after the half width, sums `+=`/`offset + corner`: `+=` and
+// `offset + corner` same code, unary and `0.0f -` on up same code; corners after the half width 128 plain (aligned 114 against 119, the
+// lowest aligned), after the result 129h, before the height 131h; `0.0f -` across 135h (739 bytes), after the result 133h, after the half width
+// 135h. Across in place into side scalars 136h (738 bytes), after the result 129h; separate side scalars and a side point with `0.0f -`
+// across 136h; back scalars with those 144h. forward_i named for the across product and up.x (retail's one read in XMM4) with
+// `0.0f -` across: scale first or last, half width before or after up, all corner places: best 131h; corners after the result with half width after
+// up 143 plain (748 bytes), the first form to put kind and bitmap at retail's -0x14/-0x18 with a 5-reference spill beside result, but
+// ours orders result -8, spill -0xc, unused -0x10 where retail has spill -8, unused -0xc, result -0x10. The across pair declared at the function's
+// top, ahead of result, in both orders, on all 32 of those forms: every home unchanged, best 131h.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
