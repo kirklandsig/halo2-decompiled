@@ -599,6 +599,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // six ranks then coherent names at both endpoint ranks: 49 each at 176/176 bytes.
 // NOT kept: no byte match; original initialized declarations and complete body restored.
 // False BL, temporary EBP and independent header/object computations remain.
+// Round 86 (m3 lane 16, fast with 0xa5b10): the bool result with a local index 75 (160 bytes; plain agrees, so the reduced image's
+// global caveat hides nothing here); the entity's index at each use 82 (157 bytes); negated flag first with an else-if NONE 77;
+// a named flagged bool 77, from a ternary 75; a ternary in the test 65 (176 bytes, shift and not for the flag); a byte flags
+// local 75; `||` with a nested reset 77; early returns 77 (155 bytes). A retail scan finds the header flag test followed at
+// once by a recomputed lookup in no other function; elsewhere a store or a loop stands between the two.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

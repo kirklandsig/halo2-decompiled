@@ -360,6 +360,14 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // M366: Canonical success signed-byte/short/word/int64 storage, false default then true-default rejection:
 // 41/47/47/48/62/64/64/48. NOT kept: all regress; false defaults and true int64 also lose
 // the matched caller. Original Boolean body restored; saved-start/scan register split remains.
+// Round 86 (m3 lane 16, fast with 0xb5f10/0xb61d0): a plain `string` with `string + start`, all 12 parameter orders that keep
+// string before destination: STCD STDC SCTD SCDT SDTC SDCT 41 (104 bytes), TSCD TSDC TCSD CTSD 48 (93 bytes), CSTD CSDT 42 (104),
+// 0xb5f10 21-82 in all; the read `char const *text = string;` after the clamp in the same 12 orders 27 (0xb5f10 5-38; start
+// EDX, walk EDI where retail has start EDI, walk EDX). Nested tests, named length, early `source` 21 with 0xb5f10 matched
+// (entry and start EDI as retail, walk ECX, count EDX; one-use locals ahead of the compare, so not kept), with `unsigned long`
+// length 21, with an `end` local too 21; `long end` before the scan 49 (94 bytes); source after the compare 32; `start +=`
+// before the clamp 36; nested tests with the text read 27, named length with it 27, `length >= start + count` with it 28;
+// named length with `string + start` 28, with `start +=` 40.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
