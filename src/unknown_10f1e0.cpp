@@ -1798,6 +1798,9 @@ bool __stdcall function_110ab0(long unit_index)
 // P327: Complete base/depletion/overlay true-false result producers, masks 1/2/4/3/5/6/7,
 // then all with result at entry: 465/430/450/465/465/430/465/465. NOT kept: 430
 // still has 424 code differences; only table/extent improves. Original full body restored.
+// DH372: First/second held-query presence bool/byte/short/long: 450 each.
+// NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
+// Original body and queries restored; state/request/result homes remain.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
