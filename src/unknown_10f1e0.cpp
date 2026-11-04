@@ -2474,6 +2474,21 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // `if (!0x114520) return false;` with the request block flat 98 (215 bytes); request priority captured after the
 // fallback block 85 (252 bytes); the request record zero-initialised with `= {0}` 65 (248 bytes); the index
 // declared then assigned after the priority 16; the index from an if/else on entry_index 16.
+// Round 54 (m3 lane 15; one-link harness with src/unknown_1130a0.cpp and src/unknown_20ba00.cpp, same roles, 22 for the check's
+// 16): the colouring order is the cause: the heaviest value takes EBX, the next ESI, the last EBP, and retail colours NONE first,
+// ours index, priority, NONE. Diagnostics with extra volatile NONE stores in the request block: 2 no change, 4 NONE ESI and
+// priority EBP, 8 retail's exact roles (index ESI, NONE EBX, priority EBP). Two more priority stores swap index and priority.
+// Overwritten NONE stores do not count; removing the copy, the memset or the test of extra moves the roles but not to retail's.
+// Real (fast): request setup through a forceinline helper 16; extra fill through one 16; both 16; entry_index tested and reassigned
+// then index declared 16; index from a ternary 16; index set in both arms of a test of entry_index 16; entry store first 16;
+// comparisons against `(short)NONE` 16; output cleared ahead of the fallback test 23; extra copied by struct assignment 16, through
+// a typed pointer 16; memmove 51; memcpy with a literal size 16. Harness (22 base): the call and return in both arms 41, the call in
+// both arms 41, the else as a fall-through 41, inverted arms 32; implied NONE tests in five places 22 to 28 (threaded, roles
+// unchanged); `!= false` 22, `== true` 24, a named bool 22; an empty `do {} while (false);` at all 16 statement boundaries 22;
+// every spelling of each NONE use (-1, typed casts, 0xffffffff) 22, word forms 83 to 88, a long index 31; index defaulting to NONE then set in
+// both arms 22; 72 combinations of an extra local, `!= NULL`, declaration order, memset spelling and priority casts keep our roles, with a
+// one-exit result 91 (224 bytes; index ESI, priority EBP, NONE EAX).
+// A 600 s permuter run (52 tries) none below 16.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

@@ -2921,6 +2921,10 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // before 'ligh' 23; light test inverted with the detached call first 23. Every other 0x1895f0 caller fills the
 // record as position, compressed forward, velocity, location (retail's order here too); that order needs
 // 0x189060's register order (round 117 lead), BLOCKED-BY 0xbf600's call (contributor).
+// Round 54 (m3 lane 15, fast): every order of the detached record's position, compression, location and velocity: 23 for the current
+// one, then 26 (location, position, velocity, compression), 27 (three forms), 28 (nine), 29 (six), 40 (retail's order), 42, 43, 43.
+// The attached call loads scale into EDI because position and direction already hold EAX and ECX in our evaluation order; that and
+// the detached arm's rotation still need 0x189060's order. BLOCKED-BY 0xbf600, 0xceee0 (their calls) and 0x17e670.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
