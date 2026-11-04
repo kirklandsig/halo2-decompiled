@@ -621,6 +621,11 @@ PRIVATE __forceinline void function_2417a1(s_marker_entry const *arg_0, long arg
 // distance `d = dx * dx; d += dy * dy;` 173; the `slots` local declared at the top of the k loop 169 (717 bytes, but
 // the slot argument moves to the stack and caller 0x240160 drops to 46: not kept); `sqrt(dy * dy + dx * dx)` 173
 // (same code); `if (marker_index == NONE) continue;` 173; the init stores through the existing real_point3d_set 200.
+// Round 43 (lane 17, fast with 0x19ec40 and its callees, which agrees with the plain 2): the result index named once
+// for the marker test and the copy 193 (690 bytes); the squared distance in a double 13 (frame 0x48); the marker point
+// declared first in its block 2; dx and dy declared before the copy 2; `continue` on a failed marker test 2 (all
+// three identical). The compile-only harness schedules this block differently (fld before the z load), so it is no
+// guide here. Original body restored.
 // @retail 0x243c00
 void function_243c00(long slot)
 {

@@ -3629,6 +3629,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // M344: Relay formal char/signed-char/byte/short/word/int/long/dword
 // 139/139/139/155/155/140/140/140, all 488/488 bytes. NOT kept: byte forms tie;
 // wider forms regress and lose the parser. Original bool contract/body restored.
+// Round 69 (m3 lane 10, fast; 0x564c0 matched each time): cursor with size, consumed, cursor, stride, then size, consumed,
+// cursor at the tail 164 (478 bytes, aligned 79, masked 32). Diagnostic, the member in a scratch global: 68 (aligned 45, masked
+// 16): EBP then holds the channel from the entry and the arms, the route's home and the tail are retail's, so the member
+// being a register candidate is the cause. Keeping a local member out of registers failed, all 164 with the same code: an
+// unused pointer to it, a const reference to the call, a one-element array, an assignment inside its test (alone, split from the
+// packet test, NONE-initialised), declared at function or loop scope; a local copy of the channel 164; a dword member mask 190 (459 bytes).
 // Twice-used relay payload at entry/member/admission/mask producers: indexed
 // packets 139/139/139/139; independent packet cursor 164/164/164/164 (478 bytes).
 // Original payload expressions, live count reads, traversal and complete body restored.

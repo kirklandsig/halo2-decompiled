@@ -230,6 +230,15 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // and add on it) 181 at retail's 821 bytes (the power takes xmm7 and the strength spills), read just before
 // `if (i == 0)` 181; `byte const *entry` 30 (same code), with colour first 121; colour first with the
 // strength declared inside the lights branch 139.
+// Round 85 (m3 lane 9, fast; compile-only screen of the add on the colour-first body): colour first re-measured 121 (828 bytes); strength
+// first with the entry used after the copy (diagnostic) 187: the movss stays first, so the scheduler does not sink it and retail's source
+// order is colour first. Strength read into a local before the copy 30 (same code); pinned_real by value 30 and colour first 121; a typed
+// collision result 30 and colour first 121; colour first with both arm stores in a forceinline pointer helper 121; colour first with a power
+// local for the test and divide 121. Screen, colour first: the add turns strength-first with one added pointer read at offset 0 (point, sky,
+// record, the zero vector) or one store through record before the first-light arm, and a second added read turns it back; a dead read, global
+// reads and stores and +4 reads alone do nothing. No natural form moves it: memcpy for the seeds and the copy (all 8 subsets), count and lights
+// locals, tag-block views of the sky, light and scenario blocks (all 8 subsets), the blend as a repeated-expression PIN, inline helpers with
+// value, pointer or reference strength, a const entry, nested else and `<=` tests.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
