@@ -580,7 +580,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 114 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// score 115 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // frame 0x264 agrees; predicate packing, left-word and color/rectangle/scalar homes differ; both text helpers match.
 // frame 0x264 agrees; predicate packing and color/rectangle/scalar homes still differ.
 // frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
@@ -707,6 +707,11 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // line position declared before the game time 122; text height as a short 340 (1895 B); the status duration
 // as `value ? value : 1` 116; timer alpha as a compound `*=` 115 (same code). Retail's tutorial colour is
 // `flag ? a4 : (bit ? a8 : a4)` with the a4 arm first and the bit test jumping back to it.
+// Round 131 (m3 lane 8, fast with 0x24ce9d/0x24c80b/0x24cedf; 0x24ce9d matched each time; base 115 in both checks):
+// `short top, left;` in one declaration 115 (same code); the timer flag as short 195 (1890 bytes), as dword 115 (same
+// code); the tutorial flag as long 227 (1890 bytes); `left` declared before `top` with the bool timer 191 (1888 bytes).
+// Retail keeps `left` as a word memory local at -0x3c beside `top`'s dword spill at -0x38; ours spills `left` as a dword
+// at -0x50 and shifts font (-0x4c against -0x50), line height (-0x18 against -0x14) and player (-0x3c against -0x40).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

@@ -341,6 +341,25 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // in retail's slot order 931f (no slot moves); self unit by a ternary 916f, 899 plain (3721 bytes);
 // enemy as `false` plus `if (actor)` 900f, 934 plain; object/marker buffers at entry 931f; combined
 // flags as `moving | (sphere_flags | obstacle_flags)` (retail's or order) 931f.
+// J246: Complete paired vertical bounds, whole velocity projection and expanded-radius
+// producer subsets 1/2/4/3/5/6/7, then all with radius square:
+// 882/882/924/882/924/924/924/924. NOT kept: shared radius grows frame to 0x2cbc
+// versus 0x2cac; other complete expression values tie. Original whole body restored.
+// B406: Required/excluded sphere-admission masks byte/word/long/dword at filter
+// 928/893/897/897f; per-object mask producers 946/892/888/888f (control 931f, full 882).
+// NOT kept: retail has separate Boolean/byte gates; frame remains 0x2cb8 or grows to
+// 0x2cbc versus 0x2cac. Original filters, qualifiers, buffers and complete body restored.
+// B408: Raised query point reused by other-actor/vehicle/sphere center lifetime subsets
+// 1..7: 915/917/926/923/932/897/938f; original query record with shared sphere center 905f
+// (control 931f, full 882). NOT kept: frames 0x2cb4/0x2ca8/0x2cb8 miss retail 0x2cac
+// and lengths 3680..3708 move away. Original query, point lifetimes and full body restored.
+// M353: Motion admission produces enabled/disabled priority truth, bool/byte/short/long:
+// 926/926/885/885; complements 882/882/932/882 fast (control 931; full 882).
+// NOT kept: test-produced flags miss byte equality and native frame 0x2cac.
+// Original priority/enabled graph, qualifiers and complete body restored.
+// DH332: Standard coordinate differences, seven subsets then reverse sphere traversal; reduced control 931:
+// 935/935/917/896/904/959/920/1022. NOT kept: lower previews grow frames away from 0x2cac; one joint gain has regressing parts. Full 882 retained.
+// Original complete body and contracts restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1462,6 +1481,33 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // 418 (same code); edge declared and initialised at the untyped branch scope 439 (1754 bytes);
 // copied_last/used/index declarations reversed 418 (same code); edge renamed (name-order tip) 418
 // (same code); emitted type from the type local instead of the step 421 (1755 bytes).
+// Corrected two-radius graph: native first/second trace and whole-source
+// receiver subsets 1/2/4/3/5/6/7, 418/418/429/418/429/429/429; native
+// positioned-point receiver 418. All restored; no frame/zero/home recovery.
+// Original radius values, native call roles and complete body retained.
+// B397: Correct original-radius live interval with long type/link/successor subsets,
+// then all with zero-extended selected type 423/418/476/409/475/476/475/475. NOT kept: 409
+// needs both width changes; either alone regresses/ties, and native link stores stay
+// word-sized. Original storage restored; frame 0x114/0x10c and zero homes remain.
+// Round 404: Trace start/target/both shared setters 426/378/370; direct-start stores 418, with target
+// setter 378; const start 418/378; attempt-owned start 412. NOT kept: target setter adds an in-loop z
+// store; retail initializes z before the loop. Existing planar target setter alone/with start setter
+// 427/435. Original endpoints/body restored; frame/zero/count homes remain.
+// P308: On the retained two-radius lifetime, existing final difference/length/start-setter
+// subsets 1/2/3/4/5/6/7 score 437/418/436/426/429/426/428; complete self-dot 428.
+// NOT kept: ties/regressions; original point values, both radii, helpers and full body restored.
+// P310: Joined forward-scan/reverse-candidate cursor, while-for/for-for/while-while/for-while:
+// short 438/621/438/438; long 456/649/456/456. NOT kept: all regress; original separate
+// scan/candidate ordinals, both radius values, geometry and complete body restored.
+// M351: Immutable original/expanded radius and data binding, all seven subsets, then all
+// with fixed source/current/selected/output receiver bindings: 418 each. Original body restored;
+// frame 0x114 versus 0x10c, persistent zero and metadata homes remain.
+// DH330: On the original-radius graph, array center pointer/reference 490/490; separate
+// corners with copy/pointer/reference center 418/490/490; direct trace-target output
+// alone/separate corners/center pointer 439/439/520. Original workspaces and body restored.
+// DH338: Existing normalizer early-zero/positive-first/zero-result/magnitude-result
+// 418/418/441/418; each with the planar setter 434. Setter forms raise the other
+// normalizer user 68 to 98/91; all restored, frame/radius/zero/metadata homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

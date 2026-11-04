@@ -736,6 +736,12 @@ bool sound_driver_voice_create_buffer(
 // B391: Split low-byte capture then spatial mask at entry/clear/count/input boundaries,
 // canonical bool then byte playback: 71/80/80/73/71/80/80/73. Original complete
 // body restored; spatial/play homes and descriptor zero/input scheduling remain.
+// Round 52 (m3 lane 15, fast with 0x191420): a word result with the 3D flag first 178 (603 bytes), with play first 75;
+// a long result with the 3D flag first re-measured 158 (bools as retail, the result a sign-extended copy after the
+// range test); both bools const with the 3D flag first 182 (599); the 3D flag first with the result assigned at the
+// end of each success arm 182 (599). Whichever bool is defined first is computed from a copy of flags and the other
+// in place, so retail's source defines the 3D flag first; the open question is why its short result/voice index
+// then loses the last callee-saved register to the 3D flag in retail and wins it here.
 // B393: Both SDK creation outcomes bool/byte/word/long, success then failure polarity,
 // with original descriptor phases and modes: 71/71/71/71/71/71/71/71. NOT kept: no exact match;
 // original complete body restored; spatial/play carriers and descriptor zero/input homes remain.

@@ -402,6 +402,11 @@ public:
 // (salt forms lose the frame: 0x8-0x0c against 0x14, location in EBX); location through its address with retest+salt 220,
 // plus indexed 221, retest only 118 (0x175270 21: the bool loses its register in the callee and leaves AL). Retail reloads
 // the location from its stack home in the link arm while EDI holds it only through the viewer loop.
+// Round 52 (m3 lane 15, fast with 0x175270): the counter declared before the `for` 54; a plain while with the increment
+// last 54; head alone in the for-init 54. local_0 walked as the head (no copy; retail's reload below the guard reads like
+// local_0 enregistered only in the loop) with the handle in place / the head set before the break test / the indexed
+// table: alone 243 (727 bytes), salt 272 (700), retest 111 (745, frame 0x10, local_0 stays in memory, NONE in ESI), retest +
+// salt 229 (743; 0x175270 100), indexed 243, indexed + salt 270 (702), indexed + retest 113 (747), all 231 (743; 0x175270 100).
 // B393: Integer allocation outcomes byte/word/long/dword, success then failure polarity,
 // reused by initialization/rejection: 102/107/106/106/102/107/106/106. NOT kept: no exact match;
 // original complete body restored. Child admission, pool/NONE ranks and salted link remain.

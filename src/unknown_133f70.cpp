@@ -62,7 +62,7 @@ short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
 	bool arg_16, bool arg_17, bool arg_18, real arg_19, real arg_20,
 	real arg_21, word arg_22, point3f const *arg_23, real arg_24);
 
-// score 16 (was 16): the 22nd argument of the 0x2cbf0 call is a word in retail, and 0x2cbf0 declares a
+// score 8 (was 8): the 22nd argument of the 0x2cbf0 call is a word in retail, and 0x2cbf0 declares a
 // word since r644 (#1015; it was a byte, score not re-measured); field_2c[i] is computed before the
 // field_4/field_5c pushes in retail. Round 58: natural loop with the record reset from the parameter
 // 247 (parameter moves to the stack); record through the parameter/const source copy/record in the loop
@@ -174,6 +174,9 @@ short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
 // Round 118: active record for three call inputs 239; category row at the call/before the inner
 // loop 16/16; direct pointer arithmetic, category value and element address 16 each; active record
 // for every call input 215; active record from the feature read 239. Caller preserved; original restored.
+// Round 145 (m3 lane 6, fast): retail loads the outer index into ECX and the category into EDX ahead of the
+// field_4/field_5c pushes; a `(long)` category cast 8; outer counter at function scope 8; the copy declared
+// before `original` 8; inner counter at function scope 8; `short` outer counter 249 (658 bytes).
 // @retail 0x133f70
 void function_133f70(s_133f70 const *record, bool arg_2)
 {

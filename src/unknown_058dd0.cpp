@@ -847,6 +847,9 @@ void c_session_client::function_06dbc0()
 // declaration here 100 (still out of line: its /Ob0 file); the mode/type test as a guard return 43; memcmp
 // tested for truth 43; the busy states as one if-condition 73 (113 bytes). Still BLOCKED-BY 0x58d90's /Ob0
 // file (retail inlines it here: direct 7-entry table and `this` in EBX as if live across the inlined call).
+// Round 145 (m3 lane 6, fast): /Ob0 dropped from 0x58d90's file with the switch as a call to it 47 (inlined,
+// direct table, this still in edx; 10 matched 0x58d90 callers then inline it too, so not kept); separate case 7/8
+// bodies 47; with a const id pointer 47 (round 113's member-id pointer and client copy re-measured 47/47).
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {

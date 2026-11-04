@@ -441,6 +441,13 @@ void function_125a90(long value);
 // M341: Actual kind-bitset producer byte/word/long/dword, negative/positive decision:
 // 48/48/36/36/48/48/36/36. Original expression and full policy loop restored;
 // element multiply/LEA, early policy load and decision-block order remain.
+// Round 84 (m3 lane 9, fast control 36): the arm whose flag is materialized is the one that falls into the
+// removal (retail: special arm with `sete`; ours: kind arm with `setne`). The stop decision as an inline predicate
+// with early returns (`if (!b || stops(element, a))`): a plain `inline` one stays out of line, 170 (342 bytes); as
+// `__forceinline` 47 (retail's `cmp eax, 0x26` and both arm bodies, but mirrored: kind arm, keep, special arm,
+// removal); the predicate in keep sense 87; its class test negated, kind case first 47 (same code); the caller's
+// keep branch first 47 (same code); the named class condition inside the forceinline predicate 153 (467 bytes,
+// 0x221810 inlined again). Original body restored; still BLOCKED-BY 0x221810 (its file held this round).
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
