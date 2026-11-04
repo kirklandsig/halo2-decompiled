@@ -1234,6 +1234,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // call-free group phase, singles and joint placements: 937/937/838/831/986/957/986/957.
 // NOT kept: all regress and shorten; ID transfers shrink frame to 0x50 rather
 // than native 0xb4. Original element copies, arrays and complete body restored.
+// M392: Native initial reject scopes after gate boundaries 1/3/1+3/1+2/1+4/2+3/1+2+3/all: 766/766/766/766/766/766/766/766.
+// NOT kept: no native ingress/frame/lookup recovery; original short-circuit guard restored. Original complete body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
