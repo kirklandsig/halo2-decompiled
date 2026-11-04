@@ -368,7 +368,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
-// score 286 (was 295): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// score 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
 // M3 lane 2 r47: the projection through the existing dot3f(&offset, &edge_vector) 286 plain (kept, 1389 bytes: retail's k, j, i
 // sum order; written out ours summed i first), dot3f(&edge_vector, &offset) 286. On 286 (fast): short link count 359 (1375);
 // the node type named once 345 (1400); count zeroed after the init loop 359 (1391); `special` false then set by an if 287
@@ -559,6 +559,11 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // bounded link/path/initialization carrier combinations 372/409/389/379/408/409/398/395.
 // NOT kept: nonexact single-history forms; each loses matched parent to 251. Original
 // two histories, counters, indexed memcpy and full body restored; frame/flag homes remain.
+// M3 lane 7 r126 (fast, 0x270930 kept): the distance sum as `(j*j + k*k) + i*i` 286 (same code); the distance
+// computed in each arm with 0x210a30's two sum orders 312 (1412 bytes); `origin = &input->start` for the delta block
+// 354 (1391), with the short link count 358 (1375); the existing 0x210850 for both conversions 356 (1320, called out
+// of line). Retail's delta block is 0x210a30 inlined with 0x210850 inlined inside it while its out-of-line 0x210a30
+// still calls 0x210850; ours cannot inline it across the /Ob1 file (a file-flags question, left to the user).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

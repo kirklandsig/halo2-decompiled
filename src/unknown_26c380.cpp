@@ -302,6 +302,13 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // M339: Raw edge-query positive/complementary test-owned hit in bool/byte/short/long:
 // 446/452/452/452/446/452/452/452. NOT kept: test-produced flags did not match; original full body
 // restored.
+// M3 lane 7 r126 (fast, plain-confirmed for the kept form): retail's EBX zero is `edge = NULL` (edge lives in EBX from
+// entry: `test ebx, ebx; je; test byte ptr [ebx + 5], 2`, spilled to +0x14 in the inner loop), which also feeds the BL
+// byte stores and the count store; pathfinding stays in EBP throughout. Ours keeps edge in memory, the zero in EBP and
+// shares EBX between pathfinding and edge (reloaded from its home twice). The file's private magnitude3d copy replaced
+// by the existing 0x24590 410 (same code, inlined; NOT kept: the new caller raised 0x15f3a0 41 -> 42 in the full check);
+// on it `bool success` with `short count = 0` at entry 550 (1472 bytes); `short count = 0` with the entry locals 425
+// (1615); `edge = NULL` declared first 427 (1615); `vector2f line_normal = { normal.i, normal.j };` 427 (1615).
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

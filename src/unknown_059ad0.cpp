@@ -5014,6 +5014,15 @@ struct s_membership_update_snapshot
 // EDX). No gain on it: renames of the masks 461 fast (at the 453 stage), declaration places of the masks and i 363 fast each; other loops sharing i 363 fast, states+players
 // sharing 473 fast; direct indexed fields for the first/second/both loops 721/646/754 fast; named index locals and player locals 457;
 // bit-first mask tests 457/457; nested player validation with shorts 457 [110]; other 0x5f900 store orders lose 0x5f900.
+// M3 lane 7 r126 (fast unless marked): lane 15's typed-record result chain (457 plain) with the implied `result &&` loop
+// heads made necessary by dropping the breaks 790 (2616 bytes; the host-lost arm moves first and session/update swap
+// EBX/EDX, as round 80 saw), with case 1 breaking out and the closing `if (!result)` tests split 775; the split alone 363
+// (lane 15's own fast count, same code); loop 1 headed `i < count` and loop 2 out of `if (result)` (its head then needed)
+// 763. On the 569 body: the base update number as a named local at all twelve uses 714; a member-state pointer in the
+// rebuild loop 523 (same code); a `player_record` pointer for case 2's four writes 519 fast, 564 plain (2589 bytes, first
+// +0x6c; five points, below the keep floor); on that: 0x5f900 storing unknown00, flag1, unknown04 564 plain (0x5f900 kept),
+// the state pointer 519, per-case `long player_index` reads 525, memset for both player_indices fills 669, a long loop-1
+// index 693.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {
