@@ -2247,7 +2247,7 @@ struct s_unit_motion
 // 28; named phase values or one step variable 70 (218 bytes); one-use named products and outputs 28 (still inlined at
 // 2871 bytes); in-place position and velocity 121 (277 bytes, stack again, not inlined); `if (time <= step)` steps 66 (221
 // bytes); defined after 0xc7840 28 (still inlined). Only a test ahead of the calls in 0xc7840 keeps it out of line (see its note).
-// Round 2 of #1049 (u2A, fast): statement-by-statement walk against retail finds no logic difference: same done test and
+// Round 2 of #1049 (fast): statement-by-statement walk against retail finds no logic difference: same done test and
 // copies, same three phases (accelerate 0x10/0xc, coast 0x14, decelerate 0x1c/0x18), same clamp (`time <= step` -> time),
 // same final `time > 0`. The 38 extra bytes are only the stack arguments. The accumulator form (28, 227 bytes) differs from
 // retail in one thing: time arrives in XMM2 and step is XMM3 (retail time XMM3, step XMM2); variants that keep 28 and the
@@ -3032,7 +3032,7 @@ void __stdcall function_ced30(long unit_index, long object_index)
 // short first, the existing current-weapon header helper and action declared first: 131 each.
 // Also: the type read through a reference instead of the weapon index 131 (with both 127); the two
 // lookups through one inline helper taking the hand 127; the second hand computed first 135.
-// Round 2 of #1049 (u2A, fast): aligned with retail the only structural differences are the reload of the pool's data and the
+// Round 2 of #1049 (fast): aligned with retail the only structural differences are the reload of the pool's data and the
 // unit for the second hand (2 instructions, then the type read from the stack with `dec eax` instead of `lea eax, [ebp-1]`
 // and the register shuffle that follows from it); the rest (switch layouts, action tables, rider call) is the same. The
 // reload implies retail had a store through an address-taken local between the lookups (the global pool pointer, which
