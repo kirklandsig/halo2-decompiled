@@ -1535,6 +1535,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH352: Complete parent/seat departure predicate in bool/byte/char/short/word/int/long/dword
 // storage: eight at 32. NOT kept: no exact predicate-owner form. Original guard,
 // leave/load/walk requests and body restored; iterator and publication homes remain.
+// N386: Actual best-score storage before sort/iterator/seat discovery/entry, original-site zeros;
+// zero before candidate/actor, row-entry declaration and double score: 32/32/32/32/32/32/32/285.
+// NOT kept: no equality or gain; original score storage, strict selection and full body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

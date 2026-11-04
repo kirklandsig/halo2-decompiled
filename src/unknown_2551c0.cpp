@@ -892,6 +892,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // 1/2/4/3/5/6/7, then all as plain while loops: 215/218/89/223/215/218/223/223.
 // NOT kept: no gain; original aggregate inputs, reverse products and full body restored.
 // Unit-call scratch and first-length/projection/query homes remain.
+// N386: Complete CRT motion/heading/reverse-probe transports, subsets 1..7:
+// 184/198/220/203/218/225/252; native construction at all three boundaries 201.
+// NOT kept: no equality or gain; original copies, reverse products and complete body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

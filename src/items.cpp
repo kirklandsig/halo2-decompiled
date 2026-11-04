@@ -721,6 +721,9 @@ struct s_item_collision_bsp
 // N371: Single-marker spin lifetime after contact, factor-first/enclosed-phase/scalar-role-name
 // subsets 0..7: 202/202/202/202/202/202/202/202. NOT kept: unmatched storage-only forms;
 // original complete body restored; protected plane width, plane joins and spin/speed homes remain.
+// N386: Complete CRT plane/marker-axis/fallback-axis transports, subsets 1..7:
+// 337/251/324/202/333/268/307; native copy construction at all three boundaries 307.
+// NOT kept: no byte equality; original planes, axis copies, arithmetic and full body restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

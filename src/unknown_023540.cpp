@@ -3515,6 +3515,8 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // N350: Immutable shift/clip/center parameter subsets and all with immutable
 // state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
 // selector, reload-pair and six quantizer input-home differences remain.
+// N386: Existing quantizer explicit cdecl/stdcall inputs, bool/byte policy and mutable/immutable
+// real samples: eight 31s at 4828 bytes. NOT kept: no byte equality; original helper and body restored.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
