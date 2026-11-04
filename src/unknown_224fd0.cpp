@@ -258,6 +258,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // long/dword/short/word ordinals: 394/394/441/441/593/593/515/515.
 // NOT kept: all regress and lose native frame or extent; complete helper/body restored.
 // Two-axis square/sine/cosine spills, basis homes and four-byte table placement remain.
+// B438: Paired off-diagonal field accumulations, seven subsets 219; whole matrix 190;
+// diagonal-only 204. NOT kept: diagonal-only removes two executable differing rows;
+// the coupled 190 is allocation steering. Original helper and full body restored.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

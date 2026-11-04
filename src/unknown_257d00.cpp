@@ -2384,6 +2384,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B436: Both live countdown computations in int/long/short/word storage, mutable/readonly:
 // 615/615/615/615/469/469/469/469 on the retained request graph. NOT kept: no exact
 // storage form or gain; signed admissions and gated observations preserved, original body restored.
+// B438: Candidate-handle sentinel admission, positive/complementary bool/byte/short/long:
+// eight fast 485 (unchanged reduced control; full 469). NOT kept: no exact lifetime
+// form or gain; original body restored. Actor/state and first-point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

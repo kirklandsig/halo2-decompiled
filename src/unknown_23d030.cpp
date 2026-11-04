@@ -473,6 +473,9 @@ extern byte g_51ec11;
 // B436: Native constant-index side-fill/up-input/roll coordinate observations, seven subsets,
 // then complete motion coordinates: 89/89/89/89/89/89/89/178. NOT kept: no exact form or eligible gain;
 // original complete body and helpers restored. Native frame/register differences remain.
+// B438: Object-relative/free-position admission in positive/complementary
+// bool/byte/short/long: eight 232 at 1329/1326. NOT kept: no exact outcome
+// lifetime; original body restored. Zero/normalization/up/roll homes remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

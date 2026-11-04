@@ -381,6 +381,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // B436: Full-width signed int allocation/ordinal/child carriers, seven subsets, then
 // all with a native while pretest: eight 55 at 870/870. NOT kept: no exact type/control
 // form or gain; original complete body restored. Split cache compare and child homes remain.
+// B438: Allocator success/failure outcomes in bool/byte/short/long: eight 55 at 870/870.
+// NOT kept: no exact outcome-lifetime form or gain; original full body restored.
+// Post-sample split cache comparison and evaluator/child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
