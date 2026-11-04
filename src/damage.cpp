@@ -901,6 +901,9 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // private linkage, cdecl and stdcall declarations 8/8/8; a zero-flag continue before setting result 8.
 // Round 69 (lane 1): count on the left of the loop test 9, named count + that 9, element local 8, flag byte local 8,
 // `!= 0` 8, `while (i < count && !result)` 25. Parameter stays EDX.
+// Round 114: count/index/result declarations 9; hoisted index with const count 8; inline indexed element 8;
+// register index 8; const owner 8; single-exit guard 8; index in the pretest 8; plain pre-tested indexed loop 8;
+// fastcall declaration 8; outer index declaration with inner initialization 5; count/result/index declarations 8.
 // @retail 0xd74b0
 bool function_d74b0(byte const *owner)
 {
