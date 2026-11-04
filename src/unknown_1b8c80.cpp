@@ -368,6 +368,11 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax H (11-03): the seat scan walks the seat indices up to the last one, so the seat count
+// is in ESI and the short index in EBP as retail has them; what is left is the loop's preamble (a
+// sign test on the decremented count where retail compares the count against the index register)
+// and the home of the loop's zero (a constant in EAX where retail stores the index register's own
+// zero)
 // score 11 (was 11), coordinator review 11-01: MiniMax R put the seat count minus one in a local declared
 // after the seat pointer again (8: the seat count in ESI and the short index in EBP as retail; left
 // are the guard's shape and the home of the loop's zero); a one-use local is kept only with a match,
@@ -385,6 +390,8 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // score 8 (was 11): the seat count minus one goes into a local, which puts the count in ESI and
 // the index in EBP as retail does; what is left is the guard's shape (a sign test on the
 // decremented count where retail compares the count against the index) and the loop's zero
+// (a constant in EAX where retail stores the index register's own zero); the permuter's 179
+// tries found nothing below 8
 // score 11 (was 6), coordinator review: the `tag->seat_count > 0` guard repeats the loop's own first test, so it is
 // kept only with a match (6 with it); the loop is back to its earlier form
 // score 6 (was 11): the seat scan is now guarded by an explicit
@@ -431,7 +438,7 @@ bool function_1b9200(long object_index, long prop_index)
 		{
 			s_vehicle_seat_definition *seat = NULL;
 
-			for (short i = 0; i < tag->seat_count; i++)
+			for (short i = 0; i <= tag->seat_count - 1; i++)
 			{
 				if (TEST_FIELD_BIT(tag->seats[i].flags.bit3))
 					seat = &tag->seats[i];
@@ -1537,15 +1544,36 @@ void function_1f86a0(long actor_index);
 // Round 132: stable current-entry pointer/reference/field pointer 134 each; nested actor lookup
 // for the unit 230; existing object-header getter 134; same-root byte/short/long results
 // 134/140/139 (864/863 bytes for the wider two). Original body restored.
+// AC506: Concrete-slot/untyped/byte/header callback pointer formals, each paired
+// with indexed native member payload first and original payload: eight at 134.
+// NOT kept: alias contracts do not recover the mask spill or EBX entry; original
+// callback definition/declaration, payload and complete body restored.
 // Round 130 (m3 lane 8, fast): retail duplicates the loop's next-entry call into the decline path and tests the
 // 0x40 bit with a fall-through decline. The decline test as `(u && !bit40) || (!same && (u || specified))` 234
 // (862 B), its two halves swapped 237, the ternary negated with arms swapped 231 (862 B); a flags byte local
 // read before the slot-bool test for both arms' 0x20 tests 141; the entry declared in the while condition 134
 // (same code).
+// Y561: Read-only actor/unit/loop-candidate/all receiver contracts,
+// each through member/original payload, eight at 134. Original mutable
+// receivers and payload restored; mask spill and EBX entry remain.
 // AC506: Concrete-slot/untyped/byte/header callback pointer formals, each paired
 // with indexed native member payload first and original payload: eight at 134.
 // NOT kept: alias contracts do not recover the mask spill or EBX entry; original
 // callback definition/declaration, payload and complete body restored.
+// AC511: Actual search-only/search-and-fallback iterator scopes, original/readonly
+// current-entry receivers, native/original slot-member payload first in each pair:
+// eight at 134. NOT kept: frame 0x10, raw-mask spill and EBX entry remain; original
+// scopes, receivers, payload and complete body restored.
+// AC513: Actual nested selection member, native payload/full slot 134/134;
+// direct nested-member observations full/payload 189/238; native member with positive
+// admission 134, early declaration 137, late full/payload receiver 233/233.
+// NOT kept: no exact match or qualifying gain; original types, payload and body restored.
+// AC516: Complete raw matching identity mask across root calls, byte/word/dword/long,
+// native slot-member payload first in each pair: 139/139/251/251/248/248/248/248.
+// NOT kept: assigned mask does not match; original Boolean, payload and complete body restored.
+// AC518: Actual join-call result bool/byte/short/long, each with native member
+// payload first and whole-slot payload second: 158/134/158/134/158/134/158/134.
+// NOT kept: one-use admission result unmatched; original body and types restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

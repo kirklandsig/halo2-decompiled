@@ -376,11 +376,26 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // the NULL-record `goto` replaced by a second copy of the default arm 853 (3956, not tail-merged); the body
 // publications with the palette byte read at every use 698 (3842). Loop left: zero in XMM5 (retail XMM7 for the
 // whole arm), slot byte in CL with the 0x130f60 result in EDX, the accumulator store interleaving.
+// Round 68 (m3 lane 1, plain; the one-link harness is not exact here, aligned 10 against the build: g_547f80 hoisted): lane 12's 3819-byte
+// form rebuilt 695 (its masked listing is close; what it lacks is retail's `mov edx, eax; or eax, -1` after the 0x130f60 call, so every later line is
+// one off). -1 stays in EDX with NONE in a named local at all five uses 696, the result typed dword 695; on the harness the result as const
+// or unsigned, declared apart from its call, after the flag, after the slot read: all the same code. The call after the source stores moves
+// -1 to EAX only ahead of the call. Probes (a dword load and global store) after the call, after the flag, either side of the slot read:
+// -1 stays in EDX; two after the call: 785 instructions but -1 still in EDX. Not a rotation of one step at those places.
 // Round 82 (m3 lane 16, fast listed with 0x131030): the three-scalar helper with weight/remaining after the height
 // 723 (3845 bytes), after the blue 616 (same code); the palette record's else arm as one ternary with a NULL default
 // 616 (same code); the 131030 arm's fog range clamped straight from the definition field like the palette arm
 // (`def[0x44] > 0 ? (def[0x44] < 10 ? def[0x44] : 10) : g_547f80`) 619 (3842 bytes: that clamp block then has retail's
 // shape, re-reading the field at each test), with the char palette slot 708 (3838).
+// N355: Caller clamped-result residence, with best-weight/byte-palette/publication-reciprocal domains:
+// 968/877/1089/964/975/1088/1081/1044. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Palette/record and zero/contribution SIMD carriers remain.
+// N357: Complete paired source-identity/best-contribution winner selections, bool/byte/short/long positive/complementary decisions:
+// 616/616/616/616/720/720/720/720. NOT kept: no byte match from these source forms.
+// Original executable source restored; Palette/record and zero/contribution SIMD carriers remain.
+// N359: Complete kind/index/weight metadata results with common publication, subsets 1/2/4/3/5/6/7 then entry declarations:
+// 720/660/613/647/711/700/800/800. NOT kept: no byte match; complete original body restored.
+// Weight-only result 613: three-point gain rejected. Palette/selected-record and zero/contribution SIMD carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

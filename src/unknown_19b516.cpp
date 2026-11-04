@@ -247,6 +247,11 @@ void c_widget::v16()
 // through a named `previous` local 2; `do { if (!widget) return; ... } while (true)` (diagnostic) 2; `break` with
 // the focus after the loop 37 (94 bytes). Retail's copy-then-test head is what follows a call result (13 such heads
 // in retail, all after calls); a test-before-copy head occurs only 4 times in all of retail.
+// Round 87 (m3 lane 12, fast): the c_widget previous_wrapped wrapper with a named base result 2; the eligibility
+// test inverted with the step in its then-arm 2; the found arm ending the loop with `widget = NULL` (step in an
+// else arm) 2; the eligibility read into a bool local 2; a for loop with `!= NULL` and a `continue` on the
+// ineligible widget 2. Diagnostic: `#pragma optimize("t", on)` 62 (the eligibility call is inlined). Retail's
+// copy-then-test heads follow iterator calls everywhere except these four widget walks.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

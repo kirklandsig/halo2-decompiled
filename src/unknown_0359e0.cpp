@@ -227,6 +227,22 @@ PRIVATE inline long swizzle_log2(dword value)
 // delayed coordinate promotion, height/common homes and minimum branch remain.
 // M321: Consumed x/y/both coordinate suffixes, private/shared logarithms, then both native short formals
 // 82/82/82/87/87/87/130/119. Original body restored; early promotions, height/common homes and minimum branch remain.
+// Y565: Branch-owned common count and matching low mask, count-first/mask-first, native/
+// sign-preserving long mask, private/shared logarithms: 99/89/110/109/73/109/93/93.
+// NOT kept: 73 combines individually regressing forms and grows to 271/270 bytes;
+// all other forms regress. Original body restored; coordinate promotion/count homes remain.
+// B398: Eight formal interleavings preserving width/x/y register order and
+// height/out stack order, h/o/w/x/y, h/w/o/x/y, h/w/x/o/y, h/w/x/y/o,
+// w/h/o/x/y, w/h/x/o/y, w/x/h/o/y, w/x/h/y/o: 82 each. Sole declaration
+// and call changed consistently; original contract/caller/body restored.
+// Frame four agrees; delayed coordinate promotion and height/common homes remain.
+// Y567: Existing logarithm short/word/long/dword output pointers, then
+// output references: 82/99/105/105/82/99/105/105. NOT kept: no byte match; original helper,
+// counts and body restored. Narrow-coordinate/count homes and minimum remain.
+// Y570: Coordinate suffix bands before one shift, complement x/y/both 99/99/103,
+// XOR x/y/both 99/99/103, shared high mask 97, shared low bands 94.
+// NOT kept: all regress and lose the matched caller; original full body restored.
+// Narrow-coordinate/count homes and the minimum branch remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

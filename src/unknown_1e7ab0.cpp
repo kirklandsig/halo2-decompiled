@@ -370,6 +370,10 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // recomputed raw state view 491; parent object local 118; table parameter with direct returns 612.
 // NOT kept: the corrected table transport leaves four extra bytes and the one-use locals do not match.
 // Original helper, case graph and complete body restored.
+// Round 131 (m3 lane 8, fast with 0x1e83c0/0xd0590/0x1e8d50/0x1e6bd0; 0x1e83c0 matched each time): the entry lookup
+// before the player index 585; `result` declared first 118 (same code); `result` declared after the player index 124;
+// the player index as a ternary initialiser 618 (2312 bytes); the getter as `table != NULL ... table->entries + index`
+// 118 (same code). The getter's table/result rotation stays; BLOCKED-BY 0xd0590 (contributor) as round 197 found.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

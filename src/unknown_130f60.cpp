@@ -95,6 +95,7 @@ local_1:
 }
 
 #include "unknown_0259d0.h"
+#include "normalize3d.h"
 #include <math.h>
 #include <string.h>
 
@@ -175,7 +176,7 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
-// score 324 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
+// score 295 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
 // Round 121 (fast control 336, aligned 103): the helper's clamp as if/else if 336 (103); remaining first 348 (156); weight before
 // height 345 (129); remaining before weight 348 (144); a named inverse weight 337 (108).
 // Round 291: Paired double-square terms, complete direction-square terms, both, ordered accumulator
@@ -344,10 +345,29 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // 503 (1917 bytes); the magnitude test as `fabs(magnitude) >= 0.0001f` 422 (1901 bytes); the third tail as
 // `count <= 0` weight first 355 (1892 bytes, retail keeps accumulate first); `opposite` declared before
 // `direction` 324 (same code). Retail's j loop head has a `lea esp, [esp]` pad that ours lacks.
+// Round 49 (m3 lane 2, plain): the existing normalize3d for the opposite vector's scale 295 at 1886 bytes (kept;
+// the scale itself compiles as before, the weight-sum adds of the accumulations change operand form, aligned
+// differences 112 -> 124); the existing length_sq3f for the direction test 295 (same code, kept as the helper
+// call). On those: vector3f_assign for the opposite vector 298; `opposite.k = 0` before i/j 397 (1882); the zero
+// test inverted with its arms swapped 295 (same code); a const source pointer 295 (same code). Retail's
+// load-first j row costs ours one byte before the j loop, so its 4-byte loop-head pad is missing here.
 // N345: Native component-array loops, negation/scale as fields or signed/unsigned
 // bounded traversal (excluding fields/fields): 360/360/357/361/361/357/361/361
 // (fast control 336, full 324). NOT kept: all regress; original component operations
 // and full body restored. Entry ESI, unit/reciprocal and accumulation schedules remain.
+// AC516: Complete direction-length admission on the shared-normalizer graph, bool/byte/short/long
+// at computation or with iteration-owned uninitialized storage: 343/343/343/343/343/343/343/343.
+// NOT kept: one-use predicate storage unmatched; original comparison, helpers and body restored.
+// AC520: Complete updated scalar sums at the six-use accumulator, immediate/staged
+// RGB/scalar/totals group masks 0-7: 335/458/335/458/335/458/335/458 (fast control 336).
+// NOT kept: one-point leads below threshold; staged RGB grows the frame/length; original helper/body restored.
+// F367: Existing six-use accumulator output contracts: pointer/reference result, reference destination with void/pointer/reference result, reference color with pointer/reference result and value color with pointer result: seven 336, value color 594 (reduced control 336; full 295). NOT kept: no gain; original helper, six uses and full body restored.
+// B423: Complete zero-direction construction decision, positive/complementary
+// bool/byte/short/long results, 343 each at 1898/1892 (reduced control 336/1885).
+// NOT kept: no exact match; original direct decision and complete body restored.
+// DH340: Actual accumulation-output parameter homes, seven nonempty subsets and complete
+// graph with the existing helper output renamed: eight 336 (fast control 336; full 295).
+// NOT kept: no byte match or gain; original parameter/helper names and complete body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
@@ -380,16 +400,9 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 			opposite.i = -direction.i;
 			opposite.j = -direction.j;
 			opposite.k = 0.0f;
-			real magnitude = (real)sqrt(opposite.j * opposite.j + opposite.i * opposite.i);
-			if (!(0.0001f > fabs(magnitude)))
-			{
-				real reciprocal = 1.0f / magnitude;
-				opposite.i *= reciprocal;
-				opposite.j *= reciprocal;
-				opposite.k *= reciprocal;
-			}
+			normalize3d(&opposite);
 		}
-		if (direction.k * direction.k + direction.j * direction.j + direction.i * direction.i > 0.0f)
+		if (length_sq3f(&direction) > 0.0f)
 		{
 			for (long j = 0; j < 2; j++)
 			{
