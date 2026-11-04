@@ -1481,25 +1481,40 @@ void function_87d00(s_bitstream *stream, void *message);
 bool function_87e90(s_bitstream *stream, void *message);
 void function_847d0(s_simulation_controller *controller, s_player_action *input);
 
-// @retail 0x685f0
-bool function_685f0(void *block, long *size, byte *destination, long capacity)
+// B24 checkpoint: DIFF 3 (113/113 bytes); caller 0x869a0 MATCH.
+// Retail: capacity in ECX, destination in EDX; two stack arguments.
+// Remaining mismatch: 3 instructions around memset setup/store ordering.
+// Uses _WriteBarrier() and experimental "standard" marker.
+// NOTE: "standard" is not valid for retail's register convention.
+// Prior work: parameter orders, aliases, volatile, helpers, and barriers.
+
+extern "C" void _WriteBarrier(void);
+#pragma intrinsic(_WriteBarrier)
+
+// @retail 0x685f0 standard
+bool function_685f0(long capacity, byte *destination, void *block, long *size)
 {
- bool result = true;
- s_bitstream stream;
- stream.data = destination;
- stream.size_in_bytes = capacity;
- memset(destination, 0, capacity);
- stream.bit_position = 0;
- stream.checkpoint_count = 0;
- stream.error = false;
- stream.unknown2c = 0;
- stream.unknown30 = 0;
- stream.unknown08 = 1;
- stream.mode = 1;
- function_87d00(&stream, block);
- *size = (stream.bit_position + 7) / 8;
- return result;
+    bool result = true;
+    s_bitstream stream;
+
+    stream.data = destination;
+    stream.size_in_bytes = capacity;
+    memset(destination, 0, capacity);
+    _WriteBarrier();
+
+    stream.bit_position = 0;
+    stream.checkpoint_count = 0;
+    stream.error = false;
+    stream.unknown2c = 0;
+    stream.unknown30 = 0;
+    stream.unknown08 = 1;
+    stream.mode = 1;
+
+    function_87d00(&stream, block);
+    *size = (stream.bit_position + 7) / 8;
+    return result;
 }
+
 
 // @retail 0x68670
 bool function_68670(byte *source, long size, void *block)
