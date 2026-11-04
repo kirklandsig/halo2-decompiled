@@ -686,6 +686,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // DL259: Primary success enters the sole request/return completion,
 // byte/bool/char/signed-char/short/word/int/long: 348/478/348/348/545/545/496/496.
 // NOT kept: no native graph/base or return-byte repair; original complete body restored.
+// B444: Resolved request inputs in existing mode/class/type formals, seven subsets
+// then all in class/mode/type load order: 396/358/396/354/396/359/396/362. NOT kept: one-consumer field
+// captures miss byte equality and disturb query homes; original entire body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

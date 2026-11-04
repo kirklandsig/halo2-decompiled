@@ -1515,6 +1515,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // N358: Complete invalidity result on failure-only resize-count graph, eight native scalar domains:
 // 159/159/159/141/141/140/140/140. NOT kept: unmatched source/representation forms; original executable body restored.
 // Query/write count homes, write setup and checksum/validation joins remain.
+// B444: Equal-size validation first on failure-only count flow, resize-arm/
+// successful-read/checksum producer variants: 175/169/175/169/175/169/175/169. NOT kept: exact-only
+// block/result forms regress; original complete body, waits and API values restored.
+// Query/count homes and write/checksum/header joins remain.
 // @retail 0x213970
 void function_213970(void)
 {

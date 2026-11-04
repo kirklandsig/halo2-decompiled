@@ -681,6 +681,9 @@ done:
 // B422: Outer UI-definition admission in bool/byte/short/long, positive/complementary:
 // 32/32/32/32/32/32/32/32. NOT kept: no byte match; all canonicalize to the original complete body.
 // Early EDI save, tag/selector scheduling and the shared scratch-address cache remain.
+// B444: Explicit unsigned selector admission >9/>=10/<=9/<10, repeated/shared copy:
+// 32/64/32/64/54/61/54/61. NOT kept: redundant admission without byte equality; original complete parser restored.
+// Early EDI save, tag/selector schedule and scratch-address cache remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

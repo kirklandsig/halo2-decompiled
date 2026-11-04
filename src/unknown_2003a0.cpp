@@ -2424,6 +2424,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
 // complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
 // Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
+// B444: Complete point/raised/location zero construction, seven subsets at native
+// output scopes then all at entry: 331/315/343/304/340/320/352/351. NOT kept: frame/layout still misses
+// retail and initialization extends code; original complete outputs and body restored.
 // @retail 0x201ea0
 void function_201ea0(void)
 {

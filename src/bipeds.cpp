@@ -2484,6 +2484,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // B442: Complementary signed body rejection, direct/default-true producers in
 // bool/byte/short/long: 63/63/63/63/85/85/76/75. NOT kept: no equality or qualifying
 // native count/EBP/flag repair. Original validation, count, stores and full body restored.
+// B444: Explicit flag read/modify/write assignments at pre-call/post-call/failure
+// boundaries, seven subsets then all mask-first: 63/63/63/63/63/63/63/63. NOT kept: no byte equality
+// or native EBP/body/flag repair; original complete body and word fields restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
