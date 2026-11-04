@@ -4045,13 +4045,14 @@ have_reference:
    +0x1b8 entries) toward 1 while their condition holds, else toward 0:
    the first while +0x248 is set (or flag 1), the second while +0x24c is
    set apart from it; whether any moved */
-// score 110 (was 129): same size as retail (513). What is left is one register choice: the constant -1
-// is kept in EBX across the whole function (the parent/seat tests and every NONE test in the loop),
-// where retail builds it in EAX for the two tests before the loop and compares the loop's with an
-// immediate, so ours also keeps the definition's time table in EDX and EDI. The whole body inside
-// `if (!flag)` with one `return result` gives retail's shared early exit, flag 2 of +0x10a through the
-// word bitfield view and the flag clear through bit_vector_set give retail's loads and in-place AND.
-// No effect (110 each): parent index in a local, parent and seat tests nested, seat in a local.
+// MATCH (was 110; round 1-2 of #1049 129 -> 110). Round 3 of #1049: the draft set `active = false` in a
+// `default:` arm; retail clears it (`xor al, al`) BEFORE the switch, so `bool active = false;` is declared
+// ahead of the switch and the switch has no default. That freed the registers: the -1 constant is no longer
+// kept in EBX (retail compares the loop's NONE tests with an immediate) and the time globals pointer lands in
+// EBX. The whole body inside `if (!flag)` with one `return result` gives retail's shared early exit, flag 2 of
+// +0x10a through the word bitfield view and the flag clear through bit_vector_set give retail's loads and
+// in-place AND. No effect (before the fix): parent index in a local, parent and seat tests nested, seat in
+// a local (110 each); the time globals pointer cached in a local (108).
 // @retail 0xc5eb0
 bool function_c5eb0(long unit_index)
 {
@@ -4072,7 +4073,7 @@ bool function_c5eb0(long unit_index)
 		for (long i = 0; i < *(long *)(definition + 0x1b8); i++)
 		{
 			real const *time = (real const *)(*(byte **)(definition + 0x1bc) + i * 8);
-			bool active;
+			bool active = false;
 
 			switch (i)
 			{
@@ -4081,9 +4082,6 @@ bool function_c5eb0(long unit_index)
 				break;
 			case 1:
 				active = unit->unknown24c != NONE && unit->unknown24c != unit->unknown248;
-				break;
-			default:
-				active = false;
 				break;
 			}
 			if (!(TEST_FIELD_BIT(((s_unit_flags_10a_view *)&unit->flags_10a)->bit2)) && active)
