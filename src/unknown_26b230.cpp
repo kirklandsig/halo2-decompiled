@@ -1901,6 +1901,7 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax B (11-03): no new form, no lower score.
 // score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
 // ours keeps the pool in memory and the selection in edi.
@@ -2155,6 +2156,8 @@ void function_269250(long clump_index, long actor_index)
 	g_4de2f8 = false;
 }
 
+// MiniMax B (11-03): no new form, no lower score; the two flag homes stay swapped (0x12/0x13) whatever
+// the order the flags are declared in.
 // score 89 (was 89): frame 0x24 agrees; category-byte homes and deletion completion differ. With the removed
 // prop cleared and tested (3) only the hoisted prop/node pool registers differ: retail loads the prop pool
 // first into edi, ours always loads the node pool first; an extra prop lookup (93) or an index node loop (76)

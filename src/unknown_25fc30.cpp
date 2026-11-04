@@ -1737,6 +1737,8 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
+// MiniMax B (11-03): the entry short inlined, the allow flag inlined and the collision flag declared
+// first each promote that flag to a register (261); its byte home and the product order still differ.
 // Tried: the hit fraction read into a named local before the distance is computed: 22 on its own (2 only
 // alongside an unrelated edit in src/unknown_16bd10.cpp, not kept).
 // MiniMax D (10-31): the same named hit-fraction local again 22 (a one-use local, not kept without a match).

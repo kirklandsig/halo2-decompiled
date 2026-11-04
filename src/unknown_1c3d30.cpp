@@ -73,6 +73,7 @@ extern byte *g_51eca8;
 extern short g_51ecb0;
 c_2d8ab0 *g_47f044;
 
+// MiniMax B (11-03): no new form, no lower score.
 // MiniMax R (11-01): no new form, no lower score; the element select still loads the field pointer
 // into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test
 // still uses EDX and EAX where retail uses EAX and ECX.
