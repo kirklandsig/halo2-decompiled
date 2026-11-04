@@ -867,6 +867,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // M352: Actual header/body progress and integer signature-comparison producers,
 // seven subsets 34/34/34/202/202/202/202; all with one shared progress scalar 202.
 // NOT kept: one-use output/result storage does not match; original body and getter restored.
+// P327: API-returned file/signing handles, original/mutable/const producer pairs
+// excluding both original: 34/34/34/161/161/34/161/161. NOT kept: ties or larger
+// 689-byte bodies; original API publications, field observations and full body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

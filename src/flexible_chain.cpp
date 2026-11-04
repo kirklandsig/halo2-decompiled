@@ -449,6 +449,9 @@ void __stdcall function_1160c0(real dt)
 // AC518: Complete normalization admission bool/byte/short/long, direct predicate
 // and success-owned result, 292/292/292/292/292/292/292/292 (1355 bytes).
 // NOT kept: decision-result lifetime does not match; original body restored.
+// AC522: Plain axis scaling long/int/short/word/byte/signed-byte loops,
+// native component cursor and long loop with complete shared cross:
+// 187/187/212/212/212/212/212/198. NOT kept: regressions; original body and homes restored.
 // B421: Root-node classification across metadata/tick producers, bool/byte/short/long,
 // positive/complementary results 277/277/289/288/277/277/289/288. NOT kept: early
 // cmp/sete differs from retail; original direct word test and complete body restored.
@@ -459,6 +462,9 @@ void __stdcall function_1160c0(real dt)
 // N355: Existing early-return normalizer with native square/projection/staged-cross and complete setters:
 // 174/186/174/174/174/186/187/187. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; Segment EDX and axis/previous/rest-offset homes remain.
+// F374: Optional-physics presence/absence at the original post-position test,
+// bool/byte/short/long: 171/171/171/171/171/171/171/171. NOT kept: no native
+// segment/home recovery; original field test and complete body restored.
 // DH350: Output-owned velocity difference/scale, interpolation contribution
 // and prediction translation phases, seven subsets then compound axis:
 // 171/171/171/171/171/171/171/171. NOT kept: no native byte match; original complete body restored.

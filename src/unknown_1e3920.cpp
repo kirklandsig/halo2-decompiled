@@ -717,6 +717,8 @@ real function_267370(long object_index);
 // through a header pointer local 100; the carrier test inverted with an empty arm 98; both NONE resets ahead of the byte
 // flags 103; the zone result in a named bool 100; the class read after the sample call 98. Diagnostic: the zone statement,
 // the resets or both inside `if (1)` 98 each, so call-site nesting does not move the -1 sharing here.
+// DL260: Existing zone predicate with one completion-time optional-index publication, short/int/long/dword carriers in bool/byte result graphs: 96/96/96/96/375/375/375/375.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1214,9 +1216,15 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // result, ours keeps a separate slot. The substitution loop in a forceinline helper taking the squad pointer 389
 // (1307 bytes); the squad pointer `byte const *` 253 (same code); `bool flag = squad && (bit 10)` 252; the squad
 // lookup ahead of the 0x1e4990 call 264; the loop's probability declared before its bools 253 (same code).
+// AC522: Six remaining substitute/squad/squad-index admission partitions,
+// then complete/default optional-squad pointer arms on the goto-free graph:
+// 392/436/408/452/420/392/353/341. NOT kept: entry/layout regressions; original body restored.
 // B421: Post-creation success bool/byte/short/long and complementary failure
 // results 253/253/253/253/253/253/253/253. NOT kept: no byte match; condition
 // residence does not recover sentinel ESI or squad/query homes. Original body restored.
+// F374: Post-substitution settings presence/absence results in bool/byte/short/long:
+// 253/253/253/253/253/253/253/253. NOT kept: condition residence does not recover
+// native sentinel/squad/query homes; original admission and complete body restored.
 // DH350: Query-output last-consumer scopes, complete decision/output-only phases,
 // bool/byte/short/long replacement storage: 253/253/353/350 twice. NOT kept:
 // no match or gain; original workspace, result domain and complete body restored.
@@ -1950,9 +1958,18 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // on both queries 251 (same code); the fraction bounds as named locals 262; the grenade reset test split into an
 // outer `state != 1 || !flag` if 251 (same code); the grenade type through a fresh lookup and `unit` fetched
 // after the queries 251 (same code). All restored.
+// P321: Actual actor-readiness result in bool/byte/short/long, producer/entry
+// declarations with original post-query observation: 251/251/251/251/251/251/251/251.
+// NOT kept: no native actor/options/pool residence recovered; full body restored.
 // B421: Shared three-consumer options admission bool/byte/short/long, positive/
 // complementary results 310/310/321/308/310/310/321/308. NOT kept: all regress
 // and exceed retail length; original pointer tests, queries and complete body restored.
+// Y577: Shared ammunition output at phase/query scope with end-bound do, bounded for,
+// short-ordinal cursor and fixed-count cursor: 278/278/251/251/278/278/251/251. NOT kept: ties
+// or regression; original full body restored. Native actor/options/pool and scalar homes remain.
+// P329: Equipment/grenade/unit receiver identities, seven subsets then actor identity:
+// 251/251/251/251/251/251/251/251. NOT kept: no byte match; original complete body restored.
+// Actor/options and retained-pool homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

@@ -687,6 +687,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH347: Last-consumer first/second receiver and projection scopes, seven subsets then
 // all with a descriptive trace name: 271/346/270/346/271/346/346/346. All restored;
 // frame 0x40 and extent agree, but early root/actor ingress and vector scheduling remain.
+// F372: Paired-case normalized-length/projection/distance declaration lifetimes,
+// seven complete subsets and all with margin: 270/270/270/270/270/270/270/270.
+// Producers never moved; original declarations and complete body restored.
+// F374: Paired normalization-continuation results, positive/complementary
+// bool/byte/short/long: 270/270/270/270/270/270/270/270. NOT kept: no exact
+// ingress/home recovery; original direct tests and complete body restored.
 // DH354: Native direct-return workspace identities, edge/actor/trace subsets
 // 1/2/4/3/5/6/7 and complete endpoint identities: eight at 270. All restored;
 // early root/actor ingress and paired SIMD scheduling remain.

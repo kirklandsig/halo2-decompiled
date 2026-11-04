@@ -322,6 +322,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // DH342: Existing vector setter at target/current/rotation input construction,
 // seven subsets 413/378/211/418/431/403/441; all plus final output setter 436 (sibling 46).
 // Original copies, helper contracts and body restored; unity/root/yaw homes remain.
+// J252: Existing rotation output identity and helper expansion contracts: 176/176/176/176/176/176/176/176.
+// NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
 // DH349: Complete scalar cosine/projection/sine-cross parts on retained in-place
 // graph, seven family subsets 178/195/176/178/176/194/178; all row-local scopes 178.
 // NOT kept: no gain; native unity/root/yaw and rotation homes remain. Original

@@ -1033,6 +1033,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // storage without/with source-normal vector: eight at 115, 1851 bytes. NOT kept:
 // no exact match; coefficient preload and zero/classification/projection homes remain.
 // Original geometry types, reads, arithmetic and complete body restored.
+// AC528: Complete cumulative segment rejection/survival in bool/byte/short/long
+// 298/384/369/371/404/404/406/405. NOT kept: no exact match or eligible gain; original complete body restored.
+// Coefficient preload, zero SIMD roles and clipping/projection homes remain. The native memory-OR result was preserved logically; no retained candidate.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -1063,6 +1063,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // DH328: Existing staged force-inline cross at disabled/flying/ground subsets
 // 436/473/429/436/431/479/431; shared staged cross at every remaining site 431.
 // NOT kept: four/two-point leads fall below threshold; length regresses or ties. Full body restored.
+// M371: Existing coordinate-difference helper at history input/anchor/relative,
+// subsets 1/2/4/3/5/6/7, then all with general raw delta: 423/433/435/423/435/441/441/465.
+// NOT kept: 423 shortens farther from retail (3034/3047); remaining forms tie or regress.
+// Original whole body and helpers restored; damping and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1791,6 +1795,12 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH329: Separate highest-contact scan before/after selection or fallback-only, direct/named
 // height and before/after native cursors 776/788/872/888/580/572/894/929. NOT kept: all regress and
 // grow frame/extent; original shared scan and complete body restored.
+// F372: Flight-state char/signed-char/byte/short/word/int/unsigned/dword carriers
+// 213/213/213/305/305/303/303/303; native byte forms tie, wider forms grow.
+// Original bool, native movement, observations and complete body restored.
+// F374: Contact velocity-dot/request-dot/scaled-projection nodes, seven subsets,
+// then the full graph with guarded planar projection: 213/209/209/211/211/211/209/213.
+// NOT kept: gains below eight; original scalar expressions and complete body restored.
 // DH354: Immutable component/velocity/contact-normal receiver bindings, seven
 // subsets and complete receiver identities: eight at 213. Original observations,
 // body and material-call graph restored; early motion/reset and cold arms remain.

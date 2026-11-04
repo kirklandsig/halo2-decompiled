@@ -319,6 +319,9 @@ bool function_1af530(long actor_index, long *b, long *a)
 static __forceinline long real_to_long(real value);
 short *function_e70b0(long unit_index, short *value);
 
+// MiniMax G (11-04): no new form, no lower score; the actor index still takes ECX and the actor
+// data EDX, where retail keeps the index in EDX and the actor data in ECX, and the exchange
+// still runs through the timer, prop, random and final argument setup.
 // score 49 (was 49): frame agrees; ECX and EDX are swapped through the whole body (retail: index EDX,
 // actor ECX), down to the final call's argument setup. Existing state query
 // ordinary/inline/forced 138 each; query with long timer 143; timer/mode 143; mode 137; readonly actor

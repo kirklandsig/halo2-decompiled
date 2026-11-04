@@ -297,6 +297,9 @@ bool g_47f05b;
 // method6/method7 overrides declared in the fixed base 35, `block` typed as the fixed allocator with `block + 1` 35,
 // the test inverted 36. Compile-only: a local placement always gives the 1 in a register and the join reload, a
 // g_479888 placement the arm reload and immediate 1s (13 spellings); the store is dropped in every form.
+// F377: Direct exhaustive constructor stores, terminal/zero-first arms and long/int/short/
+// signed-char ordinals: 34/34/34/34/43/54/43/54. NOT kept: narrow forms worsen other
+// constructor users; shared header and full body restored; base-vtable/arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {

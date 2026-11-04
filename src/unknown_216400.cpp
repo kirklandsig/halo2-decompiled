@@ -419,6 +419,11 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // `goto next` 20 (same code); that layout with a caller `bool room` (copy under `if (room)`, then `if (!room)
 // goto close`) 32 (setne/test, but list EDX, room CL, count EAX copied to ECX: retail's registers rotated by
 // one, the earlier scratch pairs too); the pointer helper with `list->count < 4096` 20.
+// Round 67 (fast): with registers masked, the bool append helper (`bool result = list->count != 4096;` ...
+// `if (!append) break;`, 51) differs from retail only by retail's count copy (`mov eax, esi`) before the
+// shift. Bool helpers: a dword index 51; the new count stored after the copy 33 (a copy appears, `mov ecx,
+// eax` for the shift, but list EDX/count EAX/result CL stay rotated); a count local copied into an index
+// local 51; `list->entries + index` 51; copy into `entries[count]`, then `list->count++` 57 (656 bytes).
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

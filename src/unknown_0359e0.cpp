@@ -243,6 +243,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // XOR x/y/both 99/99/103, shared high mask 97, shared low bands 94.
 // NOT kept: all regress and lose the matched caller; original full body restored.
 // Narrow-coordinate/count homes and the minimum branch remain.
+// Y577: Direct axis-count suffix comparisons, width/height/both with private/shared
+// logarithms, then both with branch-owned stores: 95/96/116/77/93/104/111/99. NOT kept:
+// five-point best below gate. Original body restored; narrow-coordinate/count homes and minimum branch remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

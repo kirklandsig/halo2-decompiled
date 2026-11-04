@@ -36,7 +36,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 	return memory;
 }
 
-// score 42 (was 42): retail tests the handle in ECX and copies it to EAX for the by-value
+// score 42. MiniMax H (11-04): `bool volatile success` (the read's result is written by the I/O worker,
+// like `done`) with the widened handle test stored to it and the array element passed directly MATCHES;
+// NOT kept (a new volatile on a local is outside the volatile rule), held for the user's ruling.
+// Earlier rounds (42): retail tests the handle in ECX and copies it to EAX for the by-value
 // argument, builds the success byte with `xor edx, edx; setne dl`, stores it and re-reads it from
 // memory before the test, as a volatile flag would; ours tests a register copy. Only a volatile
 // success byte (not kept) gives the store and re-read: with the array element passed directly and
