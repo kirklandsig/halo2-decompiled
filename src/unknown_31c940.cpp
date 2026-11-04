@@ -840,49 +840,35 @@ static __forceinline void update_linear_limit_values(float impulse, solver_linea
 static __forceinline void update_residual_pair(__m128 *&cursor,float *&result,solver_velocity_31c940 *a,solver_velocity_31c940 *b)
 {
 	solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)cursor;
-	// Form the two angular sums before completing their linear projections.
-	__m128 second = a->angular;
-	__m128 work = row[0].a;
-	__m128 other = b->linear;
-	__m128 axis = row[0].b;
-	__m128 first = second;
-	first = _mm_mul_ps(first, work);
-	work = row[1].a;
-	second = _mm_mul_ps(second, work);
-	work = a->linear;
-	work = _mm_sub_ps(work, other);
-	other = b->angular;
-	__m128 product = other;
-	__m128 relative_for_first = work;
-	product = _mm_mul_ps(product, axis);
-	axis = row[1].b;
-	other = _mm_mul_ps(other, axis);
-	axis = row[0].linear;
-	second = _mm_add_ps(second, other);
-	first = _mm_add_ps(first, product);
-	product = row[1].linear;
-	work = _mm_mul_ps(work, product);
-	second = _mm_add_ps(second, work);
-	// Reduce the second row first; its scalar stays live through the first store.
-	work = _mm_shuffle_ps(second, second, 0x55);
-	work = _mm_add_ss(work, second);
-	other = _mm_shuffle_ps(second, second, 0xaa);
-	second = _mm_add_ss(other, work);
-	relative_for_first = _mm_mul_ps(relative_for_first, axis);
-	first = _mm_add_ps(first, relative_for_first);
-	work = _mm_shuffle_ps(first, first, 0x55);
-	work = _mm_add_ss(work, first);
-	other = _mm_shuffle_ps(first, first, 0xaa);
-	other = _mm_add_ss(other, work);
-	__m128 projected_a = other;
-	// Keep the second projection in its vector until the first residual is written.
+	// Retain both rows' inputs, reusing each vector after its last use.
+	__m128 work_a = row[0].a;
+	__m128 work_b = b->angular;
+	__m128 work_c = a->angular;
+	__m128 work_d = _mm_load_ps((float const *)&(row[1].linear));
+	__m128 work_e = _mm_load_ps((float const *)&(row[0].b));
+	__m128 work_f = row[1].a;
+	work_a = _mm_mul_ps(work_c, work_a);
+	__m128 work_g = _mm_load_ps((float const *)&(a->linear));
+	work_g = _mm_sub_ps(work_g, _mm_load_ps((float const *)&(b->linear)));
+	work_c = _mm_add_ps(_mm_mul_ps(work_c, work_f),
+		_mm_mul_ps(work_b, _mm_load_ps((float const *)&(row[1].b))));
+	work_d = _mm_add_ps(work_c, _mm_mul_ps(work_g, work_d));
+	work_c = _mm_add_ss(_mm_shuffle_ps(work_d, work_d, 0x55), work_d);
+	work_e = _mm_add_ps(work_a, _mm_mul_ps(work_b, work_e));
+	work_e = _mm_add_ps(work_e,
+		_mm_mul_ps(work_g, _mm_load_ps((float const *)&(row[0].linear))));
+	work_b = _mm_add_ss(_mm_shuffle_ps(work_d, work_d, 0xaa), work_c);
+	work_a = _mm_shuffle_ps(work_e, work_e, 0x55);
+	work_d = _mm_add_ss(_mm_shuffle_ps(work_e, work_e, 0xaa),
+		_mm_add_ss(work_a, work_e));
+	// Keep the second reduced vector live until the first residual is written.
 	float scalar_a;
-	_mm_store_ss(&scalar_a, projected_a);
+	_mm_store_ss(&scalar_a, work_d);
 	cursor[0].m128_f32[3] -= scalar_a;
 	cursor += 6;
 	result += 2;
 	float scalar_b;
-	_mm_store_ss(&scalar_b, second);
+	_mm_store_ss(&scalar_b, work_b);
 	cursor[-3].m128_f32[3] -= scalar_b;
 }
 
