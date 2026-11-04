@@ -348,6 +348,10 @@ struct s_24e9c7_bounds
 // B439: Output-origin transfers from the first real vertex, seven nonempty receiver
 // subsets then a successive output-copy chain: 129/129/129/129/129/129/129/129.
 // Original complete body restored; early across spill and scalar homes remain.
+// B441: Existing early perpendicular setter, separate/reused side ownership,
+// direct/pre-scaled complete inputs and unary/zero-minus negative direction:
+// 144/139/139/139/144/139/139/139. NOT kept: no equality; original scalar pair, full body and
+// declaration set restored. Early spill and eight-byte-shifted scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

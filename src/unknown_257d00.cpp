@@ -2387,6 +2387,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B438: Candidate-handle sentinel admission, positive/complementary bool/byte/short/long:
 // eight fast 485 (unchanged reduced control; full 469). NOT kept: no exact lifetime
 // form or gain; original body restored. Actor/state and first-point homes remain.
+// B441: Complete state/actor arm after query/request arms 9/10/12/11/6/14/18/21:
+// 500/501/502/499/497/497/500/507 (fast control 485; full 469). NOT kept: all regress and shorten
+// away from retail; original complete body restored. Actor/state and first-point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

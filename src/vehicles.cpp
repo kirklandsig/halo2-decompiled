@@ -1275,6 +1275,10 @@ long function_10f5f0(long object_index);
 // P328: Saved attached complement and complete attachment admission in bool/byte/short/long:
 // 565/565/575/575/563/563/574/574. NOT kept: best gain is below eight and shortens away from retail.
 // Original body restored; frame 0x19ac/0x1984, predicate-result and reduction homes remain.
+// B441: Complementary reused moving predicate in bool/byte/short/long, at producer/entry
+// declaration boundaries: 512/512/580/586/512/512/580/586. NOT kept: complement instructions are absent
+// from retail and extents grow away from 2264; original complete body restored.
+// Frame 0x19ac/0x1984, native predicate stores and rolled reduction remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
