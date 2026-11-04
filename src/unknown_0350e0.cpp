@@ -123,6 +123,13 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // B409: Paired cross-coefficient construction, original/late diagonal squares and reused sine
 // parts, interleaved/grouped diagonal phases: 364/409/362/385/411/441/355/391.
 // NOT kept: one-point lead at native length below gate; original builder and complete body restored.
+// Y571: Existing builder/returned-vector producer ordinary-inline and plain-private policies,
+// eight non-original pairs 356 each; original force-inline declarations and bodies restored.
+// Frame 0x98 versus 0x90, concurrent x87 inputs and scalar publication homes remain.
+// Y573: Native orientation matrix capture/lifetime/publication graphs:
+// 355/422/356/441/394/415/395/436. NOT kept: one-point best below gate; record consolidation and
+// copies miss equality; native frame and scalar publications unresolved. Original complete body
+// and helpers restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1722,6 +1729,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // DH337: Native two-coordinate point/array projections at four declaration boundaries:
 // 192/192/192/192/192/192/192/192, 788/812 bytes. NOT kept: one-point gain,
 // grouped storage needs equality and length moves farther; independent result home remains.
+// Y569: Uniform named first/middle/last product terms in every projection row,
+// seven subsets, then complete immutable products:
+// 197/197/193/195/197/208/193/193. NOT kept: no qualifying native repair; complete original body restored;
+// independent result home, frame and producer allocation remain.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -1851,6 +1862,10 @@ real game_time_get_seconds();
 // transfers and paired field/library forms: 543/507/555/497/507/515/534/507.
 // NOT kept: saved position fields at 497 emit SSE transfers instead of native integer-word capture;
 // frame 0x90 versus 0x94 and output homes remain. Original complete body restored.
+// Y571: Shared exit, twice-used saved-entry index and draw displacement, seven subsets
+// 507/505/531/505/531/520/520; complete unsigned displacement 520. Index plus displacement
+// reaches retail frame 0x94 and 2285-byte extent. NOT kept: index-only two-point lead below gate;
+// native-frame graphs regress. Complete original body restored; output and definition/NONE homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2435,6 +2450,12 @@ real magnitude3d(vector3f const *v);
 // consuming the first vector 186/186/186; direct cyclic rotation loop 178; tangent and rotation
 // loops 191. All retain the raw-length/promoted-dot home mismatch. Original complete body
 // restored; shared tangent forms also raise two other scores.
+// Y568: Actual current/target normalization and output component loops, seven subsets,
+// then fused input lanes: 191/170/335/190/335/335/335/333. Original full body restored;
+// raw magnitude/dot/angle homes remain at frame 0x38. All three exact controls survive.
+// Y573: Fallback early-exit/while/cursor lifetime graphs: 170/170/170/170/170/170/170/170. NOT
+// kept: all tie; raw-length/dot homes persist and cursor forms miss equality. Original complete
+// body and helpers restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2751,6 +2772,17 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // DH337: Actual elapsed bindings in decay/growth and maximum-clamp field subsets
 // 366/371/317/369/366/371/369; complete elapsed-pointer graph 369. Original helper
 // and body restored; state/prefix/ordinal homes and first decay-copy rotation remain.
+// Y569: Actual two-use duplicate key, symmetric computed elapsed results and long found
+// domains, seven subsets, then complete byte found graph:
+// 315/376/330/374/328/389/387/374. NOT kept: two-point key gain below gate; elapsed forms enlarge; complete original body restored;
+// prefix/state and ordinal homes plus first decay-copy rotation remain.
+// Y571: Creation-removal cursor, admitted creation/duplicate tail bindings, seven subsets
+// 440/317/317/440/440/317/440; complete graph with loop-entry tail addresses 440.
+// NOT kept: cursor shortens to 1289 bytes and frame 0x2c; one-use tail bindings miss equality.
+// Original body restored; prefix/state and ordinal homes plus decay rotation remain.
+// Y573: Nested admission, found last-use scope and immutable request; seven subsets and complete
+// while scan: 317/317/317/317/317/317/317/317. NOT kept: all tie; native prefix/state and ordinal
+// homes remain. Original complete body and helpers restored.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -2936,6 +2968,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // geometry, view scalar/random fields, complete view and complete state/view fields: 486 each on
 // the retained inline-normalization graph. Original body and field accesses restored; frame 0x60
 // versus 0x38 and stored-velocity/projection homes remain.
+// Y568: Actual position-transform/moved-point/acceleration-add component loops, seven subsets,
+// then all with the divisor loop: 548/542/547/549/565/580/593/579. All regress and
+// shorten away from retail; original scalars, vector statements, helpers and body restored.
+// Frame 0x60 versus 0x38 and stored-velocity/projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3294,6 +3330,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // recursive neg/sbb/inc and a final test/sete; retail copies and returns its positive byte
 // directly. The other forms regress. Original complete body and positive result restored; frame
 // and fade scratch homes remain.
+// Y568: Existing two-use distance helper with native point-reference/value inputs and
+// real/double/output-reference results: 177/177/185/177/177/177/185/177. NOT kept:
+// no contract matches; original helper, both callers and complete body restored.
+// Frame 0x18 versus 0x1c and fade scratch stores remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -3843,6 +3883,10 @@ bool __stdcall function_391f0(void *state);
 // DH337: Native cluster/portal/plane field subsets and complete read-only geometry
 // 251/251/251/251/251/251/251/251. Original views/body restored; frame 0x74
 // versus 0x70, early zero and loop homes remain.
+// Y569: Positive visible-fog, portal-side and selected-tag payload scopes,
+// seven subsets, then positive portal-key scope on the complete graph:
+// 251/251/251/251/251/251/251/251. NOT kept: no qualifying native repair; complete original body restored;
+// extra frame word, early zero and portal/fog homes remain.
 // @retail 0x36b50
 void function_36b50()
 {

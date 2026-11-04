@@ -241,6 +241,9 @@
 // sines through a named pointer to the global point 578; s1 from the local copy with s0 from the global 652 (2587 bytes);
 // staged first/second cross 575/575; a separate vector for the second wave 575; the first-wave vector declared after its
 // add 575; the vector locals renamed so retail's low-to-high slot order sorts by name, ascending and descending, 575/575.
+// Y572: Coherent existing cross/sum forced/ordinary/plain declaration pairs,
+// all eight nonoriginal policies: 581 each. NOT kept: frame remains 0x58/0x60;
+// complete target and both helper bodies unchanged, original declarations restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1262,6 +1265,9 @@ void __stdcall function_43720(s_43740_input *input)
 // that, eight fill orders with the shader, normal, tag and position in retail's sequence 62-64 (0x42b20 4 each);
 // with the normal through the stored shader 66 (213 bytes, 0x42b20 62); the fill in a force-inline helper reading the
 // normal through the stored shader 67 (213 bytes, 0x42b20 62).
+// Y572: Joint original source/definition/slot formal-name priorities, seven
+// subsets then complete tag/bitmap role names: eight 62s. NOT kept: native
+// tag EAX/EBP split and signed-slot/shader homes stay wrong; body restored.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

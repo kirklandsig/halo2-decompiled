@@ -376,6 +376,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
 // `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
 // store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
+// Y566: Plain coordinate loops in the existing corner producer, forward-first/left-first/
+// planar subtotal/running point, long then short: 50/730/50/730/60/730/240/730.
+// All regress; short loops leave the helper outlined. Original whole body and
+// four-use helper restored; plane-store base, first selectors and product ranks remain.
 // Round 68 (m3 lane 1; "h" = a one-link LTCG harness of this file with unknown_22bbca and unknown_120850, whose listing equals the
 // full build's and whose score tracks the check's, 46 here; --fast calls point2f_set and is unfaithful, 258): a named-field vector3f
 // corner point read through .n 54h (.n[0..2] stores: same code); the determinant named 48 plain; rows x,z,y / y,z,x / z,x,y 70h/85h/83h;
@@ -966,6 +970,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC520: Complete signed-distance boundaries, real/double, immediate/paired fabs and
 // ordering-result forms: 539/533/539/533/831/843/831/843. NOT kept: six-point leads
 // grow frame to 0x21e4; double forms lose the native prologue; original body/helpers restored.
+// Y566: Float sine/cosine/inverse-cosine API families 1/2/4/3/5/6/7, then
+// float sine/cosine with a double angle: 539/539/562/539/582/582/570/840.
+// Original complete body and helpers restored; tag/count/plane homes and rotation
+// spills remain. Float inverse cosine shortens below retail; wide angle loses the prologue.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

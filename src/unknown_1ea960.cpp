@@ -377,6 +377,10 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // P295: Actual enclosing special-pair/first-scalar/last-scalar/vertex-array entry ownership,
 // masks 1/2/4/8/3/5/9/15: 138/138/138/138/138/138/138/138. Original external views
 // and complete body restored; restore-header, packed-key and listener ordering remain.
+// Y569: Native byte-offset construction cursors in single/special-pair/final-scalar
+// phases, seven subsets, then complete first-pair cursor graph:
+// 143/143/143/148/148/148/153/158. NOT kept: no qualifying native repair; complete original body restored;
+// restore-header, packed key and listener ordering remain.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {

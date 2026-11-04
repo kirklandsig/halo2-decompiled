@@ -434,6 +434,10 @@ union s_185be7
 // DH338: Actual range-lower/angular-bound/curve-count/curve-pointer/paired-curve/
 // lower-angular/lower-curve/all native field bindings: 927/622/622/622/622/927/927/927.
 // Original body restored; root/NONE and scalar homes remain; lower reload lacks equality.
+// Y573: CRT return-owned output/button/duration destinations, seven subsets, then input record
+// ownership: 1031/1018/754/1096/1048/1059/1132/1077. NOT kept: all regress; destination aliases
+// and own-record indirection miss equality; native root/NONE and scalar homes remain. Original
+// complete body and helpers restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
