@@ -384,6 +384,9 @@ void function_11bed0(s_location *location, point3f const *point);
 // like round 166's order (implied tests, not kept); named location and position pointers both tested 56 at 217 bytes (not kept).
 // One extra test never moves the call; two do. 0x11bed0 calling the existing 0x11be90 for its leaf half stays a byte match itself
 // but leaves this at 93 (walk 160), so the size of 0x11bed0's source is not the cause; not kept.
+// Round 111: location pointer, const position pointer, both pointers, and mutable position pointer 93 each;
+// a pool local on the native iterator 93; the iterator's pool assigned last 93; guarded native do/while and
+// its early-empty-return form 93 each. One-use receiver locals restored unmatched; the call still expands.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
