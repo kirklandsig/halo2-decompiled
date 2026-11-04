@@ -5330,6 +5330,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // M364: Original multi-use still call result in char/signed-
 // char/byte/short/word/int/long/dword storage: 683/683/683/688/688/685/685/685. NOT kept: no
 // native truth-byte/animation-home match; original result domain and complete body restored.
+// DH350: Common returned result, call-owned/test-owned bool/byte/short/long
+// on the native entry-bit graph: 594/645/608/604/611/602/623/624 (fast control
+// 594, full 588). NOT kept: no match or gain; original early/final returns restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

@@ -1217,6 +1217,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // B421: Post-creation success bool/byte/short/long and complementary failure
 // results 253/253/253/253/253/253/253/253. NOT kept: no byte match; condition
 // residence does not recover sentinel ESI or squad/query homes. Original body restored.
+// DH350: Query-output last-consumer scopes, complete decision/output-only phases,
+// bool/byte/short/long replacement storage: 253/253/353/350 twice. NOT kept:
+// no match or gain; original workspace, result domain and complete body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
