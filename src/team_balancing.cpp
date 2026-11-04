@@ -682,6 +682,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // subsets then immutable complete inputs: 67 each at 514/512 bytes.
 // NOT kept: no exact candidate-first query repair; all file controls unchanged.
 // Original long intermediates, queries and complete body restored.
+// M364: Whole candidate copy lifetimes at entry, team roots, population difference and loop
+// admissions; reused copy-initialized records outside the inner loop:
+// 180/180/178/157/152/152/174/174. NOT kept: no exact candidate-first query graph; early copy
+// lifetimes also lose the matched caller; original lifetime, queries and body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -1068,6 +1072,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // M358: Inclusive maximum-update admission, positive/complementary bool/byte/short/long:
 // 34 each. NOT kept: one-use predicates do not match. Original combined scan/fill restored;
 // player-count EAX/EDX, late fill-value load and clamp homes remain.
+// M364: Combined copy/maximum selection by input/output element pointer or slot ordinal,
+// branch/conditional producers: 116/116/96/96/120/120/98/98. NOT kept: no exact native
+// fill/count ownership; original scalar maximum, loops and complete body restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
