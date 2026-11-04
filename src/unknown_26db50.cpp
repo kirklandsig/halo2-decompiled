@@ -463,6 +463,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
 // rotation's component spill, cross scheduling and register allocation remain.
 // The body is 1085 bytes versus retail 1089.
+// MiniMax G (11-04): ring block with a hoisted double scaled radius, the ring converted once
+// into a named local and its offset named, plus the rotation with cross j, k named and a
+// second name for axis (local_axis) mixed into the dot and rows: 76 (retail's cvtsi2ss ring
+// conversion, SSE offset and an unspilled rotation). The second name is a register steer,
+// kept only with a match; the same form without it 96. Not kept.
 // Lane 15 r17: collision marker store before the entry pointer 90 (it then precedes `lea esi`
 // as retail, but the point stores still come first); named ring phase 143 (ring conversion as
 // retail: cvtsi2ss, store, fld; frame 0xdc, radius copied through integer registers); the
@@ -715,6 +720,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 275 each; ijk/kji with native radius CRT capture 276/276. NOT kept: frame/length
 // regress and no exact boundary. Original helper, radius reference and full body restored;
 // radius schedule, ring SSE conversion and rotation spill remain.
+// N382: Native record/origin/entry object references, seven ownership subsets, then all
+// with outer ring phase: 90/90/90/90/90/90/90/143. NOT kept: no equality or gain;
+// original complete body restored. Radius schedule, ring conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

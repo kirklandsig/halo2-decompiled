@@ -545,6 +545,7 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// MiniMax lane A (11-04): no new form, no lower score.
 // score 308 (was 308): frame 0x4c versus 0x44 (retail writes the transformed normal into the plane and has two
 // unused dwords below it); classifier clamp form, transformed-plane and output homes remain.
 // normal component loop 319; material-output scope 319; direct validity 351;
@@ -728,6 +729,18 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // AC524: Complete root admission bool/byte/short/long, then complementary
 // rejection, 308 each at 1243 bytes. NOT kept: frame 0x4c versus 0x44, root-kind
 // transport and classifier/plane/output homes remain; original collector restored.
+// AC539: Post-clamp bounded-key rejection result, positive then complementary
+// bool/byte/short/long: eight at 308. NOT kept: unmatched one-use decision storage;
+// original clamp, snapshots, plane math and full collector restored.
+// Coordinated long plane-index formal/declarations: 308; callee matches but a caller
+// rises 1 -> 103 (580 -> 576 bytes). NOT kept: shared-user regression; all declarations restored.
+// AC541: Complete final validity/normal-threshold publication or rejection,
+// bool/byte/short/long: eight at 308. NOT kept: no equality/gain;
+// original guards, snapshots, plane math, publication and full body restored.
+// AC543: Strict distance-improvement admission/complement at the original capture
+// boundary, bool/byte/short/long: eight at 308, 1243 bytes. NOT kept: one-use
+// outcomes unmatched; frame 0x4c versus 0x44 and classifier/plane/output homes remain.
+// Original unordered rejection, snapshots, plane math, calls and full body restored.
 // M381: Explicit plane-side-produced admission/rejection, bool/byte/short/long on
 // the aggregate origin/hit graph: 325/325/311/309/328/328/315/316. NOT kept: all regress;
 // original implicit success, plane publication, material outputs and full body restored.
