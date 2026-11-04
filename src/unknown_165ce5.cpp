@@ -1729,6 +1729,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC525: Post-setter per-weapon presence/absence results in bool/byte/short/long,
 // eight at 220 fast (control 220, full 218). NOT kept: predicate residence unmatched;
 // original post-call read and full body restored; frame, unit/mode and look homes remain.
+// AC527: Shared idle-animation selection as long/dword/int/unsigned-int, at consumption
+// or iteration scope: eight at 220 fast (control 220, full 218). NOT kept: selected-result
+// residence unmatched; original draws, counters, setter paths and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

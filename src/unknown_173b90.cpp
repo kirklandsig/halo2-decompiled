@@ -676,6 +676,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC524: Actual particle-loop continuation bool/byte/short/long, then complementary
 // completion results, 42 each at 1130 bytes. NOT kept: offset/default/reload and
 // row-i schedules remain; original guards, shared rotations and complete body restored.
+// AC527: Shared actual alpha/color/scale property receivers, subsets 1/2/4/3/5/6/7,
+// then complete receivers after the frame query: 247/117/117/258/258/135/257/240. NOT kept:
+// pointer residence unmatched and extent grows; original observations, rotations and body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

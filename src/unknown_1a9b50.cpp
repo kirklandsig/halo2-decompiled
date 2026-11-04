@@ -592,6 +592,9 @@ extern point2f *g_468778;
 // original/actor-first acquisition pairs: 440/413/429/403/401/412/403/414.
 // NOT kept: results regress and shorten away from retail; original admission,
 // lookups, early distance, result, request and complete body restored.
+// AC527: Complete distance-or-deadline stop result, positive/complementary bool/byte/short/long,
+// 383/383/383/383/383/383/383/383. NOT kept: result residence unmatched; original short circuit,
+// state-publication arms, clock/rounding observations and complete body restored; early carriers remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -972,6 +975,9 @@ static __forceinline long real_to_long(real value);
 // AC525: Complete final dispatch eligibility/rejection results in bool/byte/short/long,
 // eight at 382. NOT kept: predicate residence unmatched; original final guards,
 // field observations, query aliases and full body restored; early rejection island remains.
+// AC527: Shared two-mode timeout publication, positive/complementary bool/byte/short/long,
+// 422/422/434/433/422/422/434/433. NOT kept: assigned-result residence unmatched and
+// extent grows; original comparisons, publication paths, query aliases and whole body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
