@@ -274,6 +274,12 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// MiniMax B (11-04): no lower score; the new forms tried and dropped are the avoidance vector's
+// declaration placed before the left vector (277, identical code) and the flag store's order.
+// score 277 (was 300): the 11cd20 result is held in a local and written into the struct after the
+// side test, so the store lands in the 299460 setup where retail puts it; left: the left vector and
+// the avoidance vector still swap their 12-byte slots, the 0.9f steering block's left_i load, the
+// second normalize's j product, the 0x5d0 flag store and the local_16 dot's x87 order differ.
 // MiniMax I (11-01), not kept in review: the 0x44 setting read into a one-use local before the local_16
 // test (retail keeps it in xmm1 across the branch) 291 from 300, and with the left vector declared before
 // the other two vectors 288. The early read is a one-use local, kept only with a match; the declaration
@@ -436,8 +442,10 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 				local_11 = *(vector3f *)(local_0 + 0x290);
 			if (function_30bf0(&direction) == 0.0f)
 				direction = local_11;
-			real local_19 = direction.j * local_8.j + direction.i * local_8.i;
-			real local_20 = left_i * direction.i + direction.j * local_8.i;
+			real local_20 = left_i * direction.i;
+			local_20 += direction.j * local_8.i;
+			real local_19 = direction.j * local_8.j;
+			local_19 += direction.i * local_8.i;
 			direction.i = local_19;
 			direction.j = local_20;
 			direction.k = 0.0f;
@@ -468,9 +476,10 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 			function_26c180(arg_0);
 			if (*(bool *)(local_0 + 0x278) && *(long *)(local_0 + 0x28c) != NONE)
 			{
-				local_24.field_4 = function_11cd20((vector2f *)&local_8, (vector2f *)&local_9);
+				real local_angle = function_11cd20((vector2f *)&local_8, (vector2f *)&local_9);
 				real local_25 = local_9.j * local_8.i;
 				local_24.field_0 = local_9.i * local_13.i + local_25 > 0.0f;
+				local_24.field_4 = local_angle;
 				local_24.field_1 = false;
 				local_24.field_8 = 1.0f;
 				local_24.field_1a[10] = true;
@@ -478,8 +487,10 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 					*(real *)(local_2 + 0x20), (s_29946c const *)local_22);
 				if (0.9f > local_24.field_8)
 				{
-					direction.j = left_i * local_9.i + local_25;
-					direction.i = local_9.j * local_8.j + local_9.i * local_8.i;
+					direction.i = local_9.j * local_8.j;
+					direction.i += local_9.i * local_8.i;
+					direction.j = local_9.i * left_i;
+					direction.j += local_25;
 					direction.k = 0.0f;
 					local_17 = 0;
 					function_30bf0(&direction);
@@ -500,7 +511,9 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 		{
 			real local_28 = function_1f9e70(arg_0, arg_1, (point2f *)&local_7, (vector2f *)&local_9,
 				(vector2f *)&local_11, (vector2f *)&local_8, local_4 ? (vector2f *)&local_14 : NULL, local_10, local_17 != 1);
-			real local_29 = *(real *)((byte *)local_1 + 0x90) * local_11.k + *(real *)((byte *)local_1 + 0x8c) * local_11.j + *(real *)((byte *)local_1 + 0x88) * local_11.i;
+			real local_29 = *(real *)((byte *)local_1 + 0x90) * local_11.k;
+			local_29 += *(real *)((byte *)local_1 + 0x8c) * local_11.j;
+			local_29 += *(real *)((byte *)local_1 + 0x88) * local_11.i;
 			real local_30 = *(real *)(local_2 + 0x68);
 			real local_31;
 			if (local_30 > 0.0f)
