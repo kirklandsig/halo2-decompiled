@@ -673,6 +673,7 @@ struct s_component_property_view
 // lower score.
 // MiniMax D (11-01): the arguments pre-read into named locals compile identically (13); no new
 // form, no lower score.
+// MiniMax A (11-03): no new form, no lower score.
 // score 13 (was 13): retail reads value into edx before it looks up the
 // component and reads key into ecx last, just before the call; ours reads key
 // first, value last, and loads g_51e9b8 through ecx (93 bytes against 92).

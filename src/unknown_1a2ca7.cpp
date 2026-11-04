@@ -1402,6 +1402,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 
 /* copies the presence task's results into the friends and team members
    lists */
+// MiniMax A (11-03): no new form, no lower score: the friend count is still homed at [ebp-8] and the
+// clan count at [ebp-4] where retail reads the friend count first into [ebp-4] and reloads it into ESI,
+// and the three reversed xuid_equal argument roles still differ.
 // MiniMax S (11-01): no new form, no lower score; the friend count is still homed at [ebp-8] and the clan count at [ebp-4] where retail reads the friend count first into [ebp-4] and reloads it into ESI, and the three reversed xuid_equal argument roles still differ.
 // score 195 (was 117): 0x63d00's definition is now `inline` (round 145, for 0x1a4441's match); the body is
 // unchanged and runs 853 bytes against 835: our link holds flags20 in a register across 0x1a32fc/0x1a32ae,

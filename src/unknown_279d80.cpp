@@ -2093,6 +2093,16 @@ void function_2818e0(void)
 // arm) gives retail's order, while float global loads, an int constant, folded `* 1.0f` or an unused float local do not
 // (retail has no such literal). Fast: the blend-2 rotation multiply through a named rotation pointer 352 (1685 bytes);
 // named source vector 2; named scale 2; named destination vector 2; the existing vector3f_add for the translation 4.
+// Round 84 (lane 16): a compile-only copy scored against retail gives this function's 2 exactly (0x285750 0). The pair also flips
+// for unrelated statements in the scale arm: a float negate, a compare with 0.0f, a division by 3, a sum of two globals; not a float
+// divide, an int-to-float conversion or an int store. So the literal is one trigger of a wider tie. Fast: the counter through
+// `long *counter = &g_5044b4 + component` MATCH, but it offsets a global's address and costs 0x27dff0 387 (1752 bytes), 0x288570 120,
+// 0x28aaa0 4 (restored); the counter as a `long &` parameter 2; the group end assigned then clamped 241 (1659 bytes); the inner `for` as
+// `while` with the index step last 2; the frame state restored before the apply 65; the node lookup as a single-exit result 2. Compile-only: a real `long[3]` counter array 4
+// (0x285750 21, 0x27dff0 355); the counters as one struct 2 (0x285750 17); decoders or bit flags as array members 2 (0x285750 12); counter,
+// decoder or bit flags by const reference 2 (0x285750 6 with decoder or bit flags); the multiply's output parameter first 2 (0x285750 2);
+// 105 blend-2 arm combinations (`+=`, swapped operands, named source, destination, scale) 2 at best; the flag test without a local, sign as
+// long, int, const or struct 2.
 // @retail 0x281b60
 void function_281b60(void)
 {
