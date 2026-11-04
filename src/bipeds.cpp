@@ -1495,6 +1495,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 456/567/610/611/456/567/610/611. Bool recovers frame 0xfc and 2828 bytes; NOT kept:
 // one-use call-result transport needs equality. Original whole body restored; material,
 // airborne and animation homes remain on the retained graph.
+// P324: Plain actual-component loops for all velocity defaults, selected facing and
+// target-position input, masks 1-7: 820/800/895/659/820/800/957; complete target
+// advance loop 617. NOT kept: all regress and grow beyond retail length; original
+// native copies, row expressions and complete body restored. Shared helpers unchanged.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
