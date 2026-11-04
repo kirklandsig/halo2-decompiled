@@ -333,6 +333,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH359: Complementary whole-trace outcome long/bool/byte/short, entry seed
 // 583/568/568/572; post-output seed 584/569/569/573. NOT kept: no byte match;
 // original positive result, normal homes, tails, helpers and complete body restored.
+// DH361: Pending-sector reset after node/metadata/destination/iterator/fetch/empty-exit/
+// nonempty-entry phases 410/449/436/440/442/432/432; traversal-header declaration 411.
+// NOT kept: no native-frame or score gain; original reset, normal homes, tails and body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

@@ -304,6 +304,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH359: Whole-operation failed outcome bool/byte/short/long, cleared after output
 // 408/408/432/431; at output entry 410/410/432/431. NOT kept: no byte match;
 // original result, selected homes, roots, bitmaps, helpers and complete body restored.
+// DH361: Step-equality/polarity stopping tests 405/396; loop-owned ordinal/selected/step-equality/
+// step-polarity/complementary-ordinal/complementary-selected boundaries 390/389/405/396/390/389.
+// NOT kept: one-point leads below the gate; original directional predicate and full body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

@@ -1066,6 +1066,9 @@ bool function_2715a0(byte *buffer)
 // DH359: Separate terminal reached result bool/byte/short/long with inherited fallback
 // 486/495/542/538; missed counterparts 521/521/567/563. NOT kept: no gain or
 // byte match; original returns, fallback qualifier, heap operations and whole body restored.
+// DH361: Heap-root/link/collision-lookup ordinals declared at function scope, seven subsets,
+// then the actual child receiver too: eight at 486. Original observation/initializer sites,
+// declarations and body restored; native state/node/link registers and scalar homes remain.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
