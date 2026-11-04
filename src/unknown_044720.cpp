@@ -560,6 +560,10 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // AC530: Bound-only ordered intersection/separation results in byte/char/short/long, keeping
 // both original marking sites: eight 182s. NOT kept: no equality or gain; original comparison
 // and full body restored. Entry/index spill and center/query/bound homes remain.
+// J255: Genuine displacement-array producers with long/dword/short/word ordinals,
+// native/shared squared-length consumers: 184/184/257/257, 182/182/257/257.
+// NOT kept: ties/regressions; narrow loops also enlarge the frame and extent. Original
+// whole body restored; entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

@@ -1515,6 +1515,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // N358: Complete invalidity result on failure-only resize-count graph, eight native scalar domains:
 // 159/159/159/141/141/140/140/140. NOT kept: unmatched source/representation forms; original executable body restored.
 // Query/write count homes, write setup and checksum/validation joins remain.
+// J255: Coherent ordinary-inline cleanup, close, pair and cleanup/checker boundaries;
+// forced cleanup, forced checker and their mixed ordinary forms: 33/33/33/33/474/388/474/388.
+// NOT kept: ties/regressions. All provider contracts and complete bodies restored;
+// query/write homes and validation joins remain; forced expansion moves away from native extent.
 // @retail 0x213970
 void function_213970(void)
 {

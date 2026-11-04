@@ -1021,6 +1021,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the 587 forms lose the matched fraction provider and move away from native extent.
 // Query/frame/fraction homes remain; pointer-to-ordinal quotient also consumes EDX.
 // Original provider contract and target body restored; prior ordinal-loop forms not repeated.
+// J255: Coordinate-range subtraction at nearest/anchor/opposite producers, seven
+// standard transform subsets 876/598/1237/912/1533/1362/1554; direct loops throughout 1471.
+// NOT kept: all regress and shorten away from 2122 bytes. Original scalar/vector
+// producers, reduction trees, includes and full body restored; frame/query/ordinal/fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
