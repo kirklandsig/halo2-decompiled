@@ -1809,6 +1809,10 @@ void function_b7360(long object_index);
 // B426: Complete complementary completion state bool/byte/short/long, original/entry
 // lifetime: 593/593/594/594/593/593/594/594. NOT kept: no byte match; original completion, all
 // producers/consumers and callback restored. Pool/actor/output and retained reference remain.
+// B428: Totalized callback result through the only return, no goto, positive admission,
+// short/long/byte/word with default/explicit rejection: 590/479/590/479/569/596/590/479.
+// NOT kept: no exact match; original callback restored. Actor/output entry ownership,
+// retained reference and the 24-byte length deficit remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2357,6 +2361,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B423: Both nearest-candidate/selected-target range admissions classified as in/out
 // bool/byte/short/long, 469 each at 2400/2396. NOT kept: no exact match;
 // original thresholds, squared sums, iterator, publications and full body restored.
+// B428: Native overlap-safe turning/animation/motion input transfers, seven subsets
+// and all with the default direction transfer: 541/603/610/601/580/611/615/621 (fast control 485;
+// full 469). NOT kept: all regress; original input copies and whole body restored.
+// Actor/state ownership and first-point home remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

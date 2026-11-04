@@ -807,6 +807,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // B426: Existing reference direct/staged and pointer direct/staged cross producers,
 // each at the first/second product: 45/57/49/45/45/57/49/217. Original shared producers and
 // complete body restored; right i/j colors, forward.k reuse and angle stores remain.
+// B428: Complementary input-result lifetime, bool/byte/short/long with conditional/total
+// predicate producers: 74/75/74/75/95/96/89/103. NOT kept: no exact match; stack initialization
+// and lengths regress. Original complete body restored; right i/j colors, forward.k reuse
+// and ordinary-angle store bases remain.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

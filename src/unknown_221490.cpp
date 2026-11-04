@@ -751,6 +751,11 @@ bool sound_driver_voice_create_buffer(
 // B426: Zero-extended word/dword count bits with signed capacity/index/publication
 // uses, short/long result and playback/spatial-first producers: 71/182/158/158/159/182/158/158.
 // NOT kept: no byte match; original signed index, result, SDK phases and body restored.
+// B428: Complete routing-pair tables with memcpy first/spatial/both 212/181/242,
+// memmove first/spatial/both 247/224/294, both with spatial-first modes 250/294.
+// NOT kept: no exact match; tables shorten away from retail and regress. Original
+// arrays, direct stores and full body restored; spatial/play and zero/input homes remain.
+// Both playback-first complete-table forms also lose 0x191420 by one instruction.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
