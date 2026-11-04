@@ -532,6 +532,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // 98/127/91/106/109/121/108/108. NOT kept: no gain; width/precision selections require native
 // shape or equality. Original complete body, real carriers, helper and parameter storage restored;
 // dying-rate/tick register reuse remains.
+// P309: Existing scaler native-copy/library-copy/two-loop/fused-loop, ordinary/forced, with
+// direct update argument: 149/149/99/99/149/149/99/99. Copy/fused loops also lose its matched
+// user. NOT kept: larger frame/length and no exact target; original helper and full body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

@@ -1256,6 +1256,9 @@ struct s_item_flags_view_10b850
 // base/additive/both with complete scaled products 816/849/813; reversed paired
 // input priority without/with products 816/813. NOT kept: all remain unmatched;
 // original accumulator and full body restored. Frame and entry Boolean homes remain.
+// P307: Complete in-place cross differences, with component cosine ownership, cross sine
+// ownership and full projection product: 832/834/832/834/811/813/811/813. The 811 forms
+// reach 4096 bytes; NOT kept: two-count gain. Original helpers and complete body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

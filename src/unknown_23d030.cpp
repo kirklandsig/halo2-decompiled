@@ -438,6 +438,9 @@ extern byte g_51ec11;
 // B399: Plain native projection/roll-row traversals on the shared-state graph, scalar/
 // existing direct/staged cross and consumed row workspace: 455/448/448/448/448/448/448/448.
 // All regress and lengthen; original body restored. Zero/side/up allocation remains.
+// P303: Existing shared normalizer live i/j/k captures before stores, subsets
+// 1/2/4/3/5/6/7: 332/332/332/352/352/352/352; complete immutable captures 352.
+// NOT kept: all regress and shorten away from retail; shared header and complete original body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

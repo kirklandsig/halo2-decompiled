@@ -1486,6 +1486,12 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // setter 378; const start 418/378; attempt-owned start 412. NOT kept: target setter adds an in-loop z
 // store; retail initializes z before the loop. Existing planar target setter alone/with start setter
 // 427/435. Original endpoints/body restored; frame/zero/count homes remain.
+// P308: On the retained two-radius lifetime, existing final difference/length/start-setter
+// subsets 1/2/3/4/5/6/7 score 437/418/436/426/429/426/428; complete self-dot 428.
+// NOT kept: ties/regressions; original point values, both radii, helpers and full body restored.
+// P310: Joined forward-scan/reverse-candidate cursor, while-for/for-for/while-while/for-while:
+// short 438/621/438/438; long 456/649/456/456. NOT kept: all regress; original separate
+// scan/candidate ordinals, both radius values, geometry and complete body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

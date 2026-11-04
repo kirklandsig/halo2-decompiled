@@ -1755,6 +1755,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // B411: Existing magnitude producer with double/native/direct/test-produced movement
 // 221/224/226/226; squared-length/dot producers with double/real roots 221/224/221/224.
 // Native zero width fixes only the prefix; original root, declaration and body restored.
+// P309: Complete category admission as direct positive/negative or named positive/negative
+// predicates, original/real movement: 231/231/231/231/228/228/228/228. Original
+// selection graph and complete body restored; zero/reset homes and material expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

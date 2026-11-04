@@ -369,6 +369,9 @@ struct s_object_damage_view
 // B406: Attribution-produced event code byte/word/long/dword, definite assignment
 // 436/451/452/452; conditional selected-code producers 436/440/472/472. All regress;
 // original eager code, scalar homes, history observations and complete body restored.
+// P303: Late constant killer-team/hostility defaults and direct statistics parameter, subsets
+// 1/2/4/3/5/6/7: 374/338/353/378/374/338/378; reversed award-array declarations 353.
+// NOT kept: hostility at 338 delays its clear past attribution, unlike retail; original lifetimes and body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

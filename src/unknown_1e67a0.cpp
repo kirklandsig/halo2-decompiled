@@ -1094,6 +1094,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // copy boundaries, subsets 1/2/4/3/5/6/7: 122/176/205/171/197/203/195.
 // Both final overlap-safe library copies 99 at 1382 bytes (plain 99). NOT kept: adds
 // library calls where retail copies three components inline. Original entire body restored.
+// P298: Actual turn admission at entry/sample/scaled/rotation boundaries, short-circuit
+// 382/335/203/192; eager Boolean inputs 336/183/183/183. All restored; rotation
+// multiplicands and exit scheduling remain. NOT kept: early decision lifetimes did not match.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

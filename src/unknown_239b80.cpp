@@ -453,6 +453,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // displacements 172; native/wide squared length 170/172; native/wide paired squares 170/172;
 // double displacements with native/wide sum or wide squares 173/172/172. Original body
 // restored; extra frame word, count/departure homes and compaction remain.
+// P303: Native-width lowest/candidate/compaction ordinals on the retained output-ordinal graph,
+// subsets 1/2/4/3/5/6/7: 654/262/180/642/651/259/635; unsigned native candidate 262.
+// NOT kept: every form regresses, some lose caller 0x239d50; original scans, output ordinal and body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

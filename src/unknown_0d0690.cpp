@@ -1509,6 +1509,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // B407: Early degenerate normalizer exit, native/readonly output pointer, direct/existing
 // scaler and forced/ordinary inline: 529/529/608/608/529/529/608/608. NOT kept: no gain;
 // shared user 363 -> 368/364. Original helper, calls and complete body restored.
+// P302: Existing RGB clamp actual lower/upper/input/output record references,
+// graphs 1/2/3/5/6/7/15 then ordinary-inline full graph: 529/529/529/529/529/529/529/529. Original
+// clamp/body restored; frame, selection-result spill and block/query homes remain.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2253,6 +2256,12 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Round 404: Actual decoder input/output/paired-input/paired-output cursors 1100/756/984/855 with
 // ordered ends, 826/756/763/855 with equality ends. Original decoder, three independent samples and body
 // restored; native status/mesh/color/UV homes and selective expansion remain.
+// P308: Existing five-value decoder as a native decoded/encoded member, void/reference
+// results with forced expansion 542/542/542/542; ordinary expansion 1039/1039/1039/1039.
+// NOT kept: ties/outlining regressions; original free decoder, samples, offsets and body restored.
+// P310: Shared combined-fallback/single-valid color-normal publication and final packed-color
+// result, subsets 1..7: 714/720/1012/601/749/758/1051; complete conditional receivers 1029.
+// NOT kept: all regress; original publication paths, independent samples and body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

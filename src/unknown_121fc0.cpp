@@ -248,6 +248,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // B401: Next-unused cache slot as provisional mapped search result, long/dword/short/word:
 // ordinal traversal 227/227/223/223; native pointer traversal 218/218/215/215. NOT kept:
 // unmatched result/control forms regress and shorten extent; original search, tokenizer and body restored.
+// P307: Initialization-failure result feeding guard/four stores, bool/byte/char/word/short/int/long/dword:
+// 101/229/229/226/226/227/227/227. NOT kept: 101 adds neg/sbb/inc absent in retail,
+// and leaves outer EBP and clamp homes unresolved. Original entire body restored.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

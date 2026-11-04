@@ -266,6 +266,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // then mutable forward on all three: 110/110/119/110/119/119/119/119. Left-reference forms
 // grow to 923/922 bytes and move the first gap to +0x44; other forms retain +0x159.
 // No control score changes. Original four-use normalizer and entire body restored.
+// P305: Existing shared first-up/post-projection-up/left normalization subsets
+// 156/110/152/156/153/152/153; all with readonly forward 153. Original helper,
+// includes and complete body restored; reciprocal/late-K ownership and schedules remain.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

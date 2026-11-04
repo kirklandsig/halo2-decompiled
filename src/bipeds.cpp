@@ -1438,6 +1438,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // J245: Actual moved result in bool/byte/short/long with function-scope
 // declaration, then case-scope declaration and separate false producer: 585/585/584/581/585/585/584/581.
 // NOT kept: 584 and 581 gain only one and four; every form retains frame 0xf8 versus 0xfc. Original movement result and all workspace homes restored.
+// P300: Once-read motion input, twice-consumed turning key and real header byte,
+// graphs 1/2/4/3/5/6/7 plus entry motion declaration: 585 each. No gain; original
+// receivers, real header layout and full body restored. Frame 0xf8 versus 0xfc
+// and material/airborne/animation homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1947,6 +1951,10 @@ void function_dfd70(long arg_159e6d)
 // J245: Existing head/forward/fallback scalar-setter subsets 1/2/4/3/5/6/7,
 // then first-ray miss setter: 235/229/253/241/255/258/256/245.
 // NOT kept: all forms lose 0xde9d0; 229 gains only four and grows to 1047/1041 bytes. Original dispatch, basis and ray homes remain.
+// P300: Sequential forward/back, up/ray and returned-up storage graphs 1/2/3/4/5/6/7:
+// 233/233/233/240/240/233/233; forward/back at its first writer 233. NOT kept:
+// no target gain, and several forms raise shared users. Original helpers/body restored;
+// mode-three placement and basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2372,6 +2380,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // F360: Complete settling-period expression at four pre-validation phases, mutable/immutable:
 // 68/68/68/71/68/68/68/71. NOT kept: no exact period-lifetime/EBP repair; retail computes the period after body validation.
 // Original complete body and helpers restored.
+// P298: Existing dword fallback setter with native word setters at pre-call/post-call/failure
+// clear boundaries, masks 0..7: 73/78/78/100/73/78/78/100. The fallback memory OR agrees;
+// extra EBP and count/body transport remain. Original complete body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -2825,6 +2836,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // mutable then readonly: 561/562/530/530/561/562/530/530. Early receivers
 // give frame 0x48 and 1821 bytes; later forms tie original 0x44/1834.
 // Original whole body restored; result/state bytes and point/scalar homes remain.
+// P301: Existing typed rigid-body getter/declared motion field at hit/mass/farthest/
+// push sites, then hit+mass/both distance scans/all sites: 530 each; all with the
+// position acquired after the pure mass query 548 (1816 bytes). Original raw access
+// chain and complete body restored; native 0x4c frame and result/position homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3476,6 +3491,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // DL254: Two-use pivot output-pointer contract, direct/scalar/setter/aggregate producers, ordinary then forced inline:
 // 895/421/895/895/368/421/369/367. Original complete body and helper contracts restored;
 // NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
+// P302: Existing pivot-helper actual matrix/input/output references, seven subsets then forced-inline
+// complete reference graph: 368/368/368/368/368/368/368/368. All tie; original pointer contracts/helper/body restored;
+// native matrix/origin and paired pivot/property homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

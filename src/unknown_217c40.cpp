@@ -173,6 +173,9 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // bound-predicate/lower-expression/upper-first results: 577/474/483/545/549/826/558/538.
 // NOT kept: neutral or nonretail result/compare shape and frame/length regressions.
 // Original six-use clamp, snap helper, complete body and alignment evidence restored.
+// P304: Existing snap-input observations at quadrant/magnitude/dominance-sign consumers,
+// masks 1/2/4/3/5/6/7, and immutable input/output separation: eight forms 474 each.
+// Original helper and body restored; frame 0x38/0x40 and angle/snap homes remain.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

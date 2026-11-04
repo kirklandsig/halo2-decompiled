@@ -301,6 +301,9 @@ bool function_a7670(long object_index);
 // B411: Actual two-list first/second phase do traversals, bool/byte/short/long,
 // 281/281/196/280/285/285/200/284. NOT kept: phase/domain nonmatches, longer extents
 // and byte-phase frame shrink. Original ordinal traversal and complete body restored.
+// P305: Native selected-list/body/header read-only receivers, seven subsets 153 each;
+// all three with the property source typed as its native entity 153. Original complete body
+// restored; selector/index/count homes and admission BL remain.
 // @retail 0x278f00
 void function_278f00()
 {

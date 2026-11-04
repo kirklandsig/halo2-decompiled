@@ -1497,6 +1497,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // M344: Winning-seat presence/absence produced by all original score improvements,
 // bool/byte/short/long 147/147/143/147/147/147/147/151. NOT kept: unmatched selection
 // flags grow the frame and body; original short winner, requests and complete body restored.
+// P309: Existing request builder split from submission: void-pointer/pointer-result/void-reference/
+// unit-result, forced/ordinary expansion, 72/72/72/32/72/72/72/32. Original helper and
+// complete body restored; iterator/leave-selector/request homes remain; no exact builder split.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

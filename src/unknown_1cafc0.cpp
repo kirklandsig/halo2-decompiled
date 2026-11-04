@@ -669,6 +669,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // success-guarded publication 667/659/667/659; native record with aggregate/field publication
 // and both guards 665/679/647/665. NOT kept: one-use captures/native value copies and
 // nonretail publication/frame/extent; original outputs, shared request call and body restored.
+// P303: Corrected twelve-byte expansion, fallback mode/class/type fields uniformly at use,
+// subsets 1/2/4/3/5/6/7: 542/535/540/534/535/536/534; all with Boolean success 531.
+// NOT kept: every form regresses and disturbs the agreeing prefix; original snapshots and body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

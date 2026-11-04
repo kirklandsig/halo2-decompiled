@@ -1816,6 +1816,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // B387: Native detail-time/entry cursors and read-only detail, seven subsets, then immutable
 // parent binding: 479/491/479/491/479/491/491/491 (reduced control 479, full 305).
 // Original full body restored; request/frame, playback/NONE and range/ring homes remain.
+// P298: Detail-query acceptance in bool/byte/short/long, complete short-circuit results
+// 305/305/305/305; query-failure completion 442/442/444/443. Exact-only carriers restored;
+// native frame and playback/NONE/range/request homes remain.
 // M343: Canonical inactive-range predicate bool/byte/short/long with original request
 // 417/417/414/416; actual full request 417/417/411/416. NOT kept: retail keeps the raw mask
 // in EDI and no predicate form matches. Original mask, request and full body restored.
@@ -2204,6 +2207,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // track-gain and scale locals 465 at 1937 [237]; both 502 at 1958 [240]; `primary` after the clear 345 at 1932 [213], with the early
 // locals 485 at 1942 [276], with the gain sum ahead of the clear 345 at 1932 [217]; `pitch` after the clear 466 at 1935 [244]; the total
 // gain in its own local 349 at 1936 [263]. Retail tests `primary` before the clear, so the 213 is not its shape.
+// P304: Native gain/flag-byte/effect views, subsets 1/2/4/3/5/6/7 then readonly modifier:
+// 339/411/339/411/339/411/411/411. Flag-byte forms reach 1929/1929 but retain frame 0x4b4/0x4bc and regress.
+// Original types/views, receivers and full body restored; early scalar/clear/query homes remain.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
@@ -2486,6 +2492,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // B387: Existing byte-flag writer at all three final publication sites, seven subsets,
 // then all with masked native truth arguments: 694 each (reduced control 694, full 597).
 // Original complete body restored; entry true/flags, record/track homes and loop padding remain.
+// P298: Independent energy/output ordinals, two do/do identities 597/597;
+// for/do, do/for, for/for and while counterparts 672/724/769/672/724/769.
+// Original loops and complete body restored; entry true/flags and record/track homes remain.
 // Lane 14 r57 (plain, from 597): `alternate` declared inside the definition guard 615 at 2500 bytes (the entry is
 // then retail's to +0x6c: result first, EBX = 1 shared by the alternate mask and the true stores; the source copy
 // keeps the pointer in ESI where retail copies it from EDX, which shifts the energy loops' padding); with `distance`
@@ -2506,6 +2515,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // complete bindings with overlap-safe source transfer 780f (control 694f, full 597).
 // NOT kept: entry true/flags and record/track homes do not recover; transfer grows frame
 // to 0x40. Original roots, copy, qualifiers and complete body restored.
+// P306: Actual track/track-tag/pitch-entry references, seven subsets, then read-only
+// selected tag/pitch receivers: 694 each, tying reduced control (full 597). NOT kept:
+// no gain or match; original body restored. Entry true/flags and record/track homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

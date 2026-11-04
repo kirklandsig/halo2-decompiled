@@ -692,6 +692,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // ESI where retail re-reads [ebx] after the virtual call); that helper on the contact node, reading `node->shape` at
 // each use, 319 [162]. Retail's three loads of the data and its preloaded clamp constants are reproduced by no form;
 // both matched siblings (0x1c5400, 0x1d4880) use the single-load clamp.
+// P307: Existing plane-output returns at transformed/direct/both consumers, with original/returned
+// material and earlier native outputs: 341/306/346/343/325/348/346/348. Direct return 306 at 1243
+// bytes NOT kept: two-count gain and unmatched mixed receiver graph. Original body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

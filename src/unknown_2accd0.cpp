@@ -856,6 +856,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Captured unsigned total with header/body denominator conversions at entry, case
 // or successful progress producers (eight nonoriginal pairs): 248/233/247/261/260/233/252/207.
 // All regress; original eager conversion, all field observations, I/O and body restored.
+// P309: Guarded header/body/finalization signing-status masks 1/2/4/3/5/6/7, then all signed:
+// 83/34/34/83/83/34/83/83. Header result adds frame/length; other outcomes tie. NOT kept:
+// unmatched one-use/test-produced status; original full body restored, total/seek/size homes remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1197,6 +1200,9 @@ struct s_signed_file_write_parameters
 // B411: Test-produced header result through the sole exit, with scratch/direct/publication
 // result producers in subsets 0-7: 324/303/296/283/328/305/302/287. Native extent returns
 // in some forms but capacity and extension homes regress; original complete body restored.
+// P306: Native seek-return carriers at scratch/direct/signature consumers, seven subsets,
+// then all with the header seek result: 102/102/102/102/102/102/102/102. NOT kept:
+// one-use API-result storage has no exact match. Capacity staging and extension homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

@@ -2297,6 +2297,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // Round 64 (fast): only motion[1]'s product and the count compare differ (their 3 bytes are the length gap). Motion record
 // struct 40; group struct 40; both 40; while loop 40; normalize_inline 48; `*(long *)group > i` 40; motion[7] from
 // motion[1] 137; pointer local to motion[1] 40; byte-offset stores of motion[0]/motion[2] 40; vector3f view pointer 40.
+// P311: Complete independent normalization receiver, native/library/component captures with native/library publication:
+// P311: 322/322/322/322/307/307; native/library capture with full component publication 311/311.
+// P311: NOT kept: all regress and grow beyond retail. Original in-place helper and body restored; product fold and final count split remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2500,7 +2503,7 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 109 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
+// score 113 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
 // top) and the total on the stack, the index in EBX and the cursor in EBP; ours holds the total in EBP.
 // Earlier at 132: frame 0xa0 and loop constants agree; first +0xb saves
 // Round 55 (plain): the three sibling 0x33400 forms 130; with const list/table reads 130; with a bool object
@@ -2567,6 +2570,9 @@ s_cached_input_list g_5234e8[4];
 // view declared before count 109; shape declared before index 109; object read before the definition
 // 109; the loop bound read from g_547f98 at each test 140 (551 bytes); output[count] written at each
 // store instead of the result pointer 109.
+// P311: Native external source/object-slot layouts and complete existing position setter, subsets 1/2/4/3/5/6/7:
+// P311: 146/146/156/146/156/156/156, fast control 146 versus full 113; complete graph with list snapshot 157.
+// P311: NOT kept: no calibrated gain; setter/list forms shrink away from retail. Original body restored; frame and register homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3609,6 +3615,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // spill homes stay x 4 / z 8 / radius 0xc / -radius 0x10 where retail has x 4 / radius 8 / -radius 0xc / z 0x10;
 // on that: corner helper locals renamed three ways 225/225/225 (names move no slot), offsets passed by value
 // 400 (1805 bytes), offset declared first 225, colour declared at function scope 225.
+// P311: Existing device member color/position/UV API families on native color, subsets 1/2/4/3/5/6/7:
+// P311: 225/382/225/382/225/376/376; all member families with scalar alpha 394.
+// P311: NOT kept: six-point forms grow to 1826; native-length 376 regresses. Original APIs, color and full body restored; frame/scalar homes remain.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

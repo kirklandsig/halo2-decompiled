@@ -266,6 +266,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // Unified endpoint-side predicate for all orientation consumers, second/first polarity
 // as bool/byte/short/long: 415/436/437/436/438/438/446/430. All regress;
 // original predicates, counters, helpers, publication and whole body restored.
+// P305: Twice-used fixed-turn sine angle, double/real, near-arm/endpoint lifetime,
+// conditional/test-produced: 414/414/417/417/407/410/408/411. All regress; original
+// whole body, normalizer, emitter and double trig inputs restored; native XY homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -609,6 +612,12 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // late obstacle deltas, rotated direction or both: 753/734/761/719/763/739/773/747.
 // NOT kept: these native-workspace lifetime forms do not match; original
 // independent workspaces, scalar observations, helpers and complete body restored.
+// P302: Existing sweep-rotation actual offset/pivot references, subsets 1/2/3/5/6/7 then
+// ordinary-inline input-pair/full graph: 719/719/719/719/719/719/719/719. Original contracts and whole body restored;
+// frame/radius/trace and pivot homes remain.
+// P304: Native settings/actor backing members and shared normalizer, masks 1/2/4/3/5/6/7,
+// then all with direct actor-position uses: 719/719/756/719/756/756/756/790. Original types, helper and body restored;
+// frame 0x124/0x114, radius and trace/pivot homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
