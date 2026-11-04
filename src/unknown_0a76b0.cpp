@@ -1549,6 +1549,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // (its address passed to a call); every lookup spelling without that shares one load. Diagnostics, reverted at once:
 // `(void)&hand` 95, with a long hand 198; a local pointer to hand read at the 0xd0870 argument 95 (short) / 198 (long),
 // at the slot store 95/198 (LTCG resolves the pointer away). Retail passes no local's address anywhere here.
+// P317: Final readiness gate bool/byte/short/long, play/skip polarity
+// 95/95/95/95/95/95/95/95. NOT kept: all gates canonicalize; original entry pool/hand homes and second-load gap remain.
+// Original complete body and every existing helper restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1984,6 +1987,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // reporting 75/75/140/140; set from the pickup test 142/142/100/94. NOT kept:
 // every form regresses. Original mode/result graph, shared player observation and
 // complete body restored; request/weapon homes and getter expansion remain.
+// P317: Shared-query terminal report value short/long, conditional/explicit producer,
+// consumer/entry declarations 68/60/68/60/68/60/68/60. NOT kept: short forms add four bytes,
+// long forms tie; no exact match. Original direct reporting expression and full body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -4773,6 +4779,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
 // 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
 // output lifetime and full body restored; frame and basis/point homes remain.
+// P317: Normalized-side magnitude real/double, producer/basis/success/entry declarations
+// 175/261/175/261/175/261/175/261. NOT kept: no exact match; original basis/point homes and frame gap remain.
+// Original complete body and every existing helper restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

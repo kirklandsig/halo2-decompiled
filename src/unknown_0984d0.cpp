@@ -542,6 +542,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // then entered by a jump as in retail, but onto the volatile items read); with the count-one reads in retail's load order
 // c, b, count 115; with the notify loop reusing the counter 115; reads b, c, count 110 (544 bytes); the counter declared
 // before the validity flag 117. Body restored.
+// P317: Actual 16-byte payload record/dword/pointer/byte cursor with signed/unsigned items
+// 80/80/80/80/80/80/80/80. NOT kept: no exact match; original validity/cursor homes and loop-entry gap remain.
+// Original complete body and every existing helper restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

@@ -1511,6 +1511,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // P315: Retained two-radius/pointer graph, existing complete data getter with all entry ordinal/emitted-count/fallback-result zero-lifetime subsets: 418/401/401/401/430/401/401/438.
 // P315: NOT kept: no byte match or supported gain; original full body restored.
 // P315: NOT kept: 401 places loop-zero stores above native availability/count guards; frame 0x114 and count BX remain.
+// P317: Joint unconditional corner success/rejection accumulators bool/byte/short/long
+// 426/426/406/435/473/473/452/452. NOT kept: no match; short success 406 grows to 1754 bytes and
+// uses a wider result than native tests. Original two results and complete body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
