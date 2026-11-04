@@ -725,6 +725,10 @@ struct s_item_collision_bsp
 // AC536: Contact-query count bool/short/long/dword, then both query counts independent/shared
 // short/long: 202/202/202/202/202/202/202/202. NOT kept: no equality or qualifying supported gain.
 // Original query consumers, plane interface, random draws and full body restored.
+// AC538: Complete axial-spin decision, positive/complementary bool/byte/short/long:
+// 204/204/204/204/204/204/204/204. NOT kept: unmatched decision/storage forms; original complete body
+// restored.
+// Protected plane-index width, plane joins and spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

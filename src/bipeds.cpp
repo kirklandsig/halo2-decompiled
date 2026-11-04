@@ -4954,6 +4954,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // P321: Query directly into velocity/relative, record/CRT copy, actor/query-bound
 // success on the recovered state-call/dot graph: 150/150/148/148/136/136/135/135.
 // NOT kept: all regress and shorten to 671/683; full body restored.
+// AC538: Complete upward-kick admission, positive/complementary bool/byte/short/long:
+// 144/144/144/144/144/144/144/144. NOT kept: unmatched decision/storage forms; original complete body
+// restored.
+// Native support/result byte homes and early success store remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
