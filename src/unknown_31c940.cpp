@@ -52,12 +52,12 @@ static __forceinline solver_projection_31c940 project_second_linear_velocity(sol
 	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, row->linear)));
 }
 
-static __forceinline solver_scalar_31c940 linear_velocity(solver_linear_row_31e7b0 const *row,
+static __forceinline solver_projection_31c940 linear_velocity(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
 {
 	__m128 relative = _mm_sub_ps(a->linear, b->linear);
 	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(b->angular, row->b));
-	return sum_three_31c940(_mm_add_ps(angular, _mm_mul_ps(relative, row->linear)));
+	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, row->linear)));
 }
 
 static __forceinline void apply_angular(float const &impulse, solver_angular_row_31e7b0 const *row,
@@ -1013,17 +1013,22 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				apply_spin_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a,
 					*linear_b_pointer, *angular_b_pointer, inverse_b_pointer, result + 1);
 				apply_angular((float)rounded_spin, spin, a, b, result + 2);
-				terms += 8; result += 3; op += 24;
+				terms += 8; result += 3;
+				unsigned char next_kind = op[24];
+				op += 24;
+				if (next_kind == 1) goto read_header;
 				break;
 			}
 			// Two tangential rows share a circular friction limit.
 			case 7:
 			{
 				float target_a = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
-				solver_scalar_31c940 projected_a = linear_velocity(((solver_linear_row_31e7b0 *)terms), a, b);
-				solver_scalar_31c940 projected_b = linear_velocity(((solver_linear_row_31e7b0 *)terms) + 1, a, b);
-				float error_a = target_a * load_friction_scale(step) - projected_a.value * load_velocity_scale(step);
-				float error_b = ((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] * load_friction_scale(step) - projected_b.value * load_velocity_scale(step);
+				solver_projection_31c940 projected_a = linear_velocity(((solver_linear_row_31e7b0 *)terms), a, b);
+				solver_projection_31c940 projected_b = linear_velocity(((solver_linear_row_31e7b0 *)terms) + 1, a, b);
+				// Both projections finish before these shared parameter reads.
+				solver_step_31c940 *parameters = step;
+				float error_a = target_a * parameters->friction_scale - projected_a.value * parameters->velocity_scale;
+				float error_b = ((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] * parameters->friction_scale - projected_b.value * parameters->velocity_scale;
 				float maximum = operation_float(op, 12);
 				// Round the circular limit to its float home before comparison and
 				// division; the reads can then use that home directly.
@@ -1052,7 +1057,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				}
 				apply_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a, b, result);
 				apply_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a, b, result + 1);
-				terms += 6; result += 2; op += 20;
+				terms += 6; result += 2;
+				unsigned char next_kind = op[20];
+				op += 20;
+				if (next_kind == 1) goto read_header;
 				break;
 			}
 			// Angular friction with a scalar limit.

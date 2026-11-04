@@ -854,6 +854,74 @@ def test_contact_pair_groups_then_friction(solver_images, precision):
     assert all(coverage.values()), coverage
 
 
+def friction_transition_case(first_kind, next_kind, header, shared, seed):
+    """One friction record followed by another row, optionally under a new header."""
+    data = solver_case(first_kind, seed)
+    following = solver_case(next_kind, seed + 2)
+    following_op = OPS + 24
+    while following[following_op - HEAP] != next_kind:
+        following_op += following[following_op + 1 - HEAP]
+    put(data, STEP + 28, 'i', 1)
+    data[OPS - HEAP:OPS - HEAP + 1024] = b'\xcd' * 1024
+    first_size, first_layout = OP_LAYOUT[first_kind]
+    next_size, next_layout = OP_LAYOUT[next_kind]
+    first_vectors = 8 if first_layout == 6 else 6
+    next_vectors = {3: 3, 4: 2, 5: 6, 6: 8}[next_layout]
+    first_count = 3 if first_layout == 6 else 2
+    next_count = {3: 1, 4: 1, 5: 2, 6: 3}[next_layout]
+    put(data, OPS, '6I', 0x11801, TERMS, RESULTS, HEAP,
+        HEAP if shared else HEAP + 0x80, 12)
+    first = solver_case(first_kind, seed)
+    data[OPS + 24 - HEAP:OPS + 24 + first_size - HEAP] = first[
+        OPS + 24 - HEAP:OPS + 24 + first_size - HEAP]
+    op = OPS + 24 + first_size
+    next_terms = TERMS + first_vectors * 16
+    if header:
+        next_terms = TERMS + 1024
+        put(data, op, '6I', 0x11801, next_terms, RESULTS + 256,
+            HEAP if shared else HEAP + 0x80, HEAP, 28)
+        op += 24
+    data[op - HEAP:op + next_size - HEAP] = following[
+        following_op - HEAP:following_op + next_size - HEAP]
+    if next_kind in (7, 8):
+        put(data, op + 4, 'I', FRICTION_RESULTS + 256)
+    data[next_terms - HEAP:next_terms + next_vectors * 16 - HEAP] = following[
+        TERMS - HEAP:TERMS + next_vectors * 16 - HEAP]
+    data[IMPULSES + first_count * 4 - HEAP:IMPULSES + (first_count + next_count) * 4 - HEAP] = following[
+        IMPULSES - HEAP:IMPULSES + next_count * 4 - HEAP]
+    put(data, op + next_size, 'I', 0x400)
+    return data
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_primary_friction_header_transitions(solver_images, precision):
+    for first_kind in (7, 8):
+        for next_kind in (3, 4, 7, 8, 12, 13):
+            for header in (False, True):
+                # Spin-friction writeback clears the ordinary destination.
+                # Subsequent ordinary outputs therefore require a new header.
+                if first_kind == 8 and not header and next_kind not in (7, 8):
+                    continue
+                for shared in (False, True):
+                    for seed in (2, 4, 8, 10, 16, 20, 22, 26):
+                        for rounding in range(4):
+                            data = friction_transition_case(first_kind, next_kind, header, shared, seed)
+                            coverage = {0x31d783: 0, 0x31d520: 0, 0x31c9a0: 0}
+                            context = ('primary friction transition', first_kind, next_kind,
+                                       header, shared, seed, rounding)
+                            try:
+                                snapshots = compare_case(solver_images, data, precision | rounding << 10,
+                                                         context, coverage)
+                            except AssertionError as error:
+                                raise AssertionError(context) from error
+                            assert snapshots[0] == snapshots[1], context
+                            assert coverage == {
+                                0x31d783: int(first_kind == 7) + int(next_kind == 7),
+                                0x31d520: int(first_kind == 8) + int(next_kind == 8),
+                                0x31c9a0: 1 + int(header),
+                            }, (context, coverage)
+
+
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_normal_pair_cursors_across_redispatch(solver_images, precision):
     # Three and five pairs reenter the first unrolled kernel with advanced row
