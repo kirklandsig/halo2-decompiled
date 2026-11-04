@@ -1435,6 +1435,11 @@ static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, 
 // Round 500: native camera/request/position lexical-home subsets, all seven,
 // then all with displacement identity, 135 each on the recovered child-tail graph.
 // Original names/body restored; tag/group ownership, flag extraction and callback reloads remain.
+// Round 141 (KIMI1, fast): tag assigned in the group expression 135; split group/tag/both assignments
+// 135/135/135; request-location reread after the callback 116 (retail's reload, NOT kept: a one-use
+// field reread after a call); that with the existing tag reused at the final getter 152; request-owned
+// loop advance 143; shifted-word bit five on the reread graph 320. Original executable body restored;
+// tag/group ownership and final getter scheduling remain.
 // @retail 0x174420
 void __stdcall function_174420(long system_index, bool view_pass, bool camera_relative, bool force_visible)
 {

@@ -3703,6 +3703,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // Round 49 (m3 lane 15, fast): state range as `state >= 3` 102; the leave test with the flag byte first 101; the
 // value44 reset before the member index store 100 (one point, not kept); announcement flags stored 2, 1, 0 101; the
 // host index read from the session at each use (no assignment inside the condition) 104 (421 bytes).
+// Round 141 (KIMI1, fast): leave assigned from the host result under its guard 131 (413 bytes); shared defaults
+// original/reversed 101/103; chained defaults original/reversed 101/103; neutral defaults with the reply member
+// state before the id 94 (reply exact, seven under the bar), with a const member pointer 94 and a member reference
+// 94. Original executable body restored; held timeout owner spill and announcement/return layout remain.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
