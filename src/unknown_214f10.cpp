@@ -338,6 +338,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // boolean-bitfield consumer views 55/55/54/55/54; word/unsigned-long/signed-long
 // eight-bit views 81/80/80. NOT kept: ordinary views still forward the byte; wider
 // containers grow frame 0xfc to 0x100. Original long-outcome body restored.
+// Round 147 (m3 lane 6, fast): an empty `do {} while (false);` join between the success store and its test (a block
+// boundary with no code), branching on success: `(long)` test on the copy / on the element passed directly 55/55, plain
+// test on the copy / element 55/55, from the long on the copy 55 (351 bytes each, still forwarded). A scan of all game
+// functions for a register stored to a stack byte and re-read at once: the 8 matched hits are 6 joins and 2 volatile locals.
 // DH353: Completion initialization/handle aggregate/immutable open result, subsets
 // 1/2/4/3/5/6/7: 86/42/42/86/86/42/86; complete direct-member form 86. NOT kept:
 // no gain or match; original object, result, completion declaration and waits restored.
