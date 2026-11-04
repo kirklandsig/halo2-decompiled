@@ -742,6 +742,12 @@ struct s_item_collision_bsp
 // N371: Single-marker spin lifetime after contact, factor-first/enclosed-phase/scalar-role-name
 // subsets 0..7: 202/202/202/202/202/202/202/202. NOT kept: unmatched storage-only forms;
 // original complete body restored; protected plane width, plane joins and spin/speed homes remain.
+// F391: Standard backward axial-input/normal transports and complete paired final range sums,
+// individual/pair/complete graphs, then backward final traversal: 267/343/370/313/397/334/343/411.
+// NOT kept: all regress; normal/range graphs also displace the native frame or extent. Original
+// planes, axis/spin homes, arithmetic, random draws, pending-k join, calls and include set restored.
+// Paired range sums also raise matched 0xd9640 from 0 to 3 in the reduced image; restored.
+// Protected plane-index width, plane joins and native spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

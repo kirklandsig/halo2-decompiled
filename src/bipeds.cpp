@@ -1534,6 +1534,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // object/tag/component/state/animation/airborne/ground/facing boundaries:
 // 589/585/585/585/585/585/600/618. NOT kept: no equality; original whole body restored; frame 0xf8
 // versus 0xfc and material/airborne/animation homes remain.
+// F391: Material constant-default lifetime before object/tag/component/state/animation/airborne,
+// then after position and after velocity: 584/584/584/584/584/584/590/610, all 2828 bytes.
+// NOT kept: best gains one and every frame stays 0xf8 versus native 0xfc. Original material
+// initialization, all memory observations, animation refresh, packed output, shared eye helpers and
+// complete body restored; material/airborne/animation homes and missing frame word remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

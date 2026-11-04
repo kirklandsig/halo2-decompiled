@@ -3493,6 +3493,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // DH358: Existing quantizer double transport with explicit real-rounded callers and a multi-use
 // real sample, long/int/short/word results with mutable/immutable input: 660/660/1001/1001 twice.
 // NOT kept: all regress and lengthen to 4836/4856; original helper and whole body restored.
+// F391: Existing quantizer policy as bool/int template argument, mutable/immutable real
+// input and conditional/separate lower admissions: 1218 each in eight forms, 4404/4828 bytes.
+// NOT kept: specialization outlines both quantizers and moves extent away from retail.
+// Original helper, runtime policy formal, eight calls, repeated conversions and whole body restored;
+// selector scheduling, post-bias reload pairs and six shift-versus-clip input homes remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
