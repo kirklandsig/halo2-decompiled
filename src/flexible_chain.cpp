@@ -234,7 +234,7 @@ void __stdcall function_1160c0(real dt)
 }
 
 // MiniMax S (11-01): the segments and segment-index locals leave the first difference at +0x37; no lower score.
-// score 171 (was 179): previous/axis homes, segment ownership and rotation scheduling differ;
+// score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
 // scaled difference 212, all vector helpers 285.
@@ -438,6 +438,11 @@ void __stdcall function_1160c0(real dt)
 // velocity through scaled_difference3f 193; blend as vector3f_scale then vector3f_add_scaled 240
 // (1369); blend complement named and used three times 275 (1347); `previous = node->position =
 // position` 179 (on 179, same code); segment indexed by i and stepped back for the last node 292.
+// Round 49 (m3 lane 2, fast): the physics tag through a private inline getter 171 (same code: retail's late
+// tag-address formation follows its EDX/ECX allocation, not the argument's position); the rotation in place
+// on the offset copy with named projection and cross scalars (0x11d180's form), then predicted = offset +
+// position, 235 (1370 bytes, frame 0xa8); node as `record->nodes + i` 171; sine-first cross products 171;
+// `(1.f - cosine) * dot` 171 (all same code); the inverse step computed just before the velocity rows 297.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -574,6 +574,15 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // header flag tested through a bit-field view of the header's flags byte 77 (same code); the result set
 // after the value call 79; the entity's stored index at every use 82; the result set before the attach 72
 // (176 bytes).
+// Round 208 (m3 lane 3; one-file LTCG harness, exact for this body; real-build figures in brackets): retail's
+// reloaded data pointer and recomputed index for the object (pool kept in EDX) is what a join before the object
+// lookup gives, as in the matched 0x10fa80/0xd1540: a memory re-test `if (entity->object_index != NONE)` after
+// `if (object_index != NONE && header flag) entity->object_index = NONE;` gives retail's lookup and BL result but
+// keeps the re-test 52 [53, 177 bytes]; with the entity's index everywhere 57; the local cleared and stored once
+// 60; a local re-test (`entity->object_index = object_index = NONE;`, five spellings) 59-61 [75] and a flag set in
+// the header test 64-75 [72] are threaded before CSE and share the lookup again; a compiled-out
+// `do {} while (false);` at the arm top/before the test/both 49 (same code), at the re-test's join 52; the header
+// test through same-file inline bool helpers (5 spellings) or link-inlined helpers in another file 49 (same code).
 // Round 67 (m3 lane 1, fast): the header test through a forceinline bool getter 49 (same code), on the retail shape
 // (false first, true after the attach) 77; retail shape with the flag test positive and the NONE arm first 75 (160
 // bytes); the positive test with the NONE arm first on the long result 52; a header pointer named for the test with

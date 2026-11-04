@@ -758,6 +758,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // pointer 128 (gain 4, not kept); dot3f, plain-long jitter and `limits.k = limits.j` 257 (1010 bytes, m 47,
 // closest structure: the limits/factor products, the j/k copies, the projection/movement stores and the
 // jitter spills remain).
+// DL254: Native jitter coefficient/offset phase passes, inherited then ordinary sample:
+// 168/180/165/204/220/220/177/197. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1085,6 +1088,15 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // same counts anywhere before the rotation): 140/150/150/139/163/166/144/112, 1-6 at 1382 bytes; with the
 // moved-away flag preset and set in its test 94 (probes 145-167). Both exits: retail loads all three
 // forward dwords (ESI/EDX/EAX, flags in EBX) before its stores, ours copies interleaved.
+// Y562: Native real absolute/sine/cosine APIs, subsets 1/2/4/3/5/6/7, then all
+// with a double angle producer: 201/196/196/106/106/101/131/131. NOT kept: combined API gains need a byte match; isolated APIs regress. Original body restored.
+// Y564: Existing complete vector setter on the current rotation graph at goal/rotated/initial
+// copy boundaries, subsets 1/2/4/3/5/6/7: 122/176/205/171/197/203/195.
+// Both final overlap-safe library copies 99 at 1382 bytes (plain 99). NOT kept: adds
+// library calls where retail copies three components inline. Original entire body restored.
+// P298: Actual turn admission at entry/sample/scaled/rotation boundaries, short-circuit
+// 382/335/203/192; eager Boolean inputs 336/183/183/183. All restored; rotation
+// multiplicands and exit scheduling remain. NOT kept: early decision lifetimes did not match.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -267,6 +267,8 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // On the test: positive ready flag cleared in each failure arm 445 [184]; with a bool reset 487 [212]; with the property value zeroed before
 // the player-count test 487 [211]; with the mode-7 arms apart 454 [152] (1545 bytes). Left on that form: session_b held in EBX where retail
 // spills it and uses EBX for the owner, ESI for scratch. Restored.
+// Round 402: Actual returned entry-state admissions, independent/sequential bool/byte/short/long outcomes at unchanged call boundaries.
+// Scores 426/426/426/426/426/426/426/426. NOT kept: unmatched outcome forms; original complete body restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
