@@ -171,6 +171,8 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // state pointer into EDI (base + index * 0x1b0), then reuses ESI for the player index and the player
 // pointer; ours folds the base into the add and keeps the state in ESI. The 0x54 frame, the EDX type
 // argument and the 2308-byte length agree.
+// MiniMax A (11-04): no new form, no lower score; the getter's table/result rotation survives the declaration order, the
+// second table read and the nested seat test (117, one point, restored).
 // score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // Earlier: retail loads the state table into ESI and the state pointer into EDI, then reuses

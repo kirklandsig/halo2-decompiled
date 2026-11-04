@@ -183,6 +183,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
+// constant there, ours multiplies first (642, same code).
 // score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // activation copies) and reads d from its stack slot at each use; ours keeps d in EBX from entry. Frame 0x24
 // and clock EDI agree; direction/sample homes and coefficient schedules remain.
