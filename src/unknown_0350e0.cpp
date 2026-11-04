@@ -1901,6 +1901,9 @@ real game_time_get_seconds();
 // F372: Internal hash, animation/sample and draw workspace role names, seven
 // subsets then all with offset/reflection names: eight at 507. Native frame and
 // output homes remain; original names, scopes, APIs and complete body restored.
+// B440: Plain existing component-array loops for camera displacement/reflection/
+// draw position, seven subsets then unsigned ordinals: 708/716/619/920/708/716/1069/1069.
+// NOT kept: all regress and grow; native frame/output homes remain. Original full body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2523,6 +2526,9 @@ real magnitude3d(vector3f const *v);
 // named double inverse-cosine result 196; named cosine complement, existing bounded
 // helper in fallback, named axis projection: 170/170/170. Original body restored;
 // raw-length/promoted-dot homes remain. NOT kept: no eligible gain.
+// B440: Independent angle-only and complete rotation-admission outcomes in
+// bool/byte/short/long: eight 170 at 1045/1045 bytes. NOT kept: no equality
+// or gain; raw-length and promoted-dot homes remain. Original full body restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3829,6 +3835,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // before/after geometry, without/with native color: 368/368/453/453/382/382/465/465.
 // NOT kept: no equality; scalar-color frames recover 0xe0 but grow, native color
 // grows the frame again. Original helper, point array, scalar alpha and body restored.
+// B440: Existing conditional vector scaler within the original corner expansion,
+// input assign/copy and in-place/direct scaling boundaries, scalar/native color:
+// 376/628/409/507/381/634/418/516. NOT kept: all regress; native scalar
+// homes remain. Original helper, captures, color, geometry and full body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
