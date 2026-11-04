@@ -318,6 +318,9 @@ struct c_aggregate : c_child
 // parameter `long *const` 31, the base `v5` writing its output 31 (all same code); `__declspec(novtable)` on the
 // child interface 31 (0x97f00/0x97f30 lose their matches); `produced` declared and zeroed at the loop-body top with
 // `if (child && !error)` 141 (389 B); a pure virtual `v5` does not compile (the aggregate is instantiated).
+// M376: Fixed collection/dispatch/both equal-end and inclusive-last latches, then
+// actual child-array collection/dispatch bounds: 32/32/33/33/33/35/32/32. NOT kept: no match or qualifying gain;
+// original signed latches/body restored; escaped output and lowest loop homes remain.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

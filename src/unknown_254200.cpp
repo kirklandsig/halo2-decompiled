@@ -401,6 +401,9 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // AC532: Actual parameter-home lower/upper endpoints with mutable/const scale 394/401/394/401;
 // after first submission 335/391; complete half-span producers 363/368 (fast control 2).
 // NOT kept: none matches; original parameter, observations and body restored.
+// N369: Complete endpoint compound upper/lower/shared-half producer subsets 346 each;
+// native two-coordinate compound output 343. NOT kept: no equality and extent grows;
+// original two-reload body restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

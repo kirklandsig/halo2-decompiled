@@ -441,6 +441,10 @@ union s_185be7
 // ownership: 1031/1018/754/1096/1048/1059/1132/1077. NOT kept: all regress; destination aliases
 // and own-record indirection miss equality; native root/NONE and scalar homes remain. Original
 // complete body and helpers restored.
+// Y575: Complete button/duration copy then masked clearing, memcpy/memmove policies:
+// 1029/1006/1021/995/988/901/1001/1015. NOT kept: all regress; memcpy shrinks the frame
+// below 0xe0; memmove retains root/NONE mismatch. Original two scratch clears, filter
+// copy, helper contracts and full body restored.
 // J250: Actual sampled-input auxiliary/movement/look/auxiliary-movement native pairs
 // 622/622/622/622; opaque auxiliary formal with typed/direct pointer access 622/622;
 // complete vector/point input pairs 622/622. NOT kept: no root/NONE, settings, frame
@@ -456,6 +460,10 @@ union s_185be7
 // AC532: Controlled/parent-tag/bounds expiry subsets 1/2/4/3/5/6/7:
 // 622/626/626/626/626/626/626; complete scopes with immutable index 626.
 // NOT kept: no match or gain; original observations, scopes and full body restored.
+// N366: Complete initial/interpolated angle and curve-response adjacent result producers, seven families
+// and complete duration-scaled outputs, all tie. Original body and helpers restored; control-root/NONE,
+// settings/zero homes and clamp/flag joins remain. Scores 622/622/622/622/622/622/622/622. NOT kept:
+// unmatched result-ownership forms.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

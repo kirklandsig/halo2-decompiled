@@ -225,6 +225,10 @@ void function_1d56f0(s_havok_component *component)
 // entry 77 (same code), as a const pointer 77, with the rigid-body index copied too 77; the query info's transform
 // set from the body first and the pose copied from it 85, with the component local 85. The tail still waits on
 // BLOCKED-BY 0x1d0cf0 (component in EBX; src/unknown_1cec30.cpp avoid-listed again).
+// Round 107: array pointer/reference receivers, index-first array receiver and component reference
+// receiver 77 each; entry reference/pointer returns through the component, entry reference through
+// the array and entry pointer through the array reference 77 each. All the same code; one-caller
+// diagnostic helper removed and the original shared getter restored.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

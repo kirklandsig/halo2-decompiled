@@ -168,7 +168,7 @@ static inline real interpolate_linear(real a, real b, real t)
 	return (b - a) * t + a;
 }
 
-// score 1 (was 9): only the high-boundary test's miss differs: retail's plain-frame path jumps to the
+// score 1 (was 1): only the high-boundary test's miss differs: retail's plain-frame path jumps to the
 // restart test, ours (knowing the flag is clear there from its false start and the back edge) jumps past it.
 // Round 30 (lane 18): the fraction before the key table with the table read at each use 9 -> 1 (kept; the
 // unused key pointers dropped). Before that: an out-parameter restart helper at all three sites 9; restart
@@ -391,6 +391,16 @@ static inline real interpolate_linear(real a, real b, real t)
 // goto 1; high-boundary/both-advance case orders 1/1; restart in the loop condition 212;
 // disposal-or-restart exit 1; flag store conditioned before the exit 219; high comparison reversed 2.
 // NOT kept: no exact match or eligible gain; original body restored, including all policy outcomes.
+// Round 146 (fast): `do {} while (false);` ahead of the restart test 1; frame copied to `new_frame` at the join 1; frame
+// declared outside the loop 1; `restart && !dispose` 1; guarded `for (;;)` with a bottom break 1. One-file harness (exact at 1):
+// the empty statement after the test/after the store/in an else arm 1/1/1; frame copy in an else arm 241 (629 bytes); restart
+// copied to a named local 1; `!= false`, `!!`, `(long)`, `(byte) != 0` 1 each, `== true` 87 (659 bytes); declarations swapped, late,
+// all at the top, assigned apart, chained either way 1 each; `restart || dispose` either order 1; `restart && time >= next_time` 87
+// (659 bytes); `for (; cond; )`, guarded do, top-test `for (;;)` 1 each; an else arm with `dispose = false` (with/without the loop-top
+// store), `restart = restart`, `frame = frame` or an empty statement 1 each, `restart = false` 153 (663 bytes), `dispose = restart` 87,
+// the frame recomputed 192 (654 bytes). A dispose test at the join ahead of (or after) the restart test, with the arms' break kept 1/1;
+// the arms' break replaced by `if (!dispose) { restart...; switch }` with `if (dispose) break;` at the join, or `dispose || restart`
+// in either order, on one arm or both 1 each: the thread passes both tests.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

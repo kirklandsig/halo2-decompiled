@@ -371,6 +371,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // AC528: Native parent-list slot identities on the current reconciliation graph
 // 55/55/55/55/55/55/136/136. NOT kept: no exact match or eligible gain; original complete body restored.
 // Split post-sample comparison and evaluator/child scratch homes remain. One-use field bindings require equality; no retained candidate.
+// B431: Actual cache/header/parent/point/direction reference formals, header-parent and
+// point-direction pairs, then all five: 55 each. NOT kept: no exact boundary-contract
+// form or gain. Original signature, sole caller and full body restored; split post-sample
+// cache comparison and evaluator/child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -750,6 +754,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // DH334: Standard native-array scaling/translated-position/probe-copy algorithms, seven subsets
 // then all with contact-normal array copy: 405/384/389/405/403/405/420/421.
 // NOT kept: no exact match; original complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// F377: Complete contact-position/normal/inherited-velocity setters, single/pair/all graphs,
+// then all with the probe-direction setter: 356/366/363/366/366/367/367/367. NOT kept: no gain;
+// original complete body restored; late EBP save and sample/blend/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

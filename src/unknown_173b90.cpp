@@ -1010,6 +1010,7 @@ public:
 	virtual long count() = 0;
 	virtual long const *names() = 0;
 };
+// MiniMax h (11-04): no new form, no lower score; the default case still scales the constant first where retail multiplies the vector first.
 // score 184 (was 184): frame 0x60 agrees; 1359/1355 bytes. Default cross/tail merge,
 // normalized-j residence and color/tag homes remain. Earlier 248: 1355 bytes and frame
 // 0x60 as retail (round 27 form, below). Before it (292,
@@ -1444,6 +1445,11 @@ static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, 
 // Round 500: native camera/request/position lexical-home subsets, all seven,
 // then all with displacement identity, 135 each on the recovered child-tail graph.
 // Original names/body restored; tag/group ownership, flag extraction and callback reloads remain.
+// Round 141 (KIMI1, fast): tag assigned in the group expression 135; split group/tag/both assignments
+// 135/135/135; request-location reread after the callback 116 (retail's reload, NOT kept: a one-use
+// field reread after a call); that with the existing tag reused at the final getter 152; request-owned
+// loop advance 143; shifted-word bit five on the reread graph 320. Original executable body restored;
+// tag/group ownership and final getter scheduling remain.
 // @retail 0x174420
 void __stdcall function_174420(long system_index, bool view_pass, bool camera_relative, bool force_visible)
 {
@@ -1743,6 +1749,9 @@ bool function_17afd0(long effect_index, long value);
 // B421: Owner/view identity before the status query, bool/byte/short/long,
 // positive/complementary results 133/133/159/158/133/133/159/158. NOT kept:
 // all regress and exceed retail length; original snapshot/query graph restored.
+// DH350: Independent visibility/drawing getter lifetimes, availability default
+// after getter/owner/view, joined/nested success, view-default and conditional:
+// 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
