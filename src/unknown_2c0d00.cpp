@@ -368,6 +368,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M371: Paired object/sphere ordered-radius overlap/exclusion truth in
 // bool/byte/short/long: eight 931 (reduced control 931; full 882). NOT kept:
 // byte-neutral decisions; original tests, qualifiers and complete body restored.
+// F383: Paired normalized enemy results byte/short/word 931/902/902 fast;
+// complementary bool/byte/short/word/long 937/914/920/920/915 (control 931; full 882).
+// NOT kept: result domains/polarity do not recover native frame or byte-result transport;
+// original complete body, query storage, qualifiers and all consumers restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

@@ -699,6 +699,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH356: Plain coordinate-copy induction at paired/actor/trace publications, seven
 // subsets then all with ordinary result: 356/344/357/351/353/345/347/363. All restored;
 // native root/actor ingress remains; original record fallback and all helpers retained.
+// F383: Literal outcomes after paired/actor/trace publications, seven case subsets,
+// then complete literal returns without the result: 365/361/373/390/370/406/371/384.
+// NOT kept: root/actor ingress persists and extents regress; original result, all
+// publications, native helpers and complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

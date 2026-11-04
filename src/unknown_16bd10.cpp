@@ -930,6 +930,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // AC525: Complete FOV-target presence/absence results in bool/byte/short/long,
 // eight at 236. NOT kept: predicate residence unmatched; original target gate,
 // snapshots, projection and full body restored; direction/normal/zero homes remain.
+// F383: Coherent existing basis-builder input order 234, but its matched callee becomes 2;
+// NOT kept. Immutable projection denominator/captured scale/pan fraction, seven
+// subsets, all 236. Original interfaces, copied plane and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
