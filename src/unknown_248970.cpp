@@ -420,6 +420,10 @@ public:
 // mutable/readonly metadata: 59/59/243/243/59/59/243/243. NOT kept: native indexing loses the
 // frame and cursors regress; original type, field, declarations and body restored.
 // Child preheader, pool/sentinel ranks, allocation retest and salted index remain.
+// B431: Selected existing/allocated handle owns initialization/link/update, signed/unsigned,
+// loop/child-phase declarations and for/while: 142 each, 726/743 bytes, frame 0x10/0x14.
+// NOT kept: result ownership loses the native frame and regresses; original body restored.
+// Child preheader, pool/NONE ranks, allocation retest and salted-link construction remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

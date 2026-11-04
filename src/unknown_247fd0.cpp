@@ -368,6 +368,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DH329: Six native own-input first-consumer reads 55 each; entry cache/parent input-slot
 // pointers 168/55. NOT kept: own-input forms lack equality; cache input also loses caller
 // (24). Original inputs, cache comparison and complete body restored.
+// B431: Actual cache/header/parent/point/direction reference formals, header-parent and
+// point-direction pairs, then all five: 55 each. NOT kept: no exact boundary-contract
+// form or gain. Original signature, sole caller and full body restored; split post-sample
+// cache comparison and evaluator/child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

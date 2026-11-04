@@ -286,6 +286,10 @@ short __stdcall function_2551c0(long actor_index)
 // B425: Complementary search state, bool/byte/short/long, native slot payload first
 // then original view: 92/46/92/46/145/106/122/77. NOT kept: no exact match. Original state, slot view,
 // helper and body restored; early cross products and score-dot schedule remain.
+// B431: Native startup/direction/winner component-copy loops, all with indexed payload first,
+// then subsets 1/2/4/3/5/6/7: 247/256/109/109/240/240/42/247. NOT kept: one-point gain
+// is below threshold; original payload, aggregate transfers, rotation/dot helpers and full body
+// restored. Early j/k cross products and score-dot allocation remain.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -883,6 +887,10 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // B427: Actual external unit/target/radius scalar references, subsets 1/2/4/3/5/6/7,
 // then complete references with readonly actor: 89/89/87/89/123/123/95/95. NOT kept: radius-only
 // gains two, below threshold; original field observations, receiver and complete body restored.
+// Unit-call scratch and first-length/projection/query homes remain.
+// B431: Plain native component traversals for heading/motion/reverse producer subsets
+// 1/2/4/3/5/6/7, then all as plain while loops: 215/218/89/223/215/218/223/223.
+// NOT kept: no gain; original aggregate inputs, reverse products and full body restored.
 // Unit-call scratch and first-length/projection/query homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
