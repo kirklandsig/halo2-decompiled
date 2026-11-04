@@ -629,6 +629,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // M382: Actual initial/helper x87 magnitude result storage and consistent float-root API, masks
 // 1/2/4/3/5/6/7 then all without redundant root casts: 282/507/126/511/282/507/513/513.
 // NOT kept: no precision match or early unity/home repair; original helper and complete body restored.
+// M384: Actual reverse-angle/absolute-result/steering-angle return storage, real/double
+// at producer or entry-declared: 126/126/126/126/126/126/126/126. NOT kept: no equality for
+// result materialization; original full body restored; entry velocity/unity and angular homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3854,6 +3857,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M382: Every angular sweep product named at its producer, case/default real-real/double-real/real-double/double-double,
 // arm-local 133/172/169/162; enclosing 161/169/167/162. Real arm-local fixes the projection prefix but gains only three.
 // NOT kept: below keep gate, no byte equality for materialization/precision; original complete body restored.
+// M384: Initialized affine sweep, real/double before/after basis copy, switch/conditional
+// dispatch: 136/136/174/174/138/138/171/171. NOT kept: no byte equality for
+// precision/lifetime forms; original complete body restored; fallback/cross and x87 trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4481,6 +4487,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M382: Actual contiguous iterator scalar selection, conditional/branched/default-first/active-first,
 // original scalar snapshots 270/270/289/289; consistent at-use field observations 377/377/362/362.
 // NOT kept: no native first-match/world/result repair or byte equality; original complete body restored.
+// M384: Twice-used sample-change result, bool/byte/short/long, persistent OR before/after
+// cache publication: 208/208/216/214/208/208/216/214. NOT kept: all regress and lengthen;
+// original complete body restored; found-index/world/fallback/final-writer gaps remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

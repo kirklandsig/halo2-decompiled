@@ -1774,6 +1774,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M382: Complementary initial admission then team decisions, bool/byte/short/long:
 // 709/709/709/709/710/710/779/759. NOT kept: no native cursor/slot repair or byte match; original
 // positive decisions, snapshots, helpers, task/builder roles and complete body restored.
+// M384: Complete identity/property cache-refresh changed/current result, bool/byte/short/long:
+// 709/709/709/709/709/709/709/709. NOT kept: no equality for one-use result residence;
+// original full body restored; initial cursor/slot and request/completion homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
