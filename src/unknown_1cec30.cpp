@@ -1911,12 +1911,15 @@ PRIVATE inline transform4x3f *component_node_matrices(long object_index)
  return (transform4x3f *)((byte *)object + object->matrices_offset);
 }
 
-// score 29 (was 172): only the orientations branch differs: retail reads both matrix offsets
-// before inverting the parent (the call to 0x141590) and keeps the node's matrix base (object
-// plus offset) in EDI across that call, where ours keeps the object and reads the offset again
-// after it. Tried at 172 (lane): stable handle 197; pointer names 172; in-place composition 212;
-// default point setters 188; sibling induction 175. Tried at 29: reordering the locals and
-// precomputing the matrix pointer (no change).
+// MATCH (was 20; 29 and 172 before). Retail adds the parent's matrix offset last, (object + parent * 0x34)
+// + offset, which changes how the compiler schedules the index arithmetic ahead of the inversion call; the
+// parent matrix is therefore spelled that way instead of object_node_matrix(), whose (object + offset) +
+// node sum the compiler keeps in its own order (20 -> 11). The restore arm then wants `initial`, the node
+// matrices and the node's own matrix in that order (11 -> 0; the other five orders 16..58, the same byte
+// sum for the restore arm's matrix 185). Changed nothing or lost earlier: stable handle 197; pointer
+// names 172; in-place composition 212; default point setters 188; sibling induction 175; reordered locals
+// and a precomputed matrix pointer. The full build also matches without the `standard` marker (the image
+// is otherwise the same; the callers are itself and 0x1d3920, still unwritten); the marker is left as it was.
 // @retail 0x1d3d20 standard
 void s_havok_component::function_1d3d20(long node_index, dword *updated, dword const *restore,
  rigid_transform_scaled *orientations, long unknown)
@@ -1938,7 +1941,8 @@ void s_havok_component::function_1d3d20(long node_index, dword *updated, dword c
    if (orientations)
    {
     transform4x3f *matrices = component_node_matrices(component->object_index);
-    transform4x3f *parent_matrix = object_node_matrix(object_get(component->object_index), parent);
+    s_slot_object_view *parent_object = object_get(component->object_index);
+    transform4x3f *parent_matrix = (transform4x3f *)((byte *)parent_object + parent * sizeof(transform4x3f) + parent_object->node_matrices_offset);
     transform4x3f inverse;
     transform4x3f relative;
     function_141590(parent_matrix, &inverse);
@@ -1949,8 +1953,8 @@ void s_havok_component::function_1d3d20(long node_index, dword *updated, dword c
   else if (restore[node_index >> 5] & mask)
   {
    s_component_node_default *initial = &render_model->nodes[node_index];
-   transform4x3f *matrix = object_node_matrix(object_get(component->object_index), (short)node_index);
    transform4x3f *matrices = component_node_matrices(component->object_index);
+   transform4x3f *matrix = object_node_matrix(object_get(component->object_index), (short)node_index);
    function_141e10(&matrix->rotation, &initial->rotation);
    matrix->position.x = 0.0f;
    matrix->position.y = 0.0f;
