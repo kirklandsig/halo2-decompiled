@@ -1935,6 +1935,9 @@ void function_dfd70(long arg_159e6d)
 // crouch and default-owned zero: 104/261/261/104/104/245/242/247.
 // NOT kept: every form raises shared user 0xdc5c0; some also lose 0xde9d0.
 // Original helpers/body restored; mode-three layout and basis/ray homes remain.
+// N353: Mode-three predicate bool/byte/word/long before origin acquisition
+// 270/270/261/261; after origin acquisition 233/233/233/233.
+// NOT kept: no gain or native predicate storage match; original helpers and all user bodies restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)

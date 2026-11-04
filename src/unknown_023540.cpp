@@ -2543,6 +2543,8 @@ dword __cdecl function_131fc0(real alpha);
 // AC506: Common post-arm first-constant/final-ABCD/final-EFG publication, seven subsets
 // and all results declared at entry: 155/180/181/175/193/187/197/197. NOT kept: every
 // one-use output form regresses; original branch stores and complete body restored.
+// N353: Separate caller-side scalar/color/finalizer inline declarations, seven subsets,
+// and all force-inline declarations: 140 each. NOT kept: no gain; original declarations restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,

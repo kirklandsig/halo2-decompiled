@@ -9,6 +9,7 @@
 #include "unknown_0259d0.h"
 #include <string.h>
 #include "object_iterator.h"
+#include "unknown_06c1d0.h"
 
 /* the players (g_4e8c24, 0x21c bytes each) */
 struct s_tail_player
@@ -1161,6 +1162,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // Y559: Bounded slot count char/short/int/dword, entry then count-phase zero
 // declaration: 287/283/284/284/305/293/294/294. NOT kept: one-point lead below
 // the keep gate; retained pool/player and lazy tag-table ownership remain.
+// N353: Existing complete slot selector at held/pending/inventory subsets 1-7
+// 288/294/295/337/337/351/346; all with direct slot arguments 346.
+// NOT kept: no qualifying gain; original pool/player/tag acquisition and body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1512,7 +1516,9 @@ void __stdcall function_167e86(long user_index, long hand);
 void __stdcall player_set_local_user(long player_index, long user_index);
 void __stdcall function_14f270(long player_index, long controller_index);
 
-// score 587 (was 628): the unbind in the second-to-last loop follows retail's expansion of 0x14f190/0x14f270's
+// score 285 (was 587): frame 0xe4, 78 bytes short; mask/index homes, release expansion and late binding homes remain.
+// The existing controller iterator restores the native memory cursor and pool reload (plain 285).
+// Earlier 587 (was 628): the unbind in the second-to-last loop follows retail's expansion of 0x14f190/0x14f270's
 // NONE arms (through freshly fetched player pointers), the machine fields come from s_player_census_counts, the
 // iterator sits in a struct after a pointer (retail's frame 0xe4: a free slot at +0x24), and the arrays are filled
 // by loops (the preamble matches retail instruction for instruction). Retail also expands 0x1682bf(NONE, user,
@@ -1537,6 +1543,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // M344: Complete default-owned acceptance/rejection pass outcomes in bool/byte/short/long
 // storage 668 each (1850/1992 bytes). NOT kept: outcome flags do not match and shorten
 // the body; original switch, masks, traversal state, helpers and complete body restored.
+// N353: Existing controller iterator/user release/controller release subsets 1-7
+// 285/587/285/587/285/587/285; complete release graph with a bounded controller loop 604.
+// Keep only the existing controller iterator (plain 285, 1914/1992 bytes); release calls and bounded loop restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
@@ -1609,7 +1618,7 @@ void __stdcall function_152f80(void *address, void *option_data)
         for (long pass = 0; pass < 3; pass++)
         {
             if (controller != NONE) break;
-            for (long candidate = 0; candidate != NONE; candidate = candidate >= 0 && candidate < 3 ? candidate + 1 : NONE)
+            for (long candidate = 0; candidate != NONE; candidate = controller_index_next(candidate))
             {
                 if (!(controllers_used & (1 << candidate)) &&
                     (pass > 0 || candidate == state.player->controller_index) &&

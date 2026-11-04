@@ -4302,9 +4302,10 @@ void function_15fe20(long team_index, color3f *color);
 // unit index and the -1 compares) and the zone-progress tail's byte load order.
 long function_14de70(long local_player_index);
 
-// score 42 (was 42): frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
-// stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
-// and scratch-register renames remain. The copies are retail's when 0x7f720 returns color3f by
+// score 42 (was 42): frame 0x48c, four bytes long; exit/format spans, the zone byte shift,
+// late unit/slot NONE ownership and charge/progress/result allocation remain.
+// Earlier: two team-color copies (retail loads all three words, then stores through ESI/EDI),
+// the -1 register reused for unit/slot tests, byte shift and scratch-register renames. The copies are retail's when 0x7f720 returns color3f by
 // value (compile-only), or with each copy through a color3f local initialised from the call: 46
 // (both), 65 (rival only); on that, the individual best/best-score defaults before the
 // player-index store and the rival text cleared before the rival's player lookup 42 (44 each),
@@ -4469,6 +4470,9 @@ long function_14de70(long local_player_index);
 // as retail, both compares immediate, pool read ahead of the masked index); on it both tests against the weapon
 // local 71; the index term first in the unit address sum 73 (same code); a dead else `weapon = NONE` 42 and a ternary
 // re-assigning the default 42 (the dead default is dropped, original code).
+// N353: Actual terminal unit rejection, progress-first classifier, charge/mode/progress
+// rejection and charge/progress completion exits 171/63/171/171/171/171/171;
+// complete admitted terminal selection 195. NOT kept: all regress; native NONE/shift/result homes remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
