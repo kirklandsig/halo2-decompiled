@@ -227,6 +227,9 @@ PRIVATE inline byte const *material_parameters(long tag)
 // complete cache/table/entry prefixes 5.
 // Original executable body restored;
 // no exact match from these ownership forms.
+// Round 137: direct publication with folded chain, named pass index, pointer table or third through its
+// parameter home 5 each (+0x1a7; `second` still hoists); the last NOT kept: address diagnostic. The retained
+// reference with named pass index, either distributed offset or the packed accessor 5 each (+0x19e). Original restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

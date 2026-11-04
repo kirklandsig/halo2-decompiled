@@ -56,6 +56,9 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // ahead of `if (force) update = true;` 27; the elapsed clamp right after the zero-elapsed return 32; the force test
 // inverted with its arms swapped 27, with `update = false` before force as well 218; a 600 s permuter run (44 tries)
 // none below 23.
+// Round 137: the existing object getter for the initial, parent or both lookups 23 each; early update with the
+// immediate clamp 246 (816 bytes), with unsigned timestamp values or field references 218 each, with the initial
+// getter 218; the squared-length helper 34. Original body and declarations restored.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

@@ -133,6 +133,10 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // J247: Actual shared counter-word reader/store view subsets 107/107/107/107/107/107/107;
 // complete view with the team-mode helper 106 (425 bytes). NOT kept: one-point gain below threshold.
 // Original shared type and body restored; enable reload, maximum homes and word schedule remain.
+// Round 138: setter counter pointer before/after the clamp 106/111; independent per-use counter 107;
+// value between the enable gates 110; separate player/team inner results 109/109; two-call by-value
+// accessor 107; player record copy 71 (434 bytes), read-only copy 71, with the team-mode helper 78.
+// NOT kept: the one-use record copy spills through the code slot, absent in retail; original body restored.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
