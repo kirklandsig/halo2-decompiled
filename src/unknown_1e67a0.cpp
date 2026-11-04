@@ -1097,6 +1097,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // P298: Actual turn admission at entry/sample/scaled/rotation boundaries, short-circuit
 // 382/335/203/192; eager Boolean inputs 336/183/183/183. All restored; rotation
 // multiplicands and exit scheduling remain. NOT kept: early decision lifetimes did not match.
+// F371: Uniform side-cross row-local leading/trailing/both product parts
+// 112/112/93; complete product phases 112/112/93; complete i/j/k
+// component results mutable/const 112/112. NOT kept: the 93 product-lifetime
+// forms still miss native rotation multiplicands, side-product residence
+// and final load-all copies; allocation-only gain requires equality. Original
+// private producer and full body restored; rotation provider stays exact.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

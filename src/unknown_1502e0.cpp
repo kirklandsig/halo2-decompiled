@@ -1386,6 +1386,10 @@ void function_150820(dword *bits, bool local_only)
 // M350: Immutable captured hand/slot/weapon values, seven subsets: 43 each;
 // initialized four-byte mode output 86. Original body and calls restored;
 // native ESI player/EDI hand ownership remains.
+// F371: Selected-inventory guarded/default/paired/conditional result boundaries
+// 43/43/43/43/43; existing complete slot selector without/with slot admission
+// and with closed lookup scope 43/43/43. NOT kept: no gain or byte match;
+// native player/hand ownership remains. Original body and APIs restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -2075,6 +2079,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // B397: Complete four-slot transfer admission in bool/byte/short/long, then
 // rejection complement 202/202/202/202/202/202/202/202. Original call/rounds/loop graph restored;
 // player-data ownership and the scaled header-offset spill remain.
+// F371: Per-iteration current-slot int/short/signed-byte carriers 202/226/217;
+// cyclic slot int/dword/short/word/byte carriers 202/202/219/219/219.
+// NOT kept: no native width/allocation recovery or byte match; original
+// full-width slot arithmetic, short scan and complete body restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

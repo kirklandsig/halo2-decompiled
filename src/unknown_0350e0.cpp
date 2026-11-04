@@ -1729,6 +1729,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // input, or its output pointer, or takes reference output: 382/382/197/193; each with the
 // sole result exit 384/384/197/193. All restored; native result home remains, value returns
 // shorten to 600 bytes and raise the caller 507 -> 610; no byte match or qualifying gain.
+// F371: Uniform leading/trailing/both product parts in first/second cross,
+// then leading/both parts in both crosses: 193/193/193/193/193/193/193/193.
+// NOT kept: no gain or native frame/result-home recovery; original private
+// perpendicular producer, all projection sums and full body restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3849,6 +3853,10 @@ bool __stdcall function_391f0(void *state);
 // F369: Whole timestamp/elapsed-result joins (explicit/default/conditional/default plus
 // common clamp), then each with direct clock observations: 301/315/324/315/295/326/327/326.
 // All restored: no match or qualifying gain; original publications and every loop remain.
+// F371: Genuine byte-offset carriers in each update/render phase, then
+// update pair/render pair/large-record pair/all phases: 250/251/251/251/250/251/250/250.
+// NOT kept: the complete graph gains only one and retains frame 0x74;
+// native zero/portal/fog homes remain. Original traversals and body restored.
 // @retail 0x36b50
 void function_36b50()
 {
