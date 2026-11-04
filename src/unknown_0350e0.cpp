@@ -2429,6 +2429,9 @@ real magnitude3d(vector3f const *v);
 // consuming the first vector 186/186/186; direct cyclic rotation loop 178; tangent and rotation
 // loops 191. All retain the raw-length/promoted-dot home mismatch. Original complete body
 // restored; shared tangent forms also raise two other scores.
+// Y568: Actual current/target normalization and output component loops, seven subsets,
+// then fused input lanes: 191/170/335/190/335/335/335/333. Original full body restored;
+// raw magnitude/dot/angle homes remain at frame 0x38. All three exact controls survive.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2924,6 +2927,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // geometry, view scalar/random fields, complete view and complete state/view fields: 486 each on
 // the retained inline-normalization graph. Original body and field accesses restored; frame 0x60
 // versus 0x38 and stored-velocity/projection homes remain.
+// Y568: Actual position-transform/moved-point/acceleration-add component loops, seven subsets,
+// then all with the divisor loop: 548/542/547/549/565/580/593/579. All regress and
+// shorten away from retail; original scalars, vector statements, helpers and body restored.
+// Frame 0x60 versus 0x38 and stored-velocity/projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3282,6 +3289,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // recursive neg/sbb/inc and a final test/sete; retail copies and returns its positive byte
 // directly. The other forms regress. Original complete body and positive result restored; frame
 // and fade scratch homes remain.
+// Y568: Existing two-use distance helper with native point-reference/value inputs and
+// real/double/output-reference results: 177/177/185/177/177/177/185/177. NOT kept:
+// no contract matches; original helper, both callers and complete body restored.
+// Frame 0x18 versus 0x1c and fade scratch stores remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

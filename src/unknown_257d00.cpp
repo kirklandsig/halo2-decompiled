@@ -1790,6 +1790,10 @@ void function_b7360(long object_index);
 // 0x259ec0 and 0x25a380), as forceinline 303 (0x259ec0 still breaks under inline_depth(0)); the wait result tested directly
 // with `success = true` in its arm 630 (1700). Diagnostic, reverted: volatile reference reads at the 1/19 copy and case 5 289
 // (arg_0 EBP, output ESI as retail).
+// Y568: Positive recording/lookup/moving/direct payload-admission scopes, singly and
+// paired/complete: 301/301/301/301/301/301/301/301. All tie at 1824/1848 bytes;
+// original rejections, cases, observations and full body restored. Pool-first acquisition,
+// actor/output ESI/EBP versus EBP/ESI and retained point-reference ownership remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

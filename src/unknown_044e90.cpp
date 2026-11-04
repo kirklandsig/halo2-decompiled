@@ -242,6 +242,10 @@ struct s_visibility_bound_record
 // M347: Shared nonunit-scale decision for both transform phases, direct bool/byte/short/long then
 // test-produced bool/byte/short/long: 422/422/443/445/427/427/447/450.
 // NOT kept: shared/test-produced decision does not reproduce the native repeated scale tests; original complete body restored.
+// Y568: Actual fallback node-input/composed-output/part-record cursors, seven subsets,
+// then all with a part while loop: 432/432/436/432/436/436/436/436. All regress;
+// original indexed buffers, observations and complete body restored. Frame 0x74a4,
+// entry/table roles and eight-byte plane/query displacement remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
