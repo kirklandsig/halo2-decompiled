@@ -2347,6 +2347,10 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // DH347: Low-mask lifetime ends before independently gated high-state update, with native
 // record fields, child-handle extraction scope and whole traversal scope: eight at 240/1081.
 // NOT kept: allocation regresses earlier (+0x16); original complete body and mask updates restored.
+// M370: Existing tail clamp exhaustive native/lower/upper branch pairs, excluding native/native:
+// 155/182/155/155/182/154/154/181. NOT kept: one-point upper-first leads are below
+// threshold and lack native bound order; lower-first ties. Original field PIN producers
+// and whole body restored; indexed lookup, object/offset and low-mask homes remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

@@ -690,6 +690,18 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // N370: Persistent root/actor, parent and actual-output lexical families, seven
 // subsets then complete native local identities: 270 each. NOT kept: no equality
 // or gain; early root/actor retention and paired-vector scheduling remain.
+// F372: Paired-case normalized-length/projection/distance declaration lifetimes,
+// seven complete subsets and all with margin: 270/270/270/270/270/270/270/270.
+// Producers never moved; original declarations and complete body restored.
+// F374: Paired normalization-continuation results, positive/complementary
+// bool/byte/short/long: 270/270/270/270/270/270/270/270. NOT kept: no exact
+// ingress/home recovery; original direct tests and complete body restored.
+// DH354: Native direct-return workspace identities, edge/actor/trace subsets
+// 1/2/4/3/5/6/7 and complete endpoint identities: eight at 270. All restored;
+// early root/actor ingress and paired SIMD scheduling remain.
+// DH356: Plain coordinate-copy induction at paired/actor/trace publications, seven
+// subsets then all with ordinary result: 356/344/357/351/353/345/347/363. All restored;
+// native root/actor ingress remains; original record fallback and all helpers retained.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -1103,9 +1103,19 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // P298: Actual turn admission at entry/sample/scaled/rotation boundaries, short-circuit
 // 382/335/203/192; eager Boolean inputs 336/183/183/183. All restored; rotation
 // multiplicands and exit scheduling remain. NOT kept: early decision lifetimes did not match.
+// F371: Uniform side-cross row-local leading/trailing/both product parts
+// 112/112/93; complete product phases 112/112/93; complete i/j/k
+// component results mutable/const 112/112. NOT kept: the 93 product-lifetime
+// forms still miss native rotation multiplicands, side-product residence
+// and final load-all copies; allocation-only gain requires equality. Original
+// private producer and full body restored; rotation provider stays exact.
 // B422: Actual goal-alignment cutoff admission, bool/byte/short/long, positive/complementary:
 // 142/142/142/142/142/142/142/142, all 1382 bytes. NOT kept: no byte match; decision residence worsens rotation allocation.
 // Original complete body restored; vector/axis products, side dots and final copy scheduling remain.
+// F373: High-alignment predicate bool/byte/short/long, after/before
+// the side crosses: 140/140/140/140/172/172/176/175. NOT kept: no match;
+// original body restored, rotation multiplicands, side-dot residence and
+// final load-all copies remain.
 // N366: Native direction-output copy ranges at goal/rotated/initial-forward boundaries and complete
 // backward ranges do not recover eager inline copies. The 100-point output forms add out-of-line copy
 // calls absent from retail, including the retail-length form. Original direction copies, shared rotation

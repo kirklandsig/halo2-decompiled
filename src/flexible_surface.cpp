@@ -548,9 +548,16 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // Round 206 (m3 lane 3, fast): sine, axis draw, then cosine 117 (same code); cross3f(&axis, &old) added 134 (881
 // bytes); cross and dot on the global with the `old` copy after them 164 (893); diagnostic: 0x2551f0's unit-axis rotate
 // body on the `old` copy, copied back 201 (918); the fraction draw before the time 193. Retail ret is plain, as ours.
+// P322: Independent sine/cosine/projection entry declarations, seven subsets then
+// all with immutable time: 117 each. Every producer stays at its original point;
+// frame 0x28/0x20, seed/time and direction/cross homes remain. Original body restored.
 // B422: Current-frame rotation admission, bool/byte/short/long, positive/complementary:
 // 117/117/117/117/117/117/117/117. NOT kept: no byte match; all canonicalize to the original complete body.
 // Original observations restored; frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// P324: Independent clock/fraction, envelope/angle and wave/strength entry
+// declarations, masks 1-7, then all with the rotation scalar declarations:
+// 117 each. All producers stay at their original statements; original body
+// restored. Frame 0x28/0x20 and seed/time/direction/cross homes remain.
 // N368: Complete double cosine-product/sum/full-wave boundaries and their sequential
 // producers, then complete wave accumulation: 117 each; complete wave/strength
 // accumulation 118. NOT kept: no equality or gain; original expression graph restored.
