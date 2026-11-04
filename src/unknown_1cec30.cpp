@@ -1950,8 +1950,8 @@ void s_havok_component::function_1d3d20(long node_index, dword *updated, dword c
    if (orientations)
    {
     transform4x3f *matrices = component_node_matrices(component->object_index);
-    s_slot_object_view *parent_object = object_get(component->object_index);
-    transform4x3f *parent_matrix = (transform4x3f *)((byte *)parent_object + parent * sizeof(transform4x3f) + parent_object->node_matrices_offset);
+    s_slot_object_view *anchor_object = object_get(component->object_index);
+    transform4x3f *parent_matrix = (transform4x3f *)((byte *)anchor_object + parent * sizeof(transform4x3f) + anchor_object->node_matrices_offset);
     transform4x3f inverse;
     transform4x3f relative;
     function_141590(parent_matrix, &inverse);
