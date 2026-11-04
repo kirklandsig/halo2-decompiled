@@ -596,6 +596,11 @@ void function_245400(s_source_245400 const *source, long index,
 // B425: External first/second material and surface bindings on source-ECX graph,
 // seven subsets, then all with first-material pointer: 209/209/209/209/209/209/209/209. NOT kept: no
 // exact match; original receivers/body restored, frame and independent side homes remain.
+// Round 52 (m3 lane 2, fast; aligned count ignoring stack offsets in brackets, base 209 [267]; lead, 1 point, not kept): the first transform as a scaled copy
+// `vector3f scaled = { edge.i, edge.j, edge.k }; if (scale != 1.f) vector3f_scale(&edge, scale, &scaled);` rotated into the edge 208 [218]: retail's copies
+// before the test and scale-first products, only the matrix register (EBP from entry, retail EDX at its test) and the first block's homes left. Rows written
+// out instead of matrix_transform_vector 208 (same code); whole body in a compiled-out loop 208 (same); dword codes with named plane indices 208 (same);
+// second material read first 209 [220]; with dword codes 209.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

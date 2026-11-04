@@ -30,7 +30,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
-// score 206 (was 221): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products. Earlier 221: first transform
 // sum/product order and register numbering (retail: forward*depth +
@@ -339,6 +339,20 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // M373: Complete scale/copy branch-owned scaled workspace, native/setter/memcpy/memmove,
 // nonunit-first 327/288/327/374; unit-first 331/288/331/370. NOT kept: all regress;
 // original aggregate-default helper and full body restored; frame/coefficient homes remain.
+// Round 52 (m3 lane 2, fast; aligned difflib count in brackets, base 206 [241]): LEAD, not kept (scores rise). Retail's scale
+// and rows are separate steps with the rows in the caller: scaled vectors `vector3f s1, s2` in the caller filled by a small
+// forceinline scale step (default copies, then the scale arm, through vector3f_scale or by hand: same code), rows in the caller
+// naming the fields x first, depth limits written in the condition, separate second offset and segment locals. That gives retail's
+// frame 0x14, 1136 bytes, load-first first-view products, copy-first z/y and load-first x second-view products and the retail
+// tail from the blend down: 218 [163] with offsets 0i 0j 0k 1k 1i 1j, 217 [172/173] with 0k 0i 0j 1k 1i 1j / 0k 0j 0i 1k 1j 1i
+// (all 72 block orders 217-252). Scalar x/y/z locals inside any inline helper rank above the camera global (both views copy-first,
+// 230-306); written directly in the caller both views are load-first 270 (1146 bytes). Same form with the second offset reused for
+// the segment 218-253 (frame 0x20); rows through a pointer helper 231; by-value rows helper 293-299; rows as accumulated statements
+// 257-264; (real) product casts same code; offsets through vector3d_from_points3d 294-316; offset loops 293-318; arm reading the
+// scaled copy same code. What is left: with rows x first the first-stored second-offset component keeps a register through the first
+// view (xmm0), so x/y/z take xmm2/4/5 and the scale xmm7, where retail has xmm0/2/4, raw xmm1/3/5, scale xmm6, the camera's right.i in
+// xmm7 and all three second-offset components in the frame. Rows named z first give those registers (1i 1j 1k 0i 0j 0k: 261 [129], 1146
+// bytes, frame 0x20, the second offset's i in xmm7) but the sum tree y,x,z; retail's tree z,y,x needs x named first.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

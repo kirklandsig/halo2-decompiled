@@ -461,6 +461,11 @@ union s_185be7
 // and complete duration-scaled outputs, all tie. Original body and helpers restored; control-root/NONE,
 // settings/zero homes and clamp/flag joins remain. Scores 622/622/622/622/622/622/622/622. NOT kept:
 // unmatched result-ownership forms.
+// Round 52 (m3 lane 2, fast; aligned count without stack offsets in brackets, base 622 [348]): range fraction assigned in the arm and clamped in place with an
+// if/else, value-first test, ternary or separate declaration 619 each [347] (same code; 3 points, not kept; the upper arm still sits inline, retail's jumps back
+// into the first arm's store); named globals pointer at entry 622; diagnostic, reverted at once: the flag test reading the global through its address 1020
+// (3803 bytes; the global leaves EBX, NONE stays in ECX), with the clamp 1020 [334]; whole active body in a compiled-out loop 1040 (3805 bytes [358], global
+// reloaded as retail, arg_5 then takes EBX); attachment block in one 991 (3803 bytes [355]). Retail's EBX for NONE is still open.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
