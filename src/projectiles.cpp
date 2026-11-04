@@ -429,6 +429,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 // set through bit_vector_set 9; the angle declared after the flag store 10; the axis declared and
 // assigned separately 3. The three differences are unchanged: retail's flag OR and store precede the
 // angle duplicate (`fld st(0)`) and the first axis load.
+// Permuter (25 min on #1061, about 1180 variants): nothing below 3.
 // @retail 0xfbd40
 void function_fbd40(long projectile_index)
 {
@@ -1037,6 +1038,8 @@ real function_30bf0(vector3f *v);
 // two-element array 232 (folds back); `volatile real two_a` as a diagnostic gives the two x87 divisions but 277
 // (1000 bytes) and loses every caller (0xfa6a0 44, 0x1f8100 8, 0x26f150 21, 0xecdc0 32, 0x2900b0 30): the
 // convention follows how two_a is produced, so the divisions and the convention cannot yet be had together.
+// Permuter (25 min on #1061, about 790 variants): 180 only with a volatile horizontal length and the found flag
+// as an unsigned long; not kept (volatile without a match).
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1304,6 +1307,7 @@ extern vector3f *g_4687ac;
 // collision for the side queries as retail, but the frame stays 0x48 and the end points are still stored);
 // a local __forceinline helper with 0x16a040's body for the three queries 187 (735 bytes, frame 0x3c); side
 // queries joined as one `||` expression 163; early `return false` for the radius/tag test 181 (767 bytes).
+// Permuter (25 min on #1061, about 1140 variants): 160 only with vector3d_from_points3d's two points swapped; not kept.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -1517,6 +1521,8 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // compressed forward, velocity, location, scale 1.0, bits 0x11, NONE playback, zero source/marker/variant).
 // Everything left is allocation around 0xfd740's five register pointer arguments (ours) against retail's four
 // (point in EDI, zero in EBX), so it stays BLOCKED-BY 0xfd740, which this lane does not touch. No new form tried.
+// Permuter (25 min on #1061, about 340 variants): 111 only with the flag set through an int temporary and the
+// sound index declared apart; the plain forms in it (tag before flag, unsigned index, declaration order) stay 115.
 // @retail 0xfd0e0
 void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f const *direction,
 	point3f const *point, vector3f const *normal, word index, bool attached, long object_index,
