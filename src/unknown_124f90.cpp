@@ -1377,6 +1377,12 @@ long function_2197f0(real gain);
 // B429: Complete native compound/scalar compound/scalar assignment/constructor
 // addition boundaries 105/105/105/105 at 678 bytes; each with disabled early
 // return 188 at 652. NOT kept: sums/tails regress; original body restored.
+// M385: Existing aggregate interpolation endpoint/result compound accumulation, native-copy,
+// constructed difference/product, scalar product, twice-used start and uninitialized result:
+// 94/94/102/94/94/94/94/94. NOT kept: no native reciprocal, gain-load or tail repair; full producer restored.
+// M387: Composite fraction eager division/select/positive and complementary complete results,
+// original then eager simple upper caps: 160/160/163/159/140/140/143/101. NOT kept: no gain;
+// original body restored, native reciprocal/elapsed roles and first gain-load schedule remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2935,6 +2941,15 @@ static inline short sound_voice_find_available_channel(char type)
 // original inclusive scan: byte result 96/96/96/96, Boolean result 113/113/113/113.
 // NOT kept: ties or regressions; frame twelve/eight and saved-byte/failure tail remain.
 // Original private finder, result byte, independent defaults and full body restored.
+// N379: Existing finder produces admission plus the narrowed channel; selected-local, direct-output,
+// found-return and exhaustion-result forms with byte/bool body results: 96/96/130/134/113/113/129/104.
+// NOT kept: ties or regressions; private finder signature, saved byte result and complete body restored.
+// N381: Existing finder receives native voice/member pointer or reference, byte/Boolean body result:
+// 125/125/128/128/105/105/128/128. NOT kept: no byte match; original private input,
+// signed scan, byte result, status/error calls and complete body restored. Frame/result/failure joins remain.
+// N383: Actual channel/buffer predicates own the return decision, byte/bool, success/failure
+// polarity and constant/actual entry admission: 160/175/166/208/134/141/166/208.
+// NOT kept: all regress; original result, private finder, observations, commits and body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3860,6 +3875,15 @@ struct s_128ca0
 // 0x494 frame and early location load recover, but pitch/gain homes and pin joins differ.
 // NOT kept: one-use value record and bit copy, combined ownership forms without equality.
 // Original complete body, primitive helpers, observations, clears and interfaces restored.
+// N379: Incoming parameter owns raw and processed gain through both submissions; nested, sequential,
+// native-real and mixed sums 223/223/312/269; with coherent twice-used scale 273/273/299/246.
+// NOT kept: all regress; original parameter lifetime, gain homes, packet, helpers and body restored.
+// N381: Existing incoming gain-value contract with scalar/member/operator/parameter-owned raw sums,
+// without/with coherent scale: 222/306/275/275/277/295/287/287. NOT kept: no byte match;
+// original incoming type, caller, gain homes, helpers and entire body restored. Frame and pin joins remain.
+// N383: Both parallel branch gains through the existing compound operation, scalar/nested/compound/
+// staged raw producers 241/245/247/245; coherent twice-used scale 302/188/242/188.
+// NOT kept: unmatched record/copy operations; 188 grows to 1075/1057 bytes. Original body restored.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

@@ -1535,6 +1535,20 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH352: Complete parent/seat departure predicate in bool/byte/char/short/word/int/long/dword
 // storage: eight at 32. NOT kept: no exact predicate-owner form. Original guard,
 // leave/load/walk requests and body restored; iterator and publication homes remain.
+// DH360: Busy-query presence/absence truth at its original publication, bool/byte/short/long,
+// eight at 32; constrained 600s search, 53 proposals, best 32. NOT kept: no exact result;
+// original direct busy store, iterator, geometry, requests, slot publication and full body restored.
+// DH364: Actual candidate actor-handle/truth metadata int with bool/byte/signed-char,
+// dword with bool/byte/signed-char, unsigned-int with bool/byte: eight at 32.
+// NOT kept: no native handle-before-scaling or request-home recovery; original
+// 12-byte record, exact comparator and complete body restored.
+// DH368: Standard scalar transfers at iterator-handle/load-request/enter-slot fields,
+// seven subsets then backward transfers: 227/105/96/243/241/124/263/305. NOT kept: all regress
+// and lengthen; original stores, existing helper, memset and complete body restored.
+// DH370: Actual inner seat-validity, suitability-call and strict-score improvement
+// producers, subsets 1/2/4/3/5/6/7 then all complementary: eight at 32.
+// NOT kept: no exact selection-result form; original full body and helper restored.
+// Iterator scaling, leave-selector and request/publication schedules remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2823,6 +2837,14 @@ struct s_scenario_scripting_view
 // B432: Existing difference/squared-length/both native for loops 80/82/82;
 // while loops 80/82/82; difference/squared-length do loops 136/112. Original shared
 // helpers and complete search restored; actor/counter/set and guarded-data homes remain.
+// P341: Actual point-payload/complete candidate-record lvalue references, mutable/read-only and
+// original/traversal-owned short counter: 80/87/80/87/91/87/91/87. NOT kept: native
+// actor/counter/selector and delayed data homes remain; original complete search restored. Exact wrapper
+// and both callees survive.
+// DH370: Actual dynamic loop-bound result declared in the condition, bool/byte/
+// signed-char/short/word/int/long/dword: eight at 80, exact 367-byte extent.
+// NOT kept: no exact loop-result form; original dynamic reads, short wrapping,
+// separate point branches and full body restored; actor/set/counter homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

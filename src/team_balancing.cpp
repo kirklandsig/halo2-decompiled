@@ -705,6 +705,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // then all with entry selector declaration: 67/132/67/132/67/132/132/132. NOT kept:
 // inner advance regresses to 523/512 bytes and first +0x3e; original body restored;
 // reference-first spread queries and two extra bytes remain.
+// M377: Actual memcpy/memmove destination as candidate query/all-use receiver,
+// ordinary/immutable bindings: 174/174/218/218/216/216/210/210. NOT kept: aliases do not match,
+// construction/receiver changes regress and lose the matched caller. Original
+// native copy, four spread queries, party edits and complete body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

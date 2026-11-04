@@ -679,6 +679,26 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC527: Shared actual alpha/color/scale property receivers, subsets 1/2/4/3/5/6/7,
 // then complete receivers after the frame query: 247/117/117/258/258/135/257/240. NOT kept:
 // pointer residence unmatched and extent grows; original observations, rotations and body restored.
+// AC531: Complete six-use cache-value array reference/pointer, entry/post-invalidation/
+// emitter/post-frame acquisition: 113/113/113/122/113/113/113/122. NOT kept:
+// property-input residence grows length; original observations, helpers and body restored.
+// AC535: Actual outer-emitter continuation bool/byte/short/long, guard-owned then
+// entry/latch-owned: eight at 109, 1130 bytes/frame 0x98. NOT kept: premature row-offset
+// zero store and row-i/default/reload gaps remain; original complete body restored.
+// AC537: Actual cache-mask/property-flags/emitter-mask signed 32-bit field domains,
+// seven subsets then all int: 42/44/44/42/42/44/44/44. NOT kept: no gain; original fields,
+// shared alias-safe rotations and entire body restored.
+// AC539: Independent frame/rotation mode observations at both original gates, raw
+// short/word/long/dword 117/117/117/117, bool/byte/short/long truth 109/109/109/109.
+// NOT kept: one-use field captures unmatched; original reads, helpers and full body restored.
+// AC541: Paired entry invalidation as clear-bit/keep-bit/mask-value/conditional-bit
+// results, dword then long: 288/288/260/260/283/283/288/288. NOT kept:
+// shared mask publication does not match native separate stores and length grows;
+// original identity invalidations, shared alias-safe rotations and whole body restored.
+// AC543: Callback-position vector backing with native/memcpy/memmove/shared-setter
+// captures, original byte offset then native row index: 42/42/193/281/115/115/192/263.
+// NOT kept: no equality/gain; setter and indexed forms change extent or early allocation.
+// Original point backing, alias-safe rotations, observations and full body restored.
 // B446: Shared complete emitter/particle property evaluator, free/member provider,
 // color/scale pointer/reference outputs: 77/77/77/77/77/77/77/77. NOT kept: no exact result;
 // original complete body, types and helpers restored. Offset/default/reload and row-i schedules remain.
@@ -1749,9 +1769,33 @@ bool function_17afd0(long effect_index, long value);
 // B421: Owner/view identity before the status query, bool/byte/short/long,
 // positive/complementary results 133/133/159/158/133/133/159/158. NOT kept:
 // all regress and exceed retail length; original snapshot/query graph restored.
+// DL261: Actual optional available-view index, valid-invalidating/default-success/conditional/complete arms, long then dword: 122/121/82/82/122/121/82/82.
+// NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
 // DH350: Independent visibility/drawing getter lifetimes, availability default
 // after getter/owner/view, joined/nested success, view-default and conditional:
 // 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
+// AC541: Both downstream same-view/attachment outcomes with availability-owned or complete
+// rejection-owned results, bool/byte/short/long: 120/115/126/133/120/99/127/133.
+// NOT kept: all regress; original availability, snapshots, query gates and complete body restored.
+// AC544: Availability/owner/view lexical identities on the recovered owner-arm graph,
+// seven subsets then complete predicate/result identities: 47/47/47/47/47/47/47/47.
+// NOT kept: allocation-only ties; original names, snapshots, queries and whole body restored.
+// Round 588: Separate eligibility/drawing getters, complete eligibility producer scope
+// and immutable drawing data, seven graphs then early drawing declaration:
+// 47/219/47/219/47/219/219/219. NOT kept: no equality; original snapshots and body
+// restored. Availability clear/result and post-attachment view observation remain.
+// Y593: Independent raw-slot cursor and iteration-local salted handle, long/dword/int/short
+// with while/for traversal: 166/166/166/117/166/166/166/117. NOT kept: no equality; original complete
+// traversal and body restored; availability production and later view observation remain.
+// F380: Complete visibility/rejection results on the shifted-word/owner-arm graph,
+// bool/byte/short/long: eight 47. NOT kept: ties; original admission,
+// availability, view snapshot, query gates and complete body restored.
+// P337: Whole-iteration same-view/attachment/camera output declarations, masks
+// 1/2/4/3/5/6/7 then all with draw, each 47. NOT kept: no match; original
+// producer sites, snapshots and complete body restored. Early clear/conversion remain.
+// M381: View-validity-produced availability then unavailability, bool/byte/short/long
+// on the recovered owner-arm graph: 124/124/146/143/121/121/152/149. NOT kept: all regress;
+// original query gates, view snapshot, Boolean homes and complete body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

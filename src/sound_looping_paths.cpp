@@ -315,6 +315,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P326: Named smoothstep contributions/active gain difference/paired inactive fade
 // differences, subsets 1..7, then all plus the choice blend difference: 866 each.
 // Original grouping and observation sites preserved. NOT kept: no gain; original body restored.
+// F384: Actual override admission bool/byte/short/long at its phase boundary
+// 866/866/866/866; entry-owned 959/959/949/980. NOT kept: one-use results
+// do not match; early lifetimes grow to 3345-3361/3327. Original body restored;
+// entry zero, target/query/count homes and choice carriers remain.
+// F389: Actual floating linear-converter input at all three raw-field consumers,
+// ordinary/forced existing conversion-helper masks 0..7, 875 each (3337/3327 bytes).
+// NOT kept: all regress; original raw scalar contract, helpers and complete body restored.
 // B435: Failure-first later pool collection/active-target/inactive-record admissions,
 // seven subsets, then all with missing-handle search continuation: 866 each.
 // Original complete body restored; native 0x4e0 frame, entry zero, target/primary/query
@@ -323,6 +330,19 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // choice-zero phases: 942/956/956/956/942/956/956/956 (3297/3327 bytes).
 // Native scaled exponent part 877 (3339); existing shared conversion 1056 (3120).
 // NOT kept: no native frame/home recovery at retail extent; full body/helpers restored.
+// P330: Final existing detail-tag obsolete/matching results in bool/byte/short/long,
+// eight forms 866 at 3329/3327 bytes. NOT kept: one-use comparison ownership does
+// not match; original detail tail, helpers and complete body restored.
+// P332: Initial cluster-admission bool/byte/short/long producers at the
+// branch and before entry workspaces: eight 866 at 3329 bytes. NOT kept:
+// no equality or gain; original body restored, entry zero and count/query homes remain.
+// M386: Complete native-order four-buffer query record, full-width query/choice
+// and count-before-existing-list subsets 0..7: 873/926/961/949/866/922/945/946.
+// NOT kept: unmatched local grouping/domain graph; original arrays, counters and helpers restored.
+// DH370: Original raw converter contracts with ordinary expansion, decibel/linear/
+// logarithmic subsets 1/2/4/3/5/6/7, then all with forced pin: eight at 866.
+// NOT kept: no exact expansion form; original declarations, helpers and full body
+// restored. Entry zero, target/primary/query homes and exponent staging remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

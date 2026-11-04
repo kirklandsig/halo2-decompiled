@@ -258,6 +258,7 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
+// MiniMax b (11-04): no new form, no lower score; the one-copy form still matches retail's length, tag and late EDI save but hoists the buffer address 0x55c6e4 into EBX and scores 54, and the kept form still saves EDI early and keeps the tag in EDX with the selector in ECX; casting the one-copy form's copy source to const or to a non-const pointer keeps the hoist at 54, and reading the tag before the variant call puts the tag in EBX and scores 44.
 // score 32 (was 32): earlier, at 49: our size-optimized build hoists the buffer address 0x55c6e4 into EBX
 // Round 102 (lane 7, fast): the output parameter in a named local used by both copies 32; the selector
 // in a named engine local 32, with the tag read after it 32; on the one-copy form the output local 54

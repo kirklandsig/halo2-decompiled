@@ -294,6 +294,9 @@ real normalize2d(point2f *arg_0);
 // P320: header-derived object before input copy, raw/native 185/185; native object/header
 // P320: receivers at both radius/center uses 180/180. Original complete body restored;
 // P320: early object mask, second-copy SIMD schedule and query success transport remain.
+// P330: Optional collision-index output presence/complement at the successful-query
+// boundary, bool/byte/short/long: 180/180/180/180/180/180/180/180.
+// NOT kept: one-use admission does not match; original query/result and full body restored.
 // AC529: Second in-place copy from the adjusted snapshot, vector/point backing, original/captured actor input,
 // before/after actor production: 180/182/180/182/226/182/226/182. NOT kept: no equality or gain; native mask/copy/SSE schedules remain.
 // F373: Explicit object ordinal at branch/entry/after actor, parameter then long
@@ -303,9 +306,28 @@ real normalize2d(point2f *arg_0);
 // F375: Actual direct/adjusted mode selector at its byte observation, bool/byte/short/long:
 // 180/180/180/180/180/180/180/180. NOT kept: no byte match; original body restored.
 // Early object mask, copied-input/SSE and query-success schedules remain.
+// AC543: Genuine point-pair/direction-trio/perpendicular-pair role-name groups on the
+// recovered in-place input graph, subsets 1..7 and complete collision/receiver names:
+// eight at 180, 1025 bytes. NOT kept: no equality; early mask/copy/SSE and query-success
+// schedules remain. Original identifiers, inherited local qualifier and full body restored.
+// F382: Direct-mode point2f/vector2f separation, existing/explicit difference
+// and existing/direct magnitude: 180/188/180/180/180/188/180/180. Frame 0x90 and extent 1025 agree.
+// NOT kept: ties/regressions; original scalar separation, includes and whole body restored.
+// F384: Independent actor-direction in-place point/vector backing, native/memcpy
+// capture at its producer or before object acquisition: 259/259/259/259/263/263/263/263.
+// NOT kept: all regress and grow to 1050/1025; original full body restored. Native
+// early object mask, independent copy/SSE and query-success schedules remain.
 // B439: First/second perpendicular sign outcomes in bool/byte/short/long:
 // 180/180/180/180/180/180/180/180. NOT kept: one-use predicates do not match;
 // original body restored, early mask and copied-input/SSE/query homes remain.
+// P332: Initial adjusted-point CRT capture on the full in-place graph,
+// with second-input/center library-copy subsets: memcpy four 180s; memmove
+// four 245s (1029 bytes, all three caller conventions lost). NOT kept:
+// no gain; original captures, helper inputs and complete body restored.
+// DH370: Coordinated object-index formal int/dword/unsigned-int/short/word/
+// const-long/const-short/const-word: 180/180/180/203/203/180/203/203.
+// NOT kept: full-width contracts tie; 16-bit contracts grow and lose three callers.
+// Original long contract and every declaration restored; mask/copy/SSE schedules remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

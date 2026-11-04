@@ -23,6 +23,10 @@ extern real g_4c9798[36];
 // score 174 (was 178): the far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
+// Round 112: direct far-plane output 343; scaled-add far point 174, near point 169 (five-point
+// form not kept), both 222; long height limit 250; sequential border multiply/divide 180 (the
+// border order is fixed but the body regresses); early size declaration and dimension rename
+// 174 each. Original executable body restored; mode/size homes and rounding reloads remain.
 // score 178 (was 197): the width is rounded before the height, the overflow fix-up compares
 // the width against the height the other way round and the near-plane distance is read from
 // the tag; the mode bit still loads the flags into edx where retail uses eax.
