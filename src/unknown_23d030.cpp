@@ -461,6 +461,9 @@ extern byte g_51ec11;
 // B427: Existing shared normalizer actual double component inputs, i/j/k subsets
 // 1/2/4/3/5/6/7 then complete immutable inputs: 332/332/332/327/327/327/330/330. NOT kept: precision
 // forms do not match; entire shared header/body restored. Zero/side/up allocation remains.
+// B430: Counted camera-position/command-position/offset component transfers, masks
+// 1/2/3/4/5/6/7: 323/322/338/162/318/286/341; all with chained position 341.
+// NOT kept: no byte match; original copies, geometry and full body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

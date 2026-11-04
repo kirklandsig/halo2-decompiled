@@ -811,6 +811,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // predicate producers: 74/75/74/75/95/96/89/103. NOT kept: no exact match; stack initialization
 // and lengths regress. Original complete body restored; right i/j colors, forward.k reuse
 // and ordinary-angle store bases remain.
+// B430: Counted component-array prior-up/forward/default-vector transfers, masks
+// 1/2/3/4/5/6/7: 106/233/272/259/275/254/286; all with chained equal defaults 300.
+// NOT kept: no byte match; original aggregate transfers, products and body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

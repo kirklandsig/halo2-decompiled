@@ -473,6 +473,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B427: First-hit duplicate search completed before copying, short/native outer and
 // inner ordinals with memcpy/memmove: 251/251/248/255/252/264/252/262. NOT kept: no match or gain;
 // complete original body restored. Extra frame word and count/departure homes remain.
+// B430: Complete coordinate-bound producers on the retained native output ordinal,
+// four producer orders, without/with paired angle bounds: 179 each. NOT kept: no
+// match or gain; original body restored. Frame remains 0x18 versus native 0x14.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
