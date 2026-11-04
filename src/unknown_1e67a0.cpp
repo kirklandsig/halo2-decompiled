@@ -1103,6 +1103,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // B422: Actual goal-alignment cutoff admission, bool/byte/short/long, positive/complementary:
 // 142/142/142/142/142/142/142/142, all 1382 bytes. NOT kept: no byte match; decision residence worsens rotation allocation.
 // Original complete body restored; vector/axis products, side dots and final copy scheduling remain.
+// N366: Native direction-output copy ranges at goal/rotated/initial-forward boundaries and complete
+// backward ranges do not recover eager inline copies. The 100-point output forms add out-of-line copy
+// calls absent from retail, including the retail-length form. Original direction copies, shared rotation
+// and full body restored; j/k products, side-dot and exit scheduling remain. Scores
+// 100/110/100/303/308/307/312/318. NOT kept: unmatched result-ownership forms.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -575,7 +575,7 @@ struct s_item_collision_bsp
 // MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
-// score 211 (was 211): Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes differ.
+// score 202 (was 211): Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes differ.
 // Earlier 211 (was 249): one shared spin scale for both spin branches, with the third spin
 // component scaled after the branch so the pending value and the scale stay on the x87 stack.
 // Plane-index width, plane-join registers and the transform product rows still differ.
@@ -710,6 +710,10 @@ struct s_item_collision_bsp
 // N362: Existing marker/normalizer/random-vector/random-scalar inline call visibility,
 // four individuals, three random-scalar pairs and all four: 211/211/211/211/211/211/211/211. Original
 // declarations and complete body restored; protected plane width, plane joins and pending spin homes remain.
+// N366: Actual plane-distance output owns its original four-term accumulator, 202 plain, retained;
+// complete normal compound fields/scalars/setter 209 each, with distance 202 each;
+// isolated distance also 202. Frame 0xa0 and 1366/1361 bytes unchanged. Normal forms restored;
+// protected plane-index width, plane joins and pending spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -754,8 +758,10 @@ void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effe
 					surface_plane.i = matrix->up.i * plane.k + matrix->left.i * plane.j + matrix->forward.i * plane.i;
 					surface_plane.j = matrix->up.j * plane.k + matrix->left.j * plane.j + matrix->forward.j * plane.i;
 					surface_plane.k = matrix->up.k * plane.k + matrix->left.k * plane.j + matrix->forward.k * plane.i;
-					surface_plane.d = matrix->position.z * surface_plane.k + matrix->position.y * surface_plane.j +
-						matrix->position.x * surface_plane.i + matrix->scale * plane.d;
+					surface_plane.d = matrix->position.z * surface_plane.k;
+					surface_plane.d += matrix->position.y * surface_plane.j;
+					surface_plane.d += matrix->position.x * surface_plane.i;
+					surface_plane.d += matrix->scale * plane.d;
 				}
 				real distance = (marker.matrix.position.z * surface_plane.k + marker.matrix.position.y * surface_plane.j) +
 					surface_plane.i * marker.matrix.position.x - surface_plane.d;
@@ -1296,6 +1302,10 @@ struct s_item_flags_view_10b850
 // N362: Existing carrier/collision/material-flow/motion-publication inline call visibility,
 // four individuals, three carrier pairs and all four: 813/813/813/813/813/813/813/813. Original
 // declarations, helpers and complete body restored; frame and Boolean/carrier/collision/rotation homes remain.
+// N366: Actual integration/query-ray/paired-contact adjacent destination producers and complete settled
+// angular projection regress. Individual output producers reach retail length at 820; frame and entry
+// Boolean/collision/carrier/rotation homes remain. Original body and helpers restored. Scores
+// 820/820/858/820/858/858/855/906. NOT kept: unmatched result-ownership forms.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1767,6 +1777,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // mask then shift decoding at both consumers: 172/172/172/172/272/272/171/171.
 // NOT kept: no equality; temporary external word view and original full body restored.
 // Return-byte +0xe/+0xf and release/event homes remain.
+// N366: Complete damping result copy/compound, interleaved/staged scalar, setter and native vector
+// publication regress; return byte, release RMW/tail and event homes remain. Original damping and body
+// restored. Scores 141/141/141/141/143/143/196/141. NOT kept: unmatched result-ownership forms.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
