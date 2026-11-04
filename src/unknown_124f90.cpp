@@ -638,6 +638,10 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // Round 203 (fast, under a 0x219b40 CAVEAT; the fast baseline agreed with plain): the voice pointer declared at block scope 3; the type counter declared ahead of
 // the voice index 3; a walking per-type count pointer advanced with the type 5; a long inner
 // counter 40 (551 bytes); the two zero bytes as one chained store 5.
+// Round 70 (lane 10, fast; a one-file LTCG harness reproduces the loop): the voice stores in a forceinline reset
+// helper taking the voice pointer 3, taking the voice index 3, or with the index advanced in its own statement 3; a
+// const pointer to the per-type counts for the sum and the bound 3; the counts table without const 3. Harness: probe
+// locals (1-15 at the top, 1-8 in the loop) and the counts read through a pointer local move nothing.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -2371,35 +2375,6 @@ real g_547f14;
 /* whether a sound would be heard: its definition can play, the random skip
    fraction lets it, a listener is in range and it is loud enough; the
    listener goes to *listener_index and why it would not play to *reason */
-// score 7 (was 7): only the last add differs: retail adds the class gain base (loaded into xmm1)
-// and the inner sum before the two forced-flag tests; ours adds them after the tests, in the
-// comparison's block. Every form that computes the sum before the tests folds the base load
-// into it (`addss xmm0, [base]`) or reassociates it; VC sinks the unfolded sum otherwise (the
-// same unfolded `a + computed` add is in retail 0x1251e0 and 0x127010). Round 30 (plain): a
-// loudness local before the forced test 35; a loudness bool 44; loudness started from the base
-// with the inner sum added in place 39; the inner sum added in place on the gain local 8; one
-// combined `||` condition with a loudness local 42. Screened (compile-only, which reproduces our
-// tail exactly): the gain or the base summed in place, decibels_add into the gain, a flags word
-// local.
-// Round 121 (plain): loudness through the existing decibels_sum/decibels_add on the class gain base 63
-// (428 bytes) / decibels_add for both sums 54; the inner sum as a decibels_add long, loudness a real sum 63
-// (428 bytes); a by-value real sum helper 35; a pointer to the class gain base 35. Compile-only: every form
-// that sums before the flag tests folds the base load; only a float-consistency pragma (diagnostic, not kept;
-// it worsens 0x1251e0's x87 interpolation in the LTCG probe) gives retail's unfolded add before the tests.
-// Round 72 (plain): direct class-field loudness after forced 16; loudness from the pre-flag class base 7;
-// inner-seeded class sum / in-place class sum 7 each; an audible bool after forced 67 (468 bytes); a two-view
-// decibel-return union 7; a real const-reference sum helper 35; a forceinline class-lookup sum helper 35.
-// Round 73 (plain): a word flags local used by both flag tests 7; that local first with the sum inside
-// the `||` condition 42; the forced bool computed before the sums 42; the inner sum as a decibels_add
-// long with a loudness local before the forced bool 39; the class gain base first with a loudness local
-// before the forced bool 35. Compile-only diagnostic (not a keepable form): when the inner sum stays live
-// after the add, VC gives retail's exact pre-test `movss xmm1, base ... addss xmm1, xmm0`, so in retail the
-// inner sum is a register value VC does not reuse for the result.
-// Round 203 (plain): `-64.0f < gain_base + inner` 7; inner as `gain + distance_decibels` 13; the
-// class gain base read before the inner sum 8; both flag tests and the sum in one `||` condition, no
-// bool 42; the class gain base kept as a long, summed through its address 47. A float-consistency
-// pragma on this function alone (diagnostic) 127 (469 bytes, --fast). The same unfolded pre-test
-// `movss xmm1, a ... addss xmm1, xmm0` is open in 0x1251e0, so the cause is shared.
 // @retail 0x126c30
 bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_index, long *reason)
 {
@@ -2432,12 +2407,12 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 						real distance_gain = sound_get_distance_gain(tag_index, (s_sound const *)location, distance);
 						long gain = function_1251e0(definition, location->unknown08, location->scale);
 						long distance_decibels = function_2197f0(distance_gain);
-						real inner = *(real *)&distance_decibels + *(real *)&gain;
-						real gain_base = *(real *)&function_xaa8231(definition->class_index)->gain_base;
-
+						s_decibels inner(*(real *)&distance_decibels + *(real *)&gain);
+						s_decibels gain_base(*(real *)&function_xaa8231(definition->class_index)->gain_base);
+						s_decibels loudness = gain_base + inner;
 						bool forced = SOUND_FLAG(location->flags, 11) || SOUND_FLAG(location->flags, 8);
 
-						if (forced || gain_base + inner > -64.0f)
+						if (forced || loudness > s_decibels(-64.0f))
 						{
 							failure = 0;
 							result = true;

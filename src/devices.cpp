@@ -1404,6 +1404,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Round 31 (lane 18, fast): sampled at function scope beside start 39; the 1/30 factor written first 2; one
 // function-scope animation variable for both blocks 2; had_animation declared just before the flag test 10;
 // had_animation and speed declared after the matrices 2. All restored.
+// Round 70 (lane 10, fast): the time declared first in the block 2; the channel read as `channels->` 2; the sampled
+// matrix declared after the time 2; the 1/30 factor in a const local 2; `time *= 1.0f / 30.0f` 2. Compile-only (which
+// reproduces the order): 0-16 probe locals, `(void)&time`, a `(real)` cast and a named frame position move nothing.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
