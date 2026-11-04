@@ -335,6 +335,14 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // element overwritten through the element pointer 902 (same code); the linked-object test without the repeated
 // `!= NONE` (the pointer is already NULL then) 961 (4251 bytes); owner activity as `local_1 || (...)` 989 (4248);
 // other activity as `local_20 || ...` 970 (4254).
+// Round 84 (m3 lane 9, fast control 902): retail's scale helper is unrolled with memory homes. In the compile-only
+// harness (no /GL) our scale loops unroll, and the frame comes to retail's 0x1d4, only when the body has no destructor
+// call: the contact array's `delete` (its inline destructor; every destructor spelling tried, inline, out-of-class,
+// template or inside an inlined helper) stops VC unrolling every loop in the function. Under LTCG the delete removed
+// (diagnostic only) still leaves the loops rolled, 956 (1072 also without the asm conversion), so a second cause that
+// only LTCG shows remains. Forms: long counter 933 (rolled, cmp/jl); dword counter 933; the entry test wrapping the
+// body (single exit) 902 (same code); the attached object index in a named local right after the element pointer
+// (retail reads it first) 951; the attached component set in an if/else 901 (one point, not kept). All restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

@@ -267,6 +267,10 @@ short __stdcall function_2551c0(long actor_index)
 // Round 40 (lane 17, fast): single product operands swapped in the cross terms (no vector_k): cross_j's
 // second product axis-first 43, its first product axis-first 43, both 43; cross_k's second product
 // axis-first 43, its first 43 (all the same code: VC canonicalises the operand order). Restored.
+// Round 40 (m3 lane 18, fast), on lane 9's match-only 6 form rebuilt (vector_k, alignment, reach; only the score dot
+// differs): the dot through the file's accumulating helper (0x255741's), either operand order, 120/120; the direction copy
+// before the angle 6; trace declared first in the loop 6; forward and best direction declared before the best score and
+// found 6; best direction declared before forward 6; a 600 s permuter run (53 tries) none below 6. Body restored at 43.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -843,6 +847,12 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 47 (lane 15, fast, on the match-only 17 form): adjusted projection in the length variable 17 (slot groups retail's, 0x14/0x18
 // swapped); with a named reach 197, reach alone 196 (951 bytes); one final subtraction into it, `= length - x`, `x = x - y` 17/17/17;
 // length and second side renamed either way, six forms 17 each (names do not reorder these slots). XMM2/XMM3 and the swap remain.
+// Round 40 (m3 lane 18, fast), on lane 17's match-only 17 form rebuilt (named unit before 0x110ab0, target lookup first,
+// request stores short/long/type, named size in both sums): the location outputs declared before the side outputs 17;
+// the timing outputs declared real first 17; the timing outputs declared before the side block 17; the timing default as
+// an if/else into a local 17; the first test as `length + (size + radius)` 17. Slots there: ours sum+side0+timing0 at
+// 0x10, length+side1+timing3 at 0x14, index+timing2 at 0x18, adjusted alone at 0x1c; retail side0+timing0 at 0x10,
+// sum+side1+timing3 at 0x14, length+adjusted at 0x18, index+timing2 at 0x1c. Body restored at 89.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

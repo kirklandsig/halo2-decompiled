@@ -2529,6 +2529,9 @@ struct s_unit_event
 // assignments stayed fixed; original declarations and body restored.
 // B386: Complete existing dispatcher orders 01234/02143/04213/01324/03124/02431/04231/03412:
 // 515/513/474/522/521/473/475/515. Original cases and body restored; permutation ingress remains.
+// Y560: Complete complementary body preservation, conditional/branch-owned
+// bool/byte/short/long outcomes: 536/536/530/518/536/536/530/518. NOT kept: no byte match;
+// original destruction expression and full body restored; permutation stack/EAX ingress remains.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
