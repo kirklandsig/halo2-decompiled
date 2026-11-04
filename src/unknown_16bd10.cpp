@@ -918,6 +918,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // dot length in both input orders, per-use direction, source squared length, default-zero
 // and zero-first factor: 367/370/371/371/367/461/449/367. NOT kept: no exact match;
 // original header set, projection, factors, helper bodies and whole body restored.
+// AC518: Complete nonzero-length admission bool/byte/short/long at producer
+// or declared before plane workspace: 236/236/236/236/236/236/236/236 (control 236).
+// NOT kept: one-use predicate unmatched; original projection and body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

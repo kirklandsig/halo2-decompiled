@@ -1716,6 +1716,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC515: Complete animation-update/event-bit result bool/byte/short/long at computation or
 // with iteration-owned uninitialized storage: 220/220/220/220/220/220/220/220 fast (control 220, full 218).
 // NOT kept: one-use result diagnostics unmatched; original body and all five smoothing tuples restored.
+// AC518: Complete countdown/pause expiry bool/byte/short/long at producer or
+// in iteration-owned storage: 220/220/220/220/220/220/220/220 fast (control 220, full 218).
+// NOT kept: one-use result unmatched; frame, unit/mode and look homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
