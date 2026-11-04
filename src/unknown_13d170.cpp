@@ -412,6 +412,11 @@ struct s_block_candidate
 // N367: Joined callback/expiry busy result, expression bool/byte/short/long 360/360/365/365; branch
 // producers before oldest admission 347/347/365/367. NOT kept: ties or regressions, wider forms grow beyond
 // retail. Original busy/oldest graph restored; missing frame dword and page/ring homes remain.
+// m3 lane 1 r71 (one-link harness, exact on control 347; al = register-inclusive aligned count, control 366): LEAD, retail's EDI in the scan is the candidate's running
+// total: `long total = candidate->pages + segment_pages;` used by the store, the test and the policies 349/1212 (al 304), with one read of the clock in the default policy
+// 348 (al 312). On total: offset first with previous in the block 371/1200 (302), offset after the result 393/1200 (299), with previous in the block 393/1200 (298), offset
+// in the block 387/1211 (292), with previous there too 379/1211 (292). About 280 annealed forms of block declaration order, offset/previous position, candidate store order, case
+// order, time/zero order and segment/next scope: best aligned 381/1211 (al 292), best positional 349/1212, none under 347. Register roles remain: retail gives offset EBX and current EDI and keeps tail in memory.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

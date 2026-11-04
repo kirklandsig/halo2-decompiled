@@ -652,230 +652,33 @@ s_entry_c *function_19c5f0(long key);
 wchar_t *localized_name_get(s_localized_name *definition);
 wchar_t *localized_short_name_get(s_localized_short_name *definition);
 
-PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word *text)
+/* a text buffer of 0x100 characters, empty when constructed, filled from a screen's string */
+struct s_friend_text
 {
-    widget->value6e = true;
-    widget->function_22f52e()->set_text(text);
+    s_friend_text()
+    {
+        text[0] = 0;
+    }
+
+    void load(c_widget *screen, long handle)
+    {
+        screen->function_230134(handle, text);
+    }
+
+    word text[0x100];
+};
+
+PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 **widgets, unsigned &row, word *text)
+{
+    widgets[row]->value6e = true;
+    widgets[row++]->function_22f52e()->set_text(text);
 }
 
-// score 512 (was 512): EBP is unbiased; allocation 0x860 versus retail 0x85c; flags/clock and score homes remain.
-// Earlier text-buffer/early-bit form 489 (not kept): EBP bias 0x70 and frame 0x85c agree (the text buffers as s_text_256, bit 7 taken before
-// Frame 0x860 versus 0x85c; EBP bias 0x70, early flag/clock and late score homes remain.
-// Earlier lane r83 form 489, not kept: EBP bias 0x70 and frame 0x85c agree (the text buffers as s_text_256, bit 7 taken before
-// the clock read: the flags stay in ESI); the clock in ESI (retail EDI), the small slots' order (row +0x6c,
-// active +0x6a, bit 7 +0x6b, clock +0x64; retail +0x64/+0x6f/+0x6e/+0x68), the long campaign word and the
-// campaign/state-5/7-8 arm tail merges remain.
-// Earlier at 512: Allocation 0x860 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain
-// (round 38 below: the bias, frame and every small slot are reproducible, but only with a clock mix).
-// Earlier: retail biases EBP by 0x70 (lea ebp,[esp-0x70]) and keeps the friend flags in
-// ESI and the timestamp in EDI; ours uses a plain frame, spills the flags to a slot and packs the six
-// small locals differently.
-// Frame 0x85c agrees; EBP bias 0x70, flags/time/state homes and status-helper transport remain.
-// Earlier: frame 0x85c agrees; EBP bias and flag/time/state
-// frame 0x85c agrees; EBP bias and flag/time/state
-// Frame 0x85c agrees; EBP bias 0x70 and early flags/time/state homes remain.
-// Earlier: frame 0x85c agrees; EBP bias and flag/time/state
-// frame 0x85c agrees; EBP bias and flag/time/state homes differ.
-// Frame 0x85c agrees; EBP bias and flags/time/state homes remain. Guard-owned state
-// 576; session before elapsed test 578; word team scan 574 (three-point gain rejected); conditional
-// maxima 577; shared state formatting 717.
-// Earlier 577 (was 598): frame 0x85c agrees; EBP bias and flag/time/state
-// carriers and status-helper convention still differ. Flag bit at uses 647;
-// long active 624; long local 623; long campaign 598 kept; branch-local
-// game-name table 624. Buffers, loops, calls and common exit are unchanged.
-// Long joinability 600; word saved bit 625; timestamp rename 598; long count
-// 577 kept; explicit score exclusion 598. Original count values are preserved.
-// Earlier 577 (was 577): frame 0x85c agrees; EBP bias and flag/time/state homes remain.
-// Data-branch format buffer 644; both data-branch buffers 644; word widget index 631;
-// branch-assigned score maximum 575 (below threshold, frame 0x860); row increment after
-// publication 577; auxiliary-buffer role names 577.
-// Player/team/both candidate score values 577/577/577; key at uses 574 (below threshold);
-// activity at uses 573 kept; native ages 577; native flag byte 630; combined native observations 574.
-// Entry-owned formatting 605; with key 605, activity 601, both 601; original formatting restored.
-// EBP bias and initial flags/timestamp homes remain; original frame, loops and all call arguments retained.
-// Native real payload fields: state/activity, count, selection/totals, keys, timers, game/team,
-// score arrays and the complete view 573 each; native declaration restored. EBP bias remains.
-// Unsigned/signed word and signed-long flags 574/574/574; word flags with
-// long local/activity/joinability results 650/584/583; local/activity pair 653;
-// all native truth results 653. EBP bias and initial carriers still differ;
-// original dword flags, Boolean results and activity observations retained.
-// player-table 587; team-table 587.
-// both-tables 592; player-table-before-search 587.
-// team-table-before-search 587; both-tables-before-search 592.
-// tables-score-values 592; early-tables-score-values 592.
-// State/count/both at every use 572/594/594; flags/truth/row/all scalar role names
-// 573/573/573/573; all observations with role names 594. Original body restored.
-// Native Boolean campaign 605; signed-word count 594; both 623; with consistent state fields 623,
-// explicit session true test 621, early flag producer 664, read-only local table 623, word widget ordinal 640.
-// Separate time dividend/results in both arms, immutable results and clock-role homes 573/573/573;
-// with native campaign/count/both/state-fields/session-test 605/594/623/623/621. All executable forms restored.
-// Round 161: clock at every use 642; table at entry/pre-query/pre-widget 619/618/601; those three with consistent clock reads 654/654/643; read-only local table 573. All restored.
-// flags inline 699; flags noinline 573; flags inline noinline 573; user inline 573; user noinline 573; user
-// inline noinline 573; both inline noinline 573; both inline 699.
-// Round 211: Main message/format/both output pointers 573 each; auxiliary game/teams/both
-// output pointers 573 each; all four and message with both auxiliary outputs 573 each.
-// Round 237: Complementary local/activity/joinability states independently and together
-// 648/575/648/574/648/576/648; complementary campaign 573. Original truth states restored.
-// Three identity-query caller-inline contracts in all seven combinations 573 each; joint
-// caller-noinline contract 573. Original declarations restored.
-// Round 227: Native identifier copy/assignment/CRT, complete friend copy/assignment/CRT,
-// complete friend plus identifier copy/CRT 632/632/632/627/627/627/632/632 (exact-only). Restored.
-// Publication helper native widget/buffer-array/both references 573 each; array input
-// first 573; ordinary inline with widget/array/both references 573 each; both references
-// with text-first formals 573. Original helper and every publication call restored.
-// Round 380: Bit extraction after widgets at bool/byte/short/long width 642/642/640/628; in the data branch 639/639/633/640. Original extraction and carriers restored.
-// Round 384: publication widget/text/external-widget-reference results under forced expansion
-// 573/573/573; ordinary inline results 693/716/693; outlined void/widget results
-// 716/693. Original publication helper, complete screen body and held interfaces restored.
-// Round 168: Byte row/widget/fixed-team ordinals in seven subsets 675/629/570/685/668/625/679;
-// all with byte saved bit 679. The team-only three-point gain is dropped. Complete status-arm
-// orders 678/704/584/695/704/681/707/609; original ordinals, arm order and body restored.
-// Round 409: row declared with outputs 680; widened state 598; both 700; common total 573;
-// total with row/state/both 680/598/700; all with explicit status-text result 700.
-// Original scalar lifetimes, state width and complete body restored.
-// Round 189: real widget-array discovery cursor, long/short/byte/char query ordinals,
-// bounded ordinal latch 637/614/619/619; real array-end latch 628/610/607/607. Original
-// discovery restored; frame bias and initial flags/clock homes remain unresolved.
-// Round 290: Activity/player result and implied-activity graphs 573/651/651; explicit session test
-// combinations 571/651/651; native campaign/state combinations 658/651. Two-point gain rejected.
-// Original executable source restored.
-// Round 308: Complete primary-slot/team-mode/paired-total input subsets 636/606/662/668/687/667/680;
-// all with long primary-slot result 679. All regress and retain ordinary EBP; original observations,
-// count expressions and executable body restored. Frame bias and flag/time homes remain.
-// Round 441: Signed-short dynamic search/competitor/list subsets 565/569/568/566/557/562/561;
-// all dynamic plus fixed-team short 556 (two extra edits gain one against selected 557).
-// Search/list short kept at 557 plain, 1964/2041 bytes; frame 0x864, unbiased EBP and flags/time homes remain.
-// Round 447: Raw zero/0x80 saved bit in dword/word/byte/long at the original extraction point, then at the API result
-// 613/581/618/613/648/645/648/648. Current frame 0x864 versus 0x85c; EBP bias and flag/time homes remain.
-// Original executable source and all trial helper/interface changes restored.
-// Lane 10 round 34 (fast; aligned counts from a difflib alignment of the listing in brackets, baseline [294]):
-// retail calls the name formatter in each lookup arm with no NULL test of the name (tail-merged), so the arms
-// formatting and showing directly give retail's block exactly but score 559 [285]; retail's player search ends
-// with `cmp esi, -1` (a found index tested after the loop, long counter): index-after-loop form 565 [266]; bool
-// campaign 588 [283]; short count 579 [297]; all four with a long final-loop counter 619 [274]; search plus long
-// final counter 571 [263]. The positional score rises while the bias is missing. Bias diagnostics (none biased):
-// widget array declared first, six field locals, the status call removed, the body cut after the widget loop or
-// at any later block. Retail's other /O1 EBP frames bias only when a slot lands in the unbiased [-0xf0,-0x81]
-// window (0x2b6208, 0x2b4059, 0x2b0565), which 0x2b65b8 and 0x2b642e do not have, so the trigger is not that.
-// Round 215: player score cursor with long ordinal 557; team score cursor with long ordinal 557;
-// both score cursors with long ordinals 557; player score cursor with short ordinal and retail-
-// sized frame 562; team score cursor with short ordinal 549; both score cursors with short
-// ordinals 557; player score cursor with real pointer difference bound 544; team score cursor with
-// real array end 539; signed-short team ordinal alone on the current search/list graph 549; team
-// score cursor with unsigned-word ordinal 549; pointer-difference player scan with array-end team
-// scan 530. Keep t11 combined actual player/team score-array scans, plain-confirmed 557 to 530 at
-// 1991/2041 bytes; all 11489 baseline matches preserved. No arithmetic, input observation or call
-// tuple changes.
-// Round 461: completed selection on the real score-pointer graph, long/short results,
-// original/branch-owned maximum with direct/cached candidates: 528/520/528/520/520/512/520/512.
-// Keep short selection and both admitted score observations, plain 512 at 2010/2041 bytes;
-// original maximum initialization retained. Frame 0x864 and EBP/flag/clock homes remain.
-// Round 464: activity/team conditional label results, original/branch-complete/default-first
-// non-original pairs 512/578/512/512/578/520/520/584. Original conditional arguments
-// and score-pointer graph restored; unbiased EBP and early flag/clock homes remain.
-// Round 476: Branch-owned score formatting with neither/player/team/both conditional maxima 573/573/573/573; branch-local maximum on those four graphs 559/559/559/559.
-// Retail allocation 0x85c recovers, but EBP remains unbiased; lengths 1962/1976 versus 2041 regress. Original score join, scans, full body and every interface restored.
-// Round 144 (lane 4, fast): retail tests the session flag with `cmp byte, 1; jne`, keeps the campaign result
-// in a byte (the high byte of the session argument's slot) and the friend flags in ESI until bit 7 is taken; a
-// compile-only build gives retail's 0x85c frame and slot layout but no EBP bias either. `in_session == true` 510
-// (two-point gain rejected); bit 7 taken before the clock read 515; bool campaign 540; both first forms 513;
-// a long row 512 (same code).
-// Round 38 (lane 15, fast; aligned = LCS-aligned differing instructions, baseline 271): the four text
-// buffers as the existing s_text_256 (retail's out-of-line constructor is 0x7f8a0) give retail's
-// `lea ebp, [esp-0x70]` bias, 506 (aligned 260); with bool campaign 532 (campaign in retail's byte at +0x7f),
-// short count 523 (frame 0x85c), long flags 524, clock declared early 523, `in_session == true` 521; the
-// session test reading g_54d5b8 while the details keep the clock local 451 (flags in ESI, clock home
-// [ebp+0x68] as retail; a global/local mix, so not kept without a match); row renamed four ways 451; name
-// lookups formatting and showing in each arm with the key read at each use 452; minutes and seconds both
-// from the field before the caption call 466 (timer arms then equal retail); long search index/selected,
-// long final counter and block-scoped maxima 504; clock declared before row 504; bit-7 flag renamed three
-// ways 504; score loops with a score pointer advanced in the body 457 (frame 0x85c and every small slot as
-// retail); bit-7 flag before the clock read 455; state read from its field at each use 454 (aligned 105);
-// one show after the 2/3 arm's inner if/else 608; campaign test inverted 446 (aligned 128). Without the mix
-// the same body scores 526, with the clock global at every use 599, with bit 7 taken at the flags call 603.
-// On the 454 body: a show helper taking the widget array and `unsigned &row` (row incremented before the
-// calls as retail) 454 (aligned 95); the teams label as an if/else 454 (still neg/sbb; retail branches,
-// as it does for the campaign/a60 label). Left on that body: the 7/8 arm keeps its own show with
-// `xor edi, edi; inc edi` in retail where ours keeps the campaign arm's (retail merges campaign with
-// state 5), the two branchy labels, game/teams buffer order (retail clears game first at -0x7ec), the team
-// scan's index/cursor homes, and after each 0x230134 call retail rebuilds the format address with lea
-// where ours reuses ESI. Non-mix subsets: text buffers + name arms + state at each use 506; with short
-// count 512; buffers + short count 511; with the timer form 518; with session/bit-7 order 513; with long
-// loops 592; with the score pointers 577, plus the timer form 530. Original body kept.
-// Round 23 (lane 17, fast) on the four text buffers as `s_text_256` (506, retail's EBP bias): the 7/8
-// arm's caption call before its total 467 (2035 bytes; positional only: that arm stops sharing the arm
-// tail but computes its total after the call where retail computes it first; not kept); the state read
-// inside the guard and into its local only in the details branch 505; the 7/8 arm's widget index and
-// row increment as two statements 506 (same code); `long row` 506; both timer arms passing
-// `seconds / 60, seconds % 60` 506. Retail's shared arm tail stores row = 1 to its home and reloads it
-// into EDI, while its 7/8 arm sets EDI directly: that arm sits in another home region of row.
-// Round 41 (lane 14): one show after the 2/3 arm's campaign/totals if-else 607 (1977 B); `text[row]` then
-// `row++` everywhere or in the 7/8 arm 512 (same code); timer `seconds / 60, seconds % 60` as arguments 512
-// (same code); timer `minutes = field / 60; seconds = field % 60` 531 (2003 B: retail's unmerged timer arms
-// and 0x85c frame, but seconds keeps EDI and row moves to memory), seconds first 531; a `time` local 512.
-// Round 340: player/team score candidates before admission on the current
-// score-pointer/short-selection graph, with entry-owned maximum, masks 1..7 and entry
-// declaration-only maximum, 512/512/512/576/593/576/593/512. Entire body restored;
-// frame 0x860/0x85c, EBP bias and initial flag/clock/score homes remain.
-// DH round 268: native text storage for message/format/game/teams/main pair/auxiliary pair/
-// message+auxiliaries/format+auxiliaries 506/512/512/512/506/512/506/512. Only message
-// storage recovers EBP bias, still frame 0x860; six-point lead rejected. Original buffers and body restored.
-// Round 305: Native message with session equality, flag-before-clock and body-advanced score cursors,
-// seven subsets 504/489/487/506/504/489/487; all with native auxiliary buffers 487. Bias and frame
-// recover, but wrapped storage remains unmatched and exact-only. Original buffers and full body
-// restored at 512.
-// M294: Native message storage with bounded widget-word/row-byte/campaign-bool domains,
-// seven subsets, then all with consistent state observations (exact-only):
-// 546/601/625/532/547/624/630/630. Original complete executable source restored.
-// M296: Actual score ordinals player/team/both long, player/team/both short, then
-// both long with Boolean campaign/native short count [531, 524, 548, 545, 519, 550, 578, 568]. Original score cursors restored.
-// Round 137 (aligned 303): one details-scope symbol for total, kind, both, the timer pair, the score candidate
-// or all of them 512 each (same code). Body unchanged.
-// AC475: Canonical campaign bool/byte/short/word with native long count on completed-short
-// selection/admitted-score-pointer graph 540/540/509/509; native short count 556/556/528/528.
-// Three-point 509 forms rejected; original truth/count domains and complete body restored.
-// Signed-byte campaign with long/short count 540/556; original body retained.
-// AC498: Activity-owned player query and four canonical joinability producers,
-// bool/byte: 599/605/584/602/599/605/584/602. Original complete body restored;
-// unbiased EBP, allocation 0x860/0x85c and flag/clock homes remain.
-// N336: Ordinary main-buffer scopes at status/data alternatives, message/format/both,
-// 583 each; auxiliary arrays at data entry 512; all four there 583. Frame stays 0x860
-// without native EBP bias; original capacities, clear phases and complete body restored.
-// DL252: One caption table at clock/widget/task/data-admission phases, mutable then immutable on current
-// score-pointer/short-selection graph: 542/534/526/515/542/534/526/515. NOT kept: unsupported table
-// lifetimes require a byte match. Original table, buffers, clock observations, scans and complete body
-// restored.
-// DH315: Raw-buffer player/team body advancement and ordinal exclusion masks
-// 1/2/3/4/5/6/7: 512/512/512/519/519/519/519; both advances plus a named
-// team-array end 497, end alone 497. NOT kept: retail counts the fixed team
-// ordinal, with no retained end producer; the new end shifts unrelated scalar homes.
-// Original cursor progression, comparisons, buffers and complete body restored.
-// Round 82 (m3 lane 9, fast): the four buffers as the existing s_text_256 506 (EBP bias as retail, frame 0x860); with
-// `in_session == true` (retail's cmp byte, 1; jne) 504 (wrapped storage is exact-only, not kept); `in_session == true`
-// alone 510; on the 504 body: short count 509, bool campaign 530, `(flags & 0x80) != 0` 504 (same code), long widget
-// counter 505 (retail's jb), message alone wrapped 504, message and format 504. The friend flags still spill (retail
-// keeps them in ESI, the widget index then reuses ESI and the clock takes EDI).
-// m3 lane 16 r83 (fast; form plain 489, NOT kept at review: retail reads the clock before the bit-7 shift
-// (0x2b662e/0x2b6636), so the reorder is against retail, and s_text_256 alone is 506, gain 6 under the bar; the file's 20 matched functions still match, 0x2b642e 51): the four
-// text buffers as the existing s_text_256 (its constructor clears the first word, as the hand-written stores did)
-// 506 (retail's `lea ebp, [esp - 0x70]`); with bit 7 taken before the clock read 489 (kept: the flags then stay in
-// ESI and the frame is 0x85c); on 489: short count 514, bool campaign 504, both 526, `s_text_256 teams, game` 489
-// (same code), `in_session == true` 487 (-2, not kept), `long row` 489 (same code).
-// J251: Primary-caption default/conditional/complete/priority producers 546/535/535/550;
-// own stdcall/cdecl/inline/inline-stdcall 512/514/512/512; incoming formal roles
-// independently/together/selected 512/512/512/512. NOT kept: caption forms regress;
-// cdecl loses matched caller 0x2b6e55 (29); other contracts and names tie. Original
-// body/declarations restored; frame 0x860 versus 0x85c, EBP bias and flags/clock homes remain.
-// Status receiver and stack-input setup already agree with retail.
-// B412: Eight-team membership mask advanced with the score cursor: dword/long/word/byte
-// presence 508/508/512/508; absence 509/509/494/509. NOT kept: four-point leads below gate;
-// word absence shifts a narrow complement instead of an indexed dword mask. Full body restored.
+/* fills the screen's eight detail rows for a friend in another session, or hands over to the status text */
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {
-    word message[256], format[256];
-    message[0] = 0;
-    format[0] = 0;
+    s_friend_text message, format;
     unsigned row = 0;
     dword flags = online_friend_get_flags(friend_);
     bool local = network_session_interface_has_user(&friend_->xuid);
@@ -892,15 +695,15 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
         player = NONE;
     }
     bool joinable = player != NONE && active && function_19abe4(player);
-    dword now = g_54d5b8;
     bool flag7 = (bool)((flags >> 7) & 1);
+    dword now = g_54d5b8;
     c_text_widget_45a5e0 *text[8];
     for (unsigned i = 0; i < 8; i++)
     {
         text[i] = (c_text_widget_45a5e0 *)find_text(i + 2);
         if (!text[i]) goto done;
     }
-    if (task_index == NONE && qos_handle == NONE && now - value10e0 > 60000 && in_session)
+    if (task_index == NONE && qos_handle == NONE && g_54d5b8 - value10e0 > 60000 && in_session == true)
         task_index = online_match_session_find((XNKID const *)((byte const *)friend_ + 0x28));
     if (joinable)
     {
@@ -920,15 +723,15 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
     else
     {
         byte *details = (byte *)this;
-        short state = *(short *)(details + 0xa62);
-        if (!value10e4 || !state)
+        if (!value10e4 || !*(short *)(details + 0xa62))
             update_friend_status(friend_, session);
         else
         {
-            long campaign = *(long *)(details + 0xa68) != NONE && *(long *)(details + 0xa70) != NONE;
+            short state = *(short *)(details + 0xa62);
+            bool campaign = *(long *)(details + 0xa68) != NONE && *(long *)(details + 0xa70) != NONE;
             long game_names[11] = {0x7000180, 0x3000439, 0x600010f, 0x7000110, 0x4000237,
                 0x4000112, 0xa000114, 0xa000113, 0xb000115, 0x700010e, 0x7000180};
-            long count = *(short *)(details + 0xa80);
+            short count = *(short *)(details + 0xa80);
             if (count > 0 && now - value10dc > 1000)
             {
                 value10dc = now;
@@ -941,23 +744,20 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                 if (kind == 0 || (kind == 1 && flag7))
                 {
                     total = *(short *)(details + 0xa58) + *(short *)(details + 0xa5a);
-                    ((c_widget *)this)->function_230134(0x1500026b, format);
+                    format.load((c_widget *)this, 0x1500026b);
                 }
                 else
                 {
                     total = *(short *)(details + 0xa5c) + *(short *)(details + 0xa5e);
-                    ((c_widget *)this)->function_230134(0x1700026c, format);
+                    format.load((c_widget *)this, 0x1700026c);
                 }
-                function_1630e0(message, format, (long)total);
-                show_friend_detail(text[row++], message);
+                function_1630e0(message.text, format.text, (long)total);
+                show_friend_detail(text, row, message.text);
             }
             else if (state == 2 || state == 3)
             {
                 if (campaign)
-                {
-                    ((c_widget *)this)->function_230134(0x17000259, message);
-                    show_friend_detail(text[row++], message);
-                }
+                    message.load((c_widget *)this, 0x17000259);
                 else
                 {
                     short total;
@@ -965,16 +765,16 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                     if (kind == 0 || (kind == 1 && flag7))
                     {
                         total = *(short *)(details + 0xa58) + *(short *)(details + 0xa5a);
-                        ((c_widget *)this)->function_230134(0x1500026f, format);
+                        format.load((c_widget *)this, 0x1500026f);
                     }
                     else
                     {
                         total = *(short *)(details + 0xa5c) + *(short *)(details + 0xa5e);
-                        ((c_widget *)this)->function_230134(0x17000270, format);
+                        format.load((c_widget *)this, 0x17000270);
                     }
-                    function_1630e0(message, format, (long)total);
-                    show_friend_detail(text[row++], message);
+                    function_1630e0(message.text, format.text, (long)total);
                 }
+                show_friend_detail(text, row, message.text);
             }
             else if (state == 4 || state == 9)
             {
@@ -983,105 +783,104 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                 if (kind == 0 || (kind == 1 && flag7))
                 {
                     total = *(short *)(details + 0xa58) + *(short *)(details + 0xa5a);
-                    ((c_widget *)this)->function_230134(0x1600026d, format);
+                    format.load((c_widget *)this, 0x1600026d);
                 }
                 else
                 {
                     total = *(short *)(details + 0xa5c) + *(short *)(details + 0xa5e);
-                    ((c_widget *)this)->function_230134(0x1800026e, format);
+                    format.load((c_widget *)this, 0x1800026e);
                 }
-                function_1630e0(message, format, (long)total);
-                show_friend_detail(text[row++], message);
+                function_1630e0(message.text, format.text, (long)total);
+                show_friend_detail(text, row, message.text);
             }
             else if (state == 5)
             {
-                ((c_widget *)this)->function_230134(0xe000271, message);
-                show_friend_detail(text[row++], message);
+                message.load((c_widget *)this, 0xe000271);
+                show_friend_detail(text, row, message.text);
             }
             else if (state == 6)
             {
                 short total = *(short *)(details + 0xa5c) + *(short *)(details + 0xa5e);
-                ((c_widget *)this)->function_230134(0x1300043d, format);
-                function_1630e0(message, format, (long)total);
-                show_friend_detail(text[row++], message);
+                format.load((c_widget *)this, 0x1300043d);
+                function_1630e0(message.text, format.text, (long)total);
+                show_friend_detail(text, row, message.text);
             }
             else if (state == 7 || state == 8)
             {
                 short total = *(short *)(details + 0xa5c) + *(short *)(details + 0xa5e);
-                ((c_widget *)this)->function_230134(0x16000272, format);
-                function_1630e0(message, format, (long)total);
-                show_friend_detail(text[row++], message);
+                format.load((c_widget *)this, 0x16000272);
+                function_1630e0(message.text, format.text, (long)total);
+                show_friend_detail(text, row, message.text);
             }
             state = *(short *)(details + 0xa62);
             if (state != 8 && state != 3 && *(short *)(details + 0xa60))
             {
-                ((c_widget *)this)->function_230134(campaign ? 0xe000276 : *(short *)(details + 0xa60) == 1 ? 0x12000273 :
-                               *(short *)(details + 0xa60) == 3 ? 0xe000274 : 0xf000275, message);
-                show_friend_detail(text[row++], message);
+                if (campaign)
+                    message.load((c_widget *)this, 0xe000276);
+                else if (*(short *)(details + 0xa60) == 1)
+                    message.load((c_widget *)this, 0x12000273);
+                else if (*(short *)(details + 0xa60) == 3)
+                    message.load((c_widget *)this, 0xe000274);
+                else
+                    message.load((c_widget *)this, 0xf000275);
+                show_friend_detail(text, row, message.text);
             }
             if (*(short *)(details + 0xa62) == 8 || *(short *)(details + 0xa62) == 3 || *(short *)(details + 0xa60) == 1)
             {
-                wchar_t *name = NULL;
-                long key = *(long *)(details + 0xa70);
-                if (*(long *)(details + 0xa68) != NONE && key != NONE)
+                if (*(long *)(details + 0xa68) != NONE && *(long *)(details + 0xa70) != NONE)
                 {
-                    s_entry_b *entry = function_19c1f0(key);
+                    s_entry_b *entry = function_19c1f0(*(long *)(details + 0xa70));
                     if (entry)
                     {
-                        ((c_widget *)this)->function_230134(0x30005f4, format);
-                        name = localized_name_get((s_localized_name *)entry);
+                        format.load((c_widget *)this, 0x30005f4);
+                        function_1630e0(message.text, format.text, localized_name_get((s_localized_name *)entry));
+                        show_friend_detail(text, row, message.text);
                     }
                 }
-                else if (key != NONE)
+                else if (*(long *)(details + 0xa70) != NONE)
                 {
-                    s_entry_c *entry = function_19c5f0(key);
+                    s_entry_c *entry = function_19c5f0(*(long *)(details + 0xa70));
                     if (entry)
                     {
-                        ((c_widget *)this)->function_230134(0x30005f4, format);
-                        name = localized_short_name_get((s_localized_short_name *)entry);
+                        format.load((c_widget *)this, 0x30005f4);
+                        function_1630e0(message.text, format.text, localized_short_name_get((s_localized_short_name *)entry));
+                        show_friend_detail(text, row, message.text);
                     }
-                }
-                if (name)
-                {
-                    function_1630e0(message, format, name);
-                    show_friend_detail(text[row++], message);
                 }
             }
             if (*(long *)(details + 0xa64))
             {
-                word game[256], teams[256];
-                game[0] = 0;
-                teams[0] = 0;
-                ((c_widget *)this)->function_230134(0x9000277, format);
-                ((c_widget *)this)->function_230134(game_names[*(long *)(details + 0xa64)], game);
-                ((c_widget *)this)->function_230134(details[0xa74] ? 0x4000278 : 0x3000279, teams);
-                function_1630e0(message, format, teams, game);
-                show_friend_detail(text[row++], message);
+                s_friend_text game, teams;
+                format.load((c_widget *)this, 0x9000277);
+                game.load((c_widget *)this, game_names[*(long *)(details + 0xa64)]);
+                if (details[0xa74])
+                    teams.load((c_widget *)this, 0x4000278);
+                else
+                    teams.load((c_widget *)this, 0x3000279);
+                function_1630e0(message.text, format.text, teams.text, game.text);
+                show_friend_detail(text, row, message.text);
             }
-            state = *(short *)(details + 0xa62);
-            if (!campaign && (state == 3 || state == 8))
+            if (!campaign && (*(short *)(details + 0xa62) == 3 || *(short *)(details + 0xa62) == 8))
             {
                 long timer = *(long *)(details + 0xa78);
                 if (timer == 2)
                 {
-                    long seconds = *(long *)(details + 0xa7c);
-                    long minutes = seconds / 60;
-                    seconds %= 60;
-                    ((c_widget *)this)->function_230134(0x1400027c, format);
-                    function_1630e0(message, format, minutes, seconds);
-                    show_friend_detail(text[row++], message);
+                    long minutes = *(long *)(details + 0xa7c) / 60;
+                    long seconds = *(long *)(details + 0xa7c) % 60;
+                    format.load((c_widget *)this, 0x1400027c);
+                    function_1630e0(message.text, format.text, minutes, seconds);
+                    show_friend_detail(text, row, message.text);
                 }
                 else if (timer == 1)
                 {
-                    long seconds = *(long *)(details + 0xa7c);
-                    long minutes = seconds / 60;
-                    seconds %= 60;
-                    ((c_widget *)this)->function_230134(0x1200027d, format);
-                    function_1630e0(message, format, minutes, seconds);
-                    show_friend_detail(text[row++], message);
+                    long minutes = *(long *)(details + 0xa7c) / 60;
+                    long seconds = *(long *)(details + 0xa7c) % 60;
+                    format.load((c_widget *)this, 0x1200027d);
+                    function_1630e0(message.text, format.text, minutes, seconds);
+                    show_friend_detail(text, row, message.text);
                 }
-                short selected = NONE;
-                for (short i = 0; i < *(short *)(details + 0xa80); i++)
+                long selected = NONE;
+                for (long i = 0; i < *(short *)(details + 0xa80); i++)
                 {
                     if (xuid_equal((XUID const *)(details + 0xa82), &friend_->xuid, true))
                     {
@@ -1091,48 +890,41 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                 }
                 if (selected != NONE)
                 {
-                    long best = 0;
-                    long score;
                     if (!details[0xa74])
                     {
-                        long const *player_scores = (long const *)(details + 0xf44);
-                        for (long const *player_cursor = player_scores;
-                            player_cursor - player_scores < *(short *)(details + 0xa80); ++player_cursor)
-                            if (player_cursor != player_scores + selected)
-                            {
-                                long candidate = *player_cursor;
-                                if (candidate > best) best = candidate;
-                            }
-                        ((c_widget *)this)->function_230134(0xc00027a, format);
-                        score = *(long *)(details + 0xf44 + selected * 4);
+                        long best = 0;
+                        long const *player_score = (long const *)(details + 0xf44);
+                        for (long i = 0; i < *(short *)(details + 0xa80); i++, player_score++)
+                        {
+                            if (i != selected && *player_score > best)
+                                best = *player_score;
+                        }
+                        format.load((c_widget *)this, 0xc00027a);
+                        function_1630e0(message.text, format.text, *(long *)(details + 0xf44 + selected * 4), best);
                     }
                     else
                     {
                         long team = *(short *)(details + 0xf84 + selected * 2);
-                        long const *team_scores = (long const *)(details + 0x10a8);
-                        for (long const *team_cursor = team_scores; team_cursor < team_scores + 8; ++team_cursor)
+                        long best = 0;
+                        long const *team_score = (long const *)(details + 0x10a8);
+                        for (long i = 0; i < 8; i++, team_score++)
                         {
-                            long team_index = team_cursor - team_scores;
-                            if ((*(long *)(details + 0x10a4) & (1 << team_index)) && team_index != team)
-                            {
-                                long candidate = *team_cursor;
-                                if (candidate > best) best = candidate;
-                            }
+                            if ((*(long *)(details + 0x10a4) & (1 << i)) && i != team && *team_score > best)
+                                best = *team_score;
                         }
-                        ((c_widget *)this)->function_230134(0xa00027b, format);
-                        score = *(long *)(details + 0x10a8 + team * 4);
+                        format.load((c_widget *)this, 0xa00027b);
+                        function_1630e0(message.text, format.text, *(long *)(details + 0x10a8 + team * 4), best);
                     }
-                    function_1630e0(message, format, score, best);
-                    show_friend_detail(text[row++], message);
+                    show_friend_detail(text, row, message.text);
                 }
             }
             if (8 - row >= (unsigned)*(short *)(details + 0xa80)) value10d8 = 0;
-            for (short i = 0; row < 8 && i < *(short *)(details + 0xa80); i++)
+            for (long i = 0; row < 8 && i < *(short *)(details + 0xa80); i++)
             {
                 long index = (value10d8 + i) % *(short *)(details + 0xa80);
-                ((c_widget *)this)->function_230134(0x1200027e, format);
-                function_1630e0(message, format, index + 1, details + 0xb42 + index * 64);
-                show_friend_detail(text[row++], message);
+                format.load((c_widget *)this, 0x1200027e);
+                function_1630e0(message.text, format.text, index + 1, details + 0xb42 + index * 64);
+                show_friend_detail(text, row, message.text);
             }
         }
     }
