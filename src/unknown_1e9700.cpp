@@ -73,6 +73,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax H (11-04): no new form, no lower score; the enable reloads and the maximum homes still differ.
 // score 107 (was 107): no frame; enable observations and maximum/register homes differ.
 // Lane 12 r78: MATCH (fast, plain and full check, lost []) with two changes together, not kept by the coordinator:
 // (1) the enable byte and the input counters declared as one struct symbol in globals.h (retail's record at 0x510cb0
@@ -362,6 +363,12 @@ struct s_object_damage_view
 // Round 390: External amount-field identity after timestamp acceptance, original/whole
 // record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
 // Original body restored; scalar homes, amount-biased cursor and attribution remain.
+// J249: Existing recorded-event byte/streak long/final-event long/paired first two contracts
+// 354/354/355/353. Final-event long loses matched 0x1ea770 (19). NOT kept: paired contracts
+// lower the streak provider 107 -> 76 but replace its native byte flag-home store with a
+// full-width flag test. Coherent long/word caller event carriers with the streak contract,
+// without/with the recorded-event byte formal: 423/423/453/453; all lose matched 0xd9640 (61).
+// Original body, code domains and every provider restored; scalar homes and biased cursor remain.
 // DL253: existing streak/final/secondary provider ordinary-inline singles 353/353/353;
 // ordinary-inline pairs 353/353/353 and all three 353 on the native-frame graph;
 // forced streak expansion 962 (1949 bytes), loses a matched caller; NOT kept: shared regression.
