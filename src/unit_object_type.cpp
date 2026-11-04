@@ -587,7 +587,7 @@ real function_10f690(long object_index, real *duration);
 bool function_a7670(long object_index);
 void __stdcall function_d6bc0(long object_index);
 void function_edfa0(long unit_index, point2f const *facing);
-void __stdcall function_e4a20(point3f const *point, long arg_159e6d_2, long object_index, bool knocked);
+void __stdcall function_e4a20(long arg_159e6d_2, point3f const *point, long object_index, bool knocked);
 void function_14cad0(long player_index, long unit_index);
 void function_152340(void);
 void function_1e2a90(long actor_index);
@@ -6298,7 +6298,7 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 
 	if ((1 << unit->type) & 1)
 	{
-		function_e4a20(point, unit_index, object_index, knocked);
+		function_e4a20(unit_index, point, object_index, knocked);
 	}
 	if (unit->unknown13c != NONE)
 	{
