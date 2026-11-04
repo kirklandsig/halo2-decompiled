@@ -684,6 +684,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Immutable origin/direction/output pointer bindings, seven subsets and full immutable
 // distance, eight at 270 with all callers unchanged. Original helper/body restored;
 // native root/actor ingress and paired-vector scheduling remain.
+// DH347: Last-consumer first/second receiver and projection scopes, seven subsets then
+// all with a descriptive trace name: 271/346/270/346/271/346/346/346. All restored;
+// frame 0x40 and extent agree, but early root/actor ingress and vector scheduling remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

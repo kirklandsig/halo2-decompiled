@@ -2930,6 +2930,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // DH343: Stored-position readback, native old-point constructor, native new-point publication,
 // their pairs/all and all with shared complete displacement: 513/519/534/548/535/509/519/507.
 // Original body restored; frame 0x60 versus 0x38 and independent velocity reloads remain.
+// DH347: Complete previous/old point memcpy boundaries, moved-point initialization and
+// projection declarations: 486/486/516/486/516/516/516/516. Original body restored;
+// frame 0x60 versus 0x38 and stored-velocity/projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
