@@ -380,7 +380,7 @@ void function_10cd50(long weapon_index);
 bool unit_action_active(long unit_index, long action_type);
 byte function_10fcd0(long unit_index, long unknown, long state_name, long action_name);
 bool function_100880(long weapon_index, long magazine_index);
-void __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value);
+bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value);
 bool function_10f930(long object_index, real time, bool from_end);
 /* who is responsible for damage (damage.cpp) */
 struct s_damage_owner
@@ -2631,6 +2631,8 @@ struct s_unit_placement
 // setters alone/inline; all three setters alone/inline; all setters/byte predicates/inline:
 // eight forms 10 each. Original callee declaration and all flag operations restored.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 5 of #1049: 0xc98a0 declared after 0xbd020 without __stdcall takes the direction in ECX as retail, but
+// 0xd6800 then takes ECX/EDX, 0xd6bc0 (matched) goes to 63 and this function to 32; not kept.
 // Round 96: unit/placement declarations swapped 10; expanded flag-6 assignment 10; animation declaration
 // before its call 10; nested animation tests 10; NULL at each pointer argument 10/10; fresh unit lookup
 // for flag 76; caller unit read through its address 10; null direction local 10. Original body restored.
@@ -6229,8 +6231,29 @@ done:
    fell toward (front, back, left, right), plays its death (0x10ff40) and,
    from type 3, sets its ragdoll timer +0x1f5, its flags and (when the
    death had no animation) its deadness; a free biped turns to face it */
-// score 256 (was 258): Frame 0x24 now agrees; retail takes the direction in ECX (ours on the stack) and keeps
-// the unit pointer in EBX, the definition on the stack. Round 151: __stdcall in place of the file's /Gr
+// score 254 (was 256): Frame 0x24 agrees; retail takes the direction in ECX (ours on the stack) and keeps
+// the unit pointer in EBX, the definition on the stack. Round 5 of #1049: retail's epilogue clears AL (`xor al,
+// al` on every path, including the early return), so the function returns bool false (256 -> 254). The
+// convention is coupled to 0xd6800's: declaring this function after 0xbd020 (forward declarations) WITHOUT
+// __stdcall gives retail's ECX-only convention and a head that agrees to the scale step (250), but 0xd6800
+// then takes ECX/EDX and the MATCHED 0xd6bc0 goes to 63 (and 0xc42e0 5 -> 32), so that is not kept. On that
+// convention a fresh walk found these retail forms (each measured there, none kept without a match):
+// (a) the scale block runs before the `length > 0.0f` test (`if (!(0.0001f > fabs(length))) { scale; toward
+// *= scale; if (length > 0.0f && normalize2d(&facing) > 0.0f) ...`; the test's comiss is scheduled above the
+// divss in the same block), 255; `facing = *(point2f const *)&unit->forward` (dword copy as retail) and
+// `default: __assume(0)` in the face switch (retail's jump table has no range check); (b) retail stores each
+// definition-flag bool to a dead frame byte exactly when the test is a __forceinline helper returning a one-
+// byte struct (`s_flag { bool value; }`, as 0x1c32d0's hkBool does): both bit tests then agree and the
+// hoisted `mov ecx, 2` appears; (c) `bool front = side == 3;` gives retail's sete/test/je; (d) the weapon
+// timing's `!(time >= 0.0f)` with the 0x10f690 output in a separate local (retail never stores the first
+// time); (e) the ticks stored to the field, then re-stored 1 when `<= 1` (store, `cmp al, 1`, `jg`).
+// Still differing on that convention: the y multiply of the scale (retail loads y into xmm3, ours multiplies
+// in xmm0); the state pointer's spill slot (+0x14 retail, +0x1c ours); retail keeps the first weapon index in
+// a frame slot and looks the unit table up again for the second (ours merges the two lookups; a pool
+// pointer local, `holder` re-read: no change); `or byte [mem], imm` flag updates (ours load/or/store through
+// AL); the tail loading ESI = unit_index at the join. On the committed (stdcall) convention these forms
+// score worse (facing copy 310, scale split 263, __assume 271, duration 270), so they are not applied.
+// Round 151: __stdcall in place of the file's /Gr
 // fastcall (which passed the unit in EDX) 258, kept; the unit read through its address 258; the
 // direction declared last/second 255/256 (no retail evidence, not kept). Round 89: 0x11cc90 takes its
 // operands as retail passes them (toward in EDI, facing in ESI) 258; both definition tests through
@@ -6241,7 +6264,7 @@ done:
 // a separate unit lookup for each index (retail re-reads the table for the second one; ours merges the two) 256;
 // the bit-9 test through a bool local 285 (no store appears); the direction copied field by field 258.
 // @retail 0xc98a0
-void __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
+bool __stdcall function_c98a0(point2f const *direction, long unit_index, long type, short value)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 	byte *definition = UNIT_DEFINITION_GET(unit);
@@ -6308,7 +6331,7 @@ void __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 	bool animated = function_10ff40(unit_index, type, side, value, &flag, &side, &value);
 	if (!animated && type < 3)
 	{
-		return;
+		return false;
 	}
 	byte *state = (byte *)unit + unit->unknown33e;
 	if (flag)
@@ -6392,6 +6415,7 @@ void __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 		}
 		function_edfa0(unit_index, &face);
 	}
+	return false;
 }
 
 /* sends a unit request straight to its handler and tells the player's
