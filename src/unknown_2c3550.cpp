@@ -839,6 +839,12 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // matched 0x1b5aa0 writes it, `(bool)((g_557c40[9 >> 5] >> (9 & 31)) & 1)`, 702 [602] (retail's `shr eax, 9; test al,
 // 1` shape, ours in EDX); that without the outer parentheses 702 [602]; with the mask test as `(g_4ee4ec & mask)` 702
 // [602]; with a bool result 749 [610]; plus the radius ternary ahead of the pathfinding read 777 [607].
+// P314: Cache-versus-stack workspace producers, independent conditional/branch/default
+// obstacle/search assignments: 743/730/730/730/743/730/730/730. All regress; original
+// pointer initialization, once-read cache selection and complete body restored.
+// P314 further: Existing normalizer with ordered-positive trace admission, original/shared
+// 2D difference: 712/714, frames 0x1f8c against 0x1f88, lengths 2986/2988 against 2986.
+// NOT kept: both regress; unordered working-value changes require equality. All restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

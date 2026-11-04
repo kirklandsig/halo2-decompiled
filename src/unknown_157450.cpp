@@ -678,6 +678,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // the engine-index load then hoists as retail's); word mask with the added mask written into the second loop's test
 // 90 (396 B); `word const` mask 77 (same as word); word mask with the change tests as XORs 86; word mask with the
 // present test as `present & ~old` 86 (diagnostic, not equivalent).
+// P314: Existing bitmap setters/membership, seven site subsets with a plain present and word
+// saved mask, plus the complete dword graph: 105/72/117/497/121/134/132/140. All regress;
+// original scalar bitmap operations, saved-mask width, inherited qualifier and body restored.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4296,10 +4299,11 @@ void function_15fe20(long team_index, color3f *color);
 // unit index and the -1 compares) and the zone-progress tail's byte load order.
 long function_14de70(long local_player_index);
 
-// score 42 (was 42): frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
-// stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
-// and scratch-register renames remain. The copies are retail's when 0x7f720 returns color3f by
-// value (compile-only), or with each copy through a color3f local initialised from the call: 46
+// score 42 (was 42): frame 0x48c agrees; four bytes long. Zone byte shift, shared NONE/unit/slot
+// registers and progress/result transport remain. Earlier: two team-color copies (retail loads
+// all three words, then stores through ESI/EDI), NONE reuse, byte shift and scratch registers differed.
+// The copies are retail's when 0x7f720 returns color3f by value (compile-only), or with each copy
+// through a color3f local initialised from the call: 46
 // (both), 65 (rival only); on that, the individual best/best-score defaults before the
 // player-index store and the rival text cleared before the rival's player lookup 42 (44 each),
 // plus a byte shift count 41; the same two reorders alone 85. Weapon section on the 41 form: the
@@ -4463,6 +4467,9 @@ long function_14de70(long local_player_index);
 // as retail, both compares immediate, pool read ahead of the masked index); on it both tests against the weapon
 // local 71; the index term first in the unit address sum 73 (same code); a dead else `weapon = NONE` 42 and a ternary
 // re-assigning the default 42 (the dead default is dropped, original code).
+// P314: Decoded absent slot as the absent weapon result, conditional/branch-owned with raw/typed
+// receiver and short/byte slot: 42/42/28/28/42/42/28/28. NOT kept: byte-domain forms compare a
+// byte where retail sign-extends to a word; native-word forms tie. Original body restored.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5654,6 +5661,9 @@ void __stdcall function_d6bc0(long object_index);
 // B395: Actual reset-counter result feeds store/threshold, short/long conditional/branched
 // producers with scheduling/expiry timer lifetimes: 172/175/172/175/159/181/159/181.
 // NOT kept: all regress; original memory counter, timer observations and complete body restored.
+// P314: Counter-increment waiting ownership instead of reset-success, bool/byte/short/long
+// with branch-owned/short-circuit distance-query producers: 203/187/203/187/201/181/200/180.
+// All regress and exceed retail length; original reset, timer observations and body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

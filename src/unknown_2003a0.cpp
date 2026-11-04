@@ -2134,6 +2134,9 @@ bool function_1e11b0(long actor_index, bool active);
 // local declared after the squad 13; the depth pair around both 0x203ed0 and 0x203f60 13; `(void)&actor_index` 13;
 // the second lookup in the flag test instead of the +0x7e test 13, with the address read at the +0x34 store 13;
 // the squad re-fetched for the return 80 (218 B: any index use after the loop ends the pointer's liveness there).
+// P314: Formal/current-handle/walk lexical identities on the original receiver graph, seven
+// subsets and the complete actor receiver roles: 64 each. Original names and body restored;
+// EBP handle, receiver spill/common loop head and full-width return remain.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
