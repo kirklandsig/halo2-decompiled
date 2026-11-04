@@ -503,6 +503,9 @@ struct s_tail_player_identifier
 // DH349: On retained sole-result graph, player-first 22; late entry 17 (plain confirmed);
 // result/alternate first 30/34; direct truth 28; full player 22; comparison scope 22;
 // indexed root 27. Retain only the single retail-shaped delayed entry acquisition.
+// DH353: Positive selector byte/char/int 17/17/30; complete pointer conditional
+// and result arms 23/23; count-owned comparison and count arms 67/67; signed-byte
+// direct index 26. NOT kept: no gain or match; original selector and sole result restored.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1659,6 +1662,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // DH351: Assignment workspace ends after fallback; nested option/mask endings
 // 285/288/286/288; late user result on those scopes and separate search names
 // 605/608/608/608. NOT kept: no gain; native mask/index homes and release expansion remain.
+// DH353: Inner option ordinal int/dword/short/word 285/286/642/642;
+// per-player declaration 285; ordinal/entry role names 285/285; complete indexed
+// option view 596. NOT kept: no gain; original scalar masks and entry view restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

@@ -2039,6 +2039,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // DH351: Explicit distance/absolute/relative normalization outcomes, all seven
 // subsets, then both speed-result locals: 194 each. NOT kept: no gain; original
 // tests and full body restored; entry operands, Boolean homes and direction SIMD residence remain.
+// DH353: Slot-owned established/sentinel-owned visibility/complete retention arms,
+// subsets 1/2/4/3/5/6/7: 195/710/710/710/701/718/707; failure-first full graph 707.
+// NOT kept: no gain; original decisions, frame, observations and query calls restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
