@@ -1028,6 +1028,10 @@ real normalize2d(point2f *v);
 // original publications and complete body restored; retained DL and return transport remain.
 // DL260: Complete persistent/candidate outputs, directions and speed identities; matched initial-speed provider ordinary inline: 135/135/135/135/135/135/135/135/141.
 // NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// M389: Double queried/chosen/retry speed receivers, seven subsets, then all
+// with double base speed: 257/188/279/135/257/191/277/266. NOT kept: ties/regressions;
+// queried/chosen domains disturb native frame setup. Original real speed producers,
+// numerical predicates, address-passed outputs, calls and complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

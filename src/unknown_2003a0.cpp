@@ -3381,6 +3381,9 @@ void function_2011f0(long arg_0);
 // P319: Early validation/count producer nested/conditional/disjunction/complete-failure,
 // then bool/byte/short/long availability: 318 each. Original count threading persists;
 // NOT kept: no match or gain. All validation, narrow inputs and complete body restored.
+// M389: Both actual request completions in short/word/long/dword receivers,
+// producer-local then shared: eight 318s. NOT kept: no exact result-transport
+// repair; original requests, narrowed values, count/splice loops and complete body restored.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

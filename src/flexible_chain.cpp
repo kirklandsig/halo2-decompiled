@@ -471,6 +471,10 @@ void __stdcall function_1160c0(real dt)
 // DH354: Complete outer fixed/timestep admission result in bool/char/signed-char/
 // byte/short/word/int/long: 171/171/171/171/171/171/171/171. NOT kept: no exact admission residence;
 // direct guard/body restored; segment EDX and scalar/axis/previous/rest-offset homes remain.
+// M389: Double blend/time/projection coefficient receivers, seven subsets, then
+// full graph with double axis root: 375/339/382/348/464/465/481/484.
+// NOT kept: all regress and lose native frame or extent. Original real coefficients,
+// axis root, arithmetic trees and complete body restored; segment and vector homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
