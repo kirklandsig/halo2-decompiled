@@ -1529,6 +1529,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // squared components, then original vector with mutable/immutable squares:
 // 32/32/32/32/32/32/32/32. NOT kept: no exact scalarization; iterator/leave-selector/request homes remain.
 // Original complete executable source restored.
+// DH346: Immutable native sorted-candidate/actor/seat pointer bindings, seven subsets,
+// then all with immutable unit receiver: 32/32/32/32/32/32/32/32. Original body restored;
+// iterator scaling, leave-selector transport and request/publication homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2811,6 +2814,9 @@ struct s_scenario_scripting_view
 // mutable/immutable actor scalars, their loop counters and complete self-dot:
 // 80/80/80/93/93/80/80/80. NOT kept: no exact geometry/observation form; actor/counter/set and guarded-data homes remain.
 // Original complete executable source restored.
+// DH346: Immutable native scenario/data/set pointer bindings, seven subsets, then all
+// with immutable actor receiver: 80/80/80/80/80/80/80/80. Original complete search restored;
+// actor/counter/set homes and early scripting-data observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -842,6 +842,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // addss xmm6, xmm5), so everything after case 4 shifts. Side only 374, both 374; with case 1/2's first.x before
 // second.x 374 (VC copies the product instead); with normalize2d_fast on a case 1/2 side vector and normalize3d
 // on case 0's normal 368; that with the x pair before the y pair 372. All restored.
+// DH346: On retained paired geometry, staged side/normal/both crosses, shared chain difference,
+// immutable source/definition/outer/all pointer bindings: 265/265/265/266/265/265/265/265.
+// NOT kept: no native frame/spill recovery; original complete body and helpers restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

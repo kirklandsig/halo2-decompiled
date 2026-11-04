@@ -288,6 +288,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH344: Real trig APIs at heading cosine/sine and rotation cosine/sine,
 // individually, paired, all, then all with sine after axis scale: 180/180/180/180/186/185/173/173.
 // NOT kept: no native frame/cross/trig-home recovery; original complete helper/body restored.
+// DH346: Immutable existing rotation-axis/output and position-input pointer bindings,
+// seven subsets, then all with immutable position-output binding: 173/173/173/173/173/173/173/173.
+// Original helpers and complete body restored; frame 0x11c/0x118 and cross/trig homes remain.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
