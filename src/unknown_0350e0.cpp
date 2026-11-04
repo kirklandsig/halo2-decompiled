@@ -2930,6 +2930,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // geometry, view scalar/random fields, complete view and complete state/view fields: 486 each on
 // the retained inline-normalization graph. Original body and field accesses restored; frame 0x60
 // versus 0x38 and stored-velocity/projection homes remain.
+// M365: Existing projection helper with scalar pointer/reference/returned-x/returned-y outputs,
+// original rows then parallel row accumulation: 600/600/596/595/600/600/595/595.
+// NOT kept: all regress and shorten to 1920-1925/2035 bytes. Original helper and complete
+// body restored; frame, stored-velocity acquisition and projection/loop homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

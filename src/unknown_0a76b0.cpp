@@ -1556,6 +1556,10 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // (its address passed to a call); every lookup spelling without that shares one load. Diagnostics, reverted at once:
 // `(void)&hand` 95, with a long hand 198; a local pointer to hand read at the 0xd0870 argument 95 (short) / 198 (long),
 // at the slot store 95/198 (LTCG resolves the pointer away). Retail passes no local's address anywhere here.
+// M365: Selected notification type signed-char/short/dword/int64, at its producer then
+// declared uninitialized before the animation query: 144/143/95/159/144/143/95/159. NOT kept:
+// ties or regressions; original event result, observations and complete body restored.
+// Frame 0x18, early table/hand homes and second entry unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1991,6 +1995,10 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // reporting 75/75/140/140; set from the pickup test 142/142/100/94. NOT kept:
 // every form regresses. Original mode/result graph, shared player observation and
 // complete body restored; request/weapon homes and getter expansion remain.
+// M365: Positive returned outcome signed-char/word/long/int64, constant success then
+// pickup-test-owned success: 73/139/140/128/69/119/113/120. NOT kept: every form regresses.
+// Original Boolean result, mode graph, shared player observation and complete body restored;
+// request/weapon homes and getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -4791,6 +4799,10 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
 // 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
 // output lifetime and full body restored; frame and basis/point homes remain.
+// M365: Existing forward/inverse point helper void/reference return contracts, each/both:
+// 175/175/175/175/175/175; both with actual late relative output 201/201 (1406 bytes).
+// NOT kept: ties or regressions. Both original helpers and entire body restored; other
+// helper user stays exact. Frame 0x110 versus 0x11c and basis/point schedules remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

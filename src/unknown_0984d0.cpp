@@ -546,6 +546,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // validation ordinal:
 // 80/80/80/80/80/80/80/115. NOT kept: no eligible byte match or supported closer.
 // Original full body restored; validity/cursor homes and loop entry remain.
+// M365: Ordinary cursor reads and native long ordinal with independent count-one
+// declarations: all six orders at consumption, then case/entry storage, eight 207s
+// at 524/540 bytes. NOT kept: every form regresses and splits the parent handle.
+// Original complete body, helper and both inherited local-slot reads restored; homes and loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
