@@ -2206,6 +2206,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // N368: Nested persistent-valid/direct-set/default-and-overlay admissions, seven family
 // subsets, then all with split outer definition/graph guard: 776 each. NOT kept: no gain;
 // original admission graph restored, frame 0xcc/0xd4 and opposite selective expansion remain.
+// Y597: Complete common primary sampling weights, both-first/single-first producers,
+// sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
+// NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

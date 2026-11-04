@@ -1128,6 +1128,10 @@ struct s_tail_transfer_traits
 // 1..7 all tie 153; the complete graph with both no-seat slot declarations also ties 153.
 // All initializers and observations stayed at their original producers. Complete original
 // body restored; selected-traits/unit/NONE homes and native pool reloads remain.
+// Y597: Independent minimum-scan rejection continuations, six guard orders, then
+// weapon/grouped-rejection and age/grouped-rejection: 153/169/151/153/180/153/153/180.
+// NOT kept: two-point best gain below the gate; other forms tie or regress. Original
+// scan, observations and whole body restored; traits/unit/NONE homes and reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -2210,6 +2214,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // P328: Saved parent rejection and complete branch-owned parent admission in
 // bool/byte/short/long: 202/202/211/210/231/231/211/211. Original body restored;
 // native frame agrees, player/header-offset ownership and rounds/mode homes remain.
+// Y597: Complete single void exit, parent-admission bool/byte/short/long,
+// direct/complete named squared-distance and radius nodes: 202/202/211/210/202/202/211/210.
+// NOT kept: no gain; all original exits, observations and complete body restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
