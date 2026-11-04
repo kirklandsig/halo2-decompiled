@@ -5469,6 +5469,12 @@ void __stdcall function_ca700(long unit_index, real amount, short type, bool not
 // getter 205; frame 0x6c agrees. Shared cross 212; scaled differences 205; native byte/word flags
 // 206/206; role names 206; separate thresholds 206; shared writer 188; writer wide extraction 188;
 // initial clears only 192; weight names 188; writer scaled/cross/both 224/203/223.
+// Round 3 of #1049: a fresh statement-by-statement walk against retail found no behaviour difference (flags, the still
+// test, the cross product, velocity/acceleration, the three k-j-i dots, the limits and the smoothing all agree). Swapping
+// the operands of each of the six cross-product terms singly 165-166 (the compiler orders commutative operands itself);
+// reading g_510c54->field_2_3 at each use instead of through ticks 168 (935 bytes); limit declared bare and assigned
+// before its test 165. Retail keeps only forward.k and the three up fields in registers at the top and reads forward.i/j
+// from memory, and keeps keep in XMM0 loaded first where ours has it in XMM1.
 // @retail 0xce0c0
 void function_ce0c0(long unit_index)
 {
