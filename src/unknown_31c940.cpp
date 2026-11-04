@@ -798,6 +798,22 @@ static __forceinline void update_residual_pair(__m128 *&cursor,float *&result,so
 	cursor[-3].m128_f32[3] -= scalar_b;
 }
 
+// Residual rows retain A's angular contribution before the linear product.
+static __forceinline solver_projection_31c940 project_residual_linear_velocity(
+	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a,
+	solver_velocity_31c940 *b, __m128 const &linear_axis)
+{
+	__m128 relative = _mm_sub_ps(a->linear, b->linear);
+	__m128 contribution[3] =
+	{
+		_mm_mul_ps(a->angular, row->a),
+		_mm_mul_ps(relative, linear_axis),
+		_mm_mul_ps(b->angular, row->b)
+	};
+	__m128 angular = _mm_add_ps(contribution[0], contribution[2]);
+	return sum_three_projection(_mm_add_ps(angular, contribution[1]));
+}
+
 static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *row,solver_velocity_31c940 *a,solver_velocity_31c940 *b)
 {
 	__m128 angular_contribution[2] =
@@ -1318,7 +1334,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 				do
 				{
-					row->linear.m128_f32[3] -= project_linear_axis(row, a, b, row->linear).value;
+					row->linear.m128_f32[3] -= project_residual_linear_velocity(row, a, b, row->linear).value;
 					++row; ++result; op += op[1];
 				} while (op[2] == 3);
 				terms = (__m128 *)row;
