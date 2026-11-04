@@ -428,6 +428,10 @@ public:
 // ordinals and separate/shared initialization/link receivers: 261/261/287/287/268/268/291/291.
 // NOT kept: frame/length and matched caller regress; complete body/provider declarations
 // restored. Child preheader, pool/NONE ranks, retest and index construction remain.
+// B435: Equal-value child initialization chains on the original head-assignment graph,
+// two invalid-link chains, two zero flag/age chains, then all four pairs: 54 each.
+// NOT kept: no exact initialization or allocation gain; original stores/body restored.
+// Native child preheader, pool/NONE ranks, allocation retest and salted index remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

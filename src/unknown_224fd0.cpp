@@ -254,6 +254,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // native matrix aggregate and mixed-products-before-original-stores:
 // 445/449/441/397/413/429/428/381. NOT kept: all regress and miss retail extent;
 // original helper/body restored; axis-specific spills and table placement remain.
+// B435: Actual matrix/point-coordinate graphics publication, plain for then while,
+// long/dword/short/word ordinals: 394/394/441/441/593/593/515/515.
+// NOT kept: all regress and lose native frame or extent; complete helper/body restored.
+// Two-axis square/sine/cosine spills, basis homes and four-byte table placement remain.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

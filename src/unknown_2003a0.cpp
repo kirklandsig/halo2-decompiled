@@ -3381,6 +3381,10 @@ void function_2011f0(long arg_0);
 // P319: Early validation/count producer nested/conditional/disjunction/complete-failure,
 // then bool/byte/short/long availability: 318 each. Original count threading persists;
 // NOT kept: no match or gain. All validation, narrow inputs and complete body restored.
+// B435: Reused absolute-index word/long/dword carriers, mutable then readonly,
+// followed by long/dword mask producers: 318/394/394/318/394/394/356/356.
+// NOT kept: no exact transport or gain; original narrow arguments/stores and body restored.
+// Frame 0x134 agrees; masked-index/placement, seat and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

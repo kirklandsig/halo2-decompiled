@@ -315,6 +315,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P326: Named smoothstep contributions/active gain difference/paired inactive fade
 // differences, subsets 1..7, then all plus the choice blend difference: 866 each.
 // Original grouping and observation sites preserved. NOT kept: no gain; original body restored.
+// B435: Failure-first later pool collection/active-target/inactive-record admissions,
+// seven subsets, then all with missing-handle search continuation: 866 each.
+// Original complete body restored; native 0x4e0 frame, entry zero, target/primary/query
+// homes and choice carriers remain. Existing logarithmic result producer retained.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

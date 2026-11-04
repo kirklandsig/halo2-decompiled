@@ -341,6 +341,10 @@ struct s_24e9c7_bounds
 // M376: Signed-int selected-bitmap/height/half-width producer domains, seven subsets,
 // then all with signed-int bitmap handle: 125/125/125/125/125/125/125/125. NOT kept: no match or qualifying gain;
 // original domains/body restored; early across spill and shifted scalar homes remain.
+// B435: Existing vector2f component-array upper/side/reverse observations, seven
+// subsets, then all with the perpendicular pair: 125/125/125/125/125/125/125/144.
+// NOT kept: no exact vector-storage or early-spill recovery; original types/body restored.
+// Early across spill, eight-byte-high return/metadata homes and SSE scheduling remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
