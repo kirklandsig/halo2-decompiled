@@ -260,6 +260,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // DH321: Direct-input ordinary inline declarations for existing mode/query/trace/response/turn/
 // direction/transform/velocity providers individually: 804/804/804/804/804/804/804/804. All declarations,
 // input storage, arithmetic helpers and complete executable body restored.
+// B415: Direct-input completed turn-snapshot/planar-query/velocity workspaces, last-consumer scope
+// B415: masks 1/2/4/3/5/6/7/15: 804/804/804/804/804/804/804/804. Native length but frame 0x8c; original input access,
+// B415: complete body and all helpers restored; early input/heading and normalizer homes remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

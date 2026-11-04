@@ -441,6 +441,9 @@ extern byte g_51ec11;
 // P303: Existing shared normalizer live i/j/k captures before stores, subsets
 // 1/2/4/3/5/6/7: 332/332/332/352/352/352/352; complete immutable captures 352.
 // NOT kept: all regress and shorten away from retail; shared header and complete original body restored.
+// B415: Separate complete world-coordinate scalar phase with original/branch/per-use/shared speed
+// B415: and original/captured matrix scale: 304/351/346/304/351/350/309/351. Original scalar phases, field observations
+// B415: and full body restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

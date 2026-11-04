@@ -588,6 +588,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // bytes); the positive test with the NONE arm first on the long result 52; a header pointer named for the test with
 // the object read through the macro 49. Lead: retail's reloaded table data and recomputed index look like an
 // out-of-line getter that LTCG inlines; no existing one was found in src/.
+// B415: Full validation byte in byte/word/long/dword storage, at the test then bare entry declaration:
+// B415: 49/49/49/49/49/49/49/49. NOT kept: one-use field storage does not match. Original validity result,
+// B415: virtual calls and complete body restored; false BL and independent header lookups remain.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
