@@ -302,16 +302,9 @@ bool function_1d3f0(long index, void const *colors, D3DPalette **out)
 	return result;
 }
 
-// MiniMax H (11-04): the stage states go through sampler_state_write, whose type-by-reference
-// argument keeps each call's own dirty-mask update, and the switch cases are in retail's order
-// (3/7, 1/5, 0, 4, 2/6), which puts the case blocks where retail has them; the body matches.
-// MiniMax H (11-03): no new form, no lower score; retail's per-stage cache, its dirty mask and its dispatch table are not in this project, so the body cannot be rebuilt from this file.
-// MiniMax E (11-01): no new form, no lower score; retail's body keeps a per-stage cache and a
-// dirty mask that this project does not have.
-// score 0 (was 152): matches retail: the per-stage cache and the dirty mask are the SDK's own, so
-// the states are written through sampler_state_write and the cases keep retail's order.
-// mask at 0x407490 and dispatches through a jump table at 0x158c8; none of those globals or that
-// table exist in this project, so the body cannot be rebuilt from this file.
+// score 0 (was 152): matches (MiniMax H, 11-04). The stage states go through sampler_state_write,
+// whose type-by-reference argument keeps each call's own dirty-mask update, and the switch cases
+// are in retail's order (3/7, 1/5, 0, 4, 2/6), which puts the case blocks where retail has them.
 // @retail 0x15780
 void function_15780(long stage, long mode)
 {
