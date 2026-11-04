@@ -1901,6 +1901,7 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax B (11-03): no new form, no lower score.
 // score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
 // ours keeps the pool in memory and the selection in edi.
@@ -2025,6 +2026,9 @@ void function_269250(long clump_index, long actor_index);
 // selection stored first 128 (480 B); team mismatch `continue` then the compare 126; the common graph with the
 // selection stored first 89 (same code as fast control); the score as a ternary on the team test 128 (484 B);
 // in-arm compare ending in `continue` 126.
+// DH339: Immutable activity/created handle/created receiver, seven subsets and all with
+// readonly actor, eight at 89 fast (unchanged preview 89; full baseline 87).
+// Original mutable storage and full body restored; pool/selection and x87 homes remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2155,6 +2159,8 @@ void function_269250(long clump_index, long actor_index)
 	g_4de2f8 = false;
 }
 
+// MiniMax B (11-03): no new form, no lower score; the two flag homes stay swapped (0x12/0x13) whatever
+// the order the flags are declared in.
 // score 89 (was 89): frame 0x24 agrees; category-byte homes and deletion completion differ. With the removed
 // prop cleared and tested (3) only the hoisted prop/node pool registers differ: retail loads the prop pool
 // first into edi, ours always loads the node pool first; an extra prop lookup (93) or an index node loop (76)
@@ -2313,6 +2319,9 @@ void function_269250(long clump_index, long actor_index)
 // are not merged and the pools are no longer hoisted); `changed` set only in the replace arm 92; the group flag
 // assigned from the data test and tested in place of `data` 206; the type as a long 135; the unit flag inverted
 // (`single`, cleared for units) 89 (same code, slots unchanged).
+// DH339: Actual group/prop/node current pointers declared in their while conditions, seven
+// subsets then all with the member result condition, eight at 89. Original declarations,
+// result tests and complete body restored; category homes and deletion completion remain.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

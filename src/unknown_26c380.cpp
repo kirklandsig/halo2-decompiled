@@ -316,6 +316,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // bytes, frame 0x64 and retail's integer-move planar copy at 0x34/0x38, aligned 255, but the success tail is
 // duplicated), with the constant tails 432 (1566), with the blocked result without its temporary 462.
 // Original body restored.
+// N361: Common accepted-block state/result publication, long/bool/byte/short result,
+// original planar transfer 422/444/424/412; native planar record transfer 436/375/402/441.
+// NOT kept: 375 combines individually regressing storage forms and adds a redundant blocked store;
+// retail has distinct accepted epilogues. Original geometry, state, transfers and full body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
