@@ -1560,6 +1560,10 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // P317: Final readiness gate bool/byte/short/long, play/skip polarity
 // 95/95/95/95/95/95/95/95. NOT kept: all gates canonicalize; original entry pool/hand homes and second-load gap remain.
 // Original complete body and every existing helper restored.
+// P322: Complete three-event selection, positive/negative/conditional/split
+// producers, long then short: 144/144/144/144/146/146/146/146. Long reaches 604 bytes;
+// all regress. Original event graph and whole body restored; early pool/hand homes
+// and the second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1998,6 +2002,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // P317: Shared-query terminal report value short/long, conditional/explicit producer,
 // consumer/entry declarations 68/60/68/60/68/60/68/60. NOT kept: short forms add four bytes,
 // long forms tie; no exact match. Original direct reporting expression and full body restored.
+// P322: Common first-mode admission for 0/1/3 in conjunction, overwrite, split
+// and test-owned forms, direct/phase-local selectors: 113/109/117/113 twice.
+// Original whole body restored; request/weapon homes and player-query expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {

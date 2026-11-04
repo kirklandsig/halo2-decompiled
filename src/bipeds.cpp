@@ -1008,6 +1008,9 @@ extern long *g_51e9cc;
 // coordinated initializer inline contract alone 42. All helper users unchanged.
 // NOT kept: seven-point flag gain is below the gate; field receiver misses.
 // Original body/contracts restored; lookup address and crouch/contact schedules remain.
+// P322: Actual lookup initialization result bool/byte/short/long at consumer
+// then lookup-scope declarations: 42 each. NOT kept: one-use result misses equality;
+// lookup receiver rematerialization and crouch/contact schedules remain. Full body restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1479,6 +1482,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Native frame 0xfc recovers; real captures grow to 2832 bytes, double stays 2828.
 // NOT kept: one-use field capture and type-dependent allocation require equality;
 // the six-point 579 form also misses the gain threshold. Original full body restored.
+// P322: Actual grounded-call result bool/byte/short/long, consumer then entry declarations:
+// 456/567/610/611/456/567/610/611. Bool recovers frame 0xfc and 2828 bytes; NOT kept:
+// one-use call-result transport needs equality. Original whole body restored; material,
+// airborne and animation homes remain on the retained graph.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
