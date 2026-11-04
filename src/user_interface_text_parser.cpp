@@ -258,6 +258,7 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
+// MiniMax b (11-04): no new form, no lower score; the one-copy form still matches retail's length, tag and late EDI save but hoists the buffer address 0x55c6e4 into EBX and scores 54, and the kept form still saves EDI early and keeps the tag in EDX with the selector in ECX; casting the one-copy form's copy source to const or to a non-const pointer keeps the hoist at 54, and reading the tag before the variant call puts the tag in EBX and scores 44.
 // score 32 (was 32): earlier, at 49: our size-optimized build hoists the buffer address 0x55c6e4 into EBX
 // Round 102 (lane 7, fast): the output parameter in a named local used by both copies 32; the selector
 // in a named engine local 32, with the tag read after it 32; on the one-copy form the output local 54
@@ -686,6 +687,12 @@ done:
 // default, one copy 54; `do { if (!globals) break; ... } while (false)` around the translator, one copy 54. Matched siblings cache their buffer (0x22d5a7 in
 // ESI); here retail's ESI holds the tag, coalesced from the definition pointer, while ours gives ESI to the constant and the tag EDX. The buffer as a member of a
 // one-member record 32; a `static wchar_t *const` pointing at the buffer, one copy 54.
+// B444: Explicit unsigned selector admission >9/>=10/<=9/<10, repeated/shared copy:
+// 32/64/32/64/54/61/54/61. NOT kept: redundant admission without byte equality; original complete parser restored.
+// Early EDI save, tag/selector schedule and scratch-address cache remain.
+// B446: Forced-inline complete selection/translation, scalar or record tag/selector inputs,
+// void/shared and admission/repeated completion: 54/54/54/54/32/32/32/32. NOT kept: no exact result;
+// original complete parser and helpers restored. Early EDI save, tag/selector schedule and scratch cache remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

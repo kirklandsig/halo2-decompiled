@@ -556,6 +556,9 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax G (11-04): no new form, no lower score; retail keeps `left` in a word-sized local at -0x3c
+// beside `top` and homes the colour and text bounds at -0x34/-0x24, ours spills `left` as a dword at
+// -0x50 with the colour at -0x2c.
 // score 115 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // frame 0x264 agrees; predicate packing, left-word and color/rectangle/scalar homes differ; both text helpers match.
 // frame 0x264 agrees; predicate packing and color/rectangle/scalar homes still differ.

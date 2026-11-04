@@ -163,6 +163,12 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // where the constant's COMDAT comes from at link; it needs a non-LTCG object holding it ahead of the D3D library's object. Identity pointers 1-5/6-7 ahead
 // of the first angle, an input-bytes pointer: 2/3/2. Consecutive retail constant loads run both ways (208 ascending, 249 descending), so address order is no general rule.
 // On the kept body: the apply step as a by-value or reference helper 629 (2148 bytes)/538 (1996); offsets written at their use, both/first only 405 (1996)/25.
+// DL261: Shared negative-axis predicates; existing value/output and in-place clamp completion: 652/652/652/652/623/623/640/640/474/474.
+// NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
+// P340: Common dominant-axis selection across snap and fallback, branch-owned then conditional
+// bool/byte/short/long results: 665/665/665/665/585/585/585/585. NOT kept: native branch ownership/frame
+// and extent are not recovered; original helper and complete body restored. Frame 0x38/0x40 and
+// angle/snap homes remain; both exact callers survive.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {
