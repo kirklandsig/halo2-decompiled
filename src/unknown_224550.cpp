@@ -400,6 +400,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // N350: Common geometry-arm flip result after packing, long/dword/word/byte carriers,
 // original/reference producer inputs: 458/458/437/445/458/458/437/445.
 // NOT kept: frame/extent and exchanged tint/UV homes regress; original body restored.
+// F378: Interpolation-admission outcome at frame-fraction production, positive then complementary
+// bool/byte/short/long: 284/284/284/284/285/285/285/211. NOT kept: one-use decisions remain unmatched,
+// exchanged tint/secondary-UV homes persist and other forms grow; original complete body restored.
 // B429: Native lower-clamp comparison results in bool/byte/short/long 211/211/211/211;
 // paired lower/upper outcomes 579/579/636/628. NOT kept: one-use result forms
 // do not match; original tint/UV homes, complete loop and alias-safe captures restored.
@@ -409,6 +412,21 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // AC533: Requested-sequence clamp result, conditional/complete/lower-default/upper-default,
 // original/positive-produced count: 218/218/288/218/223/223/288/223. NOT kept: all regress;
 // tint/secondary-UV homes and blend join remain. Original whole body restored.
+// F383: Complete immutable spans/inverses/geometry, seven subsets, then immutable
+// alias-safe UV input captures: eight at 211. Original scalars and encoder restored;
+// tint/secondary-UV homes and persistent blend residence remain.
+// B438: Reverse body-stepped channel cursor, lower/upper/independent/continue clamps,
+// direct then two-test scalar inputs: 229/232/229/229/229/232/451/229. NOT kept: no exact
+// traversal/lifetime gain; original full body and alias-safe UV captures restored.
+// M385: Complete pivot/aspect/inverse destination accumulators, seven subsets then
+// early uninitialized inverse storage: 211/211/319/211/319/319/319/319. NOT kept: inverse
+// accumulation grows frame to 0x64; original body and every alias-safe UV capture restored.
+// M387: Actual forward end cursors !=/< with lower/upper/conditional/sequential clamps:
+// 515/520/512/515/515/520/644/515. NOT kept: frame remains 0x60 but entry and extents regress;
+// original callback and alias-safe encoder restored, tint/secondary-UV and blend homes remain.
+// N373: Actual tint/input RGB subobject pointer/reference ownership, eight ordered forms
+// 211/211/211/211/211/211/211/211. NOT kept: no equality; original complete color object, callback,
+// clamp, input observations and alias-safe UV captures restored. Tint/secondary-UV homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

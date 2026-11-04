@@ -940,6 +940,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // call/test boundary, bool/byte/short/long: eight at 236. NOT kept: one-use call
 // outcomes unmatched; direction/normal/length/zero homes remain. Original projection,
 // output validity, helper calls, case order and complete body restored.
+// F383: Coherent existing basis-builder input order 234, but its matched callee becomes 2;
+// NOT kept. Immutable projection denominator/captured scale/pan fraction, seven
+// subsets, all 236. Original interfaces, copied plane and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

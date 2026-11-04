@@ -3602,6 +3602,10 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // at the loop top 270 (same code); forward and up transformed before the point 312 (1500); forward and up copied
 // before the position 282. The y copy (retail keeps raw y and scales into a fresh register) still appears only
 // with a by-name reference to position.y.
+// Round 111: direct copy construction with the scale after the position 312; a shared point pointer there 320;
+// on the default-before-color scale, a shared point pointer 280, output-only 272, input-only 278, and the same
+// pointer at both render calls 280; direct copy construction 272; an explicit temporary copy 272. None preserves
+// position.y; both matched helper users and both callers stay matched. Opening body restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

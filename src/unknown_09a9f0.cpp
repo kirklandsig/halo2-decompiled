@@ -599,6 +599,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // six ranks then coherent names at both endpoint ranks: 49 each at 176/176 bytes.
 // NOT kept: no byte match; original initialized declarations and complete body restored.
 // False BL, temporary EBP and independent header/object computations remain.
+// M380: Native index/attached-identity/both publications through memcpy 49/49/49,
+// memmove 109/76/122; both with early Boolean completion 77/94. NOT kept: no byte match;
+// original scalar stores, validity result, virtual tuples and complete body restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

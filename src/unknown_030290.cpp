@@ -455,6 +455,27 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // paired/row-local delta ownership 195 each; on direct reciprocal ownership
 // 207 each. NOT kept: ties or regressions; native frame and second-transform
 // spill remain. Original helper, defaults and complete body restored.
+// Y583: Standard bounded transform input copy/backward-copy/uninitialized-copy
+// 282/282/282; output equivalents 295/295/295; paired copy/backward-copy 692/692.
+// NOT kept: nonexact record transfer and lost native frame/expansion; original
+// alias-safe helper/body restored; inverse homes and displaced X/Z spill remain.
+// Round 586: Two-transform source-table/destination-array traversal, long/dword/short/word
+// ordinals with indexed/body-advanced destination: 289/289/337/337/195/195/322/322. NOT kept: nonexact
+// traversal/grouped residence; original direct calls, helper and full body restored.
+// Round 588: Standard scaled-point multiplication, branch/copy input, factor/component
+// first and direct/native output: 693/691/693/691/693/691/693/691; forced expansion of
+// the four direct outputs 525/527/525/527. NOT kept: helper outlines or frame/length
+// regress. Original alias-safe helper/body restored; inverse homes and X/Z spill remain.
+// Y590: Standard binary displacement producers at initial/direction-first/reverse/both/
+// direction-first both and seeded initial/reverse/both: 270/270/280/314/293/294/318/360.
+// NOT kept: allocation or extent regresses; original complete helper/body restored.
+// Native inverse homes and second-transform X/Z spill remain.
+// Y592: Existing transform with separate scalar outputs, pointer/reference, native/scalar result storage, native/scalar input:
+// 195/195/259/259/228/228/242/242. NOT kept: no native frame/spill recovery; original alias-safe helper and body restored.
+// Y594: Plain paired transformed-point/inverse-depth reciprocal table traversal,
+// for/while with long/dword/short/word ordinals: 197/197/224/224/197/197/224/224.
+// NOT kept: native table residence is nonexact; narrow ordinals recover frame
+// 0x2c but shorten to 937/955. Original alias-safe helper and body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

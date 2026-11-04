@@ -1003,6 +1003,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // seven subsets then ordinary complete expansion, 539 each. NOT kept: tag/count/plane
 // homes and rotation spills remain; original helpers and body restored. All rotation
 // inputs still precede the first output store. Shared-angle sum changes were not applied.
+// Y584: Axis normalizer numeric-length result, zero-default/branch-owned with
+// bool/byte/short/long epsilon admission: 548 each. NOT kept: frame 0x21e4
+// and extent 3631 lose retail 0x21dc/3647; original full body and helpers restored.
 // AC524: Complete bitwise normal identity bool/byte/short/long, then complementary
 // mismatch results, 535 each at 3647 bytes. NOT kept: four-point gain below eight;
 // original helper and complete body restored; tag/count/plane homes and rotation spills remain.

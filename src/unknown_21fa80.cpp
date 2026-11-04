@@ -261,6 +261,13 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // producers 545/532/543/532, then forced expansion 545/532/543/532
 // (fast control 532; full 545). NOT kept: ties or regressions; native frame,
 // stream/gain homes and mixed-math expansion remain. Original helper restored.
+// DL263: Actual stream/voice/effects object reference boundaries, seven subsets then complete
+// input reference: 545/545/545/545/545/545/545/545. NOT kept: unmatched alias contracts; original
+// receiver forms, existing helper and complete body restored. Frame 0x22c versus 0x224,
+// stream/gain carriers and mixed math remain.
+// M381: Actual voice/buffer/submix API-output zero initialization, seven subsets, then
+// all with initialized status: 566/615/591/615/591/621/607/608 (fast control 532, full 545).
+// NOT kept: unsupported extra stores and regressions; original outputs, helpers and full body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

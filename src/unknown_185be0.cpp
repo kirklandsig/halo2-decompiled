@@ -477,6 +477,10 @@ union s_185be7
 // Control-root/NONE, settings/zero homes and clamp/flag joins remain.
 // AC540: Paired range-angle override/default decisions, bool/byte/short/long: 622/622/622/622/750/750/750/750.
 // NOT kept: unmatched result residence; control-root/NONE and settings/zero homes remain.
+// P340: Existing real truncation helper at hold-threshold conversion, direct/native real/immutable
+// real/rounded double/immutable double/seconds/seconds+milliseconds/immutable producers:
+// 638/638/638/709/709/638/638/638. NOT kept: unmatched conversion ownership; original cast and complete
+// body restored. Control-root/NONE, settings/zero and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
