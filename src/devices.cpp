@@ -634,6 +634,8 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
+// with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
 // score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
@@ -1080,6 +1082,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax A (11-04, run 41): no new form, no lower score (121); the initial velocity is still stack-passed
+// where retail keeps it in xmm6, and the ramp-down time still takes a register through the clamps.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // Earlier: retail keeps the initial velocity in xmm6 for the whole function and leaves
 // the ramp-down time in its stack slot; ours keeps the ramp-down time in xmm1 through the clamps
