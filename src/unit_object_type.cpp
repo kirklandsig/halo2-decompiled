@@ -3751,12 +3751,18 @@ void __stdcall function_d09c0(long unit_index, long slot_index, long definition_
 
 /* damages the unit with a damage definition from its center against its
    velocity +0x168 (in mode 4, through its player's controller) */
-// score 110 (was 117): ours keeps NONE in ebx (retail uses immediates and has no ebx), and retail also stores
-// zero into direction.j/.k before filling them (two dead dword stores that ours drops). Behaviour fix: retail
-// sets the material to NONE before 0xd6660, which then overwrites it with its default; the old source set it
-// afterwards. The owner's padding short is written as 0 (a local view with a fourth member does that).
-// Tried: aggregate owner (117), controller as long (115), memset of direction (113, size matches at 429),
-// zeroing direction.j/.k by assignment or as longs (110, dropped), if instead of the player ternary (117).
+// score 26 (was 110): the mode 4 half now matches retail byte for byte (the rest differs only in the order the second
+// half interleaves its pushes and the origin/position copies with the direction negation). Round 2 of #1049: the
+// player index is retail's inlined unit_get_player_index (0x14de90 = badc0(unit, 3), NONE when null), so the test and
+// the controller lookup call it twice (not a hand-written null test); that removed the `ebx = NONE` register retail
+// never has. Retail also zeroes direction.j/.k before filling them (two dword stores from the shared zero register):
+// memset(&direction.j, 0, 2 * sizeof(real)) gives exactly those stores (memset of the whole vector zeroes .i too, 74;
+// a plain `= {0}` initializer or long-view zeroing is dropped as dead, 80). Declaring `owner` before `direction` puts
+// the owner's zero short after the other stores like retail's (50 -> 27). The owner's padding short is written as 0.
+// Behaviour fix (earlier round): retail sets the material to NONE before 0xd6660, which then overwrites it with its
+// default. Tried: second-half statement order, all 24 orders of flags/origin/position/direction (best 26 kept: the
+// direction before position; origin first 27; others 29-33); `origin = position = ...` chain 44; s_damage_owner as a
+// three-member aggregate drops the zero short (55); memset(&owner) form (117).
 // @retail 0xd03e0
 void function_d03e0(long unit_index, long definition_index)
 {
@@ -3764,19 +3770,19 @@ void function_d03e0(long unit_index, long definition_index)
 
 	if (g_4e6948->mode == 4)
 	{
-		s_unit *object = (s_unit *)function_badc0(unit_index, 3);
-
-		if (object && object->unknown13c != NONE)
+		if (unit_get_player_index(unit_index) != NONE)
 		{
-			object = (s_unit *)function_badc0(unit_index, 3);
-			long player_index = object ? object->unknown13c : NONE;
+			long player_index = unit_get_player_index(unit_index);
 			long controller = *(short *)((byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x28);
 
 			if (controller != NONE)
 			{
-				vector3f direction;
 				/* retail also writes a zero short after the team */
 				struct { long player_index; long object_index; short team; short padding; } owner = { NONE, NONE, NONE, 0 };
+				vector3f direction;
+
+				/* retail zeroes .j and .k before filling the vector */
+				memset(&direction.j, 0, 2 * sizeof(real));
 
 				direction.i = 0.0f - unit->unknown168.i;
 				direction.j = 0.0f - unit->unknown168.j;
@@ -3792,10 +3798,10 @@ void function_d03e0(long unit_index, long definition_index)
 	function_d6660(&damage, definition_index);
 	damage.flags |= 8;
 	damage.origin = unit->unknown030;
-	damage.position = unit->unknown030;
 	damage.direction.i = 0.0f - unit->unknown168.i;
 	damage.direction.j = 0.0f - unit->unknown168.j;
 	damage.direction.k = 0.0f - unit->unknown168.k;
+	damage.position = unit->unknown030;
 	function_d7b80(&damage, unit_index, NONE, NONE, NONE, 0);
 }
 
