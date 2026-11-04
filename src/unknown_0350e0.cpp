@@ -139,6 +139,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Y577: Serial first/second/both turn publication and producer-local input windows,
 // then those four graphs with symmetric two-axis partials: 356/357/357/356/356/357/357/356.
 // NOT kept: all tie or regress; frame 0x98/0x90 and concurrent x87 inputs remain. Original helpers/body restored.
+// B446: Existing builder owns step/rate multiplication, direct products, real/double
+// angle and native trig, original/native in-place publication: 356/356/357/357/368/368/370/369. NOT kept:
+// all tie or regress; original private helper contract, helpers and entire body restored.
+// Frame 0x98 versus 0x90, concurrent x87 inputs and scalar publication homes remain.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {

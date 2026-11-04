@@ -1519,6 +1519,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // successful-read/checksum producer variants: 175/169/175/169/175/169/175/169. NOT kept: exact-only
 // block/result forms regress; original complete body, waits and API values restored.
 // Query/count homes and write/checksum/header joins remain.
+// B446: Complete resize/write/conditional-close inline workflow, handle pointer/reference,
+// cleanup in caller/boundary, original count/test-produced success: 33/33/33/33/83/83/83/83. NOT kept:
+// no exact result; original whole body, qualifier and helpers restored. Count homes, write setup and header/checksum joins remain.
 // @retail 0x213970
 void function_213970(void)
 {

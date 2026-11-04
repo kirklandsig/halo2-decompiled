@@ -679,6 +679,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC527: Shared actual alpha/color/scale property receivers, subsets 1/2/4/3/5/6/7,
 // then complete receivers after the frame query: 247/117/117/258/258/135/257/240. NOT kept:
 // pointer residence unmatched and extent grows; original observations, rotations and body restored.
+// B446: Shared complete emitter/particle property evaluator, free/member provider,
+// color/scale pointer/reference outputs: 77/77/77/77/77/77/77/77. NOT kept: no exact result;
+// original complete body, types and helpers restored. Offset/default/reload and row-i schedules remain.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
