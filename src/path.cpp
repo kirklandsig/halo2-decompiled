@@ -1078,6 +1078,9 @@ bool function_2715a0(byte *buffer)
 // DH366: Direct native state-member accesses on the retained split-root graph, input/destination/lookup
 // seven subsets then closest/location pair: 486/486/486/486/486/486/486/498. NOT kept: no byte match or
 // qualifying native repair; original complete body restored.
+// DH368: Direct named link/root/child array elements, seven subsets then collision candidate:
+// 624/528/486/659/624/528/659/684. NOT kept: child-only ties, others regress or grow;
+// original array receivers, inherited fallback qualifier and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

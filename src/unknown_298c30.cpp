@@ -301,6 +301,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // DH365: Original-site complete endpoint-distance admission, bool/byte/char/signed-char/
 // short/word/int/long: 395/395/395/395/395/395/395/395. NOT kept: nonexact one-use predicate forms; original
 // body restored. Frame 0x64 and cleanup agree; entry and normalized XY/magnitude homes remain.
+// DH368: Forward/backward standard copies at original input/positive-evaluation boundaries,
+// eight non-original pairs: 410/494/517/410/494/517/517/517. NOT kept: all regress;
+// five additional candidate-publication copy graphs excluded for added shared-global addresses.
+// Original input/evaluation copies, global assignment, emitter and complete body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -675,6 +679,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DH366: Original annular admission, inside/outside bool/byte/short/long outcomes:
 // 719/719/719/719/720/720/720/720. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// DH368: Standard center/forward/reverse sweep-history transfers, seven subsets then
+// the initial center copy too: 768/768/771/767/767/790/789/744. NOT kept: all regress;
+// original point transfers, helpers and complete body restored; frame/radius/trace homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

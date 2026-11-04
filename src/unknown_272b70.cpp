@@ -1542,6 +1542,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // dword with bool/byte/signed-char, unsigned-int with bool/byte: eight at 32.
 // NOT kept: no native handle-before-scaling or request-home recovery; original
 // 12-byte record, exact comparator and complete body restored.
+// DH368: Standard scalar transfers at iterator-handle/load-request/enter-slot fields,
+// seven subsets then backward transfers: 227/105/96/243/241/124/263/305. NOT kept: all regress
+// and lengthen; original stores, existing helper, memset and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
