@@ -1791,6 +1791,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH329: Separate highest-contact scan before/after selection or fallback-only, direct/named
 // height and before/after native cursors 776/788/872/888/580/572/894/929. NOT kept: all regress and
 // grow frame/extent; original shared scan and complete body restored.
+// DH354: Immutable component/velocity/contact-normal receiver bindings, seven
+// subsets and complete receiver identities: eight at 213. Original observations,
+// body and material-call graph restored; early motion/reset and cold arms remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

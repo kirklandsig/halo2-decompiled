@@ -1220,6 +1220,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // DH350: Query-output last-consumer scopes, complete decision/output-only phases,
 // bool/byte/short/long replacement storage: 253/253/353/350 twice. NOT kept:
 // no match or gain; original workspace, result domain and complete body restored.
+// DH354: Settings query in the natural for step, four consumption forms with
+// inner/outer outputs: 504/515/515/515/504/515/515/515. NOT kept: frame 0x12c versus 0x118,
+// lookup expansion and extent regress; original guards/defaults/loop/body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

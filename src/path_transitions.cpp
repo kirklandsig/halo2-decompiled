@@ -687,6 +687,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH347: Last-consumer first/second receiver and projection scopes, seven subsets then
 // all with a descriptive trace name: 271/346/270/346/271/346/346/346. All restored;
 // frame 0x40 and extent agree, but early root/actor ingress and vector scheduling remain.
+// DH354: Native direct-return workspace identities, edge/actor/trace subsets
+// 1/2/4/3/5/6/7 and complete endpoint identities: eight at 270. All restored;
+// early root/actor ingress and paired SIMD scheduling remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
