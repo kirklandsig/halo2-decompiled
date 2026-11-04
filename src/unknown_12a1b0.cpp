@@ -1451,6 +1451,9 @@ struct s_looping_detail_request
 // original request offset 110/131/135/134; native temporary/copy 134/151/188/187.
 // NOT kept: tested completion requires equality; first-player query still expands.
 // Original whole body restored; native detail/offset transport remains.
+// M390: Success-owned common request-flags publication, dword/long/word/byte,
+// original output then native temporary/copy: 167/167/171/157/196/196/200/191. NOT kept: tested
+// completion needs equality; original body restored, query/offset transport remains.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
