@@ -1837,6 +1837,10 @@ real game_time_get_seconds();
 // Earlier real phases reach retail length but frame 0x9c; extended results add 0x9c or aligned
 // 0xac frames. Original float-angle observations, all output scopes, APIs and body restored;
 // frame 0x90 versus 0x94 and definition/NONE/output homes remain.
+// Lane 12 r86: the camera sums follow the first mention of delta's fields: delta assigned k, i, j emits
+// retail's j, i, k order (507; product operands still global-first where retail loads delta.i/delta.k
+// first); with the j product's cast on the global 507 (same code). Also tried: `color` renamed 507
+// (no slot moves); camera sums through dot3f 507; their terms respelled k, i, j 507 (same code).
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2485,7 +2489,9 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 132 (was 132): frame 0xa0 and loop constants agree; first +0xb saves
+// score 109 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
+// top) and the total on the stack, the index in EBX and the cursor in EBP; ours holds the total in EBP.
+// Earlier at 132: frame 0xa0 and loop constants agree; first +0xb saves
 // Round 55 (plain): the three sibling 0x33400 forms 130; with const list/table reads 130; with a bool object
 // flag 127 (551 bytes; retail stores a long 1/0, so a width artifact); with list read first 130; with the shape
 // buffer at function scope 130. 0x31590's callees all preserve edi, so retail's index copy to ebx is an
@@ -2544,16 +2550,21 @@ s_cached_input_list g_5234e8[4];
 // subsets 1/2/4/3/5/6/7: 141/145/140/140/144/143/143; complete byte count/view 146.
 // Reduced control 139/549 versus full 132/554. All regress; original full-width
 // carriers and body restored; retail frame 0xa0 and list/output/index split remain.
+// Lane 12 r86 (plain checks): g_547f98 read at each use (no list local) 113 (kept), with the depth sum as
+// `g_4b9e2c * y + g_4b9e20 * x + g_4b9e38 * z` and a `!(depth >= 0.0f)` test 109 (not kept at review:
+// operand order picked by score against retail's z, x, y load order; gain 4 under the bar). On 109:
+// view declared before count 109; shape declared before index 109; object read before the definition
+// 109; the loop bound read from g_547f98 at each test 140 (551 bytes); output[count] written at each
+// store instead of the result pointer 109.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
     long count = 0;
     long view = g_4b9ed4 < 0 ? 0 : g_4b9ed4 > 3 ? 3 : g_4b9ed4;
-    byte *list = (byte *)g_547f98;
-    long total = *(short *)(list + 4);
+    long total = *(short *)((byte *)g_547f98 + 4);
     for (long i = 0; i < total; ++i)
     {
-        long index = (*(long **)(list + 0xc))[(short)i];
+        long index = (*(long **)((byte *)g_547f98 + 0xc))[(short)i];
         byte shape[0x7c];
         if (index != NONE && function_31590(index, (s_light_shape_ab *)shape) && count < 128)
         {
@@ -2828,7 +2839,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
-// score 517 (was 517): frame 0x60 versus 0x38; stored velocity reads and loop homes differ.
+// score 486 (was 517): frame 0x60 versus 0x38; retail reads the added velocity back from memory for both square
+// roots (ours spills its registers), and the projection results are copied through the stack.
+// Earlier at 517: frame 0x60 versus 0x38; stored velocity reads and loop homes differ.
 // MiniMax R (11-01): no new form, no lower score.
 // Earlier counts 529 and 561; the logic matches retail block by block (walked statement by statement against
 // Earlier at 517 (529, 561 before): frame 0x60 versus 0x38; stored velocity reads and loop homes remain.
@@ -2878,6 +2891,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Y538: Last-consumer acceleration/speed/projection scope subsets 1/2/4/3/5/6/7
 // give 533/517/517/533/533/517/533; all with the existing position receiver before
 // old-position capture 526. All restored; frame 0x60 and stored-velocity/loop homes remain.
+// Lane 12 r86: the norm block as the existing normalize3d 497, as normalize_inline 486 (kept;
+// the velocity scalings as vector3f_scale alone 517). Both projections through the out-of-line
+// transform4x3f_apply_point 820 (not inlined); the projection result brace-initialized 497; the
+// projection helper with an output pointer 514 (frame 0x44); speed test as sqrt(dot3f) 519, as
+// normalize_inline's float sum 527, its double sum grouped j + (i + k) 486 (same code); acceleration
+// as a vector3f with vector3f_scale and vector3f_add 513, with vector3f_scale only 513.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -2967,17 +2986,8 @@ bool __stdcall function_37260(byte *state, real step, byte const *parameters)
         real maximum = *(real *)(view + 0x174 + i * 4);
         if (magnitude > maximum)
         {
-            real norm = (real)sqrt((double)velocity->k * velocity->k + (double)velocity->i * velocity->i + (double)velocity->j * velocity->j);
-            if (!(fabs(norm) < 0.0001f))
-            {
-                real inverse = 1.0f / norm;
-                velocity->i *= inverse;
-                velocity->j *= inverse;
-                velocity->k *= inverse;
-            }
-            velocity->i *= maximum;
-            velocity->j *= maximum;
-            velocity->k *= maximum;
+            normalize_inline(velocity);
+            vector3f_scale(velocity, maximum, velocity);
         }
         real size = *(real *)(state + 0x48 + i * 4);
         *(real *)(view + 0x134 + i * 4) = scale_size ? size * radius : size;

@@ -617,6 +617,10 @@ PRIVATE __forceinline void function_2417a1(s_marker_entry const *arg_0, long arg
 // vector2f through magnitude2d 8; sqrtf 2; a double cast on the sqrt argument 11; distance_squared declared first 2;
 // other_point at the loop top 2; `other` const 2; a 600 s permuter run, 66 tries, none below 2 (its reduced image
 // scores the base 178, so it cannot guide this function).
+// Round 67 (m3 lane 1, plain with 0x240160/0x19ec40; fast differs here: fast 203 for the plain 173): the accumulated
+// distance `d = dx * dx; d += dy * dy;` 173; the `slots` local declared at the top of the k loop 169 (717 bytes, but
+// the slot argument moves to the stack and caller 0x240160 drops to 46: not kept); `sqrt(dy * dy + dx * dx)` 173
+// (same code); `if (marker_index == NONE) continue;` 173; the init stores through the existing real_point3d_set 200.
 // @retail 0x243c00
 void function_243c00(long slot)
 {

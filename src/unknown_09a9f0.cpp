@@ -583,6 +583,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // the header test 64-75 [72] are threaded before CSE and share the lookup again; a compiled-out
 // `do {} while (false);` at the arm top/before the test/both 49 (same code), at the re-test's join 52; the header
 // test through same-file inline bool helpers (5 spellings) or link-inlined helpers in another file 49 (same code).
+// Round 67 (m3 lane 1, fast): the header test through a forceinline bool getter 49 (same code), on the retail shape
+// (false first, true after the attach) 77; retail shape with the flag test positive and the NONE arm first 75 (160
+// bytes); the positive test with the NONE arm first on the long result 52; a header pointer named for the test with
+// the object read through the macro 49. Lead: retail's reloaded table data and recomputed index look like an
+// out-of-line getter that LTCG inlines; no existing one was found in src/.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

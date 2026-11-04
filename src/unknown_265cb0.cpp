@@ -541,10 +541,14 @@ real function_30bf0(vector3f *vector);
 // M336: Pre-collection seat ordinal and facing-entry basis/query-output workspaces,
 // seven subsets: 152/152/152/152/152/152/152; all with cursor advanced after lookup 205.
 // Original scopes/cursor restored; result/range/amount homes and inverse SIMD groups remain.
+// Round 48 (m3 lane 2, fast with 0x263740): the `volatile` dropped from the result 152 (same score, kept: the
+// plain long result is still spilled to +4); on that: occupant and player tests merged 152; facing branch on
+// the negated condition 150; short result 152; amount renamed to sort after result 152 (amount/count keep +0);
+// clamp into a named clipped fraction by ternary 263.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
-	volatile long result = 0;
+	long result = 0;
 	if (mode == 0 || mode == 1)
 	{
 		s_actor_view *actor = actor_get(actor_index);

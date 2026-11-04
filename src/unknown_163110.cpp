@@ -1020,6 +1020,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // function scope 115; t at function scope 115; the denominator as dot3f(&plane->normal, &delta) 224 (aligned 58
 // against 64); the intersection rows `delta.i * t + p0->x` without the in-place scale 119, with that dot3f 226
 // (aligned 51). Lane 16 r72's 19 form re-measured 19 but writes out the existing point/scale helpers.
+// Round 48 (m3 lane 2, fast with 0x1648d0/0x320b0): lane 16 r72's 19 form rebuilt 19 (first +0x28a); on it, the
+// distance j product's operands swapped 19 (same code); the denominator staged i, k, j with delta_i 33; all three
+// deltas named (i, k, j or i, j, k declarations, rows from them) 118/118 (the near/zero swap at +0xb6 returns);
+// delta_j named with the denominator staged i, k, j 30 (retail's denominator roles; the deltas are computed z, x, y
+// where retail computes x, z, y, and the intersection's copied-t row is y where retail's is x). Body restored.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
