@@ -1753,6 +1753,9 @@ bool function_17afd0(long effect_index, long value);
 // and immutable drawing data, seven graphs then early drawing declaration:
 // 47/219/47/219/47/219/219/219. NOT kept: no equality; original snapshots and body
 // restored. Availability clear/result and post-attachment view observation remain.
+// Y593: Independent raw-slot cursor and iteration-local salted handle, long/dword/int/short
+// with while/for traversal: 166/166/166/117/166/166/166/117. NOT kept: no equality; original complete
+// traversal and body restored; availability production and later view observation remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
