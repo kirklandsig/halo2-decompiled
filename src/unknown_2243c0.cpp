@@ -482,6 +482,15 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // N355: Actual head-address receiver with stage/pass/material-definition receiver subsets:
 // 117/117/117/117/117/117/117/117. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; Fallback EDX normalization and stage/pass/unfused-load homes remain.
+// Round 147 (m3 lane 6, fast). Round 59's score-8 chain rebuilt 8 (first +0x9e; group test variants on the way 134, 89, 112, 106, 67, 91).
+// On it, with 0x2243c0 and 0x224d90 matching: the element helper with a named base and offset 8; pass and material definitions named
+// 8; the material index named 8; the pass tag through `long const &` 8; the material definition bound 92 (552 bytes). Those two
+// not checked: the pass element bound in its own block 8; the four zeros in reverse field order 12. With the callee files the harness reproduces the
+// first 60 lines (the same 8, 88 overall): helper with a named base, offset, both in either order, a named result, base and result 8
+// each; pass tag through a member struct 8; the records pointer named before the +0x132 132 (22 in those lines); the material
+// definition bound with the head unbound, a pointer or direct 107 (index EDX, the `xor` and EDI as retail, but the registers above
+// them rotate). Ours rotates EDX, EAX, ECX, EDX through the pass and material definitions; retail reuses EAX over its dead `lea`.
+// Match-only chain; original body restored. A 600 s permuter run on the chain: 59 tries (24 failed to build), none below 8.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

@@ -4926,6 +4926,8 @@ bool function_158eb0()
 // Round 124 (m3 lane 7, fast): `g_4e6948->flag1128 != 0` in the argument 38 (144 bytes); result declared
 // before the count 7; the iterator fields stored index, absolute index, data 7; `/ 2 >= 1` 11 (147 bytes);
 // a long mode cleared then set under `if (flag)` 62 (130 bytes). Original body restored.
+// Round 147 (m3 lane 6, fast): the index through a `long const &` 5; the flag declared at function scope 5;
+// `flag == true` 6; a long flag local 12 (147 bytes); `!flag ? 0 : 1` 5. Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {

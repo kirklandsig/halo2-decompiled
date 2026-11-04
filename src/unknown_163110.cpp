@@ -1033,6 +1033,21 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // storage without/with source-normal vector: eight at 115, 1851 bytes. NOT kept:
 // no exact match; coefficient preload and zero/classification/projection homes remain.
 // Original geometry types, reads, arithmetic and complete body restored.
+// Round 147 (m3 lane 6; one-file harness exact at 115, low forms confirmed with fast). The head's first difference is only
+// the last term's registers (camera i and normal i in xmm3/xmm4 swapped); the zero inherits the swap. Natural forms (fast):
+// `total` declared first 115; that with plane3f locals 115; with a walking `out` and a `source` element pointer 114, on plane3f
+// locals 114. Harness: a walking `out` alone 249 (1867 bytes), `for (...; k++, out++)` 249, `cursor` walked in the loop 289,
+// `cursor += 2` after the loop 151 (1858). Match-only chain (helpers written out, one delta named; not kept): plane3f locals,
+// only delta_i named, denominator staged j, k, i, named scaled rows 25; `total` declared first 22 (fast 22, first +0x28a), `stc`
+// 24, `cts`/`cst` 33, `tcs` 153; `out = output` with `out++` 25, `k++, out++` 152, `out = output++` 171, `out = cursor++` 239;
+// walking `out` plus a `source` pointer 20; a 1000-try climb over term, operand and projection statement orders 18 (fast 18,
+// first +0x39a). Left at 18: the remainder loop's first-row j term, the numerator's k term, the denominator's x/y roles mirrored
+// (retail's rows read as x named, its denominator as y named), and `total` in ECX for retail's EAX, which moves its store.
+// Grids on it: dead pointer locals 1..8 before the clip 119/135/130/242/246/135/127/135, in the clip 115 up to three; deltas named
+// with the denominator staged i, k, j: none 264, i 36, k 217, j 33, ik 205, ij 234, kj 199, ikj 117 (all eight row operand orders
+// tie); delta_k named as well 208; delta_i with twelve one-expression groupings 28-38; the name assigned after the denominator 244
+// (1835), before t 94; y named with x named late/early 244/36; a struct delta with direct fields 119/119, with the scale helper
+// 113, an array 119; rows `delta.i * t + p0->x` on the helpers 119. Permuter skipped: the 19 form already ran (73 tries).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
