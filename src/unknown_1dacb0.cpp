@@ -1491,6 +1491,8 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // N361: Existing iterator/sorted-lookup/registration/resource inline call visibility, four
 // individuals, three iterator pairs and all four: 828 each. Original declarations and full body
 // restored. NOT kept: no result/candidate/output home or class/NONE/zero-carrier recovery.
+// DL261: Actual iterator/sorted-search/registration definitions and every declaration inline, seven subsets then explicit iterator expansion: 828/828/828/828/828/828/828/1265.
+// NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

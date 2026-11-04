@@ -1063,6 +1063,8 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // DH328: Existing staged force-inline cross at disabled/flying/ground subsets
 // 436/473/429/436/431/479/431; shared staged cross at every remaining site 431.
 // NOT kept: four/two-point leads fall below threshold; length regresses or ties. Full body restored.
+// DL261: Ordinary/forced cross templates; native response/history views; actual response/history/both formals: 1135/1135/1135/1135/1135/1135/426/417/433/433/433.
+// NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

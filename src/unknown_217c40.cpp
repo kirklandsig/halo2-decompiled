@@ -187,6 +187,8 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // 474/474/473/475/474/474/475/475. NOT kept: the one-point angle-array gain
 // and grouped storage need equality; original helpers and complete body restored.
 // F367: Complete snap squared components/norm in real or double storage: six forms 474; rounded magnitude in double with component or sum node 616 each (native 0x40 frame, 1932/2012 bytes). NOT kept: storage/precision nonmatches; original helpers, full body and standard alignment evidence restored.
+// DL261: Shared negative-axis predicates; existing value/output and in-place clamp completion: 652/652/652/652/623/623/640/640/474/474.
+// NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

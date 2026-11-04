@@ -1731,6 +1731,8 @@ bool function_17afd0(long effect_index, long value);
 // B421: Owner/view identity before the status query, bool/byte/short/long,
 // positive/complementary results 133/133/159/158/133/133/159/158. NOT kept:
 // all regress and exceed retail length; original snapshot/query graph restored.
+// DL261: Actual optional available-view index, valid-invalidating/default-success/conditional/complete arms, long then dword: 122/121/82/82/122/121/82/82.
+// NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
