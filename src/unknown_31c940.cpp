@@ -655,11 +655,13 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 		impulse = ratio * impulse;
 	}
 	__m128 scalar = _mm_set_ss(impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
+	// Retain both body weights before either angular velocity write.
+	__m128 weights[2];
+	weights[0] = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	weights[1] = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
 	// Reload A after projection for the bounded angular update.
-	a->angular = _mm_add_ps(_mm_load_ps((float const *)&a->angular), _mm_mul_ps(change_a, axis_a));
-	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
+	a->angular = _mm_add_ps(_mm_load_ps((float const *)&a->angular), _mm_mul_ps(weights[0], axis_a));
+	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(weights[1], axis_b));
 	*result += impulse;
 }
 
@@ -814,7 +816,7 @@ static __forceinline float const &capture_writeback_time(solver_step_31c940 *con
 {
 	return step->inverse_time;
 }
-// score 1854: normal fallbacks, writeback lifetimes, captured mass, and row reloads.
+// Main solver reconstruction; the ordinary checker determines its current score.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
