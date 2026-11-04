@@ -295,6 +295,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // DH361: Existing normalizer epsilon decision as rejection/normalization bool/byte/short/long,
 // eight at 395; the other normalizer user stays 719 and scoring stays exact. NOT kept: no match
 // or native XY/magnitude-home recovery; original comparison, shared helper and full body restored.
+// DH363: Actual candidate-record flags bool/bool, byte/byte, bool/byte, signed-char/bool, byte/signed-char,
+// bool/signed-char, signed-char/byte, signed-char/signed-char: 395/401/401/395/401/401/401/401. NOT kept: no match;
+// original byte/Boolean declarations, record layout, publications and complete body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -663,6 +666,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DH361: Sweep/obstacle ordinals and selected-obstacle/maximum-ratio declarations at function
 // scope, seven subsets, then the sweep bound too: eight at 719. Original declaration scopes,
 // initializers, geometry and body restored; frame 0x124/0x114 and radius/trace/pivot homes remain.
+// DH363: Actual count/table record fields, direct/const/mutable receivers with original guard,
+// const/mutable conditional, const/mutable/direct default-result getters: 719/719/719/719/719/775/775/775.
+// NOT kept: no native-frame or score gain; original getter, helpers and complete body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

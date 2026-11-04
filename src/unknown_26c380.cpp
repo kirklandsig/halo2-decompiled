@@ -336,6 +336,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH361: Pending-sector reset after node/metadata/destination/iterator/fetch/empty-exit/
 // nonempty-entry phases 410/449/436/440/442/432/432; traversal-header declaration 411.
 // NOT kept: no native-frame or score gain; original reset, normal homes, tails and body restored.
+// DH363: Native coordinate unions at magnitude/planar product/full-to-planar stores,
+// subsets 1/2/4/3/5/6/7: 410/410/425/410/425/425/425; all with staged cross 425.
+// NOT kept: planar stores grow to 1611 bytes without native frame recovery; original full body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

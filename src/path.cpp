@@ -1069,6 +1069,9 @@ bool function_2715a0(byte *buffer)
 // DH361: Heap-root/link/collision-lookup ordinals declared at function scope, seven subsets,
 // then the actual child receiver too: eight at 486. Original observation/initializer sites,
 // declarations and body restored; native state/node/link registers and scalar homes remain.
+// DH363: Existing penalty-switch label orders 1265/1526/2156/5612 all 486;
+// those four with the positive-penalty guard owned by the grouped cases all 487.
+// NOT kept: no match or state/root-home recovery; original dispatch and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
