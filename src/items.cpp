@@ -1813,6 +1813,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // with original Boolean accumulator and twice-used spin: 140/140/140/138/138/139/139/139. NOT kept: unmatched ABI
 // forms; one/two-point gains fail the bar. Original signature and full body restored.
 // Return byte +0xe/+0xf and release/contact/event homes remain.
+// N384: Caller-owned release output at branch/physics/function/entry scopes, with
+// submission in the existing producer or its returned output: 169/140/140/140/140/171/171/171.
+// NOT kept: ties/regressions; original private producer and full body restored. Return byte,
+// release-byte RMW/tail and contact/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

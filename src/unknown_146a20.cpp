@@ -300,6 +300,9 @@ bool g_47f05b;
 // F377: Direct exhaustive constructor stores, terminal/zero-first arms and long/int/short/
 // signed-char ordinals: 34/34/34/34/43/54/43/54. NOT kept: narrow forms worsen other
 // constructor users; shared header and full body restored; base-vtable/arm reload remain.
+// N384: Actual fixed/pool placement admission in bool/byte/short/long: eight 34.
+// NOT kept: unmatched admission carriers; original complete body restored. Shared
+// constructors untouched; intermediate vtable store and successful-arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {
