@@ -591,6 +591,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // termination and separate/chained NONE stores: 413/413/380/380/393/393/407/407.
 // NOT kept: all regress and lengthen; original counters, signed empty domains, indexed
 // metadata memcpy and whole body restored. Extra frame word and predecessor/flag homes remain.
+// AC536: Complete geometry-scan edge acceptance/rejection result, bool/byte/short/long:
+// 282/282/282/282/282/282/282/282. NOT kept: four-point gain below eight and no equality;
+// original scan gates, indexed library copy and full body restored. Extra frame word and
+// predecessor/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

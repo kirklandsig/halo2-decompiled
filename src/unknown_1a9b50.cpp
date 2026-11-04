@@ -985,6 +985,9 @@ static __forceinline long real_to_long(real value);
 // at the original call with the admitted return live: 382/382/382/382/382/382/382/382.
 // NOT kept: one-use call-result ownership lacks equality; original dispatch, state stores,
 // query aliases and whole body restored. Early rejection and magnitude/query homes remain.
+// AC536: Complete initial near-stop stop/continuation result in bool/byte/short/long:
+// 381/381/381/381/381/381/381/381. NOT kept: one-point gain below the gate and no equality;
+// original near gate, provider timing, query aliases and full body restored. Early rejection island remains.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

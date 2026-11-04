@@ -1722,6 +1722,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // seven subsets then admitted-option user lifetime: 285/668/669/674/260/628/612/636.
 // NOT kept: 260 combines tying/regressing parts, hoists separate pass tests and
 // shortens away from retail; every field observation and full body restored.
+// AC536: Actual option/user/controller zero-mask initialization after array filling,
+// seven subsets and entry declarations with chained late zero: 288/287/288/287/288/287/338/338.
+// NOT kept: no equality or qualifying supported gain; original full body restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

@@ -722,6 +722,9 @@ struct s_item_collision_bsp
 // with direct/compound offset subtraction, then all three named products:
 // 202/204/204/202/204/204/202/206. NOT kept: expression-boundary nonmatches; original
 // complete body restored. Protected plane interface, plane joins and spin/speed homes remain.
+// AC536: Contact-query count bool/short/long/dword, then both query counts independent/shared
+// short/long: 202/202/202/202/202/202/202/202. NOT kept: no equality or qualifying supported gain.
+// Original query consumers, plane interface, random draws and full body restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
