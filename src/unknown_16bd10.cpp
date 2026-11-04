@@ -927,6 +927,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // animation-first-point-pan 456; animation-first-pan-point 459;
 // first-point-animation-pan 440. NOT kept: all regress; original whole cases,
 // projection, helpers, observations and complete body restored.
+// AC525: Complete FOV-target presence/absence results in bool/byte/short/long,
+// eight at 236. NOT kept: predicate residence unmatched; original target gate,
+// snapshots, projection and full body restored; direction/normal/zero homes remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

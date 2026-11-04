@@ -969,6 +969,9 @@ static __forceinline long real_to_long(real value);
 // 382/381/382/468/381/381/468/381. NOT kept: best gain one and arithmetic storage
 // unmatched; original magnitude, query aliases and complete body restored.
 // F367: Complete facing-alignment/prediction-seconds/projected-distance nodes, masks 1/2/4/3/5/6/7, then all with remaining-distance node: 382 each. NOT kept: eight byte-neutral trials; original arithmetic, live observations, query aliases and full body restored.
+// AC525: Complete final dispatch eligibility/rejection results in bool/byte/short/long,
+// eight at 382. NOT kept: predicate residence unmatched; original final guards,
+// field observations, query aliases and full body restored; early rejection island remains.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

@@ -1726,6 +1726,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // P312: Fixed two-weapon !=2 and <=1 exhaustion, long/short/dword/word ordinals:
 // 220/421/220/421/221/421/221/421 fast (control 220, full 218). NOT kept: no match; original loop/body restored.
 // Frame 0x28/0x2c, unit/mode homes and independent look divisions/homes remain.
+// AC525: Post-setter per-weapon presence/absence results in bool/byte/short/long,
+// eight at 220 fast (control 220, full 218). NOT kept: predicate residence unmatched;
+// original post-call read and full body restored; frame, unit/mode and look homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

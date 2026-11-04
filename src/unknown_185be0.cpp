@@ -448,6 +448,9 @@ union s_185be7
 // P319: Existing clamp promoted value/lower/upper formal domains, masks 1/2/4/3/5/6/7,
 // then complete double result: 1211/1129/1205/1211/1211/1314/1211/1286. NOT kept:
 // no match, wider x87 domains enlarge frame/length. Original helper and whole body restored.
+// AC525: Complete initial input-availability/unavailability results in bool/byte/short/long,
+// 624/624/624/624/624/624/624/624. NOT kept: predicate residence unmatched; original
+// gate, resets, observations and complete body restored; control-root/NONE homes remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
