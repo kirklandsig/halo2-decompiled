@@ -1075,6 +1075,16 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // close call 201, just before the branch 198, assigned zero inside the branch 201.
 // Round 138: all_players compared to false 9; loop index declared before the clear 9; else arm's count assigned after
 // the copy 197; destination step before the count 17; source element named in the arm 9.
+// Round 53 (m3 lane 15, fast): with the destination inside the branch: the loop index declared before the clear
+// 195; the destination indexed by the zero count 195. With `memcpy(identities[count], ...); count++;` (no pointer):
+// the branches inverted 204; count declared just before the branch 198; the loop index declared before the clear
+// 195; count zeroed inside the branch 201; the else arm's count assigned after its copy 195; the id cleared before
+// the NONE fill 195; `first[j] = second[j] = NONE` 195; two fill loops 195; second filled first 195;
+// `identities[count++]` re-measured 40 (colouring and head as retail, the copy's source and destination swap).
+// Diagnostics (global probes, reverted): the indexed form plus one store after the if/else (`= count`) matches
+// retail except the probe itself (first difference at the probe); a constant store at the end of the else arm
+// also gives retail's colouring; the same store after the loop in the true arm, or a store of `joining` after
+// the if/else, does not. `(void)count`, an unused copy or an empty `if (count > 16)` change nothing.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {
