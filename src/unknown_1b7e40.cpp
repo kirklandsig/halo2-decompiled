@@ -250,6 +250,9 @@ bool function_25d9b0(long prop_index);
 // Round 138: busy result in byte/short/long storage, Boolean at entry/evaluation scope 49 each;
 // evaluation-scope Boolean with priority cleared 82; unsigned-short result initialized from priority 49
 // (558 bytes), branch-complete unsigned-short result 49. Original tail restored; busy select and exits remain.
+// AC545: Native ordered admission in nested predicate groups, eight boundary
+// partitions, 49 each. Original busy call, zero/priority exits, iterator
+// exhaustion and fallback node test restored; the select and epilogues remain.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

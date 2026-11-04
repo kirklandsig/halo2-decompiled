@@ -257,6 +257,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // B426: Existing SDK C entry points at first/later query, volume, status, playback,
 // mixbin, pitch and complete call phases: 532/532/532/532/532/532/532/532. Original SDK receivers,
 // workspaces and complete body restored; frame/stream/gain and mixed math remain.
+// AC545: Existing real-pin input-first/complete-arm/lower-default/early-return
+// producers 545/532/543/532, then forced expansion 545/532/543/532
+// (fast control 532; full 545). NOT kept: ties or regressions; native frame,
+// stream/gain homes and mixed-math expansion remain. Original helper restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
