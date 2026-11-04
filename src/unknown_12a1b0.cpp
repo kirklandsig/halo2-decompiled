@@ -1627,6 +1627,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // F361: Entry-declared result, false initialization after playing/tag/offset/track/
 // handle/playback/pitch/take producers: 50/48/48/48/48/48/50/56, all at 616 bytes.
 // NOT kept: two-point gain below threshold; original initializer and complete body restored.
+// Round 110: two-use long/short track-index locals 142/162 (619/628 bytes); force-inline get/set
+// declarations 50 each (same code); long or nested previous 129 each; force-inline previous helper 129;
+// implicit previous conversions 50 (same code). NOT kept: every gain-free form; original body restored.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {
