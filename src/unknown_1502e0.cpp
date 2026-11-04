@@ -506,6 +506,9 @@ struct s_tail_player_identifier
 // DH353: Positive selector byte/char/int 17/17/30; complete pointer conditional
 // and result arms 23/23; count-owned comparison and count arms 67/67; signed-byte
 // direct index 26. NOT kept: no gain or match; original selector and sole result restored.
+// DH355: Scenario last-use scope 17; count-owned assignment, complete count arms,
+// failure-first arms and conditional producer, unscoped/scoped: 17/67/67/67/67/67/67/67.
+// NOT kept: no match; selector forms shrink the native extent; original body restored.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1665,6 +1668,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // DH353: Inner option ordinal int/dword/short/word 285/286/642/642;
 // per-player declaration 285; ordinal/entry role names 285/285; complete indexed
 // option view 596. NOT kept: no gain; original scalar masks and entry view restored.
+// DH355: Decoded ordinal declared before matching/pass/fallback/release/binding
+// traversal, then phase pairs/all four: 285/285/285/285/285/285/285/285. NOT kept: all tie;
+// original scopes/body restored; native mask/index homes and release expansion remain.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
