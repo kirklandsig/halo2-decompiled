@@ -809,157 +809,12 @@ void function_25aba0(long actor_index);
 
 
 
-// score 29 (was 29): the kind-2 failure pop is `dec [mem]` where retail loads, decrements and stores
-// around the stamp, and the choice-failure pop is split where retail uses `dec [mem]` (aligned 8).
-// Round 96: kind-2 dispatch first 147; the kind test reversed 126; the current-slot ternary inverted
-// 29 (identical); current-slot assigned in an if 242; the default type assigned in an if 166; the
-// next-type test inverted 36; positive next-handler validation 29 and positive enabled dispatch 29
-// (both identical). Original dispatch and failure arms restored.
-// The choice arm's pop before its stamp is not retail's order there: it is kept only because its 5
-// extra bytes balance the kind-2 pop's 5 missing ones, so put the stamp first again once the kind-2
-// pop splits. Before this round only the state-one pop and the `= {0}` workspace remained (aligned 7); earlier: actor/result ESI/EDI (0x1a7b30's result arrives in ESI,
-// retail EDI), the state-one level pop (ours `dec [mem]`, retail load/dec/store around the handler
-// store), the `= {0}` workspace (retail clears it as a memset, rep stosd x16) and 0x1a8080's argument
-// set-up order differ. memset plus 0x1a8080 as (type, owner, level) leave only the entry registers and
-// the state-one pop (957/957 bytes, aligned 21 from 24, positional 143).
-// Round 78: the entry loop as `for (short i = 0; i < 3; i++)` in place of the hand-inverted do/while
-// 69 (identical code, kept; a long counter unrolls it: 1292 bytes, 651); next-handler test through
-// ACTION_HANDLER_ENABLED 87; state-one pop before the stamp 140 (957 bytes, the kind-2 pop takes
-// `dec [mem]`); `if (level < 0) break;` for the head flag 215 (rotated).
-// Tried: native workspace initializer 69; owner lifetime 266; level lifetime 320; entry pointer walk
-// 261; full-width choice 150; full-width type 338; two-word initializer 68; full member initializer
-// 287; retained ordinal 244; shared final exit 69; frame pointer on native initializer 334; outer
-// workspace 143; short copy counter 69; long level 173; retained handler reads 69; ordinary dispatch
-// first 131; empty native initializer 143; value/assigned-value initialization 249 each; empty
-// initializer with early state pop 146; owner/handler records 69 each; current-level snapshot 69;
-// level snapshot with empty initializer 143; native initializer with early state pop 140; candidate
-// index snapshot 252; candidate receiver 69; choice before workspace 69; callback/insertion names 69;
-// completion/eligibility/insertion results 69/163/69; existing mask helper inline 69; with
-// 0x1a7b30's sources sharing one copy (NULL-preset source there), both callees' parameters reordered
-// and the memset workspace, only the state-one pop differs (retail keeps level in a register around
-// the handler store): NULL-preset source 62, plus 0x1a7b30 order 60, plus memset 134 (aligned 4), pop
-// before the store 137, plus 0x1a8080 order 134 (aligned 2), without memset 58, the two orders alone
-// 67; original body kept (the NULL preset is a tested sentinel; 0x1a7b30 rises to 100). Enclosing
-// enabled/state-one/choice dispatch arms in seven combinations 69 each, all three with current-slot at
-// enabled use 69; memset 143; 0x1a8080 (type, owner, level) 67; both 143; on both: state-one
-// `level -= 1` 143, pop before the store 146, `else if` after the enabled test 143, enabled and
-// state-one tests in one arm 219.
-// Round 93, on the NULL-preset + both reorders + memset base (957 bytes, only the state-one pop left):
-// `level -= 1` 134; pop first 137; state-one, kind-2 and choice arms as one if/else chain without
-// `continue` 119 (state-one pop now as retail, but the kind-2 failure pop becomes `dec [mem]`); chain with
-// `continue` in the kind-2 arm only 134, in the state-one arm only 119; kind-2 failure statements
-// reordered (state first 119; pop before the state store or first 134: the state-one pop goes back to
-// `dec [mem]`); `while (level >= 0)` 215 (rotated). Exactly one of the state-one and kind-2 failure pops
-// takes the `dec [mem]` form in every arrangement.
-// Round 100 (on the kept body): state-one pop as `--level` or `level = level - 1` 69/69; kind-2 failure
-// state store before the stamp 69; state-one / kind-2 / choice as one if-else chain 69 (identical code
-// on this base: only the state-one pop is fused); slot selection after the enabled test 177.
-// Round 10 (lane 13), with 0x1a7b30 unchanged (its result pointer arrives in ESI, retail EDI): memset
-// alone 143 (957/957, aligned 12 from 16: entry registers, the state-one pop and 0x1a8080's argument
-// set-up); plus 0x1a8080 as (type, owner, level) 143 (aligned 10, 0x1a8080 still matches); plus the
-// state-one pop first 146; plus the state-one and kind-2 arms as an if/else chain 128 (aligned 10:
-// state-one split as retail, kind-2 fused); on the chain the kind-2 pop first or between its stores
-// 143 each (kind-2 split, state-one fused again); the kind-2 success leaving by `break` 128.
-// Diagnostics: a different state-one decrement leaves kind-2 fused on the chain, and a different
-// kind-2 decrement leaves state-one fused on the continue form, so the two pops aren't merged; the
-// choice looks like the allocator's (a temporary register or a memory operand for the decrement).
-// Round 99 (lane 6), on the kept body: the first enabled test through the handler local, as the
-// next-handler test is written, 69 (identical); kind-2 failure with the state store first 69 (aligned
-// 18: only that arm's store order moves, the state-one pop stays `dec [mem]`); the state-one stamp
-// through the table 69; `current` from `&owner->slots[level]` 69; `current` declared before the
-// handler 159 (966 bytes). The entry registers follow 0x1a7b30's own ESI/EDI colouring (its result
-// pointer arrives in ESI, retail EDI).
-// Round 88: 0x1a7b30 now matches with retail's owner ESI / result EDI, and the entry follows it
-// (69 -> 62); 0x1a7b30 as (owner_index, result) and 0x1a8080 as (type, owner, level), each consistent,
-// give retail's set-up order at both calls (58). With the memset workspace on top: 957/957, aligned 8,
-// only the state-one pop left (positional 134). On that base, the pop-or-stamp-first order of the
-// state-one, kind-2 failure, choice failure and next-handler failure arms (16 combinations tried, 9
-// measured): the state-one arm splits as retail only when another arm fuses or a choice-failure pop
-// splits too (43-137); stamping through the handler table in each arm 81-314; `--level`, `level = level - 1`,
-// kind-2 state store first and the else-if chain 134 each.
-// Round 17 (memset workspace, 957/957): only the state-one pop differs (aligned diff 3); the lower
-// level computed before the stamp and assigned after 134; the state-one stamp through the table 134;
-// state-one/kind-2/choice as an if/else chain with the kind-2 test inverted (failure arm first) 119
-// (state-one now as retail, kind-2 failure fused); on that, the workspace declared at the loop top 119.
-// DL199: Shared parent-level short/int/long/dword gives 321/285/285/285; with the library
-// workspace clear 330/292/292/292. The common value changes loop and frame allocation; original
-// 0x4c frame, six pops and aggregate workspace restored. State-one split decrement and zero-fill
-// remain.
-// Lane 14 r20: the workspace cleared by memset alone 134 (957/957, aligned 8: only the state-one
-// pop); with the state-one pop first 137, the kind-2 pop first 134, the choice pop first 46 (aligned
-// 8); a grid of 31 stamp/pop orders over the state-one, kind-2, choice and next-handler arms 43-137
-// (state-one, kind-2 and choice pops first 43, all four 45); the state-one / kind-2 / rest as an
-// if/else chain 119 with retail's stamp-first choice arm (only the kind-2 pop differs), 29 with the
-// choice pop first (kept); on the chain the six kind-2 statement orders 29-46/119-134, the
-// next-handler pop first 31, the not-enabled arm chained too 29, only the kind-2 arm chained 29, the
-// kind-2 check inverted 29/119, `continue` kept in the kind-2 arm (with or without the state-one
-// one) 46; `while (level >= 0)` 206 (rotated). Of the state-one and kind-2 pops exactly one fuses:
-// the arm that falls through to the loop end fuses, and when both `continue` the state-one one
-// does; retail splits both.
-// Round 127 (lane 4), on the kept body (every pop but the state-one arm's already as retail: the
-// shared enabled-failure and choice==stamp arms `dec [mem]`, kind-2, level++ and next-handler arms
-// load/dec/store): `level` declared before the owner lookup 60; `level` set to zero just before
-// the slot loop 308 (held in a register); memset workspace alone 134 (957/957, the pop's offset
-// runs to the end); `level = (short)(level - 1)` in the state-one arm 58 (same code); its stamp
-// through g_46eeb8[type] 58 (same code).
-// Round 46 (lane 9): with the memset workspace (957/957, 134) only the state-one arm differs. Ours cross-jumps
-// the three enabled-test failures into that arm's own `dec [mem]` (the arm is `mov [esi+8], edx` then the
-// shared pop), where retail sends them to the fallback-failure pop (0x1a7e63) and keeps a separate state-one
-// arm whose load is scheduled above the stamp store. On memset: state-one pop first 137 (both arms fused, the
-// enabled failures then share kind-2's pop), plus kind-2 pop first 131 (state-one fused, kind-2's level store
-// before its state store); a `usable` flag for the fallback call tested with the enabled test 223 (not
-// threaded: the handler/slot lines sit between), 209 without memset; tested alone right after the join 134
-// (threaded, identical code); tested with the enabled test before the handler/slot lines 169 (the fallback
-// failure then also jumps into the state-one arm, and the slot select moves after the test). With both arms
-// pop first (131) the enabled failures do jump to the fallback-failure pop as in retail; kind-2 fused only
-// when it became the host (the host is chosen first, its `level--` then fuses). State-one / kind-2 / choice as
-// an if/else chain on memset 119 (state-one split as retail, kind-2 hosts and fuses); the enabled arm in the
-// chain too 119 (identical).
-// Lane 16 r48 (fast; aligned difflib counts in brackets): the full grid of pop/stamp orders on the
-// kept chain body (state-one 2 x kind-2 failure 6 x choice 2 x next-handler 2, 48 forms) 29-137, none
-// below the kept 29 [8]: the kind-2 pop splits as retail only with `level--` before its stores, and then
-// the state-one pop fuses (best 43 [10], kind-2 store order then stamp/level/state for retail's
-// stamp/state/level); one shared `level--` after the state-one/kind-2 chain 29 (same code);
-// `level = level - 1` and `level = (short)(level - 1)` in the kind-2 arm 29/29.
-// Round 52 (harness exact once 0x1a7ad0 has several callers): the kind-2 failure `level--` fuses in all six
-// statement orders with either choice-failure order (aligned 3-10); real: stamp, state, pop with retail's
-// stamp-first choice arm 119 (only the kind-2 pop differs, 2 bytes short); pop, stamp, state 46; the
-// kind-2 test inverted with the failure statements inside it 29 (identical); success leaving by `break`
-// 29 (identical); the check result in a `started` bool 29 (identical). `level = level - 1` there and a
-// `continue` after the failure statements: identical / 42 positional.
-// Lane 16 r50 (fast): source permuter, 66 tries in 600 s, best 29; the choice==g_46fbe4 arm as an if/else
-// without `continue` (the rest of the handler code in its else), stamp first 119 (the choice pop fuses as
-// retail, but the enabled failures cross-jump into a fused state-one pop again), pop first 29 (same code);
-// on the stamp-first form the kind-2 failure orders stamp/pop/state 134, state/stamp/pop 119,
-// state/pop/stamp 133, pop/stamp/state 134, pop/state/stamp 133.
-// Round 22 (lane 18): the loop-head flag as `if (level < 0) return;` 206 (rotated); the choice-pop and
-// next-handler-failure arms as one shared stamp/pop tail 321 (880 bytes); the start callback called through
-// the handler field (no local) 29 (same code); the first enabled test through slot_type_enabled 155 (its
-// `(word >> n) & 1` bit test differs, but kind-2's pop splits as retail). LEAD: an inline bool function of
-// slot_type_enabled's shape with this file's `word & (1 << n)` test, for the first enabled test, splits both
-// the state-one and kind-2 pops as retail (150); with the stamp-first choice arm too 143 (966 bytes) and only
-// the enabled failure differs: a fall-through `dec [mem]; jmp` after the third test, where retail's three
-// tests jump to the fallback pop. On that: if/return, result-bool and preset bodies 143-150 (the last test's
-// polarity never changes); the not-enabled pop chained into the dispatch 143; positive dispatch
-// `if (enabled) { chain } else level--;` 134 (the failures jump into the state-one arm, which fuses), with
-// `continue` in the state-one arm, the kind-2 arm, the else or both arms 119/134/119/134; state-one and
-// kind-2 pops first with the stamp-first choice arm 131 (macro) / 38 (helper, 961 bytes);
-// `usable = function_1a80e0(...)` feeding one `level--` at the loop end 159 (it merges into kind-2's tail);
-// a goto from the enabled failure to the fallback pop 53 (the shared pop is laid out after the enabled tests).
-// Round 57 (lane 11, fast; choice pop stamp-first): one `if` per enabled test 175 (984 bytes, aligned 9: every
-// pop is retail's, state-one, kind-2 and next-handler split, choice fused; only the three in-place `dec; jmp`
-// remain where retail jumps to the fallback pop). So the compound test's shared pop block is what fuses a host: it
-// is absorbed into the tail of kind-2 (chain) or state-one, and that tail's load/dec/store are then alone in a
-// block. Every arm falling into one `level--` at the loop end 157; only the fallback and enabled failures sharing
-// it through a `usable` bool 159; `goto` the fallback pop 159 (absorbed into kind-2's tail, aligned 13); state-one and
-// kind-2 pops first 131; their lower level in a local computed before the stamp 119 (folded); the decrement
-// spelled `-= 1`, `+= -1`, `-1 + level`, `level + (short)-1`, `(short)(level - (short)1)` 119 each; dead trailing
-// stores after the pop `current = NULL` 119, `type = NONE` 119, `handler = NULL` with `continue` 134 (diagnostic).
 // @retail 0x1a7cc0
 void __stdcall function_1a7cc0(long actor_index)
 {
 	s_actor_view *owner = actor_get(actor_index);
 	short level = 0;
+	bool started = false;
 
 	g_46f348++;
 	function_1a7b30(actor_index, (s_flag_bits *)g_557c40);
@@ -990,13 +845,8 @@ void __stdcall function_1a7cc0(long actor_index)
 	if (owner->unknown222)
 		g_46eeb8[0x38]->unknown8 = g_46f348;
 
-	for (;;)
+	while (!started && level >= 0)
 	{
-		bool valid = false;
-		if (level >= 0)
-			valid = true;
-		if (!valid)
-			break;
 		s_slot *slot = &owner->slots[level];
 		short type = slot->type;
 
@@ -1029,13 +879,14 @@ void __stdcall function_1a7cc0(long actor_index)
 
 			if (!check || check(actor_index, current))
 			{
-				function_25aba0(actor_index);
-				function_1a6f70(actor_index);
-				return;
+				started = true;
 			}
-			handler->unknown8 = g_46f348;
-			current->state = 2;
-			level--;
+			else
+			{
+				handler->unknown8 = g_46f348;
+				current->state = 2;
+				level--;
+			}
 		}
 		else
 		{
@@ -1045,8 +896,8 @@ void __stdcall function_1a7cc0(long actor_index)
 
 			if (choice == g_46fbe4)
 			{
-				level--;
 				handler->unknown8 = g_46f348;
+				level--;
 				continue;
 			}
 
@@ -1086,6 +937,11 @@ void __stdcall function_1a7cc0(long actor_index)
 			next_handler->unknown8 = g_46f348;
 			(local_0 < 4 ? &owner->slots[local_0] : NULL)->state = 2;
 		}
+	}
+	if (started)
+	{
+		function_25aba0(actor_index);
+		function_1a6f70(actor_index);
 	}
 }
 

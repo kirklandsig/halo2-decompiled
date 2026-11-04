@@ -1138,6 +1138,27 @@ done:
 // reference pointer 158 (454 bytes, 0xd2a50 72); that with the state struct split into three locals 157 (456,
 // 0xd2a50 97); the split alone 157 (0xd2a50 97); a named cluster pointer for the 0xbf9a0 output and its read 138
 // (473); the exclusion preset false and assigned the definition test inside `if (type == 6)` 133 (470 bytes, setne).
+// Round 162 (lane 4, fast with 0xd2a50). LEAD, not kept (diagnostic forms): one lightmap call reached through a
+// `hit` flag (true, cleared in the object arm, set from the requery, `if (hit) result = lightmap`) gives retail's shared
+// `test al, al; mov [slot], al` tail and the result in memory, 164 at 448 bytes while the flag threads (0xd2a50 lost,
+// probe in ESI). With the join test as `!(excluded & 1)` (or `excluded ^ 1`) 139 at 471 bytes and retail's allocation;
+// plus the existing structure_bsp_collision_available() 150 at 461, entry order result, NONE short, probe copy, flags 112
+// (n,p,f,r 112; p,n,r,f 113; p,f,r,n 130; f,p,r,n 150); plus result a local and the unread parameter kept by an unused
+// `bool const *flag_reference = &parameter` 59 at 470 bytes, aligned 28, 0xd2a50 matching (a plain address cast, or an
+// empty inline taking it, drops the parameter: ret 0xc, 114). Only three things then differ: the NONE short's store
+// before the result's, `test bl, 1` for `test bl, bl`, and the found arm, inline in ours and after the step in retail.
+// So what is left is the join test staying unthreaded with a plain `test bl, bl`, and the found arm's place.
+// Threaded on that 59 form (167, 432 bytes; aligned 155): join test as `&` or `|` of itself, `&& itself`, `(long)` == 0, > 0,
+// a reference, a pointer or a copy of the flag at the join, `while`, `do/while(false)`, `for` or `switch` around
+// the requery, an empty inline before it, a known-false `hit` or `retry` as the compound's first element or second;
+// `-(long)excluded == 0` stays unthreaded 65 [24]. On the kept body: a statement in the else before the test 125; result
+// local 126 (parameter dropped, 0xd2a50 lost); the flag in the unread parameter 126 (dropped); `found` set in arms or
+// from the && test, then if/else-if, 125 each; the requery and found call in an inline taking the flag 155 at 486 bytes
+// (first test stays, second threads); negative dispatch with the found arm in the else 125, with `hit` 164; 16-128
+// unused locals 164 (no tracking limit); the found arm at a label after the step (goto, diagnostic) 59 (ours moves it
+// back inline); `found` tested after the lightmap call with `!found && !excluded` 182 at 428 (found arm after the
+// lightmap, jumped over; the flag still threads), that with found before lightmap 174, as else-if 182, the flag set by if 183;
+// for(;;) with breaks on the 112 form 144 (505 bytes).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
