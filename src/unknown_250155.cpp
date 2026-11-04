@@ -1507,6 +1507,8 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // restored.
 // Round 402: Ordinary inline producer/eligibility/output-query declarations, singles/pairs/all; indexed tails on the all-inline graph.
 // Scores 83/83/83/83/83/83/83/172. NOT kept: no lower count; declarations restored; original complete body restored.
+// Round 106: fixed-bound do scans first/second/both and a shared maximum 83 each;
+// guarded do fills first/second/both 110/103/127; guarded output do 83. Original body restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
