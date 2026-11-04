@@ -2195,16 +2195,16 @@ void function_159460(long player_index, bool *leading, bool *tied)
 
 #include "object_iterator.h"
 
-// MiniMax R (11-01): no new form, no lower score; the remaining difference is pure register
-// allocation in the inlined equipment lookup, and changing the matched release_entry would risk
-// the 0x15b1e0 match.
-// MiniMax R (11-01): no new form, no lower score; a 42-try permuter run left the lookup's swapped
-// registers alone.
 // score 8 (was 8): Round 30 (lane C): the inlined lookup still loads the table base before masking
 // and scaling the object index; retail scales the index first, so the scaled index gets its own
 // register and the base lands in EAX, which in turn moves the tail reload and the iterator LEA.
 // The lookup written as a subscript gives identical code (8); the shared helper still swaps the
 // mode global's register (9). A permuter run was killed before it reported a result.
+// MiniMax R (11-01): no new form, no lower score; the remaining difference is pure register
+// allocation in the inlined equipment lookup, and changing the matched release_entry would risk
+// the 0x15b1e0 match.
+// MiniMax R (11-01): no new form, no lower score; a 42-try permuter run left the lookup's swapped
+// registers alone.
 // Earlier: the inlined equipment lookup keeps the object table base and the index in
 // swapped registers.
 // Round 125: old-index mask at the call 8; char index 38 (192 bytes), short index 41 (195);
@@ -2219,6 +2219,11 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // so only the inlined copy's context differs. Old index named once and passed 8; entry element pointer 8;
 // index renamed entry_index 8; the cast receiver as a typed equipment local for every entry access 8;
 // bounds test negated with the clear arm first 8. Restored.
+// Round 147 (lane 5, fast): the release's lookup through the file's existing engine_object_get 9 (the
+// hoisted globals swap EBP/EDI); this function as a member of c_engine_equipment, `this` the entries
+// and release_entry called on `this` (0x162060's call updated) 8; both 9; the scenario in a named
+// local for the bounds test 8; the upper bound tested first 13. A compile-only copy gives data-first,
+// in-place scaling for every spelling of the lookup (getter, absolute-index local, header local).
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
