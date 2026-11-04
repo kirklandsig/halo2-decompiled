@@ -312,6 +312,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
 // then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
 // executable body and helpers restored; success/input/minimum/hit homes remain.
+// B412: Four-query termination from the real origin/length/hit/distance array extent,
+// native long/short ordinal from the cursor: 697/690/700/709/639/719/707/703.
+// All regress and move the frame; original traversal, helpers and in-place captures restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -578,6 +578,9 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 50 (m3 lane 15, fast; 0x245aa0 checked): the side flags as `(code & 0x8000) != 0` 209 (same code); the
 // facing arms inverted on `!=` 209 (same code); the facing test as one ternary condition 211; the equal-material
 // case as an early return 209 (same code); short codes with `< 0` sides 224 (762 bytes, 0x245aa0 lost to 6).
+// B412: Complete ordered-facing rejection to the sole void exit, bool/byte/short/long
+// sides with original/staged cross: 211 each. Original body restored; frame 0x24/0x2c,
+// material/side homes and delayed matrix acquisition remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
