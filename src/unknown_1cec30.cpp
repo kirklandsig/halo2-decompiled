@@ -2429,6 +2429,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // B389: Complete final-speed factor/numerator/denominator nodes, masks 1/2/4/3/6/5/7,
 // then original speed with division in place: 91/91/278/91/99/88/99/91. NOT kept: factor plus
 // denominator gains only three and only together; original body restored, early velocity j/k and zero homes remain.
+// c1B (statement walk, no logic difference found: every test, field, constant and store order agrees with
+// retail; the whole gap is the velocity block and the property-zero register): scalar velocity components
+// after the length (vj/vk, vi, or all three, assigned in both arms or scaled in place) preload the loads
+// like retail but keep copies and rename the registers, and they change the first contact loop's normal
+// sum (addss xmm4, [contact]) as well: 359/326/376/359 with the old setter (1454 bytes), 281/371/275/281/
+// 275 with the setter building its word first (1454 bytes, the three setter sites then agree); only j/k
+// scalars with velocity.i scaled in memory 159/153 (1467-1470 bytes). Not kept.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
