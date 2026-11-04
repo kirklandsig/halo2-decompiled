@@ -46,6 +46,8 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 	return token;
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (128); EBP is still saved at the token traversal
+// rather than in retail's prologue, and the scalar homes still sit 4 below retail's.
 // score 128 (was 128): frame 0xa44 agrees; EBP is saved at token traversal rather than the
 // outer block, and read-size/count/cursor homes differ. Round 28: the scalar homes sit 4 below retail's (the token
 // array agrees); EBP is saved and restored around the token loop only. Clamp as a MIN macro / an if / a PIN macro
@@ -277,6 +279,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N351: One outer admission/cache-finalization exit, counter/table order, returned path and outer-buffer subsets 0..7:
 // 128/126/126/126/128/126/126/126. NOT kept: no exact match or qualifying gain; complete original body restored.
 // Remaining: outer EBP preservation and read-size/count/cursor homes.
+// F377: Separate duplicate-equality outcome across the ordinal search, bool/byte/char/word/
+// short/int/long/dword: 203/203/203/203/203/203/203/203. NOT kept: unmatched flag carriers;
+// original complete body restored; outer EBP preservation and read-size homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

@@ -869,6 +869,10 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // with a shared attempt store 97. Opening body restored.
 // Round 41 (lane 2, fast): the shared reader's local non-volatile with a C address taken, as `(void)&local`, a dead pointer,
 // a const reference, a volatile pointer, or LARGE_INTEGER 93 each (the zero stores vanish); a volatile store through a cast 2.
+// Round 132 (lane 8, fast): a file-local reader with a volatile LARGE_INTEGER 2, a volatile long[2] 2, a volatile two-long
+// struct 2; the local's address passed to an inner forceinline holding the store and the rdtsc 2, a two-long array passed that
+// way through a volatile long pointer 2. Harness, prologue only: non-volatile through that inner forceinline by pointer or by
+// reference 144 (the stores vanish).
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {

@@ -672,6 +672,10 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // then arm 74 (226 bytes); gotos in both arms 10; `return result` / `return true` 20 (retail's block order, but the false exit
 // folds to `xor al, al` and BL takes the true result); `return false` then the restore and the goto 25; a `would_block` local
 // assigned to the result 74; the result from the sentinel, tested, then the restore 74.
+// Round 127 (lane 7, fast): `sent = -1` threaded from the failed call 10, with the `!= -2` test and two gotos 10; long
+// sent 33; `sent == -2` ahead of `sent < 0` 38; a named bool for the prepare call 10; `sent = 0` then `if (written)` 47.
+// Compile-only: direct returns fold with the result written through an inlined reference or pointer, a reference local,
+// an address-taken local, or as char/byte/long; the single-join form puts the false exit's compensation block after the restore.
 // Round 102: const position 10; the send count declared at the iteration top 10; position/written declarations
 // swapped 10; a direct completion return 67; direct builder and ordinary-failure returns 64; direct builder and
 // would-block returns 28; all three failure paths direct 64; an inline method declaration 10. Original body restored.

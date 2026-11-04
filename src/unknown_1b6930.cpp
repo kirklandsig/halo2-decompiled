@@ -132,6 +132,10 @@ short __stdcall function_272af0(s_match_globals *structure, point3f const *point
 // Round 79 (fast): the success stores in a forceinline taking the view and entry 2 (not keepable, one caller); a second view
 // pointer 2; the state value in a named short 2; a named found test 2; the test as a conditional expression 111 (699 bytes);
 // the definition read through an entry pointer 2.
+// Round 88 (fast): `do {} while (false);` at each of 25 statement boundaries from the request's +0x1c store on 2 each;
+// the definition read before the reference test 7; the copy through a const reference 2; a const view pointer 2;
+// re-measured: the read after the view store 140 (the view leaves its stack home, whole body moves); the result set
+// from the test in one expression 138 (690 bytes); the type as a ternary 44 (687 bytes).
 // @retail 0x1b69e0
 bool __stdcall function_1b69e0(long actor_index, long prop_index)
 {
