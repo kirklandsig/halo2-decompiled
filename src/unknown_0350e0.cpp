@@ -1861,6 +1861,10 @@ real game_time_get_seconds();
 // F366: Complete reflection/displacement/both product parts, size/opacity/both spans,
 // distance ratio parts and angular normalization parts: 539/507/539/507/572/572/507/507.
 // All restored; native 0x94 frame and output homes remain, without altered arithmetic grouping.
+// F370: Complete distance/angular/source-visible attenuation result subsets
+// 1/2/4/3/5/6/7 give 559/522/509/559/564/526/564; all with complete context-alpha
+// arms 556. NOT kept: all regress; native frame/output homes remain. Original
+// scalar results, observations, API and full body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3294,6 +3298,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // recursive neg/sbb/inc and a final test/sete; retail copies and returns its positive byte
 // directly. The other forms regress. Original complete body and positive result restored; frame
 // and fade scratch homes remain.
+// F370: Complete temporal lower/upper/interior result producer, with object/alpha/
+// final outcome subsets 0/1/2/3/4/5/6/7: 176/218/176/218/176/218/176/218.
+// NOT kept: one-point leads are below the bar and leave frame 0x18 versus 0x1c;
+// all original positive result paths, local qualifier and full body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4649,6 +4657,10 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F366: Homogeneous unculled/configured/both mode-table traversals, then head-tested pair,
 // positive fixed-count pair and advancing cursors: 277/263/296/277/263/277/263/290.
 // All regress and shorten; original callback and shared helpers restored; late pass stores remain.
+// F370: Parameter-owned enabled result, rejection/conditional updates in
+// byte/word/long/dword: 248/221/215/215 and 207/232/255/255. NOT kept: every
+// form also regresses both other shared users. Original separate result, helper
+// contracts and callback restored; late pass bytes and mode loads remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
