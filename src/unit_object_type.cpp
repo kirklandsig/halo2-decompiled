@@ -1875,7 +1875,11 @@ void __stdcall function_d0870(long weapon_index, long unit_index, long secondary
 // expansion (0xb58c0 with the two slot bits, then 0xcea00) is written out in the loop: the old static helper
 // stayed out of line under inline_depth(0) and cost the 105. Forms tried for the jump, all 1: continue-first
 // body, while loop with i++/slot++ in the body, do-while, unit declared outside the loop. slot++ before i++ 9;
-// slot declared before i 7.
+// slot declared before i 7. Round 1 of #1049, none moved it: indexed `slots[i]` without a slot pointer 31
+// (no pointer induction variable, cmp [eax+ecx*4]); `*slot++` in the test 42; init in for-init with `slot++, i++`
+// 11; a named short slot_index for the shifts and indexing 1. Retail's skip edge treats eax as stale (reloads it)
+// but ecx as live, so the compare operand there is probably a separate web from the slot variable; no source
+// form found that does that.
 // @retail 0xccf20
 void function_ccf20(long unit_index)
 {
@@ -2346,7 +2350,11 @@ void function_cfec0(long unit_index)
 // (mov eax, ebx), so it did not fold the value there. Tried: a result variable returning at each level 47;
 // early-return chain 99; nested ifs with one final return and the parameter reassigned 62 (one shared epilogue,
 // all four registers pushed first); early return for NONE at the top 92; a result variable with one final
-// return 113.
+// return 113. Round 1 of #1049, all still 2 (or eax, -1 kept): result variable / copy of the parameter
+// (`original`) returned at the last exit; `valid = unit_index != NONE` as the test; (dword) casts on the compare;
+// while instead of if. Failing differently: `~unit_index != 0` 96; early return of unit_index for the NONE case
+// at the top 99 (layout moves the exit first). The optimizer substitutes -1 on the NONE edge whatever the
+// spelling of the returned copy.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -4353,6 +4361,10 @@ store:
 // named normalized fraction, shared velocity addition and first/second/both library copies 4 each.
 // Frame and all other instructions agree; the cone argument setup remains.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 1 of #1049, all 4: scale * 0.3926991f in a named max_angle local (before or after the seed local);
+// speed and direction declared up front with a separate assignment; forward and result pointers as named locals;
+// `speed = speed * scale`. Retail's order (fstp, forward, result, seed) is the source order of the call's
+// arguments after the spill; ours emits the forward pointer before the spill and the result after the seed.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {
