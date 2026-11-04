@@ -3588,27 +3588,35 @@ long __stdcall function_c7160(long unit_index, short seat_index, long a, long ve
 
 /* throws away all the unit's grenades: outside mode 4 each one becomes a
    grenade object that is dropped (0xce470) */
-// score 148 (was 364): the 0xce470 drop is written out at the call site (retail has it inline). What differs is
-// frame 0xd0 versus 0xd8: retail keeps the type index (indexed count test) beside the stepped count pointer and
-// the offset, with the count base and grenade pointer spilled (five loop slots against our three).
+// score 49 (was 148): the 0xce470 drop is written out at the call site (retail has it inline). Round 3 of #1049: a
+// hand-stepped byte offset for the grenade pointer (grenade_offset += 0x2c) beside the stepped count pointer, with the
+// count tested through the unit by type index, keeps the type index apart from the count pointer: the compiler no longer
+// merges them, the frame is retail's 0xd8 and the size 423. Left: retail tests the loop on the offset (cmp ecx, 0x58)
+// where ours tests the type (cmp edx, 2), and its entry keeps the count base in EAX with the offset in ECX (ours puts the
+// base in ECX/EAX the other way round and the type in EDX). No behaviour difference found in a statement walk.
 // Tried: inline drop 364 (kept the call); pointer body step 364; indexed counts 364; entry placement 364;
 // with the inline drop: pointer or indexed counts, separate base plus stepped pointer, test by pointer and
 // decrement by index, all 148 (the compiler merges the index into the pointer); forced split count base 148;
-// forced body step 148.
+// forced body step 148. Round 3: test on the offset (offset < 0x58) in any spelling 146-148 (the type folds into the
+// count pointer again, 390-400 bytes); type or offset declared before the loop 146; short type with the offset test 54
+// (movsx where retail loads a dword); count < counts + 2 test 114; type and count tests together 107; unit lookup
+// or counts base declared in other orders 49-52.
 // @retail 0xceb30
 void __stdcall function_ceb30(long unit_index)
 {
-	char *count = UNIT_GET(unit_index)->grenade_counts;
+	s_unit *unit = UNIT_GET(unit_index);
+	char *count = unit->grenade_counts;
+	long grenade_offset = 0;
 
-	for (long type = 0; type < 2; type++, count++)
+	for (long type = 0; type < 2; type++, count++, grenade_offset += 0x2c)
 	{
 		byte *globals = (byte *)g_4e034c;
 
 		if (*(void **)(globals + 0x100))
 		{
-			byte *grenade = *(byte **)(globals + 0x104) + type * 0x2c;
+			byte *grenade = *(byte **)(globals + 0x104) + grenade_offset;
 
-			if (grenade && *count > 0)
+			if (grenade && unit->grenade_counts[type] > 0)
 			{
 				do
 				{
@@ -4045,13 +4053,14 @@ have_reference:
    +0x1b8 entries) toward 1 while their condition holds, else toward 0:
    the first while +0x248 is set (or flag 1), the second while +0x24c is
    set apart from it; whether any moved */
-// score 110 (was 129): same size as retail (513). What is left is one register choice: the constant -1
-// is kept in EBX across the whole function (the parent/seat tests and every NONE test in the loop),
-// where retail builds it in EAX for the two tests before the loop and compares the loop's with an
-// immediate, so ours also keeps the definition's time table in EDX and EDI. The whole body inside
-// `if (!flag)` with one `return result` gives retail's shared early exit, flag 2 of +0x10a through the
-// word bitfield view and the flag clear through bit_vector_set give retail's loads and in-place AND.
-// No effect (110 each): parent index in a local, parent and seat tests nested, seat in a local.
+// MATCH (was 110; round 1-2 of #1049 129 -> 110). Round 3 of #1049: the draft set `active = false` in a
+// `default:` arm; retail clears it (`xor al, al`) BEFORE the switch, so `bool active = false;` is declared
+// ahead of the switch and the switch has no default. That freed the registers: the -1 constant is no longer
+// kept in EBX (retail compares the loop's NONE tests with an immediate) and the time globals pointer lands in
+// EBX. The whole body inside `if (!flag)` with one `return result` gives retail's shared early exit, flag 2 of
+// +0x10a through the word bitfield view and the flag clear through bit_vector_set give retail's loads and
+// in-place AND. No effect (before the fix): parent index in a local, parent and seat tests nested, seat in
+// a local (110 each); the time globals pointer cached in a local (108).
 // @retail 0xc5eb0
 bool function_c5eb0(long unit_index)
 {
@@ -4072,7 +4081,7 @@ bool function_c5eb0(long unit_index)
 		for (long i = 0; i < *(long *)(definition + 0x1b8); i++)
 		{
 			real const *time = (real const *)(*(byte **)(definition + 0x1bc) + i * 8);
-			bool active;
+			bool active = false;
 
 			switch (i)
 			{
@@ -4081,9 +4090,6 @@ bool function_c5eb0(long unit_index)
 				break;
 			case 1:
 				active = unit->unknown24c != NONE && unit->unknown24c != unit->unknown248;
-				break;
-			default:
-				active = false;
 				break;
 			}
 			if (!(TEST_FIELD_BIT(((s_unit_flags_10a_view *)&unit->flags_10a)->bit2)) && active)
@@ -5305,6 +5311,23 @@ struct s_unit_damage_source
 // Tried: largest declared first 200 (index lands in EDI); slot not reset to NONE before the
 // slot-0 test 231; largest tested directly as a short 191; `slot = largest != 0 ? 0 : NONE` 211;
 // the seat NONE test inside each type arm 146; the seat index set by an if/else 140.
+// Round 3 of #1049 (retail walk: no logic difference found; the callee, its arguments and every field agree):
+// what keeps the score is the constant -1. Retail hoists NONE into EBP for the second half (`or ebp, -1` after
+// the notify test; the team, player, player-unit and both seat tests compare against EBP; the object test and
+// the two tail tests use an immediate where EBP is reused), puts the objects pool in EDI and the header in EBP,
+// and keeps the seat test in each type arm (two `cmp ecx, ebp`) with one shared lookup. Ours compares every
+// test with an immediate, merges the two seat tests after the ternary, and takes the pool in EBP. Nothing
+// triggered the hoist: seat test in each arm of an if/else (the compiler merges them again) 146, an extra
+// `responsible_index != NONE` 150 (858 bytes), `responsible_index` uninitialised 140, the whole betrayal part
+// nested under `if (notify && team != NONE && ...)` 140. Every second-half change below also flips the first
+// loop's `total += amount` to `movss xmm1, [src]; addss xmm1, amount` (retail: movaps then addss with the
+// source), so its score is not comparable: `largest` kept as a short with no `kept` (16-bit compares) 191;
+// `(long)largest` casts 191; `kept` declared before `largest` 140; the threshold compare cast to short
+// (`cmp cx, bx` as retail, instead of ours movsx + 32-bit) 146; the pool cached in a local, `objects` (lands in
+// EDI as retail) 146; that with the object path's unit in its own `s_unit *object_unit = 0` assigned to
+// `responsible` after the header test (gives retail's `xor esi, esi` / `test esi, esi` shape) 146 at 848 bytes,
+// also 146 and 854 bytes without the pool local. Not kept: none lowers the score. Largest-block residual: retail
+// keeps `slot` live in EAX across the block so `largest` takes EDX and widens in place (`movsx edx, dx`).
 // @retail 0xca700
 void __stdcall function_ca700(long unit_index, real amount, short type, bool notify, long player_index, short team,
 	long object_index, bool flag)
@@ -5446,6 +5469,12 @@ void __stdcall function_ca700(long unit_index, real amount, short type, bool not
 // getter 205; frame 0x6c agrees. Shared cross 212; scaled differences 205; native byte/word flags
 // 206/206; role names 206; separate thresholds 206; shared writer 188; writer wide extraction 188;
 // initial clears only 192; weight names 188; writer scaled/cross/both 224/203/223.
+// Round 3 of #1049: a fresh statement-by-statement walk against retail found no behaviour difference (flags, the still
+// test, the cross product, velocity/acceleration, the three k-j-i dots, the limits and the smoothing all agree). Swapping
+// the operands of each of the six cross-product terms singly 165-166 (the compiler orders commutative operands itself);
+// reading g_510c54->field_2_3 at each use instead of through ticks 168 (935 bytes); limit declared bare and assigned
+// before its test 165. Retail keeps only forward.k and the three up fields in registers at the top and reads forward.i/j
+// from memory, and keeps keep in XMM0 loaded first where ours has it in XMM1.
 // @retail 0xce0c0
 void function_ce0c0(long unit_index)
 {
@@ -6303,11 +6332,12 @@ void __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 static __forceinline void unit_perform_request(long unit_index, long type)
 {
 	s_unit_request request;
+	s_unit_request_definition *definition = g_4677c8[type];
 
 	memset(&request, 0, sizeof(request));
 	request.type = type;
 	function_b7360(unit_index);
-	bool result = g_4677c8[type]->perform(unit_index, &request);
+	bool result = definition->perform(unit_index, &request);
 	if (unit_index != NONE)
 	{
 		long player_index = UNIT_GET(unit_index)->unknown13c;
@@ -6328,8 +6358,22 @@ static __forceinline void unit_perform_request(long unit_index, long type)
 /* the unit dies: the biped's death (0xe4a20), its player and actor let
    go, its weapons and grenades dropped, it leaves its seat, its requests
    end (unless a ragdoll timer runs, when forced) and its actions stop */
-// score 323 (was 628): Frame 0x24 agrees; unit entry, callback loads and request-result homes differ.
-// Inline request helper 628; forced expansion 323; two-hand do/while 323; entry request workspace 324; zero aggregate 327.
+// score 224 (was 243): Round 3 of #1049. Same size as retail (1175 bytes) and the same 312 instructions in the same
+// order; only registers, two address folds and the hand loop's second argument differ. The bit-21 clear is
+// bit_vector_set (retail loads the flags, adds 0x134 to the pointer, ANDs, stores: +15 bytes, 243 -> 229); each
+// request handler is read before the request is cleared (retail keeps it in EBX across 0xb7360: 226); the bit-1
+// clear as bit_vector_set puts the flag load after the 1.0f load as retail (224). Still differs: (1) retail
+// passes 0x100430's value from a stack word (mov word [esp+0x44],0 in the dead
+// `knocked` slot, reloaded as a dword; the callee uses only its low word, so behaviour is the same) where ours
+// pushes 0; (2) retail adds the base explicitly before the 16-bit loads at +0xc (weapon state) and +0x28
+// (controller, twice): `add eax, base; mov ax, [eax+d]`, ours folds them into the address; (3) the flag-clear
+// temp is EBX (ours EDX); the request zeroing uses EAX in the 0x1e block and its first/second copies (ours
+// ECX/EDX); the interrupted-callback state pointer is EBP, value EBX (ours the reverse). Callers: 0xc42e0 stays 5
+// (blocked by 0xd6800's convention, not by this), 0xca0b0 stays 344.
+// Tried: inline request helper 628; forced expansion 323; two-hand do/while 323; entry request workspace 324;
+// zero aggregate 327; word local, volatile word local (219 but movzx and a size of 1176, not kept), word_flags_set
+// local for the value 229 (folded to push 0); player pointer local, data base local, forceinline player helper
+// for the controller read, weapon block pointer local 226/224 (folded, no change).
 // @retail 0xcaa60
 void __stdcall function_caa60(long unit_index, long object_index, point3f const *point, bool knocked, bool force)
 {
@@ -6369,7 +6413,7 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 		unit->actor_index = NONE;
 	}
 	unit->unknown2e0 = g_510c54->game_time;
-	unit->flags_134 &= ~2;
+	bit_vector_set(&unit->flags_134, 1, false);
 	function_d0e00(unit_index, 1.0f);
 	unit->unknown148 = 0;
 	s_unit *again = UNIT_GET(unit_index);
@@ -6388,7 +6432,7 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 			function_100430(index != NONE ? holder->weapon_object_indices[index] : NONE, 0, 0.0f);
 		}
 	}
-	UNIT_GET(unit_index)->flags_134 &= ~0x200000;
+	bit_vector_set(&UNIT_GET(unit_index)->flags_134, 21, false);
 	if (unit->parent_index != NONE)
 	{
 		if (unit->parent_seat_index != NONE)
