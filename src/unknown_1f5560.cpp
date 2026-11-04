@@ -1024,6 +1024,8 @@ real normalize2d(point2f *v);
 // DH334: Standard typed request-point/normalized-planar/facing-planar record ranges,
 // seven subsets then complete backward ranges: 144/180/194/185/197/198/202/205. NOT kept: all regress;
 // original publications and complete body restored; retained DL and return transport remain.
+// DL260: Complete persistent/candidate outputs, directions and speed identities; matched initial-speed provider ordinary inline: 135/135/135/135/135/135/135/135/141.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

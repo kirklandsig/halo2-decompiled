@@ -717,6 +717,8 @@ real function_267370(long object_index);
 // through a header pointer local 100; the carrier test inverted with an empty arm 98; both NONE resets ahead of the byte
 // flags 103; the zone result in a named bool 100; the class read after the sample call 98. Diagnostic: the zone statement,
 // the resets or both inside `if (1)` 98 each, so call-site nesting does not move the -1 sharing here.
+// DL260: Existing zone predicate with one completion-time optional-index publication, short/int/long/dword carriers in bool/byte result graphs: 96/96/96/96/375/375/375/375.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
