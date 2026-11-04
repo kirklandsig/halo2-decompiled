@@ -1097,6 +1097,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // P298: Actual turn admission at entry/sample/scaled/rotation boundaries, short-circuit
 // 382/335/203/192; eager Boolean inputs 336/183/183/183. All restored; rotation
 // multiplicands and exit scheduling remain. NOT kept: early decision lifetimes did not match.
+// B422: Actual goal-alignment cutoff admission, bool/byte/short/long, positive/complementary:
+// 142/142/142/142/142/142/142/142, all 1382 bytes. NOT kept: no byte match; decision residence worsens rotation allocation.
+// Original complete body restored; vector/axis products, side dots and final copy scheduling remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

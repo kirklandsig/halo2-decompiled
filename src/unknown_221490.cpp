@@ -745,6 +745,9 @@ bool sound_driver_voice_create_buffer(
 // B393: Both SDK creation outcomes bool/byte/word/long, success then failure polarity,
 // with original descriptor phases and modes: 71/71/71/71/71/71/71/71. NOT kept: no exact match;
 // original complete body restored; spatial/play carriers and descriptor zero/input homes remain.
+// B422: Complementary playback with the original positive spatial predicate, bool/byte/short/long,
+// playback-first then spatial-first: 154/154/150/125/153/153/153/154. NOT kept: no byte match; all regress.
+// Original complete body restored; spatial/play carriers and descriptor zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

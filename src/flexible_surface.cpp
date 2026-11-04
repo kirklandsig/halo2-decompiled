@@ -548,6 +548,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // Round 206 (m3 lane 3, fast): sine, axis draw, then cosine 117 (same code); cross3f(&axis, &old) added 134 (881
 // bytes); cross and dot on the global with the `old` copy after them 164 (893); diagnostic: 0x2551f0's unit-axis rotate
 // body on the `old` copy, copied back 201 (918); the fraction draw before the time 193. Retail ret is plain, as ours.
+// B422: Current-frame rotation admission, bool/byte/short/long, positive/complementary:
+// 117/117/117/117/117/117/117/117. NOT kept: no byte match; all canonicalize to the original complete body.
+// Original observations restored; frame 0x28/0x20 and seed/time/direction/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
