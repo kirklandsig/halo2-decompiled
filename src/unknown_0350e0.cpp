@@ -1761,6 +1761,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // DH366: Original final projection zero/nonzero admission, bool/byte/short/long outcomes:
 // 193/193/193/193/193/193/193/193. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// DH373: Complete default-mode admission/rejection before the original switch,
+// bool/byte/short/long: eight at 286 (696 bytes; caller 610). NOT kept: regression and
+// larger length gap; original dispatch, projections, helper and result restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3469,6 +3472,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // DH366: Original-site first raw/clamped fade equality, accepted/rejected bool/byte/short/long outcomes:
 // 177/177/177/177/177/177/177/177. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// DH373: Lazy parent-presence/absence outcomes at their original recursive admission,
+// bool/byte/short/long: eight at 177. NOT kept: no native frame repair or equality; original
+// positive recursive result and full body restored. Initial/final fade scratch homes remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4877,6 +4883,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // culled/gated/both/unculled/culled-unculled/gated-unculled/all families:
 // 1445/1683/1635/1841/1772/1984/1937/2137. NOT kept: every graph expands and worsens shared users;
 // original full contract and caller restored. Late pass bytes and mode loads remain.
+// DH373: Existing shared-pass result, gate, cull, depth, filter, mode, group and target
+// lexical identities: eight at 138. NOT kept: no byte match or gain. Original helper and
+// complete callback restored; late enabled bytes, dead mode loads and clear convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

@@ -272,6 +272,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // direct/captured header base: 97/97/136/136/93/93/95/95. NOT kept: every form loses
 // the matched caller (146/213/13); best gain three is below the gate.
 // Original handle capture, dispatch observations and complete body restored.
+// DH373: Original-site secondary-kind equality/inequality outcomes in bool/byte/short/long:
+// eight at 96; matched caller and file controls unchanged. NOT kept: no native entry repair
+// or equality; original repeated dispatch, body flags, result and full convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
