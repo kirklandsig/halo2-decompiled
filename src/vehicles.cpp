@@ -4777,6 +4777,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // 1/2/4/3/5/6/7 then const all: 749/749/773/749/773/773/773/773.
 // NOT kept: ties/regressions; reverse residence shortens to 2952/2974.
 // Original observations/body restored; native entry definition and SSE homes remain.
+// F387: Complemented forced-active state in bool/byte/short/long with logical
+// terminal truth 749/749/749/749; complete terminal arms 763/763/748/748.
+// NOT kept: one-point leads below gate; entry definition and SSE homes remain. Original body restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5344,6 +5347,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // and named signs: 1087/1112/1087/1113/1113/1113/1107/1105. NOT kept:
 // ties/regressions; do recovers the 0xc bound but frame stays 0xf8 versus 0xd8.
 // Original complete limiter/body restored; index and matrix/vector homes remain.
+// F387: Complemented flip/boost/side-flip predicates, masks 1/2/4/3/5/6/7,
+// 1159/1089/1087/1161/1159/1089/1161; native boost byte on weighted-driver graph 1141.
+// NOT kept: ties/regressions; frame/index/rotation homes remain. Original full body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

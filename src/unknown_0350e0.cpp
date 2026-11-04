@@ -139,6 +139,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Y577: Serial first/second/both turn publication and producer-local input windows,
 // then those four graphs with symmetric two-axis partials: 356/357/357/356/356/357/357/356.
 // NOT kept: all tie or regress; frame 0x98/0x90 and concurrent x87 inputs remain. Original helpers/body restored.
+// F387: Existing component-array views at axis observations, matrix-row stores,
+// rotation operands and returned components, masks 1/2/4/8/3/12/7/15: 356 each.
+// NOT kept: all tie at 1775/1779 bytes and frame 0x98/0x90. Original helpers/body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2878,6 +2881,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Y577: Indexed paired/fallback receivers and duplicate element reference, seven subsets,
 // then complete graph with creation reference: 375/396/317/399/375/396/399/399. NOT kept: no equality;
 // original full body restored. Native state/prefix and ordinal homes plus decay rotation remain.
+// F387: One-past retained-tail boundary with found in bool/byte/short/long, then
+// complemented missing state in those domains: 389/389/397/399/389/389/395/397.
+// NOT kept: all regress at native length; prefix/state and ordinal homes remain. Original body restored.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4049,6 +4055,9 @@ bool __stdcall function_391f0(void *state);
 // uninitialized entry declarations, masks 1-7, then complete visible-scan
 // declarations: 251 each. All initializers stay at their original statements.
 // Original body restored; extra frame word, early zero and portal/fog homes remain.
+// F387: Complemented update/render failure predicates in bool (update/render/both), byte
+// (update/render/both), then both in short/long: 252/253/254/252/253/254/288/277.
+// NOT kept: all regress; frame 0x74 and early zero/portal homes remain. Original body restored.
 // @retail 0x36b50
 void function_36b50()
 {
