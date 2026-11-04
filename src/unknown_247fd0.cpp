@@ -348,6 +348,14 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // stdcall in positions 6/1/4: 55 each at 870 bytes. NOT kept: no exact entry-contract
 // form or gain. Original signature/caller/body restored; post-sample split cache
 // comparison and evaluator/spawn/child scratch allocation remain.
+// M355: Native cache validity ranges, clear/publish/request masks 1/2/4/3/5/6/7,
+// then complete high-to-low publications: 55/55/135/55/135/135/135/135.
+// NOT kept: unmatched field representation; original validity and full body restored.
+// M357: Child admission produced after interface refresh, positive then complementary bool/byte/short/long:
+// 55/55/55/55/55/55/55/55. NOT kept: no exact producer/contract form; original complete body restored.
+// M359: Actual allocated-handle/spawn-input/child-ordinal home-name subsets 1-7,
+// then all with the child handle, on the retained reconciliation graph:
+// 55/55/55/55/55/55/55/55. NOT kept: no home or folded-compare gain; original body restored.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -721,6 +729,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // B400: Geometry-kind/contact-query/terminal-dispatch decision results, masks 1/2/4/3/5/6/7,
 // 359/359/359/359/359/359/356; complete graph with native loop predicate 356.
 // NOT kept: no exact match or gain; original complete body restored; late EBP save and sample/blend/getter homes remain.
+// B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
+// age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
+// original complete body restored; late EBP save, escaped blend and random/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

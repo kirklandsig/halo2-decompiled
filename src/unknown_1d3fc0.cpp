@@ -269,6 +269,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // P305: Existing shared first-up/post-projection-up/left normalization subsets
 // 156/110/152/156/153/152/153; all with readonly forward 153. Original helper,
 // includes and complete body restored; reciprocal/late-K ownership and schedules remain.
+// M352: Four-use normalizer input-reference/returned-reference/both contracts, each
+// with original/short-vector exit, then input/both references with float absolute API:
+// 110/110/110/110/110/110/110/110. All canonicalize; original helper and complete body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

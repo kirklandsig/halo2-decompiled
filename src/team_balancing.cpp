@@ -675,6 +675,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // P306: Complete current/best solution receivers, pointer/reference singles and pairs:
 // 67/67/84/84/84/84/84/84. NOT kept: best bindings reach 512 bytes but regress;
 // original record observations, selection, publication and complete body restored.
+// M358: Original less-first acceptance byte/short/word/long and complementary rejection
+// bool/byte/short/long: 67 each. NOT kept: one-use decision carriers do not match;
+// original query graph restored; reference-first spread calls and two extra bytes remain.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -1052,6 +1055,15 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // Round 200 (m3 lane 3, fast): clamp `(excess > 0 ? excess : 0)` 43, `(excess >= 0 ? excess : 0)` 34,
 // `maximum_imbalance >= (...)` 35; `extra_count + player_count` alone 34; per-loop index declarations
 // (`long i` / `long j`) 34. All restored.
+// M354: Standard forward/backward input copy before/after maximum reduction,
+// branch/conditional maxima 76/76/77/77/76/76/77/77.
+// NOT kept: split library-copy ownership misses the native combined scan/fill allocation.
+// M356: Reverse combined copy/maximum pass, indexed/cursor, direct/reused sample,
+// branch/conditional maximum: 41/41/73/73/64/64/64/64. NOT kept: all regress;
+// sampled/cursor forms also raise the caller. Original forward combined pass restored.
+// M358: Inclusive maximum-update admission, positive/complementary bool/byte/short/long:
+// 34 each. NOT kept: one-use predicates do not match. Original combined scan/fill restored;
+// player-count EAX/EDX, late fill-value load and clamp homes remain.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

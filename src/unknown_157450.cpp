@@ -5658,6 +5658,9 @@ void __stdcall function_d6bc0(long object_index);
 // declared before the rate 180 (884 B: frame 0x18, but the timer slot lands between object and preset where retail's
 // sits between rate and scenario); the timer renamed 180 (no move); `if (*timer > 0) { if (--*timer == 0)` 144 (same
 // code); the modifier as a nested ternary 159 (874 B); the object lookup indexed by `(word)index` 182 (movzx).
+// M346: Actual eligibility-query outcome at its original admission test,
+// bool/byte/char/signed-char/short/word/int/long: 144 each, exact 869-byte extent.
+// Frame remains 0x14 versus 0x18; timer spill and entry-base reloads remain. Original body restored.
 // Lane 13 r58 (fast): the schedule's two index tests written on the `index` local 159; d6bc0 given `index` 148;
 // both 165 (863 B); the timer pointer formed with the index read and used for the reset block's `= 1` 155 (872 B);
 // a bool schedule with the same initializer 167 (862 B). Retail's frame order (pre-push): object 0, preset 4, i 8,

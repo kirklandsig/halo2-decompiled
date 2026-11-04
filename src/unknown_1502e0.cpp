@@ -476,6 +476,12 @@ struct s_tail_player_identifier
 // N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
 // and the CRT int comparison result: all eight 31. Original body restored; options
 // acquisition, delayed saves and comparison register ownership still differ.
+// M348: Comparison transport unsigned-long/short/word/signed-byte/byte 31/67/67/67/67;
+// equality carrier 31; negative continuation/explicit mismatch arms 32/32.
+// NOT kept: no byte match; native options/identifier/comparison homes remain.
+// M350: Immutable player/scenario/full-comparison storage, seven subsets, then
+// fixed read-only player identity: 31 each. Original lookup phases and upward
+// scan restored; options acquisition and identifier/comparison homes remain.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1370,6 +1376,12 @@ void function_150820(dword *bits, bool local_only)
 // N345: Isolated player/hand/unit/held-slot/held-weapon/selector/parameter role names
 // and the int hand-negation result: all eight 43. Original body and calls restored;
 // ESI/EDI player/hand ownership still differs.
+// M348: Hand unsigned-long/word/byte/signed-byte 43/81/89/89; positive result
+// byte/signed-byte/short/long 92/92/90/91. NOT kept: no byte match;
+// native player/hand homes remain. Original body and call tuples restored.
+// M350: Immutable captured hand/slot/weapon values, seven subsets: 43 each;
+// initialized four-byte mode output 86. Original body and calls restored;
+// native ESI player/EDI hand ownership remains.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

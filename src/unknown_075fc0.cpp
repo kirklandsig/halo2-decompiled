@@ -148,6 +148,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // F363: Native record input-flag byte domains, subsets 1/2/4/3/5/6/7,
 // then all signed bytes: 408/408/408/408/408/408/408/408. Original flag domains and body restored;
 // frame 0x3c/0x34 and observer/result/counter homes remain.
+// M352: Reliable payload producer/native failure arms/positive arms/test-produced result/
+// failure predicate/quotient producer/nested capacity gate/payload with failure arms 408/418/426/416/408/408/408/418.
+// All restored; frame 0x3c versus 0x34 and observer/channel/result/counter homes remain.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

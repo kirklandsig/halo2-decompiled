@@ -389,6 +389,9 @@ struct s_block_candidate
 // P309: Initial page/category-limit admission as positive/complementary bool/byte/short/long
 // producer outcomes: 347/347/347/347/347/347/347/347. NOT kept: one-use outcomes
 // do not match; original complete body restored, missing frame dword and page/ring homes remain.
+// M352: Final failure-limit observed/capped/branch-produced/complementary minimum,
+// compound/nested independent failure-category guards, eight forms 347/347/347/347/347/347/347/347.
+// All restored; frame 0x1050 versus 0x1054 and page/ring/policy ownership remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

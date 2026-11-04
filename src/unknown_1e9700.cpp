@@ -372,6 +372,14 @@ struct s_object_damage_view
 // P303: Late constant killer-team/hostility defaults and direct statistics parameter, subsets
 // 1/2/4/3/5/6/7: 374/338/353/378/374/338/378; reversed award-array declarations 353.
 // NOT kept: hostility at 338 delays its clear past attribution, unlike retail; original lifetimes and body restored.
+// M346: Existing consideration/hostility/friendly results as byte, masks 1/2/4/3/5/6/7:
+// 353/369/351/369/351/362/362; all char 362. NOT kept: friendly alone or with
+// consideration gains only two through extent, with scalar homes unchanged. Original body restored.
+// M354: Complementary consideration/hostility/both bool and byte, then word/long pairs:
+// 353/369/369/353/369/369/417/392. NOT kept: complemented status publication misses native byte/store allocation.
+// M356: Complete timestamp/strict-improvement results, expression then ordered
+// tests, bool/byte/short/long: 353/353/353/353/353/353/353/353. NOT kept: no gain;
+// original selection and complete body restored. Scalar homes and biased cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

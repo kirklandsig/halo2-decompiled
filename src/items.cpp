@@ -1259,6 +1259,9 @@ struct s_item_flags_view_10b850
 // P307: Complete in-place cross differences, with component cosine ownership, cross sine
 // ownership and full projection product: 832/834/832/834/811/813/811/813. The 811 forms
 // reach 4096 bytes; NOT kept: two-count gain. Original helpers and complete body restored.
+// M345: Complete free/fixed/settled motion state in char/signed-char/byte/short/word/int/long/dword:
+// 853/853/853/909/909/905/905/905. Byte domains recover frame 0x150 but grow to 4113 bytes.
+// NOT kept: scalar-state carriers miss; original separate flags, every consumer and full body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

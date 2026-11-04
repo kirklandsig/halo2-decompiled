@@ -319,6 +319,9 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // P305: Native library working/output/secondary entry transfers, seven subsets
 // 449/345/366/449/442/366/442; all with the later requested-vector transfer 442.
 // Original whole body and helpers restored; magnitude/query overlap and native frame remain.
+// M359: Query outcome after escaped output production, positive/complementary
+// bool/byte/short/long: 345/345/345/345/345/345/345/345. NOT kept: one-use call
+// result is unmatched; original query guard, output lifetimes and complete body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

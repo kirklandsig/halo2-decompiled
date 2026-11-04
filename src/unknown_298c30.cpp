@@ -269,6 +269,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // P305: Twice-used fixed-turn sine angle, double/real, near-arm/endpoint lifetime,
 // conditional/test-produced: 414/414/417/417/407/410/408/411. All regress; original
 // whole body, normalizer, emitter and double trig inputs restored; native XY homes remain.
+// M352: First-trig product pairs before second trig at positive/negative/general rotations,
+// masks 1/2/3/4/5/6/7 397/399/414/395/397/399/414; complete paired products 497.
+// NOT kept: early one-use products and changed real rounding do not match; original whole body restored.
+// M359: Fixed-pair sine-first/general-pair cosine-first producer subsets 1-7,
+// then all with a separate negative fixed pair: 405/405/405/421/403/403/419/419.
+// NOT kept: unmatched schedules regress; original trig producers and complete body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

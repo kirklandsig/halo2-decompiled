@@ -1512,6 +1512,12 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // P302: Existing RGB clamp actual lower/upper/input/output record references,
 // graphs 1/2/3/5/6/7/15 then ordinary-inline full graph: 529/529/529/529/529/529/529/529. Original
 // clamp/body restored; frame, selection-result spill and block/query homes remain.
+// M353: Common failure exit with completed bool/byte/short/long results,
+// retained count guard then early count exit: 573/579/575/576/573/579/575/576.
+// All regress and lose matched caller 0x3db00; original full body and helpers restored.
+// M356: One-past-entry forward !=/< and reverse !=/> scans, direct/reused flags:
+// 559/562/564/564/535/536/535/536. NOT kept: all regress; original selection,
+// complete body and helpers restored. Frame, result spill and block/query homes remain.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2262,6 +2268,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // P310: Shared combined-fallback/single-valid color-normal publication and final packed-color
 // result, subsets 1..7: 714/720/1012/601/749/758/1051; complete conditional receivers 1029.
 // NOT kept: all regress; original publication paths, independent samples and body restored.
+// M351: Immutable existing first/second/third sample offsets, all seven subsets, then all with
+// fixed model metadata/mesh/index/data bindings: 542 each. Original body restored; native
+// status/mesh homes and selective material/magnitude expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

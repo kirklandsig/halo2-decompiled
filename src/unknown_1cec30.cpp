@@ -1070,6 +1070,9 @@ void function_1d1540(s_havok_component *component);
 // memmove boundaries 86/108/98; paired library copies with inverse at entry 106/98.
 // NOT kept: every copy boundary regresses, and the aligned frame stays 0x84/0x88.
 // Original constructor, slot, fresh post-reset lookup and complete body restored.
+// M353: Existing rotation-part getter with aggregate/member/translation-set/library
+// copies, inverse at use then entry: 106/90/130/116/106/90/130/116.
+// All grow and regress; original constructor, slot, fresh refetch and full body restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2442,6 +2445,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // F363: Shared scaler plain counted/input-cursor/bounded/output-cursor loops,
 // factor-first then component-first: 127/251/127/389/127/251/127/389. NOT kept: all regress;
 // original shared scaler, normalizer and complete body restored.
+// M346: Material-query success owned at its original call, immediately tested before fallback,
+// bool/byte/char/signed-char/short/word/int/long: 91 each. All retain frame 0x34 and
+// 1459/1454 bytes; early velocity j/k and property-zero homes remain. Original body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

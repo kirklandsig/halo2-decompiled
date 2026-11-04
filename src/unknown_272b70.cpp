@@ -1491,15 +1491,20 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // AC503: Native sorted-row pointer/count traversal, short/word/long/dword counters, mutable/read-only
 // receivers 36/36/75/75/36/36/75/75. Original ordinal loop and complete body restored; iterator load, leave-selector
 // and request/publication allocation remain. NOT kept: unmatched traversal/domain forms.
-// DH320: Existing request producer returns canonical submission in byte/signed-char/char/
-// short/word/int/long/dword domains: 77/77/77/77/77/77/77/77. Original bool helper
-// and complete body restored; iterator/leave-selector/request homes remain.
 // M344: Winning-seat presence/absence produced by all original score improvements,
 // bool/byte/short/long 147/147/143/147/147/147/147/151. NOT kept: unmatched selection
 // flags grow the frame and body; original short winner, requests and complete body restored.
 // P309: Existing request builder split from submission: void-pointer/pointer-result/void-reference/
 // unit-result, forced/ordinary expansion, 72/72/72/32/72/72/72/32. Original helper and
 // complete body restored; iterator/leave-selector/request homes remain; no exact builder split.
+// DH320: Existing request producer returns canonical submission in byte/signed-char/char/
+// short/word/int/long/dword domains: 77/77/77/77/77/77/77/77. Original bool helper
+// and complete body restored; iterator/leave-selector/request homes remain.
+// M355: Appended row pointer/reference, count release after actor/geometry/distance
+// or at acquisition on the retained slot graph: 153/153/153/153/153/153/153/153.
+// NOT kept: no exact append lifetime; retail increments after the busy query. Full body restored.
+// M357: Complete actor/capacity admission at collection, positive then complementary bool/byte/short/long:
+// 32/32/32/32/32/32/32/32. NOT kept: no exact producer/contract form; original complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2753,6 +2758,11 @@ struct s_scenario_scripting_view
 // B407: Positive/complementary scenario-data count admission in bool/byte/short/long
 // domains: 80 each. Exact-only condition results restored; actor/set/counter homes and
 // delayed scripting-data observation remain. Original complete search restored.
+// M355: Winner presence/absence published at each strict improvement with exact
+// short-NONE handling, bool/byte/short/long: 92/92/104/105/92/92/99/100.
+// NOT kept: no exact selected-state graph; original short winner and full search restored.
+// M357: Entry actor-presence admission, positive then complementary bool/byte/short/long:
+// 80/80/80/80/80/80/80/80. NOT kept: no exact producer/contract form; original complete body restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

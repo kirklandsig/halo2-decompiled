@@ -284,6 +284,10 @@ bool function_a7670(long object_index);
 // AC507: Retry-conditional positive/deferred category result in bool/byte/short/long,
 // 278/278/280/279/277/277/280/279. NOT kept: all regress and lengthen beyond retail;
 // original eager scans, live bounds, consumed index, releases and body restored.
+// M343: Native input-body cursor, retry/island declaration and mutable/read-only slots:
+// consumed at retrieval 266/266/266/266; advanced at body end 274/274/274/274, all 966 bytes.
+// Original consumed island index, signed live bound, indexed cleanup and complete body restored.
+// NOT kept: frame grows to 0x428 and every form regresses.
 // Lane 14 r57 (fast, from 153): plain `for` island index with the step back inside 240 (958 B); the second scan
 // setting the shared found flag 96 (match-only, restored); on it: the for-loop 233 (957 B: retail keeps the
 // index in ECX on the unflagged path and writes its home only after `dec`; ours homes it at the init and the

@@ -1201,6 +1201,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // then separate reverse native ID transfer: 831/794/831/917/852/824/852/845. NOT kept: all regress,
 // frames 0xd4/0xd8 versus 0xb4 and stack ingress remain. Original complete body,
 // histogram phases, selector contracts, observations and call operands restored.
+// M359: Read-only receiver contracts on capacity/teams/minimum/maximum/spread/limited/
+// imbalance selectors, individually then all: 766/766/766/766/766/766/766/766.
+// NOT kept: frame/session/lookup unchanged; original complete helpers and body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

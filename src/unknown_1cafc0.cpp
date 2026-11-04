@@ -672,6 +672,14 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // P303: Corrected twelve-byte expansion, fallback mode/class/type fields uniformly at use,
 // subsets 1/2/4/3/5/6/7: 542/535/540/534/535/536/534; all with Boolean success 531.
 // NOT kept: every form regresses and disturbs the agreeing prefix; original snapshots and body restored.
+// M346: Ordered fallback availability owned immediately before each test, original success
+// stores retained, bool/byte/char/signed-char/short/word/int/long: 348 each. All retain
+// frame twelve and 1782/1761 bytes; graph/base homes and return normalization remain. Restored.
+// M354: Failure-owned fallback continuations, first-three subsets and all four:
+// 433/396/534/375/432/396/534/532. NOT kept: alternate branch ownership misses native request allocation.
+// M356: Persistent fallback type/class/mode field references, seven subsets,
+// then all mutable: 540/535/542/536/535/534/534/534. NOT kept: all regress;
+// original snapshots and complete body restored. Request graph/base homes remain.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

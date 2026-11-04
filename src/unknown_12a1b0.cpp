@@ -1434,6 +1434,9 @@ struct s_looping_detail_request
 // then the complete request/tag/player/camera/completion identities: 110 each.
 // Original names and whole body restored; first-player call expansion and native
 // detail/offset transport still differ.
+// M353: Shared admission/traversal remaining count, long/short with while/for,
+// native audible output 110/110/113/113; temporary/copy 130/130/141/141.
+// No gain; original separate count/skip, output and complete body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2495,6 +2498,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // P298: Independent energy/output ordinals, two do/do identities 597/597;
 // for/do, do/for, for/for and while counterparts 672/724/769/672/724/769.
 // Original loops and complete body restored; entry true/flags and record/track homes remain.
+// M343: Complete pending-valued return graph, bool/byte/short/long direct initial state test
+// 668/668/799/793; default-true state-test counterparts 755/755/800/794.
+// All regress; original completion polarity, sole exit and complete body restored.
+// NOT kept: all outcomes regress; wider domains grow the frame to 0x40.
 // Lane 14 r57 (plain, from 597): `alternate` declared inside the definition guard 615 at 2500 bytes (the entry is
 // then retail's to +0x6c: result first, EBX = 1 shared by the alternate mask and the true stores; the source copy
 // keeps the pointer in ESI where retail copies it from EDX, which shifts the energy loops' padding); with `distance`
@@ -2518,6 +2525,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // P306: Actual track/track-tag/pitch-entry references, seven subsets, then read-only
 // selected tag/pitch receivers: 694 each, tying reduced control (full 597). NOT kept:
 // no gain or match; original body restored. Entry true/flags and record/track homes remain.
+// M353: Complete per-track availability bool/byte/short/long conjunction results
+// 680/680/671/680; conditional values 679/679/685/685 fast (control 694; full 597).
+// NOT kept: retail first copies alternate, then clears only the unavailable path;
+// complete-result stores differ. Original producer, widths and whole body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

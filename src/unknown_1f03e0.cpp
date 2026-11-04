@@ -1053,6 +1053,8 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // B411: Complete entry flying/damping/direct/gravity declaration orders on the planar graph
 // 441/432/441/434/444/445/445/440; NOT kept: one-point reduction and order-only nonmatches.
 // Original observations/body restored; damping ECX/EDX and raw/bounded homes remain.
+// M354: Split damping extraction in byte/dword storage, mask at producer/entry/general/consumer:
+// 427/412/627/532/464/451/630/557. NOT kept: split predicate transport needs byte equality.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1758,6 +1760,17 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // P309: Complete category admission as direct positive/negative or named positive/negative
 // predicates, original/real movement: 231/231/231/231/228/228/228/228. Original
 // selection graph and complete body restored; zero/reset homes and material expansion remain.
+// M345: Default-moving result cleared by the original zero test, bool/char/signed-char/byte/
+// short/word/int/long: 221/247/247/247/283/283/285/285.
+// NOT kept: test-produced result domains do not match; original root, motion predicate and full body restored.
+// M347: Highest-contact reduction outcome, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 225/225/225/225/225/225/225/225.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
+// M355: Test-produced current support, support-first/approach-first, each in bool/byte/short/long:
+// 264/267/270/283/304/298/302/300. NOT kept: test-produced states remain unmatched;
+// original support predicate, movement, selections and both material call sites restored.
+// M357: Fallback-call admission produced at the query, positive then complementary bool/byte/short/long:
+// 225/225/225/225/225/225/225/225. NOT kept: no exact producer/contract form; original complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

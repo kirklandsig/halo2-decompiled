@@ -353,6 +353,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 1..7: 915/917/926/923/932/897/938f; original query record with shared sphere center 905f
 // (control 931f, full 882). NOT kept: frames 0x2cb4/0x2ca8/0x2cb8 miss retail 0x2cac
 // and lengths 3680..3708 move away. Original query, point lifetimes and full body restored.
+// M353: Motion admission produces enabled/disabled priority truth, bool/byte/short/long:
+// 926/926/885/885; complements 882/882/932/882 fast (control 931; full 882).
+// NOT kept: test-produced flags miss byte equality and native frame 0x2cac.
+// Original priority/enabled graph, qualifiers and complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1492,6 +1496,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // P310: Joined forward-scan/reverse-candidate cursor, while-for/for-for/while-while/for-while:
 // short 438/621/438/438; long 456/649/456/456. NOT kept: all regress; original separate
 // scan/candidate ordinals, both radius values, geometry and complete body restored.
+// M351: Immutable original/expanded radius and data binding, all seven subsets, then all
+// with fixed source/current/selected/output receiver bindings: 418 each. Original body restored;
+// frame 0x114 versus 0x10c, persistent zero and metadata homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
