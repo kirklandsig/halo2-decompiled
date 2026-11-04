@@ -678,6 +678,9 @@ struct s_collision_result_buffer_1697c0
 // frame-bottom temp and every home through both random draws retail's; first difference +0x31, where retail loads
 // the axis j into its own register and multiplies by the scale, ours multiplies a scale copy by memory); on it the
 // normalizer products all `vector->x * scale` or compound `*=` 307/307 (same code).
+// AC530: Plain native-array normalization publication, short/long/word/dword indices, explicit/compound
+// scaling: 650/305/650/305/650/305/650/305 (fast control 303). Short/word forms outline; full-width forms
+// retain 1435 bytes but regress. Original helper and body restored; scratch/axis/result homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -953,6 +956,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 257, case 2's player test as nested ifs with the `cafc0` call's own `goto direction_from_actor` 257, the
 // remembered branches' `if (aiming)` jumping to `aim_at_point` with the weapon label dropped 257, case 2's aiming
 // arm jumping straight to the weapon label 257 (all four byte-identical); the flags cleared in two statements 259.
+// AC530: Reference lower-bound admission after the state query, byte/char/short/long
+// 253/253/265/267; before the read-only query 279/279/296/296 (calibrated fast control 258).
+// NOT kept: best gain five is below eight; predicate/observation forms need equality. Original
+// reference observations and complete body restored; Boolean homes and shared-tail predecessor remain.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

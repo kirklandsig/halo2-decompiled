@@ -855,6 +855,9 @@ bool function_e4050(long object_index);
 // local read after it 44 (same code); the parent test inverted with the vehicle arm first 114 (408 bytes); the vehicle
 // test as nested ifs 44 (same code); the no-parent exits through one found value 106 (409). Retail's datum/unit
 // EDI/EBX colouring follows its inlined 0xbaf80 walk (BLOCKED-BY 0xbaf80, still pinned in src/unknown_0bad50.cpp).
+// Round 105: on the unsigned unit-start/NONE-root walk, current before root / existing typed getter in the walk /
+// root before the unit object / const unit object / const player / const unit / typed getter for all three lookups
+// 171 each (405); a retained root object 182 (390). Original body and declarations restored.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1419,6 +1422,13 @@ static inline s_players_globals *players_globals_14f2e0()
 // N355: Actual reuse admission result producers, original/complete timer clear:
 // 86/231/231/227/83/232/232/228. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; NONE materialization and timer/flag scheduling remain.
+// F375: Loaded byte/signed-byte/short/long, then fallback-needed bool/byte/short/long:
+// 46/46/105/103/110/110/108/109. NOT kept: no match; original body restored.
+// NONE materialization and native timer/flag scheduling still differ.
+// N364: All three user-notification indices held through their own guards/calls,
+// short/long/const-short/const-long, without/with complete timers: 46/87/46/87/86/98/86/98.
+// NOT kept: no equality; original observations, timer stores and complete body restored.
+// NONE materialization and tail zero/flag scheduling remain.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2327,6 +2337,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax h (11-04): no new form, no lower score; the frame stays 0x4c against retail's 0x74 (two request workspaces reach 0x6c).
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // Round 439: parent/tag/seat one-use intermediary elision in all seven subsets 701 each;
 // complete graph with all three target field-reference lifetimes at receiver acquisition 701.

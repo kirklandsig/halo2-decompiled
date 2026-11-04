@@ -1674,6 +1674,8 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax A (11-04, run 41): no new form, no lower score (85); the second availability byte is still loaded
+// lazily where retail loads both before the muted test and keeps the remote mask in esi.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
@@ -3307,6 +3309,9 @@ struct s_voice_route_choice
 // F361: Actual sixteen-choice array input, reference/pointer and long/int count:
 // bitwise radio 363/363/363/363; conditional radio 411/411/411/411.
 // NOT kept: native entry/cursor allocation unresolved; original table contract and calls restored.
+// Y579: One-based visitation with original/one-based selection, element receiver
+// and bitwise/conditional radio: 427/376/427/369/371/390/371/390.
+// NOT kept: no gain; cursor/entry repair fails despite three retail-length forms. Original body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3647,6 +3652,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // DH335: stride char/signed-char/byte 160 each; word 163; int 139; 64-bit 164;
 // finite two-value stride and immutable long 139 each. No channel-home recovery;
 // non-native extents regress. Original stride and complete body restored.
+// Y579: Actual stream-end bounds with offset/cursor/walking-formal/difference results,
+// admission-time producer 161/165/172/174, entry producer 161/145/167/163.
+// NOT kept: no gain or native channel-home recovery; original whole body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
