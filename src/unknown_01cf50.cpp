@@ -2330,6 +2330,7 @@ void function_1e370(void)
 	}
 }
 
+// MiniMax H (11-04): no new form, no lower score; the record pool's base is held in edi here and in ebp in retail, and the allocator helper's own choice decides that.
 // MiniMax D (11-01): the permute run on this function was stopped at its time limit without a
 // measured variant.
 // MiniMax D (11-01): the allocator's statement order, an early count store and a records local in
@@ -2555,6 +2556,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
     return result;
 }
 
+// MiniMax H (11-04): no new form, no lower score; the maximum's comparison operand order, the divisor's round trip through the stack and the shared call setup still differ.
 // MiniMax D (run 37): no new form, no lower score; the maximum as `first <= second ? second : first` gives retail's comiss operand order but still scores 26, the maximum without the round trip through the stack scores 47, the four forms of the maximum (the two ternary orders, the if/else and the initial-value form) score 47 or 48, and retail's own phi copies the maximum into g_4b9fa4's register while ours keeps it in 0.0001f's.
 // MiniMax A (11-03): no new form, no lower score.
 // score 26 (was 26): the comparison of 0.0001f against g_4b9fa4 has its operands in the other
@@ -2636,6 +2638,7 @@ struct s_queued_material_payload
 	byte data[1];
 };
 
+// MiniMax H (11-04): no new form, no lower score; the count reaches the 0x4b220 call in eax here and in ecx in retail, and that callee's own body in this file decides it (six body variants keep the count in eax).
 // MiniMax D (11-01): both builds push the five stack arguments and only the count's register
 // differs, which 0x4b220's own declaration fixes.
 // MiniMax D (11-01): no new form, no lower score; the declaration of 0x4b220 may not grow a
@@ -2794,6 +2797,7 @@ struct s_429a0_payload
     vector3f first, second;
 };
 
+// MiniMax H (11-04): no new form, no lower score; retail folds the record base into the payload pointer one store before ours does (three variants: 16 each).
 // MiniMax A (11-03): the allocation from 0x1e4e0's helper scores 97; no lower score.
 // MiniMax D (run 37): no new form, no lower score; the only real difference is that retail
 // folds the record base into the payload pointer one store earlier than we do, the rest of
@@ -3158,6 +3162,7 @@ void function_13d80()
 
 extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 
+// MiniMax H (11-04): no new form, no lower score; the callee 0x15a60 takes its first argument in ecx in retail and in eax here, and that callee lives in another file.
 // MiniMax D (11-01): the setup's order follows the callee's parameter home in
 // src/unknown_0158f0.cpp, which this lane may not edit.
 // MiniMax D (11-01): no new form, no lower score.
@@ -6144,6 +6149,7 @@ struct s_2e3f0_record;
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record);
 void function_46ea0(long tag, point3f const *position);
 
+// MiniMax H (11-04): no new form, no lower score; the remaining difference would need the shadow global written through a cast of its own address.
 // Tried (MiniMax S run 10): writing the g_4b8438 store through an unsigned int lvalue
 // (*(unsigned int *)&g_4b8438 = 0) scores 73 against 76; not kept (a cast of the global's address).
 // MiniMax D (11-01): both builds store the shadow global from ebx, but ours is sunk past the
