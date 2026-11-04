@@ -1380,6 +1380,9 @@ long function_2197f0(real gain);
 // M385: Existing aggregate interpolation endpoint/result compound accumulation, native-copy,
 // constructed difference/product, scalar product, twice-used start and uninitialized result:
 // 94/94/102/94/94/94/94/94. NOT kept: no native reciprocal, gain-load or tail repair; full producer restored.
+// M387: Composite fraction eager division/select/positive and complementary complete results,
+// original then eager simple upper caps: 160/160/163/159/140/140/143/101. NOT kept: no gain;
+// original body restored, native reciprocal/elapsed roles and first gain-load schedule remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {

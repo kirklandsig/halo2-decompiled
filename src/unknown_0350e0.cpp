@@ -2382,6 +2382,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // M385: Complete shared scale compound accumulators, factor/input ownership, phased/interleaved
 // producers and existing setter publication: 27/27/27/27/27/27/27/27. NOT kept: no product-fold
 // repair or byte equality; original shared scaler restored, native frame and final count fold preserved.
+// M387: Shared scale array traversal on the recovered final-sample graph: forward long/int/dword/uint
+// 0/0/0/0; reverse predecrement 273/273/348/348. Forward plain 0 at 965/965, NOT kept:
+// shared users worsen and 25 matches are lost. Original shared scaler restored; middle product fold remains.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2704,6 +2707,9 @@ s_cached_input_list g_5234e8[4];
 // M385: Twice-used final state receiver after view/total or entry declarations, without/with
 // retained list: 153/153/153/153/140/139/140/139 (fast control 147, full 113). NOT kept: early receiver
 // multiply is absent in retail and 532/533-byte extents move away; original complete body restored.
+// M387: Radius-first position native/memcpy/memmove/setter captures, without/with list:
+// 147/147/136/162/136/136/132/150 fast (control 147, full 113). NOT kept: native/library
+// copies equal preview/list-only controls; memmove adds a call and 0xa4/0xa8 frames, setter shrinks. All restored.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3097,6 +3103,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // M385: Actual loop old-point receiver advanced in place, native/library/setter/initializer
 // captures with direct/existing scaled-add updates: 535/556/535/556/495/558/570/570.
 // NOT kept: all regress and shorten away from retail; original point receivers and full body restored.
+// M387: Existing projection producer as two genuine matrix-row iterations, long/int/dword/uint,
+// full expressions then complete accumulators: 498/498/498/498/510/510/510/510. NOT kept:
+// frames 0x68/0x70 grow beyond native 0x38; original helper/body restored, velocity/projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
