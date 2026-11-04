@@ -4819,6 +4819,16 @@ struct s_unit_move_result
 // needed a setne conversion there, 238 at 745 bytes).
 // Tried: block scope for the center (251, no frame change); `long` rigid body index (231); the a5 value in a
 // local before the loop (225, same code).
+// Round 5 of #1049: the no-parent flag test `(unknownc0 >> 6) & 1` is now TEST_FIELD_BIT, which gives retail's
+// `mov cl,[..]; shr cl,6; test cl,1` (it was `test byte [..],0x40`; the function is 1 byte longer, 734, and the score
+// the same 225). Logic re-walked statement by statement against retail: no difference. Retail's `moved` is in BL
+// on every path except inside the physics block (stored at the top, reloaded into BL after the loop, returned as
+// `mov al,bl`), and a5 is loaded into ESI just before the loop (the only integer loop invariant besides root_index,
+// root_point and the component; the header and the rigid body index stay on the stack). Not kept (all 225-238):
+// a5 declared `real` (the call then pushes it from memory, 225) or `long` with the 0x1d48f0 declaration changed to
+// long (227); `moved` split into an outer result (BL) plus an inner flag copied after the loop (233); the header
+// expression written out at each use instead of a `header` local (230); declaration order of root_index/root_point/
+// root_origin (225).
 // @retail 0xc5460
 bool __stdcall function_c5460(long object_index, long ignore_index, point3f const *position, point3f *result,
 	long a5, real radius, bool a7)
@@ -4883,7 +4893,7 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 						havok_component_delete(object->unknownb4);
 						object->unknownb4 = NONE;
 					}
-					else if ((object->unknownc0 >> 6) & 1)
+					else if (TEST_FIELD_BIT((object->unknownc0 >> 6) & 1))
 					{
 						function_1d1540(havok_component_get(object->unknownb4));
 					}
@@ -5892,18 +5902,26 @@ bool __stdcall function_c92c0(long unit_index, long vehicle_index, short seat_in
    otherwise), takes its team from the creation data (in campaign, the
    definition's when unset), starts its animation and finds its two
    animation graph entries */
-// score 253 (was 282): size matches (1040). Left: retail clears the four weapon slots through a
-// pointer in EDX with the value in ECX (and spills the definition just before, where ours spills it
-// after the +0x338 store); it saves EBP before `xorps`; reads the unit header with the base first
-// ([ecx+esi+8]); and gives the animation check and the out-of-memory return their own epilogues
-// (the store `*out_of_memory = 1` sits after `xor al, al` and before the last pop) where ours
-// shares one tail. Fixes made, in order: a failed-allocation flag (`failed`) in place of the || chain
-// in the condition gives retail's layout (282 -> 266), the slot fill as a short-counter loop (262),
-// the two graph lookups reading the definition's +0x38 afresh and keeping a long index (257), the
-// damage-source loop through the UNIT_DAMAGE_SOURCES view (253). Tried: the slot fill as a long or
-// dword loop, a pointer loop, an inline fill helper, a pointer local 281-299; the animation check
-// held in a bool 257; the unit through unit_at_masked_index 257; the amount stored first in the
-// source loop 266.
+// score 202 (was 253, 282 before that): the logic agrees with retail statement by statement (re-walked in round 5 of #1049).
+// Round 5 of #1049: the four weapon slots are cleared with memset(.., 0xff, 16), which gives retail's lea/pointer fill
+// (definition spilled first, EDX the pointer, ECX the value; 253 -> 202). What still differs: (1) retail's early
+// `return false` after the animation check keeps its own epilogue (jne over `pop edi/esi/ebp; xor al,al; pop ebx;
+// ret 0xc`) and so does the out-of-memory return, whose store sits after `xor al, al` (`mov ecx,[esp+0x1c]` before
+// the pops, `mov [ecx],1` after the xor); ours merges the two into one tail (the check jumps over the store block;
+// 16 bytes shorter, 1024) and every instruction after it shifts. Giving the first return a store of its own
+// (`*out_of_memory = false`, NOT behaviour-preserving, not kept) makes the epilogues separate and gives 1040 bytes
+// and score 172, so the merge is the rest of the score; (2) the three unit header reads are `[esi+ecx+8]` in
+// ours for the first two, retail `[ecx+esi+8]` (base first; the third already matches); (3) the registers of the
+// reads after the zero-fill loop (eax, ecx, edx in retail) and of the vector copies (retail copies through ECX and
+// EDX in the other roles); (4) `push ebp` before `xorps`. Earlier fixes, in order: a failed-allocation flag
+// (`failed`) in place of the || chain gives retail's layout (282 -> 266), the slot fill as a short-counter loop
+// (262), the two graph lookups reading the definition's +0x38 afresh and keeping a long index (257), the
+// damage-source loop through the UNIT_DAMAGE_SOURCES view (253), the memset (202). Tried for (1): `return
+// *out_of_memory = true, false`, `return !failed`, a `result` local returned from both exits, the store as a
+// separate local flag (all 253 before the memset, same merge). Tried for the fill, before the memset: the slot fill
+// as a long or dword loop, a pointer loop, `*slot++`, four stores through a pointer local, an inline fill helper
+// (281-299 or no change). Tried for (2): unit_at_masked_index, the header written as byte offset + array, base + 8
+// + offset (no change); the animation check held in a bool 257; the amount stored first in the source loop 266.
 // @retail 0xc4410
 bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_of_memory)
 {
@@ -5912,10 +5930,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 	byte *definition = UNIT_DEFINITION_GET(unit);
 
 	unit->unknown238 = NONE;
-	for (short i = 0; i < 4; i++)
-	{
-		unit->weapon_object_indices[i] = NONE;
-	}
+	memset(unit->weapon_object_indices, 0xff, sizeof(unit->weapon_object_indices));
 	unit->unknown214 = 0;
 	unit->unknown210 = 0;
 	unit->next_weapon_index = NONE;
