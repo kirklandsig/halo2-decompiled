@@ -1514,6 +1514,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 592/582/587/606/608/596/606/607, all 2828 bytes, frame 0xf8.
 // NOT kept: best gains three and no native frame/layout match. Original case
 // order and full body restored; shared helpers and all checked peers unchanged.
+// P341: Actual selected-root/header/ground-body record lvalues, seven subsets then complete read-only
+// graph: 585/585/585/585/585/585/585/585. NOT kept: missing native frame word and
+// material/airborne/animation homes remain; original receivers, helper graph and whole body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

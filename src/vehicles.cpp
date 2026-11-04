@@ -4776,6 +4776,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P336: Final/blend nested bound producers, forward MAX, reverse MIN, both bounds,
 // independent final/blend comparisons, staged final bounds: 748/751/749/749/749/749/749/749.
 // NOT kept: best gain one; original body restored. Entry definition and zero/result/one homes remain.
+// P341: Getter-produced vehicle-record lvalues, mutable/read-only, native/immutable table records and
+// original/early pure table acquisition: 749/764/749/764/749/764/749/764. NOT kept: no native entry-
+// definition or zero/result/one residence; original entire body and pointer receivers restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5345,6 +5348,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P336: Float CRT boundaries at pitch atan/root, horizontal root, driver/bank trig,
 // rotation atan/root and desired-up root: 1064/1064/1087/1097/1097/1087/1087/1087.
 // NOT kept: pitch gains grow to 5104/5094; frame stays 0xf8. Original full body restored.
+// P341: Bounded scalar branch-results at lift numerator, paired unit clamps and paired spin-step limits,
+// seven subsets then vertical attenuation: 1097/1087/1087/1097/1097/1087/1097/1097. NOT kept: native
+// frame 0xd8 and handle/matrix homes are not recovered; original full expression graph, matrices and
+// body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

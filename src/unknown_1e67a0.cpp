@@ -1126,6 +1126,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // real/double: 144/144/172/172/144/144/172/172. NOT kept: all regress;
 // original complete body restored. Native rotation multiplicands, side dots and
 // eager final copies remain; shared rotation and movement providers stay exact.
+// P341: Existing native component getter/support input, pointer/reference and mutable/read-only, shifted
+// word/native bitfield: 114/114/114/114/114/114/114/114. NOT kept: no native rotation-product or
+// side/output allocation recovery; original raw input, include set and complete body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

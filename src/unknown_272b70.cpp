@@ -2820,6 +2820,10 @@ struct s_scenario_scripting_view
 // DH346: Immutable native scenario/data/set pointer bindings, seven subsets, then all
 // with immutable actor receiver: 80/80/80/80/80/80/80/80. Original complete search restored;
 // actor/counter/set homes and early scripting-data observation remain.
+// P341: Actual point-payload/complete candidate-record lvalue references, mutable/read-only and
+// original/traversal-owned short counter: 80/87/80/87/91/87/91/87. NOT kept: native
+// actor/counter/selector and delayed data homes remain; original complete search restored. Exact wrapper
+// and both callees survive.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
