@@ -2042,6 +2042,10 @@ void function_dfd70(long arg_159e6d)
 // native or memmove origin transfer: 235/235/233/233/256/256/253/253. NOT kept:
 // no gain; memmove with either initializer also raises a shared user. Original
 // shared helpers and target restored; mode-three placement and basis/ray homes remain.
+// F390: Complete joined final-point producer after the second query, hit in bool/byte/short/long,
+// record then scalar-setter publication: 226/226/226/226/278/278/278/278. NOT kept: seven-point
+// lead grows to 1044/1041 bytes; setters reach 1077. Every form raises shared users and loses
+// exact 0xde9d0. Both original helpers and full target restored; mode-three/basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4972,6 +4976,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // P321: Query directly into velocity/relative, record/CRT copy, actor/query-bound
 // success on the recovered state-call/dot graph: 150/150/148/148/136/136/135/135.
 // NOT kept: all regress and shorten to 671/683; full body restored.
+// F390: Support query through the existing result before its riding copy, bool/byte/short/long,
+// original then support-bound success: 68/68/148/151/143/143/136/142. NOT kept: no gain;
+// the early Boolean graphs grow to 686/683. Original complete body restored, both exact callers
+// survive; native support/success byte homes and early success publication remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

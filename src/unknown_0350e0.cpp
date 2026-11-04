@@ -142,6 +142,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // F387: Existing component-array views at axis observations, matrix-row stores,
 // rotation operands and returned components, masks 1/2/4/8/3/12/7/15: 356 each.
 // NOT kept: all tie at 1775/1779 bytes and frame 0x98/0x90. Original helpers/body restored.
+// F390: Existing builder with only sine/cosine supplied by its caller, direct/named part and
+// original/twice-used angle graphs: 355/355/368/368/357/357/362/362. NOT kept: one-point
+// lead below gate; every frame stays 0x98 versus 0x90. Both original helpers, real-angle contract
+// and full body restored; concurrent x87 inputs and scalar publication homes remain, caller exact.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2884,6 +2888,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // F387: One-past retained-tail boundary with found in bool/byte/short/long, then
 // complemented missing state in those domains: 389/389/397/399/389/389/395/397.
 // NOT kept: all regress at native length; prefix/state and ordinal homes remain. Original body restored.
+// F390: Fallback zero-prefix scan start, fixed first-entry destination and completed prefix one,
+// seven subsets then natural while fallback: 396/331/385/448/374/340/409/409. NOT kept:
+// all regress; several shorten to 1273-1310/1324. Original complete body restored; native
+// prefix/state and removal-ordinal homes plus decay rotation remain, both controls stable.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4058,6 +4066,10 @@ bool __stdcall function_391f0(void *state);
 // F387: Complemented update/render failure predicates in bool (update/render/both), byte
 // (update/render/both), then both in short/long: 252/253/254/252/253/254/288/277.
 // NOT kept: all regress; frame 0x74 and early zero/portal homes remain. Original body restored.
+// F390: Existing visible-list native header, mutable/read-only receiver, signed short/long count,
+// snapshot/per-use index base: 251/276/300/306/251/276/300/306. NOT kept: no gain; frame
+// stays 0x74 versus 0x70, wide counts grow to 1036/1014. Original complete body and header
+// contract restored; early zero and visible/portal/fog homes remain, all callee controls stable.
 // @retail 0x36b50
 void function_36b50()
 {
