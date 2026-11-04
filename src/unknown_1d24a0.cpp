@@ -348,6 +348,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // (retail reads it first) 951; the attached component set in an if/else 901 (one point, not kept). All restored.
 // DL260: Existing scale/add/subtract kernels with deduced actual vector input types, seven subsets, then existing planar kernel: 1087/1140/1099/1327/1320/1295/1505/1644.
 // NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// M383: Absolute-value APIs at entry/radial/planar bound families, subsets 1/2/4/3/5/6/7,
+// then all double APIs with real results: 900/927/944/931/945/974/975/974. NOT kept:
+// two-point entry lead fails the gate; native conditional bounds, helpers and full body restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

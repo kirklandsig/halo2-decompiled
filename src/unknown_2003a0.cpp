@@ -3417,6 +3417,9 @@ void function_2011f0(long arg_0);
 // followed by long/dword mask producers: 318/394/394/318/394/394/356/356.
 // NOT kept: no exact transport or gain; original narrow arguments/stores and body restored.
 // Frame 0x134 agrees; masked-index/placement, seat and final-chain homes remain.
+// M389: Both actual request completions in short/word/long/dword receivers,
+// producer-local then shared: eight 318s. NOT kept: no exact result-transport
+// repair; original requests, narrowed values, count/splice loops and complete body restored.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

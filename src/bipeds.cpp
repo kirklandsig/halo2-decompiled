@@ -1027,6 +1027,9 @@ extern long *g_51e9cc;
 // explicit-query real/double results: 121/121/137/144/121/144/121/144. NOT kept: no equality; original
 // height observation, branch and full body restored. Lookup rematerialization and crouch/contact
 // publication schedules remain.
+// M383: Actual contiguous contact-field CRT fills at initial/object/instance phase subsets
+// 1/2/4/3/5/6/7, then fallback too: 255/214/204/259/275/221/266/272. NOT kept:
+// lookup receiver/store schedule not recovered; original scalar clears and complete body restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -2074,6 +2077,9 @@ void function_dfd70(long arg_159e6d)
 // B439: Second-ray hit/clear result in bool/byte/short/long storage:
 // 233/233/233/233/233/233/233/233. NOT kept: one-use query results do not
 // match; both helpers restored, native mode-three and basis/ray homes remain.
+// M386: Plain indexed/pointer start and clearance component producers, independent,
+// paired and crossed: 237/240/240/257/468/454/468/257. NOT kept: no byte equality or
+// qualifying native/shared-user gain; original shared helpers and complete body restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2994,6 +3000,12 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // P337: Complementary returned outcome at original exits, bool/byte/char/signed-char/
 // short/word/int/long: 530 each. NOT kept: no native frame/result repair; original
 // positive result, all exits, observations and complete body restored.
+// M386: Genuine hit-to-difference in-place vector, component/difference-helper/vector-setter/
+// point-setter producers with native/library input transfers: 529/530/529/529/529/530/529/529.
+// NOT kept: no native frame/result-home byte equality; original separate point and direction restored.
+// M388: Actual bound-selected push, maximum-distance result and side-factor producers,
+// masks 1/2/4/3/5/6/7, then named reciprocal: eight fast 530s, 1834/1908 bytes.
+// NOT kept: no frame/result-home repair; original complete body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3331,6 +3343,15 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // fast 604/604/611/614/605/605/613; all with side/aim/look views 619
 // (control 600, full 561). NOT kept: regressions and growth; original body
 // restored, result/flight-scalar homes and vector scheduling remain.
+// M383: Actual trig-input double carriers at walking/yaw/pitch phase subsets 1/2/4/3/5/6/7,
+// then all const: 600/623/602/623/602/611/611/611 (reduced control 600; full 561). NOT kept:
+// no native flight/result-home repair; original input/result domains and complete body restored.
+// M388: Final four copies via memcpy/memmove/vector setter, native byte writer, then
+// transfers plus writer and point setter plus writer: 600/593/659/593/593/593/659/659
+// (fast control 600). NOT kept: seven-point leads below gate; memmove adds four calls.
+// Original publications/body restored; result/flight homes and vector schedule remain.
+// Direct flight-rate argument on the current full-width-special graph, alone/with byte writer:
+// 610/603 (control 600); both regress. Original scalar producer and whole body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

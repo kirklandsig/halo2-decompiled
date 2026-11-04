@@ -341,6 +341,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // F385: Paired signed-pitch observation lifetimes, bool/byte/short/long negative then
 // complementary truths at their original comparisons: 284/284/284/284/285/285/285/285.
 // NOT kept: no exact predicate form; original helper and complete body restored.
+// M386: Existing complete XY normalizer with original K tail, common/failure-first/
+// success-first/early numeric output, direct then native-planar input: 423/441/441/423/515/544/544/515.
+// NOT kept: no byte equality with native unity/root/yaw and all shared users;
+// original numeric helper, alias-safe rotations and complete body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

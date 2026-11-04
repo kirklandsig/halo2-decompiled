@@ -595,6 +595,9 @@ extern point2f *g_468778;
 // AC527: Complete distance-or-deadline stop result, positive/complementary bool/byte/short/long,
 // 383/383/383/383/383/383/383/383. NOT kept: result residence unmatched; original short circuit,
 // state-publication arms, clock/rounding observations and complete body restored; early carriers remain.
+// M384: Complete prediction/heading ready/blocked request results, bool/byte/short/long:
+// 375/375/375/375/375/375/375/375. NOT kept: no byte equality for the flag lifetime;
+// original request admission and full body restored; early actor/settings/prop homes remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

@@ -1793,6 +1793,9 @@ bool function_17afd0(long effect_index, long value);
 // P337: Whole-iteration same-view/attachment/camera output declarations, masks
 // 1/2/4/3/5/6/7 then all with draw, each 47. NOT kept: no match; original
 // producer sites, snapshots and complete body restored. Early clear/conversion remain.
+// M381: View-validity-produced availability then unavailability, bool/byte/short/long
+// on the recovered owner-arm graph: 124/124/146/143/121/121/152/149. NOT kept: all regress;
+// original query gates, view snapshot, Boolean homes and complete body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

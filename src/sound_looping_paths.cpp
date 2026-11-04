@@ -336,6 +336,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P332: Initial cluster-admission bool/byte/short/long producers at the
 // branch and before entry workspaces: eight 866 at 3329 bytes. NOT kept:
 // no equality or gain; original body restored, entry zero and count/query homes remain.
+// M386: Complete native-order four-buffer query record, full-width query/choice
+// and count-before-existing-list subsets 0..7: 873/926/961/949/866/922/945/946.
+// NOT kept: unmatched local grouping/domain graph; original arrays, counters and helpers restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
