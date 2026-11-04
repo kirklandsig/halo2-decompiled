@@ -574,11 +574,11 @@ static __forceinline void update_angular_values(float impulse,
 // form both angular contributions before updating A.
 static __forceinline void solve_linear_error_kernel(float target, float mass,
 	__m128 const &axis_a, __m128 const &axis_b, __m128 const &axis_linear,
-	__m128 &angular_a, __m128 &angular_b, __m128 &linear_a, __m128 &linear_b,
-	__m128 const &inverse_a, __m128 inverse_b,
+	__m128 &angular_a, __m128 &angular_b, __m128 &linear_a, float *linear_b,
+	__m128 const &inverse_a, __m128 const &inverse_b,
 	solver_step_31c940 *const volatile &step, float *result)
 {
-	__m128 relative = _mm_sub_ps(linear_a, linear_b);
+	__m128 relative = _mm_sub_ps(linear_a, _mm_load_ps(linear_b));
 	__m128 angular = _mm_add_ps(_mm_mul_ps(angular_a, axis_a), _mm_mul_ps(angular_b, axis_b));
 	__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, axis_linear));
 	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
@@ -597,7 +597,7 @@ static __forceinline void solve_linear_error_kernel(float target, float mass,
 	__m128 delta_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
 	__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
 	linear_a = _mm_add_ps(linear_a, delta_a);
-	linear_b = _mm_sub_ps(linear_b, delta_b);
+	_mm_store_ps(linear_b, _mm_sub_ps(_mm_load_ps(linear_b), delta_b));
 	__m128 angular_change_a = _mm_mul_ps(change_a, axis_a);
 	__m128 angular_change_b = _mm_mul_ps(change_b, axis_b);
 	angular_a = _mm_add_ps(angular_a, angular_change_a);
@@ -1087,14 +1087,14 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 13:
 			{
 				solver_velocity_31c940 *body_b = b;
-				__m128 *volatile linear_b_pointer = &body_b->linear;
+				float *volatile linear_b_pointer = (float *)&body_b->linear;
 				__m128 *volatile angular_b_pointer = &body_b->angular;
 				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
 				__m128 *linear_a_pointer = &a->linear;
 				do
 				{
 					solve_linear_error_kernel(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms)->a, ((solver_linear_row_31e7b0 *)terms)->b, ((solver_linear_row_31e7b0 *)terms)->linear,
-						a->angular, *angular_b_pointer, *linear_a_pointer, *linear_b_pointer,
+						a->angular, *angular_b_pointer, *linear_a_pointer, linear_b_pointer,
 						a->inverse_inertia, *inverse_b_pointer, step, result);
 					terms += 3; ++result; op += 4;
 				} while (*op == 13);
