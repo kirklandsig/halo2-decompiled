@@ -519,6 +519,11 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // rotation 29; force-inline declarations for the range and rotation helpers 13/13;
 // slot_random_range for the scale and both draws 189 (1053 bytes) and 232 (1009 bytes).
 // Original body restored.
+// Round 66 (m3 lane 11, fast with 0x170d70): the flag store before the final scale 22; scale and rotation
+// declared, then assigned 13; sine/cosine and the rotate call in their own block 13; the flag store before
+// the rotate call 81 (1109 bytes); sine/cosine before the normalize call 106. Unused-local probes (1-16,
+// diagnostic) repeat with period 8 (13/19/15/25/21/21/17/23) and move only the dot/cross operand orders;
+// the j/k rows stay in every residue, so they are no numbering tie.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

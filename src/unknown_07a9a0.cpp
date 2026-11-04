@@ -1186,6 +1186,44 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // same; diagnostic only, /arch:SSE on 0x63220's file the same. The clamp as a max of 0x1931a0 908 (2748 B, both calls
 // out of line); the highest rating through 0x631f0 964 (2684 B); the loop variant through 0x192e60 plus that max 987;
 // through 0x192e60 plus 0x631f0 1011. BLOCKED by our link not inlining 0x63220 here.
+// Lane 18 r41 (fast = plain at the base): ours calls 0x193300's twin for the capacity and inlines the top 0x192e60
+// (two 0x1934f0 calls), retail the reverse. The player loop through 0x63220 with the capacity switch forceinline 1033
+// (2592 bytes: capacity inline, 0x63220 still called, top 0x192e60 still inlined, ret 8); adding_group declared
+// beside result 833; the loop getter through 0x192e60 with the top lookup after the summary read 887 (2756), plus the
+// capacity switch forceinline 858 (2828); adjusted seeded from the rating local 811. Diagnostic: `#pragma
+// auto_inline(off)` around this function 766 (no effect on the link's inline choices).
+// Round 146 (m3 lane 5, fast; body unchanged, 0x73530 is the target): the session takes EBP (so the stack) because the
+// output pointer has EBX, the state ESI and the inlined getter's pointer EDI. The output pointer's address taken 766, read
+// through its address 766; none of the loop-getter, capacity and long-histogram combinations gives the session EAX. Diagnostic,
+// not kept: the top getter call inside `if (1)` or a constant-true local test stays out of line with retail's head, session
+// EAX and 0x73530 byte for byte, 942 (2700 bytes), with the capacity helper force-inline 911 (aligned 471), plus the
+// loop getter 956, plus a long histogram 915 (frame 0xb4); `do {} while (0)` or a bare block around the call 766; the call in
+// both arms of the state test 915, with the capacity helper force-inline 856 (2828 bytes; the NONE arm folds, so not
+// retail's shape). A natural enclosing test that emits no code is the lead.
+// Y561: Existing capacity/imbalance/party-mode provider subsets 1..7,
+// then all plus limited provider: 766/903/903/766/766/903/903/903.
+// Original selectors/workspaces restored; frame/session/lookup remain.
+// DL255: Direct descending group/initial-histogram/validation ordinals, subsets 1..7,
+// then separate reverse native ID transfer: 831/794/831/917/852/824/852/845. NOT kept: all regress,
+// frames 0xd4/0xd8 versus 0xb4 and stack ingress remain. Original complete body,
+// histogram phases, selector contracts, observations and call operands restored.
+// M359: Read-only receiver contracts on capacity/teams/minimum/maximum/spread/limited/
+// imbalance selectors, individually then all: 766/766/766/766/766/766/766/766.
+// NOT kept: frame/session/lookup unchanged; original complete helpers and body restored.
+// DH333: Standard player extrema/member maximum/histogram clears, seven subsets
+// 824/836/861/828/829/848/825; typed three-word identity transfers 895. Frame 0xd4/0xb4
+// persists. NOT kept: regressions; original word table, observations and complete body restored.
+// M361: Immediately overwritten maximum/minimum/average defaults elided in seven subsets, then
+// success declared at its first test region:
+// 771/771/771/776/771/771/851/851. NOT kept: no eligible byte match or supported closer.
+// Original initializations and full body restored; frame/session/initial lookup remain.
+// M363: Real summary or summary/count admission owns the opening query, early-return
+// or positive-body forms: word 954/954/954/954; dword 982/982/982/982. NOT kept:
+// frames 0xd8/0xb8 versus 0xb4, late lookup and session ECX; caller reduced 8 -> 1.
+// Original complete body restored; frame/session/initial lookup remain.
+// M366: Closed ID/initial/eligible histogram phase lifetimes, six new word-table subsets 766;
+// full dword scopes 849/2780 bytes, scoped word first CRT clear 820/2812 (retail 2828).
+// NOT kept: no eligible ingress/lookup repair; original complete body restored; dword frame alone is insufficient.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

@@ -240,6 +240,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // outer `if` around the record tests 43 (same code); the machine-local test on the high xuid dword
 // (`xuid[1] >> 16`) 71 (110 bytes, both callers lose); the machine-local test as a 64-bit mask compare 44; as a
 // `(word)` of the shifted xuid 49.
+// Round 50 (m3 lane 2, fast, with 0x1a303b/0x2b393c; al = aligned count, this body's 30 by the same count): two iterate-helper expansions around the loop: a for loop with early returns 64 (134 bytes,
+// al 59, callers 17/29), with result/break 56 (139, al 37, callers 17/74); `while (entry && !result)` 83 (150, al 51, callers 3/76); a guarded do-while 56 (139, al 37, callers 17/74). The helper's NULL stays
+// a live value and its test is not threaded away. Per-pass result with a successor local 59 (135, al 40), with the successor carried and copied to an inner index at the top 59 (135, al 32:
+// flags and high identity dword as retail, next in EDX and low dword in EBX where retail has them the other way round); the successor read through the table, then the iterator store and the entry, then the entry
+// and the iterator store, or after the entry, 62/62/62 (138, al 28, callers keep): next in EBX, flags in ECX, identity in EDX:ECX, mask in AL as retail, the index still in ECX through `lea esi` and the head still padded.
+// Lead: retail's index, its product and the entry are one web in ESI, so the successor stays apart; the back-edge `mov esi, ebx; jmp` looks like a tail-merged copy of the entry computation.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -792,6 +798,17 @@ void function_1537f0(s_profile_record *record);
 // entry read through the table 46; an entry cursor beside the count 84 (270). Probes: globals not NONE 38 (EBP takes the
 // record zero as retail, so the hoist comes from the global stores sharing NONE with the links); links not NONE 58; a
 // memset of the globals 74 (260).
+// Round 68 (m3 lane 1; "h" = a one-link LTCG harness of this file with unknown_153750, listing equal to the full build's): the source
+// record under `#pragma pack(push, 4)` 53h (same code: the frame stays aligned for its 64-bit member, but the record may then sit at a
+// 4-aligned offset). With that record and an index loop: the identity pointer from memset's return in a local 55h (259 bytes), as the
+// call's argument 53h (261); the identity and record as members of one local object 44h (259 bytes), the closest shape yet: frame 0xa0,
+// identity +0x10, record +0x1c and every line through the identity copy as retail (the same object without the pack 51h, on the pointer
+// walk 85h). Not kept: nothing in the repo is that object, and a struct made up to group locals is not an accepted form. Left on it: NONE
+// hoisted into EBP (`or ebp, -1`), so field 0x40 stays in memory where retail keeps it in EBP, and the flags clear. On it: flags and time as
+// two stores 49h (257 bytes, aligned 33), the other order 49h; links as statements in two orders, chained or paired, heads chained or
+// copied from each other, links and heads through by-value helpers: all 44h (same code); heads after the loop 69h. Diagnostics, value-wrong:
+// the hoist ends at 4 links + 2 heads (37h, 258 bytes) or 3 links + 4 heads (39h with two flag stores); with the hoist gone and two flag
+// stores 29h, left the byte-store schedule around the record's `rep movsd`. Retail does not hoist NONE: it reloads `or eax, -1` in the loop.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1325,6 +1342,19 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // upper` 52; cursor from a named index 54 (1174, tail registers flip), after a repeated guard 5/54, a guarded do-while
 // 385-386 (1190), pointer bound 370 (1181), to-cursor 56, `to = from - 1` 361 (1174), copy with a separate count 350 (1162),
 // memmove/memcpy 362/368 (1181); bound copies for the repair 70/70/69/72.
+// Round 68 (m3 lane 1; "h" = the one-link harness of this file, listing equal to the full build's, reads 44 where plain reads 47): lower
+// `removed > position ? position : removed` 47 plain (re-measured, 2 points, not kept). New on the current body: the direction after both
+// arms (`bool downward = removed != NONE && removed < position;`) 402h (1187 bytes); `if (removed != position) { downward = removed <
+// position; ... }` 378h (1178 bytes); plain entry with `downward = removed > position ? false : removed < position` 36h (1171 bytes, an
+// implied test and not retail's branches: setl stays). Round 141's 8/6 forms rebuild exactly (8h, 6h). On the 6 form: forward copy
+// with a per-pass pointer assigned to a function-scope local 53h; a `from`/`to` pair per pass 361h; a table pointer local 82h, stepped as
+// `entries[0] = entries[1]` 361h; backward cursor as `to` / `from` 383h/380h; the cursor from a named index behind a repeated guard 40h
+// (1174 bytes), in four placements (same code); `if (lower + 1 <= upper)` around round 141's cursor 5h (round 141's 5; left only retail's
+// `mov ecx, eax; imul ecx; lea esi, [ecx + base]` ahead of the count reload, where ours folds the +1 into the displacement from EDX); that as
+// a do-while 385h, a counted loop 342h, memcpy/memmove 351h/365h, `to` beside `from` 277h, `to` alone 41h. All need the redundant flag
+// stores, so none is kept. Upper in ECX still comes only from the stepped cursor.
+// The scaled index in its own local before a cast cursor 40h (same three-placement result), `from` and `to` from the index 404h (1203 bytes),
+// `to` as `&g[i] - 1` per pass 349h (1178 bytes). In the 40h forms the tail's head repairs rotate EAX/ECX as well.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

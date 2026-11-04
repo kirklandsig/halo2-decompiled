@@ -438,6 +438,9 @@ short *function_e70b0(long unit_index, short *value);
 // all five 117.
 // Round 61 (m3 lane 11, fast): all 43 aligned rows are still one decision, index EDX / actor ECX (retail) or the reverse. The slot typed as the parameter with a table cast 49;
 // the timer test's `!timer` nested 49; a prop index local used twice 49; the final mode test nested 49; `ticks = ticks - 1` with the rate cast written 49 (same code each). BLOCKED-BY 0xe70b0 stands.
+// Round 145 (m3 lane 6, fast): ticks decremented through a short local stored back 111 (446 bytes); the timer
+// expiry as a named bool 49; `short action = NONE;` 49; elapsed ticks as a named long 49; the node's object
+// index named before the prop lookup 49. BLOCKED-BY 0xe70b0 (avoid-listed file this round).
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

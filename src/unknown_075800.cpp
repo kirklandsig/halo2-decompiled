@@ -1254,6 +1254,33 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M335: Rejection-owned connection exits on the native-input graph, subsets
 // 1/2/4/3/5/6/7, then all with case-local results: 196/196/196/196/196/196/196/196 reduced.
 // Original complete body restored; delayed ESI save and late expansion remain.
+// Lane 14 r60 (all plain, base 153): an explicit object parameter (type, address, object, message) on the one retail-order switch
+// 217 (420 bytes, same convention as the method form: type ECX, address EAX, message on the stack), on the kept two switches 153
+// (same code); a method with an unused size parameter, one switch 217 (same code). One switch with `inline` on 0x94420, on 0x94270,
+// on both 217 (not inlined, same code); with __forceinline on 0x94420 106 (452 bytes): retail's exact convention, prologue,
+// delayed ESI save and every case but 18, whose body is inlined where retail calls it, and caller 0x7afd0 matches, but 0x93aa0
+// inlines it too (349, match lost; a forwarding helper for this one call is not allowed). The address read once through its
+// own address on one switch, with an explicit object parameter in the orders (type, address, object, message), (address, type,
+// object, message), method 219 (424 bytes), (type, object, message, address), (object, type, message, address) 221; type
+// still ECX and message EAX because the address sits in EAX at the dispatch, and 0x7afd0 stops matching. So the address must
+// be homed in EDI by a use that crosses a call; no such use is left in retail's final code.
+// Y561: Current native-input direct priorities 0324/0423/0432/2034/2043/
+// 2304/2340/2430: 196/194/192/196/196/196/196/196 fast (control 196,
+// full 153). NOT kept: four-point best; original classifiers and caller restored.
+// B400: Explicit lookup-success results in connection cases 5/6/7, seven subsets, then
+// all with case-local handles: 196 eight times fast (control 196, full 153). NOT kept:
+// no exact match or gain; original classifiers, native input roles and all call tuples restored.
+// M355: Typed member-call late boundaries on the native/complete classifiers, 18/11/both,
+// 211/196/211/223/223/223; shared late/all-compatible selection 206/213.
+// NOT kept: unmatched callable ownership; original dispatcher and all call tuples restored.
+// M357: Coherent five native-input formal orders and three unsigned-selector orders:
+// 196/196/197/197/197/196/197/196. NOT kept: no exact producer/contract form; original complete body restored.
+// M359: Common no-op message completions for individual/residual/all hole families,
+// return and break: 196/196/196/196/196/196/196/196 reduced (control 196).
+// NOT kept: no exact classifier/save improvement; original complete body restored.
+// DH329: Primary priorities DQCPS/DSQCP/DSPCQ/DSCQP/DPQCS/DPSCQ/DCQPS/QSDPC
+// 207/198/198/208/202/198/206/197 reduced, control 196 (full 153). Original classifiers restored;
+// NOT kept: all regress; delayed ESI save and late-handler expansion remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
