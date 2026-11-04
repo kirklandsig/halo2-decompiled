@@ -567,6 +567,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // AC521: Existing shared scaled-point publication with conditional clamp/distance-difference/short-link
 // masks 0..7: 286/286/283/283/359/359/359/359. NOT kept: three-point gain only; bounded forms
 // recover frame 0xe4 but shorten away from retail. Original projection, loops, memcpy and body restored.
+// P325: Current-node pointer while traversal, separate/shared initial receiver and long/short
+// links: 405/385/402/372; corresponding canonical pointer for traversal 405/405/402/402.
+// All regress and lengthen to 1407-1423 bytes; original current-index traversal, both predecessor
+// histories and metadata memcpy restored. Native frame/zero/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

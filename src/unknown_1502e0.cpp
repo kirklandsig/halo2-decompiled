@@ -247,6 +247,10 @@ struct s_flag_word_bits
 // Y567: Complementary available bool/byte/short/long with default-true
 // then exhaustive arms: 116/116/126/122/125/125/131/130. NOT kept: no byte match; original flag
 // producer and body restored, player/root ownership and tail expansion remain.
+// P325: Caller tick/kind/effect entry declaration subsets 1..7 all tie 114;
+// the complete graph with the later definition-index declaration also ties 114.
+// Every initializer stays at its original producer; original complete body and rounding
+// helper restored. Player/root, tick/effect homes and expanded notification tail remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1092,6 +1096,10 @@ struct s_tail_transfer_traits
 // N355: Returned-player canonical for traversal with independent bounded selection/slot domains:
 // 373/378/413/373/284/284/373/283. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; Selected-traits/unit/NONE homes and pool reloads remain.
+// P325: Iteration-entry unit-index/unit-receiver/weapon-result declaration subsets
+// 1..7 all tie 153; the complete graph with both no-seat slot declarations also ties 153.
+// All initializers and observations stayed at their original producers. Complete original
+// body restored; selected-traits/unit/NONE homes and native pool reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {

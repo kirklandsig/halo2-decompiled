@@ -596,6 +596,10 @@ struct s_1f8a70_actor
 // AC521: Independent inner route outcome on the two-result/native-word-selector graph,
 // byte/signed-byte/short/long with converted or test-arm outer results: 191/191/191/191/300/300/306/306.
 // NOT kept: no exact memory-result home; original outer/inner results, unit scope and full body restored.
+// P325: On the two-result graph, inner-result declarations after unit/reset/destination,
+// at entry and at route selection all tie 188; unit-output declarations at active phase/entry
+// score 206/206; outer failure result assigned before cleanup 188. All restored;
+// unit/result packing and the native memory-result cleanup remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
