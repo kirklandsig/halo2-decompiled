@@ -1046,6 +1046,9 @@ bool function_2715a0(byte *buffer)
 // DH357: Fresh post-conversion denominator squares, with complete segment,
 // projection and collision operation families in eight forms: 486 each.
 // NOT kept: all tie; original fresh reads, sum trees and complete body restored.
+// DH359: Separate terminal reached result bool/byte/short/long with inherited fallback
+// 486/495/542/538; missed counterparts 521/521/567/563. NOT kept: no gain or
+// byte match; original returns, fallback qualifier, heap operations and whole body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

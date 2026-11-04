@@ -301,6 +301,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH352: Read-only initial-root/membership-root/membership-group descriptor pointees,
 // seven subsets then the read-only current group: eight at 390. Original pointer
 // declarations and body restored; selected-default/root/bitmap/endpoint homes remain.
+// DH359: Whole-operation failed outcome bool/byte/short/long, cleared after output
+// 408/408/432/431; at output entry 410/410/432/431. NOT kept: no byte match;
+// original result, selected homes, roots, bitmaps, helpers and complete body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
