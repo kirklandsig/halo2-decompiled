@@ -3315,6 +3315,13 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 // hoists the camera into ebp at entry and spills the seat. Block order (seat, plain, failure tail) now agrees.
 // Tried (all 113 or worse): result passed as the flag argument of 0xb8d30 (113), result set true on both paths
 // with one return (125), volatile result (121), marker declared at the top (113), camera through a local (113).
+// Round 5 of #1049: no logic difference in a fresh walk. The single-return form (`result = true;` after each copy,
+// `return result;`) is what gives retail's stack byte (`mov [esp+0x13],0` at entry, `mov al,[esp+0x13]` on the
+// failed-marker path) and the three-epilogue layout, but it scores 125 because the camera pointer still takes EBP at
+// entry (retail leaves it on its stack slot and loads it into EAX for each copy, so the seat stays in EBP and only
+// the unit and result spill) and the seat spills an extra slot (frame 0x7c versus 0x78). Also tried with that form:
+// `result = true` before the copy 126; one `byte *source` for the seat and the definition 125; memcpy for the camera
+// copy 125. 66 callers; none was changed. Unfixed: nothing found that lowers the camera's register priority.
 // @retail 0xd1080
 bool function_d1080(long unit_index, transform4x3f *matrix, s_unit_camera_data *camera)
 {
@@ -6922,6 +6929,20 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 // `value` as word (definition and declaration) 257; the zoom block's weapon as NONE then if, with the scales from
 // the stored byte field 293; only the scales from the byte field `(real)unit->unknown240` 253; the zoom block's
 // weapon through 0xcbd50 293 (retail re-reads the header data pointer there, ours keeps it).
+// Round 5 of #1049: no logic difference found in a fresh walk (every test, store and call agrees; behaviour is the
+// same except that retail passes the flags dword with its upper half unwritten, see below). The 20 missing bytes
+// are the flags slot (4: retail keeps the flags in a stack dword, writes the word `mov [esp+0x20],cx` and
+// passes `mov eax,[esp+0x20]`), `first` stored at [esp+0x13] (4; pushes `changed` to [esp+0x12]), the loop-head
+// alignment (jmp over 8 bytes of padding, follows from the size) and the zoom block's second header lookup.
+// Tried (not kept; layout-only forms count only on a MATCH): flags as `union { word w; long l; }` built through .w
+// and passed as .l: 253 -> 238 (frame 0x28 as retail and `or cx,4` / `and cx,0xfffb` become retail's 16-bit ops;
+// a plain word local or short gives 32-bit `ecx` ops), with `last` as dword `(control >> 30) & 1` 234; the same
+// with `last = control >> 30` tested `& 1` 259; word-typed bitfield struct built bit by bit 344; the `flags |= n`
+// / `flags &= ~n` if/else form of the ternaries (same code); `short flags` 283; the zoom weapon as NONE then an if
+// 284, through 0xcbd50 292 (that one matches retail's `or eax,-1` shape but ours takes the idx in DI, because retail
+// holds the header global in EDI for its second data load; ours keeps the data pointer and loads the global once).
+// Still differs after the union: `first` is not spilled (retail needs EBX as a third bit-test temp because it keeps
+// `control` in EDX where ours uses EDI), `shl ecx,1` for `shl cx,1`, `test dl,dl` after `and dl,1` for `test bl,1`.
 // @retail 0xc58f0
 bool __stdcall function_c58f0(long unit_index)
 {
