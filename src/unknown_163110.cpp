@@ -1021,6 +1021,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // deltas named (i, k, j or i, j, k declarations, rows from them) 118/118 (the near/zero swap at +0xb6 returns);
 // delta_j named with the denominator staged i, k, j 30 (retail's denominator roles; the deltas are computed z, x, y
 // where retail computes x, z, y, and the intersection's copied-t row is y where retail's is x). Body restored.
+// AC513: Native near/far coordinate-point field types singly/both, both with native
+// source-normal vector, each with native source-normal vector, and both with shared plane
+// storage without/with source-normal vector: eight at 115, 1851 bytes. NOT kept:
+// no exact match; coefficient preload and zero/classification/projection homes remain.
+// Original geometry types, reads, arithmetic and complete body restored.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

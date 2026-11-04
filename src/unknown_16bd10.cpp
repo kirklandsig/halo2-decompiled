@@ -914,6 +914,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // factors, original/producer direction declaration: 443/437/443/443/443/437/443/443.
 // NOT kept: readonly plane producers shorten to 1660/1668 versus 1696 and regress;
 // original plane, direction, factor, scopes and complete body restored.
+// AC513: Existing shared add-scaled projection; copied-normal squared length,
+// dot length in both input orders, per-use direction, source squared length, default-zero
+// and zero-first factor: 367/370/371/371/367/461/449/367. NOT kept: no exact match;
+// original header set, projection, factors, helper bodies and whole body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
