@@ -892,6 +892,11 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // 1/2/4/3/5/6/7, then all as plain while loops: 215/218/89/223/215/218/223/223.
 // NOT kept: no gain; original aggregate inputs, reverse products and full body restored.
 // Unit-call scratch and first-length/projection/query homes remain.
+// F391: Native motion/heading inputs through standard forward/backward range capture,
+// each alone then all four paired directions: 184/184/201/201/197/197/197/197.
+// NOT kept: every form regresses; heading captures grow frame 0x54 to 0x60 and all lengths grow.
+// Original full vector inputs, zero-k stores, target acquisition, normalizations and whole body restored;
+// unit-call scratch register and first-length/projection/query homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
