@@ -1747,9 +1747,10 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 	return index;
 }
 
+// score 9 (was 9): only the node/matrix entry order remains (round 67, round 70).
 // MiniMax D (11-01): no new form and no lower score; the bounded permute search was stopped before
 // it measured a variant.
-// score 9 (was 9): only the node/matrix entry order remains (round 67, round 70). Earlier: node/matrix entry order and
+// Earlier: node/matrix entry order and
 // the forward/up xmm homes remained (retail forward
 // in xmm4/2/3 and up in xmm5/1/0; the marker forward values take xmm2 first here); frame 0x1c agrees.
 // The point computed into position, normalize3d and cross3f give retail's early up.j/up.k loads.
@@ -1855,6 +1856,10 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // Diagnostics: with the else arm's marker reads removed the base folds (`add edx, [eax + 0xc]`, 234 with node first), so
 // the else arm's read of the same field is what makes it a temporary; with no node copy, node-first aligned 7 and the
 // base is still EBX. Retail's base takes EAX as the source dies; none of these forms gets that.
+// Round 42 (m3 lane 18, fast with 0x178360): the marker index parameter `long`, narrowed `(short)` at its uses with the
+// callers passing the long index, node copy first 101, in this order 9 (same code); node copy first with `matrix`
+// declared uninitialized and assigned after the copy 101; node copy first with `up` declared just before the 0x11d000
+// call 101; the scale read once into a local before the marker pointer 192.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {

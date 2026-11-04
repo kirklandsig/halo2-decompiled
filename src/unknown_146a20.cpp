@@ -291,6 +291,12 @@ bool g_47f05b;
 // count/fixed-base/fixed-derived constructor expansion: 34/1058/34/34/34/1058/1058/1058. Ordinary
 // policies retain the omitted intermediate vtable store; forced policies expand the native call.
 // Original declarations and complete body restored; the store and successful-arm reload remain.
+// Round 42 (m3 lane 18, fast with 0x146b80/0x146e30/0x22c3e0/0x1c2690): testing the global while placing through
+// `block`, `g_479894 = g_479888 ? new (block) ... : NULL;`, gives retail's arm reload and the 1 in EDX together, so
+// only the vtable store differs: 35 (140 bytes, positional); as `if (g_479888) ... else g_479894 = NULL;` 35; on it the
+// method6/method7 overrides declared in the fixed base 35, `block` typed as the fixed allocator with `block + 1` 35,
+// the test inverted 36. Compile-only: a local placement always gives the 1 in a register and the join reload, a
+// g_479888 placement the arm reload and immediate 1s (13 spellings); the store is dropped in every form.
 // @retail 0x146a20
 void function_146a20(void)
 {
