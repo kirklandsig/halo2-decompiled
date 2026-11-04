@@ -5338,6 +5338,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // M364: Original multi-use still call result in char/signed-
 // char/byte/short/word/int/long/dword storage: 683/683/683/688/688/685/685/685. NOT kept: no
 // native truth-byte/animation-home match; original result domain and complete body restored.
+// F374: Actual inline grabbing char/signed-char/byte/short/word/int/long/dword
+// carriers: 594/594/594/581/581/578/578/578 (fast control 594, full 588).
+// NOT kept: wider carriers retain the result in EDI/DI rather than retail
+// byte storage; original bool, predicate and complete body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
