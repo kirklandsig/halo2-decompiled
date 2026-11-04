@@ -357,6 +357,10 @@ static inline void quaternion_transform_vector(
 // N368: Caller initial-dot/sine/axis-scale adjacent producers, seven family subsets
 // 263/253/253/221/221/249/214; all with entry declarations 214. Original producers restored.
 // NOT kept: unmatched storage/producer forms regress; native half/quaternion/transform homes remain.
+// N374: Paired root division, doubled helper-scalar addition and doubled
+// half-angle-product addition, masks 1..7 and all with independent halves:
+// 200/200/200/252/252/252/252/254. Original roots, factors, halves, helper and body
+// restored; NOT kept: no native frame/spill recovery or byte match.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1115,6 +1119,10 @@ void function_143250(
 // N371: Complete scalar lexical homes by fanout/depth/live-span, forward/reverse,
 // then band-fanout-depth/band-depth-fanout: 1766/1766/1766/1766/1766/1766/1766/1766. Original names restored.
 // NOT kept: unmatched spill-priority forms; native frame, input admission and basis/matrix homes remain.
+// N374: Actual band-local matrix receiver lifetimes from first store through
+// application, band masks 1..7 and all immutable: 1766/1766/1766/1766/1766/1766/1766/1766.
+// Original shared receiver and full scalar/publication graph restored;
+// NOT kept: no native frame/admission recovery or byte match.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

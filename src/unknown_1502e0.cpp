@@ -1501,6 +1501,10 @@ void function_150820(dword *bits, bool local_only)
 // direct selected-weapon reads with direct/char/int/short slot: 49/49/72/43.
 // NOT kept: ties or regressions; original short slot and weapon capture restored.
 // Native ESI player/EDI hand and entry temporaries remain exchanged.
+// N374: Hand lifetime after slot/slot admission/weapon/query, selected slot
+// indexed then conditional on primary: 70/70/70/70/81/82/104/86. Original selector,
+// lifetimes and full body restored; NOT kept: unmatched shorter extents
+// and native ESI-player/EDI-hand ownership remains.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -2222,6 +2226,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // P328: Saved parent rejection and complete branch-owned parent admission in
 // bool/byte/short/long: 202/202/211/210/231/231/211/211. Original body restored;
 // native frame agrees, player/header-offset ownership and rounds/mode homes remain.
+// N374: Complete sole-exit graph with actual squared-distance/radius/parallel-square
+// producer masks 0..7: 202/202/202/202/202/202/202/202. Original returns,
+// arithmetic and full body restored; NOT kept: no byte match or native
+// player/header-offset recovery. Native frame 0x28 remains.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

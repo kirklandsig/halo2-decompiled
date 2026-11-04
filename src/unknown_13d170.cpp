@@ -415,6 +415,10 @@ struct s_block_candidate
 // N371: Saved ring successor in the ordinary inner for increment, bare scan/segment/
 // admitted/entry lifetimes, original then semantic cursor names: 347/347/347/347/347/347/347/347.
 // NOT kept: unmatched successor-slot forms; full body restored; missing frame dword and page/ring homes remain.
+// N374: Full-width unsigned insertion successor/scan ordinal/saved successor,
+// masks 1..7 and immutable complete graph: 347/350/350/347/347/350/350/350.
+// Original signed cursors, modulo and full body restored; NOT kept:
+// no native signed-remainder/frame recovery or byte match.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
