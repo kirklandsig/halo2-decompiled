@@ -694,6 +694,10 @@ struct s_item_collision_bsp
 // B407: Joint pending-factor/fallback-speed scalar identities on the common pending-k
 // graph, eight lexical relations: 211 each; all file controls unchanged. Original
 // names and complete body restored; plane joins and scalar/spin homes remain.
+// N349: Actual contact displacement via scalar/shared-scale producers and field/shared-add/native-point
+// publications 211/317/211/317/211/317/211; copied point then scaled additions 282.
+// Original complete body restored; protected plane width, plane joins and spin/speed homes remain.
+// NOT kept: unmatched displacement/copy forms and frame/extent regressions.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1265,6 +1269,9 @@ struct s_item_flags_view_10b850
 // DH335: Axial-row scalar homes 839/860/864/878/839/860/864/878; first 839
 // is prior-form calibration. Complete axial-vector component loop 1000.
 // NOT kept: frame/length regress; original helper, inputs and full body restored.
+// N352: Actual item/typed-tag/external-hit-header bindings, families 1..7 and
+// complete read-only views: 813 each. NOT kept: one-use/combined record forms
+// remain unmatched; original body/helpers restored, frame stays 0x154/0x12c.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1698,6 +1705,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // AC503: Existing two-site release producer owns the actual item receiver and byte/dword mask,
 // entry/direction/scale/vector clear boundaries 140/140/182/183/140/140/182/183. Original helper and complete body
 // restored; return byte, release RMW/tail and event homes remain. NOT kept: unmatched producer forms.
+// N350: Complete update counts in byte/short/long/dword 143/173/176/176;
+// category-bit aggregation 182/181/181/181 on the paired-setter graph. NOT kept:
+// numeric return representations regress; original Boolean accumulator and full body restored.
 // B395: Captured-spin logical OR on paired point setters, result/spin-first with
 // bool/byte/short/long accumulators: 179/176/186/183/185/179/186/179. NOT kept: all
 // regress; original bitwise join, two-use spin value, helper and complete body restored.
@@ -1714,6 +1724,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // DH333: Typed owner/origin/position record-range copies, seven subsets
 // 167/165/171/164/171/181/187; complete backward ranges 189. Unlike scalar-coordinate ranges,
 // these copy complete records. NOT kept: regressions/shorter extent; full original body restored.
+// N352: Eight return/spin lexical home pairs on the paired-setter graph: 140 each.
+// NOT kept: return byte stays +0xe/+0xf and release/event homes remain; original
+// names, declaration sites, helper, paired setters and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

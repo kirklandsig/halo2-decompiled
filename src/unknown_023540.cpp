@@ -2549,6 +2549,8 @@ dword __cdecl function_131fc0(real alpha);
 // Y563: Common output workspace across shader arms, shader/function scope, original/shared
 // raw workspace and ternary/upper-default short alpha: 140/145/140/145/140/145/140/145.
 // NOT kept: no gain or byte match; original workspace scopes and complete body restored.
+// N353: Separate caller-side scalar/color/finalizer inline declarations, seven subsets,
+// and all force-inline declarations: 140 each. NOT kept: no gain; original declarations restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -3500,6 +3502,9 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // destinations with nested/guard/default/conditional clamp graphs:
 // 31/31/787/31 twice. Original output contract, helper and complete body
 // restored; selector scheduling, post-bias reloads and shift/clip homes remain.
+// N350: Immutable shift/clip/center parameter subsets and all with immutable
+// state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
+// selector, reload-pair and six quantizer input-home differences remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

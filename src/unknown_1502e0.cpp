@@ -9,6 +9,7 @@
 #include "unknown_0259d0.h"
 #include <string.h>
 #include "object_iterator.h"
+#include "unknown_06c1d0.h"
 
 /* the players (g_4e8c24, 0x21c bytes each) */
 struct s_tail_player
@@ -460,9 +461,6 @@ struct s_tail_player_identifier
 // [53, 45, 55, 46]; plain countdown scan with pointer step in the body [38, 30, 58, 26].
 // NOT kept: 30 gains one; 26 uses a countdown unlike retail and depends on combined forms.
 // Original ordinal scan restored; pointer/comparison roles and delayed saves remain.
-// F353: Complete player record with native entry/options-root/traits-result/alternate-truth lifetimes
-// 32/68/56/56/32/67/67/56.
-// NOT kept: no gain; original full body/helpers restored.
 // N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
 // and the CRT int comparison result: all eight 31. Original body restored; options
 // acquisition, delayed saves and comparison register ownership still differ.
@@ -470,6 +468,9 @@ struct s_tail_player_identifier
 // 31/31/31/31/31/31/31; complete operands with direct truth producer 68.
 // Existing player/object lookup inline, forced and unhinted policies: eight 31.
 // NOT kept: no gain; original observations, ordinal scan and full comparison restored.
+// F353: Complete player record with native entry/options-root/traits-result/alternate-truth lifetimes
+// 32/68/56/56/32/67/67/56.
+// NOT kept: no gain; original full body/helpers restored.
 // Y559: Complementary first-set storage bool/byte/short/long, branch-cleared then
 // test-produced: 32/32/68/67/67/67/68/67. NOT kept: no byte match; native
 // delayed saves and identifier/options/comparison allocation remain.
@@ -1194,6 +1195,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // Y563: Count-slot rejection guards/held guard/Boolean accumulation/rejection plus
 // accumulation, final guarded/early-exit tail: 284/284/318/318/284/284/318/318. NOT kept:
 // no gain; original count admission, field observations and complete body restored.
+// N353: Existing complete slot selector at held/pending/inventory subsets 1-7
+// 288/294/295/337/337/351/346; all with direct slot arguments 346.
+// NOT kept: no qualifying gain; original pool/player/tag acquisition and body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1360,9 +1364,6 @@ void function_150820(dword *bits, bool local_only)
 // returns 108, absent-unit return 78, branch-owned result 106, success-default result 88, admission
 // result before dispatch 101. All original calls, observations and executable body restored.
 // NOT kept: no score gain or byte match.
-// F353: Native hand arm/default producers, original then actual mode/result storage names
-// 43/45/45/43/43/45/45/43.
-// NOT kept: no gain; original full body/helpers restored.
 // N345: Isolated player/hand/unit/held-slot/held-weapon/selector/parameter role names
 // and the int hand-negation result: all eight 43. Original body and calls restored;
 // ESI/EDI player/hand ownership still differs.
@@ -1370,6 +1371,9 @@ void function_150820(dword *bits, bool local_only)
 // player/unit receivers: eight 43; existing player/object inline, forced and
 // unhinted expansion policies: eight 43. Every other user keeps its score.
 // NOT kept: no gain; original helpers, includes, receivers and complete body restored.
+// F353: Native hand arm/default producers, original then actual mode/result storage names
+// 43/45/45/43/43/45/45/43.
+// NOT kept: no gain; original full body/helpers restored.
 // Y559: Complementary final failure bool/byte/short/long, conditional then
 // guarded command clearing: 85/85/87/89/73/73/87/89. NOT kept: no byte match;
 // native ESI player/EDI hand and temporary entry registers remain.
@@ -1558,7 +1562,9 @@ void __stdcall function_167e86(long user_index, long hand);
 void __stdcall player_set_local_user(long player_index, long user_index);
 void __stdcall function_14f270(long player_index, long controller_index);
 
-// score 587 (was 628): the unbind in the second-to-last loop follows retail's expansion of 0x14f190/0x14f270's
+// score 285 (was 587): frame 0xe4, 78 bytes short; mask/index homes, release expansion and late binding homes remain.
+// The existing controller iterator restores the native memory cursor and pool reload (plain 285).
+// Earlier 587 (was 628): the unbind in the second-to-last loop follows retail's expansion of 0x14f190/0x14f270's
 // NONE arms (through freshly fetched player pointers), the machine fields come from s_player_census_counts, the
 // iterator sits in a struct after a pointer (retail's frame 0xe4: a free slot at +0x24), and the arrays are filled
 // by loops (the preamble matches retail instruction for instruction). Retail also expands 0x1682bf(NONE, user,
@@ -1590,6 +1596,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // Y563: Eight existing pass-switch case orders, including 2/1/default/0: 587 each.
 // Original Boolean result and mask/index homes persist; complete source restored.
 // NOT kept: no gain or byte match; native memory cursor and inline expansion remain.
+// N353: Existing controller iterator/user release/controller release subsets 1-7
+// 285/587/285/587/285/587/285; complete release graph with a bounded controller loop 604.
+// Keep only the existing controller iterator (plain 285, 1914/1992 bytes); release calls and bounded loop restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
@@ -1662,7 +1671,7 @@ void __stdcall function_152f80(void *address, void *option_data)
         for (long pass = 0; pass < 3; pass++)
         {
             if (controller != NONE) break;
-            for (long candidate = 0; candidate != NONE; candidate = candidate >= 0 && candidate < 3 ? candidate + 1 : NONE)
+            for (long candidate = 0; candidate != NONE; candidate = controller_index_next(candidate))
             {
                 if (!(controllers_used & (1 << candidate)) &&
                     (pass > 0 || candidate == state.player->controller_index) &&

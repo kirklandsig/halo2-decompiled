@@ -1502,6 +1502,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // second conditional/depleted-valid assignment, bool then byte status: 357/327/349/322 twice.
 // NOT kept: no exact default/SETLE producer match. Original complete body restored; pool/state
 // ownership, signed-count joins and byte normalization remain.
+// N352: Actual unit/control/state record-reference families 1..7 and complete
+// read-only bindings: 164 each. NOT kept: pool/state/SETLE/result homes and
+// byte normalization remain; original receivers, scalar argument read and body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1749,6 +1752,9 @@ bool __stdcall function_110ab0(long unit_index)
 // Y561: Complete uninitialized result short/word/long/dword at original
 // declaration 574/574/554/554; before lookups 574/574/554/554. NOT kept:
 // all regress and grow away from retail; original Boolean result/body restored.
+// N352: Actual unit/control/state record-reference families 1..7 and complete
+// read-only bindings: 450 each. NOT kept: frame stays eight versus twelve,
+// with 424 code differences; original pointer receivers and full body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

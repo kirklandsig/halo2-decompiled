@@ -379,6 +379,12 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // DH331: Oriented start/end UV endpoints before subtraction, conditional then paired branches,
 // bounds pointer/reference and four-real pointer/reference: 473/473/473/473/541/541/541/541.
 // NOT kept: smaller frames and regressed extents/scores; original alias-safe encoder and callback restored.
+// N348: Native box storage for geometry/primary/secondary UV, seven subsets, then
+// native box encoder output, on the current frame/plain-pivot graph: 223 each.
+// Original union views and all input-before-store captures restored; tint/UV homes remain.
+// N350: Common geometry-arm flip result after packing, long/dword/word/byte carriers,
+// original/reference producer inputs: 458/458/437/445/458/458/437/445.
+// NOT kept: frame/extent and exchanged tint/UV homes regress; original body restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

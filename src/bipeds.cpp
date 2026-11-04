@@ -974,6 +974,9 @@ extern long *g_51e9cc;
 // M338: Complete actual activity admission in bool/byte/short/long, positive/complementary channels:
 // 42/42/42/42/42/42/42/42. Original body restored; lookup receiver and crouch/contact schedules remain.
 // Nonmatching single-consumer truth carriers restored.
+// N348: Packed index/surface/kind extraction before key admission, subsets 1/2/4/3/5/6/7:
+// 79/51/42/245/79/51/245; all with short kind 245. Original decoder scopes and full
+// body restored; lookup receiver retention and crouch/contact scheduling remain.
 // F355: Complete velocity-threshold positive/complementary truth ownership in bool/byte/short/long:
 // 42/42/42/42/42/42/42/42. NOT kept: no gain; original body restored.
 // J246: Coordinated table-getter inline contract with native word flags,
@@ -1955,6 +1958,9 @@ void function_dfd70(long arg_159e6d)
 // 233/233/233/240/240/233/233; forward/back at its first writer 233. NOT kept:
 // no target gain, and several forms raise shared users. Original helpers/body restored;
 // mode-three placement and basis/ray homes remain.
+// N353: Mode-three predicate bool/byte/word/long before origin acquisition
+// 270/270/261/261; after origin acquisition 233/233/233/233.
+// NOT kept: no gain or native predicate storage match; original helpers and all user bodies restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4773,6 +4779,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // OR criterion 62/143/133/160; conditional criterion 141/145/135/159.
 // NOT kept: the six-point best is below eight and an embedded assignment
 // requires byte equality. Original result/support lifetimes and full body restored.
+// N350: Separate positive actor authorization in bool/const bool/byte/const byte,
+// original and support-bound success: 155 each at 668/683 bytes. NOT kept: result
+// lifetime loses native extent and byte homes; both exact callers survive; body restored.
 // B395: Byte/signed-byte success accumulators, actor/support/velocity/entry producers:
 // 88/150/140/149 in either domain. NOT kept: all regress; canonical return conversion
 // and native support/result homes remain. Original Boolean result and complete body restored.

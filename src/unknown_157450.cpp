@@ -674,6 +674,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // through +0x60, but a width cast on one side of a compare, and retail compares dword: `movzx eax, cx; cmp esi, eax`;
 // not kept); a word new-mask local ahead of the change test 133 (375 B); the added mask declared ahead of the change
 // test 130 (375 B), 59 on the word mask; the volatile present declared first on the word mask 86.
+// N348: Sentinel-owned loop continue, saved-word/team-short/condition-player
+// subsets 0..7: 32/77/107/64/32/77/107/64. Original nested guard, masks,
+// qualifiers and body restored; native word entry and shared post-loop reload remain.
 // Lane 13 r58 (fast): word mask, plain present and the post-loop stores/index24 through the getter 63 (384 B,
 // the engine-index load then hoists as retail's); word mask with the added mask written into the second loop's test
 // 90 (396 B); `word const` mask 77 (same as word); word mask with the change tests as XORs 86; word mask with the
@@ -682,6 +685,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // full eight-ordinal then bounded-exhaustion traversal: 97/81/97/81/92/79/92/79.
 // NOT kept: all regress; the saved-word form still reloads for compare and update.
 // Original iterator, masks, callbacks, qualifier and complete body restored.
+// N351: Mask-field reference/immutable pointer, original/condition-owned immutable player, saved dword/word:
+// 32/77/32/77/32/77/32/77. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: native word entry and shared post-loop mask reload.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4308,6 +4314,10 @@ long function_14de70(long local_player_index);
 // frame 0x48c agrees, four bytes long; the late unit/slot NONE
 // sentinel, byte shift count, mode scratch register and final progress/result transport remain.
 // Earlier color-copy trials: the copies are retail's when 0x7f720 returns color3f by
+// frame 0x48c, four bytes long; exit/format spans, the zone byte shift,
+// late unit/slot NONE ownership and charge/progress/result allocation remain.
+// Earlier: two team-color copies (retail loads all three words, then stores through ESI/EDI),
+// the -1 register reused for unit/slot tests, byte shift and scratch-register renames. The copies are retail's when 0x7f720 returns color3f by
 // value (compile-only), or with each copy through a color3f local initialised from the call: 46
 // (both), 65 (rival only); on that, the individual best/best-score defaults before the
 // player-index store and the rival text cleared before the rival's player lookup 42 (44 each),
@@ -4480,6 +4490,9 @@ long function_14de70(long local_player_index);
 // Y563: One object handle for the unit then its weapon, raw/native view, tail/entry
 // declaration and ternary/branch result: 42/73/42/73/42/73/42/73. NOT kept: ties or
 // regressions; original independent unit/weapon carriers and complete body restored.
+// N353: Actual terminal unit rejection, progress-first classifier, charge/mode/progress
+// rejection and charge/progress completion exits 171/63/171/171/171/171/171;
+// complete admitted terminal selection 195. NOT kept: all regress; native NONE/shift/result homes remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {

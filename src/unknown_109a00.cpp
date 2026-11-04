@@ -581,12 +581,20 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // locals 131; a rigid-body local for the two velocity getters with the center through carrier_vector_from_havok 192
 // (0xb7060 11); body_index declared short 197; the matrix through the existing havok_component_rigid_body_matrix_get
 // 112 (same code); the center read through the existing havok_component_rigid_body_get 112 (same code). Restored.
+// N347: Existing point/vector setters for current center, previous center and previous velocity pair,
+// seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
+// Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
+// restored; native input registers, early physics spill and center/projection remain.
 // Round 48 (m3 lane 2, fast with 0xb7060): the inner search tested `j < count && !found` without the break 256
 // (908 B); the model index folded into the physics lookup 135; the component pointer computed before the NONE
 // test 270; the center copy before the velocity getters 174; diagnostic, `entry->active = true` moved ahead of
 // the matrix call (not retail's order: retail stores it after the center) 218, but the head then equals retail
 // (object index EAX, entry index ECX, first difference +0x35) and 0xb7060 matches: the register arguments follow
 // where the entry flag store sits, so look for a retail-order form that changes the same first-pass liveness.
+// N349: Actual selected component-row result, immediate/deferred ordinal and original/row-owned
+// downstream inputs 247/268/237/277; with existing center conversion 222/256/249/286.
+// Original complete body restored; input roles, early physics spill and center/projection scheduling remain.
+// NOT kept: selected-row result forms did not match.
 // N347: Existing point/vector setters for current center, previous center and previous velocity pair,
 // seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
 // Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
@@ -600,6 +608,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // DH334: Standard native-array inner products, forward/reverse and both product orientations,
 // each with original/shared add-scale projection: 180/185/180/185/262/264/262/264; caller 11/11/11/11/0/0/0/0.
 // NOT kept: no exact match; original complete body restored; native input roles, physics spill and center/projection remain.
+// N351: Native handle/ordinal domains dword-long/long-dword/dword-dword/int-long/long-int/int-int/dword-int/int-dword:
+// 112/112/112/112/112/112/112/112. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: entry registers, physics-pointer spill and center/projection schedule.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
