@@ -335,6 +335,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // 269/271/269/271/269/271/269/269. NOT kept: no eligible byte match or supported closer.
 // Original complete body restored; frame 8, incoming unit/name/actions ranks and shared calls
 // remain.
+// M363: Output snapshot/acquisition phases: both snapshots first 328; paired state/action first 268; state before unit 327; state before actions 327;
+// action first 314; late actions 327; split state 312; split action 326.
+// NOT kept: 268 gains only three; native receiver acquisition precedes these snapshots.
+// Original body restored; incoming unit/name/actions ranks and shared callback threading remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -2543,6 +2547,10 @@ __forceinline char unit_action_round(real value)
 // Lane 17 r39 (fast): the 0xe000607 fallback tested before the three-name/range arm 235 (same code); the range
 // as `>= 0xe000608` 235; name/type/first-person declarations reversed 235, type first 235; is_biped computed
 // before the weapon 307 (1191 bytes). Original body restored.
+// M363: Native single-exit completion char/byte/short/long, then each with the existing
+// signed-short hand accessor:
+// 318/318/324/326/319/319/325/327. NOT kept: no eligible byte match or native-supported closer.
+// Original complete body restored; pool/index/type/name and completion-byte homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2958,6 +2966,10 @@ long function_c8f60(long unit_index, short seat_index);
 // Quaternion memmove grows frame to 0x100 versus 0xf0; position memmove at 285 adds a non-retail
 // call and gains only length. Original full body restored; entry vehicle/unit/ordinal residence
 // remains.
+// M363: Linear/angular/both/contiguous velocity library clears 271/271/285/338;
+// each with guarded full-width activity 280/280/294/335. NOT kept: frame 0xec versus native 0xf0;
+// integer clears replace native interleaved SSE stores. Original body restored;
+// entry vehicle/unit/ordinal residence remains.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)

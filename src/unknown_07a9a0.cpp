@@ -1211,6 +1211,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // success declared at its first test region:
 // 771/771/771/776/771/771/851/851. NOT kept: no eligible byte match or supported closer.
 // Original initializations and full body restored; frame/session/initial lookup remain.
+// M363: Real summary or summary/count admission owns the opening query, early-return
+// or positive-body forms: word 954/954/954/954; dword 982/982/982/982. NOT kept:
+// frames 0xd8/0xb8 versus 0xb4, late lookup and session ECX; caller reduced 8 -> 1.
+// Original complete body restored; frame/session/initial lookup remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
