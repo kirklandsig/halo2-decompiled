@@ -171,6 +171,9 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // Round 125 (m3 lane 7, fast; positional/aligned, base 2/1): case 1 velocity through a case pointer 511/25; named cosine
 // with sine/cosine products 504/16 (2352 bytes); position.x read back from velocity.i 2/1; position.x stored first 4/2;
 // position through a case pointer 531/18 (2316 bytes); explicit double arguments 22/7; zero stores ahead of the sine 2/1.
+// Round 136: a field-first sine snapshot 2; cosine or both field-first snapshots 24/24 (2352 bytes);
+// assignment-expression sine 2, cosine 24 or both 24; position.x before field-first sine 2; position.y before cosine 8.
+// Original case restored; NOT kept: one-use field copies and producer-only forms without an exact match.
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {

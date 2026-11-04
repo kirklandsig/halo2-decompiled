@@ -1935,6 +1935,7 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 }
 /* takes rounds from a weapon's reserve for a magazine: first its own, then
    the reserves of the holder's other weapons of the same kind */
+// MiniMax H (11-03): no new form, no lower score; retail keeps the magazine index in esi and the available count in edi where ours has them the other way round, and retail holds the pool in ebp where ours reloads the pool global for each slot.
 // score 107 (was 124): the pool pointer is read once into a local that lives across the whole body, the
 // definition is read through the live weapon, `taken` is declared inside the availability gate and the
 // other-weapon receiver is a single local reused by the two reserve accesses. Still open: the magazine,
@@ -2857,6 +2858,7 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax G (11-04): no new form, no lower score; retail's magazine-%10 case value is 0x1600056b, the source has 0x1700056b.
 // MiniMax C (11-01): no new form, no lower score.
 // score 398 (was 398): one 27-label switch whose tree retail lays out inverted on the path to 0x1d0007ba
 // (root, 0x1500056e and 0x1700056c fall through to the high side; no other function in the image has that node
@@ -3158,6 +3160,7 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax H (11-03): no new form, no lower score; retail saves ebx and ebp and keeps the weapon in ebp where ours saves ebx, esi and edi and keeps it in edi, so the stack slots and the loop's registers differ.
 // score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.
@@ -3390,6 +3393,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax G (11-04): no new form, no lower score; the barrel pointer before the definition gives fast 638 (was 640), below the retention threshold.
 // MiniMax C (11-01): no new form, no lower score.
 // score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
 // Earlier: round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes

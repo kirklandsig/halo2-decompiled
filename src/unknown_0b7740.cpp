@@ -1276,6 +1276,11 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // code, no count > 0 guard); the node index declared at the top of the render branch (re-measured) 97; the parent
 // index declared once for both branches (re-measured) 341 (1386 bytes); parent and parent_mirrored declared once
 // for both branches 350 (1382); the no-model mirrored flag before the matrix (re-measured) 97 (same code).
+// Round 42 (m3 lane 18, fast, on the count > 0 guard diagnostic, 44 at 1390 bytes): retail has no store or call on
+// either path into the no-model branch and its render branch reuses EDI after 0xb8bd0, so its re-read is no kill.
+// The data field through a `byte *const *` pointer to it 44; the parent header by pointer addition 44; the parent
+// object by byte offset 44 (all same code); parent object, matrix and mirrored flag as conditional initialisations
+// 44 (1396); a parent header pointer with its object read at each use, mirrored first, 42 (1392: `lea` of the header).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

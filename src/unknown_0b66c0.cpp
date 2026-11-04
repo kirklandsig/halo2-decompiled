@@ -353,6 +353,13 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // P311: Shared bounded scanner !=511 / <=510 exhaustion, unsigned-long/long/word/short counters:
 // P311: eight forms 40 at exact 100 bytes; shared find loses its match in every form.
 // P311: NOT kept: no target gain and shared-user regressions. Original helper/body restored; saved-start and scan register split remain.
+// M362: Existing copy helper terminator through direct CRT result/destination
+// formal, long/unsigned-long/int/unsigned-int sizes: eight 53s at 90/100 bytes.
+// NOT kept: target regresses and shared users rise (caller 13, constructor 29,
+// formatter 1, connector 90); original copier, scanner and full body restored.
+// M366: Canonical success signed-byte/short/word/int64 storage, false default then true-default rejection:
+// 41/47/47/48/62/64/64/48. NOT kept: all regress; false defaults and true int64 also lose
+// the matched caller. Original Boolean body restored; saved-start/scan register split remains.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -669,6 +676,9 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // sent 33; `sent == -2` ahead of `sent < 0` 38; a named bool for the prepare call 10; `sent = 0` then `if (written)` 47.
 // Compile-only: direct returns fold with the result written through an inlined reference or pointer, a reference local,
 // an address-taken local, or as char/byte/long; the single-join form puts the false exit's compensation block after the restore.
+// Round 102: const position 10; the send count declared at the iteration top 10; position/written declarations
+// swapped 10; a direct completion return 67; direct builder and ordinary-failure returns 64; direct builder and
+// would-block returns 28; all three failure paths direct 64; an inline method declaration 10. Original body restored.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

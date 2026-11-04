@@ -335,6 +335,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // element overwritten through the element pointer 902 (same code); the linked-object test without the repeated
 // `!= NONE` (the pointer is already NULL then) 961 (4251 bytes); owner activity as `local_1 || (...)` 989 (4248);
 // other activity as `local_20 || ...` 970 (4254).
+// P312: Wide-dot left/right and complete real-dot native value-formal masks 1/2/4/3/5/6/7,
+// then immutable complete inputs: 1117/1117/1274/1250/1424/1395/1606/1606. NOT kept: no match;
+// native input copies enlarge frames/extents. Original pointer kernels and complete body restored.
 // Round 84 (m3 lane 9, fast control 902): retail's scale helper is unrolled with memory homes. In the compile-only
 // harness (no /GL) our scale loops unroll, and the frame comes to retail's 0x1d4, only when the body has no destructor
 // call: the contact array's `delete` (its inline destructor; every destructor spelling tried, inline, out-of-class,
