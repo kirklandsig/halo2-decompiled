@@ -1719,6 +1719,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC518: Complete countdown/pause expiry bool/byte/short/long at producer or
 // in iteration-owned storage: 220/220/220/220/220/220/220/220 fast (control 220, full 218).
 // NOT kept: one-use result unmatched; frame, unit/mode and look homes remain.
+// P312: Fixed two-weapon !=2 and <=1 exhaustion, long/short/dword/word ordinals:
+// 220/421/220/421/221/421/221/421 fast (control 220, full 218). NOT kept: no match; original loop/body restored.
+// Frame 0x28/0x2c, unit/mode homes and independent look divisions/homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

@@ -331,6 +331,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // P296: Constant case outputs completed after callbacks in state/action/separate-both/paired
 // dispatch, each with original/early result constants: 455/456/406/408/496/496/378/380.
 // All restored; native unit/name/actions ranks and shared-call threading remain.
+// P313: Original-graph formal unit/name/output lexical role subsets and complete alternate roles,
+// eight at 271. All original names and complete body restored; frame 8 and
+// incoming unit/name/actions ranks and shared callback joins remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -975,6 +978,13 @@ extern vector3f *g_4687b0;
 // none/record, both record and mixed scalar/record, record/scalar:
 // 362/310/363/338/392/450/391/338. NOT kept: all regress and grow away from
 // 1699 bytes. Original inputs, copies, frame and full body restored.
+// P313: Existing scalar setter at blend/parent-add/projectile-subtract boundaries, seven subsets,
+// then all with the initial velocity setter: 309/309/309/309/309/309/309/314. All original
+// component producers and full body restored; tag/index/type/direction homes remain.
+// P319: Saved type promotion / unsigned projectile / unsigned marker domains, masks
+// 1/2/4/3/5/6/7, then all with integral attach: 332/309/309/332/332/309/332/390.
+// NOT kept: domains tie or regress; wide saved type shortens away from retail, integral
+// attach loses the entry. Original scalar types, observations and complete body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1550,6 +1560,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // (its address passed to a call); every lookup spelling without that shares one load. Diagnostics, reverted at once:
 // `(void)&hand` 95, with a long hand 198; a local pointer to hand read at the 0xd0870 argument 95 (short) / 198 (long),
 // at the slot store 95/198 (LTCG resolves the pointer away). Retail passes no local's address anywhere here.
+// P317: Final readiness gate bool/byte/short/long, play/skip polarity
+// 95/95/95/95/95/95/95/95. NOT kept: all gates canonicalize; original entry pool/hand homes and second-load gap remain.
+// Original complete body and every existing helper restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1992,6 +2005,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // B414: Completed admission buffer before actions, weapon-owned/complete phase and initialized/edge-owned
 // failure in bool/byte: 60/60/94/94/60/60/94/94. NOT kept: no match or gain; complete phase grows to 420 bytes.
 // Original complete body restored; request/weapon homes and player-getter expansion remain.
+// P317: Shared-query terminal report value short/long, conditional/explicit producer,
+// consumer/entry declarations 68/60/68/60/68/60/68/60. NOT kept: short forms add four bytes,
+// long forms tie; no exact match. Original direct reporting expression and full body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -2968,6 +2984,9 @@ long function_c8f60(long unit_index, short seat_index);
 // and the transform pointer's swap; renaming the transform pointer 306/306); on it the 0x3dc state in a long
 // 304, `1u <<` for is_vehicle 306, the unit read through a header pointer kept from the first lookup 305.
 // Original body restored.
+// P313: Actual marker/relative/inverse workspace role subsets, then uninitialized marker/relative
+// declaration reversal: 293/293/293/293/293/293/293/293. Original names, matrix scopes and full body restored;
+// frame 0xf0 agrees, entry vehicle/unit/ordinal residence remains.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -4792,6 +4811,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // B414: Away, normalized-side and world-point scopes end at their last consumers, seven subsets;
 // all with frame ending at its final conversion: 175/175/175/175/175/175/175/175.
 // Original complete body restored; frame 0x110 versus 0x11c and basis/point scheduling remain.
+// P317: Normalized-side magnitude real/double, producer/basis/success/entry declarations
+// 175/261/175/261/175/261/175/261. NOT kept: no exact match; original basis/point homes and frame gap remain.
+// Original complete body and every existing helper restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

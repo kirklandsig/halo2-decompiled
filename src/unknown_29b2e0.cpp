@@ -315,6 +315,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // 176; shared magnitude independently on the opening graph 176. Root/yaw homes,
 // unity register and rotation homes remain; all other calibrated scores unchanged.
 // Original helper contracts, alias-safe reads/publications and complete body restored.
+// P320: Sequential magnitude/yaw and target/final-pitch scalar ownership, expired argument
+// P320: pitch storage and complete phase combinations 176/179/271/179/271/271/271/271.
+// P320: NOT kept: no byte match for explicit scalar/parameter-home reuse; original
+// P320: complete body restored. Unity register, root/yaw and rotation homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

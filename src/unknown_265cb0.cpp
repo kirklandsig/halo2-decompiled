@@ -2015,6 +2015,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // N340: Whole actor/vehicle admission regions, original/failure-first/success-first
 // trees excluding the original pair: 194/194/194/194/194/194/194/194. All restored;
 // lookup operands, established/visible homes and direction residence remain.
+// P313: Existing shared dots at absolute/relative/facing consumers on the recovered-frame graph,
+// seven subsets, then all with the point-difference helper: 194/194/194/194/194/194/194/246. NOT kept:
+// no exact arithmetic-association result. Original body and shared helper definitions restored.
 // Round 208 (m3 lane 3, fast with 0x25d810): strongest's zero after the prop-iterator start 194, best_level's 195,
 // both 195; the iterator start from the first actor lookup 729 (2843 bytes); `(short)p` in the first search 194;
 // the players iterator declared at the top 194.

@@ -452,6 +452,10 @@ void __stdcall function_1160c0(real dt)
 // B421: Root-node classification across metadata/tick producers, bool/byte/short/long,
 // positive/complementary results 277/277/289/288/277/277/289/288. NOT kept: early
 // cmp/sete differs from retail; original direct word test and complete body restored.
+// P316: Complete normalization/trigonometric/constraint scalar declarations at loop
+// entry, seven phase subsets, then all at function entry: 171 each. Every initializer
+// stays at its original computation. No gain; complete body restored. Segment EDX
+// and scalar/axis/previous/rest-offset homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -1407,6 +1407,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // B413: Kept-unit existence/admission result predicates, then the native two-short timer
 // model in all combinations, and the complete timer memset: 278/258/280/91/287/267/287/280.
 // Exact-only result-then-test forms and the timer model restored; NONE and tail scheduling remain.
+// P316: Final-success byte/signed-byte/short/unsigned-short domains on the retained
+// success graph: 108 each; with complete timer clear 105 each, frame 0x11c versus 0x118.
+// NOT kept: all regress and enlarge the frame. Original Boolean full body restored;
+// NONE materialization and timer/flag scheduling remain.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
