@@ -342,6 +342,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH367: Actual edge flag high/low byte views, unsigned/signed metadata and low sign test:
 // 410/406/410/404/410/410/406/406. NOT kept: best six-point gain is below the eight-point gate;
 // original edge word, frame 0x5c/0x64, overlapping normal homes and complete body restored.
+// DH369: Standard magnitude/point-projection reductions, native/direct/named
+// nonoriginal pairs: 584/585/426/657/657/426/657/657. NOT kept: all regress and grow;
+// magnitude-only forms change ret 0x18 to 0x1c and lose seven matched callers. Original
+// helpers/body restored; frame 0x5c/0x64, normal overlap and byte/output tails remain.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

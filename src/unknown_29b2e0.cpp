@@ -335,6 +335,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // DH362: Native planar epsilon truth bool/byte/short/long, positive then complementary,
 // 262/262/262/262/263/263/263/263. NOT kept: all regress and lengthen to 1719/1706;
 // original numeric/optional results, every helper and complete body restored.
+// DH369: Standard input range copies at desired/current/rotation boundaries,
+// subsets 1/2/4/3/5/6/7, then backward copies: 341/437/456/457/448/483/488/488.
+// NOT kept: all regress and lengthen; seven forms also lose the matched sibling. Original
+// copies, helpers and complete body restored; unity/root/yaw and rotation homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
