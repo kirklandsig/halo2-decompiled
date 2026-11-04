@@ -397,6 +397,9 @@ void c_class_2c9e69::select_last_variant()
 // qualifier, cast at the empty call 36 (154 bytes); name-arm copy only re-measured 13 (159 bytes: the empty
 // arm tests the stack home, the name arm takes EDI for EBX), with the copy named label/caption/variant_text/
 // a_text 13 each; the name-arm copy without the qualifier 36 (154 bytes). Restored.
+// Round 149: const entry 23; icon declared before text with split assignment 23; top-level const text 23;
+// base text with the inherited qualifier 23; name-arm base/const receiver with direct empty text 13/13 (159);
+// name buffer before that receiver 13; with returned-name local 17; plain renamed original receiver 36 (154). Restored.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {
