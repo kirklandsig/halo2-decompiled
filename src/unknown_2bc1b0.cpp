@@ -170,6 +170,14 @@ struct s_placement_2bc1
 // Round 138: marker test with the not-found arm first 5; first-element address at creation 5, at both calls 5;
 // object local declared before the placement 5; marker test `!= false` 5. Probe (not kept): a load and a global store
 // before the creation call give retail's registers in the copy and the whole tail, so one rotation step is the cause.
+// Round 53 (m3 lane 15, fast): tag read without the definition local 5 and the existing game_engine_get() for the
+// engine test 5 (both re-measured, copy still ECX); placement declared at the top of the engine block 5; tag index
+// declared at function scope 5; early return when the marker is not found 5; the final call inside the event's
+// block 5; the engine pointer named before its test 5. Diagnostics (not kept): one global load anywhere before the
+// creation call moves the copy to EDX and gives retail's tail; two such loads (or a two-load sum) give retail's
+// EAX copy and tail; loads after the copy fix only the tail; stores that need no register change nothing;
+// 0x2bc1b0 returning char changes nothing. So retail allocates one scratch value fewer (or two more) before the
+// copy, with the same code.
 // @retail 0x2bc1f0
 void function_2bc1f0(long team)
 {

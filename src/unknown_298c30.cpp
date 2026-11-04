@@ -288,6 +288,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // pointer/reference output formals and void/ignored-pointer result contracts:
 // 420/420/420/420/434/434/434/434. Original emitter and complete body restored;
 // entry sum and normalized XY/magnitude homes remain.
+// M374: Existing emitter returns next ordinal, byte/short/word/long result with
+// byte/short candidate count: 428/428/428/428/419/464/464/464. NOT kept: all regress;
+// short/word/long results on short count regress caller 389 to 699. Original emitter,
+// counters and whole body restored; entry and native XY/magnitude homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -644,6 +648,12 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DH332: Standard real sine/cosine overloads across the sweep and obstacle phases,
 // seven subsets then native absolute/count overloads: 719/719/719/719/719/719/719/719.
 // All canonicalize; original APIs and body restored. Frame/radius/trace homes remain.
+// M374: Existing late annular endpoint producer in rotated/direction/forward-offset/
+// reverse-offset workspaces, original/shared planar differences: 719/749/719/749/719/749/719/749.
+// NOT kept: no native-frame or score gain; original workspaces, all math and body restored.
+// DH357: Actual advancing obstacle-entry cursor, short/long/int/word ordinal,
+// consumed/explicit head steps: 785/779/779/781/785/779/779/781.
+// NOT kept: all regress and lengthen; original traversal and whole body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

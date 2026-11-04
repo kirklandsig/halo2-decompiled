@@ -3609,6 +3609,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax G (11-04): no new form, no lower score; retail reads the member state through its own
+// address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
+// session+0x10 into the reply id's stack slot before the timeout call, and returns through two
+// epilogues (1 and 0) where ours keeps the peer result in EBX.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
@@ -3766,6 +3770,8 @@ struct s_network_session_list;
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, const s_session_id *id);
 bool function_07ab10(long key_index, s_type_99af70 *address, long local, word port, const XNADDR *xnaddr);
 
+// MiniMax G (11-04): no new form, no lower score; the host/session staging at the 0x7ab10 call
+// (retail reloads the session and keeps the host in ESI) and the cleanup placement still differ.
 // score 136 (was 136): host/session staging, clock boundary and cleanup placement differ;
 // size preference 233; gated identity 142; long result 160; failure-path result 192; address name 136.
 // host/session homes, cleanup placement and clock expansion differ;
@@ -4449,6 +4455,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
+// MiniMax h (11-04): no new form, no lower score; the result byte stays at +0xa where retail keeps it at +0xb.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.

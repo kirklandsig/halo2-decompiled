@@ -2033,12 +2033,26 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 208 (m3 lane 3, fast with 0x25d810): strongest's zero after the prop-iterator start 194, best_level's 195,
 // both 195; the iterator start from the first actor lookup 729 (2843 bytes); `(short)p` in the first search 194;
 // the players iterator declared at the top 194.
+// J251: On frame 0x80, real direction/velocity/all-dot array traversals 636/194/298;
+// direction+velocity, direction+dots, velocity+dots and all 636/643/298/643;
+// all with descending input axes 743. NOT kept: loops retain runtime traversal or
+// worsen homes/length; copy alone canonicalizes. Original body restored at 194;
+// first +0x5c, direction SIMD residence and established/visible byte homes remain.
 // DH343: Existing native component-array identity throughout direction/velocity/relative/forward,
 // direction+velocity/direction+relative/direction+forward/all: 194/194/194/194/194/194/194/194.
 // Original body restored; entry operand order, Boolean homes and direction SIMD residence remain.
 // N356: Signed-octet established/visible/retain storage, seven subsets and complete plain-char family:
 // 194/194/194/194/194/194/194/194. NOT kept: unmatched storage/result-lifetime forms.
 // Original executable source restored; Entry index operands, exchanged Boolean homes and direction SIMD residence remain.
+// DH351: Explicit distance/absolute/relative normalization outcomes, all seven
+// subsets, then both speed-result locals: 194 each. NOT kept: no gain; original
+// tests and full body restored; entry operands, Boolean homes and direction SIMD residence remain.
+// DH353: Slot-owned established/sentinel-owned visibility/complete retention arms,
+// subsets 1/2/4/3/5/6/7: 195/710/710/710/701/718/707; failure-first full graph 707.
+// NOT kept: no gain; original decisions, frame, observations and query calls restored.
+// DH356: Complete facing/distance/speed score-contribution producers, seven subsets,
+// then all zero lifetimes at the score region: 687/283/261/744/736/281/738/731.
+// NOT kept: one-use result forms regress; original full body restored; query remains exact.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
