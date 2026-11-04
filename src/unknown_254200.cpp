@@ -401,6 +401,9 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // N369: Complete endpoint compound upper/lower/shared-half producer subsets 346 each;
 // native two-coordinate compound output 343. NOT kept: no equality and extent grows;
 // original two-reload body restored.
+// K148: second-texture lower product commuted/division 2/2; second texture C entry 375;
+// both coordinate references 2; point value copy 161; whole-object pointer 18; third-lower/
+// fourth-upper products commuted 2/2. NOT kept: no equality; original two-reload body restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

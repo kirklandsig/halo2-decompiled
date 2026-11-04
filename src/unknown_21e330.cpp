@@ -761,6 +761,10 @@ PRIVATE __forceinline real function_21ece1(real arg_0, real arg_1)
 // by value 125; the header's operator+ field left or gain left 103/122 (SSE); plain real with a const reference gain 144; a memcpy copy of the field
 // field first, gain first, in place either way 144 each (copy gone); a memcpy from a field pointer 106; a double local summed with `+=` 105. The header
 // operator in another file without /arch:SSE did not inline on the reduced image (132, inconclusive; a move for flags is not keepable anyway).
+// Round 149: the bit-level helper for the first sum 62 (411); gain bits with a real field 119 (431);
+// helper arguments reversed 25; the first sum direct into the clamp 81; const bit-view gain 25;
+// const result values 25; double-return helper rechecked 26; real first three/double last 29;
+// diffusion before reverb delay 24 (NOT kept: one point); diffusion and density before delay 29. Restored.
 // @retail 0x21ece0
 void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 {

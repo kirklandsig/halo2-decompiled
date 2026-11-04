@@ -1248,6 +1248,10 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // `return result` 43; `result = true` before function_a8c10 21. The three `[edi + ecx + 8]` unit
 // lookups stay data-first in a compile-only screen for every order of the entry declarations, an
 // unused header pointer and a header pointer for the first lookup.
+// Round 144: all three self lookups through the existing header accessor 19 (same code); the shared bit setter 19;
+// an explicit success goto 19; a computed active value with the result before its store 19 (NOT kept: one-use
+// local, no match); direct success return true/result 264/264 (948 B); an addressed result read 19 (same code);
+// a one-iteration do/break scope 646 (1266 B, frame 0x84). Original body restored.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -4314,6 +4318,8 @@ void function_e5750(long unit_index);
 // under one `if` from /d2inlT70 up, unconditionally from 62 and under 0xec9a0's two tests from 90, and
 // every source form here stays under the build's threshold. Pointer before the call with `!type` 72,
 // with an early return 72, a bool local before the call 83; after the call an early return 52, `!type` 52.
+// Round 146: definition below the final helper, post-call pointer/const pointer/header/byte/bool locals,
+// zero-path return and single-exit goto all 52; original restored.
 // @retail 0xec330
 void __stdcall function_ec330(long unit_index, long type)
 {
@@ -4420,6 +4426,8 @@ extern vector3f *g_4687bc;
 // pointer 90; both 89; result declared first 54; unknown14 stored first/second/last 51/51/56;
 // x + (y + z) 54; x + (z + y) 48; with unknown14 second 45; rigid body by pointer arithmetic 45;
 // the material NONE store back after function_d6660 148 (retail stores it first; d6660 then overwrites it).
+// Round 145: material declaration/assignment split, direct initialization and renamed material; rigid-body
+// reference, base then index, const component and first-node dereference all 45; shared array base 58. Original restored.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
