@@ -626,6 +626,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // P329: Reused speed/heading-weight/angle declarations, six orders then reciprocal scope/role names:
 // 126/126/126/126/126/126/126/126. NOT kept: no byte match; original complete body restored.
 // Velocity-copy receivers and unity SIMD/x87 homes remain.
+// M382: Actual initial/helper x87 magnitude result storage and consistent float-root API, masks
+// 1/2/4/3/5/6/7 then all without redundant root casts: 282/507/126/511/282/507/513/513.
+// NOT kept: no precision match or early unity/home repair; original helper and complete body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3848,6 +3851,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M378: Complete default placements 1/D/2, 2/D/1, D/1/2, D/2/1; paired real cases
 // in both label/default orders: 136/136/136/136/165/165/165/165. NOT kept: no native projection/
 // trig repair or byte equality; original cases, precision and complete body restored.
+// M382: Every angular sweep product named at its producer, case/default real-real/double-real/real-double/double-double,
+// arm-local 133/172/169/162; enclosing 161/169/167/162. Real arm-local fixes the projection prefix but gains only three.
+// NOT kept: below keep gate, no byte equality for materialization/precision; original complete body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4472,6 +4478,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M378: Complete ray point/up library transfers, memcpy alone/both, memmove alone/both,
 // and mixed transfers: 176/176/176/269/267/277/267/269. NOT kept: no native
 // first-match/world/result repair; original complete copies and body restored.
+// M382: Actual contiguous iterator scalar selection, conditional/branched/default-first/active-first,
+// original scalar snapshots 270/270/289/289; consistent at-use field observations 377/377/362/362.
+// NOT kept: no native first-match/world/result repair or byte equality; original complete body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

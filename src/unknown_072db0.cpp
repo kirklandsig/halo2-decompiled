@@ -1771,6 +1771,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M379: Complete identity member production identifier/flags first at producer/group/function
 // scope, mutable/readonly native-member aggregate initialization: 744 each. NOT kept: all regress;
 // original packed-object snapshot and body restored; cursor/slot and later homes remain.
+// M382: Complementary initial admission then team decisions, bool/byte/short/long:
+// 709/709/709/709/710/710/779/759. NOT kept: no native cursor/slot repair or byte match; original
+// positive decisions, snapshots, helpers, task/builder roles and complete body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

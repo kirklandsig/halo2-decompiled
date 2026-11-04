@@ -516,6 +516,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // M380: Actual failure/success cardinality in long/dword/short/word storage:
 // 199/199/160/160/203/203/203/204. NOT kept: all regress and grow to 552/556 bytes;
 // original validity, byte ordinal, inherited local-slot reads, helper and complete body restored.
+// M382: Complete request-family if dispatch, all six family priorities, then shared type and native long ordinal:
+// 228/205/219/203/208/209/228/218. NOT kept: all regress and lose native dispatch/prologue; original switch,
+// validity, ordinal, cursor observations, existing helper and complete body restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
