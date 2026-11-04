@@ -700,6 +700,10 @@ static inline word font_character_pixel(long alpha, long color)
 // N378: Complete default run pixel, color/opaque, long/word and byte/numeric parity:
 // 231/216/231/216/231/182/231/182. NOT kept: no byte equality or qualifying native-shape gain;
 // original executable source restored; alpha extension, literal assembly and run-two reuse remain.
+// N380: Complete per-command emitted-count result, long/dword/short/word/byte/signed-char,
+// then word fills/full-width pixel helper: 164/164/150/150/153/153/173/173.
+// NOT kept: no native count/parity match; original helper and complete decoder restored.
+// Frame 0xc agrees; alpha widening, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

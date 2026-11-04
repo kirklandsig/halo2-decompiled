@@ -569,6 +569,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // construction, then genuine local partial results/native setter/consumed old workspace:
 // 117/153/116/183/182/205/182/182. NOT kept: unmatched publication/lifetime forms;
 // original complete body restored. Frame 0x28/0x20 and direction/cross/seed homes remain.
+// N380: Initial envelope/rotation sine/rotation cosine real APIs, masks 1..7, then
+// all with complete angle accumulation: 117 each. NOT kept: no byte match; original
+// producers and body restored. Frame 0x28/0x20 and seed/direction/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

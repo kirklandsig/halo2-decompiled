@@ -1320,6 +1320,10 @@ struct s_item_flags_view_10b850
 // producers, each with existing or standard vector sum: 864/924/865/924/1124/997/1214/1087.
 // NOT kept: all regress/lengthen; every frame stays 0x154 versus native 0x12c.
 // Original accumulator, helpers, observations and complete executable body restored.
+// N380: Shared scaled-difference ray/angular scale/paired contact scaled-add masks
+// 1..7, then all with predicted-position scaled-add: 856/813/856/813/856/813/856/871.
+// NOT kept: no native-shape gain; original helpers, observations and body restored.
+// Frame 0x154/0x12c and entry Boolean/carrier/collision/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

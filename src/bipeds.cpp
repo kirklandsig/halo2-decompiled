@@ -2038,6 +2038,10 @@ void function_dfd70(long arg_159e6d)
 // P321: Initial zero/one crouch with ternary/complete/crouch-default/zero-default
 // switch results: 233/233/252/233/233/233/264/234. NOT kept: no gain;
 // crouch-default and zero-default also raise shared users. Helpers restored.
+// N380: Standard complete head/forward/fallback object-copy boundaries, subsets 1..7,
+// then complete backward ranges: 236/239/244/270/267/272/263/259. NOT kept: target and shared users
+// regress; original helpers and complete wrapper restored. Native mode-three
+// placement and forward/up/second-ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4954,6 +4958,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // P321: Query directly into velocity/relative, record/CRT copy, actor/query-bound
 // success on the recovered state-call/dot graph: 150/150/148/148/136/136/135/135.
 // NOT kept: all regress and shorten to 671/683; full body restored.
+// N380: Complementary state criterion bool/byte/short/long, original/support-bound
+// success: 144/144/146/146/160/160/167/167. NOT kept: no equality; original state observation,
+// call criterion and complete body restored. Support/result byte homes and
+// native early success remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
