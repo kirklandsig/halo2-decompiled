@@ -455,6 +455,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // 282/282/282; output equivalents 295/295/295; paired copy/backward-copy 692/692.
 // NOT kept: nonexact record transfer and lost native frame/expansion; original
 // alias-safe helper/body restored; inverse homes and displaced X/Z spill remain.
+// Round 586: Two-transform source-table/destination-array traversal, long/dword/short/word
+// ordinals with indexed/body-advanced destination: 289/289/337/337/195/195/322/322. NOT kept: nonexact
+// traversal/grouped residence; original direct calls, helper and full body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

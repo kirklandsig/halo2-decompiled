@@ -335,6 +335,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // bool/byte/short/long direct then common results: 403/403/406/396/405/405/408/398.
 // NOT kept: all regress and raise the matched sibling to 64-70; original numeric
 // contract, alias-safe helper publications and complete body restored.
+// Round 586: Paired yaw/pitch rate-policy table traversal, long/dword/short/word
+// ordinals with repeated/captured current-angle values: 426/426/434/434/343/343/337/337. NOT kept:
+// nonexact array/field-pointer residence; first four also lose sibling 0x29b990 (48); body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
