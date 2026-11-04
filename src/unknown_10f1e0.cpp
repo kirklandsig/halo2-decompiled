@@ -3246,7 +3246,7 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
     return active;
 }
 
-short *function_e70b0(long unit_index, short *value);
+short *function_e70b0(short *value, long unit_index);
 bool function_e4050(long object_index);
 const long g_4408f8[8] = { NONE, 0, 1, 2, 2, NONE, NONE, 3 };
 const long g_440918[8] = { NONE, NONE, 0x600008c, 0xc000043, 0xc000043, 0xd000042, 0xc000043, 0xc000043 };
@@ -3418,7 +3418,7 @@ bool function_10ff40(long unit_index, long type, short side, short value,
                 force_overlay = true;
             else
             {
-                if (*function_e70b0(unit_index, &action) != 0 ||
+                if (*function_e70b0(&action, unit_index) != 0 ||
                     (*((byte *)g_4e0300->data + (unit_index & 0xffff) * 12 + 3) == 0 && function_e4050(unit_index)))
                     force_overlay = true;
             }

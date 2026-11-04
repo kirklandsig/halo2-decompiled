@@ -347,7 +347,7 @@ struct s_path_result_view;
 struct s_29e730;
 struct s_29de21;
 struct s_29e0f9;
-short *function_e70b0(long unit_index, short *value);
+short *function_e70b0(short *value, long unit_index);
 long function_1e4a50(long character_index);
 void __stdcall function_26c2d0(long prop_index);
 bool function_1f9490(long actor_index, s_reference reference, s_actor_move_request *request);
@@ -642,7 +642,7 @@ bool __stdcall function_1f8a70(long actor_index, long unknown)
 		short route_mode = actor->unknown229 != 0;
 		{
 			short unit_mode;
-			if (*function_e70b0(actor->unknown018, &unit_mode) == 5)
+			if (*function_e70b0(&unit_mode, actor->unknown018) == 5)
 			{
 				byte *properties = (byte *)function_1e4990(actor->unknown054);
 				byte *movement = (byte *)function_1e4a50(actor->unknown054);

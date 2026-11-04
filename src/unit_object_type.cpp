@@ -579,7 +579,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes);
 void function_a8a30(long unit_index, long definition_index);
 real normalize2d(point2f *v);
 real function_11cc90(vector2f const *a, vector2f const *b);
-short *function_e70b0(long unit_index, short *state);
+short *function_e70b0(short *state, long unit_index);
 bool function_10ff40(long unit_index, long type, short side, short value, bool *flag, short *side_out, short *value_out);
 void function_ba350(long object_index, real seconds);
 bool function_101240(long weapon_index);
@@ -3549,7 +3549,7 @@ void function_c6990(long unit_index)
 /* the entry animation (of five) whose end point on the vehicle's seat is
    nearest the unit's center; the seat marker's position and that point */
 // @retail 0xc7160
-long __stdcall function_c7160(long unit_index, short seat_index, long a, long vehicle_index, long b)
+long __stdcall function_c7160(long unit_index, short seat_index, long vehicle_index, long a, long b)
 {
 	point3f *marker_position = (point3f *)a;
 	point3f *position = (point3f *)b;
@@ -5306,7 +5306,7 @@ void function_c8bb0(long unit_index, long vehicle_index, long *object_index, sho
 		}
 		point3f marker_position;
 		point3f entry_position;
-		if (function_c7160(unit_index, seat, (long)&marker_position, candidate_index, (long)&entry_position) == NONE)
+		if (function_c7160(unit_index, seat, candidate_index, (long)&marker_position, (long)&entry_position) == NONE)
 		{
 			continue;
 		}
@@ -6326,7 +6326,7 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 				{
 					short state;
 
-					if (*function_e70b0(unit_index, &state) == NONE)
+					if (*function_e70b0(&state, unit_index) == NONE)
 					{
 						facing = toward;
 						turn = true;
