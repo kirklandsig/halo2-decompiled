@@ -2847,6 +2847,9 @@ void function_c5740(long unit_index, bool start)
 /* plays the sounds of a unit's impact: its weapon's (+0x58) when it holds
    a weapon that allows it (0x1012c0), else the globals' material sound
    (+0x154, 0xb4 bytes each) and the definition's +0xac */
+// MiniMax A (11-03): no new form, no lower score: all five arguments still pass on the stack as retail
+// does, but the register assignment differs (retail arg1 in EAX and arg2 in EBP); 0x188180
+// (src/unknown_187ec0.cpp, not my file) is still unmatched.
 // MiniMax R (10-31): no new form, no lower score: retail passes the point in ECX and again on the stack and
 // never the forward to 0x188180, whose parameter types live in src/unknown_187ec0.cpp.
 // score 94 (was 94): Frameless length agrees; definition/material/pool register ownership and call setup remain.
@@ -3373,6 +3376,8 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 
 /* whether the object's root, simulated by Havok and not keyframed, has
    something in the way (0x168f40 from its main rigid body's position) */
+// MiniMax A (11-03): no new form, no lower score: the root index and the rigid-body offset still swap
+// between EDI and EBP; reordering the last two header tests gives 50.
 // score 12 (was 12): root and rigid-body offset saved registers differ (a short index gives
 // retail's registers but tests at 16 bits before extending: 3 aligned differences, 293 bytes);
 // entry result 89; native short body index 12 at 293 bytes; root cursor/seed 110/96;
@@ -4336,6 +4341,9 @@ store:
    speed in a cone around the unit's aim on top of the unit's velocity
    (capped at 4 unless the unit's +0xc0 bit 1 is set), and deletes it in
    state 1 when it has nowhere to go and is not a predicted copy (0xa7670) */
+// MiniMax A (11-03): no new form, no lower score: the cone call still sets the forward pointer, the
+// output pointer and the seed in a different order than retail; the float store and the two pointer
+// setups stay swapped.
 // score 4 (was 4): cone setup differs: retail spills sampled speed before forming the forward
 // pointer, then forms the output pointer before copying the seed. Ours swaps both pairs.
 // The 0x98 frame and every other instruction agree.
