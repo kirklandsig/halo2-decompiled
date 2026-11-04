@@ -2117,6 +2117,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // 194/194/188/188/194/194/188/188 (572/552 bytes), all matched controls preserved.
 // NOT kept: one-use admission results regress and retain frame 0x40 versus 0x44;
 // original initial guard, color/query observations and complete body restored.
+// N354: Both external color-field identities, readonly/mutable references/pointers,
+// at the spawn/query boundary and before location propagation: 128 each (eight forms).
+// NOT kept: one-use field identities require equality; original complete body restored.
+// Missing early color slot and frame 0x40 versus 0x44 remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3275,6 +3279,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // 93/93/93/93; before cursor acquisition 112/112/112/113. Earlier reads change the
 // argument convention and lose the matched caller. NOT kept: no gain or exact match;
 // original activity field read, definition/cursor lifetimes and complete body restored.
+// N354: Exhausted-particle continuation with original/for-owned effect traversal,
+// cached/live mode and original/native node word: 93/93/108/108/93/93/108/108.
+// NOT kept: ties/regressions; every live-mode form loses caller 0x176f60 (25).
+// Original complete body restored; native frame and system/successor/color homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

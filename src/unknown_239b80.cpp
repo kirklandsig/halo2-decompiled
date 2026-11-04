@@ -441,6 +441,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // compaction) 265 (759 B; frame 0x14 as retail, but points in EBP and indices in EBX where retail has ESI/EBP, and
 // the zeroed count via a zero register); on it departure declared first 265, `current` declared first 264, a
 // separate `hull_count++` 265, memcpy 275 (751 B), the `||` departure update 273 (748 B).
+// N354: Existing epsilon equality at departure/completion/both 171/170/171;
+// both with bool/byte/short/word departure 248/248/175/175, overlap CRT 259.
+// NOT kept: tie/regression; original helper bindings, state and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
