@@ -2898,6 +2898,10 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // P299: Planar facing/velocity/paired copies and paired existing 2D product, original
 // then independent relative output: 737/737/764/764/745/745/769/769. NOT kept: native
 // planar copy staging does not recover frame 0xfc; every form regresses. Original full body restored.
+// M376: Existing friction complete tested result, initialized result, repeated negative
+// bound/result and entry-result declaration; original then distinct relative output:
+// 692/722/741/692/700/730/749/700. NOT kept: no gain; frames stay 0xd0/0x104 versus native 0xfc.
+// Original helper and complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3208,6 +3212,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // DH325: Native force/torque/working-velocity memcpy subsets 1/2/4/3/5/6/7:
 // 1052/1052/1052/1052/1052/1052/1052; complete memmove 1093. All restored;
 // frame 0x80 versus 0x74 and original force/velocity homes remain.
+// M376: Existing float CRT initial-angle/paired-heading/body-magnitude producers,
+// Seven subsets, then angle-helper magnitude: 1053/1053/1056/1057/1053/1068/1050/1053.
+// NOT kept: best 1050 gains only two; frame stays 0x80 versus 0x74.
+// Original APIs, private helper and complete body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4414,6 +4422,11 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // F359: Plain ray-scale vector-array loops, seven ordinal domains and body-stepped component cursor:
 // 349/349/349/349/349/349/349/235. NOT kept: no exact induction/publication repair.
 // Original complete body and helpers restored.
+// M376: Selected override receiver with cached-default/collision-clamp/sound-clamp
+// producer subsets, then all with repeated delta: 117/151/168/163/147/151/169/169.
+// Original indexed search with cached/collision, cached/sound, all, all/delta:
+// 182/165/177/177. NOT kept: selected receivers require equality; original-index 165 is 1353/1361, farther from retail.
+// Original indexed search, scalar producers and complete body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
