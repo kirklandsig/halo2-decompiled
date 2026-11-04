@@ -100,10 +100,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
-// score 96 (was 96): no local frame; retail reads the type once before the kind test and keeps
-// the body array/body in EBP/ESI. Current component EAX, rigid index ECX, kind EDI and ret 8
-// agree with the matched caller. A single type read must preserve that incoming convention;
-// every prior one-read type form flips the component/index pair (the caller
+// score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
+// both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
+// component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
+// preserve that incoming convention; every prior one-read type form flips the component/index pair (the caller
 // 0x1d5bf0 then differs). Type read after the rigid body 94 at 256 bytes (caller 13), first
 // 117, after headers/body/index 94 (caller 13), body then type 136, kind 7 as a ternary 104;
 // case 0 through the object_index local 91 at 256 bytes (caller 146), with the one-read type
@@ -147,7 +147,6 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // `neg; sbb; and; add` where retail has the switch's `dec eax; je`. object_index, type, then rigid body with the
 // kind-7 ternary 96 at 256 bytes with the caller still matching (retail's three pushes); with case 0 through
 // object_index 141 (212 bytes, caller 213); one-read switch form 96 (256, caller 13); one header pointer read by
-// score 96 (was 96): one type read shared by both kind routes and case 0 through the same header data in retail.
 // both switches 125 (284 bytes, caller 194).
 // Round 63 (lane 12, fast): one type read with case 0 through component (retail's unshared index arithmetic, which
 // a case 0 through the object_index local loses to CSE) 94 (caller 13); the type read indexed by `(word)object_index`
@@ -242,6 +241,21 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // the case 0 object through a pointer in its own block 28.
 // Retail's `xor eax, eax; mov al; shr al, 2; and eax, 1` comes from none of 27 compile-only spellings (byte and dword
 // bitfields, byte/bool locals, byte results); only 0x9d250's `not al` form keeps `shr al` next to `and eax, 1`.
+// Round 60 (m3 lane 13, fast; caller 0x1d5bf0 in brackets): case 0 as 0x9d250 reads the bit, through the existing
+// word bitfield `TEST_FIELD_BIT(((s_object_view *)...)->flag2) ? 11 : 9` (unknown_0a58d0.h), gives retail's exact
+// `xor eax, eax; mov al; shr al, 2; ... and eax, 1; shl eax, 1; or eax, 9`: on the current body 96 [0]; on round 118's
+// form (object_index, absolute_index, rigid body, headers, byte type; case 0 through headers[component->object_index &
+// 0xffff]) 24 at 256 B [0], only the opening left: retail loads the header array first into EDX, moves the index to
+// ESI for the rigid body and keeps the object index in ECX; ours gives the object index EDX, the headers ESI and the
+// rigid body ECX, and loads the type `mov al` then `movzx` (not kept: the object_index local is used once). On 24:
+// headers first 83 [2] (the header load takes EAX, so the component arrives in EDX), headers second 83, rigid body
+// after absolute_index 88, after the type 111 (268 B) [9], before absolute_index 94 [13]; long type 89, char type 24;
+// no object_index local 101, case 0 through the object_index local 101, `(word)` absolute index 98 [208]; case 0
+// through havok_object_get 24; the existing object_header_get/object_get/havok_object_get getters for the type and
+// case 0 (with/without the object_index local, either order) 94-136 [13-213]. The other declaration orders of the
+// 24 form (o object_index, h headers, r rigid body, a absolute_index, t type): o,h,r,a,t and h,o,r,a,t 21 [13] (the
+// component arrives in ECX and the index in EAX), o,r,h,a,t 94 [13], h,r,o,a,t 94 [13], r first (r,o,a,h,t /
+// r,o,h,a,t / r,h,o,a,t) 96 [13], o,h,a,t,r 106 (264 B) [9], h,o,a,t,r 106 (264 B) [11].
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -542,6 +556,12 @@ struct s_physics_component_walk : s_havok_component
 // recursion and the latch as retail, but the latch moves after the cold blocks); that helper with the neighbor
 // branch first 179; the empty-section test's two body bytes as char locals 146 (same code); one entry-scope
 // section index for both scans 146 (same code); the section-count arms swapped (`!= 0` first) 153 (909 bytes).
+// Round 60 (m3 lane 13, fast): retail's neighbor scan never re-tests the section count (found goes straight to the
+// reload and recursion test, not-found to `continue`) and its `*active = true` block sits after that scan. The
+// recursion written in the found branch with `continue` after the loop 412 (1010 B, not merged); round 66's
+// __forceinline scan helper rebuilt 168, with the no-next-group arm ending in `continue` 168; the next-group arms
+// swapped 192 (901 B); one `connected` result set by the kind-7 test and the scan 151 (910 B); the group fields read
+// at each use for the admission test and next selection 146 (same code).
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

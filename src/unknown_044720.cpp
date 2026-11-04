@@ -544,6 +544,15 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // 191/191 (frame 0x10a4); with the branch query unaligned 184 (frame 0x1094, point +0x3c and query
 // +0x2c against retail's +0x30/+0x20), declared after the list storage 184, its center as one
 // struct copy 205.
+// Round 60 (m3 lane 13, fast): retail's own code compares the node byte with -1 (`movzx ecx, byte [ebx+0x10];
+// cmp ecx, -1; je`), so `bound[0x10] != NONE` is retail's test, not a steering one; its count test is `test; je`
+// (`if (count)`); retail's 0x44c90 also joins the geometry lookup through one stored result. Round 50's form without
+// the grouping struct (one-result lookup in this file's helper, center fill local, flag) 12 at 872 B, but 0x44c90
+// 107 -> 132 (488 B); that body with the early-return helper 227 (893 B); on 12: the query as the existing hkVector4
+// built by `set(x, y, z, radius)` 27, the tree read above the count test 12 (sunk into the branch), the query
+// brace-initialized from the center fields 27, the list headers initialized as this body does (first's pointer
+// first, counts and capacities chained) 21. At 12 only the tree load differs (retail EAX after the center
+// loads, ours EDX after the zero stores): every form without the struct forward-substitutes it to the push.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

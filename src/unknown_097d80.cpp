@@ -302,6 +302,10 @@ struct c_aggregate : c_child
 // local stored to error after the total is added 32; `total = produced + total` 31; the release output initialized
 // to 0 at its declaration 68 (381 bytes); total declared before error and error initialized from it 31. Frame 0x8024
 // in each; still BLOCKED by the build flag (frame 0x8020 needs `produced` to share a slot).
+// Round 60 (m3 lane 13, fast; what LTCG knows of the virtual callee): `v5` declared const 31, its output
+// parameter `long *const` 31, the base `v5` writing its output 31 (all same code); `__declspec(novtable)` on the
+// child interface 31 (0x97f00/0x97f30 lose their matches); `produced` declared and zeroed at the loop-body top with
+// `if (child && !error)` 141 (389 B); a pure virtual `v5` does not compile (the aggregate is instantiated).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
