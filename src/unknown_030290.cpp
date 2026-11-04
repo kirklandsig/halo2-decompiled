@@ -445,6 +445,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // 1/2/3/4/5/6/7: 285/336/364/195/285/336/364; full graph with native direction 341.
 // NOT kept: no gain; input-record copies and changed observation timing miss equality.
 // Original alias-safe helper and full body restored; frame and inverse/point homes remain.
+// Y575: Shared final projected-point difference with native input construction, displaced
+// setter and unit-scale reverse difference, eight graphs: 197 each. NOT kept: all regress;
+// native frame/inverse homes and displaced-transform spill remain. Original full body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

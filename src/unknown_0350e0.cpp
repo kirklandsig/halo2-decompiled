@@ -130,6 +130,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 355/422/356/441/394/415/395/436. NOT kept: one-point best below gate; record consolidation and
 // copies miss equality; native frame and scalar publications unresolved. Original complete body
 // and helpers restored.
+// Y575: Existing matrix-row setters, forward/left/up subsets then all with native real trig:
+// 356/374/355/374/355/363/363/365. NOT kept: best gain one; matrix-row boundaries do not
+// recover frame 0x90 or concurrent x87 inputs. Original two helpers and complete body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2450,6 +2453,10 @@ real magnitude3d(vector3f const *v);
 // Y573: Fallback early-exit/while/cursor lifetime graphs: 170/170/170/170/170/170/170/170. NOT
 // kept: all tie; raw-length/dot homes persist and cursor forms miss equality. Original complete
 // body and helpers restored.
+// Y575: Existing rotation-size clamp at tail/direct-tail/rotation-entry/direct-entry/
+// predicate/direct-predicate, then original size at predicate/rotation-entry:
+// 171/171/303/303/311/311/311/303. NOT kept: no gain; early one-use size producers
+// miss equality and move frame/length away. Original helper contracts and body restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2771,6 +2778,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Y573: Nested admission, found last-use scope and immutable request; seven subsets and complete
 // while scan: 317/317/317/317/317/317/317/317. NOT kept: all tie; native prefix/state and ordinal
 // homes remain. Original complete body and helpers restored.
+// Y575: Creation/duplicate/decay rejection continues, seven subsets, then negative-first
+// growth: 317/317/317/317/317/317/317/367. NOT kept: ties or regression; native prefix/state
+// and ordinal homes persist. Original full body, helpers, count reads and swaps restored.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
