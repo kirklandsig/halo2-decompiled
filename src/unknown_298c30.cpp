@@ -260,6 +260,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // first arm 431 (1695 bytes); each emission's y written before x 421 (1743 bytes); diagnostic: the arg_0 address
 // read removed 401 (1728 bytes, cleanup 0x18, caller 0x29a190 697). Retail spills the first arm's cosine to
 // [esp+0x28] and takes the y product in SSE before the sine; ours keeps both on x87. Original body restored.
+// Lane 14 r60 (fast with caller 0x29a190, base 395/389; "no-home" = aligned count ignoring stack offsets, base 277): the first
+// arm's y product named before the sine in both emissions 412 (1743 bytes, no-home 265); double difference locals in the
+// root, y-first or x-first, 437 (1712 bytes, no-home 284, frame moved); both counters short 471 (1680 bytes, no-home 262;
+// caller 699); short candidate count alone 464 (no-home 273; caller 699); short outer counter alone 402 (no-home 305);
+// double differences with both short 488 (no-home 312; caller 698); all three 464 (no-home 292; caller 698); short counters
+// with the named y product 449 (1695 bytes, no-home 243, the closest structure; caller 699).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

@@ -316,6 +316,12 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // local_5 366; that with local_4 as a struct copy of the +0x290 vector 442 (1887 bytes); local_6 declared before
 // local_5 412 (1864 bytes); the input magnitude taken inside `if (local_2)` 353. Retail copies local_4 whole (k
 // included) into +0x5c..+0x64 before 0x29b2e0 and builds local_20 from that copy after the call. Original body restored.
+// Lane 14 r60 (fast; "no-home" = aligned count ignoring stack offsets, base 174): retail holds &+0x290 in EBX and arg_2 in ESI and
+// copies the three working vectors whole through integer registers. All three whole copies 442 (1887 bytes, frame 0x60, no-home
+// 214: the pointer is copy-propagated into [ebp+0x290] uses, arg_2 moves to EBX and arg_0 to ECX), with a non-const pointer 442
+// (same code); local_6 alone whole 366 (frame 0x58, no-home 231); local_4 alone whole 449 (frame 0x60, no-home 272), with the
+// non-const pointer 449 (same code); the query output vector at function scope 345 (same code), with all three whole 442, with
+// local_6 alone whole 366.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

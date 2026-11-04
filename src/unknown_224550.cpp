@@ -95,7 +95,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 }
 
 // MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
-// score 223 (was 232): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
+// score 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
 // through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // Earlier at 381: Frame 0x50 versus 0x60 (the tint lived in a one-caller helper's scope, so uv_b reused its
@@ -356,6 +356,21 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // entry 223 (same code); uv_b's default bounds copied from uv_a 347 (1956 bytes); the tint and its clamps in their own
 // block ending at the pack 249 (1906 bytes); `uv_b,uv_a` declaration order 223 (same code); the flip read before the
 // extents 250 (1949 bytes). Original body restored.
+// Lane 14 r60 (fast; "no-home" = aligned count ignoring stack offsets, kept form 123, 223 form 125): kept 211: aspect defaults
+// before the flip. Not kept, an order of independent values 6 under the bar: retail's extent order (ax, ay, by, inv_ax, inv_ay,
+// bx, inv_bx, inv_by) 208, the width before the inverse products 208, both 205 (plain, 1950 bytes, no-home 117); on 205 the final
+// geometry with y before x, x1/y1 before x0/y0, both, y before x in each pair, subtractions then scaling, grouped products
+// 205 each. Retail keeps the blend in XMM5 from the join on and stores ax, ay, bx and by once each at their definitions; ours
+// keeps both a-extents in registers and stores by twice (the named local and the UV helper's shared expression are two values).
+// A named copy of the blend at the join 223 (same code). On 211: complement before the flip 291, before the extents 329;
+// inverse sums next-term first in one expression 319 (frame 0x64, no-home 90), first-term first 321 (0x64, 96). Sweep with
+// defaults first: ay ax by bx 210; by bx ay ax 211; b pair first 211; ax iax ay iay bx ibx by iby 289 (0x5c); ax ay iay iax by
+// bx iby ibx 213; by ax ay 208; ax by ay 208; iay before iax 211; iby before ibx 211; all extents first 211; ay ax iax iay by bx
+// 211. With the one-expression sums: nine orders 296-365 (frame 0x64 or 0x68, no-home 85-107). All four extents written at
+// each use (a match-only form): named products 304 (0x58), one-expression sums 302 (0x5c, 1917 bytes, no-home 76: the closest
+// structure), with iay first 302 (no-home 80, a homes and order as retail, only ay's slot and the blend register missing);
+// other reciprocal orders 302 (83-94). Named subsets on that: ay 296, ax+ay 297, ax 302, bx+by 311 (0x64), ay+by 298 (0x64),
+// ax+ay with iax first 291; none reaches frame 0x60.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
@@ -430,8 +445,8 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_c
 		real ax=uv_a.bounds.x1-uv_a.bounds.x0,ay=uv_a.bounds.y1-uv_a.bounds.y0;
 		real bx=uv_b.bounds.x1-uv_b.bounds.x0,by=uv_b.bounds.y1-uv_b.bounds.y0;
 		real inv_ax=1.0f/ax,inv_ay=1.0f/ay,inv_bx=1.0f/bx,inv_by=1.0f/by;
-		long flip=sprite_flip(definition,seed);
 		real aspect_x=1.0f,aspect_y=1.0f;
+		long flip=sprite_flip(definition,seed);
 		if(ax>ay) aspect_y=ay*inv_ax; else aspect_x=ax*inv_ay;
 		real remaining_blend=1.0f-blend;
 		if(bx>by)

@@ -341,6 +341,11 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // N347: Read-only virtual count/element/both/both-interface, metadata/metadata-count/metadata-element/
 // complete contracts: 55/55/55/55/55/55/55/55. NOT kept: unmatched alias/contract combinations. Original
 // complete body and declarations restored; split post-sample comparison and child scratch homes remain.
+// Lane 14 r60 (fast; on the field_50 read-back form, 133, aligned 21): the six orders of 0x175070's parameters, every
+// call changed: (first,child,last) and (first,last,child) 133 aligned 21; the three with last or child in other places
+// 141 aligned 69 and 0x178eb0 2. Named first/last list pointers around the child pointer 133 aligned 21 (copy
+// propagated; the parent stays one load). Compile-only: the split also holds with the store nested under three ifs,
+// inside a loop, right after a call, and with most registers carrying values across the compare.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

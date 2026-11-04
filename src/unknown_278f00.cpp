@@ -290,6 +290,13 @@ bool function_a7670(long object_index);
 // consumed at retrieval 266/266/266/266; advanced at body end 274/274/274/274, all 966 bytes.
 // Original consumed island index, signed live bound, indexed cleanup and complete body restored.
 // NOT kept: frame grows to 0x428 and every form regresses.
+// Lane 14 r60 (fast, base 153 aligned 65): a separate second-scan found flag tested first 96 at 954 bytes, aligned 39 (match-only;
+// the same code as sharing the first flag), left: selector EDX/list EAX for retail's EAX/EDX, the index stored at each step, the
+// record address folded after the retry test, one reload order. On it: plain `for` index 233 (957 bytes, aligned 60), the flagged
+// body in a forced-inline helper 96 (same code), the helper with the `for` index 233 (same code). Alone: `for` index 240 (958
+// bytes, aligned 77); admission preset true with the type in a local 155, with the flag 264, with the flag and `for` 140 (958
+// bytes, aligned 75). At the guard selector, list and index take EAX, ECX and EDX: whichever of selector and list picks EAX
+// first decides the rest, and retail's list staying in EDX is what lets the unflagged path skip both reloads.
 // @retail 0x278f00
 void function_278f00()
 {
