@@ -2712,6 +2712,9 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // Round 66 (m3 lane 1, fast): second loop's colour array declared first 95; its bitmap pointer declared first
 // 95; the search result left unstored (call kept) 95; the voice state as `? 0 : 1` 95; a screen pointer local
 // for the last loop's lookup and first call 95 (all the same code).
+// Round 107: single-output helper returns text_a/text_b/bitmap_a/bitmap_b 95 each; first-loop
+// item/player/local declaration orders player-item-local, local-player-item, local-item-player and
+// item-local-player 95 each. All the same code; original helper and declarations restored.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
