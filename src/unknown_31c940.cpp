@@ -863,7 +863,7 @@ static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *r
 	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
 	float projected;
 	_mm_store_ss(&projected, xyz);
-	row->b.m128_f32[3] -= projected;
+	row->b.m128_f32[3]=row->b.m128_f32[3]-((float const volatile &)projected);
 }
 
 // Solver state stays together through the iterations. Result publication then
