@@ -3762,7 +3762,8 @@ void __stdcall function_d09c0(long unit_index, long slot_index, long definition_
 // Behaviour fix (earlier round): retail sets the material to NONE before 0xd6660, which then overwrites it with its
 // default. Tried: second-half statement order, all 24 orders of flags/origin/position/direction (best 26 kept: the
 // direction before position; origin first 27; others 29-33); `origin = position = ...` chain 44; s_damage_owner as a
-// three-member aggregate drops the zero short (55); memset(&owner) form (117).
+// three-member aggregate drops the zero short (55); memset(&owner) form (117); the position source through a local
+// point3f pointer (26-27).
 // @retail 0xd03e0
 void function_d03e0(long unit_index, long definition_index)
 {
@@ -4181,13 +4182,12 @@ bool function_cb810(long unit_index, vector3f *vector)
 
 /* how the unit reacts to damage it took: sets the report's reaction
    (+0x50) from 0xc9770, after the biped's knockdown checks */
-// score 128 (was 166): memory fields read as field bits (TEST_FIELD_BIT) give retail's load-and-shift, the locals
-// (type bits, flags) are plain mask tests, and the +0x1f0 bit is read through a fresh UNIT_DEFINITION_GET(unit) (retail
-// does after 0xe4050, which keeps unit in ebp). Still differs: retail keeps `hard` in al for the whole function
-// (reloaded after each call, its slot shared with `ignore`) and report in edx, ours spills `hard` and uses eax for
-// temporaries; and the 0xc9770 call, because that callee's source uses its 3rd flag where retail uses `held` (in its
-// result clamp `if (held && result > 1)`): with that one-word change 0xc9770 is 64 -> 58 and this function 121, 574 bytes.
-// Tried: held/force declared before the +0x50 store 128 (kept).
+// MATCH (was 109): memory fields read as field bits (TEST_FIELD_BIT) give retail's load-and-shift, the locals (type
+// bits, flags) are plain mask tests, and the +0x1f0 bit is read through a fresh UNIT_DEFINITION_GET(unit) (retail does
+// after 0xe4050, which keeps unit in ebp). Round 2 of #1049: the statements were already retail's; two spellings fixed
+// the allocation: the 0x3dc byte is read through UNIT_GET(unit_index) (not through the reassigned `header`), which puts
+// the type-bit pointer sum in esi like retail (109 -> 3), and ignore/held/force are declared in that order before the
+// +0x50 store (retail zeroes them as ignore, held, force). Tried before: held/force before the store, ignore after (128).
 // @retail 0xc9e70
 void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_damage_report const *report)
 {
@@ -4209,17 +4209,17 @@ void function_c9e70(long unit_index, dword flags, s_type_1e6529 const *data, s_d
 	{
 		function_e3f00(unit_index);
 	}
+	bool ignore = false;
 	bool held = false;
 	bool force = false;
 	*(long *)(bytes + 0x50) = 0;
-	bool ignore = false;
 	if ((data->flags & 0x10) || TEST_FIELD_BIT((damage[4] >> 4) & 1) || TEST_FIELD_BIT((unit->flags_134 >> 19) & 1))
 	{
 		ignore = true;
 	}
 	header = (byte *)g_4e0300->data + (unit_index & 0xffff) * 0xc;
 	dword type_bit = 1 << header[3];
-	if (((type_bit & 1) && *((byte *)((s_unit_header *)header)->unit + 0x3dc) == 2) || (type_bit & 2))
+	if (((type_bit & 1) && *((byte *)UNIT_GET(unit_index) + 0x3dc) == 2) || (type_bit & 2))
 	{
 		held = true;
 	}
