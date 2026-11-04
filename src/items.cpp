@@ -718,6 +718,10 @@ struct s_item_collision_bsp
 // complete normal scalar inputs mutable/const 207/207, all four inputs 209/209;
 // safe in-place result with captured normals mutable/const 216/216.
 // NOT kept: no equality or gain; in-place extent grows. Original body restored.
+// B443: Independent complete axial scalar inputs, six capture/declaration orders,
+// then spin-phase/entry reservations: 272/272/272/272/272/272/272/272. NOT kept: all regress,
+// frame grows to 0xa8 and extent to 1383; original axis/body restored.
+// Protected plane-index width, plane joins and spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

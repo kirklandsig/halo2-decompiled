@@ -1819,6 +1819,10 @@ void function_b7360(long object_index);
 // B432: Original notification switch produces a positive/complementary classification
 // in bool/byte/short/long: 303/303/303/303 in either polarity. NOT kept: no exact
 // condition-storage form; original callback restored, pool/input/output homes remain.
+// B443: Separate original byte clear/set producers at orientation/moving/directed
+// payloads, seven subsets then all with set before clear: 301/301/301/301/301/301/301/301.
+// NOT kept: no equality or gain; original byte expressions/full callback restored.
+// Pool/input/output ownership, retained point-reference carrier and 24-byte gap remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2390,6 +2394,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B441: Complete state/actor arm after query/request arms 9/10/12/11/6/14/18/21:
 // 500/501/502/499/497/497/500/507 (fast control 485; full 469). NOT kept: all regress and shorten
 // away from retail; original complete body restored. Actor/state and first-point homes remain.
+// B443: Native/CRT turning-anchor snapshots before/after the point query,
+// with original/early facing capture: 502/502/517/517/500/500/517/517. NOT kept: all regress
+// and grow to 2420 bytes; early facing grows frame 0x1c to 0x28.
+// Original anchor observations/facing/full body restored; actor/state and first-point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

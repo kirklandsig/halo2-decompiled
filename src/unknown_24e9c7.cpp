@@ -352,6 +352,10 @@ struct s_24e9c7_bounds
 // direct/pre-scaled complete inputs and unary/zero-minus negative direction:
 // 144/139/139/139/144/139/139/139. NOT kept: no equality; original scalar pair, full body and
 // declaration set restored. Early spill and eight-byte-shifted scalar homes remain.
+// B443: Exhaustive returned-height producers at three admission gates, all eight
+// rejection-first/success-first arm masks: 186/186/186/186/186/186/186/186. NOT kept: all grow
+// to 748 bytes at frame 0x48; original entry zero/full body restored.
+// Early across spill, eight-byte-high scalar homes and SSE scheduling remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
