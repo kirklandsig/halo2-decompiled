@@ -7204,7 +7204,7 @@ struct s_unit_turn_state_view
    is in state 1 at +0x1bc), within its aim and look limits when they are
    on (0xc7840); records the aim's turn speeds (+0x243, +0x1f8); whether
    either moved */
-// score 401 (was 640): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
+// score 395 (was 401): built the turn frame in place (b9fc0 writes frame.forward/up, left and up cross products as
 // retail), result as a variable, the state byte's bits through s_unit_turn_state_view, +0x10a through
 // s_unit_flags_10a_view, the unit/definition bit tests nested. Still differs: retail keeps the result `moved`
 // in a stack slot ([esp+0xb], 0 stored up front, reloaded on the all-close path, BL=1 on the moved path)
@@ -7214,6 +7214,20 @@ struct s_unit_turn_state_view
 // `volatile bool moved` (397: stack slot and frame match, but stores/loads are not retail's), scale*rate
 // operand order (no change), declaring old_flat/new_flat in the other order or at function scope (no change;
 // 0x11ce20 takes the new aim first, as retail passes it in ECX at 0xc63be; the other order also scores 401).
+// Round 7 of #1049 (401 -> 395): both 0x11f0d0 calls had the vectors in the wrong parameter order (aim, desired,
+// velocity). Retail's callee writes the zero vector through its first register (EBX), copies the target into
+// the second (ESI) and reads the third (EDI), and retail's call sites load EBX = &velocity (0x174 / 0x198),
+// ESI = &aim (0x168 / 0x18c), EDI = &desired (0x15c / 0x180): the arguments are (velocity, aim, desired), so
+// the old source zeroed the aim and copied the velocity over the desired vector (a behaviour bug). Remaining:
+// `moved` sits in EBX for the whole function (xor bl,bl) where retail keeps it in a stack byte ([esp+0xb],
+// reloaded at the all-close return; EBX holds &aim), the reciprocal ours makes of the shared `step` division
+// (retail divides twice by the stored step), and schedulings. Tried (0xc60c0 with callers and callees in one
+// check): all-close as the single `return moved` after `if (!(close)) { moved = true; ... }` 419 (slot and
+// register assignment as retail but every callee-saved register is pushed at entry, frame 0x80); the same
+// with an early return for the two start tests 440; early return for the start tests alone 410; moved as a
+// one-field struct / one-element array / through a pointer 395 (all fold the same); `return false` at the
+// all-close point 395; byte *state declared before the rates 397; both turn shares written out in place
+// (no helper) 399; &aim as a named pointer (no change).
 // @retail 0xc60c0
 bool __stdcall function_c60c0(long unit_index)
 {
@@ -7254,7 +7268,7 @@ bool __stdcall function_c60c0(long unit_index)
 		}
 		else
 		{
-			function_11f0d0(&unit->unknown168, &unit->unknown15c, &unit->unknown174, g_510c54->rate, arg_3097c5_2, pitch_rate);
+			function_11f0d0(&unit->unknown174, &unit->unknown168, &unit->unknown15c, g_510c54->rate, arg_3097c5_2, pitch_rate);
 		}
 		real yaw_share;
 		real pitch_share;
@@ -7307,7 +7321,7 @@ bool __stdcall function_c60c0(long unit_index)
 		}
 		else
 		{
-			function_11f0d0((vector3f *)&unit->unknown18c, &unit->unknown180, &unit->unknown198, g_510c54->rate,
+			function_11f0d0(&unit->unknown198, (vector3f *)&unit->unknown18c, &unit->unknown180, g_510c54->rate,
 				look_yaw_rate, look_pitch_rate);
 		}
 		if (0.0001f > (real)fabs(old_aim.i - unit->unknown168.i) && 0.0001f > (real)fabs(old_aim.j - unit->unknown168.j) &&
