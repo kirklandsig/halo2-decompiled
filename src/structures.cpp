@@ -974,6 +974,9 @@ done:
 
 #undef COLLISION_OBJECT_14A8E0
 
+// MiniMax G (11-04): the result as a local with the parameter kept alive by an unused pointer 125 and 127;
+// the entry order none/probe/flags/result 127; the exclusion flag assigned in the type-6 arm with the
+// requery after the join 149; the join test as !(excluded & 1) 138. Body restored to the original.
 // score 125 (was 125): frame 0x64 agrees; exclusion BL, NONE/EBX and spilled result allocation still differ.
 // Lane 15 r17: the pointers to the direction, ignored object and surface parameters removed (each
 // identical code; only the triangle pointer holds the convention: without it 158 and matched caller
