@@ -385,6 +385,7 @@ PRIVATE inline long polygon_round_19f(real value)
     return result;
 }
 
+// MiniMax B (11-04): no new form, no lower score.
 // score 316 (was 316): the distance to the centre is now computed and compared in double, so the
 // MiniMax R (11-01): no new form, no lower score (the retail-shaped fade gives 390, the double
 // comparison 316; the call to 0x4b2d0 keeps three stack arguments where retail's takes two).
