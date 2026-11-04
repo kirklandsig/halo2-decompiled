@@ -447,6 +447,9 @@ extern byte g_51ec11;
 // B417: Existing shared normalizer computed square/inner-sum/whole-squared-length stages,
 // seven subsets then immutable complete stages: 245/89/89/245/109/89/109/109. Original header/body restored.
 // NOT kept: computed-stage temporaries do not match; zero/normalization/up allocation remains.
+// B419: Existing shared normalizer two-use threshold result at scale admission and common
+// numeric return, bool/byte/short/long rejection then success: 278/278/278/278/228/228/228/228. All regress;
+// original shared header and full body restored. Zero/normalization/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

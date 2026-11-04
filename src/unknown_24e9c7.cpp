@@ -335,6 +335,9 @@ struct s_24e9c7_bounds
 // B416: Plain two-coordinate corner traversal, long/int/short/unsigned-short indices
 // and successive/original-tree equations: 214/214/214/214/209/209/209/209. NOT kept: frame grows and
 // extent shrinks away from retail; original point type, equations and complete body restored.
+// B419: Native two-axis fraction/pixel/scaled-pixel/raster-extent values, height-first
+// fields then readonly aggregates: 125/125/125/125/125/126/126/131. NOT kept: grouped dimensional values
+// do not match. Original scalar owners, integer conversions, corner equations and body restored.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

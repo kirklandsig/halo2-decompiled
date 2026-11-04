@@ -794,6 +794,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // B417: Prior-up/normalized-direction/right last-consumer regions, seven subsets then complete
 // geometric workspace names: 45/45/45/45/45/45/45/45 at 1262/1261. Original body restored;
 // right i/j carriers, second-product forward.k reuse and ordinary-angle store bases remain.
+// B419: Native geometric-basis ownership of prior-up/normalized-forward/perpendicular-left,
+// seven role subsets then complete forward-setter graph: 70/77/45/70/70/77/70/249. NOT kept: grouped
+// workspace does not match. Original scalar/vector owners, helpers and complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

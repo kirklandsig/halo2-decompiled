@@ -236,6 +236,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // B417: Completed caller cache-mask/angle/rotation-scale phases, seven subsets then complete
 // basis lifetime ending after composition: 219/219/219/219/219/219/219/219 at 1836/1836.
 // Original helper/body restored; axis-square/sine/cosine spills and table placement remain.
+// B419: Native unit-circle coefficient pair, direct/sine-first/cosine-first/complete-scalar
+// acquisition, mutable then readonly: 254/489/254/489/254/489/254/489. NOT kept: grouped coefficients
+// do not match and move frame/extent away from retail; original helper and whole body restored.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
