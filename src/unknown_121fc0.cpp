@@ -245,6 +245,19 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
 // then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
 // result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
+// Round 69 (m3 lane 10, fast): EBP's late save comes from where the walk's exits land. When the no-token exit and the
+// loop's exit reach one block, the restore goes on a block of its own around the walk; when the no-token exit jumps past
+// the success test's join and the loop's exit falls into that join, the restore lands in the join with ESI/EDI and the
+// save moves to the block top (retail's push order and `pop edi; pop esi; store; pop ebp`). `if (!token) goto out;
+// do ... while (token);` with `out:` before the flag store 63 (aligned 27; a goto and a hand-inverted loop: not kept); with
+// 0x1a1480's size and success swapped and the counters before the token array 59 (aligned 23; not kept). Diagnostic only,
+// reverted at once: the first form with a volatile size 6, and with the swap and counters too it matches byte for byte
+// (0x1a1480 still matches), so these are the only causes left; every cast read of the size (`*(long *)&size` and others)
+// folds and leaves the two-read clamp. Goto-free forms: the flag store in both arms of the success test 127 (aligned 49);
+// the flag store in the success arm ahead of the walk and in an else 114 (the save at the top, the store is not retail's place);
+// the flag store ahead of the success test 154 (766 bytes). Compile-only, the save stays late for: the guard's label inside the success
+// block, the success test as a goto too, for(;;) with a break or a goto at its end, `if (token) do` with or without
+// `else goto`, a do/while(0) with breaks, an empty else on the success test.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

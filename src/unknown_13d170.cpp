@@ -383,6 +383,11 @@ struct s_block_candidate
 // bytes); oldest_time zero-initialised 392 (1228 bytes); best declared before the candidate ring 347 (same code);
 // the page remainder mask as `~(-1 << shift)` 347 (other code, same count).
 // Retail keeps result's NONE in EAX through the clamp and stores oldest's NONE from it. Original body restored.
+// Round 69 (m3 lane 10, fast; aligned and register-masked counts in brackets, base 260/139): the 4 missing frame bytes are the next index's home: retail
+// keeps offset in EBX, the forwarded candidate pages in EDI and spills next, tail and head, ours gives EDI to tail and EBX to next and keeps offset in memory. Pages, result, offset,
+// clamp, with previous's NONE in the block 380 (257/139); the policy switch as an inline helper with a return per case 343 (260/145), on that head 375 (258/152). 240
+// random declaration orders of the head, block and segment locals, compile-only: 289-295 against 295, frame never 0x1054. Diagnostics: unused
+// pointers to tail or head 347/380 (same code); tail in a scratch global 376 (1228 bytes, 262/120) still leaves offset in memory.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

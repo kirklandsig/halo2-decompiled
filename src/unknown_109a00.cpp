@@ -591,6 +591,18 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
 // Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
 // restored; native input registers, early physics spill and center/projection remain.
+// Round 69 (m3 lane 10, fast with 0xb7060, aligned counts in brackets): the axis block written with no pointer locals (normalize,
+// dot3f(up, forward), vector3f_scale(forward, dot, &scaled), a subtract helper, normalize, cross3f_staged, each on
+// `&entry->transform.axis`) gives retail's dot, scale and subtract instruction for instruction, compile-only and on the full
+// listing; only four cross product sides differ. Forward first in the dot 16 lines off in that block; direct `up->i -= scaled.i` 16; every scale statement order and side 16.
+// That form alone 132 (aligned 57); with the center through carrier_vector_from_havok 120 (927 bytes, aligned 106, 264 lines as
+// retail, masked 33: only the entry/component EBX/EBP swap and entry index on the stack); with the search reading
+// `component->bodies[i].count` and `.indices[j]` directly 117 (928, masked 30, retail's offset temporary); that without the converter 235.
+// One hot memory reference decides the swap: compile-only, deleting either `= true` store flips entry to EBX, but deleting a failure
+// store, a previous-state copy or a flag test does not, and the two listings have the same references to entry and component.
+// No flip: the default body as a ternary or default-first, loop test order, a count local, a body pointer as pointer arithmetic, a named
+// havok pointer, valid or active in a local, entry/component declared in either order or at the top, byte flag fields or
+// found, active stored ahead of the center or a velocity getter (124), valid read before the active store (118), a named current transform (121).
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

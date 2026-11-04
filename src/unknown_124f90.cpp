@@ -1236,7 +1236,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 125 (was 137): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// score 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
 // Round 160: the gain and ducking gains as s_decibels, the interpolation by value and the hold sum through the
@@ -1366,6 +1366,12 @@ long function_2197f0(real gain);
 // M337: Release-end predicate sum, twice-used remaining attack time and distinct-release
 // hold quotient at their producers, seven subsets [137, 193, 137, 193, 137, 193, 193], all with table-first
 // entry 183. All restored; table/index entry, interpolation and hold-copy homes remain.
+// Round 69 (m3 lane 10; baseline 177 at 642 bytes, the ternary clamps' tails cross-jump): `t = 1.0f; if (1.0f > time) t = time;` in arms 2 and 4
+// 125 (678, aligned 55, masked 20; kept). First arm on that: an inverse local with `(elapsed - hold) * inverse * fade_out` and `t = 1.0f; if (1.0f >
+// time * inverse) t = time / fade_in;` 94 (683, aligned 52, masked 17; kept); as a ternary 163 (648); `t = time * inverse` 127 (672); a fraction local 179
+// (640); plus a fade_out local 98 (masked 15). No inverse: a fade_out local 128 (678, aligned 76, masked 14: retail's order, reciprocal first, with XMM
+// colours cycled: elapsed 2 for 3, inverse 1 for 2, fade_out 4 for 1, 1.0 3 for 4); on it `gain = X + gain` 153 (682, masked 10, frame 0x10 from the by-value
+// copy), `gain.value` sum spellings and a sum local 128, staged time, a named product or a named first term 128; an if-form clamp in arm 1 145 (681).
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -1390,15 +1396,20 @@ long function_127010(short class_index)
 				{
 					if (ducking->fade_out_time >= 0.001f && ducking->fade_out_time + ducking->hold_time > elapsed)
 					{
-						real time = sound_system->ambience_fade - elapsed + (elapsed - ducking->hold_time) / ducking->fade_in_time * ducking->fade_out_time;
-						real t = 1.0f > time / ducking->fade_in_time ? time / ducking->fade_in_time : 1.0f;
+						real inverse = 1.0f / ducking->fade_in_time;
+						real time = sound_system->ambience_fade - elapsed + (elapsed - ducking->hold_time) * inverse * ducking->fade_out_time;
+						real t = 1.0f;
+						if (1.0f > time * inverse)
+							t = time / ducking->fade_in_time;
 
 						gain = gain + decibels_interpolate(s_decibels(0ul), ducking->gain, t);
 					}
 					else
 					{
 						real time = (sound_system->ambience_fade - elapsed) / ducking->fade_in_time;
-						real t = 1.0f > time ? time : 1.0f;
+						real t = 1.0f;
+						if (1.0f > time)
+							t = time;
 
 						gain = gain + decibels_interpolate(s_decibels(0ul), ducking->gain, t);
 					}
@@ -1430,7 +1441,9 @@ long function_127010(short class_index)
 				if (ducking->fade_in_time >= 0.001f)
 				{
 					real time = sound_system->ambience_fade / ducking->fade_in_time;
-					real t = 1.0f > time ? time : 1.0f;
+					real t = 1.0f;
+					if (1.0f > time)
+						t = time;
 
 					gain = gain + decibels_interpolate(s_decibels(0ul), ducking->gain, t);
 				}

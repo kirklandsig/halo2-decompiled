@@ -38,8 +38,7 @@ real function_14b240(s_14b240_owner const *owner, s_bsp3d_disk const *disk, poin
 real function_50650(real cosine);
 
 // @retail 0x18ab70
-void function_18ab70(s_sound_portal_bsp const *bsp, long portal_index, s_sound_listener_rotation const *listener,
-	bool reverse, point3f const *point, real radius, s_sound_portal_angles *angles)
+void function_18ab70(s_sound_listener_rotation const *listener, s_sound_portal_bsp const *bsp, long portal_index, point3f const *point, real radius, bool reverse, s_sound_portal_angles *angles)
 {
 	point3f const *const *point_reference = &point;
 	if (portal_index != NONE)
