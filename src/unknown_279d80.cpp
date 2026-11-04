@@ -2109,6 +2109,9 @@ void function_2818e0(void)
 // decoder or bit flags by const reference 2 (0x285750 6 with decoder or bit flags); the multiply's output parameter first 2 (0x285750 2);
 // 105 blend-2 arm combinations (`+=`, swapped operands, named source, destination, scale) 2 at best; the flag test without a local, sign as
 // long, int, const or struct 2.
+// Round 143: real sign lanes with negative zero 245 (1685 bytes, all controls regressed); the sign mask renamed 2;
+// prefix / += / assignment counter updates 2 each; register flags 2; register count 2; a const group bound 2.
+// All restored; the count/flags reload pair and frame 0x34 remain.
 // @retail 0x281b60
 void function_281b60(void)
 {

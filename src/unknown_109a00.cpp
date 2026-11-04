@@ -305,6 +305,8 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (112); the entry registers are still reversed (retail
+// object in eax, entry in ecx) and the physics pointer is still spilled early.
 // score 112 (was 112): Frame 0x48 agrees; object/entry registers, early physics-pointer spill and center/projection scheduling remain.
 // Earlier at 112 (was 112): retail takes the object index in eax and the entry
 // index in ecx (ours the other way round, which is also 0xb7060's last
@@ -518,6 +520,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // N351: Native handle/ordinal domains dword-long/long-dword/dword-dword/int-long/long-int/int-int/dword-int/int-dword:
 // 112/112/112/112/112/112/112/112. NOT kept: no exact match or qualifying gain; complete original body restored.
 // Remaining: entry registers, physics-pointer spill and center/projection schedule.
+// Y581: Existing full component/row model and main-body selector, direct/shared
+// acquisition and accessor/data, original center 112/112/112/112; converted
+// center 149/149/149/149 (frame 0x44, caller 2 -> 11). NOT kept: no gain or
+// native input/spill repair. Original views, helpers, center and full body restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
