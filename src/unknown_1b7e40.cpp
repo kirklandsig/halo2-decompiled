@@ -470,6 +470,11 @@ evaluate:
 // guard returns (`unknown20 <= 0`, `prop_index != unknown1c`) 74; with `if (!view) return result;` 74; with the
 // existing magnitude3d 74; with the far result assigned (`result = g_46fbe8;`) 72; the near/far arms as an if/else
 // assigning result with one return 88 (278 bytes).
+// Round 69 (lane 11, fast; 0x25d740 inlined in every kept-shape form): a named near flag with two ifs, single exit 88 (278 bytes); the same
+// with the near arm returning 112 (230 bytes, the flag test folds, the call goes out of line, exits merge); the two outer tests as a named
+// flag retested 84; guard returns with the slot field read first 74; nested with it 73; an actor local with it 73. Diagnostic (reverted): 0x25d740
+// pinned out of line 102 (231 bytes): ESI/EDI are still pushed at entry and the exits merge, where retail pushes ESI after the first test, EDI
+// at the call, and has five separate exits, so the inlining is not the only cause.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

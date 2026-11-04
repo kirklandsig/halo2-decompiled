@@ -10,7 +10,7 @@
 #include "object_iterator.h"
 #include "unknown_0d0690.h"
 
-/* the influences' weights (g_502258, cleared by unknown_157450.cpp): two
+/* the influences' weights (g_502250 + 2, cleared by unknown_157450.cpp): two
    shared values, three per influence type, then the influence table */
 struct s_spawn_influence_type
 {
@@ -29,7 +29,10 @@ struct s_spawn_influence_globals
 	byte const *table;
 };
 
-extern dword g_502258[0x27];
+/* retail's code holds no absolute address of the two words at 0x502250 and does not clear them; the weights follow
+   them. Retail addresses the type records 8 bytes below this symbol, which the compiler keeps as an integer offset
+   only within 8 bytes of it */
+extern dword g_502250[0x29];
 
 PRIVATE const byte g_4709f0[48] =
 {
@@ -61,255 +64,29 @@ struct s_spawn_scenario_23aea0
 	s_spawn_settings_23aea0 *settings;
 };
 
-// score 61 (was 61): prologue and 438-byte extent agree; the default-copy destination still
-// uses pointer induction instead of integer offset 0x18..0xa8; staged scalar loads differ.
-// Earlier at 97 (was 105): the prologue is retail's; what differs is the destination, still a pointer
-// induction where retail keeps the integer offset 0x18..0xa8 with the base in the displacement (16
-// stores 3 bytes shorter), and the alignment pad that puts ahead of the override loop.
-// Earlier (105): addressing the weights through the neighbouring global's own symbol
-// (g_502248: four longs, the two shared values, then the twelve type records) still folds the
-// destination into a pointer induction (148), with the type records read as dwords or as reals,
-// so retail's integer table offset with its base in the displacement stays out of reach.
-// Earlier (105): the destination still folds into a pointer induction — a struct-typed
-// member access and a byte-offset access both canonicalise back to it — so retail's integer
-// table offset with its base in the displacement stays out of reach; the definition register
-// (ECX against retail's EAX) and the override block's extra lea esp, [esp] still differ.
-// Earlier (105): definition uses ECX and destination uses a pointer instead of retail integer offset; override alignment differs.
-// Earlier (105): a block struct over the merged global, byte offsets taken from the array and
-// a real global struct all leave VC strength-reducing the destination into a pointer induction, so
-// retail's integer offset with its base in the displacement is not reachable from this side.
-// retail's weights are addressed from a base 16 bytes below the array (its
-// displacement base is the neighbouring global g_502248) with the byte offset in a register; an
-// element pointer reaches retail's store form (103) but the base, the bound and the override
-// alignment still differ.
-// definition uses ECX and destination uses a pointer instead of retail integer offset; override alignment differs.
-// Earlier (105): retail's weights are addressed from a base 16 bytes below the array (its
-// Earlier (105): definition uses ECX and destination uses a pointer instead of retail integer offset; override alignment differs.
-// Earlier at 103: the definition now stays in EAX and the source pointer in ECX, but
-// the destination is still an absolute pointer induction instead of retail's integer table
-// offset 0x18..0xa8; the prologue publishes the default table after the first scalar store
-// and the override loop keeps an extra lea esp, [esp].
-// the destination is an absolute pointer induction instead of retail's
-// integer table offset 0x18..0xa8 (16 stores 3 bytes shorter each, so the override loop gains
-// an alignment pad); retail keeps the definition in EAX and forms the source pointer in ECX
-// between the two scalar stores.
-// actual batch/type ranges 139/227; inner type ordinal 139; direct twelve types 254;
-// source records with direct/batch/read-only ranges 257/227/227; complete override 140.
-// Word/byte batch ordinals 141/141; word/byte entry ordinals 242/242;
-// both word/byte 253/253; early table publication and later scenario receiver 105/105.
-// integer destination offset and definition register remain; adjacent
-// component loop/word table 242/242; record cursor/batch cursor 240/240; actual batch bases 239;
-// direct twelve types 254; unsigned component/native records 242/242.
-// destination pointer replaces the retail integer table offset;
-// flat index 254; zero-based batches 139; typed records 137; flat typed records 121;
-// unsigned indices 141; batch steps 139; const records 137; full source table 139.
-// Read-only source 105; direct header link 105; scenario after copy 158;
-// isolated default-source phase 158; header field at consumers 135;
-// global object/override fields at consumers 105/107; explicit override values 105.
-// Default/override/both memcpy 145/140/172; native scalar defaults 105; shared tuple address 123;
-// raw word
-// array/seven-word records 121/121; shared override type 122.
-// native source groups 121; readonly source groups 121; real source groups 121; native destination
-// records 121; native tuple assignment 143; complete source table 103; native group owner 121;
-// native record range 154. Integer destination induction remains; two-point table gain rejected.
-// Unsigned outer counter 141; outer do-while 105; inner do-while 242; table pointer as the
-// globals' last member (retail's memset clears it) 102; running destination index 120.
-// No-link compiles of 1728 loop shapes, counter types and destination forms all fold the
-// global into a pointer induction variable; retail keeps the integer offset 0x18..0xa8.
-// Scalar-default memcpy/memmove 142/156; defaults plus scalar overrides 142/141;
-// derived type dword/short/word/byte with long ordinals 105/325/325/348.
-// A twelve-byte destination record indexed by the type ordinal moves the definition into
-// EAX and the source pointer into ECX (105 -> 103); the same record reached through a
-// pointer below the table regresses to 149.
-// Round 421: override cursor 120; scalar override snapshots 119; cursor/scalar snapshots 137; scenario each-use
-// 158; cursor/scenario each-use 163; scalar/scenario each-use 161; all override ownership 169; all
-// ownership/native override assignment 179.
-// Lane 14 r11: one `for (type = 2; type < 14; type++)` loop over struct fields 105 (VC unrolls it
-// by six into retail's two passes; same code as the nested loops); that loop with an entry
-// pointer 103; nested loops with an entry reference 103; an inline element accessor (index
-// parameter) 103; a twelve-byte array wrapper with an indexing operator 103; a walking source
-// record pointer 121. One-file screens (no link), all a pointer induction: const pointer or
-// reference to the globals, a global defined here/static/as a struct, unsized extern, array
-// reference local, while loop, `<= 13`, zero-based ordinal, struct copy (not unrolled).
-// Screens show VC keeps an integer offset only when two different global symbols share the
-// induction, and then rebases it to start at 0; retail's starts at 0x18 (12 * type, not rebased).
-// Round 9 (lane 2, fast): retail's offset is 12 * type for type 2..13 with the base 0x18 below the first
-// weight, i.e. `types[type - 2]` with `type` the definition's entry index; written that way as one loop
-// 105, the same over the raw dwords 254 (278 bytes, not unrolled), as the nested loops 105, zero-based
-// nested loops 139 (374 bytes), nested loops through an element pointer 103. Ours always ends the loop on a
-// pointer compare (`cmp eax, &weights_end`), retail on the offset (`cmp eax, 0xa8`).
-// Round 126 (real `--fast`): a zero-based loop over the twelve records (source from +0x180) 105; a named
-// `real const *` source indexed by type * 7 121; one twelve-byte record copy per type 257 (279 bytes, not
-// unrolled); the table pointer stored after the two scalar defaults 105; byte-offset destination 254 (278).
-// One-link LTCG screens (exact for this function, which calls nothing): a forceinline copy helper taking
-// the record pointer (2..13 or 0..11) gives the base code; an out-of-file copy function is not inlined into
-// this /Ob1 file even when its definition is `inline` (called). Retail's 12 * type offset with the table
-// address folded into the displacement looks like a loop strength-reduced over a register base.
-// DL200: Overlap-safe default/override/both tuple copies 258/146/282, each with a new reduced
-// caller loss at 0x1574c0; all rejected. Consistent tuple byte-field orders 0/8/4, 4/0/8, 4/8/0,
-// 8/0/4 and 8/4/0 give 117/117/111/111/117. Original two-by-six copies, real field values, scalar
-// overrides, signed guards and includes restored at 105. Integer destination induction and
-// definition receiver remain.
-// Round 46 (lane 9): one loop over type 2..13 with the `type * 3 - 4` index 254 (278 bytes, not unrolled), the
-// same with `(type - 2) * 3 + 2` 254, with an unsigned short type 256; nested loops with a per-batch source
-// pointer 121; one loop storing through `(&globals->value0)[type * 3 - 4]` 105. Diagnostic (not kept): /Os,
-// /Ot and /Oy- keep the pointer induction; /Og- drops the loop optimisation altogether.
-// Round 322: Actual two-by-six destination array/per-batch receiver with field/native/library/grouped-input copies 105/145/145/123 each. Integer destination induction and definition EAX remain; all original tables, copies, overrides and body restored.
-// Round 56 (lane 12, fast): the outer loop over the first type of each batch (`first = 2; first < 14;
-// first += 6`, type = first + j) 139 (374 bytes); that through the records 139; the outer counter
-// stepping by six (`i < 12; i += 6`) 105; one type loop through a source record pointer and
-// `types[type - 2]` 123; a walking source pointer with dword copies 255 (278 bytes). One-link
-// screens with the global unresolved (an external symbol) still fold it into a pointer induction.
-// Round 40 (screen, base 100): a per-type memcpy in one type loop 257 (279 bytes), in the two-by-six loops
-// 145 (406 bytes), into `&g_502258[type * 3 - 4]` 257; `long index = type * 3` named in the nested loops 98
-// (aligned 25), in one loop 252; a named dword source record pointer 118; a types pointer two records below
-// the array 157 (378 bytes); a two-dimensional view 100; real-typed fields in one type loop 100: always the
-// pointer induction.
-// Round 62 (lane 12, fast): in retail, 18 of the 21 loops that keep an integer offset with the global in
-// the displacement compare unsigned (`dword` or sizeof-count counters, `jb`: 0x137c20, 0x193010, 0xe99a0,
-// 0x6bff0); this one and 0x238b4a (three tables) use `jl`. A standalone compile of this body gives the
-// integer offset (unrolled by six, `cmp eax, 144; jb`, rebased to 0) only for a zero-based `dword` counter
-// over a struct-typed global; through the cast `dword` array, or from a start of 2, it counts down with a
-// pointer, and every signed counter folds the global into the pointer. Real: one zero-based loop to
-// `NUMBEROF(globals->types)` 141 (375 bytes, countdown); the inner batch counter `dword` 105 (same code);
-// both batch counters `dword` 141; one type loop to `2 + NUMBEROF(globals->types)` 141; the scenario read
-// first 110.
-// Round 104 (lane 8, fast): retail's displacement 0x502248 is g_502258 - 16 (`g_502258[type * 3 - 4]`
-// on an integer IV type * 12 from 0x18, exit `cmp eax, 0xa8`). `long index = type * 3` named in the
-// nested loops 103 (definition in retail's EAX and the source lea between the scalar stores; IV still a
-// pointer); with the scenario read first 110; one type loop with the index 252 (not unrolled); `index =
-// type * 3 - 4` 103; the index plus a named source record 121; the index with the table store after
-// the defaults 104.
-// Round 33 (lane 15, fast): a twelve-byte record assignment per type in the two-by-six loops 145 (406 bytes);
-// one type loop through a typed source record and `types[type - 2]` fields 123; `type != 14` 254 (278 bytes, not
-// unrolled); the source as the definition's seven-dword record array `records[type][k]` 121; that with `index =
-// type * 3` 121. A scan of retail for loops storing through `[reg + global]` with a small `cmp reg, imm` bound
-// found no matched function with this integer-offset shape to copy from.
-// Round 62 (m3 lane 16, fast): one type loop over the records through a file-scope const pointer to the globals 105;
-// `(globals->types - 2)[type]` 105; the type loop as a do-while 254 (278 bytes, not unrolled); scenario read after the
-// copy 158; a short type 256. Compile-only probes: a second global of the same stride in the loop gives an integer IV
-// rebased to 0 (`xor eax, eax`, displacement +0x18), never retail's unrebased 0x18 start; selectany/static/extern "C"/
-// thread/class-member globals, const and local base pointers, an inline getter and negative-offset bases all fold.
-// Round 45 (lane 10, fast; compile-only screens agree): 1..31 unused locals at the top keep the pointer induction
-// (not a numbering tie); one type loop through `globals->types[type - 2]` real fields 105 (same code), dword
-// fields 254 (278 bytes, not unrolled); the nested loops through `globals->types[i * 6 + j]` dword fields 105;
-// a `s_spawn_influence_type *weights` element pointer 252 (278), an element reference 252 (278).
-// Round 37 (m3 lane 14, fast): the override type read once into a local 122 (367 bytes; retail re-reads
-// it per store); the inner loop over type (`type = i * 6 + 2; type < i * 6 + 8`) 226 (313); one
-// function-scope type for both loops 122; nested loops with a twelve-byte record assignment 145 (406);
-// nested loops through a named source record pointer 123. No other retail function uses this
-// integer-offset store idiom, so no matched sibling shows its form.
-// Round 191 (lane 3): the batch's first type stepping by six (`type = 2; type < 14; type += 6`, inner
-// j loop) 105 (same code); one signed type loop with an unsigned `type - 2u` record index 105 (same
-// code); `extern dword g_502258[]` unsized, linked, 105 (same code); a `dword` type counter from 2
-// 141 (375 bytes, a pointer countdown). Diagnostic, reverted at once: a volatile destination 242
-// (294 bytes, not unrolled, still a pointer). 0x502248..0x502257 hold other globals (a `long *` and
-// the game type), so retail's displacement is only g_502258 - 16, not a wider table.
-// Round 112 (m3 lane 7, fast): the table pointer stored before the tag read 105 (same code); the two scalar
-// defaults through g_502258[0]/[1] as dwords 142 (374 bytes); value0 by the dword array and value4/value8
-// through globals->types[type - 2] 105; `type = 2 + i * 6 + j` 105; the six records of a batch written out
-// (diagnostic) 105 (same code: VC's own unroll). Every form keeps the pointer induction.
-// Round 148 (fast): retail's IV reads as 12 * (first type of the batch) from 0x18 with the exit `cmp eax, 0xa8`
-// (first < 14), so the batch loop `for (first = 2; first < 14; first += 6)` with `type = first + j` 139
-// (374 bytes, again a pointer induction; the same as re-measure), the inner loop over `k = first .. first + 6`
-// 227 (312 bytes), both batch counters `dword` 162 (374 bytes); the weights as records indexed by the
-// definition's entry index from `g_502258 - 4` 157 (378 bytes); one `dword` type loop 256 (278 bytes, not
-// unrolled, pointer induction).
-// Round 111 (lane 8, fast; one-file LTCG harness exact at 105): a zero-based `dword` loop over the twelve
-// records 141 (375 bytes; in the LTCG harness it counts down with a pointer, not the integer offset); one
-// `dword` type loop from 2 141; an `unsigned short` type loop 256 (278 bytes, not unrolled); a zero-based
-// `long` loop over the records 105 (same code); the outer batch counter `dword` 141. Harness diagnostics
-// (not kept): /G5, /G6, /G7 and /Ox the same 105; the weights reached through an extern `dword *const`
-// global pointer 105 (folded at link), through a non-const one 156.
-// Round 56 (m3 lane 1, fast, plain-confirmed): the influence table pointer as the weights' last member (the
-// 0x9c-byte memset in 0x157450 clears 0x5022f0 with them) with the copies through `globals->types[type - 2]`
-// real fields 102 (scenario load and table store then at retail's positions); plus a `weights` element pointer
-// for the three stores 97 (kept: definition in EAX and the source lea between the scalar stores, the prologue
-// exact); on 97: one type loop in place of the two-by-six loops 97 (same code, kept), an element reference 97,
-// `globals->types + (type - 2)` 97, a named `real const *source` record 120, a `dword` type counter 140 (377
-// bytes); before it, a signed `short` type loop 256 (278 bytes, not unrolled), a do-while type loop 254 (not
-// unrolled). Diagnostic (reverted): the stores aimed at a global defined in a /GL- file keep the pointer
-// induction, so LTCG's view of the symbol is not the cause.
-// Round 498: Source-record-difference destination ordinal, flat table with </!= bounds and
-// field/native tuple copies 346/225/209/225; complete scalar header 357/213/212/213. Record-owned
-// traversal loses the retail unroll or grows the frame/code; original types and body restored.
-// Round 242: Existing vector/point setters at defaults and overrides, mutable/read-only
-// inputs, eight 73s (one-use element alias, exact-only). Direct default vector setter
-// alone 61 plain (438/438, kept); override setter alone 109; both direct vector setters
-// and the direct-union record 73/73. Only the default setter and native scalar/vector
-// record view remain; original scalar defaults, override reloads and signed loops retained.
-// Every other user keeps its score in reduced and ordinary checks; all matches survive.
-// Round 308: Retained setter with long/long, dword/long, long/dword batch ordinals 61/100/61;
-// zero-based long/dword type ordinal 61/100; non-equality/inclusive fixed bound 232/61;
-// body-stepped source cursor 68. Earlier induction forms used direct stores; this setter graph
-// still keeps a pointer induction and staged scalar loads. Original body restored.
-// M293: Retained-setter override early exit, paired scalar observations, actual record cursor,
-// their combinations, then native scalar truth tests: 61/75/75/76/76/93/93/61. All restored.
-// Round 246: Native source vector/array records on the retained setter graph, flat/nested
-// 61/61/61/61; native vector assignment/library copy 256/256; both-phase setter 73;
-// mutable nested source records 61. Original source view and complete body restored;
-// integer destination induction and staged default-input loads remain.
-// Round 55 (lane 11): a compile-only sweep of 300 forms: every stride-1 counter folds the destination (array classes
-// with an inline operator[], typed arrays, an element pointer, a separate offset beside the counter), but a byte-offset
-// loop variable keeps retail's integer offset and its signed compare: `for (long o = 0x18; o < 0xa8; o += 0x48)` around
-// an inner six-record loop that VC unrolls fully. That holds only while the base is at most 8 bytes above the
-// displacement: displacement against the symbol +24 to -8 integer, -9 to -48 pointer with a countdown; the global's
-// declared size, element type and the start value do not move it. Retail's -16 from g_502258 therefore needs a symbol
-// at 0x502250 or below (nothing else reads 0x502250/0x502254). Real fast trials: the nested loop on `(byte *)g_502258
-// - 16` 140 (377 bytes), through an extern const base pointer 146 (390 bytes). MATCH (plain, not kept, BLOCKED-BY 0x157450,
-// whose file holds the definition and is another lane's this round; a lead only, because retail shows nothing else at
-// 0x502250..0x502257, so what lives there has to be established first): `dword g_502250[0x29]` as the definition,
-// g_502258 as `g_502250 + 2` here and in src/unknown_2bd960.cpp, `byte *source = definition + 0x184;`, the loop above
-// with `, source += 0xa8`, `record = (s_spawn_influence_type *)((byte *)g_502250 + o - 8)` and the inner loop reading
-// `source + j * 0x1c - 4`, `source + j * 0x1c` and `source + j * 0x1c + 4`. 0x157450, 0x23ba10, 0x23b060, 0x23b500 and
-// 0x2bf740 stay matched. On that symbol a source walked by the batch without the bias 20, the type counter advanced
-// with the batch 6 (definition in ECX with `add ecx`), a named records pointer 25.
-// Round 84: the fused `(byte *)g_502258 + offset - 16` outer byte-offset/six-record setter loop recovers
-// retail's integer destination 0x18..0xa8 and bound, but keeps SSE tuple stores: 82 (486 bytes); local receiver
-// and point setter 82 each; per-record real source cursor 148; per-element byte destination 100; flat byte
-// destination 253; inner byte offset 210; batch/byte offsets 226; dual type/byte counters 91; scalar or dword
-// fields on the byte-offset loop 140 each; aggregate record copy 145. Original 61 body restored.
-// Round 48 (fast with 0x157450/0x23ba10/0x23b060/0x23b500/0x2bf740): retail copies each record as three dword
-// moves through ESI in order; ours keeps the setter's SSE loads. A named `real const *source` record 66; the table
-// pointer after the scalar defaults 68; the definition as `byte const *` without the tag local 61 (same code);
-// source reals indexed `[type * 7 + k]` 61 (same code); zero-based records from +0x180 61 (same code); globals
-// declared before the scenario 61 (same code). BLOCKED-BY 0x157450 (round 55's g_502250 symbol lead).
-// Round 140 (m3 lane 5, fast, on the setter body): the setter's sources as `((real const *)(definition + 0x148))[type
-// * 7 + n]` 61; through a named `real const *values` for the three 61; the globals pointer declared before the
-// scenario pointer 61; the scenario pointer declared at its test 99 (its load moves below the stores); the sources as
-// `((real const *)(definition + 0x148 + type * 0x1c))[n]` 61. The integer-offset copy loop still needs the weights'
-// symbol at 0x502250 (the round 55 lead above), which lives in src/unknown_157450.cpp, held by another lane this round.
-// M3 lane 14 r59 (fast): each record as three real field assignments (`types[type - 2].value0 = ...`, value4,
-// value8) 102 (390 bytes): the copies become retail's interleaved dword moves through ESI, unrolled by six, so
-// only the destination induction differs (a pointer with small displacements, 3 bytes shorter per store); the same
-// with a `const` globals pointer 102 (same code). A twelve-byte record assignment in the type loop 256 (279 bytes,
-// not unrolled), memcpy re-measured 256 (same code); the weights addressed through the cast global at each use, no
-// globals local, 61 (same code); vector3f_assign fed through a `vector3f const *` view of the record 61 (same code).
-// So the round 55 match needs the field assignments (or its dword reads) and the 0x502250 symbol together.
-// BLOCKED-BY 0x157450 (src/unknown_157450.cpp, held by F356 in r59).
-// Round 140: typed per-record setter/scalar copies 100/140; raw batch setter/scalar copies 82/140;
-// typed batch setter/scalar copies 89/140; typed record-reference setter/scalar copies 100/140.
-// The byte-offset setters grow to 486 bytes and every scalar form loses retail's unroll/addressing.
-// MiniMax B (11-03), not kept: a 0xac-byte struct declared at 0x502248 (four words, the two shared values, the twelve
-// records, the table), with a byte-offset loop 0x18..0xa8 by 0x48 and the source from definition + 0x184, matched in
-// the lane, but 0x502248 is the mission-objective pointer (`long *g_502248`, src/unknown_29f5b0.cpp), so the tree no
-// longer links (batch 216: LNK2001 g_502248) and the struct would fold unrelated globals into the weights.
+/* sets the influence weights from the game's defaults and the scenario's overrides; the two-by-six copy runs on a
+   byte offset as retail does (0x18..0xa8 from the record 8 bytes below the symbol, which VC unrolls by six) */
 // @retail 0x23aea0
 void function_23aea0()
 {
 	byte *tag = g_4e3b44[g_4e034c->index & 0xffff].bytes;
 	byte *definition = *(byte **)(tag + 0xc);
 	s_spawn_scenario_23aea0 *scenario = (s_spawn_scenario_23aea0 *)g_4e0350;
-	s_spawn_influence_globals *globals = (s_spawn_influence_globals *)g_502258;
+	s_spawn_influence_globals *globals = (s_spawn_influence_globals *)(g_502250 + 2);
 	globals->table = g_4709f0;
 	globals->value4 = *(real *)(definition + 0x154);
 	globals->value0 = *(real *)(definition + 0x150);
-	for (long type = 2; type < 14; type++)
+	byte *source = definition + 0x184;
+	for (long offset = 0x18; offset < 0xa8; offset += 0x48)
 	{
-		vector3f_assign(&globals->types[type - 2].vector,
-			*(real const *)(definition + 0x148 + type * 0x1c),
-			*(real const *)(definition + 0x14c + type * 0x1c),
-			*(real const *)(definition + 0x150 + type * 0x1c));
+		s_spawn_influence_type *records = (s_spawn_influence_type *)((byte *)g_502250 + offset - 8);
+		for (long j = 0; j < 6; j++)
+		{
+			records[j].value0 = *(real const *)(source + j * 0x1c - 4);
+			records[j].value4 = *(real const *)(source + j * 0x1c);
+			records[j].value8 = *(real const *)(source + j * 0x1c + 4);
+		}
+		source += 0xa8;
 	}
 	if (scenario->count > 0)
 	{
@@ -366,7 +143,7 @@ __forceinline void spawn_influence_add(s_spawn_influence_list *list, point3f con
 // @retail 0x23ba10
 void function_23ba10(long type, point3f const *point, s_spawn_influence_list *list)
 {
-	s_spawn_influence_globals *globals = (s_spawn_influence_globals *)g_502258;
+	s_spawn_influence_globals *globals = (s_spawn_influence_globals *)(g_502250 + 2);
 	s_spawn_influence_type *definition = &globals->types[type];
 
 	spawn_influence_add(list, point, definition->value0, definition->value4, globals->value0,
@@ -855,8 +632,8 @@ void function_23b500(long player_index, s_spawn_influence_list *list)
 				point3f predicted;
 				point_along_vector_23b500(&object->position, &object->velocity, settings->vehicle_time, &predicted);
 				spawn_influence_add(list, &predicted, radius, radius * 1.2f,
-					((s_spawn_influence_globals *)g_502258)->value0,
-					((s_spawn_influence_globals *)g_502258)->value4, settings->vehicle_weight);
+					((s_spawn_influence_globals *)(g_502250 + 2))->value0,
+					((s_spawn_influence_globals *)(g_502250 + 2))->value4, settings->vehicle_weight);
 			}
 		}
 		else if (type_mask & 0x20)
@@ -867,8 +644,8 @@ void function_23b500(long player_index, s_spawn_influence_list *list)
 				point3f predicted;
 				point_along_vector_23b500(&object->position, &object->velocity, settings->projectile_time, &predicted);
 				spawn_influence_add(list, &predicted, settings->projectile_inner, settings->projectile_outer,
-					((s_spawn_influence_globals *)g_502258)->value0,
-					((s_spawn_influence_globals *)g_502258)->value4, settings->projectile_weight);
+					((s_spawn_influence_globals *)(g_502250 + 2))->value0,
+					((s_spawn_influence_globals *)(g_502250 + 2))->value4, settings->projectile_weight);
 			}
 		}
 	}

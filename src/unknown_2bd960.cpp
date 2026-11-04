@@ -1104,7 +1104,7 @@ struct s_point_list_2bf
 };
 
 /* the values the points get (unknown_157450.cpp) */
-extern dword g_502258[0x27];
+extern dword g_502250[0x29];
 
 /* adds a point to the list, unless it is full */
 static __forceinline void point_list_add_2bf(s_point_list_2bf *list, point3f position, real a, real b, real c, real d, real e)
@@ -1140,7 +1140,7 @@ void c_game_engine_45c948::v32(long player_index, long list_pointer)
 			{
 				point3f const *source = &g_4e0350->marker_entries[(short)state->w60[i]].position;
 				point_list_add_2bf(list, *source,
-					*(real *)&g_502258[35], *(real *)&g_502258[36], *(real *)&g_502258[0], *(real *)&g_502258[1], *(real *)&g_502258[37]);
+					*(real *)&g_502250[37], *(real *)&g_502250[38], *(real *)&g_502250[2], *(real *)&g_502250[3], *(real *)&g_502250[39]);
 			}
 		}
 	}

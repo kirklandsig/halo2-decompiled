@@ -562,6 +562,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // producers, then complete wave accumulation: 117 each; complete wave/strength
 // accumulation 118. NOT kept: no equality or gain; original expression graph restored.
 // Frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// Round 69 (lane 11, fast, compile-only screens exact for the tail): the tail alone is solved: `cos((real)(time * 0.001)) *
+// cos(time * 0.0006f) + sin((real)(time * 0.005))`, times `cos(time * 0.0001f)`, gives retail's x87 sequence op for op (the
+// first cast is retail's fxch pair and its cosine order, the sine cast its two fst stores). It adds 12 bytes that the rotation must
+// give back: on the current rotation 171 (892 bytes), the first cast alone 164 (888), the sine cast alone 164 (888). With it,
+// cross3f on the global 158 (880), projection before cross3f 163 (880); scalar cross on the global (kept only with a match) with
+// dot3f 147 (884), `old_k`, `old_j` read before the axis 151 (880, aligned 49), read after the axis 148 (880, aligned 47). Those
+// captures give retail's early xmm5/xmm4 loads and the store-and-reload of cross k; still open: retail adds the global's i term
+// last with its load late, every direct read adds it first; capturing i as well ranks it last but loads it early and spills.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
