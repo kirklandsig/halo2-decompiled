@@ -4639,6 +4639,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // B409: Extra-gate-first pass state, initial-gate rejection and admitted-gate conditional
 // selection in byte/bool/short/long: 248/248/219/213/205/237/231/238. Both peer users regress;
 // original shared producer and complete caller restored; native late bytes/mode loads remain.
+// DH345: Existing fog producer single-exit admission/rejection results in
+// bool/byte/short/long: eight at 138. Original maximum, helper, caller and pass
+// operations restored; late enabled bytes, mode loads and clear convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

@@ -679,6 +679,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH342: On the retained direct-case-return graph, five alternate whole-case orders
 // 342/293/381/345/381; explicit default result returns first/middle/last 270/270/270.
 // Original case order and complete body restored; early root/actor ingress remains.
+// DH345: Reference producer interfaces, seven subsets/full forced expansion, eight at 270;
+// excluded from the trial count because caller adaptation left the queue; all restored.
+// Immutable origin/direction/output pointer bindings, seven subsets and full immutable
+// distance, eight at 270 with all callers unchanged. Original helper/body restored;
+// native root/actor ingress and paired-vector scheduling remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

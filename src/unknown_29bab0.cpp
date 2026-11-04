@@ -263,6 +263,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // DH342: Existing vector component arrays throughout normalization/projection/body,
 // seven subsets 750/750/807/750/807/807/807; all plus marker point components 807.
 // Original fields, parameter storage, helpers and body restored; early input/heading and norm homes remain.
+// DH345: Direct-input complete direction results: logical/conditional admission and
+// equality/inequality side completion, eight graphs 776/814/813/822/783/811/800/757.
+// All regress; original input storage, decisions, helpers and complete body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

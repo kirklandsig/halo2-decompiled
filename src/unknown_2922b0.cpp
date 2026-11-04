@@ -325,6 +325,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH342: Shared lower-first root/output clamps and real root API, seven subsets
 // 618/626/618/626/618/626/626; all with real rotation trig API 624.
 // Original scalar producers, observations and body restored; success/input/minimum/hit homes remain.
+// DH345: Complete final scalar projections before all three stores, six row orders,
+// then immutable ijk/kji results: eight at 613 (2830 bytes). NOT kept: five-point
+// gain is below the eight-point threshold; original body and in-place snapshots restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
