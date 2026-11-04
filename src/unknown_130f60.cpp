@@ -361,6 +361,7 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // AC520: Complete updated scalar sums at the six-use accumulator, immediate/staged
 // RGB/scalar/totals group masks 0-7: 335/458/335/458/335/458/335/458 (fast control 336).
 // NOT kept: one-point leads below threshold; staged RGB grows the frame/length; original helper/body restored.
+// F367: Existing six-use accumulator output contracts: pointer/reference result, reference destination with void/pointer/reference result, reference color with pointer/reference result and value color with pointer result: seven 336, value color 594 (reduced control 336; full 295). NOT kept: no gain; original helper, six uses and full body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

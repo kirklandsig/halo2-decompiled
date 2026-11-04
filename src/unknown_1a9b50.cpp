@@ -960,6 +960,7 @@ static __forceinline long real_to_long(real value);
 // AC520: Planar normalizer returns at query-pair/facing/request-pair producers, subsets
 // 1/2/4/3/5/6/7 then phase-owned uninitialized storage: 382/382/382/382/382/382/382/382.
 // NOT kept: one-use call-result residence does not match; original calls, aliases and full body restored.
+// F367: Complete facing-alignment/prediction-seconds/projected-distance nodes, masks 1/2/4/3/5/6/7, then all with remaining-distance node: 382 each. NOT kept: eight byte-neutral trials; original arithmetic, live observations, query aliases and full body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

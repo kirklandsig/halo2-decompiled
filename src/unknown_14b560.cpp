@@ -1401,6 +1401,9 @@ static inline s_players_globals *players_globals_14f2e0()
 // Y571: Separate native word library clears, alias-safe up copy and color transfer, seven
 // subsets 46/94/149/94/149/169/169; complete graph with field_198 library clear 169.
 // Original copies, clears and full body restored; NONE materialization and final zero/flag order remain.
+// F369: Complete kept-unit failure ownership at all edges/state phase/admitted unit/full state
+// admission: 69/46/46/46; each with complete timer clear 66/43/43/43. NOT kept: no
+// byte match; the three-point clear is below the bar. Original body and observations restored.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

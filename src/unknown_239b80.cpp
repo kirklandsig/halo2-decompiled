@@ -456,6 +456,8 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P303: Native-width lowest/candidate/compaction ordinals on the retained output-ordinal graph,
 // subsets 1/2/4/3/5/6/7: 654/262/180/642/651/259/635; unsigned native candidate 262.
 // NOT kept: every form regresses, some lose caller 0x239d50; original scans, output ordinal and body restored.
+// F365: Lowest/distance/ranking rejection on the retained native output ordinal, masks 1/2/4/3/5/6/7, then classifier early return:
+// 170/170/170/170/170/170/170/256 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -815,6 +817,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B395: Actual NONE result terminates the input walk, short/long ordinal, failure/success
 // capacity arms and tail/post-crossing prior-state publication: 282/282/284/284/250/309/257/311.
 // NOT kept: all regress; original capacity breaks, indexed walk and complete body restored.
+// F364: Native point-owned equality, instance/static and ordinary/forced boundaries,
+// original/recovered count-fraction graphs: 129/129/129/129/281/92/281/92. NOT kept: repeated loop
+// guard requires a match. Original helper and body restored; count/prior-side and SIMD homes remain.
 // B399: Pre-collector crossing with immediate prior-side publication plus four complete
 // denominator/fraction/clamp decisions, bool then byte: 239/241/239/241/239/241/239/241. NOT kept:
 // every exact-only combination regresses; original state, fraction and complete body restored.

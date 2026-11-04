@@ -1555,6 +1555,7 @@ bool function_17afd0(long effect_index, long value);
 
 // score 47 (was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
+// availability clear/production and the post-attachment view observation remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
 // bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
@@ -1719,6 +1720,9 @@ bool function_17afd0(long effect_index, long value);
 // AC515: Actual two-use view classification on the shifted-word/effect-index/owner-arm graph,
 // long/dword/short/byte with default-query then conditional producers: 139/139/141/129/139/139/141/125.
 // NOT kept: unmatched classification storage; original Boolean result and complete body restored.
+// F366: Phase-specific post-attachment view observation with original/complete/refined/logical/
+// success-only/complete-query/invalidation/complementary availability producers: 111/119/118/119/129/119/79/112.
+// Exact-only observation diagnostics restored; original snapshots, query gates and full body retained.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

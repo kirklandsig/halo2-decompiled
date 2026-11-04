@@ -322,6 +322,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
 // then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
 // executable body and helpers restored; success/input/minimum/hit homes remain.
+// F365: Native vector cross/point translation/in-place rotation receivers, masks 1/2/4/3/5/6/7, then ordinary inline:
+// 628/628/628/630/630/630/633/633 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

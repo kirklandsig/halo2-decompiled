@@ -538,6 +538,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // DH335: Native surround-bin stores, paired surround-gain chains and complete
 // stereo publications, subsets 1..7 and complete interleaved form, 246 each.
 // Original arrays and whole body restored; frame/status/clock and SSE gaps remain.
+// F366: Actual decoder flags own both consumers, conditional/complete/default/paired producers
+// at the original phase then parameter-only entry: 263/263/275/275/293/293/302/295.
+// Original mode, status, clocks, retry, arrays, outputs and whole body restored; frame 0x3c/0x40 remains.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

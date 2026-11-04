@@ -279,6 +279,7 @@ real normalize2d(point2f *arg_0);
 // AC517: Scalar lifetime role names for radius, planar length/projection and adjusted distance/clearance,
 // phase subsets 1..7 then complete far-separation/state names: eight forms 180 at exact 1025 bytes.
 // Original names and full body restored; early object masking and copied-input/SSE schedules remain.
+// F368: Actual first/second/both normalizer completion as real, then bool, and entry-owned real/bool pairs: 180 each at 1025 bytes. NOT kept: one-use completion captures do not match or recover early mask/copy/SSE scheduling. Original body and inherited local qualifier restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
