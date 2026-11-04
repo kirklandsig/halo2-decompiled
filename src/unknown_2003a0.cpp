@@ -3347,6 +3347,10 @@ void function_2011f0(long arg_0);
 // as is 322 (retail's `cmp di, -1`, one byte shorter, but the splice loop's pad grows a byte; aligned 141 ->
 // 140); the final 0x2011f0 call with arg_1 unmasked (retail pushes the full dword) 350 (1344 bytes); a scenario
 // local for its three reads 348. Retail keeps the chain head in EDX through the splice; ours keeps it in memory.
+// J250: Actual signed palette member, placement member and complete typed row,
+// seven subsets 318 each; all with native scalar one-word masks 318. NOT kept:
+// no allocation or extent gain. Original alignment-two row, masks and body restored;
+// narrowed-input/placement, seat and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

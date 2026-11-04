@@ -434,6 +434,10 @@ union s_185be7
 // DH338: Actual range-lower/angular-bound/curve-count/curve-pointer/paired-curve/
 // lower-angular/lower-curve/all native field bindings: 927/622/622/622/622/927/927/927.
 // Original body restored; root/NONE and scalar homes remain; lower reload lacks equality.
+// J250: Actual sampled-input auxiliary/movement/look/auxiliary-movement native pairs
+// 622/622/622/622; opaque auxiliary formal with typed/direct pointer access 622/622;
+// complete vector/point input pairs 622/622. NOT kept: no root/NONE, settings, frame
+// or flag improvement. Original input record, body and outside declaration restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

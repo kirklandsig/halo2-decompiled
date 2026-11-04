@@ -1005,6 +1005,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // P310: Existing coefficient copier returns native direction pointer/reference or sample
 // pointer/reference: forced 547/547/547/547; ordinary 621/621/620/620. NOT kept: ties or
 // outlining regressions; original full copier, direction consumer and complete body restored.
+// J250: Sole-caller fraction formal orders a/b/c, c/a/b, c/b/a, b/a/c, b/c/a
+// 587/547/547/587/587; original-order stdcall/cdecl/inline 547/547/547. NOT kept:
+// the 587 forms lose the matched fraction provider and move away from native extent.
+// Query/frame/fraction homes remain; pointer-to-ordinal quotient also consumes EDX.
+// Original provider contract and target body restored; prior ordinal-loop forms not repeated.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

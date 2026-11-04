@@ -385,6 +385,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // `> 0`; byte field with `> 0` 50h; short local 163h (980 bytes, aligned 39 against 42: AX store as retail, the extended axis stays in
 // ECX); direct field 175h. Diagnostics, unused initialised locals: 1-15 at the top (period 8) and 0-7 at the top with 1-7 in the helper,
 // on the long and short bodies: best 4 of 24 corner products off, none reaches retail's ranks.
+// J250: Existing corner destination pointer/reference returns 46/46; complete bound/output
+// references 46; bound-reference destination pointer/reference returns 46/46; output-reference
+// destination pointer/reference returns 46/46; bound-reference point-value result 246 (1039 B).
+// NOT kept: no live-plane store, first-selector or product-memory-side recovery; the point
+// value moves away from native extent. Original four-use helper, all corner calls and body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -960,6 +965,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // as `while (remaining > 0)` 545 (3631 bytes); the first plane decoded after the face is taken 758; the quad
 // branch inverted (fallback copy first) 574; the first loop stepping `++i` with `faces[i]` 552; the angle test as
 // `angle <= maximum` 539 (same code).
+// J250: Complete decoder/angle/alias-safe rotation formal-reference contracts,
+// seven subsets then ordinary complete expansion, 539 each. NOT kept: tag/count/plane
+// homes and rotation spills remain; original helpers and body restored. All rotation
+// inputs still precede the first output store. Shared-angle sum changes were not applied.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
