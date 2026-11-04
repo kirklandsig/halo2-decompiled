@@ -335,6 +335,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // element overwritten through the element pointer 902 (same code); the linked-object test without the repeated
 // `!= NONE` (the pointer is already NULL then) 961 (4251 bytes); owner activity as `local_1 || (...)` 989 (4248);
 // other activity as `local_20 || ...` 970 (4254).
+// P312: Wide-dot left/right and complete real-dot native value-formal masks 1/2/4/3/5/6/7,
+// then immutable complete inputs: 1117/1117/1274/1250/1424/1395/1606/1606. NOT kept: no match;
+// native input copies enlarge frames/extents. Original pointer kernels and complete body restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

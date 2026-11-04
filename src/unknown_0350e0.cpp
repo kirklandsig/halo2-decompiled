@@ -2903,6 +2903,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // projection helper with an output pointer 514 (frame 0x44); speed test as sqrt(dot3f) 519, as
 // normalize_inline's float sum 527, its double sum grouped j + (i + k) 486 (same code); acceleration
 // as a vector3f with vector3f_scale and vector3f_add 513, with vector3f_scale only 513.
+// P312: Existing projection input value/const-reference/reference/native snapshot, returned result
+// 589/486/486/589; reference output on those inputs 498/514/514/487. NOT kept: no match or gain;
+// original projection helper/body restored. Frame 0x60/0x38 and velocity/loop homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

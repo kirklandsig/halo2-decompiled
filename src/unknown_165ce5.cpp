@@ -1713,6 +1713,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
 // Original real argument domain and narrowing preserved; all one-use captures restored.
 // Frame, unit/mode homes and independent look divisions remain.
+// P312: Fixed two-weapon !=2 and <=1 exhaustion, long/short/dword/word ordinals:
+// 220/421/220/421/221/421/221/421 fast (control 220, full 218). NOT kept: no match; original loop/body restored.
+// Frame 0x28/0x2c, unit/mode homes and independent look divisions/homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

@@ -411,6 +411,9 @@ union s_185be7
 // P310: Plain two-axis turn/attachment-scale/object-scale array loops, subsets 1..7:
 // 991/616/991/616/991/616/1185; complete loops with shared axis 1185.
 // NOT kept: six-point best gain is below gate; original array producers and full body restored.
+// P312: Existing flag setter installed-state bool/byte/word/long returns, common and
+// branch-owned results: 622/622/622/622/622/622/622/622. NOT kept: no match or gain;
+// original void producer and full body restored; root/NONE and scalar/flag homes remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

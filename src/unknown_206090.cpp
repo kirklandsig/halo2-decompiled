@@ -369,6 +369,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // the final loop's member count read through the element pointer local 1359 (6238); that with the magnitude form
 // 1390 (6211). Retail places the duplicate-contact search out of line after the impact loop (rotated, entered by a
 // forward jump when the list is non-empty); ours keeps it inline.
+// P312: Native value-input magnitude/first-normalizer/second-normalizer masks 1/2/4/3/5/6/7,
+// then immutable complete inputs: 1355/1357/1390/1357/1390/1410/1410/1410. NOT kept: no match;
+// original pointer kernels/captures restored. Second-normalizer values enlarge frame to 0x5dc.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
