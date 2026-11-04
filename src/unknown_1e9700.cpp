@@ -205,6 +205,8 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
+// kept, the original body is restored.
 // score 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
 // rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
