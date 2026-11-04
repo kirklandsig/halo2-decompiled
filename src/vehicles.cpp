@@ -2560,6 +2560,10 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // 48/48/48/48/48/48/48/48. NOT kept: grouped storage lacks equality; original scalar results, spin helper and complete body restored.
 // Y596: Complete side-result conditionals/branches, positive/complement, joint branches/defaults:
 // 142/123/142/123/107/107/104/104. NOT kept: no exact result selection; native turn/spin schedules remain; original body/helper restored.
+// Y598: Existing spin scratch/input identities, producer/entry declarations: eight 42s.
+// Complete per-use turn fabs/fabsf/nonnegative-unary/negative-unary, original/float torque
+// magnitude: 139/139/42/46/169/169/116/115. NOT kept: no exact magnitude/spill result;
+// original helper and body restored; native turn-product and spin spill/store schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2939,6 +2943,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // original/distinct relative output: 677/721/709/739/685/725/700/749. NOT kept: nonnative aggregate clears;
 // 677 reaches native length but inserts rep stosd. Current axes and three position-zero stores before
 // left cross, original/distinct output 676/682; original output kept at 3244 bytes, plain confirmed.
+// Y598: Actual velocity/basis/applied-force lexical identities, separate and complete,
+// original then distinct relative output: 676/676/676/676/682/682/682/682. NOT kept:
+// no exact slot repair; frames remain 0xd0/0x104 versus 0xfc. Original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3271,6 +3278,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // Original complete body restored; incoming velocity and force homes remain.
 // Y596: Complete planar projection pair/array, assigned/entry/initialized/readonly outputs:
 // 1057/1057/1057/1057/1057/1057/1057/1057. NOT kept: no equality; frame stays 0x80 versus 0x74; original full body restored.
+// Y598: Persistent default outputs, aggregate/scalar force/torque/both, then force/both assignments:
+// 1074/1095/1078/1074/1095/1078/1052/1052. NOT kept: no exact constructor result.
+// Original complete body restored; frame 0x80 versus 0x74 and velocity/force homes remain.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {

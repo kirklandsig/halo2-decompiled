@@ -1603,6 +1603,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // M367: Optional ready-query completion/fallback result bool/byte/short/long:
 // 95/95/95/95/95/95/95/95. NOT kept: one-use result producers do not match.
 // Original terminal returns and complete body restored; early hand spill and second unit load remain.
+// Y598: Actual late state/tag/selected-weapon lexical identities, seven subsets
+// and complete entry-uninitialized storage: 95/95/95/95/95/95/95/95. NOT kept:
+// no exact home repair; original body restored; early hand spill and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1900,6 +1903,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // DH343: Signed slot/hand domains char-long/long-char/char-char/short-long/short-char/
 // char-short/short-short/char-word: 144/146/146/136/143/134/131/134. NOT kept: short slot/hand 131
 // gains seven below the gate. Original body restored; pool reload and weapon/mode homes remain.
+// Y598: Complete paired tag-comparison inputs long/dword/int64/unsigned-int64,
+// producer then entry declarations: 138/138/138/138/138/138/138/138. NOT kept:
+// single-use field copies lack equality; original body restored; pool reload and weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
