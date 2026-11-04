@@ -824,6 +824,9 @@ void function_1537f0(s_profile_record *record);
 // DH358: Existing unused eight-byte source field as signed integer, native SDK integer/time
 // records, dword/word/byte field arrays and double: eight scores 53; every file control unchanged.
 // NOT kept: identity homes still fold and frame 0x98/end-bound remain; original record and body restored.
+// M393: Positive pointer do latch, strict then equality endpoint, per-visit/outer identity/source declaration pairs:
+// 53/53/53/53/53/53/53/53. NOT kept: nonexact lifetime/latch forms; identity homes still fold and native frame/end-bound remain.
+// Original complete body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1376,6 +1379,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // DH358: Branch-set capacity result with empty/full defaults in bool/byte/word/dword:
 // eight scores 395 at 1162/1171 bytes. NOT kept: every form regresses and loses native extent;
 // original predicate, removed-index producer, bounds, copy loops and full tail restored.
+// M393: Phase-owned reloaded long/int count, shared/direct admission, original then complete direction arms:
+// 383/383/395/395/385/385/59/59. NOT kept: nonexact count/direction completion forms; native count/removal and upper-bound register ownership remain.
+// Original complete body restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

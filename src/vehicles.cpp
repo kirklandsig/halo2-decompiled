@@ -1311,6 +1311,9 @@ long function_10f5f0(long object_index);
 // P330: Plain raw light cursor/indexed scan, native Boolean bit-four test and
 // branch-owned mask: 565/566/571/565/565/565/571/571. NOT kept: no gain; frame 0x19ac
 // and predicate/reduction homes remain. Original full body, buffer and array values restored.
+// M393: Point-sum/damping/radial rate-distance-scale double receivers, subsets 1/2/4/3/5/6/7 then immutable nonaccumulators:
+// 565/582/635/576/637/635/639/639. NOT kept: nonexact precision receivers; native frame, predicate-byte stores and reduction homes remain.
+// Original complete body restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -5488,6 +5491,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // seven subsets then vertical attenuation: 1097/1087/1087/1097/1097/1087/1097/1097. NOT kept: native
 // frame 0xd8 and handle/matrix homes are not recovered; original full expression graph, matrices and
 // body restored.
+// M393: Complete normalization length/inverse, paired trig and angular rate/inverse-step double receivers, subsets 1/2/4/3/5/6/7 then immutable all:
+// 1118/1166/1166/1196/1152/1114/1143/1143. NOT kept: nonexact precision receivers; native frame, handle/offset and matrix/vector homes remain.
+// Original complete body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

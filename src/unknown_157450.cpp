@@ -697,6 +697,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // N359: Left-shifting notification bit with long/dword/short/byte ordinals, full then word saved mask:
 // 95/87/65/65/89/83/56/56. NOT kept: no byte match; complete original body restored.
 // Native saved-word entry and shared post-loop mask reload remain.
+// M393: Reusable playing-XOR set, mutable/read-only carrier and inherited/plain present, full then word saved mask:
+// 130/130/131/131/58/58/140/140. NOT kept: no exact recovery; native saved-word entry and one shared post-loop reload remain.
+// Original complete body restored.
 // @retail 0x158140
 void function_158140(void)
 {
