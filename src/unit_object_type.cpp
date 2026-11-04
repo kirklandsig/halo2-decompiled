@@ -2247,6 +2247,15 @@ struct s_unit_motion
 // 28; named phase values or one step variable 70 (218 bytes); one-use named products and outputs 28 (still inlined at
 // 2871 bytes); in-place position and velocity 121 (277 bytes, stack again, not inlined); `if (time <= step)` steps 66 (221
 // bytes); defined after 0xc7840 28 (still inlined). Only a test ahead of the calls in 0xc7840 keeps it out of line (see its note).
+// Round 2 of #1049 (u2A, fast): statement-by-statement walk against retail finds no logic difference: same done test and
+// copies, same three phases (accelerate 0x10/0xc, coast 0x14, decelerate 0x1c/0x18), same clamp (`time <= step` -> time),
+// same final `time > 0`. The 38 extra bytes are only the stack arguments. The accumulator form (28, 227 bytes) differs from
+// retail in one thing: time arrives in XMM2 and step is XMM3 (retail time XMM3, step XMM2); variants that keep 28 and the
+// same swap: result declared after the accumulators, one function-scope step, a `remaining` copy of time, products written
+// out in each use, `!result &&` repeated at each phase test, `!motion->done` in the first test, an unused-product block.
+// Inlining into 0xc7840 does not change with any of these (2870 bytes, 1103); `bool result = false` with `!motion->done`
+// tested (not equivalent: a done motion would return false) is 233 bytes and stays out of line (0xc7840 2442, 645), so the
+// choice looks size-bound (227 inlined, 233 not) and retail's identical 227 bytes being kept out of line points at 0xc7840.
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -3023,6 +3032,14 @@ void __stdcall function_ced30(long unit_index, long object_index)
 // short first, the existing current-weapon header helper and action declared first: 131 each.
 // Also: the type read through a reference instead of the weapon index 131 (with both 127); the two
 // lookups through one inline helper taking the hand 127; the second hand computed first 135.
+// Round 2 of #1049 (u2A, fast): aligned with retail the only structural differences are the reload of the pool's data and the
+// unit for the second hand (2 instructions, then the type read from the stack with `dec eax` instead of `lea eax, [ebp-1]`
+// and the register shuffle that follows from it); the rest (switch layouts, action tables, rider call) is the same. The
+// reload implies retail had a store through an address-taken local between the lookups (the global pool pointer, which
+// nothing can alias, stays in EDI; its data field is reloaded). Tried: the type read through a stack reference instead of
+// the weapon index 131; a two-iteration loop over the hand (unrolls and CSEs, 127); the matches stored into a local array
+// by pointer 132, by a loop 136; bools written through a pointer 127; each lookup in an inline helper writing its result
+// through an out pointer 146 (static) / 146 (forceinline), writing the comparison 139 / 139: all fold to direct locals.
 // @retail 0xc9d00
 void __stdcall function_c9d00(long unit_index, long weapon_index, long type)
 {
