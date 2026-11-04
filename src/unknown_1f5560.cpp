@@ -830,6 +830,14 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax G (11-04): score 59 (was 135): the trajectory result is compared against zero, the
+// request point is copied component by component into the request record instead of as one point3f,
+// and the movement threshold is tested as !(base * 1.2 >= chosen), which gives retail's comiss/jae.
+// Still different: retail caches the trajectory result in DL (`mov dl, al`), loads the force flag
+// into AL and stores DL to the stack slot afterwards, while ours tests the result, loads the force
+// flag and stores the comparison - one byte longer, which shifts every later constant and jump;
+// retail copies the request point through integer registers and returns the request call's result
+// directly, and the unit-state table goes to ESI rather than EDX.
 // MiniMax H (11-04): the trajectory result hoisted to function scope 135, the invalid tail
 // returning the valid flag 135 and the comparison written as !(a >= b) 135; no lower score.
 // MiniMax R (11-01): no new form, no lower score; retail's trajectory call still passes eleven
@@ -1082,8 +1090,8 @@ bool function_1f8160(long actor_index, signed char const *types, point3f const *
         real vertical;
         real horizontal;
         real chosen_speed = speed;
-        bool result = function_fa1a0(speed, 1.0f, &actor->position, target, &minimum, NULL, NULL, true,
-            &direction, NULL, NULL, NULL, &vertical, &horizontal);
+        bool result = (function_fa1a0(speed, 1.0f, &actor->position, target, &minimum, NULL, NULL, true,
+            &direction, NULL, NULL, NULL, &vertical, &horizontal) != 0);
         if (force || speed * 1.25f > minimum)
         {
             real retry_speed = minimum + 0.03f;
@@ -1104,8 +1112,10 @@ bool function_1f8160(long actor_index, signed char const *types, point3f const *
             if (*(short *)(unit + *(short *)(unit + 0x346) + 0x36) == 5)
             {
                 s_unit_request request;
+                *(real *)((byte *)&request + 4) = target->x;
+                *(real *)((byte *)&request + 8) = target->y;
+                *(real *)((byte *)&request + 12) = target->z;
                 request.type = 0x2e;
-                *(point3f *)((byte *)&request + 4) = *target;
                 result = function_e6900(actor->unknown018, &request);
             }
             else if (!first_type)
@@ -1114,7 +1124,7 @@ bool function_1f8160(long actor_index, signed char const *types, point3f const *
                 byte *globals = (byte *)g_4e034c;
                 if (globals && *(long *)(globals + 0xc8) > 0)
                     base_speed = *(real *)(*(byte **)(globals + 0xcc) + 0x80);
-                if (base_speed * 1.2f < chosen_speed)
+                if (!(base_speed * 1.2f >= chosen_speed))
                 {
                     actor->unknown464 = true;
                     actor->unknown466 = true;
