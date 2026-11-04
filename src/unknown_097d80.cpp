@@ -321,6 +321,9 @@ struct c_aggregate : c_child
 // M376: Fixed collection/dispatch/both equal-end and inclusive-last latches, then
 // actual child-array collection/dispatch bounds: 32/32/33/33/33/35/32/32. NOT kept: no match or qualifying gain;
 // original signed latches/body restored; escaped output and lowest loop homes remain.
+// Round 87 (m3 lane 16, fast): `produced` as a local of an inline collection helper returning the count or adding to a total by
+// reference, forceinline and plain, 146/146/146/146 (389 bytes, frame still 0x8024: an inlined local packs no better); the `get_info`
+// output as a local of a forceinline helper 31; both 146. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

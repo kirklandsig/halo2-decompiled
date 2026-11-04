@@ -550,6 +550,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // P327: Complete scalar prediction on the named-length graph, six declaration orders,
 // then producer definitions with original/late ticks, direct update argument: 117/117/117/117/117/117/117/117.
 // NOT kept: all regress and lose native frame/extent; original body and parameter storage restored.
+// Round 87 (m3 lane 16, fast): tick_scale declared after the chains (ticks in XMM3 as retail, but the products copy it: `movaps xmm4, xmm3; mulss
+// xmm4, xmm0`), tick products i, j, k 73 (369 bytes); products j, i, k 72 (369); products j, i, k with deltas i, j, k 72 (369); products and deltas i, j, k 73
+// (369); fused product and delta rows i, j, k 73 (369), rows j, i, k 72 (369); `v = v * t` 73 (369); `v = t * v` 73 (369). Original body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

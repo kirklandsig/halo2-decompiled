@@ -1281,6 +1281,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // The data field through a `byte *const *` pointer to it 44; the parent header by pointer addition 44; the parent
 // object by byte offset 44 (all same code); parent object, matrix and mirrored flag as conditional initialisations
 // 44 (1396); a parent header pointer with its object read at each use, mirrored first, 42 (1392: `lea` of the header).
+// Round 87 (m3 lane 16, fast, on the count > 0 guard diagnostic, 44 at 1390): `__assume` in the no-model arm (index != NONE at the
+// top or the end, parent object != NULL, pool != NULL before or in the arm, data != NULL) 389 each (1399 bytes: any `__assume` unfolds
+// the entry's flag store, the no-model block stays the same); three parent lookups 20 (1399), two 20 (1399); a forceinline lookup taking
+// the index as `long const &`, one/two lookups 44/44, a plain inline one, two lookups 44. Original body restored.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

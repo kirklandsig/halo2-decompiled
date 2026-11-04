@@ -92,19 +92,19 @@ void map_name_from_path(char const *path, char *name)
 }
 
 // @retail 0x214db0
-void map_file_path_get(char const *map_name, char *path)
+void s_map_name::map_file_path_get(char *path) const
 {
 	char name[256];
 
-	if (map_name[0] == 't' && map_name[1] == ':' && map_name[2] == '\\' ||
-		map_name[0] == 'w' && map_name[1] == ':' && map_name[2] == '\\')
+	if (text[0] == 't' && text[1] == ':' && text[2] == '\\' ||
+		text[0] == 'w' && text[1] == ':' && text[2] == '\\')
 	{
-		map_name_from_path(map_name, name);
+		map_name_from_path(text, name);
 		csprintf_256(path, "%s.map", name);
 	}
 	else
 	{
-		char const *file_name = strrchr(map_name, '\\');
+		char const *file_name = strrchr(text, '\\');
 
 		if (file_name)
 		{
@@ -112,7 +112,7 @@ void map_file_path_get(char const *map_name, char *path)
 		}
 		else
 		{
-			file_name = map_name;
+			file_name = text;
 		}
 		map_name_from_path(file_name, name);
 		csprintf_256(path, "d:\\maps\\%s.map", name);
@@ -127,7 +127,7 @@ long cache_file_find(char const *map_name)
 	long index;
 
 	path[0] = 0;
-	map_file_path_get(map_name, path);
+	((s_map_name const *)map_name)->map_file_path_get(path);
 	for (index = 0; index < MAXIMUM_CACHE_FILES; index++)
 	{
 		if (!function_11c920(path, cache_file_map_name(index)))
@@ -148,7 +148,7 @@ s_cache_copy *cache_copy_find(char const *map_name)
 
 	path[0] = 0;
 	result = NULL;
-	map_file_path_get(map_name, path);
+	((s_map_name const *)map_name)->map_file_path_get(path);
 	for (index = 0; index < MAXIMUM_CACHE_COPIES; index++)
 	{
 		s_cache_copy *copy = &g_55acac[index];
@@ -383,7 +383,7 @@ bool map_copy_request(char const *map_name, long priority)
 	char path[256];
 
 	path[0] = 0;
-	map_file_path_get(map_name, path);
+	((s_map_name const *)map_name)->map_file_path_get(path);
 	if (location == _map_location_none)
 	{
 		if (!g_55be24[1].map_name[0] || priority >= g_55be24[1].priority)

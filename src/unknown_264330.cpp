@@ -955,7 +955,10 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 real function_296600(long actor_index, long prop_ref_index);
 
 // MiniMax B (11-04): no new form, no lower score.
-// score 257 (was 257): frame 0x20 and actor EBX agree; squad/object, flag and root/hit homes differ.
+// score 163 (was 257): retail's length, frame 0x20, actor EBX. Left: the object and table registers (ours EAX/ECX, retail ECX/EAX, time read after the table pointer), the
+// suppression/current byte homes swapped, root and not_current in each other's slots with `!current` evaluated at the named local where retail evaluates it among the first
+// call's arguments, and BLOCKED-BY 0x25cb60: retail pushes the short sight as ESI, a short last parameter; a contributor's signature takes a long, so ours adds `movsx`.
+// Earlier (257, was 257): frame 0x20 and actor EBX agree; squad/object, flag and root/hit homes differ.
 // Earlier: actor EBX, prop ESI, squad home, the type-15 arm and the 0x25c9d0
 // call are retail's; left: the object and table registers (ours EAX/ECX, retail ECX/EAX) and time
 // scheduling before the branch, the suppression/current byte homes swapped ([esp+0x12]/[esp+0x13]),
@@ -1094,6 +1097,11 @@ real function_296600(long actor_index, long prop_ref_index);
 // DH334: Standard inner/outer/both short maxima, with/without null-first unit (fast 372, full 257);
 // then full maximum and secondary-result stages: 350/365/366/368/346/346/365/355.
 // NOT kept: new maximum call and larger frame absent in retail; original complete body restored.
+// Round 87 (m3 lane 16, plain; --fast misbuilds this function, aligned counts in brackets, 257 is [112]): unit NULL-first 267 at 1278 bytes [96], re-measured; on it a named
+// `not_current` for both 0x1c8df0 calls at the top 308 at 1270 [76], alone 262 at 1248 [91]; named after the root lookup 163 at 1268 [74], kept. On the kept form: time read
+// after the object 163, before the reference 163; a named object table for the three lookups 163; an object index local (before the kept form) 267, the object through
+// an array of pointers 267, current declared before suppressed 267; a named record pointer before not_current 159 (one use, not kept); a named mode 258 at 1272 [85]; not_current
+// declared before root 163, at function scope 163; root declared bare 163; suppressed renamed to sort before current 163 (byte homes unchanged).
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {
@@ -1116,9 +1124,11 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 	s_type_76cf92 *prop = prop_get(reference->prop_index);
 	long time = g_510c54->game_time;
 	byte *object = *(byte **)(g_4e0300->data + (reference->object_index & 0xffff) * 12 + 8);
+	byte *unit = NULL;
 	bool suppressed = (squad && (squad[2] & 1)) || *(short *)(actor + 0x84) == 1 || actor[0x228];
 	bool current = *(long *)(actor + 0x338) == prop_ref_index;
-	byte *unit = object[0xaa] == 0 ? object : NULL;
+	if (object[0xaa] == 0)
+		unit = object;
 	if (*(short *)(actor + 4) == 15 && *(long *)(actor + 0x26c) != NONE)
 	{
 		byte *parent = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x26c) & 0xffff) * 12 + 8);
@@ -1174,8 +1184,9 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 	else
 	{
 		long root = function_baf40(unit && *(long *)(unit + 0x14) != NONE ? *(long *)(unit + 0x14) : reference->object_index);
+		bool not_current = !current;
 		short sight = function_1c8df0(*(short *)((byte *)sample + 0x28), *(short *)((byte *)motion + 0x28),
-			&motion->field_0, root, sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
+			&motion->field_0, root, sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, not_current,
 			current ? (long *)(actor + 0x348) : NULL);
 		if (*(long *)(actor + 0x7c) != NONE && prop->unknown25 && 25.0f > reference->unknown28 &&
 			(sight == 0 || sight == 1))
@@ -1193,7 +1204,7 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 				{
 					short other_sight = function_1c8df0(*(short *)((byte *)sample + 0x28),
 						*(short *)((byte *)state + 0x2c), (point3f const *)((byte *)state + 0x30),
-						root, sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, !current,
+						root, sample, prop->unknown25 && prop->unknown23 ? 2 : 0, false, *(long *)(actor + 0x26c) != NONE, not_current,
 						current ? (long *)(actor + 0x348) : NULL);
 					view->unknown8c = (short)other_sight;
 					view->unknown8a = function_263810((point3f const *)sample, actor_index, (point3f const *)((byte *)state + 0x30), NULL, 2, (short)other_sight, true, NULL);
