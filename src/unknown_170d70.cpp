@@ -1593,20 +1593,26 @@ void function_171830(point3f const *point, vector3f const *forward,
 			}
 		}
 	}
+	/* the camera sits behind the point, along the view's forward vector
+	   (retail: ecx, kept in edi, scales the distance at 0x171909-0x171911);
+	   the samples beside it go along up (eax, kept in ebx) and up x forward.
+	   With forward and up the other way round the ray went straight down from
+	   a vehicle's camera marker into the vehicle, and the follow camera was
+	   pulled in to the hood */
 	real depth = *distance + offset;
 	point3f center;
-	center.x = point->x + (0.0f - depth * up->i);
-	center.y = point->y + (0.0f - depth * up->j);
-	center.z = point->z + (0.0f - depth * up->k);
+	center.x = point->x + (0.0f - depth * forward->i);
+	center.y = point->y + (0.0f - depth * forward->j);
+	center.z = point->z + (0.0f - depth * forward->k);
 	function_171d00(point, &center, &center_fraction, narrow);
 	vector3f side;
-	side.i = forward->j * up->k - up->j * forward->k;
-	side.j = up->i * forward->k - forward->i * up->k;
-	side.k = up->j * forward->i - forward->j * up->i;
+	side.i = up->j * forward->k - forward->j * up->k;
+	side.j = forward->i * up->k - up->i * forward->k;
+	side.k = forward->j * up->i - up->j * forward->i;
 	real best_fraction = center_fraction;
 	real radius = *distance * 0.174f;
 	vector3f offsets[2];
-	offsets[0] = *forward;
+	offsets[0] = *up;
 	offsets[0].i *= radius;
 	offsets[0].j *= radius;
 	offsets[0].k *= radius;
