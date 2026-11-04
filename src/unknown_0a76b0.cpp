@@ -971,6 +971,10 @@ extern vector3f *g_4687b0;
 // Round 81 (m3 lane 16, fast): the definition local renamed to sort before/after the projectile index
 // (two spellings) and the projectile index renamed 309/309/309 (names move no slot); velocity declared
 // first in the function 309 (same code); one function-scope origin for both throw branches 312.
+// Y570: Complete up/side inputs scalar/none, none/scalar, both scalar, record/none,
+// none/record, both record and mixed scalar/record, record/scalar:
+// 362/310/363/338/392/450/391/338. NOT kept: all regress and grow away from
+// 1699 bytes. Original inputs, copies, frame and full body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2105,6 +2109,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // Round 81 (m3 lane 16, fast): the own weapon through the char-index unit_action_weapon_get 100, both weapons
 // through it 103; the player index read at its one use (no local) 97, an actor index local for the 12c test
 // and calls 97, `given` declared first 97 (same code each).
+// Y570: Receiver/request formal-home reads, first/every use separately and
+// all four paired forms, 97 each. NOT kept: no byte match; all home reads
+// removed and original body restored. Frame/result and pooled roots remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

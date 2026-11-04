@@ -1794,6 +1794,9 @@ void function_b7360(long object_index);
 // paired/complete: 301/301/301/301/301/301/301/301. All tie at 1824/1848 bytes;
 // original rejections, cases, observations and full body restored. Pool-first acquisition,
 // actor/output ESI/EBP versus EBP/ESI and retained point-reference ownership remain.
+// Y570: Full-width initial/recording point and set indices 303/303/301/303/303/301,
+// both complete 301, both with one full reference capture 301. Original whole
+// callback restored; pool/actor/output carriers and the 24-byte gap remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

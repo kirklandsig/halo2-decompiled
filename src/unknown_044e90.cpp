@@ -246,6 +246,9 @@ struct s_visibility_bound_record
 // then all with a part while loop: 432/432/436/432/436/436/436/436. All regress;
 // original indexed buffers, observations and complete body restored. Frame 0x74a4,
 // entry/table roles and eight-byte plane/query displacement remain.
+// Y570: Native entry/range/frustum displacement producers, seven subsets and all with
+// selection-owned flags, 406 each. Original indexed addresses and body restored;
+// entry/table roles and plane/query homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
