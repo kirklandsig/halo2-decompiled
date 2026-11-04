@@ -1036,6 +1036,17 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // AC528: Complete cumulative segment rejection/survival in bool/byte/short/long
 // 298/384/369/371/404/404/406/405. NOT kept: no exact match or eligible gain; original complete body restored.
 // Coefficient preload, zero SIMD roles and clipping/projection homes remain. The native memory-OR result was preserved logically; no retained candidate.
+// Round 211 (m3 lane 3, fast; a stdcall copy under the compile-only listing tracks the clip block; aligned with registers
+// and stack/both masked, control 64/22). Dot helpers grid, 360 compile-only: classification or distance through dot3f or
+// plane_distance_to_point only raise it; denominator through dot3f with direct rows is its best, real 226 (51/15). Clip
+// grids, about 1600 compile-only: delta_i named, denominator staged j, k, i, `out++` tail 45 (20/15), with the named
+// scaled rows 152 (1830 bytes); the same staged i, k, j 61 (32/17), as one expression 53 (25/13); delta_j named, staged
+// i, k, j, `t * dx` 56 (28/12), staged k, i, j 57 (29/14), one expression 59 (31/17). So a named delta multiplies as
+// load-then-scale and keeps its register, a repeated expression copies first and is overwritten last; retail's denominator
+// has y named-like and its intersection has x named-like, which no single naming gives. First-row j term, all still
+// `[eax] * [ecx + 4]`: a named point pointer 171 (52/31), point-first terms 171, staged through a sum 179 (50/28), staged on
+// the array 334 (54/30), plane_distance_to_point 171, a named sum 58 (30/14). Keepable forms: no delta local 235/239 (54/19,
+// 63/18), all three named 246/247 (78/27, 79/29), only the `out++` tail 249 (65/23). Original body restored.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
