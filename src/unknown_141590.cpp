@@ -354,6 +354,9 @@ static inline void quaternion_transform_vector(
 // N365: Existing complete vector setter output with staged-cross/shared-dot/independent-half
 // masks 0..7, 333/346/340/351/344/360/333/368. Paired output restores frame 0x24
 // but grows code. Original helper/body restored; NOT kept: unmatched output ownership.
+// N368: Caller initial-dot/sine/axis-scale adjacent producers, seven family subsets
+// 263/253/253/221/221/249/214; all with entry declarations 214. Original producers restored.
+// NOT kept: unmatched storage/producer forms regress; native half/quaternion/transform homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1106,6 +1109,9 @@ void function_143250(
 // N365: Complete actual-result copy/compound multiply/add/subtract producer families,
 // seven subsets and all with producer declarations, 1766 each. Original scalar graph
 // restored. NOT kept: unmatched producer ownership; native frame/admission/homes remain.
+// N368: Final-consumer lexical homes for real/double/both families, forward/reverse,
+// then both within producer bands, forward/reverse: 1766 each. Original names restored.
+// NOT kept: unmatched home allocation; native frame, rotation admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

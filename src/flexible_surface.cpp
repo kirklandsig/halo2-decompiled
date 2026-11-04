@@ -551,6 +551,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // B422: Current-frame rotation admission, bool/byte/short/long, positive/complementary:
 // 117/117/117/117/117/117/117/117. NOT kept: no byte match; all canonicalize to the original complete body.
 // Original observations restored; frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// N368: Complete double cosine-product/sum/full-wave boundaries and their sequential
+// producers, then complete wave accumulation: 117 each; complete wave/strength
+// accumulation 118. NOT kept: no equality or gain; original expression graph restored.
+// Frame 0x28/0x20 and seed/time/direction/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
