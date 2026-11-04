@@ -1275,6 +1275,10 @@ long function_10f5f0(long object_index);
 // P328: Saved attached complement and complete attachment admission in bool/byte/short/long:
 // 565/565/575/575/563/563/574/574. NOT kept: best gain is below eight and shortens away from retail.
 // Original body restored; frame 0x19ac/0x1984, predicate-result and reduction homes remain.
+// AC545: Complete speed-result comparison arms, bool/byte/short/long at producer
+// 565/565/571/581; entry declarations 565/565/571/581. NOT kept: no equality;
+// wide carriers shorten away from native length. Original full body restored;
+// frame, initial predicate-byte stores and rolled reduction remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

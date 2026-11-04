@@ -574,6 +574,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // AC530: One bounded word ordinal owns both capacity and link-copy indexing, signed/unsigned,
 // node/function scope, increment after/before memcpy: 361/361/359/359/361/361/359/359.
 // NOT kept: all regress at 1375/1388 despite frame 0xe4; original total, memcpy and body restored.
+// AC532: Native signed clearing bound with indexed/edge-cursor/step-cursor/both
+// increasing walks 286/286/286/282; bounded short-link counterparts 359 each.
+// NOT kept: four-point best gain below gate, frame still 0xe8; original full body restored.
 // Y576: Link-metadata library memmove with long/short/word post-increment counts
 // 356/361/346; separate increments 356/361/346; copy-owned long/short ordinals 345/348.
 // NOT kept: all regress. Narrow transports recover frame 0xe4 but initial/flag homes still differ.
@@ -584,6 +587,14 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // N367: Capacity-owned link eligibility reused for surface work, expression bool/byte/short/long
 // 286/286/290/289; branch producers 359/359/370/366. NOT kept: no equality or gain; original predicates,
 // flags and indexed memcpy restored. Extra frame word, predecessor and flag homes remain.
+// AC534: Positive-domain initialization with actual step/edge end pointers, range/equality
+// termination and separate/chained NONE stores: 413/413/380/380/393/393/407/407.
+// NOT kept: all regress and lengthen; original counters, signed empty domains, indexed
+// metadata memcpy and whole body restored. Extra frame word and predecessor/flag homes remain.
+// AC536: Complete geometry-scan edge acceptance/rejection result, bool/byte/short/long:
+// 282/282/282/282/282/282/282/282. NOT kept: four-point gain below eight and no equality;
+// original scan gates, indexed library copy and full body restored. Extra frame word and
+// predecessor/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

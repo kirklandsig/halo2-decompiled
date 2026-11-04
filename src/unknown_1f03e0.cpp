@@ -1807,6 +1807,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH356: Complete three-arm candidate-quality conditional, direct/named acceptance/rejection,
 // original/early material-speed skip: eight at 211. NOT kept: gain two; original full body
 // restored. Native motion/reset order, separate cold height tests and material expansion remain.
+// AC533: Test-produced post-scan selected-support/fallback handoff, bool/byte/short/long:
+// 279/279/282/280/288/288/292/291. NOT kept: frame moves from native 0x28 to 0x24 and
+// code grows; motion/reset, cold height arms and second material expansion remain. Body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

@@ -603,6 +603,9 @@ struct s_1f8a70_actor
 // AC530: Uniform complete frame-member pointer at active/route/unit/reset phase boundaries
 // 506/505/505/505; corresponding real frame references 506/505/505/505 (fast control 188).
 // NOT kept: all regress and lose native entry order; original field observations and full body restored.
+// AC532: Shared destination case-family producers 2/3, 4/5, both: conditional nodes
+// 373/384/409, branch nodes 370/380/411; both with wide selected mode 441/411.
+// NOT kept: no match; original cases, live observations, results and body restored.
 // Y576: Full-record/fallback/failure-first branch subsets 187/211/305/210/304/305/304;
 // all with shared modes-two/three destination prefix 369. NOT kept: one-point best gain;
 // route dispatch, expired unit/result home and failure-result storage still differ. Original body restored.

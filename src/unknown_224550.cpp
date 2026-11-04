@@ -406,6 +406,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // M375: Native secondary encoded-UV library transfers, object/array/bounds/encoder-result,
 // memcpy then memmove: 211/211/211/211/366/366/366/366. NOT kept: no byte match or native home repair;
 // original whole callback, encoder result contract and all alias-safe input captures restored.
+// AC533: Requested-sequence clamp result, conditional/complete/lower-default/upper-default,
+// original/positive-produced count: 218/218/288/218/223/223/288/223. NOT kept: all regress;
+// tint/secondary-UV homes and blend join remain. Original whole body restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
