@@ -289,6 +289,9 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // out of line and the body takes retail's shape, but the request then arrives on the stack and is homed in EBP;
 // that with the word bitfields 135 (471 bytes), whose class test becomes retail's `shr al, 7; test al, 1` (the
 // byte bitfield gives `test cl, cl; jns`), so retail's +0xa bits are word bitfields like flag1/flag2.
+// Round 106 (plain): nested class condition, bool/long end-update results, previous value20/value24/both and
+// disjoint source mask 110 each; word +0xa 132 (478), marker-size local 131 (470), location-flags local 111 (474).
+// Original body restored.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

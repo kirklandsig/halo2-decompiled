@@ -906,6 +906,9 @@ extern "C" void _ReadWriteBarrier(void);
 // 0x220fd0 216); the rolloff and obstruction LF zeros chained 23; the room difference stored into lRoom and
 // pinned in place 21 (same code); the 0x12aff0 call ahead of the three float stores 49 (672 bytes); the second
 // barrier removed 22.
+// Round 105: the memset result as a multi-use environment pointer 182 (667); clearing from lDirect 21;
+// both voice HF conversions before attenuation 127 (679), obstruction only / occlusion only 96/96 (672);
+// nine explicit aggregate zeros 96 (662); const attenuation / const room 21/21. Original body restored.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,
