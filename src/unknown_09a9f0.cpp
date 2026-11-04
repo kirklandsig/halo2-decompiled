@@ -605,6 +605,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // the header flag through the stored index 77; the object store through it 77, with the attach too 82. Retail loads the pool after
 // the NONE test, so no NONE path reaches the second lookup there (unlike 0x10fa80, which loads the pool above its test). BL also
 // keeps `f` out of EBP only in retail: every bool form here caches `f` in EBP.
+// M380: Native index/attached-identity/both publications through memcpy 49/49/49,
+// memmove 109/76/122; both with early Boolean completion 77/94. NOT kept: no byte match;
+// original scalar stores, validity result, virtual tuples and complete body restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

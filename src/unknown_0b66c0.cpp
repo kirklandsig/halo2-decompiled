@@ -373,6 +373,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // first `add edi, ebp`, retail's direction). Probes (harness only, not kept): extra uses of the walk or of destination move
 // the walk or start between scratch registers and start then arrives there, never in ECX with an EDI home, so re-weighting the scan
 // does not reach retail's convention.
+// M380: Shared copier short/word/int64/uint64 size contracts with native/void return:
+// 39/39/56/56/39/39/56/56. NOT kept: narrow forms gain one and grow to 103 bytes;
+// wide forms regress at 112 bytes. Original helper, scanner and complete body restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

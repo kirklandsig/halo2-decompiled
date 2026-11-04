@@ -821,6 +821,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // neither, crossed with function_1f087b, staged and plain second products and the else pointer: 43 to 222, none below 45 without that
 // pointer. Diagnostic: 0-7 identity locals before the first product by 0-7 before the second, with function_1f087b or staged: best 45,
 // best at 1261 bytes 64.
+// B432: Caller-visible inline declarations for the existing staged cross, normalizer
+// and perpendicular producers, seven subsets, then staged-cross forceinline: eight 45s.
+// Original declarations and callback restored; right i/j, forward.k and angle bases remain.
+// B434: Missing-object/missing-target/ordinary-orientation arms first, seven
+// subsets 361/219/222/250/367/333/337; nullable acquisition with common fallback 358.
+// NOT kept: all regress; original branches, products and full body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
