@@ -2290,6 +2290,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // Round 64 (fast): only motion[1]'s product and the count compare differ (their 3 bytes are the length gap). Motion record
 // struct 40; group struct 40; both 40; while loop 40; normalize_inline 48; `*(long *)group > i` 40; motion[7] from
 // motion[1] 137; pointer local to motion[1] 40; byte-offset stores of motion[0]/motion[2] 40; vector3f view pointer 40.
+// M360: Explicit entry/motion/both byte displacements 55/57/45; entry/motion/both
+// declared before the group 55/57/45; both at entry 78; both stepped at derivation 253.
+// Original body restored; second normalized product and post-fstp count fold remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2489,7 +2492,7 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 109 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
+// score 113 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
 // top) and the total on the stack, the index in EBX and the cursor in EBP; ours holds the total in EBP.
 // Earlier at 132: frame 0xa0 and loop constants agree; first +0xb saves
 // Round 55 (plain): the three sibling 0x33400 forms 130; with const list/table reads 130; with a bool object
@@ -2556,6 +2559,9 @@ s_cached_input_list g_5234e8[4];
 // view declared before count 109; shape declared before index 109; object read before the definition
 // 109; the loop bound read from g_547f98 at each test 140 (551 bytes); output[count] written at each
 // store instead of the result pointer 109.
+// M360: Branch-owned view clamps 147/147/158/144 fast (control 147); with the
+// once-read source list 136/136/149/148. First clamp/list form plain 132 versus
+// baseline 113, restored; frame/list/output allocation remains. NOT kept: no full gain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3589,6 +3595,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // spill homes stay x 4 / z 8 / radius 0xc / -radius 0x10 where retail has x 4 / radius 8 / -radius 0xc / z 0x10;
 // on that: corner helper locals renamed three ways 225/225/225 (names move no slot), offsets passed by value
 // 400 (1805 bytes), offset declared first 225, colour declared at function scope 225.
+// M360: Four independent corner points at geometry/matrix/producer/entry scopes
+// 410/410/410/410; all with native color 377/377/377/377. Original array and body
+// restored; native radius/zero homes and the color-sized frame gap remain.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

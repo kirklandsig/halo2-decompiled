@@ -245,6 +245,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // gain loaded with movss); that with a plain real gain value 545 (same code); the stream's 0x20 bit updated before
 // the send flags 576 (1863 bytes); the pitch delta compared without the `(real)` cast 545; the send flag set
 // before the two cached level stores 545.
+// M360: Extended scaled-value/linear-result producer with sample/energy/root
+// consumer widths, masks 0..7: 558/558/555/555/578/578/568/568 fast (control 532). NOT kept:
+// no exact match; original precision, helper, body and frame/gain homes restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

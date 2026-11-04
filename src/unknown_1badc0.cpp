@@ -273,6 +273,9 @@ real normalize2d(point2f *arg_0);
 // early-success, query-test and complete query arms 232/241/255/253;
 // uniform scalar terms 238/245/253/249. All restored; four query-result forms
 // change entry convention and lose callers; point/SSE and success ordering remain.
+// M360: Existing unit-scale component-array differences, seven direction subsets
+// and all with complete input copy publication: 180/180/180/180/180/180/180/180. Original body and
+// includes restored; early object masking, input-copy/SSE and query-success schedules remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
