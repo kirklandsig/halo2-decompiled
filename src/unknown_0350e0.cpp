@@ -1758,6 +1758,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // multiplication boundaries, then a named scaled-angle expression: 193 each;
 // the same four producers with one common exit: 193 each. Original whole body
 // restored; independent result home and frame 0x14 versus 0x18 remain.
+// AC542: Complete projection sums as y/x/both accumulations 208/195/197,
+// y/x/both named two-product prefixes 219/195/195, then both graphs with CRT result clear
+// 282/282. NOT kept: no native frame/result-home repair or equality; original full body restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3463,6 +3466,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // result and body restored. Frame 0x18 versus 0x1c and fade scratch homes remain.
 // J252: Existing position/opacity/recursive inline contracts and own cdecl: 224/177/177/224/224/177/224/176.
 // NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
+// AC542: Final raw kind captured before alpha output in signed-char/short/long/dword
+// 177/175/176/176; property equality in bool/byte/short/long 168/168/168/170.
+// NOT kept: one-use output temporaries are unmatched; the equality forms materialize and
+// re-test a Boolean before publication. Original result/body and frame 0x18/0x1c remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4867,6 +4874,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // J252: Existing cull/depth/draw/setup inline contracts: 138/138/138/138/138/138/138/138.
 // NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
 // J252: Existing configured-provider inline and shared pass path 2137; NOT kept: no eligible native-shape gain; original provider and complete caller restored.
+// AC542: Normal-cull input owns its completed decision, complete/conditional production in
+// bool/byte/short/long: 251/251/258/254/200/200/211/216. NOT kept: target and both shared users regress;
+// original helper, input contracts and full callback restored. Late enabled/mode/clear gaps remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

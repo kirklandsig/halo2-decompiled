@@ -1729,6 +1729,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // AC539: Nearest-edge improvement result, positive bool/byte/short/long 553 each,
 // complementary forms 554 each (control 552). NOT kept: unmatched decision storage;
 // original nearest commits, sums, word counts, geometry and full body restored.
+// AC542: Existing paired normalization/contact and edge/separation squared-length producers,
+// paired side/projection dot producers, seven subsets and full-width accepted counts: 554/552/554/554/554/554/554/573.
+// NOT kept: no byte equality for changed reduction associations; original full body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
