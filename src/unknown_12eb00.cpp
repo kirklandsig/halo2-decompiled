@@ -125,6 +125,10 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // Round 75 (fast; ours ends `ret 8` like retail): the blend source looked up without the field_c local 11;
 // the weight read from the array at each use 30; the sample stored before the sum 11; `local_7 *=` 29;
 // a sample-count local for both loops 173 (1175 bytes); previous index after the copy 16 (again).
+// Round 116 (fast): cluster parameter renamed 11; result declaration separated from initialization 72
+// (1181 bytes); walking output cursor 81 (1193); guarded do loop 262 (1196); accumulator byte subscript 11;
+// typed component index 76 (1194); accumulator pointer local 11 (NOT kept: one-use address local);
+// walking cluster parameter 305 (1174). Original body restored.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

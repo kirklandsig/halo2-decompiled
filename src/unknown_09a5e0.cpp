@@ -2057,7 +2057,10 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // that the keep rule drops); the head block's register split is not reachable from the source (short
 // casts, declaration order, else, ternary, literal -1, masking and the truncated 0x13c read: 155,
 // 201, 212 and 269).
-// score 155 (was 155): Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership differ.
+// MiniMax lane A (11-04): the 0x400 block's parent value re-read as a short instead of truncated
+// from the long matches retail's block exactly (135, from 155).
+// score 135 (was 155): The 0x400 block matches; the entry/unit stack homes, the 0x2000 block's dead
+// add, the loop's mask home and register split and the float constants still differ.
 // Lane 18 r37 (fast): plain 0x400000 mask test 168 (1070 B); a pointer to the 0x214 field used for
 // test and store 155; both tail compares written source-first 155; the 0x214 value named for test and
 // store 155; one compare-and-store template helper (reference target and value) for the 0x2000,
@@ -2351,6 +2354,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // 155/182/155/155/182/154/154/181. NOT kept: one-point upper-first leads are below
 // threshold and lack native bound order; lower-first ties. Original field PIN producers
 // and whole body restored; indexed lookup, object/offset and low-mask homes remain.
+// F382: Complete three-component position field with short-circuit comparison traversal,
+// long/dword/short/byte ordinals, break/condition admission: 293/293/297/298 repeated.
+// NOT kept: regressions and shorter extents; original scalar fields, comparisons and body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
@@ -2361,11 +2367,11 @@ long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 	long local_4 = function_a5e70(arg_0, local_3 & 0x3ff, arg_3);
 	if (local_3 & 0x400)
 	{
-		short local_6 = NONE;
 		long local_5 = *(long *)(local_1 + 0x13c);
 		short local_7 = *(short *)(local_1 + 0x130);
+		short local_6 = NONE;
 		if (local_5 != NONE)
-			local_6 = (short)local_5;
+			local_6 = *(short *)(local_1 + 0x13c);
 		if (local_6 == NONE || local_7 == NONE)
 		{
 			if (local_2->field_90 != local_6 || local_2->field_92 != local_7)

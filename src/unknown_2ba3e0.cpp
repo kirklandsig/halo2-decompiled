@@ -924,6 +924,9 @@ real g_55e618;
 // sums nested in the call 44 (aligned 14); a named `short` last argument read before the sums, named `surface_index` or
 // `a_value` 61 each (1535 bytes: the load moves to the block's top but in EAX whatever the name, so same-size name order
 // does not pick its register); that read with plain position stores after the impact index 234 (frame 0x12c).
+// M380: Displacement/sweep scalar, aggregate and immutable aggregate producers,
+// all eight non-original pairs: 129 each at 1549 bytes. NOT kept: all regress;
+// original interleaved travel products, reflection, collision extent and full body restored.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

@@ -65,6 +65,10 @@ struct s_object_flags_256bd0
 // MiniMax B (11-04): no new form, no lower score (the two-exit and early-return spellings of the timer test give 278 and 184).
 // score 178 (was 178): the activity test is the loop's condition, so the frame is 0x110 and the
 // activity byte is re-read at every pass as retail does; the first block's register homes differ.
+// Round 112: split active/null-entry loop and an initialized entry 178 each; actor/status
+// declarations swapped 184; native object-header getter at the definition lookup, final flag
+// update and both 178 each; native swarm lookup 178; native spawned-actor getter 178.
+// Original executable body restored; entry register/store order and loop pre-test remain.
 // Round 34: the activity test moved into the while condition and the step helper no longer reads
 // the global (it steps the iterator and copies its index): retail's frame 0x110 at 179/1074, the
 // loop reloads the byte and takes retail's cmovne; the first block's register homes remain.
