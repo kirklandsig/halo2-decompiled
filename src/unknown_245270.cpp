@@ -596,6 +596,9 @@ void function_245400(s_source_245400 const *source, long index,
 // B425: External first/second material and surface bindings on source-ECX graph,
 // seven subsets, then all with first-material pointer: 209/209/209/209/209/209/209/209. NOT kept: no
 // exact match; original receivers/body restored, frame and independent side homes remain.
+// B436: Existing point-transform native input/coefficient/output array observations, seven subsets,
+// then one reused matrix scale: 209/209/209/209/209/209/209/213. NOT kept: no exact form or eligible gain;
+// original complete body and helpers restored. Native frame/register differences remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

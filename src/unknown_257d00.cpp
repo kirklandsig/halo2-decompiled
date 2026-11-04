@@ -2381,6 +2381,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B434: Four untried nested subtype orders 0/2/1, 1/0/2, 1/2/0, 2/0/1; pending-first
 // state arm; classification default refinements; combined graph: seven fast 485; shared
 // classification phase 488 (fast control 485, full 469). NOT kept: no gain; original body restored.
+// B436: Both live countdown computations in int/long/short/word storage, mutable/readonly:
+// 615/615/615/615/469/469/469/469 on the retained request graph. NOT kept: no exact
+// storage form or gain; signed admissions and gated observations preserved, original body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

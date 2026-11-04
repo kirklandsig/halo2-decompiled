@@ -470,6 +470,9 @@ extern byte g_51ec11;
 // B434: Actual camera/input/output callback formals, seven typed-owner subsets,
 // then complete read-only input: 275/282/111/91/91/91/91/91. NOT kept: none matches;
 // original three-pointer signature, declaration, table entry and whole body restored.
+// B436: Native constant-index side-fill/up-input/roll coordinate observations, seven subsets,
+// then complete motion coordinates: 89/89/89/89/89/89/89/178. NOT kept: no exact form or eligible gain;
+// original complete body and helpers restored. Native frame/register differences remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
