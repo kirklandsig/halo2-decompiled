@@ -827,6 +827,7 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // loads and the late reload, but the byte still goes to BL (`mov edx,[eax]; mov bl,[edx+0x40]`, push ebx) 46,
 // 141 bytes: the byte register is not chosen by the base register dying, so source cannot reach DL here. Callers
 // pass the same registers as retail (index EAX, velocity ECX), so their setup is not the cause.
+// Permuter (25 min on #1044 round 2, about 1400 variants): nothing below 29.
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -1123,6 +1124,8 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // Round 28 (lane G): retail's arguments here are (matrix, index, component) as in 0x1d0cf0; the
 // declaration order does not change the registers LTCG picks (0x1d0cf0 81 and this 38 either
 // way), so the source keeps its order. Every remaining difference follows 0x1d0cf0's convention.
+// Permuter (25 min on #1044 round 2, about 650 variants): only a volatile transform pointer with a
+// (short) index argument gave 34; not kept (volatile without a match, and the cast narrows the index).
 // @retail 0x1d0c20
 void havok_component_rigid_body_matrix_set(long rigid_body_index, s_havok_component *component, transform4x3f const *matrix)
 {
@@ -1615,6 +1618,7 @@ PRIVATE __forceinline real const &component_time_step()
 // code (26, 470 bytes) for: product operands swapped, the step as a `real const *` local, the step read as
 // `g_510c54->rate` at the first product with the reference bound after it, the stop distance in a helper taking
 // the step by reference. Both products through a helper taking `&g_510c54->rate` 138 (462 bytes).
+// Permuter (25 min on #1044 round 2, about 730 variants): nothing below its own baseline (23 in its render).
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -3312,6 +3316,7 @@ struct s_1cf531
 // hoisted load, retail folds it as `mulps xmm1,[esp+0x34]`); the early copy as an __m128 snapshot and the impulse
 // declared late: frame grows to 0x64+. Element as `data + index`, pointer arithmetic on bytes, or a long index
 // local: 27 (same code).
+// Permuter (25 min on #1044 round 2, about 3100 variants): nothing below 27.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {
