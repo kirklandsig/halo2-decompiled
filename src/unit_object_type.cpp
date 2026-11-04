@@ -191,7 +191,7 @@ struct s_unit
 	short unknown2ea;
 	long unknown2ec;
 	byte unknown2f0[0x330 - 0x2f0];
-	bool unknown330[4];
+	byte unknown330[4];
 	real unknown334;
 	real unknown338;
 	short unknown33c;
@@ -5408,7 +5408,7 @@ struct s_unit_damage_source
 // keeps `slot` live in EAX across the block so `largest` takes EDX and widens in place (`movsx edx, dx`).
 // @retail 0xca700
 void __stdcall function_ca700(long unit_index, real amount, short type, bool notify, long player_index, short team,
-	long object_index, bool flag)
+	long object_index, byte flag)
 {
 	s_unit *unit = UNIT_GET(unit_index);
 	long now = g_510c54->game_time;
@@ -5993,7 +5993,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 		UNIT_DAMAGE_SOURCES(unit)[i].amount = 0.0f;
 		UNIT_DAMAGE_SOURCES(unit)[i].object_index = NONE;
 		UNIT_DAMAGE_SOURCES(unit)[i].player_index = NONE;
-		unit->unknown330[i] = false;
+		unit->unknown330[i] = 0;
 	}
 	if (UNIT_GET(unit_index)->animation_offset == NONE)
 	{
@@ -7710,12 +7710,13 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // Round 6 of #1049 (full statement walk against retail: the 19 calls, their order, every field offset, constant,
 // condition direction and the switch table (cases 0-4, 6, 8, 9) agree; the 12 missing bytes are encodings, not a
 // statement: 3 for `and edx, 0xffffff01` vs ours `and edx, 1` on the function_15cbf0 argument, the rest register moves).
-// Two real differences, neither kept. (1) Retail passes function_ca700's last argument as the raw byte
-// `report->unknown00` (`xor ecx, ecx; mov cl, [ebp]`; ca700 stores that byte at unit+0x330+i unchanged), ours
-// converts it to a bool (`test cl, cl; setne cl`), so a nonzero byte other than 1 is stored as 1. Declaring ca700's
-// `flag` as `byte` and `unknown330` as `byte[4]` fixes the call (ca700 stays 140, d9640 stays MATCH) but this function
-// goes 344 -> 379: the call is one instruction shorter and the positional score shifts; without the array change
-// ca700 grows to 517. (2) Retail's function_15cbf0 takes a bool (`and 0xffffff01`); unknown_157450.cpp declares it long.
+// Two real differences. (1) Fixed (behaviour): retail passes function_ca700's last argument as the raw byte
+// `report->unknown00` (`xor ecx, ecx; mov cl, [ebp]`; ca700 stores that byte at unit+0x330+i unchanged), where the
+// source converted it to a bool (`test cl, cl; setne cl`), storing a nonzero byte other than 1 as 1. ca700's `flag` is
+// a `byte` and `unknown330` a `byte[4]` now (ca700 stays 140, d9640 stays MATCH); this function's score goes 344 -> 379
+// because the call is one instruction shorter and the positional score shifts (without the array change ca700 grows to
+// 517). (2) Retail's function_15cbf0 takes a bool (`and 0xffffff01`); unknown_157450.cpp declares it long (left to
+// machine 3's lanes, #104).
 // What decides the rest: retail enregisters unit_index in ebx from entry (`mov ebx, [esp+0xc0]`; the non-grenade path
 // reaches the badc0 call with it, only the grenade path reloads it) and spills the definition (reloaded from [esp+0x10]
 // in five places, edi holds attacker_index); ours loads the argument straight into eax, uses bl for the hard temp,
