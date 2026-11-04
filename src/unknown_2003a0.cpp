@@ -2142,6 +2142,9 @@ bool function_1e11b0(long actor_index, bool active);
 // P314: Formal/current-handle/walk lexical identities on the original receiver graph, seven
 // subsets and the complete actor receiver roles: 64 each. Original names and body restored;
 // EBP handle, receiver spill/common loop head and full-width return remain.
+// DL262: Coherent matched predicate/removal/return-provider inline declaration subsets, then
+// explicit predicate expansion on the complete graph: 64/64/64/64/64/64/64/64.
+// NOT kept: no exact native form; original complete body and all provider contracts restored.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {

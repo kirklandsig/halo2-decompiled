@@ -539,11 +539,10 @@ real normalize2d(point2f *vector);
 real function_267370(long object_index);
 
 
-// score 98 (was 98): the water-plane test is 0x11c120's body (location_point_in_zone_inline) and the marker
-// read existing 0xcaf90; left: the NONE resets keep -1 in EDI, which the inlined plane compares
-// then share (retail compares with immediates, gives EDI to the cluster table and forms -1 in ECX
-// at the resets for them and the carrier compare), the carrier ternary lands in EDI instead of EAX,
-// and both crosses' multiply operand orders.
+// score 20 (was 98): First +0x140: plane x-product operands, parent-selection carriers
+// and cross-product registers remain; frame 0x90 and length 1724 agree. Signed zone
+// byte and NONE sentinel recover immediate zone compares, EDI table and later ECX resets
+// (plain 20). Existing marker and every call/value unchanged.
 // Round 106: the plane test through the out-of-line 0x11c120 with its noinline declaration dropped
 // (locate-only) keeps the same -1 sharing, so LTCG inlining is not the cause; without the
 // `(void)&actor_index` line 98 (same code); the second parent fetch in its own local 104; the
@@ -719,6 +718,9 @@ real function_267370(long object_index);
 // the resets or both inside `if (1)` 98 each, so call-site nesting does not move the -1 sharing here.
 // DL260: Existing zone predicate with one completion-time optional-index publication, short/int/long/dword carriers in bool/byte result graphs: 96/96/96/96/375/375/375/375.
 // NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// DL262: Signed zone byte 20 plain; const cluster/plane receivers isolated, then signed
+// combinations and const BSP receiver: 20/98/98/20/20/98/20/20.
+// Keep only the native byte/sentinel declaration; all optional const receivers restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
