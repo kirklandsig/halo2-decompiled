@@ -3246,6 +3246,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // Seven subsets, then angle-helper magnitude: 1053/1053/1056/1057/1053/1068/1050/1053.
 // NOT kept: best 1050 gains only two; frame stays 0x80 versus 0x74.
 // Original APIs, private helper and complete body restored.
+// P334: Native inverse/damping/paired-mass component-transform contracts,
+// seven subsets then queried-velocity range copy: 1090/1105/1078/1074/1093/1138/1118/1138.
+// NOT kept: no eligible native frame/velocity/force-home recovery; original complete body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4764,6 +4767,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P326: Selected-velocity blend/reverse speed and limit/combined speed-turn scalar
 // declarations before dispatch, subsets 1..7, then all before object lookup: 749 each.
 // Initializers stayed at case producers. NOT kept: no gain; original body and SSE homes remain.
+// P334: Native component-range up/paired-forward/lateral projection contracts,
+// seven family subsets then complete reversed input ranges: 873/958/904/1078/950/1100/1219/1243.
+// NOT kept: no native entry-definition or zero/result/unit-constant residence; original complete body restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5327,6 +5333,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // F376: Existing drift/side dot and spin-squared-length boundaries, subsets 1/2/4/3/5/6/7,
 // then complete projection dot: 1086/1087/1087/1086/1087/1087/1087/1087. NOT kept: one-point
 // lead grows to 5104/5094; frame stays 0xf8/0xd8. Original complete body and helpers restored.
+// P334: Native backward/short-angle/target component-transform contracts,
+// seven subsets then complete mass-force producer: 1040/1172/1161/1143/1153/1253/1230/1285. NOT kept: backward
+// alone reaches 1040 but shortens to 5088/5094, frame 0xf0/0xd8; other forms regress. Original body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

@@ -471,6 +471,9 @@ void __stdcall function_1160c0(real dt)
 // DH354: Complete outer fixed/timestep admission result in bool/char/signed-char/
 // byte/short/word/int/long: 171/171/171/171/171/171/171/171. NOT kept: no exact admission residence;
 // direct guard/body restored; segment EDX and scalar/axis/previous/rest-offset homes remain.
+// P334: Native k-j-i distance/axis/projection reduction contracts, seven subsets
+// then plain component reductions: 380/384/306/507/471/469/589/614. NOT kept: regressions and larger
+// extents; original complete body restored; segment/axis/previous homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

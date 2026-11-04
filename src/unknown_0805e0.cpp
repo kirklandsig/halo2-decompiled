@@ -813,6 +813,9 @@ void function_1537f0(s_profile_record *record);
 // termination and per-visit/outer input storage: eight 53 at 255 bytes; both
 // initializers stay exact. NOT kept: no gain; original body restored, identity
 // homes still fold, frame 0x98 and spilled countdown remain.
+// P334: Existing three-word identity standard fill/fill_n/construct-range contracts,
+// forward and backward: 100/101/134/120/106/102/140/116. NOT kept: frames 0xa8/0xb0 versus native
+// 0xa0 and 281–310 bytes versus 258; both original initializers and complete body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
