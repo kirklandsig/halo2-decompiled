@@ -1063,19 +1063,6 @@ void function_1d1540(s_havok_component *component);
 // N344: Actual two-use slot lexical homes array_slot/body_slot/current_slot/entry_slot,
 // constructor then existing aligned setter: 65/65/65/65/90/90/90/90.
 // NOT kept: aligned setters grow to 231/220 and miss. Original constructor, slot and fresh lookup restored.
-// Y560: Complete ordinary-path admission (fixed/flag short circuit), direct/branch-owned
-// bool/byte/short/long complements: 133/133/133/133/142/142/145/143. NOT kept: one-use
-// outcomes do not match; original dispatch, constructor, slot and fresh lookup restored.
-// J246: Native rotation/translation memcpy boundaries 74/116/106;
-// memmove boundaries 86/108/98; paired library copies with inverse at entry 106/98.
-// NOT kept: every copy boundary regresses, and the aligned frame stays 0x84/0x88.
-// Original constructor, slot, fresh post-reset lookup and complete body restored.
-// M353: Existing rotation-part getter with aggregate/member/translation-set/library
-// copies, inverse at use then entry: 106/90/130/116/106/90/130/116.
-// All grow and regress; original constructor, slot, fresh refetch and full body restored.
-// DH332: Typed whole/rotation/translation standard copies, forward then backward native ranges:
-// 77/77/97/97/81/105/81/105. NOT kept: all regress; frame, constructor copy and incoming component/index transport remain.
-// Original complete body and contracts restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2438,22 +2425,6 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // B389: Complete final-speed factor/numerator/denominator nodes, masks 1/2/4/3/6/5/7,
 // then original speed with division in place: 91/91/278/91/99/88/99/91. NOT kept: factor plus
 // denominator gains only three and only together; original body restored, early velocity j/k and zero homes remain.
-// DL253: Shared scaler input captures j/k, i/k and i/j, mutable/const, then lone j and lone k,
-// all 91 at 1459 bytes. NOT kept: one-use captures require equality and every form regresses
-// other users (9-14 lost matches). Original scaler and complete target restored; early velocity
-// j/k loads, speed-product carriers and property-zero residence remain.
-// F359: Complete shared contact-state outcome in bool/byte/signed-char/short/word/int/long/dword:
-// 158/162/162/164/164/164/164/164. NOT kept: no exact outcome graph; prefix regresses and extent grows.
-// Original complete body and helpers restored.
-// F363: Shared scaler plain counted/input-cursor/bounded/output-cursor loops,
-// factor-first then component-first: 127/251/127/389/127/251/127/389. NOT kept: all regress;
-// original shared scaler, normalizer and complete body restored.
-// M346: Material-query success owned at its original call, immediately tested before fallback,
-// bool/byte/char/signed-char/short/word/int/long: 91 each. All retain frame 0x34 and
-// 1459/1454 bytes; early velocity j/k and property-zero homes remain. Original body restored.
-// DH328: Bounded material ordinal short/word/byte/signed-byte 180/180/242/242;
-// with persistent sample output 180/180/242/242. NOT kept: all regress and grow beyond
-// retail; agreeing prefix disturbed. Original ordinal, sample lifetime and full body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
