@@ -238,6 +238,9 @@ struct s_flag_word_bits
 // B397: Duration-field pointer/reference inputs to the existing rounding producer,
 // direct/duration/rate/named-rate graphs 114/114/114/114/114/114/114/114. All restored;
 // scalar frame agrees, player/root ownership, separate SSE input and expanded tail remain.
+// Y567: Complementary available bool/byte/short/long with default-true
+// then exhaustive arms: 116/116/126/122/125/125/131/130. NOT kept: no byte match; original flag
+// producer and body restored, player/root ownership and tail expansion remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1386,6 +1389,9 @@ void function_150820(dword *bits, bool local_only)
 // M350: Immutable captured hand/slot/weapon values, seven subsets: 43 each;
 // initialized four-byte mode output 86. Original body and calls restored;
 // native ESI player/EDI hand ownership remains.
+// Y567: One-return failed unit/slot/eligibility admissions, seven subsets
+// and separately tested complete eligibility: 60/63/60/63/60/63/60/60. Original body restored;
+// native player/hand and entry temporary ownership remain.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -2075,6 +2081,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // B397: Complete four-slot transfer admission in bool/byte/short/long, then
 // rejection complement 202/202/202/202/202/202/202/202. Original call/rounds/loop graph restored;
 // player-data ownership and the scaled header-offset spill remain.
+// Y567: Existing complete object getter for unit/pickup/transferred weapon,
+// seven subsets, then complete shared object/header acquisition: 202/202/202/202/202/202/202/202.
+// Original helper uses and body restored; player/header-offset homes remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
