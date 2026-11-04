@@ -6693,10 +6693,10 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 				weapon_empty = true;
 			}
 		}
-		byte *weapon_definition = UNIT_DEFINITION_GET(UNIT_GET(weapon_index));
-		dword weapon_flags = *(dword *)(weapon_definition + 0x12c);
+		byte *local_67e06b_4 = UNIT_DEFINITION_GET(UNIT_GET(weapon_index));
+		dword weapon_flags = *(dword *)(local_67e06b_4 + 0x12c);
 		dual_wieldable = TEST_FIELD_BIT((weapon_flags >> 22) & 1) || TEST_FIELD_BIT((weapon_flags >> 23) & 1);
-		second_hand_only = (*(dword *)(weapon_definition + 0x12c) >> 23) & 1;
+		second_hand_only = (*(dword *)(local_67e06b_4 + 0x12c) >> 23) & 1;
 		long *slot = unit->weapon_object_indices;
 		for (long i = 0; i < 4; i++, slot++)
 		{
