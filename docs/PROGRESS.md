@@ -2,6 +2,36 @@
 
 The newest entry comes first.
 
+## 2026-11-04: 10410 functions match
+
+```
+matched 10410 of 11326 game functions (1901473 of 2786206 bytes, 68.25%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+1 new matches, none lost:
+- @@coldspear's #1053: `0xc5eb0` match.
+
+## 2026-11-04: 10409 functions match
+
+```
+matched 10409 of 11326 game functions (1900960 of 2786206 bytes, 68.23%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+1 new matches, none lost:
+- @@coldspear's #1052: `0xc9e70` match.
+
+## 2026-11-04: 10408 functions match
+
+```
+matched 10408 of 11326 game functions (1900386 of 2786206 bytes, 68.21%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+2 new matches, none lost:
+- @coldspear's #1050: `0xcb500` and `0xce520` match.
+
 ## 2026-11-04: 10406 functions match
 
 ```
