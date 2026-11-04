@@ -2387,9 +2387,11 @@ PRIVATE inline bool projectile_object_predicted(long object_index)
 // rotation, field offsets, 1.0/0.5/0.0/0.0001/0.3 constants read from the XBE, condition directions, callee argument
 // registers and stack order, the end switch and its fall-through): no behaviour difference found. What differs is
 // layout (retail frame 0x118, collision at +0xcc, own slots for guidance forward/up/aim point/movement; ours 0x110)
-// and register/scheduling. Retail expands 0xfaa30 inline at only two of its six uses (the 1.0 test before the loop and
-// the predicted case at the end, both re-reading the data array with the saved index * 12 in [esp+0x7c]); a local
-// inline copy of it at the first use 1040, at both 1055 (4750 bytes), so all six stay calls to 0xfaa30.
+// and register/scheduling. Retail expands 0xfaa30 inline at two of its five uses (the 1.0 test before the loop and
+// the predicted case at the end, both re-reading the data array with the saved index * 12 in [esp+0x7c]); it emits
+// the range check's call twice (0xf97b4 and 0xf97ca, one per arm of the average_speed test), so its code has six
+// sites for the same five statements as ours (actions 1, 2, 1, 1 at collision_count == 10, 2). A local inline copy
+// at the first use 1040, at both 1055 (4750 bytes), so all five stay calls to 0xfaa30.
 // @retail 0xf8eb0
 void function_f8eb0(long projectile_index, vector3f *displacement)
 {
@@ -2781,14 +2783,15 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 /* a projectile's collision: damage to what it hit, the response of the
    material hit (detonating, bouncing, reflecting, attaching), the impact
    effects and sounds, then the projectile's action */
-// score 1180 (was 1190): Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
+// score 1190: Frame 0x220 versus 0x218, stacked velocity and normalization/effect scheduling remain.
 // Round 1 of #1061 (logic walk against retail, all blocks): no statement-level behaviour difference found except the
 // two below. collision_count is a dword in retail (`cmp dword ptr [esp+0x23c], 1`; the caller does `movsx edx, ax;
 // push edx`): `long collision_count` 1190 -> 1180 (4848 -> 4836 bytes) and caller 0xf8eb0 then pushes it as retail
 // does, but scores 946 -> 1037 (4691 -> 4718 bytes, positional shift), so it is not kept (the type changes no behaviour).
-// Retail stores NONE to the damage record's material (+0x7c) BEFORE calling 0xd6660 in both damage scopes, and
-// 0xd6660 then overwrites it with g_47d8e0: the store before the call 1180 (same, instruction now as retail), not kept
-// (dead-looking store; ours leaves NONE where retail leaves g_47d8e0 until 0xd7b80 writes it). A goto to share the
+// Behaviour fix (round 2 of #1061): retail stores NONE to the damage record's material (+0x7c) BEFORE calling 0xd6660
+// in both damage scopes, and 0xd6660 then overwrites it with g_47d8e0; the source stored NONE after the call, and
+// 0xd7b80 writes +0x7c only on some paths, so on the others ours left NONE where retail leaves g_47d8e0. The store now
+// comes first (score unchanged). A goto to share the
 // `*velocity = *g_4687a4` tail 1180 (same bytes). Retail inlines function_faa30 at three of its four sites (the
 // unknowndc^2 test and both action-switch arms) and calls it only in the 0.09 block; ours calls all four.
 // Earlier 1162 (was 1185): frame 0x220 versus 0x218, velocity on the stack versus eax, input normalization and effect scheduling remain.
@@ -2936,8 +2939,8 @@ void function_faa60(vector3f *velocity, long projectile_index, s_collision_resul
 		{
 			s_type_1e6529 damage;
 
+			damage.material_index = NONE; /* retail stores it first; 0xd6660 then writes its default */
 			function_d6660(&damage, damage_definition_index);
-			damage.material_index = NONE;
 			damage.flags |= 8;
 			damage.unknown84 = *((byte *)definition + 0x128) & 0x3f;
 			damage.scale = damage_scale;
@@ -3041,8 +3044,8 @@ no_effects:
 	{
 		s_type_1e6529 damage;
 
+		damage.material_index = NONE; /* retail stores it first; 0xd6660 then writes its default */
 		function_d6660(&damage, damage_definition_index);
-		damage.material_index = NONE;
 		damage.flags |= 8;
 		damage.origin = collision->point;
 		damage.position = collision->point;
