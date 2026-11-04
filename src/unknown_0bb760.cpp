@@ -456,6 +456,8 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax H (11-04): the permuter was stopped before it reported any variant (no output in 240 s
+// under the shared load); no lower score.
 // Round 30 (lane D): the permuter found no better form (82 tries, best 84, the baseline). On this body
 // the variant byte read before the blend value scores 171 and before the selection seed 190; with
 // retail's found path (the inverse inside the found branch) it is 123, and the plain inverse form 132:

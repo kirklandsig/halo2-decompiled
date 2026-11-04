@@ -879,6 +879,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // (same code); the body test as `body_size > body_offset` 157 (aligned 11); a body_size local read before the switch 142 (688, aligned 9: T in ECX, but the
 // switch temp moves to EDX and the signature sum still folds). Harness cross of direct-arm order, six clamps, total local, helper none/signature/both, test
 // order (110 forms): none below aligned 6. Seek helper with `g_4fa0c8.size` clamp 153 (689); that clamp alone 159, without the total local 175.
+// P327: API-returned file/signing handles, original/mutable/const producer pairs
+// excluding both original: 34/34/34/161/161/34/161/161. NOT kept: ties or larger
+// 689-byte bodies; original API publications, field observations and full body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

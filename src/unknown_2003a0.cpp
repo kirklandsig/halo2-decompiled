@@ -1569,7 +1569,6 @@ real function_204950(long squad_index, long actor_index, short mode)
 
 PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *arg_0);
 
-// @retail 0x204b20
 // score 2 (was 2): the record pool's pointer is reloaded after the branch on the index,
 // retail reloads it before, so the jump lands on the shared reload.
 // Pool read before the active test 2; record address size * index + data 2; not-found
@@ -1589,6 +1588,12 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // Round 41 (lane 2, fast): in the squad step, the pool read after the search 2, in each arm 2, the iterator field at each use 2,
 // read again after the search 2, a `found` local tested 2. In the shared index search (0x1c8700 alongside): direct returns 2;
 // while loop 2; result assigned after the loop 68 (380 bytes, 0x201df0, 0x200d80 lost); count local 2; mask local 2.
+// Round 132 (fast): in the squad step, a compiled-out `do {} while (false);` after the search 2, closing the found arm 2, closing the
+// not-found arm 2; not-found stores swapped with the bound read after 2; the pool re-read from the iterator at every use in both arms 2.
+// Harness (exact): that statement at the found arm's top, the not-found top, the join or both arm ends 2 each; a named offset 2; found
+// stores in either other order 2/2; named datum 2; named bound 2; two sequential index tests 2; datum NONE stored first 114; both
+// not-found stores first 111; `local_2 == NONE` first 80; pointer from a ternary then tested 86.
+// @retail 0x204b20
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
@@ -3365,6 +3370,10 @@ void function_2011f0(long arg_0);
 // as is 322 (retail's `cmp di, -1`, one byte shorter, but the splice loop's pad grows a byte; aligned 141 ->
 // 140); the final 0x2011f0 call with arg_1 unmasked (retail pushes the full dword) 350 (1344 bytes); a scenario
 // local for its three reads 348. Retail keeps the chain head in EDX through the splice; ours keeps it in memory.
+// F370: Reuse/attach/both request-completion lifetimes 318/336/336;
+// each with construction last-consumer scope 318/336/336; both as byte,
+// without/with construction scope 336/336. NOT kept: ties/regressions;
+// one-use request results require equality. Original complete body restored.
 // J250: Actual signed palette member, placement member and complete typed row,
 // seven subsets 318 each; all with native scalar one-word masks 318. NOT kept:
 // no allocation or extent gain. Original alignment-two row, masks and body restored;
