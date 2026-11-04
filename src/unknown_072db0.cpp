@@ -1763,6 +1763,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M369: Existing availability boundary receives the actual descriptor by pointer/reference,
 // ordinary/forced inline and long/bool truth: 709/719/709/719/709/719/709/719.
 // NOT kept: all tie or regress; original ordinal helper, all three calls and whole body restored.
+// M377: Complete availability/provider truth, direct initialization then test-produced
+// true, bool/byte/short/long results: 719/719/719/719/719/719/719/719.
+// NOT kept: all regress; original producer, three callers and full body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

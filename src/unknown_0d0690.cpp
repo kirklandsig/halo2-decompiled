@@ -1531,6 +1531,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // tested-pointer/bool-completion/early-failure/branch-success results, original/combined
 // admission: 581/578/585/587/570/587/568/566. NOT kept: all regress; bool-completion also
 // loses the matched caller. Original scan, full body and helper contracts restored.
+// M377: Existing shared setter for initial/secondary/ambient vector copies,
+// seven subsets, then complete graph with existing same-tree dot: 529/578/562/582/562/559/563/563.
+// NOT kept: no gain; secondary/ambient forms grow frame to 0x30 and lose the
+// matched caller. Original native copies, all helpers and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

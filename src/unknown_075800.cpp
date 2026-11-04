@@ -1285,6 +1285,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // remainder and terminal/default remaining handler: 195/195/195/195/189/189/189/189 fast (control 196, full 153).
 // NOT kept: seven-point best is below the gate and entry/save shape still differs;
 // original classifiers, all handler tuples and matched caller restored.
+// M377: Individual connection cases 5/6/7 inserted after direct 0/2/3 on
+// native-input primary root (last 7-after-3 excluded): 199/197/198/199/197/198/199/199 fast, control 196.
+// NOT kept: all regress and grow to 448/444; original dispatch/caller restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
