@@ -250,6 +250,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // 1/2/4/3/5/6/7, then all with native output-row arrays: 219 each. NOT kept: no exact
 // observation contract or gain. Original helper/body restored; axis-specific product/cosine
 // spills, basis homes and table placement remain.
+// B433: Complete row setters on the native square/sine graph, six row orders,
+// native matrix aggregate and mixed-products-before-original-stores:
+// 445/449/441/397/413/429/428/381. NOT kept: all regress and miss retail extent;
+// original helper/body restored; axis-specific spills and table placement remain.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

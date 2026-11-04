@@ -424,6 +424,10 @@ public:
 // loop/child-phase declarations and for/while: 142 each, 726/743 bytes, frame 0x10/0x14.
 // NOT kept: result ownership loses the native frame and regresses; original body restored.
 // Child preheader, pool/NONE ranks, allocation retest and salted-link construction remain.
+// B433: Existing canonical index provider inline/forced; pointer-difference/allocation
+// ordinals and separate/shared initialization/link receivers: 261/261/287/287/268/268/291/291.
+// NOT kept: frame/length and matched caller regress; complete body/provider declarations
+// restored. Child preheader, pool/NONE ranks, retest and index construction remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
