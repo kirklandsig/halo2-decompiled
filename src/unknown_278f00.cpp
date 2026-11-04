@@ -331,6 +331,19 @@ bool function_a7670(long object_index);
 // DH355: Retry success/count continuation in the existing do-while, long/int/dword/
 // short/word/signed-char/byte/char: 153/153/153/259/259/262/262/262. NOT kept: ties or regressions;
 // byte-width frame shrinks to 0x420; original body and 0x424 frame restored.
+// DH360: Complete first/deferred initialized-prefix membership reductions in bool/byte/short/long,
+// 235/235/265/264/278/278/320/317. NOT kept: regressions; retail stops at the first match.
+// Original eager stopping searches, live bounds, retries, releases and complete body restored.
+// DH362: Root activation result bool/byte/short/long, positive then complementary,
+// eight at 153. NOT kept: native selector/island/count and admission homes do not move;
+// original short-circuit guard, eager searches, retry/release graph and full body restored.
+// DH364: Forward first-prefix cursor with remaining long/short/word/dword counts
+// 276/295/296/276; deferred-prefix counterparts 276/275/268/261. NOT kept:
+// all regress; original eager stopping searches, live bounds, consumed island
+// index, retry/release graph and complete body restored.
+// DH367: Eager stopping first/deferred searches via standard search_n and find_if,
+// eight boundary pairs 297/317/314/305/325/380/366/387. NOT kept: all regress and lengthen;
+// original eager membership, native bounds, consumed island index and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {

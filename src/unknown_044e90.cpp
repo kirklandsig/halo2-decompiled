@@ -278,6 +278,15 @@ struct s_visibility_bound_record
 // (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
 // chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
 // movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
+// Y585: Initialized containment false at unseen/bound-index/bound/transform/local-point/
+// scaled-point/first-center/completed-center boundaries: 406/406/406/406/406/417/417/417.
+// NOT kept: no eligible gain; original producer and full body restored; entry/table and plane/query homes remain.
+// Y587: Fallback-center component for traversal long/dword/short/word/byte/
+// signed-char, then long/short while: 406/406/502/502/502/502/406/502.
+// NOT kept: narrow traversal stays rolled and shortens away from retail; original full body restored.
+// Y589: Actual composed-node/frustum-plane/fallback-center input last-use scopes,
+// seven subsets then all with immutable query, eight at 406. NOT kept: no exact
+// entry/table or plane/query-home recovery; original complete body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

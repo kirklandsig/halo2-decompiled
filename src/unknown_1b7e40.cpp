@@ -69,6 +69,7 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax B (11-04): no new form, no lower score.
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
@@ -250,6 +251,9 @@ bool function_25d9b0(long prop_index);
 // Round 138: busy result in byte/short/long storage, Boolean at entry/evaluation scope 49 each;
 // evaluation-scope Boolean with priority cleared 82; unsigned-short result initialized from priority 49
 // (558 bytes), branch-complete unsigned-short result 49. Original tail restored; busy select and exits remain.
+// AC545: Native ordered admission in nested predicate groups, eight boundary
+// partitions, 49 each. Original busy call, zero/priority exits, iterator
+// exhaustion and fallback node test restored; the select and epilogues remain.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -314,6 +318,7 @@ evaluate:
 	return 0;
 }
 
+// MiniMax B (11-04): no new form, no lower score.
 // MiniMax R (11-01): no lower score; reading the slot's expected index into a local before the actor lookup
 // and the file's /Ob1 setting both leave it at 73 (0x25d740 is still inlined here); calling the view getter
 // twice (76) does not hold it out of line either.

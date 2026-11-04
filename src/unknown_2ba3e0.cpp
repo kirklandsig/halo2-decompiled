@@ -932,6 +932,9 @@ real g_55e618;
 // read first with each sum stored after its statement 234. At 44 only one block is left: v.i load first, retail's `mov edx, [esp + 0xd4]` above the position stores (ours after them), the x sum first, `lea ebx` among the
 // sums. Lead, BLOCKED-BY 0x1697c0 (its file is another lane's this round): ours keeps that load behind the stores through the particle, so check what the record pointer does in 0x1697c0's source for the caller's alias
 // summary; 0x1697c0 itself is at 25, first +0x314. The 44 form leans on the dot written out three times, so it is match-only.
+// M380: Displacement/sweep scalar, aggregate and immutable aggregate producers,
+// all eight non-original pairs: 129 each at 1549 bytes. NOT kept: all regress;
+// original interleaved travel products, reflection, collision extent and full body restored.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

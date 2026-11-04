@@ -18,6 +18,8 @@ void function_3e5a0(vector3f *current, vector3f const *target, real step);
 void function_3e4e0(dword *current, dword const *target, real step);
 
 // score 21 (was 23): the tail's flag local is declared before the type local, so the zero
+// MiniMax G (11-04): no new form, no lower score: the object pointer and force flag keep their stack homes, and the object stays in eax.
+// 0x3dfe0 score 21 (was 23): the tail's flag local is declared before the type local, so the zero
 // store comes before the NONE store as in retail; the object pointer and force flag still swap
 // stack homes (retail object 0x14 in ebx, force 0x10) and the object is loaded into eax instead of
 // ebx.
