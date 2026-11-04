@@ -4908,6 +4908,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P341: Getter-produced vehicle-record lvalues, mutable/read-only, native/immutable table records and
 // original/early pure table acquisition: 749/764/749/764/749/764/749/764. NOT kept: no native entry-
 // definition or zero/result/one residence; original entire body and pointer receivers restored.
+// B447: Complete dispatch/normalization boundary, caller/provider entry receiver,
+// pointer/reference scalar outputs: forced inline 1034/1034/1034/1034; ordinary
+// inline 3616/3616/3597/3597. NOT kept: entry/later lookups still merge; forced
+// forms shorten to 2700 bytes and ordinary providers stay called. Original full
+// body restored; native zero/result/one and definition ownership remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5494,6 +5499,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // seven subsets then vertical attenuation: 1097/1087/1087/1097/1097/1087/1097/1097. NOT kept: native
 // frame 0xd8 and handle/matrix homes are not recovered; original full expression graph, matrices and
 // body restored.
+// B447: Complete orientation/tensor/torque/spin boundary, state/torque pointer
+// and reference contracts: forced inline 1087/1087/1087/1087; ordinary inline
+// 3746/3746/3746/3746. NOT kept: forced forms retain frame 0xf8; ordinary
+// providers stay called, frame 0x94. Original complete body restored; native
+// frame 0xd8, handle/offset and matrix/vector ownership remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

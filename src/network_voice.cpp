@@ -3327,6 +3327,10 @@ struct s_voice_route_choice
 // ordinal/difference selection and bitwise/conditional radio: 393/1074/474/1083/
 // 430/1080/474/1081. NOT kept: native frame/entry fail and both callers lose;
 // original full body restored; stream-end forms suppress four-way expansion.
+// B447: Whole ordered scan provider with headset/nearest/radio/all-output completion,
+// forced inline 363/363/363/363; ordinary inline 1347/1344/1343/1339. NOT kept:
+// no exact match; ordinary providers suppress native expansion and stay called.
+// Original complete body restored; talker/zero, cursor and priority merge remain.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

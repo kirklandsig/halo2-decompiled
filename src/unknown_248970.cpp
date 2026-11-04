@@ -442,6 +442,11 @@ public:
 // frame 0x10, 0x175270 matches, location no longer a register argument), three there 148 (758), three at the loop head
 // 235 (753, 0x175270 100). So on the retest + salt form the location keeps EBX only because the NONE constant has one use too few
 // for its register across the allocation call; what gives retail that use (or takes one from the location) is the lead.
+// B447: Complete child traversal/allocation/link/update boundary, location/metadata
+// pointer/reference receivers: forced inline 58/58/58/58; ordinary inline
+// 505/505/505/505. NOT kept: forced forms disturb the matching viewer x87
+// schedule; ordinary providers stay called. Original full body restored;
+// child preheader, pool/NONE, allocation retest and salted index remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
