@@ -456,6 +456,8 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P303: Native-width lowest/candidate/compaction ordinals on the retained output-ordinal graph,
 // subsets 1/2/4/3/5/6/7: 654/262/180/642/651/259/635; unsigned native candidate 262.
 // NOT kept: every form regresses, some lose caller 0x239d50; original scans, output ordinal and body restored.
+// F365: Lowest/distance/ranking rejection on the retained native output ordinal, masks 1/2/4/3/5/6/7, then classifier early return:
+// 170/170/170/170/170/170/170/256 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

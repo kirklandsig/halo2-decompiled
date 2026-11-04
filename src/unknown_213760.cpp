@@ -1503,6 +1503,8 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P303: Existing shared completion provider on the failure-only count graph, open/query/resize
 // masks 1/2/4/3/5/6/7, then all five asynchronous boundaries: 33/33/33/33/33/33/33/33.
 // Original local completion expansion and complete body restored; query/count and write/header joins remain.
+// F365: File-owned completion wait, instance/static, pointer/reference and ordinary/forced inline:
+// 33/33/33/33/33/33/33/33 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
 // @retail 0x213970
 void function_213970(void)
 {

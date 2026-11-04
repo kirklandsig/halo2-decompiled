@@ -377,6 +377,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // without the snapshot, products in double 1548 (frame 0x590, but the double loads are shared: `fld` once and `fmul
 // st(i)`, where retail reloads with `fld m; fmul m`); the component index read after the 0x81 flag test (retail's
 // order) 1474 (6195 bytes). All restored.
+// F365: Vector-owned captured magnitude and paired normalizers, masks 1/2/4/3/5/6/7, then ordinary inline:
+// 1354/1354/1355/1354/1354/1354/1354/1354 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
