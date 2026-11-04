@@ -434,6 +434,9 @@ void function_14bac0()
 // forms with uniform cached/per-use headers, 256 each at 1050/1043 bytes. NOT kept:
 // read/storage steering without a match. Original complete handle walk and body restored;
 // frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
+// N357: Final query result owns destination/alternate/both readiness, original/native recipients and byte/word complete results:
+// 250/237/247/244/236/256/247/279. NOT kept: no byte match from these source forms.
+// Original executable source restored; Frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

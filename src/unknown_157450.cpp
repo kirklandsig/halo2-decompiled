@@ -688,6 +688,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // N351: Mask-field reference/immutable pointer, original/condition-owned immutable player, saved dword/word:
 // 32/77/32/77/32/77/32/77. NOT kept: no exact match or qualifying gain; complete original body restored.
 // Remaining: native word entry and shared post-loop mask reload.
+// N357: Added-team set at playing producers, bit union/cumulative difference with full/word saved mask and signed/unsigned added set:
+// 89/113/79/79/89/113/79/79. NOT kept: no byte match from these source forms.
+// Original executable source restored; Native word entry storage and shared post-loop mask reload remain.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4306,7 +4309,7 @@ void function_15fe20(long team_index, color3f *color);
 // unit index and the -1 compares) and the zone-progress tail's byte load order.
 long function_14de70(long local_player_index);
 
-// score 41 (was 42): frame 0x48c agrees; four extra bytes, late weapon NONE reuse,
+// score 42 (was 42): frame 0x48c agrees; four extra bytes, late weapon NONE reuse,
 // the shift-count read width, format-mode branch and charge/progress allocation remain.
 // Earlier: frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
 // stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
@@ -4493,6 +4496,9 @@ long function_14de70(long local_player_index);
 // N353: Actual terminal unit rejection, progress-first classifier, charge/mode/progress
 // rejection and charge/progress completion exits 171/63/171/171/171/171/171;
 // complete admitted terminal selection 195. NOT kept: all regress; native NONE/shift/result homes remain.
+// N357: Complete rejection outcome in bool/byte/char/signed-char/short/word/int/long:
+// 98/98/98/98/372/372/372/372. NOT kept: no byte match from these source forms.
+// Original executable source restored; Late ESI NONE, byte shift acquisition and progress/result transport remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5690,6 +5696,9 @@ void __stdcall function_d6bc0(long object_index);
 // F360: Both squared-distance j/i tails as plain real-vector reverse loops, four signed for/while inductions:
 // 265/265/199/199/265/265/199/199. NOT kept: no native frame/timer repair.
 // Original complete body and helpers restored.
+// N357: Positive mode/time-slice/eligibility admissions, seven subsets and complete graph with outer timer declaration:
+// 144/144/144/144/144/144/144/144. NOT kept: no byte match from these source forms.
+// Original executable source restored; Frame 0x14/0x18, independent timer spill and entries-base reloads remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

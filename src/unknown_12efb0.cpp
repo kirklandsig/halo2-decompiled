@@ -390,6 +390,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // N355: Caller clamped-result residence, with best-weight/byte-palette/publication-reciprocal domains:
 // 968/877/1089/964/975/1088/1081/1044. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; Palette/record and zero/contribution SIMD carriers remain.
+// N357: Complete paired source-identity/best-contribution winner selections, bool/byte/short/long positive/complementary decisions:
+// 616/616/616/616/720/720/720/720. NOT kept: no byte match from these source forms.
+// Original executable source restored; Palette/record and zero/contribution SIMD carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
