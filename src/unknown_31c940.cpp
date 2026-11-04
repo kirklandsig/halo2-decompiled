@@ -1242,14 +1242,17 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				__m128 *volatile angular_b_pointer = &body_b->angular;
 				do
 				{
-					__m128 relative = _mm_sub_ps(_mm_load_ps((float const *)&a->linear),
-						_mm_load_ps(linear_b_pointer));
-					__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, ((solver_linear_row_31e7b0 *)terms)->a), _mm_mul_ps(*angular_b_pointer, ((solver_linear_row_31e7b0 *)terms)->b));
-					__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, ((solver_linear_row_31e7b0 *)terms)->linear));
-					__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
-					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
-					float projected;
-					_mm_store_ss(&projected, xyz);
+					solver_linear_row_31e7b0 const *row = (solver_linear_row_31e7b0 const *)terms;
+					// Retain the angular inputs, then reuse their work vectors for reduction.
+					__m128 work_a = _mm_load_ps((float const *)&(a->angular));
+					__m128 work_b = *angular_b_pointer;
+					work_a = _mm_mul_ps(work_a, row->a);
+					__m128 work_c = row->b;
+					work_c = _mm_add_ps(work_a, _mm_mul_ps(work_b, work_c));
+					work_b = _mm_add_ps(work_c,
+						_mm_mul_ps(_mm_sub_ps(_mm_load_ps((float const *)&(a->linear)),
+							*(__m128 const *)linear_b_pointer), row->linear));
+					float projected = sum_three_projection(work_b).value;
 					float velocity = projected * load_velocity_scale(step);
 					float low = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 4)) * load_error_scale(step) - velocity;
 					if (low > 0.0f)
