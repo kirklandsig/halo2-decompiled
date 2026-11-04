@@ -535,6 +535,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // P307: Native unsigned timestamp return with signed/native start, immediate signed/unsigned
 // second-tick producers and original/selected nonnegative elapsed: eight body forms 246 each;
 // return-only calibration 246. Original clock contract, scratch and complete body restored.
+// DH335: Native surround-bin stores, paired surround-gain chains and complete
+// stereo publications, subsets 1..7 and complete interleaved form, 246 each.
+// Original arrays and whole body restored; frame/status/clock and SSE gaps remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

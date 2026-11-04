@@ -1209,6 +1209,9 @@ struct s_signed_file_write_parameters
 // M351: Immutable paired transfer amounts/signed-body inputs/signature position, all seven
 // subsets, then all with immutable queried extent: 102 each. Original complete body restored;
 // capacity EAX/EBX staging and extension offset/size/buffer homes remain.
+// DH330: Dispatch orders 1032/3021/3102/3120/3201/2013/3012/0213 on the
+// retained direct-header-return/live-seek graph 331/315/324/325/322/325/317/169.
+// Original complete cases and body restored; capacity and extension homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

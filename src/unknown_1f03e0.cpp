@@ -1055,6 +1055,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // Original observations/body restored; damping ECX/EDX and raw/bounded homes remain.
 // M354: Split damping extraction in byte/dword storage, mask at producer/entry/general/consumer:
 // 427/412/627/532/464/451/630/557. NOT kept: split predicate transport needs byte equality.
+// DH328: Existing staged force-inline cross at disabled/flying/ground subsets
+// 436/473/429/436/431/479/431; shared staged cross at every remaining site 431.
+// NOT kept: four/two-point leads fall below threshold; length regresses or ties. Full body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1771,6 +1774,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // original support predicate, movement, selections and both material call sites restored.
 // M357: Fallback-call admission produced at the query, positive then complementary bool/byte/short/long:
 // 225/225/225/225/225/225/225/225. NOT kept: no exact producer/contract form; original complete body restored.
+// DH329: Separate highest-contact scan before/after selection or fallback-only, direct/named
+// height and before/after native cursors 776/788/872/888/580/572/894/929. NOT kept: all regress and
+// grow frame/extent; original shared scan and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

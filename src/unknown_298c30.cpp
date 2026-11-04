@@ -275,6 +275,13 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // M359: Fixed-pair sine-first/general-pair cosine-first producer subsets 1-7,
 // then all with a separate negative fixed pair: 405/405/405/421/403/403/419/419.
 // NOT kept: unmatched schedules regress; original trig producers and complete body restored.
+// DH324: Whole native output-record references at first/second/repeated emission,
+// seven subsets then all native pointers: 413/413/431/432/450/450/468/468. Original destinations,
+// helper, publication graph and complete body restored; entry/normalized homes remain.
+// DH326: Positive-default evaluation output; negative arm from original/stored input,
+// pointer/reference output formals and void/ignored-pointer result contracts:
+// 420/420/420/420/434/434/434/434. Original emitter and complete body restored;
+// entry sum and normalized XY/magnitude homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -607,6 +614,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // seven subsets 784/719/784/719/784/719/784; all with separate phase cosines 783.
 // NOT kept: staging nonmatches; original helper inputs, scalar precision and whole body
 // restored. Frame 0x124/0x114, eager radius and trace/trig/pivot homes remain.
+// DH322: Complete direction deltas in real/double with shared setter, named squared length,
+// magnitude before publication and named absolute length: 719/777/719/777/787/806/719/777.
+// NOT kept: precision/staging nonmatches; double forms also raise the shared user 389 to 405.
+// Original helper/body restored; frame/radius/trace homes remain.
 // Round 50 (m3 lane 15, fast): the rotated obstacle offset as two scalars 853 (3285 bytes); the sweep arms
 // setting only the three scales, the three point2f built after 868 (3287); the sweep points declared in the
 // loop body 719 (same code); the reversed direction negated by component 822 (3355); the obstacle distance
@@ -624,6 +635,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // P304: Native settings/actor backing members and shared normalizer, masks 1/2/4/3/5/6/7,
 // then all with direct actor-position uses: 719/719/756/719/756/756/756/790. Original types, helper and body restored;
 // frame 0x124/0x114, radius and trace/pivot homes remain.
+// DH332: Standard real sine/cosine overloads across the sweep and obstacle phases,
+// seven subsets then native absolute/count overloads: 719/719/719/719/719/719/719/719.
+// All canonicalize; original APIs and body restored. Frame/radius/trace homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

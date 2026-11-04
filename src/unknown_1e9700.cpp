@@ -380,6 +380,9 @@ struct s_object_damage_view
 // M356: Complete timestamp/strict-improvement results, expression then ordered
 // tests, bool/byte/short/long: 353/353/353/353/353/353/353/353. NOT kept: no gain;
 // original selection and complete body restored. Scalar homes and biased cursor remain.
+// DH336: Two real award buffers/counts in array and record ownership forms:
+// 353/353/353/385/385/385/385/385; pointer-difference controls repeat the earlier form.
+// NOT kept: grouped storage needs equality; original complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

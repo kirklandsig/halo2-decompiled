@@ -1262,6 +1262,9 @@ struct s_item_flags_view_10b850
 // M345: Complete free/fixed/settled motion state in char/signed-char/byte/short/word/int/long/dword:
 // 853/853/853/909/909/905/905/905. Byte domains recover frame 0x150 but grow to 4113 bytes.
 // NOT kept: scalar-state carriers miss; original separate flags, every consumer and full body restored.
+// DH335: Axial-row scalar homes 839/860/864/878/839/860/864/878; first 839
+// is prior-form calibration. Complete axial-vector component loop 1000.
+// NOT kept: frame/length regress; original helper, inputs and full body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1708,6 +1711,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // B407: Native addressed contact/event/owner/payload identities on the paired-setter graph,
 // four isolated and four complete role-name families: 140 each. Original names, helper,
 // workspaces and complete body restored; return-byte, release and event homes remain.
+// DH333: Typed owner/origin/position record-range copies, seven subsets
+// 167/165/171/164/171/181/187; complete backward ranges 189. Unlike scalar-coordinate ranges,
+// these copy complete records. NOT kept: regressions/shorter extent; full original body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

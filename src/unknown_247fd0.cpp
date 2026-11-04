@@ -356,6 +356,13 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // M359: Actual allocated-handle/spawn-input/child-ordinal home-name subsets 1-7,
 // then all with the child handle, on the retained reconciliation graph:
 // 55/55/55/55/55/55/55/55. NOT kept: no home or folded-compare gain; original body restored.
+// DH327: Child-creation admission retained across interface refresh, positive/
+// complementary bool/byte/short/long: 133/133/116/117 twice, 880/870 bytes.
+// Original child result/refresh order and complete body restored. NOT kept:
+// carried flags regress and lengthen; post-x87 fold and child scratch homes remain.
+// DH329: Six native own-input first-consumer reads 55 each; entry cache/parent input-slot
+// pointers 168/55. NOT kept: own-input forms lack equality; cache input also loses caller
+// (24). Original inputs, cache comparison and complete body restored.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -732,6 +739,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
 // age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
 // original complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// DH334: Standard native-array scaling/translated-position/probe-copy algorithms, seven subsets
+// then all with contact-normal array copy: 405/384/389/405/403/405/420/421.
+// NOT kept: no exact match; original complete body restored; late EBP save, escaped blend and random/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

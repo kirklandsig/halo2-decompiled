@@ -538,6 +538,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // M347: Limit-admission outcome, direct bool/byte/short/long then
 // test-produced bool/byte/short/long: 32/32/32/32/32/32/32/32.
 // NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
+// DH333: Standard native-array prediction/tick/delta transforms, seven subsets, then
+// complete graph plus correction addition, with direct tracked argument: 200/178/238/136/234/192/243/225.
+// NOT kept: regressing frame/code growth; original prediction, parameter storage and full body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

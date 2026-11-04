@@ -3638,6 +3638,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // P304: Native forwarding-route memset with independent cursor/short member/word kind,
 // interference masks 0-7: 152/172/172/170/150/149/163/156. Original route stores, observations and full body restored;
 // channel/packet/member ownership and route homes remain.
+// DH335: stride char/signed-char/byte 160 each; word 163; int 139; 64-bit 164;
+// finite two-value stride and immutable long 139 each. No channel-home recovery;
+// non-native extents regress. Original stride and complete body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

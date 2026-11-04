@@ -1268,6 +1268,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M359: Common no-op message completions for individual/residual/all hole families,
 // return and break: 196/196/196/196/196/196/196/196 reduced (control 196).
 // NOT kept: no exact classifier/save improvement; original complete body restored.
+// DH329: Primary priorities DQCPS/DSQCP/DSPCQ/DSCQP/DPQCS/DPSCQ/DCQPS/QSDPC
+// 207/198/198/208/202/198/206/197 reduced, control 196 (full 153). Original classifiers restored;
+// NOT kept: all regress; delayed ESI save and late-handler expansion remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

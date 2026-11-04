@@ -1007,6 +1007,9 @@ real normalize2d(point2f *v);
 // M347: Request-state admission outcome, direct bool/byte/short/long then
 // test-produced bool/byte/short/long: 135/135/135/135/135/135/135/135.
 // NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
+// DH334: Standard typed request-point/normalized-planar/facing-planar record ranges,
+// seven subsets then complete backward ranges: 144/180/194/185/197/198/202/205. NOT kept: all regress;
+// original publications and complete body restored; retained DL and return transport remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

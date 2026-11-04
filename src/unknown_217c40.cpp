@@ -179,6 +179,12 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // M358: Two-mode snap admission, positive/complementary bool/byte/short/long:
 // 474 each. NOT kept: one-use admission predicates do not match; original helpers
 // and complete body restored; frame 0x38/0x40, angle and snap-work homes remain.
+// DH332: Standard lower/upper clamps and paired divisor selection, seven subsets then real magnitude API:
+// 980/1001/1211/555/982/992/1250/1250. NOT kept: all regress and miss native frame/length; original helper and standard alignment evidence retained.
+// Original complete body and contracts restored.
+// DH336: Native coordinate/axis/double-angle array subsets, then point pairs:
+// 474/474/473/475/474/474/475/475. NOT kept: the one-point angle-array gain
+// and grouped storage need equality; original helpers and complete body restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

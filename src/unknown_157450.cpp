@@ -4305,6 +4305,9 @@ long function_14de70(long local_player_index);
 // Earlier: frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
 // stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
 // and scratch-register renames remain. The copies are retail's when 0x7f720 returns color3f by
+// frame 0x48c agrees, four bytes long; the late unit/slot NONE
+// sentinel, byte shift count, mode scratch register and final progress/result transport remain.
+// Earlier color-copy trials: the copies are retail's when 0x7f720 returns color3f by
 // value (compile-only), or with each copy through a color3f local initialised from the call: 46
 // (both), 65 (rival only); on that, the individual best/best-score defaults before the
 // player-index store and the rival text cleared before the rival's player lookup 42 (44 each),
@@ -4467,6 +4470,9 @@ long function_14de70(long local_player_index);
 // player index through the existing 0x14de70 42 (same code; kept, it was that function's body written out).
 // F356: Shared charge fraction, positive/complementary charge outcomes and entry fraction storage, original/existing weapon selection:
 // 111/93/67/111/115/99/82/115. NOT kept: no qualifying match or gain; original complete body restored.
+// DH323: Complete paired winner producers with bool/byte/short/long improvement
+// and no-improvement outcomes 701/701/701/701/708/708/710/710. NOT kept: all regress;
+// late unit/slot sentinel, byte shift count and tail observation residency remain.
 // Lane 13 r58 (fast): weapon NONE default before the unit test with an `if` for the slot 73 (2688 B, `or esi, -1`
 // as retail, both compares immediate, pool read ahead of the masked index); on it both tests against the weapon
 // local 71; the index term first in the unit address sum 73 (same code); a dead else `weapon = NONE` 42 and a ternary

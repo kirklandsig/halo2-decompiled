@@ -376,6 +376,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // M350: Uninitialized angle/complement/width entry declarations, seven subsets,
 // then paired primary-aspect storage at entry: 223 each. All producers stay at
 // their original phases; complete body restored, tint/secondary-UV homes remain.
+// DH331: Oriented start/end UV endpoints before subtraction, conditional then paired branches,
+// bounds pointer/reference and four-real pointer/reference: 473/473/473/473/541/541/541/541.
+// NOT kept: smaller frames and regressed extents/scores; original alias-safe encoder and callback restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

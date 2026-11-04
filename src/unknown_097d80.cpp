@@ -311,6 +311,9 @@ struct c_aggregate : c_child
 // M358: Allocation-information query success/failure in byte/short/word/long: 31 each.
 // NOT kept: one-use query outcomes do not match; independent outputs and complete body
 // restored; frame 0x8024/0x8020 and exchanged low loop homes remain.
+// DH330: Cleanup null guard with completed-query scope/shared scalar query output/
+// actual block reference, masks 0-7: 31/31/31/31/31/31/31/31. Shared outputs recover
+// 0x8020 but exchange the low loop homes; original independent outputs/body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

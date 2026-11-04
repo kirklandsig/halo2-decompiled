@@ -1437,6 +1437,12 @@ struct s_looping_detail_request
 // M353: Shared admission/traversal remaining count, long/short with while/for,
 // native audible output 110/110/113/113; temporary/copy 130/130/141/141.
 // No gain; original separate count/skip, output and complete body restored.
+// DH332: Typed source/offset/velocity copies, seven subsets then complete backward ranges:
+// 172/181/202/114/165/175/196/182. NOT kept: all regress; query expansion and detail/offset transport remain.
+// Original complete body and contracts restored.
+// DH336: Declared byte/char/word/long completion with original bool storage,
+// request output then native temporary/copy: 110/110/129/128/127/127/153/152.
+// Original Boolean contract and complete body restored; first-player expansion remains.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1839,6 +1845,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 508/525/503/510/524/520/380/482f (control 479f, full 305). First signed byte
 // plain 426 at 1907/1923 bytes, frame 0x11c; NOT kept: no full gain or native frame.
 // Original long ordinals, count reads, request and complete body restored.
+// DH334: Named computed gain difference/pitch interval/detail milliseconds, seven subsets,
+// then complete stages with a named pitch offset: 479 each reduced (control 479, full 305).
+// NOT kept: no gain or native frame recovery; original complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

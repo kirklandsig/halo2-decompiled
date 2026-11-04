@@ -251,6 +251,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // P307: Initialization-failure result feeding guard/four stores, bool/byte/char/word/short/int/long/dword:
 // 101/229/229/226/226/227/227/227. NOT kept: 101 adds neg/sbb/inc absent in retail,
 // and leaves outer EBP and clamp homes unresolved. Original entire body restored.
+// DH331: Native next-cursor reference in existing tokenizer, original/early-null/nested-result/
+// output-owned graphs, pointer then fixed-array delimiter input: 128/232/193/248/128/232/193/248.
+// Original tokenizer and loader restored; early EBP preservation and read-size homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

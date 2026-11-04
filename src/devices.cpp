@@ -1795,6 +1795,9 @@ bool function_0b6760(s_index_pair const *pair);
 // P310: Reached/reversal shared event dispatch as value+pending/offset/field/admission:
 // 285/331/327/291; ordinary-index forms 399/392/340/400. NOT kept: no match;
 // original event observations, both inherited qualifications and full body restored.
+// DH338: First-channel receiver across manual/group phases, pointer/reference,
+// inherited/ordinary index and saved-pointer domains: 376/376/393/393/392/392/441/441.
+// All restored; frame/index/header/state/result homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

@@ -3180,12 +3180,19 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // F354: Live default-target receiver/repeated steering direction/fraction numerator,
 // singles and pairs/all/all forced inline: 1077/1047/1053/1089/1060/1053/1105/1105.
 // NOT kept: best gain five is below eight; frame stays 0x80 versus 0x74; original body/helper restored.
+// DH323: Repeated clamp inputs at yaw/paired upright controls/final ground
+// fraction, subsets 1/2/4/3/5/6/7 1068/1064/1052/1068/1068/1064/1068; all plus boost fade 1068.
+// NOT kept: ties or regressions, frame remains 0x80 versus 0x74. Original
+// complete expressions, helper contracts and body restored.
 // P297: Existing ground/yaw/boost dot3f producers, seven subsets, then all with the
 // angle producer forced inline: 1051/1071/1068/1071/1068/1071/1071/1071. NOT kept: changed float trees require equality; original body/helpers restored.
 // M350: Existing angle producer magnitude mutable/const 1057/1057; complete
 // result initialized/assigned/const 1052/1052/1052; magnitude plus result,
 // result-first and both const 1053/1053/1053. Frame stays 0x80; original
 // helper/body restored, with force/velocity homes still differing.
+// DH325: Native force/torque/working-velocity memcpy subsets 1/2/4/3/5/6/7:
+// 1052/1052/1052/1052/1052/1052/1052; complete memmove 1093. All restored;
+// frame 0x80 versus 0x74 and original force/velocity homes remain.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {

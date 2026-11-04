@@ -1089,6 +1089,9 @@ real function_296600(long actor_index, long prop_ref_index);
 // J247: 25c9d0/25cca0/263810/268c60 inline contracts, original/null-first unit pairs:
 // 257/267/257/267/257/267/257/267; frame 0x20, 1256/1278 bytes (retail 1268).
 // NOT kept: no gain; body/contracts restored. Squad, flag and root/hit homes remain.
+// DH334: Standard inner/outer/both short maxima, with/without null-first unit (fast 372, full 257);
+// then full maximum and secondary-result stages: 350/365/366/368/346/346/365/355.
+// NOT kept: new maximum call and larger frame absent in retail; original complete body restored.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

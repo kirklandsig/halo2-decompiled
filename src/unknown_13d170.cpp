@@ -392,6 +392,9 @@ struct s_block_candidate
 // M352: Final failure-limit observed/capped/branch-produced/complementary minimum,
 // compound/nested independent failure-category guards, eight forms 347/347/347/347/347/347/347/347.
 // All restored; frame 0x1050 versus 0x1054 and page/ring/policy ownership remain.
+// DH333: Standard age/segment/category selections in seven subsets
+// 393/388/419/384/433/366/435; final failure-limit minimum 410. The latter recovers
+// frame 0x1054 but grows to 1243/1213 bytes. NOT kept: regressions; full original body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

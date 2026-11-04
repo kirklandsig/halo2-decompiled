@@ -3493,6 +3493,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // seven subsets, then all with the skip-state role name: 31 each at 4828 bytes.
 // Original parameter symbols restored; selector scheduling, post-bias reload
 // order and six quantizer inputs in shift rather than clip home remain.
+// DH325: Existing quantizer inline/natural expansion, immutable value/direct
+// input subsets 0-3 in each: 1201 each, 4420/4828 bytes. All restored; native
+// expansion still needs force-inline. Selector/reload/sample homes remain.
+// DH327: Existing quantizer writes native integer outputs, pointer/reference
+// destinations with nested/guard/default/conditional clamp graphs:
+// 31/31/787/31 twice. Original output contract, helper and complete body
+// restored; selector scheduling, post-bias reloads and shift/clip homes remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

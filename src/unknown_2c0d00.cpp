@@ -357,6 +357,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 926/926/885/885; complements 882/882/932/882 fast (control 931; full 882).
 // NOT kept: test-produced flags miss byte equality and native frame 0x2cac.
 // Original priority/enabled graph, qualifiers and complete body restored.
+// DH332: Standard coordinate differences, seven subsets then reverse sphere traversal; reduced control 931:
+// 935/935/917/896/904/959/920/1022. NOT kept: lower previews grow frames away from 0x2cac; one joint gain has regressing parts. Full 882 retained.
+// Original complete body and contracts restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1499,6 +1502,12 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // M351: Immutable original/expanded radius and data binding, all seven subsets, then all
 // with fixed source/current/selected/output receiver bindings: 418 each. Original body restored;
 // frame 0x114 versus 0x10c, persistent zero and metadata homes remain.
+// DH330: On the original-radius graph, array center pointer/reference 490/490; separate
+// corners with copy/pointer/reference center 418/490/490; direct trace-target output
+// alone/separate corners/center pointer 439/439/520. Original workspaces and body restored.
+// DH338: Existing normalizer early-zero/positive-first/zero-result/magnitude-result
+// 418/418/441/418; each with the planar setter 434. Setter forms raise the other
+// normalizer user 68 to 98/91; all restored, frame/radius/zero/metadata homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

@@ -680,6 +680,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // M356: Persistent fallback type/class/mode field references, seven subsets,
 // then all mutable: 540/535/542/536/535/534/534/534. NOT kept: all regress;
 // original snapshots and complete body restored. Request graph/base homes remain.
+// DH336: Name/primary/alternate library publication on the twelve-byte shared
+// request graph, original output-index tests: 587/385/386/590/590/492/597/617.
+// Original complete body restored; graph-base/reload homes and byte normalization remain.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

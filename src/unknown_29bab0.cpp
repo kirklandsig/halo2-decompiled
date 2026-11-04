@@ -241,6 +241,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // epsilon, ja and divss, the length stored at [esp+0x40] as retail) 771 at 3499; plus float radial squares 803 (3482);
 // plus the scale as `local_1 * v` 771. The input/heading homes (input pointer in EBX from entry, local_2 at
 // [esp+0x2c] for retail's [esp+0x20]) keep the rest positional.
+// DH321: Direct-input ordinary inline declarations for existing mode/query/trace/response/turn/
+// direction/transform/velocity providers individually: 804/804/804/804/804/804/804/804. All declarations,
+// input storage, arithmetic helpers and complete executable body restored.
 // Lane 14 r57 (fast, from 750): retail tests the radial distance once (float squares from memory, fsqrt, the
 // gap loaded after it, one fcompi), each arm then taking its own exit tests. The two radial tests as one
 // conditional expression 816 (frame 0x90); with float squares 804 (3504 bytes; the squares are retail's, but

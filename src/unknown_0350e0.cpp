@@ -1719,6 +1719,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // folds both into one constant. Negations spelled `-(...)` 193 (identical code); result declared at the y test with
 // `return 0.0f` in case 0/default 291 (904 bytes); case 0 merged into default 194; `return 0.0f` in case 0/default
 // 193; `if (y)` 193. Body restored.
+// DH337: Native two-coordinate point/array projections at four declaration boundaries:
+// 192/192/192/192/192/192/192/192, 788/812 bytes. NOT kept: one-point gain,
+// grouped storage needs equality and length moves farther; independent result home remains.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2733,6 +2736,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Round 64 (fast): a copy of `first` for the sorts 370; the third pass through state->entries[i] with no entry pointer 318;
 // `--last` as its own statement in the third pass 317, in the fourth pass 317; first swap through the flags pointer 375;
 // `entries[first++]` in the second pass 317; `first = i + 1` 442. `first` stays in EBP in all of them.
+// DH337: Actual elapsed bindings in decay/growth and maximum-clamp field subsets
+// 366/371/317/369/366/371/369; complete elapsed-pointer graph 369. Original helper
+// and body restored; state/prefix/ordinal homes and first decay-copy rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3816,6 +3822,9 @@ bool __stdcall function_391f0(void *state);
 // Round 64 (fast, aligned counts from 132): long current cluster at the guard 302 (frame 0x6c, aligned 129); camera read at the plane
 // test 251 (aligned 131); fog word widened into a long after its NONE test 251 (132); current+camera 302; current+fog 302;
 // camera+fog 251; all three 284 at 1020 bytes (aligned 127, frame 0x6c). Retail's slots: remaining 0x10, ordinal 0x14, structure 0x18.
+// DH337: Native cluster/portal/plane field subsets and complete read-only geometry
+// 251/251/251/251/251/251/251/251. Original views/body restored; frame 0x74
+// versus 0x70, early zero and loop homes remain.
 // @retail 0x36b50
 void function_36b50()
 {

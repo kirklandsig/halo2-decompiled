@@ -2271,6 +2271,15 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // M351: Immutable existing first/second/third sample offsets, all seven subsets, then all with
 // fixed model metadata/mesh/index/data bindings: 542 each. Original body restored; native
 // status/mesh homes and selective material/magnitude expansion remain.
+// DH326: Branch-owned bitmap UV, texture-region base UV and publication-ended combined color,
+// subsets 1..7 then all with aggregate color initialization: 629/677/798/542/629/677/798/798.
+// Original output lifetimes and full body restored; status/mesh homes and helper expansion remain.
+// DH330: Native three-sample output array with long/dword/short/word indexed decoding,
+// encoded-format scope 656/656/877/877; model scope 664/664/877/877.
+// NOT kept: unmatched grouped outputs; original independent samples and body restored.
+// DH338: Complete RGB pin index loops in long/short/word/byte 542/1111/1111/1111;
+// advancing-channel loops 542/1111/1111/1111. Narrow loops remain rolled and shorten
+// away from retail; original helper/body restored, status/mesh/sample homes remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

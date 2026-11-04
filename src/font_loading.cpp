@@ -669,6 +669,9 @@ static inline word font_character_pixel(long alpha, long color)
 // F361: Complete command-class dispatch, shared 0/1 arm, PSR/SPR/RPS/RSP groups:
 // word pixel result 204/221/235/249; long result 196/214/220/225.
 // NOT kept: larger extents and unresolved alpha/literal/run-two schedule; original decoder restored.
+// DH331: C-runtime word fill at switch/ordinary/both boundaries, long then word fill values,
+// then both with full-width pixel result and long/word fills: 86/86/87/108/107/108/106/108.
+// Original fills, helper and body restored; alpha widening, literal assembly and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

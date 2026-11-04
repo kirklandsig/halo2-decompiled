@@ -424,6 +424,16 @@ union s_185be7
 // M351: Immutable existing range minimum/span/exponent, all seven subsets, then all with
 // a read-only range-record binding: 622 each. Original observations and complete body restored;
 // control-root/NONE, settings/zero homes and clamp/flag joins remain.
+// DH326: Existing flag mutator with short/word/dword canonical predicates, pointer then
+// native reference destinations: 626/626/625/626/626/625; ignored pointer/reference destination
+// results with Boolean predicates 622/622. Original helper and full body restored; root/NONE
+// ownership, settings/zero homes and flag joins remain.
+// DH330: Own-input homes at each of the six original first consumers 1031/622/622/622/622/622;
+// controller/action homes at all consumers 1031/623. NOT kept: unmatched own-input
+// indirections; original arguments, helpers and complete body restored.
+// DH338: Actual range-lower/angular-bound/curve-count/curve-pointer/paired-curve/
+// lower-angular/lower-curve/all native field bindings: 927/622/622/622/622/927/927/927.
+// Original body restored; root/NONE and scalar homes remain; lower reload lacks equality.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

@@ -3155,6 +3155,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // constant-false result first: eight fast 600s against control 600 (full 561).
 // NOT kept: no byte match for declaration allocation. Original body restored;
 // result/flight scalar homes and vector scheduling remain.
+// DH324: Actual initial mode/current-state/prior-turn discriminator values, seven
+// subsets then immutable values: fast 599/599/611/599/611/601/609/609 (control 600, full 561).
+// NOT kept: 599 gains only one against reduced 600. Original field observations and
+// complete body restored; result/flight/vector homes remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3491,6 +3495,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // M338: Native scale/transform-row/complete point-geometry ordinal loops, subsets 1/2/4/3/5/6/7 and final
 // pivot translation: 369/369/364/369/364/364/364/364. Original helper and body restored;
 // matrix/origin/pivot homes remain. NOT kept: four-point lead above 30 fails the eight-point gate.
+// DH322: Final pivot in consumed offset, component/difference/setter/loop: 368/368/368/368;
+// in final position: 363/363/363/363, 1937 bytes, matrix home 0x50 and first +0x7d; origin four bytes high.
+// NOT kept: five-point nonmatch gain above 30 fails the eight-point threshold; original
+// output workspace, helper and complete body restored, matrix/origin/pivot/property homes remain.
 // AC504: Both pivots through existing alias-safe/scalar-input/axis rotations, with
 // component/shared/in-place translation: 895 each (1412 bytes, helper outlined).
 // Native inline expansion on four producer forms: 389/389/389/391; all regress.
@@ -5192,6 +5200,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // admitted motion declaration: eight fast 655s against control 655 (full 648).
 // NOT kept: no byte match for declaration allocation. Original body restored;
 // tag/state/animation homes and completion expansion remain.
+// DH324: Native flag-word/timer-array/output forward-push fields, seven subsets,
+// then direct native push reads: fast 655/655/655/655/655/655/655/655 (control 655, full 648).
+// Original actual record declaration, field accesses and complete body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
