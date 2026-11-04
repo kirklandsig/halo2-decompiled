@@ -5303,6 +5303,23 @@ struct s_unit_damage_source
 // Tried: largest declared first 200 (index lands in EDI); slot not reset to NONE before the
 // slot-0 test 231; largest tested directly as a short 191; `slot = largest != 0 ? 0 : NONE` 211;
 // the seat NONE test inside each type arm 146; the seat index set by an if/else 140.
+// Round 3 of #1049 (retail walk: no logic difference found; the callee, its arguments and every field agree):
+// what keeps the score is the constant -1. Retail hoists NONE into EBP for the second half (`or ebp, -1` after
+// the notify test; the team, player, player-unit and both seat tests compare against EBP; the object test and
+// the two tail tests use an immediate where EBP is reused), puts the objects pool in EDI and the header in EBP,
+// and keeps the seat test in each type arm (two `cmp ecx, ebp`) with one shared lookup. Ours compares every
+// test with an immediate, merges the two seat tests after the ternary, and takes the pool in EBP. Nothing
+// triggered the hoist: seat test in each arm of an if/else (the compiler merges them again) 146, an extra
+// `responsible_index != NONE` 150 (858 bytes), `responsible_index` uninitialised 140, the whole betrayal part
+// nested under `if (notify && team != NONE && ...)` 140. Every second-half change below also flips the first
+// loop's `total += amount` to `movss xmm1, [src]; addss xmm1, amount` (retail: movaps then addss with the
+// source), so its score is not comparable: `largest` kept as a short with no `kept` (16-bit compares) 191;
+// `(long)largest` casts 191; `kept` declared before `largest` 140; the threshold compare cast to short
+// (`cmp cx, bx` as retail, instead of ours movsx + 32-bit) 146; the pool cached in a local, `objects` (lands in
+// EDI as retail) 146; that with the object path's unit in its own `s_unit *object_unit = 0` assigned to
+// `responsible` after the header test (gives retail's `xor esi, esi` / `test esi, esi` shape) 146 at 848 bytes,
+// also 146 and 854 bytes without the pool local. Not kept: none lowers the score. Largest-block residual: retail
+// keeps `slot` live in EAX across the block so `largest` takes EDX and widens in place (`movsx edx, dx`).
 // @retail 0xca700
 void __stdcall function_ca700(long unit_index, real amount, short type, bool notify, long player_index, short team,
 	long object_index, bool flag)
