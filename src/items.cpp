@@ -720,6 +720,8 @@ struct s_item_collision_bsp
 // NOT kept: no equality or gain; in-place extent grows. Original body restored.
 // Y592: Independent branch query-input planes/scalar plane outputs/contact-consumer declarations, masks 1/2/3/4/5/6/7; all with role names:
 // 204/207/206/202/204/207/206/206. NOT kept: no exact storage form; protected plane width, plane joins and spin/speed homes remain.
+// Y595: Final angular output owns spin, scalar/existing setter at original/entry/effect/contact boundaries:
+// 210/210/210/210/210/210/210/210. NOT kept: no byte equality; original complete body restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

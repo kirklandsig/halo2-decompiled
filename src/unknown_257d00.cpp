@@ -1820,6 +1820,8 @@ void function_b7360(long object_index);
 // point records, seven subsets then complete backward copy: 454/309/309/481/472/319/489/489.
 // NOT kept: native ownership is unrecovered and all extents shrink away from 1848;
 // original complete callback and transfers restored.
+// Y595: Shared secondary/primary reference-validation phase, positive/complementary bool/byte/short/long results:
+// 472/472/465/461/500/500/499/498. NOT kept: no byte equality; original complete body restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2375,6 +2377,8 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B430: Existing byte-flag writers at classification/request/motion publications,
 // masks 1/2/3/4/5/6/7: 488/485/488/485/488/485/488; all plus pooled flags 513
 // (fast control 485; full 469). NOT kept: no match or gain; original body restored.
+// Y595: Complete turning/fallback normalization admissions, positive/complementary bool/byte/short/long results:
+// 469/469/469/469/469/469/469/469. NOT kept: no byte equality; original complete body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

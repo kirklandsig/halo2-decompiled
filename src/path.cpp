@@ -1065,6 +1065,8 @@ bool function_2715a0(byte *buffer)
 // DH357: Fresh post-conversion denominator squares, with complete segment,
 // projection and collision operation families in eight forms: 486 each.
 // NOT kept: all tie; original fresh reads, sum trees and complete body restored.
+// Y595: Per-iteration 64-link output at iteration/after-sift/after-sentinel/query boundaries, inherited/descriptive names:
+// 486/486/486/486/486/486/486/486. NOT kept: no byte equality; original complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
