@@ -992,6 +992,19 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // F362: Existing sample copy as const input member, forced/ordinary expansion,
 // byte/dword order and pointer/reference direction: 547/799/547/719/547/799/547/719.
 // NOT kept: frame/query/search homes stay wrong; outlined copies shrink away from retail.
+// Round 404: Actual coefficient-count long/dword/word/size_t producers 547/547/601/547; with separate
+// byte extents 547/547/605/547. Original copy span/helper and body restored; frame/input,
+// vector/selection and fraction homes remain.
+// B410: Existing copier direction memcpy/memmove 547/601; coefficient memmove with
+// aggregate/memcpy/memmove direction 649/649/662; native sample reference with direction
+// memcpy/memmove or coefficient memmove 547/601/649. NOT kept: neutral or nonretail CRT
+// transfer shape and shorter extent. Original copier, all calls and complete body restored.
+// P308: Direct failing-candidate skips at nearest/projection/opposite-distance reductions,
+// all seven subsets 547 each; all with count/override guard exits 570 at 2109 bytes.
+// NOT kept: ties/regression; original searches, guards, helpers and complete body restored.
+// P310: Existing coefficient copier returns native direction pointer/reference or sample
+// pointer/reference: forced 547/547/547/547; ordinary 621/621/620/620. NOT kept: ties or
+// outlining regressions; original full copier, direction consumer and complete body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

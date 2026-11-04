@@ -1786,6 +1786,13 @@ void function_b7360(long object_index);
 // F364: Native point-set/collection accessor ownership, pointer/reference returns and
 // ordinary/forced boundaries: 301/301/301/301/553/303/553/303. NOT kept: shared users regress.
 // Original accessor and callback restored; actor/output carriers and 24-byte deficit remain.
+// Round 40 (m3 lane 18, fast): whole body inside `if (perception == NONE || type == 1 || type == 4)` with every failure as
+// `break`, empty cases as `success = true; break;`, word flags at +0x10a and a `short result` if/else (lane 9's 246 form without
+// its goto) 307 (1852 bytes; the `||` test is `cmp cx, 1/4`, not retail's `dec/sub 3`), actor first 305; case 13 word flags with one
+// shared 0xb7360 call 309 (1816); success declared at the main switch 301; cs_point_get as an inline function 561 (breaks
+// 0x259ec0 and 0x25a380), as forceinline 303 (0x259ec0 still breaks under inline_depth(0)); the wait result tested directly
+// with `success = true` in its arm 630 (1700). Diagnostic, reverted: volatile reference reads at the 1/19 copy and case 5 289
+// (arg_0 EBP, output ESI as retail).
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2317,6 +2324,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // F364: Native command-record lookup, global/explicit pool input, pointer/reference
 // returns and ordinary/forced boundaries: 485/485/485/485/485/485/485/485 (fast control 485). Original shared
 // lookup, record and callback restored; actor/state ownership and first-point home remain.
+// Round 40 (m3 lane 18, fast; control 485, full 469): retail's case-block order 1, 2.., 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21,
+// 14, 20 (from its jump table) 491; case 20's point and vector declared outside the iterator loop 485; case 1's point declared
+// at the case top 485; the result declared after the other locals 485; the state local for case 1's point and the facing
+// call, declared after the flag 485. Retail's actor (EBX) is spilled to [esp+0x10] and that slot is shared with the case
+// 1/4/20 points; ours keeps the actor in EDI, which 0x210b60's EDI argument clobbers in case 1, so its slot cannot be shared.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

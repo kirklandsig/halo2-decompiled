@@ -2425,12 +2425,6 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // B389: Complete final-speed factor/numerator/denominator nodes, masks 1/2/4/3/6/5/7,
 // then original speed with division in place: 91/91/278/91/99/88/99/91. NOT kept: factor plus
 // denominator gains only three and only together; original body restored, early velocity j/k and zero homes remain.
-// F359: Complete shared contact-state outcome in bool/byte/signed-char/short/word/int/long/dword:
-// 158/162/162/164/164/164/164/164. NOT kept: no exact outcome graph; prefix regresses and extent grows.
-// Original complete body and helpers restored.
-// F363: Shared scaler plain counted/input-cursor/bounded/output-cursor loops,
-// factor-first then component-first: 127/251/127/389/127/251/127/389. NOT kept: all regress;
-// original shared scaler, normalizer and complete body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

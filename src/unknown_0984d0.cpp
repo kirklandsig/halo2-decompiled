@@ -541,6 +541,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // F364: Native table-owned element validation, instance/static, bool/long results and
 // ordinary/forced boundaries: 80/80/80/80/80/80/80/80. Original helper, table type and
 // inherited local-slot reads restored; validity/cursor homes and loop entry remain.
+// Round 40 (m3 lane 18, fast), each with retail's long counter in place of the signed byte: alone 115 (the loop is
+// then entered by a jump as in retail, but onto the volatile items read); with the count-one reads in retail's load order
+// c, b, count 115; with the notify loop reusing the counter 115; reads b, c, count 110 (544 bytes); the counter declared
+// before the validity flag 117. Body restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
