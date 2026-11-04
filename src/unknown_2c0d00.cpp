@@ -1555,6 +1555,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // length but outlines its copy, keeps frame 0x114 and loses exact caller; all algorithms lose that
 // caller. Native copy-then-count commit 418. Original full body restored; frame 0x114/0x10c and
 // radius/zero/count/metadata homes remain.
+// P344: Actual current/selected/output array-element lvalues on the corrected two-radius graph, seven
+// subsets then actual source subobject: 418/418/418/418/418/418/418/418. NOT kept: no byte match;
+// original complete body restored. Native frame, radius/zero/count and metadata/trace homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
