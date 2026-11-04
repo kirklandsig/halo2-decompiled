@@ -859,6 +859,12 @@ union s_60403
 // Round 40 (m3 lane 18, fast): the mapping loop's two counts named before it (previous_count/current_count or old_count/
 // new_count, either name order) 155; a long retained mask 149 (same code); a plain bool discriminator with 0x609e0's
 // if/else header local 167; a plain bool declared at the member loop top 167; at function scope 167. Body restored.
+// Round 148 (m3 lane 5; a one-file LTCG harness with an entry calling this is exact here, base 149; aligned counts from a line diff, base 84): plain bool + `old_players`
+// (previous + 0x10d4 before the retained loop) + mapped member at each use 277 (1513 bytes, aligned 81); `old_players` before the member loop for the retained and emission
+// loops 329 (1482, aligned 117); `members` (current + 0xc) instead 278 (aligned 64); old member sum written `previous + index * 0x10c + 0xc` 278 (aligned 64); on the 146 form the
+// member copy written once before the flag test 265 (1513, aligned 39). 90 random combinations of those with test order, map pointer spelling, old index local, count locals,
+// flag and old member declared at the loop top: none below 146, aligned none below 39. In all of them previous + 0xc is rebuilt from the stack; retail keeps previous in EBX through
+// the member loop's head (`lea esi, [ecx + ebx + 0xc]`, reloaded at the latch).
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

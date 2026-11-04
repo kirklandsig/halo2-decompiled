@@ -893,51 +893,49 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
     function_b7360(object_index);
 }
 
-// Activating this body changes shared helper register conventions and loses
-// seven existing exact matches. Preserve the closest draft until those
-// helper conventions can be reconciled with their owners.
-#if 0
 
-__declspec(noinline) bool function_0bfe60(dword const *mask, long node);
+bool function_0bfe60(dword const *mask, long node);
 bool unit_animation_periodic_layer_active(long object_index);
 bool function_10edd0(long object_index);
-__declspec(noinline) void function_10ec00(long object_index, s_animation_state *state, long unused,
+void function_10ec00(long object_index, s_animation_state *state, long unused,
 	dword const *node_mask, long count, real_quaternion_transform *orientations, byte *mask);
-__declspec(noinline) void function_10e530(long object_index, s_animation_state *state, long unused,
+void function_10e530(long object_index, s_animation_state *state, long unused,
 	dword const *node_mask, long count, real_quaternion_transform *orientations, byte *mask);
 void function_1132f0(long object_index, dword const *node_mask, long count, transform4x3f *matrices);
 void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const *orientation);
 
 
-__declspec(noinline) transform4x3f const *__stdcall function_bd610(long object_index,
-	byte const *nodes, transform4x3f const *input_matrices);
-
-// Retail 0xbd610
+/* samples and overlays an object's node orientations and rebuilds its matrices, when it has any */
+// score 309 (was 342): enabled from the draft, 810 bytes against 856, first difference +0x4. Retail reads the object through the header at each early test, keeps
+// the matrices result and the matrices passed on as two values, and holds the sample flag in a stack byte. Forms: the draft with one result and a volatile sample flag
+// 303 (not kept: no new volatile), with a plain flag 342; two results and the object read after the early tests 309, with the loop's increment before the flag test
+// and no for-increment (not kept: a hand-placed increment) 295.
+// @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
 {
-	transform4x3f *result = (transform4x3f *)input_matrices;
-	word header_index = (word)object_index;
-	s_object_transform_header *header = &((s_object_transform_header *)g_4e0300->data)[header_index];
+	s_object_transform_header *header = &((s_object_transform_header *)g_4e0300->data)[object_index & 0xffff];
+	transform4x3f const *result = input_matrices;
+	if (*(short *)((byte *)header->object + 0x112) == NONE)
+		return result;
+	if (object_index != NONE && ((byte *)header->object)[0xb3] > 0)
+		return result;
 	byte *object = (byte *)header->object;
-	transform4x3f *matrices = 0;
-	rigid_transform_scaled *orientations = 0;
-	if (*(short *)(object + 0x112) == NONE)
-		return input_matrices;
-	if (object_index != NONE && object[0xb3] > 0)
-		return input_matrices;
 	byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
 	long model_index = *(long *)(definition + 0x38);
 	if (model_index == NONE)
-		return input_matrices;
+		return result;
 	s_animation_state *state = (s_animation_state *)(object + *(short *)(object + 0x12a));
 	long node_count = *(short *)(object + 0x110) / sizeof(rigid_transform_scaled);
 	byte *model = g_4e3b44[model_index & 0xffff].bytes;
 	byte *render_model = g_4e3b44[*(long *)(model + 4) & 0xffff].bytes;
 	rigid_transform_scaled *object_orientations = (rigid_transform_scaled *)(object + *(short *)(object + 0x112));
+	transform4x3f const *final_matrices = input_matrices;
 	dword mask[8];
 	memcpy(mask, model + 0xa4, sizeof(mask));
-	volatile bool sample = false;
+	bool sample = false;
+	transform4x3f *matrices = 0;
+	rigid_transform_scaled *orientations = 0;
 	if ((bool)((*(dword *)(object + 4) >> 30) & 1) &&
 		!((bool)((*(dword *)((byte *)header->object + 4) >> 29) & 1)) &&
 		(!((1 << definition[0]) & 1) || !((byte *)header->object)[0x34b]))
@@ -958,7 +956,7 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 				(long)(model + 0xa4), node_count, (byte *)object_orientations);
 			orientations = object_orientations;
 			matrices = (transform4x3f *)input_matrices;
-			result = matrices;
+			final_matrices = input_matrices;
 		}
 	}
 	if (((1 << ((byte *)header)[3]) & 3) &&
@@ -971,7 +969,7 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 		function_10e530(object_index, state, (long)render_model, 0,
 			node_count, (real_quaternion_transform *)g_4dc2f0, (byte *)mask);
 		matrices = g_4d8f20;
-		result = g_4d8f20;
+		final_matrices = g_4d8f20;
 		orientations = g_4dc2f0;
 	}
 	if (matrices && orientations)
@@ -987,12 +985,10 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 		}
 		result = matrices;
 	}
-	if (result && ((1 << ((byte *)header)[3]) & 3))
-		function_1132f0(object_index, (dword const *)(model + 0xa4), node_count, result);
+	if (final_matrices && ((1 << ((byte *)header)[3]) & 3))
+		function_1132f0(object_index, (dword const *)(model + 0xa4), node_count, (transform4x3f *)final_matrices);
 	return result;
 }
-
-#endif
 
 #include <math.h>
 /* the point and direction 0xbc070 sets in the list at g_4de2f4 */
