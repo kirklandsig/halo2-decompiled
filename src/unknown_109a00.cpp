@@ -256,6 +256,11 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 // i, j, k declared before the cross 10; a two-use moved-position pointer 163; `result = true` before the rotate test 120;
 // definition read at its test 73; offset, velocity, then moved declared 10; displacement before the moved point 10;
 // change declared with displacement and built by statements 10.
+// Round 108: the existing scaled-add helper with a unit factor in either input order 10; change declared before
+// displacement and built by statements 10; a one-use second-point input pointer 163; a one-use change-input pointer
+// 163; plain inline on the private implementation leaves a 17-byte wrapper and loses the matched caller; the shared
+// point-velocity helper at the first site as well as the second 165 (1019 bytes); previous velocity declared before
+// the moved transform 10. Original body and forced-inline declaration restored.
 // @retail 0x109a00
 bool function_109a00(long object_index, vector3f *delta, bool rotate, vector3f *velocity)
 {
@@ -410,6 +415,8 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (112); the entry registers are still reversed (retail
+// object in eax, entry in ecx) and the physics pointer is still spilled early.
 // score 112 (was 112): Frame 0x48 agrees; object/entry registers, early physics-pointer spill and center/projection scheduling remain.
 // Earlier at 112 (was 112): retail takes the object index in eax and the entry
 // index in ecx (ours the other way round, which is also 0xb7060's last

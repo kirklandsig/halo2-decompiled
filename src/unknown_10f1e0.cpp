@@ -405,6 +405,9 @@ bool function_1d9320(s_1d9240 *slot);
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
 
+// MiniMax A (11-04, run 41): no new form, no lower score (37); the mask form for the visited-bit test (the
+// existing bit_vector_test, and the same set written out inline) matches retail's test but turns the following
+// update into load/OR/store and shifts two call setups (42).
 // score 37 (was 37): frame 0x104 agrees. Retail tests the visited bit with a mask and still ORs
 // it into memory after computing the word address; with the shift-form test ours gets that update
 // but not the test, and with a mask test (the existing bit_vector_test) the update becomes
@@ -1792,6 +1795,9 @@ bool __stdcall function_110ab0(long unit_index)
 // N352: Actual unit/control/state record-reference families 1..7 and complete
 // read-only bindings: 450 each. NOT kept: frame stays eight versus twelve,
 // with 424 code differences; original pointer receivers and full body restored.
+// P327: Complete base/depletion/overlay true-false result producers, masks 1/2/4/3/5/6/7,
+// then all with result at entry: 465/430/450/465/465/430/465/465. NOT kept: 430
+// still has 424 code differences; only table/extent improves. Original full body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2194,6 +2200,12 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // clamps 776/841/841; complete overlay center-admission bool/byte/short/long/dword
 // storage 776 each. NOT kept: no gain or exact predicate/branch-layout form.
 // Original body restored; frame 0xcc/0xd4 and first-angle/overlay expansion remain.
+// P326: Existing primary blend scalars/secondary weight/overlay ratio declarations at their
+// owning phase, subsets 1..7, then all at entry: 776 each. Assignments stayed at their
+// producers. NOT kept: no gain; original body restored, frame and first-angle expansion remain.
+// N368: Nested persistent-valid/direct-set/default-and-overlay admissions, seven family
+// subsets, then all with split outer definition/graph guard: 776 each. NOT kept: no gain;
+// original admission graph restored, frame 0xcc/0xd4 and opposite selective expansion remain.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -3251,6 +3263,8 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (44); the frame is still 0x3c against retail's 0x38,
+// which waits on 0xe70b0's return type.
 // MiniMax D (11-01): no new form, no lower score.
 // score 44 (was 44): BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38. Measured from
 // the frame top every slot agrees except the action short (ours 4-aligned below the 4-byte slots,

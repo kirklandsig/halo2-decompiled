@@ -392,11 +392,20 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC520: Existing four-use corner pointer/reference outputs with pointer/reference/native
 // value returns, then native returned point: 46/46/42/46/46/46/42/246. NOT kept:
 // four-point value-return leads below threshold; native result grows frame/length; original helper/body restored.
+// AC522: Actual normal-copy result plane/normal pointer/reference receivers,
+// memcpy then memmove 91/91/91/91/211/211/211/211. NOT kept: EDI receiver and
+// dot/product regressions; original library/copy boundaries and body restored.
 // J250: Existing corner destination pointer/reference returns 46/46; complete bound/output
 // references 46; bound-reference destination pointer/reference returns 46/46; output-reference
 // destination pointer/reference returns 46/46; bound-reference point-value result 246 (1039 B).
 // NOT kept: no live-plane store, first-selector or product-memory-side recovery; the point
 // value moves away from native extent. Original four-use helper, all corner calls and body restored.
+// AC524: Complete two-edge eligibility bool/byte/short/long, then complementary
+// rejection, 48 each at 983 bytes on the by-value/component-array graph. NOT kept:
+// dot-product divergence moves earlier to +0x67; original predicate and body restored.
+// AC526: Whole inverse result if/else/default/conditional, successful/failed/nested
+// publication returns, default field and nested result: 63/98/63/46/46/46/108/98. NOT kept: no gain;
+// original corner producer and tail restored; plane base, selector/product ranks remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -975,6 +984,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC520: Complete signed-distance boundaries, real/double, immediate/paired fabs and
 // ordering-result forms: 539/533/539/533/831/843/831/843. NOT kept: six-point leads
 // grow frame to 0x21e4; double forms lose the native prologue; original body/helpers restored.
+// AC522: Complete selected-edge acceptance bool/byte/short/long, then
+// complementary rejection 533/533/533/533/606/606/606/606. NOT kept: six-point lead below
+// gate and frame 0x21e4 versus 0x21dc; original complete body restored.
 // Y566: Float sine/cosine/inverse-cosine API families 1/2/4/3/5/6/7, then
 // float sine/cosine with a double angle: 539/539/562/539/582/582/570/840.
 // Original complete body and helpers restored; tag/count/plane homes and rotation
@@ -986,6 +998,14 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Y584: Axis normalizer numeric-length result, zero-default/branch-owned with
 // bool/byte/short/long epsilon admission: 548 each. NOT kept: frame 0x21e4
 // and extent 3631 lose retail 0x21dc/3647; original full body and helpers restored.
+// AC524: Complete bitwise normal identity bool/byte/short/long, then complementary
+// mismatch results, 535 each at 3647 bytes. NOT kept: four-point gain below eight;
+// original helper and complete body restored; tag/count/plane homes and rotation spills remain.
+// AC526: Complete normalized-axis admission bool/byte/short/long, then complementary
+// rejection results, 533 each at 3647 bytes. NOT kept: six-point lead below eight and
+// frame grows to 0x21e4; original body/helpers restored; tag/count/plane homes remain.
+// AC529: Complete forward-edge role, bool/byte/word/long direct then false-default publication:
+// 555/555/621/578/624/624/624/630. NOT kept: no equality or gain; native tag/count/plane/topology homes remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

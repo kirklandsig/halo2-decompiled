@@ -961,6 +961,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// MiniMax A (11-04, run 41): no new form, no lower score (196 in the 16-address set, 153 in the wider one);
+// the switch's cases still take their arguments in registers other than retail's (it pushes edi where ours
+// pushes esi), so the callee conventions decide this one.
 // score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
@@ -1281,6 +1284,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // DH329: Primary priorities DQCPS/DSQCP/DSPCQ/DSCQP/DPQCS/DPSCQ/DCQPS/QSDPC
 // 207/198/198/208/202/198/206/197 reduced, control 196 (full 153). Original classifiers restored;
 // NOT kept: all regress; delayed ESI save and late-handler expansion remain.
+// M374: Partial late-handler ownership, only 18/11 at entry, early-return/else
+// remainder and terminal/default remaining handler: 195/195/195/195/189/189/189/189 fast (control 196, full 153).
+// NOT kept: seven-point best is below the gate and entry/save shape still differs;
+// original classifiers, all handler tuples and matched caller restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

@@ -161,6 +161,12 @@ static __forceinline long real_to_long(real value);
 // Round 97 (fast): existing vector3f_assign 2; void helper with output reference 2; vector temporary 2;
 // three-real array temporary 2; const aggregate temporary 2; named output result 6; state/slot declarations
 // swapped 2; const actor view 2. Original two-difference body restored.
+// Round 132 (fast): forward-text dot with direction first in every product 2; a two-pointer inline dot taking a point3f 6, in
+// k, j, i text with the i product swapped 6, its result named 6; direction and slot pointers formed before the actor lookup 112,
+// the direction pointer alone 112. Harness: plane_distance_to_point 79 (0x132fd0 and 0x181800 get retail's i-term load order through
+// it; here the facing's i stays first); an extra subtraction 70, a fourth term 80; a direction pointer read from a global 44; the i
+// product named before the sum 6 (it comes first and reuses xmm0); the direction's i, the facing's i or both named 2/2/2; the partial
+// k + j sum named 2, accumulated with `+=` 2, three `+=` statements 2, `sum < 0` 2, i + j then k 6; the sum tested twice 2.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

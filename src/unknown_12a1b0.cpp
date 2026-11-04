@@ -1226,6 +1226,10 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // the same 35 with an embedded assignment, state in a char or long local, `2 ==`, a cast of this file's getter, a predicate helper, the element
 // at loop scope, a byte cast, an index guard ahead or around the state test, `continue`, a flag read first, a second view, the state test
 // inside the helper. With the state read through the macro the element is a CSE temp again: 24 at 210, with or without the local.
+// Round 108: only iterator construction forced inline 24; an ordinary inline provider declaration 24; the iterator's
+// element getter forced inline 24; a comma-separated assignment/test condition 24; an empty-step for 24; index declared
+// before the iterator 24; an unsigned index 47 (215 bytes); the provider call in its own lexical block 24. The matched
+// provider, gain query and both iterator siblings stayed matched. Original body and declarations restored.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
