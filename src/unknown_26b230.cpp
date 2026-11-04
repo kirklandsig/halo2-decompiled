@@ -2021,6 +2021,10 @@ void function_269250(long clump_index, long actor_index);
 // memcpy retains 482 bytes; memmove moves away to 464 versus retail 480.
 // Original assignment, receiver and full body restored; pool/selection and
 // x87 score homes remain.
+// Round 82 (m3 lane 9, fast; this body 89 fast, 87 plain): in-arm compare as `if (!(score <= best))` with the
+// selection stored first 128 (480 B); team mismatch `continue` then the compare 126; the common graph with the
+// selection stored first 89 (same code as fast control); the score as a ternary on the team test 128 (484 B);
+// in-arm compare ending in `continue` 126.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2299,6 +2303,16 @@ void function_269250(long clump_index, long actor_index)
 // predicates in bool/byte/short/long, eight forms 89 each at 743 bytes.
 // One-use predicates are exact-only and restored; original categories, mutation
 // result, deletion continuation, all shared pools and complete body retained.
+// Round 82 (m3 lane 9, fast): retail's deletion arm reloads both pools and joins the unit test after `test bl, bl`
+// (0x26b093), skipping the node scan. The node scan written in both live arms 295 (837 bytes, not merged); `if (unit)
+// continue; break;` 89 (same code); the deletion arm first as `match && replacement == NONE` with the rest in its else
+// (a repeated test) 196 (741 bytes, registers rotate); the 3 form re-measured 3 (ours: node pool EDI, prop pool EBP);
+// on it the node iterator declared beside/before the prop iterator 3/3.
+// M3 lane 4 r161 (fast): the prop loop split into a matched-object arm (deletion, or replace + node scan) and an
+// else arm (state clear + node scan) so only the bottom test reads the unit flag 295 (837 B: the two node scans
+// are not merged and the pools are no longer hoisted); `changed` set only in the replace arm 92; the group flag
+// assigned from the data test and tested in place of `data` 206; the type as a long 135; the unit flag inverted
+// (`single`, cleared for units) 89 (same code, slots unchanged).
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

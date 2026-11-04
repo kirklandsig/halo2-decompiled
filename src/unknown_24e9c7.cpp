@@ -324,6 +324,11 @@ struct s_24e9c7_bounds
 // up 143 plain (748 bytes), the first form to put kind and bitmap at retail's -0x14/-0x18 with a 5-reference spill beside result, but
 // ours orders result -8, spill -0xc, unused -0x10 where retail has spill -8, unused -0xc, result -0x10. The across pair declared at the function's
 // top, ahead of result, in both orders, on all 32 of those forms: every home unchanged, best 131h.
+// Round 143 (m3 lane 6, fast): scale read before size and the across products 125 (same code); across_j before
+// across_i 125 (same code); across_i as `-forward_j` then `*= size` 138 (739 B: the across products are still
+// substituted into their single uses, after the height conversions); result renamed to sort first/last 125/125
+// (diagnostic). Retail computes both across products right after size (across_j spilled to -8), so they are not
+// single-use temporaries there.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

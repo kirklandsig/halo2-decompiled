@@ -2113,6 +2113,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 67 (m3 lane 1, fast): spawn as an aggregate initialiser `{ scale, unknown, location }` 128; the type-query
 // pointer at function scope 128; multiplied declared before tinted 128; the matrix producer as the spawn call's
 // argument 162 (552 bytes); the location mode in a short/word local before the loop 143/143 (552 bytes).
+// AC506: Initial location-setter presence/absence results in bool/byte/short/long:
+// 194/194/188/188/194/194/188/188 (572/552 bytes), all matched controls preserved.
+// NOT kept: one-use admission results regress and retain frame 0x40 versus 0x44;
+// original initial guard, color/query observations and complete body restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3267,6 +3271,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // effect pointer is formed in EAX and copied to EBP, where retail and our cached form load the index straight into
 // EBP; on the live form the system looked up before the effect 119 (348 bytes); colours read at the call 122 (320
 // bytes); colours declared before the particle-location index 108; the location pointer declared first 108.
+// AC506: Activity-admission bool/byte/short/long at the original cursor-read boundary
+// 93/93/93/93; before cursor acquisition 112/112/112/113. Earlier reads change the
+// argument convention and lose the matched caller. NOT kept: no gain or exact match;
+// original activity field read, definition/cursor lifetimes and complete body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
