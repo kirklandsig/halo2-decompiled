@@ -99,7 +99,7 @@ static inline c_class_58d20 *network_session_get_live(void)
 
 /* compares two Xbox Live user ids, and their guest numbers if asked to */
 // @retail 0x63d00
-bool xuid_equal(XUID const *a, XUID const *b, bool compare_guest_number)
+inline bool xuid_equal(XUID const *a, XUID const *b, bool compare_guest_number)
 {
 	bool result = false;
 

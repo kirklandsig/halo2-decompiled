@@ -376,6 +376,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // the NULL-record `goto` replaced by a second copy of the default arm 853 (3956, not tail-merged); the body
 // publications with the palette byte read at every use 698 (3842). Loop left: zero in XMM5 (retail XMM7 for the
 // whole arm), slot byte in CL with the 0x130f60 result in EDX, the accumulator store interleaving.
+// Round 68 (m3 lane 1, plain; the one-link harness is not exact here, aligned 10 against the build: g_547f80 hoisted): lane 12's 3819-byte
+// form rebuilt 695 (its masked listing is close; what it lacks is retail's `mov edx, eax; or eax, -1` after the 0x130f60 call, so every later line is
+// one off). -1 stays in EDX with NONE in a named local at all five uses 696, the result typed dword 695; on the harness the result as const
+// or unsigned, declared apart from its call, after the flag, after the slot read: all the same code. The call after the source stores moves
+// -1 to EAX only ahead of the call. Probes (a dword load and global store) after the call, after the flag, either side of the slot read:
+// -1 stays in EDX; two after the call: 785 instructions but -1 still in EDX. Not a rotation of one step at those places.
 // Round 82 (m3 lane 16, fast listed with 0x131030): the three-scalar helper with weight/remaining after the height
 // 723 (3845 bytes), after the blue 616 (same code); the palette record's else arm as one ternary with a NULL default
 // 616 (same code); the 131030 arm's fog range clamped straight from the definition field like the palette arm

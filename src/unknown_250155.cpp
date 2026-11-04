@@ -1504,6 +1504,8 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // index_count/indices/item_count declared before player_count 107; teams/values `bool const` with index_count
 // first 107; player_count zeroed in branch one 142; branch one's pointer fill ending on `<` 137 (442 bytes). All
 // restored.
+// Round 402: Ordinary inline producer/eligibility/output-query declarations, singles/pairs/all; indexed tails on the all-inline graph.
+// Scores 83/83/83/83/83/83/83/172. NOT kept: no lower count; declarations restored; original complete body restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
