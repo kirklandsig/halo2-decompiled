@@ -985,6 +985,11 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // the horizontal offsets 39; four scalar short edges copied into the piece 238 (1129 bytes, frame
 // 0x64); each edge inset then offset as two statements 207 (1162 bytes); insets left, right, top,
 // bottom 20 (top/right registers swap as well).
+// Round 53 (m3 lane 15, fast): the four offset statements in all 23 other orders 2 to 49 (left, right,
+// top, bottom 2); the four insets in all 23 other orders 20 to 170; the window shorts of the camera
+// storage as one rectangle member 2; inner and piece declared together with piece assigned 2; the
+// coordinates or the points declared at the top of the block 2/2. Unused-local probes (1 to 16) at
+// the top leave it at 2, so the load order is no numbering tie.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {

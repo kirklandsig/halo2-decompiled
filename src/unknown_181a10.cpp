@@ -412,6 +412,10 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // copy with direct/shared/scalar reconstruction 95 each; the normal field address 8. Original restored.
 // Round 138: inner loop as while 68 (671 bytes); bodies by pointer add 8; context assigned after its declaration 8;
 // component guards nested 8; index guards nested 8.
+// Round 53 (m3 lane 15, fast): the second body read before the first 8; the query pointer named before the
+// call 8; entry pointers for both bodies 8; `result = true` first in the closer-contact arm 10; that test with
+// its operands swapped 8. Diagnostics: `(void)j`, `(void)i`, `(void)first` and unused initialised copies of
+// them (one or two) leave the slots, so no-code references do not order these spill homes.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
