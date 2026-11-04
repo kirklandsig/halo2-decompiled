@@ -232,6 +232,9 @@ struct s_visibility_bound_record
 // in ESI from entry through the bottom arm (no reload). Flags read at each use 442 (1744 bytes); the bit-12 test through
 // TEST_FIELD_BIT 419; both 444 (retail's shr/test and tag in EAX, but no table preload); with the table read once into a
 // local 447; the table local and TEST_FIELD_BIT with the flags local 442.
+// Y565: Actual outer/inner/both while traversals 406/406/406; live count-table cursor
+// with original/outer/inner/both while graphs 433/433/433/433; both real table cursors
+// 443. Original body restored; entry/table and plane/query homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

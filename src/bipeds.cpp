@@ -1426,6 +1426,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 550/550/584/585/585/581/585/585. NOT kept: 550 uses a one-use called result and
 // shortens away from retail; 584 gains one, 581 gains four and shortens away.
 // Original complete body restored; missing frame word and material/airborne/animation homes remain.
+// Y565: Independent nearest-point pair, measured point, eye/center and animated-body
+// output declarations at case/function entry, paired/all case outputs, all entry outputs,
+// then all plus animated body: eight at 585. Original body restored; frame 0xf8/0xfc
+// and material/airborne/animation homes remain. No input observation or helper changed.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

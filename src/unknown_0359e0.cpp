@@ -227,6 +227,10 @@ PRIVATE inline long swizzle_log2(dword value)
 // delayed coordinate promotion, height/common homes and minimum branch remain.
 // M321: Consumed x/y/both coordinate suffixes, private/shared logarithms, then both native short formals
 // 82/82/82/87/87/87/130/119. Original body restored; early promotions, height/common homes and minimum branch remain.
+// Y565: Branch-owned common count and matching low mask, count-first/mask-first, native/
+// sign-preserving long mask, private/shared logarithms: 99/89/110/109/73/109/93/93.
+// NOT kept: 73 combines individually regressing forms and grows to 271/270 bytes;
+// all other forms regress. Original body restored; coordinate promotion/count homes remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

@@ -2128,6 +2128,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // g_4687c4 856; definition looked up right after the unit 795. On 776: id copied inside the index test
 // 842; final slot test inverted with arms swapped 776 (same code); overlay loop as `for` 869 (first
 // 0x11df30 inlined as retail, frame 0xc8); `for` with the id inside the test 873; ratio `0.5f + 0.5f * x` 776.
+// Y565: Existing channel_start at each direct set site, early/late pairs/all, then all with
+// the original graph guard: 775/775/775/776/776/775/775/776. NOT kept: at most one
+// point; frame stays 0xcc and first-angle/overlay expansion remains. Original body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
