@@ -2136,6 +2136,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // Y567: Existing complete object getter for unit/pickup/transferred weapon,
 // seven subsets, then complete shared object/header acquisition: 202/202/202/202/202/202/202/202.
 // Original helper uses and body restored; player/header-offset homes remain.
+// P328: Saved parent rejection and complete branch-owned parent admission in
+// bool/byte/short/long: 202/202/211/210/231/231/211/211. Original body restored;
+// native frame agrees, player/header-offset ownership and rounds/mode homes remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
