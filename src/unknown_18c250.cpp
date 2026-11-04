@@ -336,6 +336,9 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // real assignment after stores 8; scalar copy declared first 8; late object snapshot 7.
 // native data/entry/both record copies 56/58/74; direct entry/data/both fields 22/23/65;
 // native admission predicate 7; nested availability predicate 7.
+// MiniMax H (11-04): the curve address built from the samples' address copied into a dword with memcpy, plus
+// the entry's data offset, with the scale passed straight to the callee: 7 -> 2. NOT kept: the memcpy reads the
+// field's bits through its address (kept only with a byte match); without it the same body is 8.
 // @retail 0x18ca20
 void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permutation const *permutation, real scale)
 {

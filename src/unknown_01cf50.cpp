@@ -3056,6 +3056,9 @@ s_runtime_device_configuration g_runtime_device_configuration;
 long g_467008, g_46700c;
 bool g_5093bc;
 
+// MiniMax H (11-04): the settings are copied with memcpy, the depth format tests the low flag byte
+// and the interval mask the high flag byte of the flags word; the two flag bytes are then read from
+// memory as retail does and the function matches (fast and plain).
 // MiniMax G (10-31): 55 (was 68): the settings are copied into the global field by field and the
 // depth format is assigned first; the two flag bytes still come from a register instead of memory.
 // MiniMax G (10-31): a byte-typed view of the global loads the flag bytes from memory (54), but it
@@ -3064,6 +3067,7 @@ bool g_5093bc;
 // gives retail's store order (52) but the flag bytes are still taken from the loaded dword
 // instead of memory, the reads through the packed dword give 69 and 72, a dword copy of the
 // first four bytes gives 55 and reading the flag bytes through the global's address gives 52.
+// MATCH (was 55 fast; 68 before). Tried (MiniMax S run 10): copying the settings field by field, assigning the depth
 // score 55 (fast; 68 before). Tried (MiniMax S run 10): copying the settings field by field, assigning the depth
 // format after the back buffer width and clearing the result before the device pointer gives 68;
 // reading the two flag bytes back through a byte pointer to g_runtime_device_configuration as
@@ -3074,11 +3078,11 @@ bool g_5093bc;
 // @retail 0x128c0
 bool function_128c0(s_128c0_settings const *settings)
 {
-    g_runtime_device_configuration = *(s_runtime_device_configuration const *)settings;
+    memcpy(&g_runtime_device_configuration, settings, sizeof(g_runtime_device_configuration));
     bool result = true;
     D3DPRESENT_PARAMETERS parameters;
     memset(&parameters, 0, sizeof(parameters));
-    parameters.AutoDepthStencilFormat = (D3DFORMAT)(D3DFMT_D24S8 + ((byte)g_485ac8 != 0));
+    parameters.AutoDepthStencilFormat = (D3DFORMAT)(D3DFMT_D24S8 + ((byte)g_485ac8 ? 1 : 0));
     parameters.Windowed = false;
     parameters.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
     parameters.EnableAutoDepthStencil = true;
@@ -3093,11 +3097,11 @@ bool function_128c0(s_128c0_settings const *settings)
         break;
     case 1:
         parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
-        parameters.FullScreen_PresentationInterval = 1 + ((g_485ac8 >> 8) ? 0x80000000 : 0);
+        parameters.FullScreen_PresentationInterval = 1 + ((byte)(g_485ac8 >> 8) != 0 ? 0x80000000 : 0);
         break;
     case 2:
         parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
-        parameters.FullScreen_PresentationInterval = 2 + ((g_485ac8 >> 8) ? 0x80000000 : 0);
+        parameters.FullScreen_PresentationInterval = 2 + ((byte)(g_485ac8 >> 8) != 0 ? 0x80000000 : 0);
         break;
     default:
         parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
@@ -3112,8 +3116,8 @@ bool function_128c0(s_128c0_settings const *settings)
         D3DDevice_Reset(&parameters);
     if (!g_5093b0)
     {
-        g_5093b0 = NULL;
         result = false;
+        g_5093b0 = NULL;
     }
     else
     {
