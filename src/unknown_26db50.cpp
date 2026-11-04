@@ -695,6 +695,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // DH320: Existing bitmap activation ordinal char/signed-char/byte/short/word/int/
 // unsigned-int/dword domains: 91/91/92/90/92/90/91/91. Both producer users checked;
 // byte domains lose the matched peer. Original helper/body restored; ring conversion/spill remain.
+// DH339: Trace/world/collision declared at native spoke scope, seven subsets then all
+// with the actual point workspace, eight at 90. Original declaration scopes and complete
+// body restored; radius schedule, SSE ring conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

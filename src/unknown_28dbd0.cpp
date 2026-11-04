@@ -279,6 +279,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // AC503: Shared moving/fixed offset and velocity producers on the added-cross graph, seven
 // subsets then the complete native point receiver 216/180/173/180/173/180/180/173. Original full file/helper restored;
 // frame 0x11c/0x118 and cross/trig homes remain. NOT kept: unmatched producer/field-pointer forms.
+// DH339: Native accumulation through three advancing component cursors, long/dword/short/byte
+// bounds 229/229/315/315; output-end for/while/do walks 316/316/314; split adds 316.
+// NOT kept: frame/length move away from retail; original scales, helper and complete body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
