@@ -733,6 +733,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // original clamp, snapshots, plane math and full collector restored.
 // Coordinated long plane-index formal/declarations: 308; callee matches but a caller
 // rises 1 -> 103 (580 -> 576 bytes). NOT kept: shared-user regression; all declarations restored.
+// AC541: Complete final validity/normal-threshold publication or rejection,
+// bool/byte/short/long: eight at 308. NOT kept: no equality/gain;
+// original guards, snapshots, plane math, publication and full body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

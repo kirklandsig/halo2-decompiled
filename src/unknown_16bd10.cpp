@@ -933,6 +933,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // AC539: Actual FOV transition-completion result, positive then complementary
 // bool/byte/short/long: eight at 236. NOT kept: unmatched one-use decision storage;
 // original duration/target observations, projection, helpers and full body restored.
+// AC541: Actual timer nonzero-scale decision, bool/byte/short/long at its consumer
+// 236/236/236/236; at the entry snapshot 365/365/439/323. NOT kept:
+// no equality/gain; original snapshot, projection, float trees and whole body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -1742,6 +1742,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC539: Independent zoom/idle channel-query return ownership, positive then
 // complementary bool/byte/short/long: eight at 220 fast (control 220, full 218).
 // NOT kept: one-use call results unmatched; original queries and full body restored.
+// AC541: All four early coefficient override/default-presence outcomes, bool/byte/short/long,
+// eight at 220 fast (control 220, full 218). NOT kept: no equality or gain;
+// original field tests, overrides, smoothing tuples and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

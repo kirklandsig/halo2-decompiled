@@ -691,6 +691,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC539: Independent frame/rotation mode observations at both original gates, raw
 // short/word/long/dword 117/117/117/117, bool/byte/short/long truth 109/109/109/109.
 // NOT kept: one-use field captures unmatched; original reads, helpers and full body restored.
+// AC541: Paired entry invalidation as clear-bit/keep-bit/mask-value/conditional-bit
+// results, dword then long: 288/288/260/260/283/283/288/288. NOT kept:
+// shared mask publication does not match native separate stores and length grows;
+// original identity invalidations, shared alias-safe rotations and whole body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1761,6 +1765,9 @@ bool function_17afd0(long effect_index, long value);
 // DH350: Independent visibility/drawing getter lifetimes, availability default
 // after getter/owner/view, joined/nested success, view-default and conditional:
 // 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
+// AC541: Both downstream same-view/attachment outcomes with availability-owned or complete
+// rejection-owned results, bool/byte/short/long: 120/115/126/133/120/99/127/133.
+// NOT kept: all regress; original availability, snapshots, query gates and complete body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
