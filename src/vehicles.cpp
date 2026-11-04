@@ -1296,6 +1296,9 @@ long function_10f5f0(long object_index);
 // declaration boundaries: 512/512/580/586/512/512/580/586. NOT kept: complement instructions are absent
 // from retail and extents grow away from 2264; original complete body restored.
 // Frame 0x19ac/0x1984, native predicate stores and rolled reduction remain.
+// P330: Plain raw light cursor/indexed scan, native Boolean bit-four test and
+// branch-owned mask: 565/566/571/565/565/565/571/571. NOT kept: no gain; frame 0x19ac
+// and predicate/reduction homes remain. Original full body, buffer and array values restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2970,6 +2973,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // original/distinct relative output: 677/721/709/739/685/725/700/749. NOT kept: nonnative aggregate clears;
 // 677 reaches native length but inserts rep stosd. Current axes and three position-zero stores before
 // left cross, original/distinct output 676/682; original output kept at 3244 bytes, plain confirmed.
+// P336: Normalized up/lateral/bank-axis in actual matrix rows, seven separate-output
+// graphs then all with in-place output: 720/738/776/754/797/772/782/774. Bank-axis alone
+// recovers frame 0xfc but grows to 3311/3244 and regresses; all equality-only forms restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3303,6 +3309,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // normalization traversals: 1125/1125/1114/1114/1125/1125/1114/1114. NOT kept:
 // frames 0x84/0x88 and lengths 4706/4694 move away from native 0x74/4666.
 // Original complete body restored; incoming velocity and force homes remain.
+// P334: Native inverse/damping/paired-mass component-transform contracts,
+// seven subsets then queried-velocity range copy: 1090/1105/1078/1074/1093/1138/1118/1138.
+// NOT kept: no eligible native frame/velocity/force-home recovery; original complete body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4842,6 +4851,15 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // B445: Actual recognized-name return on direct-active graph, failure/success defaults in
 // bool/byte/short/long: 790/757/752/752/749/774/764/761. NOT kept: ties or regressions; whole body restored.
 // Frame 0x18 agrees; native entry definition and zero/result/one residence remain.
+// P334: Native component-range up/paired-forward/lateral projection contracts,
+// seven family subsets then complete reversed input ranges: 873/958/904/1078/950/1100/1219/1243.
+// NOT kept: no native entry-definition or zero/result/unit-constant residence; original complete body restored.
+// P336: Final/blend nested bound producers, forward MAX, reverse MIN, both bounds,
+// independent final/blend comparisons, staged final bounds: 748/751/749/749/749/749/749/749.
+// NOT kept: best gain one; original body restored. Entry definition and zero/result/one homes remain.
+// P341: Getter-produced vehicle-record lvalues, mutable/read-only, native/immutable table records and
+// original/early pure table acquisition: 749/764/749/764/749/764/749/764. NOT kept: no native entry-
+// definition or zero/result/one residence; original entire body and pointer receivers restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5418,6 +5436,16 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // B445: Discarded query-output workspace reused by drift/side-input/both-axis producer
 // subsets, then late angular acceleration: 1087/1087/1096/1107/1085/1064/1066/1066. NOT kept: unsupported combined workspace
 // ownership; 1064 is 5104 bytes, 1066 is 5107, with frame still 0xf8. Whole body restored.
+// P334: Native backward/short-angle/target component-transform contracts,
+// seven subsets then complete mass-force producer: 1040/1172/1161/1143/1153/1253/1230/1285. NOT kept: backward
+// alone reaches 1040 but shortens to 5088/5094, frame 0xf0/0xd8; other forms regress. Original body restored.
+// P336: Float CRT boundaries at pitch atan/root, horizontal root, driver/bank trig,
+// rotation atan/root and desired-up root: 1064/1064/1087/1097/1097/1087/1087/1087.
+// NOT kept: pitch gains grow to 5104/5094; frame stays 0xf8. Original full body restored.
+// P341: Bounded scalar branch-results at lift numerator, paired unit clamps and paired spin-step limits,
+// seven subsets then vertical attenuation: 1097/1087/1087/1097/1097/1087/1097/1097. NOT kept: native
+// frame 0xd8 and handle/matrix homes are not recovered; original full expression graph, matrices and
+// body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

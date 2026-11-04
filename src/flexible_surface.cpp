@@ -566,6 +566,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // acquisition with inline limiter: 117/117/604/117/604/604/604/117. NOT kept: force-limiter forms
 // grow to 1247/880 and lose matched 0x3db00. All provider bodies, definitions/declarations and
 // complete target body restored; frame 0x28/0x20 and direction/cross homes remain.
+// P339: Complete old-direction scalar captures ijk/ikj/jik/jki/kij/kji,
+// immutable component aggregate and existing setter: 154/154/155/134/153/132/154/157.
+// NOT kept: all regress; original full capture, products and body restored.
+// Native 0x20 frame, seed/time order and old/cross homes remain; exact peers survive.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

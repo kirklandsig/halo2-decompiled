@@ -1790,6 +1790,9 @@ bool function_17afd0(long effect_index, long value);
 // F380: Complete visibility/rejection results on the shifted-word/owner-arm graph,
 // bool/byte/short/long: eight 47. NOT kept: ties; original admission,
 // availability, view snapshot, query gates and complete body restored.
+// P337: Whole-iteration same-view/attachment/camera output declarations, masks
+// 1/2/4/3/5/6/7 then all with draw, each 47. NOT kept: no match; original
+// producer sites, snapshots and complete body restored. Early clear/conversion remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

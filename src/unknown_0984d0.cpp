@@ -513,6 +513,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // subsets then all with the chain-count identity: 80 each at 540/540 bytes.
 // NOT kept: no byte match; original complete body, helper and local-slot reads restored.
 // Native validity/cursor homes and validation-loop entry remain.
+// P336: Actual validator inline/inline-stdcall/inline-cdecl/forced boundaries with
+// forced then ordinary input producer on the byte ordinal: 80/80/181/494/80/80/181/205.
+// NOT kept: no gain; cdecl loses the validator match. Both complete sources and contracts restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

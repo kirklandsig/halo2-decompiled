@@ -709,6 +709,8 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // B433: Called normalizer/trace contracts, each ordinary/inline/forced, excluding
 // the ordinary pair: eight at 270. Original declarations and full body restored;
 // early root/actor retention and paired-vector scheduling remain.
+// P333: Native direction/point-publication/parent-record/all transfers through memcpy/memmove:
+// 270/354/270/433/270/414/270/396. NOT kept: no match or gain; original copies, helper and full body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -378,6 +378,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // F385: Persistent actor-mode presence byte/char/word/short/long, reduced
 // 931/931/954/954/955; absence bool/byte/long 931/931/942 (control 931, full 882).
 // NOT kept: frames 0x2cb8/0x2cbc miss 0x2cac; original complete body/qualifiers restored.
+// P343: Actual first/second marker and sphere element lvalues, seven subsets then mutable records:
+// 931/931/931/931/931/931/931/931 reduced (unchanged control 931; full 882). NOT kept: no equality;
+// original buffers, observations, query, qualifiers, helpers and full body restored; native
+// frame/actor/unit and priority/query/marker homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1563,6 +1567,14 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // and complete Boolean role names, subsets 1/2/4/3/5/6/7 then alternate complete names:
 // 439/418/418/439/439/418/439/439. NOT kept: ties/regressions; scan scope also grows
 // to 1754 bytes. Original full body restored; frame 0x114/0x10c and radius/zero/count homes remain.
+// P335: Actual corner/tangent/trace eight-byte alignment, seven subsets and complete
+// graph with direction alignment: 652/652/655/652/652/652/652/652. NOT kept: prologue/extent
+// diverge and three exact providers regress. Original objects, alignment and complete body restored.
+// P342: Standard record copies at fallback/singleton, forward/backward/lifetime single sites then paired
+// forward/backward: 403/423/429/429/427/425/428/440. NOT kept: fallback forward reaches 403 and native
+// length but outlines its copy, keeps frame 0x114 and loses exact caller; all algorithms lose that
+// caller. Native copy-then-count commit 418. Original full body restored; frame 0x114/0x10c and
+// radius/zero/count/metadata homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

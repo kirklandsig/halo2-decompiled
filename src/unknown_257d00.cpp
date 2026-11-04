@@ -1834,6 +1834,10 @@ void function_b7360(long object_index);
 // payloads, seven subsets then all with set before clear: 301/301/301/301/301/301/301/301.
 // NOT kept: no equality or gain; original byte expressions/full callback restored.
 // Pool/input/output ownership, retained point-reference carrier and 24-byte gap remain.
+// P339: Selected case-seven delay in short/word/int/dword, exhaustive branch
+// then conditional producers: 301 each, all 1824/1848 bytes. NOT kept: no
+// byte match; original full callback restored. Entry actor/output roles,
+// reference retention and 24-byte deficit remain; all calibrated peers unchanged.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

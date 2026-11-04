@@ -2944,6 +2944,12 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // Y590: Actual trigger-record null/count/count rejection exits, seven subsets
 // then complete pending/latch rejection ownership: 50 each. NOT kept: the first
 // event index reload and actor-loop alignment persist; original full body restored.
+// P340: Actual trigger-query bool/byte/char/signed-char/short/word/long/dword results at the original
+// call: 50/50/50/50/101/101/62/62. NOT kept: one-use result misses equality; original direct comparison,
+// calls, wrapped scan and complete body restored. First-event index reload and loop alignment remain.
+// P343: Accumulated trigger-count zero lifetime before squad/input/trigger/task/list/threshold/scan,
+// then entry declaration with original seed: 176/176/105/61/50/50/57/50. NOT kept: no equality; original
+// whole body restored; first-event index reload and shifted actor-loop alignment remain.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

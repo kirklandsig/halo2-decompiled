@@ -571,6 +571,15 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // fields 182/182/182; full/count mixed pairs 259/257. NOT kept: full-header clears retain extra
 // stores and grow away from native length; count clears tie. Original list initialization and
 // whole body restored; entry/index spill and point homes remain.
+// P333: Standard copies at initial/query/bound point producers, seven subsets then
+// complete backward copy: 227/209/195/243/233/213/254/254. NOT kept: all regress; initial/query
+// transfers also lose the matched caller. Original copies, includes and full body restored.
+// P335: Standard native point lifetime construction at initial/query/bound producers,
+// seven copy subsets then complete fill: 227/209/195/243/233/213/254/253. NOT kept: all regress;
+// construction copies canonicalize to initialized-copy output and disturb the caller. Original body restored.
+// P342: Actual provider-node and table-base matrix record lvalues, mutable/read-only alone and all four
+// pairs: 182/182/182/182/182/182/182/182. NOT kept: no equality; original matrix receivers and whole
+// body restored. Entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

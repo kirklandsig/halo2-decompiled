@@ -612,6 +612,7 @@ struct s_1f8a70_actor
 // P325: On the two-result graph, inner-result declarations after unit/reset/destination,
 // at entry and at route selection all tie 188; unit-output declarations at active phase/entry
 // scored 206/206; outer failure result assigned before cleanup 188. All restored;
+// gave 206/206; outer failure result assigned before cleanup 188. All restored;
 // unit/result packing and the native memory-result cleanup remain.
 // N367: Early active/arrival/mode success joins on the two-result word-selector graph, seven subsets
 // 424/418/425/446/443/441/316; complete joins with terminal literals 306. NOT kept: all regress; original
@@ -622,6 +623,9 @@ struct s_1f8a70_actor
 // B437: Actual radius-first route admission in bool/byte/short/long valid storage
 // 309/309/308/308, complementary invalid storage 309/309/308/308. NOT kept:
 // all regress; unit/result packing, dispatch adjacency and memory-result cleanup remain.
+// P337: Current two-result word-selector lexical unit/selector/inner-result home subsets
+// 1/2/4/3/5/6/7, then all with outer-result name, each 188. NOT kept: no byte match;
+// native unit/result +0x12 and late memory result remain. Original full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

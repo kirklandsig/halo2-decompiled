@@ -2823,6 +2823,10 @@ struct s_scenario_scripting_view
 // B432: Existing difference/squared-length/both native for loops 80/82/82;
 // while loops 80/82/82; difference/squared-length do loops 136/112. Original shared
 // helpers and complete search restored; actor/counter/set and guarded-data homes remain.
+// P341: Actual point-payload/complete candidate-record lvalue references, mutable/read-only and
+// original/traversal-owned short counter: 80/87/80/87/91/87/91/87. NOT kept: native
+// actor/counter/selector and delayed data homes remain; original complete search restored. Exact wrapper
+// and both callees survive.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -1023,6 +1023,10 @@ extern long *g_51e9cc;
 // Y590: Complete switch-default discovery ownership, found/missing channels in
 // bool/byte/short/long storage: 42 each. NOT kept: no receiver-retention or
 // contact-schedule gain; original complete body restored.
+// P340: Recent-component height output, exhaustive/conditional real/double, immutable real/double and
+// explicit-query real/double results: 121/121/137/144/121/144/121/144. NOT kept: no equality; original
+// height observation, branch and full body restored. Lookup rematerialization and crouch/contact
+// publication schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1508,6 +1512,21 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // B437: Airborne char/signed-char/byte/short/word/int/dword/long domains on the
 // retained animation graph 599/599/599/632/632/627/627/627. NOT kept: all regress;
 // frame 0xf8 versus 0xfc and material/airborne/animation homes remain.
+// P337: Default boost before tag/component/airborne/position, then after position/
+// velocity/facing/speed: 659/659/659/660/651/631/613/603, 2816 bytes, frame 0xf8.
+// NOT kept: all regress; original default branch and complete body restored.
+// P339: Whole case orders 2/1/3/6/4-5, 3/1/2/6/4-5, 1/3/2/6/4-5,
+// 1/2/3/4-5/6, 2/1/3/4-5/6, 3/1/2/4-5/6, 1/3/2/4-5/6, 3/2/1/4-5/6:
+// 592/582/587/606/608/596/606/607, all 2828 bytes, frame 0xf8.
+// NOT kept: best gains three and no native frame/layout match. Original case
+// order and full body restored; shared helpers and all checked peers unchanged.
+// P341: Actual selected-root/header/ground-body record lvalues, seven subsets then complete read-only
+// graph: 585/585/585/585/585/585/585/585. NOT kept: missing native frame word and
+// material/airborne/animation homes remain; original receivers, helper graph and whole body restored.
+// P343: Initial speed-constant lifetime before
+// object/tag/component/state/animation/airborne/ground/facing boundaries:
+// 589/585/585/585/585/585/600/618. NOT kept: no equality; original whole body restored; frame 0xf8
+// versus 0xfc and material/airborne/animation homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2972,6 +2991,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // B437: Actual body byte offsets stepped inside mass/farthest/push loop subsets
 // 1/2/4/3/5/6/7 and complete unsigned offsets: 530 each. Original signed ordinals,
 // base observations and body restored; frame/result/state/point homes remain.
+// P337: Complementary returned outcome at original exits, bool/byte/char/signed-char/
+// short/word/int/long: 530 each. NOT kept: no native frame/result repair; original
+// positive result, all exits, observations and complete body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3679,6 +3701,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // B442: Root-first parent/root order, bool/byte/short/long completion results,
 // false-default 383/417/414/415; true-default 443/444/437/437. NOT kept: all regress;
 // true-default frame grows to 0x130. Original order, result and full body restored.
+// P342: Complete offset/delta squared products, alone/both, real-root overload and complete immutable
+// products: 369/369/369/368/369/369/369/369. NOT kept: no byte match or eligible native allocation gain;
+// original reductions, root expression and whole body restored. Matrix/origin and paired pivot/property
+// homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4461,6 +4487,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // F386: Existing vector/axis projection component-array observations, three subsets
 // ordinary/forced inline, then complete readonly projections ordinary/forced: 145 each.
 // NOT kept: no gain; original helper/body restored, normalization SIMD/trig homes remain.
+// P340: Tick-rate scalar ownership at the normalization product, mutable/immutable real rate and
+// magnitude carriers at two producer boundaries: 210/210/210/210/157/157/157/157. NOT kept: unmatched
+// one-use carrier graph; original product, coefficients, helper and complete body restored. Native 0x24
+// frame, normalization SIMD and trig/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -5015,6 +5045,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // original then support-bound success: 68/68/148/151/143/143/136/142. NOT kept: no gain;
 // the early Boolean graphs grow to 686/683. Original complete body restored, both exact callers
 // survive; native support/success byte homes and early success publication remain.
+// P339: Structured actor-success restoration/completion tail with original/native
+// success timing, bool/byte/word/long result: 68/88/154/153/92/95/147/146.
+// NOT kept: no byte match; original body restored. Support/result byte homes and
+// early success store remain; both exact callers and providers survive.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

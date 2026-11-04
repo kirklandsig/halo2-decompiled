@@ -3521,6 +3521,10 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // N350: Immutable shift/clip/center parameter subsets and all with immutable
 // state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
 // selector, reload-pair and six quantizer input-home differences remain.
+// P332: Native quantizer lower/upper/both conversion producers 32/31/32;
+// split lower arms alone/with upper producer 31/31; both with single-exit,
+// positive-default and split/conditional results 30/790/646. NOT kept:
+// one-point lead or regression, no byte match; original helper and body restored.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

@@ -371,6 +371,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // DH340: Actual accumulation-output parameter homes, seven nonempty subsets and complete
 // graph with the existing helper output renamed: eight 336 (fast control 336; full 295).
 // NOT kept: no byte match or gain; original parameter/helper names and complete body restored.
+// P331: Final base-layer admission results, masks 1/2/4/3/5/6/7 then complementary all:
+// 336/336/336/336/336/336/335/335 (reduced control 336; full 295). NOT kept: one-point lead below
+// margin; original body restored.
 // Y580: On the shared-normalizer/case-specific graph, actual descriptor indexed pointer,
 // walking pointer, case-produced pointer and indexed reference, long/dword side ordinals:
 // 468/468/424/424/364/364/468/468 (fast control 336, full 295). NOT kept: all regress;
@@ -389,6 +392,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // contribution-first / native color-capture scale-add, force/ordinary inline:
 // 274/514/514/731 twice (reduced control 336; full 295). NOT kept: fused
 // 1879/1892 grows the length gap; staging grows frames/lengths. Full helper/body restored.
+// P333: Last-consumer pitch-cosine/selected-axis/paired-remainder phases, seven subsets,
+// then all with angle-snapshot end scope: eight 336s (reduced control 336; full 295).
+// NOT kept: byte-neutral; original lifetimes, helper and complete body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

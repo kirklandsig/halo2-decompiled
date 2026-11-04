@@ -1246,6 +1246,8 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // ending before continuation, direct success return and flat cleanup combinations:
 // 406/406/374/406/374/406/374/374. NOT kept: native extent regresses;
 // original guards, producer scope, sentinel defaults and entire body restored.
+// P333: Complete initial substitution admission, allowed/blocked in bool/byte/short/long:
+// eight 389s at 1307/1272. NOT kept: entry/query homes and extent regress; full body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1985,6 +1987,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P329: Equipment/grenade/unit receiver identities, seven subsets then actor identity:
 // 251/251/251/251/251/251/251/251. NOT kept: no byte match; original complete body restored.
 // Actor/options and retained-pool homes remain.
+// P335: Standard min/max probability/increased/delay producers, seven subsets and
+// complete graph with final maximum consumer: 322/325/275/354/323/323/346/395. NOT kept: all regress;
+// original clamps, field observations, includes and complete body restored. Actor/options/pool homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

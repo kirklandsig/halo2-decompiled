@@ -488,6 +488,9 @@ void __stdcall function_1160c0(real dt)
 // F388: Existing axis/rest-offset/recurrent-previous component-array views,
 // subsets 1/2/4/3/5/6/7: 171 each; all with working direction/position/prediction 183.
 // NOT kept: no gain; original body restored, segment and mirrored homes remain.
+// P334: Native k-j-i distance/axis/projection reduction contracts, seven subsets
+// then plain component reductions: 380/384/306/507/471/469/589/614. NOT kept: regressions and larger
+// extents; original complete body restored; segment/axis/previous homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

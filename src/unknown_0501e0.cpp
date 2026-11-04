@@ -326,6 +326,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // DH340: Complete raw-vector capture aggregate/native/setter/CRT with native scaled defaults
 // 345/391/342/391; shared-setter scaled defaults 252/336/252/336. NOT kept: all regress
 // and lengthen the body; original aggregate-scaled helper and complete body restored.
+// P331: Aggregate-scaled graph with branch-owned/unit-default/conditional/const-conditional
+// weights: 206/248/247/247; immediate clamp in each: 206/248/247/247. NOT kept: native eager
+// producer shape/equality absent; original helper and body restored.
 // Y580: Current aggregate-scaled/native-sum graph, actual endpoint traversal with long/dword
 // ordinals: separate/fused/iteration-owned/in-place displacement workspaces
 // 384/373/375/378/441/441/382/382. NOT kept: storage graphs miss equality and native extent;
@@ -347,6 +350,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // 206/209/209/213/206/206/213/213. NOT kept: unmatched complete-value contracts; original
 // observations, helper and complete body restored. Frame 0x20 versus 0x14 and
 // coefficient/input/result homes remain.
+// P333: Standard binary differences with one captured origin, seven producer subsets
+// then complete raw copy: 324/328/260/304/300/297/277/386. NOT kept: no match or gain; original helper/body restored.
+// Excluded standard-transform global-array arguments; uncredited and restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

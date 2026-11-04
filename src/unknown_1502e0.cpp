@@ -1491,6 +1491,9 @@ void function_150820(dword *bits, bool local_only)
 // Y567: One-return failed unit/slot/eligibility admissions, seven subsets
 // and separately tested complete eligibility: 60/63/60/63/60/63/60/60. Original body restored;
 // native player/hand and entry temporary ownership remain.
+// P330: Terminal command success accumulated into bool/byte/short/long result,
+// bitwise OR 95/97/95/98; logical OR 87/92/90/92. NOT kept: no match,
+// changed entry allocation and shorter extent. Original result graph and full body restored.
 // F373: Native query-return admission/failure in bool/byte/short/long,
 // at the original call boundary: 43/43/43/43/43/43/43/43. NOT kept:
 // no byte match; original body restored, player/hand ownership remains.
@@ -1501,6 +1504,9 @@ void function_150820(dword *bits, bool local_only)
 // direct selected-weapon reads with direct/char/int/short slot: 49/49/72/43.
 // NOT kept: ties or regressions; original short slot and weapon capture restored.
 // Native ESI player/EDI hand and entry temporaries remain exchanged.
+// P332: Terminal game-mode equality/inequality producers at the original
+// observation, bool/byte/short/long: eight 43 at 210 bytes. NOT kept:
+// no byte match; original body and calls restored, player/hand homes remain.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -2231,6 +2237,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // F380: Complete distance/transfer/pickup workspace endings, seven subsets and all plus
 // parent validation: eight 202. NOT kept: ties; original declarations, observations,
 // signed scan, request clear, callback tuples and complete body restored.
+// P330: Persistent transfer completion controls notification and loop termination,
+// bool/byte/short/long expression producers 292/292/276/275, guarded producers
+// 284/284/261/258. NOT kept: no match, larger frame/extent; original break and full body restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
