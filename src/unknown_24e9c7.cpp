@@ -338,6 +338,9 @@ struct s_24e9c7_bounds
 // B419: Native two-axis fraction/pixel/scaled-pixel/raster-extent values, height-first
 // fields then readonly aggregates: 125/125/125/125/125/126/126/131. NOT kept: grouped dimensional values
 // do not match. Original scalar owners, integer conversions, corner equations and body restored.
+// M376: Signed-int selected-bitmap/height/half-width producer domains, seven subsets,
+// then all with signed-int bitmap handle: 125/125/125/125/125/125/125/125. NOT kept: no match or qualifying gain;
+// original domains/body restored; early across spill and shifted scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

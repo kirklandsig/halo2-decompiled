@@ -593,6 +593,9 @@ void function_245400(s_source_245400 const *source, long index,
 // B417: Plane-table acquisition ends after native plane pointers, with completed endpoint/cross
 // regions and earlier bare point workspace, eight forms: 209/209/209/209/209/209/209/209.
 // Original body restored; frame 0x24/0x2c, side homes and delayed matrix acquisition remain.
+// B425: External first/second material and surface bindings on source-ECX graph,
+// seven subsets, then all with first-material pointer: 209/209/209/209/209/209/209/209. NOT kept: no
+// exact match; original receivers/body restored, frame and independent side homes remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

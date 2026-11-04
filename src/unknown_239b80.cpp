@@ -474,6 +474,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B420: One spatial equality result serves departure and geometric completion,
 // bool/byte/short/long with long then Boolean departure: 301/301/298/301/313/313/297/297.
 // NOT kept: no exact match; original complete body restored.
+// B424: Exact endpoint termination of admitted lowest/pass/candidate scans,
+// subsets 1/2/4/3/5/6/7 then all with duplicate outer scan: 170/170/170/170/170/170/170/170.
+// NOT kept: no exact match; original signed bounds and complete body restored.
+// B427: First-hit duplicate search completed before copying, short/native outer and
+// inner ordinals with memcpy/memmove: 251/251/248/255/252/264/252/262. NOT kept: no match or gain;
+// complete original body restored. Extra frame word and count/departure homes remain.
+// B430: Complete coordinate-bound producers on the retained native output ordinal,
+// four producer orders, without/with paired angle bounds: 179 each. NOT kept: no
+// match or gain; original body restored. Frame remains 0x18 versus native 0x14.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -855,6 +864,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B420: Wrapped predecessor from the real input ordinal, four natural address
 // producers with tail then completed-crossing prior-side publication: 326/326/386/333/318/318/381/324.
 // NOT kept: no exact match; original complete body restored.
+// B424: Standard min/max interpolation clamp, nested lower/upper, sequential lower/upper,
+// named lower/upper and single standard lower/upper boundary: 357/357/371/372/371/372/376/383.
+// NOT kept: no exact match; original fraction clamp, include set and complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

@@ -220,6 +220,8 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// MiniMax H (11-04): the temporary velocity scoped so the position copy reuses its slot 256 at
+// retail's 1030 bytes; not kept, the frame stays 0x78 and the score rises.
 // MiniMax E (11-01): no new form, no lower score; left: frame 0x78 against retail's 0x6c, the
 // basis/position homes and the early ESI save (the 36-point form needs 0x11f0d0 in
 // src/unknown_11eed0.cpp).
@@ -1084,6 +1086,8 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// MiniMax H (11-04): the squared length written as i*i + j*j + k*k 94; the component order
+// does not move.
 // score 94 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
 // publication differ; the force formal still requires a zero extension.
 // Earlier: retail pushes the whole found-flag dword to 0x1c4b00 and keeps its MOV/LEA
