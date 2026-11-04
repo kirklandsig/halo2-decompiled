@@ -557,19 +557,24 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 
 // Retain the coefficient and B inertia addresses across consecutive rows.
 // Native scalar locals keep the projection between SSE and x87 without a copy.
-static __forceinline void solve_linear_friction(float target, float const volatile &limit,
+static __forceinline void solve_linear_friction(float target, float const &limit,
 	float const *const volatile &friction_scale_pointer,
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a,
 	__m128 &angular_b, __m128 &linear_b, __m128 const *const volatile &inverse_b_pointer,
 	solver_step_31c940 *const volatile &step, float *result)
 {
-	__m128 relative = _mm_sub_ps(a->linear, linear_b);
-	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(angular_b, row->b));
-	__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, row->linear));
-	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
-	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+	// Keep the angular products and reuse their work vectors for projection.
+	__m128 work_a = _mm_load_ps((float const *)&(a->angular));
+	__m128 work_b = _mm_mul_ps(angular_b, _mm_load_ps((float const *)&(row->b)));
+	work_a = _mm_mul_ps(work_a, row->a);
+	work_a = _mm_add_ps(work_a, work_b);
+	work_b = _mm_mul_ps(_mm_sub_ps(a->linear,
+		_mm_load_ps((float const *)&(linear_b))), row->linear);
+	work_a = _mm_add_ps(work_a, work_b);
+	__m128 sum = _mm_add_ss(_mm_shuffle_ps(work_a, work_a, 0xaa),
+		_mm_add_ss(_mm_shuffle_ps(work_a, work_a, 0x55), work_a));
 	float projected;
-	_mm_store_ss(&projected, xyz);
+	_mm_store_ss(&projected, sum);
 	float impulse = (target * (*friction_scale_pointer)
 		- projected * load_velocity_scale(step)) * row->a.m128_f32[3];
 	float magnitude = (float)fabs(impulse);
@@ -578,9 +583,12 @@ static __forceinline void solve_linear_friction(float target, float const volati
 		float factor = limit / magnitude;
 		impulse *= factor; row->linear.m128_f32[3] *= factor;
 	}
-	__m128 scalar = _mm_set_ss(impulse);
+	// Round the SIMD input once, retaining the extended impulse for accumulation.
+	float rounded = impulse;
+	__m128 scalar = _mm_load_ss(&rounded);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
+	__m128 scalar_b = _mm_load_ss(&rounded);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar_b, scalar_b, 0), *inverse_b_pointer);
 	// Capture both linear contributions before either body write.
 	__m128 linear_contribution[2] =
 	{
@@ -914,7 +922,7 @@ union solver_phase_state_31c940
 		long iteration;
 		float saved_error;
 		float spin_limit;
-		volatile float linear_limit;
+		float linear_limit;
 		float angular_limit;
 	} solving;
 	struct
