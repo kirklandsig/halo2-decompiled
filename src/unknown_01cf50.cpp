@@ -5862,6 +5862,8 @@ PRIVATE __forceinline void draw_filter_quad(real left, real right, real top, rea
     D3DDevice_SetVertexData4f(0, left, bottom, 16777215.0f, 16777215.0f);
 }
 
+// MiniMax H (11-04): the camera forward vector copied into a local 748; not kept, the original
+// body is restored.
 // MiniMax D (11-01): no new form, no lower score.
 // score 694 (was 694): our body is 121 bytes longer than retail's (2628 against 2507); the
 // triangle-fan primitive constants are retail's, but the instruction sequence still differs.

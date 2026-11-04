@@ -1575,6 +1575,8 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
+// `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
 // score 709 (was 709): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // Earlier: Frame 0xc0 agrees; initial cursor base/home, slot and request/completion homes remain.
 // frame 0xc0 agrees; native completion-group cursor retained;
