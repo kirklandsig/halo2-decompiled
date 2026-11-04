@@ -324,6 +324,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // original planar transfer 422/444/424/412; native planar record transfer 436/375/402/441.
 // NOT kept: 375 combines individually regressing storage forms and adds a redundant blocked store;
 // retail has distinct accepted epilogues. Original geometry, state, transfers and full body restored.
+// DH351: Existing shared planar products at origin/first endpoint/second endpoint,
+// seven subsets, then complete immutable projection distance with unused overload removed:
+// 410 each. NOT kept: no gain; full/planar normal homes, frame and byte/output tails remain.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

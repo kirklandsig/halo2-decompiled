@@ -1238,6 +1238,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // DH349: Existing nested player/object getter policies ordinary/forced/unhinted,
 // eight nonbaseline pairs, all 284. Original getters and full body restored;
 // native pool/player retention and delayed tag-table acquisition remain.
+// DH351: Existing raw flag pointer/reference returns with local/direct object input
+// 284 each; native bit-field pointer/reference returns 253 each; bit-field value return
+// 290. NOT kept: pointer forms add a flag-address calculation absent in retail; value form regresses.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1653,6 +1656,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // all short 585; immutable full-width ordinals 285; option-mask last-use scope 288;
 // shared full-width ordinal 285. NOT kept: five-point 280 below gate; native mask/index
 // homes and release expansion remain. Original per-traversal full-width ordinals restored.
+// DH351: Assignment workspace ends after fallback; nested option/mask endings
+// 285/288/286/288; late user result on those scopes and separate search names
+// 605/608/608/608. NOT kept: no gain; native mask/index homes and release expansion remain.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

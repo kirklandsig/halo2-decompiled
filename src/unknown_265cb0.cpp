@@ -2036,6 +2036,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // N356: Signed-octet established/visible/retain storage, seven subsets and complete plain-char family:
 // 194/194/194/194/194/194/194/194. NOT kept: unmatched storage/result-lifetime forms.
 // Original executable source restored; Entry index operands, exchanged Boolean homes and direction SIMD residence remain.
+// DH351: Explicit distance/absolute/relative normalization outcomes, all seven
+// subsets, then both speed-result locals: 194 each. NOT kept: no gain; original
+// tests and full body restored; entry operands, Boolean homes and direction SIMD residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
