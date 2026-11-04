@@ -2389,6 +2389,10 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // P298: Existing dword fallback setter with native word setters at pre-call/post-call/failure
 // clear boundaries, masks 0..7: 73/78/78/100/73/78/78/100. The fallback memory OR agrees;
 // extra EBP and count/body transport remain. Original complete body restored.
+// Y569: Nested count/component, selected-body/query and signed bound admission scopes,
+// six fresh subsets, complete native selected short and complete native getter graph:
+// 63/63/63/63/63/63/67/75. NOT kept: no qualifying native repair; complete original body restored;
+// extra EBP, count/body transport and flag stores remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {

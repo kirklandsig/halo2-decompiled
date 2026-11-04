@@ -1722,6 +1722,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // DH337: Native two-coordinate point/array projections at four declaration boundaries:
 // 192/192/192/192/192/192/192/192, 788/812 bytes. NOT kept: one-point gain,
 // grouped storage needs equality and length moves farther; independent result home remains.
+// Y569: Uniform named first/middle/last product terms in every projection row,
+// seven subsets, then complete immutable products:
+// 197/197/193/195/197/208/193/193. NOT kept: no qualifying native repair; complete original body restored;
+// independent result home, frame and producer allocation remain.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2742,6 +2746,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // DH337: Actual elapsed bindings in decay/growth and maximum-clamp field subsets
 // 366/371/317/369/366/371/369; complete elapsed-pointer graph 369. Original helper
 // and body restored; state/prefix/ordinal homes and first decay-copy rotation remain.
+// Y569: Actual two-use duplicate key, symmetric computed elapsed results and long found
+// domains, seven subsets, then complete byte found graph:
+// 315/376/330/374/328/389/387/374. NOT kept: two-point key gain below gate; elapsed forms enlarge; complete original body restored;
+// prefix/state and ordinal homes plus first decay-copy rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3836,6 +3844,10 @@ bool __stdcall function_391f0(void *state);
 // DH337: Native cluster/portal/plane field subsets and complete read-only geometry
 // 251/251/251/251/251/251/251/251. Original views/body restored; frame 0x74
 // versus 0x70, early zero and loop homes remain.
+// Y569: Positive visible-fog, portal-side and selected-tag payload scopes,
+// seven subsets, then positive portal-key scope on the complete graph:
+// 251/251/251/251/251/251/251/251. NOT kept: no qualifying native repair; complete original body restored;
+// extra frame word, early zero and portal/fog homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
