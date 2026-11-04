@@ -873,6 +873,9 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // Round 586: Actual output-slot cursor at entry/data/after-primary/before-name/before-game/
 // before-timer/final-list phases and explicit completed-publication advancement: 619/614/558/554/554/548/566/619.
 // NOT kept: retail retains the output ordinal; original frame, observations and body restored.
+// P336: First-character library clears at message/format/auxiliary producers,
+// seven subsets then complete typed fills: 577/575/571/581/638/636/626/612.
+// NOT kept: all regress; original arrays, clears, full body and includes restored. Frame/bias/flags remain.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

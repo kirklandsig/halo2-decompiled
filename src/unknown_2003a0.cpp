@@ -2144,6 +2144,9 @@ bool function_1e11b0(long actor_index, bool active);
 // EBP handle, receiver spill/common loop head and full-width return remain.
 // Y595: Full-width long/dword/int/unsigned-int result contracts, Boolean/direct zero-one mask production:
 // 65/65/65/65/65/65/65/65. NOT kept: no byte equality; original complete body restored.
+// DL262: Coherent matched predicate/removal/return-provider inline declaration subsets, then
+// explicit predicate expansion on the complete graph: 64/64/64/64/64/64/64/64.
+// NOT kept: no exact native form; original complete body and all provider contracts restored.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2426,6 +2429,16 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
 // complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
 // Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
+// J255: Coherent ordinary-inline squad-test, actor state update and actor-cluster
+// provider subsets, then squad-deactivation boundary: 275/275/275/275/275/275/275/275.
+// NOT kept: ties/regressions. Every provider contract and complete body restored;
+// frame, iterator/point homes and bitmap-intersection spill remain.
+// B444: Complete point/raised/location zero construction, seven subsets at native
+// output scopes then all at entry: 331/315/343/304/340/320/352/351. NOT kept: frame/layout still misses
+// retail and initialization extends code; original complete outputs and body restored.
+// N372: Actual current-cursor/saved-successor for/while graphs, raw and existing typed
+// actor receiver: 318/318/300/300/318/318/300/300. Original body restored; all retain
+// frame 0x48 versus 0x54. Iterator pool, point/area homes and intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -2934,6 +2947,15 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // Y590: Actual trigger-record null/count/count rejection exits, seven subsets
 // then complete pending/latch rejection ownership: 50 each. NOT kept: the first
 // event index reload and actor-loop alignment persist; original full body restored.
+// P340: Actual trigger-query bool/byte/char/signed-char/short/word/long/dword results at the original
+// call: 50/50/50/50/101/101/62/62. NOT kept: one-use result misses equality; original direct comparison,
+// calls, wrapped scan and complete body restored. First-event index reload and loop alignment remain.
+// P343: Accumulated trigger-count zero lifetime before squad/input/trigger/task/list/threshold/scan,
+// then entry declaration with original seed: 176/176/105/61/50/50/57/50. NOT kept: no equality; original
+// whole body restored; first-event index reload and shifted actor-loop alignment remain.
+// N372: Delay-owned pending conditional/exhaustive results 135/50; computed candidate
+// admission joins 156/50/50; complete graphs 156/50/50. NOT kept: no byte match; original
+// word/result graph restored. The first-event index reload and actor-loop pad remain.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3388,6 +3410,25 @@ void function_2011f0(long arg_0);
 // NOT kept: no match or gain. All validation, narrow inputs and complete body restored.
 // Y592: Both function exits to sole return, or whole active-body/result finalization, bool/byte/short/long accumulated outcome:
 // 318/318/318/354/318/318/318/354. NOT kept: no exact whole-result ownership; original validation, narrowed inputs and complete body restored.
+// F384: Immutable group-row/selected-row/actor-record receivers, seven subsets,
+// then all with immutable options: 318 each. NOT kept: no gain; original body restored.
+// Native masked-input/placement, seat and final-chain homes remain.
+// F386: Whole active-body containment and common completion gate, persistent reuse
+// bool/byte/short/long success 318/318/318/354; missing polarity 318/318/357/357.
+// NOT kept: ties/regressions; original body restored, input/seat/chain homes remain.
+// F389: Shared narrowed row identity word/dword/long/int: word producer 318/394/394/394,
+// mask producer 318/356/356/356. Wide masks also demote 0x200d80 to 22. NOT kept: all tie/regress;
+// original narrowed observations and complete body restored; input/placement and chain homes remain.
+// B435: Reused absolute-index word/long/dword carriers, mutable then readonly,
+// followed by long/dword mask producers: 318/394/394/318/394/394/356/356.
+// NOT kept: no exact transport or gain; original narrow arguments/stores and body restored.
+// Frame 0x134 agrees; masked-index/placement, seat and final-chain homes remain.
+// M389: Both actual request completions in short/word/long/dword receivers,
+// producer-local then shared: eight 318s. NOT kept: no exact result-transport
+// repair; original requests, narrowed values, count/splice loops and complete body restored.
+// N372: Range/reuse/category continuation guards at the common attempt latch, seven subsets
+// and complete tail completion guard: 318 each. Original body restored; native 0x134 frame
+// agrees, but masked-input/placement, seat and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

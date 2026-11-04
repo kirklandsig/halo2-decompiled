@@ -539,11 +539,10 @@ real normalize2d(point2f *vector);
 real function_267370(long object_index);
 
 
-// score 98 (was 98): the water-plane test is 0x11c120's body (location_point_in_zone_inline) and the marker
-// read existing 0xcaf90; left: the NONE resets keep -1 in EDI, which the inlined plane compares
-// then share (retail compares with immediates, gives EDI to the cluster table and forms -1 in ECX
-// at the resets for them and the carrier compare), the carrier ternary lands in EDI instead of EAX,
-// and both crosses' multiply operand orders.
+// score 20 (was 98): First +0x140: plane x-product operands, parent-selection carriers
+// and cross-product registers remain; frame 0x90 and length 1724 agree. Signed zone
+// byte and NONE sentinel recover immediate zone compares, EDI table and later ECX resets
+// (plain 20). Existing marker and every call/value unchanged.
 // Round 106: the plane test through the out-of-line 0x11c120 with its noinline declaration dropped
 // (locate-only) keeps the same -1 sharing, so LTCG inlining is not the cause; without the
 // `(void)&actor_index` line 98 (same code); the second parent fetch in its own local 104; the
@@ -719,6 +718,9 @@ real function_267370(long object_index);
 // the resets or both inside `if (1)` 98 each, so call-site nesting does not move the -1 sharing here.
 // DL260: Existing zone predicate with one completion-time optional-index publication, short/int/long/dword carriers in bool/byte result graphs: 96/96/96/96/375/375/375/375.
 // NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// DL262: Signed zone byte 20 plain; const cluster/plane receivers isolated, then signed
+// combinations and const BSP receiver: 20/98/98/20/20/98/20/20.
+// Keep only the native byte/sentinel declaration; all optional const receivers restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1222,6 +1224,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // B421: Post-creation success bool/byte/short/long and complementary failure
 // results 253/253/253/253/253/253/253/253. NOT kept: no byte match; condition
 // residence does not recover sentinel ESI or squad/query homes. Original body restored.
+// N370: Two-use optional squad-index availability/absence results, bool/byte/short/long:
+// 356/356/352/354/356/356/352/354. NOT kept: no equality; original complete body restored.
+// Sentinel EDI/ESI, squad/query/result homes and rotated substitution head remain.
 // F374: Post-substitution settings presence/absence results in bool/byte/short/long:
 // 253/253/253/253/253/253/253/253. NOT kept: condition residence does not recover
 // native sentinel/squad/query homes; original admission and complete body restored.
@@ -1237,6 +1242,15 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Y589: Actual creation-payload/equipment-selection/actor-object last-use scopes,
 // seven subsets then all with immutable settings view: eight at 253. NOT kept:
 // sentinel/squad/query homes unchanged; original complete body restored.
+// F383: Metadata refresh in the normal for step 504 (frame 0x12c, 1403 bytes);
+// immutable squad/placement/actor bindings, seven subsets, all 253. Original loop,
+// receivers and complete body restored; sentinel ESI and squad/query homes remain.
+// B433: Common continuation/cleanup outside flags admission, producer-pointer scope
+// ending before continuation, direct success return and flat cleanup combinations:
+// 406/406/374/406/374/406/374/374. NOT kept: native extent regresses;
+// original guards, producer scope, sentinel defaults and entire body restored.
+// P333: Complete initial substitution admission, allowed/blocked in bool/byte/short/long:
+// eight 389s at 1307/1272. NOT kept: entry/query homes and extent regress; full body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1976,6 +1990,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P329: Equipment/grenade/unit receiver identities, seven subsets then actor identity:
 // 251/251/251/251/251/251/251/251. NOT kept: no byte match; original complete body restored.
 // Actor/options and retained-pool homes remain.
+// P335: Standard min/max probability/increased/delay producers, seven subsets and
+// complete graph with final maximum consumer: 322/325/275/354/323/323/346/395. NOT kept: all regress;
+// original clamps, field observations, includes and complete body restored. Actor/options/pool homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

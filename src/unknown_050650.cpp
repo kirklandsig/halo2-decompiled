@@ -684,6 +684,10 @@ struct s_collision_result_buffer_1697c0
 // Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
 // results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
 // contract or gain; original magnitude return, all consumers and complete sampler restored.
+// M389: Root/absolute-value float-library boundaries, singly/together, 307/298/303;
+// widened rounded-root/root-producer/reciprocal receivers 546/546/651;
+// float root/absolute with double reciprocal 651/651. NOT kept: five-point best
+// is below eight and length grows; double forms outline. Original helper/body restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -963,6 +967,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 253/253/265/267; before the read-only query 279/279/296/296 (calibrated fast control 258).
 // NOT kept: best gain five is below eight; predicate/observation forms need equality. Original
 // reference observations and complete body restored; Boolean homes and shared-tail predecessor remain.
+// M389: Both native normalization-return scalar receivers, local real/const-real/double/const-double
+// 258/258/327/327; shared/test-owned real/const-real/double/const-double 258/258/327/327.
+// NOT kept: one-use scalar/result residence did not match; double forms grow to 1480/1444.
+// Original comparison producers, calls and complete body restored (fast control 258; full 257).
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

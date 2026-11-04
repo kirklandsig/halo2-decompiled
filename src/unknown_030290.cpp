@@ -451,6 +451,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Y577: Native final planar delta, field/aggregate producers, scalar/record/memcpy/memmove
 // publication: 195/251/251/272/195/251/251/272. NOT kept: no equality; grouped residence
 // and copies tie or regress. Original helper/body restored; inverse homes and displaced-transform spill remain.
+// AC545: Uniform final scale products, paired/row-local named parts and
+// paired/row-local delta ownership 195 each; on direct reciprocal ownership
+// 207 each. NOT kept: ties or regressions; native frame and second-transform
+// spill remain. Original helper, defaults and complete body restored.
 // Y583: Standard bounded transform input copy/backward-copy/uninitialized-copy
 // 282/282/282; output equivalents 295/295/295; paired copy/backward-copy 692/692.
 // NOT kept: nonexact record transfer and lost native frame/expansion; original

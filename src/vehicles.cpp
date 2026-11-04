@@ -617,6 +617,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // and forced inline, then both with bulk fallback copy or float root: 126 each.
 // Original helper, callers and complete body restored; velocity-copy receivers,
 // early unity SIMD residence and later angular x87/SSE homes remain.
+// M378: Complete forward/heading/both memcpy, velocity with forward/heading/both,
+// then all and forward/heading memmove: 128/132/134/132/136/138/404/407. NOT kept: all regress;
+// original complete scalar copies, helpers and body restored; entry velocity/unity homes remain.
 // AC528: Initial speed acceptance/rejection in bool/byte/short/long
 // 225/225/225/225/225/225/225/225. NOT kept: no exact match or eligible gain; original complete body restored.
 // Velocity-copy receivers, early unity and SIMD/x87 homes remain. No retained candidate.
@@ -626,6 +629,15 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Y591: Scalar initial velocity/direction/paired perpendicular vectors, seven subsets,
 // then all with velocity-role names: 153/126/240/233/249/240/249/249. NOT kept: no exact allocation
 // repair; original complete vector workspaces, helper contracts and body restored.
+// M382: Actual initial/helper x87 magnitude result storage and consistent float-root API, masks
+// 1/2/4/3/5/6/7 then all without redundant root casts: 282/507/126/511/282/507/513/513.
+// NOT kept: no precision match or early unity/home repair; original helper and complete body restored.
+// M384: Actual reverse-angle/absolute-result/steering-angle return storage, real/double
+// at producer or entry-declared: 126/126/126/126/126/126/126/126. NOT kept: no equality for
+// result materialization; original full body restored; entry velocity/unity and angular homes remain.
+// M388: Squared-norm inputs to sqrt, initial/helper real and double carriers:
+// 225/128/126/126/225/225/128/309. NOT kept: no gain or precision equality; last form
+// grows to 1150/1144. Original helper/body restored; velocity/unity and angular homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1278,6 +1290,27 @@ long function_10f5f0(long object_index);
 // P328: Saved attached complement and complete attachment admission in bool/byte/short/long:
 // 565/565/575/575/563/563/574/574. NOT kept: best gain is below eight and shortens away from retail.
 // Original body restored; frame 0x19ac/0x1984, predicate-result and reduction homes remain.
+// AC545: Complete speed-result comparison arms, bool/byte/short/long at producer
+// 565/565/571/581; entry declarations 565/565/571/581. NOT kept: no equality;
+// wide carriers shorten away from native length. Original full body restored;
+// frame, initial predicate-byte stores and rolled reduction remain.
+// J254: Existing bounds/state/component/reset providers inline/forced:
+// 565/628/565/2131/565/644/565/614. NOT kept: forced expansion grows away from retail; bounds
+// form loses matched 0x1d56f0. Original complete body and every declaration restored; native
+// frame and predicate stores remain.
+// F386: Complete velocity/offset/position component-array observations, seven subsets,
+// then all with six-real output: 565 each. Original entire body restored; native frame,
+// predicate-byte stores and reduction homes remain. NOT kept: no gain.
+// F389: Completed point-average branch/default/result/running-result publications,
+// original then six-real API output: 573/566/565/565 twice. NOT kept: ties/regressions;
+// original average, buffer and complete body restored; native frame/flag-result homes remain.
+// B441: Complementary reused moving predicate in bool/byte/short/long, at producer/entry
+// declaration boundaries: 512/512/580/586/512/512/580/586. NOT kept: complement instructions are absent
+// from retail and extents grow away from 2264; original complete body restored.
+// Frame 0x19ac/0x1984, native predicate stores and rolled reduction remain.
+// P330: Plain raw light cursor/indexed scan, native Boolean bit-four test and
+// branch-owned mask: 565/566/571/565/565/565/571/571. NOT kept: no gain; frame 0x19ac
+// and predicate/reduction homes remain. Original full body, buffer and array values restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2564,6 +2597,18 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // Complete per-use turn fabs/fabsf/nonnegative-unary/negative-unary, original/float torque
 // magnitude: 139/139/42/46/169/169/116/115. NOT kept: no exact magnitude/spill result;
 // original helper and body restored; native turn-product and spin spill/store schedules remain.
+// J254: Native side-result stages with double return/double join/real return/advanced join,
+// ordinary/forced: 30/55/133/127/30/55/133/127. Branch-produced real result, returned/field
+// output and original/gate-owned input: 127/60/127/60. NOT kept: unmatched statement/result-
+// boundary combinations; 30 still has a double-zero path instead of the native real join.
+// Original complete body, spin helper and all game calls restored; corrected-dividend and spin-
+// store schedules remain.
+// F386: Caller-owned advance store with scalar advanced-spin input to the existing helper,
+// four real-result graphs, ordinary/forced: 127/133/127/132 twice. NOT kept: all regress
+// and grow; original helper/body restored, turn-product and spin transport remain.
+// F389: Existing spin/period field-reference contracts, each/both ordinary/forced,
+// then both with the dividend local named by role: 42 each. NOT kept: no equality/gain;
+// original pointer contracts, two-use helper and full body restored; turn/spin schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2932,6 +2977,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // P299: Planar facing/velocity/paired copies and paired existing 2D product, original
 // then independent relative output: 737/737/764/764/745/745/769/769. NOT kept: native
 // planar copy staging does not recover frame 0xfc; every form regresses. Original full body restored.
+// F379: Exhaustive turn-rate policy results, default/branch bank ownership,
+// special/normal arm priority and full/conditional control arms: 718/718/718/718/689/689/689/689.
+// NOT kept: best gain three is below the gate; original body restored, frame 0xd0 versus 0xfc remains.
 // Y579: Actual quaternion return nested/received, original/relative/inverse-current/
 // inverse-desired output graphs: 690/689/698/698/700/700/699/699.
 // NOT kept: best gain three; native 0xfc frame remains missing. Original full body restored.
@@ -2946,6 +2994,15 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // Y598: Actual velocity/basis/applied-force lexical identities, separate and complete,
 // original then distinct relative output: 676/676/676/676/682/682/682/682. NOT kept:
 // no exact slot repair; frames remain 0xd0/0x104 versus 0xfc. Original complete body restored.
+// P336: Normalized up/lateral/bank-axis in actual matrix rows, seven separate-output
+// graphs then all with in-place output: 720/738/776/754/797/772/782/774. Bank-axis alone
+// recovers frame 0xfc but grows to 3311/3244 and regresses; all equality-only forms restored.
+// M381: Actual projected-up/force/torque aggregate construction, subsets 1..7, then
+// all with independent relative output: 692/692/692/692/692/692/692/699. NOT kept: ties or regression;
+// original vector producers, inverse/relative ownership and complete body restored.
+// N378: Existing complete basis constructors current/desired/both/distinct output, inline then force-inline:
+// 742/734/755/763/742/734/755/763. NOT kept: no byte equality or qualifying native-shape gain;
+// original executable source restored; other constructor users regress; native frame 0xfc and scalar/transform homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3256,6 +3313,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // DH325: Native force/torque/working-velocity memcpy subsets 1/2/4/3/5/6/7:
 // 1052/1052/1052/1052/1052/1052/1052; complete memmove 1093. All restored;
 // frame 0x80 versus 0x74 and original force/velocity homes remain.
+// F379: Direct two-use driving/braking outcomes from the original control test,
+// bool/byte/short/long and complements: 1057/1057/1056/1057/1057/1057/1056/1057.
+// NOT kept: regressions; original whole body restored, frame 0x80 versus 0x74 and force/velocity homes remain.
 // Y579: Conditional working-velocity value/branch receiver/conditional receiver/
 // setter producers, original/query-owned output: 1095/1072/1055/1042/1116/1111/1111/1072.
 // NOT kept: 1042 shortens to 4639/4666, away from retail; all retain frame 0x80. Original full body restored.
@@ -3281,6 +3341,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // Y598: Persistent default outputs, aggregate/scalar force/torque/both, then force/both assignments:
 // 1074/1095/1078/1074/1095/1078/1052/1052. NOT kept: no exact constructor result.
 // Original complete body restored; frame 0x80 versus 0x74 and velocity/force homes remain.
+// P334: Native inverse/damping/paired-mass component-transform contracts,
+// seven subsets then queried-velocity range copy: 1090/1105/1078/1074/1093/1138/1118/1138.
+// NOT kept: no eligible native frame/velocity/force-home recovery; original complete body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3877,6 +3940,21 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M374: Actual physics/orientation/index parameter-home identities, seven role graphs,
 // then all with input basis identity: 136/136/136/136/136/136/136/136. NOT kept: no native
 // projection/trig home repair; original complete body and all contracts restored.
+// M378: Complete default placements 1/D/2, 2/D/1, D/1/2, D/2/1; paired real cases
+// in both label/default orders: 136/136/136/136/165/165/165/165. NOT kept: no native projection/
+// trig repair or byte equality; original cases, precision and complete body restored.
+// M382: Every angular sweep product named at its producer, case/default real-real/double-real/real-double/double-double,
+// arm-local 133/172/169/162; enclosing 161/169/167/162. Real arm-local fixes the projection prefix but gains only three.
+// NOT kept: below keep gate, no byte equality for materialization/precision; original complete body restored.
+// M384: Initialized affine sweep, real/double before/after basis copy, switch/conditional
+// dispatch: 136/136/174/174/138/138/171/171. NOT kept: no byte equality for
+// precision/lifetime forms; original complete body restored; fallback/cross and x87 trig homes remain.
+// M386: One sequential projection/flip-axis vector, native then entry angle/cosine/sine
+// declaration subsets 0..7: 179/179/179/179/179/179/179/179. NOT kept: no byte equality for
+// reused-workspace/scalar lifetimes; original separate vectors and complete body restored.
+// M388: Existing return-valued coordinate setters at forward/up/fallback, masks
+// 1/2/4/3/5/6/7, then initial up: 136/136/136/136/136/136/136/207. NOT kept:
+// no projection/cross/trig equality; original complete body and all helpers restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4507,6 +4585,15 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // is farther from native 1361. Original whole search and body restored.
 // Y596: Identity/validity hit flag before the original later threshold, positive/complement bool/byte/short/long:
 // 161/161/161/161/161/161/161/161. NOT kept: search flag needs equality; 1354/1361 bytes moves away from native; full original body restored.
+// M378: Complete ray point/up library transfers, memcpy alone/both, memmove alone/both,
+// and mixed transfers: 176/176/176/269/267/277/267/269. NOT kept: no native
+// first-match/world/result repair; original complete copies and body restored.
+// M382: Actual contiguous iterator scalar selection, conditional/branched/default-first/active-first,
+// original scalar snapshots 270/270/289/289; consistent at-use field observations 377/377/362/362.
+// NOT kept: no native first-match/world/result repair or byte equality; original complete body restored.
+// M384: Twice-used sample-change result, bool/byte/short/long, persistent OR before/after
+// cache publication: 208/208/216/214/208/208/216/214. NOT kept: all regress and lengthen;
+// original complete body restored; found-index/world/fallback/final-writer gaps remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -4805,9 +4892,32 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // 883/963/1192/1076/1290/1395/1504; all plus reverse maximum 1514. No gain; every
 // form shortens away from 2974 bytes. Original provider boundaries/body restored;
 // entry definition and zero/result/one residence remain.
+// J253: Coordinated magnitude/projection inline/forced contracts
+// 759/756/759/825/845/967/846/842; magnitude inline removes the unity hoist
+// but grows the extent. Existing tag-getter entry-only/all-definition receivers
+// 999/1015 (2730/2680 bytes); all provider contracts and complete body restored.
 // P326: Selected-velocity blend/reverse speed and limit/combined speed-turn scalar
 // declarations before dispatch, subsets 1..7, then all before object lookup: 749 each.
 // Initializers stayed at case producers. NOT kept: no gain; original body and SSE homes remain.
+// F381: Case-owned twice-used kind/gear/reverse-speed observations, subsets
+// 1/2/4/3/5/6/7 then const all: 749/749/773/749/773/773/773/773.
+// NOT kept: ties/regressions; reverse residence shortens to 2952/2974.
+// Original observations/body restored; native entry definition and SSE homes remain.
+// F387: Complemented forced-active state in bool/byte/short/long with logical
+// terminal truth 749/749/749/749; complete terminal arms 763/763/748/748.
+// NOT kept: one-point leads below gate; entry definition and SSE homes remain. Original body restored.
+// B445: Actual recognized-name return on direct-active graph, failure/success defaults in
+// bool/byte/short/long: 790/757/752/752/749/774/764/761. NOT kept: ties or regressions; whole body restored.
+// Frame 0x18 agrees; native entry definition and zero/result/one residence remain.
+// P334: Native component-range up/paired-forward/lateral projection contracts,
+// seven family subsets then complete reversed input ranges: 873/958/904/1078/950/1100/1219/1243.
+// NOT kept: no native entry-definition or zero/result/unit-constant residence; original complete body restored.
+// P336: Final/blend nested bound producers, forward MAX, reverse MIN, both bounds,
+// independent final/blend comparisons, staged final bounds: 748/751/749/749/749/749/749/749.
+// NOT kept: best gain one; original body restored. Entry definition and zero/result/one homes remain.
+// P341: Getter-produced vehicle-record lvalues, mutable/read-only, native/immutable table records and
+// original/early pure table acquisition: 749/764/749/764/749/764/749/764. NOT kept: no native entry-
+// definition or zero/result/one residence; original entire body and pointer receivers restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5368,9 +5478,32 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // M350: Plain wind/forward-target/lateral-velocity component loops, subsets
 // 1..7: 2767/2759/2759/2726/2726/2742/2682, frame 0xfc and 6443-6518 bytes.
 // Native final point cursor 1087. Original body restored; frame/index homes remain.
+// J253: Coordinated quaternion/multiply/velocity/step inline/forced contracts
+// 1094/1599/1127/2743/1127/1378/1087/3412. No native frame/extent recovery;
+// forced multiply and velocity forms lose matched controls; all contracts/body restored.
 // F376: Existing drift/side dot and spin-squared-length boundaries, subsets 1/2/4/3/5/6/7,
 // then complete projection dot: 1086/1087/1087/1086/1087/1087/1087/1087. NOT kept: one-point
 // lead grows to 5104/5094; frame stays 0xf8/0xd8. Original complete body and helpers restored.
+// F381: Reverse limiter while/do, own int/short/word/byte ordinals, real cursor
+// and named signs: 1087/1112/1087/1113/1113/1113/1107/1105. NOT kept:
+// ties/regressions; do recovers the 0xc bound but frame stays 0xf8 versus 0xd8.
+// Original complete limiter/body restored; index and matrix/vector homes remain.
+// F387: Complemented flip/boost/side-flip predicates, masks 1/2/4/3/5/6/7,
+// 1159/1089/1087/1161/1159/1089/1161; native boost byte on weighted-driver graph 1141.
+// NOT kept: ties/regressions; frame/index/rotation homes remain. Original full body restored.
+// B445: Discarded query-output workspace reused by drift/side-input/both-axis producer
+// subsets, then late angular acceleration: 1087/1087/1096/1107/1085/1064/1066/1066. NOT kept: unsupported combined workspace
+// ownership; 1064 is 5104 bytes, 1066 is 5107, with frame still 0xf8. Whole body restored.
+// P334: Native backward/short-angle/target component-transform contracts,
+// seven subsets then complete mass-force producer: 1040/1172/1161/1143/1153/1253/1230/1285. NOT kept: backward
+// alone reaches 1040 but shortens to 5088/5094, frame 0xf0/0xd8; other forms regress. Original body restored.
+// P336: Float CRT boundaries at pitch atan/root, horizontal root, driver/bank trig,
+// rotation atan/root and desired-up root: 1064/1064/1087/1097/1097/1087/1087/1087.
+// NOT kept: pitch gains grow to 5104/5094; frame stays 0xf8. Original full body restored.
+// P341: Bounded scalar branch-results at lift numerator, paired unit clamps and paired spin-step limits,
+// seven subsets then vertical attenuation: 1097/1087/1087/1097/1097/1087/1097/1097. NOT kept: native
+// frame 0xd8 and handle/matrix homes are not recovered; original full expression graph, matrices and
+// body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
