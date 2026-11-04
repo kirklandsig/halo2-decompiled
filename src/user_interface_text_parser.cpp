@@ -668,6 +668,13 @@ done:
 // Round 141 (m3 lane 5, fast; parse_variant stays matched), on the natural one-copy form 54 (173 bytes): a const pointer
 // local for the translator's buffer 54; `&g_55c6e4[0]` 54; a named copy source 54; a named selector 54; the tag read in the
 // translator call 45 (171). The EBX hoist of the buffer stays in all of them.
+// Round 52 (m3 lane 15, fast; parse_variant stays matched; aligned counts, the natural one-copy form 22): the EBX load sits between
+// `test esi, esi` and `je`: the address is hoisted over the branch because both arms use it. The translator in each case: a tag
+// local 42 (171 bytes, aligned 15), the tag read in each case 45 (171, aligned 8: only the EBX load and the tag's load differ), that
+// with the getter in the switch 45. The copy in both arms of the definition test (no shared tail, no EBX): the tag read in each case
+// 47 (178, aligned 12), a tag local 41 (178, aligned 12; the address is then hoisted in that arm into ESI, the tag takes EAX and
+// the selector ECX); the getter written out, tag read before its fallback (diagnostic) 42 (178), one translator after the switch and
+// the default copying and returning 33 (178, aligned 10), per-case translator with one tail 42 (171).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
