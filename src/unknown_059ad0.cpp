@@ -3836,6 +3836,10 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // with channel failure first 152 [19] (554 bytes), with the transport local too 163 [19]; a local copy of session for the part after the loopback test 136 [34]
 // (coalesced, no second register), on the flag/channel form with a host copy too 152 [19]; that part as a forceinline bool helper taking session and host 145 [25]
 // (581 bytes, session still in ESI). No retail call path leads from 0x5fb00, 0x5fb60 or 0x7ab10 back here. BLOCKED-BY the same host/session staging.
+// Round 142: on the loopback-helper/forceinline-clock/channel-failure-first composite (138): host read through
+// its parameter home 138; long resolver result 138; session read through its parameter home 138; inline resolver
+// wrappers with host before local/host first 168/168 (559 bytes); entry remote 138; loopback helper by reference/
+// scalar fields 138/138. Original body restored; host/session staging remains.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
