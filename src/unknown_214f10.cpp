@@ -341,6 +341,11 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // DH353: Completion initialization/handle aggregate/immutable open result, subsets
 // 1/2/4/3/5/6/7: 86/42/42/86/86/42/86; complete direct-member form 86. NOT kept:
 // no gain or match; original object, result, completion declaration and waits restored.
+// Round 211 (m3 lane 3, fast): the byte stored by `memset(&success, opened, sizeof(success))` with the branch on success
+// 43 (364 bytes: a `mov ah, al` fill and a test of the register, no memory re-test), with the branch on the long 43, from
+// the handle test directly 43; by `memcpy(&success, &opened, sizeof(success))` 55 (351 bytes); through a local bool/char
+// union 55 (351 bytes); `__assume(opened == (long)success)` before the test 43 (364 bytes). Still only a volatile
+// success byte re-reads it.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
