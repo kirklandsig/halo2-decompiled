@@ -1234,6 +1234,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // DH356: Common Boolean query-default chains in both directions, probability zero
 // before/after, inner/outer query storage: eight at 253. Original body restored;
 // sentinel EDI/ESI, squad/query homes and rotated substitution head remain.
+// Y589: Actual creation-payload/equipment-selection/actor-object last-use scopes,
+// seven subsets then all with immutable settings view: eight at 253. NOT kept:
+// sentinel/squad/query homes unchanged; original complete body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1967,6 +1970,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // Y577: Shared ammunition output at phase/query scope with end-bound do, bounded for,
 // short-ordinal cursor and fixed-count cursor: 278/278/251/251/278/278/251/251. NOT kept: ties
 // or regression; original full body restored. Native actor/options/pool and scalar homes remain.
+// Y584: Existing slot-query real-field reference/direct-read ownership, independent
+// current/secondary pairs and readonly pair: 251/258/251/251/258/251/251/251.
+// Original signed-word snapshots, both queries and full body restored; pool/actor/options homes remain.
 // P329: Equipment/grenade/unit receiver identities, seven subsets then actor identity:
 // 251/251/251/251/251/251/251/251. NOT kept: no byte match; original complete body restored.
 // Actor/options and retained-pool homes remain.

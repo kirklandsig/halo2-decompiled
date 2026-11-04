@@ -595,6 +595,8 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // 282/282/282/282/282/282/282/282. NOT kept: four-point gain below eight and no equality;
 // original scan gates, indexed library copy and full body restored. Extra frame word and
 // predecessor/flag homes remain.
+// Y592: Standard edge fill_n/fill before/after step clearing, short/long remaining steps:
+// 297/383/404/423/382/400/309/309. NOT kept: native-frame range-fill forms regress in score/extent; original clearing, metadata memcpy and body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -1074,6 +1076,8 @@ bool function_2715a0(byte *buffer)
 // DH357: Fresh post-conversion denominator squares, with complete segment,
 // projection and collision operation families in eight forms: 486 each.
 // NOT kept: all tie; original fresh reads, sum trees and complete body restored.
+// Y595: Per-iteration 64-link output at iteration/after-sift/after-sentinel/query boundaries, inherited/descriptive names:
+// 486/486/486/486/486/486/486/486. NOT kept: no byte equality; original complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

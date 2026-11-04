@@ -368,6 +368,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DH329: Six native own-input first-consumer reads 55 each; entry cache/parent input-slot
 // pointers 168/55. NOT kept: own-input forms lack equality; cache input also loses caller
 // (24). Original inputs, cache comparison and complete body restored.
+// Y584: Persistent validity/cached-record/value-array field references, seven subsets
+// and complete metadata-scope binding: 128/128/128/55/128/128/128/128. NOT kept:
+// post-sample compare stays split; other forms shorten to 863 bytes. Full original body restored.
 // AC528: Native parent-list slot identities on the current reconciliation graph
 // 55/55/55/55/55/55/136/136. NOT kept: no exact match or eligible gain; original complete body restored.
 // Split post-sample comparison and evaluator/child scratch homes remain. One-use field bindings require equality; no retained candidate.

@@ -623,6 +623,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // P329: Reused speed/heading-weight/angle declarations, six orders then reciprocal scope/role names:
 // 126/126/126/126/126/126/126/126. NOT kept: no byte match; original complete body restored.
 // Velocity-copy receivers and unity SIMD/x87 homes remain.
+// Y591: Scalar initial velocity/direction/paired perpendicular vectors, seven subsets,
+// then all with velocity-role names: 153/126/240/233/249/240/249/249. NOT kept: no exact allocation
+// repair; original complete vector workspaces, helper contracts and body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -2546,6 +2549,10 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // P313: Existing in-place spin helper returns installed output as pointer/reference/real/double,
 // common/branch-owned: 42/42/42/42/42/42/42/42. Both original ignored-result calls, void helper
 // and full body restored; turn-product and spin spill/store scheduling remain.
+// Y583: Current in-place spin helper with rejected-period early return, before/after
+// admission input and direct/conditional dividend, ordinary/forced inline:
+// 77/83/86/94/77/83/86/94. NOT kept: native length/schedule not recovered;
+// original helper/body restored; turn-product and corrected-dividend/result stores remain.
 // F376: Existing spin helper owns separate torque/timestep inputs, with direct/named advance,
 // original/conditional corrected dividend and original/forced inline: 42/43/84/84/42/43/84/84.
 // Original two-use helper, both calls and full body restored; native turn-product and spin
@@ -2553,6 +2560,8 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // P328: Actual torque/magnitude/turn-product declarations in six orders, then entry-owned
 // and role-named: 42/42/42/42/42/42/42/42. Original declarations and body restored;
 // native frame agrees, turn-product and spin scratch/store schedules remain.
+// Y592: Complete two-side torque result as native vector/actual pair array, entry/producer declarations and mutable/readonly initializers:
+// 48/48/48/48/48/48/48/48. NOT kept: grouped storage lacks equality; original scalar results, spin helper and complete body restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2839,7 +2848,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 692 (was 692): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// score 676 (was 692): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 692 (was 692; earlier 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
@@ -2928,6 +2937,10 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // bound/result and entry-result declaration; original then distinct relative output:
 // 692/722/741/692/700/730/749/700. NOT kept: no gain; frames stay 0xd0/0x104 versus native 0xfc.
 // Original helper and complete body restored.
+// Y594: Current/desired/both matrix unit-scale/zero-position initializers and complete current aggregate,
+// original/distinct relative output: 677/721/709/739/685/725/700/749. NOT kept: nonnative aggregate clears;
+// 677 reaches native length but inserts rep stosd. Current axes and three position-zero stores before
+// left cross, original/distinct output 676/682; original output kept at 3244 bytes, plain confirmed.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3103,11 +3116,11 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 
 	transform.scale = 1.0f;
 	transform.forward = vehicle->forward;
-	cross3f(&vehicle->up, &vehicle->forward, &transform.left);
 	transform.up = vehicle->up;
 	transform.position.x = 0.0f;
 	transform.position.y = 0.0f;
 	transform.position.z = 0.0f;
+	cross3f(&vehicle->up, &vehicle->forward, &transform.left);
 	desired.scale = 1.0f;
 	desired.forward = *facing;
 	cross3f(&desired.up, facing, &desired.left);
@@ -3247,6 +3260,17 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // Seven subsets, then angle-helper magnitude: 1053/1053/1056/1057/1053/1068/1050/1053.
 // NOT kept: best 1050 gains only two; frame stays 0x80 versus 0x74.
 // Original APIs, private helper and complete body restored.
+// Y589: Complete branch-owned scalar velocity, nonunit/unit/captured/conditional
+// producers, original or projection-end scope: 1036/1064/1058/1091 twice.
+// NOT kept: frame remains 0x80; 1036 shortens to 4639/4666, farther from retail.
+// Original full body, velocity values, helpers and call inputs restored.
+// Y591: Initialized facing/forward/paired airborne planar objects, seven subsets,
+// then all plus initialized control point: 1052 each. NOT kept: no gain; frame
+// remains 0x80 versus 0x74. Original full body and helper contracts restored.
+// Y594: Two-entry planar direction table, for/while long/dword/short/word
+// normalization traversals: 1125/1125/1114/1114/1125/1125/1114/1114. NOT kept:
+// frames 0x84/0x88 and lengths 4706/4694 move away from native 0x74/4666.
+// Original complete body restored; incoming velocity and force homes remain.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4464,6 +4488,13 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Original indexed search with cached/collision, cached/sound, all, all/delta:
 // 182/165/177/177. NOT kept: selected receivers require equality; original-index 165 is 1353/1361, farther from retail.
 // Original indexed search, scalar producers and complete body restored.
+// Y591: Complete guarded component/query outcome, direct/exhaustive in bool/byte/short/long:
+// 177/177/177/177/177/177/177/177. NOT kept: deferred outcome requires equality;
+// original full search, component reads, collision/fallback and body restored.
+// Y594: First valid search hit owns complete threshold admission in bool/byte/short/long,
+// for/while scans: 173/173/198/197/173/173/198/197. NOT kept: inside-search
+// decision requires a byte match; best gain three is below the gate and 1359 bytes
+// is farther from native 1361. Original whole search and body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

@@ -139,6 +139,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Y577: Serial first/second/both turn publication and producer-local input windows,
 // then those four graphs with symmetric two-axis partials: 356/357/357/356/356/357/357/356.
 // NOT kept: all tie or regress; frame 0x98/0x90 and concurrent x87 inputs remain. Original helpers/body restored.
+// Y593: Separate scalar i/j/k outputs, pointer/reference, record/scalar results and reused input
+// scalars: 470/470/414/414/470/470/450/450. NOT kept: no equality or native frame/extent;
+// original six-use helper, snapshots, arithmetic and complete body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2884,6 +2887,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Y577: Indexed paired/fallback receivers and duplicate element reference, seven subsets,
 // then complete graph with creation reference: 375/396/317/399/375/396/399/399. NOT kept: no equality;
 // original full body restored. Native state/prefix and ordinal homes plus decay rotation remain.
+// Y593: Original inclusive-tail missing-pair state, bool/byte/short/long with for/while
+// first scan: 320/320/327/326/320/320/327/326. NOT kept: all regress at native length;
+// original positive found state, full body and helpers restored; prefix/state homes remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4062,6 +4068,9 @@ bool __stdcall function_391f0(void *state);
 // uninitialized entry declarations, masks 1-7, then complete visible-scan
 // declarations: 251 each. All initializers stay at their original statements.
 // Original body restored; extra frame word, early zero and portal/fog homes remain.
+// Y593: Found-side owns plane/minimum payload, for/while side traversal in long/dword/short/word:
+// 257/257/289/289/257/257/289/289. NOT kept: all regress; native frame and zero/portal homes remain.
+// Original complete body and every phase call restored.
 // @retail 0x36b50
 void function_36b50()
 {

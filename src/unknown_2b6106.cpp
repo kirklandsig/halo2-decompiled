@@ -870,6 +870,9 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // B412: Eight-team membership mask advanced with the score cursor: dword/long/word/byte
 // presence 508/508/512/508; absence 509/509/494/509. NOT kept: four-point leads below gate;
 // word absence shifts a narrow complement instead of an indexed dword mask. Full body restored.
+// Round 586: Actual output-slot cursor at entry/data/after-primary/before-name/before-game/
+// before-timer/final-list phases and explicit completed-publication advancement: 619/614/558/554/554/548/566/619.
+// NOT kept: retail retains the output ordinal; original frame, observations and body restored.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

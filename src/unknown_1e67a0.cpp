@@ -1118,6 +1118,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // calls absent from retail, including the retail-length form. Original direction copies, shared rotation
 // and full body restored; j/k products, side-dot and exit scheduling remain. Scores
 // 100/110/100/303/308/307/312/318. NOT kept: unmatched result-ownership forms.
+// Round 588: Complete scalar captures at goal/turned final copies and rotation input,
+// seven subsets then all immutable: 150/174/192/181/206/223/221/221. NOT kept: one-use
+// input captures miss equality. Original shared rotation and complete body restored;
+// j/k rotation products, side-dot residence and final load-all copies remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -2142,6 +2142,8 @@ bool function_1e11b0(long actor_index, bool active);
 // P314: Formal/current-handle/walk lexical identities on the original receiver graph, seven
 // subsets and the complete actor receiver roles: 64 each. Original names and body restored;
 // EBP handle, receiver spill/common loop head and full-width return remain.
+// Y595: Full-width long/dword/int/unsigned-int result contracts, Boolean/direct zero-one mask production:
+// 65/65/65/65/65/65/65/65. NOT kept: no byte equality; original complete body restored.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2929,6 +2931,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // allocation forms; original event domain, wrapped scan, calls and body restored.
 // First-event index reload and displaced actor-loop alignment remain.
 // Wide conditional results 35 grow to 582/578 and add sign extension; the first index reload remains.
+// Y590: Actual trigger-record null/count/count rejection exits, seven subsets
+// then complete pending/latch rejection ownership: 50 each. NOT kept: the first
+// event index reload and actor-loop alignment persist; original full body restored.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3381,6 +3386,8 @@ void function_2011f0(long arg_0);
 // P319: Early validation/count producer nested/conditional/disjunction/complete-failure,
 // then bool/byte/short/long availability: 318 each. Original count threading persists;
 // NOT kept: no match or gain. All validation, narrow inputs and complete body restored.
+// Y592: Both function exits to sole return, or whole active-body/result finalization, bool/byte/short/long accumulated outcome:
+// 318/318/318/354/318/318/318/354. NOT kept: no exact whole-result ownership; original validation, narrowed inputs and complete body restored.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

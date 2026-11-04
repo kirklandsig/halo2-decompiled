@@ -1020,6 +1020,9 @@ extern long *g_51e9cc;
 // M372: Actual contact point/normal/final-position CRT memcpy transfers, seven site
 // subsets: 42 each; complete memmove 108 at 1462/1481 bytes. Original aggregate
 // transfers and complete body restored; lookup receiver and crouch/contact schedules remain.
+// Y590: Complete switch-default discovery ownership, found/missing channels in
+// bool/byte/short/long storage: 42 each. NOT kept: no receiver-retention or
+// contact-schedule gain; original complete body restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -3271,6 +3274,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M364: Original early-return changed result in char/signed-
 // char/byte/short/word/int/long/dword storage: 610/610/610/623/623/625/625/625. NOT kept: no
 // native result-byte/flight-home match; original result domain and complete body restored.
+// Y590: Actual wall-projection/axial-scalar/matrix-conversion last-use scopes,
+// seven subsets then all with planar temporary termination: 600 each (fast control
+// 600, full 561). NOT kept: no byte change; complete original body restored.
+// Changed-result/flight homes and vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3632,6 +3639,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // subsets then all with the original collision declared at entry: 368 each.
 // Original declarations and complete body restored; native matrix/origin and
 // paired pivot/property homes remain; frame 0x12c still agrees.
+// Round 588: Position/property/collision last-use scopes, seven subsets, then all with
+// earlier inner rotation declaration: 368 each. NOT kept: no native-home repair; original
+// complete body restored. Matrix/origin and paired pivot/property homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4408,6 +4418,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // publication loop, seven subsets then complete immutable parts:
 // 179/176/196/154/181/170/190/190. NOT kept: all regress; original twice-used helper
 // and body restored; normalization SIMD and trigonometric/basis homes remain.
+// Round 588: Angle/rotation/basis last-use scopes, seven subsets, then all with double angle:
+// 145/145/145/145/145/145/145/151. NOT kept: no exact scope/domain repair; original
+// complete body restored. Normalization SIMD ranks and coefficient/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
