@@ -1143,6 +1143,15 @@ done:
 // NOT kept: gains at most seven; narrow counter/layout forms require equality. Frames
 // stay 0x64, first +3 and exclusion/result/NONE ownership remain. Original complete
 // body, grouped workspace, triangle reference, retry state and query operands restored.
+// Zero/one exclusion in signed-byte/short/word compound producers 125/125/125;
+// complete branch producers 133/133/133; short/word conditional producers 133/133.
+// Original Boolean exclusion, result parameter, grouped storage and complete body restored.
+// DH335: collision-selection input char/signed-char/byte 125 each; short/word 126,
+// int/long/dword 130. Wider inputs lose the matched caller. Original Boolean
+// contract and whole body restored; exclusion/result/NONE and direction homes remain.
+// N351: Native output long fields +08/+0c/+10, subsets 1/2/4/3/5/6/7, then model-output pointer:
+// 125/125/125/125/125/125/125/124. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: exclusion/result/NONE homes and direction reload.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

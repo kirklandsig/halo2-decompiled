@@ -95,6 +95,7 @@ local_1:
 }
 
 #include "unknown_0259d0.h"
+#include "normalize3d.h"
 #include <math.h>
 #include <string.h>
 
@@ -175,7 +176,7 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
-// score 324 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
+// score 295 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
 // Round 121 (fast control 336, aligned 103): the helper's clamp as if/else if 336 (103); remaining first 348 (156); weight before
 // height 345 (129); remaining before weight 348 (144); a named inverse weight 337 (108).
 // Round 291: Paired double-square terms, complete direction-square terms, both, ordered accumulator
@@ -344,6 +345,12 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // 503 (1917 bytes); the magnitude test as `fabs(magnitude) >= 0.0001f` 422 (1901 bytes); the third tail as
 // `count <= 0` weight first 355 (1892 bytes, retail keeps accumulate first); `opposite` declared before
 // `direction` 324 (same code). Retail's j loop head has a `lea esp, [esp]` pad that ours lacks.
+// Round 49 (m3 lane 2, plain): the existing normalize3d for the opposite vector's scale 295 at 1886 bytes (kept;
+// the scale itself compiles as before, the weight-sum adds of the accumulations change operand form, aligned
+// differences 112 -> 124); the existing length_sq3f for the direction test 295 (same code, kept as the helper
+// call). On those: vector3f_assign for the opposite vector 298; `opposite.k = 0` before i/j 397 (1882); the zero
+// test inverted with its arms swapped 295 (same code); a const source pointer 295 (same code). Retail's
+// load-first j row costs ours one byte before the j loop, so its 4-byte loop-head pad is missing here.
 // N345: Native component-array loops, negation/scale as fields or signed/unsigned
 // bounded traversal (excluding fields/fields): 360/360/357/361/361/357/361/361
 // (fast control 336, full 324). NOT kept: all regress; original component operations
@@ -380,16 +387,9 @@ void function_131030(long tag_index, vector3f const *view_direction, s_fog_accum
 			opposite.i = -direction.i;
 			opposite.j = -direction.j;
 			opposite.k = 0.0f;
-			real magnitude = (real)sqrt(opposite.j * opposite.j + opposite.i * opposite.i);
-			if (!(0.0001f > fabs(magnitude)))
-			{
-				real reciprocal = 1.0f / magnitude;
-				opposite.i *= reciprocal;
-				opposite.j *= reciprocal;
-				opposite.k *= reciprocal;
-			}
+			normalize3d(&opposite);
 		}
-		if (direction.k * direction.k + direction.j * direction.j + direction.i * direction.i > 0.0f)
+		if (length_sq3f(&direction) > 0.0f)
 		{
 			for (long j = 0; j < 2; j++)
 			{
