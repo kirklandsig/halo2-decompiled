@@ -709,6 +709,8 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // ordinary/immutable bindings: 174/174/218/218/216/216/210/210. NOT kept: aliases do not match,
 // construction/receiver changes regress and lose the matched caller. Original
 // native copy, four spread queries, party edits and complete body restored.
+// M391: Shared spread-query pair in plain two-pass long/short/word/byte loops, positive then complementary decision: 172/172/172/175/158/158/158/169.
+// NOT kept: No exact candidate-first query repair; frame grows from 0x2694 to 0x269c and extent moves away from native. Decision flags require equality. Original complete body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
