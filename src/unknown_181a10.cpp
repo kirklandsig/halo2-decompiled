@@ -668,6 +668,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // short copy ordinal: 315/313/326/357/344/329/342/307. One-point lead rejected; original
 // aggregate copies, setters, plane math and body restored. Frame/point/plane homes remain.
 // M323: Native instance/mesh-surface/direct-surface layouts, seven subsets and complete readonly inputs, all 308. Original input observations, types and body restored; frame 0x4c versus 0x44 and classifier/plane/output homes remain.
+// Round 56 (m3 lane 13, fast): retail keeps origin as three scalars (x at +0x38, y and z in reused slots +0x14/+0x18)
+// and copies the hit point out with dword moves. Origin as three named reals through a position pointer 315 (1251
+// bytes, frame 0x48); read straight from the transform 312 (1248, frame 0x48); each with the hit copied out by
+// struct assignment 322/319 (1228/1231); the struct assignment alone 331 (1218, frame 0x4c). Every 0x14a300 call
+// here sign-extends the plane index in retail (a long parameter; needs src/unknown_17d9a0.cpp, avoided this round).
 // Round 44 (m3 lane 2, fast = plain): retail's slots: origin y/z at +0x14/+0x18 (reused by the material and
 // friction), hit +0x2c..+0x34, origin x +0x38, +0x3c/+0x40 never touched, plane +0x44..+0x50 (normal written
 // in place); the untouched pair looks like a reserved aggregate home. Origin and hit copied by components
@@ -680,6 +685,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // assigned in the test 309 (gives the register load, EAX not ECX); a next pointer local alone 312; the clamp
 // helper comparing with its own `value` 332 (1232 B); the second shape in a local for the exclusion test 346;
 // the key range test as `key < 0 || key > count - 1` 308 (different code, aligned worse).
+// Round 144 (m3 lane 6, fast; register-masked aligned [169]): `plane3f plane`, the transformed normal, and
+// material/friction/restitution each declared at function scope 308 (same code); the classifier reading
+// `shape->data` at each use 308 (same code); the exclusion test as a single-exit bool helper on the shape (result =
+// byte test under the kind/data/classifier test) 320 [178] (retail's `setne al; test al, al`, but the shape stays in
+// ESI where retail re-reads [ebx] after the virtual call); that helper on the contact node, reading `node->shape` at
+// each use, 319 [162]. Retail's three loads of the data and its preloaded clamp constants are reproduced by no form;
+// both matched siblings (0x1c5400, 0x1d4880) use the single-load clamp.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

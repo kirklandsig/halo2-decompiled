@@ -377,6 +377,13 @@ void function_11bed0(s_location *location, point3f const *point);
 // 0x125920 11, 0x14a280 14, 0x1e1500 42, 0x1697c0 118, 0x17c0e0 149 (0x14a280's bsp moves to the stack, round 88's
 // 0x1d48f0 cause). Aggregate-initialized iterator 93 (same code); source pointer on the native iterator 93 (same code);
 // index walk 161 (confirmed). BLOCKED-BY 0x11bed0's inline eligibility.
+// Round 142 (fast, control 93): the call in an inline helper taking the source 93, on the index walk 160; on the walk,
+// switch on the source type with one or three cases 162/162; inline bool predicate, also through a bool local 161/161;
+// inline getter returning the spatial pointer or NULL, ternary or if/else 163/163; `source && source->audible == 1` 162;
+// `sound && ...` 161; `audible != 0 &&` and the same nested 167/167; `&& sound` 161; `&& data` 161; `&& sound && data` a byte match
+// like round 166's order (implied tests, not kept); named location and position pointers both tested 56 at 217 bytes (not kept).
+// One extra test never moves the call; two do. 0x11bed0 calling the existing 0x11be90 for its leaf half stays a byte match itself
+// but leaves this at 93 (walk 160), so the size of 0x11bed0's source is not the cause; not kept.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -1210,6 +1217,15 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // the loop gives retail's index EDI/element ESI but folds the state load (`mov al, [esi + edx + 2]; add esi, edx`) 35 (211
 // bytes), six other element spellings 35; the test through the macro with that local 24 (index ESI again).
 // A private next with pointers to the iterator's count/first/both 24/24/24, to its index (alone or with the others) 50 (212 bytes).
+// Round 142 (fast with 0x126df0, 0x12a810 and 0x21bd00): the state in a two-use char local 24; `long curve` with a cast at the call
+// 24; the state through the pool's data directly 24; `iterator.index` as the call's argument 24; `continue` with an element local 24;
+// for-loop init and step 64; a duration test ahead of the state 66; 0x126df0 with a time local 24 (0x126df0 still matches), with a
+// gain local 29 (0x126df0 50). Other address lists on --fast give 69 here, so keep that list.
+// An inline fade-in helper taking the element pointer, called with a named element local: all registers retail's, 35 at 211 bytes,
+// only the state read left (`mov al, [esi + edx + 2]; add esi, edx; cmp al, 2` for retail's `lea esi, [edx + eax]; cmp byte ptr [esi + 2], 2`);
+// the same 35 with an embedded assignment, state in a char or long local, `2 ==`, a cast of this file's getter, a predicate helper, the element
+// at loop scope, a byte cast, an index guard ahead or around the state test, `continue`, a flag read first, a second view, the state test
+// inside the helper. With the state read through the macro the element is a CSE temp again: 24 at 210, with or without the local.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -1258,6 +1274,11 @@ struct s_looping_detail_request
 
 // score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
 // instead of retail's temporary/copy, and the first-player query still expands.
+// Lane 14 r57 (plain): the audible arm through a local offset copied into the request after the 0x21bfb0 call
+// (retail's [esp+0x10] temporary; the arm is then retail's but for detail held in EDI) 130 at 534 bytes, with the
+// copy after the callbacks 127, the offset declared once at the top for both arms 127, `result = true` last 132,
+// a definition-index local for the lookup and the call 159. Diagnostic: noinline on this file's declaration of
+// the query leaves it inlined (127). The query's expansion still costs the else arm 26 bytes.
 // Round 28 (lane G): what still differs is the first-player query: retail calls 0x14dde0 out of line
 // and our build inlines it, and the audible arm's detail then stays in EDI where retail reloads it;
 // the rest of the body is retail's. The out-of-line forms are the implied-test ones the 2026-10-30
@@ -1395,6 +1416,10 @@ struct s_looping_detail_request
 // B389: Positive branch-assigned completion without an entry default, bool/byte/short/long,
 // with original then early audible completion: 152/159/174/176/152/159/174/176. All regress;
 // original completion and full body restored; first-player call and detail/offset homes remain.
+// M343: One admitted-request graph from the reused attached-source outcome, bool/byte/short/long,
+// with native audible offset 154/154/156/156, with temporary/copy 182/182/183/183. Original
+// complete body restored; query expansion and detail/offset homes remain.
+// NOT kept: unmatched admission outcomes; every form regresses.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1566,6 +1591,12 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // Round 442: native byte selected range/full count/full voice-result domains, seven subsets
 // 92/110/125/61/101/109/126; complete graph with result initialized before pitch selection 125.
 // Original scalar domains, shared helpers and body restored; early index/flag scheduling remains.
+// Round 142 (fast; aligned count in brackets, control 50 [43]): `bool result = false` after or just before the flag store 48 [41]
+// (retail's `mov [esp+0x1c], esi` first; under the keep bar, restored); 0x21cb90 with a flags local 50, with that and the twice-indexed
+// take 146 [43]; the twice-indexed take with 0x21cc30 inline 67 [40]. Diagnostics, the take written out here (not keepable): 53 [20],
+// with an entry pointer and flags local 138 [22], with 0x21cc30 inline 122 [19] and 150 [21], the set path written out as well 53 [20],
+// 138 [22] and 150 [21], with the result moved 51 [18]. Diagnostics, 0x2194c0's parameters swapped everywhere (0x21cb90 0): 49 [30], with
+// the result moved 47 [28], with the twice-indexed take 144 [28], with 0x21cc30 inline 65 [25]. BLOCKED-BY 0x2194c0 for that arm's registers.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {
@@ -1634,6 +1665,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // reads it as a 0xa0-byte play state) makes the frame 0x12c, four over retail's 0x128, and the
 // score does not move; the homes differ by 4, 8, 28 and 36 bytes, so ours is not a shift of
 // retail's layout: the original body is restored.
+// Lane 14 r57 (plain, from 305): the range gain through the existing decibels_add 432 (1939 bytes); track_definition
+// renamed 305 (no slot moves); the two arrays declared at the update block's top 419 (and they would be filled
+// on every pass); the replacement lookup and creation given the definition_index local 429 (1908 bytes; retail
+// holds the definition index in EBX across the find call but reads it from the record); sounds filled by memset
+// alone 306.
 // Lane 18 round 14: approach_126660 now takes (value, delta, maximum) and forms the lower bound
 // itself, as every caller passed `0 - maximum, maximum` (0x1269f0 matched with it): the gain
 // step's call 307 -> 305 (plain).
@@ -1763,6 +1799,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // B387: Native detail-time/entry cursors and read-only detail, seven subsets, then immutable
 // parent binding: 479/491/479/491/479/491/491/491 (reduced control 479, full 305).
 // Original full body restored; request/frame, playback/NONE and range/ring homes remain.
+// M343: Canonical inactive-range predicate bool/byte/short/long with original request
+// 417/417/414/416; actual full request 417/417/411/416. NOT kept: retail keeps the raw mask
+// in EDI and no predicate form matches. Original mask, request and full body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2130,6 +2169,10 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // input subsets 1-7: 339/467/465/464/462/481/481; all with flat zero aggregate 492.
 // Exact-only one-use snapshots all restored; frame remains 0x4b4/0x4bc with scalar homes,
 // class-query boundary, clear regions and stop-call expansion unresolved.
+// Round 142 (fast; aligned count in brackets, control 339 [257]): the nested base struct with `= {{0}, {0}}` 496 at 1953 [257]; early
+// track-gain and scale locals 465 at 1937 [237]; both 502 at 1958 [240]; `primary` after the clear 345 at 1932 [213], with the early
+// locals 485 at 1942 [276], with the gain sum ahead of the clear 345 at 1932 [217]; `pitch` after the clear 466 at 1935 [244]; the total
+// gain in its own local 349 at 1936 [263]. Retail tests `primary` before the clear, so the 213 is not its shape.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
@@ -2412,6 +2455,15 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // B387: Existing byte-flag writer at all three final publication sites, seven subsets,
 // then all with masked native truth arguments: 694 each (reduced control 694, full 597).
 // Original complete body restored; entry true/flags, record/track homes and loop padding remain.
+// Lane 14 r57 (plain, from 597): `alternate` declared inside the definition guard 615 at 2500 bytes (the entry is
+// then retail's to +0x6c: result first, EBX = 1 shared by the alternate mask and the true stores; the source copy
+// keeps the pointer in ESI where retail copies it from EDX, which shifts the energy loops' padding); with `distance`
+// renamed to sort after maximum/minimum 615 (no home moves); inside the availability block 596 at 2518 bytes; with
+// distance declared before maximum 596; after the definition lookup 602.
+// M343: Complete pending-valued return graph, bool/byte/short/long direct initial state test
+// 668/668/799/793; default-true state-test counterparts 755/755/800/794.
+// All regress; original completion polarity, sole exit and complete body restored.
+// NOT kept: all outcomes regress; wider domains grow the frame to 0x40.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

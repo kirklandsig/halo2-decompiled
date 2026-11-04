@@ -243,12 +243,25 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // producer orders: 110/110/110/110/110/110; each product named at its own row producer
 // 110; existing setter publication 188 (937 bytes). Original product expressions, stores,
 // four-use normalizer and complete body restored; forward late-k/reciprocal issue remains.
+// Round 38 (m3 lane 18, fast): dot3f over the address expressions `&local_1[0].forward/up` 110; the whole
+// orthonormalisation as a forceinline helper over a transform pointer 149; the dot written out j, i, k 110; the
+// helper's sum written `j_squared + i*i + k*k` 110; the axis pointers taken after both normalisations 110.
 // Round 139 (m3 lane 6, fast, 0x1c4a80 stays matched): the projection through the existing vector3f_add_scaled
 // with the negated dot 156 (929 B); the products scalar first 110; `up->x = up->x - ...` 110 (same code); the
 // header normalize_inline for up and left 151; a left pointer for the cross and its normalization 119 (923 B).
 // Round 121 (fast; on the 2 form, aligned count in brackets): dot3f through the matrix fields 152 (39), with the projection reading
 // forward through the fields 157 (22), up 163 (107), both 177 (108); the 2 form with the projection reading forward through the fields
 // 157 (12), up 147 (100), both 177 (98); the dot's i term as `up->i * local_1[0].forward.i` 148 (12): the i term stays up-first in all.
+// Round 65 (m3 lane 11; fast, on the 2 form): `up_i` local 2; dot's i term through the matrix field 126 at 929 (aligned 5: the
+// term flips but up.i loses its preload, `movaps xmm3, xmm0; mulss xmm3, [i]`, a jmp and a reload); cross3f_staged 181
+// at 936. Compile-only, i term or registers unchanged or worse (96-130 aligned, base 96): address of up.i as the helper's argument,
+// `*(real *)up` or `*(real *)forward` in the dot, a pointer or reference to up.i declared before forward, pointer reads
+// of up.i before the normalizations, partial sums named, a rotation sub-record pointer for forward, up or a term (102-118; real, for both vectors, 76 at 922).
+// A dead direct read of up.i anywhere flips the term and drops the preload the same way. No matched function has this
+// dot encoding (scan of retail for `movaps xmm7, xmm5; mulss xmm7, xmm3; addss xmm0, xmm7`).
+// Round 57 (m3 lane 13, fast): the normalizer's products as i*inv, j*inv, inv*k 110 (same code); `transform4x3f
+// local_1[6]` declared before `local_0` 110; the normalizer returning the length, both pointers taken after the two
+// calls 110; the header normalize3d for forward only 233 (839 bytes); the projection rows in k, j, i order 110.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

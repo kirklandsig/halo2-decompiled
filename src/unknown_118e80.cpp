@@ -342,6 +342,11 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // Round 126 (lane 8, plain): 0x11ce20 called (&target_up, &up) 218 (re-measured; under the bar); on it: speed
 // scale read at each use 230; forward stored before up 219; frame rate read once into a local for its three uses
 // 279 (1052 bytes); the angle test inverted with the copy arm first 240. Still BLOCKED-BY 0x11f0d0's double local.
+// Round 207 (lane 3, fast): on 0x11f0d0's position step, the existing scale_vector_by_double into the
+// difference then vector3f_add 220 here (0x11f0d0 2 -> 162, 933 bytes: each product is rounded and stored);
+// the existing vector3f_add_scaled with a real quotient 220 (0x11f0d0 89, its `double angle` still pads
+// this frame); here: turn velocity declared before forward 224; world-up computed before the forward
+// branch 285 (1010 bytes); the second turn's scale as `acceleration + acceleration` 224.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1161,6 +1166,10 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // Round 93: bool/dword force union 44; with component stores 51; existing vector/point setters 56/56;
 // memcpy/direct receiver 44/44; staged squares 42; preloaded-i component stores 49; complete updated vector 135.
 // NOT kept: the exact-only union wrapper, one-use velocity local and value snapshot. Original body restored.
+// Round 65 (m3 lane 1, fast, control 94): the 0x119bc0 result passed straight into the 0x1c4b00 call 101; the moving
+// test written into the flag-setter call 94; object flags read at each use (no snapshot) 156; the physics word at
+// 0xc0 read at each use 132; the requested up/forward copies swapped 98. The bool force flag still waits on files
+// other lanes hold.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

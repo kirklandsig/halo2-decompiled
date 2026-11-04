@@ -482,6 +482,10 @@ static inline bool teams_enabled_19e1c0()
 // AC489: First-word-only text initialization at entry for player/team/formatted families,
 // subsets 1/2/4/3/5/6/7: 425/427/435/437/451/453/467; team-only with ordinary result 609.
 // Original buffer, result and full body restored; frame/capacity homes and separate copy tails remain.
+// Round 38 (m3 lane 18, fast): the twelve token compares through one inline predicate (token, length, name)
+// 390, with the plain result 691 (both identical code); a block-scoped text buffer in each of the nine cases (one
+// shared slot, frame unchanged) 390, plain 691 (identical); an inline copy helper (length, clamp, copy; four callers)
+// with the volatile result 620 (1237 bytes). The plain result still merges even the name-call setup across cases.
 // Round 79 (m3 lane 16, fast): plain result with the fallback as `if (result) return result;` 693; plain result
 // with the local-team value long 693; plain result with switch-side-time `result = remaining` plus the early
 // fallback return 734; long opponent team with `best_score <=` and both event teams read at each use, plain/volatile
@@ -493,6 +497,14 @@ static inline bool teams_enabled_19e1c0()
 // returns 390 (same code); the engine's token text in a `written` local returned when nonzero, volatile/plain
 // result 397/693. Retail: event EBX, token_length EDI, remaining EBP, result ESI from the top; the opponent loop
 // runs on `cmp edi, 8` (no free register for a down counter), where ours counts EBX down from 8.
+// Round 67 (m3 lane 10, fast): each case its own `if` ending in `return result;` with the plain result 630 (lane 9's
+// form re-measured, 1232 bytes: every return gets its own epilogue where retail jumps to the shared copy tail), with
+// every format failure returning `remaining` 623, with a long opponent team and `best_score <=` 625; on the volatile
+// result: the time-mode test as `mode == 3 || mode == 4 || mode == 8` 397, the token fallback clamp as one ternary 395
+// (1432 bytes), the mode field read at each use with no local 390 (same code).
+// Round 143 (m3 lane 5, fast): every clamp as `if (remaining <= result)` 390 (same code); text
+// declared before the result 390 (same code); `best_score <= function_1587f0(team)` with the short
+// team 388; local-team value long 393 (1436 bytes); engine text returned early 390 (same code).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

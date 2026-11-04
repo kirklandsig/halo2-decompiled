@@ -1989,9 +1989,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax R (10-31): no kept form, no lower score: colour locals reach the frame 0x44 but spill both colours
 // (195/188); the permuter's 124 promotes the unknown to xmm0 and breaks retail's argument layout.
-// score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // Earlier forms: frame 0x44 agrees; settings/color/query registers, cursor home and zone-base scheduling remain.
 // tried native slot scalar 159 (a one-use copy of the field; not kept without a match); cursor/request/transform names and late settings receiver 166 (fast control 166);
 // shared zone predicate 286; zone cases first 166; float consistency 166; immutable loop selectors 169 (fast).
@@ -2103,10 +2103,20 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // unknown-first form: cursor and colour locals read before the spawn stores 180 (572 bytes); multiplied() as
 // the call's argument 132; spawn declared first 124; effect cursor read after set_location 132; matrix at
 // function scope 124.
+// Round 123 (m3 lane 7, fast with callers/callees): spawn as an aggregate `= { scale, unknown, location }` after
+// set_location 128 (same code); with colour locals after/before it 184/184 (572 bytes); the type-query block's
+// braces removed 128 (same code); the mode cached in a word local before the loop 179 (564 bytes).
 // DH315: Live mode/placement field references, readonly/mutable single/both,
 // entry and iteration scopes: 128 in all eight forms, 556/552 bytes. Both
 // matched callers and transform producer stay exact; original descriptor reads,
 // query/color timing, cases, spawn fields and complete body restored.
+// Round 67 (m3 lane 1, fast): spawn as an aggregate initialiser `{ scale, unknown, location }` 128; the type-query
+// pointer at function scope 128; multiplied declared before tinted 128; the matrix producer as the spawn call's
+// argument 162 (552 bytes); the location mode in a short/word local before the loop 143/143 (552 bytes).
+// AC506: Initial location-setter presence/absence results in bool/byte/short/long:
+// 194/194/188/188/194/194/188/188 (572/552 bytes), all matched controls preserved.
+// NOT kept: one-use admission results regress and retain frame 0x40 versus 0x44;
+// original initial guard, color/query observations and complete body restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3248,10 +3258,23 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // function_1751d0() call 85 (331 bytes; not kept, retail makes that call); node predicate before the transform
 // call 115 (0x176f60 25); colours declared before the particle-location cursor 93; location pointer at function
 // scope 93; colours as long 93; location pointer declared in the while condition 93.
+// Round 123 (m3 lane 7, fast with callers/callees): spawn cursor re-measured 89; with the effect location index
+// declared inside the definition test 93; spawn + per-call mode 109 (0x176f60 25: the definition takes EBX, the
+// effect is computed in EAX and its index becomes a register argument), with the location index inside the test
+// 109, the node flag written in the call's argument 112 (327 bytes), the matrix declared beside the spawn 109.
 // DH315: Live mode-field reference, readonly/mutable, original/outer cursor
 // declaration and direct/named multiplication: 108/108/108/108/122/122/122/122.
 // All lose matched caller 0x176f60 (25); original cached mode, cursor, query,
 // successor, input contract and complete body restored.
+// Round 81 (m3 lane 9, fast with 0x176f60): the live mode (definition->location_mode in the loop call) 108 with
+// 0x176f60 25: both parameters then become register arguments (effect index in EAX, system in ECX) because the
+// effect pointer is formed in EAX and copied to EBP, where retail and our cached form load the index straight into
+// EBP; on the live form the system looked up before the effect 119 (348 bytes); colours read at the call 122 (320
+// bytes); colours declared before the particle-location index 108; the location pointer declared first 108.
+// AC506: Activity-admission bool/byte/short/long at the original cursor-read boundary
+// 93/93/93/93; before cursor acquisition 112/112/112/113. Earlier reads change the
+// argument convention and lose the matched caller. NOT kept: no gain or exact match;
+// original activity field read, definition/cursor lifetimes and complete body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

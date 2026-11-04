@@ -3697,6 +3697,9 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // Round 139 (m3 lane 5, fast): reply member-state pointer before the id 94 (seven, under the bar); with the identity
 // address named before the memset 94; with an early not-peer `return false` and `return true` 116 (428 bytes); with the
 // announcement id field by field 94; with the identity as a structure assignment 94; with `leave` declared first 96.
+// Round 49 (m3 lane 15, fast): state range as `state >= 3` 102; the leave test with the flag byte first 101; the
+// value44 reset before the member index store 100 (one point, not kept); announcement flags stored 2, 1, 0 101; the
+// host index read from the session at each use (no assignment inside the condition) 104 (421 bytes).
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3822,6 +3825,10 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // `channel` at function scope 138, a two-use XNADDR host local 138, `address` before the key release 138, the
 // forceinline as a separate declaration above this function 138 (same code each); clock and channel failure first
 // without the flag 142.
+// Round 58 (lane 14, fast; aligned counts in brackets, this body [34]): one transport local for both value38 reads 144 [34]; in-place loopback flag 136 [31];
+// with channel failure first 152 [19] (554 bytes), with the transport local too 163 [19]; a local copy of session for the part after the loopback test 136 [34]
+// (coalesced, no second register), on the flag/channel form with a host copy too 152 [19]; that part as a forceinline bool helper taking session and host 145 [25]
+// (581 bytes, session still in ESI). No retail call path leads from 0x5fb00, 0x5fb60 or 0x7ab10 back here. BLOCKED-BY the same host/session staging.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -4563,6 +4570,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // Round 139 (m3 lane 5, fast): identity flag declared at entry 305 (same code); `result` after the state-0/10 exit
 // 307; payload address named before the identity compare 305; `result` before the sender lookup 310; `state <= 2`
 // arm first in the range chain 373 (1246 bytes).
+// Round 58 (lane 14, fast; aligned counts in brackets, this body [245]): host site as `if (sender != NONE) goto acknowledge;` 317 [265] (the block then follows
+// directly); reason 9 as the fall-through after the received block, retail's order 305 [244] (1265 bytes), with an else goto at the host site 305 [244], with the
+// acknowledgement falling out of its block 313 [245] (1272 bytes); `done:` ahead of the acknowledgement 305 [245], with reason 9 last 305 [244]; a flag set at both sites
+// and tested at the end 305 [245]. The block stays right after the reason-5 exit in all but the first: source position and label order do not move it.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
@@ -4991,6 +5002,12 @@ struct s_membership_update_snapshot
 // M302: Mask zero initialization after validation, added/moved/removed and pair/all subsets,
 // then all four masks: 704/703/704/687/686/686/780/779 (unchanged fast 523).
 // Original initializations restored; mask homes, validation scheduling and stale completion remain.
+// Round 80 (m3 lane 9, fast; positional/aligned, base 523/315 on fast, 569 plain): a whole rewrite as a result chain, no
+// gotos, failures as `result = false` in else arms, loops headed `result && i < count`, phases under `if (result)`, 772/349
+// (2606 bytes): the first loop's head, cursor and bound are retail's, but update takes EBX and session EDX (retail session
+// EBX, update reloaded from the stack) and the host-lost arm moves first. On it: `else` around the host-lost arm 772/349;
+// one exit with a late `result = true` 790/350; a named version and update count for the first loop 772/349 (same code);
+// the opening `bool result = ...` test with no later store 813/359, with the late store 809/353.
 // Round 47 (lane 15; plain unless marked, exact aligned line counts in brackets): the lead. Retail's first two member loops, the
 // last player loop and every failure come from a result chain with no goto: typed update records (member change 0x104: old/new
 // index, words, has_properties, properties_valid, properties; player change 0x140), `bool result = base == NONE || base == value4c;`,
