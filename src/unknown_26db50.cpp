@@ -452,14 +452,21 @@ struct s_record_collision_view
 
 PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis, real sine, real cosine)
 {
-	real along = dot3f(axis, vector) * (1.0f - cosine);
-	real i = vector->i, j = vector->j, k = vector->k;
-	vector->i = axis->i * along + i * cosine - (axis->k * j - axis->j * k) * sine;
-	vector->j = axis->j * along + j * cosine - (axis->i * k - axis->k * i) * sine;
-	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
+	vector3f const *local_axis = axis;
+	real along = (local_axis->i * vector->i + vector->j * axis->j + axis->k * vector->k) * (1.0f - cosine);
+	vector3f cross;
+	cross.j = local_axis->i * vector->k - axis->k * vector->i;
+	cross.k = vector->i * axis->j - local_axis->i * vector->j;
+	vector->i = local_axis->i * along + cosine * vector->i - (axis->k * vector->j - axis->j * vector->k) * sine;
+	vector->j = cosine * vector->j + along * axis->j - cross.j * sine;
+	vector->k = axis->k * along + cosine * vector->k - cross.k * sine;
 }
 
-// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
+// MiniMax G (11-04): retail's ring block and the 0x29c9ee rotation form now match; 76 (was 90).
+// score 76 (was 90): Frame 0xd8 agrees and the ring block now converts the ring with
+// cvtsi2ss, keeps the SSE offset and the hoisted scaled radius, and the rotation is
+// unspilled; the radius still copies through EDX, the sector index is read after it, and
+// the spoke's zero-init, the trace call's register roles and the rotation's pairing differ.
 // it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
 // rotation's component spill, cross scheduling and register allocation remain.
 // The body is 1085 bytes versus retail 1089.
@@ -725,15 +732,18 @@ long function_26d570(long object_index)
 		real radius_value = *(real *)((byte *)object_get(object_index) + 0x3c);
 		long sector_index = record->location_index;
 		real const &radius = radius_value;
+		double scaled_radius = radius * 1.2;
 		long ring = 0;
 		long rings_remaining = 2;
 		do
 		{
-			real distance = (real)((double)radius * 1.2 + (real)ring * radius);
+			real ring_value = (real)ring;
+			real ring_offset = ring_value * 0.39269909262657166f;
+			real distance = (real)((double)ring_value * radius + scaled_radius);
 			for (short spoke = 0; spoke < 8; spoke++)
 			{
 				vector3f direction = *g_4687a8;
-				real angle = (real)spoke * 0.7853981852531433f + (real)ring * 0.39269909262657166f;
+				real angle = (real)spoke * 0.7853981852531433f + ring_offset;
 				real sine = (real)sin(angle);
 				real cosine = (real)cos(angle);
 				record_rotate_vector(&direction, g_4687b0, sine, cosine);
