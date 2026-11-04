@@ -384,6 +384,9 @@ void function_11bed0(s_location *location, point3f const *point);
 // like round 166's order (implied tests, not kept); named location and position pointers both tested 56 at 217 bytes (not kept).
 // One extra test never moves the call; two do. 0x11bed0 calling the existing 0x11be90 for its leaf half stays a byte match itself
 // but leaves this at 93 (walk 160), so the size of 0x11bed0's source is not the cause; not kept.
+// Round 111: location pointer, const position pointer, both pointers, and mutable position pointer 93 each;
+// a pool local on the native iterator 93; the iterator's pool assigned last 93; guarded native do/while and
+// its early-empty-return form 93 each. One-use receiver locals restored unmatched; the call still expands.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -1631,6 +1634,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // F361: Entry-declared result, false initialization after playing/tag/offset/track/
 // handle/playback/pitch/take producers: 50/48/48/48/48/48/50/56, all at 616 bytes.
 // NOT kept: two-point gain below threshold; original initializer and complete body restored.
+// Round 110: two-use long/short track-index locals 142/162 (619/628 bytes); force-inline get/set
+// declarations 50 each (same code); long or nested previous 129 each; force-inline previous helper 129;
+// implicit previous conversions 50 (same code). NOT kept: every gain-free form; original body restored.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {

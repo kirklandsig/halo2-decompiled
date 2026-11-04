@@ -777,6 +777,11 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // use 225; else-arm zero + ternary with the radius square before the model index 227; the rest of the
 // body inside the cluster loop's found branch 230 (the found path then skips the `cluster == NONE`
 // re-test as retail's does), with the 224 forms 239.
+// Round 115 (fast, both callers matched): single-result query 259 (926 bytes); with range/model forms 261 (927);
+// ternary query with those forms 225; guarded root table 231; delayed flags 241; if/else query result 272 (928);
+// named ternary result 264 (929); non-NONE-first input with the direct ternary 224 (895); one-variable query result
+// 258 (923). NOT kept: 224 is only a six-point gain; every other form regresses or moves the frame/length away.
+// Original helper, range, model, root and flag forms restored.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
