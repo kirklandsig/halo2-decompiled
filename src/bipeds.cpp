@@ -4192,6 +4192,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // M342: Existing in-place rotation returns its output pointer, ignored/forward/up/both
 // consumer handoffs with ordinary/forced inline: 145/145/145/145/145/145/145/145. NOT kept: no exact
 // output-handoff graph. Original helper and complete body restored; normalization SIMD/trig homes remain.
+// AC508: Reversed rotation cross with sine subtraction on retained indexed-dot graph,
+// ordinary/staged producers, shared dot, cross-first capture and complete parallel parts:
+// 179/156/182/158/168/168/178/179. NOT kept: no exact sign/scheduling match; original helper/body
+// restored. Normalization SIMD ranks and trigonometric/basis homes remain.
 // Y559: Full unrounded CRT cosine/sine/both double results, original then
 // producer declarations; float trig pair with original/producer declarations:
 // 223/182/276/223/182/276/191/191. NOT kept: no byte match; normalization SIMD,
@@ -4706,6 +4710,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // B395: Byte/signed-byte success accumulators, actor/support/velocity/entry producers:
 // 88/150/140/149 in either domain. NOT kept: all regress; canonical return conversion
 // and native support/result homes remain. Original Boolean result and complete body restored.
+// Native state/offset/jump field-domain subsets 1/2/4/3/5/6/7:
+// 68/68/68/68/68/68/68; complete graph with native early success 143.
+// All native record views and original result timing restored; support/result
+// byte homes and early success remain unresolved.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

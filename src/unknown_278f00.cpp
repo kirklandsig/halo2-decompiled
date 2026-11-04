@@ -281,6 +281,9 @@ bool function_a7670(long object_index);
 // renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
 // continue;` 96. Retail keeps the index in ECX and the list in EDX on the unflagged path, storing the
 // index only after `dec` on the flagged one; ours stores it after the `inc` and keeps the list in EAX.
+// AC507: Retry-conditional positive/deferred category result in bool/byte/short/long,
+// 278/278/280/279/277/277/280/279. NOT kept: all regress and lengthen beyond retail;
+// original eager scans, live bounds, consumed index, releases and body restored.
 // Lane 14 r57 (fast, from 153): plain `for` island index with the step back inside 240 (958 B); the second scan
 // setting the shared found flag 96 (match-only, restored); on it: the for-loop 233 (957 B: retail keeps the
 // index in ECX on the unflagged path and writes its home only after `dec`; ours homes it at the init and the

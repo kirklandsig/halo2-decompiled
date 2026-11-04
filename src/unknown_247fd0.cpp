@@ -701,6 +701,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
 // age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
 // original complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// AC508 isolated trials: Existing random-output helper pointer/reference outputs, void/real/
+// reference/pointer returns, ignored and complete returned-output consumers: eight scores 356.
+// Original helper, every consumer and full body restored; late EBP save and sample/blend/getter homes remain.
 // M344: Allocated-record pointer results at producer/entry, conditional/default-owned,
 // positive guard/failure exit 409/410/409/410/409/410/409/410, all 1659/1652 bytes.
 // NOT kept: unmatched nullable admission adds a pointer test; original handle admission,

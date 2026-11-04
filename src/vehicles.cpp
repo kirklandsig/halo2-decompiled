@@ -2488,6 +2488,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // F353: Plain two-side spin loops, aggregate/const/assigned/assigned-const-pointer tables,
 // original/forced-inline existing helper 213/213/213/213/213/213/213/213.
 // NOT kept: grouped storage, frame 0x18/0x10 and 646/682 bytes; original body/helper restored.
+// AC509: Shared steering magnitude conditional/complement/branch/library producers,
+// original then library torque magnitude: 122/124/122/128/142/142/142/162. NOT kept:
+// native repeated comparison is lost and code shortens; original body and spin helper restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3720,6 +3723,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // F353: Consistent float CRT trig APIs and actual trig-result name/declaration homes
 // 173/173/159/159/173/173/159/159.
 // NOT kept: no gain; original full body/helpers restored.
+// AC507: X87 fraction carrier with real/double angle/cosine/sine domains, masks
+// 0..7, 198/203/237/237/230/230/237/222. NOT kept: all regress, change the
+// frame and lack a precision match; original real fraction/trig graph restored.
 // F355: Wide fraction with real/wide angle, original/entry trig declarations and original/late flip predicate:
 // 199/202/199/202/227/235/227/235. NOT kept: no gain; original body restored.
 // @retail 0xf44a0
@@ -4610,6 +4616,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P291: Reverse-case zero/complete-arm/existing-ratio-helper/magnitude-owned results,
 // conditional then branched reverse selection: 753/751/797/751/753/751/797/751.
 // All restored; frame 0x18, entry definition and zero/result/one residence remain.
+// AC511: Actual lateral/projection/rejection vector output entry lifetimes, seven
+// subsets and complete graph with existing staged lateral cross: 749/749/749/749/749/749/749/749.
+// NOT kept: frame 0x18 and 2974-byte extent agree but entry definition and zero/result/one
+// homes remain; original output scopes, cross and complete body restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

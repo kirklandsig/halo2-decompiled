@@ -436,6 +436,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // DH316: Unsigned-word/signed-64-bit pass, long/bool departure and memcpy/memmove:
 // 257/254/187/264/319/299/299/292. NOT kept: all regress; two word CRT forms lose the
 // caller. Original pass, state, copy, helpers and entire executable body restored.
+// AC508: Actual unrounded distance/angle/delta domains, wide subsets 1/2/4/3/5/6/7:
+// 234/216/255/249/263/265/259; native float CRT pair 170. NOT kept: no exact precision match;
+// original body restored. Extra frame word and count/departure/compaction homes remain.
 // Lane 13 r58 (fast): one retail-shaped body (short hull count, `while (hull_count < count)` with
 // `indices[hull_count++] = current`, bool departure and heading declared ahead of the lowest scan, memmove
 // compaction) 265 (759 B; frame 0x14 as retail, but points in EBP and indices in EBX where retail has ESI/EBP, and

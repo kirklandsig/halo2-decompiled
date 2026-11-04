@@ -1537,6 +1537,10 @@ void function_1f86a0(long actor_index);
 // Round 132: stable current-entry pointer/reference/field pointer 134 each; nested actor lookup
 // for the unit 230; existing object-header getter 134; same-root byte/short/long results
 // 134/140/139 (864/863 bytes for the wider two). Original body restored.
+// AC506: Concrete-slot/untyped/byte/header callback pointer formals, each paired
+// with indexed native member payload first and original payload: eight at 134.
+// NOT kept: alias contracts do not recover the mask spill or EBX entry; original
+// callback definition/declaration, payload and complete body restored.
 // Round 130 (m3 lane 8, fast): retail duplicates the loop's next-entry call into the decline path and tests the
 // 0x40 bit with a fall-through decline. The decline test as `(u && !bit40) || (!same && (u || specified))` 234
 // (862 B), its two halves swapped 237, the ternary negated with arms swapped 231 (862 B); a flags byte local
@@ -1546,6 +1550,10 @@ void function_1f86a0(long actor_index);
 // with indexed native member payload first and original payload: eight at 134.
 // NOT kept: alias contracts do not recover the mask spill or EBX entry; original
 // callback definition/declaration, payload and complete body restored.
+// AC511: Actual search-only/search-and-fallback iterator scopes, original/readonly
+// current-entry receivers, native/original slot-member payload first in each pair:
+// eight at 134. NOT kept: frame 0x10, raw-mask spill and EBX entry remain; original
+// scopes, receivers, payload and complete body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

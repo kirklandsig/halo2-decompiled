@@ -1462,6 +1462,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // 418 (same code); edge declared and initialised at the untyped branch scope 439 (1754 bytes);
 // copied_last/used/index declarations reversed 418 (same code); edge renamed (name-order tip) 418
 // (same code); emitted type from the type local instead of the step 421 (1755 bytes).
+// Corrected two-radius graph: native first/second trace and whole-source
+// receiver subsets 1/2/4/3/5/6/7, 418/418/429/418/429/429/429; native
+// positioned-point receiver 418. All restored; no frame/zero/home recovery.
+// Original radius values, native call roles and complete body retained.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
