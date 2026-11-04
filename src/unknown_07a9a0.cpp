@@ -1194,6 +1194,19 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // loop getter 956, plus a long histogram 915 (frame 0xb4); `do {} while (0)` or a bare block around the call 766; the call in
 // both arms of the state test 915, with the capacity helper force-inline 856 (2828 bytes; the NONE arm folds, so not
 // retail's shape). A natural enclosing test that emits no code is the lead.
+// Y561: Existing capacity/imbalance/party-mode provider subsets 1..7,
+// then all plus limited provider: 766/903/903/766/766/903/903/903.
+// Original selectors/workspaces restored; frame/session/lookup remain.
+// DL255: Direct descending group/initial-histogram/validation ordinals, subsets 1..7,
+// then separate reverse native ID transfer: 831/794/831/917/852/824/852/845. NOT kept: all regress,
+// frames 0xd4/0xd8 versus 0xb4 and stack ingress remain. Original complete body,
+// histogram phases, selector contracts, observations and call operands restored.
+// M359: Read-only receiver contracts on capacity/teams/minimum/maximum/spread/limited/
+// imbalance selectors, individually then all: 766/766/766/766/766/766/766/766.
+// NOT kept: frame/session/lookup unchanged; original complete helpers and body restored.
+// DH333: Standard player extrema/member maximum/histogram clears, seven subsets
+// 824/836/861/828/829/848/825; typed three-word identity transfers 895. Frame 0xd4/0xb4
+// persists. NOT kept: regressions; original word table, observations and complete body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

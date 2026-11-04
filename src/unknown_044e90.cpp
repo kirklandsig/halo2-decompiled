@@ -225,6 +225,10 @@ struct s_visibility_bound_record
 // branch-owned inputs 463; shared scale with update/branch inputs 462/462; existing
 // point setter on update/branch/all producers 448/463/462. All controls survive.
 // NOT kept: all forms regress and shrink away from 1742 bytes; original body restored.
+// M345: All four release-ownership results in bool/char/signed-char/byte/short/word/int/long,
+// immediate per release 406/406/406/406/406/406/406/406; together at cleanup entry
+// 507/507/507/507/511/511/528/528. NOT kept: new ownership carriers miss.
+// Original direct sign tests, capacity reloads, cleanup order and complete body restored.
 // B394: Inverse-transform scale reference/pointer, whole transform, translation and all-row references;
 // then transform/scale, translation/scale and complete subobject identities: 406/406/406/406/436/406/406/406.
 // NOT kept: no exact match; original complete executable source restored.
@@ -232,6 +236,12 @@ struct s_visibility_bound_record
 // in ESI from entry through the bottom arm (no reload). Flags read at each use 442 (1744 bytes); the bit-12 test through
 // TEST_FIELD_BIT 419; both 444 (retail's shr/test and tag in EAX, but no table preload); with the table read once into a
 // local 447; the table local and TEST_FIELD_BIT with the flags local 442.
+// Y565: Actual outer/inner/both while traversals 406/406/406; live count-table cursor
+// with original/outer/inner/both while graphs 433/433/433/433; both real table cursors
+// 443. Original body restored; entry/table and plane/query homes remain.
+// M347: Shared nonunit-scale decision for both transform phases, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 422/422/443/445/427/427/447/450.
+// NOT kept: shared/test-produced decision does not reproduce the native repeated scale tests; original complete body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

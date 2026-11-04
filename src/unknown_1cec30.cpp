@@ -823,6 +823,11 @@ void havok_component_rigid_body_linear_velocity_set(long rigid_body_index, s_hav
 // the reload) still give BL 52, so a shared first body load is not what takes DL. In every form our
 // build never loads the fixed byte into the dying base register (ECX base -> DL, EDX/EAX base -> BL),
 // where retail does (`mov edx, [eax]; mov dl, [edx + 0x40]`).
+// Round 140 (c1C): the slot as a `hkRigidBody *volatile *` (diagnostic, not kept) gives retail's two separate body
+// loads and the late reload, but the byte still goes to BL (`mov edx,[eax]; mov bl,[edx+0x40]`, push ebx) 46,
+// 141 bytes: the byte register is not chosen by the base register dying, so source cannot reach DL here. Callers
+// pass the same registers as retail (index EAX, velocity ECX), so their setup is not the cause.
+// Permuter (25 min on #1044 round 2, about 1400 variants): nothing below 29.
 // @retail 0x1d0e50
 void havok_component_rigid_body_angular_velocity_set(long rigid_body_index, s_havok_component *component, vector3f const *velocity)
 {
@@ -1119,6 +1124,8 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 // Round 28 (lane G): retail's arguments here are (matrix, index, component) as in 0x1d0cf0; the
 // declaration order does not change the registers LTCG picks (0x1d0cf0 81 and this 38 either
 // way), so the source keeps its order. Every remaining difference follows 0x1d0cf0's convention.
+// Permuter (25 min on #1044 round 2, about 650 variants): only a volatile transform pointer with a
+// (short) index argument gave 34; not kept (volatile without a match, and the cast narrows the index).
 // @retail 0x1d0c20
 void havok_component_rigid_body_matrix_set(long rigid_body_index, s_havok_component *component, transform4x3f const *matrix)
 {
@@ -1606,6 +1613,12 @@ PRIVATE __forceinline real const &component_time_step()
 // `mulss xmm0, [mem]` with the scaled value in xmm0, but it is spilled across the power call (`mulss xmm0,
 // [esp+8]`, 160, 490 bytes); read after the exponent result 50; a constant multiplier also puts the scaled
 // value in xmm0. Retail loads the global right at the product, so its step read must rank earlier in another way.
+// Round 140 (c1C): retail's three extra instructions are only the memory operands: `mulss xmm0,[eax+4]` then
+// `add eax,4` (the step's address kept) and `movaps xmm7,xmm4; mulss xmm7,[eax]`; no statement is missing. Same
+// code (26, 470 bytes) for: product operands swapped, the step as a `real const *` local, the step read as
+// `g_510c54->rate` at the first product with the reference bound after it, the stop distance in a helper taking
+// the step by reference. Both products through a helper taking `&g_510c54->rate` 138 (462 bytes).
+// Permuter (25 min on #1044 round 2, about 730 variants): nothing below its own baseline (23 in its render).
 // @retail 0x1d2280
 real function_1d2280(bool allow_reverse, bool scale_by_mass, real mass, real target, real acceleration,
 	real velocity, real limit, real position, real exponent, bool force_acceleration, real *ratio)
@@ -1911,12 +1924,15 @@ PRIVATE inline transform4x3f *component_node_matrices(long object_index)
  return (transform4x3f *)((byte *)object + object->matrices_offset);
 }
 
-// score 29 (was 172): only the orientations branch differs: retail reads both matrix offsets
-// before inverting the parent (the call to 0x141590) and keeps the node's matrix base (object
-// plus offset) in EDI across that call, where ours keeps the object and reads the offset again
-// after it. Tried at 172 (lane): stable handle 197; pointer names 172; in-place composition 212;
-// default point setters 188; sibling induction 175. Tried at 29: reordering the locals and
-// precomputing the matrix pointer (no change).
+// MATCH (was 20; 29 and 172 before). Retail adds the parent's matrix offset last, (object + parent * 0x34)
+// + offset, which changes how the compiler schedules the index arithmetic ahead of the inversion call; the
+// parent matrix is therefore spelled that way instead of object_node_matrix(), whose (object + offset) +
+// node sum the compiler keeps in its own order (20 -> 11). The restore arm then wants `initial`, the node
+// matrices and the node's own matrix in that order (11 -> 0; the other five orders 16..58, the same byte
+// sum for the restore arm's matrix 185). Changed nothing or lost earlier: stable handle 197; pointer
+// names 172; in-place composition 212; default point setters 188; sibling induction 175; reordered locals
+// and a precomputed matrix pointer. The full build also matches without the `standard` marker (the image
+// is otherwise the same; the callers are itself and 0x1d3920, still unwritten); the marker is left as it was.
 // @retail 0x1d3d20 standard
 void s_havok_component::function_1d3d20(long node_index, dword *updated, dword const *restore,
  rigid_transform_scaled *orientations, long unknown)
@@ -1938,7 +1954,8 @@ void s_havok_component::function_1d3d20(long node_index, dword *updated, dword c
    if (orientations)
    {
     transform4x3f *matrices = component_node_matrices(component->object_index);
-    transform4x3f *parent_matrix = object_node_matrix(object_get(component->object_index), parent);
+    s_slot_object_view *anchor_object = object_get(component->object_index);
+    transform4x3f *parent_matrix = (transform4x3f *)((byte *)anchor_object + parent * sizeof(transform4x3f) + anchor_object->node_matrices_offset);
     transform4x3f inverse;
     transform4x3f relative;
     function_141590(parent_matrix, &inverse);
@@ -1949,8 +1966,8 @@ void s_havok_component::function_1d3d20(long node_index, dword *updated, dword c
   else if (restore[node_index >> 5] & mask)
   {
    s_component_node_default *initial = &render_model->nodes[node_index];
-   transform4x3f *matrix = object_node_matrix(object_get(component->object_index), (short)node_index);
    transform4x3f *matrices = component_node_matrices(component->object_index);
+   transform4x3f *matrix = object_node_matrix(object_get(component->object_index), (short)node_index);
    function_141e10(&matrix->rotation, &initial->rotation);
    matrix->position.x = 0.0f;
    matrix->position.y = 0.0f;
@@ -2425,6 +2442,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // B389: Complete final-speed factor/numerator/denominator nodes, masks 1/2/4/3/6/5/7,
 // then original speed with division in place: 91/91/278/91/99/88/99/91. NOT kept: factor plus
 // denominator gains only three and only together; original body restored, early velocity j/k and zero homes remain.
+// c1B (statement walk, no logic difference found: every test, field, constant and store order agrees with
+// retail; the whole gap is the velocity block and the property-zero register): scalar velocity components
+// after the length (vj/vk, vi, or all three, assigned in both arms or scaled in place) preload the loads
+// like retail but keep copies and rename the registers, and they change the first contact loop's normal
+// sum (addss xmm4, [contact]) as well: 359/326/376/359 with the old setter (1454 bytes), 281/371/275/281/
+// 275 with the setter building its word first (1454 bytes, the three setter sites then agree); only j/k
+// scalars with velocity.i scaled in memory 159/153 (1467-1470 bytes). Not kept.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -2813,26 +2837,31 @@ void __stdcall function_1d3920(byte *component_bytes, dword *updated, real offse
 }
 #endif
 
+// The rigid body is read through the component at each use: a local body pointer makes LTCG pass the
+// component in ECX instead of retail's EAX (194). Retail takes the component in EAX and the body index
+// in EDX (0x1d83f7 `mov edi, eax; mov eax, [edi + 8]` reads the component's object index, 0x1d8438
+// `lea edx, [edx + edx*2]` scales the index by the rigid-body stride), so the component comes first:
+// with the index first LTCG swaps the two registers (4). The matrix's position changes no bytes here
+// or in 0x1d7ef0's calls, so it stays last.
 // @retail 0x1d83e0
-void function_1d83e0(long body_index, s_havok_component *component, long node_a, long node_b,
+void function_1d83e0(s_havok_component *component, long body_index, long node_a, long node_b,
     transform4x3f *matrix)
 {
     s_component_transform_definition *definition = (s_component_transform_definition *)g_4e3b44[
         ((s_component_transform_header *)g_4e0300->data)[component->object_index & 0xffff].object->definition_index & 0xffff].bytes;
     s_component_collision_model_link *model = (s_component_collision_model_link *)g_4e3b44[definition->model_index & 0xffff].bytes;
     s_component_node_body_model *physics = (s_component_node_body_model *)g_4e3b44[model->physics_model_index & 0xffff].bytes;
-    s_havok_component_rigid_body *body = &component->rigid_bodies.data[body_index];
     long child_a = NONE;
     long child_b = NONE;
-    for (long i = 0; i < body->node_count && (child_a == NONE || child_b == NONE); i++)
+    for (long i = 0; i < component->rigid_bodies.data[body_index].node_count && (child_a == NONE || child_b == NONE); i++)
     {
-        s_component_node_body_link *link = &physics->bodies[body->nodes[i]];
+        s_component_node_body_link *link = &physics->bodies[component->rigid_bodies.data[body_index].nodes[i]];
         if (link->node == node_a && child_a == NONE)
             child_a = i;
         if (link->node == node_b && child_b == NONE)
             child_b = i;
     }
-    c_component_child_frames *shape = *(c_component_child_frames **)((byte *)body->rigid_body + 0xc);
+    c_component_child_frames *shape = *(c_component_child_frames **)((byte *)component->rigid_bodies.data[body_index].rigid_body + 0xc);
     hkVector4 buffer_a[16];
     hkVector4 buffer_b[16];
     if (child_a == 0)
@@ -2877,9 +2906,11 @@ PRIVATE __forceinline bool velocity_limit_length(vector3f *v, real maximum)
     return limited;
 }
 
-// score 7 (was 7): the saves are staged as retail's; the five rigid-body reads address
-// [offset + data] where retail has [data + offset], and the 0x1d1010 call copies the component to ESI
-// before the index to ECX. The entry saves came from this function's own double-typed scale: with a
+// score 2 (was 7): the time step and gravity are read into their own locals before the change vector
+// (found by the permuter, round 2 of #1044); that gives retail's [data + offset] at the five rigid-body
+// reads, where the product written inline or as one local keeps [offset + data] (7). What is left: the
+// 0x1d1010 call copies the component to ESI before the index to ECX, where retail copies the index
+// first. The entry saves came from this function's own double-typed scale: with a
 // named double here, any image holding 0x2056e0's double cap or unknown_0350e0.cpp pins the saves at
 // entry. Round 17: both caps through the existing scale_vector_by_double 50; real scales 77 (folds the
 // last multiply); quotient per component 77; the two-caller cap helper with the quotient as
@@ -3015,9 +3046,11 @@ void function_1ced00(s_havok_component *component)
     if (TEST_FIELD_BIT(component->flag5) && havok_component_any_rigid_body_active(component))
     {
         vector3f change;
+        real dt = g_510c54->rate;
+        real gravity = g_51e9c4->unknown0;
         change.i = 0.0f;
         change.j = 0.0f;
-        change.k = 0.0f - g_510c54->rate * g_51e9c4->unknown0;
+        change.k = 0.0f - dt * gravity;
         function_bba20(component->object_index);
         if (!TEST_FIELD_BIT(component->flag2) &&
             ((1 << ((s_component_transform_header *)g_4e0300->data)[component->object_index & 0xffff].type) & 2))
@@ -3068,13 +3101,25 @@ struct s_component_frame_map
 
 byte *__fastcall function_30c170(hkWorld *world);
 
-// MiniMax D (11-01): no new form tried, no lower score; the round-41 merge rewrote this body,
-// so its score is now 346 against the 206 the task started from.
-// score 206 (was 206): Frame 0xb4 and extent agree; body base/stride and protected relative-call
-// input registers remain. BLOCKED-BY 0x1d83e0 (contributor code): retail passes the component to it
-// in EAX and loads the component into EAX at entry; ours passes it in ECX, and the EAX/ECX roles
-// swap from the first body (+0x3d, still the first difference in round 68; the reduced build of the
-// fast check gives another convention, 346, so only the plain check scores this function).
+// score 15 (was 173), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
+// caller, the reduced image gives another convention: 344). 0x1d83e0 MATCHES, so the call registers
+// (component EAX, index EDX, matrix ESI, two stack words) and the frame agree. The node_b word is now
+// read inside the `pair->node_b != NONE` test (the guard compares the short, the sign extension and its
+// slot store come after it, in EAX as in retail): 173 -> 15, and the whole second half matches. What is
+// left is the first equal-node arm only (frame_a, columns 0-2): ours hoists the zero stores of the
+// columns' fourth words (and in column 0 the k store) ahead of the i/j stores, and loads k,j,i where
+// retail loads k,i,j and stores i,j,k,w; the identical copy in the frame_b arm and this arm's
+// translation already match. The same helper call gives retail's order in the second half, so only this
+// block's scheduling differs.
+// Round 1 (c2A) tried, on the 15 form: operand order `pair->node_a != first->node` 16; arms swapped
+// (equal arm first) 74; per-column loop with k,i,j locals 15 (same code); columns and translation
+// as direct set() calls 324; const reference to the pair 15; one source pointer (&matrix or the pair)
+// feeding a single converter call 546; node_a read after the first link 281; node_a assigned inside a
+// NONE guard like node_b 311; first link before the count 214; relative/matrix declared once at
+// function scope 15; node_b initialized to NONE (kept, same code) 15.
+// Round 90 tried: the equal arm copied into a local matrix first 352 (changes the frame); the pair
+// pointer through a local in that arm 173; node_b declared after index_b 173; node_b read after the
+// index search 308.
 // Tried: body getters 206; first count after lookup 205 (below gate), both 275; node streams 336;
 // streams with getters 336; count names 206; search names 206; transformed name 206; entry phase
 // transforms 301; equal-node arm first 248; second selector word 226; promoted first nodes 290; entry
@@ -3108,8 +3153,8 @@ byte *__fastcall function_30c170(hkWorld *world);
 // Round 182: first/second/both actual link references 206/206/206; native body
 // record references confined to count/node searches, alone/with either/both links
 // and mutable body records, 332/332/332/332/332. Original records and body restored.
-// Round 89: blocker confirmed in the full build: retail loads the component into EAX before each 0x1d83e0
-// call and 0x1d83e0 reads it from EAX at entry; ours uses ECX on both sides.
+// Round 89 (resolved by the 0x1d83e0 match): retail loads the component into EAX before each 0x1d83e0
+// call and 0x1d83e0 reads it from EAX at entry.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3128,17 +3173,20 @@ void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     if (first->node != pair->node_a)
     {
         transform4x3f relative, matrix;
-        function_1d83e0(index_a, component, first->node, node_a, &relative);
+        function_1d83e0(component, index_a, first->node, node_a, &relative);
         function_142a60(&relative, &pair->frame_a, &matrix);
         component_matrix_frame(&matrix, frame_a);
     }
     else
         component_matrix_frame(&pair->frame_a, frame_a);
     *body_a = component->rigid_bodies.data[index_a].rigid_body;
-    long node_b = pair->node_b;
+    long node_b = NONE;
     long index_b = NONE;
     if (pair->node_b != NONE)
+    {
+        node_b = pair->node_b;
         index_b = node_b == NONE ? mapping->fallback : mapping->bodies[node_b];
+    }
     if (index_b != NONE)
     {
         long other_node_count = component->rigid_bodies.data[index_b].node_count;
@@ -3152,7 +3200,7 @@ void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
         if (other_first->node != pair->node_b)
         {
             transform4x3f relative, matrix;
-            function_1d83e0(index_b, component, other_first->node, node_b, &relative);
+            function_1d83e0(component, index_b, other_first->node, node_b, &relative);
             function_142a60(&relative, &pair->frame_b, &matrix);
             component_matrix_frame(&matrix, frame_b);
         }
@@ -3263,6 +3311,12 @@ struct s_1cf531
 // as an __m128 with the product in a new vector 107 (frame 0x64, the copy forwarded from the scaled
 // vector), also with the copy in its own block 107; the surface components in named x/y/z locals
 // 27; the surface vector through havok_from_vector3d 27.
+// Round 140 (c1C): the corrected vector computed in place in the impulse, with the final product splat-first, in a
+// named splat, or after a no-op self-assignment: 46 (908 bytes; the reload after get_inverse_scale is a separate
+// hoisted load, retail folds it as `mulps xmm1,[esp+0x34]`); the early copy as an __m128 snapshot and the impulse
+// declared late: frame grows to 0x64+. Element as `data + index`, pointer arithmetic on bytes, or a long index
+// local: 27 (same code).
+// Permuter (25 min on #1044 round 2, about 3100 variants): nothing below 27.
 // @retail 0x1cf520
 void function_1cf520(s_1cf520 *arg_1, c_1cf520 *arg_0, bool arg_2, bool arg_3, long arg_4, long arg_5)
 {

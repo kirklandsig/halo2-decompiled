@@ -799,7 +799,7 @@ byte g_55e708;
 
 #define PIN(x, low, high) ((x) < (low) ? (low) : ((x) > (high) ? (high) : (x)))
 
-// score 38 (was 128): the loop, frame and clamp are retail's; left are scratch register picks only (object argument and
+// score 38 (was 38): the loop, frame and clamp are retail's; left are scratch register picks only (object argument and
 // count in the fallback arm, the loop's amount/index loads, the single-marker arm, the opacity reload). 0x2dba0's order is
 // now applied: earlier BLOCKED-BY 0x2dba0 (parameter order): with its parameters declared (tag, alternate, kind,
 // index, marker_index, position, direction, color, alpha, amount, scale) at its definition and every call (0x2dba0 and
@@ -884,6 +884,11 @@ byte g_55e708;
 // Round 64 (m3 lane 1, fast with the same list): dword absolute index 38 (same code); count zeroed in an else of the
 // first-person test 38; unsigned loop index 39; unsigned count 39; count = 1 before the flag test 107. Permuter
 // (600 s, annealing): reduced image scores this body 141 (frame 0xec), nothing better in 47 tries.
+// Round 131 (m3 lane 8, fast with the same list): the flag test as an early return inside the 0x31520 test 38; the
+// count clamped before the warning flag 107 (retail stores it after); the fallback test `count < 1` 42; the absolute
+// index computed after the light and definition 38 (same code); the clamp test `count >= 2` 38. The rotations left
+// (fallback object EAX/count EDX, loop amount EAX/absolute EDX/index ECX, single-arm amount ECX/colour EDX/position EAX,
+// opacity ECX) do not move with any of these.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
