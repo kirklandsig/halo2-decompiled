@@ -997,6 +997,8 @@ PRIVATE inline long damage_object_root(long object_index)
 
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// MiniMax G (11-04): no new form, no lower score; the first 0xbadc0 call only leaves the line behind a second
+// count test (248), and the squared distance at both tests (284) or with the mask in a local (275) is worse.
 // score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
 // use (the flags & 2 unit test) but calls it at the other two; retail calls all three. Retail keeps data in edi,
 // the definition in esi and &data->position in ebx (the distances are [ebx], [ebx+4], [ebx+8]) and spills the
@@ -1695,18 +1697,21 @@ bool __stdcall function_db110(long object_index, bool players_only, bool walk_si
 	if ((1 << datum->type) & 2)
 	{
 		function_d0620(&iterator, object_index);
-		while (function_d0690(&iterator))
+		if (function_d0690(&iterator))
 		{
-			if (iterator.child_short == NONE)
-				continue;
-			if (players_only)
+			do
 			{
-				s_damage_object *unit = (s_damage_object *)function_badc0(iterator.child_index, 3);
-				if (!unit || unit->player_index == NONE)
+				if (iterator.child_short == NONE)
 					continue;
-			}
-			result = true;
-			break;
+				if (players_only)
+				{
+					s_damage_object *unit = (s_damage_object *)function_badc0(iterator.child_index, 3);
+					if (!unit || unit->player_index == NONE)
+						continue;
+				}
+				result = true;
+				break;
+			} while (function_d0690(&iterator));
 		}
 	}
 
@@ -1744,6 +1749,7 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 /* destroys a damage region: picks the permutations whose chance and body
    threshold allow it, and destroys each now or schedules it after its
    delay */
+// MiniMax G (11-04): no new form, no lower score; the two call setups still follow 0xd9d60's convention.
 // score 82 (was 96): the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
 // its index in EAX, 0xd9d60 its flag in AL); both are back-edge targets of the link-time walk. BLOCKED-BY 0xd9d60.
 // Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
@@ -2345,6 +2351,8 @@ void function_176330(point3f const *point, s_effect_marker *markers);
 
 /* starts a destroyed permutation's effect: attached to the object, or at
    the marker with the object's velocity */
+// MiniMax G (11-04): no new form, no lower score; the flag's register is still fixed by the call cycle that
+// runs through the stubbed functions outside this file.
 // score 69 (was 69): retail takes the flag in al, the marker name in ecx and the object index in edx, with two stack
 // arguments (`ret 8`); the parameter order marker, object, flag, effect, owner is the one that gives that assignment
 // (the other orders put the flag in cl or dl, 81), but only while fewer callers pass it. With the calls of 0xdaaa0
