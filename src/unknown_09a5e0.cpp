@@ -2047,8 +2047,7 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 	long local_0 = NONE;
 	if (arg_1 != NONE)
 	{
-		byte *local_2 = (byte *)((arg_0 & 0xffff) * 12);
-		byte *local_1 = *(byte **)(local_2 + (long)g_4e0300->data + 8);
+		byte *local_1 = (byte *)((s_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
 		local_0 = ((long *)(local_1 + 0x218))[arg_1];
 	}
 	return local_0;
@@ -2360,8 +2359,7 @@ long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
 	c_unit_type *volatile local_0 = this;
 	s_9d450 *local_2 = (s_9d450 *)arg_3;
-	byte *local_1 = (byte *)((arg_0 & 0xffff) * 12);
-	local_1 = *(byte **)(local_1 + (long)g_4e0300->data + 8);
+	byte *local_1 = *(byte **)(((arg_0 & 0xffff) * 12) + (long)g_4e0300->data + 8);
 	dword local_3 = (dword)arg_1;
 	long local_4 = function_a5e70(arg_0, local_3 & 0x3ff, arg_3);
 	if (local_3 & 0x400)
