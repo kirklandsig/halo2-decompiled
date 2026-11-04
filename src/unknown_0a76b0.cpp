@@ -331,6 +331,11 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // P296: Constant case outputs completed after callbacks in state/action/separate-both/paired
 // dispatch, each with original/early result constants: 455/456/406/408/496/496/378/380.
 // All restored; native unit/name/actions ranks and shared-call threading remain.
+// J251: Own stdcall/cdecl/inline/inline-stdcall contracts 271/273/271/271;
+// with the native shared hand argument 168/166/168/168. NOT kept: shared forms
+// raise caller 0x111650 from 666 to 713/722/713/713; cdecl alone raises it to 693.
+// Original body and all declarations restored; frame 8, unit/name/actions ranks
+// and shared-call threading remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -2534,6 +2539,11 @@ __forceinline char unit_action_round(real value)
 // Lane 17 r39 (fast): the 0xe000607 fallback tested before the three-name/range arm 235 (same code); the range
 // as `>= 0xe000608` 235; name/type/first-person declarations reversed 235, type first 235; is_biped computed
 // before the weapon 307 (1191 bytes). Original body restored.
+// J251: Weapon getter forceinline 235; byte-round inline 267; full-round inline 253;
+// weapon/byte, weapon/full, byte/full and all expansion pairs 267/253/253/253;
+// all with the short-hand consumer 277. NOT kept: rounding contracts regress and
+// lose twelve or sixteen matched users. Original provider declarations and body restored;
+// frame 0x14 and first +9 remain, with pool/type/name ranks and completion-byte home unresolved.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2943,6 +2953,11 @@ long function_c8f60(long unit_index, short seat_index);
 // and the transform pointer's swap; renaming the transform pointer 306/306); on it the 0x3dc state in a long
 // 304, `1u <<` for is_vehicle 306, the unit read through a header pointer kept from the first lookup 305.
 // Original body restored.
+// J251: Own stdcall/cdecl/inline/inline-stdcall contracts 293/291/293/293;
+// guarded full-width activity on each 296/294/296/296. NOT kept: cdecl replaces
+// native ret 0x18 with ret and loses matched callers 0xea830 and 0xeb270; full-width
+// forms grow to 1224/1209 bytes and leave first +6. Original body/contracts restored;
+// frame 0xf0 agrees, while vehicle/index/unit and reset/result homes remain.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
