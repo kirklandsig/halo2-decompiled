@@ -1079,13 +1079,14 @@ void function_1e5bb0(s_biped_physics_output *arg_0, void *arg_1, void *arg_2, re
     vector3f const *arg_20, vector3f const *arg_21, vector3f const *arg_22,
     vector3f const *arg_23, vector3f const *arg_24, long arg_25);
 void function_1e6360(s_biped_physics_output *arg_0, real arg_1, long arg_2, real arg_3);
-void function_1e5af0(void *arg_1, s_biped_physics_output *arg_0, vector3f const *arg_2, vector3f const *arg_3);
+void function_1e5af0(void *arg_1, vector3f const *arg_3, vector3f const *arg_2, s_biped_physics_output *arg_0);
 void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, bool arg_3, bool arg_4,
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
-// score 94 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
-// publication differ; the force formal still requires a zero extension.
+// score 92 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
+// publication differ; the force formal still requires a zero extension. Round 85 (m3 lane 16): 0x1e5af0's
+// parameters as (physics, forward, up, output) give the first 0x1e5af0 call retail's EAX/ECX/EDX setup (94 -> 92).
 // Earlier: retail pushes the whole found-flag dword to 0x1c4b00 and keeps its MOV/LEA
 // order at the first 0x1e5af0 call; both callees live in files this lane may not edit
 // (BLOCKED-BY 0x1c4b00 and 0x1e5af0). Frame 0x1f0 agrees; call setup, movement loads and
@@ -1220,7 +1221,7 @@ bool __stdcall function_118700(long arg_0)
         if ((bool)((*(dword *)local_8 >> 4) & 1))
         {
             function_1e6360((s_biped_physics_output *)&local_3, local_0->turn, arg_0, 0.0f);
-            function_1e5af0(local_9, (s_biped_physics_output *)&local_3, &local_0->up, &local_0->forward);
+            function_1e5af0(local_9, &local_0->forward, &local_0->up, (s_biped_physics_output *)&local_3);
         }
         else
             function_1e6120((s_biped_physics_output *)&local_3, local_9, 0.0f, false, false,
@@ -1231,7 +1232,7 @@ bool __stdcall function_118700(long arg_0)
         {
             local_0->forward = local_11.field_18;
             local_0->up = local_11.field_24;
-            function_1e5af0(local_9, (s_biped_physics_output *)&local_3, &local_0->up, &local_0->forward);
+            function_1e5af0(local_9, &local_0->forward, &local_0->up, (s_biped_physics_output *)&local_3);
         }
         vector3f *local_12 = (vector3f *)((byte *)&local_3 + 0x138);
         bool local_13 = local_12->k * local_12->k + local_12->j * local_12->j + local_12->i * local_12->i > 0.0f;

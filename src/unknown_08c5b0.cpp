@@ -139,6 +139,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // `long setting = kind; if (setting == 1 && available)` 32 (95 bytes); seeded `setting = 1; if (kind == setting && available)` 30
 // (94 bytes); `setting = kind` first in the kind arm 12; inner `else setting = kind` with `available && kind == 1` 4 (same code).
 // The pair follows the kind's surviving references: it outranks the request only with a third use that reaches allocation.
+// Round 85 (fast, plain reads, no volatile): the existing selector called under an outer `kind == 1` test, as a
+// ternary 4 and as if/else 4 (unfolded load, request/kind still EAX/CX); the selector under `switch (kind)` with
+// case 1/default 38 (104 bytes); `kind != 1` chain written in place 32 (95 bytes); availability read into a bool
+// first, `setting = 1` seeded 43 (108 bytes). The matched sibling 0x8c5b0 loads the request into EAX (no kind).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

@@ -1186,8 +1186,11 @@ void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *u
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks);
 void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input *input);
 
+/* parameter order from retail's call setups, which load the register
+   arguments last to first after pushing forward: 0xe3c90 and 0x118700 load
+   output (EAX), up (ECX), then physics (EDX); 0xdd360 loads up before output */
 // @retail 0x1e5af0
-void function_1e5af0(void *physics, s_biped_physics_output *output, vector3f const *up, vector3f const *forward)
+void function_1e5af0(void *physics, vector3f const *forward, vector3f const *up, s_biped_physics_output *output)
 {
  switch (*(byte *)physics)
  {
