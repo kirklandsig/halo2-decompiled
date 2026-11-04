@@ -429,6 +429,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 // set through bit_vector_set 9; the angle declared after the flag store 10; the axis declared and
 // assigned separately 3. The three differences are unchanged: retail's flag OR and store precede the
 // angle duplicate (`fld st(0)`) and the first axis load.
+// Permuter (25 min on #1061, about 1180 variants): nothing below 3.
 // @retail 0xfbd40
 void function_fbd40(long projectile_index)
 {
@@ -1037,6 +1038,8 @@ real function_30bf0(vector3f *v);
 // two-element array 232 (folds back); `volatile real two_a` as a diagnostic gives the two x87 divisions but 277
 // (1000 bytes) and loses every caller (0xfa6a0 44, 0x1f8100 8, 0x26f150 21, 0xecdc0 32, 0x2900b0 30): the
 // convention follows how two_a is produced, so the divisions and the convention cannot yet be had together.
+// Permuter (25 min on #1061, about 790 variants): 180 only with a volatile horizontal length and the found flag
+// as an unsigned long; not kept (volatile without a match).
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1304,6 +1307,7 @@ extern vector3f *g_4687ac;
 // collision for the side queries as retail, but the frame stays 0x48 and the end points are still stored);
 // a local __forceinline helper with 0x16a040's body for the three queries 187 (735 bytes, frame 0x3c); side
 // queries joined as one `||` expression 163; early `return false` for the radius/tag test 181 (767 bytes).
+// Permuter (25 min on #1061, about 1140 variants): 160 only with vector3d_from_points3d's two points swapped; not kept.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -1517,6 +1521,8 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // compressed forward, velocity, location, scale 1.0, bits 0x11, NONE playback, zero source/marker/variant).
 // Everything left is allocation around 0xfd740's five register pointer arguments (ours) against retail's four
 // (point in EDI, zero in EBX), so it stays BLOCKED-BY 0xfd740, which this lane does not touch. No new form tried.
+// Permuter (25 min on #1061, about 340 variants): 111 only with the flag set through an int temporary and the
+// sound index declared apart; the plain forms in it (tag before flag, unsigned index, declaration order) stay 115.
 // @retail 0xfd0e0
 void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f const *direction,
 	point3f const *point, vector3f const *normal, word index, bool attached, long object_index,
@@ -1654,7 +1660,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 // the speed product's operand order and the 0x190 store before the `and [esi+0x12c], 0xfffffeff` RMW;
 // the plane dot product's operand order; retail's two separate object_flags RMWs (0x10000, 0x20000)
 // where ours merges to one `or 0x30000`; retail's two separate seat-bit tests where ours has `test dl, 6`.
-// Earlier rounds (before the speed update was written out and the definition read once):
+// Earlier rounds (before the definition was read once):
 // HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
 // #9, so it waits for their OK) with a definition local at entry gives 304: the speed update expands where
 // retail expands it, the definition goes to EDI and the body is retail's 1261 bytes; the definition local
@@ -1974,8 +1980,8 @@ real function_17c900(short function_type, real input);
 // differences are the three output stores (retail stores straight to the output in each exit; ours copies the point
 // once, same values) and the angle/cosine reusing the dead index slot (esp+0x40). The retail caller (call at 0xf91a6: `push
 // index; lea ebx, [esp+0xc4]; call`) proves the callee convention (index on the stack, output in ebx); only the salt
-// written at both uses plus the three exits gives it (328, caller 0xf8eb0 946 -> 969, so the pair stays 1294 -> 1297
-// and the form is not kept). On that form: the three wander components computed into locals before the point set 328
+// written at both uses plus the three exits gives it (328, caller 0xf8eb0 946 -> 969, so the pair rises by 3,
+// 1294 -> 1297, and the form is not kept). On that form: the three wander components computed into locals before the point set 328
 // (same code); `game_time` named in the wander branch 328 (same); wander direction vector 362 (1482 bytes, its tail is
 // retail's); the drift rotation as a named vector then scaled and stored 330 (stores land last as retail, schedule still
 // differs). Remaining as before: the early xmm4 zero, to_target kept in xmm1-3 across the lead merge, the rotation's
@@ -2849,10 +2855,10 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // two below. collision_count is a dword in retail (`cmp dword ptr [esp+0x23c], 1`; the caller does `movsx edx, ax;
 // push edx`): `long collision_count` 1190 -> 1180 (4848 -> 4836 bytes) and caller 0xf8eb0 then pushes it as retail
 // does, but scores 946 -> 1037 (4691 -> 4718 bytes, positional shift), so it is not kept (the type changes no behaviour).
-// Behaviour fix (round 2 of #1061): retail stores NONE to the damage record's material (+0x7c) BEFORE calling 0xd6660
-// in both damage scopes, and 0xd6660 then overwrites it with g_47d8e0; the source stored NONE after the call, and
-// 0xd7b80 writes +0x7c only on some paths, so on the others ours left NONE where retail leaves g_47d8e0. The store now
-// comes first (score unchanged). A goto to share the
+// Source order (round 2 of #1061): retail stores NONE to the damage record's material (+0x7c) BEFORE calling 0xd6660
+// in both damage scopes, and 0xd6660 then overwrites it with g_47d8e0; the store now comes first, as retail's. No
+// behaviour change: g_47d8e0 is a constant NONE (src/unknown_187ec0.cpp, never written), so either order leaves NONE
+// (score unchanged). A goto to share the
 // `*velocity = *g_4687a4` tail 1180 (same bytes). Retail inlines function_faa30 at three of its four sites (the
 // unknowndc^2 test and both action-switch arms) and calls it only in the 0.09 block; ours calls all four.
 // Earlier 1162 (was 1185): frame 0x220 versus 0x218, velocity on the stack versus eax, input normalization and effect scheduling remain.
