@@ -451,6 +451,8 @@ union s_185be7
 // AC525: Complete initial input-availability/unavailability results in bool/byte/short/long,
 // 624/624/624/624/624/624/624/624. NOT kept: predicate residence unmatched; original
 // gate, resets, observations and complete body restored; control-root/NONE homes remain.
+// AC529: Complete post-callback correction admission, allowed/blocked bool/byte/short/long:
+// 622/622/622/622/626/626/626/626. NOT kept: predicate residence does not match; control-root/NONE and scalar/flag homes remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

@@ -1001,6 +1001,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC526: Complete normalized-axis admission bool/byte/short/long, then complementary
 // rejection results, 533 each at 3647 bytes. NOT kept: six-point lead below eight and
 // frame grows to 0x21e4; original body/helpers restored; tag/count/plane homes remain.
+// AC529: Complete forward-edge role, bool/byte/word/long direct then false-default publication:
+// 555/555/621/578/624/624/624/630. NOT kept: no equality or gain; native tag/count/plane/topology homes remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
