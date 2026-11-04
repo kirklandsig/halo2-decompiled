@@ -4509,7 +4509,7 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
     }
 }
 
-// score 585 (was 580; the fast image says 612), 1636 bytes against retail's 1700. Round 122: 0x144f0
+// score 585 (was 580; the fast image says 612), 1652 bytes against retail's 1700 (the fast image builds 1636). Round 122: 0x144f0
 // matches; both its calls pass retail's values (fallback 0, fallback index 1: `xor ebx, ebx`, `push ecx` with ECX 1).
 // Round 1 of #1066: the 24/25 else branch now calls function_14f60(stage, 1) (retail jumps to the case 2 block, which
 // does `mov edi, ecx` with ECX = 1; it used to pass the surface); case 8 follows case 13 as in retail's layout;
@@ -7512,7 +7512,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // clipped fill still writes the rows in another order than retail's.
 // Round 2 of #1066: a forced-inline removal helper (all three sites expanded, retail's 1133 bytes), the volatile
 // header as a plain local, one read of the pool and guarded do-while loops gave 279 on the fast image but 342 in the full
-// build, and that set cost matched 0x41640 (unknown_0350e0.cpp) there, so none of it is kept.
+// build, so none of it is kept.
 // @retail 0x1f5c0
 void __stdcall function_1f5c0(long character_index)
 {
