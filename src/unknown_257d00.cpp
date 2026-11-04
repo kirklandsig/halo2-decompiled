@@ -2326,6 +2326,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B416: Completed search-scan/candidate-geometry/selected-target-geometry lifetimes,
 // seven subsets then all with complete search role names: 485 each (fast control 485;
 // full baseline 469). Original complete body restored; actor/state and first-point homes remain.
+// B418: Real state bitfields at dispatch/tail/secondary observations, seven subsets
+// and all with raw member tests: 485 each (fast control 485; full 469). Original
+// type and body restored; actor/state registers and first-point home remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
