@@ -978,6 +978,9 @@ static __forceinline long real_to_long(real value);
 // AC527: Shared two-mode timeout publication, positive/complementary bool/byte/short/long,
 // 422/422/434/433/422/422/434/433. NOT kept: assigned-result residence unmatched and
 // extent grows; original comparisons, publication paths, query aliases and whole body restored.
+// F385: Existing vector-union component-array observations in target velocity, facing
+// and working vectors, seven subsets, then actual position arrays: eight at 382.
+// NOT kept: byte-neutral homes/exit diagnostic; original complete body and query aliases restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

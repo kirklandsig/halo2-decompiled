@@ -332,6 +332,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // bool/byte/short/long direct then common results: 403/403/406/396/405/405/408/398.
 // NOT kept: all regress and raise the matched sibling to 64-70; original numeric
 // contract, alias-safe helper publications and complete body restored.
+// F385: Paired signed-pitch observation lifetimes, bool/byte/short/long negative then
+// complementary truths at their original comparisons: 284/284/284/284/285/285/285/285.
+// NOT kept: no exact predicate form; original helper and complete body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -686,6 +686,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // DL259: Primary success enters the sole request/return completion,
 // byte/bool/char/signed-char/short/word/int/long: 348/478/348/348/545/545/496/496.
 // NOT kept: no native graph/base or return-byte repair; original complete body restored.
+// F385: Paired alternate/fallback policy extraction in bool/byte/short/long at entry
+// 592/592/600/536; after primary query 575/575/588/583. NOT kept: policy residence
+// misses native query/request homes; original parameters, byte status and complete body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

@@ -372,6 +372,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // complementary bool/byte/short/word/long 937/914/920/920/915 (control 931; full 882).
 // NOT kept: result domains/polarity do not recover native frame or byte-result transport;
 // original complete body, query storage, qualifiers and all consumers restored.
+// F385: Persistent actor-mode presence byte/char/word/short/long, reduced
+// 931/931/954/954/955; absence bool/byte/long 931/931/942 (control 931, full 882).
+// NOT kept: frames 0x2cb8/0x2cbc miss 0x2cac; original complete body/qualifiers restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
