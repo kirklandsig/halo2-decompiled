@@ -66,17 +66,6 @@ bool transport_security_create_key(long local, long index, bool online);
 bool transport_security_register_key(long index, long local, bool host, const XNKID *kid, const XNKEY *key);
 bool function_07ab60(const s_type_99af70 *address, long local, long *index_out, XNKID *kid_out, XNKEY *key_out, XNADDR *xnaddr_out);
 
-/* the session states (0x7420, 0x1f8 bytes) */
-#define SESSION_STATE_DATA_SIZE 0x1f8
-
-/* enters a session state: clears the state block and copies in the new state's data */
-static inline void network_session_enter_state_with_data(c_class_58d20 *session, long state, void const *data, long size)
-{
-	memset(&session->value7420, 0, SESSION_STATE_DATA_SIZE);
-	memcpy(&session->value7420, data, size);
-	session->state = state;
-}
-
 void network_observer_request_channel(s_network_observer *observer, long index);
 
 // @retail 0x62240
@@ -1041,26 +1030,6 @@ bool __stdcall network_session_boot_machine(c_class_58d20 *session, const s_sess
 	return result;
 }
 
-// score 23 (was 23): retail keeps the inlined disconnect's reason in a pushed ebx set after
-// the memset; ours stores an immediate. BLOCKED-BY 0x616b0: with its body written through
-// network_session_enter_state_with_data (the reason copied from its address), this matches and
-// 0x616b0/0x5ef20 stay matched (its file was held in round 15).
-// Tried: the sibling's long/bool union 33; the result
-// assigned in the call's argument 6 (bool in bl, reason still folded); a long result passed as
-// the reason 62; a reason parameter the caller passes as 1 41 (it stays on the stack); the
-// result set first and passed by name 35; the callee's volatile reason read 27 (a stack temp);
-// `inline` on the callee 23; the reason as `true` 23.
-// Fully assigned success arms 36; conditional action result 35; external
-// session reference 23; current-member snapshot with original result 23;
-// rejection result 59; wrapper inline/noinline declarations 23/23;
-// external reference with assigned success arms 36. Reason still folds.
-// Round 15: boot arm first 23; the result taken from the host test 35; early false return 36;
-// result set before the arms 35; `result` with the member index first in the comparison 24.
-// Round 35 (m3 lane 18, fast with 0x162d00): the two calls as one ternary statement 23; the boot arm
-// first with the reason as the member comparison 24; the disconnect's declaration `__forceinline` 23
-// (0x5e1a0 stays 10); a long result returned as `!= 0` 58 (122 bytes, 0x162d00 15); diagnostic only,
-// not kept (it writes the disconnect out by hand): the reason in a local passed by address to the
-// file's state-entry helper with state 10 matches, so the cause is 0x616b0's own body (held file).
 // @retail 0x5ade0
 bool network_session_host_boot_member(c_class_58d20 *session, long member_index)
 {
@@ -2418,51 +2387,22 @@ bool network_session_handle_session_disband(c_class_58d20 *session, const s_type
 	return result;
 }
 
-// score 10 (was 10): byte zero/result exits still differ (the union shares the reason and the
-// result). Retail is the sibling 0x5e150's plain shape (`bool result = false; ... result = true;`)
-// apart from the inlined disconnect's reason: retail keeps it in ebx (as 0x5ade0 does), ours
-// folds it into an immediate store; that plain shape alone is 14. Tried: full-state
-// nonzero/equality 39/40; joined state 39/40; scalar-state boundary 39/40; accepted-state
-// equality 55/36; result initialization width and success tails; peer result with
-// literal/result reason 24/23; peer-fed value/bool view 37/43; host-fed reason with bool/union
-// result 14/10; both test results 24; peer-fed common success 15; plain shape 14, with the
-// disconnect callee beside its retail neighbours 14, the callee copying its reason with memcpy
-// 14, building a one-field state record 14, reading its reason through its address 14.
-// the result carrier is a dword here (xor ebx,ebx, mov eax,1, mov al,bl)
-// where retail keeps a byte (xor bl,bl, mov al,1), so the disconnect path also falls into the
-// false-exit copy instead of retail's shared mov al,1 exit; the disconnect reason agrees.
-// result initialization width and success tails differ;
-// peer result with literal/result reason 24/23; peer-fed value/bool view 37/43;
-// host-fed reason with bool/union result 14/10; both test results 24;
-// peer-fed common success 15;
-// a plain bool result set before the disconnect and passed as the reason 14 (the reason folds
-// to an immediate store); the reason in a union with the result a separate bool 14.
-// Round 15 (diagnostic): BLOCKED-BY 0x616b0: the plain shape matches once 0x616b0's body is
-// written through network_session_enter_state_with_data; this union form is then 22.
-// Round 131: byte initialization and shared success with the reason assigned in the call 14;
-// full value at the join 66; separate reason assignment with shared success 14; reversed union
-// members 10; unsigned value 10; bool-first aggregate 82; inline disconnect declaration with
-// shared success 14 (0x616b0 and 0x5ef20 stay matched); separate Boolean return local 10.
 // @retail 0x5e1a0
 bool network_session_handle_session_boot(c_class_58d20 *session, const s_type_99af70 *address)
 {
-	union { long value; bool result; } local_0;
-	local_0.value = 0;
+	bool result = false;
 	if (network_session_address_is_peer(session, address))
 	{
 		if (network_session_channel_is_host_address(session, address))
 		{
 			if (network_session_channel_is_host_address(session, address))
 				network_session_close(session);
-			local_0.value = 1;
 		}
 		else
-		{
-			local_0.value = 1;
-			network_session_disconnect(session, local_0.value);
-		}
+			network_session_disconnect(session, 1);
+		result = true;
 	}
-	return local_0.result;
+	return result;
 }
 
 // @retail 0x5e5b0
