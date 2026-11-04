@@ -35,11 +35,25 @@ struct s_query_collector_entries
 	}
 };
 
+struct source_2df020;
+class class_2df020
+{
+public:
+	void function_2df020(source_2df020 const *source);
+};
+
 class c_query_array_collector : public c_query_collector
 {
 public:
 	virtual ~c_query_array_collector();
-	virtual void collect(s_batch_contact const *) {}
+	/* retail table 0x453b90 slot 1 (0x2df020): the contact appended to
+	   the array at +0x10; empty, every query here found nothing (0x183910
+	   gave explosions no closest point, so their damage fell off as if
+	   from far away) */
+	virtual void collect(s_batch_contact const *contact)
+	{
+		((class_2df020 *)this)->function_2df020((source_2df020 const *)contact);
+	}
 	byte unknown08[8];
 	s_query_collector_entries entries;
 };
