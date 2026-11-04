@@ -3165,6 +3165,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // subsets then immutable values: fast 599/599/611/599/611/601/609/609 (control 600, full 561).
 // NOT kept: 599 gains only one against reduced 600. Original field observations and
 // complete body restored; result/flight/vector homes remain.
+// M362: Existing yaw cross ordinary/staged 600/600; complete indexed yaw
+// publication with original/ordinary/staged cross 617/617/617; existing
+// scale/add-scaled with ordinary/staged cross 600/600; weighted staged cross
+// and existing sum 605 (reduced control 600, full 561). NOT kept: no gain;
+// original yaw helper, flight/result homes and complete body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4272,6 +4277,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // F359: Complete projection reductions in four source phases, original/early cross capture:
 // 181/175/188/169/190/179/192/177. NOT kept: no exact projection-phase repair.
 // Original complete body and helpers restored.
+// M362: Existing rotation owns cosine/sine/both from real then double angle formals,
+// 227/200/227/237/190/236; both float trig producers in that graph 228/235.
+// NOT kept: native once-computed coefficients and frame are lost; no exact match.
+// Original helper contract, coefficient lifetimes and complete body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -5212,6 +5221,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // DH324: Native flag-word/timer-array/output forward-push fields, seven subsets,
 // then direct native push reads: fast 655/655/655/655/655/655/655/655 (control 655, full 648).
 // Original actual record declaration, field accesses and complete body restored.
+// M362: Existing grabbing predicate helper with bool/byte/char/short/word/int/long/dword
+// result domains 715/715/715/710/710/706/706/706 (fast control 655, full 648).
+// NOT kept: helper-result storage lengthens the body and regresses; native homes
+// and completion expansion remain. Original predicate and complete body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

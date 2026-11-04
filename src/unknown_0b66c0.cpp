@@ -353,6 +353,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // P311: Shared bounded scanner !=511 / <=510 exhaustion, unsigned-long/long/word/short counters:
 // P311: eight forms 40 at exact 100 bytes; shared find loses its match in every form.
 // P311: NOT kept: no target gain and shared-user regressions. Original helper/body restored; saved-start and scan register split remain.
+// M362: Existing copy helper terminator through direct CRT result/destination
+// formal, long/unsigned-long/int/unsigned-int sizes: eight 53s at 90/100 bytes.
+// NOT kept: target regresses and shared users rise (caller 13, constructor 29,
+// formatter 1, connector 90); original copier, scanner and full body restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

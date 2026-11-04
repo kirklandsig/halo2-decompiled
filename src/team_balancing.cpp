@@ -678,6 +678,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // M358: Original less-first acceptance byte/short/word/long and complementary rejection
 // bool/byte/short/long: 67 each. NOT kept: one-use decision carriers do not match;
 // original query graph restored; reference-first spread calls and two extra bytes remain.
+// M362: Native signed int delta/parallel populations/final difference, seven
+// subsets then immutable complete inputs: 67 each at 514/512 bytes.
+// NOT kept: no exact candidate-first query repair; all file controls unchanged.
+// Original long intermediates, queries and complete body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
