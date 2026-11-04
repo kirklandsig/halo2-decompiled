@@ -4318,6 +4318,8 @@ void function_e5750(long unit_index);
 // under one `if` from /d2inlT70 up, unconditionally from 62 and under 0xec9a0's two tests from 90, and
 // every source form here stays under the build's threshold. Pointer before the call with `!type` 72,
 // with an early return 72, a bool local before the call 83; after the call an early return 52, `!type` 52.
+// Round 146: definition below the final helper, post-call pointer/const pointer/header/byte/bool locals,
+// zero-path return and single-exit goto all 52; original restored.
 // @retail 0xec330
 void __stdcall function_ec330(long unit_index, long type)
 {
