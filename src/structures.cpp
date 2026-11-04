@@ -478,6 +478,13 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	return false;
 }
 
+// MiniMax A (11-04): no new form, no lower score (172). What still differs: the promoted clone of
+// function_11e800 hands the four pointers to different registers. Retail calls it with
+// ECX=arg1, EDX=arg2, EAX=arg3, ESI=arg4; our build calls it with ECX=arg1, EDX=arg2, ESI=arg3,
+// EAX=arg4 (checked at our 0x407628 against retail's 0x14aebb). The assignment comes from the
+// callee's own body in src/unknown_11cb00.cpp (126 off retail), which is not this machine's file,
+// so the call site cannot be fixed from here: BLOCKED-BY 0x11e800.
+// Also still different: the BSP/section carriers and the plane/instance stack homes.
 // MiniMax E (11-01): no new form, no lower score; the byte result set before the type branch gives
 // 197 and the range declared before the section 172 with identical code. Left: the BSP in EBX with the
 // section in its stack home, the rotated range/plane/instance homes and the 0x16e1b0 output homes.
