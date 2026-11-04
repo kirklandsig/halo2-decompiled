@@ -305,6 +305,15 @@ struct c_aggregate : c_child
 // P306: Test-produced collection/dispatch/item admissions, seven subsets, then
 // native byte carriers: 31 each. NOT kept: no gain or match; the 0x8024 frame remains.
 // Original short circuits, independent outputs, signed traversals and full body restored.
+// M351: Immutable collection-child/cleanup-block/cleanup-object bindings, all seven subsets,
+// then all with the immutable dispatch end: 31 each. Independent escaped outputs and the
+// complete body restored; frame 0x8024 versus 0x8020 and exchanged low loop homes remain.
+// M358: Allocation-information query success/failure in byte/short/word/long: 31 each.
+// NOT kept: one-use query outcomes do not match; independent outputs and complete body
+// restored; frame 0x8024/0x8020 and exchanged low loop homes remain.
+// DH330: Cleanup null guard with completed-query scope/shared scalar query output/
+// actual block reference, masks 0-7: 31/31/31/31/31/31/31/31. Shared outputs recover
+// 0x8020 but exchange the low loop homes; original independent outputs/body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

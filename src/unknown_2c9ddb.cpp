@@ -159,6 +159,11 @@ extern long g_55c154;
 // (load(selected)) {...}` with the game type read once into a local for its three uses): with the controller index
 // read once into a local 161 (587 B); with the named destination for the copy 185 (571 B); selected arm first 160
 // (586 B); under a named `create_default` bool 160 (586 B); controller local and named destination 184 (572 B).
+// Round 145 (m3 lane 6, fast): two load arms 174 (595 bytes); with the saved-index store after each copy 195
+// (600); count as sizeof(name)/sizeof(name[0]) 61; arms on entry->variant directly 174; arms with their own
+// scoped variant 174. Compile-only (/O1 /Oi /Gr): every two-arm shape (either order, nested, no else, a mode
+// variable with one 0x238c69 call, one copy, fewer constant-1 uses) hoists the constant 1 into EBX and moves
+// `this` out of EBX; the one-load body with a second load call or per-branch copies does not.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

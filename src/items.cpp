@@ -682,6 +682,22 @@ struct s_item_collision_bsp
 // DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
 // 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
 // all controls unchanged. Original body, pending-k join and protected plane contract restored.
+// DL255: Contact/angular provider ordinary/inline/forced policies, eight pairs:
+// 211/386/211/712/211/712/386/734. NOT kept: ties/regressions; forced expansion loses
+// 0xd9640 and/or 0x10b190 and raises other users. On the shared spin-k graph, existing
+// staged cross/linear add/both: 205/211/209 (1366 bytes). NOT kept: gains six/zero/two,
+// below threshold; 0x1c4590 6 -> 11 and 0x24cf66 114 -> 115 also rise.
+// Original complete body, vector expressions and both provider declarations restored.
+// Native normalization result, squared-speed producer and measured/selected-speed
+// ownership on the common pending-k graph: 211/211/245/211/245/245/245;
+// complementary speed admission 252. Original complete body and protected plane contract restored.
+// B407: Joint pending-factor/fallback-speed scalar identities on the common pending-k
+// graph, eight lexical relations: 211 each; all file controls unchanged. Original
+// names and complete body restored; plane joins and scalar/spin homes remain.
+// N349: Actual contact displacement via scalar/shared-scale producers and field/shared-add/native-point
+// publications 211/317/211/317/211/317/211; copied point then scaled additions 282.
+// Original complete body restored; protected plane width, plane joins and spin/speed homes remain.
+// NOT kept: unmatched displacement/copy forms and frame/extent regressions.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1237,9 +1253,25 @@ struct s_item_flags_view_10b850
 // B392: Native rotation input/cross with plain output loops, direct/staged cross, immediate/separate
 // cosine loops and long/unsigned ordinals: 1000/1024/1009/1041/1000/1024/1009/1041. Original complete
 // helper and body restored; frame and Boolean/vector homes remain.
+// B401: Independent fixed predicate with unified post-query position/settle outcomes,
+// byte/word/long/dword bit results then three-state results: 859/880/880/880/882/905/902/902.
+// NOT kept: unmatched conditional results enlarge length/frame; original full body and helpers restored.
+// B403: Complete accumulator base/additive/both scalar inputs 820/813/816;
+// base/additive/both with complete scaled products 816/849/813; reversed paired
+// input priority without/with products 816/813. NOT kept: all remain unmatched;
+// original accumulator and full body restored. Frame and entry Boolean homes remain.
 // P307: Complete in-place cross differences, with component cosine ownership, cross sine
 // ownership and full projection product: 832/834/832/834/811/813/811/813. The 811 forms
 // reach 4096 bytes; NOT kept: two-count gain. Original helpers and complete body restored.
+// M345: Complete free/fixed/settled motion state in char/signed-char/byte/short/word/int/long/dword:
+// 853/853/853/909/909/905/905/905. Byte domains recover frame 0x150 but grow to 4113 bytes.
+// NOT kept: scalar-state carriers miss; original separate flags, every consumer and full body restored.
+// DH335: Axial-row scalar homes 839/860/864/878/839/860/864/878; first 839
+// is prior-form calibration. Complete axial-vector component loop 1000.
+// NOT kept: frame/length regress; original helper, inputs and full body restored.
+// N352: Actual item/typed-tag/external-hit-header bindings, families 1..7 and
+// complete read-only views: 813 each. NOT kept: one-use/combined record forms
+// remain unmatched; original body/helpers restored, frame stays 0x154/0x12c.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1673,9 +1705,28 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // AC503: Existing two-site release producer owns the actual item receiver and byte/dword mask,
 // entry/direction/scale/vector clear boundaries 140/140/182/183/140/140/182/183. Original helper and complete body
 // restored; return byte, release RMW/tail and event homes remain. NOT kept: unmatched producer forms.
+// N350: Complete update counts in byte/short/long/dword 143/173/176/176;
+// category-bit aggregation 182/181/181/181 on the paired-setter graph. NOT kept:
+// numeric return representations regress; original Boolean accumulator and full body restored.
 // B395: Captured-spin logical OR on paired point setters, result/spin-first with
 // bool/byte/short/long accumulators: 179/176/186/183/185/179/186/179. NOT kept: all
 // regress; original bitwise join, two-use spin value, helper and complete body restored.
+// B401: Complete unchanged-state conjunction accumulator, positive/negative spin truth,
+// bool/byte/short/long: 179/179/186/187/176/176/179/181. NOT kept: unmatched result
+// representations regress; original success accumulator, helper, paired setters and full body restored.
+// B403: Completion-owned damping result after the call, bool/byte/short/long,
+// default-zero 131/129/175/170 and exhaustive outcomes 176/176/180/176.
+// NOT kept: branch-set outcome flags require equality; 129 recovers the return-byte
+// home at retail length but remains unmatched. Original two-use spin and full body restored.
+// B407: Native addressed contact/event/owner/payload identities on the paired-setter graph,
+// four isolated and four complete role-name families: 140 each. Original names, helper,
+// workspaces and complete body restored; return-byte, release and event homes remain.
+// DH333: Typed owner/origin/position record-range copies, seven subsets
+// 167/165/171/164/171/181/187; complete backward ranges 189. Unlike scalar-coordinate ranges,
+// these copy complete records. NOT kept: regressions/shorter extent; full original body restored.
+// N352: Eight return/spin lexical home pairs on the paired-setter graph: 140 each.
+// NOT kept: return byte stays +0xe/+0xf and release/event homes remain; original
+// names, declaration sites, helper, paired setters and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

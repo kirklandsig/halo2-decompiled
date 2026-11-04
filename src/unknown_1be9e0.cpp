@@ -176,6 +176,9 @@ static __forceinline long real_to_long(real value);
 // Round 75 (fast, no caveat): the count test as `accepted + joint->participant_count < 2` 37; a long
 // participant sum 37; the prop view test as `!(view && ...)` 24; no participant pointer local 27;
 // `declined >= 2` 26. Retail never tail-merges the count failure's g_46fbe4 return with the countdown's.
+// Round 101: a countdown field pointer used for the test, decrement and reset 24; an actor reference 24;
+// a joint reference 24; const state, joint or actor pointers 24 each; const node and view pointers 24;
+// an explicit outer missing-prop else 24. Every form kept the same return graph and 445-byte length.
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {

@@ -568,6 +568,16 @@ extern point2f *g_468778;
 // Round 139 (m3 lane 5, fast): actor first with constant exits 393; with a two-use settings distance local at the
 // final calls 403 (1554 bytes); with the default threshold before the clock 393; that threshold order alone 375 (same
 // code); the two-use distance local alone 425 (1567 bytes).
+// AC507: Active/inactive unit-admission call results in bool/byte/short/long storage,
+// 375/375/375/375 and 375/375/375/375. NOT kept: one-use results do not match;
+// original calls, observations and complete body restored. Early carriers remain.
+// AC509: Admission rejection to the sole result return, compound/negative-result/positive-result/
+// settings-owned gates: 374/407/407/374; actor-first versions 413/435/435/413. NOT kept:
+// best gain 1; original acquisition, result, admission and complete body restored. Early carriers remain.
+// AC511: Actual header-free slot-member record with entry/branch false result,
+// direct completion and early admission, original/actor-first acquisition:
+// 387/440/425/440/410/413/393/413. NOT kept: native receiver/return lifetime graphs
+// regress; original record, lookups, result and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -927,6 +937,9 @@ static __forceinline long real_to_long(real value);
 // after magnitude/weight, each with retained/direct facing reads, bool then byte:
 // 534/571/522/554/551/588/543/585. NOT kept: all regress and enlarge code; original
 // result, velocity/facing receivers, query aliases and full body restored.
+// DH322: Sequential magnitude/query speed, prediction/flight duration and limit/direction distance,
+// seven subsets then entry declarations: 384/445/382/446/384/445/446/446. NOT kept:
+// storage nonmatches; original scalar lifetimes/body restored, early exit and query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

@@ -752,6 +752,15 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // Round 82 (m3 lane 16, fast, 0x24590 listed): one scale local for the limits, acceleration and movement 196 (1065
 // bytes); factor declared at the top 166 (first difference +0x3); `state->speed = field_148 = acceleration` 134; each
 // jitter value as one sign * on/off * scale product 162 (1057 bytes); the clamped control magnitude named 132 (same code).
+// Round 66 (m3 lane 11, fast, 0x24590 listed; m = register-masked aligned count, base 83): dot3f projection
+// 130 (m 85, repeat); retail-order plain-long jitter 233 (m 62, repeat); both 228 (1025 bytes, m 61); both
+// with the volatile long 196 (m 67); both with the scale factor on the left 228; dot3f plus a top velocity
+// pointer 128 (gain 4, not kept); dot3f, plain-long jitter and `limits.k = limits.j` 257 (1010 bytes, m 47,
+// closest structure: the limits/factor products, the j/k copies, the projection/movement stores and the
+// jitter spills remain).
+// DL254: Native jitter coefficient/offset phase passes, inherited then ordinary sample:
+// 168/180/165/204/220/220/177/197. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1073,6 +1082,18 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // DH319: Complete final turn-test stop/continue results in bool/byte/short/long
 // storage: 140/140/140/140/140/140/140/140, all 1382 bytes. Original expression
 // restored; native j/k products, side-dot and output scheduling remain.
+// Round 66 (m3 lane 11, fast with 0x24590, 0x1cd6c0 and 0x1ecf50 listed): `turning && c` 116; the
+// alignment dot as (forward, goal) 116; `if (c) if (turning)` 114; `rate * angle` 114; the side crosses
+// declared at the top of the turn block 114; `0.5f < alignment` 114. Unused-local probes (1-8, diagnostic,
+// same counts anywhere before the rotation): 140/150/150/139/163/166/144/112, 1-6 at 1382 bytes; with the
+// moved-away flag preset and set in its test 94 (probes 145-167). Both exits: retail loads all three
+// forward dwords (ESI/EDX/EAX, flags in EBX) before its stores, ours copies interleaved.
+// Y562: Native real absolute/sine/cosine APIs, subsets 1/2/4/3/5/6/7, then all
+// with a double angle producer: 201/196/196/106/106/101/131/131. NOT kept: combined API gains need a byte match; isolated APIs regress. Original body restored.
+// Y564: Existing complete vector setter on the current rotation graph at goal/rotated/initial
+// copy boundaries, subsets 1/2/4/3/5/6/7: 122/176/205/171/197/203/195.
+// Both final overlap-safe library copies 99 at 1382 bytes (plain 99). NOT kept: adds
+// library calls where retail copies three components inline. Original entire body restored.
 // P298: Actual turn admission at entry/sample/scaled/rotation boundaries, short-circuit
 // 382/335/203/192; eager Boolean inputs 336/183/183/183. All restored; rotation
 // multiplicands and exit scheduling remain. NOT kept: early decision lifetimes did not match.

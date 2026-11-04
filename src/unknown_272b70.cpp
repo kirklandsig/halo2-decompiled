@@ -1491,15 +1491,37 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // AC503: Native sorted-row pointer/count traversal, short/word/long/dword counters, mutable/read-only
 // receivers 36/36/75/75/36/36/75/75. Original ordinal loop and complete body restored; iterator load, leave-selector
 // and request/publication allocation remain. NOT kept: unmatched traversal/domain forms.
-// DH320: Existing request producer returns canonical submission in byte/signed-char/char/
-// short/word/int/long/dword domains: 77/77/77/77/77/77/77/77. Original bool helper
-// and complete body restored; iterator/leave-selector/request homes remain.
 // M344: Winning-seat presence/absence produced by all original score improvements,
 // bool/byte/short/long 147/147/143/147/147/147/147/151. NOT kept: unmatched selection
 // flags grow the frame and body; original short winner, requests and complete body restored.
 // P309: Existing request builder split from submission: void-pointer/pointer-result/void-reference/
 // unit-result, forced/ordinary expansion, 72/72/72/32/72/72/72/32. Original helper and
 // complete body restored; iterator/leave-selector/request homes remain; no exact builder split.
+// DH320: Existing request producer returns canonical submission in byte/signed-char/char/
+// short/word/int/long/dword domains: 77/77/77/77/77/77/77/77. Original bool helper
+// and complete body restored; iterator/leave-selector/request homes remain.
+// M355: Appended row pointer/reference, count release after actor/geometry/distance
+// or at acquisition on the retained slot graph: 153/153/153/153/153/153/153/153.
+// NOT kept: no exact append lifetime; retail increments after the busy query. Full body restored.
+// M357: Complete actor/capacity admission at collection, positive then complementary bool/byte/short/long:
+// 32/32/32/32/32/32/32/32. NOT kept: no exact producer/contract form; original complete body restored.
+// DH323: Actual collection/sorted-candidate/selected-seat record lvalues, seven
+// subsets 150/32/150/32/150/32/150; all four seat/candidate roles 150.
+// NOT kept: no handle/scaling, leave-selector or publication-home recovery;
+// comparator remains exact. Original pointers and complete body restored.
+// DH325: Entry/no-seat completion and no-winner continuation, seven subsets,
+// then split entry exits: 32/32/32/32/32/32/32/32. Original complete body restored;
+// iterator acquisition, leave-selector and request/publication homes remain.
+// DH327: Native sorted-array end bound, cached/per-use, equality/ordered and
+// mutable/read-only candidate receivers: eight 150s, 848/846 bytes. Original
+// traversal and complete body restored; iterator scaling, leave-selector and
+// request/slot publication remain. NOT kept: all bounds regress and lengthen.
+// DH329: Native inner seat cursor, short/word/long/dword ordinals, mutable/read-only
+// rows 34/176/165/165/34/176/165/165. Original ordinal loop and complete body restored;
+// NOT kept: no match or qualifying gain; iterator/leave-request/publication homes remain.
+// DH337: Read-only returned-actor for ownership and displacement-output lifetimes:
+// 276/276/276/276/276/276/276/276, frame 0x6b0 and 975 bytes. NOT kept: regressions;
+// original iterator/body restored, iterator/leave-request/publication homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2747,9 +2769,33 @@ struct s_scenario_scripting_view
 // B392: Actual external actor-record reference with scenario/data/set reference masks 0..7:
 // 80/80/96/96/80/80/96/96. Original complete search and all observations restored; actor/counter/set
 // homes remain.
+// DH323: Existing point-base getter, decoded/masked set bits, pointer/record
+// receivers and early/loop-owned signed-short traversal 168/164/168/164/168/166/168/166.
+// NOT kept: rooted re-observation grows frame 0x18 to 0x20 and length to
+// 430/433 bytes. Original signed stride/wrap, bounds and complete search restored.
 // B394: Complete packed winner in long/dword storage, winner-produced/retained set bits;
 // and admitted/entry result lifetime; original low-word NONE test retained: 96/94/91/101/96/94/91/101.
 // NOT kept: no exact match; original complete executable source restored.
+// B407: Positive/complementary scenario-data count admission in bool/byte/short/long
+// domains: 80 each. Exact-only condition results restored; actor/set/counter homes and
+// delayed scripting-data observation remain. Original complete search restored.
+// M355: Winner presence/absence published at each strict improvement with exact
+// short-NONE handling, bool/byte/short/long: 92/92/104/105/92/92/99/100.
+// NOT kept: no exact selected-state graph; original short winner and full search restored.
+// M357: Entry actor-presence admission, positive then complementary bool/byte/short/long:
+// 80/80/80/80/80/80/80/80. NOT kept: no exact producer/contract form; original complete body restored.
+// DH325: Native output-present/absolute resolver-branch predicates in bool/byte/short/long
+// storage: 80/80/80/80/80/80/80/80. Exact-only predicate forms restored;
+// actor/counter/set homes and the early scripting-data observation remain.
+// DH327: Explicit signed set-admission result, positive/complementary,
+// bool/byte/short/long: eight 80s. Original short-circuit guards and complete
+// search restored; actor/counter/set homes and guarded data observation remain.
+// DH329: Own packed-input pointer at entry/actor/scenario/selector scope, native/read-only,
+// eight 101s at 377/367 bytes; wrapper 14. NOT kept: own-input aliases lack equality,
+// lengthen and lose the wrapper. Original input, selector and complete search restored.
+// DH338: Full-word long/dword winners with short traversal after actor/data,
+// admitted-set/for ownership: 92/92/92/93 each. No equality; original winner,
+// traversal and body restored, actor/counter/selector and data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

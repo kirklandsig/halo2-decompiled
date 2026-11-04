@@ -1544,6 +1544,11 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // P289: Twice-used animation channel long/dword/short/byte at its producer, then
 // entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
 // no exact match. Original body restored; early pool/hand and second unit load remain.
+// Round 208 (m3 lane 3, fast): a compile-only LTCG probe gives retail's entry (unit load, hand store, unit reload
+// through a copy of the data register) only when `hand` is a memory local whose store sits between the two lookups
+// (its address passed to a call); every lookup spelling without that shares one load. Diagnostics, reverted at once:
+// `(void)&hand` 95, with a long hand 198; a local pointer to hand read at the 0xd0870 argument 95 (short) / 198 (long),
+// at the slot store 95/198 (LTCG resolves the pointer away). Retail passes no local's address anywhere here.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {

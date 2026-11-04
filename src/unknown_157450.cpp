@@ -674,6 +674,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // through +0x60, but a width cast on one side of a compare, and retail compares dword: `movzx eax, cx; cmp esi, eax`;
 // not kept); a word new-mask local ahead of the change test 133 (375 B); the added mask declared ahead of the change
 // test 130 (375 B), 59 on the word mask; the volatile present declared first on the word mask 86.
+// N348: Sentinel-owned loop continue, saved-word/team-short/condition-player
+// subsets 0..7: 32/77/107/64/32/77/107/64. Original nested guard, masks,
+// qualifiers and body restored; native word entry and shared post-loop reload remain.
 // Lane 13 r58 (fast): word mask, plain present and the post-loop stores/index24 through the getter 63 (384 B,
 // the engine-index load then hoists as retail's); word mask with the added mask written into the second loop's test
 // 90 (396 B); `word const` mask 77 (same as word); word mask with the change tests as XORs 86; word mask with the
@@ -681,6 +684,13 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // P314: Existing bitmap setters/membership, seven site subsets with a plain present and word
 // saved mask, plus the complete dword graph: 105/72/117/497/121/134/132/140. All regress;
 // original scalar bitmap operations, saved-mask width, inherited qualifier and body restored.
+// DL255: Residual notification bitmaps, dword/byte carriers and dword/word saved masks,
+// full eight-ordinal then bounded-exhaustion traversal: 97/81/97/81/92/79/92/79.
+// NOT kept: all regress; the saved-word form still reloads for compare and update.
+// Original iterator, masks, callbacks, qualifier and complete body restored.
+// N351: Mask-field reference/immutable pointer, original/condition-owned immutable player, saved dword/word:
+// 32/77/32/77/32/77/32/77. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: native word entry and shared post-loop mask reload.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4304,6 +4314,19 @@ long function_14de70(long local_player_index);
 // all three words, then stores through ESI/EDI), NONE reuse, byte shift and scratch registers differed.
 // The copies are retail's when 0x7f720 returns color3f by value (compile-only), or with each copy
 // through a color3f local initialised from the call: 46
+// frame 0x48c agrees; four extra bytes, late weapon NONE reuse,
+// the shift-count read width, format-mode branch and charge/progress allocation remain.
+// Earlier: frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
+// stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
+// and scratch-register renames remain. The copies are retail's when 0x7f720 returns color3f by
+// frame 0x48c agrees, four bytes long; the late unit/slot NONE
+// sentinel, byte shift count, mode scratch register and final progress/result transport remain.
+// Earlier color-copy trials: the copies are retail's when 0x7f720 returns color3f by
+// frame 0x48c, four bytes long; exit/format spans, the zone byte shift,
+// late unit/slot NONE ownership and charge/progress/result allocation remain.
+// Earlier: two team-color copies (retail loads all three words, then stores through ESI/EDI),
+// the -1 register reused for unit/slot tests, byte shift and scratch-register renames. The copies are retail's when 0x7f720 returns color3f by
+// value (compile-only), or with each copy through a color3f local initialised from the call: 46
 // (both), 65 (rival only); on that, the individual best/best-score defaults before the
 // player-index store and the rival text cleared before the rival's player lookup 42 (44 each),
 // plus a byte shift count 41; the same two reorders alone 85. Weapon section on the 41 form: the
@@ -4463,6 +4486,11 @@ long function_14de70(long local_player_index);
 // weapon local 71 (the constant still propagates); `(short)iterator.index` as the zone shift count 41 (retail's
 // `mov cl, byte`, under the keep threshold); OBJECT_DATUM_GET with a signed char slot 75 (`cmp cl, 0xff`); the
 // player index through the existing 0x14de70 42 (same code; kept, it was that function's body written out).
+// F356: Shared charge fraction, positive/complementary charge outcomes and entry fraction storage, original/existing weapon selection:
+// 111/93/67/111/115/99/82/115. NOT kept: no qualifying match or gain; original complete body restored.
+// DH323: Complete paired winner producers with bool/byte/short/long improvement
+// and no-improvement outcomes 701/701/701/701/708/708/710/710. NOT kept: all regress;
+// late unit/slot sentinel, byte shift count and tail observation residency remain.
 // Lane 13 r58 (fast): weapon NONE default before the unit test with an `if` for the slot 73 (2688 B, `or esi, -1`
 // as retail, both compares immediate, pool read ahead of the masked index); on it both tests against the weapon
 // local 71; the index term first in the unit address sum 73 (same code); a dead else `weapon = NONE` 42 and a ternary
@@ -4470,6 +4498,12 @@ long function_14de70(long local_player_index);
 // P314: Decoded absent slot as the absent weapon result, conditional/branch-owned with raw/typed
 // receiver and short/byte slot: 42/42/28/28/42/42/28/28. NOT kept: byte-domain forms compare a
 // byte where retail sign-extends to a word; native-word forms tie. Original body restored.
+// Y563: One object handle for the unit then its weapon, raw/native view, tail/entry
+// declaration and ternary/branch result: 42/73/42/73/42/73/42/73. NOT kept: ties or
+// regressions; original independent unit/weapon carriers and complete body restored.
+// N353: Actual terminal unit rejection, progress-first classifier, charge/mode/progress
+// rejection and charge/progress completion exits 171/63/171/171/171/171/171;
+// complete admitted terminal selection 195. NOT kept: all regress; native NONE/shift/result homes remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5654,6 +5688,9 @@ void __stdcall function_d6bc0(long object_index);
 // declared before the rate 180 (884 B: frame 0x18, but the timer slot lands between object and preset where retail's
 // sits between rate and scenario); the timer renamed 180 (no move); `if (*timer > 0) { if (--*timer == 0)` 144 (same
 // code); the modifier as a nested ternary 159 (874 B); the object lookup indexed by `(word)index` 182 (movzx).
+// M346: Actual eligibility-query outcome at its original admission test,
+// bool/byte/char/signed-char/short/word/int/long: 144 each, exact 869-byte extent.
+// Frame remains 0x14 versus 0x18; timer spill and entry-base reloads remain. Original body restored.
 // Lane 13 r58 (fast): the schedule's two index tests written on the `index` local 159; d6bc0 given `index` 148;
 // both 165 (863 B); the timer pointer formed with the index read and used for the reset block's `= 1` 155 (872 B);
 // a bool schedule with the same initializer 167 (862 B). Retail's frame order (pre-push): object 0, preset 4, i 8,
@@ -5664,6 +5701,9 @@ void __stdcall function_d6bc0(long object_index);
 // P314: Counter-increment waiting ownership instead of reset-success, bool/byte/short/long
 // with branch-owned/short-circuit distance-query producers: 203/187/203/187/201/181/200/180.
 // All regress and exceed retail length; original reset, timer observations and body restored.
+// F360: Both squared-distance j/i tails as plain real-vector reverse loops, four signed for/while inductions:
+// 265/265/199/199/265/265/199/199. NOT kept: no native frame/timer repair.
+// Original complete body and helpers restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

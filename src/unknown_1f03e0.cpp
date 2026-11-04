@@ -1026,11 +1026,38 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // B389: Complete native aggregate producers: direct rotation/raw/working, general working/raw,
 // direct raw+working, general raw+working and all: 433/433/497/551/433/497/551/584.
 // Original raw-first body restored; damping and raw/bounded homes remain.
+// DL253: Independent shared general/history output sums 473/435; history difference/offset/relative
+// setters 431/433/433; flying desired setter 428; direct two-point difference 572; general unity
+// scaled difference 463. NOT kept: gains two/five below the bar; flying setter also shortens away
+// from retail. Original raw-first body restored; damping and raw/bounded homes remain.
 // B391: Actual external normal/facing/input identities, subsets 1/2/4/3/5/6/7, then
 // all with up identity: 346/509/533/477/511/587/513/511. NOT kept: the normal-field
 // reference reaches 346 at 3052 bytes by changing existing product scheduling; retail
 // does not show that new field-alias lifetime or its projection load pattern. Exact-only
 // identities and complete body restored; damping and raw/bounded homes remain.
+// Y562: Planar/eight-normalization branch-owned damping/flying/direct admission, subsets
+// 1/2/4/3/5/6/7, then late damping: 574/530/629/658/633/639/652/659. Original entry observations and whole body restored.
+// NOT kept: all regress; combined predicate scopes also lose the exact caller.
+// Y564: Planar/eight-normalization initial/fallback/both scalar direct copies
+// 497/593/594; initial/fallback/both library copies 433/433/433; both scalar
+// copies with native raw aggregate 594; both overlap-safe copies 586. NOT kept:
+// no gain; original full body, raw/bounded homes, helpers and observations restored.
+// DL256: Existing cross/dot expansion pairs forced-inline/inline, inline/forced-inline, both forced,
+// ordinary/inline, inline/ordinary, ordinary/forced-inline, forced-inline/ordinary and both ordinary:
+// 433 each (3037/3047 bytes); every shared user unchanged. Original annotations and full body restored;
+// damping ECX/EDX, raw/bounded homes and cross/history schedules remain.
+// B409: Declared word-bit consumers for damping/direct/gravity/the three/enabled/
+// all four/all with history/the three with history: 427/438/427/425/441/457/575/444.
+// NOT kept: six-point leads below gate; combined 425 shortens away from retail to
+// 3034/3047. Original word layout, flag producers and complete body restored.
+// B411: Complete entry flying/damping/direct/gravity declaration orders on the planar graph
+// 441/432/441/434/444/445/445/440; NOT kept: one-point reduction and order-only nonmatches.
+// Original observations/body restored; damping ECX/EDX and raw/bounded homes remain.
+// M354: Split damping extraction in byte/dword storage, mask at producer/entry/general/consumer:
+// 427/412/627/532/464/451/630/557. NOT kept: split predicate transport needs byte equality.
+// DH328: Existing staged force-inline cross at disabled/flying/ground subsets
+// 436/473/429/436/431/479/431; shared staged cross at every remaining site 431.
+// NOT kept: four/two-point leads fall below threshold; length regresses or ties. Full body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1726,9 +1753,30 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // bit-production masks 0/1/2/4/3/5/6/7: 223/226/223/311/226/310/312/311.
 // NOT kept: all grow to 1068/1088 versus 1066; original definition, both calls, magnitude,
 // initializers, predicates and complete body restored.
+// B400: Saved two-bit selection state with candidate-state/native movement/shared-contact-byte
+// masks 0..7: 359/294/360/293/359/294/360/293, at 1129/1045 bytes against 1066.
+// NOT kept: no exact match or gain; original separate predicates, magnitude, observations,
+// complete body and material calls restored; zero width and reset/selection homes remain.
+// B411: Existing magnitude producer with double/native/direct/test-produced movement
+// 221/224/226/226; squared-length/dot producers with double/real roots 221/224/221/224.
+// Native zero width fixes only the prefix; original root, declaration and body restored.
 // P309: Complete category admission as direct positive/negative or named positive/negative
 // predicates, original/real movement: 231/231/231/231/228/228/228/228. Original
 // selection graph and complete body restored; zero/reset homes and material expansion remain.
+// M345: Default-moving result cleared by the original zero test, bool/char/signed-char/byte/
+// short/word/int/long: 221/247/247/247/283/283/285/285.
+// NOT kept: test-produced result domains do not match; original root, motion predicate and full body restored.
+// M347: Highest-contact reduction outcome, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 225/225/225/225/225/225/225/225.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
+// M355: Test-produced current support, support-first/approach-first, each in bool/byte/short/long:
+// 264/267/270/283/304/298/302/300. NOT kept: test-produced states remain unmatched;
+// original support predicate, movement, selections and both material call sites restored.
+// M357: Fallback-call admission produced at the query, positive then complementary bool/byte/short/long:
+// 225/225/225/225/225/225/225/225. NOT kept: no exact producer/contract form; original complete body restored.
+// DH329: Separate highest-contact scan before/after selection or fallback-only, direct/named
+// height and before/after native cursors 776/788/872/888/580/572/894/929. NOT kept: all regress and
+// grow frame/extent; original shared scan and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

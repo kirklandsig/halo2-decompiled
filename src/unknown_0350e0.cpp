@@ -120,6 +120,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 465; scalar in-place helper (i, j, k read once; k re-read as retail) as one expression, running sum or staged 377/377/377 (aligned 276,
 // frame 0x64). On that: squares before trig 376; named sine products 411; hoisted angles 394; squares+products 420; squares+angles 396;
 // products+angles 434; all three 440; with rows in retail's pair order 481. Retail's matrix slots: first at 0x60, second at 0x2c.
+// B409: Paired cross-coefficient construction, original/late diagonal squares and reused sine
+// parts, interleaved/grouped diagonal phases: 364/409/362/385/411/441/355/391.
+// NOT kept: one-point lead at native length below gate; original builder and complete body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1716,6 +1719,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // folds both into one constant. Negations spelled `-(...)` 193 (identical code); result declared at the y test with
 // `return 0.0f` in case 0/default 291 (904 bytes); case 0 merged into default 194; `return 0.0f` in case 0/default
 // 193; `if (y)` 193. Body restored.
+// DH337: Native two-coordinate point/array projections at four declaration boundaries:
+// 192/192/192/192/192/192/192/192, 788/812 bytes. NOT kept: one-point gain,
+// grouped storage needs equality and length moves farther; independent result home remains.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -1841,6 +1847,10 @@ real game_time_get_seconds();
 // retail's j, i, k order (507; product operands still global-first where retail loads delta.i/delta.k
 // first); with the j product's cast on the global 507 (same code). Also tried: `color` renamed 507
 // (no slot moves); camera sums through dot3f 507; their terms respelled k, i, j 507 (same code).
+// B409: Full sampled-color field/library/overlap-safe transfers, then saved-position
+// transfers and paired field/library forms: 543/507/555/497/507/515/534/507.
+// NOT kept: saved position fields at 497 emit SSE transfers instead of native integer-word capture;
+// frame 0x90 versus 0x94 and output homes remain. Original complete body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2415,6 +2425,10 @@ real magnitude3d(vector3f const *v);
 // moving angle/sine/cosine homes); acos on a fresh dot3f 198 (1039 bytes); arms swapped under the
 // inverted test 171; sine, projection dot, cosine, then the product 170; fallback `-step > delta` 170
 // (identical); fallback delta through the nested ternary clamp 188 (1025 bytes). Body restored.
+// DL257: Complete native/shared/staged tangent producers with a plain rotation loop 191/191/191;
+// consuming the first vector 186/186/186; direct cyclic rotation loop 178; tangent and rotation
+// loops 191. All retain the raw-length/promoted-dot home mismatch. Original complete body
+// restored; shared tangent forms also raise two other scores.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2722,6 +2736,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Round 64 (fast): a copy of `first` for the sorts 370; the third pass through state->entries[i] with no entry pointer 318;
 // `--last` as its own statement in the third pass 317, in the fourth pass 317; first swap through the flags pointer 375;
 // `entries[first++]` in the second pass 317; `first = i + 1` 442. `first` stays in EBP in all of them.
+// DH337: Actual elapsed bindings in decay/growth and maximum-clamp field subsets
+// 366/371/317/369/366/371/369; complete elapsed-pointer graph 369. Original helper
+// and body restored; state/prefix/ordinal homes and first decay-copy rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -2906,6 +2923,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // P312: Existing projection input value/const-reference/reference/native snapshot, returned result
 // 589/486/486/589; reference output on those inputs 498/514/514/487. NOT kept: no match or gain;
 // original projection helper/body restored. Frame 0x60/0x38 and velocity/loop homes remain.
+// DL257: Actual state scalar fields, scalar arrays, velocity vectors, complete state, view
+// geometry, view scalar/random fields, complete view and complete state/view fields: 486 each on
+// the retained inline-normalization graph. Original body and field accesses restored; frame 0x60
+// versus 0x38 and stored-velocity/projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3259,6 +3280,11 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // 144, kind as signed char 220. On the if-form graph: `!(alpha > 0.0f)`, `0.0f >= alpha`, a ternary, the getter's
 // return tested, the header unnamed, result initialised false 231 each; kind as signed char 211 (773 bytes),
 // short 226, declared after alpha 233. Body restored.
+// DL257: Complete failure outcome in bool/byte/short/long, branch-set 167/167/210/208; entry-
+// default 213/213/219/217. NOT kept: 167 reaches 773 bytes by an inverted failure carrier with
+// recursive neg/sbb/inc and a final test/sete; retail copies and returns its positive byte
+// directly. The other forms regress. Original complete body and positive result restored; frame
+// and fade scratch homes remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -3799,6 +3825,9 @@ bool __stdcall function_391f0(void *state);
 // Round 64 (fast, aligned counts from 132): long current cluster at the guard 302 (frame 0x6c, aligned 129); camera read at the plane
 // test 251 (aligned 131); fog word widened into a long after its NONE test 251 (132); current+camera 302; current+fog 302;
 // camera+fog 251; all three 284 at 1020 bytes (aligned 127, frame 0x6c). Retail's slots: remaining 0x10, ordinal 0x14, structure 0x18.
+// DH337: Native cluster/portal/plane field subsets and complete read-only geometry
+// 251/251/251/251/251/251/251/251. Original views/body restored; frame 0x74
+// versus 0x70, early zero and loop homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
@@ -4601,6 +4630,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F340: Complementary rejection state in bool/byte/short/long, sequential selected-bit
 // then gate versus complete admission: 218/218/228/231/210/210/242/247.
 // Every shared user regresses; original helper and complete caller restored.
+// B409: Extra-gate-first pass state, initial-gate rejection and admitted-gate conditional
+// selection in byte/bool/short/long: 248/248/219/213/205/237/231/238. Both peer users regress;
+// original shared producer and complete caller restored; native late bytes/mode loads remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

@@ -426,6 +426,18 @@ extern byte g_51ec11;
 // rows' products commuted, j row / i row / k row each, 89/89/89 (same code); the projection scale as
 // `projection = (1.f - cosine) * projection` 118 (1326 bytes); the pitch sum written controls first 89 (same code).
 // Zero XMM3 and the side/up homes remain.
+// AC507: Opposite-order direct/staged up cross with complete scale/setter negation,
+// original/alternate normalization: 334/322/335/320/328/323/308/313. NOT kept: sign/grouping
+// diagnostics do not match and grow the body; original up producer and full body restored.
+// F363: Shared direction producer owned by camera state, instance/static,
+// pointer/reference output and forced/ordinary inline: eight forms 89 each.
+// Original state type, helper, both calls and body restored; zero/side/up homes remain.
+// B397: Twice-consumed matrix-scale predicate in bool/byte/short/long, then
+// unit-scale complement 324/324/319/321/324/324/319/321. Original separate scale tests restored;
+// zero/side normalization and up/roll allocation remain.
+// B399: Plain native projection/roll-row traversals on the shared-state graph, scalar/
+// existing direct/staged cross and consumed row workspace: 455/448/448/448/448/448/448/448.
+// All regress and lengthen; original body restored. Zero/side/up allocation remains.
 // P303: Existing shared normalizer live i/j/k captures before stores, subsets
 // 1/2/4/3/5/6/7: 332/332/332/352/352/352/352; complete immutable captures 352.
 // NOT kept: all regress and shorten away from retail; shared header and complete original body restored.
