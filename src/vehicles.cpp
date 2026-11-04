@@ -4709,6 +4709,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // 883/963/1192/1076/1290/1395/1504; all plus reverse maximum 1514. No gain; every
 // form shortens away from 2974 bytes. Original provider boundaries/body restored;
 // entry definition and zero/result/one residence remain.
+// P326: Selected-velocity blend/reverse speed and limit/combined speed-turn scalar
+// declarations before dispatch, subsets 1..7, then all before object lookup: 749 each.
+// Initializers stayed at case producers. NOT kept: no gain; original body and SSE homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

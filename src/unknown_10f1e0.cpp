@@ -2190,6 +2190,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // clamps 776/841/841; complete overlay center-admission bool/byte/short/long/dword
 // storage 776 each. NOT kept: no gain or exact predicate/branch-layout form.
 // Original body restored; frame 0xcc/0xd4 and first-angle/overlay expansion remain.
+// P326: Existing primary blend scalars/secondary weight/overlay ratio declarations at their
+// owning phase, subsets 1..7, then all at entry: 776 each. Assignments stayed at their
+// producers. NOT kept: no gain; original body restored, frame and first-angle expansion remain.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
