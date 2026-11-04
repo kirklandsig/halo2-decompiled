@@ -593,6 +593,10 @@ struct s_1f8a70_actor
 // mode share a slot at +0x10 for retail's +0x12, route's byte neighbour +0x14 for +0x16); `result = false;` after the
 // 0x1f86a0 call 366; with the route default storing false 388 (1672 B); with case 3 in case 5's order and route_mode = 1
 // 413 (1624 B, aligned 99).
+// M368: Terminal outer completion before success/cleanup, bool/byte/short/long,
+// guarded by inner/outer result: 318/318/462/462/488/486/491/484.
+// NOT kept: all regress or grow beyond retail; original late assignments restored.
+// Unit/result +0x10 versus +0x12 and route-tail placement remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

@@ -564,6 +564,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // 354 (1391), with the short link count 358 (1375); the existing 0x210850 for both conversions 356 (1320, called out
 // of line). Retail's delta block is 0x210a30 inlined with 0x210850 inlined inside it while its out-of-line 0x210a30
 // still calls 0x210850; ours cannot inline it across the /Ob1 file (a file-flags question, left to the user).
+// M368: Link-admission-only data receiver before/inside capacity, direct/result
+// predicate, long/short count: 282/282/282/282/359/359/359/359.
+// NOT kept: four-point lead is below the bar; word forms shrink away from retail.
+// Original memcpy, observations and body restored; frame and flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
