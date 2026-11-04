@@ -568,6 +568,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // predicate, long/short count: 282/282/282/282/359/359/359/359.
 // NOT kept: four-point lead is below the bar; word forms shrink away from retail.
 // Original memcpy, observations and body restored; frame and flag homes remain.
+// AC521: Existing shared scaled-point publication with conditional clamp/distance-difference/short-link
+// masks 0..7: 286/286/283/283/359/359/359/359. NOT kept: three-point gain only; bounded forms
+// recover frame 0xe4 but shorten away from retail. Original projection, loops, memcpy and body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -1037,6 +1040,10 @@ bool function_2715a0(byte *buffer)
 // (2116 bytes; 0x2713f0 108); `result` declared before the link penalty 486 (same code); the node pointer taken
 // before the pop and used for the NONE heap-index store 501; the NONE break before the node pointer 485 (one point,
 // not kept). Original body restored.
+// N361: Existing projection/distance/weight/heap-removal inline call visibility, four
+// individuals, three projection pairs and all four: 486 each; existing actual magnitude
+// producer 498 (2064 bytes, unresolved reduced call). Original declarations and body restored.
+// NOT kept: no gain or native register/root recovery; state/node/link and scalar homes remain.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

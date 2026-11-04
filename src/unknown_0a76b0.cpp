@@ -331,6 +331,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // P296: Constant case outputs completed after callbacks in state/action/separate-both/paired
 // dispatch, each with original/early result constants: 455/456/406/408/496/496/378/380.
 // All restored; native unit/name/actions ranks and shared-call threading remain.
+// P313: Original-graph formal unit/name/output lexical role subsets and complete alternate roles,
+// eight at 271. All original names and complete body restored; frame 8 and
+// incoming unit/name/actions ranks and shared callback joins remain.
 // M361: Existing count-output/active-bit helper producers, seven subsets then entry count storage:
 // 269/271/269/271/269/271/269/269. NOT kept: no eligible byte match or supported closer.
 // Original complete body restored; frame 8, incoming unit/name/actions ranks and shared calls
@@ -979,6 +982,17 @@ extern vector3f *g_4687b0;
 // Round 81 (m3 lane 16, fast): the definition local renamed to sort before/after the projectile index
 // (two spellings) and the projectile index renamed 309/309/309 (names move no slot); velocity declared
 // first in the function 309 (same code); one function-scope origin for both throw branches 312.
+// Y570: Complete up/side inputs scalar/none, none/scalar, both scalar, record/none,
+// none/record, both record and mixed scalar/record, record/scalar:
+// 362/310/363/338/392/450/391/338. NOT kept: all regress and grow away from
+// 1699 bytes. Original inputs, copies, frame and full body restored.
+// P313: Existing scalar setter at blend/parent-add/projectile-subtract boundaries, seven subsets,
+// then all with the initial velocity setter: 309/309/309/309/309/309/309/314. All original
+// component producers and full body restored; tag/index/type/direction homes remain.
+// P319: Saved type promotion / unsigned projectile / unsigned marker domains, masks
+// 1/2/4/3/5/6/7, then all with integral attach: 332/309/309/332/332/309/332/390.
+// NOT kept: domains tie or regress; wide saved type shortens away from retail, integral
+// attach loses the entry. Original scalar types, observations and complete body restored.
 // M361: Existing component-array relative-velocity difference producer alone, then parent-
 // add/speed-scale/staged-cross subsets:
 // 328/328/306/306/321/321/299/299. NOT kept: no eligible byte match or supported closer.
@@ -1551,11 +1565,17 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // P289: Twice-used animation channel long/dword/short/byte at its producer, then
 // entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
 // no exact match. Original body restored; early pool/hand and second unit load remain.
+// B414: Actual metadata animation-admission outcome, positive/negative bool/byte/short/long:
+// 177/170/178/176/179/179/179/178. NOT kept: all regress, including 170 at 604 bytes.
+// Original complete body restored; early pool, second unit load and hand storage remain.
 // Round 208 (m3 lane 3, fast): a compile-only LTCG probe gives retail's entry (unit load, hand store, unit reload
 // through a copy of the data register) only when `hand` is a memory local whose store sits between the two lookups
 // (its address passed to a call); every lookup spelling without that shares one load. Diagnostics, reverted at once:
 // `(void)&hand` 95, with a long hand 198; a local pointer to hand read at the 0xd0870 argument 95 (short) / 198 (long),
 // at the slot store 95/198 (LTCG resolves the pointer away). Retail passes no local's address anywhere here.
+// P317: Final readiness gate bool/byte/short/long, play/skip polarity
+// 95/95/95/95/95/95/95/95. NOT kept: all gates canonicalize; original entry pool/hand homes and second-load gap remain.
+// Original complete body and every existing helper restored.
 // M365: Selected notification type signed-char/short/dword/int64, at its producer then
 // declared uninitialized before the animation query: 144/143/95/159/144/143/95/159. NOT kept:
 // ties or regressions; original event result, observations and complete body restored.
@@ -1846,10 +1866,17 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // AC505: Actual duplicate-type admission bool/byte/short/long result
 // 138/138/138/138; guarded complete outcomes 140/140/141/143.
 // NOT kept: no gain or byte match; original predicates, mode/flag, body and calls restored.
+// AC514: Existing native unit/weapon-view slot/selected/paired acquisition subsets
+// 1/2/4/3/5/6/7, then all with native short slot: 137/138/138/137/137/138/137/135.
+// NOT kept: unmatched alias/width forms; original complete body and include set restored.
+// Frame 0xc agrees; same-block pool reload and selected-weapon/mode homes remain.
 // M367: True-default single-exit completion bool/byte/short/long, before entry
 // lookups 132/157/164/166; after selected lookup 150/167/171/173. NOT kept:
 // 132 gains six above 30 and grows to 539/538 bytes; other forms regress.
 // Original body restored; same-block pool reload and weapon/mode homes remain.
+// DH343: Signed slot/hand domains char-long/long-char/char-char/short-long/short-char/
+// char-short/short-short/char-word: 144/146/146/136/143/134/131/134. NOT kept: short slot/hand 131
+// gains seven below the gate. Original body restored; pool reload and weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2002,6 +2029,12 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // reporting 75/75/140/140; set from the pickup test 142/142/100/94. NOT kept:
 // every form regresses. Original mode/result graph, shared player observation and
 // complete body restored; request/weapon homes and getter expansion remain.
+// B414: Completed admission buffer before actions, weapon-owned/complete phase and initialized/edge-owned
+// failure in bool/byte: 60/60/94/94/60/60/94/94. NOT kept: no match or gain; complete phase grows to 420 bytes.
+// Original complete body restored; request/weapon homes and player-getter expansion remain.
+// P317: Shared-query terminal report value short/long, conditional/explicit producer,
+// consumer/entry declarations 68/60/68/60/68/60/68/60. NOT kept: short forms add four bytes,
+// long forms tie; no exact match. Original direct reporting expression and full body restored.
 // M365: Positive returned outcome signed-char/word/long/int64, constant success then
 // pickup-test-owned success: 73/139/140/128/69/119/113/120. NOT kept: every form regresses.
 // Original Boolean result, mode graph, shared player observation and complete body restored;
@@ -2136,6 +2169,16 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // Round 81 (m3 lane 16, fast): the own weapon through the char-index unit_action_weapon_get 100, both weapons
 // through it 103; the player index read at its one use (no local) 97, an actor index local for the 12c test
 // and calls 97, `given` declared first 97 (same code each).
+// AC514: Existing native unit/weapon-view admission/offered/received getter subsets
+// 1/2/4/3/5/6/7, then all with nested admission: 97/97/97/97/97/97/97/122.
+// NOT kept: unmatched receiver/alias forms; original getter boundaries, include set,
+// transfer results and complete body restored. Frame/result and pool/weapon homes remain.
+// Y570: Receiver/request formal-home reads, first/every use separately and
+// all four paired forms, 97 each. NOT kept: no byte match; all home reads
+// removed and original body restored. Frame/result and pooled roots remain.
+// N360: First-transfer call initializes actual arm-owned result, mutable/immutable bool/byte/short/long:
+// 116/116/137/137/121/121/116/116. NOT kept: unmatched source/result-storage forms; original executable source restored.
+// Frame 0x24/0x20, result byte and pool/unit/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -2565,6 +2608,10 @@ __forceinline char unit_action_round(real value)
 // Lane 17 r39 (fast): the 0xe000607 fallback tested before the three-name/range arm 235 (same code); the range
 // as `>= 0xe000608` 235; name/type/first-person declarations reversed 235, type first 235; is_biped computed
 // before the weapon 307 (1191 bytes). Original body restored.
+// AC514: Strength-owned target producers default/explicit arms/conditional/per-use 254/234/278/254;
+// existing shared dot directions 235/235; complete longitudinal-speed/ratio parts 235/235.
+// NOT kept: gain one below gate; all unmatched helper/grouping and receiver forms restored.
+// Pool/index/type/name and completion-byte homes remain.
 // M363: Native single-exit completion char/byte/short/long, then each with the existing
 // signed-short hand accessor:
 // 318/318/324/326/319/319/325/327. NOT kept: no eligible byte match or native-supported closer.
@@ -2978,6 +3025,9 @@ long function_c8f60(long unit_index, short seat_index);
 // and the transform pointer's swap; renaming the transform pointer 306/306); on it the 0x3dc state in a long
 // 304, `1u <<` for is_vehicle 306, the unit read through a header pointer kept from the first lookup 305.
 // Original body restored.
+// P313: Actual marker/relative/inverse workspace role subsets, then uninitialized marker/relative
+// declaration reversal: 293/293/293/293/293/293/293/293. Original names, matrix scopes and full body restored;
+// frame 0xf0 agrees, entry vehicle/unit/ordinal residence remains.
 // M361: Original receivers with complete position/quaternion assignment, memcpy or memmove
 // boundaries, eight non-original pairs:
 // 293/277/293/293/277/285/285/279. NOT kept: no eligible byte match or supported closer.
@@ -4809,6 +4859,12 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
 // 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
 // output lifetime and full body restored; frame and basis/point homes remain.
+// B414: Away, normalized-side and world-point scopes end at their last consumers, seven subsets;
+// all with frame ending at its final conversion: 175/175/175/175/175/175/175/175.
+// Original complete body restored; frame 0x110 versus 0x11c and basis/point scheduling remain.
+// P317: Normalized-side magnitude real/double, producer/basis/success/entry declarations
+// 175/261/175/261/175/261/175/261. NOT kept: no exact match; original basis/point homes and frame gap remain.
+// Original complete body and every existing helper restored.
 // M365: Existing forward/inverse point helper void/reference return contracts, each/both:
 // 175/175/175/175/175/175; both with actual late relative output 201/201 (1406 bytes).
 // NOT kept: ties or regressions. Both original helpers and entire body restored; other

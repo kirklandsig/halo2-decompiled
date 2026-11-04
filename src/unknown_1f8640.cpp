@@ -597,6 +597,9 @@ struct s_1f8a70_actor
 // guarded by inner/outer result: 318/318/462/462/488/486/491/484.
 // NOT kept: all regress or grow beyond retail; original late assignments restored.
 // Unit/result +0x10 versus +0x12 and route-tail placement remain.
+// AC521: Independent inner route outcome on the two-result/native-word-selector graph,
+// byte/signed-byte/short/long with converted or test-arm outer results: 191/191/191/191/300/300/306/306.
+// NOT kept: no exact memory-result home; original outer/inner results, unit scope and full body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

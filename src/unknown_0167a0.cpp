@@ -74,6 +74,7 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
+// MiniMax A (11-03): the chain-local forms tried here all regress; no lower score.
 // score 5 (was 5): the 0x18a90 tail below is solved (round 126: 0x18a90's body rewritten with each binding
 // byte read at every use gives retail's EBX state convention and 972 bytes); left is the restore block's schedule.
 // Earlier: BLOCKED-BY 0x18a90 (src/unknown_01cf50.cpp, contributor file: retail passes the state
@@ -227,6 +228,9 @@ PRIVATE inline byte const *material_parameters(long tag)
 // complete cache/table/entry prefixes 5.
 // Original executable body restored;
 // no exact match from these ownership forms.
+// Round 137: direct publication with folded chain, named pass index, pointer table or third through its
+// parameter home 5 each (+0x1a7; `second` still hoists); the last NOT kept: address diagnostic. The retained
+// reference with named pass index, either distributed offset or the packed accessor 5 each (+0x19e). Original restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
