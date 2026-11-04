@@ -441,6 +441,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // independent branches/joint branch/perspective-default/orthographic-default/immutable
 // conditional: 195/195/197/295/293/195; deferred conditional/joint with late inverse
 // defaults 283/280. NOT kept: no gain; original helper, defaults and complete body restored.
+// Y573: Complete source direction/origin and immutable displaced-input ownership, masks
+// 1/2/3/4/5/6/7: 285/336/364/195/285/336/364; full graph with native direction 341.
+// NOT kept: no gain; input-record copies and changed observation timing miss equality.
+// Original alias-safe helper and full body restored; frame and inverse/point homes remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

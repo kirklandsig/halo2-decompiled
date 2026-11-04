@@ -126,6 +126,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Y571: Existing builder/returned-vector producer ordinary-inline and plain-private policies,
 // eight non-original pairs 356 each; original force-inline declarations and bodies restored.
 // Frame 0x98 versus 0x90, concurrent x87 inputs and scalar publication homes remain.
+// Y573: Native orientation matrix capture/lifetime/publication graphs:
+// 355/422/356/441/394/415/395/436. NOT kept: one-point best below gate; record consolidation and
+// copies miss equality; native frame and scalar publications unresolved. Original complete body
+// and helpers restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2443,6 +2447,9 @@ real magnitude3d(vector3f const *v);
 // Y568: Actual current/target normalization and output component loops, seven subsets,
 // then fused input lanes: 191/170/335/190/335/335/335/333. Original full body restored;
 // raw magnitude/dot/angle homes remain at frame 0x38. All three exact controls survive.
+// Y573: Fallback early-exit/while/cursor lifetime graphs: 170/170/170/170/170/170/170/170. NOT
+// kept: all tie; raw-length/dot homes persist and cursor forms miss equality. Original complete
+// body and helpers restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2761,6 +2768,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // 440/317/317/440/440/317/440; complete graph with loop-entry tail addresses 440.
 // NOT kept: cursor shortens to 1289 bytes and frame 0x2c; one-use tail bindings miss equality.
 // Original body restored; prefix/state and ordinal homes plus decay rotation remain.
+// Y573: Nested admission, found last-use scope and immutable request; seven subsets and complete
+// while scan: 317/317/317/317/317/317/317/317. NOT kept: all tie; native prefix/state and ordinal
+// homes remain. Original complete body and helpers restored.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
