@@ -835,6 +835,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // B388: Plain two-list transform table, long/short list ordinal, indexed/advancing
 // obstacle receiver and long/Boolean success: 827/861/827/861/794/806/794/806.
 // All regress and shorten away from retail; original distinct transform loops restored.
+// Round 67 (m3 lane 10, fast; aligned difflib counts in brackets, 601 at 675): the enabled-bit test written as the
+// matched 0x1b5aa0 writes it, `(bool)((g_557c40[9 >> 5] >> (9 & 31)) & 1)`, 702 [602] (retail's `shr eax, 9; test al,
+// 1` shape, ours in EDX); that without the outer parentheses 702 [602]; with the mask test as `(g_4ee4ec & mask)` 702
+// [602]; with a bool result 749 [610]; plus the radius ternary ahead of the pathfinding read 777 [607].
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

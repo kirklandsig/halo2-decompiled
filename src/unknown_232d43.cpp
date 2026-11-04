@@ -1009,6 +1009,9 @@ struct s_string_buffer
 // loads reversed 65; a row pointer in the `== 9` arm or in the chain's arm 90/90 (504 bytes: unmerged, but the test stays in line and
 // its arm precedes the loads); with that arm, the negated nested test 90, De Morgan 90, six arms 88, an empty `!= 9` arm 90, the
 // chain inverted with `== 9` tested again 102 (511 bytes). Lead: a form that lays the loads directly after the 8 test.
+// Round 100 (plain): membership assigned in the condition 50 (481 bytes); split low/final assignments 87 (486);
+// a two-use value pointer in the final or low arm 68 each (500), in both 63 (478); staged final values 50;
+// an inline two-output loader in the final or both arms 50 each (481). All leave 9 in line; range body restored.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

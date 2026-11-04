@@ -1067,6 +1067,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // Lane 17 r37 (plain): `moved_away` as `alignment > 0.99f ? ... : false` 114; its dot as (rotated, goal) 114; the
 // side crosses declared with the sampled vector 114; both side crosses through the existing cross3f_staged 112 (1389
 // bytes, same cross schedule; gain 2, not kept); on that, `dot < alignment` 112. Body restored.
+// B394: Native first-channel fields, direct/reference/pointer ownership 114/140/140;
+// those with existing native physics input 140/150/150; native fields/output reference 114;
+// channel/input/output identities 150. NOT kept: ties or regressions; original complete body restored.
 // DH319: Complete final turn-test stop/continue results in bool/byte/short/long
 // storage: 140/140/140/140/140/140/140/140, all 1382 bytes. Original expression
 // restored; native j/k products, side-dot and output scheduling remain.
