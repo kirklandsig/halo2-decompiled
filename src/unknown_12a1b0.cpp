@@ -1834,6 +1834,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // J247: Coordinated query/preparation/stop/scanner inline contracts, original/full request:
 // 305/305/305/305/305/305/305/305. NOT kept: no gain; scanner raises 73 other scores.
 // Original complete body, request and every contract restored; frame and range/ring homes remain.
+// J249: Existing getter/ring-constructor/ring-step force-inline contracts 305/305/305.
+// Vector-bit setter/test/both 439/419/435, with extra word indexing and a higher control score.
+// Existing single-word flag setter 305; with canonical Boolean activity 444; then actual full
+// request 442 (native frame 0x128, 1923 bytes, first +0x39), native per-pass counts 464
+// (frame 0x134, 1939 bytes), sound-array memset 369 (frame 0x128, 1907 bytes).
+// NOT kept: all regress or tie; final extent moves away from native. Original helpers,
+// request, mask, counts, fills and complete body restored; frame/range/ring homes remain.
 // F358: Class gain-rate snapshot/zero-rate-first/read-only receiver, seven subsets, then immutable pitch modifier:
 // 478/479/479/495/478/479/495/495 (unchanged fast 479; full 305). NOT kept: snapshot 478 versus preview 479 gains only one and grows to 1924/1923 bytes; original observations, providers, request, loops and body restored.
 // B400: One reused range-sound handle with producer/entry declarations, independent pass counts
@@ -2524,6 +2531,13 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // bool/byte/short/long channels: 740/740/736/748 and 740/740/736/748.
 // NOT kept: all regress at 2518 bytes/frame 0x3c; entry flags/true and record/track
 // homes remain. Original branch-owned creation flag and complete body restored.
+// J249: Native source transfer through memcpy at entry/definition guard/availability guard/
+// after lookup 597/615/596/602; corresponding memmove 734/720/765/765, losing matched
+// 0x18a7b0 (117/117/124/124) and raising 0x21d630. NOT kept: the one-point memcpy gain
+// is below the gate; overlap-safe transfer disturbs the native entry and caller contract.
+// Coordinated __stdcall on the original/native-guard graph 597/615: same code curves.
+// Original full body, transfer, lifetimes and all three declarations restored; native
+// true/flags, record/scalar homes and energy/track ownership remain.
 // B406: Completed acquisition supplies admission and return, bool/byte/short/long
 // success 749/734/778/782; complementary pending outcomes 732/732/775/780. All regress;
 // original branch-owned result, persistent input truth and complete body restored.

@@ -466,6 +466,14 @@ struct s_ai_scene_assignment
 // maximum parameter 12; a const role parameter 12; a const last-role flag 12; a const selected-role
 // pointer 12; the actor field read through its direct address 12; an actor-field pointer used by the
 // scorer and store 12; the limit renamed by its assignment role 12 (all 348 bytes, original restored).
+// Round 162 (lane 4, fast; aligned counts in brackets, the 12 form is [3]): a short copy of the role index in
+// the found arm for the stores and the recursion, on the direct maximum 59 [37], on the int copy 12 [3]; a word
+// copy 72 [47]; a long copy for the stores with the raw recursion 59 [37]; the short copy incremented for the
+// recursion 59 [37], as `++role` on the int copy 12 [3], as a statement 59 [37], long 102 [76]; the slot read as
+// `*(long const *)&maximum_count` 59 and a short read through its address 59 (both fold); a long or short role
+// copy from the entry for the entry uses and the stores 59/59 [37], the long one also for the recursion 102 [76];
+// a threaded `full` flag in the loop test on the direct form 74 [30] and on the int copy 79 [16] (347 bytes,
+// retail's dword load only without the int copy, the loop tail then out of line).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

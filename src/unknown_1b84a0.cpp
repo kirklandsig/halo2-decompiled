@@ -196,6 +196,9 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 // tested as (byte) 7; (byte)ready != 0 stored 64/3/2; byte ready 22; field typed byte with long ready 7, without 22;
 // readiness as !!, == true, (bool), !(!a || !b), a ? f() : false, ? 1 : 0, != 0 pair, != false, (long), (byte):
 // 7/66/22/7/64/7/7/7/7/22.
+// Round 136: node/view hoisted in either order 7/7; actor-first 7; state-first 9; node and view
+// hoisted separately 7/7; const actor/state 7; all four pointer locals const 7; read-only view and
+// read-only actor/view 7/7. Original declarations restored; NOT kept: no exact match from declaration/lifetime forms.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {
