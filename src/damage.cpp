@@ -901,6 +901,11 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // private linkage, cdecl and stdcall declarations 8/8/8; a zero-flag continue before setting result 8.
 // Round 69 (lane 1): count on the left of the loop test 9, named count + that 9, element local 8, flag byte local 8,
 // `!= 0` 8, `while (i < count && !result)` 25. Parameter stays EDX.
+// P338: complementary all-clear outcome bool/byte/short/long with guarded index:
+// 38/38/47/45; unconditional index 37/37/42/40 (57-66/47 bytes). Cursor declaration before
+// result/count/guard or inside guard with original result: guarded index 5/5/5/5, unconditional
+// index 8/8/8/8 (47/47 bytes). Original body restored; NOT kept: result conversion and cursor
+// ownership do not recover both native zero scheduling and the owner/index register pair.
 // @retail 0xd74b0
 bool function_d74b0(byte const *owner)
 {
@@ -4621,6 +4626,10 @@ dword function_db810(long object_index, long node_index)
 // Also tried: result before the object lookup (17), rank before it (7), both before it (17), rank after the
 // model lookup (6), a signed-short rank (4), the pointer advanced in the body (4), a count-consuming while
 // with pointer advance in the body (4), read-only physics/rows/node indices (4).
+// P338: complete tag-table snapshot at entry/object/output/minimum boundaries, direct or tag-data local:
+// 39/34/34/34 twice (313/305 bytes). One scalar owns successive tag handles at four input boundaries,
+// mask at acquisition or traversal: eight trials 4 (305/305 bytes). Original body restored;
+// NOT kept: input lifetime/scalar ownership did not recover EAX reuse and the native save/mask schedule.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {
