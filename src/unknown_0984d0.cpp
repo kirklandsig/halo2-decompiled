@@ -513,6 +513,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // subsets then all with the chain-count identity: 80 each at 540/540 bytes.
 // NOT kept: no byte match; original complete body, helper and local-slot reads restored.
 // Native validity/cursor homes and validation-loop entry remain.
+// M380: Actual failure/success cardinality in long/dword/short/word storage:
+// 199/199/160/160/203/203/203/204. NOT kept: all regress and grow to 552/556 bytes;
+// original validity, byte ordinal, inherited local-slot reads, helper and complete body restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
