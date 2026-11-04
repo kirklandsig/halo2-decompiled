@@ -448,6 +448,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Y575: Shared final projected-point difference with native input construction, displaced
 // setter and unit-scale reverse difference, eight graphs: 197 each. NOT kept: all regress;
 // native frame/inverse homes and displaced-transform spill remain. Original full body restored.
+// Y577: Native final planar delta, field/aggregate producers, scalar/record/memcpy/memmove
+// publication: 195/251/251/272/195/251/251/272. NOT kept: no equality; grouped residence
+// and copies tie or regress. Original helper/body restored; inverse homes and displaced-transform spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

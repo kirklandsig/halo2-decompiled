@@ -136,6 +136,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // F366: Real two-turn/three-vector tables, both, vector traversal, turn traversal, turn plus
 // vector table, both traversals, head-tested turn traversal: 364/372/391/396/675/625/626/626.
 // Grouped-storage diagnostics rejected; original builders, arithmetic, snapshots and body restored.
+// Y577: Serial first/second/both turn publication and producer-local input windows,
+// then those four graphs with symmetric two-axis partials: 356/357/357/356/356/357/357/356.
+// NOT kept: all tie or regress; frame 0x98/0x90 and concurrent x87 inputs remain. Original helpers/body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2826,6 +2829,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Y575: Creation/duplicate/decay rejection continues, seven subsets, then negative-first
 // growth: 317/317/317/317/317/317/317/367. NOT kept: ties or regression; native prefix/state
 // and ordinal homes persist. Original full body, helpers, count reads and swaps restored.
+// Y577: Indexed paired/fallback receivers and duplicate element reference, seven subsets,
+// then complete graph with creation reference: 375/396/317/399/375/396/399/399. NOT kept: no equality;
+// original full body restored. Native state/prefix and ordinal homes plus decay rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
