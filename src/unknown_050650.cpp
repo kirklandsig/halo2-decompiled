@@ -1427,6 +1427,13 @@ struct s_actor_looking_structure_view
 // and output 478 (660 bytes); score `dot3f(&directions[i], &forward)` 33; named angle with sine and cosine passed to the in-place
 // helper 146 (927 bytes); axis local in the loop body with the fraction before the copy 174 (910 bytes); `dot3f(axis, vector)` in
 // the helper plus the dot3f score 142 (926 bytes).
+// Round 86 (fast): k identity locals, k = 1..8, on the forward vector 33 at k = 1 and 23 otherwise; of the actor 141 (927 bytes); of the
+// axis in the helper 61/61/61/173/173/173/83/61; of the helper's vector 23 each; on the call's axis argument 173/173/61/61/61/61/83/61; on its
+// vector argument 23 each. Compile-only (register-mapped rotation region, control 15): real chains on cosine, sine and projection and
+// axis chains for the dot or the cross only, none below 15; axis components in named reals, six orders, 46-81. Retail's axis j reads lead two
+// products, an order the plain field reads have not given.
+// Source forms (fast): fraction declared before the copy and set after the rotate 136 (927 bytes); `best_score < score` 23; the clamp as
+// `score < 0.6f` 23; the angle named before the copy 33; the selected test as `dot < 0.7f` 23.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
