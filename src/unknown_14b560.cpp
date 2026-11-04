@@ -1398,6 +1398,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // unit initialised NONE 46; kept-unit success as a goto to the tail with no result test 182 (1035 bytes); `if (result)
 // {} else if (mode != 4)` 46. Retail scan: matched `mov reg, -1` after a folded byte test takes the register of the
 // byte temp (0x240300 ECX, 0xc5eb0 EAX, 0x2413c0 ECX), so retail's temp here avoids AL though its pointer is EDX.
+// P316: Final-success byte/signed-byte/short/unsigned-short domains on the retained
+// success graph: 108 each; with complete timer clear 105 each, frame 0x11c versus 0x118.
+// NOT kept: all regress and enlarge the frame. Original Boolean full body restored;
+// NONE materialization and timer/flag scheduling remain.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

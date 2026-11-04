@@ -1445,6 +1445,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // graphs 1/2/4/3/5/6/7 plus entry motion declaration: 585 each. No gain; original
 // receivers, real header layout and full body restored. Frame 0xf8 versus 0xfc
 // and material/airborne/animation homes remain.
+// P316: Optional block address in mutable/const byte/void pointer domains: entry-null
+// forms 585 each; selection-join null forms 691 each at 2788 bytes, frame 0xf4.
+// NOT kept: no gain, join forms move frame/length away, and one-use field pointers
+// require equality. Original integer carrier and complete body restored; frame
+// 0xf8/0xfc and material/airborne/animation homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1961,6 +1966,10 @@ void function_dfd70(long arg_159e6d)
 // N353: Mode-three predicate bool/byte/word/long before origin acquisition
 // 270/270/261/261; after origin acquisition 233/233/233/233.
 // NOT kept: no gain or native predicate storage match; original helpers and all user bodies restored.
+// P316: Actual hit/head projection and clearance-endpoint ownership, six native scalar
+// forms 233 each; both projections plus clearance or actual obstruction result 234/234.
+// NOT kept: no gain. Original shared helpers restored; native mode-three placement
+// and forward/up/ray homes remain; every checked shared user retains its score.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4789,6 +4798,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // 68/68/68/68/68/68/68; complete graph with native early success 143.
 // All native record views and original result timing restored; support/result
 // byte homes and early success remain unresolved.
+// P316: Plain relative/kick/actor-ground coordinate loops on the recovered state-call
+// graph, masks 1/2/4/3/5/6/7 then all with support-bound success:
+// 143/144/144/236/143/70/233/211. NOT kept: no gain; final early-success form
+// also loses both exact callers. Original full body restored; support/result homes remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
