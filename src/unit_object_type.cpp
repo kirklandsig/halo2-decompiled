@@ -612,7 +612,7 @@ void function_11f0d0(vector3f *position, vector3f *forward, vector3f const *targ
 void function_bba20(long object_index);
 long function_176780(long object_index, s_effect_owner const *owner, real scale_a, long tag_index, real scale_b,
 	point3f const *origin, vector3f const *direction);
-void function_15cbf0(long attacker_index, long player_index, long flags);
+void function_15cbf0(long attacker_index, long player_index, bool flags);
 bool function_1147e0(long unit_index, bool a, real b, real c, long definition_index, bool hard);
 void function_c86e0(long unit_index, bool keep_weapon_zoom);
 void function_1c95d0(long unit_index, long attacker_index, short type, real amount);
@@ -7699,11 +7699,11 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
    delay and stun, the timer +0x2bc, its death direction, the player and
    betrayal bookkeeping, the hit animation, the actor's perception of the
    attacker, its camera shake and, when it was a killing blow, its death */
-// score 343 (was 413): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
+// score 370 (was 413): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
 // block), report in ebp and the unit in esi, and spills the definition to [esp+0x10]; ours spills unit_index and the
 // definition and uses ebx and edi as temporaries, so the prologue order, the stack slots (retail: definition 0x10,
-// total 0x18, unit 0x1c, hard 0x20) and the byte re-load of flags for the sign test differ. Retail also passes the
-// bit of flags to function_15cbf0 masked with 0xffffff01 (a bool; its parameter is a long in unknown_157450.cpp).
+// total 0x18, unit 0x1c, hard 0x20) and the byte re-load of flags for the sign test differ. Retail passes the bit of
+// flags to function_15cbf0 masked with 0xffffff01, as a bool (its parameter and c_engine_peer::p29's are bool, 379 -> 370).
 // Tried: definition written out at every use (605), unit declared after the other locals (353), total as one sum
 // expression (367; it loads +0x44 first, so total is built with += to load +0x48 first), a (bool) cast on the
 // function_15cbf0 argument (343, no change).
@@ -7715,8 +7715,7 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // source converted it to a bool (`test cl, cl; setne cl`), storing a nonzero byte other than 1 as 1. ca700's `flag` is
 // a `byte` and `unknown330` a `byte[4]` now (ca700 stays 140, d9640 stays MATCH); this function's score goes 344 -> 379
 // because the call is one instruction shorter and the positional score shifts (without the array change ca700 grows to
-// 517). (2) Retail's function_15cbf0 takes a bool (`and 0xffffff01`); unknown_157450.cpp declares it long (left to
-// machine 3's lanes, #104).
+// 517). (2) Retail's function_15cbf0 takes a bool (`and 0xffffff01`): fixed, 379 -> 370 (0x15cbf0 still matches).
 // What decides the rest: retail enregisters unit_index in ebx from entry (`mov ebx, [esp+0xc0]`; the non-grenade path
 // reaches the badc0 call with it, only the grenade path reloads it) and spills the definition (reloaded from [esp+0x10]
 // in five places, edi holds attacker_index); ours loads the argument straight into eax, uses bl for the hard temp,
