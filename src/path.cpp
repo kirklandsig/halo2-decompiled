@@ -587,6 +587,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // N367: Capacity-owned link eligibility reused for surface work, expression bool/byte/short/long
 // 286/286/290/289; branch producers 359/359/370/366. NOT kept: no equality or gain; original predicates,
 // flags and indexed memcpy restored. Extra frame word, predecessor and flag homes remain.
+// AC534: Positive-domain initialization with actual step/edge end pointers, range/equality
+// termination and separate/chained NONE stores: 413/413/380/380/393/393/407/407.
+// NOT kept: all regress and lengthen; original counters, signed empty domains, indexed
+// metadata memcpy and whole body restored. Extra frame word and predecessor/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

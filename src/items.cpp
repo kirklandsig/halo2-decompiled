@@ -718,6 +718,10 @@ struct s_item_collision_bsp
 // complete normal scalar inputs mutable/const 207/207, all four inputs 209/209;
 // safe in-place result with captured normals mutable/const 216/216.
 // NOT kept: no equality or gain; in-place extent grows. Original body restored.
+// AC534: Actual contact-distance accumulator at whole/pair/individual product boundaries,
+// with direct/compound offset subtraction, then all three named products:
+// 202/204/204/202/204/204/202/206. NOT kept: expression-boundary nonmatches; original
+// complete body restored. Protected plane interface, plane joins and spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

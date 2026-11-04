@@ -981,6 +981,10 @@ static __forceinline long real_to_long(real value);
 // AC531: Live unit-handle field references/pointers acquired at actor/metadata/prop/action
 // boundaries, eight at 382/1904 bytes. NOT kept: native field identity canonicalizes;
 // early rejection and magnitude/query homes remain. Original whole body restored.
+// AC534: Request-submission accepted/rejected results in bool/byte/short/long,
+// at the original call with the admitted return live: 382/382/382/382/382/382/382/382.
+// NOT kept: one-use call-result ownership lacks equality; original dispatch, state stores,
+// query aliases and whole body restored. Early rejection and magnitude/query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

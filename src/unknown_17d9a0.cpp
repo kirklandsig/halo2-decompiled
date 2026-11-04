@@ -410,6 +410,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // completed-ordinal publication then immediate failed publication/return:
 // 141/115/141/115/126/121/126/121. NOT kept: dot divergence moves to +0x67
 // and every extent shortens away from retail; original helper and whole body restored.
+// AC534: One caller-owned three-coordinate workspace across all four corner calls,
+// array pointer/reference and vector/point pointers, first-corner then entry declarations:
+// 54/54/54/54/54/54/54/54. NOT kept: dot divergence moves earlier to +0x67; original
+// helper and full body restored. Plane base, first selectors and product memory sides remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

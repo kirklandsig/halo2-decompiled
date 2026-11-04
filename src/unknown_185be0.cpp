@@ -464,6 +464,10 @@ union s_185be7
 // and complete duration-scaled outputs, all tie. Original body and helpers restored; control-root/NONE,
 // settings/zero homes and clamp/flag joins remain. Scores 622/622/622/622/622/622/622/622. NOT kept:
 // unmatched result-ownership forms.
+// AC534: First held-input scan collects released/retained word/dword masks for both
+// metadata words, indexed then source-cursor reads: 1099/1116/1039/1097/1026/1039/984/998.
+// NOT kept: deferred publication regresses, frame moves from 0xe0 and first gap to +2;
+// original two scans, per-bit stores and full body restored. Root/NONE and scalar homes remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
