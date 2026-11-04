@@ -707,7 +707,9 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 		float ratio = lower / impulse;
 		impulse = ratio * impulse;
 	}
-	__m128 scalar = _mm_set_ss(impulse);
+	// Only SIMD consumes this rounded copy; accumulation retains the x87 impulse.
+	float rounded_impulse = impulse;
+	__m128 scalar = _mm_load_ss(&rounded_impulse);
 	// Retain both body weights before either angular velocity write.
 	__m128 weights[2];
 	weights[0] = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
