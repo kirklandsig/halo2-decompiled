@@ -2041,6 +2041,9 @@ void function_dfd70(long arg_159e6d)
 // P321: Initial zero/one crouch with ternary/complete/crouch-default/zero-default
 // switch results: 233/233/252/233/233/233/264/234. NOT kept: no gain;
 // crouch-default and zero-default also raise shared users. Helpers restored.
+// M386: Plain indexed/pointer start and clearance component producers, independent,
+// paired and crossed: 237/240/240/257/468/454/468/257. NOT kept: no byte equality or
+// qualifying native/shared-user gain; original shared helpers and complete body restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2945,6 +2948,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // bool/byte/char/signed-char/short/word/int/long: 530/530/530/530/530/530/530/530.
 // NOT kept: no native result/frame repair; original result, scans and body restored.
 // Native final-loop size observation remains a possible unretained correction.
+// M386: Genuine hit-to-difference in-place vector, component/difference-helper/vector-setter/
+// point-setter producers with native/library input transfers: 529/530/529/529/529/530/529/529.
+// NOT kept: no native frame/result-home byte equality; original separate point and direction restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {

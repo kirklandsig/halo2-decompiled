@@ -3860,6 +3860,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M384: Initialized affine sweep, real/double before/after basis copy, switch/conditional
 // dispatch: 136/136/174/174/138/138/171/171. NOT kept: no byte equality for
 // precision/lifetime forms; original complete body restored; fallback/cross and x87 trig homes remain.
+// M386: One sequential projection/flip-axis vector, native then entry angle/cosine/sine
+// declaration subsets 0..7: 179/179/179/179/179/179/179/179. NOT kept: no byte equality for
+// reused-workspace/scalar lifetimes; original separate vectors and complete body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

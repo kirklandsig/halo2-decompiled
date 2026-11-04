@@ -332,6 +332,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // bool/byte/short/long direct then common results: 403/403/406/396/405/405/408/398.
 // NOT kept: all regress and raise the matched sibling to 64-70; original numeric
 // contract, alias-safe helper publications and complete body restored.
+// M386: Existing complete XY normalizer with original K tail, common/failure-first/
+// success-first/early numeric output, direct then native-planar input: 423/441/441/423/515/544/544/515.
+// NOT kept: no byte equality with native unity/root/yaw and all shared users;
+// original numeric helper, alias-safe rotations and complete body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
