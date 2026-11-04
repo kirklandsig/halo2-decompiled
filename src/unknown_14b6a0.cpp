@@ -463,6 +463,9 @@ void function_14bac0()
 // N381: Complete displacement aggregate, writable/readonly, original/native result-tested recipients,
 // original/complete first-iterator initial value: 222/222/228/228/222/222/228/228. NOT kept: ties or
 // regressions; original displacement writes, observations, iterators and complete body restored. Frame/point overlap remains.
+// N383: Existing typed player iterator at the first traversal, selected-player type, native
+// result-tested recipients and early uninitialized iterator declaration: 222/222/228/228/222/222/228/228.
+// NOT kept: ties/regressions; original fields, points, iterators, includes and full body restored.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

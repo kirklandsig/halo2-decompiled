@@ -295,6 +295,10 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N381: Existing tokenizer returns complete token/cursor pair by direct/named/default-member/factory
 // production, original/zero read count: 275/232/250/181/274/219/253/233. NOT kept: no byte match,
 // larger frame and changed extent; original scalar outputs, tokenizer, read/wait and entire loader restored.
+// N383: Canonical token update with overflow continue, long/dword results and long/dword/short/word
+// predecessor ordinals: 128/128/213/213/128/128/213/213. Single read/write tokenizer cursor, pointer/reference
+// and original/token-owned/nested/cursor-owned producers: 128/220/193/248/128/220/193/248.
+// NOT kept: ties/regressions; original scalar channels, helper, loader and full body restored.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
