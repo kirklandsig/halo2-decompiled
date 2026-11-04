@@ -1275,6 +1275,10 @@ long function_10f5f0(long object_index);
 // P328: Saved attached complement and complete attachment admission in bool/byte/short/long:
 // 565/565/575/575/563/563/574/574. NOT kept: best gain is below eight and shortens away from retail.
 // Original body restored; frame 0x19ac/0x1984, predicate-result and reduction homes remain.
+// J254: Existing bounds/state/component/reset providers inline/forced:
+// 565/628/565/2131/565/644/565/614. NOT kept: forced expansion grows away from retail; bounds
+// form loses matched 0x1d56f0. Original complete body and every declaration restored; native
+// frame and predicate stores remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2549,6 +2553,12 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // P328: Actual torque/magnitude/turn-product declarations in six orders, then entry-owned
 // and role-named: 42/42/42/42/42/42/42/42. Original declarations and body restored;
 // native frame agrees, turn-product and spin scratch/store schedules remain.
+// J254: Native side-result stages with double return/double join/real return/advanced join,
+// ordinary/forced: 30/55/133/127/30/55/133/127. Branch-produced real result, returned/field
+// output and original/gate-owned input: 127/60/127/60. NOT kept: unmatched statement/result-
+// boundary combinations; 30 still has a double-zero path instead of the native real join.
+// Original complete body, spin helper and all game calls restored; corrected-dividend and spin-
+// store schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
