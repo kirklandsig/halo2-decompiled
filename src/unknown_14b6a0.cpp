@@ -440,6 +440,10 @@ void function_14bac0()
 // N359: Actual unvisited-root admission in bool/byte/char/signed-char/short/word/int/long:
 // 222/222/222/222/222/222/222/222. NOT kept: no byte match; complete original body restored.
 // Frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
+// N362: Existing open probe/recipient-state/recipient-position inline declarations,
+// three individuals, three pairs and all three, plus final-processing inline declaration:
+// 222/222/222/222/222/222/222/222. Original complete source restored; frame and readiness homes remain.
+// Five protected bounds-query metadata forms excluded and restored; no provider definition changed.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

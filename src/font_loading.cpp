@@ -687,6 +687,10 @@ static inline word font_character_pixel(long alpha, long color)
 // N360: Separate expanded-alpha result accumulator, word/long, disjoint parity/color OR/add:
 // 226/226/226/226/226/230/226/226. NOT kept: unmatched source/result-storage forms; original executable source restored.
 // Alpha extension, literal assembly and run-two reuse remain.
+// N362: Full-width numeric pixel result with eight actual count/remaining/color/run
+// lexical families, the last two including source/output roles: 212/212/212/212/212/212/212/212.
+// NOT kept: unmatched home/representation forms; original helper and decoder restored.
+// Alpha parity widening, literal assembly and constant-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
