@@ -3660,6 +3660,7 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
 long __stdcall function_2e540(s_slot *slot, byte *data);
 extern long g_485898;
 
+// MiniMax A (11-04): the corner locals declared at function scope, before the position 285 (the same code); no lower score.
 // MiniMax D (11-01): the scale as a ternary 288 (worse), reverted; no lower score.
 // score 285 (was 285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
 // position's stack slots for the corner coordinates while we keep two slots of our own, and
@@ -4159,6 +4160,7 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
     }
 }
 
+// MiniMax A (11-04): the four products' declaration order (six orders) 152/164/152/163/152/163, the multiply operands swapped 152, the products inlined into a/b/c/d 166; the permuter's best (148) rewrites the vertex calls and so draws something else, not kept.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 152 (was 152): the instruction sequence is retail's, the same number of instructions, and
 // only the register allocation and the spill slots differ: retail loads cosine, width, height,
@@ -7390,6 +7392,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
     g_4b62a2 = (g_4b62a2 + 1) & 0x1ff;
 }
 
+// MiniMax A (11-04): the character pointer computed before the empty-slot test 374 (worse), reverted; no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 342 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // clipped fill still writes the rows in another order than retail's.
