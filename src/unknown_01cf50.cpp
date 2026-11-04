@@ -2375,9 +2375,11 @@ bool function_1e4e0(point3f const *position, t_1e4e0_callback callback, void con
 
 void __stdcall function_35b00(void *payload);
 
-// @retail 0x1e5e0 standard
-bool function_1e5e0(long size, point3f const *position, long a, long b, long c,
-	long d, long e, long f, long g, void const *data)
+/* retail's one caller sets the position up ahead of the pushes and the size after them, so the position
+   is the last parameter and the size the first */
+// @retail 0x1e5e0
+bool function_1e5e0(long size, long a, long b, long c,
+	long d, long e, long f, long g, void const *data, point3f const *position)
 {
 	(void)&a; (void)&b; (void)&c; (void)&d;
 	(void)&e; (void)&f; (void)&g; (void)&data;
