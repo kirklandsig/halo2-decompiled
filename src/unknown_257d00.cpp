@@ -1816,6 +1816,9 @@ void function_b7360(long object_index);
 // B430: Selection-owned common validity publication, bool/byte/short/long, default
 // invalid/admitted-arm production 358/358/487/487; default valid/explicit rejection
 // 355/355/345/357. NOT kept: no byte match; original stores, result and callback restored.
+// B432: Original notification switch produces a positive/complementary classification
+// in bool/byte/short/long: 303/303/303/303 in either polarity. NOT kept: no exact
+// condition-storage form; original callback restored, pool/input/output homes remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2371,6 +2374,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B430: Existing byte-flag writers at classification/request/motion publications,
 // masks 1/2/3/4/5/6/7: 488/485/488/485/488/485/488; all plus pooled flags 513
 // (fast control 485; full 469). NOT kept: no match or gain; original body restored.
+// B432: Native counted turning/state/current vector publications, seven subsets,
+// 560/581/625/608/615/622/620; all with facing input loop 597. Turning-only recovers
+// actor/state and point +0x10 but regresses. Original aggregate copies and full
+// callback restored; actor/state/point homes, later geometry and tail remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

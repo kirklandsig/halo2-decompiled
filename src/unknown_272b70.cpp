@@ -2817,6 +2817,9 @@ struct s_scenario_scripting_view
 // DH346: Immutable native scenario/data/set pointer bindings, seven subsets, then all
 // with immutable actor receiver: 80/80/80/80/80/80/80/80. Original complete search restored;
 // actor/counter/set homes and early scripting-data observation remain.
+// B432: Existing difference/squared-length/both native for loops 80/82/82;
+// while loops 80/82/82; difference/squared-length do loops 136/112. Original shared
+// helpers and complete search restored; actor/counter/set and guarded-data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

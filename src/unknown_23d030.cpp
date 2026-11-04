@@ -464,6 +464,9 @@ extern byte g_51ec11;
 // B430: Counted camera-position/command-position/offset component transfers, masks
 // 1/2/3/4/5/6/7: 323/322/338/162/318/286/341; all with chained position 341.
 // NOT kept: no byte match; original copies, geometry and full body restored.
+// B432: Existing normalizer native for/while/do scales 108/108/332; immutable
+// reciprocal forms 108/108/332; pointer for/while 352/352. NOT kept: no exact scaling
+// graph; original shared header and camera restored. Zero/side/up homes remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
