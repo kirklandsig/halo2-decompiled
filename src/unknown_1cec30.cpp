@@ -3164,10 +3164,13 @@ void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     else
         component_matrix_frame(&pair->frame_a, frame_a);
     *body_a = component->rigid_bodies.data[index_a].rigid_body;
-    long node_b = pair->node_b;
+    long node_b;
     long index_b = NONE;
     if (pair->node_b != NONE)
+    {
+        node_b = pair->node_b;
         index_b = node_b == NONE ? mapping->fallback : mapping->bodies[node_b];
+    }
     if (index_b != NONE)
     {
         long other_node_count = component->rigid_bodies.data[index_b].node_count;
