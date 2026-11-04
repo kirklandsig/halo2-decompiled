@@ -71,55 +71,6 @@ bool function_986d0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 }
 
 /* kind 3: creation of an entity and the entities linked to it */
-// score 18 (was 18): the callback setup still differs: our table/owner/vtable loads are hoisted
-// above the argument pushes, where retail loads them after the entry value (all in ecx). The loop
-// on `result && i < count` with the nested status test and its else spills the index around the
-// call as retail does, with no volatile reads, goto or self reference; without the outer else the
-// index stays in ebx (135 instructions). Round 49: entry value in a local first 18; retail's
-// continue-shaped status update 14 and an argument-first forwarding helper 14 (each leaves only
-// the receiver loads; neither keepable); owner/table/entry locals 16-18 (owner local in this form 18); status ternaries and
-// `result = result && ...` 41-44; cleanup index, declaration order, handle local, peers receiver
-// and loop shapes in a 100-form random search, 18 or worse.
-// Earlier (22-131): unsigned handle/index storage, status role names, nested success admission,
-// loop-proven status, inline/noinline declarations of the rollback, cleanup, mask release and
-// identifier writer, index before outcome stores/admission, separate rollback tails, completed
-// handle lifetime, status returns, final room guard, encoded count before/after the checkpoint,
-// masked entry index, constant member dispatch, entry pointer, admitted mask/owner snapshots,
-// peer receiver refresh, direct receiver, persistent entry-array base, separate callback handle,
-// callback adapter, parallel cursors, status assignment, field references, grouped arrays, byte
-// status, failure first, common rollback, element pointers, argument record, array names/order,
-// append increment, array initialization, unsigned count, callback index name, status
-// declaration order, inline depth zero.
-// Round 318: on the natural index-spill body, long/short status 148/142;
-// status after header 72; late long/short status 142/142; twice-used release mask 18;
-// one status exit 18; late status with mask 72. Frame and callback setup remain. All restored.
-// Round 5: named callback inputs with late and separated receiver acquisitions 18/18/18;
-// bottom-increment for/while 18/18; success/failure presets 122/126 (414/402); shared checkpoint
-// helper 18; release pointer arithmetic 18; assigned outcome branches 18; writer argument
-// assignment 18; index declaration initializer 18. All restored.
-// Round 136, natural spill graph: bool/long/short/byte callback outcomes 18,18,18,18;
-// callback outcome with entry/owner/long-entry/both snapshots 18,18,18,18. All nonmatching exact-only forms restored.
-// Round 44: retail's entry index uses ECX (`lea ecx, [eax+eax*4]`), which keeps its receiver loads
-// after the entry value; ours uses EAX and hoists them. `if (result && call)` without the outer else
-// 113; inner update false-first 18; receiver through `peers` 108; `handles[i]` at each use 18;
-// permuter 56 tries, best 18.
-// Round 184 (lane 3): `if (result && call) result = true; else result = false;` 113 (386 bytes);
-// `if (!result || !call) result = false; else result = true;` 113; the inner update as
-// `result = call ? true : false;` 113; the entry index as a local 18 (same code); the inner
-// `if (result)` dropped (the loop condition implies it) 126 (370 bytes).
-// Round 195 (lane 3): both indexes for-scoped 18; the entry value through an inline getter 18; the `&&`
-// status form with for-scoped indexes 113 (386 bytes), with the entry value in a local 95 (388 bytes);
-// `released + i` with for-scoped indexes 18. Compile-only, every one of ~75 forms (wrappers, getters,
-// locals, a real call in an argument) loads the receiver chain before the arguments.
-// Round 120: common failure publication without/with the outer else 113/113; scoped peers 18;
-// collection for-loop 18; scoped collection for-loop 18; index declared first 18;
-// handle/table acquisition order swapped 18; count before result in the loop test 136.
-// Original body restored at 18.
-// Round 32 (lane 18, fast): `if (!v0(...)) result = false;` with no true store 124 (375 bytes); `result =
-// v0(...);` in the `if (result)` arm 113 (386 bytes); the entry value named just before the call 18 (the index
-// then takes ECX and the owner/vtable loads follow it as in retail; only the `self->table` load is still
-// hoisted, into EDX), with an owner local after it 18; the `&&` status with `handles[i]` at each use 113
-// (retail's `mov 1; jne; mov 0` status shape, but the index stays in EBX and the frame drops 4).
 // @retail 0x98750
 bool function_98750(c_handle_table_450cd0 *self, s_bitstream *stream, long index, long a3, long reserved_bits)
 {
@@ -146,13 +97,15 @@ bool function_98750(c_handle_table_450cd0 *self, s_bitstream *stream, long index
 		simulation_write_entity_identifier(handle, stream);
 		if (result)
 		{
-			if (self->table->owner->v0(handle, self->entries[handle & 0x3ff].unknown04, a3, stream, reserved_bits, &released[i]))
+			dword value = self->entries[handle & 0x3ff].unknown04;
+			s_handle_peers *table = self->table;
+			if (table->owner->v0(handle, value, a3, stream, reserved_bits, &released[i]))
+			{
 				result = true;
-			else
-				result = false;
+				continue;
+			}
 		}
-		else
-			result = false;
+		result = false;
 	}
 	if (result && stream_has_room(stream, reserved_bits))
 	{

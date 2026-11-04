@@ -85,6 +85,9 @@ PRIVATE __forceinline long texture_floor(real value)
 // named truncated level 4; ordinary inline floor helper 166. Opening body and helper declaration restored.
 // Round 138: the bit-scan asm through EAX or EDX 6/6 (clear still EDX); index declared before the loop 4;
 // `while (remaining != 0)` 4; remaining declared, then assigned 4.
+// Round 67: bitmap declared at loop-body scope ahead of the NONE test 14, with the bias too 18, both at the top
+// of the body 21; a loop-scope copy of a pending mask 38; a for loop clearing the bit in its increment with
+// the NONE test as `continue` 4. Diagnostic: one to eight unused locals at entry leave EDX (symbol count not it).
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
