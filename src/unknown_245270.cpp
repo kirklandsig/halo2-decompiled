@@ -275,6 +275,7 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
+// MiniMax B (11-04b): no new form, no lower score; retail still copies the source into esi at the entry and frames 0x2c against our 0x24, and its declaration and call live in src/unknown_245850.cpp, which this lane may not edit.
 // score 209 (was 209): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
 // source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
@@ -610,6 +611,10 @@ void function_245400(s_source_245400 const *source, long index,
 // acquisition and producer/entry declaration boundaries: 209/209/209/209/209/209/209/209.
 // NOT kept: one-use index transport has no equality; original complete body restored.
 // Frame 0x24/0x2c, material/table/side homes and delayed matrix acquisition remain.
+// MiniMax B (11-04): no new form, no lower score; a named copy of the index and a named
+// copy of the source pointer each give 209 at retail's 783 bytes, and retail still copies
+// the source into esi and frames 0x2c against our 0x24; the declaration and the call live
+// in src/unknown_245850.cpp.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
