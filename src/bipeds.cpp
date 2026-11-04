@@ -2481,6 +2481,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M366: Direct lower/upper body admission without selected sentinel, long/short/char/read-only-long,
 // combined/nested query: 70/64/65/70/70/64/65/70. NOT kept: no exact/native-sentinel repair;
 // original full body restored; extra EBP, count/body transport and flag schedules remain.
+// B442: Complementary signed body rejection, direct/default-true producers in
+// bool/byte/short/long: 63/63/63/63/85/85/76/75. NOT kept: no equality or qualifying
+// native count/EBP/flag repair. Original validation, count, stores and full body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3641,6 +3644,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // subsets then all with the original collision declared at entry: 368 each.
 // Original declarations and complete body restored; native matrix/origin and
 // paired pivot/property homes remain; frame 0x12c still agrees.
+// B442: Root-first parent/root order, bool/byte/short/long completion results,
+// false-default 383/417/414/415; true-default 443/444/437/437. NOT kept: all regress;
+// true-default frame grows to 0x130. Original order, result and full body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

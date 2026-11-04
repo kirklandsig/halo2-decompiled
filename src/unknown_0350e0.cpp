@@ -1904,6 +1904,9 @@ real game_time_get_seconds();
 // B440: Plain existing component-array loops for camera displacement/reflection/
 // draw position, seven subsets then unsigned ordinals: 708/716/619/920/708/716/1069/1069.
 // NOT kept: all regress and grow; native frame/output homes remain. Original full body restored.
+// B442: Complete selected-color snapshot at iteration/after-opacity/admission/after-angle,
+// native initialization 519/519/524/524; library copy 519/519/524/524. NOT kept:
+// no native frame/home recovery or gain. Original color producers and full body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2529,6 +2532,9 @@ real magnitude3d(vector3f const *v);
 // B440: Independent angle-only and complete rotation-admission outcomes in
 // bool/byte/short/long: eight 170 at 1045/1045 bytes. NOT kept: no equality
 // or gain; raw-length and promoted-dot homes remain. Original full body restored.
+// B442: Existing complete axis-angle matrix with returned/axis/output/in-place
+// vector application, matrix at producer/entry: 388/248/327/242/388/248/327/242.
+// NOT kept: changed floating expansion misses equality and grows; original full body restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3839,6 +3845,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // input assign/copy and in-place/direct scaling boundaries, scalar/native color:
 // 376/628/409/507/381/634/418/516. NOT kept: all regress; native scalar
 // homes remain. Original helper, captures, color, geometry and full body restored.
+// B442: Existing input scalar capture/declaration orders yxz/yzx/zxy/zyx, scalar color:
+// 388/377/396/390; native color 385/367/393/386. NOT kept: no equality, wrong
+// scalar homes and regression. Original captures, helper, color and full body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
