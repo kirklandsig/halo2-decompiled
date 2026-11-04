@@ -787,14 +787,14 @@ static __forceinline void update_residual_pair(__m128 *&cursor,float *&result,so
 	other = _mm_shuffle_ps(first, first, 0xaa);
 	other = _mm_add_ss(other, work);
 	__m128 projected_a = other;
-	// Round both projections before publishing either remaining error.
-	float scalar_b;
-	_mm_store_ss(&scalar_b, second);
+	// Keep the second projection in its vector until the first residual is written.
 	float scalar_a;
 	_mm_store_ss(&scalar_a, projected_a);
+	cursor[0].m128_f32[3] -= scalar_a;
 	cursor += 6;
 	result += 2;
-	cursor[-6].m128_f32[3] -= scalar_a;
+	float scalar_b;
+	_mm_store_ss(&scalar_b, second);
 	cursor[-3].m128_f32[3] -= scalar_b;
 }
 
