@@ -1557,6 +1557,16 @@ void function_1f86a0(long actor_index);
 // current-entry receivers, native/original slot-member payload first in each pair:
 // eight at 134. NOT kept: frame 0x10, raw-mask spill and EBX entry remain; original
 // scopes, receivers, payload and complete body restored.
+// AC513: Actual nested selection member, native payload/full slot 134/134;
+// direct nested-member observations full/payload 189/238; native member with positive
+// admission 134, early declaration 137, late full/payload receiver 233/233.
+// NOT kept: no exact match or qualifying gain; original types, payload and body restored.
+// AC516: Complete raw matching identity mask across root calls, byte/word/dword/long,
+// native slot-member payload first in each pair: 139/139/251/251/248/248/248/248.
+// NOT kept: assigned mask does not match; original Boolean, payload and complete body restored.
+// AC518: Actual join-call result bool/byte/short/long, each with native member
+// payload first and whole-slot payload second: 158/134/158/134/158/134/158/134.
+// NOT kept: one-use admission result unmatched; original body and types restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

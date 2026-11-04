@@ -4306,7 +4306,11 @@ void function_15fe20(long team_index, color3f *color);
 // unit index and the -1 compares) and the zone-progress tail's byte load order.
 long function_14de70(long local_player_index);
 
-// score 41 (was 42): frame 0x48c agrees; four extra bytes, late weapon NONE reuse,
+// score 42 (was 42): frame 0x48c agrees, four bytes long; zone CL shift acquisition, late unit/slot
+// ESI NONE sharing, pool-load order, branch joins and progress/result transport remain.
+// Earlier team-color transfers load all three words before stores through ESI/EDI; the copies
+// are retail's when 0x7f720 returns color3f by
+// frame 0x48c agrees; four extra bytes, late weapon NONE reuse,
 // the shift-count read width, format-mode branch and charge/progress allocation remain.
 // Earlier: frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
 // stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
@@ -4487,12 +4491,19 @@ long function_14de70(long local_player_index);
 // as retail, both compares immediate, pool read ahead of the masked index); on it both tests against the weapon
 // local 71; the index term first in the unit address sum 73 (same code); a dead else `weapon = NONE` 42 and a ternary
 // re-assigning the default 42 (the dead default is dropped, original code).
+// AC512: Readonly native late unit with original/per-use slot fields, original/readonly
+// progress/player/both receivers: 42/28/42/28/42/28/42/28. All restored.
+// NOT kept: 28 changes the slot test to a byte compare; retail sign-extends
+// into a word and shares the ESI sentinel. Native shift/NONE/result transport remains.
 // Y563: One object handle for the unit then its weapon, raw/native view, tail/entry
 // declaration and ternary/branch result: 42/73/42/73/42/73/42/73. NOT kept: ties or
 // regressions; original independent unit/weapon carriers and complete body restored.
 // N353: Actual terminal unit rejection, progress-first classifier, charge/mode/progress
 // rejection and charge/progress completion exits 171/63/171/171/171/171/171;
 // complete admitted terminal selection 195. NOT kept: all regress; native NONE/shift/result homes remain.
+// AC519: Actual late unit presence/absence results in bool/byte/short/long,
+// 42/42/42/42/42/42/42/42. NOT kept: unmatched one-use predicate storage;
+// original native word-slot comparison, observations and complete body restored.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {

@@ -664,6 +664,15 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // with scale first formed inside the list block 130 (1136 bytes); the first particle read from the emitter at the
 // guard and again for the loop 293 (1145 bytes); the position rotated through the existing
 // vector3f_rotate_into_axes, the motion through the shared helper 129 (1140 bytes).
+// AC515: Cache invalidation mask-before-identity stores at system/location/particle, subsets 1..7,
+// then all native mask computations before the original identity/mask stores: 283/279/286/169/285/282/289/53.
+// NOT kept: no exact result from store/result diagnostics; original invalidations and body restored.
+// AC517: Both shared unit-default assignment chains with both scalar declaration priorities:
+// original offset 120/122/120/122; native row index 115/117/115/117. NOT kept: all regress and lengthen.
+// Original defaults, offset walk, shared rotations and body restored; offset/default/reload and row-i order remain.
+// AC519: Complete nonempty/empty emitter outcomes, bool/byte/short/long,
+// 109/109/109/109/109/109/109/109. NOT kept: regressions from native admission
+// storage; original gate, offset, defaults, shared rotations and body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1545,7 +1554,7 @@ long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
 // score 47 (was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
-// flag width, availability and view carriers remain.
+// availability clear/result and the post-attachment view refresh remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
 // bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
@@ -1707,6 +1716,9 @@ bool function_17afd0(long effect_index, long value);
 // in EBP, NONE in EBX, availability in AL); the view local with availability false right after the view read and
 // set on success 131 (504; availability spilled, NONE in EBX, owner in EDI); the view local with one-expression
 // availability 125 (492). Every branchy availability form moves NONE out of EBP and the flag out of BL.
+// AC515: Actual two-use view classification on the shifted-word/effect-index/owner-arm graph,
+// long/dword/short/byte with default-query then conditional producers: 139/139/141/129/139/139/141/125.
+// NOT kept: unmatched classification storage; original Boolean result and complete body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

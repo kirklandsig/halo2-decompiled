@@ -2909,6 +2909,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // Round 143 (m3 lane 6, fast): the compute arm's found/count test nested 50; local_4 left uninitialised and set to
 // NONE inside the pending arm 50; the follow-up (0x202e90 + 0x1fb8a0) as a forceinline helper taking the index,
 // task and event 50; the 0x290cd0 index argument as `(word)arg_1` 117 (582 B); the index parameter as dword 50.
+// AC514: Actual mapped trigger-event long/int/dword/word results with conditional
+// then default-first producers: 35/35/35/59/50/50/50/60. NOT kept: unmatched width/producer
+// allocation forms; original event domain, wrapped scan, calls and body restored.
+// First-event index reload and displaced actor-loop alignment remain.
+// Wide conditional results 35 grow to 582/578 and add sign extension; the first index reload remains.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

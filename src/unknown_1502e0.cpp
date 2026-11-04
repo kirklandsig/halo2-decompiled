@@ -235,6 +235,9 @@ struct s_flag_word_bits
 // pointer/reference rounding inputs 114/114; tick-result output pointer/reference
 // 114/114; result-first named scalar homes 114. All restored; player/root,
 // duration, tick/effect homes and expanded tail remain.
+// AC512: Readonly player/header/object-tag input contracts, seven subsets
+// 114 each; complete readonly graph with native flag-byte admission 124.
+// All restored; player/root allocation, tick/effect homes and expanded tail remain.
 // B397: Duration-field pointer/reference inputs to the existing rounding producer,
 // direct/duration/rate/named-rate graphs 114/114/114/114/114/114/114/114. All restored;
 // scalar frame agrees, player/root ownership, separate SSE input and expanded tail remain.
@@ -1056,6 +1059,9 @@ struct s_tail_transfer_traits
 // 157/158/162/162/152/160/151; complete conditional slot producers 151.
 // NOT kept: at most two points and unmatched lifetime interaction. Original
 // defaults and body restored; selected-traits/unit/NONE homes and reloads remain.
+// AC512: Readonly player/main-unit/no-seat-unit contracts, seven subsets 153
+// each; complete graph with selected-output lexical identity 153. All restored;
+// selected-traits/unit/NONE homes and native no-seat pool reloads remain.
 // B397: Native traits-element/player-identifier domains and complete inner choice
 // eligibility subsets, then complete rejection complement 153/153/153/153/153/153/153/153.
 // Original layouts/tests restored; traits/unit/NONE homes and pool reloads remain.

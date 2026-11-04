@@ -443,6 +443,9 @@ void __stdcall function_1160c0(real dt)
 // on the offset copy with named projection and cross scalars (0x11d180's form), then predicted = offset +
 // position, 235 (1370 bytes, frame 0xa8); node as `record->nodes + i` 171; sine-first cross products 171;
 // `(1.f - cosine) * dot` 171 (all same code); the inverse step computed just before the velocity rows 297.
+// AC518: Complete normalization admission bool/byte/short/long, direct predicate
+// and success-owned result, 292/292/292/292/292/292/292/292 (1355 bytes).
+// NOT kept: decision-result lifetime does not match; original body restored.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

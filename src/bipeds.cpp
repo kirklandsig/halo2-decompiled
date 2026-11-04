@@ -1961,6 +1961,9 @@ void function_dfd70(long arg_159e6d)
 // N353: Mode-three predicate bool/byte/word/long before origin acquisition
 // 270/270/261/261; after origin acquisition 233/233/233/233.
 // NOT kept: no gain or native predicate storage match; original helpers and all user bodies restored.
+// AC518: Complete normalized head-separation admission bool/byte/short/long
+// at producer or before head workspace: 233/233/233/233/233/233/233/233.
+// NOT kept: one-use admission result unmatched; bool forms also raise a shared user.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)

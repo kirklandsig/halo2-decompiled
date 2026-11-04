@@ -578,6 +578,16 @@ extern point2f *g_468778;
 // direct completion and early admission, original/actor-first acquisition:
 // 387/440/425/440/410/413/393/413. NOT kept: native receiver/return lifetime graphs
 // regress; original record, lookups, result and complete body restored.
+// AC513: Existing native actor-pool getter at original/readonly/actor-first producers
+// 375/375/413; actor-first direct completion 393; metadata-owned admission and
+// single failure-result join 374/374; direct request direction 375; every-use facing
+// 401. NOT kept: best gain 1 and no exact match; original getter, include set and body restored.
+// AC516: Actual request-submission call result, bool/byte/short/long at its producer
+// or with the request-owned uninitialized declaration: 375/375/375/375/375/375/375/375.
+// NOT kept: one-use call-result storage unmatched; original call, state stores and complete body restored.
+// AC519: Planar normalization-return residence, facing/request/fallback subsets
+// 1..7 and one shared planar-length carrier: 375 each. NOT kept: no byte match;
+// original normalization calls, early distance, result and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -930,6 +940,10 @@ static __forceinline long real_to_long(real value);
 // `local_10 = false;` 382 (same code); the query scalars renamed to sort in retail's slot order (local_20 <
 // local_19 < local_15 by address: flight_time/launch_speed/prediction_time) 382 and in the reverse order
 // (time_of_flight/rise_speed/lead_time) 382: names do not move these homes.
+// AC513: One metadata near-limit observation, with readonly metadata/prop/both,
+// returned admission, original-object receiver, query-output names or shared squared length:
+// 469/469/469/469/519/478/469/471. NOT kept: retail reloads the limit; no exact
+// match, frames/lengths move away. Original observations and whole body restored.
 // P299: Input-only actor/metadata/paired prop receivers on the current velocity graph,
 // seven subsets and immutable bindings: 382 each. Original complete body restored;
 // early rejection island and magnitude/object/query homes remain.
@@ -940,6 +954,12 @@ static __forceinline long real_to_long(real value);
 // DH322: Sequential magnitude/query speed, prediction/flight duration and limit/direction distance,
 // seven subsets then entry declarations: 384/445/382/446/384/445/446/446. NOT kept:
 // storage nonmatches; original scalar lifetimes/body restored, early exit and query homes remain.
+// AC516: Complete post-query planar-facing admission, bool/byte/short/long at computation
+// or with the direction-workspace declaration: 382/382/382/382/382/382/382/382.
+// NOT kept: one-use predicate storage unmatched; original gate, query aliases and complete body restored.
+// AC520: Planar normalizer returns at query-pair/facing/request-pair producers, subsets
+// 1/2/4/3/5/6/7 then phase-owned uninitialized storage: 382/382/382/382/382/382/382/382.
+// NOT kept: one-use call-result residence does not match; original calls, aliases and full body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
