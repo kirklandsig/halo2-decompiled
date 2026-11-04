@@ -1415,6 +1415,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // N355: Actual reuse admission result producers, original/complete timer clear:
 // 86/231/231/227/83/232/232/228. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; NONE materialization and timer/flag scheduling remain.
+// N364: All three user-notification indices held through their own guards/calls,
+// short/long/const-short/const-long, without/with complete timers: 46/87/46/87/86/98/86/98.
+// NOT kept: no equality; original observations, timer stores and complete body restored.
+// NONE materialization and tail zero/flag scheduling remain.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

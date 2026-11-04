@@ -2344,6 +2344,11 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // F368: Existing scale complete scalar input/products/setter/native input/index loop/native-input loop/scalar-input setter/native output: 40/40/40/340/16/340/40/340. Plain loop 16 at 967/965; NOT kept: shared users worsen and 25 matches are lost. Shared header restored; final count split remains.
 // P315: Native ordinal/group/record/motion lexical ownership, seven independent/paired/full sets, then full parameter-role names: 40/40/40/40/40/40/40/40.
 // P315: NOT kept: no byte match or supported gain; original full body restored.
+// N364: Shared component scaler reverse int/long/short/signed-byte and forward
+// word/byte/unsigned-long/unsigned-int loops: 20/20/348/348/348/348/16/16.
+// NOT kept: no byte equality; reverse order differs from native i/j/k, narrow loops
+// roll, and unsigned-domain source selection adds no supported shared repair.
+// Original shared header and full body restored; post-fstp count split remains.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2642,6 +2647,10 @@ s_cached_input_list g_5234e8[4];
 // P315: Actual data-array output receivers, base/retail-biased and indexed/streaming record cursors, without/with the native list snapshot: 147/147/147/147/136/136/136/136.
 // P315: NOT kept: no byte match or supported gain; original full body restored.
 // P315: Fast control 147; the native-list array receiver is 132 plain at 554/548, not kept.
+// N364: Final filter-result long/dword entry, scan and call lifetimes, without/with
+// the retained list snapshot: 147/147/147/147/136/136/136/136 fast (control 147, full 113).
+// NOT kept: no exact result-home repair; reduced-only list lead is not a full gain.
+// Original complete body restored; native list/frame and output/index ownership remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3742,6 +3751,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // P315: Current complete origin-sum graph, four real corner-input producer/geometry/entry/immutable lifetimes, without/with native color: 230/230/230/230/225/225/225/225.
 // P315: NOT kept: no byte match or supported gain; original full body restored.
 // P315: One-point scalar forms fail the gain gate; six-point native-color forms grow to 1826/1819.
+// N364: Homogeneous GPU corner outputs, W at helper end/transform or caller
+// before/after geometry, without/with native color: 368/368/453/453/382/382/465/465.
+// NOT kept: no equality; scalar-color frames recover 0xe0 but grow, native color
+// grows the frame again. Original helper, point array, scalar alpha and body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

@@ -1763,6 +1763,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N362: Existing impulse/contact/damage-dispatch/damping inline call visibility, four
 // individuals, three impulse pairs and all four: 140/140/140/140/140/140/140/140. Original
 // declarations and complete body restored; return-byte, release-tail and event homes remain.
+// N364: Complete native 16-bit motion flags captured once, word/short/dword/long,
+// mask then shift decoding at both consumers: 172/172/172/172/272/272/171/171.
+// NOT kept: no equality; temporary external word view and original full body restored.
+// Return-byte +0xe/+0xf and release/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
