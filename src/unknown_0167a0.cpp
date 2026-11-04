@@ -74,6 +74,7 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
+// MiniMax A (11-03): the chain-local forms tried here all regress; no lower score.
 // score 5 (was 5): the 0x18a90 tail below is solved (round 126: 0x18a90's body rewritten with each binding
 // byte read at every use gives retail's EBX state convention and 972 bytes); left is the restore block's schedule.
 // Earlier: BLOCKED-BY 0x18a90 (src/unknown_01cf50.cpp, contributor file: retail passes the state
