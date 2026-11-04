@@ -280,6 +280,8 @@ __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 const long g_43e8e8[4] = { 32, 64, 128, 256 };
 
 // MiniMax E (11-01): the copy count read at the copy site instead of before the allocation
+// score 58 (was 58): this round found no gain - the allocation callee takes its out pointer in ESI here and
+// in EBX in retail, and 0x15b10 is in src/unknown_0158f0.cpp, so the convention cannot be changed here.
 // scores 76 (was 62); no lower score.
 // MiniMax E (11-01): the copy count read before the allocation reaches retail's 178 bytes;
 // the earlier round dropped this form on the difference count alone (62 against 58).
@@ -381,6 +383,11 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
 
+// score 72 (was 72): this round adds the mipmap limit read into a named local ahead of the texture
+// pointer (70) and the texture cleared after the count call (71); both are under the keep bar, so
+// the original body stands - the width still lives in di where retail keeps it in bx.
+// score 72 (was 72): this round found no gain - the texture pointer is taken from a local again, and the
+// first 16-bit height store and the width and texture register lifetimes still differ.
 // score 72 (was 68): the texture pointer is taken from a local again and the flags are read
 // in the test itself: the four points the bitmap's own address won are under the keep bar,
 // so the body of the earlier round is restored.
@@ -2486,6 +2493,9 @@ struct s_render_transform_record
 
 // MiniMax D (run 37): no new form, no lower score; the second table_entry_data lookup has to
 // stay out of line like retail's, and that is decided in src/unknown_023540.cpp (not my file).
+// score 51 (was 51): this round found no gain - retail calls table_entry_data out of line for the
+// transform table and we inline it, which also makes our body eleven bytes longer; that helper's
+// inline-ness is decided in src/unknown_023540.cpp.
 // score 51 (was 51): retail calls table_entry_data out of line for the transform table, and we
 // inline it there, which also makes our body eleven bytes longer than retail's; the inline-ness of
 // that helper is set in src/unknown_023540.cpp, so it cannot be changed from this file.
@@ -3111,6 +3121,12 @@ bool function_128c0(s_128c0_settings const *settings)
 }
 
 
+// score 62 (was 62): this round's fields read straight off the locked rectangle (63) and the row
+// kept as an offset instead of a pointer (67) both score worse; the rectangle still sits four
+// bytes lower than retail's and the pitch slot stays below the pointer slot.
+// score 62 (was 62): this round found no gain - our frame slots for the locked rectangle sit four bytes
+// lower than retail's, and retail builds each row from a running pointer while we recompute it from
+// the row base.
 // score 62 (was 62): our frame slots for the locked rectangle sit four bytes lower than retail's,
 // so the surface pointer and the LockRect arguments are stored at other offsets; we hold pBits in a
 // register and set the flag there, where retail sets it in memory and keeps the pointer in the frame;
@@ -3384,6 +3400,11 @@ bool function_14600()
 
 // MiniMax D (run 37): no new form, no lower score; the width reciprocal first gives 74, the
 // width first with constants[3] first gives 78 and the full retail order gives 43.
+// score 40 (was 40): this round's width-first form with the constants stored in retail's order
+// scores 38 but still computes the quotient in xmm0 rather than xmm2 and loads the height
+// before the width; the gain is under the keep bar, so the original body stands.
+// score 40 (was 40): this round found no gain - retail computes the width ratio first and keeps it in
+// xmm2; declaring x before y gives 74 and reordering the constants gives 78, so the original order stands.
 // score 40 (was 73): retail loads the width pair first and only then the
 // height pair, ours loads the height pair first; the conversions of the two
 // differences into EDX and EAX now agree
@@ -3434,6 +3455,8 @@ void function_1eb00()
 // MiniMax H (11-03): no new form, no lower score; SDK SetPixelShaderProgram inline: 763 bytes but merges the flag's 1 with the render-state argument into ebx (155), cross-module helper 155, helper call 167.
 // MiniMax E (11-01): no new form, no lower score; retail's body builds four shader programs from
 // tables and caches that this project does not have.
+// score 79 (was 79): this round found no gain - retail's body builds four shader programs from tables and
+// caches that this project does not have, so the difference is a knowledge difference, not a local form.
 // score 79 (was 79): the ratio of the two counters is computed with the other operand order:
 // ours divides into xmm3 and multiplies xmm4, retail divides into xmm2 and multiplies xmm0.
 // @retail 0x36580
@@ -5054,6 +5077,9 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
     g_485a78[0] = g_485a78[1] = NONE;
 }
 
+// score 62 (was 62): this round found no gain - the second argument arrives in eax where retail takes it in
+// ecx, and the arguments behind it sit one stack slot lower; the callers are in other files, so the
+// calling convention cannot be changed from here.
 // score 62 (was 62): the second argument arrives in eax where retail takes it in ecx, and the
 // arguments behind it sit one stack slot lower than retail's; the callers of this function are
 // in other files, so the calling convention cannot be changed from here.
@@ -5270,6 +5296,9 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
     function_4ede0(tag, context, first, second, third, handle, material);
 }
 
+// score 54 (was 54): this round found no gain - the score rests on the volatile tag local; without it the
+// compiler rebuilds the body (117), computing the block before the tag gives 111 and the two-element tag
+// table gives 115, so the body is unchanged.
 // @retail 0x4ebd0
 // MiniMax D (run 37): no new form, no lower score; the tag without the volatile gives 111 (in
 // the original order 117) and the reordered body gives 101, so the original body is kept even
