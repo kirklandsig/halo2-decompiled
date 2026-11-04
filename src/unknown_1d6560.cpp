@@ -599,6 +599,9 @@ struct s_physics_component_walk : s_havok_component
 // N369: Persistent input/output/recursive-operand lexical families, seven subsets
 // and full-family common names: 146 each. No latch or carrier change;
 // NOT kept: all tie. Original identities and complete method restored.
+// AC547: Actual indexed body-array receivers, mutable/readonly at admitted/entry
+// scope 335/335/337/337; walking counterparts 351/351/354/354. NOT kept: non-native
+// residence and 948/964-byte extents; original complete method and observations restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

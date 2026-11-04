@@ -3655,6 +3655,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y579: Actual stream-end bounds with offset/cursor/walking-formal/difference results,
 // admission-time producer 161/165/172/174, entry producer 161/145/167/163.
 // NOT kept: no gain or native channel-home recovery; original whole body restored.
+// AC547: Actual kind-byte pointer/reference at packet/dispatch-arm scope,
+// indexed traversal 139/139/139/139; independent packet cursor 164/164/164/164.
+// NOT kept: alias-only forms do not match; original byte reads and full body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

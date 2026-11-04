@@ -1545,6 +1545,9 @@ void function_1f86a0(long actor_index);
 // AC527: Post-search reservation observation as bool/byte/short/long, native member/full-slot
 // payload pairs, eight at 134. NOT kept: one-use result residence unmatched; original types,
 // observation, raw mask, root short circuit and complete body restored; mask/entry homes remain.
+// AC547: Existing root/iterator/accept-decline/all ordinary-inline declaration
+// policies, native member payload first in each pair: eight at 134. NOT kept:
+// no frame/mask/entry recovery; original declarations, payload and body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

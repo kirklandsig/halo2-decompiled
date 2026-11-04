@@ -248,6 +248,9 @@
 // then all with ordinary w transfer: 676/736/661/739/719/749/765/803. Full basis
 // recovers frame 0x60 but grows to 2712 bytes. NOT kept: all regress; original
 // native copies, helpers, integer conversion and complete body restored.
+// AC547: Special-cross W receiver 581; first/both perspective input receivers
+// across all reuse subsets 676/682/697/697/682/682; all with second projection
+// first 662. NOT kept: no native frame/residence match; original body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -865,6 +868,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Y582: On current paired-point geometry, original/shared normalizer pairs for camera side
 // and surface normal, all eight nonoriginal pairs: 270/270/377/377/377/377/377/377.
 // NOT kept: no byte match; original roots/scales, shared crosses and full body restored.
+// AC547: Next-color difference/scaled-difference stages 304/526; upper/lower library
+// seeds 563/626; seeded complete stages 579/627; transition difference/scaled-difference
+// receiver stages 535/571. NOT kept: all regress; original complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
