@@ -1232,6 +1232,10 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // `return result` 43; `result = true` before function_a8c10 21. The three `[edi + ecx + 8]` unit
 // lookups stay data-first in a compile-only screen for every order of the entry declarations, an
 // unused header pointer and a header pointer for the first lookup.
+// Round 144: all three self lookups through the existing header accessor 19 (same code); the shared bit setter 19;
+// an explicit success goto 19; a computed active value with the result before its store 19 (NOT kept: one-use
+// local, no match); direct success return true/result 264/264 (948 B); an addressed result read 19 (same code);
+// a one-iteration do/break scope 646 (1266 B, frame 0x84). Original body restored.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {

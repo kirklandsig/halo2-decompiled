@@ -1375,6 +1375,9 @@ long function_146650(void);
 // aggregate initializer 14 (same code); offset zeroed by a chained assignment after its declaration 18; a state_position
 // pointer for the three queries 125; an origin pointer for the actor position at all four uses 36. Permuter (600 s):
 // its reduced image scores 248 against the full 14, nothing better in 49 tries.
+// Round 144: actor-reference reads at entry/all behavior queries/final callback, then direct actor_index at the
+// direction producer/iterator setup/movement callback, and split proximity/projected declarations: 14 each,
+// identical listings. NOT kept: no allocation change; the original parameter observations and declarations restored.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
