@@ -323,6 +323,11 @@ void motion_sensor_blip_set_position(point2f const *point, s_motion_sensor_blip 
 // named for the first lookup 26; the type in a long ahead of the mask 26; a pool local inside the rider arm 26, at the not-friendly block's
 // top 26; a pool local for the first lookup and a second direct read 26; one pool local refreshed after the call in a friendly flag 106
 // (360 bytes, pool in EBX).
+// Round 101: a pool snapshot in the unit/vehicle branch, refreshed only after the friendly call with a
+// single done exit, 24 (NOT kept: two-point gain; pool/mask registers remain reversed); a const mask or
+// const object on that form 24 each; the pool before the first object 118; a rider ternary, unsigned rider
+// index or named header base on the 24 form 24 each; type shifts repeated at the mask tests 84 (361 bytes).
+// Original body restored.
 // @retail 0x1a1e49
 char motion_sensor_object_type(long local_player_index, long object_index)
 {
