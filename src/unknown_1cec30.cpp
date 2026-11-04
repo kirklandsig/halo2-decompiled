@@ -2813,26 +2813,31 @@ void __stdcall function_1d3920(byte *component_bytes, dword *updated, real offse
 }
 #endif
 
+// The rigid body is read through the component at each use: a local body pointer makes LTCG pass the
+// component in ECX instead of retail's EAX (194). Retail takes the component in EAX and the body index
+// in EDX (0x1d83f7 `mov edi, eax; mov eax, [edi + 8]` reads the component's object index, 0x1d8438
+// `lea edx, [edx + edx*2]` scales the index by the rigid-body stride), so the component comes first:
+// with the index first LTCG swaps the two registers (4). The matrix's position changes no bytes here
+// or in 0x1d7ef0's calls, so it stays last.
 // @retail 0x1d83e0
-void function_1d83e0(long body_index, s_havok_component *component, long node_a, long node_b,
+void function_1d83e0(s_havok_component *component, long body_index, long node_a, long node_b,
     transform4x3f *matrix)
 {
     s_component_transform_definition *definition = (s_component_transform_definition *)g_4e3b44[
         ((s_component_transform_header *)g_4e0300->data)[component->object_index & 0xffff].object->definition_index & 0xffff].bytes;
     s_component_collision_model_link *model = (s_component_collision_model_link *)g_4e3b44[definition->model_index & 0xffff].bytes;
     s_component_node_body_model *physics = (s_component_node_body_model *)g_4e3b44[model->physics_model_index & 0xffff].bytes;
-    s_havok_component_rigid_body *body = &component->rigid_bodies.data[body_index];
     long child_a = NONE;
     long child_b = NONE;
-    for (long i = 0; i < body->node_count && (child_a == NONE || child_b == NONE); i++)
+    for (long i = 0; i < component->rigid_bodies.data[body_index].node_count && (child_a == NONE || child_b == NONE); i++)
     {
-        s_component_node_body_link *link = &physics->bodies[body->nodes[i]];
+        s_component_node_body_link *link = &physics->bodies[component->rigid_bodies.data[body_index].nodes[i]];
         if (link->node == node_a && child_a == NONE)
             child_a = i;
         if (link->node == node_b && child_b == NONE)
             child_b = i;
     }
-    c_component_child_frames *shape = *(c_component_child_frames **)((byte *)body->rigid_body + 0xc);
+    c_component_child_frames *shape = *(c_component_child_frames **)((byte *)component->rigid_bodies.data[body_index].rigid_body + 0xc);
     hkVector4 buffer_a[16];
     hkVector4 buffer_b[16];
     if (child_a == 0)
@@ -3068,13 +3073,17 @@ struct s_component_frame_map
 
 byte *__fastcall function_30c170(hkWorld *world);
 
-// MiniMax D (11-01): no new form tried, no lower score; the round-41 merge rewrote this body,
-// so its score is now 346 against the 206 the task started from.
-// score 206 (was 206): Frame 0xb4 and extent agree; body base/stride and protected relative-call
-// input registers remain. BLOCKED-BY 0x1d83e0 (contributor code): retail passes the component to it
-// in EAX and loads the component into EAX at entry; ours passes it in ECX, and the EAX/ECX roles
-// swap from the first body (+0x3d, still the first difference in round 68; the reduced build of the
-// fast check gives another convention, 346, so only the plain check scores this function).
+// score 173 (was 206), checked together with 0x1d83e0 and its caller 0x1d77d0 (alone, or without the
+// caller, the reduced image gives another convention: 344). 0x1d83e0 now MATCHES, so the call
+// registers (component EAX, index EDX, matrix ESI, two stack words) and the frame agree. What is left
+// is scheduling and one register: in the equal-node arms the zero stores of the matrix copy's fourth
+// words run ahead of the column stores (retail keeps the source order: eax = [esi+0xc] first, stores
+// in column order), and in the second half the node_b word goes to EDX where retail uses EAX (retail
+// stores the sign-extended word to its slot after the compare, ours before). The first (relative)
+// arm and the first half of the function agree instruction for instruction.
+// Round 90 tried: the equal arm copied into a local matrix first 352 (changes the frame); the pair
+// pointer through a local in that arm 173; node_b declared after index_b 173; node_b read after the
+// index search 308.
 // Tried: body getters 206; first count after lookup 205 (below gate), both 275; node streams 336;
 // streams with getters 336; count names 206; search names 206; transformed name 206; entry phase
 // transforms 301; equal-node arm first 248; second selector word 226; promoted first nodes 290; entry
@@ -3108,8 +3117,8 @@ byte *__fastcall function_30c170(hkWorld *world);
 // Round 182: first/second/both actual link references 206/206/206; native body
 // record references confined to count/node searches, alone/with either/both links
 // and mutable body records, 332/332/332/332/332. Original records and body restored.
-// Round 89: blocker confirmed in the full build: retail loads the component into EAX before each 0x1d83e0
-// call and 0x1d83e0 reads it from EAX at entry; ours uses ECX on both sides.
+// Round 89 (resolved by the 0x1d83e0 match): retail loads the component into EAX before each 0x1d83e0
+// call and 0x1d83e0 reads it from EAX at entry.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
@@ -3128,7 +3137,7 @@ void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     if (first->node != pair->node_a)
     {
         transform4x3f relative, matrix;
-        function_1d83e0(index_a, component, first->node, node_a, &relative);
+        function_1d83e0(component, index_a, first->node, node_a, &relative);
         function_142a60(&relative, &pair->frame_a, &matrix);
         component_matrix_frame(&matrix, frame_a);
     }
@@ -3152,7 +3161,7 @@ void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
         if (other_first->node != pair->node_b)
         {
             transform4x3f relative, matrix;
-            function_1d83e0(index_b, component, other_first->node, node_b, &relative);
+            function_1d83e0(component, index_b, other_first->node, node_b, &relative);
             function_142a60(&relative, &pair->frame_b, &matrix);
             component_matrix_frame(&matrix, frame_b);
         }
