@@ -714,6 +714,10 @@ struct s_item_collision_bsp
 // complete normal compound fields/scalars/setter 209 each, with distance 202 each;
 // isolated distance also 202. Frame 0xa0 and 1366/1361 bytes unchanged. Normal forms restored;
 // protected plane-index width, plane joins and pending spin/speed homes remain.
+// N369: Final untransformed query destination, original/branch-owned input plane 206/206;
+// complete normal scalar inputs mutable/const 207/207, all four inputs 209/209;
+// safe in-place result with captured normals mutable/const 216/216.
+// NOT kept: no equality or gain; in-place extent grows. Original body restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
