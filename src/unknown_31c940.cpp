@@ -103,6 +103,35 @@ static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 c
 	*result += impulse;
 }
 
+static __forceinline void apply_circular_linear(float impulse, solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, solver_velocity_31c940 *b, float *result)
+{
+	// SSE consumes a rounded float while result accumulation retains the x87
+	// value. Passing the impulse by reference would round both paths early.
+	float rounded_impulse;
+	float volatile &store = rounded_impulse;
+	store = impulse;
+	__m128 scalar = _mm_load_ss(&rounded_impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
+	a->linear = _mm_add_ps(a->linear, linear_a);
+	b->linear = _mm_sub_ps(b->linear, linear_b);
+	// Reload the axes after both linear writes, then form both contributions
+	// before either angular write. Row storage may overlap the body fields.
+	// The circular pair retains both angular contributions before either write.
+	__m128 angular[2] =
+	{
+		_mm_mul_ps(change_a, row->a),
+		_mm_mul_ps(change_b, row->b)
+	};
+	a->angular = _mm_add_ps(a->angular, angular[0]);
+	b->angular = _mm_add_ps(b->angular, angular[1]);
+	*result += impulse;
+}
+
+
 static __forceinline void apply_linear_spilled(float const volatile &source, solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b, float *result)
 {
@@ -1055,8 +1084,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3] *= factor;
 					((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] *= factor;
 				}
-				apply_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a, b, result);
-				apply_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a, b, result + 1);
+				apply_circular_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a, b, result);
+				apply_circular_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a, b, result + 1);
 				terms += 6; result += 2;
 				unsigned char next_kind = op[20];
 				op += 20;
