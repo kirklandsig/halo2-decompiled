@@ -1269,6 +1269,9 @@ long function_10f5f0(long object_index);
 // P328: Saved attached complement and complete attachment admission in bool/byte/short/long:
 // 565/565/575/575/563/563/574/574. NOT kept: best gain is below eight and shortens away from retail.
 // Original body restored; frame 0x19ac/0x1984, predicate-result and reduction homes remain.
+// P330: Plain raw light cursor/indexed scan, native Boolean bit-four test and
+// branch-owned mask: 565/566/571/565/565/565/571/571. NOT kept: no gain; frame 0x19ac
+// and predicate/reduction homes remain. Original full body, buffer and array values restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

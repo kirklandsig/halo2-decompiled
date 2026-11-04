@@ -1441,6 +1441,9 @@ void function_150820(dword *bits, bool local_only)
 // Y567: One-return failed unit/slot/eligibility admissions, seven subsets
 // and separately tested complete eligibility: 60/63/60/63/60/63/60/60. Original body restored;
 // native player/hand and entry temporary ownership remain.
+// P330: Terminal command success accumulated into bool/byte/short/long result,
+// bitwise OR 95/97/95/98; logical OR 87/92/90/92. NOT kept: no match,
+// changed entry allocation and shorter extent. Original result graph and full body restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -2139,6 +2142,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // P328: Saved parent rejection and complete branch-owned parent admission in
 // bool/byte/short/long: 202/202/211/210/231/231/211/211. Original body restored;
 // native frame agrees, player/header-offset ownership and rounds/mode homes remain.
+// P330: Persistent transfer completion controls notification and loop termination,
+// bool/byte/short/long expression producers 292/292/276/275, guarded producers
+// 284/284/261/258. NOT kept: no match, larger frame/extent; original break and full body restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
