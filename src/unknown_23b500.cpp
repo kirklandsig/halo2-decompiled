@@ -29,7 +29,26 @@ struct s_spawn_influence_globals
 	byte const *table;
 };
 
+/* the influence weights from 0x502248 (four words of other globals, then the
+   two shared values, the twelve type records and the influence table) */
+struct s_spawn_influence_weights
+{
+	union
+	{
+		byte bytes[0xac];
+		struct
+		{
+			dword unknown00[4];
+			real value0;
+			real value4;
+			s_spawn_influence_type types[12];
+			byte const *table;
+		};
+	};
+};
+
 extern dword g_502258[0x27];
+extern s_spawn_influence_weights g_502248;
 
 PRIVATE const byte g_4709f0[48] =
 {
@@ -61,6 +80,11 @@ struct s_spawn_scenario_23aea0
 	s_spawn_settings_23aea0 *settings;
 };
 
+// 0x23aea0 matches: the weights are a struct view of the global at 0x502248 (its byte view
+// sits at offset 0), the copy loop counts in a byte offset 0x18..0xa8 stepped by 0x48 so the
+// base stays in the displacement, each record is a pointer into that view whose three values
+// are assigned as dword fields, and the source cursor starts at definition + 0x184 and advances
+// by 0xa8 per batch.
 // score 61 (was 61): prologue and 438-byte extent agree; the default-copy destination still
 // uses pointer induction instead of integer offset 0x18..0xa8; staged scalar loads differ.
 // Earlier at 97 (was 105): the prologue is retail's; what differs is the destination, still a pointer
@@ -290,33 +314,35 @@ struct s_spawn_scenario_23aea0
 // @retail 0x23aea0
 void function_23aea0()
 {
-	byte *tag = g_4e3b44[g_4e034c->index & 0xffff].bytes;
-	byte *definition = *(byte **)(tag + 0xc);
+	byte *definition = *(byte **)(g_4e3b44[g_4e034c->index & 0xffff].bytes + 0xc);
 	s_spawn_scenario_23aea0 *scenario = (s_spawn_scenario_23aea0 *)g_4e0350;
-	s_spawn_influence_globals *globals = (s_spawn_influence_globals *)g_502258;
-	globals->table = g_4709f0;
-	globals->value4 = *(real *)(definition + 0x154);
-	globals->value0 = *(real *)(definition + 0x150);
-	for (long type = 2; type < 14; type++)
+	g_502248.table = g_4709f0;
+	g_502248.value4 = *(real *)(definition + 0x154);
+	g_502248.value0 = *(real *)(definition + 0x150);
+	byte *source = definition + 0x184;
+	for (long offset = 0x18; offset < 0xa8; offset += 0x48, source += 0xa8)
 	{
-		vector3f_assign(&globals->types[type - 2].vector,
-			*(real const *)(definition + 0x148 + type * 0x1c),
-			*(real const *)(definition + 0x14c + type * 0x1c),
-			*(real const *)(definition + 0x150 + type * 0x1c));
+		s_spawn_influence_type *record = (s_spawn_influence_type *)(g_502248.bytes + offset);
+		for (long type = 0; type < 6; type++)
+		{
+			record[type].value0 = *(real const *)(source + type * 0x1c - 4);
+			record[type].value4 = *(real const *)(source + type * 0x1c);
+			record[type].value8 = *(real const *)(source + type * 0x1c + 4);
+		}
 	}
 	if (scenario->count > 0)
 	{
 		s_spawn_settings_23aea0 *settings = scenario->settings;
 		if (settings->value0 != 0.f)
-			globals->value4 = settings->value0;
+			g_502248.value4 = settings->value0;
 		if (settings->value4 != 0.f)
-			globals->value0 = settings->value4;
+			g_502248.value0 = settings->value4;
 		for (long j = 0; j < settings->count; j++)
 		{
 			s_spawn_type_override_23aea0 *entry = &settings->types[j];
-			globals->types[entry->type].value0 = entry->values.value0;
-			globals->types[entry->type].value4 = entry->values.value4;
-			globals->types[entry->type].value8 = entry->values.value8;
+			g_502248.types[entry->type].value0 = entry->values.value0;
+			g_502248.types[entry->type].value4 = entry->values.value4;
+			g_502248.types[entry->type].value8 = entry->values.value8;
 		}
 	}
 }
