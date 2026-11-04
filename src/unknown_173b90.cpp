@@ -688,6 +688,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC537: Actual cache-mask/property-flags/emitter-mask signed 32-bit field domains,
 // seven subsets then all int: 42/44/44/42/42/44/44/44. NOT kept: no gain; original fields,
 // shared alias-safe rotations and entire body restored.
+// AC539: Independent frame/rotation mode observations at both original gates, raw
+// short/word/long/dword 117/117/117/117, bool/byte/short/long truth 109/109/109/109.
+// NOT kept: one-use field captures unmatched; original reads, helpers and full body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

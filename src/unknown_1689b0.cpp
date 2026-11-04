@@ -1726,6 +1726,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // AC537: Complete near-plane/interior direction-admission truth, positive and
 // complementary bool/byte/short/long: 553/553/553/553/553/553/553/553. NOT kept: no match; original
 // normal selection, sums, word counters, geometry and whole body restored.
+// AC539: Nearest-edge improvement result, positive bool/byte/short/long 553 each,
+// complementary forms 554 each (control 552). NOT kept: unmatched decision storage;
+// original nearest commits, sums, word counts, geometry and full body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

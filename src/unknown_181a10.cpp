@@ -728,6 +728,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // AC524: Complete root admission bool/byte/short/long, then complementary
 // rejection, 308 each at 1243 bytes. NOT kept: frame 0x4c versus 0x44, root-kind
 // transport and classifier/plane/output homes remain; original collector restored.
+// AC539: Post-clamp bounded-key rejection result, positive then complementary
+// bool/byte/short/long: eight at 308. NOT kept: unmatched one-use decision storage;
+// original clamp, snapshots, plane math and full collector restored.
+// Coordinated long plane-index formal/declarations: 308; callee matches but a caller
+// rises 1 -> 103 (580 -> 576 bytes). NOT kept: shared-user regression; all declarations restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

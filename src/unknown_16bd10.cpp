@@ -930,6 +930,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // AC525: Complete FOV-target presence/absence results in bool/byte/short/long,
 // eight at 236. NOT kept: predicate residence unmatched; original target gate,
 // snapshots, projection and full body restored; direction/normal/zero homes remain.
+// AC539: Actual FOV transition-completion result, positive then complementary
+// bool/byte/short/long: eight at 236. NOT kept: unmatched one-use decision storage;
+// original duration/target observations, projection, helpers and full body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
