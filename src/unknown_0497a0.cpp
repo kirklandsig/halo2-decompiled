@@ -1087,8 +1087,8 @@ struct D3DTexture;
 struct s_bitmap_view;
 D3DTexture *function_12360(s_bitmap_view *bitmap, real priority);
 void function_52d40(long bitmap_index, byte *shader, long tag, dword flags);
-bool function_1e5e0(long size, point3f const *position, long a, long b, long c,
-    long d, long e, long f, long g, void const *data);
+bool function_1e5e0(long size, long a, long b, long c,
+    long d, long e, long f, long g, void const *data, point3f const *position);
 
 struct s_43740_input
 {
@@ -1103,215 +1103,31 @@ void __stdcall function_43720(s_43740_input *input)
     function_52d40(input->bitmap, input->vertices.shader, input->tag, false);
 }
 
-// score 62 (was 62): retail reads the object's field before the frame is set up
-// and compares it with -1, ours loads it into ebp and compares ebp. Retail
-// rereads the tag for input.tag (now matched), keeps the slot index in ebp after
-// the texture test and tests the normal flag as shader + 0x2c. Tried: early
-// return 63; the test reading the field and the tag read inside 62; the body as
-// an inline helper taking the tag 62; the normal flag read through the shader
-// pointer 66 (definition moves to the stack); a vertex count local first 64 (it
-// swaps source and definition registers and 0x42b20 stops matching).
-// Round 197 fast trials: Populated request definition readback, direct/stored source and slot x
-// definition/shader normal x retained/removed slot anchor 62, 62, 67, 67, 62, 62, 67, 67.
-// Round 121: the slot anchor `(void)&slot;` dropped (identical code, 0x42b20 still matches); on that:
-// the tag as a dword 62; a slot index local for both arrays 62; the vertex count stored first 63; the
-// parameters as (definition, source, slot) at the definition and the call 62 (identical code).
-// Round 98: retail tests the tag in eax before `push ebp` and copies it to ebp after (ours keeps it
-// in ebp from the load, so ebp is saved before the test). The test on the field with the tag read
-// inside 62; the normal flag through the stored shader pointer or a shader pointer local 67 (the
-// definition moves to the stack and 0x42b20 stops matching); the input record or the bitmap
-// declared at the top 62/62; the record filled count, shader, normal, slot, tag, then source,
-// definition, bitmap 63; the group lookup re-reading the tag field 62 (CSE gives the same code).
-// Round 213: complete mutable request/zero aggregate/library zero/readonly request
-// 91/100/105/91; direct-position counterparts 91/100/105/91. Original body restored;
-// tag admission before saved EBP and signed-slot/shader-relative homes remain.
-// Round 12: the tag field read at each use (test, call, group lookup) 62 and with a tag local
-// inside 62 (the reads merge into one value); the normal flag read through the stored
-// input.vertices.shader 67 (213 bytes, the definition moves to the stack, 0x42b20 62); the
-// position computed before the input fill 62 (retail computes it before the pushes; ours
-// still interleaves it); a named vertex count used for the field and the call 64, with the
-// position first 64 (0x42b20 4).
-// Round 443: Ordinary-inline declarations at lookup/texture/submission boundaries, seven
-// subsets 62 each; all plus shader-relative normal 67 and matched caller 62. All declarations
-// and original body restored; early tag/EBP and signed-slot homes remain.
-// Round 49: normal flag through the stored shader member with (definition, source, slot) at the
-// definition and call 67; tag field read at each use 62 (identical); shader pointer local 67, with
-// the lookup rereading the field 67, with every tag use read from the field 67 (each still folds the
-// read to [definition + 0x68] but makes the definition a stack argument held in EBP).
-// Round 26: retail's EAX test / EBP copy head needs the tag's test read and the body's reads to be
-// separate values: field test with the group lookup (field) before the index call (field) 68, or a
-// tag local read before the call for the lookup only 68 (both split like retail but the tag outranks
-// a parameter: ret 8, 0x42b20 60); either with the record's tag from the local 40 (head through the
-// index call identical; the tag then lives across the texture call where retail re-reads the field,
-// and it mixes local and field reads of one value); 36-form grid of those splits x normal read x slot
-// local x fill order 68-70; early-return guard 68; recomputed count argument 68; tag local used
-// everywhere 63, masked in place 62. The normal read through the stored shader (member, local,
-// accessor inline) still folds to +0x68 under LTCG (compile-only harness gives [ecx+0x2c]) 67/70.
-// Round 18 (m3 lane 2, fast; 0x42b20 and 0x43720 matched in each): the position through the sibling's
-// `&((s_ribbon_point *)...)->position` 62; the bitmap address written `bitmap * 0x74 + base` 62; `long const tag`
-// 62; the group lookup before the index call 62 (LTCG still loads it after the call); the record filled in retail's
-// store order (shader, slot, normal, tag, source, definition, count, bitmap) 62.
-// Round 40: record filled slot, shader, normal, count, tag, bitmap, then source and definition 64; with the normal
-// read through the stored shader 67 (213 bytes, 0x42b20 62); filled count, shader, normal, slot, tag, source,
-// definition, bitmap 63; arrays indexed through the stored slot 62 (same code); texture test as an early return 62.
-// Round 101 (lane 8; exact LTCG harness through 0x42b20 with the generated stand-in TU, 58 = 62):
-// beyond the head, retail keeps the slot index in EBP after the texture test, reads the normal flag as
-// shader + 0x2c and computes the position before the pushes. The position computed before the record
-// is declared 62; input.tag read through the definition parameter 62; the vertex count as `2 * count`
-// 62; `NONE != tag` 62 (identical code each time; 0x42b20 still matches).
-// Round 12 (lane 17, fast): the normal flag read through the stored input.vertices.shader 67 (213 bytes:
-// still folded to +0x68, the definition moves to the stack, 0x42b20 62); the slot taken once into a long
-// local before the texture call for both arrays 69 (215 bytes, 0x42b20 66); the position computed after
-// the normal and before the tag, bitmap and count 62; that with the count right after the slot 63; the
-// mid-fill position with both arrays indexed through the stored slot 62 (0x42b20 matched in the last three).
-// Round 34 (lane 13, LTCG harness through 0x42b20, base 58 aligned 32 = 62; 0x42b20 0 in each): the
-// definition given a typed sub-record at +0x3c with the normal flag at its +0x2c, shader and normal read
-// through it 62; with the tag as a typed field 62; the typed tag alone 62; a second index local copied
-// from the tag for the call and lookup 62; an early return on the field with the tag local after it 62;
-// the tag as a dword 62 (all identical code); the lookup through `(word)tag` harness 60, aligned 53 (204 bytes).
-// Round 188 (fast, 0x42b20 matched in each): the parameters as (slot, source, definition), (slot,
-// definition, source), (source, slot, definition) and (definition, slot, source) at the definition
-// and the call 62 each (identical code); the tag test on the field with a tag local for the call and
-// the lookup (lookup first) in all six parameter orders 62 each.
-// Round 42 (lane 11, fast): the field test with the tag local inside the block and the normal flag read
-// back through the stored `input.vertices.shader + 0x2c` 67 (213 bytes; it still folds to the definition's
-// +0x68, the definition becomes a stack argument in EBP, the tag takes EBX and 0x42b20 drops to 62); that
-// with the record filled in retail's store order 67 (0x42b20 62); the field test with the tag local
-// inside and the normal read from the definition 62, plus retail's fill order 62, plus the record declared
-// at the top 62 (0x42b20 matched in each).
-// Round 124 (fast, 0x42b20 checked each time): the image pointer written into the texture call 62; the
-// group pointer written into the image expression 62; the call's count argument recomputed from the
-// point count 62; the bitmap stored before the tag 62 (identical code each time); the slot stored
-// last 64 (211 bytes, and 0x42b20 stops matching).
-// Round 36 (lane 15, fast; 0x42b20 checked each time): the field test with a block-local tag used for
-// the lookup (placed before the index call), the call and the record 63 (206 bytes, no split); the
-// function-scope tag with the lookup first and the record's tag from it 63; the field read at each use
-// with the lookup first (listed 68: the head splits like retail's, but the tag takes EBX, the source
-// becomes a stack argument in EBP, ret 8, 0x42b20 60) with the record filled in retail's store order 68,
-// with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
-// 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
-// split tag below both parameters in retail's colouring is open.
-// Round 66 (m3 lane 16, fast; 0x42b20 checked each time): the tag assigned inside the test 62 (same
-// code); the count named first with the record filled in retail's store order (shader, normal, slot,
-// tag, position, then source, definition, count, bitmap) 64 (0x42b20 4); a long slot index with the
-// named count for the field and the call 64 (0x42b20 4); the call's count recomputed 62 (again);
-// the position computed before the record is declared 62. No matched retail function has this
-// head's one-value EAX test / EBP copy.
-// Round 31 (m3 lane 2, fast; 0x42b20 checked each time): on the split form (tag field tested, the
-// index call on the field, a tag local for the group lookup and the record: 40, retail's head through
-// the index call, a mix of field and local reads kept only with a match): the normal flag through the
-// stored shader 67 (212 bytes, 0x42b20 62); the record filled in retail's store order (shader, slot,
-// normal, tag, source, definition, count, bitmap) 42; a `long index = slot` for both arrays 40; the
-// position computed before the record 40; the count stored first 41. The tag local for the lookup
-// only 68 (the tag outranks the source: definition ESI, source stacked; 0x42b20 60).
-// Round 64 (lane 9, fast; 0x42b20 checked each time): round 26's split rebuilt (field test and call
-// argument, a tag local for the lookup and the record) 40, 208 bytes (retail's head through the call, but a
-// field/local mix, and the local lives to the record so the lookup copies EBP where retail consumes it); the
-// tag local for the lookup only with the record from the field 68 (retail's tag copy consumed in place, but
-// the source parameter then takes EBP and is passed on the stack: ret 8, 0x42b20 60); that with the normal
-// read through the stored shader pointer 70 (the definition takes EBP instead, 0x42b20 62); field test with
-// the local for the call and lookup and the record from the field 62 (same code); the call argument from the
-// field and the rest from the local 63; test, call and lookup on the field with a record-only local 50 (212
-// bytes: frame 0x24, the tag spilled; positional).
-// Round 68 (m3 lane 16, fast; 0x42b20 and 0x43720 checked each time): `long bitmap` declared ahead of the
-// tag 62; the texture test as `!= NULL` 62 (same code each); test and call on the field with the tag local
-// after the call 63; round 26's split re-measured (tag local read before the call, test and call on the
-// field, the local for the lookup and the record) 40 (retail's head through the call; left: the tag kept for
-// the record, so the lookup copies EBP into ECX, the slot index in EAX against retail's EBP, the normal flag
-// at +0x68 and the count/position schedule; a mix of field and local reads, kept only with a match); that
-// with the record's tag read through the stored definition pointer 68 (the definition takes ESI, the source
-// goes to the stack: ret 8, 0x42b20 60).
-// Round 36 (lane 15, fast; 0x42b20 checked each time): the field test with a block-local tag used for
-// the lookup (placed before the index call), the call and the record 63 (206 bytes, no split); the
-// function-scope tag with the lookup first and the record's tag from it 63; the field read at each use
-// with the lookup first (listed 68: the head splits like retail's, but the tag takes EBX, the source
-// becomes a stack argument in EBP, ret 8, 0x42b20 60) with the record filled in retail's store order 68,
-// with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
-// 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
-// split tag below both parameters in retail's colouring is open.
-// Round 135 (m3 lane 5): retail's 0x1e5e0 copies the record with an inline rep movs and calls nothing. Diagnostics
-// only: the record passed to a scratch callee that stores the pointer 119 (152 bytes: VC drops the record stores),
-// to one that only reads it 66. Renames (slot/register ties): tag 62, bitmap 62, group 62, image 62, the definition
-// byte view 62.
-// Round 509: Native tag-field/tag-entry/bitmap-table receiver subsets 1/2/4/3/5/6/7
-// and all with the source array receivers 62 each. Original body restored;
-// early tag EAX/EBP split, signed-slot residence and shader-relative test remain.
-// Round 512: Native source snapshot mutable/read-only 81/81, definition
-// snapshot mutable/read-only 100/100, both snapshots in four constness forms
-// 124 each. Original body restored; all copies lose the matched caller.
-// Early tag EAX/EBP admission and later slot/shader homes remain.
-// Round 237: Actual owning source frame fields in short/word domains, with no additional layout,
-// typed texture field, typed shader/normal record, both: 62/62/62/62/62/62/62/62. Every form includes
-// the new source fields; old standalone tag/shader forms are excluded. Original layouts and full
-// body restored; early tag EAX/EBP admission, signed-slot residence and shader-relative test remain.
-// DL238: Entry source/definition, slot and shader request-header subsets 1/2/3/4/5/6/7/all plus
-// shader-relative normal 66/59/68/67/66/73/73/79. Early slot alone reaches retail length at 59, a
-// rejected three-point gain. On it, shared texture-pointer/Boolean admission 69/75; native
-// count/slot/shader consumer subsets 59/59/59/69/69/69/69. Shader/admission forms lose matched
-// 0x42b20. Complete original body restored; tag admission EAX/EBP split and signed-slot/shader
-// homes remain.
-// M319: Native subordinate header production via sparse member/mutable aggregate/
-// readonly aggregate/sparse library copy, count from published request 79/105/105/79;
-// count from producer header 81/105/105/81. Extra producer forms require exact
-// equality; all restored. Entry tag/EBP split and signed-slot/shader homes remain.
-// Y547: Fresh submitted identity reassigned to the original tag, with shader-relative
-// normal/two-use signed count/direct position masks 0..7: 62/67/64/66/62/67/64/66.
-// Exact-only field-result forms restored; early tag/EBP and signed-slot/shader homes remain.
-// N334: Bitmap/texture phases share tag admission in bool/byte/short/long storage,
-// nested then combined consumer guards: 73/73/76/75/73/73/76/75. All extend the body; original
-// complete source restored. Early EAX/EBP tag admission and signed-slot/shader homes remain.
-// Round 33 (m3 lane 18, fast; 0x42b20 checked each time): a long slot index declared at entry for
-// both arrays 79 (223 bytes, 0x42b20 60); the record as one aggregate initializer 87 (229 bytes,
-// padding zeroed); the group lookup through `(word)tag` 67 (204 bytes, 0x42b20 4); the record
-// filled before the texture test 74 (218 bytes); the vertex count without the short cast 68
-// (203 bytes). All restored; the early EAX/EBP tag split remains.
-// Round 203 (fast; 0x42b20 checked each time): the tag field read at the test, the call and the lookup
-// (no local) 62 (same code); a short vertex-count local computed first, used by the record and the call
-// 64 (0x42b20 4); the position through a typed ribbon point pointer 62; the record declared at function
-// scope 62; the group lookup folded into the image address 62.
-// Round 35 (m3 lane 18, fast; 0x42b20 checked each time): the vertex count stored first 65; the slot
-// stored after the shader and normal 62; an early `return` when the tag is NONE 62; the record declared
-// at function scope 62; a block-local long point index for both arrays 62; the vertex count
-// pushed from its own expression (no short store) 66 (215 bytes). All restored.
-// Round 160 (fast; 0x42b20 checked each time): the tag test on the field with the tag local inside it 62 (same code);
-// a long slot index for both arrays 62, with the vertex count named first 64 (0x42b20 4), the shader local and
-// shader-relative normal too 65 (213 bytes, 0x42b20 62), the shader field-relative only 65 (213, 0x42b20 62); a named
-// short vertex count without the slot index 64 (0x42b20 4), a long one 65. Retail's definition stays in EBX and its
-// slot word in DX only without those; all restored.
-// Round 146 (m3 lane 5, fast; aligned 22 at 62): the tag through a force-inline lookup helper masking its by-value
-// parameter in place 62, with the test on the field and the tag local inside 62 (no split either way); the record's slot
-// stored ahead of the tag test 59 (210 bytes, aligned 30: three points, not kept); a long index and a named short count
-// ahead of the fill 64 (retail's slot/index/count opening, but source and definition swap EBX/ESI, 0x42b20 4); on
-// that, eight fill orders with the shader, normal, tag and position in retail's sequence 62-64 (0x42b20 4 each);
-// with the normal through the stored shader 66 (213 bytes, 0x42b20 62); the fill in a force-inline helper reading the
-// normal through the stored shader 67 (213 bytes, 0x42b20 62).
-// Y572: Joint original source/definition/slot formal-name priorities, seven
-// subsets then complete tag/bitmap role names: eight 62s. NOT kept: native
-// tag EAX/EBP split and signed-slot/shader homes stay wrong; body restored.
+/* queues one slot of a ribbon for sorted drawing, once its bitmap's texture is available */
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
     byte *bytes = (byte *)definition;
-    long tag = *(long *)(bytes + 0x34);
-    if (tag != NONE)
+    if (*(long *)(bytes + 0x34) != NONE)
     {
-        long bitmap = function_137590(tag, *(short *)((byte *)source + 0x1a), *(short *)((byte *)source + 0x18));
+        long tag = *(long *)(bytes + 0x34);
+        long bitmap = function_137590(*(long *)(bytes + 0x34), *(short *)((byte *)source + 0x1a), *(short *)((byte *)source + 0x18));
         byte *group = g_4e3b44[tag & 0xffff].bytes;
         s_bitmap_view *image = (s_bitmap_view *)(*(byte **)(group + 0x48) + bitmap * 0x74);
         if (function_12360(image, 0.0f))
         {
             s_43740_input input;
+            short count = source->point_count[slot] * 2;
             input.vertices.source = source;
             input.vertices.definition = definition;
-            input.vertices.slot = slot;
             input.vertices.shader = bytes + 0x3c;
-            input.vertices.normal = *(short *)(bytes + 0x68) != 0;
-            input.vertices.vertex_count = (short)(source->point_count[slot] * 2);
+            input.vertices.normal = *(short *)(input.vertices.shader + 0x2c) != 0;
+            input.vertices.slot = slot;
             input.tag = *(long *)(bytes + 0x34);
+            input.vertices.vertex_count = count;
             input.bitmap = bitmap;
-            point3f const *position = (point3f *)(g_4ea940->data + (source->point_index[slot] & 0xffff) * 0x38 + 0x1c);
-            function_1e5e0(0x20, position, (long)function_43720, (long)function_42cf0,
-                0, 4, 0x28, 0x18, input.vertices.vertex_count, &input);
+            function_1e5e0(0x20, (long)function_43720, (long)function_42cf0, 0, 4, 0x28, 0x18, count, &input,
+                (point3f *)(g_4ea940->data + (source->point_index[slot] & 0xffff) * 0x38 + 0x1c));
         }
     }
 }
