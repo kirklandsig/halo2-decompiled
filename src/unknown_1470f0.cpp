@@ -28,8 +28,10 @@ public:
 	virtual void method7(long unknown) {}
 };
 
-/* whether the address lies in the block */
-#define ADDRESS_IN_BLOCK(address, start, end) ((long)(start) <= (long)(address) && (long)(end) >= (long)(address))
+#define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+
+/* whether the address lies in the block: pinning it to the block's bounds leaves it unchanged */
+#define ADDRESS_IN_BLOCK(address, start, end) (PIN((long)(address), (long)(start), (long)(end)) == (long)(address))
 
 // @retail 0x1470f0 deleting c_game_havok_memory
 
@@ -55,78 +57,29 @@ void *c_game_havok_memory::allocate(long size, long memory_class)
 	return result;
 }
 
-extern "C" void _ReadWriteBarrier(void);
-#pragma intrinsic(_ReadWriteBarrier)
-// score 9 (was 9): retail's second block uses eax for its bounds and edx for its vtable, so its
-// call stays apart and the third joins the first; ours uses edx/eax there, so the third joins the
-// second. The third's end addition and the fallback's ecx/push order also differ.
-// Tried: plain four-call chain 38; third in the inclusive end form of the first two 7 (not kept, two
-// points); four calls with inclusive first/third 29, all inclusive 29; shared dispatch with inclusive
-// second/third only 31; third abstract/fixed-base dispatch 19/19; nested receivers 19;
-// first/second/both inclusive 18/28/27; shared receiver name 19 and with inclusive 27; allocation
-// local 19; fallback inline/noinline/consistent-inline declarations 19; inverted third 19; third
-// predicate 19; first/third shared dispatch 11 with concrete/same-local second 11/11 and inclusive 9;
-// early third 39 (132/121); late second 9; second predicate 9; dispatch flag 38 (109/121); inverse
-// admission with separate range lifetimes 41-52, shared end 52; native range lifetimes 31/9, shared end
-// 31; each receiver global read once on its path 9; a hand-merged first/third dispatch 9; void
-// completion second/fallback/both 26; common 9; second/common and all completions 9; entry null return
-// with all completions 26; inclusive third with second receiver lifetime 7; eager second/first ends
-// 9/32; address-first second lower 8; scoped first/second range results 7; fallback result local 7;
-// entry/reversed receiver declarations 7; eager first receiver 7; named second/first upper predicates
-// 7; standalone third range 7; no barrier 49 (109 bytes: all three share one call), with the inclusive
-// third 49; a forceinline inclusive range helper for all three 44 (135), without the barrier 43
-// (123); second and third nested under the first's else 9, with the inclusive third 9. Round 55: four
-// plain calls with `>= || ==` ends in all three ranges 29, with a plain `>=` second 29; the second and the
-// fallback sharing one receiver call through a label 43; the barrier in the second arm instead of the first
-// 49; the third and the fallback sharing the final call 49. A one-file LTCG screen of 194 forms (call sharing
-// x end test x barrier arm, and four plain calls) found none below 9 but the inclusive third; four plain calls
-// give retail's second block and fallback but join the first range to the second's call.
-// Round 49 (one-link LTCG screen, exact at 9): one extra register value in the first arm (a diagnostic
-// store there) gives retail's second block and fallback; every no-code form there coalesces, 7 on the
-// inclusive third: allocator self-assign, a pool local, a `+ 0` cast, getters, a release helper, an
-// address copy, the barrier moved or doubled. Globals as one struct 7; null guard as an early return 20;
-// second and third sharing the call 18; four direct calls with inclusive ends 29, barrier 18; one
-// owner-lookup helper 42; first bounds from start plus size 7. Fast: third end as a long add 9; third as
-// an offset compare 10; address-first equalities 13; the pool's page-array bounds 9; second and third
-// sharing the call on this body 27; the second end as start plus size 9.
-// Round 121: direct second dispatch 9; concrete direct second dispatch 9; concrete fallback return
-// declarations 9; concrete first assignment 9; direct chain with concrete first 27, concrete first/second
-// 27; first receiver local in the direct chain 27; distinct second receiver local on the shared graph 9.
-// Round 32 (lane 18, fast): the third range nested in an else with the allocator assigned before its test and
-// the fallback inside 39 (132 bytes); the barrier after the second's direct call instead of the receiver copy 31
-// (131 bytes); the third range nested in an else with its start named for the test and the end 9; the second
-// range address-first (`address >= start && (address <= end || ==)`) 10; a second barrier in the third arm 51
-// (107 bytes).
 // @retail 0x147160
 void c_game_havok_memory::deallocate(void *address)
 {
 	if (address)
 	{
-		c_havok_abstract_allocator *allocator;
-		if (((long)((byte *)g_479898 + 0x4340) <= (long)address && ((long)((byte *)g_479898 + 0xf0340) >= (long)address || (byte *)g_479898 + 0xf0340 == address)))
+		if (ADDRESS_IN_BLOCK(address, (byte *)g_479898 + 0x4340, (byte *)g_479898 + 0xf0340))
 		{
-			_ReadWriteBarrier();
-			allocator = g_479898;
+			g_479898->deallocate(address);
 		}
-		else if (((long)((byte *)g_479894 + 0x30) <= (long)address && ((long)((byte *)g_479894 + 0x15030) >= (long)address || (byte *)g_479894 + 0x15030 == address)))
+		else if (ADDRESS_IN_BLOCK(address, (byte *)g_479894 + 0x30, (byte *)g_479894 + 0x15030))
 		{
-			allocator = g_479894;
-			allocator->deallocate(address);
-			return;
+			g_479894->deallocate(address);
 		}
 		else if (ADDRESS_IN_BLOCK(address, g_47989c->m_buffer, (byte *)g_47989c->m_buffer + g_47989c->m_size))
 		{
-			allocator = g_47989c;
+			g_47989c->deallocate(address);
 		}
 		else
 		{
 			function_146e30()->deallocate(address);
-			return;
 		}
-		allocator->deallocate(address);
 	}
 }
-#pragma function(_ReadWriteBarrier)
 
 // @retail 0x1471e0
 void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memory_class)
@@ -150,74 +103,29 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 	return result;
 }
 
-#pragma intrinsic(_ReadWriteBarrier)
-// score 11 (was 11): the first and third ranges now share one call, as in retail; left: the first end
-// test is `jg` (retail `jge`), the second block takes EDX for its start and EAX for its vtable (retail EAX/
-// EDX), so the third joins the second's call instead of the first's; the third end is `add edx, eax`
-// (retail `add eax, edx`) and the fallback sets ECX after the push.
-// Earlier (score 19): retail tests the end of the block with >= and gives the second block its own
-// deallocate, ours shares the first and the second.
-// Second return 19; first+second returns 19; address local 19; second concrete 19; second concrete
-// with third base 19; primary/second branch inversions 19/19; third-before-second 19; fallback local 19;
-// second predicate 19. First start/end 41; with second return/concrete/end/receiver 41/41/42/41;
-// inclusive tests and inclusive returns 42/42; first start/end without the barrier 41.
-// 0x147160's shared first/third dispatch with inclusive ends and the barrier 9 (not kept: redundant
-// end tests), without the barrier 49; four plain calls with inclusive / exclusive ends 38/29;
-// shared dispatch with exclusive ends 47.
-// Round 10: four plain calls with inclusive first/second ends 41, exclusive-or-equal first and inclusive
-// second 30, inclusive first and exclusive-or-equal second 51; first/third shared dispatch with exclusive-or-
-// equal ends and no barrier 47; the third end as `&((byte *)m_buffer)[m_size]` 19. One-file LTCG probe: the
-// third block's end is `add edx, eax` (retail `add eax, edx`) in every form tried (operand order, long or
-// pointer sums, size-first or difference tests); with the shared dispatch the second block's start always
-// takes EDX (retail EAX) and its vtable EAX (retail EDX).
-// Round 72 (lane 9, fast = plain): 0x147160's shared first/third dispatch with this function's existing
-// `> || ==` ends and the barrier in the first arm 11 (kept, with the second block calling g_479894
-// directly; assigning it to the allocator first is the same 11); with `>= || ==` 9 (redundant tests, not
-// kept); with plain `>=` ends 41; without the barrier 47 (111 bytes). On the kept form: plain `>=` first
-// end 51 (129 bytes), plain `>=` second end 39 (129 bytes), third in the `> || ==` form 18 (123 bytes);
-// allocator declared above the address test 11; third end `m_size + m_buffer` 11; fallback through the
-// allocator local 11; barrier after the first assignment 11. Diagnostic: one to four unused locals at
-// entry 19 each (before the dispatch change).
-// Round 459: Branch-admitted primary/secondary/physical receiver capture subsets on shared dispatch, then all with inclusive endpoint arms (exact-only)
-// 11/11/11/42/42/42/42/41. Original executable source restored.
-// M299: Independent repeated primary/secondary endpoint and physical-start ownership
-// subsets [33, 68, 86, 11, 33, 68, 86], all with common fallback 59. Original bounds restored.
-// Round 122: secondary/fallback/shared/all void-return expressions 21/21/11/11; plain shared return 21;
-// secondary and fallback done exits 11; secondary-only done exit 11; secondary receiver before its bounds 11;
-// concrete primary global declaration 11. Concrete secondary declaration did not compile at its explicit base
-// destructor; primary declaration without the complete type did not compile at an external upcast.
-// Round 31 (lane 17, fast): third range in its own else with the fixed-memory global in a local 42; that
-// local declared at the top and used for the third's bounds and receiver 44 (123 bytes); address-first
-// second lower bound 12; address-first first upper bound and equality 12; address-first third range 13.
 // @retail 0x147240
 void c_game_havok_memory::deallocate_aligned(void *address)
 {
 	if (address)
 	{
-		c_havok_abstract_allocator *allocator;
-		if (((long)((byte *)g_479898 + 0x4340) <= (long)address && ((long)((byte *)g_479898 + 0xf0340) > (long)address || (byte *)g_479898 + 0xf0340 == address)))
+		if (ADDRESS_IN_BLOCK(address, (byte *)g_479898 + 0x4340, (byte *)g_479898 + 0xf0340))
 		{
-			_ReadWriteBarrier();
-			allocator = g_479898;
+			g_479898->deallocate_aligned(address);
 		}
-		else if (((long)((byte *)g_479894 + 0x30) <= (long)address && ((long)((byte *)g_479894 + 0x15030) > (long)address || (byte *)g_479894 + 0x15030 == address)))
+		else if (ADDRESS_IN_BLOCK(address, (byte *)g_479894 + 0x30, (byte *)g_479894 + 0x15030))
 		{
 			g_479894->deallocate_aligned(address);
-			return;
 		}
 		else if (ADDRESS_IN_BLOCK(address, g_47989c->m_buffer, (byte *)g_47989c->m_buffer + g_47989c->m_size))
 		{
-			allocator = g_47989c;
+			g_47989c->deallocate_aligned(address);
 		}
 		else
 		{
 			function_146e30()->deallocate_aligned(address);
-			return;
 		}
-		allocator->deallocate_aligned(address);
 	}
 }
-#pragma function(_ReadWriteBarrier)
 
 // @retail 0x1472c0
 void *c_game_havok_memory::allocate16(long size, long memory_class)
@@ -241,61 +149,12 @@ void *c_game_havok_memory::allocate16(long size, long memory_class)
 	return result;
 }
 
-// score 8 (was 8): First upper-bound branch pair and EAX bound reuse still differ; shared bounds 36;
-// outer bounds 36; shared bounds with delayed fixed receiver 43; numeric bounds 36;
-// shared upper/lower 36/36; read-only bounds 36; shared bounds with exits 45.
-// Fixed membership 95; paired memberships 146; independent pool/fixed/physical bounds 106/48/48;
-// all independent bounds 134; separate pool-bound decisions 36; eager memberships 114.
-// First upper-bound branch pair, EAX bound reuse and shared-dispatch placement still differ.
-// first upper-bound branch pair is missing and bound
-// registers differ. Typed pool bounds 36; typed bounds and pool dispatch 73;
-// direct pool fields 36; typed bounds with delayed fixed receiver 43; fixed
-// object size 36; physical object reference 36; pool object reference 36;
-// typed fixed receiver 36.
-// Shared inclusive begin/end helper 43; begin/size helper 44; helper with the fixed
-// receiver 36; begin/size helper with early returns 44; size-first end 43. Retail's
-// jge/jne pair and EAX ends come only from a second (equality) test of each end.
-// Round 282: void-return completion on pool/fixed/physical/fallback paths
-// 36/36/45/36; pool+fixed/pool+physical/three pools/all paths 36 each.
-// Original calls restored; first upper-bound branch pair and bound-register reuse remain.
-// the first range's end is now a named local tested for equality, which gives
-// retail's jge/jne pair and the shared dispatch block; the first range's start and the second and
-// third ranges' ends are still computed in edx where retail uses eax. Only an end named before
-// the first test keeps the jne, and it is then computed before the jg; every end written in the
-// test (>= or > with ==, either order, casts, comma, range helper) gives a lone jge and split calls.
-// Inclusive third 6 (moves 0x147160 9 -> 7 and 0x147240 19 -> 30); end named at function scope
-// with inclusive third 11; inline range helper for the first two 10; inline >= || == end 70;
-// start test nesting the named end 70; third testing == first 23.
-// Round 33: every range's start and end share EAX in retail; ours computes the named first end
-// before the jg (start in EDX) and gives the second and third ends EDX (`add edx, eax`, the same
-// third-range difference as 0x147160 and 0x147240). Third end as `m_size + (byte *)m_buffer` 8
-// (same code), as `(long)m_buffer + m_size` 8; first end inline with a barrier in the first arm 60
-// (153 bytes); first end as a long local 44 (the == folds away); first start named too 8; the
-// equality test before the >= 10; permuter, 59 tries, none lower.
-// Round 61: first-only return 8; nested named end with the first return 70; nested plain inclusive
-// end 43; const end 8; one shared end 8; shared start/end 8; start named after end 8; concrete
-// page_count end 8; void * end 8. Original body restored.
-// Round 15: the first end in the test as the siblings write it 70 (start and end both in EAX, but the
-// first call block merges into the second's and the equality branch goes), with `>` 70; all three
-// ranges in that form 68; address-first comparisons with the named end 10; second and third ranges
-// address-first 14.
-// Round 58: the third range `>= || ==` 6 (-2, not kept); first and second plain with that third 43 (127 bytes); the named
-// first end with second and third `>= || ==` 64 (155 bytes); first in the test `>= || ==`, second plain, third `>= || ==` 73
-// (153 bytes). Compile-only (exact here, 8 = real 8), about 8,000 forms: test spellings, named and shared bounds, inverted
-// tests, per-arm allocator locals, inline bool helpers, casts, assignments in the test: none below 6. `>= || ==` in all three gives
-// retail's EAX bounds but turns the first call block's class/vtable to EAX/EDX (retail EDX/EAX), so the blocks don't merge.
-// Named first and second ends in nested blocks with the third `>= || ==` in the test: compile-only 8, only the named ends' lea
-// ahead of the jg (start EDX) still differs; the third range, the merged calls and the jne are retail's.
-// Round 159 (fast): early return with each arm returning and the three-way macro on all ranges 43 (127 bytes); early return head only 8
-// (same code); allocator local shared by the first two arms 43 (127 bytes); third end `size + buffer` with the macro 43 (127 bytes);
-// fixed-memory local with the macro 34 (126 bytes); one bound local reassigned in the test 70 (151 bytes).
 // @retail 0x147320
 void c_game_havok_memory::deallocate16(void *address, long size, long memory_class)
 {
 	if (address)
 	{
-		byte *pool_end = (byte *)g_479898 + 0xf0340;
-		if (((long)((byte *)g_479898 + 0x4340) <= (long)address && ((long)pool_end >= (long)address || pool_end == address)))
+		if (ADDRESS_IN_BLOCK(address, (byte *)g_479898 + 0x4340, (byte *)g_479898 + 0xf0340))
 		{
 			g_479898->deallocate16(address, size, memory_class);
 		}
