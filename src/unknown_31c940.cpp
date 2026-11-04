@@ -643,11 +643,11 @@ static __forceinline void solve_angular_friction_kernel(float target, float cons
 // both axes before either angular write; only the SIMD impulse rounds here.
 static __forceinline void solve_bounded_angular(float mass, float target,
 	solver_angular_row_31e7b0 *row, solver_velocity_31c940 *a,
-	__m128 &velocity_b, __m128 const *const volatile &inverse_b_pointer,
+	float *velocity_b, __m128 const *const volatile &inverse_b_pointer,
 	float const &upper, float const &lower, solver_step_31c940 *const volatile &step, float *result)
 {
 	__m128 axis_a = row->a, axis_b = row->b;
-	__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, axis_a), _mm_mul_ps(velocity_b, axis_b));
+	__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, axis_a), _mm_mul_ps(_mm_load_ps(velocity_b), axis_b));
 	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
 	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
 	float projected;
@@ -673,7 +673,8 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 	weights[1] = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
 	// Reload A after projection for the bounded angular update.
 	a->angular = _mm_add_ps(_mm_load_ps((float const *)&a->angular), _mm_mul_ps(weights[0], axis_a));
-	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(weights[1], axis_b));
+	_mm_store_ps(velocity_b, _mm_add_ps(_mm_load_ps(velocity_b),
+		_mm_mul_ps(weights[1], axis_b)));
 	*result += impulse;
 }
 
@@ -1039,13 +1040,13 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				solver_velocity_31c940 *body_b = b;
 				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
-				__m128 *velocity_b_pointer = &body_b->angular;
+				float *velocity_b_pointer = (float *)&body_b->angular;
 				do
 				{
 					float const volatile &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
 					float mass = mass_source;
 					float target = ((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3];
-					solve_bounded_angular(mass, target, ((solver_angular_row_31e7b0 *)terms), a, *velocity_b_pointer, inverse_b_pointer,
+					solve_bounded_angular(mass, target, ((solver_angular_row_31e7b0 *)terms), a, velocity_b_pointer, inverse_b_pointer,
 						operation_float(op, 4), operation_float(op, 8), step, result);
 					terms += 2; ++result; op += 16;
 				} while (*op == 4);
