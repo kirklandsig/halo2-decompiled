@@ -276,6 +276,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // M352: Four-use normalizer input-reference/returned-reference/both contracts, each
 // with original/short-vector exit, then input/both references with float absolute API:
 // 110/110/110/110/110/110/110/110. All canonicalize; original helper and complete body restored.
+// P327: Native-array squared-length reduction, long/dword/short/byte index, original
+// scale 221/221/311/311; indexed scale 221/221/391/391. NOT kept: all regress
+// and grow beyond 922 bytes; original four-use helper and complete body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

@@ -42,6 +42,10 @@ public:
 // Round 101: result declared then assigned 4; that result before key b, a locals 4; a const handle 4;
 // a receiver reference 4; an immutable key pointer 4; the key declared before the virtual methods 4;
 // unsigned key fields 4; an unsigned method result at declaration and definition 4. Original restored.
+// Round 88 (one-link screen of the differing head, 4 there): reader through a pointer, as LARGE_INTEGER parts or a struct with a
+// constructor, none volatile: the zero stores vanish (frame 8); `do {} while (false);` before the reader, between its store
+// and rdtsc, before or after the start read, before the call, the reader or start declared then assigned, a const key
+// pointer: head unchanged, 4; the intrinsic tried is not one this toolchain has (an unresolved call).
 // @retail 0x18f260
 long c_resource_lock::method0(long handle)
 {

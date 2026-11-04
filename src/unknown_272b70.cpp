@@ -1532,6 +1532,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH346: Immutable native sorted-candidate/actor/seat pointer bindings, seven subsets,
 // then all with immutable unit receiver: 32/32/32/32/32/32/32/32. Original body restored;
 // iterator scaling, leave-selector transport and request/publication homes remain.
+// DH352: Complete parent/seat departure predicate in bool/byte/char/short/word/int/long/dword
+// storage: eight at 32. NOT kept: no exact predicate-owner form. Original guard,
+// leave/load/walk requests and body restored; iterator and publication homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

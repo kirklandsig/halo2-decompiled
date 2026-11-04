@@ -409,6 +409,9 @@ struct s_block_candidate
 // N352: Post-callback allocator-clock long/dword, occupied/segment/admitted/entry
 // declarations: 347 each. NOT kept: one-use clock forms remain unmatched and retain
 // frame 0x1050/0x1054 and page/ring homes; complete original body restored.
+// N367: Joined callback/expiry busy result, expression bool/byte/short/long 360/360/365/365; branch
+// producers before oldest admission 347/347/365/367. NOT kept: ties or regressions, wider forms grow beyond
+// retail. Original busy/oldest graph restored; missing frame dword and page/ring homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
