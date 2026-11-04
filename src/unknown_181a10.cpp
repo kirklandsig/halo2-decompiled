@@ -545,6 +545,7 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// MiniMax lane A (11-04): no new form, no lower score.
 // score 308 (was 308): frame 0x4c versus 0x44 (retail writes the transformed normal into the plane and has two
 // unused dwords below it); classifier clamp form, transformed-plane and output homes remain.
 // normal component loop 319; material-output scope 319; direct validity 351;

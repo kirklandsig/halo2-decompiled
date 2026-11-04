@@ -910,6 +910,7 @@ extern vector3f *g_4687b0;
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax lane A (11-04): no new form, no lower score.
 // score 309 (was 309): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
@@ -4831,6 +4832,7 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 /* hoists a unit onto a ledge (type 49): its animation by the hoist marker,
    facing away from the ledge, its seat transform kept relative to the new
    frame */
+// MiniMax lane A (11-04): no new form, no lower score.
 // score 175 (was 175): Direct native position output gives 1388/1388 bytes; frame 0x110 versus 0x11c.
 // Scaled-away/frame-left XMM ranks and point sums remain. Earlier (201): the result is retail's
 // (per-case `result = b8d30 > 0 && f10f430`, body under
