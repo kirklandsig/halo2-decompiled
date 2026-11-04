@@ -450,6 +450,9 @@ void function_14bac0()
 // N365: Complete real scenario-table/marker/origin field layouts, seven nonempty
 // subsets 222 each; all with native result-tested recipients 228. Original external
 // views and full body restored; NOT kept: unmatched layout/alias ownership.
+// N375: Entry request admission in positive/complementary bool/byte/short/long
+// storage, eight forms 222 each. NOT kept: no frame/home or byte-match gain; original
+// request, point/iterator/readiness graph and complete executable body restored.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

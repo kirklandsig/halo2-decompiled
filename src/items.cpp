@@ -1313,6 +1313,9 @@ struct s_item_flags_view_10b850
 // angular projection regress. Individual output producers reach retail length at 820; frame and entry
 // Boolean/collision/carrier/rotation homes remain. Original body and helpers restored. Scores
 // 820/820/858/820/858/858/855/906. NOT kept: unmatched result-ownership forms.
+// N375: Actual collision impact-prefix member with direct/pointer/reference ownership
+// and consistent point/normal fields: 911/887/887/887/887/904/858/858. NOT kept:
+// all regress; original record, field observations, helpers and complete body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1787,6 +1790,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N366: Complete damping result copy/compound, interleaved/staged scalar, setter and native vector
 // publication regress; return byte, release RMW/tail and event homes remain. Original damping and body
 // restored. Scores 141/141/141/141/143/143/196/141. NOT kept: unmatched result-ownership forms.
+// N375: Complete post-decrement mode/count expiry admission in positive/complementary
+// native truth domains, eight valid forms 140 each; original full body restored.
+// NOT kept: no byte match or frame/home gain; return byte and release/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

@@ -282,6 +282,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // F377: Separate duplicate-equality outcome across the ordinal search, bool/byte/char/word/
 // short/int/long/dword: 203/203/203/203/203/203/203/203. NOT kept: unmatched flag carriers;
 // original complete body restored; outer EBP preservation and read-size homes remain.
+// N375: Global mapping initialization by endpoint cursors, fill/fill_n, unsigned ordinal,
+// ordinary cursor/ordinal while and advancing cursor/count: 128/128/253/253/128/128/128/128.
+// NOT kept: no gain; standard fills shorten to 741/773. Original whole body restored.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
