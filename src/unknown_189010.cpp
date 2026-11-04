@@ -279,6 +279,14 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // before the playback call 130 (470 bytes); that with the priority from the request's audible field 130
 // (470 bytes); the object/source/platform stores before the flag word 134 (0x1895f0 4, 0x189a50 3);
 // an early `return NONE` for a NONE tag 152 (483 bytes). All restored.
+// M3 lane 14 r59 (plain checks): the end test as `(flags & 0x100) || (bool)((flags >> 11) & 1) || !audible` 132
+// (486 bytes; the flags stay in ESI); the first class flag named in a bool before its test 110 (same code); the
+// +0xa class bits as word bitfields (`word unknown0a : 7; word flag23 : 1; word : 8;`) 132 (478 bytes). Retail's
+// header order (priority from the request, set-or-clear object/platform bits, location copy after the flags) with
+// the first lookup under a repeated tag test (diagnostic only) 132 at retail's 470 bytes: both 0x221810 calls stay
+// out of line and the body takes retail's shape, but the request then arrives on the stack and is homed in EBP;
+// that with the word bitfields 135 (471 bytes), whose class test becomes retail's `shr al, 7; test al, 1` (the
+// byte bitfield gives `test cl, cl; jns`), so retail's +0xa bits are word bitfields like flag1/flag2.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

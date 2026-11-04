@@ -279,6 +279,14 @@ struct s_spawn_scenario_23aea0
 // scenario pointer 61; the scenario pointer declared at its test 99 (its load moves below the stores); the sources as
 // `((real const *)(definition + 0x148 + type * 0x1c))[n]` 61. The integer-offset copy loop still needs the weights'
 // symbol at 0x502250 (the round 55 lead above), which lives in src/unknown_157450.cpp, held by another lane this round.
+// M3 lane 14 r59 (fast): each record as three real field assignments (`types[type - 2].value0 = ...`, value4,
+// value8) 102 (390 bytes): the copies become retail's interleaved dword moves through ESI, unrolled by six, so
+// only the destination induction differs (a pointer with small displacements, 3 bytes shorter per store); the same
+// with a `const` globals pointer 102 (same code). A twelve-byte record assignment in the type loop 256 (279 bytes,
+// not unrolled), memcpy re-measured 256 (same code); the weights addressed through the cast global at each use, no
+// globals local, 61 (same code); vector3f_assign fed through a `vector3f const *` view of the record 61 (same code).
+// So the round 55 match needs the field assignments (or its dword reads) and the 0x502250 symbol together.
+// BLOCKED-BY 0x157450 (src/unknown_157450.cpp, held by F356 in r59).
 // @retail 0x23aea0
 void function_23aea0()
 {

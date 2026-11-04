@@ -89,6 +89,10 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // dispatch on `object` 105; `sound_index = NONE` at its declaration 21; the description at the slot block
 // scope 21; the spatialization flag if/else swapped 24. Retail's callees 0x18d4f0, 0x189fe0 and 0x189340 all
 // keep ESI, so the EBX copy is an allocation choice, not a callee summary.
+// Round 135 (plain): direct duration address 21; const early object 21; object declared before
+// spatialization 21; object declared at slot-block scope 21; sound result declared after the clamp 21;
+// inline started-dispatch declaration 21 (0x109220 MATCH); inline spatial playback declaration 21
+// (0x189340 MATCH); nested late playback scope 21. All restored; the late object load still differs.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

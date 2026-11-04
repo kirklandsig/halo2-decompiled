@@ -265,6 +265,11 @@ const dword g_455978[81] = {
 // Round 284: joint optional bounds/index/computed vertical-product identities, six lexical
 // priorities 298 each; two complete vertical-scalar declaration lifetimes 298 each.
 // Original body restored; optional scalar homes and selective helper expansion remain.
+// Round 131 (m3 lane 8, fast with 0x11bed0/0x14a280): the query filter named once for both volumes 505 (2111 bytes);
+// the sample counter declared before the presence object 298 (same code); the counter declared outside the for 298;
+// the presence object declared with the transform 354; the count as `18 + (arg_8 ? 9 : 0)` 433. Same budget pattern as
+// 0x116b00 (round 131 there): retail inlines 0x279740 (/Ob1 src/unknown_279740.cpp) at the first release and so calls
+// 0x11bed0; ours can inline neither 0x279740 nor keep 0x11bed0 out (round 54's diagnostic: 0x279740 inlinable flips it).
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

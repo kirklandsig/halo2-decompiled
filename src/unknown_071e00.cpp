@@ -182,6 +182,12 @@ bool __stdcall function_71d70(c_session_state_matchmaking *arg_0)
 // a `<=` false arm 45 (183); a final return of local_0 or
 // false 43/43 (187); an outer-type false return 65 (200); an invalid-state direct return 74 (186).
 // Original body restored.
+// Round 66 (m3 lane 11; compile-only harness reproduces ours and the layout): in retail arm order every
+// result form (all set/return mixes, four nestings), a single-exit goto done on any arm, the range test
+// inverted, an early type return and code-identical spellings of the timeout copy (char, byte-offset or
+// `!= 0` flag, braces, `7L`) merge the copies before layout; only an extra session load keeps them apart.
+// Real (fast): timeout copy in a nested else 37; goto done after it 37; nonzero-state arm first, match or
+// !match first, 37/37; byte-offset search pointer in the timeout copy 37 (all 176 bytes).
 // @retail 0x712d0
 bool function_712d0(c_session_state_matchmaking *arg_0)
 {

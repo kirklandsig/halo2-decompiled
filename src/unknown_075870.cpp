@@ -747,6 +747,8 @@ static inline void observer_statistics_reset(s_network_statistics *statistics);
 // each use (+12 bytes). Tried: dropping volatile (177), swapping the parameters (177), reading the volatile argument once
 // into a local (198), the same through *(T volatile *)&argument (198), channel->x spelt observer->channels[channel_index].x
 // (208), owner pointers walked in both loops (177 / 208). The volatile stays only because the callers need the convention.
+// Permuter (25 min on r663): 38 below its own baseline, only with network_observer_channel_forget_address's last two
+// arguments swapped (a behaviour change); not kept.
 // @retail 0x76ff0
 void network_observer_update_connection(s_network_observer *volatile observer, long channel_index)
 {
@@ -1603,6 +1605,7 @@ extern "C" void _ReadWriteBarrier(void);
 // call, a do/while with break, the whole body inside `if (elapsed >= limit)` (41; with result = 2/0 assigned: 69),
 // result = 2/0/1 assigned in an else-if chain (62), per-field observer->channels[index].x (91), the slot as
 // &channels[index] minus offsetof(channels) (41), the slot after the 0x79560 call (88).
+// Permuter (25 min on r663): nothing lower.
 // @retail 0x7a1c0
 long function_7a1c0(s_network_observer *observer, long index)
 {
@@ -2341,6 +2344,7 @@ extern "C" void _ReadWriteBarrier(void);
 // both barriers (343), network_frame_rate under optimize("g", off) (225, x87 code),
 // min/max written as if/ternary forms (206), ternary vs sum order for
 // value4e28/rate (205-224).
+// Permuter (25 min on r663): nothing below 89.
 // @retail 0x779f0
 void network_observer_update_channel_budgets(s_network_observer *observer)
 {
@@ -2498,6 +2502,8 @@ long function_75890(long time);
 // more merging), connect state as ternary (180, lea eax+eax+6 instead of retail's
 // mov eax,6 / mov eax,8) vs two calls (152 before the configuration change),
 // reordering the state-2/connect/out-of-range blocks (152, same layout).
+// Permuter (25 min on r663): 9 below its own baseline, only by duplicating the owner loop with channel_may_send's
+// arguments swapped in the copy (a behaviour change); not kept.
 // @retail 0x776a0
 void s_network_observer::function_776a0(long channel_index)
 {
