@@ -2903,6 +2903,14 @@ void function_c5740(long unit_index, bool start)
 // M341: Native root fields through mutable/const pointer/reference, each with expression
 // or in-place final definition index: 94/94/94/94/94/94/94/94. Original root/index body
 // restored; definition/material/pool ownership and effect-call convention remain.
+// Round 1 of #1049 (fresh walk against retail 0xceee0-0xcf03b, fast, still 94): no logic difference left: weapon
+// slot, 0x1012c0 gate, definition tag +0x58, root through 0xbaf80, the 0x188180 argument list (point in EAX,
+// forward in ECX, tag, unit, 0xf, 0, raw material dword, root+0x70, root+0x28, 1.0), the material record's
+// +0x64 and the definition record's +0xac sounds all agree. What differs is only the prologue and the 0x188180
+// call setup: retail keeps definition_index in EBP (loaded first), the object globals pointer in EDI (reloaded
+// through [edi+0x44] after 0x1012c0), and reads unit_index and the material from the stack at each use, while
+// ours puts unit_index in EBX and the material in BP; and 0x188180 is still unmatched (bipeds.cpp, items.cpp
+// and unknown_187ec0.cpp), so which registers carry its first arguments is not ours to decide.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -3944,14 +3952,6 @@ void function_cc590(long unit_index)
    and the unit's own point (its vehicle's, else its center): a free biped
    leaves it to 0xdef60; otherwise mode 3 uses its weapon's barrel, modes
    1-3 its marker 0x4000095, and other modes its center */
-// score 110 (was 124): the prologue through the parent and flag tests now agrees with retail (flag 2
-// read through the word bitfield view, one shared lookup of the center, the location left unset, a
-// switch on the mode with the weapon test falling into the marker case). Left: retail's call to
-// 0xdef60 passes the point in EAX and that callee is far from matched (995), the weapon block's
-// register choice, and retail adds the offsets with the point read into a register first. Kept: the
-// point's fields read into locals before the sums (110). Tried and dropped for the sums: plain
-// (122), reversed operands (122), +=, all three sums before the stores (122); component-wise marker
-// copy (110).
 // @retail 0xcb500
 void __stdcall function_cb500(long unit_index, short mode, point3f const *origin, vector3f const *forward,
 	real const *offsets, point3f *point)
@@ -4007,15 +4007,14 @@ have_reference:
 		function_cafc0(unit_index, point);
 		break;
 	}
-	real dx = origin->x - reference.x;
-	real dy = origin->y - reference.y;
-	real dz = origin->z - reference.z;
-	real px = point->x;
-	real py = point->y;
-	real pz = point->z;
-	point->x = px + dx;
-	point->y = py + dy;
-	point->z = pz + dz;
+	vector3f delta;
+
+	delta.i = origin->x - reference.x;
+	delta.j = origin->y - reference.y;
+	delta.k = origin->z - reference.z;
+	point->x += delta.i;
+	point->y += delta.j;
+	point->z += delta.k;
 }
 
 /* fades the unit's two definition-timed values (+0x25c, the definition's
@@ -5050,6 +5049,16 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 // Tried (all 99): operand order of the angle and rate products, swapped high/low declaration order, low copied
 // from high, conditional-expression clamps; reading i, j directly in the first terms (99); rotated vector built
 // in a temporary and copied (122).
+// Round 1 of #1049 (fast, kept at 99): a fresh walk found no logic difference (clamps, the two branches' scale and
+// random-turn formulas, the 0x45e240/0x45e244 constants and the Rodrigues rotation d*cos + a*along - (d x a)*sin
+// all agree, the x87 tail matches byte for byte). Two structural facts for whoever continues. (1) Retail takes the
+// sums angle + pi/4 and rate + 2pi into the first block but multiplies them by the constant only after the
+// preceding clamp (`a`, test, `b`, test; `c`, test, `d`, test): that source shape, with the sums as locals
+// declared first, gives retail's 810 bytes and its c/d block, but the clamps land in xmm3/xmm4 instead of
+// retail's xmm4/xmm5 and the score rises to 170 (171 with either high/low order), so it was not kept; low/high
+// swapped, high = low and low = high behave the same. (2) Retail reads the direction's i and j from memory at
+// each use and forms (d x a) as three early registers; named locals for those terms or for x/y/z moved the
+// direction pointer from ESI to EDI (181) or gave 800 bytes (174).
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
