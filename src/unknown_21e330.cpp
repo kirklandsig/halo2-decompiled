@@ -761,6 +761,9 @@ PRIVATE __forceinline real function_21ece1(real arg_0, real arg_1)
 // by value 125; the header's operator+ field left or gain left 103/122 (SSE); plain real with a const reference gain 144; a memcpy copy of the field
 // field first, gain first, in place either way 144 each (copy gone); a memcpy from a field pointer 106; a double local summed with `+=` 105. The header
 // operator in another file without /arch:SSE did not inline on the reduced image (132, inconclusive; a move for flags is not keepable anyway).
+// Round 61: a by-value sum helper defined in an existing file without /arch:SSE and inlined under LTCG 119 (plain, 435 bytes: it compiles to
+// addss, so the caller's setting applies and retail's x87 is a double sum, not a non-SSE helper; closes round 52's lead). On the volatile copy (fast):
+// the gain by const reference 25; the sum in a double local 106 (395 bytes); the helper returning double 26; a double gain parameter 63 (415 bytes).
 // @retail 0x21ece0
 void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 {

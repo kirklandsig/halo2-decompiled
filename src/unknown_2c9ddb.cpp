@@ -395,6 +395,9 @@ void c_class_2c9e69::select_last_variant()
 // qualifier, cast at the empty call 36 (154 bytes); name-arm copy only re-measured 13 (159 bytes: the empty
 // arm tests the stack home, the name arm takes EDI for EBX), with the copy named label/caption/variant_text/
 // a_text 13 each; the name-arm copy without the qualifier 36 (154 bytes). Restored.
+// Round 61 (fast): the name arm through an inline helper taking the text 96 (120 bytes, stays out of line), through a forceinline
+// helper 36 (154 bytes), both arms through forceinline helpers 36; the variant named once with a nested `else { if (text) }` 43 (150 bytes);
+// the interface result named 36; a name pointer local 36; name-arm copy only re-measured 13 (159 bytes). Existing 0x253af2 adds a compare retail lacks here.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {
