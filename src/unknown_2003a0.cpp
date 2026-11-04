@@ -3384,6 +3384,9 @@ void function_2011f0(long arg_0);
 // F384: Immutable group-row/selected-row/actor-record receivers, seven subsets,
 // then all with immutable options: 318 each. NOT kept: no gain; original body restored.
 // Native masked-input/placement, seat and final-chain homes remain.
+// F386: Whole active-body containment and common completion gate, persistent reuse
+// bool/byte/short/long success 318/318/318/354; missing polarity 318/318/357/357.
+// NOT kept: ties/regressions; original body restored, input/seat/chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

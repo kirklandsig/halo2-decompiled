@@ -1275,6 +1275,9 @@ long function_10f5f0(long object_index);
 // P328: Saved attached complement and complete attachment admission in bool/byte/short/long:
 // 565/565/575/575/563/563/574/574. NOT kept: best gain is below eight and shortens away from retail.
 // Original body restored; frame 0x19ac/0x1984, predicate-result and reduction homes remain.
+// F386: Complete velocity/offset/position component-array observations, seven subsets,
+// then all with six-real output: 565 each. Original entire body restored; native frame,
+// predicate-byte stores and reduction homes remain. NOT kept: no gain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2549,6 +2552,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // P328: Actual torque/magnitude/turn-product declarations in six orders, then entry-owned
 // and role-named: 42/42/42/42/42/42/42/42. Original declarations and body restored;
 // native frame agrees, turn-product and spin scratch/store schedules remain.
+// F386: Caller-owned advance store with scalar advanced-spin input to the existing helper,
+// four real-result graphs, ordinary/forced: 127/133/127/132 twice. NOT kept: all regress
+// and grow; original helper/body restored, turn-product and spin transport remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {

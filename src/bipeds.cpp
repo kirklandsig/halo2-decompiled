@@ -3640,6 +3640,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // subsets then all with the original collision declared at entry: 368 each.
 // Original declarations and complete body restored; native matrix/origin and
 // paired pivot/property homes remain; frame 0x12c still agrees.
+// F386: Static existing component-array observations of scaled pivot, transform rows
+// and full geometry, seven subsets then all forced: 369/368/369/369/369/369/369/369.
+// NOT kept: tie/regressions; original helper/body restored, matrix/origin/pivot homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4416,6 +4419,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // publication loop, seven subsets then complete immutable parts:
 // 179/176/196/154/181/170/190/190. NOT kept: all regress; original twice-used helper
 // and body restored; normalization SIMD and trigonometric/basis homes remain.
+// F386: Existing vector/axis projection component-array observations, three subsets
+// ordinary/forced inline, then complete readonly projections ordinary/forced: 145 each.
+// NOT kept: no gain; original helper/body restored, normalization SIMD/trig homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
