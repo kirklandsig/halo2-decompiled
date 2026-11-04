@@ -3043,6 +3043,8 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // DH347: Complete previous/old point memcpy boundaries, moved-point initialization and
 // projection declarations: 486/486/516/486/516/516/516/516. Original body restored;
 // frame 0x60 versus 0x38 and stored-velocity/projection homes remain.
+// J252: Projection receiver returns, helper expansion and component-array access: 514/514/486/486/486/486/486/486/486/535/501/501.
+// NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3412,6 +3414,8 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // DH343: Positive signed-char/short/long/dword carrier, branch-defined then entry-default:
 // 173/176/173/173/173/176/173/173. NOT kept: gains one/four are below the gate; original bool
 // result and body restored. Frame 0x18 versus 0x1c and fade scratch homes remain.
+// J252: Existing position/opacity/recursive inline contracts and own cdecl: 224/177/177/224/224/177/224/176.
+// NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4793,6 +4797,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // DH345: Existing fog producer single-exit admission/rejection results in
 // bool/byte/short/long: eight at 138. Original maximum, helper, caller and pass
 // operations restored; late enabled bytes, mode loads and clear convention remain.
+// J252: Existing cull/depth/draw/setup inline contracts: 138/138/138/138/138/138/138/138.
+// NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
+// J252: Existing configured-provider inline and shared pass path 2137; NOT kept: no eligible native-shape gain; original provider and complete caller restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
