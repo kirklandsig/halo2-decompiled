@@ -667,6 +667,9 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // test 2; half and i declared at the top of the found block 2; the even count as its own local 2. A compile-only copy with `__stdcall`
 // parameters reproduces the swapped pair. There a division by 3, 5, 7 or 100 anywhere in the function flips it (a division by 4 or 8, or
 // a `% 3`, does not), and 12 extra reads of either parameter do not, so reference counts do not decide it. 102 no-extra-code forms keep the pair.
+// Round 143 (plain): explicit start/end numerators with end = start + 32 2; prefix increment 2; reversed bound 2;
+// a short query-group local 2; &ids[0] 2; return after the build 2; != loop bound 3; compound increment 2.
+// All restored; the post-loop hill/index reload order remains.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {

@@ -1061,6 +1061,9 @@ bool __stdcall network_session_boot_machine(c_class_58d20 *session, const s_sess
 // (0x5e1a0 stays 10); a long result returned as `!= 0` 58 (122 bytes, 0x162d00 15); diagnostic only,
 // not kept (it writes the disconnect out by hand): the reason in a local passed by address to the
 // file's state-entry helper with state 10 matches, so the cause is 0x616b0's own body (held file).
+// Round 140: unsigned reason declaration 23 (0x616b0/0x5ef20 stay matched); comparison-owned
+// long/bool reasons 52/50; condition-assigned bool reason 50; member read through its address 23;
+// entry-hoisted long reason 53; branch-scoped reason with plain/addressed member 23/23.
 // @retail 0x5ade0
 bool network_session_host_boot_member(c_class_58d20 *session, long member_index)
 {
@@ -3700,6 +3703,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // Round 49 (m3 lane 15, fast): state range as `state >= 3` 102; the leave test with the flag byte first 101; the
 // value44 reset before the member index store 100 (one point, not kept); announcement flags stored 2, 1, 0 101; the
 // host index read from the session at each use (no assignment inside the condition) 104 (421 bytes).
+// Round 141 (KIMI1, fast): leave assigned from the host result under its guard 131 (413 bytes); shared defaults
+// original/reversed 101/103; chained defaults original/reversed 101/103; neutral defaults with the reply member
+// state before the id 94 (reply exact, seven under the bar), with a const member pointer 94 and a member reference
+// 94. Original executable body restored; held timeout owner spill and announcement/return layout remain.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3829,6 +3836,10 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // with channel failure first 152 [19] (554 bytes), with the transport local too 163 [19]; a local copy of session for the part after the loopback test 136 [34]
 // (coalesced, no second register), on the flag/channel form with a host copy too 152 [19]; that part as a forceinline bool helper taking session and host 145 [25]
 // (581 bytes, session still in ESI). No retail call path leads from 0x5fb00, 0x5fb60 or 0x7ab10 back here. BLOCKED-BY the same host/session staging.
+// Round 142: on the loopback-helper/forceinline-clock/channel-failure-first composite (138): host read through
+// its parameter home 138; long resolver result 138; session read through its parameter home 138; inline resolver
+// wrappers with host before local/host first 168/168 (559 bytes); entry remote 138; loopback helper by reference/
+// scalar fields 138/138. Original body restored; host/session staging remains.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,

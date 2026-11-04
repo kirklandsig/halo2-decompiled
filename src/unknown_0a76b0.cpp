@@ -5328,6 +5328,9 @@ void function_edfa0(long unit_index, point2f const *facing)
 // sequence used volatile casts or real pointer aliasing); every plain shape compiles to the same code here:
 // a `real *` array helper 13; separate in/out pointer helper 13; element pointer local 13; pointer helper
 // with `*=` 13; one point2f copy 19 (as before); y first, `*=`, division by the length all code-identical.
+// Round 143: y saved after the x store / a scaled-y local / mixed union array-field accesses 13 each;
+// magnitude2d with manual scaling 13; both product locals 13; a length-squared local 13; scalar entry
+// x/y 13; a scaled point copy 31 (NOT kept: frame 0x10 versus 0xc and a one-use aggregate). Restored.
 // @retail 0xedff0
 void function_edff0(long unit_index)
 {
