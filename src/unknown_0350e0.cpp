@@ -2429,6 +2429,9 @@ real magnitude3d(vector3f const *v);
 // consuming the first vector 186/186/186; direct cyclic rotation loop 178; tangent and rotation
 // loops 191. All retain the raw-length/promoted-dot home mismatch. Original complete body
 // restored; shared tangent forms also raise two other scores.
+// DH343: Complete native construction of first/second/axis/rotated/both inputs/inputs+axis/
+// axis+rotated/all existing vectors: 170/170/170/170/170/170/170/170. Original body restored;
+// raw-length and promoted-dot homes remain; frame and extent still agree.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2924,6 +2927,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // geometry, view scalar/random fields, complete view and complete state/view fields: 486 each on
 // the retained inline-normalization graph. Original body and field accesses restored; frame 0x60
 // versus 0x38 and stored-velocity/projection homes remain.
+// DH343: Stored-position readback, native old-point constructor, native new-point publication,
+// their pairs/all and all with shared complete displacement: 513/519/534/548/535/509/519/507.
+// Original body restored; frame 0x60 versus 0x38 and independent velocity reloads remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3282,6 +3288,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // recursive neg/sbb/inc and a final test/sete; retail copies and returns its positive byte
 // directly. The other forms regress. Original complete body and positive result restored; frame
 // and fade scratch homes remain.
+// DH343: Positive signed-char/short/long/dword carrier, branch-defined then entry-default:
+// 173/176/173/173/173/176/173/173. NOT kept: gains one/four are below the gate; original bool
+// result and body restored. Frame 0x18 versus 0x1c and fade scratch homes remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

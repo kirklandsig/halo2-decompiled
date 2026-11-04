@@ -1826,6 +1826,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // AC505: Actual duplicate-type admission bool/byte/short/long result
 // 138/138/138/138; guarded complete outcomes 140/140/141/143.
 // NOT kept: no gain or byte match; original predicates, mode/flag, body and calls restored.
+// DH343: Signed slot/hand domains char-long/long-char/char-char/short-long/short-char/
+// char-short/short-short/char-word: 144/146/146/136/143/134/131/134. NOT kept: short slot/hand 131
+// gains seven below the gate. Original body restored; pool reload and weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {

@@ -2018,6 +2018,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 208 (m3 lane 3, fast with 0x25d810): strongest's zero after the prop-iterator start 194, best_level's 195,
 // both 195; the iterator start from the first actor lookup 729 (2843 bytes); `(short)p` in the first search 194;
 // the players iterator declared at the top 194.
+// DH343: Existing native component-array identity throughout direction/velocity/relative/forward,
+// direction+velocity/direction+relative/direction+forward/all: 194/194/194/194/194/194/194/194.
+// Original body restored; entry operand order, Boolean homes and direction SIMD residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
