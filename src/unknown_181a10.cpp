@@ -701,6 +701,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // DH335: Standard backward origin/hit/normal transfers, subsets 1..7, then
 // complete final position transfer: 312/303/372/305/376/352/354/377. NOT kept:
 // hit-only gain five and paired gain three; original complete body restored.
+// AC515: Complete exclusion result on the aggregate origin/hit graph, bool/byte/short/long,
+// at computation or with entry-owned uninitialized storage: 308/308/308/308/308/308/308/308.
+// NOT kept: unmatched result storage; original guards, observations and complete body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

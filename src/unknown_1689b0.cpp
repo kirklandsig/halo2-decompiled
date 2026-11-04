@@ -1711,6 +1711,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // counts after/before construction 553/553/573/573; independent point declaration
 // initialization 594/594/578/578. All restored; native sum homes/query zero/prism
 // anchor remain. Coordinate-table owner stays matched in every trial.
+// AC515: Direction-length-owned normal-path decision bool/byte/short/long, with length at
+// direction phase or uninitialized radius scope: 613/613/613/613/613/613/613/613.
+// NOT kept: unmatched decision/storage graph; original flags, normalization and complete geometry restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
