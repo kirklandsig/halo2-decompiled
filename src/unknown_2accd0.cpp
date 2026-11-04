@@ -850,6 +850,18 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 66 (m3 lane 10, fast; 0x2adb10 102 throughout): the header read test as `header_size == bytes` 36; the body
 // progress sum offset first 34 (same code); the header case's open test as its own if around the read 34 (same code);
 // the scratch clamp as `MIN(remaining, size)` 35; the signature-state test as `!(offset < size)` 34 (same code).
+// B403: Actual seek-return dword at body/signature/both, seek-equality Boolean at
+// body/signature/both, signed seek result at body/both: 34/34/34/34/34/34/34/34.
+// NOT kept: one-use results remain unmatched; original full body restored.
+// Captured unsigned total with header/body denominator conversions at entry, case
+// or successful progress producers (eight nonoriginal pairs): 248/233/247/261/260/233/252/207.
+// All regress; original eager conversion, all field observations, I/O and body restored.
+// P309: Guarded header/body/finalization signing-status masks 1/2/4/3/5/6/7, then all signed:
+// 83/34/34/83/83/34/83/83. Header result adds frame/length; other outcomes tie. NOT kept:
+// unmatched one-use/test-produced status; original full body restored, total/seek/size homes remain.
+// M352: Actual header/body progress and integer signature-comparison producers,
+// seven subsets 34/34/34/202/202/202/202; all with one shared progress scalar 202.
+// NOT kept: one-use output/result storage does not match; original body and getter restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1184,6 +1196,22 @@ struct s_signed_file_write_parameters
 // compare), declared first / between / last 115/119/115 [34] (declared first that arm's saved homes become retail's,
 // header EDI, body EBX, size EBP, but every scratch register after it rotates one step); the `void *` parameters
 // view as 0x2ad7c0 takes it 102 (same code), with the position local 115.
+// J248: Standard minima at header clear/transfer/extension, subsets 1..7,
+// then all with the standard positive-offset maximum: 285/257/297/231/294/271/305/338.
+// NOT kept: reference-return contracts regress; original capacity staging,
+// extension buffer/offset homes and complete callback restored.
+// B411: Test-produced header result through the sole exit, with scratch/direct/publication
+// result producers in subsets 0-7: 324/303/296/283/328/305/302/287. Native extent returns
+// in some forms but capacity and extension homes regress; original complete body restored.
+// P306: Native seek-return carriers at scratch/direct/signature consumers, seven subsets,
+// then all with the header seek result: 102/102/102/102/102/102/102/102. NOT kept:
+// one-use API-result storage has no exact match. Capacity staging and extension homes remain.
+// M351: Immutable paired transfer amounts/signed-body inputs/signature position, all seven
+// subsets, then all with immutable queried extent: 102 each. Original complete body restored;
+// capacity EAX/EBX staging and extension offset/size/buffer homes remain.
+// DH330: Dispatch orders 1032/3021/3102/3120/3201/2013/3012/0213 on the
+// retained direct-header-return/live-seek graph 331/315/324/325/322/325/317/169.
+// Original complete cases and body restored; capacity and extension homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

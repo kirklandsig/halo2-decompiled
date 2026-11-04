@@ -62,7 +62,7 @@ struct s_object_flags_256bd0
 	word unknown0 : 6;
 	word bit6 : 1;
 };
-// score 178 (was 179): the activity test is the loop's condition, so the frame is 0x110 and the
+// score 178 (was 178): the activity test is the loop's condition, so the frame is 0x110 and the
 // activity byte is re-read at every pass as retail does; the first block's register homes differ.
 // Round 34: the activity test moved into the while condition and the step helper no longer reads
 // the global (it steps the iterator and copies its index): retail's frame 0x110 at 179/1074, the
@@ -244,12 +244,18 @@ struct s_object_flags_256bd0
 // to a frame slot, 1071 bytes); that helper as a non-static function in swarm.cpp (cross-file inline) 201; plus
 // a read of the helper's parameter through its address 273 (1066); `if (--*timer <= 0)` 178 (same code); the
 // unit index named for its two uses 185 (1074 bytes, retail's length, but the actor pointer moves EDI -> EBP).
+// Round 49 (m3 lane 2, fast = plain 178): the timer through `(short *)slot->unknownc` (FORMS-slot-data-block) 178
+// (same code, kept). Lead: retail's loop distance is (dz*dz + dy*dy) + dx*dx with dy subtracted first, which is
+// vector3d_from_points3d + length_sq3f (0x24550's distance_sq3f inlines as k, i, j): that gives retail's distance
+// block exactly (aligned 55 -> 48) but flips the operand order of the inlined 0x11cc90 dot before the loop, 183;
+// with delta declared beside the minimum 183; with actor_get for both actor lookups 183; with dot3f(&delta, &delta)
+// for length_sq3f 183.
 // @retail 0x256bd0
 short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 {
 	byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
 	short result = g_470c44;
-	short *timer = (short *)((byte *)slot + 0xc);
+	short *timer = (short *)slot->unknownc;
 	--*timer;
 	if (*timer <= 0)
 	{

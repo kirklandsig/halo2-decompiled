@@ -321,6 +321,12 @@ void c_juggernaut_engine::v15(long player_index)
 // swapped): a dword masked index 8; the keep path masking the player index 85; the masked index read
 // from the iterator with the iterator's index at each player-index use 8; an early continue 8; the
 // keep path shifting by the short masked index 82 (CSE'd with the test).
+// Round 87 (m3 lane 12, fast): juggernaut_is with its own `long absolute_index = player_index & 0xffff;` (as
+// juggernaut_set) 5 (same code), called with the masked index 8; the test on `(char)absolute_index` 8; the test
+// written on the masked local (dword count) with the keep path shifting by `(short)absolute_index` 8 (retail's
+// mask-then-shift and `mov ecx, ...`, but the keep path's byte count pulls the masked index into ebx), with the
+// keep path shifting by `player_index & 0xffff` 81 (shifts combined). juggernaut_is's short parameter is also
+// declared in src/network_voice.cpp and src/unknown_157450.cpp.
 // @retail 0x192530
 void c_juggernaut_engine::v18()
 {

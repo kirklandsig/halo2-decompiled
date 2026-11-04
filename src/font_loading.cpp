@@ -661,6 +661,23 @@ static inline word font_character_pixel(long alpha, long color)
 // N342: Single-first upper dispatch / lower-first dispatch / flat pair-single / flat single-pair,
 // original word then full-width pixel result: 139/172/182/183/163/166/174/175.
 // NOT kept: dispatch ownership regresses; original helper, cases, observations and body restored.
+// J248: Unsigned dword alpha with word/short/dword/unsigned-int color,
+// each with word/dword pixel result and the original byte-parity expression:
+// 85/106/85/106/85/105/85/105. NOT kept: promotion/interface nonmatches; original
+// helper and decoder restored; parity, literal assembly and run-two reuse remain.
+// Diagnostic scoped size preference 198; NOT kept: compiler setting.
+// F361: Complete command-class dispatch, shared 0/1 arm, PSR/SPR/RPS/RSP groups:
+// word pixel result 204/221/235/249; long result 196/214/220/225.
+// NOT kept: larger extents and unresolved alpha/literal/run-two schedule; original decoder restored.
+// DH331: C-runtime word fill at switch/ordinary/both boundaries, long then word fill values,
+// then both with full-width pixel result and long/word fills: 86/86/87/108/107/108/106/108.
+// Original fills, helper and body restored; alpha widening, literal assembly and two-run reuse remain.
+// N348: Stable write/count-only mode shared by all five output checks, bool/byte/short/long:
+// 206/206/241/241 in either truth channel. NOT kept: mode storage regresses the frame,
+// length and alpha/literal schedules. Original pointer checks, helper and body restored.
+// N351: Packed-run case orders 40162357/14062357/61402357/26140357/32614057/53261407/65432107/13502467:
+// 90/91/94/93/167/115/116/97. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: alpha extension, literal assembly and run-two reuse.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

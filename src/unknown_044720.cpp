@@ -272,6 +272,10 @@ void function_44720(void)
 // loop-body top 135 (same code), a `short` loop index 137 (503 bytes, frame still 0x44), the material index read
 // from the table at each use 135 (same code), `material` declared before the weight 136. 0x41040 (300) and
 // 0x45ce0 (332) now belong to this machine but stay far off; the BLOCKED-BY above stands.
+// Round 145 (m3 lane 5, fast with 0x44720/0x45560/0x458d0): the loop bounds in an if/else on group 151; the
+// selected material as `NONE` then `if (force || ...)` 136 (486 B); the parts under `if (geometry)` on the
+// current form 107 (same code); level at the call with that if/else selection 137 (485 B); the geometry lookup
+// with one exit and the structure global read per arm 132 (488 B, 0x45560 239). Original body restored.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)

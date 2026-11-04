@@ -1250,6 +1250,13 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Round 124 (m3 lane 7, fast): iterator outputs renamed resolved_* 828 (same code); no candidate, result
 // set in an if/else on `named` 977 (2825 bytes); a `graph` local for `this` 828 (same code); a `for` over
 // the iterate call with a found break 998 (2839 bytes); chained NULL entry stores 828. Body restored.
+// M3 lane 7 r126 (fast, 0x1dc790/0x1dc8c0 checked): retail's EBP zero is the inheritance loop's `i = 0` (the matched
+// out-of-line 0x1ddd00 keeps i in EBP: `xor ebp, ebp; cmp eax, ebp; mov [esp+0xc], ebp`), placed before the fifth type
+// request and also used for its NULL/count tests; the requests' mode-table temp shares found_mode's dead home with the
+// loop candidate. `long i = 0;` above the kinds request in the inline helper 1011 (loses 0x1dc8c0; no EBP zero); an
+// inline iterator-setup helper for both twins (siblings' store order) 828; `for (long i = 0; ...)` 828; the outputs
+// declared type, class, mode 828 (stores reorder; iterator_mode keeps found_mode's home); the per-type lookup as an
+// inline helper returning the id, as the siblings do, for both twins 828. All restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

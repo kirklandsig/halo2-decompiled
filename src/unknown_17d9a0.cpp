@@ -376,6 +376,15 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
 // `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
 // store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
+// Round 68 (m3 lane 1; "h" = a one-link LTCG harness of this file with unknown_22bbca and unknown_120850, whose listing equals the
+// full build's and whose score tracks the check's, 46 here; --fast calls point2f_set and is unfaithful, 258): a named-field vector3f
+// corner point read through .n 54h (.n[0..2] stores: same code); the determinant named 48 plain; rows x,z,y / y,z,x / z,x,y 70h/85h/83h;
+// the planar part named in every row 60h; rows starting at the position 46h (same code); a short row pointer with a short axis 186h
+// (1005 bytes). The sibling 0x245270's form (`field = f(); side = n.n[field] > 0.f ? 1 : 0`, by-value short/byte helper) over axis
+// long/short local/direct field x `> 0`/`? 1 : 0` x bool/byte field x helper axis long/short x side bool/byte: `? 1 : 0` same code as
+// `> 0`; byte field with `> 0` 50h; short local 163h (980 bytes, aligned 39 against 42: AX store as retail, the extended axis stays in
+// ECX); direct field 175h. Diagnostics, unused initialised locals: 1-15 at the top (period 8) and 0-7 at the top with 1-7 in the helper,
+// on the long and short bodies: best 4 of 24 corner products off, none reaches retail's ranks.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

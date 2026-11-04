@@ -2328,12 +2328,22 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // once for the loop test and the first slot test 155; the child counts declared before the child
 // handle/slot defaults 155; the 0x23e compare with the unit field first 155; the child fraction declared
 // first 155.
+// M345: Per-child complete/separate metadata-state change masks, requested-child/iteration
+// scopes and dword/long carriers: 214/214/249/249/221/221/251/251.
+// NOT kept: deferred per-child mask joins miss; original per-store result updates and whole body restored.
 // Lane 14 r57 (fast, from 155): the 0x400000 tail as a plain mask with the unit field on the left 168 (1070 bytes);
 // a function-scope `long *` to the 0x214 field for the compare and the copy 155 (folded, no dead add); the parent
 // short as `local_5 != NONE ? (short)local_5 : NONE` 201; NONE declared after both parent reads 155; the unit
 // lookup declared before the state view 155. Retail's 0x400 block copies the parent into AX with `mov ax, dx`
 // before testing it (one byte more than ours), and the 0x2000 block's two loads and dead add make up the rest
 // of the 9 missing bytes.
+// Round 66 (m3 lane 11, fast): the slot loop's bit tests swapped 285 (1033 bytes); `(dword)1 << (local_5 - 4)`
+// 155; NONE declared after both parent reads 155 (a repeat); tail flags tested 10, 9, 8 177 (1081 bytes);
+// the 0x800 update before its stores 251 (1060 bytes, `or` on memory); the 0x1000 update before its
+// stores 164.
+// M347: Optional tag-count availability, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 155/155/155/155/155/155/155/155.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
