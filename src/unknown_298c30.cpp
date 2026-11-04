@@ -672,6 +672,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DH363: Actual count/table record fields, direct/const/mutable receivers with original guard,
 // const/mutable conditional, const/mutable/direct default-result getters: 719/719/719/719/719/775/775/775.
 // NOT kept: no native-frame or score gain; original getter, helpers and complete body restored.
+// DH366: Original annular admission, inside/outside bool/byte/short/long outcomes:
+// 719/719/719/719/720/720/720/720. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

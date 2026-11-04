@@ -1758,6 +1758,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // multiplication boundaries, then a named scaled-angle expression: 193 each;
 // the same four producers with one common exit: 193 each. Original whole body
 // restored; independent result home and frame 0x14 versus 0x18 remain.
+// DH366: Original final projection zero/nonzero admission, bool/byte/short/long outcomes:
+// 193/193/193/193/193/193/193/193. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3463,6 +3466,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // result and body restored. Frame 0x18 versus 0x1c and fade scratch homes remain.
 // J252: Existing position/opacity/recursive inline contracts and own cdecl: 224/177/177/224/224/177/224/176.
 // NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
+// DH366: Original-site first raw/clamped fade equality, accepted/rejected bool/byte/short/long outcomes:
+// 177/177/177/177/177/177/177/177. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4867,6 +4873,10 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // J252: Existing cull/depth/draw/setup inline contracts: 138/138/138/138/138/138/138/138.
 // NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
 // J252: Existing configured-provider inline and shared pass path 2137; NOT kept: no eligible native-shape gain; original provider and complete caller restored.
+// DH366: Existing provider forced-inline contract, original caller then configured
+// culled/gated/both/unculled/culled-unculled/gated-unculled/all families:
+// 1445/1683/1635/1841/1772/1984/1937/2137. NOT kept: every graph expands and worsens shared users;
+// original full contract and caller restored. Late pass bytes and mode loads remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

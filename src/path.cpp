@@ -1075,6 +1075,9 @@ bool function_2715a0(byte *buffer)
 // DH363: Existing penalty-switch label orders 1265/1526/2156/5612 all 486;
 // those four with the positive-penalty guard owned by the grouped cases all 487.
 // NOT kept: no match or state/root-home recovery; original dispatch and complete body restored.
+// DH366: Direct native state-member accesses on the retained split-root graph, input/destination/lookup
+// seven subsets then closest/location pair: 486/486/486/486/486/486/486/498. NOT kept: no byte match or
+// qualifying native repair; original complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
