@@ -462,6 +462,9 @@ void __stdcall function_1160c0(real dt)
 // N355: Existing early-return normalizer with native square/projection/staged-cross and complete setters:
 // 174/186/174/174/174/186/187/187. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; Segment EDX and axis/previous/rest-offset homes remain.
+// F374: Optional-physics presence/absence at the original post-position test,
+// bool/byte/short/long: 171/171/171/171/171/171/171/171. NOT kept: no native
+// segment/home recovery; original field test and complete body restored.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

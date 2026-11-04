@@ -1746,6 +1746,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // input, or its output pointer, or takes reference output: 382/382/197/193; each with the
 // sole result exit 384/384/197/193. All restored; native result home remains, value returns
 // shorten to 600 bytes and raise the caller 507 -> 610; no byte match or qualifying gain.
+// F371: Uniform leading/trailing/both product parts in first/second cross,
+// then leading/both parts in both crosses: 193/193/193/193/193/193/193/193.
+// NOT kept: no gain or native frame/result-home recovery; original private
+// perpendicular producer, all projection sums and full body restored.
 // P318: Whole double projection producers, double result/test/conditional consumers:
 // 262/235/262/262; mixed producer domains at the original float atan2 boundary,
 // real/double result: 185/262/322/246. NOT kept: the 185 form moves frame to 0x1c
@@ -1886,6 +1890,13 @@ real game_time_get_seconds();
 // F366: Complete reflection/displacement/both product parts, size/opacity/both spans,
 // distance ratio parts and angular normalization parts: 539/507/539/507/572/572/507/507.
 // All restored; native 0x94 frame and output homes remain, without altered arithmetic grouping.
+// F370: Complete distance/angular/source-visible attenuation result subsets
+// 1/2/4/3/5/6/7 give 559/522/509/559/564/526/564; all with complete context-alpha
+// arms 556. NOT kept: all regress; native frame/output homes remain. Original
+// scalar results, observations, API and full body restored.
+// F372: Internal hash, animation/sample and draw workspace role names, seven
+// subsets then all with offset/reflection names: eight at 507. Native frame and
+// output homes remain; original names, scopes, APIs and complete body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3403,6 +3414,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // recursive neg/sbb/inc and a final test/sete; retail copies and returns its positive byte
 // directly. The other forms regress. Original complete body and positive result restored; frame
 // and fade scratch homes remain.
+// F370: Complete temporal lower/upper/interior result producer, with object/alpha/
+// final outcome subsets 0/1/2/3/4/5/6/7: 176/218/176/218/176/218/176/218.
+// NOT kept: one-point leads are below the bar and leave frame 0x18 versus 0x1c;
+// all original positive result paths, local qualifier and full body restored.
 // Y568: Existing two-use distance helper with native point-reference/value inputs and
 // real/double/output-reference results: 177/177/185/177/177/177/185/177. NOT kept:
 // no contract matches; original helper, both callers and complete body restored.
@@ -3982,6 +3997,10 @@ bool __stdcall function_391f0(void *state);
 // F369: Whole timestamp/elapsed-result joins (explicit/default/conditional/default plus
 // common clamp), then each with direct clock observations: 301/315/324/315/295/326/327/326.
 // All restored: no match or qualifying gain; original publications and every loop remain.
+// F371: Genuine byte-offset carriers in each update/render phase, then
+// update pair/render pair/large-record pair/all phases: 250/251/251/251/250/251/250/250.
+// NOT kept: the complete graph gains only one and retains frame 0x74;
+// native zero/portal/fog homes remain. Original traversals and body restored.
 // P318: One phase-success accumulator for update/render in bool/byte/short/long,
 // selected-tag then function-entry declaration: 251/251/281/286/251/251/281/286.
 // All retain frame 0x74 versus 0x70; no gain. Original independent flags and complete
@@ -4794,6 +4813,10 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F366: Homogeneous unculled/configured/both mode-table traversals, then head-tested pair,
 // positive fixed-count pair and advancing cursors: 277/263/296/277/263/277/263/290.
 // All regress and shorten; original callback and shared helpers restored; late pass stores remain.
+// F370: Parameter-owned enabled result, rejection/conditional updates in
+// byte/word/long/dword: 248/221/215/215 and 207/232/255/255. NOT kept: every
+// form also regresses both other shared users. Original separate result, helper
+// contracts and callback restored; late pass bytes and mode loads remain.
 // DH345: Existing fog producer single-exit admission/rejection results in
 // bool/byte/short/long: eight at 138. Original maximum, helper, caller and pass
 // operations restored; late enabled bytes, mode loads and clear convention remain.

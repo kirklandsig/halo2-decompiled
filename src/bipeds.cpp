@@ -2014,6 +2014,13 @@ void function_dfd70(long arg_159e6d)
 // forms 233 each; both projections plus clearance or actual obstruction result 234/234.
 // NOT kept: no gain. Original shared helpers restored; native mode-three placement
 // and forward/up/ray homes remain; every checked shared user retains its score.
+// F373: Height-interpolation complement/paired products/unscaled/scaled sum,
+// paired products with sum, complement with products/unscaled/scaled sum:
+// 233/233/233/233/233/233/233/233. NOT kept: no byte match; original
+// shared helpers restored, mode-three placement and basis/ray homes remain.
+// F375: Default stance-query standing/crouch returns, bool/byte/short/long:
+// 233/233/233/233/233/233/233/233. Complementary forms also raise shared users.
+// NOT kept: no byte match; original helpers restored, mode-three/basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4906,6 +4913,13 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // recovered state-call/dot graph, original then support-bound success:
 // 68/148/151/151/143/136/142/142. NOT kept: no byte match; native support/result
 // homes remain. Original complete body restored; both exact callers survive.
+// F373: Ground/raw/velocity/relative declarations at their actual producers,
+// individual, paired and complete lifetimes, then support at its producer:
+// 68/68/68/68/68/68/68/68. NOT kept: byte homes and early success remain;
+// original body restored, both exact callers survive.
+// F375: Existing relative/kick/actor-ground producers, seven subsets then complete raw library copies:
+// 143/68/68/68/143/70/143/143 on the state-call/dot graph. NOT kept: no byte match.
+// Original body restored; native support/result byte homes remain, exact callers survive.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -5330,6 +5344,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // M364: Original multi-use still call result in char/signed-
 // char/byte/short/word/int/long/dword storage: 683/683/683/688/688/685/685/685. NOT kept: no
 // native truth-byte/animation-home match; original result domain and complete body restored.
+// F374: Actual inline grabbing char/signed-char/byte/short/word/int/long/dword
+// carriers: 594/594/594/581/581/578/578/578 (fast control 594, full 588).
+// NOT kept: wider carriers retain the result in EDI/DI rather than retail
+// byte storage; original bool, predicate and complete body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

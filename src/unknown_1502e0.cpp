@@ -244,6 +244,9 @@ struct s_flag_word_bits
 // Y567: Complementary available bool/byte/short/long with default-true
 // then exhaustive arms: 116/116/126/122/125/125/131/130. NOT kept: no byte match; original flag
 // producer and body restored, player/root ownership and tail expansion remain.
+// F377: Complete byte/word/long/dword success results, original/native-byte flag pairs:
+// 87/106/96/81/90/78/90/78. NOT kept: unmatched result flags; native-byte long/dword
+// reach 340 bytes. Original body restored; player/root/tick homes remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1091,6 +1094,9 @@ struct s_tail_transfer_traits
 // Y576: Winning weapon as long/short/signed-byte slot or element receiver, original
 // for traversal 199/217/206/253; plain while 199/217/206/253. NOT kept: alternate
 // winner producers grow beyond retail and leave traits/unit/NONE homes and reloads unresolved.
+// F377: Last matched options-entry/traits-array results, pointer/reference outputs and
+// original/early unit-index producers: 196/196/201/201/224/224/218/218. NOT kept:
+// no gain; original full body restored; selected-traits/unit/NONE homes and reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1429,9 +1435,19 @@ void function_150820(dword *bits, bool local_only)
 // M350: Immutable captured hand/slot/weapon values, seven subsets: 43 each;
 // initialized four-byte mode output 86. Original body and calls restored;
 // native ESI player/EDI hand ownership remains.
+// F371: Selected-inventory guarded/default/paired/conditional result boundaries
+// 43/43/43/43/43; existing complete slot selector without/with slot admission
+// and with closed lookup scope 43/43/43. NOT kept: no gain or byte match;
+// native player/hand ownership remains. Original body and APIs restored.
 // Y567: One-return failed unit/slot/eligibility admissions, seven subsets
 // and separately tested complete eligibility: 60/63/60/63/60/63/60/60. Original body restored;
 // native player/hand and entry temporary ownership remain.
+// F373: Native query-return admission/failure in bool/byte/short/long,
+// at the original call boundary: 43/43/43/43/43/43/43/43. NOT kept:
+// no byte match; original body restored, player/hand ownership remains.
+// F375: Actual selected-mode byte availability/failure after the query, bool/byte/short/long:
+// 43/43/43/43/43/43/43/43. NOT kept: no byte match; original body restored.
+// Saved player/hand ESI/EDI and entry temporary allocation still differ.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -2124,6 +2140,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // B397: Complete four-slot transfer admission in bool/byte/short/long, then
 // rejection complement 202/202/202/202/202/202/202/202. Original call/rounds/loop graph restored;
 // player-data ownership and the scaled header-offset spill remain.
+// F371: Per-iteration current-slot int/short/signed-byte carriers 202/226/217;
+// cyclic slot int/dword/short/word/byte carriers 202/202/219/219/219.
+// NOT kept: no native width/allocation recovery or byte match; original
+// full-width slot arithmetic, short scan and complete body restored.
 // Y567: Existing complete object getter for unit/pickup/transferred weapon,
 // seven subsets, then complete shared object/header acquisition: 202/202/202/202/202/202/202/202.
 // Original helper uses and body restored; player/header-offset homes remain.

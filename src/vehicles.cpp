@@ -1266,6 +1266,9 @@ long function_10f5f0(long object_index);
 // P298: Control-call accumulation by test/logical/conditional/named-result forms
 // 533/621/533/533; request-call accumulation 614/619/614/614. Original body restored.
 // NOT kept: 533 grows to 2300/2264 bytes; frame and native predicate stores still differ.
+// F376: Initial numeric powered/open bit extraction and unsigned snapshot width, subsets
+// 1/2/4/3/5/6/7, then explicit maximum production: 598/565/565/599/602/601/624/624.
+// Original complete body restored; frame 0x19ac/0x1984 and native predicate stores remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2533,6 +2536,10 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // P313: Existing in-place spin helper returns installed output as pointer/reference/real/double,
 // common/branch-owned: 42/42/42/42/42/42/42/42. Both original ignored-result calls, void helper
 // and full body restored; turn-product and spin spill/store scheduling remain.
+// F376: Existing spin helper owns separate torque/timestep inputs, with direct/named advance,
+// original/conditional corrected dividend and original/forced inline: 42/43/84/84/42/43/84/84.
+// Original two-use helper, both calls and full body restored; native turn-product and spin
+// spill/publication schedules remain. NOT kept: no exact helper-boundary/dividend result.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5283,6 +5290,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // M350: Plain wind/forward-target/lateral-velocity component loops, subsets
 // 1..7: 2767/2759/2759/2726/2726/2742/2682, frame 0xfc and 6443-6518 bytes.
 // Native final point cursor 1087. Original body restored; frame/index homes remain.
+// F376: Existing drift/side dot and spin-squared-length boundaries, subsets 1/2/4/3/5/6/7,
+// then complete projection dot: 1086/1087/1087/1086/1087/1087/1087/1087. NOT kept: one-point
+// lead grows to 5104/5094; frame stays 0xf8/0xd8. Original complete body and helpers restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

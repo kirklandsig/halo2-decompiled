@@ -1791,6 +1791,12 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH329: Separate highest-contact scan before/after selection or fallback-only, direct/named
 // height and before/after native cursors 776/788/872/888/580/572/894/929. NOT kept: all regress and
 // grow frame/extent; original shared scan and complete body restored.
+// F372: Flight-state char/signed-char/byte/short/word/int/unsigned/dword carriers
+// 213/213/213/305/305/303/303/303; native byte forms tie, wider forms grow.
+// Original bool, native movement, observations and complete body restored.
+// F374: Contact velocity-dot/request-dot/scaled-projection nodes, seven subsets,
+// then the full graph with guarded planar projection: 213/209/209/211/211/211/209/213.
+// NOT kept: gains below eight; original scalar expressions and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

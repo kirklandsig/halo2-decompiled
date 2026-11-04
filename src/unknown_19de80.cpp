@@ -520,6 +520,9 @@ static inline bool teams_enabled_19e1c0()
 // AC526: Complete signed formatter-failure truths bool/byte/short/long, inherited
 // result then native result: 418/418/427/424/691/691/691/691. NOT kept: native frame alone still
 // merges name-copy tails; original full result, clamps, cases and body restored.
+// F372: Entry declaration lifetimes for the opponent iterator, mode and local-team
+// value, seven subsets then all with the actual local-player receiver: eight at 390.
+// Original branch declarations, result storage and complete body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
