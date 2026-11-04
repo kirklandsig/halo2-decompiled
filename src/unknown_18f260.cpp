@@ -39,6 +39,9 @@ public:
 // Round 156 (fast): `user_data` local, key b, a locals, then a barrier 4 (only `xor esi` after the key stores: the
 // constant propagates past the barrier); a const reference to the key 4; the key as one __int64 cut into halves 74;
 // the reader's local declared then assigned 4; the reader's local as a two-long volatile array 4; key b, a locals 4.
+// Round 101: result declared then assigned 4; that result before key b, a locals 4; a const handle 4;
+// a receiver reference 4; an immutable key pointer 4; the key declared before the virtual methods 4;
+// unsigned key fields 4; an unsigned method result at declaration and definition 4. Original restored.
 // @retail 0x18f260
 long c_resource_lock::method0(long handle)
 {
