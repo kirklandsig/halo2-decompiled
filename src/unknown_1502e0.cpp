@@ -299,6 +299,9 @@ void function_151ea0(long player_index, long object_index)
 // memcpy then success 4.
 // Original executable body restored;
 // no exact match from these ownership forms.
+// Round 103: equality as an else-if 1; nested <=/== priority tests 12; an explicit not-equal
+// else-if to done 1; separate distance-failure/copy/done labels 75; split result declaration 1;
+// result declared last 1; byte result 32; a named closer flag 1. Original body restored.
 // @retail 0x151320
 bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
 {
@@ -1302,6 +1305,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // Round 51 (m3 lane 15): mode arms swapped 27; `primary ? 0 : 1` hand 17; result declared before the player 35;
 // e68c0 code from hand 60; unit index local inside the dispatch block 17; dispatch outcome in its own success flag
 // copied to result (0x152bf0's matching form) 17. Diagnostic: 1-8 unused entry locals 17 each (not symbol numbering).
+// Round 104: unit declared at entry 17; slot declared at entry 17; unit then result before player 35;
+// read-only player/unit receivers 17 each; nested slot/weapon tests 17; held-slot array pointer 17;
+// weapons array pointer 17. NOT kept: no byte match or gain; original body restored, EDI/ESI still exchanged.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {

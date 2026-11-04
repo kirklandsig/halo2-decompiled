@@ -448,6 +448,10 @@ void function_125a90(long value);
 // removal); the predicate in keep sense 87; its class test negated, kind case first 47 (same code); the caller's
 // keep branch first 47 (same code); the named class condition inside the forceinline predicate 153 (467 bytes,
 // 0x221810 inlined again). Original body restored; still BLOCKED-BY 0x221810 (its file held this round).
+// Round 104: named special with the callee declared inline 159 (472 bytes; declarations restored);
+// named element byte offset 36; keep result 36; keep arm first 86; type declared at loop top 36;
+// index declared only at the iterator 51; const element pointer 36; const type 36. All restored;
+// the element multiply/LEA, early policy load and decision-block placement remain.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
