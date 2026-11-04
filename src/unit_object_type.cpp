@@ -6461,286 +6461,306 @@ public:
 	virtual bool may_pick_up_weapon(long player_index, long weapon_index) = 0;
 };
 
-/* the rounds a weapon holds in its magazines (+0x22a, 0x10 bytes each), or
-   its definition's (+0x2c4, 0x5c bytes each) for weapons 0x106030 says
-   refill; in a multiplayer engine mode 7 with option 0x20, the dropped
-   weapon of a player on a flagged team counts by its definition too */
-static long unit_weapon_rounds(long weapon_index, long magazine_count, bool check_owner)
-{
-	s_unit *weapon = UNIT_GET(weapon_index);
-	long total = 0;
-
-	for (long i = 0; i < magazine_count; i++)
-	{
-		bool by_definition;
-		short rounds;
-
-		if (check_owner)
-		{
-			by_definition = false;
-			if (g_4e6948->state == 2 && *((byte *)weapon + 0x12c) & 1)
-			{
-				long owner_index = *(long *)((byte *)weapon + 0x154);
-
-				if (owner_index != NONE)
-				{
-					long player_index = UNIT_GET(owner_index)->unknown13c;
-
-					if (player_index != NONE && g_55e4d0[g_4e9ae8->engine_index] && *(long *)((byte *)g_4e6948 + 0x180) == 7 &&
-						((1 << player_index) & *(word *)g_510c9c) && *((byte *)g_4e6948 + 0x22c) & 0x20)
-					{
-						by_definition = true;
-					}
-				}
-			}
-		}
-		else
-		{
-			by_definition = function_106030(weapon_index);
-		}
-		if (by_definition)
-		{
-			byte *definition = UNIT_DEFINITION_GET(weapon);
-
-			if (*(long *)(definition + 0x2c0) <= i)
-			{
-				continue;
-			}
-			rounds = *(short *)(*(byte **)(definition + 0x2c4) + i * 0x5c + 0xc);
-		}
-		else
-		{
-			rounds = *(short *)((byte *)weapon + 0x22a + i * 0x10);
-		}
-		if (check_owner || rounds > 0)
-		{
-			total += rounds;
-		}
-	}
-	return total;
-}
-
 /* which of the unit's hands (0, 1) and slots (2, 3) may take the weapon:
    free hands, a second hand for dual-wieldable weapons, a matching weapon
    replaced only by a fresher one, an empty weapon only when it adds
    rounds, not a fully used one for AIs; the player code and the engine
-   have the last word, then the weapon learns its holder */
+   have the last word, then the weapon learns its holder. A weapon's rounds
+   are its magazines' (+0x22a, 0x10 bytes each), or its definition's
+   (+0x2c4, 0x5c bytes each) for weapons 0x106030 says refill and, when
+   counting a held weapon in a multiplayer engine mode 7 with option 0x20,
+   for the dropped weapon of a player on a flagged team; retail expands both
+   counts in place */
+// score 530 (was 1032): Round 2 of #1049. The draft's logic matched retail statement by statement; the drop came from
+// shape. Retail expands the round counts in place (the draft called a static helper): the slot loop's magazine loop
+// reloads the unit and the definition count each pass and calls 0x106030 per magazine, the held-weapon loop reads
+// the engine mode/team words each pass; the three flag tests
+// are TEST_FIELD_BIT (load, shift, test dl,1) and the second-hand bit is read from the definition again; `empty`
+// and `loaded` are declared with the other flags (registers DL/BL, as retail); the body sits in `if (0xcd6a0)` with
+// one `return result` so the early exit shares the epilogue (prologue now identical); the definition-match tests are
+// repeated, not a bool. Still differs: register and spill-slot choices only (retail keeps the weapon and definition
+// pointers in EDI/ESI until `push ebp`, spills them at 0x18/0x24 and the unit offset at 0x2c; ours spills early to
+// 0x14/0x18, so most later [esp+N] differ), the slot loop's two induction registers (retail EBP=0x5c step, EBX=0x10;
+// ours the reverse), the order of two loads in the match loop, the modes pointer in EBX versus ESI, and 0x106030,
+// which retail calls and ours inlines. A file-scope inline_depth(0) pair around this function keeps it a call
+// (482) but is not kept, as it doesn't give a match.
+// Tried: weapon looked up before the unit 510; first_slot or total declared elsewhere 483/482; state word as
+// short-array index, branch order swapped in the magazine loop, magazine pointer arithmetic 482 each; `break`
+// replaced by `return result` inside and `return false` after the loop 490 (separate early epilogue); helper static
+// function for both loops 780-1032.
 // @retail 0xcd7b0
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 {
 	bool result = false;
 
-	if (!function_cd6a0(unit_index, NONE, weapon_index))
+	if (function_cd6a0(unit_index, NONE, weapon_index))
 	{
-		return result;
-	}
-	s_unit *unit = UNIT_GET(unit_index);
-	s_unit *weapon = UNIT_GET(weapon_index);
-	byte *local_67e06b = UNIT_DEFINITION_GET(weapon);
-	long magazine_count = *(long *)(local_67e06b + 0x2c0);
-	long first_slot = NONE;
-	bool weapon_empty = false;
-	bool has_rounds = false;
-	long total = 0;
-
-	if (magazine_count > 0)
-	{
+		s_unit *unit = UNIT_GET(unit_index);
+		s_unit *weapon = UNIT_GET(weapon_index);
+		byte *local_67e06b = UNIT_DEFINITION_GET(weapon);
+		long magazine_count = *(long *)(local_67e06b + 0x2c0);
+		long first_slot = NONE;
+		bool weapon_empty = false;
+		bool second_hand_only;
+		bool has_rounds = false;
+		bool dual_wieldable;
+		long total = 0;
 		bool empty = false;
 		bool loaded = false;
-		byte *magazine = *(byte **)(local_67e06b + 0x2c4) + 8;
-		short *state = (short *)((byte *)weapon + 0x22a);
 
-		for (long i = magazine_count; i != 0; i--, magazine += 0x5c, state += 8)
+		if (magazine_count > 0)
 		{
-			if (*(short *)magazine > 0)
+			byte *magazine = *(byte **)(local_67e06b + 0x2c4) + 8;
+			short *state = (short *)((byte *)weapon + 0x22a);
+
+			for (long i = magazine_count; i != 0; i--, magazine += 0x5c, state += 8)
 			{
-				if (state[1] == 0 && state[0] == 0)
+				if (*(short *)magazine > 0)
 				{
-					empty = true;
+					if (state[1] == 0 && state[0] == 0)
+					{
+						empty = true;
+					}
+					else
+					{
+						loaded = true;
+					}
 				}
-				else
+			}
+			if (empty && !loaded)
+			{
+				weapon_empty = true;
+			}
+		}
+		byte *weapon_definition = UNIT_DEFINITION_GET(UNIT_GET(weapon_index));
+		dword weapon_flags = *(dword *)(weapon_definition + 0x12c);
+		dual_wieldable = TEST_FIELD_BIT((weapon_flags >> 22) & 1) || TEST_FIELD_BIT((weapon_flags >> 23) & 1);
+		second_hand_only = (*(dword *)(weapon_definition + 0x12c) >> 23) & 1;
+		long *slot = unit->weapon_object_indices;
+		for (long i = 0; i < 4; i++, slot++)
+		{
+			if (*slot != NONE)
+			{
+				long held_definition_index = UNIT_GET(*slot)->definition_index;
+
+				if (weapon->definition_index == held_definition_index ||
+					*(long *)(local_67e06b + 0x304) == held_definition_index)
 				{
-					loaded = true;
+					if (first_slot == NONE)
+					{
+						first_slot = i;
+					}
+					for (long m = 0; m < *(long *)(local_67e06b + 0x2c0); m++)
+					{
+						s_unit *slot_weapon = UNIT_GET(*slot);
+						long rounds;
+
+						if (function_106030(*slot))
+						{
+							byte *slot_definition = UNIT_DEFINITION_GET(slot_weapon);
+
+							if (*(long *)(slot_definition + 0x2c0) <= m)
+							{
+								continue;
+							}
+							rounds = *(short *)(*(byte **)(slot_definition + 0x2c4) + m * 0x5c + 0xc);
+						}
+						else
+						{
+							rounds = *(short *)((byte *)slot_weapon + 0x22a + m * 0x10);
+						}
+						if (rounds > 0)
+						{
+							has_rounds = true;
+							total += rounds;
+						}
+					}
 				}
 			}
 		}
-		if (empty && !loaded)
+		long held[2];
+		*(dword *)modes = 0;
+		for (long hand = 0; hand < 2; hand++)
 		{
-			weapon_empty = true;
-		}
-	}
-	dword weapon_flags = *(dword *)(UNIT_DEFINITION_GET(UNIT_GET(weapon_index)) + 0x12c);
-	bool dual_wieldable = (weapon_flags >> 22) & 1 || (weapon_flags >> 23) & 1;
-	bool second_hand_only = (weapon_flags >> 23) & 1;
-	long *slot = unit->weapon_object_indices;
-	for (long i = 0; i < 4; i++, slot++)
-	{
-		if (*slot != NONE)
-		{
-			long held_definition_index = UNIT_GET(*slot)->definition_index;
+			s_unit *holder = UNIT_GET(unit_index);
+			short index = (&holder->current_weapon_index)[hand];
+			long held_index = index != NONE ? holder->weapon_object_indices[index] : NONE;
 
-			if (weapon->definition_index == held_definition_index ||
-				*(long *)(local_67e06b + 0x304) == held_definition_index)
+			modes[hand] = true;
+			modes[hand + 2] = true;
+			held[hand] = held_index;
+			if (held_index != NONE)
 			{
-				if (first_slot == NONE)
+				s_unit *held_weapon = UNIT_GET(held_index);
+				char state = *((char *)held_weapon + 0x20c);
+
+				if (TEST_FIELD_BIT((*(dword *)(UNIT_DEFINITION_GET(held_weapon) + 0x12c) >> 3) & 1) || state == 1 || state == 2)
 				{
-					first_slot = i;
-				}
-				long rounds = unit_weapon_rounds(*slot, magazine_count, false);
-				if (rounds > 0)
-				{
-					has_rounds = true;
-					total += rounds;
+					modes[hand] = false;
 				}
 			}
-		}
-	}
-	long held[2];
-	*(dword *)modes = 0;
-	for (long hand = 0; hand < 2; hand++)
-	{
-		s_unit *holder = UNIT_GET(unit_index);
-		short index = (&holder->current_weapon_index)[hand];
-		long held_index = index != NONE ? holder->weapon_object_indices[index] : NONE;
-
-		modes[hand] = true;
-		modes[hand + 2] = true;
-		held[hand] = held_index;
-		if (held_index != NONE)
-		{
-			s_unit *held_weapon = UNIT_GET(held_index);
-			char state = *((char *)held_weapon + 0x20c);
-
-			if ((*(dword *)(UNIT_DEFINITION_GET(held_weapon) + 0x12c) >> 3) & 1 || state == 1 || state == 2)
+			else
 			{
-				modes[hand] = false;
+				modes[hand + 2] = false;
 			}
 		}
-		else
+		bool dual[2];
+		*(word *)dual = 0;
+		if (dual_wieldable)
 		{
-			modes[hand + 2] = false;
-		}
-	}
-	bool dual[2];
-	*(word *)dual = 0;
-	if (dual_wieldable)
-	{
-		if (held[0] == NONE)
-		{
-			modes[1] = false;
-			modes[3] = false;
-		}
-		else
-		{
-			dword held_flags = *(dword *)(UNIT_DEFINITION_GET(UNIT_GET(held[0])) + 0x12c);
-
-			if (!((held_flags >> 22) & 1) && !((held_flags >> 23) & 1))
+			if (held[0] == NONE)
 			{
 				modes[1] = false;
 				modes[3] = false;
 			}
-		}
-		if (second_hand_only)
-		{
-			modes[0] = false;
-			modes[2] = false;
-		}
-		dual[0] = held[1] != NONE;
-		dual[1] = held[0] != NONE;
-	}
-	else
-	{
-		modes[1] = false;
-		modes[3] = false;
-	}
-	if (first_slot != NONE)
-	{
-		for (long hand = 0; hand < 2; hand++)
-		{
-			bool hand_dual = dual[hand];
-
-			if (!hand_dual)
+			else
 			{
-				modes[hand] = hand_dual;
-			}
-			if (modes[hand + 2])
-			{
-				s_unit *held_weapon = UNIT_GET(held[hand]);
-				long held_definition_index = held_weapon->definition_index;
-				bool matches = weapon->definition_index == held_definition_index ||
-					*(long *)(local_67e06b + 0x304) == held_definition_index;
+				dword held_flags = *(dword *)(UNIT_DEFINITION_GET(UNIT_GET(held[0])) + 0x12c);
 
-				if (matches && *(real *)((byte *)held_weapon + 0x184) > *(real *)((byte *)weapon + 0x184))
+				if (!TEST_FIELD_BIT((held_flags >> 22) & 1) && !TEST_FIELD_BIT((held_flags >> 23) & 1))
 				{
-					continue;
-				}
-				if (matches || !hand_dual)
-				{
-					modes[hand + 2] = false;
-					modes[hand] = false;
+					modes[1] = false;
+					modes[3] = false;
 				}
 			}
-		}
-	}
-	if (weapon_empty)
-	{
-		for (long hand = 0; hand < 2; hand++)
-		{
-			if (!has_rounds)
+			if (second_hand_only)
 			{
-				dual[hand] = false;
+				modes[0] = false;
+				modes[2] = false;
 			}
-			else if (dual[hand] && held[hand] != NONE && UNIT_GET(held[hand])->definition_index == weapon->definition_index)
+			dual[0] = held[1] != NONE;
+			dual[1] = held[0] != NONE;
+		}
+		else
+		{
+			modes[1] = false;
+			modes[3] = false;
+		}
+		if (first_slot != NONE)
+		{
+			for (long hand = 0; hand < 2; hand++)
 			{
-				long held_count = *(long *)(UNIT_DEFINITION_GET(UNIT_GET(held[hand])) + 0x2c0);
+				bool hand_dual = dual[hand];
 
-				if (unit_weapon_rounds(held[hand], held_count, true) == total)
+				if (!hand_dual)
+				{
+					modes[hand] = hand_dual;
+				}
+				if (modes[hand + 2])
+				{
+					s_unit *held_weapon = UNIT_GET(held[hand]);
+					long held_definition_index = held_weapon->definition_index;
+
+					if ((weapon->definition_index == held_definition_index ||
+						*(long *)(local_67e06b + 0x304) == held_definition_index) &&
+						*(real *)((byte *)held_weapon + 0x184) > *(real *)((byte *)weapon + 0x184))
+					{
+						continue;
+					}
+					if (weapon->definition_index == held_definition_index ||
+						*(long *)(local_67e06b + 0x304) == held_definition_index || !hand_dual)
+					{
+						modes[hand + 2] = false;
+						modes[hand] = false;
+					}
+				}
+			}
+		}
+		if (weapon_empty)
+		{
+			for (long hand = 0; hand < 2; hand++)
+			{
+				if (!has_rounds)
 				{
 					dual[hand] = false;
 				}
-			}
-			if (!dual[hand])
-			{
-				modes[hand] = false;
-				modes[hand + 2] = false;
-			}
-		}
-	}
-	if (unit->actor_index != NONE &&
-		((function_101d20(weapon_index) && *(real *)((byte *)weapon + 0x184) == 1.0f) || weapon_empty))
-	{
-		modes[0] = false;
-		modes[1] = false;
-		modes[2] = false;
-		modes[3] = false;
-	}
-	if (unit->unknown13c != NONE)
-	{
-		function_1509e0(unit->unknown13c, weapon_index, modes);
-	}
-	for (long hand = 0; hand < 2; hand++)
-	{
-		if (modes[hand] || modes[hand + 2])
-		{
-			result = true;
-			long player_index = unit->unknown13c;
-			if (player_index != NONE)
-			{
-				c_unit_engine_view *engine = (c_unit_engine_view *)g_55e4d0[g_4e9ae8->engine_index];
-
-				if (engine)
+				else if (dual[hand] && held[hand] != NONE && UNIT_GET(held[hand])->definition_index == weapon->definition_index)
 				{
-					result = engine->may_pick_up_weapon(player_index, weapon_index);
+					s_unit *held_weapon = UNIT_GET(held[hand]);
+					long held_count = *(long *)(UNIT_DEFINITION_GET(held_weapon) + 0x2c0);
+					long held_total = 0;
+
+					for (long m = 0; m < held_count; m++)
+					{
+						long rounds;
+						bool by_definition = false;
+
+						if (g_4e6948->state == 2 && *((byte *)held_weapon + 0x12c) & 1)
+						{
+							long owner_index = *(long *)((byte *)held_weapon + 0x154);
+
+							if (owner_index != NONE)
+							{
+								long player_index = UNIT_GET(owner_index)->unknown13c;
+
+								if (player_index != NONE && g_55e4d0[g_4e9ae8->engine_index] && *(long *)((byte *)g_4e6948 + 0x180) == 7 &&
+									((1 << player_index) & *(word *)g_510c9c) && *((byte *)g_4e6948 + 0x22c) & 0x20)
+								{
+									by_definition = true;
+								}
+							}
+						}
+						if (by_definition)
+						{
+							byte *held_definition = UNIT_DEFINITION_GET(held_weapon);
+
+							rounds = *(long *)(held_definition + 0x2c0) > m ?
+								*(short *)(*(byte **)(held_definition + 0x2c4) + m * 0x5c + 0xc) : 0;
+						}
+						else
+						{
+							rounds = *(short *)((byte *)held_weapon + 0x22a + m * 0x10);
+						}
+						held_total += rounds;
+					}
+					if (held_total == total)
+					{
+						dual[hand] = false;
+					}
+				}
+				if (!dual[hand])
+				{
+					modes[hand] = false;
+					modes[hand + 2] = false;
 				}
 			}
-			if (result)
+		}
+		if (unit->actor_index != NONE &&
+			((function_101d20(weapon_index) && *(real *)((byte *)weapon + 0x184) == 1.0f) || weapon_empty))
+		{
+			modes[0] = false;
+			modes[1] = false;
+			modes[2] = false;
+			modes[3] = false;
+		}
+		if (unit->unknown13c != NONE)
+		{
+			function_1509e0(unit->unknown13c, weapon_index, modes);
+		}
+		for (long hand = 0; hand < 2; hand++)
+		{
+			if (modes[hand] || modes[hand + 2])
 			{
-				function_1060a0(weapon_index, unit_index);
+				result = true;
+				long player_index = unit->unknown13c;
+				if (player_index != NONE)
+				{
+					c_unit_engine_view *engine = (c_unit_engine_view *)g_55e4d0[g_4e9ae8->engine_index];
+
+					if (engine)
+					{
+						result = engine->may_pick_up_weapon(player_index, weapon_index);
+					}
+				}
+				if (result)
+				{
+					function_1060a0(weapon_index, unit_index);
+				}
+				break;
 			}
-			return result;
 		}
 	}
-	return false;
+	return result;
 }
 
 /* the unit's control update: counts down its ragdoll (+0x1f5) and two
