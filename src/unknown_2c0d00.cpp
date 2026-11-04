@@ -368,6 +368,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M371: Paired object/sphere ordered-radius overlap/exclusion truth in
 // bool/byte/short/long: eight 931 (reduced control 931; full 882). NOT kept:
 // byte-neutral decisions; original tests, qualifiers and complete body restored.
+// Y591: Positive complete classification in bool/byte/short/long, entry/admitted defaults:
+// 939/939/919/933/936/936/919/933 reduced (control 931, full 882). NOT kept:
+// no byte match or native frame repair; original decisions, qualifiers and body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

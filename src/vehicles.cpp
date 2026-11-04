@@ -623,6 +623,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // P329: Reused speed/heading-weight/angle declarations, six orders then reciprocal scope/role names:
 // 126/126/126/126/126/126/126/126. NOT kept: no byte match; original complete body restored.
 // Velocity-copy receivers and unity SIMD/x87 homes remain.
+// Y591: Scalar initial velocity/direction/paired perpendicular vectors, seven subsets,
+// then all with velocity-role names: 153/126/240/233/249/240/249/249. NOT kept: no exact allocation
+// repair; original complete vector workspaces, helper contracts and body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3251,6 +3254,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // producers, original or projection-end scope: 1036/1064/1058/1091 twice.
 // NOT kept: frame remains 0x80; 1036 shortens to 4639/4666, farther from retail.
 // Original full body, velocity values, helpers and call inputs restored.
+// Y591: Initialized facing/forward/paired airborne planar objects, seven subsets,
+// then all plus initialized control point: 1052 each. NOT kept: no gain; frame
+// remains 0x80 versus 0x74. Original full body and helper contracts restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4468,6 +4474,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Original indexed search with cached/collision, cached/sound, all, all/delta:
 // 182/165/177/177. NOT kept: selected receivers require equality; original-index 165 is 1353/1361, farther from retail.
 // Original indexed search, scalar producers and complete body restored.
+// Y591: Complete guarded component/query outcome, direct/exhaustive in bool/byte/short/long:
+// 177/177/177/177/177/177/177/177. NOT kept: deferred outcome requires equality;
+// original full search, component reads, collision/fallback and body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
