@@ -587,7 +587,7 @@ real function_10f690(long object_index, real *duration);
 bool function_a7670(long object_index);
 void __stdcall function_d6bc0(long object_index);
 void function_edfa0(long unit_index, point2f const *facing);
-void __stdcall function_e4a20(point3f const *point, long arg_159e6d_2, long object_index, bool knocked);
+void __stdcall function_e4a20(long arg_159e6d_2, point3f const *point, long object_index, bool knocked);
 void function_14cad0(long player_index, long unit_index);
 void function_152340(void);
 void function_1e2a90(long actor_index);
@@ -1875,7 +1875,11 @@ void __stdcall function_d0870(long weapon_index, long unit_index, long secondary
 // expansion (0xb58c0 with the two slot bits, then 0xcea00) is written out in the loop: the old static helper
 // stayed out of line under inline_depth(0) and cost the 105. Forms tried for the jump, all 1: continue-first
 // body, while loop with i++/slot++ in the body, do-while, unit declared outside the loop. slot++ before i++ 9;
-// slot declared before i 7.
+// slot declared before i 7. Round 1 of #1049, none moved it: indexed `slots[i]` without a slot pointer 31
+// (no pointer induction variable, cmp [eax+ecx*4]); `*slot++` in the test 42; init in for-init with `slot++, i++`
+// 11; a named short slot_index for the shifts and indexing 1. Retail's skip edge treats eax as stale (reloads it)
+// but ecx as live, so the compare operand there is probably a separate web from the slot variable; no source
+// form found that does that.
 // @retail 0xccf20
 void function_ccf20(long unit_index)
 {
@@ -2346,7 +2350,11 @@ void function_cfec0(long unit_index)
 // (mov eax, ebx), so it did not fold the value there. Tried: a result variable returning at each level 47;
 // early-return chain 99; nested ifs with one final return and the parameter reassigned 62 (one shared epilogue,
 // all four registers pushed first); early return for NONE at the top 92; a result variable with one final
-// return 113.
+// return 113. Round 1 of #1049, all still 2 (or eax, -1 kept): result variable / copy of the parameter
+// (`original`) returned at the last exit; `valid = unit_index != NONE` as the test; (dword) casts on the compare;
+// while instead of if. Failing differently: `~unit_index != 0` 96; early return of unit_index for the NONE case
+// at the top 99 (layout moves the exit first). The optimizer substitutes -1 on the NONE edge whatever the
+// spelling of the returned copy.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -2895,6 +2903,14 @@ void function_c5740(long unit_index, bool start)
 // M341: Native root fields through mutable/const pointer/reference, each with expression
 // or in-place final definition index: 94/94/94/94/94/94/94/94. Original root/index body
 // restored; definition/material/pool ownership and effect-call convention remain.
+// Round 1 of #1049 (fresh walk against retail 0xceee0-0xcf03b, fast, still 94): no logic difference left: weapon
+// slot, 0x1012c0 gate, definition tag +0x58, root through 0xbaf80, the 0x188180 argument list (point in EAX,
+// forward in ECX, tag, unit, 0xf, 0, raw material dword, root+0x70, root+0x28, 1.0), the material record's
+// +0x64 and the definition record's +0xac sounds all agree. What differs is only the prologue and the 0x188180
+// call setup: retail keeps definition_index in EBP (loaded first), the object globals pointer in EDI (reloaded
+// through [edi+0x44] after 0x1012c0), and reads unit_index and the material from the stack at each use, while
+// ours puts unit_index in EBX and the material in BP; and 0x188180 is still unmatched (bipeds.cpp, items.cpp
+// and unknown_187ec0.cpp), so which registers carry its first arguments is not ours to decide.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -3207,13 +3223,13 @@ void function_c6810(long unit_index)
    (0xce920); retail has 0xe6900 expanded in the first branch only, so that
    branch is written out and inline_depth(0) keeps the second a call */
 #pragma inline_depth(0)
-// score 60 (was 150): the written-out request-9 branch matches retail's bytes except where the player slot's data
-// pointer lives: retail keeps it in esi and adds the +0x28 read separately, ours uses ecx and folds it into the
-// address. Tried: both branches calling 0xe6900 179 (second also inlined); a noinline declaration of 0xe6900 150
-// (not honoured); the call sites reordered 179; a shared request local 179; the player slot as a local byte
-// pointer, a struct view or an array element 60 (same); the requester unit and its player index re-read 60.
+// MATCH (was 150, 60). The request-9 branch is written out (0xe6900 expanded there only) and the player's
+// controller is read twice through one player pointer: retail does not fold the +0x28 into the address, which a
+// single read (60) or a pointer to the field (60, 30) does. Tried: both branches calling 0xe6900 179; a noinline
+// declaration of 0xe6900 150 (not honoured); the call sites reordered 179; a shared request local 179; the
+// requester unit and its player index re-read 60.
 // @coldspear (#104, 2026-10-30): reading the request definition g_4677c8[9] through a volatile pointer gives 26,
-// not kept (no match), but it shows retail re-reads the definition there.
+// not kept: retail re-reads the definition there.
 // @retail 0xce520
 void function_ce520(long weapon_index, long unit_index, bool flag)
 {
@@ -3245,12 +3261,12 @@ void function_ce520(long weapon_index, long unit_index, bool flag)
 
 			if (requester->unknown13c != NONE)
 			{
-				short controller =
-					*(short *)((byte *)g_4e8c24->data + (requester->unknown13c & 0xffff) * 0x21c + 0x28);
+				byte *player = (byte *)g_4e8c24->data + (requester->unknown13c & 0xffff) * 0x21c;
 
-				if (controller != NONE)
+				/* two reads of the controller: retail keeps the player pointer and loads +0x28 from it */
+				if (*(short *)(player + 0x28) != NONE)
 				{
-					function_1e6980((s_time_entry *)((byte *)g_51e9c0 + controller * 0x1b0 + 0x150),
+					function_1e6980((s_time_entry *)((byte *)g_51e9c0 + *(short *)(player + 0x28) * 0x1b0 + 0x150),
 						(short)request.type, result);
 				}
 			}
@@ -3636,8 +3652,11 @@ void __stdcall function_ceb30(long unit_index)
 // weapon (EDX) before the unit (EAX). The count declared first keeps the unit index in EBX from entry,
 // so LTCG passes it there as retail (with the NONE initialisers first: NONE in EBX, stack argument);
 // the unit through unit_at_masked_index and the definition/value declared before the weapon index
-// give the rest. Other orders 8-60; NONE in an else arm 117. With 0xcea70 declared (slot, weapon,
-// mode, unit) and 0xce520 (unit, weapon, flag) at every call it matches (contributor code: held).
+// give the rest. Other orders 8-60; NONE in an else arm 117. MATCH with 0xcea70 declared (slot, weapon,
+// mode, unit) AND 0xce520 (unit, weapon, flag) at every call (the 0xce520 order alone 2, the 0xcea70
+// order alone 2); both held: the retail setup orders are reg-to-reg copies or differ per caller, so they
+// are not retail evidence, and 0xcea70 is matched code in @Banshee64's range. The 0xce520 order also
+// changes its call in 0x15e360 (src/unknown_157450.cpp), which stays matched either way.
 // @retail 0xd09c0
 void __stdcall function_d09c0(long unit_index, long slot_index, long definition_index, short value, dword const *state)
 {
@@ -3933,14 +3952,6 @@ void function_cc590(long unit_index)
    and the unit's own point (its vehicle's, else its center): a free biped
    leaves it to 0xdef60; otherwise mode 3 uses its weapon's barrel, modes
    1-3 its marker 0x4000095, and other modes its center */
-// score 110 (was 124): the prologue through the parent and flag tests now agrees with retail (flag 2
-// read through the word bitfield view, one shared lookup of the center, the location left unset, a
-// switch on the mode with the weapon test falling into the marker case). Left: retail's call to
-// 0xdef60 passes the point in EAX and that callee is far from matched (995), the weapon block's
-// register choice, and retail adds the offsets with the point read into a register first. Kept: the
-// point's fields read into locals before the sums (110). Tried and dropped for the sums: plain
-// (122), reversed operands (122), +=, all three sums before the stores (122); component-wise marker
-// copy (110).
 // @retail 0xcb500
 void __stdcall function_cb500(long unit_index, short mode, point3f const *origin, vector3f const *forward,
 	real const *offsets, point3f *point)
@@ -3996,15 +4007,14 @@ have_reference:
 		function_cafc0(unit_index, point);
 		break;
 	}
-	real dx = origin->x - reference.x;
-	real dy = origin->y - reference.y;
-	real dz = origin->z - reference.z;
-	real px = point->x;
-	real py = point->y;
-	real pz = point->z;
-	point->x = px + dx;
-	point->y = py + dy;
-	point->z = pz + dz;
+	vector3f delta;
+
+	delta.i = origin->x - reference.x;
+	delta.j = origin->y - reference.y;
+	delta.k = origin->z - reference.z;
+	point->x += delta.i;
+	point->y += delta.j;
+	point->z += delta.k;
 }
 
 /* fades the unit's two definition-timed values (+0x25c, the definition's
@@ -4350,6 +4360,10 @@ store:
 // named normalized fraction, shared velocity addition and first/second/both library copies 4 each.
 // Frame and all other instructions agree; the cone argument setup remains.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 1 of #1049, all 4: scale * 0.3926991f in a named max_angle local (before or after the seed local);
+// speed and direction declared up front with a separate assignment; forward and result pointers as named locals;
+// `speed = speed * scale`. Retail's order (fstp, forward, result, seed) is the source order of the call's
+// arguments after the spill; ours emits the forward pointer before the spill and the result after the seed.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {
@@ -5035,6 +5049,16 @@ void __stdcall function_c8290(vector3f *aim, point3f *point, long unit_index, ve
 // Tried (all 99): operand order of the angle and rate products, swapped high/low declaration order, low copied
 // from high, conditional-expression clamps; reading i, j directly in the first terms (99); rotated vector built
 // in a temporary and copied (122).
+// Round 1 of #1049 (fast, kept at 99): a fresh walk found no logic difference (clamps, the two branches' scale and
+// random-turn formulas, the 0x45e240/0x45e244 constants and the Rodrigues rotation d*cos + a*along - (d x a)*sin
+// all agree, the x87 tail matches byte for byte). Two structural facts for whoever continues. (1) Retail takes the
+// sums angle + pi/4 and rate + 2pi into the first block but multiplies them by the constant only after the
+// preceding clamp (`a`, test, `b`, test; `c`, test, `d`, test): that source shape, with the sums as locals
+// declared first, gives retail's 810 bytes and its c/d block, but the clamps land in xmm3/xmm4 instead of
+// retail's xmm4/xmm5 and the score rises to 170 (171 with either high/low order), so it was not kept; low/high
+// swapped, high = low and low = high behave the same. (2) Retail reads the direction's i and j from memory at
+// each use and forms (d x a) as three early registers; named locals for those terms or for x/y/z moved the
+// direction pointer from ESI to EDI (181) or gave 800 bytes (174).
 // @retail 0xd0080
 void function_d0080(long unit_index, vector3f *direction)
 {
@@ -6290,7 +6314,7 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 
 	if ((1 << unit->type) & 1)
 	{
-		function_e4a20(point, unit_index, object_index, knocked);
+		function_e4a20(unit_index, point, object_index, knocked);
 	}
 	if (unit->unknown13c != NONE)
 	{
@@ -6306,7 +6330,8 @@ void __stdcall function_caa60(long unit_index, long object_index, point3f const 
 		byte *player = (byte *)g_4e8c24->data + (player_index & 0xffff) * 0x21c;
 
 		*(long *)(player + 0x30) = *(long *)(player + 0x2c);
-		function_14cad0(player_index, unit_index);
+		/* the player lets go of its unit: retail passes NONE in ebx */
+		function_14cad0(player_index, NONE);
 		function_152340();
 	}
 	if (unit->unknown130 != NONE)

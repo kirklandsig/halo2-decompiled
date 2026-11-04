@@ -73,6 +73,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// MiniMax H (11-04): no new form, no lower score; the enable reloads and the maximum homes still differ.
 // score 107 (was 107): no frame; enable observations and maximum/register homes differ.
 // Lane 12 r78: MATCH (fast, plain and full check, lost []) with two changes together, not kept by the coordinator:
 // (1) the enable byte and the input counters declared as one struct symbol in globals.h (retail's record at 0x510cb0
@@ -133,6 +134,10 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // J247: Actual shared counter-word reader/store view subsets 107/107/107/107/107/107/107;
 // complete view with the team-mode helper 106 (425 bytes). NOT kept: one-point gain below threshold.
 // Original shared type and body restored; enable reload, maximum homes and word schedule remain.
+// Round 138: setter counter pointer before/after the clamp 106/111; independent per-use counter 107;
+// value between the enable gates 110; separate player/team inner results 109/109; two-call by-value
+// accessor 107; player record copy 71 (434 bytes), read-only copy 71, with the team-mode helper 78.
+// NOT kept: the one-use record copy spills through the code slot, absent in retail; original body restored.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
