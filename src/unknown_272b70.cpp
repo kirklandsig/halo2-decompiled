@@ -2845,6 +2845,10 @@ struct s_scenario_scripting_view
 // signed-char/short/word/int/long/dword: eight at 80, exact 367-byte extent.
 // NOT kept: no exact loop-result form; original dynamic reads, short wrapping,
 // separate point branches and full body restored; actor/set/counter homes remain.
+// DH374: Final short-NONE commit presence/absence in bool/byte/short/long: 80/80/80/80/80/80/80/80 (fast
+// control 80; full 80).
+// NOT kept: no byte match or eligible gain. Original direct final test, signed-short traversal/wrap, strict
+// selection, geometry branches and complete search restored; actor/counter/set and guarded-data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
