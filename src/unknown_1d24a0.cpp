@@ -326,6 +326,15 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // the NONE-default count 917 (4283 bytes); the linked component as one ternary 901 (one point, not kept); the
 // record flags read at each use 964 (4248 bytes). Retail keeps the array header in EBX across the loop (reloaded
 // at the top, reused by the swap-remove block) and saves EBX; ours never uses EBX here.
+// Round 144 (m3 lane 5, fast = full 902): local_17 renamed to sort after local_0 902 (local_1 stays at +9, retail
+// +0xa); the body position read through its pointer (no copy) 965 (frame 0x1e4, 4216 bytes); the accumulations
+// through the existing vector3f_add 902 (same code); the scale helper replaced by the existing vector3f_scale 1181
+// (retail's frame 0x1d4, 4026 bytes: the vectors stay in registers); the helper's loop as `scale * component` 902.
+// Original body and helpers restored.
+// Round 49 (m3 lane 15, fast control 902): swap-remove as `data[i] = data[--size]` 902 (same code); the removed
+// element overwritten through the element pointer 902 (same code); the linked-object test without the repeated
+// `!= NONE` (the pointer is already NULL then) 961 (4251 bytes); owner activity as `local_1 || (...)` 989 (4248);
+// other activity as `local_20 || ...` 970 (4254).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

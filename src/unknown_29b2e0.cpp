@@ -51,7 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain.
+// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // Frame 0x2c agrees at 1711/1706 bytes; unity XMM5/XMM4, root +0x10/yaw +0xc and rotation product/register homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
@@ -286,6 +286,27 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // DH311: Plain native rotation component-array production, with complete cosine/projection/sine
 // phase masks 0-7: 218/269/285/340/269/368/315/410. Native output/phase records are exact-only;
 // all regress, original alias-safe helper/body restored; root/yaw and rotation homes remain.
+// Round 82 (m3 lane 9, fast): retail's acos result, the clamped yaw and the sqrt temporaries share +0xc (ours:
+// acos result and sqrt temporaries with local_11 at +0x10). Both arg_2 copies declared before the arg_3 copy 375;
+// the yaw in a branch-local copied to local_8 at the arm's end 272 (1727 bytes); result declarations reversed 176
+// (same code); the failure arm first 176 (same code); the up vector read through the field at each use 178.
+// m3 lane 16 r83 (fast, the 169 plain-confirmed; 0x29b990 matched in each but the 383): the normalizer single-exit
+// (`else local_0 = 0.0f;` then one `if (length) *length = local_0; return local_0;`) 171 (DH309's form: unity in XMM4
+// as retail); with the XY vector declared before the second copy 169 (retail's local_5.k/local_6.j store order; a
+// gain of 7, under the bar: the lead), its components assigned one by one 169 (same code); with the first length
+// from the return (no out-parameter) 267; the XY vector right after the first copy 365; the plain reciprocal in
+// the normalizer 383 (0x29b990 6); the half-pi limit as if/else 169 (same code); the else arm's zeros chained 172.
+// Left on 169: the x87 transfer temporaries (roots, acos) at +0x10 with local_11 where retail packs them at +0xc
+// with the yaw, the length/first-i/second-length XMM3/6/5 (ours 6/5/3), the yaw clamp's zero copy hoisted above
+// its branch, the pitch spilled into arg_4's home, and the rotations' slots/schedule. All restored.
+// J244: Existing staged rotation cross on the retained in-place angle/rotation graph,
+// with original/ordinary/staged pitch axis, result setter and shared dot:
+// 213/237/237/213/237/237/240/240. NOT kept: all regress; frames 0x24/0x28
+// versus 0x2c. Original helper, arithmetic, includes and body restored; unity/root/yaw homes remain.
+// Round 82 (m3 lane 9, fast): retail's acos result, the clamped yaw and the sqrt temporaries share +0xc (ours:
+// acos result and sqrt temporaries with local_11 at +0x10). Both arg_2 copies declared before the arg_3 copy 375;
+// the yaw in a branch-local copied to local_8 at the arm's end 272 (1727 bytes); result declarations reversed 176
+// (same code); the failure arm first 176 (same code); the up vector read through the field at each use 178.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

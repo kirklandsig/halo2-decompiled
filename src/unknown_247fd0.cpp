@@ -327,10 +327,20 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DL250: Existing sample helper inline/unannotated contracts with shared, distinct, sample-scoped
 // and entry-owned output lifetimes: 55/55/55/55/55/55/55/55.
 // Original complete source restored; no eligible gain.
+// Round 48 (fast with 0x248cc0): a compiled-out `do {} while (false);` between the field_38 sample and the
+// compare 55 (same code, still split); 0x173ba0's record argument read back from field_50 (as 0x247950 does)
+// 133 (876 bytes); the seed bits by an explicit 0x1fff mask and shift 232 (876 bytes); `s_248000 *const` record
+// pointer 55 (same code); child result declared before the loop, on the 55 graph, 55 (same code).
 // Round 61 (m3 lane 11, fast): no matched function has the post-fstp fold yet (0x39a80, 0x186ab0 still differ). The cached-record compare as
 // `while` with the same body 140 (880 bytes); the compare in a bool ahead of the fifth sample's store 140 (878 bytes; its `test` schedules above the x87
 // ops, no folded cmp); the child counter dword 55 (same code); the tag index in a local for both child-loop uses 221 (872 bytes); the reciprocal declared
 // ahead of the loop 55 (same code). Compile-only: the compare inside a ternary or a short-circuit test still splits.
+// M342: Explicit refreshed virtual child count at the native latch, provider carry and
+// count/index declaration scopes: 55/55/55/55/55/55/55/55. NOT kept: no exact count/provider
+// handoff shape; original complete body restored. Split post-sample compare and child scratch homes remain.
+// N347: Read-only virtual count/element/both/both-interface, metadata/metadata-count/metadata-element/
+// complete contracts: 55/55/55/55/55/55/55/55. NOT kept: unmatched alias/contract combinations. Original
+// complete body and declarations restored; split post-sample comparison and child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -678,6 +688,23 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // B387: Read-only settings/immutable particle/immutable allocation identity, seven subsets,
 // then all with immutable effect identity: 356 each. Original complete body restored;
 // frame 0xb0 and late EBP save, escaped blend and random/getter homes remain.
+// B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
+// age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
+// original complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// Round 66 (m3 lane 1, fast): grouped workspace members in retail's frame order (probe point, direction, the
+// collision result moved in, blend, sample, placement) 355 at 1652 bytes (point/direction/collision/placement
+// land on retail's offsets; retail's unused 16 bytes are the blend and sample slots, both kept in registers); on
+// it the in-loop tag lookup through the inline particle_object_for_tag (retail inlines it here: the
+// 'PRTM'/'prt3' compare) 383 (1691 bytes), plus the `(short)` child index and if/else reciprocal 383; blend as
+// its own point3f 403 (frame 0xa4, blend in XMM2-4 as retail); and the first sample a plain real 432 (frame
+// 0xa0). A named double in callee 0x249170 (diagnostic) leaves the frame at 0xa0. All restored.
+// B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
+// age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
+// original complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// M344: Allocated-record pointer results at producer/entry, conditional/default-owned,
+// positive guard/failure exit 409/410/409/410/409/410/409/410, all 1659/1652 bytes.
+// NOT kept: unmatched nullable admission adds a pointer test; original handle admission,
+// record observations, inherited qualifier, helpers and entire body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

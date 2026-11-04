@@ -283,9 +283,17 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 81 (m3 lane 12, fast): the tiny test as `fabs(distance) >= 0.0001f` 94; the normalizer `static inline`
 // 92 (same code); its root through sqrtf 156 (634 bytes); the normalizer on a `point2f &` 92; the root's sum
 // written y first 92. Original normalizer and body restored; early Y load remains.
+// Round 57 (m3 lane 13, fast): the direction as an aggregate initializer with the distance declared at the call 92
+// (same code); fabsf in the normalizer 156 (634 bytes); `real const` direction locals 92 (same code); the
+// normalizer on two component pointers (`&direction.x, &direction.y`) 92 (same code); the reaches flag declared
+// after the direction locals 166 (638 bytes). Retail's `direction->y * inverse` keeps y as the register operand
+// (preloaded), where ours commutes it to `inverse * [y]`.
 // Round 79 (m3 lane 9, fast): the reaches flag declared after the other locals 92; distance declared before
 // direction 92; sqrtf in the normalizer 156 (634 bytes); the normalizer plain `static inline` 92; the ancestor
 // walk as `while` with the step at its end 92 (all 92 forms same code). Early Y load still missing.
+// Round 81 (m3 lane 12, fast): the tiny test as `fabs(distance) >= 0.0001f` 94; the normalizer `static inline`
+// 92 (same code); its root through sqrtf 156 (634 bytes); the normalizer on a `point2f &` 92; the root's sum
+// written y first 92. Original normalizer and body restored; early Y load remains.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
@@ -821,9 +829,16 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // B384: Single actor-action predicate bool/byte/short/long, original/native shifted global
 // bit consumer: 773/773/783/782/773/773/783/782. NOT kept: new predicate storage is established inside a test
 // without an exact match. Original actor observations, bit consumer and full body restored.
+// m3 lane 11 r63 (fast): actor pointer declared first 757 (2995 B); `*complete` read after the actor/height
+// block 673, after the output clears 676, just before the step loop 704; that 673 form with bool result 755;
+// `ignored` set after the out-count test 675; `radius < source.radius` 675. All restored.
 // B388: Plain two-list transform table, long/short list ordinal, indexed/advancing
 // obstacle receiver and long/Boolean success: 827/861/827/861/794/806/794/806.
 // All regress and shorten away from retail; original distinct transform loops restored.
+// Round 67 (m3 lane 10, fast; aligned difflib counts in brackets, 601 at 675): the enabled-bit test written as the
+// matched 0x1b5aa0 writes it, `(bool)((g_557c40[9 >> 5] >> (9 & 31)) & 1)`, 702 [602] (retail's `shr eax, 9; test al,
+// 1` shape, ours in EDX); that without the outer parentheses 702 [602]; with the mask test as `(g_4ee4ec & mask)` 702
+// [602]; with a bool result 749 [610]; plus the radius ternary ahead of the pathfinding read 777 [607].
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

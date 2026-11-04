@@ -139,6 +139,7 @@ long network_observer_find_channel(s_network_observer *observer, long owner, lon
 // `unsigned long owner` (10), channel pointer first (33), one && chain with the
 // machine copy before it (17), do-while with early return (46). The volatile
 // stays only because it lowers 10 to 1; it does not match.
+// Permuter (25 min on r660, about 1100 variants): nothing below 1.
 // @retail 0x75d30
 long network_observer_find_channel_by_machine(s_network_observer *observer, const s_session_machine_address *address, long volatile owner)
 {
@@ -1342,6 +1343,8 @@ static __forceinline long observer_round(real value)
 // ours loads the minimum into ecx first, then inc ebp; imul eax, ebp. Swapping
 // the multiply operands, folding intervals + 1 into the product, or reading
 // the minimum inline all give 7; reversing the max direction gives 9.
+// Permuter (25 min on r660): best 5, only with config fields read as short where they are long (a behaviour
+// change); not kept.
 // @retail 0x79850
 void function_79850(s_network_observer *observer, long index)
 {
@@ -1408,6 +1411,7 @@ void function_797b0(s_network_observer *observer, long index, bool received)
 // (25), as the call's argument (19), `limited` first (71), burst factors swapped (19), `samples` local (19),
 // `quotient` local (19), min-clamp spelled with ?: (19/25), reversed clamp `if (burst > m) m = burst` (18, cmov flips),
 // refresh read into a short local (25).
+// Permuter (25 min on r660): nothing below 19.
 // @retail 0x78e60
 void function_78e60(s_network_observer *observer, long index)
 {
@@ -1915,21 +1919,16 @@ void function_79480(s_network_observer *observer)
 	observer->value4f38 = now;
 }
 
-// score 6 (was 6): retail loads received_bytes into ebp first (before the
-// channel pointer is formed), adds bytes and stores it, then reloads ebp with
-// sample_time; ours hoists the sample_time load into ebp first and loads
-// received_bytes into eax. The volatile read only lowers the score from 93
-// (plain `received_bytes += bytes` and the load-add-store local both fuse into
-// add dword ptr [esi + 0x4a8], ecx, 8 bytes short): it does not match. The
-// fast check's call/global address differences are not real differences.
+// Matches with `interval` declared first and the received bytes added in place (the permuter found it): retail
+// loads received_bytes into ebp before it reloads ebp with sample_time. The earlier volatile read of received_bytes
+// (6) is gone.
 // @retail 0x79660
 void function_79660(s_network_observer *observer, long index, long bytes, long delay, long stream_delay)
 {
 	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
-	long local_0 = *(volatile long *)&channel->received_bytes;
-	channel->received_bytes = bytes + local_0;
-	channel->stream_delay = stream_delay;
 	long interval = 0;
+	channel->received_bytes += bytes;
+	channel->stream_delay = stream_delay;
 	long last = channel->sample_time;
 	if (last != NONE)
 		interval = observer_time_get() - last;
@@ -1958,6 +1957,8 @@ void function_79660(s_network_observer *observer, long index, long bytes, long d
 // count gives retail's store order); all 24 orders of the four locals were
 // tried (5 to 8), and so were count/total declared at the top, moving
 // total += received before or after count++ (105+), and count += 1 (7).
+// Permuter (25 min on r660): best 2, only with network_observer_update_bandwidth's count and total swapped (a
+// behaviour change) and a volatile flag store; not kept.
 // @retail 0x79260
 void function_79260(s_network_observer *observer)
 {
@@ -2614,6 +2615,7 @@ static __forceinline bool function_785f7(const s_type_99af70 *arg_0)
 // and a cast read of message+4 all give 10; `byte` or `char` flags also 10
 // (mov al, byte ptr [ecx + 4]); `unsigned short` stays at 3; declaring the
 // view or flags first, or reading the bit from flags directly, 22 or worse.
+// Permuter (25 min on r660): nothing below 3.
 // @retail 0x785d0
 void __stdcall function_0785d0(void *unknown10, s_type_99af70 const *address, void const *message)
 {
@@ -2752,6 +2754,7 @@ void network_observer_update(s_network_observer *observer)
 // (shl edx, 0x10); ours does the opposite. Operand order of the | and +,
 // the usual htonl macro spellings, splitting into lo/hi locals in either order
 // and a separate mid = ip & 0xff00 all compile to the same 2.
+// Permuter (25 min on r660): nothing below 2.
 // @retail 0x78900
 void network_observer_recreate_connections(s_network_observer *observer)
 {

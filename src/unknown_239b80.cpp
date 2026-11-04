@@ -97,6 +97,9 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // without the defaulted distance 16, with an early defaulted projection 16; output base declared
 // after the previous index 9; staged point-first numerator 9. Original helper and loop restored;
 // the three setup stores and first intersection's x product remain.
+// Round 124 (m3 lane 7, fast): the copy as `output[result] = ...; result++;` 5; the arms swapped (`!= 0` arm
+// first) 93; the helper's points as references 5; plane, points and output all references 5; a point pointer in
+// the classification loop 9. Original body restored.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -427,9 +430,17 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B385: Existing complete 2D magnitude with component/aggregate displacement, scalar/native
 // angle producer and memcpy/memmove: 170/170/180/180/259/259/259/259. No byte match;
 // native vector grouping, shared header and complete original executable source restored.
+// B391: Actual lowest/current/candidate external point references, subsets 1-7, then
+// complete external coordinate references: 170/170/170/170/170/170/170/170. Original
+// complete body restored; extra frame word, count/departure and compaction homes remain.
 // DH316: Unsigned-word/signed-64-bit pass, long/bool departure and memcpy/memmove:
 // 257/254/187/264/319/299/299/292. NOT kept: all regress; two word CRT forms lose the
 // caller. Original pass, state, copy, helpers and entire executable body restored.
+// Lane 13 r58 (fast): one retail-shaped body (short hull count, `while (hull_count < count)` with
+// `indices[hull_count++] = current`, bool departure and heading declared ahead of the lowest scan, memmove
+// compaction) 265 (759 B; frame 0x14 as retail, but points in EBP and indices in EBX where retail has ESI/EBP, and
+// the zeroed count via a zero register); on it departure declared first 265, `current` declared first 264, a
+// separate `hull_count++` 265, memcpy 275 (751 B), the `||` departure update 273 (748 B).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -768,6 +779,8 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Actual output cursor at alias join: native/memcpy with rollback 286/286, deferred commit 342/342; at
 // entry: rollback 285/285, deferred commit 325/325. Count/prior-side and SIMD homes remain; original
 // indexed output body restored.
+// M339: Actual current/intersection/last-output element references, subsets 1/2/4/3/5/6/7 then previous
+// endpoint: 129/129/129/129/129/129/129/129. Original pointer/output forms and full body restored.
 // Round 202 (lane 3, harness exact, confirmed --fast): retail keeps both side flags in memory (current +0xc,
 // previous +0xd, the loop end copies through CL); ours keeps the previous side in CL, so count is not loaded once into
 // ECX. `long last = count - 1` index 129; `points + count` then `previous--` 129; the result/flags/mask declared after
@@ -781,6 +794,12 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // prior-side byte and SIMD homes remain.
 // M339: Actual current/intersection/last-output element references, subsets 1/2/4/3/5/6/7 then previous
 // endpoint: 129/129/129/129/129/129/129/129. Original pointer/output forms and full body restored.
+// Lane 13 r58 (fast): a `short total = count` copy (as matched 0x23a160) for the previous point and the loop 133;
+// for the loop only 129 (same code); the previous side re-derived from `distance >= 0.f` at the loop end 258; the
+// previous distance folded into the side's initializer 133; `!(distance < 0.f)` for the side 130.
+// B395: Actual NONE result terminates the input walk, short/long ordinal, failure/success
+// capacity arms and tail/post-crossing prior-state publication: 282/282/284/284/250/309/257/311.
+// NOT kept: all regress; original capacity breaks, indexed walk and complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

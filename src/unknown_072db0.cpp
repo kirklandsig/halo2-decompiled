@@ -1612,6 +1612,27 @@ struct s_rating_summary
 // walking counters pointer 38 (base at the struct, not +6; homes unchanged), named zcounters 38 (names do not
 // move these homes); the switch without its `default: __assume(0)` 105 (1197 bytes); the formatter's result
 // in a local 25 again (match-only; only the team latch left).
+// Round 206 (m3 lane 3, fast): with the formatter's result in a local (match-only) 25 again (only the team
+// latch left: retail stores both cursors at the head, counters from ECX; ours steps counters in ESI and stores it
+// at the latch, homes swapped); on that, the team loop bounded by the existing accessor 0x193440 under the region
+// 163 (1191 bytes, it stays a call); the stats pointer before the two rating calls 25 (same code); the team skill
+// as `long` 55 (1212 bytes, but only because the skill compare moves; the latch is unchanged). Diagnostics without
+// the inline_depth(0) region: unicode_string_to_ascii for the name and the 0x193440 accessor 412 (1264 bytes), with
+// a strncpy-and-terminate inline copy as well 412: 0x192e60 still inlines at entry. Original body restored.
+// Round 141 (m3 lane 6, fast): a strncpy-and-terminate helper (as font_loading.cpp has) declared __forceinline
+// or inline ahead of the region 214 (1200 bytes: the inline_depth(0) region keeps even a __forceinline helper out
+// of line); the team counters read directly at the call 32; the team identity named (`const XUID *`) for the
+// memcmp and the call 47 at 1212 bytes (the team-loop latch then stores both cursors from ECX/EDX at the head with
+// retail's homes, teams +0x14, counters +0x18, but the team cursor is based at the identity, +0xdd0, where
+// retail's is +0xdc8); a team element pointer 47, with the identity pointer 46; the identity named only for the
+// call 47. Retail's prologue/epilogue is `ret 8` too (the queue's `ret 0` was jump-table data).
+// Round 206 (m3 lane 3, fast): with the formatter's result in a local (match-only) 25 again (only the team
+// latch left: retail stores both cursors at the head, counters from ECX; ours steps counters in ESI and stores it
+// at the latch, homes swapped); on that, the team loop bounded by the existing accessor 0x193440 under the region
+// 163 (1191 bytes, it stays a call); the stats pointer before the two rating calls 25 (same code); the team skill
+// as `long` 55 (1212 bytes, but only because the skill compare moves; the latch is unchanged). Diagnostics without
+// the inline_depth(0) region: unicode_string_to_ascii for the name and the 0x193440 accessor 412 (1264 bytes), with
+// a strncpy-and-terminate inline copy as well 412: 0x192e60 still inlines at entry. Original body restored.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1974,9 +1995,17 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M332: Native due-timestamp captures at read/write/both submission boundaries, before/inside
 // admission, then both complete due predicates: 710/715/716/710/715/716/716/716. Original global reads,
 // clocks, predicates and body restored; initial cursor/slot and later homes remain.
+// Round 141 (m3 lane 6, fast; aligned diff 515): the `valid` flag dropped for a clear loop in each failing arm 751
+// (2910 bytes, aligned 521); an early `continue` after clearing for an invalid user 783 (aligned 524); the type-5
+// record scan by index 768 (2926, aligned 577); the request identity copied into a local XUID 733 (2910, aligned
+// 489); both 812 (2942, aligned 584). The slot helper's cmovne still needs /arch:SSE, so the positional count
+// cannot reach a match under the file's flags.
 // M339: Complete duplicate-search condition under for/while, ordered/equality endpoint and identity/type
 // filter order: 709/709/698/698/746/746/721/721. NOT kept: type-first 698 grows frame 0xc0 to 0xc8;
 // original body restored.
+// M3 lane 4 r161 (fast): the existing xuid getter 0x647a0 as the users-loop test 757 (2862 B; called, not
+// inlined); a const user reference for the users loop 754; that with online_logon_connected() 775 (2846 B);
+// the identity flag tests before the slot test 711; team declared before valid 709 (same code).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

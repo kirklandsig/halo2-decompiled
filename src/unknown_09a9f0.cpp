@@ -554,16 +554,31 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // stored again at the top of the unflagged arm 67 (188 bytes); the entity store after the result 49; the object
 // index declared before `value` 49; the entity's field read into a local before the header test 49; the header
 // test or the object read through the entity's stored index (long result) 49/49 (forwarded, same code).
-// Lane 18 round 36 (fast): on the long result, the flag read as the byte at +2 of the header 49 (same code); the
-// object store and attach through `entity->object_index` 52; the bool result cleared at entry and set after the
-// attach (re-measured) 80 (158 bytes: retail's BL and branches, the header address still shared); the validity
-// test written `object_index != NONE` beside the long result 76 (189 bytes); the entity's index and the local
-// assigned in one chained statement 49 (same code).
 // m3 lane 11 r62 (fast): bool result false first, `result = true` right after the attach (retail's BL
 // sequence) 77 re-measured (160 bytes: EBP then caches the last argument for both virtual calls); with the
 // header flag tested through a bit-field view of the header's flags byte 77 (same code); the result set
 // after the value call 79; the entity's stored index at every use 82; the result set before the attach 72
 // (176 bytes).
+// Lane 18 round 36 (fast): on the long result, the flag read as the byte at +2 of the header 49 (same code); the
+// object store and attach through `entity->object_index` 52; the bool result cleared at entry and set after the
+// attach (re-measured) 80 (158 bytes: retail's BL and branches, the header address still shared); the validity
+// test written `object_index != NONE` beside the long result 76 (189 bytes); the entity's index and the local
+// assigned in one chained statement 49 (same code).
+// m3 lane 14 r56 (fast): the flag test through the existing object_header_get (slot_handler.h) 49 (same code);
+// bool result preset false with the flagged arm first and `result = true` before the value test 75 (160 bytes);
+// the long result with `if (result && flagged) { clear; result = false; }` then `if (result)` the attach block
+// 52; the flagged arm setting `result = false` before the clear 50; a long result preset false and set true
+// after the attach 67. All restored.
+// m3 lane 11 r62 (fast): bool result false first, `result = true` right after the attach (retail's BL
+// sequence) 77 re-measured (160 bytes: EBP then caches the last argument for both virtual calls); with the
+// header flag tested through a bit-field view of the header's flags byte 77 (same code); the result set
+// after the value call 79; the entity's stored index at every use 82; the result set before the attach 72
+// (176 bytes).
+// Round 67 (m3 lane 1, fast): the header test through a forceinline bool getter 49 (same code), on the retail shape
+// (false first, true after the attach) 77; retail shape with the flag test positive and the NONE arm first 75 (160
+// bytes); the positive test with the NONE arm first on the long result 52; a header pointer named for the test with
+// the object read through the macro 49. Lead: retail's reloaded table data and recomputed index look like an
+// out-of-line getter that LTCG inlines; no existing one was found in src/.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

@@ -74,7 +74,7 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
-// score 5 (was 47): the 0x18a90 tail below is solved (round 126: 0x18a90's body rewritten with each binding
+// score 5 (was 5): the 0x18a90 tail below is solved (round 126: 0x18a90's body rewritten with each binding
 // byte read at every use gives retail's EBX state convention and 972 bytes); left is the restore block's schedule.
 // Earlier: BLOCKED-BY 0x18a90 (src/unknown_01cf50.cpp, contributor file: retail passes the state
 // in EBX, ours pushes it; that tail is about 42 of the 47 lines and the extra byte, the later calls shifting
@@ -206,9 +206,27 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Round 516: Packed entry/chain results in short/word/long pairs on recovered field-reference
 // graph. Restore table/index order and protected sampler state convention remain.
 // Scores 48/47/49/47/50/48/49/47; original executable body restored.
+// Round 65 (m3 lane 1, fast, control 5): entry stored directly to its field (no reference) 5 (first
+// difference +0x1a7: `second` then loads above the store); the existing `entry` local stored then read 181
+// (975 bytes); the entry base from the `tables` local 178; the pass table base read before the next index
+// 5 (same code); permuter (600 s, 51 tries) best 5.
 // Round 126 (lane 8, on the fixed tail, fast): direct entry store 5 (`second` hoists instead); fresh restore-block
 // packed/next/pass locals 5; entry from the tables local 178; tables re-read into a const local after its store 279;
 // entry reference bound before the parameters lookup 5; permuter 54 tries, best 5.
+// Round 144 (m3 lane 5, fast; retail reloads the tables field into ECX before loading `third`, ours after the
+// entry's word load): tables published without the local reassignment 5; `third + (next & 0x1ff)` 5; the
+// tables local for the 0xc/0x14/0x1c bases 209 (974 bytes); fresh restore-block parameters/definition/tables
+// locals 5; the pass field bound through a reference 5. Original body restored.
+// P294: owning cached pointer fields 5;
+// complete owning cache prefix 5;
+// actual table header 5;
+// actual entry/pass prefixes 5;
+// cached fields and entry/pass prefixes 5;
+// cached fields and table header 5;
+// complete cache and table header 5;
+// complete cache/table/entry prefixes 5.
+// Original executable body restored;
+// no exact match from these ownership forms.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
@@ -1541,6 +1559,12 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // packed declarations 130 each; a full post-sampler word used only for rescaling 130; that word also selecting
 // the output category 291; a twice-used post-sampler descriptor pointer or reference 130 each. None gives the
 // mapped rescale test retail's `mov ax,[ebx]; test ah,8`; the original 130 body and matched sampler/writers remain.
+// Round 144 (m3 lane 5, fast; scores 0x1b2c0/0x19ca0; any pointer copy in 0x1b2c0 hides its write summary, so
+// 0x19ca0 matches only with direct stores): cases 14/18 as `memset(out + 1, 0, 3 * sizeof(real))` 103 (724 bytes)/MATCH;
+// a `real zero` local stored to out[1..3] 6/MATCH; that chained `out[3] = out[2] = out[1] = zero` 6/MATCH; direct case 18
+// moved after case 20 30/MATCH; zero local with case 12 `out[2] = out[3]` and case 13 the same 2/MATCH (only case 13's
+// pair in source order c,8); with case 13 as two statements, chained 8-first, or its own zero local 6/MATCH each (cases
+// 10, 13, 14 all flip once case 13 ends on out[3]). Original body restored.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {
