@@ -1790,6 +1790,9 @@ void function_b7360(long object_index);
 // 0x259ec0 and 0x25a380), as forceinline 303 (0x259ec0 still breaks under inline_depth(0)); the wait result tested directly
 // with `success = true` in its arm 630 (1700). Diagnostic, reverted: volatile reference reads at the 1/19 copy and case 5 289
 // (arg_0 EBP, output ESI as retail).
+// B420: Existing completion receives secondary/primary/recording validations,
+// subsets 1/2/4/3/5/6/7, then all as short: 301/301/301/479/301/301/479/526.
+// NOT kept: no exact match; original complete body restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2329,6 +2332,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B418: Real state bitfields at dispatch/tail/secondary observations, seven subsets
 // and all with raw member tests: 485 each (fast control 485; full 469). Original
 // type and body restored; actor/state registers and first-point home remain.
+// B420: Complete structured outcome gates the post-dispatch continuation,
+// completed/pending in bool/byte/short/long: 766/766/726/718/694/694/672/668.
+// NOT kept: no exact match; original complete body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

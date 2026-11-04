@@ -459,6 +459,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B418: Native lowest-point state, aggregate/component initialization and both
 // current-declaration priorities: 170 each; all four with prior heading before scan
 // 207/207/206/206. NOT kept: grouped state needs a match; original body restored.
+// B420: One spatial equality result serves departure and geometric completion,
+// bool/byte/short/long with long then Boolean departure: 301/301/298/301/313/313/297/297.
+// NOT kept: no exact match; original complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -834,6 +837,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B418: Normal pointer/reference, complete coefficient references and plane
 // reference before/after alias copying: 131/131/200/130/131/131/200/130. NOT kept:
 // no match or gain; original field observations and complete body restored.
+// B420: Wrapped predecessor from the real input ordinal, four natural address
+// producers with tail then completed-crossing prior-side publication: 326/326/386/333/318/318/381/324.
+// NOT kept: no exact match; original complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

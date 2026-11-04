@@ -862,6 +862,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // B418: Complete product/planar-sum/final-projection stages in the existing
 // projection helper, seven subsets and immutable complete stages: 87/87/87/87/87/87/87/87.
 // NOT kept: at most two fewer differences; original helper and full body restored.
+// B420: Complete lateral-clearance and heading admissions, positive/negative
+// bool/byte/short/long values at both original tests: 89/89/89/89/89/89/89/89.
+// NOT kept: no exact match; original complete body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
