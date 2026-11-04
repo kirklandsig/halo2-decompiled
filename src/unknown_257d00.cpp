@@ -1783,6 +1783,9 @@ void function_b7360(long object_index);
 // 301/301/465/449; direct default failure at those widths 471/471/463/467.
 // Original startup initialization, complete callback and inherited boundary restored;
 // actor/output entry carriers, retained point reference and 24-byte deficit remain.
+// F364: Native point-set/collection accessor ownership, pointer/reference returns and
+// ordinary/forced boundaries: 301/301/301/301/553/303/553/303. NOT kept: shared users regress.
+// Original accessor and callback restored; actor/output carriers and 24-byte deficit remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2311,6 +2314,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 64 (lane 10, fast only, under a builds-differently CAVEAT, so these are not plain scores; control 485, full 469): retail's case table order is 1, 2.., 4, 7/8, 0, 13 (the exit), 5, 9, 10, 12, 11, 6, 18, 21, 14, 20, with the tail after case 0 and the sete
 // shared by every `== 0` result. Case 14 moved before 20 491 (2400); with `!(distance > 1.f)` 615 (2396, masked aligned 101); that comparison alone or as an if 622 (2384, masked 94, retail's
 // comiss with the memory constant); an explicit case 13 before 5 485 (same code); command before actor 614; the result first 502 (frame 0x20).
+// F364: Native command-record lookup, global/explicit pool input, pointer/reference
+// returns and ordinary/forced boundaries: 485/485/485/485/485/485/485/485 (fast control 485). Original shared
+// lookup, record and callback restored; actor/state ownership and first-point home remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

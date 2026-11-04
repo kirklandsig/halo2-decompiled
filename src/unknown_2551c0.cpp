@@ -843,6 +843,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 47 (lane 15, fast, on the match-only 17 form): adjusted projection in the length variable 17 (slot groups retail's, 0x14/0x18
 // swapped); with a named reach 197, reach alone 196 (951 bytes); one final subtraction into it, `= length - x`, `x = x - y` 17/17/17;
 // length and second side renamed either way, six forms 17 each (names do not reorder these slots). XMM2/XMM3 and the swap remain.
+// F364: Native vector-owned projection, instance/static and ordinary/forced
+// boundaries, original/recovered entry graphs: 89/89/89/89/25/25/17/17. NOT kept: recovered
+// graph needs a one-use unit snapshot and mixed radius reads without a match. Original body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

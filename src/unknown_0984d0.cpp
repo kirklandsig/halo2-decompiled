@@ -538,6 +538,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // DH316: Whole-case terminal-return regions, seven subsets then positive validated
 // admission: eight 80s at 540/540 bytes. NOT kept: no byte match; original complete
 // body restored. Validity/cursor homes and validation-loop entry still differ.
+// F364: Native table-owned element validation, instance/static, bool/long results and
+// ordinary/forced boundaries: 80/80/80/80/80/80/80/80. Original helper, table type and
+// inherited local-slot reads restored; validity/cursor homes and loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
