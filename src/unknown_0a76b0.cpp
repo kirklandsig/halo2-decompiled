@@ -1538,6 +1538,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // P289: Twice-used animation channel long/dword/short/byte at its producer, then
 // entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
 // no exact match. Original body restored; early pool/hand and second unit load remain.
+// B414: Actual metadata animation-admission outcome, positive/negative bool/byte/short/long:
+// 177/170/178/176/179/179/179/178. NOT kept: all regress, including 170 at 604 bytes.
+// Original complete body restored; early pool, second unit load and hand storage remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1973,6 +1976,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // reporting 75/75/140/140; set from the pickup test 142/142/100/94. NOT kept:
 // every form regresses. Original mode/result graph, shared player observation and
 // complete body restored; request/weapon homes and getter expansion remain.
+// B414: Completed admission buffer before actions, weapon-owned/complete phase and initialized/edge-owned
+// failure in bool/byte: 60/60/94/94/60/60/94/94. NOT kept: no match or gain; complete phase grows to 420 bytes.
+// Original complete body restored; request/weapon homes and player-getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -4759,6 +4765,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
 // 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
 // output lifetime and full body restored; frame and basis/point homes remain.
+// B414: Away, normalized-side and world-point scopes end at their last consumers, seven subsets;
+// all with frame ending at its final conversion: 175/175/175/175/175/175/175/175.
+// Original complete body restored; frame 0x110 versus 0x11c and basis/point scheduling remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

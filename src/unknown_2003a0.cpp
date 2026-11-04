@@ -2409,6 +2409,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // elapsed as a dword, gets the late pushes and the pool reloaded per pass in EDI; the frame stays 0x48); on that,
 // a word wake read 312, `while ((squad = function_200d83(&squads)) != NULL)` 318, a long index without word casts
 // 312 (aligned 109).
+// B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
+// complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
+// Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
