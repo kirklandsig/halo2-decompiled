@@ -1498,6 +1498,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // query on the global, 349 (1302 B); with both weapon-object lookups through it 349; plus the if-form
 // depletion 325 (frame four, the three flags at retail's +0x11..+0x13, unit not re-derived, data in EDI);
 // with the controlling field tested directly 325; with the overlay read at its switch 346 (1264 B).
+// AC508: Joint false-default ownership in first conditional/valid-handle assignment and
+// second conditional/depleted-valid assignment, bool then byte status: 357/327/349/322 twice.
+// NOT kept: no exact default/SETLE producer match. Original complete body restored; pool/state
+// ownership, signed-count joins and byte normalization remain.
 // N352: Actual unit/control/state record-reference families 1..7 and complete
 // read-only bindings: 164 each. NOT kept: pool/state/SETLE/result homes and
 // byte normalization remain; original receivers, scalar argument read and body restored.
@@ -1745,6 +1749,9 @@ bool __stdcall function_110ab0(long unit_index)
 // 0x600008c as `result = interruptible;` then an inner switch with no default 451; the state name read
 // into a local at entry 530 (1865 B); the overlay read into a local at entry 464 (1793 B, but the unit
 // index then arrives in EDI); a headers local for the unit, first slot and both weapon lookups 476.
+// Y561: Complete uninitialized result short/word/long/dword at original
+// declaration 574/574/554/554; before lookups 574/574/554/554. NOT kept:
+// all regress and grow away from retail; original Boolean result/body restored.
 // N352: Actual unit/control/state record-reference families 1..7 and complete
 // read-only bindings: 450 each. NOT kept: frame stays eight versus twelve,
 // with 424 code differences; original pointer receivers and full body restored.
@@ -2131,6 +2138,16 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // g_4687c4 856; definition looked up right after the unit 795. On 776: id copied inside the index test
 // 842; final slot test inverted with arms swapped 776 (same code); overlay loop as `for` 869 (first
 // 0x11df30 inlined as retail, frame 0xc8); `for` with the id inside the test 873; ratio `0.5f + 0.5f * x` 776.
+// Y565: Existing channel_start at each direct set site, early/late pairs/all, then all with
+// the original graph guard: 775/775/775/776/776/775/775/776. NOT kept: at most one
+// point; frame stays 0xcc and first-angle/overlay expansion remains. Original body restored.
+// F357: Complete persistent-channel admission results in bool/byte/long/dword:
+// logical conjunctions 776/776/776/776; eager conjunctions 823/823/808/808.
+// NOT kept: no gain; original direct guards, scratch lifetime, helpers and samples restored.
+// B398: Overlay lower/upper independent clamps, upper-first exclusive/independent
+// clamps 776/841/841; complete overlay center-admission bool/byte/short/long/dword
+// storage 776 each. NOT kept: no gain or exact predicate/branch-layout form.
+// Original body restored; frame 0xcc/0xd4 and first-angle/overlay expansion remain.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

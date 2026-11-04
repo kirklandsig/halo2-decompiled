@@ -252,6 +252,15 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
 // then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
 // result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
+// B401: Next-unused cache slot as provisional mapped search result, long/dword/short/word:
+// ordinal traversal 227/227/223/223; native pointer traversal 218/218/215/215. NOT kept:
+// unmatched result/control forms regress and shorten extent; original search, tokenizer and body restored.
+// P307: Initialization-failure result feeding guard/four stores, bool/byte/char/word/short/int/long/dword:
+// 101/229/229/226/226/227/227/227. NOT kept: 101 adds neg/sbb/inc absent in retail,
+// and leaves outer EBP and clamp homes unresolved. Original entire body restored.
+// DH331: Native next-cursor reference in existing tokenizer, original/early-null/nested-result/
+// output-owned graphs, pointer then fixed-array delimiter input: 128/232/193/248/128/232/193/248.
+// Original tokenizer and loader restored; early EBP preservation and read-size homes remain.
 // N351: One outer admission/cache-finalization exit, counter/table order, returned path and outer-buffer subsets 0..7:
 // 128/126/126/126/128/126/126/126. NOT kept: no exact match or qualifying gain; complete original body restored.
 // Remaining: outer EBP preservation and read-size/count/cursor homes.

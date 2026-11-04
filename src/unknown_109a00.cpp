@@ -599,6 +599,15 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
 // Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
 // restored; native input registers, early physics spill and center/projection remain.
+// F361: Existing default-body producer as component member, mutable/read-only receiver
+// and ordinary/forced inline: short result 112/112/112/112; long 267/267/267/267.
+// NOT kept: no native entry-register/spill repair; original helper, search and body restored.
+// DH331: Typed standard ranges for prior transform/velocity-pair/center, subsets 1..7,
+// then all with backward ranges: 228/242/235/210/219/253/281/285. Original copies, helpers,
+// body and caller inputs restored; native input registers, physics spill and projection remain.
+// DH334: Standard native-array inner products, forward/reverse and both product orientations,
+// each with original/shared add-scale projection: 180/185/180/185/262/264/262/264; caller 11/11/11/11/0/0/0/0.
+// NOT kept: no exact match; original complete body restored; native input roles, physics spill and center/projection remain.
 // N351: Native handle/ordinal domains dword-long/long-dword/dword-dword/int-long/long-int/int-int/dword-int/int-dword:
 // 112/112/112/112/112/112/112/112. NOT kept: no exact match or qualifying gain; complete original body restored.
 // Remaining: entry registers, physics-pointer spill and center/projection schedule.

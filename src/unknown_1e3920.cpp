@@ -713,6 +713,10 @@ real function_267370(long object_index);
 // Round 160 (fast 416 control, aligned 33): the zone helper's NONE tests as `(short)NONE` 416 (same code), the cluster test
 // as `(word)` against 0xffff 420 (0x11c120 3), the plane's x term product written the other way 416 (same code), both 420.
 // The helper is unchanged; the `(word)` form gives retail's immediate compare at the head, the lead if 0x11c120 can keep it.
+// Round 146 (m3 lane 5, fast with 0x1e2a90, aligned 28): the carrier as NONE then if/else-if 98 (same code); the root test
+// through a header pointer local 100; the carrier test inverted with an empty arm 98; both NONE resets ahead of the byte
+// flags 103; the zone result in a named bool 100; the class read after the sample call 98. Diagnostic: the zone statement,
+// the resets or both inside `if (1)` 98 each, so call-site nesting does not move the -1 sharing here.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
