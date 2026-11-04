@@ -697,6 +697,9 @@ static inline word font_character_pixel(long alpha, long color)
 // N365: Actual byte output cursor with complete word-fill/numeric-parity/bounded-byte-run
 // masks 0..7: 85/107/204/208/179/161/172/156. Original word cursor, helper and decoder restored;
 // NOT kept: unmatched cursor/domain forms; parity/literal/two-run gaps remain.
+// N378: Complete default run pixel, color/opaque, long/word and byte/numeric parity:
+// 231/216/231/216/231/182/231/182. NOT kept: no byte equality or qualifying native-shape gain;
+// original executable source restored; alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

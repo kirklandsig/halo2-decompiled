@@ -2924,6 +2924,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // bound/result and entry-result declaration; original then distinct relative output:
 // 692/722/741/692/700/730/749/700. NOT kept: no gain; frames stay 0xd0/0x104 versus native 0xfc.
 // Original helper and complete body restored.
+// N378: Existing complete basis constructors current/desired/both/distinct output, inline then force-inline:
+// 742/734/755/763/742/734/755/763. NOT kept: no byte equality or qualifying native-shape gain;
+// original executable source restored; other constructor users regress; native frame 0xfc and scalar/transform homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
