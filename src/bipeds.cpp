@@ -2014,6 +2014,10 @@ void function_dfd70(long arg_159e6d)
 // forms 233 each; both projections plus clearance or actual obstruction result 234/234.
 // NOT kept: no gain. Original shared helpers restored; native mode-three placement
 // and forward/up/ray homes remain; every checked shared user retains its score.
+// F373: Height-interpolation complement/paired products/unscaled/scaled sum,
+// paired products with sum, complement with products/unscaled/scaled sum:
+// 233/233/233/233/233/233/233/233. NOT kept: no byte match; original
+// shared helpers restored, mode-three placement and basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4906,6 +4910,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // recovered state-call/dot graph, original then support-bound success:
 // 68/148/151/151/143/136/142/142. NOT kept: no byte match; native support/result
 // homes remain. Original complete body restored; both exact callers survive.
+// F373: Ground/raw/velocity/relative declarations at their actual producers,
+// individual, paired and complete lifetimes, then support at its producer:
+// 68/68/68/68/68/68/68/68. NOT kept: byte homes and early success remain;
+// original body restored, both exact callers survive.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

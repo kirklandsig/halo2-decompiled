@@ -1430,6 +1430,9 @@ void function_150820(dword *bits, bool local_only)
 // Y567: One-return failed unit/slot/eligibility admissions, seven subsets
 // and separately tested complete eligibility: 60/63/60/63/60/63/60/60. Original body restored;
 // native player/hand and entry temporary ownership remain.
+// F373: Native query-return admission/failure in bool/byte/short/long,
+// at the original call boundary: 43/43/43/43/43/43/43/43. NOT kept:
+// no byte match; original body restored, player/hand ownership remains.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

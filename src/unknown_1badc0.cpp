@@ -289,6 +289,10 @@ real normalize2d(point2f *arg_0);
 // P320: header-derived object before input copy, raw/native 185/185; native object/header
 // P320: receivers at both radius/center uses 180/180. Original complete body restored;
 // P320: early object mask, second-copy SIMD schedule and query success transport remain.
+// F373: Explicit object ordinal at branch/entry/after actor, parameter then long
+// ownership, and branch/entry dword: 180/193/193/180/193/193/180/193.
+// NOT kept: no match; early forms grow to 1029 bytes. Original body restored;
+// early mask, copied-input/SSE and query-success schedules remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
