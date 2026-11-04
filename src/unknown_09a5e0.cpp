@@ -2312,6 +2312,16 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // M334: First/mapped-parent scalar identities, independent semantic lexical priorities
 // 10/01/11/20/02/22/12/21, all 155 at 1072/1081 bytes. Original complete body restored;
 // indexed lookup, object/offset homes and low-mask ownership remain.
+// Lane 14 r57 (fast, from 155): the 0x400000 tail as a plain mask with the unit field on the left 168 (1070 bytes);
+// a function-scope `long *` to the 0x214 field for the compare and the copy 155 (folded, no dead add); the parent
+// short as `local_5 != NONE ? (short)local_5 : NONE` 201; NONE declared after both parent reads 155; the unit
+// lookup declared before the state view 155. Retail's 0x400 block copies the parent into AX with `mov ax, dx`
+// before testing it (one byte more than ours), and the 0x2000 block's two loads and dead add make up the rest
+// of the 9 missing bytes.
+// M343: Complete approximate-position equality in bool/byte/short/long, direct initializer
+// or default-false test result: 155/155/155/155/155/155/155/155. Original full body restored;
+// object/offset and low-mask homes remain.
+// NOT kept: unmatched comparison-result lifetimes.
 // Round 84 (m3 lane 12, fast): the 0x400 flag update between the two stores 156 (ours still loads the
 // result first: retail must store 0x90 before it reuses EAX, which holds the NONE short there, so the order
 // follows the head block's EAX/EDX/ECX rotation, not the statements); the low request intersection named

@@ -260,6 +260,11 @@ real normalize2d(point2f *arg_0);
 // from `arg_2` instead of the copy 215 (1001 bytes); the found-flag store before the far-side vector 211; the
 // clearance `2.0f - local_11` named before the perpendicular 266 (996 bytes); the radius times 1.1 named once
 // for both components 211; the first perpendicular's y stored before x 211.
+// Lane 12 r86 (fast with 0x1ba5c0/0x1bdad0/0x1bff80, all still matching): retail forms the
+// center-minus-actor x/y early, before the squared-length test; an actor-to-center vector through
+// vector3d_from_points3d used in both projections 232 (1028 bytes); the clearance computed after
+// normalize2d 245 (1013 bytes); `result = true` before the out-pointer store 241 (1031 bytes);
+// local_11's squares written i, j, k 217; the actor-to-point vector from local_1 182.
 // M3 lane 2 r47 (fast, on 180): the to-center copy declared before the actor-difference call 226 (1027 bytes); the copy
 // taken right after the input copy, before the object lookup, 232; `2.0f - local_11` inside the normalize-success
 // block 245 (1013 bytes: that block then is retail's code, sqrt stored and re-read after the call; aligned 121 -> 119);

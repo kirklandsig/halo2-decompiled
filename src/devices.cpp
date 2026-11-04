@@ -833,6 +833,9 @@ struct s_device_machine_view
 // N336: Failure-owned power-velocity zero at cruise/disabled/power/paired/all leaves
 // 103/49/49/104/103/41/104; including stopped default 108. Original callback restored;
 // native group-word sharing and velocity-zero join remain.
+// N345: Immediate velocity-magnitude nodes at three guarded divisions, seven
+// subsets, then all with immutable bounded publication: all eight 34. NOT kept:
+// single-use library results do not match. Original callback and observations restored.
 // Round 81 (m3 lane 9, fast; on the 0x1200055f zero store; /FAs screen of 18 spellings: a read-only word value
 // always puts the group pointer in a pushed ESI, only an in-place `shr al, 1` keeps it in EAX): `bool second =
 // (group_flags >> 1) & 1` 114 (656 bytes); a `both` bool 122; `(bool)(f & 1) && (bool)(f & 2)` 114; first/second
@@ -1199,6 +1202,9 @@ bool function_108530(long device_index, long name)
 // pinned before the position 141 (507 bytes, a `push ecx` frame and ret 0x14: one float leaves the
 // stack, callers 26/28); the initial-velocity store first among the inner stores 122 (a repeat); the
 // denominator summed cruise, half ramp-up, half ramp-down 121 (same code). Original body restored.
+// N345: Direct scalar truth at divisor/derivative tests, seven nonempty subsets,
+// 121 each; nonzero admission on bounded nonnegative ramp-up 132. NOT kept: no
+// gain. Both callers stay 31/13; original predicates and complete body restored.
 // Round 123 (m3 lane 7, fast with both callers, which stay 31/13): both ramp-down clamps as `<=`/`>=` ifs 122;
 // the ramp-up zero clamp as an if 122; the initial-velocity store first in the inner block 122; an early
 // `return` on the tiny duration 121 (same code); one nested ternary for both ramp-down clamps 127.
@@ -1582,7 +1588,7 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
-// score 285 (was 294): our frame is 0x1c and retail's 0x20, and the index, header, state and result
+// score 285 (was 285): our frame is 0x1c and retail's 0x20, and the index, header, state and result
 // homes still differ; the group path reloads the definition pointer from three base registers.
 // Earlier (294, was 294): our frame is 0x1c and retail's 0x20; the index, header, state and result
 // homes still differ, and the group path reloads the definition pointer from three base registers.
@@ -1734,6 +1740,20 @@ bool function_0b6760(s_index_pair const *pair);
 // both event-id selects 302 (1476 bytes); the pointer with a direct `if` for the first test 292; a second pointer
 // for channels[1] 287; the definition read after the state block 286; event ids as selects between two field
 // reads, both/either 331/317/317 (1506/1501 bytes); a plain (non-volatile) definition pointer 386.
+// Round 144 (m3 lane 6, fast; [LCS-aligned / register-masked aligned] this body [172 / 122], 398 instructions
+// against 394): plain index with both event-id selects re-measured 302 [137 / 72] (1476 bytes); that with
+// block-scoped `previous` locals (one per phase, as retail's separate +0x14 / +0x1c homes) 298 [121 / 53]; that with
+// a plain definition pointer 431 [154 / 90] (1449 bytes); plain index, selects, scoped `previous` and the 0x8 path
+// as `if (finished) flags |= 0x20; else flags &= ~0x20; function_107520(device_index);` 343 [110 / 48] (1470 bytes;
+// VC then hoists the flags load and duplicates the call into both arms, as retail); on this body the 0x8 path as
+// that single call 364 [167 / 122], scoped `previous` alone 290 [179 / 130]. The 48-row form leaves the callee-saved
+// roles (ours index*12 ESI, device_index EDI, group EBX, velocity pointer ESI; retail EBX, ESI, ESI, EBX), the result
+// in DL (retail a stack byte), the state offset loaded once (retail compares memory and re-reads it), the volatile
+// definition re-read four times in the acceleration block (retail once into EDX) and the group pointer's spill
+// around the 0x1c6620 call.
+// F354: Complete channel-array receiver across manual and group phases, ordinary
+// index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
+// NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
 // Round 81 (m3 lane 9, fast): the header type byte read through s_device_header (DEVICE_GET's own shape) 285
 // (same code); with a plain index 411 (1466 bytes: retail's 0x20 frame and the index*12 CSE spilled at
 // [esp+0x1c], but in ESI/EDI where retail has EBX/ESI); the state test through the existing
