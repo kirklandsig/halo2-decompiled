@@ -1377,6 +1377,9 @@ long function_2197f0(real gain);
 // B429: Complete native compound/scalar compound/scalar assignment/constructor
 // addition boundaries 105/105/105/105 at 678 bytes; each with disabled early
 // return 188 at 652. NOT kept: sums/tails regress; original body restored.
+// DL264: Existing aggregate gain addition with receiver-first expression,
+// result/copy storage, value/reference right input and immutable returns: 185/185/105/105/158/154/185/105.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

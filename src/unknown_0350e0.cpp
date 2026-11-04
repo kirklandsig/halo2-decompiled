@@ -2379,6 +2379,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // NOT kept: no byte equality; reverse order differs from native i/j/k, narrow loops
 // roll, and unsigned-domain source selection adds no supported shared repair.
 // Original shared header and full body restored; post-fstp count split remains.
+// DL264: Existing scaler component-array input/output references, unrolled
+// then forward traversal, and pointer input/output forms: 27/27/27/0/0/0/27/0.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
