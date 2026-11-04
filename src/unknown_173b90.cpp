@@ -695,6 +695,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // results, dword then long: 288/288/260/260/283/283/288/288. NOT kept:
 // shared mask publication does not match native separate stores and length grows;
 // original identity invalidations, shared alias-safe rotations and whole body restored.
+// AC543: Callback-position vector backing with native/memcpy/memmove/shared-setter
+// captures, original byte offset then native row index: 42/42/193/281/115/115/192/263.
+// NOT kept: no equality/gain; setter and indexed forms change extent or early allocation.
+// Original point backing, alias-safe rotations, observations and full body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

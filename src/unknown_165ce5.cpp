@@ -1745,6 +1745,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC541: All four early coefficient override/default-presence outcomes, bool/byte/short/long,
 // eight at 220 fast (control 220, full 218). NOT kept: no equality or gain;
 // original field tests, overrides, smoothing tuples and complete body restored.
+// AC543: Independent final resource-presence/complement results at the original
+// tail consumer, bool/byte/short/long: eight at 220 fast (control 220, full 218).
+// NOT kept: one-use outcomes unmatched; frame, unit/mode/look homes and late restores
+// remain. Original final gate, smoothing tuples, observations and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

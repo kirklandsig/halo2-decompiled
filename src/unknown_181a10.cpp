@@ -736,6 +736,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // AC541: Complete final validity/normal-threshold publication or rejection,
 // bool/byte/short/long: eight at 308. NOT kept: no equality/gain;
 // original guards, snapshots, plane math, publication and full body restored.
+// AC543: Strict distance-improvement admission/complement at the original capture
+// boundary, bool/byte/short/long: eight at 308, 1243 bytes. NOT kept: one-use
+// outcomes unmatched; frame 0x4c versus 0x44 and classifier/plane/output homes remain.
+// Original unordered rejection, snapshots, plane math, calls and full body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

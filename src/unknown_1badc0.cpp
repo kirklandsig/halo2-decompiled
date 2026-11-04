@@ -303,6 +303,10 @@ real normalize2d(point2f *arg_0);
 // F375: Actual direct/adjusted mode selector at its byte observation, bool/byte/short/long:
 // 180/180/180/180/180/180/180/180. NOT kept: no byte match; original body restored.
 // Early object mask, copied-input/SSE and query-success schedules remain.
+// AC543: Genuine point-pair/direction-trio/perpendicular-pair role-name groups on the
+// recovered in-place input graph, subsets 1..7 and complete collision/receiver names:
+// eight at 180, 1025 bytes. NOT kept: no equality; early mask/copy/SSE and query-success
+// schedules remain. Original identifiers, inherited local qualifier and full body restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
