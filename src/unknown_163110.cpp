@@ -623,6 +623,9 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // planes 2/3 as direct field stores 501 (2838); all four side planes direct 606 (2840); y + d * scale grouped
 // then z and x 36. The existing function_2477b1 for the normal rotation keeps the plane helper out of line
 // (six calls, compile-only).
+// Round 43 (lane 17, fast): the helper's x term normal-first 28 (identical); the helper taking one in-place plane
+// 66; the scale read before the normal rotation 617 (2857 bytes); the z term normal-first 28 (identical); the
+// distance accumulated in plane->d 648 (2897 bytes). Original helper and body restored.
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {
