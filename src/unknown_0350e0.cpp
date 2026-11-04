@@ -1938,6 +1938,8 @@ real game_time_get_seconds();
 // seven subsets then immutable original clock: 547/560/533/547/539/542/539/539. NOT kept: all regress;
 // native 0x94 frame, output homes and definition/NONE roles remain. Original field reads, time updates,
 // vector transfers, APIs and whole body restored.
+// P347: Complete first/subsequent-entry scale/angle/both/both-with-predicate outcomes, first/subsequent arm priority:
+// 537/512/535/535/537/512/535/535. NOT kept: All eight regress and retain frame 0x90 versus native 0x94. Original scalar producers, tint work, APIs and complete body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3927,6 +3929,8 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // N383: Full existing collision-output fields with scalar/alpha-first/SDK RGBA/const SDK RGBA
 // colors: 231/225/232/232; genuine three-use negative radius: 398/379/375/375.
 // NOT kept: ties/regressions or gain six with larger extent; original view, geometry and body restored.
+// P347: Complete opacity-gated collision result, bool/byte/short/long, positive/complementary truth:
+// 231/231/403/401/402/402/404/403. NOT kept: Two ties and six regressions; all retain frame 0xd0 versus native 0xe0. State-result forms do not match; original complete body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
