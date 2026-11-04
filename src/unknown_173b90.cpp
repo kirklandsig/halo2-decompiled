@@ -667,6 +667,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC515: Cache invalidation mask-before-identity stores at system/location/particle, subsets 1..7,
 // then all native mask computations before the original identity/mask stores: 283/279/286/169/285/282/289/53.
 // NOT kept: no exact result from store/result diagnostics; original invalidations and body restored.
+// AC517: Both shared unit-default assignment chains with both scalar declaration priorities:
+// original offset 120/122/120/122; native row index 115/117/115/117. NOT kept: all regress and lengthen.
+// Original defaults, offset walk, shared rotations and body restored; offset/default/reload and row-i order remain.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

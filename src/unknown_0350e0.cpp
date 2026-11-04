@@ -2303,6 +2303,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // P311: Complete independent normalization receiver, native/library/component captures with native/library publication:
 // P311: 322/322/322/322/307/307; native/library capture with full component publication 311/311.
 // P311: NOT kept: all regress and grow beyond retail. Original in-place helper and body restored; product fold and final count split remain.
+// AC517: Shared normalization valid-arm/small-length returns and separate result 40/40/40;
+// twice-used bool/byte/short/long admission and short-length classification 40/40/40/40/40.
+// Original shared helper restored; second-component product fold and post-fstp count split remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2576,6 +2579,9 @@ s_cached_input_list g_5234e8[4];
 // P311: Native external source/object-slot layouts and complete existing position setter, subsets 1/2/4/3/5/6/7:
 // P311: 146/146/156/146/156/156/156, fast control 146 versus full 113; complete graph with list snapshot 157.
 // P311: NOT kept: no calibrated gain; setter/list forms shrink away from retail. Original body restored; frame and register homes remain.
+// AC517: Complete index/query/capacity admission in bool/byte/short/long at computation
+// or shape-scope declarations: eight 147 on reduced control 147 (full 113). NOT kept: no exact predicate result.
+// Original body restored; native 0xa0 frame, spilled list and output/index homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3624,6 +3630,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // P311: Existing device member color/position/UV API families on native color, subsets 1/2/4/3/5/6/7:
 // P311: 225/382/225/382/225/376/376; all member families with scalar alpha 394.
 // P311: NOT kept: six-point forms grow to 1826; native-length 376 regresses. Original APIs, color and full body restored; frame/scalar homes remain.
+// AC517: Existing full/in-place point transforms and scaled-vector transforms, scalar alpha:
+// 1016/894/496/796; native color 1016/894/511/813. NOT kept: no exact helper expansion; lengths move away.
+// Original corner helper, four-point array, inputs and body restored; native frame/scalar homes remain.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
