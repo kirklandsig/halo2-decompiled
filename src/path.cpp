@@ -1033,6 +1033,10 @@ bool function_2715a0(byte *buffer)
 // (2116 bytes; 0x2713f0 108); `result` declared before the link penalty 486 (same code); the node pointer taken
 // before the pop and used for the NONE heap-index store 501; the NONE break before the node pointer 485 (one point,
 // not kept). Original body restored.
+// N361: Existing projection/distance/weight/heap-removal inline call visibility, four
+// individuals, three projection pairs and all four: 486 each; existing actual magnitude
+// producer 498 (2064 bytes, unresolved reduced call). Original declarations and body restored.
+// NOT kept: no gain or native register/root recovery; state/node/link and scalar homes remain.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

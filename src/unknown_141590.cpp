@@ -345,6 +345,9 @@ static inline void quaternion_transform_vector(
 // N346: Immutable transform dot/doubled-scalar/quadratic coefficient masks 1..7, then complete
 // immutable coefficients/cross: 200/200/200/200/200/200/200/200. Original helper and all three users restored;
 // NOT kept: unmatched lifetime/combination forms. Native frame/quaternion/cross spill homes remain.
+// N361: Half-angle root-input double addition/factor/both/post-addition promotion, paired
+// outputs 211/202/211/202, independent real outputs 278/269/278/269. Original root inputs,
+// paired storage and body restored. NOT kept: unmatched precision-only forms; native spill homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1088,6 +1091,9 @@ void function_143250(
 // N346: Isolated matrix/workspace/rotation/result/coefficients/term_9/term_8/term_11 names:
 // 1766/1766/1766/1766/1766/1766/1766/1766. Original identifiers and complete scalar graph restored;
 // NOT kept: unmatched lexical allocation. Frame, rotation admission and basis/matrix homes remain.
+// N361: Actual band-table aggregate initialization, band masks 1..7 and all immutable,
+// 1976/1930/1880/2123/2126/2166/2187/2187. Original assignment-based tables and full scalar
+// graph restored. NOT kept: unmatched table lifetime/publication forms; frame, admission and homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

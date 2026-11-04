@@ -1485,6 +1485,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // The lookup in an inline helper on this do-while 828; the candidate at block scope with the loop testing it 926
 // (2825 bytes); the outputs declared bare and set by one chained `= NONE` 828; the iterator as an aggregate
 // initializer 828; no candidate, `if (named) result = named->animation_id;` 1020 (2791 bytes).
+// N361: Existing iterator/sorted-lookup/registration/resource inline call visibility, four
+// individuals, three iterator pairs and all four: 828 each. Original declarations and full body
+// restored. NOT kept: no result/candidate/output home or class/NONE/zero-carrier recovery.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
