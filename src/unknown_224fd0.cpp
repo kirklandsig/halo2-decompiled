@@ -79,6 +79,7 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// MiniMax G (11-05): the rotation helper with retail's statement order gives 342, with forward.i moved ahead of the cross products and the products re-associated 228, and with scalar locals for the squares and the sine products 342/418/510; the case bodies' scheduling and the four-byte table placement stay unmatched; no new form, no lower score.
 // score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax S (11-01): no new form, no lower score.
 // Earlier at 219 (was 380): frame 0x6c and length agree; the rotation case bodies are scheduled differently

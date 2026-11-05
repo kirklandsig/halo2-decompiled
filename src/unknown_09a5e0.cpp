@@ -2053,6 +2053,7 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 	return local_0;
 }
 
+/* copies each requested unit field that changed into the update record and returns the mask of what changed */
 // MiniMax lane E (11-01): the pool index named in a local gives retail's SIB base (154, a gain of one
 // that the keep rule drops); the head block's register split is not reachable from the source (short
 // casts, declaration order, else, ternary, literal -1, masking and the truncated 0x13c read: 155,
@@ -2102,16 +2103,13 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // getter guard/exhaustive result 200; complete output receiver 184;
 // exhaustive child metadata/count/all results 234/299/311; ordered clamp results
 // and bound returns 191. Object/offset homes and low-mask allocation still differ.
-// object/offset homes and low-mask allocation remain;
 // getter byte slot 200; table/full identifier, object, table/decoded index 184;
 // header/object/table with byte slot 200; table word object slot plus byte slot 287.
-// object/offset homes and low-mask allocation remain;
 // reversed getter with short/byte/long slot 184/200/208; unsigned handle
 // combination 184/200/208; reversed short/long with scalar clamp 184/208.
 // header/object homes and low-mask allocation remain.
 // Clamp source/result names and source-first declarations 184/184/184;
 // tail fractions, child fraction, mask names and both scratch-home combinations 184 each.
-// object/offset homes and low-mask allocation remain;
 // forced/ordinary/compiler-selected getter and clamp inline contracts, all eight
 // alternatives 184 each. Both original helper contracts and bodies retained.
 // Native entry metadata+state/metadata/state 187/187/232; native reference 187; both request
@@ -2245,16 +2243,6 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // the named offset 246. Retail's dead `add ebp, 0x214` is the idiom of a pointer-to-field variable whose
 // last use was folded away (matched 0x89df0 and 0xbb950 link walks, 0xa0c50's inlined flag setter); no
 // existing accessor reads the unit's 0x214 field.
-// Round 226: native-short first parent with direct immutable request, early parent-mask placement
-// subsets 0-3: 289/289/289/288; exhaustive mapped-parent outcomes with those subsets
-// 288/288/288/297. Original parent reads, request carrier, result timing, four-slot loop and
-// complete body restored; object/offset and low-mask homes remain.
-// Round 20 (lane 18, fast): retail tests the 0x400000 bit with `test ecx, 0x400000` and keeps both later
-// tail flags memory-homed (false stored to the dead flag and record parameter slots), the first in CL.
-// The plain 0x400000 mask test 168; the child loop as a plain `for` over the bit with direct
-// `field_ac[bit - 18]` indexing 247 (1051 bytes), as a zero-based `for` with `field_ac[i]` 220 (1057);
-// the tail flags declared after the clamps 158 (both stores then sink after the flag compare); the flags
-// parameter used directly in place of its copy 155 (same code); renaming the unit pointer 155 (no move).
 // Round 112 (lane 8, fast): first slot mask as long 155 (same code); the second mask named once at the
 // loop top for both tests 268 (1043 bytes: retail computes it twice); the slot pointer used directly with
 // no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags
@@ -2334,12 +2322,6 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // M345: Per-child complete/separate metadata-state change masks, requested-child/iteration
 // scopes and dword/long carriers: 214/214/249/249/221/221/251/251.
 // NOT kept: deferred per-child mask joins miss; original per-store result updates and whole body restored.
-// Lane 14 r57 (fast, from 155): the 0x400000 tail as a plain mask with the unit field on the left 168 (1070 bytes);
-// a function-scope `long *` to the 0x214 field for the compare and the copy 155 (folded, no dead add); the parent
-// short as `local_5 != NONE ? (short)local_5 : NONE` 201; NONE declared after both parent reads 155; the unit
-// lookup declared before the state view 155. Retail's 0x400 block copies the parent into AX with `mov ax, dx`
-// before testing it (one byte more than ours), and the 0x2000 block's two loads and dead add make up the rest
-// of the 9 missing bytes.
 // Round 66 (m3 lane 11, fast): the slot loop's bit tests swapped 285 (1033 bytes); `(dword)1 << (local_5 - 4)`
 // 155; NONE declared after both parent reads 155 (a repeat); tail flags tested 10, 9, 8 177 (1081 bytes);
 // the 0x800 update before its stores 251 (1060 bytes, `or` on memory); the 0x1000 update before its
@@ -2365,7 +2347,8 @@ long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
 	c_unit_type *volatile local_0 = this;
 	s_9d450 *local_2 = (s_9d450 *)arg_3;
-	byte *local_1 = *(byte **)(((arg_0 & 0xffff) * 12) + (long)g_4e0300->data + 8);
+	long local_18 = (arg_0 & 0xffff) * 12;
+	byte *local_1 = *(byte **)(local_18 + (long)g_4e0300->data + 8);
 	dword local_3 = (dword)arg_1;
 	long local_4 = function_a5e70(arg_0, local_3 & 0x3ff, arg_3);
 	if (local_3 & 0x400)
@@ -2419,20 +2402,17 @@ long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 			local_4 |= 0x1000;
 		}
 	}
-	if ((local_3 & 0x2000) && local_2->field_a8 != *(long *)(local_1 + 0x214))
+	if ((local_3 & 0x2000) && memcmp(&local_2->field_a8, local_1 + 0x214, sizeof(long)))
 	{
 		local_2->field_a8 = *(long *)(local_1 + 0x214);
 		local_4 |= 0x2000;
 	}
-	long local_5 = 18;
-	long local_16 = 4;
-	short *local_17 = &local_2->field_ac[0].field_4;
-	do
+	long local_5 = 0;
+	for (long local_16 = 4; local_16 > 0; local_16--)
 	{
-		dword local_6 = 1 << (local_5 - 4);
-		if ((local_3 & local_6) || (local_3 & (1 << local_5)))
+		if ((local_3 & (1 << (local_5 + 14))) || (local_3 & (1 << (local_5 + 18))))
 		{
-			long local_8 = function_9d453(arg_0, (short)(local_5 - 18));
+			long local_8 = function_9d453(arg_0, (short)local_5);
 			long local_9 = NONE;
 			short local_10 = NONE;
 			long local_11 = 0;
@@ -2451,27 +2431,23 @@ long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 					local_12 = *(short *)(local_14 + 0x22a);
 				}
 			}
-			short *local_14 = local_17;
-			if ((local_3 & local_6) && ((*(long *)(local_14 - 2)) != local_9 || local_14[0] != local_10))
+			if ((local_3 & (1 << (local_5 + 14))) && (local_2->field_ac[local_5].field_0 != local_9 || local_2->field_ac[local_5].field_4 != local_10))
 			{
-				(*(long *)(local_14 - 2)) = local_9;
-				local_14[0] = local_10;
-				local_4 |= local_6;
+				local_2->field_ac[local_5].field_0 = local_9;
+				local_2->field_ac[local_5].field_4 = local_10;
+				local_4 |= 1 << (local_5 + 14);
 			}
-			dword local_7 = 1 << local_5;
-			if ((local_3 & local_7) && (local_14[1] != local_11 || local_14[2] != local_12 || (*(real *)(local_14 + 4)) != local_13))
+			if ((local_3 & (1 << (local_5 + 18))) && (local_2->field_ac[local_5].field_6 != local_11 || local_2->field_ac[local_5].field_8 != local_12 || local_2->field_ac[local_5].field_c != local_13))
 			{
-				local_14[1] = (short)local_11;
-				local_14[2] = (short)local_12;
-				(*(real *)(local_14 + 4)) = local_13;
-				local_4 |= local_7;
+				local_2->field_ac[local_5].field_6 = (short)local_11;
+				local_2->field_ac[local_5].field_8 = (short)local_12;
+				local_2->field_ac[local_5].field_c = local_13;
+				local_4 |= 1 << (local_5 + 18);
 			}
 		}
-		local_17 += 8;
 		local_5++;
 	}
-	while (--local_16);
-	if (TEST_FIELD_BIT((local_3 >> 22) & 1) && local_2->field_ec != *(short *)(local_1 + 0x23e))
+	if ((local_3 & 0x400000) && memcmp(&local_2->field_ec, local_1 + 0x23e, sizeof(short)))
 	{
 		local_2->field_ec = *(short *)(local_1 + 0x23e);
 		local_4 |= 0x400000;
