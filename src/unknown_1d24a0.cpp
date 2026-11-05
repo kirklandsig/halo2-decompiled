@@ -105,6 +105,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// MiniMax E (11-04): the residual subtract in both limit arms 1065, the subtract helper taking a scale in both arms 1017 and with a scale variable 1009, the contact array hoisted out of the loop 1004, the fused scaled subtract in both limit arms 1016 and in the radial arm only 996 or the planar arm only 1017; no lower score.
 // score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Earlier score 902 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
 // Round 105: retail has 23 more mulss, 22 more movss and 15 more movaps, ours ~10 extra counted loops
@@ -368,6 +369,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // M383: Absolute-value APIs at entry/radial/planar bound families, subsets 1/2/4/3/5/6/7,
 // then all double APIs with real results: 900/927/944/931/945/974/975/974. NOT kept:
 // two-point entry lead fails the gate; native conditional bounds, helpers and full body restored.
+// T61: Actual wide-dot left/right/both and real-dot left/right/both reference inputs,
+// both complete dot interfaces, then both with planar input references: eight at 902.
+// NOT kept: native input identities do not recover the entry pair or frame; original kernels
+// and complete body restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

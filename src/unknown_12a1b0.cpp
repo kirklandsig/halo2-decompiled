@@ -1467,6 +1467,8 @@ struct s_looping_detail_request
 // finalization and `return true` 190 (535 B); both arms returning 180 (533); an early `return false` with its own
 // finalization when no player 180 (524); the audible arm jumping past the else 110; the query in a `for` initializer
 // 110; the mode through a named long 110 (same code). The query stays inlined in all six; `return` shapes do not cool it.
+// B448: Complete fallback selection/placement/publication provider, detail and source pointer/reference, forced/ordinary inline:
+// 159/159/159/159/434/434/434/434. NOT kept: no byte match; complete original body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1886,6 +1888,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 479 reduced each; all with complete native request 477 (control 479; full 305).
 // NOT kept: two reduced points without equality or ordinary gain; original
 // acquisitions, pointer scopes, request and full body restored. Frame/range homes remain.
+// J257: Actual gain-step/pitch/random-delay scalar residence, double subsets and complete clamped-pitch producer:
+// 456/535/344/541/456/535/541/563. NOT kept: no byte match; scalar precision forms lack equality and do not jointly recover native frame and playback/range ownership.
+// Original executable source restored; allocation gaps remain.
 // DH371: Actual release/stopped/gain-rate/update/range-blend/ring-match/pitch/detail
 // Boolean guard results: 479/479/479/479/452/479/479/479 reduced (control 479, full 305).
 // NOT kept: unmatched one-use outcomes; range-blend retains reduced frame 0x118/0x128.
@@ -2604,6 +2609,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 674/749/675/675; immutable counterparts 674/749/675/675 reduced (control 694,
 // full 597). NOT kept: frame grows from 0x3c to 0x40/0x44; entry true/flags and
 // record/track homes remain. Original Boolean producer and complete body restored.
+// J257: One complete repeated stopping/continuing classification across result, release and track tests, bool/byte/short/long:
+// 729/761/790/780/761/761/790/780. NOT kept: no byte match; shared terminal classification does not recover native entry truth and record/track ownership.
+// Original executable source restored; allocation gaps remain.
 // DH371: Actual definition/system/copy/listener/normalization/release/track-init/start
 // Boolean guard results: 694/694/734/694/694/694/694/670 reduced (control 694, full 597).
 // NOT kept: unmatched one-use outcomes, including the reduced-only 670; original complete

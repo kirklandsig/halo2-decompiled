@@ -659,6 +659,8 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 }
 
 // MiniMax H (11-04): no new form, no lower score; retail's frame pointer and 8-byte self-alignment are not ours (frame 0xac against 0xb4).
+// MiniMax H (11-04): no new form, no lower score (230); the earlier rounds' forms still leave the
+// caller-dependent frame alignment and the dword result, so the body stands.
 // MiniMax R (11-01): no new form, no lower score: our frame is still 0xac against retail's self-aligned 0xb4; the alignment is decided by LTCG from the call chain (callers 0xbf2c0 and 0x268c90), not by this body.
 // MiniMax A (11-03): no new form, no lower score.
 // score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,

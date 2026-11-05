@@ -1570,6 +1570,8 @@ struct s_camera_clip_reference_16ebf0
 
 // MiniMax R (11-01): the first cross-product carriers still differ; a permuter run over this
 // function was killed before it printed, so no new form was found.
+// MiniMax E (11-04): no new form, no lower score; the clip test still adds the plane terms
+// i*x, k*z, j*y where retail adds j*y, k*z, i*x (an accumulator in retail's order gives 87 too).
 // score 87 (was 87): this round found no gain - the frame is 0x9c against retail's 0x98, retail copies both
 // vectors whole while we copy them scalar by scalar, and the 0x171d00 narrow convention is set in
 // another file.
