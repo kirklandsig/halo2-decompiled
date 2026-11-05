@@ -1481,7 +1481,7 @@ long function_1766b0(long object_index, long tag_index, long unknown34, long unk
 }
 
 // @retail 0x176780
-long function_176780(s_effect_owner const *owner, long object_index, real scale_a, long tag_index, real scale_b, point3f const *origin, vector3f const *direction)
+long function_176780(long tag_index, s_effect_owner const *owner, long object_index, real scale_a, real scale_b, point3f const *origin, vector3f const *direction)
 {
 	s_effect_parameters parameters;
 	point3f point;
