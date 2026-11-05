@@ -1884,6 +1884,12 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // Y598: Complete paired tag-comparison inputs long/dword/int64/unsigned-int64,
 // producer then entry declarations: 138/138/138/138/138/138/138/138. NOT kept:
 // single-use field copies lack equality; original body restored; pool reload and weapon/mode homes remain.
+// Round 95 (m3 lane 12, fast): single exit with `result = true` first and `result = false` in the empty-hand else 132 (539 B),
+// the direct `bool result = weapon_index != NONE; if (result)` 165 (526 B), with the other hand as `primary != false` 147,
+// `result = true` after `primary` 131; the test inverted (`if (weapon_index == NONE) result = false; else {...}`) 109 at 538 B,
+// not kept: register-masked aligned count 75 as the baseline, the result moves to a stack byte retail lacks, direct form 165;
+// `result = false` first with `result = true` at the end of the drop block 154. Retail hoists `xor al, al` before the NONE test
+// and ends `mov al, 1` (no result home).
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2104,6 +2110,10 @@ done:
 // AC548: Literal failure returns at admission/empty-weapon/rollback edges, subsets 1-7, then direct accepted return
 // 97/117/117/103/103/111/111/122. NOT kept: no qualifying supported gain or byte match.
 // Native frame/result byte, unit/weapon homes and pool reloads remain. Original complete body restored.
+// Round 95 (m3 lane 12, fast): `given` declared first 97; the player index read first 97; the admission test through the
+// unit macro with the unit pointer declared after it 124 (340 B), with the admission nested 122 (340 B); the own weapon
+// through the unit pointer 97. Retail holds false in AL from the top (`xor al, al` before the 13c test) through both
+// lookups and exits to one epilogue without ebx.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

@@ -239,6 +239,10 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // reads and stores and +4 reads alone do nothing. No natural form moves it: memcpy for the seeds and the copy (all 8 subsets), count and lights
 // locals, tag-block views of the sky, light and scenario blocks (all 8 subsets), the blend as a repeated-expression PIN, inline helpers with
 // value, pointer or reference strength, a const entry, nested else and `<=` tests.
+// Round 95 (m3 lane 12, fast; colour first alone 121, only the post-call add and the ECX/EDI pair differ): on it, strength
+// declared bare and set before the count test 121; the collision sentinel stored after `result = 2` 123; the direction
+// seed declared bare then assigned 121; the blend computed in the 0x131c20 call 121; loop index and entry renamed 121.
+// Diagnostic: `strength +=` in the first-light block as well 141, the post-call add stays load-first.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1859,6 +1863,11 @@ dword function_015cd0(long index, dword entry);
 // (312 B; the extra test stays). No shift (4 each): nested prelude tests; tag defaulting to NONE, by if, ternary or helper; a count
 // defaulting to 0, by local, helper or in the test; a named bool or bool helper for the prelude; a locations local, with or without
 // `do {} while (false)` or declared outside the block; a globals getter at each use or in a local; a location getter; `0 < count`.
+// Round 95 (m3 lane 12, fast): the tag field read at its test and again at the 0x137550 call 4; the sample test as
+// `bitmap && result != 1` 4; the texture test positive (conversion arm first) 57 (316 B); the redundant `else bitmap = NULL`
+// dropped 4 (same code); `result` renamed `status` 4. Callee register sets (0x12ce00, 0x358d0 under 0x1362b0) write the
+// same general registers as retail. A volatile probe (diagnostic, reverted) in callee 0xd1630 or in 0xd30d0 leaves both leas:
+// the rotation comes from this body.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
