@@ -768,6 +768,9 @@ void swarm_leader_detach(long actor_index);
 // at 288 fast; member-array mutable/immutable bases, captured/live slots:
 // 259/259/285/285 versus fast 266 (full 281). NOT kept: seven-point lead;
 // native frame remains 0x1c/0x20. Original type/body restored.
+// Y608: One twice-used low-byte input truth carrier, bool/byte/signed-char/word/short/
+// dword/long/64-bit, 307/266/266/282/282/282/282/343 fast against control 266 (full 281).
+// NOT kept: no exact graph; frame/displacement/countdown homes remain. Original body restored.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
