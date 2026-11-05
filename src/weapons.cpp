@@ -3514,6 +3514,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Dropping the `volatile` on unit_index gives fast 657 / 2501 bytes (retail keeps it in [esp+0x24], stored at entry and
 // reloaded into EDI after each call). What remains differs only in homes: retail EBX = weapon_index, EDI = barrel offset
 // (index*0x34, the barrel is never a pointer), definition spilled to [esp+0x14]; ours EDI = definition, EBX = offset.
+// Permuter, 40 minutes (11-05): full image 590 only with temporaries for call arguments and indices and casts that change
+// no value. Its plain parts (barrel before barrel_definition, function_b7360 before the rounds read, the clamp as nested ifs,
+// the fired test written positively, burst declared after the unit) give 639 fast, from 643. Not kept.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -3873,6 +3876,7 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Round 455: Actual persistent header element as pointer/reference, with entry activity declaration
 // and readonly tag subsets: 1545 each, 5780/5684 bytes, frame 0x3c. Original complete body,
 // lookup graph, activity declaration and metadata restored.
+// Permuter, 40 minutes (11-05): 1369 only with volatile locals and casts that change no value. Not kept.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -4368,6 +4372,8 @@ struct s_weapon_projectile_creation
 // `repeated_direction` into the projectile block changed nothing.
 // Steps (fast check): behaviour fixes 1221, creation block 1314, normalize_inline instead of the function_30bf0 call 1274,
 // short target + loop-top initialisers 1252, shift-style flag tests + projectile refetches 1143.
+// Permuter, 40 minutes (11-05): 1082 only with the `unit_index != NONE` test dropped (a behaviour change), temporaries and
+// casts. Not kept.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
