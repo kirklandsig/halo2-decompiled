@@ -409,6 +409,7 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// MiniMax H (11-04): no new form, no lower score; the four orders of the entry declarations (the actor first, the actor and its slot first, the actor second and the slot before the actor) give 413, 413, 375 and 413 against 375.
 // score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // Lane 6 r85: retail returns constants (`mov al, 1` / `xor al, al`, every push at entry, the early tests
 // jumping to the false exit); `if (...) return true; ... return false;` without the result byte gives that
@@ -598,6 +599,13 @@ extern point2f *g_468778;
 // M384: Complete prediction/heading ready/blocked request results, bool/byte/short/long:
 // 375/375/375/375/375/375/375/375. NOT kept: no byte equality for the flag lifetime;
 // original request admission and full body restored; early actor/settings/prop homes remain.
+// m3 lane 1 r71 (--fast; masked = aligned count with registers and esp offsets masked, base 163): LEAD, not kept because the score rises: the actor looked up first with
+// constant returns 413/1523 (masked 86); plus the velocity field as a named pointer used eight times 398/1549 (75); plus the direction pointer declared inside its test
+// 398 (65); plus the second distance's zero assigned in its arm 406 (65); plus the planar pair copied whole 414 (59). Settings then sit in memory and the prop in EBX as
+// retail; what is left: arg_0 ESI (retail EDI), actor EDI spilled (retail EBP, the extra slot makes frame 0x44 against 0x40), slot EBP (retail ESI), the first dot's term
+// order, `comiss` against the memory zero after the normalize, and the request's word/dword store order. On that base the slot as the parameter itself 422/1532 (60), the
+// prop at function scope 397/1560 (73). Same code, no change: slot declared first or middle, all six dot term orders, dot operands swapped, renamed locals (three sets).
+// One-link harness not faithful here (control 442 at 1580 bytes).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

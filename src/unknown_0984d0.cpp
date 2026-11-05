@@ -258,7 +258,7 @@ void c_handle_table_450cd0::v4(long a1, s_bitstream *stream)
 
 struct s_handle_creation;
 bool function_991d0(c_handle_table_450cd0 *self, long handle, long size, void const *data);
-void replication_table_add_chain(long const *values, s_handle_peers *peers, long count, long const *handles, long const *others, s_handle_creation *blocks);
+void replication_table_add_chain(s_handle_peers *peers, long count, long const *handles, long const *values, long const *others, s_handle_creation *blocks);
 long replication_table_get_chain(s_handle_peers *peers, long handle, long *handles);
 void replication_table_release(s_handle_peers *peers, long handle);
 void replication_table_release_chain(s_handle_peers *peers, long count, long const *handles);
@@ -276,13 +276,8 @@ public:
 	virtual void v7(long arg_0, long arg_1, long arg_2, void *arg_3) = 0;
 };
 
-PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long const *arg_1, byte const *arg_2)
-{
-	long local_0 = arg_1[4];
-	long local_1 = arg_1[0];
-	return function_991d0(arg_0, local_1, local_0, arg_2);
-}
-// score 80 (was 80): frame 0x1c agrees; native byte validation ordinal reduces the diff; items/data carriers and loop entry remain.
+// score 47 (was 80): frame 0x1c, retail's spilled cursors and counter and the jump past the items reload agree; left are the data cursor's init ahead of
+// the count guard (retail sets both cursors after it), the loop's scratch registers, the count-one tail's scheduling and case 2/4's and case 5's scratch registers.
 // Round 40 (lane 17, fast): a long validation counter (retail's dword at esp+0x18) 115: every stack
 // slot is then retail's (flag in the argument slot, counter at 0x18, cursors at 0x14/0x10) and only the
 // loop entry (retail jumps past the items reload) and the 0x991d0 argument registers differ; with the
@@ -522,6 +517,24 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // M382: Complete request-family if dispatch, all six family priorities, then shared type and native long ordinal:
 // 228/205/219/203/208/209/228/218. NOT kept: all regress and lose native dispatch/prologue; original switch,
 // validity, ordinal, cursor observations, existing helper and complete body restored.
+// M3 lane 10 r71 (fast, aligned in brackets; plain where marked): kept: a plain `for` over a long counter with a named data pointer stepped in the body (no volatile
+// reads, no helper) 75 [56], with 0x89950 declared (peers, count, handles, values, others, blocks) 47 [41], every declaration and call changed and 0x89950 still matched. Evidence for that
+// order: the stack arguments' order is retail's pushes at 0x990a3; `values` travels in EAX, and its slot among them was chosen from five placements, reading as the block's own field
+// order (count, items, b, c). If that placement is rejected, the old declaration on this body is 75. On it the count-one reads in the other orders 49-53. Natural index loop with no data pointer 207 [58] (524 bytes: the handle spills
+// and the items cursor takes EDI) unless case 5 goes through a table local: block-scoped or function-scoped 34 [21] (540 bytes, the whole validation loop is then
+// retail's); that with the count-one reads count, c, b 30 [17]; with b, count, c 25 [28]; with the 0x89950 order above 2 [2] (plain, all 22 other functions in both
+// files match); the other placements of `values` 2/4/4/10. That 2 form is not kept: case 5's table local is a one-use copy (ruled on before, round 42 above), and
+// only one thing is left in it, `lea ecx, [eax*4]` where retail has `lea ecx, [edx*4]` after `lea esi`. It needs a real match, and sizing memcmp by the request's
+// count flips the regime: 209 [42] (520 bytes). The size spelled `* 4`, `<< 2`, by sizeof first, through a named size, count, reference, info pointer or reference,
+// nested ifs, breaks, a flag or a bool 209 each; items local for the arm 64 [21] (540 bytes, but `shl ecx, 2` and the notify loop loses its cursor). Harness (the
+// file plus 0x89950's; 3 s a form; it reproduces both regimes): the count stays in ECX for `shl` unless it stays live past the size, and retail's guard `test edx,
+// edx` is that use; a non-short-circuit `&` of the compare and memcmp gives retail's `lea esi; lea ecx, [edx*4]; lea edi` (215 instructions, not usable); `inline` on
+// 0x89d20 drops the address kept in EDX across the call (`lea edi` as retail) but leaves `shl ecx, 2`. Other locals with the size form (entry, peer, state, owner, shared
+// counter, named count) stay in the 209 regime; without the case-5 local all of them keep the handle split. Permutations of local declarations don't move it.
+// Lead (harness, on the 2 form): a real store through the chain buffer between the compare and memcmp (`local_8[local_9] = 0;`, diagnostic only) with the size read from the request
+// gives retail's whole shape, `lea esi; lea ecx, [edx*4]; lea edi; xor eax, eax`, guard on EDX, regime kept, one instruction too many: the size's load must not be merged with the compare's
+// before allocation, and a later load of the same register then gives retail's code. Code-free kills tried: an unused local through a pointer, a one-element array, an out-parameter helper, flag joins
+// (threaded before the merge), differently typed reads of the count 209 each. What separates the two loads in retail without an instruction is the open question.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
@@ -534,21 +547,12 @@ void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 	case 3:
 	{
 		bool local_6 = true;
-		signed char validation_index = 0;
-		if (local_0->info.count > 0)
+		byte const *element_data = (byte const *)&local_0->data;
+		for (long validation_index = 0; validation_index < local_0->info.count; validation_index++)
 		{
-			long const *local_10 = (long const *)local_0->info.items;
-			byte const *local_11 = (byte const *)&local_0->data;
-			do
-			{
-				long const *local_12 = *(long const *volatile *)&local_10;
-				byte const *local_13 = *(byte const *volatile *)&local_11;
-				if (!function_98fb1(this, local_12, local_13))
-					local_6 = false;
-				local_11 += 0x10;
-				validation_index++;
-				local_10++;
-			} while (validation_index < local_0->info.count);
+			if (!function_991d0(this, local_0->info.items[validation_index], local_0->info.b[validation_index], element_data))
+				local_6 = false;
+			element_data += 0x10;
 		}
 		if (!local_6)
 			return;
@@ -564,7 +568,7 @@ void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 			local_14->owner->v2(local_1, local_18, local_17, local_19, &local_0->data);
 		}
 		else
-			replication_table_add_chain((long const *)local_0->info.b, table, local_0->info.count, (long const *)local_0->info.items, (long const *)local_0->info.c, (s_handle_creation *)&local_0->data);
+			replication_table_add_chain(table, local_0->info.count, (long const *)local_0->info.items, (long const *)local_0->info.b, (long const *)local_0->info.c, (s_handle_creation *)&local_0->data);
 		for (long local_7 = 0; local_7 < local_0->info.count; local_7++)
 			function_99690(this, local_0->info.items[local_7], 3);
 		break;

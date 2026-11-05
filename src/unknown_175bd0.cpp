@@ -2139,6 +2139,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // spawn lexical-home priorities: 178/178/178/178/178/178/178/178. NOT kept: no exact
 // color/query home recovery; original complete body and observations restored.
 // Frame 0x44 recovers but all eight grow to 572/552 bytes; input-home reuse remains.
+// DH372: Partial clipped-zone halfspace acceptance/rejection, bool/byte/short/long,
+// 131 each at 556 bytes. NOT kept: regressions; original helper and body restored.
+// Missing early color home and frame 0x40/0x44 remain; all checked controls survive.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2418,6 +2421,9 @@ event_done:
 // the 0xbadc0 validity call, and 0xbadc0's body is in another file.
 // MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
 // and 0xbaf80's bodies (src/unknown_0bad50.cpp) that decide it.
+// score 63 (was 63): this round found no gain - retail adds the record base into the scaled index before
+// its first load and keeps the object index in eax across 0xbadc0, whose argument convention is set in
+// src/unknown_0bad50.cpp.
 // score 63 (was 63): only the object index differs: ours keeps it in ESI from entry across 0xbadc0
 // Four-byte frame agrees; initial object handle remains retained across read-only queries.
 // Earlier: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
@@ -2925,6 +2931,10 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // before 'ligh' 23; light test inverted with the detached call first 23. Every other 0x1895f0 caller fills the
 // record as position, compressed forward, velocity, location (retail's order here too); that order needs
 // 0x189060's register order (round 117 lead), BLOCKED-BY 0xbf600's call (contributor).
+// Round 54 (m3 lane 15, fast): every order of the detached record's position, compression, location and velocity: 23 for the current
+// one, then 26 (location, position, velocity, compression), 27 (three forms), 28 (nine), 29 (six), 40 (retail's order), 42, 43, 43.
+// The attached call loads scale into EDI because position and direction already hold EAX and ECX in our evaluation order; that and
+// the detached arm's rotation still need 0x189060's order. BLOCKED-BY 0xbf600, 0xceee0 (their calls) and 0x17e670.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3322,6 +3332,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // cached/live mode and direct/native node word: 120/120/128/128/117/117/124/124.
 // NOT kept: no exact residence/frame recovery; original full body restored.
 // Frames 0x48/0x50 versus 0x54; every form loses the exact update caller.
+// DH372: Particle availability/exhaustion across the original transform call,
+// bool/byte/short/long 119/119/126/132/119/119/126/132. NOT kept: regressions; original body
+// restored, frame 0x4c/0x54 and system/successor/color homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

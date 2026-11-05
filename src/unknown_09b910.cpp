@@ -997,6 +997,11 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // Round 120 (lane 7, fast): non-const payload pointer 20; flags read once into a long local 51 (145 bytes);
 // object name read once into a local 51 (142 bytes); the word field passed as short 20; `flags != 0` 20.
 // Still BLOCKED-BY 0xfd740 (contributor) and 0x1883e0 through 0xfcea0's index width.
+// Round 70 (m3 lane 1, fast): the word field through a zeroed union local 42 (154 B); a word local read before the flag
+// test 20; the owner argument cast from NULL 20; 0xfcea0's index as short with a long local at its 0xfd740 call 0 here, but
+// 0xfcea0 133 (579 B) and 0xfc330 540; short with the parameter's slot read as long at that call 0 here, 0xfcea0 4,
+// 0xfc330 540 (aligned 395 -> 360, 2143 B): not kept, a cast that reads 4 bytes of a 2-byte parameter. Retail's 0xfc330
+// also pushes its spilled dword unextended. Still BLOCKED-BY 0xfd740.
 // @retail 0xa17d0
 bool c_projectile_effect_event::v11(long a, long const *entities, long c, void const *data)
 {

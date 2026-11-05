@@ -830,6 +830,16 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax G (11-04), not kept (coordinator): 59 with the trajectory result compared against zero
+// (`fa1a0(...) != 0` on a bool call; retail has no setne, it only moves the result to DL, so the
+// compare steers registers: 165 without it), the request point copied component by component and the
+// threshold as !(base * 1.2 >= chosen); a redundant compare is kept only with a byte match.
+// G's notes on what still differed at 59:
+// Still different: retail caches the trajectory result in DL (`mov dl, al`), loads the force flag
+// into AL and stores DL to the stack slot afterwards, while ours tests the result, loads the force
+// flag and stores the comparison - one byte longer, which shifts every later constant and jump;
+// retail copies the request point through integer registers and returns the request call's result
+// directly, and the unit-state table goes to ESI rather than EDX.
 // MiniMax H (11-04): the trajectory result hoisted to function scope 135, the invalid tail
 // returning the valid flag 135 and the comparison written as !(a >= b) 135; no lower score.
 // MiniMax R (11-01): no new form, no lower score; retail's trajectory call still passes eleven

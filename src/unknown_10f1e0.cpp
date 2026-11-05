@@ -1534,6 +1534,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // at entry/controlled scope: 347/347/347/347/344/344/344/344. NOT kept: all regress
 // and lengthen to 1300/1299 versus 1286; original lookup observations and body restored.
 // Native pool/displacement ownership, SETLE/default homes and byte normalization remain.
+// P345: Joint false-default chain, success/depletion/interruptibility-owned defaults,
+// byte then bool success: 164/165/165/164/194/193/195/194. NOT kept: no byte match;
+// original complete body restored; pool/displacement, SETLE/default homes and normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1802,6 +1805,9 @@ bool __stdcall function_110ab0(long unit_index)
 // overlay, then both with Boolean depletion: 450/560/560/466/567/567/575/581. NOT kept:
 // no verified native frame/result-join gain; original full body restored.
 // Best code prefix stays 424 differences; all frames remain eight versus twelve.
+// DH372: First/second held-query presence bool/byte/short/long: 450 each.
+// NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
+// Original body and queries restored; state/request/result homes remain.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2222,6 +2228,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // N373: Ordered primary/secondary null-or-found screen producers, conditional/default/total-if forms
 // 830/775/835/830/775/835/835/835. NOT kept: at most one point; original full body restored.
 // Frame 0xcc/0xd4, entry computation and first-angle/overlay expansion remain.
+// Y597: Complete common primary sampling weights, both-first/single-first producers,
+// sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
+// NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -2481,6 +2490,21 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // `if (!0x114520) return false;` with the request block flat 98 (215 bytes); request priority captured after the
 // fallback block 85 (252 bytes); the request record zero-initialised with `= {0}` 65 (248 bytes); the index
 // declared then assigned after the priority 16; the index from an if/else on entry_index 16.
+// Round 54 (m3 lane 15; one-link harness with src/unknown_1130a0.cpp and src/unknown_20ba00.cpp, same roles, 22 for the check's
+// 16): the colouring order is the cause: the heaviest value takes EBX, the next ESI, the last EBP, and retail colours NONE first,
+// ours index, priority, NONE. Diagnostics with extra volatile NONE stores in the request block: 2 no change, 4 NONE ESI and
+// priority EBP, 8 retail's exact roles (index ESI, NONE EBX, priority EBP). Two more priority stores swap index and priority.
+// Overwritten NONE stores do not count; removing the copy, the memset or the test of extra moves the roles but not to retail's.
+// Real (fast): request setup through a forceinline helper 16; extra fill through one 16; both 16; entry_index tested and reassigned
+// then index declared 16; index from a ternary 16; index set in both arms of a test of entry_index 16; entry store first 16;
+// comparisons against `(short)NONE` 16; output cleared ahead of the fallback test 23; extra copied by struct assignment 16, through
+// a typed pointer 16; memmove 51; memcpy with a literal size 16. Harness (22 base): the call and return in both arms 41, the call in
+// both arms 41, the else as a fall-through 41, inverted arms 32; implied NONE tests in five places 22 to 28 (threaded, roles
+// unchanged); `!= false` 22, `== true` 24, a named bool 22; an empty `do {} while (false);` at all 16 statement boundaries 22;
+// every spelling of each NONE use (-1, typed casts, 0xffffffff) 22, word forms 83 to 88, a long index 31; index defaulting to NONE then set in
+// both arms 22; 72 combinations of an extra local, `!= NULL`, declaration order, memset spelling and priority casts keep our roles, with a
+// one-exit result 91 (224 bytes; index ESI, priority EBP, NONE EAX).
+// A 600 s permuter run (52 tries) none below 16.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -2838,6 +2862,9 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
+// score 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
+// pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
+// costs both callers in other lanes' files.
 // score 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // (663) costs both callers in other lanes' files.
@@ -3262,7 +3289,7 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
     return active;
 }
 
-short *function_e70b0(long unit_index, short *value);
+short *function_e70b0(short *value, long unit_index);
 bool function_e4050(long object_index);
 const long g_4408f8[8] = { NONE, 0, 1, 2, 2, NONE, NONE, 3 };
 const long g_440918[8] = { NONE, NONE, 0x600008c, 0xc000043, 0xc000043, 0xd000042, 0xc000043, 0xc000043 };
@@ -3434,7 +3461,7 @@ bool function_10ff40(long unit_index, long type, short side, short value,
                 force_overlay = true;
             else
             {
-                if (*function_e70b0(unit_index, &action) != 0 ||
+                if (*function_e70b0(&action, unit_index) != 0 ||
                     (*((byte *)g_4e0300->data + (unit_index & 0xffff) * 12 + 3) == 0 && function_e4050(unit_index)))
                     force_overlay = true;
             }

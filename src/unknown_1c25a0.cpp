@@ -957,6 +957,14 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // function_1d1540 before 0x278f00/0x146bf0 1; between them 1; before the reversed 0x1d01c0/0x1d1260
 // pair 1; the swapped pair with function_1d1540 between function_1d1260 and function_1d01c0 1.
 // Every control stayed unchanged; original declarations restored.
+// Round 89 (m3 lane 12, plain and full checks; every trial restored): `inline` on 0x146bf0's definition 1, on 0x146da0's 1; 0x1c4040 declared
+// first or between its neighbours in src/unknown_146a20.cpp 1, 1. 0x1c4040 and 0x146bf0 call each other and 0x146bf0 takes no arguments, so
+// retail reached 0x146bf0 first. Retail's graph has that path through a stub here: 0x1d1260 -> 0x2266a0 -> ... -> 0x17a8a0 -> 0xb7b40 -> 0x146bf0.
+// 0xb7b40's draft enabled, nothing else: 2 (the custom regime, attempt EAX, active CL), 0x1c4040 13, 0x146bf0 3, 6 matched lost, all callers
+// of 0x1d1540 going custom (215): 0xb8890, 0xe16b0, 0xf0fd0, 0x1c35f0, 0x1c3770, 0x1c39c0. With 0xb7430 too: the same plus 0x275380, 0xb7430
+// matches. 0xb7b40 and 0xb8540: 1, 0x1d1540 back at 97, 0xb8540 matches, 28 lost (0x1c3770 goes custom, 41). All four drafts: 1, 29 lost.
+// 0xb7b40, 0xb7430 and 0x2902b0: 1, 229 lost. Lead: with 0xb7b40 enabled 0x1d1540 needs a caller built before it, which takes 0x146bf0
+// being reached before 0x278f00 is on the walk's stack (then 0x1c4040 -> 0x278f00 -> 0xb8890 builds that caller first).
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
