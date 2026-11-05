@@ -205,6 +205,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // the > 1 icon as one call with `invitations + (received ? 18 : 7)` 383 (2357 bytes); the status visibility
 // as `(empty || self) ? false : true` 330 (same code); a short invitation count 339 (2338 bytes); voice
 // availability as `player != NONE && ...` 631 (2325 bytes). Homes still BLOCKED-BY 0x230134 as noted.
+// Round 400: zero-session library clear/const/online/status/entry workspace
+// 505/330/331/368/712; complete zero-reject/admit/reject results 375/330/330.
+// NOT kept: no byte match or qualifying gain; original workspace and body restored.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

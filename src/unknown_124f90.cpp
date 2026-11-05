@@ -4128,6 +4128,10 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // Round 164: state pointer sunk into the branch and recomputed in the fallback 598; with 0x16f3a0
 // calls 553; fallback in both arms 633, with 0x16f3a0 calls 706, plus 0x14ddc0/0x14de70 at the loop
 // head 740 (retail's loop head, aligned 426 -> 402).
+// Round 400: shared zone predicate with original/direct publication, then
+// existing cross, point setter and both boundaries: 555/554/643/640/609/610/640/637.
+// NOT kept: every form regresses and lengthens; original predicate, helper
+// calls, includes and complete body restored. Frame excess remains.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {
