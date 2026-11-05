@@ -1092,6 +1092,8 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
+// MiniMax D (11-04): no new form, no lower score; the unit index masked once into a local 153 (same code),
+// the seat-index branch still splits the object table and the unit index over different registers.
 // score 153 (was 153): logic walked against retail, no behaviour difference found (loops, offsets, order of the three
 // weapon slots, grenade copy and the memset path agree). Only allocation differs: retail keeps the player in ebx, the
 // unit index in ebp and NONE in edi, and re-reads g_4e0300->data and the unit pointer in the no-seat branch (0x1528af,
@@ -1476,6 +1478,8 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax D (11-04): no new form, no lower score; retail keeps the player in ESI and the hand in EDI and this
+// build swaps them (the unit index takes ECX instead of EDX), and the permuter was killed before it reported.
 // score 43 (was 43): the walk found no difference in logic (same stores, calls, argument order, held_slots/weapons
 // offsets, mode == 4 byte test, result kept in bl with its stack copy). Only the callee-saved pair is swapped:
 // retail keeps the player in esi and the hand in edi (edi pushed late), ours the reverse, and the unit index and the
@@ -2249,6 +2253,10 @@ void function_15e8e0(long object_index, long player_index);
 void __stdcall function_191ec4(long definition_index, long player_index, short count);
 void __stdcall function_191e51(long definition_index, long player_index);
 
+// score 130 (was 202): the object index is masked once into a local (object_slot) used by both the object
+// lookup and its type, so the scaled header offset stays in a register across the calls as retail's EBP does;
+// the parent index is read in place instead of through a local, which leaves the object pointer in ESI and the
+// parent index in EAX as retail has them. The player lookup and the object header setup now match retail.
 // score 202 (was 202): Frame 0x28 agrees; player data uses ECX versus EDX,
 // the object uses EBP versus ESI and the scaled header offset spills instead of staying in EBP.
 // Earlier: the prologue's registers differ: retail keeps the player base in ebx
@@ -2312,12 +2320,12 @@ void __stdcall function_150e30(long player_index, long object_index)
     s_tail_player *player = tail_player_get(player_index);
     if (player->unit_index == NONE) return;
     byte *unit = (byte *)tail_object_get(player->unit_index);
-    byte *object = (byte *)tail_object_get(object_index);
-    long parent_index = *(long *)(object + 0x14);
+    long object_slot = object_index & 0xffff;
+    byte *object = (byte *)tail_object_get(object_slot);
     bool parent_ok = false;
-    if (parent_index != NONE)
+    if (*(long *)(object + 0x14) != NONE)
     {
-        long parent_type = ((s_tail_object_header *)g_4e0300->data)[parent_index & 0xffff].type;
+        long parent_type = ((s_tail_object_header *)g_4e0300->data)[*(long *)(object + 0x14) & 0xffff].type;
         parent_ok = parent_type == 11 || parent_type == 7;
     }
     if (*(long *)(object + 0x14) != NONE && !parent_ok) return;
@@ -2357,7 +2365,7 @@ void __stdcall function_150e30(long player_index, long object_index)
         else if (kind != 0 && function_ccb80(player->unit_index) == NONE && !function_138880())
             function_151ea0(player_index, object_index);
     }
-    byte type = ((s_tail_object_header *)g_4e0300->data)[object_index & 0xffff].type;
+    byte type = ((s_tail_object_header *)g_4e0300->data)[object_slot].type;
     if ((1 << type) & 4)
     {
         bool modes[4];
