@@ -258,6 +258,14 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
+// MiniMax A (11-05, second round): no new form, no lower score; the switch subject written as an inline
+// `get_game_variant()->field_xcb8724` puts the selector in EAX as retail has it but moves the tag into EBX
+// before the call (44), the tag read after the switch gives 45, and a field pointer for the tag or a named
+// selector leaves the code unchanged (32).
+// MiniMax A (11-05): no new form, no lower score; the permuter's best was 37 (swapping the translator's
+// first two arguments, which changes the call), the one-copy form still hoists the buffer address into
+// EBX at 54, and reading the tag before the variant call puts the tag and the selector in retail's
+// registers but still hoists the buffer at 57.
 // MiniMax b (11-04): no new form, no lower score; the one-copy form still matches retail's length, tag and late EDI save but hoists the buffer address 0x55c6e4 into EBX and scores 54, and the kept form still saves EDI early and keeps the tag in EDX with the selector in ECX; casting the one-copy form's copy source to const or to a non-const pointer keeps the hoist at 54, and reading the tag before the variant call puts the tag in EBX and scores 44.
 // score 32 (was 32): earlier, at 49: our size-optimized build hoists the buffer address 0x55c6e4 into EBX
 // Round 102 (lane 7, fast): the output parameter in a named local used by both copies 32; the selector

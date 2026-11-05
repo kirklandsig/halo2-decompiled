@@ -832,6 +832,8 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// MiniMax A (11-05): no new form, no lower score; the plane-0 term still loads `vector_e4.i` after the
+// forward copy and keeps the zero in xmm3 where retail has it in xmm4.
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Round 16: retail loads the three `view->vector_e4` coefficients into xmm0, xmm3 and xmm4
 // before it copies the point and then reloads the point's components from that copy, ours reloads

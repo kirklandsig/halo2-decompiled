@@ -1318,6 +1318,8 @@ struct s_batch_cache_4b5d0
 
 struct s_133f70;
 
+// MiniMax A (11-05): no new form, no lower score; the call to 0x4bcc0 already carries its six stack
+// arguments in retail's order and with retail's values, so what is left is the frame size and the entry/result homes.
 // MiniMax h (11-04): no lower score; the 0x4bcc0 call takes the distance from the third stack slot where retail takes it from the second, and that slot layout follows the unmatched callers in src/unknown_133790.cpp.
 // score 175 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // Round 22 (lane G, machine 3; no code change kept): retail's byte home and its split record base

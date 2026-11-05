@@ -233,6 +233,10 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// MiniMax A (11-05): no new form, no lower score; the segment selected before the node 279 (as before),
+// and our segment base takes EDI with the segment pointer in ECX where retail keeps both in EDX, the
+// node-position copy uses EDX where retail uses ECX, and the physics index is masked in EAX before the
+// pushes where retail masks ECX after them.
 // MiniMax S (11-01): the segments and segment-index locals leave the first difference at +0x37; no lower score.
 // score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
