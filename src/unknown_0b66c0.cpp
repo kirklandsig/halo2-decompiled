@@ -371,6 +371,15 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // M380: Shared copier short/word/int64/uint64 size contracts with native/void return:
 // 39/39/56/56/39/39/56/56. NOT kept: narrow forms gain one and grow to 103 bytes;
 // wide forms regress at 112 bytes. Original helper, scanner and complete body restored.
+// Round 88 (m3 lane 16, fast with 0xb5f10/0xb61d0; [0xb5f10]): nested tests + named length + early `source` 21 [match] at 100 bytes,
+// aligned 13, masked 5, is the nearest shape (one-use locals, kept only on a match). On it: scan as `while` 21; scan with a named walk
+// 21; length declared at the top 21; named end after the scan 21; `start + string` 21; orders TCSD 21 [38], TSCD 21 [2], CTSD 25 [41],
+// CSTD 25 [41]. Source at the clamp 28 [6], reversed 28 [6], through a text read 27 [6], reversed 27 [6]; after the compare, reversed 32
+// [6]; in the call, reversed 28 [6]. Early text read used at the copy 40 [35] (aligned 10, masked 6: count ECX and walk EDX as retail, but
+// start arrives directly in EDI), with `start +=` 40 [35]; text read before the scan 48 (93 bytes) [84]; named end with `start +=` 40 [match]
+// (aligned 20, masked 12); clamp written `count + 1 > 0x200` 53 (90 bytes) [104]. Plain string: early source 49 (92 bytes) [6]; source at
+// clamp 41 (104) [35]; early text 41 (104) [35]; string kept through its own address: at clamp 40 (104) [6], text read 40 [6], reversed
+// 40 [6], early 49 (92) [6], `start +=` 40 [6]. Left: count and walk swapped on the match-keeping form, or start's entry register on the other.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

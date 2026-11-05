@@ -275,6 +275,9 @@ static __forceinline s_object_visibility_header_ab *visibility_header_step(s_rec
 // wrong values to our callee.
 // Round 85 (m3 lane 9, fast; 0x109660's file was another lane's, so caller forms only): the callee declarations swapped 2; a const object index 2;
 // a flags byte local for both tests 67; the iterator declared before the first loop 2; `i != count` 4. Still BLOCKED-BY 0x109660.
+// Round 88 (m3 lane 16, fast): the first-pass tests as `continue` 2; the object index read from the global each pass 115 (255
+// bytes); the count read at the loop test 87 (240 bytes); a dword object index 2; the first call reading the array 2; `while`
+// with the increment last 2. Still BLOCKED-BY 0x109660 (its file is on another lane's list this round).
 // @retail 0xb7060
 void function_b7060()
 {

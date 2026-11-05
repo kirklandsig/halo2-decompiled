@@ -607,6 +607,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // M380: Native index/attached-identity/both publications through memcpy 49/49/49,
 // memmove 109/76/122; both with early Boolean completion 77/94. NOT kept: no byte match;
 // original scalar stores, validity result, virtual tuples and complete body restored.
+// Round 88 (m3 lane 16, fast with 0xa5b10/0xbb780/0x108e10): early bool with the store and attach through 0xbb780 77 (160 bytes),
+// with `inline` on 0xbb780's definition 77; the long result with that inline helper 49; the helper's value named first 77; a header
+// reference for the test 77; early bool with the in/out value copied to a local after the creation call 75 (176 bytes, aligned 35,
+// masked 27: a one-use copy, not kept).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

@@ -356,6 +356,16 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // 1/2/4/3/5/6/7, all 176; full references with the angle also referenced 178.
 // NOT kept: no byte match; original helper and both in-place calls restored;
 // unity/root/yaw and rotation homes remain. The numeric helper and sibling stay fixed.
+// Round 88 (m3 lane 16, fast with 0x29b990/0x1e5450/0x11ce20/0x11cc90; aligned, masked in brackets; base 176 [229, 138]): single-exit
+// normalizer + XY first 169 [222, 136], still one short of the bar; direct rows 189 [180, 105] at 1706 bytes; all three 183 [175, 103]
+// at 1706: everything before the rotations then has retail's structure, the rest is the rotations' operand forms and schedule. Rows from
+// retail's listing with each cross in its row 264 (1670), with SE/XY 260; 0xd0080's rows with x/y copies 181 (1706) [208, 110]; 0xc7840's named rows
+// 176; retail-spelled named rows 176, with SE/XY 170. On all three: named axis at the first call 183 [180, 130]; helper axis link 227
+// [350, 157]; helper vector link 179 [177, 122]; both 233 (1694); call + helper axis 227; call axis + helper vector 183 [174, 103]; all
+// 233 (1694). Helper parameter orders vaso avso svao ovas vaos soav oasv asvo saov oavs 183 each (same code: copy-propagated). Rows named i 193
+// (1690), j 187 (1694), k 183, i+j 181 [244, 128], i+k 193, j+k 183; rows written k,j,i 199 (1683), j,k,i 198 (1687), k,i,j 256 (1675). On
+// SE + XY: limit updates as ternaries 169 (same code); named turn products 278 (1716); named low bounds 277 (1716); rate limits as ternaries
+// 242 (1715); else-arm zeros reversed 172; pitch computed in its target local 173.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
