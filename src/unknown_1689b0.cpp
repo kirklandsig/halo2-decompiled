@@ -1750,6 +1750,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // AC554: Paired reconstruction plane-axis degeneracy truth in bool/byte/char/signed-char/
 // short/word/int/long 553/553/553/553/553/553/553/553. NOT kept: no exact test-producer repair;
 // original helper and body restored.
+// AC556: Complete output-path-produced returned status in bool/byte/char/signed-char/
+// short/word/int/long: 589/635/635/635/652/652/647/647. NOT kept: all regress and
+// lengthen; original entry result, fallback writes, geometry, word counts and full body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
