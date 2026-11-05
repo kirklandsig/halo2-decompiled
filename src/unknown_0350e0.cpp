@@ -1784,6 +1784,12 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // AC544: Direction/mode/scale formal lexical identities, seven subsets then all
 // with position identity: 193/193/193/193/193/193/193/193. NOT kept: no native result-home or frame
 // repair; original inputs, helper, switch, arithmetic and whole body restored.
+// DH366: Original final projection zero/nonzero admission, bool/byte/short/long outcomes:
+// 193/193/193/193/193/193/193/193. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
+// DH373: Complete default-mode admission/rejection before the original switch,
+// bool/byte/short/long: eight at 286 (696 bytes; caller 610). NOT kept: regression and
+// larger length gap; original dispatch, projections, helper and result restored.
 // AC546: Alias-safe second cross in its actual first-cross receiver, native/library/setter/
 // scalar output: ordinary 421/421/198/197, forced 247/247/198/197. NOT kept: no gain;
 // ordinary value copies worsen the caller to 610; original private helper and full body restored.
@@ -3592,6 +3598,12 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // AC544: Entry declarations for alpha, existing qualified kind and paired query bytes,
 // seven subsets then reversed complete declarations: 177/177/177/177/177/177/177/177. NOT kept: no
 // native frame repair or match; original producers, scopes, qualifiers and whole body restored.
+// DH366: Original-site first raw/clamped fade equality, accepted/rejected bool/byte/short/long outcomes:
+// 177/177/177/177/177/177/177/177. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
+// DH373: Lazy parent-presence/absence outcomes at their original recursive admission,
+// bool/byte/short/long: eight at 177. NOT kept: no native frame repair or equality; original
+// positive recursive result and full body restored. Initial/final fade scratch homes remain.
 // AC546: Original-site case-zero kind admission/rejection outcomes in bool/byte/short/long:
 // eight at 177. NOT kept: one-use outcomes do not match or repair the frame; original
 // predicate, qualified kind observations, positive result and complete body restored.
@@ -5057,6 +5069,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // culled/gated/both/unculled/culled-unculled/gated-unculled/all families:
 // 1445/1683/1635/1841/1772/1984/1937/2137. NOT kept: every graph expands and worsens shared users;
 // original full contract and caller restored. Late pass bytes and mode loads remain.
+// DH373: Existing shared-pass result, gate, cull, depth, filter, mode, group and target
+// lexical identities: eight at 138. NOT kept: no byte match or gain. Original helper and
+// complete callback restored; late enabled bytes, dead mode loads and clear convention remain.
 // AC546: Existing shared pass helper returns availability to all three draw callers in
 // bool/signed-char/byte/short/word/long/dword/int: eight at 138. NOT kept: no gain or
 // native publication repair; original shared helper and every complete caller restored.

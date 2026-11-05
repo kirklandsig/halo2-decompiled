@@ -1533,6 +1533,9 @@ void function_150820(dword *bits, bool local_only)
 // direct selected-weapon reads with direct/char/int/short slot: 49/49/72/43.
 // NOT kept: ties or regressions; original short slot and weapon capture restored.
 // Native ESI player/EDI hand and entry temporaries remain exchanged.
+// DH372: Isolated mode-success/command-success/actual-command exits, then both success-exit
+// pairs 90/86/110/112/110; sole-return common success in bool/byte/long 63/73/91.
+// NOT kept: no byte match or gain; original body restored, saved player/hand roles remain.
 // P332: Terminal game-mode equality/inequality producers at the original
 // observation, bool/byte/short/long: eight 43 at 210 bytes. NOT kept:
 // no byte match; original body and calls restored, player/hand homes remain.

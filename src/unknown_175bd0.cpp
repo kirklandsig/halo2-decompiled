@@ -2129,6 +2129,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // AC528: First-traversal cursor acquisition with late spawn-field masks 0..7
 // 167/166/166/160/163/164/164/165. NOT kept: no exact match or eligible gain; original complete body restored.
 // Early color/query/cursor homes and frame remain. These changed observation/residence forms require equality; no retained candidate.
+// DH372: Partial clipped-zone halfspace acceptance/rejection, bool/byte/short/long,
+// 131 each at 556 bytes. NOT kept: regressions; original helper and body restored.
+// Missing early color home and frame 0x40/0x44 remain; all checked controls survive.
 // AC531: Actual plane-field pointer/reference at entry lookup or after index admission,
 // ordinary/forced existing zone expansion: eight at 129/556 bytes. NOT kept: no frame
 // or color-home recovery; original producer, all live reads and complete body restored.
@@ -3322,6 +3325,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // AC528: Complete positive node classification, exhaustive then false-default in bool/byte/short/long
 // 96/110/106/107/94/96/95/96. NOT kept: no exact match or eligible gain; original complete body restored.
 // Native frame and system/successor/color homes remain. Several exhaustive non-Boolean forms also lose the exact caller; no qualifying gain or equality.
+// DH372: Particle availability/exhaustion across the original transform call,
+// bool/byte/short/long 119/119/126/132/119/119/126/132. NOT kept: regressions; original body
+// restored, frame 0x4c/0x54 and system/successor/color homes remain.
 // AC531: Complete immutable color pair, dword/long/unsigned-int/int, active/query-owned
 // scopes: eight at 93/338 bytes. NOT kept: color residence canonicalizes; native
 // frame, definition spill and system/successor roles remain. Original whole body restored.

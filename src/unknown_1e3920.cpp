@@ -1260,6 +1260,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // original guards, producer scope, sentinel defaults and entire body restored.
 // P333: Complete initial substitution admission, allowed/blocked in bool/byte/short/long:
 // eight 389s at 1307/1272. NOT kept: entry/query homes and extent regress; full body restored.
+// DH374: Successor-NONE result owned by while condition, bool/byte/signed-char/short/word/int/long/dword:
+// 253/253/253/253/253/253/253/253 (fast control 253; full 253).
+// NOT kept: no byte match or eligible gain. Original dynamic successor test, replacement result, query
+// defaults, refreshes, cleanup and full body restored; sentinel ESI and squad/query homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
