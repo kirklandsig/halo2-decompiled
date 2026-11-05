@@ -348,6 +348,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // (retail reads it first) 951; the attached component set in an if/else 901 (one point, not kept). All restored.
 // DL260: Existing scale/add/subtract kernels with deduced actual vector input types, seven subsets, then existing planar kernel: 1087/1140/1099/1327/1320/1295/1505/1644.
 // NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// M383: Absolute-value APIs at entry/radial/planar bound families, subsets 1/2/4/3/5/6/7,
+// then all double APIs with real results: 900/927/944/931/945/974/975/974. NOT kept:
+// two-point entry lead fails the gate; native conditional bounds, helpers and full body restored.
 // Round 148 (m3 lane 6, fast; aligned in brackets, control 902 [681]): HELD LEAD, needs a ruling on a shared helper: `inline` on
 // magnitude3d's definition (0x24590) makes our build spill live xmm values across that call as retail does. Recipe, 849 [384],
 // 4241 bytes: the scale helper as three statements (retail's frame 0x1d4 and calls), the rigid-body position copied field by

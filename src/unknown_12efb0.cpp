@@ -410,6 +410,14 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // M383: Existing scalar destination/color/scalars/weight, merge and publication formal
 // lexical homes, then scalar-merge/all helpers: eight 616s. NOT kept: no palette/SIMD
 // allocation repair; original helper symbols, input-weight capture and complete body restored.
+// Round 211 (m3 lane 3, fast; aligned with registers and stack/both masked, control 353/130): retail's six-field
+// accumulation runs in parallel registers (red, height, green, weight, blue, intensity, distance, remaining, with arguments
+// loaded ahead and multiplied in place); ours finishes one field before the next in every form. The three six-field
+// accumulations written on the accumulators directly 697 (retail's 3817 bytes, first difference +0x6d, 506/147), with the
+// char slot 725 (3797, 508/140), with the body publications 697 (506/148), all three 726 (3796, 508/141); also the
+// other three accumulations direct, so no helper takes an accumulator's address, 711 (3804, 521/157), still one field at
+// a time. On the original helpers, char slot and body publications together 723 (3846, 403/102), the best register-blind
+// helper form; that with all six values computed before any store 738 (3852, 412/90). Original body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

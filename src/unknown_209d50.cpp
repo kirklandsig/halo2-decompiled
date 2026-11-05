@@ -95,6 +95,11 @@ static inline void *function_xc5914d(long thread_index, short size)
 // 71 (277 bytes, allocation/result still coalesce in EAX); one-pointer array 95 (266); allocator parameter order 71;
 // result before the frame 71; frame field reference 71; wide allocator size formal 71; one-pointer storage record 95
 // (266). Both wrappers are promoted and lose the spill; byte-return direct allocation 71. Original 12 form restored.
+// Round 61 (fast): the listing differs only in `mov eax, ebx` against ours' reload, so retail's home is a non-volatile memory value the store forwards. The allocator
+// with an out-parameter stored before the size update 95 (266, promoted); a const pointer 95; the allocation named with the volatile and the result copied from it
+// 71/71 (277: the allocation takes EAX, the frame ESI), in one declaration 71; the result copy after the second allocation 71, no volatile 95; the volatile home after
+// the second allocation 71; the frame reference after the first allocation 25 (281); a done flag with a ternary return 102 (291, the pointer does spill unforced), an
+// if on the flag 90; `else return arguments` 90.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

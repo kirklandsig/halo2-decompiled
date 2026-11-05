@@ -168,6 +168,13 @@ void __stdcall function_2562c0(long actor_index, s_slot *slot)
 // retail's select is branchy); on the 70 form: result declared then assigned on its own line 70; the search loop
 // ending on `break` with `if (!object) state->started = true;` 70; the started byte in a bool local 70; `<` returning
 // result with an else returning g_470be8 75 (retail length, ja); `<` on a named elapsed product 75.
+// Round 51 (fast): a compiled-out `do {} while (false);` at the started arm's end, the search arm's end, the character block's end, the outer block's end or after the if/else,
+// on the 70 form 70, on a joined result reassigned in the search arm 71 (334 bytes), on global returns in the search arm 97, on one result with a be8 assignment 137 (374 bytes);
+// a long result on the 70 form 67 (347 bytes, movsx preload, near jb), joined 67 (354, far jb, spilled); on the 70 form, `!(>=)` returning result first 70, `<` with a goto onto the
+// search arm's return 19 (this body's code); `!(>=)` with a goto past the reassignment 71, with a compiled-out statement at the label 71, label in the search arm 71; goto onto the
+// last return 97 (far jb, no preload), with global returns 97; started arm falling to a character-block be8, goto onto the last return 97 (be8 inline), `return result` at the jb 84
+// (352 bytes, jae), flat search with goto failed 84, no result local 97; a label reached only by the jump after the search returns 84, at character level past the be8 return 70, with
+// be8 returned in the arm 70, global returns with that label 105 (366 bytes). Every preload form takes the nearby epilogue; every far jb lands on the reload and loses the preload.
 // @retail 0x256300
 short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 {

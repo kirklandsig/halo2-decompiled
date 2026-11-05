@@ -504,6 +504,10 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // Round 32 (lane 18, fast, plain 15 at the start): the prop-state NONE test nested under the range test 15;
 // the elapsed compare written `local_4 <= elapsed * rate` 15; the final unknown07c test nested under the
 // random compare 15; the game-time local declared bare at the top 15; `field_6 != (short)NONE` 15.
+// Round 163: colouring reads ticks, clock, result in EDI, EBX, EBP here and ticks, result, clock in retail; a named
+// clock pointer gives result EBX and NONE EBP but clock EDI and ticks EBP 91 (415 bytes); a ticks-to-seconds inline
+// helper 15; the elapsed test as a bool helper 84; field_6 tested in its own if 15; dword ticks 108 (438 bytes); the
+// settings factor first with the call second 15.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

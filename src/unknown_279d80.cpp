@@ -1994,6 +1994,12 @@ void function_27dd10(void)
 // Round 79 (fast; 0x281b60 has the same tie through function_288572): the count by const reference 2; the clamp operands reversed 53;
 // the flags byte read and pointer step split 2; the shift before the tail steps 2 (0x288570 12); a per-pass count copy 2 (0x281b60 62,
 // 0x288570 120); the shift in the for increment 12.
+// Round 86 (fast and compile-only over all six walk users): k identity locals at the walk's top, k = 1..8, 2 each (no period, the
+// reload pair does not follow symbol numbering); bit flags declared first in the wrapper, passed by reference 39 (0x281b60 87, 0x288570 152; compile-only shows no change, so not usable there); all 24 orders of the
+// index, flags pointer, count and inheritance parameters 2 each; natural rewrites of the arms of other blend methods (+=, *=, named
+// weight, interpolate_real, no scale local) 2 each, so arms folded away do not count; saved frame state as dword or long, fraction
+// first 2, next index first 6; apply index named in both arms 2; counters pre-incremented or += 1 2; the group end with the compare reversed 8;
+// a named table pointer for the outputs 2.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

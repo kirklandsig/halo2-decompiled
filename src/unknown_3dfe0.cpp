@@ -20,10 +20,12 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // score 21 (was 23): the tail's flag local is declared before the type local, so the zero
 // MiniMax G (11-04): no new form, no lower score: the object pointer and force flag keep their stack homes, and the object stays in eax.
 // 0x3dfe0 score 21 (was 23): the tail's flag local is declared before the type local, so the zero
+// score 21 (was 23): the tail's flag local is declared before the type local, so the zero
 // store comes before the NONE store as in retail; the object pointer and force flag still swap
 // stack homes (retail object 0x14 in ebx, force 0x10) and the object is loaded into eax instead of
 // ebx.
 // earlier, at 23 (was 23): the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
+// Earlier at 23: the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
 // force 0x10), update's false store sits after the force test, and special takes esi for edi.
 // update = false before force 218 (homes as retail, sample/update timestamps swap esi/edi);
 // that plus update elapsed after the object 186; update before the object 216;
@@ -73,6 +75,8 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // declared before force and assigned after it 21 (same code); update between update_elapsed and the object 216 (26); the object looked up again in the force arm
 // 156 (27: a home store in the arm, not a reload), on the kept order 226 (813 bytes); separate flag-test and later object pointers 216 / 21; sample as one ternary
 // chain 166 (26).
+// Y596: Complementary interpolation result, force-arm/direct producers in bool/byte/short/long:
+// 24/24/158/66/229/229/141/139. NOT kept: no equality; object/force spill homes and early update store remain; original whole body restored.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

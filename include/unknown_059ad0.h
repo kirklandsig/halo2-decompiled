@@ -8,6 +8,7 @@
 
 #include "unknown_11c920.h"
 #include <wchar.h>
+#include <string.h>
 #include "network_channel_owner.h"
 
 #define MAXIMUM_PLAYERS_PER_SESSION 16
@@ -370,6 +371,17 @@ struct s_session_member_identity
 {
 	dword words[9];
 };
+
+/* the session states (0x7420, 0x1f8 bytes) */
+#define SESSION_STATE_DATA_SIZE 0x1f8
+
+/* enters a session state: clears the state block and copies in the new state's data */
+static inline void network_session_enter_state_with_data(c_class_58d20 *session, long state, void const *data, long size)
+{
+	memset(&session->value7420, 0, SESSION_STATE_DATA_SIZE);
+	memcpy(&session->value7420, data, size);
+	session->state = state;
+}
 
 /* src/unknown_059ad0.cpp */
 inline void network_session_leave(c_class_58d20 *session, bool immediately)
