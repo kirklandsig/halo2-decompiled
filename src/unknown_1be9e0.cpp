@@ -183,6 +183,12 @@ static __forceinline long real_to_long(real value);
 // outer level, each on the current returns 24, on expiry falling to the node return 87 (457 bytes), on one continuing return at the end through gotos 24, on outer else returns
 // 24. One e4 fall-through at the end with a goto to the last e8 return 81 (430 bytes), with the node-level e4 kept 24; a status local from the top with two e8 assignments
 // 159 (440 bytes); both tests returning e8 with one final e4 131 (437 bytes). Matched 0x1b2630 and 0x1bbf40 get unmerged e4 blocks by tail duplication after a join.
+// Round 153 (fast): the decrement as its own statement 24; the countdown through a short `delay` local 24; the node byte test and the
+// view test as nested ifs 24; the actor lookup declared first 92; the pause countdown stored straight from real_to_long 24. Re-measured:
+// round 134's gotos to one final e8 (here with no count-failure return) 24, round 51's one final e4 131 (437 bytes, EBP pushed at entry),
+// round 45's 87 form 87 (457 bytes: the count failure's e4 and the node-level e4 merge at the count test, each merged return staying at its
+// first occurrence, and e8 sits after the countdown; VC lays blocks out by trace, not source order). Of the matched functions only 0x1b2630
+// and 0x1bbf40 have two identical e4 return blocks in retail.
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {

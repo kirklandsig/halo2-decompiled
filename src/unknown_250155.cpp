@@ -1518,6 +1518,9 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // array/row-count/query declarations or after the three queries,
 // 84/84/84/94/83/83/83/94. NOT kept: no exact or qualifying result;
 // original complete body restored.
+// Full-array defaults before first/second/both collections 166/131/177; common
+// after queries/at declaration 193/188; slot defaults in first/second/both scans
+// 168/137/186. NOT kept: native post-scan tail shape not recovered; original restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {

@@ -663,6 +663,22 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // unless it reads `steps`; one between or after the loops does not; statements with no branch do not; the threaded
 // flags above do not. So the pair follows a block count inside a loop, and retail has one more block there that is
 // gone after allocation. A 600 s permuter run on the 2: 55 tries, best 2.
+// AC558: Complete two-step admission/rejection truth in bool/byte/short/long:
+// eight at 333, 1388 bytes (control 286/1389). NOT kept: all regress; original
+// type-2 fallback, metadata stores, long link total and complete body restored.
+// Y605: Complete transition-step pointer/reference, branch-owned/shared admitted metadata,
+// original long then bounded short link total: 375/375/385/385/392/392/391/391.
+// NOT kept: all regress and shorten away from retail; original indexed fields and body restored.
+// F397: Geometry previous-point/edge/output object references, seven subsets and complete endpoint
+// references: 282/286/286/282/282/286/282/282. NOT kept: best gains four only; original
+// receivers, memcpy and body restored. Extra frame word and predecessor/flag homes remain.
+// F401: Complete three-state transition publication/call result, expression byte/short/long/dword
+// and complete-arm producers: 350/346/344/344/378/368/368/368. NOT kept: all regress and no equality; original
+// metadata stores, calls and full body restored. Extra frame word and predecessor/flag homes remain.
+// DH377: Integer-index for traversal, parent update through the retained node/embedded array,
+// long link total 286/374; bounded word total 359/344; readonly node/predecessor counterparts
+// 286/374/359/344. NOT kept: no gain; original while, both histories, metadata memcpy and body restored.
+// Extra link cursor, frame 0xe8 versus 0xe4 and zero/flag/geometry homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -1170,6 +1186,18 @@ bool function_2715a0(byte *buffer)
 // update 488 (masked lower, retail's four loads), declared before the whole test 488; NONE type test ahead of the
 // penalty 578 (2128), after it 579 (2128); location count and flags read once before the walk 486, count only 486
 // (both same code).
+// Y606: Actual short link discriminator with paired metadata halves/direct depth/shared
+// point producers, masks 0..7: 486/492/481/498/486/492/481/498. NOT kept:
+// five-point leads below eight; half transfers grow extent. Original type/body restored.
+// F396: Complete per-link flags/type/node scalar observations, seven subsets then all immutable: 505/490/485/506/478/524/547/547.
+// NOT kept: 478 grows frame to 0xc58 versus native 0xc54 and combines nonqualifying snapshots; native repeated reads/state EBP remain. Original complete body and helpers restored.
+// DH379: Original back-edge/flag/exclusion/diameter/distance/child-index positive
+// pipeline owners, then split distance and flag rejections: eight at 486. NOT kept:
+// no native state/register recovery; original guards and complete body restored.
+// DH383: Complete link vector/point/both input values, mutable then immutable, 518/525/510/518/525/510;
+// paired acquisition 510/510. NOT kept: no exact record-copy form; frame or length moves away from
+// retail. Original live geometry inputs, fresh denominator, inherited result qualifier and entire body
+// restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

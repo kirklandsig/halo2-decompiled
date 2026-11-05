@@ -501,6 +501,10 @@ extern byte g_51ec11;
 // F404: Uniform axial/cosine/sine product stages in every roll row, masks
 // 1/2/4/3/5/6/7 then complete const: 169/35/19/332/335/339/185/185. NOT kept: no exact product-stage form.
 // Original arithmetic trees, interleaved row publications and full body restored; roll/movement scheduling remains.
+// B451: Complete roll scalar axis/up/both inputs on the seven-difference graph
+// 238/114/308; native up/axis snapshots 385/272; existing direct/staged roll tangent
+// 61/61; one reused movement-yaw observation 172. NOT kept: all regress, snapshots
+// miss equality. Original complete body restored; three scheduling spots remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

@@ -768,6 +768,16 @@ void swarm_leader_detach(long actor_index);
 // MiniMax E (11-04): no new form, no lower score; the memory walk's pointer walk, its index
 // body, the twice-read slot and the for-loop forms score 285, 370, 286, 288 and 555 against the
 // unchanged 266 (fast; 281 ordinary).
+// Y606: Actual participant element pointer/reference, promoted/native slot: four
+// at 288 fast; member-array mutable/immutable bases, captured/live slots:
+// 259/259/285/285 versus fast 266 (full 281). NOT kept: seven-point lead;
+// native frame remains 0x1c/0x20. Original type/body restored.
+// Y608: One twice-used low-byte input truth carrier, bool/byte/signed-char/word/short/
+// dword/long/64-bit, 307/266/266/282/282/282/282/343 fast against control 266 (full 281).
+// NOT kept: no exact graph; frame/displacement/countdown homes remain. Original body restored.
+// DH379: Condition-owned stop/prop-next/actor-next results, seven subsets and immutable
+// bindings: 266/266/266/266/266/266/266/266 fast, against its unchanged reduced control. NOT kept:
+// no byte match or native frame/receiver recovery; original complete body restored.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

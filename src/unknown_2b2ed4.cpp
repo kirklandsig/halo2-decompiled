@@ -215,6 +215,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // failure-first/nested results, output-owned and reused admissions,
 // 330/330/597/330/330/330/377/604. NOT kept: no exact or qualifying result;
 // original complete body and existing helper restored.
+// Three-way suffix selectors: native 2,3,default; alternatives 2,default,3 and
+// 3,default,2. All eight non-native order pairs 330, still 2334/2345 bytes.
+// NOT kept: no native case-layout recovery; original complete cases restored.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

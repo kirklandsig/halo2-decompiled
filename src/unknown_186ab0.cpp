@@ -297,6 +297,9 @@ void player_action_initialize(s_player_action *arg_0);
 // locals' declarations swapped 1; first two locals assigned apart from their declarations 1; element pointer for the first unit lookup 1. Direction as a variable 419 (1444 bytes);
 // a one-caller inline wrapper of the cycle call 451 (1431 bytes). Diagnostic only: inline_depth 1, 2 and 3 in place of 255, 1 each.
 // Retail holds two copies of this read: the out-of-line 0xcbec0 (base type) and this site (base unit). BLOCKED-BY 0xcbec0 stands.
+// AC557: Complete held-action session gate as bool/byte/short/long admission
+// and complementary rejection results: eight at 134 (1486/1515). NOT kept:
+// no exact match; original short-circuit gate, cold latch and full body restored.
 // F399: Complete cyclic admission/rejection predicates in bool/byte/short/long
 // truth domains: eight forms 134 each. Earlier first-count ternaries excluded.
 // NOT kept: no gain or equality; original signed count test, short cyclic index,

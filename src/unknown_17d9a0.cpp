@@ -1075,8 +1075,17 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // capture and separate/matrix-position pivot: 536/661/585/600/536/661/585/600.
 // NOT kept: three-point lead is below eight and matrix grouping is unmatched; other forms
 // lose native frame/extent. Original basis vectors, alias-safe helper and whole body restored.
+// Y606: Outstanding total before signed phase admission, short/int/long/dword,
+// flags rejection then nested flags admission: 538/763/763/763/538/763/763/763.
+// NOT kept: one-point native gain; wider totals lose native frame/extent. Original body restored.
 // F396: Complete normal-identity reduction, Boolean AND and full-word XOR/OR, long/int/short/word ordinals: 780/780/803/803/715/715/742/742.
 // NOT kept: no byte equality; native short-circuit identity, tag/count/plane homes and rotation spills remain. Original complete body and helpers restored.
+// DH379: Two-consumer distance limit after angle/after plane/before candidate/at group,
+// mutable and immutable: 539/539/726/726/792/792/791/791. NOT kept: native production ties,
+// earlier lifetimes regress; original observations, helpers and complete body restored.
+// DH383: Complete parallel near/far conditional/default/branch producers retain four original distances:
+// 614/614/646/645/540/614/634/634. NOT kept: no equality or gain; several lose native frame or extent.
+// Original four-value sort, tag/count/plane homes, all helpers and entire body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

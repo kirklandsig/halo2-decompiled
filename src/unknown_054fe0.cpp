@@ -1775,6 +1775,11 @@ struct s_summary_player_sort_entry
 // Round 66 (m3 lane 1, fast): name pointer read after get_values_4d08 356 (1291 bytes); memset before
 // get_values_4d08 339 (same code); `statistics` declared at its test 372; team_mask beside the player count 375;
 // get_values, memset, then the name pointer 356 (1291 bytes).
+// Round 55 (m3 lane 2, fast; [n] = register-masked aligned count, 339 is [101]): diagnostics with a file-level view of the fields from
+// +0x4c: type pointer, early member index, view pointer for the name, identity, counts, mask and players 353 [93] (frame 0xa9c: the
+// pointers fold into the session register, the same code at every subset); with the existing key getter 396 [80] (1323 bytes, frame
+// 0xaa0, only the member index gains a home); both pointers from inline getters 396 [80], as const references to their results 396
+// [82], without the key getter 353 [95]. Retail's two pointers survive where every spelling folds; a form must first stop that.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

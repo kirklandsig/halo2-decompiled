@@ -1048,6 +1048,17 @@ real normalize2d(point2f *v);
 // with double base speed: 257/188/279/135/257/191/277/266. NOT kept: ties/regressions;
 // queried/chosen domains disturb native frame setup. Original real speed producers,
 // numerical predicates, address-passed outputs, calls and complete body restored.
+// AC554: Uninitialized independent completed result, actual invalid-branch production and
+// sole return, bool/byte/char/signed-char/short/word/int/long 208/189/189/189/179/179/186/186.
+// NOT kept: no exact DL/return-join repair; original independent validity and full body restored.
+// DL267: Existing request point setter; direction/facing zero setters; actor/default facing vector setters; actor/direction/default point setters: 166/135/175/135/229/175/135/229.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Default persistent vertical/horizontal, their pair, retry vertical/horizontal, retry pair, all four and all with direction; native DL and separate return transport remain. Scores 118/117/157/138/137/158/190/221.
+// NOT kept: output default stores are absent in native code and the unmatched defaults are not retained; original executable source restored.
+// DH382: Completed invalid type admission at absent definition/rejected forced mask/
+// exhausted short search, seven subsets 136/244/253/238/253/267/267; all typed-first 249.
+// NOT kept: all regress and disturb the native entry/type prefix; original entire body,
+// trajectory inputs, movement/request stores and independent result producers restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
