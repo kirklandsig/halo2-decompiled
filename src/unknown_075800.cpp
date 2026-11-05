@@ -1288,6 +1288,15 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // remainder and terminal/default remaining handler: 195/195/195/195/189/189/189/189 fast (control 196, full 153).
 // NOT kept: seven-point best is below the gate and entry/save shape still differs;
 // original classifiers, all handler tuples and matched caller restored.
+// M377: Individual connection cases 5/6/7 inserted after direct 0/2/3 on
+// native-input primary root (last 7-after-3 excluded): 199/197/198/199/197/198/199/199 fast, control 196.
+// NOT kept: all regress and grow to 448/444; original dispatch/caller restored.
+// M379: Intact native-input family priorities QSPDC/QSPCD/QPSDC/QPSCD/SQPCD/SQPDC/SPQDC/SPQCD
+// 195/202/195/202/202/195/195/201 reduced (control 196, full 153). NOT kept: no qualifying gain;
+// original classifiers, all handler tuples and body restored; delayed ESI/late expansion remain.
+// M383: Native-input peer-first primary priorities PDQCS/PDSCQ/PDCQS/PDCSQ/PQDSC/
+// PQDCS/PQSDC/PQSCD: 198/194/204/201/197/204/195/202 (reduced control 196; full 153).
+// NOT kept: at most two points; original classifiers, all handler tuples and body restored.
 // m3 lane 1 r71 (all plain, on the one retail-order switch, base 217/420): CAUSE of the convention: the three direct address arguments to
 // 0x92ef0 (EAX) outweigh the one EDI argument to 0x94220, so address takes EAX and type ECX. Diagnostics, wrong values, never kept: the three
 // lookups given message instead 3/444 (0x7afd0 MATCH; only those three `mov eax, edi` differ), two of them 213/424, one 213/424; five EDI calls

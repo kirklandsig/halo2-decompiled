@@ -231,6 +231,14 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Round 137: direct publication with folded chain, named pass index, pointer table or third through its
 // parameter home 5 each (+0x1a7; `second` still hoists); the last NOT kept: address diagnostic. The retained
 // reference with named pass index, either distributed offset or the packed accessor 5 each (+0x19e). Original restored.
+// Round 68 (m3 lane 11, fast; reference form: only the tables reload is late; direct store: only `second` is early):
+// tables re-read into a local before the entry store for chain and pass 279; chain and pass bases named before it 181; the
+// word read ahead of the store through a fresh local 184 (976 bytes); a field pointer local for the reference 5; the pass
+// through a reference, with either entry form, 5; direct entry and range stores 178; a typed word pointer read 5; inline
+// entry/pass/range helpers, direct stores with `range` read back 178, keeping both references 5, direct entry and pass
+// with the range reference 5, also serving the first block 5; the pass helper with local copies of `second`, `third`,
+// tables, entry or all of them, eight forms, 5; the word read recomputed from the published tables: direct 294 (981),
+// read first 182 (974), store from `tables` 289 (978), reference store 295 (982). Original body restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

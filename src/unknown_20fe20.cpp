@@ -2572,6 +2572,12 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // source-z snapshot 418 (1944 bytes); y-first helper with reversed case declarations 22; staged source z and x 413
 // (1952 bytes); union array view 3; y product operands swapped 3; caller y before the unchanged helper 422.
 // Original 3 form restored.
+// Round 133 (plain): the existing cross-file devices.cpp/actor_object_knowledge.cpp squared-distance helpers
+// (declared here; LTCG inlines them) 27/27 (retail's y-first schedule, but the differences then take XMM1-3 in
+// x, y, z order); (fast) the outer x, y, z locals ahead of the helper in x, y, z or z, x, y order 432/432 (1940
+// bytes), the same z, x, y locals with the helper's differences in x, y, z order 432. Unused-local probes
+// (diagnostic): 3 or 8 extra symbols in the function move only case 7's fold (32) or nothing (3), others 333;
+// in the helper nothing.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2859,6 +2865,11 @@ void function_20fda0(long arg_0);
 // Round 33 (lane 17): short team and side locals (0x20f1a0's form) 19; the flag test un-negated, release arm
 // first 31; the flag read into a named bool 19; node ahead of the owner with a short team and long side 24
 // (141 bytes: pool loaded first, node add explicit, but the side multiply moves up); the same with a short side 24.
+// Round 133 (fast): the node through unknown_20f8b0.cpp's existing audio_queue_node (declared here; LTCG
+// inlines it) 19 (same code), with the node ahead of the owner 24; the node computed at the top of the block
+// 49 (144 bytes) or between the team read and the call 48 (145 bytes; both keep the loads ahead of the call and
+// cost 0x114e80 13); permuter (600 s, 46 tries): nothing valid below 19 (its 16 reads the team as a dword).
+// The team field passed straight to the call without the long local 20.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

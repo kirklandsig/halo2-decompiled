@@ -60,6 +60,9 @@ extern "C" void _ReadWriteBarrier(void);
 // scope 3 and at the field-test scope 3; the result flag declared at function scope and cleared after the
 // barrier 4 (aligned 1: only the result store left above the reload); the flag cleared after the barrier
 // and the record 4; the flag initialized at function scope 54; actor index read once into a local 3.
+// Round 150 (fast): lookup Boolean at entry 179/604; first event aggregate 180/627; named actor predicate 3;
+// object renamed with that predicate 3; read-only object pointer 3; object at function scope 3;
+// success flag before the event stores 7; nested team validation 3. Original restored.
 // Round 70 (m3 lane 1, no barrier; one-link harness, exact at 3 on this body, unless marked fast): the cause is the
 // lookup's memory summary, taken from its code before optimization. One store through a local pointer in 0x1c9580, in one
 // arm 0 (fast; 0x1c9580, 0x1c9c80 and 0x28fc50 stay matched) or all three 0; a reference to one member of a local record

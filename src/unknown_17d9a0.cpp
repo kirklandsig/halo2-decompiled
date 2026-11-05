@@ -406,6 +406,27 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC526: Whole inverse result if/else/default/conditional, successful/failed/nested
 // publication returns, default field and nested result: 63/98/63/46/46/46/108/98. NOT kept: no gain;
 // original corner producer and tail restored; plane base, selector/product ranks remain.
+// AC531: Plain two-edge validation traversal, long/short/dword/word ordinal,
+// completed-ordinal publication then immediate failed publication/return:
+// 141/115/141/115/126/121/126/121. NOT kept: dot divergence moves to +0x67
+// and every extent shortens away from retail; original helper and whole body restored.
+// AC534: One caller-owned three-coordinate workspace across all four corner calls,
+// array pointer/reference and vector/point pointers, first-corner then entry declarations:
+// 54/54/54/54/54/54/54/54. NOT kept: dot divergence moves earlier to +0x67; original
+// helper and full body restored. Plane base, first selectors and product memory sides remain.
+// Round 54 (m3 lane 15; `--fast 0x17d9a0 0x120850 0x22bbca` is exact here, 46: listing 0x22bbca brings point2f_set's file in; a one-link harness
+// with those files is 54 for 46, 0x120850 taking ECX there, with its product pairs as retail's). Ours differs from retail in 1, 4, 6, 0 of
+// the 6 pairs of corners 0-3. Harness, plane helper / axis form / lookup / helper types (320 + 288 forms): nothing below 54; plane helper with
+// a `short axis` local and the existing 0x120810 taking the point built in its first argument 182 (975 bytes, aligned 37), with a named index
+// and horizontal/vertical locals instead 182 (975, aligned 35); plane helper with a named row index 161 (983 bytes, aligned 42, pairs 1, 5, 0, 0:
+// the side load folds to one `movzx`, shifting every later corner by one instruction); axis stored directly 169 to 203; the arguments as
+// `bounds + n` same code. Diagnostic tables of 0-7 locals at the top by 0-7 in the helper: base best 6 of 24 pairs (50, t7 h3), plane helper with a named
+// row index best 4 (158, aligned 37); no state reaches retail's pairs.
+// Real (fast, same round): real px, py named before the setter 48; short horizontal, vertical named 54; the plane helper on the current corner
+// 61; plane helper with a named row index 153; plane helper with 0x120810's body named 151; plane helper, `short axis` local, 0x120810 taking
+// the point in its first argument 173 (975 bytes); plane helper, `short axis` local, named index and coordinates 173 (975 bytes).
+// M391: Computed plane-dot/paired squared-edge/reciprocal double receivers, seven subsets, then complete real receivers: 101/133/179/79/131/141/174/54.
+// NOT kept: No exact live-plane, selector or product-memory-side recovery; nonmatching one-use/precision lifetimes are discarded. Original complete body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -995,6 +1016,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // seven subsets then ordinary complete expansion, 539 each. NOT kept: tag/count/plane
 // homes and rotation spills remain; original helpers and body restored. All rotation
 // inputs still precede the first output store. Shared-angle sum changes were not applied.
+// Y584: Axis normalizer numeric-length result, zero-default/branch-owned with
+// bool/byte/short/long epsilon admission: 548 each. NOT kept: frame 0x21e4
+// and extent 3631 lose retail 0x21dc/3647; original full body and helpers restored.
 // AC524: Complete bitwise normal identity bool/byte/short/long, then complementary
 // mismatch results, 535 each at 3647 bytes. NOT kept: four-point gain below eight;
 // original helper and complete body restored; tag/count/plane homes and rotation spills remain.
@@ -1003,6 +1027,12 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // frame grows to 0x21e4; original body/helpers restored; tag/count/plane homes remain.
 // AC529: Complete forward-edge role, bool/byte/word/long direct then false-default publication:
 // 555/555/621/578/624/624/624/630. NOT kept: no equality or gain; native tag/count/plane/topology homes remain.
+// AC535: Complete candidate-plane grouping acceptance, positive then complementary
+// bool/byte/short/long: 529/529/529/529/531/531/531/531 at 3647 bytes. NOT kept:
+// frame grows to 0x21e4 versus native 0x21dc; original body/helpers restored.
+// DH372: Partial angular/first-distance grouping decisions, bool/byte/short/long,
+// 529 each at 3647 bytes. NOT kept: one-use outcomes are unmatched and enlarge the
+// native 0x21dc frame to 0x21e4; original body/helpers restored, tag/count/plane homes remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

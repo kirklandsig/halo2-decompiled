@@ -507,6 +507,11 @@ static inline word font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax B (11-04): no new form, no lower score: the alpha parity is still masked in 16 bits where retail
+// widens it to 32 bits; a `(long)(byte)` cast 85, a byte alpha parameter 201, a named long parity 176, a long
+// helper return 212 and a long alpha 105 keep the structure but not the parity bytes, and the best form found
+// (the case-1 pixel assigned before the run, with the permuter's four other edits) gives 83, below the keep
+// threshold, so the original body was restored.
 // MiniMax A (11-03): no new form, no lower score: the alpha parity is still masked in 16 bits where retail
 // widens it to 32 bits, and the literal word assembly and the run-two reuse still differ; dropping the byte
 // cast gives 204.
@@ -697,6 +702,24 @@ static inline word font_character_pixel(long alpha, long color)
 // N365: Actual byte output cursor with complete word-fill/numeric-parity/bounded-byte-run
 // masks 0..7: 85/107/204/208/179/161/172/156. Original word cursor, helper and decoder restored;
 // NOT kept: unmatched cursor/domain forms; parity/literal/two-run gaps remain.
+// B437: Pure command-pixel producers before output guards, pair/single/fill
+// subsets 1/2/4/3/5/6/7 then numeric parity: 180/207/180/211/180/222/230/235.
+// NOT kept: all regress; original helper, alpha/literal/two-run graph restored.
+// N378: Complete default run pixel, color/opaque, long/word and byte/numeric parity:
+// 231/216/231/216/231/182/231/182. NOT kept: no byte equality or qualifying native-shape gain;
+// original executable source restored; alpha extension, literal assembly and run-two reuse remain.
+// N380: Complete per-command emitted-count result, long/dword/short/word/byte/signed-char,
+// then word fills/full-width pixel helper: 164/164/150/150/153/153/173/173.
+// NOT kept: no native count/parity match; original helper and complete decoder restored.
+// Frame 0xc agrees; alpha widening, literal assembly and run-two reuse remain.
+// N382: Pixel-before-run producers in cases 2/4/5/6, joint 2456/12456, then
+// 12456/2456 with word packed pixels: 86/85/85/85/86/162/162/86. NOT kept: unmatched schedules; original
+// helper, literal, case order, fills and complete decoder restored. Alpha widening, literal
+// assembly and two-run reuse remain; frame 0xc agrees.
+// N385: Existing standard uninitialized_fill_n/uninitialized_fill at packed/ordinary run
+// boundaries, eight nonoriginal indexed/counted/endpoint pairs: 165/184/173/242/198/183/203/214.
+// NOT kept: all regress; original indexed fills, helper, includes and entire decoder restored.
+// Frame 0xc and alpha extension/literal assembly/two-run differences remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

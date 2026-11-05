@@ -1402,6 +1402,7 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 
 /* copies the presence task's results into the friends and team members
    lists */
+// MiniMax B (11-04): no new form, no lower score.
 // MiniMax A (11-03): no new form, no lower score: the friend count is still homed at [ebp-8] and the
 // clan count at [ebp-4] where retail reads the friend count first into [ebp-4] and reloads it into ESI,
 // and the three reversed xuid_equal argument roles still differ.

@@ -250,6 +250,17 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // 1/2/4/3/5/6/7, then all with native output-row arrays: 219 each. NOT kept: no exact
 // observation contract or gain. Original helper/body restored; axis-specific product/cosine
 // spills, basis homes and table placement remain.
+// B433: Complete row setters on the native square/sine graph, six row orders,
+// native matrix aggregate and mixed-products-before-original-stores:
+// 445/449/441/397/413/429/428/381. NOT kept: all regress and miss retail extent;
+// original helper/body restored; axis-specific spills and table placement remain.
+// B435: Actual matrix/point-coordinate graphics publication, plain for then while,
+// long/dword/short/word ordinals: 394/394/441/441/593/593/515/515.
+// NOT kept: all regress and lose native frame or extent; complete helper/body restored.
+// Two-axis square/sine/cosine spills, basis homes and four-byte table placement remain.
+// B438: Paired off-diagonal field accumulations, seven subsets 219; whole matrix 190;
+// diagonal-only 204. NOT kept: diagonal-only removes two executable differing rows;
+// the coupled 190 is allocation steering. Original helper and full body restored.
 // m3 lane 1 r71 (--fast): a 50-minute annealed search over the rotation helper's statement order and product operand forms, 204 forms, ranked by an aligned count of the
 // rotation block: base 219 (aligned 164), retail's flow 357/1820 (147), aligned best 366/1848 (85), positional best 213/1840 (168; six under the base at the wrong length, not kept). With registers and esp offsets masked,
 // everything outside the two rotation arms already agrees (168 of 168 masked differences are in the arms). One-link harness not faithful (control 715 at 1521 bytes).

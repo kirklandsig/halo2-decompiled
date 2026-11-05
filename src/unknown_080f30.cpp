@@ -313,6 +313,10 @@ struct s_pending_message_storage : s_pending_message_header
 // do loop as a while on the result 14/22. Reader: a live asm read of a non-volatile local 85/203 (287 bytes; the emitted mov shifts everything);
 // a volatile low/high struct 14/22; declaring that intrinsic by name in the file does not make it one of this compiler's intrinsics (plain external call: 109/221, with a volatile
 // 94/150, assigned to a volatile 136/282, assigned to a plain local 109/218); a C read of the local after the asm 123/250 (stores dropped).
+// Round 51 (fast, on a copy of the helper in this file, header untouched; the copy reproduces 14): a compiled-out `do {} while (false);` after start, before the pump count or at the
+// loop's end 14 each; result declared before start 15; pump count declared at the size block 14; `if (result != 0) break;` for the result test 14; the elapsed arm first 75; elapsed
+// declared with the pump count 14; a named seconds value 14. The frame stays 0x1c in all. Reading of the layout: 8-byte start's spilled half and the 4-byte pump count both fit the dead
+// first time stamp's slot, and whichever is spilled first takes it; ours spills the pump count first, retail spills start first (then 4+4+8+8 = 0x18).
 // @retail 0x80e10
 bool function_80e10(s_pending_message_storage *request, void **output, long *size)
 {
