@@ -1681,6 +1681,8 @@ real function_30bf0(vector3f *vector);
 // in both functions); (k, i, j) alone 357; with the colour2 positive checks as stored selects 433 (1878 B).
 // Round 402: Complete applied/fallback query outcomes, bool/byte/short/long, at the real query boundary.
 // Scores 450/450/450/450/450/450/450/450. NOT kept: unmatched outcome forms; original complete body restored.
+// J260: Native root/square/both/reciprocal storage 447/461/385/449; complete scale-input captures inside/before the root, ordinary/immutable, 436/436/436/436. The first four lose the matched caller; the final four recover frame 0x40 but regress to 1874 bytes.
+// NOT kept: no eligible native repair; opening executable source restored. Recover normal I/K copy scheduling and native color/rotation homes; original helper and every body restored.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

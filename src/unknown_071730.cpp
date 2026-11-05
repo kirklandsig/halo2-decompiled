@@ -273,6 +273,8 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // spills it and uses EBX for the owner, ESI for scratch. Restored.
 // Round 402: Actual returned entry-state admissions, independent/sequential bool/byte/short/long outcomes at unchanged call boundaries.
 // Scores 426/426/426/426/426/426/426/426. NOT kept: unmatched outcome forms; original complete body restored.
+// J260: Direct state/mode/both reset results, long 460/457/425 and Boolean 421/473/419; accumulated long/Boolean 429/424. Complete Boolean results reach 419, frame 0x3e4, 1590 bytes, first +0x27. NOT kept: seven-point gain below eight. On that new graph, seven flag-name subsets tie 419; false default after receivers 421.
+// NOT kept: no eligible native repair; opening executable source restored. Return byte +0xe versus +0xf, secondary-state and getter boundary remain; original defaults, fields, clocks, calls and whole body restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

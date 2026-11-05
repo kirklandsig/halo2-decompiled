@@ -465,6 +465,8 @@ void function_125a90(long value);
 // still falls through), that without the direct keep store 47 [23]; `remove = type == 0x26 && !a` under `||` 75 [15]; `type != 0x26 || a` 75;
 // inverted `&&` 75, inverted `!(||)` 29; each type test a named bool 29. Named special or ordinary, with two ifs or nested tests, and no
 // implied test: 151/142/162 (466-471 bytes, 0x221810 inlined). Not kept: 29 and 25 need the direct keep store, which is match-only.
+// J260: Immutable b/a/both policies 36/36/36; receiver initialized from the pool base then advanced by index, with no/b/a/both immutable policies, 36/36/36/36; receiver initialized from base then indexed 36. All eight complete target listings equal the unchanged preview.
+// NOT kept: no eligible native repair; opening executable source restored. EAX multiply/ESI LEA before policy loading and native type/removal block placement remain; original flags, loop, pool refresh, fields, calls and body restored.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
