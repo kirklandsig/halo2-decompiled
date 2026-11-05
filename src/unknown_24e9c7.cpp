@@ -379,6 +379,9 @@ struct s_24e9c7_bounds
 // scale 134 (752 B; kind and bitmap homes become retail's, side at -0x10 below the result), scale only 154/134, unit perpendicular 144.
 // Result references lowered: temporary for up 141, named extent 125, with the side 142/143, on the helpers 134/134, assigned last 159;
 // up through a helper 134; `0.0f -` forms for up with the scalars 139 (738 B). Retail keeps the y coordinate in EDX and re-reads x: named y 194/186/207, both at each use 191 (684-705 B).
+// N396: Signed eight-byte selected ordinal/pixel-height/half-width storage, seven subsets
+// then full bitmap-handle graph: 220/125/220/148/235/148/235/238. NOT kept: no native narrow-domain
+// equality or gain; original body restored, early across spill and eight-byte-high scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

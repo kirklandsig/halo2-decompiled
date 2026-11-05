@@ -1118,6 +1118,9 @@ bool __stdcall function_2399da(long controller_index)
 // at three places (a rotation test, diagnostic) keep the identity in ECX: no missing rotation step. 130 combinations (own rank local or field, identity
 // test spelling, permission spelling, task index preset, chain/over-rank first/nested dispatch, store order, nested or guard returns) 89-96 with no
 // identity in EAX.
+// N396: Signed eight-byte requested/own/task residency, seven subsets then late requested producer:
+// 198/195/243/126/208/207/253/198. NOT kept: native narrow domains and extent regress;
+// original body restored, selected identity/rank registers and extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

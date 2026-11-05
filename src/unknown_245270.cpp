@@ -631,6 +631,10 @@ void function_245400(s_source_245400 const *source, long index,
 // second material's record (forceinline, inline, reference; with a named record) 208 or 204 late, no dead lea, no arrival change.
 // Plane table and pointers inside the plane test 222 (766 bytes): the source does arrive in ECX and copies to a callee-saved
 // register at entry as retail's, but the matrix then becomes a register argument too (no push, caller 43).
+// N396: Signed eight-byte primary ordinal/first decoded code/second decoded code,
+// seven subsets then complete encoded/decoded residence: 208/281/270/278/279/263/294/298.
+// NOT kept: native narrow domains, no qualifying gain and longer decoded forms; original body restored.
+// Frame 0x24/0x2c, independent side homes and delayed matrix acquisition remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

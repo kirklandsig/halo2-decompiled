@@ -683,6 +683,9 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // 311/311/311/264; raw word with the first three 311/311/311; byte owning
 // declaration plus direct bit-zero admission 311. NOT kept: no equality or
 // gain; original datum layout and body restored, native one-spill/failure byte remain.
+// N396: Selected owner-word memcpy/memmove through conditional/branch/selected-source/negative
+// sources: 264/307/280/324/264/307/267/310. NOT kept: no equality or gain; original owner transfer
+// and body restored, constant-one spill and native failure-byte store remain.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

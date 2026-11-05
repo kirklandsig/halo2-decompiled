@@ -493,6 +493,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // scalars read in the else arm, if/else, else/if, ternary: 301/297/301 each (folded, 890-894 B). Scale read through a pointer
 // to the camera parameter 234, with the order 232, with yxz 232 (971 B); separate result scalars 195/193; displaced point
 // through a pointer local 216.
+// N396: Complete ordered epsilon outcomes, direct/exhaustive/default-false/default-true
+// bool and byte producers: eight at 195. NOT kept: no equality or gain; original complete body
+// restored, native inverse homes and the second-transform X/Z spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
