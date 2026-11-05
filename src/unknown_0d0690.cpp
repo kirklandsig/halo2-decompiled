@@ -1511,6 +1511,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // M398: Original primary/bounded-base/bounded-lightmap output defaults, masks
 // 1/2/3/4/5/6/7, then all at entry: 529/529/529/553/553/529/529/580.
 // NOT kept: no frame/result/carrier gain; original workspaces, helpers and body restored.
+// M403: Actual serialized curve header, local/tag-field producer, native float/bounds
+// members and mutable/readonly input: eight at 529/2189. NOT kept: no native
+// frame/result/carrier recovery; original helper, records and entire body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

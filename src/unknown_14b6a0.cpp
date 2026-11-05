@@ -487,6 +487,9 @@ void function_14bac0()
 // M399: Complete original accepted-point/bounds/relocation-output zero defaults, subsets 1..7:
 // 279/267/313/258/312/293/332; complete CRT point defaults 319. NOT kept: every form grows and regresses.
 // Original entire body restored; frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
+// M403: Immutable request/paired probe points/paired marker ordinals, seven subsets
+// then immutable selected unit: eight at 222/1036. NOT kept: native frame and
+// point/recipient/readiness homes unchanged; original complete body restored.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

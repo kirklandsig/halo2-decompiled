@@ -341,6 +341,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH368: Standard coordinate-range squared/length delta and output-copy boundaries,
 // seven subsets then the complete graph with native float root: 437/507/435/555/443/501/537/537.
 // NOT kept: all regress and miss native homes/extent; original metrics, copies and whole body restored.
+// M403: Existing shared distance at pass-start/visited-anchor/paired-candidate,
+// seven subsets then shared squared metric: 401/390/404/401/415/404/415/415. NOT kept:
+// no gain; original helpers and full body restored, native selected/root/bitmap homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

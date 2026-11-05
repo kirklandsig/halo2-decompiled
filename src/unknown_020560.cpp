@@ -1055,6 +1055,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // all with the existing copier sample reference: eight at 547/2122. NOT kept:
 // native query register, vector/ordinal homes and frame 0x2c are not recovered.
 // Original interfaces, both caller sites, copier and complete body restored.
+// M403: Native sample position/coefficient-triplet/direction readonly members,
+// seven subsets then readonly table input: eight at 547/2122. NOT kept: native
+// frame/query/vector/ordinal/fraction homes unchanged; original record and body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

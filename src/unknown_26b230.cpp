@@ -1983,6 +1983,9 @@ void function_269250(long clump_index, long actor_index);
 // the improve test 126 (39). The walk written out in this body (diagnostic): the found arm assigning the group directly 128 (64: pool promoted into EDI and the
 // selection memory-only as retail, but the not-found path threads); the helper's exact shape, one level or both levels, 126/126 (39, same code). So the pool wins
 // only once the not-found path threads; retail has both.
+// M403: Native selected/created 32-bit long/int/dword declaration pairs on the common
+// score graph, eight nonoriginal pairs: eight at 87/482. NOT kept: pool/selection
+// residency and x87 score homes unchanged; original domains and complete body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
