@@ -446,6 +446,11 @@ bool function_1b1970(long actor_index, short mode, vector2f const *forward,
 // Round 210, field read at each use (the form that matched 0x18c3b0), mode at the call, no index local: `(word)` argument
 // 66; plain argument 66; a named slot pointer inside the block 66; a `(word)` test 66 (retail's `xor eax, eax; mov ax` read
 // and call setup, but the list is still read from the stack after the join).
+// Round 152 (m3 lane 6, fast): on the current body (movzx index; mode local read before the test into BX) a `short index`
+// local 79 (757 bytes: xor/mov index and the list kept in EBX, but the inlined dot product swaps its mulss operands);
+// short index with the mode at the call 66 (no EBX reload at the join; the two flag stores share `mov al, 1`); the field
+// read at the test and the call with the mode local 70 (758 bytes); `long index` sign-extended 12 (movsx, same shape); the
+// store as a ternary 75 (748 bytes); index declared before the mode 12.
 // @retail 0x1b1a90
 void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

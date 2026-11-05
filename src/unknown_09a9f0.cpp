@@ -227,6 +227,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 	}
 }
 
+// MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
+// pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
+// scratch register); no lower score.
 // score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
 // EBX and keeps a false result in BL from before the creation call, pushes EBP only around the header
 // test and leaves the table global in EDX, reloading its data and recomputing the index for the
@@ -599,6 +602,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // six ranks then coherent names at both endpoint ranks: 49 each at 176/176 bytes.
 // NOT kept: no byte match; original initialized declarations and complete body restored.
 // False BL, temporary EBP and independent header/object computations remain.
+// Round 86 (m3 lane 16, fast with 0xa5b10): the bool result with a local index 75 (160 bytes; plain agrees, so the reduced image's
+// global caveat hides nothing here); the entity's index at each use 82 (157 bytes); negated flag first with an else-if NONE 77;
+// a named flagged bool 77, from a ternary 75; a ternary in the test 65 (176 bytes, shift and not for the flag); a byte flags
+// local 75; `||` with a nested reset 77; early returns 77 (155 bytes). A retail scan finds the header flag test followed at
+// once by a recomputed lookup in no other function; elsewhere a store or a loop stands between the two.
 // Round 55 (m3 lane 15, fast): on the bool result (false first, true after the attach): both lookups as `[index & 0xFFFF].flags` and
 // `.object` with no `&` 77, on the long result 49 (same code); `object_index == NONE || !flag` with the attach block under an inner
 // `entity->object_index != NONE` or `object_index != NONE` and the store in the else 75/75 (threaded, the lookup is shared);
@@ -608,6 +616,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // M380: Native index/attached-identity/both publications through memcpy 49/49/49,
 // memmove 109/76/122; both with early Boolean completion 77/94. NOT kept: no byte match;
 // original scalar stores, validity result, virtual tuples and complete body restored.
+// Round 153 (fast; 0xa5a00/0xa5b10/0xa5b40/0xa5b80/0x108e10 matched throughout): the validity branch on `object_index != NONE` with
+// the long result kept for the return 76 (189 bytes); the flagged arm clearing the result before the entity store 50; the in/out value
+// declared, then assigned 49; the creation result through a chained `entity->object_index = object_index = v29(...)` 49; `if (value != 0)`
+// 49 (same code each). Re-measured: the store and attach through 0xbb780 49.
+// Round 88 (m3 lane 16, fast with 0xa5b10/0xbb780/0x108e10): early bool with the store and attach through 0xbb780 77 (160 bytes),
+// with `inline` on 0xbb780's definition 77; the long result with that inline helper 49; the helper's value named first 77; a header
+// reference for the test 77; early bool with the in/out value copied to a local after the creation call 75 (176 bytes, aligned 35,
+// masked 27: a one-use copy, not kept).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -950,6 +966,9 @@ bool c_projectile_type::v8(long a, long b)
 // boundaries 12 (47, 188 bytes, at the two after the 0x800 store); the power copied as long, both stores or the first only,
 // 12/12; the index by value 12; the power through a const pointer 12; a group index local before the entry 12; the NONE
 // test as `index + 1 != 0` 12; `b` throughout with no flags local 12.
+// Round 215 (lane 3, fast), full-width mask unless noted: the mask alone 12; a dword bitfield's low word 12; a 12-byte group array indexed
+// `[index & 0xffff]` 12; a by-value one-long handle with inline accessors 12; a group local masked after the test 12; `(dword)(index << 16) >> 16` 12;
+// the object through a typed view 12; a word bitfield's low word 5 (movzx, no mask).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

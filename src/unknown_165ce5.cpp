@@ -1379,6 +1379,8 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
+// MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
+// outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
 // score 218 (was 218): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // Earlier at 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
 // Round 25 (lane I, fast): the two locals whose homes are swapped (`unit` and `mode`, ours
@@ -1766,6 +1768,25 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // their PIN assignments 220; the aiming velocity as a named pointer for its three uses 233 (2190 B, aligned 118; the pointer takes
 // unit's home, unit/mode homes unchanged); a const unit pointer 220; a const look pointer 220. Retail's movzx flag test is not
 // followed by any use of EAX (the next instruction reloads it), so no two-use local is behind it. Body unchanged.
+// Round 132 (m3 lane 7, fast, control 220): the look values declared where they are computed 220, as
+// `real const` there 220, declared first in the block 220 (all same code: their homes stay -0xc/-8);
+// the look pointer, flags and weapon counter declared at first use 220; the pitch as `y * (-1 / rate)`
+// 221; divide then clamp in separate statements 223 (a repeat of lane 9 r87's form). Retail's look
+// slots -0x2c/-0x28 are never address-taken (no lea of them), yet retail reloads g_510c54 after each
+// look store; still BLOCKED by the stand-in (round 98) for the ESI/EDI save after the unit test.
+// AC552: Existing object/definition getter forced expansion and outlined magnitude inline,
+// subsets 1/2/4/3/5/6/7, then outlined tick-provider inline: eight at 220 fast
+// (control 220, full 218). NOT kept: no gain; original helper declarations and complete body restored.
+// AC556: Consistent triple-validity char/signed-char/byte return contracts with
+// bool/byte/short activity carriers: 218/218/218/415/415/415/414/414
+// (unchanged complete-file fast control 218, full 218). NOT kept: query provider loses
+// its match; original return declarations, activity domain and entire body restored.
+// AC558: Complete primary-weapon override admission/rejection result in
+// bool/byte/short/long: eight at 220 (unchanged fast 220, full 218). NOT kept:
+// one-consumer truth unmatched; original early gate and complete body restored.
+// M398: Original clamped-yaw/clamped-pitch/late-magnitude zero defaults, masks
+// 1/2/3/4/5/6/7, then complete activity/zoom/scope defaults: eight at 220 fast (control 220, full 218).
+// NOT kept: no frame/look-home gain; original producers, all five smoothing tuples and body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
