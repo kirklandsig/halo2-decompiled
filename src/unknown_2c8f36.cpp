@@ -262,6 +262,8 @@ void c_button_widget_45d5d0::v8()
 // the widget downcast to the button class 2; a head copy with the test on the source 2. Compile-only: two distinct inlinees, out-parameter, reference,
 // struct-field or iterator forms, `register`, no-code statements between copy and test, a hand-rotated `&&` condition and a `goto` into a do-while
 // never give both retail's tail and its layout. A walk variable that takes ESI at entry keeps the first load in EAX but moves the walk into ESI.
+// Round 110: direct-previous/wrapped-step hybrids 37 each; focus break 2; selected-widget break 2;
+// qualified entry, predicate and focus calls 2 each; direct step with continue 37 (98 bytes). Opening body restored.
 // @retail 0x2c8fb4
 void c_button_widget_45d5d0::v9()
 {

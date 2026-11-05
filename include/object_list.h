@@ -38,6 +38,7 @@ extern s_object_list_state *g_5107f0;
 static inline void carrier_point_velocity(point3f const *center, vector3f const *linear,
 	vector3f const *angular, point3f const *point, vector3f *result)
 {
+	vector3f const *velocity = linear;
 	vector3f offset;
 	offset.i = point->x - center->x;
 	offset.j = point->y - center->y;
@@ -48,9 +49,9 @@ static inline void carrier_point_velocity(point3f const *center, vector3f const 
 	result->i = i;
 	result->j = j;
 	result->k = k;
-	result->i = linear->i + result->i;
-	result->j = linear->j + result->j;
-	result->k = linear->k + result->k;
+	result->i = velocity->i + result->i;
+	result->j = velocity->j + result->j;
+	result->k = velocity->k + result->k;
 }
 
 #endif

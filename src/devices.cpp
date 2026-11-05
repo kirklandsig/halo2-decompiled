@@ -863,6 +863,14 @@ struct s_device_machine_view
 // 95/93/93/93/17/17/17/17. NOT kept: 17 uses a byte load, complement and one combined
 // mask test instead of the native word load and two tests; only its zero-default combination
 // gains. Wider carriers grow to 655 bytes. Original whole callback, masks and result restored.
+// Round 62 (m3 lane 14, fast; compile-only object screen exact at 34): the pointer wins EAX when the flags load
+// is two load tuples at register allocation that merge later. With the zero store: a second if/else after the
+// machine test whose arms both read the flags 0 (MATCH, byte for byte; identical arms, so reverted); the flags read in
+// both arms of the machine test 3 (654 bytes; the load hoists above the `je`, the rest is retail's); both arms
+// also holding the two tests 3; a store in the machine arm stops the hoist and the load tail-merges after the
+// join (diagnostic). `!(~f & 1) && !(~f & 2)` 110; `!(~f & 3)` 121 (655); do/while(false) breaks 122 (656). Screens:
+// a NULL-first or reassigned pointer, `group += 0`, a dead read of flags/identifier/value, a dead pointer copy, the
+// flags read twice, a no-op test in an arm, a pointer to the flags field, 30 missing-bit carriers: the pushed ESI or 35+.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -943,7 +951,7 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 	return result;
 }
 
-bool __stdcall function_106790(long volatile device_index);
+bool __stdcall function_106790(long device_index);
 
 /* the device object type definition */
 struct s_device_type_definition
@@ -1252,6 +1260,12 @@ bool function_108530(long device_index, long name)
 // 169/185/168/184/168/184/175/191. Post-pin pair recovers ret 0x14 and both callers in
 // preview, but grows a frame and 558/571-byte bodies. NOT kept: early one-use nodes lack
 // equality and regress; original complete body restored at 121, native 523 bytes.
+// Round 62 (m3 lane 14, fast, callers 31/13 unless noted): the velocity and cruise stores in both arms of the
+// denominator test 121 (same code); the velocity store alone in both 138; all four reset stores in both 132; retail's
+// statement order (cruise time, target/position/start stores, half times) with a velocity local 170 (486 bytes, the
+// ramp-down held in xmm6 for life, callers 19/34), through the motion field 131 (510, callers 26/28). Diagnostics
+// (reverted at once): 1/2/4/8 extra real uses of the initial velocity at the top or in the inner block never hold it in
+// one register, so it does not follow reference weight; a volatile ramp-down on these three bodies 165/152/166.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1627,7 +1641,9 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
-// score 285 (was 285): our frame is 0x1c and retail's 0x20, and the index, header, state and result
+// score 248 (was 285): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
+// where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
+// Earlier (285, was 285): our frame is 0x1c and retail's 0x20, and the index, header, state and result
 // homes still differ; the group path reloads the definition pointer from three base registers.
 // Earlier (294, was 294): our frame is 0x1c and retail's 0x20; the index, header, state and result
 // homes still differ, and the group path reloads the definition pointer from three base registers.
@@ -1824,37 +1840,40 @@ bool function_0b6760(s_index_pair const *pair);
 // M375: Complete closing refresh admission, bool/byte/short/long positive then complementary
 // result: 285/285/285/285/285/285/285/285. NOT kept: one-use decisions did not match; original frame,
 // observations, both inherited scalar qualifications and complete body restored.
+// Round 62 (m3 lane 14, fast): device_channel_valid on channels[0] or on the pointer, old body 288/285 (1500/1496
+// bytes); plain index, event-id selects, scoped `previous`, one 0x107520 call on the 0x8 path and
+// device_channel_valid 360 (1478); that with device_has_animation_state 248 (1479 bytes, kept: retail's
+// `cmp word [ebp+0x12a], -1`, then a second movsx read). On it: a plain definition pointer 386 (1464, frame 0x24);
+// the closing block setting the result 248 (same code); the b3 byte `<= 0` 248; the result declared first 248; the
+// state before the definition 249; the result after the state 248; a local tag table before the definition or
+// before the device, or read after the device header 248/248/248; one bool for the result and the direction 248
+// (same code); byte/char result 243/243 (1482). A volatile result (diagnostic, reverted at once) reaches retail's
+// 1495 bytes, 231: the stack byte is most of the length gap; it crosses no call on any path.
 // @retail 0x106790
-bool __stdcall function_106790(long volatile device_index)
+bool __stdcall function_106790(long device_index)
 {
 	s_device *device = DEVICE_GET(device_index);
 	bool result = false;
 	byte const *volatile saved_definition = g_4e3b44[device->definition_index & 0xffff].bytes;
-	real previous;
 	s_animation_state *state = NULL;
-	if (device->animation_state_offset != NONE)
+	if (device_has_animation_state(device_index))
 		state = device_get_animation_state(device);
 	device->flags &= ~0x100;
 	if (device->flags & 8)
 	{
 		if (!(device->flags & 0x20))
 		{
-			previous = device->power;
+			real previous = device->power;
 			real position;
 			bool finished = function_107cc0(device_index, &device->motion_14c,
 				&device->channels[0], state, previous, &position);
 			device->power = position;
 			device->power_velocity = (position - previous) / g_510c54->rate;
 			if (finished)
-			{
 				device->flags |= 0x20;
-				function_107520(device_index);
-			}
 			else
-			{
 				device->flags &= ~0x20;
-				function_107520(device_index);
-			}
+			function_107520(device_index);
 			result = true;
 		}
 	}
@@ -1867,13 +1886,8 @@ bool __stdcall function_106790(long volatile device_index)
 		}
 		else
 		{
-			c_animation_channel *power_channel = &device->channels[0];
-			bool power_channel_animates = false;
-			if (state)
-				power_channel_animates = power_channel->graph_tag_index != NONE &&
-					power_channel->animation_id.index != NONE;
-			if (power_channel_animates)
-				power_channel->set_frame_ratio(device->power);
+			if (state && device_channel_valid(&device->channels[0]))
+				device->channels[0].set_frame_ratio(device->power);
 			real position_acceleration = *(real const *)(saved_definition + 0xcc) * device->position;
 			real remaining_acceleration = *(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
 			real acceleration = position_acceleration + remaining_acceleration;
@@ -1892,22 +1906,22 @@ bool __stdcall function_106790(long volatile device_index)
 			else
 			{
 				real local_c01284_2 = device->power_velocity;
-				previous = device->power;
+				real previous = device->power;
 				if (fabs(local_c01284_2) > speed)
 					device->power_velocity = increasing ? speed : 0.0f - speed;
 				bool reached = function_11eed0(&device->power, &device->power_velocity,
 					group->value, g_510c54->rate, speed, acceleration,
 					(*(byte const *)(saved_definition + 0xbc) & 1) != 0, 0.0f, 1.0f);
 				if (reached)
-					function_107980(device_index, *(long const *)(saved_definition + (increasing ? 0xf0 : 0xf8)));
+					function_107980(device_index, increasing ? *(long const *)(saved_definition + 0xf0) : *(long const *)(saved_definition + 0xf8));
 				else if (device->power_velocity != 0.0f && device->power_velocity * local_c01284_2 <= 0.0f)
-					function_107980(device_index, *(long const *)(saved_definition +
-						(device->power_velocity > local_c01284_2 ? 0xe0 : 0xe8)));
+					function_107980(device_index, device->power_velocity > local_c01284_2 ? *(long const *)(saved_definition + 0xe0) :
+						*(long const *)(saved_definition + 0xe8));
 				if (previous != device->power || (device->flags & 0x80))
 				{
 					function_107520(device_index);
-					if (state && power_channel->graph_tag_index != NONE && power_channel->animation_id.index != NONE)
-						power_channel->set_frame_ratio_and_advance(device->power, state,
+					if (state && device_channel_valid(&device->channels[0]))
+						device->channels[0].set_frame_ratio_and_advance(device->power, state,
 							(animation_event_callback)function_bf600, device_index);
 				}
 			}
@@ -1935,7 +1949,7 @@ bool __stdcall function_106790(long volatile device_index)
 		{
 			if (state && function_0b6760((s_index_pair const *)&device->channels[1]))
 				device->channels[1].set_frame_ratio(device->position);
-			previous = device->position;
+			real previous = device->position;
 			function_11eed0(&device->position, &device->position_velocity, group->value, g_510c54->rate,
 				*(real const *)(saved_definition + 0xc0), *(real const *)(saved_definition + 0xc4), false, 0.0f, 1.0f);
 			if (previous != device->position)

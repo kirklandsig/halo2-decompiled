@@ -483,6 +483,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B430: Complete coordinate-bound producers on the retained native output ordinal,
 // four producer orders, without/with paired angle bounds: 179 each. NOT kept: no
 // match or gain; original body restored. Frame remains 0x18 versus native 0x14.
+// P345: Actual advancing output cursor retaining the independent pass bound/eager length,
+// long/short pass, long/bool departure and memcpy/memmove: 251/267/251/276/299/258/253/266.
+// NOT kept: no byte match; original complete body restored; extra frame word remains.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -867,6 +870,14 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B424: Standard min/max interpolation clamp, nested lower/upper, sequential lower/upper,
 // named lower/upper and single standard lower/upper boundary: 357/357/371/372/371/372/376/383.
 // NOT kept: no exact match; original fraction clamp, include set and complete body restored.
+// Round 62 (m3 lane 14, fast; each with the `if (count > 0)` guard, match-only, restored): if/else fraction and the
+// previous side folded into its initializer 93 (889 bytes, aligned 36); if/else with the fraction declared at function
+// scope `= 0.f` 151 (887; zero set first but in XMM3); if/else, folded side, dx at its uses 154 (887, aligned 33, zero
+// XMM2 as retail, first difference +0x9e); the same with dy at its uses instead 300 (926). Without the guard: `short i
+// = 0; if (count > 0) do ... while (i < count);` 235. Compile-only screen (900 forms, base aligned 81): declaration
+// orders of dx/dy/fraction/denominator, statement orders with a fraction default and every product operand order:
+// none below aligned 25; retail's x output copies the fraction and its y output multiplies dy in place, and no spelling
+// gives that split; `i = 0` before a guard folds the guard away, so the store stays after the `jle`.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

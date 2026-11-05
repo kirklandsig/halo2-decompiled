@@ -384,6 +384,9 @@ void function_11bed0(s_location *location, point3f const *point);
 // like round 166's order (implied tests, not kept); named location and position pointers both tested 56 at 217 bytes (not kept).
 // One extra test never moves the call; two do. 0x11bed0 calling the existing 0x11be90 for its leaf half stays a byte match itself
 // but leaves this at 93 (walk 160), so the size of 0x11bed0's source is not the cause; not kept.
+// Round 111: location pointer, const position pointer, both pointers, and mutable position pointer 93 each;
+// a pool local on the native iterator 93; the iterator's pool assigned last 93; guarded native do/while and
+// its early-empty-return form 93 each. One-use receiver locals restored unmatched; the call still expands.
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -1230,6 +1233,12 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // element getter forced inline 24; a comma-separated assignment/test condition 24; an empty-step for 24; index declared
 // before the iterator 24; an unsigned index 47 (215 bytes); the provider call in its own lexical block 24. The matched
 // provider, gain query and both iterator siblings stayed matched. Original body and declarations restored.
+// Round 89 (m3 lane 12, fast with the same list): the ESI/EDI tie follows element against index weight: a volatile local reading a field through
+// the macro in the arm (diagnostic, reverted) 62 (226 bytes, unchanged order), two 58 (231 bytes, index EDI and element ESI as retail), one ahead of
+// the state test 73 (229 bytes, unchanged); a volatile copy of the index 44 (214 bytes, unchanged). The state test written twice 24 (it threads
+// away before the tie). A force-inline fade-in helper taking the index in place of the 0x126df0 call 24. Iterator fields set here in place of
+// its helper: first then index from first 24, count first 25, index then first from index 24. In 0x126df0: every field through the macro 132
+// (134 bytes; 0x126df0 82), the gain stores 74 (0x126df0 76), bit test and flag store 80 (0x126df0 72), one gain store with a ternary 37 (0x126df0 15).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -1451,6 +1460,9 @@ struct s_looping_detail_request
 // original request offset 110/131/135/134; native temporary/copy 134/151/188/187.
 // NOT kept: tested completion requires equality; first-player query still expands.
 // Original whole body restored; native detail/offset transport remains.
+// M390: Success-owned common request-flags publication, dword/long/word/byte,
+// original output then native temporary/copy: 167/167/171/157/196/196/200/191. NOT kept: tested
+// completion needs equality; original body restored, query/offset transport remains.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1631,6 +1643,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // F361: Entry-declared result, false initialization after playing/tag/offset/track/
 // handle/playback/pitch/take producers: 50/48/48/48/48/48/50/56, all at 616 bytes.
 // NOT kept: two-point gain below threshold; original initializer and complete body restored.
+// Round 110: two-use long/short track-index locals 142/162 (619/628 bytes); force-inline get/set
+// declarations 50 each (same code); long or nested previous 129 each; force-inline previous helper 129;
+// implicit previous conversions 50 (same code). NOT kept: every gain-free form; original body restored.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {
@@ -1867,6 +1882,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 479 reduced each; all with complete native request 477 (control 479; full 305).
 // NOT kept: two reduced points without equality or ordinary gain; original
 // acquisitions, pointer scopes, request and full body restored. Frame/range homes remain.
+// DH371: Actual release/stopped/gain-rate/update/range-blend/ring-match/pitch/detail
+// Boolean guard results: 479/479/479/479/452/479/479/479 reduced (control 479, full 305).
+// NOT kept: unmatched one-use outcomes; range-blend retains reduced frame 0x118/0x128.
+// Original request, observations and complete body restored; native frame/range/ring homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2178,6 +2197,8 @@ void function_12a1b0(short voice_index, s_looping_track_sound *sound, s_looping_
 void function_21f8a0(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects);
 void __stdcall function_21f720(s_looping_impulse_parameters const *parameters);
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects, bool force);
+// MiniMax G (11-04): the pitch bounds read through a `s_short_bounds *` 339, the same bounds with a
+// named lower 339, an early `real scale` local 485 and one declared after the bounds 513: no lower score.
 // score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword
@@ -2568,6 +2589,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 674/749/675/675; immutable counterparts 674/749/675/675 reduced (control 694,
 // full 597). NOT kept: frame grows from 0x3c to 0x40/0x44; entry true/flags and
 // record/track homes remain. Original Boolean producer and complete body restored.
+// DH371: Actual definition/system/copy/listener/normalization/release/track-init/start
+// Boolean guard results: 694/694/734/694/694/694/694/670 reduced (control 694, full 597).
+// NOT kept: unmatched one-use outcomes, including the reduced-only 670; original complete
+// body restored. Entry true/flags, record/scalar homes and track/state ownership remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

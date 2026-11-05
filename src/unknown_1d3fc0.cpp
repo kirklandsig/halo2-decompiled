@@ -30,6 +30,7 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// MiniMax B (11-04): a second forceinline normalize twin (k, j, i summed in turn, used for up and left while forward keeps 0x1d3fc1) with the dot product written out 2; NOT kept: a score-picked helper twin (no new inline twins).
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // Round 34 (lane 17, fast): forward/up pointers taken first, then both normalized through them 150;
@@ -279,6 +280,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // P327: Native-array squared-length reduction, long/dword/short/byte index, original
 // scale 221/221/311/311; indexed scale 221/221/391/391. NOT kept: all regress
 // and grow beyond 922 bytes; original four-use helper and complete body restored.
+// DL262: Four-use normalizer actual scaling-status bool/byte/short/long results, result-first
+// then exact short-vector return with post-call matrix receivers: 110/110/110/110/110/110/110/110.
+// NOT kept: no byte equality; original normalizer, receivers and complete body restored.
 // M3 lane 10 r71 (fast, 0x1c4a80 stays matched; aligned in brackets, base 110 [56]): the dot written as accumulating statements j,k,i / k,j,i / j,i,k 110 [55]/[56]/[52]; both axis
 // pointers taken after both normalizations 110 [56]; `up` declared before `forward` and assigned after 110 [56]; both pointers declared at function scope 110 [56]. One-file
 // harness on the 2 form (axis block scored, exact to the plain listing; 2 s a form), all still only the dot's i term: chains of 1-16 identity pointer locals at the function top, in the

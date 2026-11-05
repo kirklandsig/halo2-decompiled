@@ -508,6 +508,15 @@ public:
 // subsets then all with the chain-count identity: 80 each at 540/540 bytes.
 // NOT kept: no byte match; original complete body, helper and local-slot reads restored.
 // Native validity/cursor homes and validation-loop entry remain.
+// P336: Actual validator inline/inline-stdcall/inline-cdecl/forced boundaries with
+// forced then ordinary input producer on the byte ordinal: 80/80/181/494/80/80/181/205.
+// NOT kept: no gain; cdecl loses the validator match. Both complete sources and contracts restored.
+// M380: Actual failure/success cardinality in long/dword/short/word storage:
+// 199/199/160/160/203/203/203/204. NOT kept: all regress and grow to 552/556 bytes;
+// original validity, byte ordinal, inherited local-slot reads, helper and complete body restored.
+// M382: Complete request-family if dispatch, all six family priorities, then shared type and native long ordinal:
+// 228/205/219/203/208/209/228/218. NOT kept: all regress and lose native dispatch/prologue; original switch,
+// validity, ordinal, cursor observations, existing helper and complete body restored.
 // M3 lane 10 r71 (fast, aligned in brackets; plain where marked): kept: a plain `for` over a long counter with a named data pointer stepped in the body (no volatile
 // reads, no helper) 75 [56], with 0x89950 declared (peers, count, handles, values, others, blocks) 47 [41], every declaration and call changed and 0x89950 still matched. Evidence for that
 // order: the stack arguments' order is retail's pushes at 0x990a3; `values` travels in EAX, and its slot among them was chosen from five placements, reading as the block's own field
