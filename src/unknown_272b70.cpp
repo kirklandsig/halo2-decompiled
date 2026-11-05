@@ -2864,6 +2864,10 @@ struct s_scenario_scripting_view
 // F401: Actual actor-position field reference at post-actor/admitted-set/iteration/branch phases,
 // original then loop-owned short traversal: 95/99/80/80/102/103/87/87. NOT kept: no exact or eligible gain;
 // original search restored. Actor/counter/selector and guarded scripting-data homes remain.
+// F403: Independent signed lower-bound or short-circuited upper-bound admissions,
+// bool/byte/short/long at the original observations: 80/80/80/80/80/80/80/80.
+// NOT kept: no exact individual-bound result; original direct guards and complete
+// search restored. Actor/counter/selector and guarded scripting-data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

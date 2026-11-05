@@ -900,6 +900,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // subsets 1/2/4/3/5/6/7 and all complementary incompleteness: eight at 34.
 // NOT kept: no exact comparison-result form; original body, getter, API boundaries
 // and cleanup restored. Entry total and seek/size carriers remain.
+// F403: Actual completed-offset/cancellation/signing-flags producer subsets 1/2/4/3/5/6/7,
+// then positive admission on the complete graph: 126/161/161/82/82/161/82/223. NOT kept: all regress;
+// original scalar producers, observations, getter, API tuples and complete body restored.
+// Fresh total and independent extent/seek/transfer carriers remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

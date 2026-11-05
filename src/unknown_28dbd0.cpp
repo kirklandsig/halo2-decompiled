@@ -318,6 +318,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // eight at 173/1209. NOT kept: no native frame/cross/trig-home recovery.
 // Original value-angle/vector-pointer producer, consumed-axis phases, ordinary
 // pooled reads, draws, request and complete body restored.
+// F403: Existing stored forward as read-only rotation/outer-cross input, original
+// consumed-axis or distinct projected-axis output, eight protocols: 231/235/241/256/232/231/238/198.
+// NOT kept: no exact ownership form; original helper, input/output contracts and full body
+// restored. Frame 0x11c/0x118, retained heading zero and cross/trig homes remain.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
