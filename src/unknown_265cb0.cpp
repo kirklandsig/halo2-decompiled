@@ -1276,6 +1276,10 @@ struct s_equipped_object_view
 // A volatile probe local (diagnostic, reverted) ahead of any entry statement does not move the widened index (59, 152 bytes; 51, 149).
 // The pool and its data compete for ESI by references, so the entry's second lookup is what hands ESI to the pool, but it also swaps
 // the entry's registers. That form stays unkept: a local for some reads and a lookup for others is a hand reload without a match.
+// Round 169 (lane 4, fast): the threshold count test nested inside the held test 6; the tag instance by pointer
+// arithmetic (`g_4e3b44 + index`, then `->bytes`) 6; one volatile pool view local for both lookups 6; early returns in
+// place of the result 39; the held object through a header pointer into the pool 20 (143 bytes); a 600 s fast annealing
+// permuter run (its reduced image scores the original 6): 56 tries, none below 6.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {

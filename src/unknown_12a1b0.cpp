@@ -1239,6 +1239,9 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // away before the tie). A force-inline fade-in helper taking the index in place of the 0x126df0 call 24. Iterator fields set here in place of
 // its helper: first then index from first 24, count first 25, index then first from index 24. In 0x126df0: every field through the macro 132
 // (134 bytes; 0x126df0 82), the gain stores 74 (0x126df0 76), bit test and flag store 80 (0x126df0 72), one gain store with a ternary 37 (0x126df0 15).
+// Round 169 (lane 4, fast with the same list; 0x126df0's file was off limits): duration or curve read once through
+// its own address 24/24; the iterator set up ahead of the NONE guard 58 (205 bytes); the guard folded into the loop
+// condition with the iterator set up unconditionally 58 (205 bytes); the state compared as an unsigned byte 24.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
