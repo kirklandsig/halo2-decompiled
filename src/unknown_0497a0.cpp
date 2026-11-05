@@ -1234,14 +1234,6 @@ void __stdcall function_43720(s_43740_input *input)
 // at +0x68 and the count/position schedule; a mix of field and local reads, kept only with a match); that
 // with the record's tag read through the stored definition pointer 68 (the definition takes ESI, the source
 // goes to the stack: ret 8, 0x42b20 60).
-// Round 36 (lane 15, fast; 0x42b20 checked each time): the field test with a block-local tag used for
-// the lookup (placed before the index call), the call and the record 63 (206 bytes, no split); the
-// function-scope tag with the lookup first and the record's tag from it 63; the field read at each use
-// with the lookup first (listed 68: the head splits like retail's, but the tag takes EBX, the source
-// becomes a stack argument in EBP, ret 8, 0x42b20 60) with the record filled in retail's store order 68,
-// with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
-// 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
-// split tag below both parameters in retail's colouring is open.
 // Round 135 (m3 lane 5): retail's 0x1e5e0 copies the record with an inline rep movs and calls nothing. Diagnostics
 // only: the record passed to a scratch callee that stores the pointer 119 (152 bytes: VC drops the record stores),
 // to one that only reads it 66. Renames (slot/register ties): tag 62, bitmap 62, group 62, image 62, the definition

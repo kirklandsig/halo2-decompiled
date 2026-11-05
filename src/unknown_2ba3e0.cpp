@@ -936,6 +936,9 @@ real g_55e618;
 // rotate); the position set nested as the argument with named sums 44 (aligned 7), written out 44 (aligned 9), assignments in a
 // comma argument 44 (aligned 8): the stores still precede the load; a plain collision record for the union with the class member or a
 // short member 44 (aligned 8); the normal as direct record fields 44 (aligned 15), with no normal pointer 647 (1745 B).
+// M380: Displacement/sweep scalar, aggregate and immutable aggregate producers,
+// all eight non-original pairs: 129 each at 1549 bytes. NOT kept: all regress;
+// original interleaved travel products, reflection, collision extent and full body restored.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
