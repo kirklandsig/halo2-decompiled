@@ -363,6 +363,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // [546]; file-local inline or forceinline declaration 1069; each form alone on the body below 964/955/947/906/968/977/926, so
 // none is keepable. Plain check of the callers with `inline`, nothing lost, 0x1d24a0 861, but 0xf8eb0 946->1030, 0xd1e10 542->596,
 // 0x185be0 622->958, 0x1aa0d0 375->402, 0x2c0d60 882->952, 0xf6d10 749->759 (aligned mixed: three fall, three rise).
+// T61: Actual wide-dot left/right/both and real-dot left/right/both reference inputs,
+// both complete dot interfaces, then both with planar input references: eight at 902.
+// NOT kept: native input identities do not recover the entry pair or frame; original kernels
+// and complete body restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

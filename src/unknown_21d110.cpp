@@ -452,6 +452,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // first 191/190; with a twice-used allocation-success value 183/185; entry result plus
 // settings/created_sound_index local names 191/190/183/185. The allocation value moves state to
 // ECX, but frame eight/four and state/tag homes remain. Original body restored.
+// T61: Actual private starter-state/allocator-definition reference interfaces and forced
+// allocator expansion, seven subsets 181 each; all with unsigned allocator result 161,
+// unsigned allocator result alone 161 (445 bytes, frame four). NOT kept: both 161 forms
+// lose all eight sensitive callers and raise 0x189fe0 110->135; unsigned domain lacks equality.
+// Original helper interfaces, result domain, expansion and complete body restored.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
