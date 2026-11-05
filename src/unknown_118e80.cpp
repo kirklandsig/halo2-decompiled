@@ -349,6 +349,9 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // the existing vector3f_add_scaled with a real quotient 220 (0x11f0d0 89, its `double angle` still pads
 // this frame); here: turn velocity declared before forward 224; world-up computed before the forward
 // branch 285 (1010 bytes); the second turn's scale as `acceleration + acceleration` 224.
+// Round 400: complete ordinary zero-limit/admission results in bool, byte,
+// short and long domains 249 each, 1030/1030 bytes. NOT kept: no gain or
+// match; original scalar tests and body restored. Frame and early save remain.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

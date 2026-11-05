@@ -1685,6 +1685,9 @@ real function_30bf0(vector3f *vector);
 // in both functions); (k, i, j) alone 357; with the colour2 positive checks as stored selects 433 (1878 B).
 // Round 402: Complete applied/fallback query outcomes, bool/byte/short/long, at the real query boundary.
 // Scores 450/450/450/450/450/450/450/450. NOT kept: unmatched outcome forms; original complete body restored.
+// Round 398: Original-boundary normal scalar observations, six component read orders, immutable
+// channels and the existing vector setter: 458/458/458/458/458/458/458/457. NOT kept: all regress
+// and grow away from retail; original independent length observation, normal copy and full body restored.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2304,6 +2307,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Y605: Actual query direction member with native/shared-setter/CRT-copy/CRT-move
 // publications, existing then direct weighted receiver: 542/611/542/613/542/611/542/613.
 // NOT kept: no byte match; original query declaration, helpers, publications and body restored.
+// F397: Existing color pin owns packed return/output, color pointer/reference and forced/ordinary
+// expansion: 667/667/1456/1456/667/667/1457/1457. NOT kept: all regress; original helper/body
+// restored, native status/mesh homes and selective expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

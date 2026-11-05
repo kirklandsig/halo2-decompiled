@@ -1562,6 +1562,8 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Y606: Two-consumer unit handle ends at the first leave call, preserving the later
 // load-request field reload; long/dword/int/const-long before/after selected-seat
 // receiver: eight at 32. NOT kept: no exact mixed observation graph. Body restored.
+// F396: Winning unit/object/seat field storage borrowed at all marked-body uses, seven subsets then immutable bindings: 32/32/32/32/32/32/32/32.
+// NOT kept: no byte equality; iterator scaling, leave-selector and request/slot publication homes remain. Original complete body and helpers restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2862,6 +2864,9 @@ struct s_scenario_scripting_view
 // control 80; full 80).
 // NOT kept: no byte match or eligible gain. Original direct final test, signed-short traversal/wrap, strict
 // selection, geometry branches and complete search restored; actor/counter/set and guarded-data homes remain.
+// F401: Actual actor-position field reference at post-actor/admitted-set/iteration/branch phases,
+// original then loop-owned short traversal: 95/99/80/80/102/103/87/87. NOT kept: no exact or eligible gain;
+// original search restored. Actor/counter/selector and guarded scripting-data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

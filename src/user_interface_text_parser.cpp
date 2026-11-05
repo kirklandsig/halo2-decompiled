@@ -720,6 +720,9 @@ done:
 // and repeated/shared completion: 32/32/32/32/54/54/54/54. NOT kept: no equality;
 // direct native receiver ownership retains the early save or scratch-address cache.
 // Original getter, calls and complete body restored.
+// F402: Complementary selector partitions at 1/2/3/4/5/7/8/9, retaining original
+// translation/copy completion, 70/65/63/63/69/69/63/69. NOT kept: all regress;
+// original complete dispatch restored; early EDI save and scratch/tag ownership remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

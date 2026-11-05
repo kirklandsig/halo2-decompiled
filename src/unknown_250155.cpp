@@ -1511,6 +1511,13 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // Scores 83/83/83/83/83/83/83/172. NOT kept: no lower count; declarations restored; original complete body restored.
 // Round 106: fixed-bound do scans first/second/both and a shared maximum 83 each;
 // guarded do fills first/second/both 110/103/127; guarded output do 83. Original body restored.
+// Round 400: existing sort-callback inline boundaries, all seven nonempty
+// subsets 83 each; all three with native three-call sort join 119. NOT kept:
+// no gain; original callback definitions and complete target body restored.
+// F402: Chained player/selected zero initialization in both target orders, before
+// array/row-count/query declarations or after the three queries,
+// 84/84/84/94/83/83/83/94. NOT kept: no exact or qualifying result;
+// original complete body restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2724,6 +2731,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // text_b, shown count, player/no_team, bitmap_a, bitmap_b and retail bitmap_b, text_a, text_b, shown count, player/no_team, bitmap_a, so retail has
 // bitmap_b one step ahead of all five. Tried on the plain body: the helper taking bitmap_b first 95; the second loop declaring bitmap_b first 95; that with
 // bitmap_a and text in reverse 95; bitmap_b stored first in every arm of the helper 177 (932 bytes); players[i] named once in the voice block 95 (same code).
+// F399: Existing four-output producer with whole-screen pointer/reference, output
+// pointer/reference and direct/captured mode contracts: eight forms 95 each.
+// NOT kept: no gain or equality; original helper, both uses and complete body restored.
+// Frame 0x788 agrees; scalar homes, voice-query reload and final screen receiver remain.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

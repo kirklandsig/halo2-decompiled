@@ -698,6 +698,10 @@ struct s_collision_result_buffer_1697c0
 // real length/Boolean success outputs, ordinary/forced expansion:
 // 634/551/642/573/458/458/475/475. NOT kept: all regress and move length away;
 // four forms lose the matched caller (39/39/4/4). Original helper and sampler restored.
+// F395: Collision-ray component loops, long/short/word/dword direct products 338/337/337/338;
+// native candidate copy then in-place loops 376/362/362/376. NOT kept: all regress and
+// enlarge the frame to 0xb0; copy forms also demote matched caller 0x297660 to 1.
+// Original full body restored; native frame-bottom scratch and candidate transport remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

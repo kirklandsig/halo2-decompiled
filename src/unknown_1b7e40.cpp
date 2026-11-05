@@ -260,6 +260,10 @@ bool function_25d9b0(long prop_index);
 // AC557: Busy provider char/signed-char/byte/short/word/int/long/dword returns,
 // coherent definition and all prototypes: 49/49/49/51/51/49/49/49. NOT kept:
 // no target gain; wider transports also demote provider and five other users.
+// Round 398: Native velocity square/length producers, their paired/range-observation forms,
+// immutable complete graph and shared squared-length producer: eight at 49 (556/557 bytes).
+// An isolated range-copy control also scores 49 and is excluded from new-trial credit. NOT kept:
+// no score gain; original velocity/range observations, busy select and complete body restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

@@ -632,6 +632,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // retail, but `update` still takes BL and the actor stays a stack argument; a flag tested later, not kept); that
 // with the short prior state 419 (1620 bytes); sampled_one declared after the two entry calls 414; sampled_one
 // declared before maximum 412 (same code).
+// F402: Complete case priorities 42013/42031/42103/42130/42301/42310/43012/43021
+// on the retained signed prior-state graph,
+// 423/434/421/417/448/421/450/440. NOT kept: no exact or qualifying result;
+// original complete body restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

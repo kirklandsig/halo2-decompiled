@@ -189,6 +189,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // input boundaries, then each with a named scale test: 227/227/379/379/317/317/392/392.
 // NOT kept: all regress and shorten away from retail; original transform inputs,
 // field reads, interpolation qualifiers and complete body restored.
+// F399: Existing interpolation endpoint/sample/output reference contracts, seven
+// subsets and complete output-reference return: eight forms 94 each.
+// NOT kept: no gain or equality; original helper, both calls and whole body restored.
+// Frame 0x4040 agrees; early mesh, count homes, creation setup and transform ranks remain.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

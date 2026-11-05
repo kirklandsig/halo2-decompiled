@@ -2943,6 +2943,13 @@ static inline short sound_voice_find_available_channel(char type)
 // N385: Independent finder completion state, found/searching polarity in bool/byte/long/dword:
 // 125/125/125/125/125/125/125/125. NOT kept: no equality; completion flags and whole finder/body restored.
 // Frame twelve/eight, saved byte normalization and early failure tail remain.
+// F399: Explicit candidate admission/rejection/staged-admission/independent bitmap
+// predicates with byte final result 96/96/177/96, Boolean result 113/113/156/113.
+// NOT kept: no gain or equality; original private scan, byte result and whole body
+// restored. Twelve/eight-byte frame, saved true and early failure tail remain.
+// F401: Actual free/streaming table bases separately/both, then native bitmap-word lvalues,
+// with byte/Boolean final result: 96/142/142/96/113/132/132/113. NOT kept: ties or regressions; original finder
+// and full body restored. Twelve/eight-byte frame, saved normalization and failure tail remain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3881,6 +3888,13 @@ struct s_128ca0
 // signed readonly-reference early/completed and unsigned readonly-reference early/completed:
 // 237/231/237/237/222/237/237/237. NOT kept: no byte match; original pin and full body restored.
 // Frame 0x49c/0x494, initial gain homes and integer pin joins remain.
+// F399: Existing native gain-class pin input with integer/class returns, early/common
+// results and direct/overloaded comparisons: 222/227/247/216/251/241/247/216.
+// NOT kept: six-point lead below eight, unmatched record contracts and regressed shared
+// clamp user; original pin, all three calls and whole body restored. Frame and pin joins remain.
+// F401: Existing reference sum at both parallel permutation-gain producers, mutable/readonly
+// converted parts crossed with inner reference sum and coherent scale: 222/222/269/269/277/277/249/249. NOT kept:
+// ties or regressions; original arithmetic/body restored. Frame/gain homes and pin joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -4126,6 +4140,10 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // Round 164: state pointer sunk into the branch and recomputed in the fallback 598; with 0x16f3a0
 // calls 553; fallback in both arms 633, with 0x16f3a0 calls 706, plus 0x14ddc0/0x14de70 at the loop
 // head 740 (retail's loop head, aligned 426 -> 402).
+// Round 400: shared zone predicate with original/direct publication, then
+// existing cross, point setter and both boundaries: 555/554/643/640/609/610/640/637.
+// NOT kept: every form regresses and lengthens; original predicate, helper
+// calls, includes and complete body restored. Frame excess remains.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {

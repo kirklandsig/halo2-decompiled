@@ -155,6 +155,8 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // angle and native trig, original/native in-place publication: 356/356/357/357/368/368/370/369. NOT kept:
 // all tie or regress; original private helper contract, helpers and entire body restored.
 // Frame 0x98 versus 0x90, concurrent x87 inputs and scalar publication homes remain.
+// F396: Complete parallel rotation products, up/left/forward subsets then immutable complete terms: 356/353/360/356/359/355/356/356.
+// NOT kept: best gain three is below the keep threshold; native frame and concurrent x87 inputs remain. Original complete body and helpers restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1799,6 +1801,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // Y602: Plain component negation/case-three/case-four displacement subsets, then forced existing
 // perpendicular producer: 193/193/193/193/193/193/193/193.
 // NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
+// F397: Position/direction declaration and sole call reordered together, original/sole exit
+// and ordinary/forced perpendicular expansion: 193/193/193/193; cdecl counterparts
+// 194/194/194/194. NOT kept: default forms tie, cdecl raises caller to 509;
+// original signature, call, helper and body restored. Independent result home remains.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2802,6 +2808,10 @@ s_cached_input_list g_5234e8[4];
 // J256: Coherent cache-update/filter/queued-producer inline contracts and forced updater expansion:
 // 123/113/123/113/123/113/123/1561. NOT kept: no target gain; updater inline loses a matched caller and forced expansion loses two, with length growing to 1660
 // Original executable source restored; native frame and allocation gaps remain.
+// F395: Complete twice-used flag-word snapshot, dword/const-dword/long/const-long,
+// original live list 148/148/148/148; once-read list 136/136/136/136 fast (control 147, full 113).
+// NOT kept: retail loads the flag word twice; nonexact read-once forms are ineligible.
+// Original complete body restored; native list/total spills and output/index homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3225,6 +3235,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // J256: Native maximum/divisor/projection-scale observation subsets and complete projection initialization:
 // 508/490/518/495/496/515/504/504. NOT kept: every form regresses from 486; maximum observations recover only four frame bytes, while scale capture enlarges it
 // Original executable source restored; native frame and allocation gaps remain.
+// F395: Plain x/y random-update loop after the original z update, long/int/dword/short,
+// scalar-array then native-vector receivers: 490/490/490/543/490/490/490/543.
+// NOT kept: all regress and enlarge the frame to 0x68/0x38; original complete body restored.
+// Native stored-velocity acquisition and projection/loop homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3623,6 +3637,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // 155/252/258/289/283/288/322/322.
 // NOT kept: 155 restores frame 0x1c by adding two out-of-line clamp calls absent from retail; no native-
 // shape keeper; original complete body and helpers restored.
+// F397: Branch-owned first/opacity bytes and shared native position, seven subsets,
+// then query-entry region output: 177/177/177/177/177/177/177/177. NOT kept: all tie;
+// original output scopes and body restored. Native frame/fade scratch homes remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -5096,6 +5113,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // Y602: Existing bit-vector availability byte/bool/short/long, direct/repeated group receivers:
 // 138/138/213/222/138/138/213/222.
 // NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
+// F397: Separate byte result with bool/char/signed-char/short/word/int/long/dword gate
+// formals: 138/138/138/138/138/138/138/138. NOT kept: target ties; bool changes shared
+// caller to 307 without repairing native raw-byte publication. Original helper/body restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
