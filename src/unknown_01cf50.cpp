@@ -3086,6 +3086,7 @@ bool g_5093bc;
 // MiniMax H (11-04): the settings are copied with memcpy, the depth format tests the low flag byte
 // and the interval mask the high flag byte of the flags word; the two flag bytes are then read from
 // memory as retail does and the function matches (fast and plain).
+// MiniMax H (11-04): no new form, no lower score; copying the settings field by field (55), with the fields in another order (61) and with the copy split around the memset (107) are all worse, and the flag byte still comes from the register that held the copied dword where retail reloads it from the global.
 // MiniMax G (10-31): 55 (was 68): the settings are copied into the global field by field and the
 // depth format is assigned first; the two flag bytes still come from a register instead of memory.
 // MiniMax G (10-31): a byte-typed view of the global loads the flag bytes from memory (54), but it
