@@ -868,6 +868,18 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // M352: Actual header/body progress and integer signature-comparison producers,
 // seven subsets 34/34/34/202/202/202/202; all with one shared progress scalar 202.
 // NOT kept: one-use output/result storage does not match; original body and getter restored.
+// Round 148 (m3 lane 5, fast; 0x2adb10 stays matched; aligned counts from a line diff of the listing, base about 22): a conversion helper for the
+// total 34, for all three conversions 34, with the total folded in 88; a `do { } while (false)` over the body case's failure path 34; `default: break;`
+// 218 (695 bytes). Closest yet, not kept (score rises until it matches): forceinline `(file, position)` seek helper for the signature sum + total folded
+// into its conversion 28 (aligned 17) + the sibling's `dword buffer_size;` local + `dword remaining` + `size = buffer_size; if (buffer_size > remaining)
+// size = remaining;` 153 (691 bytes, aligned 6: size EDI, position ESI, the sums, the direct arm's `sub ecx, eax` jumping to the shared `mov edi, ecx`, all
+// retail's). Left: the scratch size loads into a temporary EDX and is copied (retail loads EDI directly), and the signature sum folds body_size into ESI
+// (retail `mov ecx`, head-merged with the body case, then `lea esi, [ecx + edx]`). On it: `if (size > remaining)` or the out parameter into size 156 (689,
+// aligned 20: size ESI, sums header first again); MIN 153 (693, aligned 9); if/else or a ternary clamp 153 (693, aligned 9); a getter returning the size 156,
+// with buffer_size 153 (aligned 6); named body and header locals in the signature case, sum written body first, `register` on the helper parameter 153
+// (same code); the body test as `body_size > body_offset` 157 (aligned 11); a body_size local read before the switch 142 (688, aligned 9: T in ECX, but the
+// switch temp moves to EDX and the signature sum still folds). Harness cross of direct-arm order, six clamps, total local, helper none/signature/both, test
+// order (110 forms): none below aligned 6. Seek helper with `g_4fa0c8.size` clamp 153 (689); that clamp alone 159, without the total local 175.
 // P327: API-returned file/signing handles, original/mutable/const producer pairs
 // excluding both original: 34/34/34/161/161/34/161/161. NOT kept: ties or larger
 // 689-byte bodies; original API publications, field observations and full body restored.
