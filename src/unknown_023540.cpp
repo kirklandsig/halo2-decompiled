@@ -3486,6 +3486,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // N350: Immutable shift/clip/center parameter subsets and all with immutable
 // state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
 // selector, reload-pair and six quantizer input-home differences remain.
+// F391: Existing quantizer policy as bool/int template argument, mutable/immutable real
+// input and conditional/separate lower admissions: 1218 each in eight forms, 4404/4828 bytes.
+// NOT kept: specialization outlines both quantizers and moves extent away from retail.
+// Original helper, runtime policy formal, eight calls, repeated conversions and whole body restored;
+// selector scheduling, post-bias reload pairs and six shift-versus-clip input homes remain.
 // P332: Native quantizer lower/upper/both conversion producers 32/31/32;
 // split lower arms alone/with upper producer 31/31; both with single-exit,
 // positive-default and split/conditional results 30/790/646. NOT kept:

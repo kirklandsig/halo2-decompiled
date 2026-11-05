@@ -718,6 +718,12 @@ struct s_item_collision_bsp
 // complete normal scalar inputs mutable/const 207/207, all four inputs 209/209;
 // safe in-place result with captured normals mutable/const 216/216.
 // NOT kept: no equality or gain; in-place extent grows. Original body restored.
+// F391: Standard backward axial-input/normal transports and complete paired final range sums,
+// individual/pair/complete graphs, then backward final traversal: 267/343/370/313/397/334/343/411.
+// NOT kept: all regress; normal/range graphs also displace the native frame or extent. Original
+// planes, axis/spin homes, arithmetic, random draws, pending-k join, calls and include set restored.
+// Paired range sums also raise matched 0xd9640 from 0 to 3 in the reduced image; restored.
+// Protected plane-index width, plane joins and native spin/speed homes remain.
 // AC534: Actual contact-distance accumulator at whole/pair/individual product boundaries,
 // with direct/compound offset subtraction, then all three named products:
 // 202/204/204/202/204/204/202/206. NOT kept: expression-boundary nonmatches; original

@@ -1516,6 +1516,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // target-position input, masks 1-7: 820/800/895/659/820/800/957; complete target
 // advance loop 617. NOT kept: all regress and grow beyond retail length; original
 // native copies, row expressions and complete body restored. Shared helpers unchanged.
+// F391: Material constant-default lifetime before object/tag/component/state/animation/airborne,
+// then after position and after velocity: 584/584/584/584/584/584/590/610, all 2828 bytes.
+// NOT kept: best gains one and every frame stays 0xf8 versus native 0xfc. Original material
+// initialization, all memory observations, animation refresh, packed output, shared eye helpers and
+// complete body restored; material/airborne/animation homes and missing frame word remain.
 // B437: Airborne char/signed-char/byte/short/word/int/dword/long domains on the
 // retained animation graph 599/599/599/632/632/627/627/627. NOT kept: all regress;
 // frame 0xf8 versus 0xfc and material/airborne/animation homes remain.

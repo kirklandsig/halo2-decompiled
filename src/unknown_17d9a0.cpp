@@ -414,6 +414,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // array pointer/reference and vector/point pointers, first-corner then entry declarations:
 // 54/54/54/54/54/54/54/54. NOT kept: dot divergence moves earlier to +0x67; original
 // helper and full body restored. Plane base, first selectors and product memory sides remain.
+// F393: Complete two-use projection row ordinal long/dword/int/word after/before point construction:
+// 163/163/163/196/158/158/158/198. NOT kept: no byte match; original complete body/helpers restored;
+// live-plane distance base, first selectors and product memory sides remain.
 // Round 54 (m3 lane 15; `--fast 0x17d9a0 0x120850 0x22bbca` is exact here, 46: listing 0x22bbca brings point2f_set's file in; a one-link harness
 // with those files is 54 for 46, 0x120850 taking ECX there, with its product pairs as retail's). Ours differs from retail in 1, 4, 6, 0 of
 // the 6 pairs of corners 0-3. Harness, plane helper / axis form / lookup / helper types (320 + 288 forms): nothing below 54; plane helper with
@@ -1042,6 +1045,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC535: Complete candidate-plane grouping acceptance, positive then complementary
 // bool/byte/short/long: 529/529/529/529/531/531/531/531 at 3647 bytes. NOT kept:
 // frame grows to 0x21e4 versus native 0x21dc; original body/helpers restored.
+// F393: Existing decoder masked plane ordinal long/dword/int/word, then sign-bit decision bool/byte/short/long:
+// 539/539/539/574/736/736/736/574. NOT kept: no byte match; original complete body/helpers restored;
+// native tag/count/plane homes and rotation spills remain.
 // DH372: Partial angular/first-distance grouping decisions, bool/byte/short/long,
 // 529 each at 3647 bytes. NOT kept: one-use outcomes are unmatched and enlarge the
 // native 0x21dc frame to 0x21e4; original body/helpers restored, tag/count/plane homes remain.

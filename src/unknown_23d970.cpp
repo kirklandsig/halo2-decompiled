@@ -820,6 +820,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // B434: Missing-object/missing-target/ordinary-orientation arms first, seven
 // subsets 361/219/222/250/367/333/337; nullable acquisition with common fallback 358.
 // NOT kept: all regress; original branches, products and full body restored.
+// F393: Masked target ordinal long/dword/int/word, then actual reset-capability decision bool/byte/short/long:
+// 45/45/45/185/55/55/55/45. NOT kept: no byte match; original complete body/helpers restored;
+// right i/j carriers, forward.k reuse and ordinary-angle store bases remain.
 // Round 54 (m3 lane 15; a one-link harness with 0x30bf0, 0x11d090, 0x16f3a0, 0xbadc0, 0x172520, 0x1f0870's files and an address-taken
 // entry is exact, 45/43/53/217 as listed, 4.6 s a form): first product written out 219 (1261 bytes), with `(real)` on row i's second, first
 // or both products 219/216/224, on the whole row 219, with parentheses on all rows 224, row i as a negated sum or difference 219/232;

@@ -149,6 +149,8 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // original/twice-used angle graphs: 355/355/368/368/357/357/362/362. NOT kept: one-point
 // lead below gate; every frame stays 0x98 versus 0x90. Both original helpers, real-angle contract
 // and full body restored; concurrent x87 inputs and scalar publication homes remain, caller exact.
+// F392: Actual aggregate forward/left/up row producers in the existing builder, seven subsets then complete aggregate rotation-result initialization: 391/421/406/440/425/491/507/507. Forward+left, forward+up and complete rows recover frame 0x90 but grow/regress.
+// NOT kept: no exact match. Original two helpers and complete body restored; native concurrent x87 inputs, frame 0x90 and scalar publications remain unresolved.
 // B446: Existing builder owns step/rate multiplication, direct products, real/double
 // angle and native trig, original/native in-place publication: 356/356/357/357/368/368/370/369. NOT kept:
 // all tie or regress; original private helper contract, helpers and entire body restored.
@@ -2975,6 +2977,8 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // expansion, complete forced expansion and complete clamp reference input: eight at 317. Original
 // alias-safe copies, pointer contracts, helpers and whole body restored; frame 0x30, native
 // prefix/state and ordinal homes plus decay rotation remain.
+// F392: Distinct-entry admission in the existing four-use swap with standard capture/publication copy subsets, then original assignments: 407/407/407/407/407/407/407/407.
+// NOT kept: no exact match. Original alias-safe assignment helper and full body restored; native state/prefix/ordinal homes remain unresolved.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4203,6 +4207,8 @@ bool __stdcall function_391f0(void *state);
 // views, then find/search iterator results: 353/352/394/353/352/394/353/394. NOT kept: frames
 // 0x84/0x8c versus native 0x70 and extents 1087/1119 versus 1014; original side loop, whole body
 // and include set restored. Early zero and portal/fog homes remain.
+// F392: Actual distance aggregate initialization with CRT/aggregate flags and independent constant-array entry lifetimes: 302/332/319/349/305/340/305/340.
+// NOT kept: no exact match. Original arrays, initialization loop, CRT zero, reads and full body restored; native zero and frame 0x70 remain unresolved.
 // @retail 0x36b50
 void function_36b50()
 {

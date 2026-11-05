@@ -1540,6 +1540,10 @@ void function_150820(dword *bits, bool local_only)
 // indexed then conditional on primary: 70/70/70/70/81/82/104/86. Original selector,
 // lifetimes and full body restored; NOT kept: unmatched shorter extents
 // and native ESI-player/EDI-hand ownership remains.
+// F393: Existing player/object getter masked native ordinal long/dword/int/word:
+// 43/43/43/85/43/43/43/64. NOT kept: no byte match; original complete body/helpers restored;
+// saved player/hand ESI/EDI and entry temporaries remain exchanged.
+// Word object ordinal recovers saved roles but replaces native AND32 with MOVZX; 64 at 206/210 bytes.
 // DH372: Isolated mode-success/command-success/actual-command exits, then both success-exit
 // pairs 90/86/110/112/110; sole-return common success in bool/byte/long 63/73/91.
 // NOT kept: no byte match or gain; original body restored, saved player/hand roles remain.

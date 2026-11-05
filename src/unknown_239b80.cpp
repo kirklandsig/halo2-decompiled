@@ -483,6 +483,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B430: Complete coordinate-bound producers on the retained native output ordinal,
 // four producer orders, without/with paired angle bounds: 179 each. NOT kept: no
 // match or gain; original body restored. Frame remains 0x18 versus native 0x14.
+// F393: Actual classifier result short/long/int/dword, then complementary admission bool/byte/short/long:
+// 170/170/170/170/170/170/170/170. NOT kept: no byte match; original complete body/helpers restored;
+// extra frame word and produced-length/departure/count/compaction homes remain.
 // P345: Actual advancing output cursor retaining the independent pass bound/eager length,
 // long/short pass, long/bool departure and memcpy/memmove: 251/267/251/276/299/258/253/266.
 // NOT kept: no byte match; original complete body restored; extra frame word remains.
