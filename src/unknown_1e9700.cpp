@@ -1016,6 +1016,8 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // storage as one rectangle member 2; inner and piece declared together with piece assigned 2; the
 // coordinates or the points declared at the top of the block 2/2. Unused-local probes (1 to 16) at
 // the top leave it at 2, so the load order is no numbering tie.
+// Lane 9 r89 (fast): window x offset as a named short before each inset statement 41, after the insets 38; window y before the bottom inset 44; both 44; address-cast reads
+// 2; pointer to the window pair at the top or before the bottom inset 2/2; `-8 + field` for bottom and right 2/2; whole-record copy first 218; a data pointer to the field or storage (diagnostic) 2/2.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {
