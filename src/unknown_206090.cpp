@@ -419,6 +419,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // private/native ray type: 1355/1421/1382/1355 in both sets. NOT kept: no native
 // frame/home recovery; pointer/short traversal changes miss extent. Original raw query
 // storage, private ray, captures, scaled translation and entire body restored.
+// M3 lane 12 r93 (fast; 0x2056e0 matches): the first loop's element position through a named point pointer (also
+// for the ray origin) 1385 (6195 bytes); its offset through the existing vector3d_from_points3d 1407 (6259 bytes); the
+// magnitude summed i, j, k 1355 (same code); the magnitude from three named component locals 1608 (6022 bytes, as the
+// pointer-read form); the snapshot declared const 1355 (same code). The frame excess is the snapshot copy (ours stores
+// each component, copies it to the snapshot and loads x87 from there; retail loads x87 from the first store).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

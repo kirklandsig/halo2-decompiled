@@ -373,6 +373,15 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // both complete dot interfaces, then both with planar input references: eight at 902.
 // NOT kept: native input identities do not recover the entry pair or frame; original kernels
 // and complete body restored.
+// M3 lane 12 r93 (fast): LEAD, the unroll blocker found: under LTCG the scale helper's loop unrolls only with a
+// `long` counter (a `short` one stays rolled even alone in a three-line body) and only when the function calls no
+// destructor (`delete` of the contact array, its explicit destructor call, plain or inside a helper all keep every
+// loop rolled; a non-destructor member doing the same frees unrolls them). Long counter with the frees written out
+// (the destructor body by hand, diagnostic) 1174 at 4033 bytes but retail's frame 0x1d4, entry pair and scale shape
+// (difflib-matched lines 518 against 444 here); with a release member in the header 1168. Forms on this body: explicit
+// destructor call plus operator delete 925, with the long counter 930; long counter alone 933 (listed); a byte local
+// renamed on the unrolled body 1174 (same code). Next: retail frees the list with no destructor call, so the contact
+// array type wants a plain free path (all three users, 0x1cf9f0 and 0x1d2070 matched); the asm conversion is no blocker.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

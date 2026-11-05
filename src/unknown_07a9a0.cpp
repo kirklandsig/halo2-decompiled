@@ -1242,6 +1242,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Round 148 (m3 lane 6, fast): `inline` on 0x192e60 766, on 0x1934f0 766, both 766. Player loop through a call to 0x63220:
 // forceinline on its definition 1032 (2588), `inline` on its definition 1097 (2524), with `inline` on 0x192e60 1097; each gives
 // 0x73530 its match (session in EAX, ret 4), but a score rise is not kept: held lead. Result first and capacity before the summary 785.
+// M3 lane 12 r93 (fast; 0x73530 8 throughout): the capacity switch with grouped case labels (1-2 height, 3-5 product)
+// 876 (2852 bytes: the switch now inlines as retail's jump table, but the top 0x192e60 call still inlines); that with
+// the loop's variant through 0x192e60 864 (2804 bytes: the loop call stays out of line, the top one inlines, the
+// reverse of retail); that with the player value through 0x63220 1067 (2556 bytes, 0x63220 still out of line); the
+// team-count switch grouped alone 940 (2704 bytes); the capacity helper with external `inline` linkage 840 (2828
+// bytes). Our link inlines the first 0x192e60 call site in source order and keeps 0x63220 out of line.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
