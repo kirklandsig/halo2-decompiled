@@ -481,8 +481,8 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 }
 
 /* recomputes the teams that have players */
-// MiniMax C (11-04): the present-team bit in a named one-use local gives 29 (kept); a word mask (77/78), a non-volatile present (63), a named new mask (30), swapped compares (88) and a dword-cast compare (78) are worse.
-// score 29 (was 32): the old team mask is kept as a 32 bit value here and as a 16 bit one in
+// MiniMax C (11-04): the present-team bit in a named one-use local gives 29 (not kept, m3 review: a one-use local is kept only with a byte match); a word mask (77/78), a non-volatile present (63), a named new mask (30), swapped compares (88) and a dword-cast compare (78) are worse.
+// score 32 (was 32): the old team mask is kept as a 32 bit value here and as a 16 bit one in
 // retail; the comparison and the update of the two masks use different registers, and the input
 // counter loop uses different ones too. Retail keeps the word mask in a register after the loop
 // (reloaded into ecx before the first test, shared by the compare and the OR for the store);
@@ -718,8 +718,7 @@ void function_158140(void)
 
 		if (team != NONE)
 		{
-			dword team_bit = 1 << team;
-			present_teams |= team_bit;
+			present_teams |= 1 << team;
 			if (!(player->flags & 2))
 			{
 				playing_teams |= 1 << player->team;
