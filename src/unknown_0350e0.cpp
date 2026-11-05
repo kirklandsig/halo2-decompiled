@@ -2772,6 +2772,10 @@ s_cached_input_list g_5234e8[4];
 // J256: Coherent cache-update/filter/queued-producer inline contracts and forced updater expansion:
 // 123/113/123/113/123/113/123/1561. NOT kept: no target gain; updater inline loses a matched caller and forced expansion loses two, with length growing to 1660
 // Original executable source restored; native frame and allocation gaps remain.
+// F395: Complete twice-used flag-word snapshot, dword/const-dword/long/const-long,
+// original live list 148/148/148/148; once-read list 136/136/136/136 fast (control 147, full 113).
+// NOT kept: retail loads the flag word twice; nonexact read-once forms are ineligible.
+// Original complete body restored; native list/total spills and output/index homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3187,6 +3191,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // J256: Native maximum/divisor/projection-scale observation subsets and complete projection initialization:
 // 508/490/518/495/496/515/504/504. NOT kept: every form regresses from 486; maximum observations recover only four frame bytes, while scale capture enlarges it
 // Original executable source restored; native frame and allocation gaps remain.
+// F395: Plain x/y random-update loop after the original z update, long/int/dword/short,
+// scalar-array then native-vector receivers: 490/490/490/543/490/490/490/543.
+// NOT kept: all regress and enlarge the frame to 0x68/0x38; original complete body restored.
+// Native stored-velocity acquisition and projection/loop homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
