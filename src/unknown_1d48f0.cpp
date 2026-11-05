@@ -276,6 +276,9 @@ const dword g_455978[81] = {
 // returns 365/333/298/306; complete named squared parts give the same four scores.
 // Plain two-component array scaling 298, with zero-result return 365. NOT kept:
 // no target gain; all but the 306 form also raise other shared users. Header restored.
+// N393: Excluded handle/radius/magnitude eight-byte storage, seven subsets
+// 548/576/593/376/562/587/607; all with unsigned handle 607. NOT kept: unmatched,
+// larger storage forms; full body restored. Optional homes and selective expansion remain.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

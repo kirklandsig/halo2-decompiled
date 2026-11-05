@@ -1986,6 +1986,9 @@ void function_269250(long clump_index, long actor_index);
 // N391: Actual retained best bool/byte/short/word/int/long/dword/unsigned-char:
 // 177/160/145/155/141/141/155/160. NOT kept: all regress against reduced control 89/full 87;
 // original real best and full body restored. Memory-only selection, pool and x87 homes remain.
+// N393: Selected/created signed or unsigned eight-byte handle storage, eight nonoriginal
+// width pairs 115/115/170/160/160/170/160/160. NOT kept: no native memory-only selection
+// match; original handles/body restored. Pool EBX and x87 score/best transport remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

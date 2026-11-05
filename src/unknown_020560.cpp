@@ -1058,6 +1058,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // N391: Nearest/opposite cutoffs and paired candidate distances in double, seven subsets:
 // 593/630/706/648/692/716/714; all plus projection 820. NOT kept: all regress;
 // original scalar domains, expressions and full body restored. Native vector/query homes remain.
+// N393: Native nearest/anchor/opposite coordinate-difference double residency, seven
+// subsets 648/640/730/645/731/665/753; all plus projection 753. NOT kept: larger,
+// unmatched storage domains; original scalar graph restored. Frame/query/vector homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

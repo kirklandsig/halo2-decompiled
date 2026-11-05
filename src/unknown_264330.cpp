@@ -630,6 +630,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // retail, but `update` still takes BL and the actor stays a stack argument; a flag tested later, not kept); that
 // with the short prior state 419 (1620 bytes); sampled_one declared after the two entry calls 414; sampled_one
 // declared before maximum 412 (same code).
+// N393: Next/current/prior-state signed/unsigned eight-byte storage, eight forms 455/455/453/453/490/490/456/529.
+// NOT kept: all regress and enlarge frame/body; original handles, state, flags and body restored.
+// Frame 0xa4/0xa0 and stacked actor versus EAX/EBX remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

@@ -726,6 +726,9 @@ static inline word font_character_pixel(long alpha, long color)
 // N391: Case orders 04651237/04615237/04165237/01465237/06415237/06451237/
 // 06145237/01645237: 115/116/113/113/117/116/115/114. NOT kept: all regress;
 // original cases/body restored. Alpha extension, literal assembly and run-two reuse remain.
+// N393: Packed/ordinary indexed, descending-copy forward cursor and reverse real cursor
+// fill pairs 01/02/10/11/12/20/21/22: 172/174/172/164/166/175/174/199. NOT kept: unmatched traversal forms;
+// original loops/helper/body restored. Alpha widening, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
