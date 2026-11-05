@@ -773,6 +773,10 @@ bool g_51e9bc;
 // N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
 // forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
 // body restored; unity/limit/direction ownership and jitter spill homes remain.
+// N395: Complete limit-owned destination assignment/memcpy/setter/coordinate modulation,
+// original/direct projection: 238/237/238/237/198/201/112/56. NOT kept: coordinate form
+// gains six; direct form grows away from 1077 bytes; all transfer forms require equality.
+// Original complete body restored; projection ownership and jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

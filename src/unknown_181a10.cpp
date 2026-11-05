@@ -759,6 +759,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // long root type 319 (80), plus a next-shape local 319 (79), plus a one-use bool for the byte test 323 (79). Normal row terms in six orders 239 each (aligned 106-116).
 // long plane index locals 239 (same `mov dx`: the short formal narrows; the callee's formal is the real blocker, a caller rose before). Hit through
 // a contact position pointer 310 (folds). Left: contact takes a register once the hit is read by components (retail keeps it on the stack), three data reads.
+// N395: Actual first/second/root/component/key/bounded-key names individually, then
+// two complete node/key identity orders: 239/239/239/239/239/239/239/239. NOT kept: no equality or
+// frame/home recovery; original names and complete collector restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

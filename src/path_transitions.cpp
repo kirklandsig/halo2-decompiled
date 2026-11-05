@@ -726,6 +726,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // declared 219; `second` declared in its block 219; both reciprocal forms 219; both products turned 219; the radius
 // product turned 219. Left: the entry (actor loaded at entry, pathfinding moved to EBX), which colours case 5, and
 // the projection sum (retail (j + k) + i with j in XMM3, ours (k + j) + i).
+// N395: Actual actor/surface/parent index eight-byte homes, signed/unsigned individually
+// 371/371/219/219/370/370; complete signed/unsigned 398/398. NOT kept: native values are narrow,
+// ingress is not recovered, and wider actor/parent homes grow the frame/extent. Original body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
