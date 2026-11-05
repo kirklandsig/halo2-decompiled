@@ -723,6 +723,10 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // Frame 0x84/0x80 and early constant-one spill remain.
 // M305: Two-use negative adjustment 265; with reversed membership 258 (six-point lead, restored);
 // late-tag/two-distance interactions 307/337/345/303/328/336.
+// AC545: Owning raw byte with signed-byte/byte/signed-word/word bitfields
+// 311/311/311/264; raw word with the first three 311/311/311; byte owning
+// declaration plus direct bit-zero admission 311. NOT kept: no equality or
+// gain; original datum layout and body restored, native one-spill/failure byte remain.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

@@ -935,6 +935,19 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // count the same. Chain 1/2/4 236/245/236; with the length j-first, chain 1/2/4-7, 238/247/238/238/238/247; j-first at chain 3 375/123;
 // accumulated j, k, i at chain 3 374/127; dot3f at chain 3/5 250/374. Left on the chain form: which direction load the scheduler hoists
 // above the `lea` (retail d.j, ours the first product's d.k), which sets the length/zero roles for everything after the block.
+// AC539: Actual FOV transition-completion result, positive then complementary
+// bool/byte/short/long: eight at 236. NOT kept: unmatched one-use decision storage;
+// original duration/target observations, projection, helpers and full body restored.
+// AC541: Actual timer nonzero-scale decision, bool/byte/short/long at its consumer
+// 236/236/236/236; at the entry snapshot 365/365/439/323. NOT kept:
+// no equality/gain; original snapshot, projection, float trees and whole body restored.
+// AC543: Actual animation-matrix completion/pending call results at the original
+// call/test boundary, bool/byte/short/long: eight at 236. NOT kept: one-use call
+// outcomes unmatched; direction/normal/length/zero homes remain. Original projection,
+// output validity, helper calls, case order and complete body restored.
+// F383: Coherent existing basis-builder input order 234, but its matched callee becomes 2;
+// NOT kept. Immutable projection denominator/captured scale/pan fraction, seven
+// subsets, all 236. Original interfaces, copied plane and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

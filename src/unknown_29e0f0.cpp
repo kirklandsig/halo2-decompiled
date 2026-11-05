@@ -301,6 +301,21 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH352: Read-only initial-root/membership-root/membership-group descriptor pointees,
 // seven subsets then the read-only current group: eight at 390. Original pointer
 // declarations and body restored; selected-default/root/bitmap/endpoint homes remain.
+// DH359: Whole-operation failed outcome bool/byte/short/long, cleared after output
+// 408/408/432/431; at output entry 410/410/432/431. NOT kept: no byte match;
+// original result, selected homes, roots, bitmaps, helpers and complete body restored.
+// DH361: Step-equality/polarity stopping tests 405/396; loop-owned ordinal/selected/step-equality/
+// step-polarity/complementary-ordinal/complementary-selected boundaries 390/389/405/396/390/389.
+// NOT kept: one-point leads below the gate; original directional predicate and full body restored.
+// DH363: Native indexed coordinates in squared/length metrics and actual output triplet loop,
+// subsets 1/2/4/3/5/6/7: 390/390/393/390/393/393/393; full graph with indexed length delta 428.
+// NOT kept: no match or native-home recovery; original metrics, copy and whole body restored.
+// DH365: One append-capacity outcome owns the marker append and output flag,
+// bool/byte/char/signed-char/short/word/int/long: 414/409/409/409/404/404/406/406. NOT kept: no exact
+// result/join recovery; original body restored. Selected-default/root/bitmap homes remain.
+// DH368: Standard coordinate-range squared/length delta and output-copy boundaries,
+// seven subsets then the complete graph with native float root: 437/507/435/555/443/501/537/537.
+// NOT kept: all regress and miss native homes/extent; original metrics, copies and whole body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

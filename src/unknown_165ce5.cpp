@@ -1739,6 +1739,23 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // without a match. Look locals' addresses taken 220/104 (reciprocal still shared); look value and clamp in separate statements 223;
 // aiming velocity through a pointer 542/114; `mode` declared first, assigned later 220. Positional stays above 218 until the look
 // block's bytes agree, because every form shifts what follows it.
+// AC535: Peer processing/final activation-resource phases gated by one entry result,
+// positive/complementary bool/byte/short/long: 542/542/573/571/542/542/573/571 fast
+// (control 220, full 218). NOT kept: frame 0x28 and native unit/mode/look/save gaps
+// remain; original complete body and every observation/call restored.
+// AC537: Actual post-spring blend-completion/pending truth, bool/byte/short/long,
+// 220/220/220/220/220/220/220/220 (fast control 220, full 218). NOT kept: no equality/gain; original
+// completion test, all five smoothing tuples and complete body restored.
+// AC539: Independent zoom/idle channel-query return ownership, positive then
+// complementary bool/byte/short/long: eight at 220 fast (control 220, full 218).
+// NOT kept: one-use call results unmatched; original queries and full body restored.
+// AC541: All four early coefficient override/default-presence outcomes, bool/byte/short/long,
+// eight at 220 fast (control 220, full 218). NOT kept: no equality or gain;
+// original field tests, overrides, smoothing tuples and complete body restored.
+// AC543: Independent final resource-presence/complement results at the original
+// tail consumer, bool/byte/short/long: eight at 220 fast (control 220, full 218).
+// NOT kept: one-use outcomes unmatched; frame, unit/mode/look homes and late restores
+// remain. Original final gate, smoothing tuples, observations and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

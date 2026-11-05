@@ -1281,6 +1281,9 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // The data field through a `byte *const *` pointer to it 44; the parent header by pointer addition 44; the parent
 // object by byte offset 44 (all same code); parent object, matrix and mirrored flag as conditional initialisations
 // 44 (1396); a parent header pointer with its object read at each use, mirrored first, 42 (1392: `lea` of the header).
+// Round 110: split parent base, a one-use parent-node local, pool[0]/dereferenced-pool member spellings,
+// parent object/index role names, a function-scope parent object and a parent-node array pointer 97 each
+// (same code). NOT kept: no gain; the one-use forms require a byte match. Opening body restored.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
