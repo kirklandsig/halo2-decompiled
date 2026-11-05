@@ -572,6 +572,9 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// MiniMax E (11-05): no new form, no lower score; the four-term plane-distance accumulator written as one
+// expression gives 211, the same sum without the redundant parentheses 205 and the contact point written as
+// three products followed by three adds 207 - all worse. Reverted.
 // MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.

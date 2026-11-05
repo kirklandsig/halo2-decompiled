@@ -2457,6 +2457,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax E (11-05): no new form, no lower score; merging the two set-chunk calls into one site with the
+// range and permutation indices in named locals gives 193 (short indices) and 192 (long indices) - our frame
+// drops to 8 against retail's 0xc. Reverted.
 // score 17 (was 23): left: the range index is sign-extended (`movsx ebp, ax`, one byte) for
 // 0x219070's long set index, the 0x219070 call runs after the chunk index push, and the
 // delayed start sets flag0 before storing the start time. Earlier: the two set-chunk calls narrow their indices to char
