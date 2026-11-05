@@ -2389,6 +2389,14 @@ dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
 // MiniMax D (11-01): no new form tried, no lower score.
+// MiniMax G (11-04, not kept, m3 review: the destination default moved inside the source-null block, so a null
+// destination with a non-null source read an unset rectangle; a behaviour change): 132 (was 140) with the two default rectangles built in retail's
+// store order (source[3] first, then the 320-based pair, the 240-based pair and the last 320-based
+// one) inside the source-null block, which matches retail's fallback arithmetic instruction for
+// instruction. Still: retail builds both defaults unconditionally and writes each selected default
+// into the parameter's home, ours branches over the block and leaves the parameters alone, so the
+// vertex emission that follows is one instruction out of step; retail also reloads preserve_alpha
+// after the call in the short arm where ours keeps the value in a register.
 // score 140 (was 154): Frame and retail extent agree; caller flag residency and native
 // fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
 // Earlier 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
@@ -2841,6 +2849,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 }
 
 // MiniMax D (11-01): no new form tried, no lower score.
+// MiniMax G (11-04): no new form, no lower score.
 // score 211 (was 247): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
 // the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
 // Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
