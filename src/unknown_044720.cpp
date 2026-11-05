@@ -608,6 +608,12 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // DL270: Native common geometry field-address selection, mutable/readonly entry
 // pointer/reference and mutable/readonly field-location contracts, eight 222s.
 // NOT kept: target regresses and shared user 107 -> 137; original selector/body restored.
+// M396: Immutable bitmap/bound-point/displacement producer subsets 1/2/4/3/5/6/7,
+// then complete immutable value/receiver graph: eight at 182. NOT kept: no entry/index
+// spill or center/query/bound home repair; original complete body restored.
+// M402: Actual upstream tag/BSP/instance section record producers, seven subsets,
+// then complete read-only selector graph: eight at 182. NOT kept: no entry/index
+// spill or center/query/bound home repair; original shared selector and full body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

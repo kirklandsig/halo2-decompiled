@@ -381,6 +381,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // all regress and shorten farther from retail; original helper and body restored.
 // J259: Full root/sine/cosine return storage, separate/paired/all and immutable all: 689/706/698/690/682/701/683/683.
 // NOT kept: no eligible native repair; opening executable source restored. Native frame 0x108 is lost; original real helpers and every in-place capture restored; success/input/minimum/hit homes and inactive exit remain.
+// M400: Complete original input/basis/origin/distance/ray/root/rotation-cross/projection defaults
+// 603/677/637/665/671/592/592/598. NOT kept: none improves; original
+// producers and all in-place snapshots restored; result/input/minimum/hit homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

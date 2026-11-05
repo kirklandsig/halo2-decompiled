@@ -638,6 +638,9 @@ void function_245400(s_source_245400 const *source, long index,
 // rotated back through a forceinline helper taking the matrix 234 (811 bytes; plain inline stays out
 // of line, 387). Retail pushes EBP only around the plane code (`push ebp ... pop ebp` mid-body) and
 // reads the matrix at its test; ours keeps the matrix in EBP from entry, so EBP is a prologue save.
+// M397: Complete edge/cross/transformed-point defaults, masks 1/2/4/3/5/6/7,
+// then all at entry: 213/209/223/213/230/223/230/230. NOT kept: no equality or eligible native-
+// frame gain; original workspaces and complete body restored. Four exact controls survive.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

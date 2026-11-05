@@ -1778,6 +1778,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC558: Complete primary-weapon override admission/rejection result in
 // bool/byte/short/long: eight at 220 (unchanged fast 220, full 218). NOT kept:
 // one-consumer truth unmatched; original early gate and complete body restored.
+// M398: Original clamped-yaw/clamped-pitch/late-magnitude zero defaults, masks
+// 1/2/3/4/5/6/7, then complete activity/zoom/scope defaults: eight at 220 fast (control 220, full 218).
+// NOT kept: no frame/look-home gain; original producers, all five smoothing tuples and body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

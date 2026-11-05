@@ -383,6 +383,9 @@ struct s_24e9c7_bounds
 // the half width, side and back kept as points 138 (739; homes unchanged); the bitmap entry indexed at both uses 144 (746, masked 78); `up.x`
 // written `-(placement->forward_i * result)` 125 (same code); `across_i` written `-placement->forward_j * size` 125 (same code, still sunk); bitmap
 // at each use with `size * (0.0f - forward_j)` 138 (742, masked 79).
+// M397: Immutable actual upper/side/reverse records, masks 1/2/4/3/5/6/7,
+// then all with immutable scalar producers: 125/125/125/125/125/125/125/125. NOT kept: no exact or
+// eligible gain; original records, observations and complete body restored. Early spill/homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -562,6 +562,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // F401: Original-site decoder-open success/failure outcome in bool/byte/short/long:
 // 246/246/246/246/246/246/246/246. NOT kept: no exact one-use outcome; original direct test and full body
 // restored. Frame 0x3c/0x40, status/clock/output homes and instruction policy remain.
+// M399: Original mode/byte-count/start-clock scalar zero defaults, subsets 1..7:
+// 246/246/246/296/296/296/296; complete defaults with elapsed zero 296. NOT kept: ties or regressions.
+// Original producers and entire body restored; frame 0x3c/0x40, native mode spill and clock/SSE gaps remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

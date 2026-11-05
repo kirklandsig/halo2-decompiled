@@ -1983,6 +1983,9 @@ void function_269250(long clump_index, long actor_index);
 // the improve test 126 (39). The walk written out in this body (diagnostic): the found arm assigning the group directly 128 (64: pool promoted into EDI and the
 // selection memory-only as retail, but the not-found path threads); the helper's exact shape, one level or both levels, 126/126 (39, same code). So the pool wins
 // only once the not-found path threads; retail has both.
+// M403: Native selected/created 32-bit long/int/dword declaration pairs on the common
+// score graph, eight nonoriginal pairs: eight at 87/482. NOT kept: pool/selection
+// residency and x87 score homes unchanged; original domains and complete body restored.
 // MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
 // M3 lane 4 r168 (fast, this body 89). New: a 600 s permuter run (55 tries, none below 87); the selection as a dword 89
 // (same code). Re-measured listed forms: in-arm compare 126 (480 bytes); the walk as a for loop with the step in its init

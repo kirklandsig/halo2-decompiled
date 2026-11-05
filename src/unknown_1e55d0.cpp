@@ -200,6 +200,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // F402: Four-byte movement/input/state pointer-home lexical identities, seven
 // subsets then the complete graph with the velocity identity, 319 each. NOT kept:
 // all canonicalize; original names, aligned helper and complete body restored.
+// M400: Complete original matrix/position/conversion output defaults, seven subsets and CRT,
+// 312/330/323/319/312/330/323/317. NOT kept: matrix default gives native move/input registers
+// and first +0x8f at 312, but grows to 1200/1164 bytes and gains only seven; all original producers restored.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

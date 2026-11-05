@@ -723,6 +723,9 @@ static inline word font_character_pixel(long alpha, long color)
 // boundaries, eight nonoriginal indexed/counted/endpoint pairs: 165/184/173/242/198/183/203/214.
 // NOT kept: all regress; original indexed fills, helper, includes and entire decoder restored.
 // Frame 0xc and alpha extension/literal assembly/two-run differences remain.
+// M401: Complete whole-expression pixel result before the original word return, word/short/long/dword/int/unsigned-int/signed-64/unsigned-64:
+// 85/85/226/226/226/226/210/210. NOT kept: ties or regressions; original helper and complete decoder restored.
+// Frame 0xc agrees; alpha parity widening, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

@@ -2820,6 +2820,9 @@ s_cached_input_list g_5234e8[4];
 // original live list 148/148/148/148; once-read list 136/136/136/136 fast (control 147, full 113).
 // NOT kept: retail loads the flag word twice; nonexact read-once forms are ineligible.
 // Original complete body restored; native list/total spills and output/index homes remain.
+// M396: Immutable original view/total/handle producers, subsets 1/2/4/3/5/6/7,
+// then complete immutable observation/result graph: eight at fast 146 (control 146, full 113).
+// NOT kept: no native list/total spill or output/index allocation repair; original body restored.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {

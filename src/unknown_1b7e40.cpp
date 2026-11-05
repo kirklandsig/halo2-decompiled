@@ -264,6 +264,9 @@ bool function_25d9b0(long prop_index);
 // immutable complete graph and shared squared-length producer: eight at 49 (556/557 bytes).
 // An isolated range-copy control also scores 49 and is excluded from new-trial credit. NOT kept:
 // no score gain; original velocity/range observations, busy select and complete body restored.
+// M400: Original velocity/iterator defaults via aggregates or CRT, at original phases/entry,
+// separately/together: 95/90/163/211/231/187/187/230. NOT kept: all regress;
+// original twelve-byte workspace producers, busy test and all exits restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

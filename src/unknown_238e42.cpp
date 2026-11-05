@@ -1122,6 +1122,9 @@ bool __stdcall function_2399da(long controller_index)
 // stored field) combined with `own_rank >= rank` 89, with the permission test as a named bool 89, with the task index preset
 // to NONE 89, with a removal-arm identity local 89, with own rank read ahead of the identity test 89: the identity stays in
 // ECX and the rank in EAX in every combination (a gain of 1, under the keep bar).
+// M397: Complete selection/member/membership output-buffer defaults, masks 1/2/4/3/5/6/7,
+// then all aggregate-initialized at entry: 174/158/123/193/196/181/212/234. NOT kept: added
+// stores and no exact or eligible gain; original buffers and full body restored.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

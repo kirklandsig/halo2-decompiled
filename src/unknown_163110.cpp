@@ -872,6 +872,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // AC558: Complete native byte enable-input contracts (bool/byte/char pairs except
 // original bool/bool): eight at 115, 1851 bytes. NOT kept: no exact match;
 // original definition, every prototype, both caller tuples and entire body restored.
+// M398: Original delta/transformed-point/intersection zero defaults, masks
+// 1/2/3/4/5/6/7, then all at entry: 115/212/212/115/115/212/212/415.
+// NOT kept: no coefficient/zero-home gain; original outputs, helpers and body restored.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

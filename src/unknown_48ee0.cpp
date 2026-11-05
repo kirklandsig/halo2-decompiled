@@ -31,6 +31,8 @@ extern real g_4c9798[36];
 // the width against the height the other way round and the near-plane distance is read from
 // the tag; the mode bit still loads the flags into edx where retail uses eax.
 // Earlier 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
+// Earlier form (178 from 197): the width is rounded before the height, the overflow fix-up compares
+// Earlier form (197 from 197): the mode bit loads the flags into edx where retail uses eax, so
 // MiniMax lane E (11-01): no new form, no lower score.
 // Earlier: the mode bit loads the flags into edx where retail uses eax, so
 // the mode bit loads the flags into edx where retail uses eax, so
@@ -210,6 +212,12 @@ extern real g_4c9798[36];
 // subsets, published dot pairs, complete graph, dead snapshot removal and complete
 // projection/plane scale graph 174/343/174/343/174/343/343/343. NOT kept:
 // ties or nonnative frame/short extent; original copies, normal consumers and body restored.
+// M396: Actual mode/width-limit/height-limit enum domains, subsets 1/2/4/3/5/6/7,
+// 174/174/250/174/250/250/250; complete immutable limit graph 250. NOT kept:
+// ties/regressions; original body restored. Mode/size homes and rounding reloads remain.
+// M402: Complete reciprocal/depth-scale/offset result arms, seven subsets, then
+// complete fallback-first reciprocal: 174/174/323/174/323/323/323/323. NOT kept:
+// offset default moves after its branch; original scalar results and whole body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

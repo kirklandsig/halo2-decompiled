@@ -1249,6 +1249,17 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 }
 
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
+// MiniMax R (11-04): forms tried - the flag declared before the cursor and the total 93 (the channels argument leaves eax, and the gain is under the review threshold, so the original body is restored), the shared helper rewritten with an early return 94 here but 0x56160 falls to 25, the contribution written constant-first 94 (the same bytes) and a pointer-indexed walk 128, a nested four-by-four group loop 94 (it reproduces retail's unrolled four-channel block, its memory counter and its prologue, but the identity flag stays in bl), the same nest with a separate group cursor 112 and 118 and with the flag first 111 (the channels argument leaves eax), the declaration orders on that nest 93, 99 and 108, and the fast permuter 47 tries with no lower score.
+// MiniMax D (11-01): no new form, no lower score; the declaration order may not change, and the
+// flag's register follows the shared helper that the matched 0x56160 and 0x56380 pin.
+// score 94 (was 94): identity BL versus retail AL and membership AL versus CL;
+// frame, entry convention and 347-byte extent agree; payload/add and cursor schedules follow.
+// Earlier: this round's new forms - the flag declared ahead of the total and the
+// cursor (108), between the two (111), the channel reached by index (109) and the value read
+// into a named local (94) - all leave the flag in bl where retail keeps it in al.
+// Earlier: this round found no gain - the flag stays in bl where retail keeps it in al, and the
+// two availability globals are tested in the opposite order from retail.
+// Earlier: the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
 // into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
 // Earlier at 94 (was 94): this round's new forms - the flag declared ahead of the total and the
@@ -1392,6 +1403,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // code); a single-exit total set to 0 in the else of the inverted entry test 109; the per-channel product as an inline
 // helper taking the include flag 94 (same code); the inverted flag `!= player` with `? 11 : 13` 94 (same code); the flag
 // first, then the total and an indexed element pointer per iteration 112 (0x54990 1). Restored.
+// M400: Shared membership seeded from its active byte, bool/byte/signed-char/short/word/
+// long/dword/int storage: 94/94/94/146/146/133/133/133. NOT kept: every form
+// raises shared-user scores; original false-seeded helper and target body restored.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1789,6 +1803,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // Round 90 (m3 lane 9, fast with 0x53610/0x54890/0x53a20): the values parameter `*const`, the inner counter at
 // function scope, the target bit at function scope, the removal mask at function scope and the active mask declared
 // ahead of the player masks, 85 each (same code). Restored.
+// M400: Immutable original membership/local/remote bindings, all seven subsets, then
+// all with immutable input/player-bit bindings: 85 each. Original bindings restored;
+// no readiness/query boundary or remote residency change; all calibrated controls unchanged.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3380,6 +3397,9 @@ struct s_voice_route_choice
 // merges the radio and -1 SetPlaybackPriority tails at `mov edx, engine; push edx; call`; ours loads the engine early in
 // both arms (EAX in the -1 arm), so the suffixes differ. After the loop retail reloads the talker into EBX with the zero
 // in EBP; ours swaps them, so the radio test becomes `cmp [mem], bl`. Restored.
+// M397: Actual ordinal/player/source-table lexical identities, masks 1/2/4/3/5/6/7,
+// then all with conditional radio: 363/363/363/363/363/363/363/411. NOT kept: no exact or eligible
+// gain; original complete body restored. Entry saves and cursor bias remain.
 // Round 92 (m3 lane 12, fast): `__assume` ahead of the loop on talker, count, choices or settings 363 each, with branch radio 411, with its named bit
 // 422; on the player inside the loop 1091 (any assume there stops the unrolling, callers 22/18), with branch radio 1103, with the bit 1104. The player
 // read inside each headset arm 363 (branch 411, with the bit 422). On branch radio and the bit: a mode local, `mode << player`, pre-increment, the counter

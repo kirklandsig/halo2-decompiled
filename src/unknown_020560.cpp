@@ -1075,6 +1075,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Y607: Existing scalar coordinate scratch shared across both searches, x/y/z subsets
 // then all with shared candidate distance: 547/547/547/547/547/547/547/547. NOT kept: shared
 // lifetime forms do not match. Original complete body restored; native frame/query/ordinal/fraction homes remain.
+// M403: Native sample position/coefficient-triplet/direction readonly members,
+// seven subsets then readonly table input: eight at 547/2122. NOT kept: native
+// frame/query/vector/ordinal/fraction homes unchanged; original record and body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

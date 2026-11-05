@@ -4957,6 +4957,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // inline 3616/3616/3597/3597. NOT kept: entry/later lookups still merge; forced
 // forms shorten to 2700 bytes and ordinary providers stay called. Original full
 // body restored; native zero/result/one and definition ownership remain.
+// M395: Complete result/blend/reverse-turning double receiver families 1/2/4/3/5/6/7, then immutable case receivers:
+// 1489/852/771/1538/1510/832/1537/1537. NOT kept: no exact native-shape candidate; native entry definition and zero/result/unit-constant residence remain.
+// Original complete body restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
