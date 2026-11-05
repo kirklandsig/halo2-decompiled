@@ -1264,6 +1264,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // 253/253/253/253/253/253/253/253 (fast control 253; full 253).
 // NOT kept: no byte match or eligible gain. Original dynamic successor test, replacement result, query
 // defaults, refreshes, cleanup and full body restored; sentinel ESI and squad/query homes remain.
+// B452: Actual tag/squad/placement input layouts, seven subsets then all with immutable
+// squad/placement bindings: eight at 253. NOT kept: sentinel and query homes unchanged;
+// original input observations, outputs and complete body restored at the native frame/extent.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

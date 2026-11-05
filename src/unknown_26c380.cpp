@@ -392,6 +392,9 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // and it still matches.
 // Held form at 34: 1605 bytes as retail, first difference +0x94, aligned count with registers and stack homes masked 4. Left: the cross's row j operands and the magnitude's j/i order, XMM1-3 rotated
 // (retail line offset, normal j, normal i; ours normal j, normal i, line offset), the line offset's and previous sector's stack slots, tail C's edge/distance store order.
+// B452: Boolean result/first-edge/hit lexical priorities, six role-name sets and
+// two joint sector-flag declarations: eight at 244. NOT kept: the native 0x64 frame
+// stays, but the two byte homes and projection/previous-sector homes remain exchanged.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

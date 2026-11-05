@@ -333,6 +333,9 @@ struct c_aggregate : c_child
 // bytes), plus the dispatch too 146. Still BLOCKED by the build flag: frame 0x8020 needs `produced` to share a slot.
 // M3 lane 9 r88 (fast): one output local shared by both calls, 4 names by first/middle/last declaration, 31 each (frame 0x8020 but the shared slot and the two spills exchange; retail keeps `result` apart at +0x1c and packs
 // produced with a spill at +0x10); produced declared then assigned 31, a one-element array 31, through an output pointer local 31, at the loop body top 141 (389). Still BLOCKED by the build flag.
+// B452: Shared escaped callback/information output with cleanup zero/NONE seeds,
+// before/after-array storage and completed query scopes: 78/74/78/74/78/74/78/74.
+// NOT kept: native 0x8020 frame recovers but extent grows; original outputs/body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
