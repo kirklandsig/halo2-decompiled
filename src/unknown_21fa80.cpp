@@ -281,6 +281,8 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // M381: Actual voice/buffer/submix API-output zero initialization, seven subsets, then
 // all with initialized status: 566/615/591/615/591/621/607/608 (fast control 532, full 545).
 // NOT kept: unsupported extra stores and regressions; original outputs, helpers and full body restored.
+// Round 217 (m3 lane 3, fast control 532, full 545; the fast image carries the builds-differently caveat): `changed` as a flag preset true and cleared by an if 544; the gain test as `fabs(...) >= 0.1f` 545; `changed` with `== 0` tests 532 (same code);
+// mode and direct read ahead of `changed` 555 (1902 B), with the fall-through two-case send switch (round 212's form, 545 alone) 558 (1913 B); the gain source pointer chosen by an if ahead of the bits read 536. Body unchanged.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

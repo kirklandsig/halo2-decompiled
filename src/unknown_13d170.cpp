@@ -170,6 +170,8 @@ struct s_block_candidate
 	long pages;
 };
 
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 /* a walk over the blocks, the current one ahead of the iterator */
 struct s_physical_block_iterator
 {
@@ -178,7 +180,7 @@ struct s_physical_block_iterator
 };
 
 // MiniMax S (11-01): the result/limit declaration swap reaches retail's frame but scores worse; no lower score.
-// score 338 (was 347): frame 0x1054 now as retail (the deletion walk's struct holds the never-touched dword at esp+0x54); page-offset/ring-tail allocation and policy blocks differ.
+// score 209 (was 347): frame 0x1054 now as retail (the deletion walk's struct holds the never-touched dword at esp+0x54); page-offset/ring-tail allocation and policy blocks differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but
 // ours moves the else arm past the scan; retail also uses the page offset (EBX) as its zero from
 // the limit clamp on, so EBX is pushed first. Candidate stores offset before time 370; busy as
@@ -454,11 +456,14 @@ struct s_physical_block_iterator
 // Left there: an early zero register at the limit clamp (retail's zero is offset's EBX, NONE in EAX, type in ECX; dropping any two real zero literals removes it, a threshold, so retail's source has fewer: not found), the skip path's `xor esi, esi` (retail literal zero in the none arm),
 // late `push edi` (follows NONE in EAX), the walk's `movsx` before the add and `mov edx, edi`, the after arm past the epilogue, and the slot order.
 // On the zero register: one real zero literal fewer (candidate time, one segment time, head, one clamp arm, the limit clamp's zero) removes it; copies of a zero (head from tail, chained stores, a helper's parameter) do not.
+// Round 217 (lane 3; grid on fast, then plain; x = register-inclusive aligned, m = masked aligned): kept 338 -> 209 (1228 bytes): offset and previous in the admitted block, in the order oldest, have_best, head, offset, tail, current, previous; candidate, none and gap statement orders; `MAX(physical->time - x->time, 0)` for the default arm's two clamps. Same with `dword now` 209; on it `better` uninitialized 209, case 0 through a flag 209, an empty join 209, better preset true 209, written-out successor 209, direct insertion 230 (1246).
+// RECIPE (match-only parts, not kept; 93, 1213 bytes, x 37, m 12, first difference +0x338: entry, clamp, late push edi and the loop all retail's): the above plus the successor written at both uses (`candidates[(i + 1) % 256]`, `i = (i + 1) % 256`), two forced-inline policies with one result each (time then pages; weighted age with the clamp as one ternary per age) called from a forced-inline switch in the `!have_best ||` test,
+// and the insertion in two stages, the first test repeated after the arms: `if (best.previous == NONE) { if (physical->first == NONE) { entry->previous = NONE; physical->last = result; } else { element pointer ahead of entry->previous = NONE; element->previous = result; } } else { long next = element(best.previous)->next; if (next == NONE) {...} else {...} } if (best.previous == NONE) { entry->next = physical->first; physical->first = result; } else { before; entry->next = before->next; before->next = result; }`. The repeat is what sinks retail's after arm past the ret (without it the arm stays in line, 125 with offset at the top, x 45 m 24); written `!= NONE` 125 (m 58-60); direct first element 124 (m 19), `long first` 122 (m 16); offset at the top with that two-stage form 125 (x 27 m 10: only the entry's early zero and the walk differ).
+// Left on the recipe: EBX and EDI swapped for the scan's maximum and bit and for result and NONE (`or edi, -1; cmp eax, edi` where retail has `cmp eax, -1` and `or ebx, -1` later), and the walk (retail's data base in EBX, `movsx ecx, [eax + ebx]` ahead of the add, `add ebx, edi` and a separate best.offset load copied from EDI for the second compare). No inner `return result`: with one, 353 (this was the block on round 215's lead). Offset: declared at the top 125, between the clamp and the limit test 244, first in the block 258, ahead of head 113, ahead of tail, current or previous 93, declared at the top and assigned there 93.
+// On the recipe: block declarations best/iterator/oldest_time/segment/next_tail/i/candidate moved 93 each; overlap test with a start, end, block offset or block end local, sum swapped, inverted 93; reversed compare 93 (x 39); local iterator step with the salt read first 170 (x 79), with an offset local 387 (1216); result declared first 389 (1238), `long allocated` 93, in the test 93; `long oldest = result` 93 (same code). Dead volatile load probes (diagnostic, reverted): walk body 55 (1214), after the walk 81, insertion 97, at `if (have_best)` 98. Zero diagnostics on the 125 form (wrong values, reverted): head from pages 98 (x 31, m 20, retail's entry exactly), tail 127, candidate pages 384 (1191), gap time 347, second clamp 289 (1225), offset 327, `type < 1` 267, both limit zeros 305 (1224).
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
-	long offset = 0;
-	long previous = NONE;
 	long pages = size >> physical->page_shift;
 	if (size & ((1 << physical->page_shift) - 1))
 		pages++;
@@ -468,11 +473,13 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 	{
 		s_block_candidate candidates[256];
 		s_block_candidate best;
+		long oldest = NONE;
 		bool have_best = false;
 		long head = 0;
+		long offset = 0;
 		long tail = 0;
 		long current = physical->first;
-		long oldest = NONE;
+		long previous = NONE;
 		dword oldest_time;
 		while (offset < physical->page_count)
 		{
@@ -481,8 +488,8 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 			{
 				s_block_candidate *candidate = &candidates[tail];
 				candidate->previous = previous;
-				candidate->time = 0;
 				candidate->offset = offset;
+				candidate->time = 0;
 				candidate->pages = 0;
 				tail = next_tail;
 			}
@@ -490,8 +497,8 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 			dword segment_time;
 			if (current == NONE)
 			{
-				segment_pages = physical->page_count - offset;
 				segment_time = 0;
+				segment_pages = physical->page_count - offset;
 				offset = physical->page_count;
 			}
 			else
@@ -521,8 +528,8 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 				}
 				else
 				{
-					segment_pages = block->offset - offset;
 					segment_time = 0;
+					segment_pages = block->offset - offset;
 					offset = block->offset;
 				}
 			}
@@ -549,10 +556,8 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 							break;
 						default:
 							{
-								dword age = physical->time - candidate->time;
-								dword best_age = physical->time - best.time;
-								age = age > 0 ? age : 0;
-								best_age = best_age > 0 ? best_age : 0;
+								dword age = MAX(physical->time - candidate->time, 0);
+								dword best_age = MAX(physical->time - best.time, 0);
 								better = (long)(best.pages * age) > (long)(candidate->pages * best_age);
 							}
 							break;
