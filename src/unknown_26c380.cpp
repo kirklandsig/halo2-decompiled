@@ -455,13 +455,13 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 						long tmp3 = iterator.vertex;
 						point1 = &pathfinding->vertices[tmp3];
 						{
-							long start_vertex;
+							long entry_vertex;
 
 							if (forward)
-								start_vertex = edge->vertices[1];
+								entry_vertex = edge->vertices[1];
 							else
-								start_vertex = edge->vertices[0];
-							point0 = &pathfinding->vertices[start_vertex];
+								entry_vertex = edge->vertices[0];
+							point0 = &pathfinding->vertices[entry_vertex];
 						}
 						distance0 = dot_product2d(point0, &line_normal) - line_distance;
 						distance1 = dot_product2d(point1, &line_normal) - line_distance;
