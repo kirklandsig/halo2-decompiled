@@ -1134,7 +1134,7 @@ counters_done:
 #include "unknown_1eb550.h"
 #include <xmmintrin.h>
 extern real g_47f05c;
-void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity);
+void havok_component_rigid_body_point_velocity_get(vector3f *velocity, long rigid_body_index, s_havok_component *component, point3f const *point);
 void __stdcall function_1c3770(long object_index, dword flags);
 bool function_1c5210(transform4x3f const *matrix, void *shape, long excluded_component, long filter);
 
@@ -1186,7 +1186,7 @@ void function_1ec690(byte const *input, s_state_c570 *state, byte *output)
   if (rigid_body_index != NONE)
   {
    vector3f &current = scratch.current;
-   havok_component_rigid_body_point_velocity_get(rigid_body_index, (s_havok_component *)other_component, (point3f *)(input + 0xe8), &current);
+   havok_component_rigid_body_point_velocity_get(&current, rigid_body_index, (s_havok_component *)other_component, (point3f *)(input + 0xe8));
    change.i = current.i - state->field_50.i;
    change.j = current.j - state->field_50.j;
    change.k = current.k - state->field_50.k;

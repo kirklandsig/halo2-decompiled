@@ -1978,6 +1978,11 @@ void function_269250(long clump_index, long actor_index);
 // form's head and pool hoist are retail's shape, with EDI for EBX and the selection memory-only); the selected arm's transfer in a
 // forceinline helper, in-arm 126, common graph 89 (same code); a block-local actor index in the selected arm, in-arm 126 (same
 // code); the walk's result index in a local at the top of the body, in-arm 126, with the actor index local 126.
+// M3 lane 12 r91 (harness with src/actors.cpp equals fast, 89; in-arm 126, masked 39): in-arm with the search loop inside a compiled-out loop 126 (39); with
+// the datum index 128 (64), the same in the region 128 (64); the common compare in the region 89 (45); the loop body in the region 126 (39); an empty else arm on
+// the improve test 126 (39). The walk written out in this body (diagnostic): the found arm assigning the group directly 128 (64: pool promoted into EDI and the
+// selection memory-only as retail, but the not-found path threads); the helper's exact shape, one level or both levels, 126/126 (39, same code). So the pool wins
+// only once the not-found path threads; retail has both.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2108,178 +2113,8 @@ void function_269250(long clump_index, long actor_index)
 	g_4de2f8 = false;
 }
 
-// MiniMax B (11-03): no new form, no lower score; the two flag homes stay swapped (0x12/0x13) whatever
-// the order the flags are declared in.
-// score 89 (was 89): frame 0x24 agrees; category-byte homes and deletion completion differ. With the removed
-// prop cleared and tested (3) only the hoisted prop/node pool registers differ: retail loads the prop pool
-// first into edi, ours always loads the node pool first; an extra prop lookup (93) or an index node loop (76)
-// gives retail's registers but keeps the node-first load order.
-// Earlier: The 3 form clears the removed prop and tests it before the node scan (a set-and-test
-// frame 0x24 agrees; category-byte homes, removal completion and pool carriers remain.
-// Earlier rejected pointer-clear diagnostic: The 3 form clears the removed prop and tests it before the node scan (a set-and-test
-// flag, kept only on a match; build/r74/26b230.best3.cpp in lane 5): there only the two pool registers
-// differ: retail keeps the prop pool in edi and the node pool in ebp; ours swaps them. Start there.
-// Round 74 (from 189): tail as a record-pool iterator walk, clump loop through the shared datum walk,
-// members through swarm_creature_iterator_next, unit set only when the mask test passes, the removed
-// prop cleared and the node scan guarded by it, flags/replacement declared first, together 3.
-// Then: first-node lookup through prop_get 3; node body through prop_ref_get 180; node step through
-// prop_ref_get 3; prop step reading the pool directly 3; swarm flag tested before the prop 185;
-// `continue` member loop 346; changed/unit in the prop loop condition 181; renamed swarm flag 89 (at 89);
-// a 600 s permuter run stopped by the harness before reporting.
-// Before round 74 (old body): frame 0x1c versus 0x24; current/replacement/object homes and iterator exit differed.
-// Byte type 195; membership result earlier 189; existing group lookup 189; removal arm first 189; guarded pointer-result loop 194.
-// Complete workspace scope 189; depth zero 391; member-link result first 222; replacement-result loop 206; promoted category 195.
-// Depth one 189; outer datum API 290; word unit 218; word group 192; calling scan 237.
-// Direct pool step 254; activity-controlled loop 194; existing prop lookup 189; short/signed byte change 244/189; cached-bound scan 189.
-// node datum type 189; shared object header 189; forced existing scan 188; self-member skip 358;
-// final tracking guard 189; complete unit arms 193; unsigned replacement 189; word category mask 192.
-// Read-only object/external object reference/read-only member/extensions 189/189/189/189.
-// Ordinary prop/node/both iterator inline and separate removal noinline 189/189/189/189.
-// Frame/current/object/replacement homes remain; unchanged result 189;
-// changed-reference count 246; category at uses 195; member header getter 189; removal
-// inline/forced expansion 189/460; complete unit predicate 243; count plus removal boundary 246.
-// frame/current/object/replacement homes remain.
-// Earlier: Frame/current/object/replacement homes remain; unchanged result 189;
-// Earlier: frame/current/object/replacement homes remain.
-// Shared datum/calling walks 216/188; with group getter 216/188; native iterator index 189/237;
-// current-head/read-only object 241/216. Shared walk recovers frame 0x24 at 216/765 bytes.
-// On that frame: member while 216; tested category 219; both 219; category names 216;
-// names with while/test/both 216/219/219. One-point calling-walk gain rejected; body restored.
-// Round 368: non-unit bool/byte 219/219; non-group bool/byte 190/190;
-// joint absence domains bool/bool, byte/byte, bool/byte, byte/bool 220/220/220/220.
-// Round 373: shared member walk ordinary/inline/forced 183/183/183; entry member
-// workspace with the same boundaries 183/183/183; uniform original-object reads
-// with ordinary/forced member walk 243/243. Six-point gain restored.
-// Current-member identity before lookup 204; successor published on continuation 200;
-// original-object accessor at every use 262; identity/successor, identity/accessor, successor/accessor,
-// all three 200/261/262/262; all with conditional unit admission 263. Original body restored.
-// Round 211: change-result gate before each prop lookup, on the shared-member/frame-0x24 body,
-// with original/reversed category declarations and native node/getter subsets: 111 four times /
-// 109 four times; both reach 741 bytes. Original traversal and completion tests restored.
-// DL159: single iteration-completion label 3; separate completion guards 3; reversed category declarations 5; category name/native node datum/node iterator/both iterator names 3/3/3/3; native node with reversed categories 5. Labels rejected as branch layout.
-// Structured unit continuation, with separate completion guards and native byte unit/change domains in all eight combinations, 89 each. Original body restored.
-// Round 104, on the 3 form: group flag before the cleared prop 185; a removed flag for the cleared prop 3;
-// prop step defined before the node step 3; pool struct fields swapped (diagnostic) 3; prop-loop body
-// reading the prop at its top 136; 600 s permuter, 66 tries, none below 3. Original body restored.
-// Round 276: Unchanged-result polarity on the recovered frame, crossed with byte result, native node
-// Round 276: datum and complete category identities, 94 in all eight forms. Original result, traversal
-// Round 276: and body restored; category homes, removal completion and pool-register roles remain.
-// Native repeated state pointer/reference, crossed with the existing node-head getter
-// and chained adjacent flag clears: all eight 89. Native object fields retain the same offsets.
-// Round 249: Complete deletion/live-prop arms with common completion, ownership/replacement
-// comparison priority and original/reversed category declarations 196/144/197/146;
-// changed published after deletion 196/178/197/180. All exact-only forms restored.
-// Round 299: chained category initialization in both assignment orders, with
-// invariant-first completion and native node-datum subsets: 87/89/87/89/87/89/87/89.
-// Two-count forms restored; category homes and deletion/pool scheduling remain.
-// Round 433: Typed current clump and changed-reference count on frame 0x24, signed/unsigned with
-// original/invariant-first completion and direct/shared head; fast
-// 230/230/229/229/230/230/229/229.
-// Original body and existing helper restored.
-// Round 107: the pool registers follow how g_502418/g_50241c are declared. With the 3 form and the
-// two pools as plain separate globals (either declaration order, or one of them in a one-field
-// struct) this function matches byte for byte, but 0x25d770 (0 -> 2) and 0x25d810 (0 -> 91) then
-// load the node pool first (the other 717 functions of the 46 pool files unchanged); with
-// s_prop_pool_storage those two match and this one keeps the node pool in edi. Also 3: the struct
-// with the tracking pool (0x502414) or the clump pool (0x502420) added, the struct defined in a
-// /GL- file, the prop step reading the pool twice. The swarm flag renamed (slot order) 89, identical.
-// Round 31: on the 3 form, prop loop as an explicit index loop with the lookup in its body 189 (the pools
-// are no longer hoisted); target-clear arm through prop_get at each use 220; the existing prop walk
-// struct 3; node iterator declared beside the prop iterator 3. On the opening body the deletion arm as
-// `if (unit) continue; break;` 89 (identical code).
-// Lane 16 r48 (fast): the 3 form under s_prop_pool_storage leaves only the pool registers (ours node pool
-// EDI / prop pool EBP; retail the other way). Under separate pool globals the 3 form matches but
-// 0x25d770 2 and 0x25d810 91 (335 B; result/actor registers permute): 0x25d770's walk as a for loop 114
-// (208 B, the step is duplicated); the prop pool defined in this file instead of globals.cpp 2/91; prop
-// declared before datum in 0x25d770 2/91; both pools as one two-element array 252 (709 B: the pools are
-// no longer hoisted; 0x26aaf0 0 -> 70). Ours gives the pool the loop references first the first
-// callee-saved register (reverse order with the struct); retail gives the prop pool it in all three.
-// Lane 14 r22: unit flag renamed to sort before the group flag 89 (slots unchanged); the completion
-// test as the prop loop's condition (`(!changed || unit) && next`, the removal arm `continue`) 111
-// (741 B, but the entry is not threaded past the test); the removed flag rechecked 3 (both flag slots
-// then agree; only the prop/node pool roles in EDI/EBP differ, set by s_prop_pool_storage, which
-// matched 0x25d770 needs); with the removed test last 190; set before the removal call 3.
-// Round 29 (fast, 3 form with separate pools, which matches here): a probe reading the prop pool first
-// at the top of unknown_25d690.cpp 2/91 (0x25d770/0x25d810); separate pools named to sort prop first or
-// last 2/91 each (names do not rank promoted globals); 0x25d770's prop lookup at each of its three uses
-// 55 (the prop pool then takes EDI and loads first as retail, but the lookup sinks under the tests: the
-// promoted pools rank by reference count, ties by first reference); the final actor compare through a
-// second prop_get in both 49/115; both actor reads through it in 0x25d770 55/91.
-// Round 250: Foreign-state clear before owned-prop handling: replacement-first with category-
-// order/native-node subsets 123/123/121/121; removal-first 98/98/96/96. Category homes and
-// deletion/pool scheduling remain; all matched controls survive.
-// Round 116 (lane 8, fast): the 3 form (cleared prop) re-checked 3: the hoisted loads are in place and only which
-// pool gets EDI/EBP differs (ours node EDI / prop EBP). Separate pool globals with the 3 form: this function matches,
-// 0x25d770 2 and 0x25d810 91, unchanged by the definition order in globals.cpp or the extern order in globals.h. Under
-// separate globals the first-referenced pool takes the first register (the node pool in 0x25d770/0x25d810); under the
-// struct the other one; retail gives the prop pool the first register in all three. The node walk through the out-of-
-// line 0x26be30 4 (wrong link field, +0x2c for +0x34; not a valid form).
-// Round 193 (lane 3, fast): the 3 form under s_prop_pool_storage 3; with separate pool globals it
-// matches but 0x25d770 2 and 0x25d810 91, also with the prop pool defined first in globals.cpp, declared
-// first in globals.h, grouped with the clump pool (one struct, node separate) or the node pool grouped with
-// the tracking pool: 0/2/91 each. Whenever the two pools are separate symbols 0x25d770/0x25d810 give the
-// node pool the first register (one use each, node referenced first); as one symbol 0x26ae30 does (node
-// referenced last); retail gives the prop pool the first register in all three. The 3 form's cleared prop
-// is a flag set and tested, kept only on a match: a shared-declaration conflict with matched 0x25d770 and
-// 0x25d810, not a body problem. The 3 form with the node scan started from the prop pointer 208 (709 B).
-// Round 482: Independent category false-initializer lifetimes at entry/object/type
-// boundaries, eight nonoriginal pairs 91/91/90/91/91/90/91/91. Original entry
-// declarations restored; category-byte homes and deletion/pool completion remain.
-// Round 231: Disjoint-category unit deletion reaches existing completion, original/native node
-// with original/reversed/chained category initialization 188/188/186/186/186/186/188/188. All
-// reach 760 bytes; original continuation and body restored.
-// Round 295: One exclusive object category enum/byte/short/long, group-first [223, 197, 223, 223],
-// unit-first [241, 241, 241, 241]. Exact-only classification forms restored; original completion and pools retained.
-// Round 136 (m3 lane 6, fast): the 3 form re-checked 3; with a prop-pool read at the end of the prop body
-// (diagnostic) 199 (773 B); the deletion as its own first arm (`== object_index && replacement == NONE`) 196
-// (741 B); the keep/replace arm first 196; the deletion arm ending in `if (changed && !unit) break;` 89 (same code).
-// Lead: our first linked pool reference is 0x25d020's node-pool read (in the third object of our link
-// order); if ties between separate pool globals go by symbol creation order, that alone gives 0x25d770/0x25d810
-// (one use of each pool) the node pool first under separate globals.
-// Also round 136: `changed` declared with the categories and reset per clump 89 (same code).
-// Round 235: Native current-clump receiver with declared prop identity/head and native node
-// identity subsets, eight forms 89 each. Entire 0x24-frame body restored;
-// category-byte homes, deletion completion and pool-register roles remain.
-// DH292: Per-prop false mutation result bool/byte/short/long 85/85/242/243; ownership-produced
-// result 137/137/247/249. False Boolean with group/unit and unit/group chained initializers
-// 83/85, also 83/85 with native node datum. Six- and four-point forms rejected;
-// original whole-group result, categories, deletion, node and tracking walks restored.
-// DH304: Whole-group owner/child comparison-result accumulation, independent bool/byte producers then joint domains, 185/207/189/206/175/196/176/181.
-// Original whole-group result and all traversal restored; category homes, deletion completion and pool carriers remain.
-// Round 127 (lane 8, fast): the cleared-prop form re-measured 3 (pool registers only); completion test as
-// `!unit && changed` 89; deletion arm ending in the full completion test 89; deletion arm as `replacement == NONE`
-// before the store 94; `changed` declared outside the clump loop 89; `if (unit) continue; break;` with a char-typed
-// tracking test 89.
-// Round 63 (m3 lane 1, fast): the 3 form re-built 3 (pool roles only); node head through prop_get(props.index)
-// 89 (same code), on the 3 form 3; head from the current prop 208 (709); nodes through prop_ref_get 180 (759).
-// Also round 63: unit initialised once from `((1 << type) & 3) != 0` 211; unit declared before the group flag
-// 87 (only the two clears swap; slots stay), on the 3 form 5.
-// F350: Native final tracking/state receiver with same/other-object cleanup
-// predicates in bool/byte/short/long, eight forms 89 each at 743 bytes.
-// One-use predicates are exact-only and restored; original categories, mutation
-// result, deletion continuation, all shared pools and complete body retained.
-// Round 82 (m3 lane 9, fast): retail's deletion arm reloads both pools and joins the unit test after `test bl, bl`
-// (0x26b093), skipping the node scan. The node scan written in both live arms 295 (837 bytes, not merged); `if (unit)
-// continue; break;` 89 (same code); the deletion arm first as `match && replacement == NONE` with the rest in its else
-// (a repeated test) 196 (741 bytes, registers rotate); the 3 form re-measured 3 (ours: node pool EDI, prop pool EBP);
-// on it the node iterator declared beside/before the prop iterator 3/3.
-// M3 lane 4 r161 (fast): the prop loop split into a matched-object arm (deletion, or replace + node scan) and an
-// else arm (state clear + node scan) so only the bottom test reads the unit flag 295 (837 B: the two node scans
-// are not merged and the pools are no longer hoisted); `changed` set only in the replace arm 92; the group flag
-// assigned from the data test and tested in place of `data` 206; the type as a long 135; the unit flag inverted
-// (`single`, cleared for units) 89 (same code, slots unchanged).
-// DH339: Actual group/prop/node current pointers declared in their while conditions, seven
-// subsets then all with the member result condition, eight at 89. Original declarations,
-// result tests and complete body restored; category homes and deletion completion remain.
-// P327: Complete group-category definite assignment in bool/bool, byte/bool, bool/byte,
-// byte/byte domains 152 each; complete unit assignment as well 193 each. NOT kept:
-// all regress; original classification stores, deletion continuation and pools restored.
-// M3 lane 4 r164: the cleared-prop form with separate pool globals and a probe reading the prop pool at the top of the third linked
-// object (plain, diagnostic): this function matches, 0x25d770 2, 0x25d810 91, so first reference in link order does not break the
-// tie. Under separate pools (fast): a front-end forceinline node walk 2/91; the prop pointer declared outside the loop 2/91; 1 to 8
-// identity locals in 0x25d770 (diagnostic) 2/91 each; a second merged prop lookup at the first test 48/116, at the middle test 49/115,
-// as its own statement 2/91. Under the struct the last-referenced pool takes the first register, so the prop walk as a plain `for` with
-// the call in init and step 229 (789 B), with the cleared prop 206 (773 B): the step is duplicated and the pools are not hoisted.
+/* an object is going away: every clump prop tracking it moves to a replacement member or is removed,
+   and the references to it in the props, their nodes and the trackings are cleared */
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
@@ -2334,8 +2169,7 @@ void function_26ae30(long object_index)
 				else
 				{
 					function_26aaf0((s_clump *)group, props.index);
-					if (!unit) break;
-					continue;
+					prop = NULL;
 				}
 			}
 			else if (prop->state.unknown3c == object_index)
@@ -2344,7 +2178,7 @@ void function_26ae30(long object_index)
 				prop->state.unknown66 = false;
 				prop->state.unknown65 = false;
 			}
-			if (group_object && prop->unknown22)
+			if (prop && group_object && prop->unknown22)
 			{
 				s_iterator nodes;
 				nodes.next = ((s_clump_prop *)(g_50241c->data + (props.index & 0xffff) * sizeof(s_clump_prop)))->first_node;

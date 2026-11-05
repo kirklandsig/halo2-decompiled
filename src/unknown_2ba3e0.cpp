@@ -894,6 +894,17 @@ real g_55e618;
 // M380: Displacement/sweep scalar, aggregate and immutable aggregate producers,
 // all eight non-original pairs: 129 each at 1549 bytes. NOT kept: all regress;
 // original interleaved travel products, reflection, collision extent and full body restored.
+// M3 lane 12 r91 (fast; masked with registers and stack offsets): retail's particle stores do not block reads of the collision record. With 0x1697c0's capture
+// of the record cut (diagnostic, wrong values: no record to 0x244980 and none through 0x169510's recursion; either alone changes nothing) our build pushes the
+// last argument first and stores the position last at retail's frame offsets, but entry registers swap: 380 (1540), velocity pointer 363 (1519, frame 0x118), round
+// 75's form 384 (1527). Round 75's form rebuilt 44, masked 13 of 401, every register as retail. A nested setter or comma stores still run before a plain last
+// argument; an inline getter as the last argument with the setter nested evaluates right to left, so the load lands first and the push precedes the stores as
+// retail: 59 (1535, masked 11), with a setter taking the particle, so y and z store through it as retail, 59 (masked 9). Left there: EAX for retail's EDX, each
+// later block rotating one step and a tail cross-jump that rotation undoes (the two missing bytes), the v.i load's place and the x sum first. Getter with a named
+// value, by reference, through one or two pointer locals 59/59/59/59; a placement or record pointer local 59/59; sums in six orders with normal locals i,j,k or j,k,i
+// 59 each, k,i,j 66; an inline reset of the impact 59, inside the first argument 63 (masked 11); comma stores with named sums and the getter 44 (masked 11, stores
+// first), without named sums 236 (1554). By-value class for the last parameter: direct read with the setter 44 (masked 11, stores first, EDX), a getter returning it
+// 212 (1549). LEAD for 0x247950: that class with a converting constructor takes it 356 -> 337 at retail's 1652 bytes (its file was held; not kept).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
