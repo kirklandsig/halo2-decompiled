@@ -373,6 +373,12 @@ struct s_24e9c7_bounds
 // B445: Complete opacity producer at global-copy/corner/reverse/side/upper/width/height/basis boundaries:
 // 139/173/172/185/166/171/171/172. NOT kept: moved one-use producers do not match; original whole body restored.
 // Early across spill and eight-byte-high scalar homes remain.
+// Round 130 (m3 lane 7, fast): retail computes the across terms ahead of the height conversion and reuses across j's home for side y:
+// a side vector scaled in place, with slots -0xc/-8 above the result. Direct fields scaled in place 144 (746 B), through `real half` 154
+// (756 B); named scalars in place 125/125, with `real half` 123, through a copy 123 (2 points, slots unmoved). Pointer helpers: set and
+// scale 134 (752 B; kind and bitmap homes become retail's, side at -0x10 below the result), scale only 154/134, unit perpendicular 144.
+// Result references lowered: temporary for up 141, named extent 125, with the side 142/143, on the helpers 134/134, assigned last 159;
+// up through a helper 134; `0.0f -` forms for up with the scalars 139 (738 B). Retail keeps the y coordinate in EDX and re-reads x: named y 194/186/207, both at each use 191 (684-705 B).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -111,6 +111,11 @@ inline void dialogue_name_override(long volatile *name, long value)
 // helper as a ternary 48; the vocalization's default name read at each use 9; a fresh actor lookup
 // for the unit's index 129; the vocalization default declared ahead of the default name 9; the unit
 // index read from the actor at both tests 9.
+// Round 213 (m3 lane 3, fast): retail's two loads reuse the dying register (`mov eax, [eax + 0xcc]`, matched 0x1c9e50 likewise); `globals_tag` reassigned
+// to the element 9; an element local set in the arm 9; both reads kept as two statements 9; an inline helper returning the name 9; g_4e034c read at each
+// use 9; an inline element getter 97 (467 bytes). Dead `volatile` load probes (reverted) before the tag, the test, the name or the unit lookup 84-110
+// (440-448 bytes: the name leaves the stack and the frame shrinks), so no rotation step could be located. Retail's lookup shape (scaled index EDX, pool
+// reuses EAX) also matches 0x28f8d0's difference; both shapes occur in matched functions with the same inline.
 // @retail 0x291ea0
 bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real *duration)
 {

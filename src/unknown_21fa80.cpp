@@ -266,6 +266,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // B426: Existing SDK C entry points at first/later query, volume, status, playback,
 // mixbin, pitch and complete call phases: 532/532/532/532/532/532/532/532. Original SDK receivers,
 // workspaces and complete body restored; frame/stream/gain and mixed math remain.
+// Round 212 (m3 lane 3, fast control 532, plain 545; aligned 344): the sends as a fall-through two-case switch 545 fast (1901, aligned 331);
+// on it direct declared uninitialised beside changed 545, ahead of changed 545, the send state at the function's top 545, status at the
+// function's top 545; direct beside changed on the loop form 532. Frame stays 0x22c: retail's byte flags sit together at +0xe/+0xf, ours at
+// +0x13/+0x1b, and the declarations do not move them.
 // AC545: Existing real-pin input-first/complete-arm/lower-default/early-return
 // producers 545/532/543/532, then forced expansion 545/532/543/532
 // (fast control 532; full 545). NOT kept: ties or regressions; native frame,

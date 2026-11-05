@@ -150,6 +150,8 @@ PRIVATE __forceinline void function_295027(long arg_0, vector3f *arg_1)
 // position's home right; one-member wrappers 465 (no effect); the speed vector or offset as real[3] 720/463; array + pair 478. So both puzzles are aggregate
 // membership and size, not scopes or names: find the real record over 16 bytes that holds the speed vector and still leaves frame 0xdc.
 // Earlier first line: score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
+// MiniMax B (11-04): no new form, no lower score.
+// score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
 // Earlier score 523 (was 581): frame 0xdc agrees; since round 67 the neighbour walk is the shared inline member
 // step (retail's head-tested loop) and 0x118fe0 stays out of line as in retail. Left: retail keeps the
 // walk's position at 0x20 sharing its slot with the post-walk vector (ours shares the offset vector,

@@ -507,6 +507,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // B445: Original root-tag carrier destructively normalized after full-handle dispatch,
 // signed/unsigned mask/word forms at producer/entry declarations: 152/117/152/117/152/117/152/117.
 // NOT kept: no equality or gain; whole body restored. Fallback EDX, stage/pass and unfused homes remain.
+// Round 130 (m3 lane 7, fast; 0x2243c0 and 0x224d90 checked each time): round 59's chain rebuilt 8 (aligned 7, masked 1); tag
+// read after the instance 91 (552 B), instance from the tag 67 (0x224d90 lost). Material definition bound 92 (552 B), with head unbound
+// 38. Scratch dead reads ahead of the pass lookup: two of them put every later register at retail's (index EDX, the `xor` early,
+// EDI, the 0x1c620 and 0x1bbf0 setups, no loop pad), though the head then shifts, so ours spends one scratch step too many there.
+// On the bound form: pass tag inline 92, unbound pass 118 (544 B, no pad), stage unbound 124, pointer copy of the pass, double
+// reference, reference tag, its copy, staged tables 92 each; bound tables 86 (0x224d90 lost), on the chain 36. Cache zeros before the
+// material lookup 13 (`xor` as retail, but the stores stay ahead of the loads; retail stores them after), before the pass lookup 60,
+// with the bound definition 97; the same 13 with the cache copied for 0x175610 (scratch; its stores did not move).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

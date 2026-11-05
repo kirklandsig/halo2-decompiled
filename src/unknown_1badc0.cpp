@@ -306,6 +306,29 @@ real normalize2d(point2f *arg_0);
 // F375: Actual direct/adjusted mode selector at its byte observation, bool/byte/short/long:
 // 180/180/180/180/180/180/180/180. NOT kept: no byte match; original body restored.
 // Early object mask, copied-input/SSE and query-success schedules remain.
+// Round 63 (m3 lane 14, fast, plain confirms 47 with 0x1ba5c0/0x1bdad0/0x1bff80 matching). Match-only recipe at 47 (1025 B, aligned 13), not
+// kept because it writes the difference helpers out: an actor-to-center vector through vector3d_from_points3d right after the
+// center copy, used through dot_product2d at both projections; the second input copy, then the actor difference from it as direct
+// i and j rows only (no k); center minus copy in place through the helper; one inline 2-D perpendicular helper and one negate
+// helper for both perpendiculars, so their i and j have no direct reference before the scale; `local_12.k = 0` direct, which
+// is what gives retail's load-first i and j rows with `mulss t, [k]` last; `local_4 *= 1.1f` for the radius; `2.0f - local_11`
+// inside the normalize-success block; local_10 as direct i, j, k rows; dot_product2d(&local_10, &local_12) for the second
+// dot; `result = true` before the output store. Left: the opening's copy registers (retail: `and edx` second, center pointer
+// `lea edx`, copy x read early in EAX, center temps in EBX, copy z before y, ECX never reused), the first dot's operands, the
+// second dot's term order, ECX for the block address with the up global read ahead of the first push, and EAX/EDX in the else
+// arm's point copy. Steps: named vector first 223 (1036 B, aligned 50); with clearance in the block 212, result first 231, both
+// 217; radius named 217, `local_4 *=` 219 (aligned 28); local_10 rows ijk 214 (1029 B, aligned 21), kji 218, jki 218, kij 219;
+// dot_product2d at both projections 193 (1026 B), with the squared length too 189; actor difference rows 69 (1023 B, aligned
+// 17); dot for local_12 65; perpendicular and negate helpers 47 (only local_12's are needed; local_9's alone 65).
+// From 47: helpers for both differences 206, actor rows with a local_10 helper 194, actor helper with local_10 rows 195,
+// vector2d_from_points2d for the actor difference 195; one variable for both perpendiculars 194 (1020 B), for both differences
+// 51, both 69; projections direct 208, center vector as rows 213, as j then i 209-213; interleaved rows 204-242; opening
+// orders 69-258 (on 69); a named center pointer 51-65 (aligned 12 at best), center by fields 243; first dot arguments
+// swapped 47; second dot arguments swapped 47; one variable for block count and value 51; `void *volatile` 47; the block
+// global re-read 51; dead `&local_15` instead of volatile 49, one-element array or one-member struct 151 (store removed);
+// up global in a local 68 (1021 B; reads it ahead of the push); point copy by `*(point3f *)arg_3` 47, by a pointer local 51;
+// output index before the copy 102 (callers lose 5, 6, 11). Permuter (600 s on 47): 63 tries, none below 47. Without
+// written-out helpers no subset gains: clearance, result, radius, local_12 helpers, local_9 helpers in all 31 combinations 180-245.
 // AC543: Genuine point-pair/direction-trio/perpendicular-pair role-name groups on the
 // recovered in-place input graph, subsets 1..7 and complete collision/receiver names:
 // eight at 180, 1025 bytes. NOT kept: no equality; early mask/copy/SSE and query-success
@@ -328,6 +351,25 @@ real normalize2d(point2f *arg_0);
 // const-long/const-short/const-word: 180/180/180/203/203/180/203/203.
 // NOT kept: full-width contracts tie; 16-bit contracts grow and lose three callers.
 // Original long contract and every declaration restored; mask/copy/SSE schedules remain.
+// Round 130 (m3 lane 7, fast; 0x1ba5c0/0x1bdad0/0x1bff80/0x30c60/0x24d8d3/0x24da7d matching each time). New causes, match-only:
+// retail's center and radius are the existing 0x30c60 inlined (`lea edx` center pointer, radius as a movss): `inline` on its
+// definition, its radius read as a real and lane 14 r63's recipe (see its report) 47 -> 19 (1025 B, aligned 10; through its `long *` 80, 1021 B).
+// A helper accumulating the third dot (`real result = a->j * b->j; result += a->i * b->i;`) 15; written j first, swapped,
+// direct, named 19/19/44/25. BLOCKED-BY 0x26d100: its `&point` read makes this function's point copy escape, so the copy's
+// stores are ordered against later pointer loads, which is the whole opening schedule (`and edx`, y store, x read). With
+// 0x26d100 as (up, point, output, collision), reading `point` directly, start before direction and result first (round 61's
+// form in src/unknown_1c20f0.cpp's note): this function 4 (fast). That reorder alone, plain: 0x26d100 and 0x1c19b0 match, no listed caller moves. Left
+// at 4: the first dot's operands. Direct rows interleaved (c.i, 5.i, c.j, 5.j, which is the order the operand ranks imply)
+// fix them but the second dot's i product takes the perpendicular's temporary first, 177 (1028 B); with a dead `(void)local_9.x`
+// after the getter that too is retail's: MATCH in a plain check (0x3d7f0 177 -> 224 from the `inline`: retail calls 0x30c60 there; a
+// redundant statement, not keepable, so scratch only; the statement must precede the c.i
+// row: after it or after all rows 177, `.y` 177; through a scalar declared early 177). Without the callee's reorder the same
+// form 11, opening only. On the way: interleaved orders 187-191, in-place rows 68-70; both differences through helpers 174-197;
+// through one interleaving helper, 24 row orders, 172-208, with a directly stored perpendicular 161-197; 2-D helpers for the
+// center and in-place differences 19 (same code); center rows before the copy 198 (1031 B); named center scalars 190-198;
+// center difference unnamed at both dots 229 (1022 B); block-top declaration orders 174-197; early masked index 25; copy helper
+// 15, memcpy 15, pointer local 21, scalar copies 245/256, statement orders 51-85. No written-out rows (existing helpers only)
+// 177 at best (1031 B). Identity pointer chains of 1..7 locals 25/187 each. The rows and helpers stay match-only: body restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
