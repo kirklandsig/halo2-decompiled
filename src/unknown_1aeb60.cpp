@@ -319,6 +319,11 @@ bool function_1af530(long actor_index, long *b, long *a)
 static __forceinline long real_to_long(real value);
 short *function_e70b0(short *value, long unit_index);
 
+// MiniMax G (11-05): no new form, no lower score; the actor index still takes ECX and the actor
+// data EDX where retail keeps the index in EDX and the actor data in ECX, and the swap still runs
+// through the timer, the prop lookup, the random scale and the final argument setup; an index
+// local, the actor lookup written out, the actor reused in the last test and the data base read
+// into a local all give the same code, and the permuter (nine tries) found nothing below 49.
 // MiniMax E (11-04): no new form, no lower score; an index local, a masked index, the state
 // before the actor and a masked second lookup score 49, a short index 112; the call to 0x1f4f40
 // already sets retail's arguments up (EAX, ECX and three stack arguments), so the swap is in
