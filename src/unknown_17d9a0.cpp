@@ -125,6 +125,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
 
+// MiniMax R (11-04): the corner products' operand order (register/memory sides) changes no code at all
+// (46), a short axis result scores 162, the short axis passed to the corners 186, and a plane pointer for
+// the copy, the dot and the store 65 (the store base then matches retail but the dot's sides flip); the
+// store-only and copy-only pointer forms give 51 and 61; no new form, no lower score.
 // score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
 // ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
 // and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
