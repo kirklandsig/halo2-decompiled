@@ -639,6 +639,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // N393: Next/current/prior-state signed/unsigned eight-byte storage, eight forms 455/455/453/453/490/490/456/529.
 // NOT kept: all regress and enlarge frame/body; original handles, state, flags and body restored.
 // Frame 0xa4/0xa0 and stacked actor versus EAX/EBX remain.
+// Round 69 (m3 lane 14, fast): our actor goes to EBX at entry but EBX then holds a loop byte flag and the actor is re-read
+// from its stack home 12 times (retail keeps it in EBX, flags in stack bytes). `maximum` as a plain word 429 (1616 bytes);
+// sample/update declared at function scope 412; the 0x2641c0 result in its own bool 412; old_state short 413; the actor
+// pointer declared then assigned 412.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

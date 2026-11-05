@@ -2528,6 +2528,9 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // both arms 22; 72 combinations of an extra local, `!= NULL`, declaration order, memset spelling and priority casts keep our roles, with a
 // one-exit result 91 (224 bytes; index ESI, priority EBP, NONE EAX).
 // A 600 s permuter run (52 tries) none below 16.
+// Round 69 (m3 lane 14, fast): the fallback lookup assigned inside the NONE test's condition 16 (same code); the sound
+// index stored before the delay 23, first after the memset 24; the definition index stored after the delay 44; the
+// output written through a `long &` reference to the priority parameter 16 (same code).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

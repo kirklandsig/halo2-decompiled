@@ -539,7 +539,7 @@ real normalize2d(point2f *vector);
 real function_267370(long object_index);
 
 
-// score 20 (was 98): First +0x140: plane x-product operands, parent-selection carriers
+// score 20 (was 20): First +0x140: plane x-product operands, parent-selection carriers
 // and cross-product registers remain; frame 0x90 and length 1724 agree. Signed zone
 // byte and NONE sentinel recover immediate zone compares, EDI table and later ECX resets
 // (plain 20). Existing marker and every call/value unchanged.
@@ -727,6 +727,9 @@ real function_267370(long object_index);
 // B449: Existing cross producer with whole-vector field/aggregate/setter/const construction,
 // each with aggregate/library publication: 135/135/135/135/135/135/135/135.
 // NOT kept: aggregate staging has no byte match; every shared helper and target body restored.
+// Round 69 (m3 lane 14, fast with 0x1e2a90): the first cross reading up as the field expression 22 (its k products turn
+// b-loaded: the second product as retail, the first away); no up local at all 22; no left local 20, `vector3f *const` up/left
+// 20, the second cross with field expressions 20 (same code each).
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1532,6 +1535,10 @@ void function_1e3b60(long actor_index);
 // (457); plain unqualified word maximum re-measured 26 (429 at 1616 bytes); the current-target test as one named
 // bool 26 (438); the list head read through the held actor pointer 26 (442, 1616 bytes); the sample/update
 // flags declared before the prior state 26 (412, same code).
+// Round 69 (m3 lane 14, fast, all in 0x262ba0, which loads the actor into EBX at entry but hands EBX to a loop byte flag and
+// re-reads the actor from its stack home 12 times): `maximum` as a plain word 26 (429 at 1616 bytes); sample/update declared
+// at function scope 26 (412); the 0x2641c0 result in its own bool 26 (412); old_state short 26 (413); the actor pointer
+// declared then assigned 26 (412).
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
