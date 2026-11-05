@@ -181,6 +181,10 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // Round 207 (lane 3, fast): the slot-clear helper as `(flags & 1) ^ 1` 86 (same code); the limit product
 // computed before the first event block 199; the scoring test inverted with the decay arm first 150; the
 // existing unit_index local passed to 0xb9dd0 231 (916 bytes). The scoring flag test as `!((flags >> 3) & 1)` 86 (same code). Pool reload still BLOCKED-BY 0x101280's summary.
+// Round 55 (m3 lane 2; register-masked aligned count 17, all but three items rotation after the spilled pool): 0x101280 reading through a
+// real out-of-line getter LTCG inlines, for the object or for the definition, 86 each (plain: a call in the callee's IL is not what
+// makes the reload). Slot-clear helper (fast, the same code each time, `not dl; test dl, 1` for retail's `not al; and al, 1`): a byte
+// local then `(byte)~flags & 1` 86, a byte or bool one-bit field read through a cast 86/86, returning a byte as `~flags & 1` or `!= 0` 86/86.
 // @retail 0x2403b0
 void __stdcall function_2403b0(long player_index)
 {

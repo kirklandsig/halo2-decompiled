@@ -494,6 +494,14 @@ extern "C" void _ReadWriteBarrier(void);
 // iterator set from the global 163 (481 bytes); without the barrier 161 (479 bytes); release through the pool
 // local 126; `pool = iterator.data` after the iterator's assignments, element only 122. Retail's frame reads as
 // a four-field datum iterator at +4 plus a prologue-set pool copy at +0 read only for the element.
+// Round 55 (m3 lane 2, fast, register-masked aligned count in brackets, 122 is [32]): retail's frame +0 fits the hoisted pool of the
+// shared step spilled for lack of a register, so the real gap is pressure: its datum value stays materialized (`xor ebp, ebp` ... `test
+// ebp, ebp`) where every form here threads it. data_iterator_next_inlined with/without the barrier 162 [25]/152 [26]; four-field
+// iterator with/without 162 [25]/152 [26]; no barrier alone 161 [29]; function_badc0 without the barrier (plain) 152 [26]; the lookup
+// in the body as one test, an assigned unit, a default-first unit or a ternary 152 [26] each; an out-parameter lookup, a staged cast and
+// const references to the result 152 [26] each; `__assume` after the lookup, three facts, 161 [29], with the shared step 152 [26]. The
+// barrier moved into the lookup 149 [28], with the shared step 153 [24], four-field 153 [24] (branch shape right; still frame 0x10
+// and g_4e0300 in a register).
 // @retail 0x1fb510
 void function_1fb510(void)
 {
