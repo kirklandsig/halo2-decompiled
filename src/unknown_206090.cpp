@@ -419,6 +419,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // private/native ray type: 1355/1421/1382/1355 in both sets. NOT kept: no native
 // frame/home recovery; pointer/short traversal changes miss extent. Original raw query
 // storage, private ray, captures, scaled translation and entire body restored.
+// Round 136 (fast): the magnitude helper's input copy and result in an inner block 1395 (6195 bytes, frame 0x5cc);
+// the copy const 1355; `sqrtf` 1415 (6259 bytes); the copy declared, then assigned 1355; the first normalizer with
+// one exit (zero in the if arm, the scaling in the else) 1355.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

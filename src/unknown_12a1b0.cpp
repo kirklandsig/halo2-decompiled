@@ -387,6 +387,8 @@ void function_11bed0(s_location *location, point3f const *point);
 // Round 111: location pointer, const position pointer, both pointers, and mutable position pointer 93 each;
 // a pool local on the native iterator 93; the iterator's pool assigned last 93; guarded native do/while and
 // its early-empty-return form 93 each. One-use receiver locals restored unmatched; the call still expands.
+// MiniMax C (11-05): no new form, no lower score: the location call is still expanded here; the walk still
+// keeps the iterator struct where retail keeps a packed datum index (that datum form is 127).
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -1471,6 +1473,8 @@ struct s_looping_detail_request
 // 110; the mode through a named long 110 (same code). The query stays inlined in all six; `return` shapes do not cool it.
 // B448: Complete fallback selection/placement/publication provider, detail and source pointer/reference, forced/ordinary inline:
 // 159/159/159/159/434/434/434/434. NOT kept: no byte match; complete original body restored.
+// MiniMax C (11-05): no new form, no lower score: the first-player query is still expanded here, and
+// the audible arm still stores the offset in the request instead of retail's temporary and copy.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1654,6 +1658,8 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // Round 110: two-use long/short track-index locals 142/162 (619/628 bytes); force-inline get/set
 // declarations 50 each (same code); long or nested previous 129 each; force-inline previous helper 129;
 // implicit previous conversions 50 (same code). NOT kept: every gain-free form; original body restored.
+// MiniMax C (11-05): no new form, no lower score: the take path still tests the flags in memory where retail
+// loads them into EAX, and the previous value still comes back without retail's movsx.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {
@@ -1714,6 +1720,7 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
+// MiniMax E (11-05): no new form, no lower score.
 // score 305 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
@@ -2452,6 +2459,10 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
+// MiniMax E (11-05): no new form, no lower score; the alternate mask spelled `(flags & 1) == 1`
+// scores 749 and is reverted. Retail's parameter order is ours (arg1 definition index, arg6 state,
+// arg7 flags, eight stack args); only the entry's mask carrier differs - ours hoists the raw flags
+// byte into BL before the pushes, retail masks it with 1 after them and keeps it in a stack slot.
 // score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
 // declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
@@ -2618,6 +2629,14 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Boolean guard results: 694/694/734/694/694/694/694/670 reduced (control 694, full 597).
 // NOT kept: unmatched one-use outcomes, including the reduced-only 670; original complete
 // body restored. Entry true/flags, record/scalar homes and track/state ownership remain.
+// M3 lane 4 r167 (plain; rank on the register-masked aligned count, 102 for the kept 597): alternate read inside the definition
+// guard as bool 615 (2500 bytes, 767 instructions as retail, masked 89, first difference +0x1c: retail's `mov ebx, 1` hoisted constant and
+// flags in memory appear; a score rise, not kept); as a byte 698 with combine_sources/lookup id as if/else (2492 bytes, masked 91, frame
+// 0x40); read through the source-flags bitfield view on flags 615, with the two later flags tests through it too 615 (masked 90); if/else
+// combine_sources alone 630 (2499 bytes, masked 94). One-file link (reduced, 694 for 597; aligned/shape): gains clear through a zeroed
+// 16-byte local struct assigned to the field, reals or longs, 721/729 (direct [ebp+0xc4] stores from a zero register, as retail); chained
+// `= 0.f` 744; memset through a real pointer or a byte offset 717 (same as the alternate form). Next: the bool form's masked list
+// (index/created compare order, source in EDX copied to ESI for the rep movs, the track loop's per-iteration homes).
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

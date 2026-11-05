@@ -496,6 +496,8 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // T58: Whole-scan current-point pointer/reference, indexed/advancing candidate, original/overlap CRT:
 // 228/228/259/259/222/222/249/249. NOT kept: no eligible match or gain; complete original source restored.
 // Extra frame word, produced-length/departure homes and compaction remain.
+// MiniMax A (11-05): retail's compaction copies the first (i - j) entries from `indices` to `indices + j` (`lea ecx, [ebp + eax*2]` is the destination) where this body copies them the other way round, a behaviour difference; changing the direction alone leaves the score at 170 because the copy is still expanded inline; one 16-bit hull counter driving the outer loop with the increment at the top of the body, a bool departure and that copy 243 (frame 0x14 and the first loop as retail, but the count argument takes EBP, the points argument drops out of a register and the code shortens to 753 bytes); the same counter with a long hull count 227 and with a long departure 255; the short hull count alone 242 and a bool departure alone 248; no lower score.
+// MiniMax A (11-05): one 16-bit hull counter with `while (hull_count < count)` and a bool departure 245 (frame 0x14 and the first loop's `mov edx, ebx` as retail, but the points argument drops out of a register, the indices argument takes EBP and the code shortens); the same counters both 16-bit with the two-counter body 259 (the same rotation); a 16-bit pass counter with the long hull count 261 (the frame stays 0x18); no lower score.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -897,6 +899,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // 95 (890), around a for with an outer index 98 (890); guarded do-while 102 (891), and 131 (887) where the guard folds.
 // B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
 // 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
+// MiniMax A (11-05): retail reads the count argument as a dword and narrows it (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word (`movsx edi, word ptr [ebp + 8]`), so the parameter type, not the body, keeps the rest of the function out of step; no lower score.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

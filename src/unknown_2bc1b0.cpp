@@ -3,6 +3,7 @@
 #include "unknown_1523c0.h"
 #include "data_array.h"
 #include "game_engine_events.h"
+#include "engine_object_definition.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -136,76 +137,29 @@ struct s_placement_2bc1
 	byte field_28[0xc4 - 0x28];
 };
 
-// score 5 (was 5): the placement pointer copied for the creation call uses ECX where retail uses
-// EAX, and the game options pointer read for the mode test uses EDX where retail uses ECX.
-// Existing initializer 89; initializer result 89; initializer before mode 88; paired helpers 88;
-// event before team 63; early event plus sender 63; event before creation 63; returning initializer before creation 90.
-// Unconditional event with options pointer 32; byte mode before event 31; mode against event type 31;
-// mode declaration before team 31; object result before query 16; creation condition assignment 16;
-// function-scope object result 16; combined result/mode lifetimes 31; event before mode declaration 31.
-// event filled before the mode test 32 (stores now precede the test but the mode load folds into the
-// compare after them, 223 bytes); test result as a bool before the fill 76; fill then send helper 32;
-// mode read into a local before the fill 31 (load order right, constant 4 not shared in eax);
-// function-scope event filled before the test 32. The placement copy is ecx here, eax in retail.
-// Round 70: byte-array placement 5; creation assignment in the marker test 5 (on the current
-// body); placement at function scope 5; event without its block scope 32 (fill moves before the
-// test); named marker-test bool 5.
-// Marker-query inline declarations 5; native tag hierarchy 5; creation/announcement/both names 5/5/5;
-// missing-tag return 5; tag field at both uses 50; direct tag receiver 5; native tag with both names 5.
-// Round 123: const object result 5; early return without an engine 5; team passed without
-// its short cast 5; position pointer local for the marker query 5; creation pointer local 5. Diagnostics:
-// without the team call 38 (the copy then uses EDX), without the event 142, without the final
-// call 39: the copy's register follows the allocation of the whole tail.
-// Round 55: early return when no object is created 5; the existing game_engine_get() for the engine
-// test 5; the out-of-line event sender 61 (not inlined); tag index read without the definition
-// local 5; event declared at the top of the marker block, filled in place 32.
-// Round 67: short team at both calls 44 (228 bytes; mode tail exact, marker prefix regresses); short team only
-// at the update or at entry with the original marker argument 5 each; event pointer 61 (198 bytes, send not
-// inlined); shared creation pointer 5; full-width team copy 5; shared creation pointer plus earlier object
-// result 5; NONE-initialized object result 5. A 2400 s permuter run timed out during its initial full build.
-// Round 49: tag read without the definition local 5; a local for the definition's +0xc pointer 5; engine
-// test `!= NULL` 5; NULL owner argument 5; event declared before the team call, unscoped 32 (223 bytes).
-// The stub callee is not the cause: matched 0x152a50 and 0x1e04a0 copy the placement with EAX before the
-// same stub call, and 0x1e04a0's second site uses ECX.
-// Round 138: marker test with the not-found arm first 5; first-element address at creation 5, at both calls 5;
-// object local declared before the placement 5; marker test `!= false` 5. Probe (not kept): a load and a global store
-// before the creation call give retail's registers in the copy and the whole tail, so one rotation step is the cause.
-// Round 53 (m3 lane 15, fast): tag read without the definition local 5 and the existing game_engine_get() for the
-// engine test 5 (both re-measured, copy still ECX); placement declared at the top of the engine block 5; tag index
-// declared at function scope 5; early return when the marker is not found 5; the final call inside the event's
-// block 5; the engine pointer named before its test 5. Diagnostics (not kept): one global load anywhere before the
-// creation call moves the copy to EDX and gives retail's tail; two such loads (or a two-load sum) give retail's
-// EAX copy and tail; loads after the copy fix only the tail; stores that need no register change nothing;
-// 0x2bc1b0 returning char changes nothing. So retail allocates one scratch value fewer (or two more) before the
-// copy, with the same code.
-// K148: tag-header owner 5; tag-instance owner 5; both owners 5; tag-present Boolean 5;
-// object-created Boolean 5; engine-enabled Boolean 5; unsigned object index 5; unsigned tag index 5.
-// NOT kept: no equality or allocation change; original body restored.
+/* creates the team's item at its marker and sends the event for it */
 // @retail 0x2bc1f0
 void function_2bc1f0(long team)
 {
-	if (g_55e4d0[g_4e9ae8->engine_index])
-	{
-		byte *definition = g_4e3b44[g_4e034c->index & 0xffff].bytes;
-		long tag_index = *(long *)(*(byte **)(definition + 0xc) + 0xc);
-		if (tag_index != NONE)
-		{
-			s_placement_2bc1 placement;
-			function_b7930(&placement, tag_index, NONE, 0);
-			if (function_2bc1b0(&placement.position, team))
-			{
-				long object_index = function_b7b40(&placement);
-				if (object_index != NONE)
-				{
-					function_15e050(object_index, (short)team);
-					{
-						s_event event;
+	long tag_index = engine_object_definition(_engine_object_held_item);
 
-						game_engine_event_initialize_inline(&event, 4, 1);
-						game_engine_event_send_inline(&event);
-					}
-					function_a7870(object_index);
+	if (tag_index != NONE)
+	{
+		s_placement_2bc1 placement;
+		function_b7930(&placement, tag_index, NONE, 0);
+		if (function_2bc1b0(&placement.position, team))
+		{
+			long object_index = function_b7b40(&placement);
+			if (object_index != NONE)
+			{
+				function_15e050(object_index, (short)team);
+				{
+					s_event event;
+
+					game_engine_event_initialize_inline(&event, 4, 1);
+					game_engine_event_send_inline(&event);
 				}
+				function_a7870(object_index);
 			}
 		}
 	}

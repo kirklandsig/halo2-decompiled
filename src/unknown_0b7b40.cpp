@@ -232,7 +232,7 @@ long __stdcall function_b7b40(void *creation)
         function_be690(result);
         object_dispatch_finish_creation(result);
         long effect = *(long *)(definition + 0x50);
-        if (effect != NONE) function_176780((s_effect_owner const *)(placement + 0x68), result, 0.0f, effect, 0.0f, 0, 0);
+        if (effect != NONE) function_176780(effect, (s_effect_owner const *)(placement + 0x68), result, 0.0f, 0.0f, 0, 0);
         function_2e1e0(result);
         if (hidden) *(dword *)(object + 4) |= 0x20000;
         else *(dword *)(object + 4) &= ~0x20000;
