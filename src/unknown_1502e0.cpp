@@ -112,7 +112,7 @@ void function_152340(void);
 bool __stdcall function_e5470(long player_index, long object_index);
 long __stdcall function_e5bc0(long unit_index, long object_index, long previous_index);
 bool function_1df560(short team_a, short team_b);
-bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index);
+bool function_151320(long player_index, s_target_candidate *candidate, s_target_candidate *best);
 
 /* the object fields 0x1515e0 reads */
 struct s_1515e0_object
@@ -149,7 +149,7 @@ void function_1515e0(long object_index, long player_index, s_target_candidate *b
 			memset(&candidate, 0, sizeof(candidate));
 			candidate.priority = 2;
 			candidate.object_index = object_index;
-			function_151320(&candidate, *best_reference, *player_reference);
+			function_151320(*player_reference, &candidate, *best_reference);
 		}
 	}
 }
@@ -307,39 +307,10 @@ void function_151ea0(long player_index, long object_index)
 	}
 }
 
-// MiniMax H (11-04): no new form, no lower score; the equal-priority branch still picks the other epilogue.
-// score 1 (was 1): only the jne of the equal-priority test differs: retail jumps to the epilogue after the copy
-// block (al still holds the initial false) and keeps a separate `xor al, al` + epilogue for the not-closer
-// arm; ours jumps to the epilogue after that `xor`. Tried (fast, base 1): `return false;` in the else arm
-// (67, the register assignment changes from the prologue on), `return result;` there (67), `!(a < b)` test first
-// (12), `a >= b` test first (13), copy arm's stores swapped (4), `return false` as an early exit before the
-// copy label (67), copy label in the same arm with `return result` (69).
-// Permuter (25 min on r654, about 1030 variants): nothing below 1.
-// M337: Initial winner predicate with guarded/direct equality, equality-first result, and
-// priority-range result, bool/byte carriers: 74/104, 112/102, 81/79, 82/91.
-// All restored; the equal-priority jne still chooses the other existing epilogue.
-// P294: whole-record memcpy 1;
-// whole-record memmove 81;
-// all named fields 37;
-// readonly candidate 1;
-// readonly memcpy 1;
-// readonly memmove 81;
-// readonly named fields 37;
-// memcpy then success 4.
-// Original executable body restored;
-// no exact match from these ownership forms.
-// Round 103: equality as an else-if 1; nested <=/== priority tests 12; an explicit not-equal
-// else-if to done 1; separate distance-failure/copy/done labels 75; split result declaration 1;
-// result declared last 1; byte result 32; a named closer flag 1. Original body restored.
-// P323: equality-owned point/vector/point+vector/distance/point+distance/
-// vector+distance/all declarations 1/1/1/1/1/1/1; all declarations at their
-// computation phase 1. Native 0x24 frame, 259 bytes and the wrong
-// lower-priority jump to the other epilogue remain. Original body restored.
 // @retail 0x151320
-bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
+bool function_151320(long player_index, s_target_candidate *candidate, s_target_candidate *best)
 {
 	bool result = false;
-	long const *player_reference = &player_index;
 	point3f player_position;
 	point3f best_position;
 	point3f candidate_position;
@@ -349,27 +320,22 @@ bool function_151320(s_target_candidate *candidate, s_target_candidate *best, lo
 	real best_distance;
 
 	if (candidate->priority > best->priority)
-		goto copy;
-	if (candidate->priority == best->priority)
 	{
-		function_b9dd0(tail_player_get(*player_reference)->unit_index, &player_position);
+		result = true;
+	}
+	else if (candidate->priority == best->priority)
+	{
+		function_b9dd0(tail_player_get(player_index)->unit_index, &player_position);
 		function_b9dd0(best->object_index, &best_position);
 		function_b9dd0(candidate->object_index, &candidate_position);
 		vector3d_from_points3d(&player_position, &candidate_position, &to_candidate);
 		vector3d_from_points3d(&player_position, &best_position, &to_best);
 		candidate_distance = to_candidate.j * to_candidate.j + to_candidate.i * to_candidate.i + to_candidate.k * to_candidate.k;
 		best_distance = length_sq3f(&to_best);
-		if (candidate_distance < best_distance)
-		{
-copy:
-			result = true;
-			*best = *candidate;
-		}
-		else
-		{
-			result = false;
-		}
+		result = candidate_distance < best_distance;
 	}
+	if (result)
+		*best = *candidate;
 	return result;
 }
 
@@ -479,80 +445,21 @@ struct s_tail_player_identifier
 	byte identifier[12];
 };
 
-// score 17 (was 66): delayed options acquisition restores the native late register saves;
-// player/scenario carriers and selector/entry scheduling remain at 168 bytes.
-// Earlier at 22: the complete comparison loop and both return epilogues agreed.
-// Earlier at 31: logic walk against retail found no behaviour difference (same player identifier
-// at +4, scenario entry 0 value 0x2c == 1 selects the second traits set, 16 options players of 0xe4
-// bytes at +0x2dc, 12-byte identifier compare at +0xe, traits at +0xac + 0x1c * set). Still differs:
-// retail keeps the options pointer in ebx, the identifier in eax and the compare result in edx; ours
-// puts the identifier in ebx, the options pointer in edx and the result in eax, and loads
-// g_4e0350/g_4e6948 at different points. Tried: identifier hoisted/late (67), index form
-// players[i] (66-67), do-while (31), memcmp() == 0 without the result variable (80), != 0 (80),
-// scenario read without a local (67), flag as index vs ?: (43), find-then-test form (31).
-// Permuter (25 min on r654): nothing below 31 (its renderer drops the `i++, entry++` increment, so it started
-// from the indexed form).
-// Round 45 (m3 lane 2, fast, base 31): retail loads the player first, the scenario next and g_4e6948 only after the
-// scenario test (beside `push ebx`); the entry pointer assigned after the alternate test 68 (158 bytes, the loop's
-// entry jump over the padding goes), that with the entry declared first 68; `difference` declared at function scope
-// 31 (same code); the player declared before the entry 32; `alternate` declared first 67 (158 bytes).
-// M337: Native range-end scan with early/delayed options and direct/common result
-// [53, 45, 55, 46]; plain countdown scan with pointer step in the body [38, 30, 58, 26].
-// NOT kept: 30 gains one; 26 uses a countdown unlike retail and depends on combined forms.
-// Original ordinal scan restored; pointer/comparison roles and delayed saves remain.
-// N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
-// and the CRT int comparison result: all eight 31. Original body restored; options
-// acquisition, delayed saves and comparison register ownership still differ.
-// F357: Native scenario count/list/selector operand lifetimes, seven subsets
-// 31/31/31/31/31/31/31; complete operands with direct truth producer 68.
-// Existing player/object lookup inline, forced and unhinted policies: eight 31.
-// NOT kept: no gain; original observations, ordinal scan and full comparison restored.
-// F353: Complete player record with native entry/options-root/traits-result/alternate-truth lifetimes
-// 32/68/56/56/32/67/67/56.
-// NOT kept: no gain; original full body/helpers restored.
-// Y559: Complementary first-set storage bool/byte/short/long, branch-cleared then
-// test-produced: 32/32/68/67/67/67/68/67. NOT kept: no byte match; native
-// delayed saves and identifier/options/comparison allocation remain.
-// N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
-// and the CRT int comparison result: all eight 31. Original body restored; options
-// acquisition, delayed saves and comparison register ownership still differ.
-// M348: Comparison transport unsigned-long/short/word/signed-byte/byte 31/67/67/67/67;
-// equality carrier 31; negative continuation/explicit mismatch arms 32/32.
-// NOT kept: no byte match; native options/identifier/comparison homes remain.
-// M350: Immutable player/scenario/full-comparison storage, seven subsets, then
-// fixed read-only player identity: 31 each. Original lookup phases and upward
-// scan restored; options acquisition and identifier/comparison homes remain.
-// DH340: Sole-result break/goto with four zero lifetimes 32/32/24/24 each;
-// body pointer step alone 32; original comma step with sole result 22 (NOT kept).
-// Plain counted while with sole result 22 (plain confirmed); while alone 31. Native
-// identifier/options/comparison homes and both epilogues; scratch word and 168-byte extent agree.
-// DH349: On retained sole-result graph, player-first 22; late entry 17 (plain confirmed);
-// result/alternate first 30/34; direct truth 28; full player 22; comparison scope 22;
-// indexed root 27. Retain only the single retail-shaped delayed entry acquisition.
-// DH353: Positive selector byte/char/int 17/17/30; complete pointer conditional
-// and result arms 23/23; count-owned comparison and count arms 67/67; signed-byte
-// direct index 26. NOT kept: no gain or match; original selector and sole result restored.
-// DH355: Scenario last-use scope 17; count-owned assignment, complete count arms,
-// failure-first arms and conditional producer, unscoped/scoped: 17/67/67/67/67/67/67/67.
-// NOT kept: no match; selector forms shrink the native extent; original body restored.
-// DH357: Actual matched-entry result before traits publication, scan/entry-owned
-// defaults, break/sole-exit transfers and ordinary/conditional results: 60/62/60/62
-// in each lifetime. NOT kept: no byte match; original complete body restored.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
 	s_tail_player_identifier *player = (s_tail_player_identifier *)tail_player_get(player_index);
-	s_tail_scenario *scenario = (s_tail_scenario *)g_4e0350;
 	bool alternate = false;
 
-	if (scenario->entry_count > 0 && scenario->entries[0].value2c == 1)
+	if (((s_tail_scenario *)g_4e0350)->entry_count > 0 && ((s_tail_scenario *)g_4e0350)->entries[0].value2c == 1)
 		alternate = true;
+	long i = 0;
+	byte const *identifier = player->identifier;
 	s_tail_options_player *entry = ((s_tail_options *)g_4e6948)->players;
 	s_tail_traits *result = 0;
-	long i = 0;
 	while (i < 16)
 	{
-		long difference = memcmp(entry->identifier, player->identifier, sizeof(entry->identifier));
+		long difference = memcmp(entry->identifier, identifier, sizeof(entry->identifier));
 
 		if (difference == 0)
 		{
@@ -807,7 +714,7 @@ void function_1516c0(long object_index, long player_index, s_target_candidate *b
 		memset(&candidate, 0, sizeof(candidate));
 		candidate.priority = 3;
 		candidate.object_index = object_index;
-		function_151320(&candidate, *best_reference, *player_reference);
+		function_151320(*player_reference, &candidate, *best_reference);
 	}
 }
 
@@ -872,7 +779,7 @@ void function_151780(long object_index, long player_index, s_target_candidate *b
 			candidate.object_index = object_index;
 			candidate.flags = (byte)flags;
 			candidate.priority = special ? 7 : 1;
-			function_151320(&candidate, *best_reference, *player_reference);
+			function_151320(*player_reference, &candidate, *best_reference);
 		}
 	}
 }
@@ -1032,7 +939,7 @@ static __forceinline void player_object_target_candidate_evaluate(long object_in
 					}
 					candidate.object_index = target_index;
 					*(short *)&candidate.flags = (short)seat_index;
-					function_151320(&candidate, *best_reference, *player_reference);
+					function_151320(*player_reference, &candidate, *best_reference);
 				}
 			}
 		}
@@ -1051,7 +958,7 @@ static __forceinline void player_object_target_candidate_evaluate(long object_in
 					memset(&candidate, 0, sizeof(candidate));
 					candidate.priority = 8;
 					candidate.object_index = object_index;
-					function_151320(&candidate, *best_reference, *player_reference);
+					function_151320(*player_reference, &candidate, *best_reference);
 				}
 			}
 		}

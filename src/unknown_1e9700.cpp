@@ -610,6 +610,11 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // after the clamp, delta on either side of the sum: 85 each (the field stays folded; two reads do not unfold it). The engine pointer named at the top 24 (the
 // note's form, re-measured: the entry block is then exact but for that load's place, plus the engine test swap); named after the entry 69; named at the top and
 // assigned again at the join 85, declared without a value and assigned at the join 85, NULL then assigned at the join 85 (a dead definition does not unfold it).
+// Round 169 (lane 4, fast): a plain delta parameter (field read kept) 18, re-measured: delta's movsx then takes EDX at
+// the top, where retail has the field. Both volatiles removed (and the field named `column` as in 0x1e9c90) 85, but
+// that body is retail's but for two places: the folded `add eax, [esp+0x18]` (one instruction short, which shifts the
+// rest) and the first engine test's EAX/ECX swap. On that plain body: the first test through game_engine_get() 85; the
+// notify through a force-inline helper taking the bit (diagnostic, this caller only) 85; a `long const` field 85.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)
@@ -1023,6 +1028,8 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // storage as one rectangle member 2; inner and piece declared together with piece assigned 2; the
 // coordinates or the points declared at the top of the block 2/2. Unused-local probes (1 to 16) at
 // the top leave it at 2, so the load order is no numbering tie.
+// Lane 9 r89 (fast): window x offset as a named short before each inset statement 41, after the insets 38; window y before the bottom inset 44; both 44; address-cast reads
+// 2; pointer to the window pair at the top or before the bottom inset 2/2; `-8 + field` for bottom and right 2/2; whole-record copy first 218; a data pointer to the field or storage (diagnostic) 2/2.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {

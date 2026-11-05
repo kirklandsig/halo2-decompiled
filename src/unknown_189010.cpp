@@ -305,6 +305,13 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // Round 106 (plain): nested class condition, bool/long end-update results, previous value20/value24/both and
 // disjoint source mask 110 each; word +0xa 132 (478), marker-size local 131 (470), location-flags local 111 (474).
 // Original body restored.
+// M399: Existing post-playback class input read-only, immutable variant binding/completed-time producer,
+// seven nonempty subsets 110 each; all with immutable tag-index formal 110. NOT kept: every form ties.
+// Original whole body restored; early source/header work, first query expansion and playback register homes remain.
+// M401: Playback definition/declaration/sole call reordered together to (tag, state), default/stdcall/cdecl/fastcall,
+// then the same four with inline metadata: 110/110/134/110/110/110/134/110.
+// NOT kept: native EAX state/stack tag setup is not recovered; all interface, provider and caller changes restored.
+// Frame 0xa8 agrees; early header work, first class-query expansion and playback homes remain.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -761,6 +768,11 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // 0xfcdd0, 0x184440 (67 sources), 0x1201a0, 0xfd410 or 0x17bbd0 (57) it matches; with any member of the large call cycle
 // (0xfc330, 0x10c880, 0x17a8a0, 0x188180, 0xfcea0, 0x1765e0, 0x247470 ...; 533+ sources) the swap appears, so 0xfcdd0 and
 // 0x184440 no longer bring it. Direct calls of 0x1895f0: retail 10, ours the same 10 plus the stand-in.
+// Round 152 (m3 lane 6, fast with 0x188180): this function placed before 0x1895f0 / before 0x189fe0 in the file 2/2 (source
+// order inside the file does not move it); the forward compressed after the velocity and location copies 20; the maximum
+// distance looked up just before the along test 197 (676 bytes); the length test arms swapped (`== 0.0f` first) 127 (661
+// bytes). Lead: retail's `pop esi; mov al, 1` is what a scheduler gives when the call is taken to define EAX; the 0x1895f0
+// result reaches callers through 0x189400 -> 0x189210 -> 0xc5890 (0x188180 and 0xc58f0 drop it).
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

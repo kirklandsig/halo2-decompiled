@@ -30,6 +30,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
+// MiniMax A (11-05): no new form, no lower score; nothing I tried moved the frame off 0x20 or the sum tree onto
+// retail's forward*depth + up*height + right*width order.
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products. Earlier 221: first transform
@@ -382,6 +384,15 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // memory operands where retail loads them and keeps right.i in XMM7, both depth limits hoisted ahead of the k tests, frame 0x20); on it the depth
 // limits in the condition 289 (1170, masked 150); its products written variable-first 273 (same code); the helper in place on the original offset
 // loops 276 (1111, masked 109), so the in-place transform is what gives the copy-then-scale.
+// Y603: Captured-vector existing in-place vector/particle scale producers with
+// uninitialized weight/segment lifetime subsets: 206/206/206/206/206/206/206/206. NOT kept:
+// all tie; original helper/body restored, frame 0x20 and coefficient/raw-input homes remain.
+// Y605: Caller-owned complete scaled vectors with aggregate/native/shared-setter/CRT defaults,
+// rotation-only existing helper with input pointer then reference: 272/330/274/330/272/330/274/330.
+// NOT kept: all regress and lengthen; original aggregate-scaled helper and full body restored.
+// N395: Aggregate-scaled complete view returns with pointer/reference/value input,
+// cursor/indexed output 278/281/278/281/401/404; actual returned-output consumers
+// 276/273. NOT kept: no equality/native frame recovery; original helper and full body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

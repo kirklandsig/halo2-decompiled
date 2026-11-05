@@ -741,6 +741,10 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // keeps (inverse base + cursor) + collection. The find-slot key through a named `t_player_key` pointer 28; find-slot
 // given `&watcher->players` 28; the swap's update through a block-scoped pointer 28; `collection` declared after
 // `source` and `player` 28 (all same code); a const `collection` before the second loop 277 (1072 bytes).
+// Round 67 (m3 lane 14, fast with 0x84e90/0x69260): the swap callee as (collection, player, update, other)
+// 32 (retail pushes the slot before loading `updates`, its argument order; 0x84e90 stays matched), with the
+// occupied key through a const reference 32, with the occupied update as `updates + ++*count - 1` 32; on
+// the current order the occupied key as `&collection->players[i].key` 28 and that update form 28 (same code).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

@@ -392,6 +392,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // helper's); settings read once through its address in the actor block 882 (masked 420); the previous-direction
 // dot through dot3f alone 893 (3694 bytes); the computed actor pointer used inside the actor block, stored once
 // into the volatile actor 884 (masked 412).
+// Round 152 (m3 lane 5; plain unless marked, fast misleads here: fast base 931 against plain 882; [m, x] masked and exact aligned counts, body [185, 475]):
+// the unit no-obstacle bit as a word bitfield 917 [183, 464] (retail's `shr dl, 2; test dl, 1`); the unit looked up through a second
+// actor_get 918 [183, 475]; both 936 [181, 464]; self_unit declared first 931f; the actor flag after self_unit 933f; the continues
+// in the type arms as a flag tested after them, in a do-while 939f (3743 B) [206, 477], the arms do not sink. Retail's type 1/7/11 arms
+// and the unit arm's other branches sit past the function's `ret`, each jumping back to the distance test; ours keeps them in place.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
