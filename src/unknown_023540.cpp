@@ -2389,7 +2389,8 @@ dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// MiniMax G (11-04): score 132 (was 140): the two default rectangles are now built in retail's
+// MiniMax G (11-04, not kept, m3 review: the destination default moved inside the source-null block, so a null
+// destination with a non-null source read an unset rectangle; a behaviour change): 132 (was 140) with the two default rectangles built in retail's
 // store order (source[3] first, then the 320-based pair, the 240-based pair and the last 320-based
 // one) inside the source-null block, which matches retail's fallback arithmetic instruction for
 // instruction. Still: retail builds both defaults unconditionally and writes each selected default
@@ -2622,21 +2623,21 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     function_1ccf0(&g_484f68);
     function_1cc30(12);
     function_1c710(g_51f0f0);
-    if (!source)
-    {
-        default_source[3] = height;
-        default_source[0] = 0.0f;
-        default_source[2] = 0.0f;
-        default_source[1] = width;
-        default_destination[0] = 320.0f - width * 0.5f;
-        default_destination[2] = 240.0f - height * 0.5f + arg_af5a49;
-        default_destination[1] = 320.0f + width * 0.5f;
-        default_destination[3] = arg_af5a49 + height * 0.5f + 240.0f;
-        source = default_source;
-    }
     if (!destination)
     {
+        default_destination[0] = 320.0f - width * 0.5f;
+        default_destination[1] = 320.0f + width * 0.5f;
+        default_destination[2] = 240.0f - height * 0.5f + arg_af5a49;
+        default_destination[3] = arg_af5a49 + height * 0.5f + 240.0f;
         destination = default_destination;
+    }
+    if (!source)
+    {
+        default_source[0] = 0.0f;
+        default_source[1] = width;
+        default_source[2] = 0.0f;
+        default_source[3] = height;
+        source = default_source;
     }
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
     real inverse_width = 1.0f / width;
