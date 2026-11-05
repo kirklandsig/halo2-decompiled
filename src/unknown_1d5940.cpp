@@ -53,33 +53,12 @@ void __cdecl function_2d9160(void *arg_0, long arg_1, long arg_2);
 void function_1d0080(hkRigidBody *arg_0, s_havok_component *arg_1, byte const *arg_2, long arg_3, bool arg_4);
 void function_1d6ad0(s_havok_component *arg_0, s_physics_model_owner *arg_1);
 
-// score 9 (was 9): retail zeroes the eight words of the mask with eax and
-// ours with ecx, so the zeroing and the eight stores differ (retail picks ecx
-// only where eax holds a live value; nothing visible is live in eax here).
-// Tried: field read through the owner at each use 9; mask declared first 9;
-// existing bit_vector_fill 9 (188 under the old inline_depth(0) pair, now removed).
-// Round 55 (plain checks; --fast moves the component into EBX here): memset before the node
-// list local 9; `dword local_2[8] = { 0 };` at the memset 20 (the rest still ECX); loop counter
-// declared before its for 9; memset through a forceinline wrapper 9; node list local read before
-// the section call 22. Diagnostics: the first loop from 1 keeps ECX; the memset ahead of the
-// section call gives EAX (shared with its `false` push).
-// Round 63 (plain): section-list result used at both queries 65; per-call result before the
-// clear 49; body count before the clear 156 (696 bytes); clear in the loop initializer 9;
-// model pointer declared at function scope 9; whole-array destination 9; element-size count 9;
-// literal 0x20 count 9.
-// Round 49 (plain): mask declared at the clear 9; loop bound as `field_38 > index` 11; header test
-// `(...) == 0` 9; header index product `12 * index` 9; switch result declared at function scope 9.
-// Round 31 (lane 17, plain): owner's node-list field typed as the list struct (casts dropped) 9; the
-// result and body-count zero stores moved up to the clear 194 (696 bytes); clear ahead of the section
-// call 17; second loop bound read through the node-list local 59; first body slot passed as the bare
-// array 9.
-// Round 88 (plain): `do {} while (false);` after the section call 9, after the node list local 9, after the clear 9;
-// first update written as `local_0 <= local_1` 9; first loop as a while 9.
-// Round 147 (plain): call result discarded through a comma with the model load 9; call, model load and clear in
-// one comma chain 9; element pointer cached before the clear 171; existing zero result as the fill value 9;
-// behavioral mask and model names 9/9; clear return used only for the later bit test 54, only for both query
-// mask arguments 33. Original restored. NOT kept: a void section-list return declaration cannot link because
-// the real definition returns a pointer; changing that definition is outside this round's permitted scope.
+/* the object's section lists, not all of them */
+static inline void object_section_lists_1d5940(s_section_lists *lists, long object_index)
+{
+ function_181a80(lists, object_index, false);
+}
+
 // @retail 0x1d5940
 long __stdcall function_1d5940(s_havok_component *arg_0, bool arg_1, bool arg_2, bool arg_3)
 {
@@ -95,7 +74,7 @@ long __stdcall function_1d5940(s_havok_component *arg_0, bool arg_1, bool arg_2,
   arg_1 = true;
  if (function_20a9a0((s_type_1a7926 *)&local_3, arg_0->object_index))
  {
-  function_181a80((s_section_lists *)&local_6, arg_0->object_index, false);
+  object_section_lists_1d5940((s_section_lists *)&local_6, arg_0->object_index);
   s_1d5943 *local_8 = (s_1d5943 *)local_3.field_48;
   memset(local_2, 0, sizeof(local_2));
   for (long local_9 = 0; local_9 < local_8->field_38; ++local_9)
