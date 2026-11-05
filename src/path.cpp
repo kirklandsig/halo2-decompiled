@@ -1127,6 +1127,9 @@ bool function_2715a0(byte *buffer)
 // DH368: Direct named link/root/child array elements, seven subsets then collision candidate:
 // 624/528/486/659/624/528/659/684. NOT kept: child-only ties, others regress or grow;
 // original array receivers, inherited fallback qualifier and complete body restored.
+// Y606: Actual short link discriminator with paired metadata halves/direct depth/shared
+// point producers, masks 0..7: 486/492/481/498/486/492/481/498. NOT kept:
+// five-point leads below eight; half transfers grow extent. Original type/body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
