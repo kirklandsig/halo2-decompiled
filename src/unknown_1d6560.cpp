@@ -272,6 +272,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // direct/captured header base: 97/97/136/136/93/93/95/95. NOT kept: every form loses
 // the matched caller (146/213/13); best gain three is below the gate.
 // Original handle capture, dispatch observations and complete body restored.
+// DH373: Original-site secondary-kind equality/inequality outcomes in bool/byte/short/long:
+// eight at 96; matched caller and file controls unchanged. NOT kept: no native entry repair
+// or equality; original repeated dispatch, body flags, result and full convention restored.
 // M3 lane 4 r164 (fast, caller in brackets): round 60's 24 form rebuilt 24 [0]; headers, object index, rigid body, type through the
 // object index with case 0 through it 124 (228 B) [209]; the 21 form (headers, object index, rigid body, absolute index, type) in 8
 // parameter orders, definition, declaration and call together, 21 [13] each (identical code: the component stays in EDX and the

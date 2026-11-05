@@ -407,6 +407,8 @@ static __forceinline bool structure_bsp_collision_available()
 // on it, a bool result 56, the excluded arm also `goto done` 67 (272 bytes), the && flag guarding 0xbf9a0 with
 // `if (excluded) return result;` 57 (287 bytes), a byte `found` 45 (same code), the 0xbf9a0 test positive with the
 // requery after its block 56; before it, a byte flag `excluded |= 1` with the model query as its else-if 62 (threaded).
+// Round 149 (m3 lane 5, fast with 0xd2bb0): 0x14af40's matching shape here (named `found`, requery in its then-arm, `!(excluded | found)`), the found arm
+// storing the result 81 (291 bytes), `& 1` test 81, returning it 80 (286), store and return 79 (287): retail pushes EBX and EBP late here.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -1193,12 +1195,21 @@ done:
 // generation and retry scopes, masks 0..7: 146/146/146/171/146/146/146/171.
 // NOT kept: all lose the matched caller (14), regress and miss native extent;
 // original entry-result lifetime, guards and complete body restored.
+// Lane 5 r149 (held, coordinator): MATCH with the parameter renamed `unused`, a fresh `bool result`, a dead
+// `bool const *unused_reference = &unused;` (retail never reads it, but its slot is address-taken), surface read once
+// through its address, the BSP test through structure_bsp_collision_available, and the object path as a `hit` flag
+// with the requery under `!(excluded | found)`. Without the dead address line 109 (fast). Not kept: a parameter-address
+// line that is never read is reverted even with a match (10-19 ruling). Patch build/held/lane5-r149-14af40-unused-address.patch.
 // N378: Complete object completion chain with eligibility/model/fallback results in the actual return result:
 // 181/133/181/133/200/147/200/147. NOT kept: no byte equality or qualifying native-shape gain;
 // original executable source restored; exclusion/result/NONE and direction homes remain.
 // Lane 12 r92: matches (0) with `bool const *unused_reference = &unused; __assume(*unused_reference);` plus
 // `__assume(!found)` in the !found arm, hit/found flags and plain locals; held, not kept: the assume on the
 // unread parameter states a value nobody checks (patch build/held/lane12-r92-14af40-assume-unused.patch).
+// T60: Overwritten result-parameter char/short/word/int/long/dword/unsigned-int domains
+// 119/115/115/118/118/118/118; independent long result 120 (caller lost). NOT kept:
+// wider result operations lack native byte storage/equality; other gains below margin.
+// Original Boolean contract/body restored; exclusion/result/NONE and direction homes remain.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

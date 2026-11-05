@@ -1740,6 +1740,10 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // AC544: Exact-association plane-dot offset, paired root operands and perpendicular-dot
 // negation boundaries, seven subsets then immutable parts: 554/554/554/553/554/554/554/554.
 // NOT kept: all regress; original reductions, counters, observations and whole body restored.
+// M3 lane 9 r88 (fast; masked+stack = aligned count with registers and stack homes masked, base 310): retail has no count guard (`cmp word ptr [esp+0x16c], si`, then the index store, then `jle`) and computes
+// radius * radius inside the loop (hoisted to the preheader): plain `for` with the product inside 554 (2901, entry shape as retail), the product inside alone 555. The next index named before the first point with
+// 0x120790 for both points 686 (2955, masked+stack 280: retail's axis re-reads, table reads and early idiv appear), with the file's helper 602 (293), plain for + next + 0x120790 669 (2942, 282), + the file's helper
+// 606 (294), plain for + 0x120790 without next 654 (342); 0x120790 alone 651 (339). Lead: those three together fix most of the inner edge loop; what remains first is the zero in ESI (retail) against EBX and the cursor at plane.j.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

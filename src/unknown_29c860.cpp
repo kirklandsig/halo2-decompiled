@@ -274,9 +274,11 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// score 277 (was 277): the 0.9 steering block is one instruction short (145 of the count); the left and avoidance vectors swap their
+// 12-byte slots; the second normalize's j product, the 0x5d0 flag store, the early 0x44 load and the local_16 dot's x87 order differ.
 // MiniMax B (11-04): no lower score; the new forms tried and dropped are the avoidance vector's
 // declaration placed before the left vector (277, identical code) and the flag store's order.
-// score 277 (was 300): the 11cd20 result is held in a local and written into the struct after the
+// Earlier note, 277 from 300: the 11cd20 result is held in a local and written into the struct after the
 // side test, so the store lands in the 299460 setup where retail puts it; left: the left vector and
 // the avoidance vector still swap their 12-byte slots, the 0.9f steering block's left_i load, the
 // second normalize's j product, the 0x5d0 flag store and the local_16 dot's x87 order differ.
@@ -288,22 +290,22 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // component (339), the other two vectors swapped (306). Left: the second normalize's j product, the left
 // vector's stores and 12-byte slot, the 0x5d0 flag store, the side test's dot order and the local_16 dot's
 // x87 order.
-// score 645 (was 645), coordinator review: the body is back to its earlier form. The lane's 628 needed two one-use
+// Earlier note, 645 from 645, coordinator review: the body is back to its earlier form. The lane's 628 needed two one-use
 // locals (the 0x44 setting read early, the 0x11cd20 result held until after the side test), kept only with a match;
 // without them the sum splits and store reorders below score 643 (fast), under the 8-point bar. Its tried forms:
-// score 268 (was 271): the left vector is built before the forward copy, so the three stores
+// Earlier note, 268 from 271: the left vector is built before the forward copy, so the three stores
 // land where retail puts them; left: the second normalize's j product keeps the other operand
 // order, the avoidance vector and the left vector still swap their 12-byte slots, the 0x5d0
 // flag store, the steering block's sums and the local_16 dot's x87 order differ.
-// score 271 (was 291): the distance from the side test is held in a local and written into the
+// Earlier note, 271 from 291: the distance from the side test is held in a local and written into the
 // struct after the test, so its value stays in a register across the test; left: the left vector
 // and the avoidance vector still swap their 12-byte slots, the steering block's sums, the local_16
 // dot's x87 order, the 0x5d0 flag store and the second normalize's j product differ.
-// score 291 (was 300): the settings word at local_2+0x44 is read before the local_16 branch, as
+// Earlier note, 291 from 300: the settings word at local_2+0x44 is read before the local_16 branch, as
 // retail does (it keeps it in xmm1 across the branch); left: the left vector and the avoidance
 // vector still swap their 12-byte slots, the steering block's sums, the local_16 dot's x87 order,
 // the 0x5d0 flag store and the second normalize's j product differ.
-// score 300 (was 300): the actor flag updates are the existing setters 0x1e4290 (clear 0x800)
+// Earlier note, 300 from 300: the actor flag updates are the existing setters 0x1e4290 (clear 0x800)
 // and 0x1e4260 (set 2), which retail inlines here (they are `inline` at their definitions), and the
 // side test reads the left vector, which is initialised from local_8 as sibling 0x29a190 writes it
 // (retail reads the left vector's home there and the scalar's home in the two direction sums).
@@ -335,6 +337,13 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // Diagnostic (not kept): one extra avoidance store moves the slots but changes the code 319 (2827).
 // Much of the count is a one-instruction shift after the steering-direction block, where retail
 // loads local_9.i, left_i and local_9.j first and interleaves the two sums.
+// Round 213 (m3 lane 3, fast): 145 of the 277 lines are one missing instruction in the 0.9 steering block: retail keeps the component in xmm2, loads left_i
+// (`mulss xmm0, xmm2`), then `movaps xmm3, xmm2; mulss xmm3, [local_8.i]`; ours multiplies the component in place by left_i's home. In retail every product's
+// destination is its first source operand (j*8j, i*8i, left*i, j*8i) in both steering blocks. Tried: left_i first in the product 277 (same code); direction.j first 278;
+// through two named sums either order 277; the component in a named local 277; one-expression sums 277, 278; first block's sums reordered 277, one expression 279; left_i
+// declared ahead of local_9, local_8, local_7, at the top, beside local_10, or with local_8 and local_9 declared together 277 each (same code); left_i written out at each use
+// 583 (three spellings); left_i from the left vector 543 (2814 bytes); the left vector built from left_i 343 (2829), built first 277; a separate early velocity vector with
+// direction declared in five places 422 (2815); dead pointer locals and identity pointer chains of 1-8 (diagnostic) 277 each (no period here).
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

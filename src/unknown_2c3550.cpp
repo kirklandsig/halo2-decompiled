@@ -732,6 +732,11 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // DH352: Entry radius/height/outgoing-mask lexical identities, seven subsets 675 each;
 // complete graph with Boolean success 754. Original entry scalars and full body restored;
 // byte success, radius/pathfinding schedule and scalar/geometry homes remain.
+// Round 129 (m3 lane 7, fast; aligned/masked control 415/270): entry grid of radius ternary, radius before pathfinding, (bool) enabled bit, final_complete after the actor block, first_output at the top,
+// 31 combinations: 674 twice (radius before pathfinding with the ternary and complete moved; gain 1), the rest 675-703. Retail's failure block: retry assigns `found`, one `if (!found)` block, short flag
+// loop testing `flag` per obstacle, `goto done` 741 (2968 B, masked 246), with `bool result` 746 (2969, masked 228), with `return false;` 793 (masked 234); on 746: radius ternary first 789 (2953), (bool) bit
+// 775 (masked 224); without bool 764. Types seen in retail: `short ignored` 706 (2976), retry-loop index short 744 (2965), ignored-loop index short 675 (same code), `short frame` 704, ignored+frame 701,
+// all three index/ignored 724; on `bool result` + failure block: all three 739 at retail's 2986 B (masked 223, the closest yet, but positional), with frame 749 (masked 221). Left there: copy loop and `truncated` in BL.
 // B437: Stored passthrough-point producers with four count/receiver contracts
 // 738/760/741/744; with bool success 766/783/773/755. NOT kept: all regress;
 // byte success, radius/path acquisition and scalar/geometry homes remain.
@@ -741,6 +746,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // retry flow, two calls 779 (3012); all together 789 (2974) [623], without bool result 721 (2965) [596]. Greedy on aligned:
 // transform loops plus early count and flag 681 [567]; with short node index 734 (2963) [543]; with the frame re-read 732 [632];
 // positive obstacle-count arm first 715 [527]; all four 734 (2964) [631]. `inline` on 0x210690, 0x2104b0, both, or 0x2c4030 675.
+// B437: Stored passthrough-point producers with four count/receiver contracts
+// 738/760/741/744; with bool success 766/783/773/755. NOT kept: all regress;
+// byte success, radius/path acquisition and scalar/geometry homes remain.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
