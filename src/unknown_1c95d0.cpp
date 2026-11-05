@@ -73,6 +73,9 @@ extern "C" void _ReadWriteBarrier(void);
 // through its address 164/178 (0x1c9580 39); the result in the second parameter 164, its address read at the call or
 // at entry 164/168; a separate result with that read 164; the result or flag stored through a local pointer in this
 // function 164/164. The 0xbadc0 store leaves 0xd6c80 (206) and 0xdb110's inlining unchanged.
+// Round 215 (lane 3, fast): the lookup result bound to a const reference, no barrier 169 (585 bytes), with the barrier 20; the flag cleared first,
+// no barrier 173 (585); a const reference copied into a local, no barrier 165 (589); the second parameter reassigned and bound, no barrier 169 (585).
+// BLOCKED-BY 0xbadc0: its file stays untouched this round.
 // @retail 0x1c95d0
 void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
 {
