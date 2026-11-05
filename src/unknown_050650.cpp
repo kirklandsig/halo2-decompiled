@@ -681,10 +681,16 @@ struct s_collision_result_buffer_1697c0
 // AC530: Plain native-array normalization publication, short/long/word/dword indices, explicit/compound
 // scaling: 650/305/650/305/650/305/650/305 (fast control 303). Short/word forms outline; full-width forms
 // retain 1435 bytes but regress. Original helper and body restored; scratch/axis/result homes remain.
+// Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
+// results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
+// contract or gain; original magnitude return, all consumers and complete sampler restored.
 // M389: Root/absolute-value float-library boundaries, singly/together, 307/298/303;
 // widened rounded-root/root-producer/reciprocal receivers 546/546/651;
 // float root/absolute with double reciprocal 651/651. NOT kept: five-point best
 // is below eight and length grows; double forms outline. Original helper/body restored.
+// DL265: Complete rotation value/const-value/receiver pointer/const-pointer/reference/const-reference/
+// output-pointer/output-reference protocols: 431/431/303/303/303/303/303/303. NOT kept: no exact native
+// transport; original shared producer and body restored; root/axis/result scratch homes remain.
 // Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
 // results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
 // contract or gain; original magnitude return, all consumers and complete sampler restored.
@@ -967,6 +973,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 253/253/265/267; before the read-only query 279/279/296/296 (calibrated fast control 258).
 // NOT kept: best gain five is below eight; predicate/observation forms need equality. Original
 // reference observations and complete body restored; Boolean homes and shared-tail predecessor remain.
+// P345: Movement/attention/object admission-produced return results, subsets
+// 1/2/4/3/5/6/7 then separate false defaults: 378/335/335/369/369/323/358/356
+// (reduced control 341; full 257). NOT kept: extra SETG/SETNE result stores absent from
+// retail; original body restored; byte homes and direction-tail predecessor remain.
 // M389: Both native normalization-return scalar receivers, local real/const-real/double/const-double
 // 258/258/327/327; shared/test-owned real/const-real/double/const-double 258/258/327/327.
 // NOT kept: one-use scalar/result residence did not match; double forms grow to 1480/1444.
@@ -1572,6 +1582,7 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// MiniMax H (11-04): no new form, no lower score; retail calls 0x1fdd90 at +0x198 where our build expands it inline, and marking it noinline gives 590 and is not a permitted form; the frame stays 0xcc against retail's 0xc8 and the actor table is held in a register.
 // score 442 (was 442): frame 0xcc versus retail 0xc8, early getter scheduling, vector homes and branch layout differ.
 // Tried the out-of-line predicate declaration 546 fast; horizontal aggregate copies 562 fast; initial native setters 546 fast;
 // explicit looking success/fallback stores 532 fast, 527 plain (three-point gain, restored); target point or selected vector

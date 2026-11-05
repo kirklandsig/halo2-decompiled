@@ -78,6 +78,19 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
 // score 390 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// Round 64 (fast; masked aligned count in brackets, base 390 [182]): NOT kept, scratch recipe reaching 155 [11] at retail's 1596 bytes with every stack
+// slot right (aligned 428 -> 22): (1) group as `long`, tested on the field read and copied after: `if (bit_vector_test(visited_groups, entry.field_0))
+// continue; long local_15 = entry.field_0;`, set through bit_vector_set: 398 [161] (read beside a local copy, match-only; without it the rest stays 435-461);
+// (2) endpoint and start `short`; record index set before the pass loop and after each step; output through `&out[count]` with a separate cursor and the
+// record pointer before the loop: 313 [67] (428 -> 87); (3) group bitmap by memset 225, found flag declared before the endpoint, `else result = false` on
+// the sentinel test: 190 [45] at 1596 (the else is a redundant store unless retail's `mov byte [esp+0x13], 0` counts as evidence); (4) output pointer named per
+// pass so it is computed before the point: 192 [39]; (5) x87 sums: scalars canonicalise (declaration order, written order, 4 identity locals: same code), but a
+// vector local through vector3d_from_points3d keeps the written order, reversed in the code; retail's sites are written (i,j,k) at the pass start, (k,i,j) at
+// the visited point, (j,k,i) twice at the pair: 159 [15] (needs per-site expressions); (6) squared distance helper as declared x, y, z with
+// `x*x + (y*y + z*z)` 155 [11]. Left then: the third distance loads arg_0 into ESI, where retail keeps arg_3 in ESI from the range test to the call, arg_0
+// in EDX, `mov ecx, esi; mov esi, edx` (one line, shifts all that follows); `mov [esp+0x80], al` for the flag; the step's EAX; `movsx edx, ax` ahead of the
+// record base. Same code at (a): arg_3 or arg_0 copied to a local, the range test as a helper, repeated subtests, helper arguments reversed. Other forms:
+// named total split 426 (1612 bytes). Each of (1)-(6) raises the score alone or is match-only, so nothing is kept without a match.
 // Round 27: the instruction order follows retail closely, but the locals sit in different frame
 // slots, the group pointer is in EBP where retail keeps EBX and retail parks the group index in the
 // incoming s_reference slot at 0x80; no form found this round.
@@ -301,6 +314,18 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH352: Read-only initial-root/membership-root/membership-group descriptor pointees,
 // seven subsets then the read-only current group: eight at 390. Original pointer
 // declarations and body restored; selected-default/root/bitmap/endpoint homes remain.
+// Round 134 (m3 lane 8, fast; al = aligned raw/masked/masked+stack, base 428/207/182). Rebuilt: memset group bitmap, bit_vector_test/set,
+// the group read in the bit test and then into a long local, short selected point, else-false 425 (1604, frame 0x68, al 221/148/107); output
+// loop with a cursor stepped against the unchanged start 428 (1605, al 205/150/91); the record index set before the pass loop and after each
+// step 197 (1596, frame 0x64, first diff +0x13a, the group spilled to arg_2's home as retail, al 65/47/47); (point, record) output helper order
+// 199 (al 57/41/41); scan sum plain or as k, j, i statements 190 (al 48/37/37, first 197 lines exact), y, x, z locals 194; the found flag
+// declared before the pass's point copy 188 (al 46/35/35). NOT kept: the field read beside the local needs a match. Left on 188: the per-call
+// x87 orders (retail z,y,x then y,x,z then x,z,y, ours z,y,x throughout; identity chains in the body or helper, a vector local, a named sum
+// and length_sq3f 188, a from-points inline 185, do not move them), arg_3 kept in ESI with arg_0 in EDX to the 0x29de20 call, AL stored as
+// the found flag (a named short status stored as a byte folds to 1), the latch's `add eax, ebp`, the selected record's load order, the output
+// loop's entry jump. On that form: group local before the test 437 (1561), short 400, joined 437, link pointer 437; field at every use, direct
+// or through a link pointer, 491/474 (1657/1641). The natural pieces on this body: step 425 (1608), plus memset 431, bit helpers 446,
+// else-false 439, short selected point 435 (1564), memset+helpers+else-false 462, with the short point 412 (1599); all but the step 437.
 // DH359: Whole-operation failed outcome bool/byte/short/long, cleared after output
 // 408/408/432/431; at output entry 410/410/432/431. NOT kept: no byte match;
 // original result, selected homes, roots, bitmaps, helpers and complete body restored.

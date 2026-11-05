@@ -610,9 +610,31 @@ struct s_physics_component_walk : s_havok_component
 // N369: Persistent input/output/recursive-operand lexical families, seven subsets
 // and full-family common names: 146 each. No latch or carrier change;
 // NOT kept: all tie. Original identities and complete method restored.
+// AC547: Actual indexed body-array receivers, mutable/readonly at admitted/entry
+// scope 335/335/337/337; walking counterparts 351/351/354/354. NOT kept: non-native
+// residence and 948/964-byte extents; original complete method and observations restored.
 // P335: Readonly owner/group/opaque recursive-input contracts, seven subsets then
 // complete contracts with fixed component binding: 146/146/146/146/146/146/146/146. NOT kept: all tie;
 // original method interface and full body restored. Latch reload and neighbor/key homes remain.
+// Round 72 (m3 lane 1, harness with damage.cpp, exact; masked aligned in brackets, base 146 [27]): kept: both section scans through one forced-inline helper with the object index read through an
+// inline getter (first scan byte-exact, retail's load order included), and one `open` flag taking the scan or the kind test in the arms and then `*active` or the recursion 104 [9] (all of retail's layout);
+// char body locals with `__assume(this_body != NONE)` 49 [6]. Steps on the old body: getter at all four calls 178 [167], neighbor scan only 147 [25], first scan only 178 [33], first calls 179 [37], second calls
+// 178 [31]; named object index or forced-inline section test 343 [61]; scan helper with no getter 151 [24], on the flag form 78 [16]; helper + getter 134 [16]; `long j` and a test after the first scan 177 [168]; char
+// bodies 134 [16], next first 107 [18]; arms swapped or the neighbor arm first with `continue` 189 [126]; out-parameter or `found` scan helper 134 [14]. On the 49 form, all 49 [6] with `next` still in EAX: the chain written
+// without a short local, a short next local, no `short` name for either; first body through a forced-inline helper (both forms) or a ternary; bit_vector_test / bit_vector_set at each mask; first_body or next
+// declared at the loop or block top in every order; `__assume` on next or first_body at five sites; on the body locals (next, both, >= 0); the next body through a named pointer, reference or getter, declared ahead of the
+// ternary or not. Higher: next through if/else short 54 [6], long 68 [14]; group_a/group_b locals 58 [12]; first body default then test 298 [53]; named group pointer 51 [9]; first-body group pointer 272 [35]; terminal flag 169 [11].
+// Diagnostics (not kept): rotation probes before next move nothing (124, 176, 177 [9-11]); next's use dropped at each site, only the next-body read flips next to EDX (84 [10], al 22); next body read before
+// the ternary also gives EDX (107) but loads ahead of the ternary. Retail reads it after the ternary and still has next in EDX: that is what is left.
+// Arm and end orders of the flag: end `next != NONE` first 172 [156], first_body tested first 88 [14]; neighbor arm first 184 [77], with that end 189 [165]; arms merged on `next == NONE || count > 0` 278 [102] (817 bytes).
+// Lane 1 r72 (held, coordinator): the 146 -> 49 rests on match-only forms. Without `__assume(this_body != NONE)` and the char body
+// locals it is 104, without the object-index getter 120 (the scan helper itself adds nothing: the same flag form with the scans
+// written inline is also 120). The 120 is the `open` flag set in the arms; written as one direct condition the same body scores
+// 161 and the continue form with the helper 151, so none of it is kept (test-set flag rule, kept only with a byte match);
+// build/held/lane1-r72-1d6630-flag.patch is the whole 49 form, a lead toward the match.
+// T57: Persistent actual current-group pointer/const-pointer/reference/const-reference,
+// selected by index then receiver, spanning body and entry phases
+// 356/356/356/356/338/338/338/338. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

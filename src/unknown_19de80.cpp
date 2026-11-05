@@ -527,6 +527,9 @@ static inline bool teams_enabled_19e1c0()
 // AC537: Complete absent-team eligibility at both name branches, bool/byte/short/long
 // with inherited/native result: 390/390/390/390/691/691/691/691. NOT kept: no match; original admission,
 // result qualifier, all name-copy/format paths and complete body restored.
+// AC548: Shared event-presence lifetime, bool/byte/short/long with inherited/ordinary result
+// 454/454/446/441/671/671/630/626. NOT kept: no qualifying supported gain or byte match.
+// Native frame/result/capacity/token homes and independent copy tails remain. Original complete body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

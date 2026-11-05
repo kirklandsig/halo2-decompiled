@@ -365,7 +365,15 @@ real function_30bf0(vector3f *vector);
 
 // MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
 // no new form, no lower score.
-// score 152 (was 152): Frame 0x350 agrees; result/range/projection homes and inverse delta/motion SIMD groups remain.
+// score 104 (was 152): retail's registers throughout (the SIMD groups are now right), 1310 bytes against 1308. Left: stack homes
+// (result +4 for retail's +0; amount shares with the count where retail shares it with the squared distance; range, scale, the
+// cursor and the two facing values one slot off), the not-facing arm sits inline where retail places it after the first return, and
+// x-operand forms in the two seat-loop cross products. Round 64, fast, masked aligned in brackets: the projected delta through a clipped
+// point and vector3d_from_points3d 262 [38]; with vector3d_from_points3d for motion and length_sq3f for both squared lengths 104
+// [30], kept; on that: the projected delta written out again 110 [38] at 1308 bytes; `seats[i]` directly 142 [25] (1313 bytes), a per-iteration seat pointer 148 [34]; vector3d_from_points3d for the
+// first delta too 145 [38]; a named clipped fraction 235 [40]; `short result`, the ternary 3/2, `a`/`b` at the block top 104 (same
+// code); negated facing test with the arms swapped 106 [32] (the arm stays inline); amount initialised 260 [42].
+// Earlier first line: score 152 (was 152): Frame 0x350 agrees; result/range/projection homes and inverse delta/motion SIMD groups remain.
 // Earlier: result/range homes and inverse SIMD groups remain; seat thresholds now stay in memory.
 // result/range homes, inverse SIMD groups and seat-threshold reloads remain.
 // Round 57: retail's result stores are a spill of a long result (dword store, `mov ax, word` reload at
@@ -587,10 +595,8 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 			if (endpoint && !actor->unknown007)
 			{
 				vector3f motion;
-				motion.i = endpoint->x - point->x;
-				motion.j = endpoint->y - point->y;
-				motion.k = endpoint->z - point->z;
-				if (motion.k * motion.k + motion.j * motion.j + motion.i * motion.i > 0.002500000176951289f)
+				vector3d_from_points3d(point, endpoint, &motion);
+				if (length_sq3f(&motion) > 0.002500000176951289f)
 				{
 					plane3f plane;
 					plane.n = *(vector3f *)((byte *)actor + 0x2c0);
@@ -601,14 +607,16 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 						if (amount > 1.0f) amount = 1.0f;
 						if (amount > 0.0f)
 						{
-							delta.i = motion.i * amount + point->x - origin->x;
-							delta.j = motion.j * amount + point->y - origin->y;
-							delta.k = motion.k * amount + point->z - origin->z;
+							point3f clipped;
+							clipped.x = motion.i * amount + point->x;
+							clipped.y = motion.j * amount + point->y;
+							clipped.z = motion.k * amount + point->z;
+							vector3d_from_points3d(origin, &clipped, &delta);
 						}
 					}
 				}
 			}
-			real distance_squared = delta.k * delta.k + delta.j * delta.j + delta.i * delta.i;
+			real distance_squared = length_sq3f(&delta);
 			if (range * range > distance_squared)
 			{
 				real scale = 1.0f;
@@ -1394,6 +1402,13 @@ long function_146650(void);
 // aggregate initializer 14 (same code); offset zeroed by a chained assignment after its declaration 18; a state_position
 // pointer for the three queries 125; an origin pointer for the actor position at all four uses 36. Permuter (600 s):
 // its reduced image scores 248 against the full 14, nothing better in 49 tries.
+// Round 63 (m3 lane 14, fast): the prop test as nested ifs 14; as an inverted test with `continue` 14; the movement test as
+// nested ifs 14; the target query's result named in a nested if 14; the query's point/direction/position parameters not
+// const 14; ahead a const aggregate 14. Compile-only frame screen, references dropped with liveness kept: without the
+// first query's direction, ahead > direction > target; without the second's, direction > ahead > target (no change);
+// without both, retail's ahead > target > direction. So the two query references do not weigh the same, and an unused
+// or input-only vector shares target_direction's slot, so a new vector does not test a reference's weight. The direction
+// output and first query references are what retail's order lacks.
 // Round 144: actor-reference reads at entry/all behavior queries/final callback, then direct actor_index at the
 // direction producer/iterator setup/movement callback, and split proximity/projected declarations: 14 each,
 // identical listings. NOT kept: no allocation change; the original parameter observations and declarations restored.
@@ -1826,7 +1841,21 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 194 (was 194): frame 0x80 and the forward/relative blocks now agree; the established and
+// score 168 (was 194): retail's length (2880). Left, in order: the players iterator's table pointer loads into ECX where retail
+// uses EAX and stores it at once (one extra pad line after it); the search shape; the facing and relative dots keep the
+// direction in memory where retail holds j, k, i in xmm2, xmm1, xmm3 across both dots after the last normalize; the scoring
+// block's established/visible layout. Round 64, fast, masked aligned in brackets (start 194 [66]): the block entered on
+// `visible || established` with one shared score test 171 [66], kept; the zeros before the clear 168 [64], kept; the prop
+// iterator through 0x26be00/0x26be30 and the view through 0x25d740, same code, kept. Not kept: rejection flag + zeros +
+// player NULL first + long second counter 377 [24] at 2882 bytes (the flag is match-only; every structural block is then
+// retail's and the score stays up only through the iterator's extra pad line); same without the flag, score test in both
+// arms 391 [32], with `!(distance > 3.5f)` 386 [29]; established-first block 320 [52]; `visible || established` after the
+// facing block 383 [45]; `established || (visible && ...)` 258-336 [63-72]; slot store in both positive arms 390 [24]; arms
+// swapped 377 [25]; vehicle index or definition pointer named 377 [24]; long vehicle type 383; reset stores reordered or
+// chained 377-379; iterator stores reordered 378/379; pool local 377; a NULL datum store 236 at 2888 bytes (extra store, not
+// retail's). Diagnostics, reverted: a dead read beside the vehicle lookup puts the table pointer in EAX at 2880 bytes (247
+// [43]); two beside the iterator also do; one gives EDX: the iterator's register is a rotation step, not its statements.
+// Earlier first line: score 194 (was 194): frame 0x80 and the forward/relative blocks now agree; the established and
 // visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
 // where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
 // Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
@@ -2081,22 +2110,17 @@ void function_266640(long actor_index)
 	s_actor_view *actor = actor_get(actor_index);
 	long strongest_node = NONE, best_node = NONE;
 	byte *data = (byte *)actor;
-	memset(data + 0x324, 0, 0x10);
 	short best_level = 0;
 	real strongest = 0.0f;
-	s_actor_prop_iterator iterator;
-	iterator.next = actor_get(actor_index)->first_prop_index;
-	s_prop_node_view *entry;
-	while ((entry = actor_next_prop(&iterator)) != NULL)
+	memset(data + 0x324, 0, 0x10);
+	s_iterator iterator;
+	function_26be00(actor_index, &iterator);
+	s_node_view *entry;
+	while ((entry = function_26be30(&iterator)) != NULL)
 	{
 		s_prop_datum *node = (s_prop_datum *)entry;
 		long index = iterator.index;
-		s_type_f95cd3 *view = NULL;
-		if (node->tracking_index != NONE)
-		{
-			s_type_e5ff81 *tracking = tracking_get(node->tracking_index);
-			if (tracking) view = &tracking->view;
-		}
+		s_type_f95cd3 *view = function_25d740((s_prop_node *)node);
 		s_type_5cfb45 *state = function_25d690(node);
 		s_type_76cf92 *prop = prop_get(node->prop_index);
 		if (node->state >= 1)
@@ -2241,7 +2265,7 @@ void function_266640(long actor_index)
 				if (reference != NONE && prop_ref_get(reference)->unknown27 < 1)
 					visible = false;
 				bool positive = false;
-				if (distance < 15.0f)
+				if (distance < 15.0f && (visible || established))
 				{
 					if (visible)
 					{
@@ -2259,9 +2283,8 @@ void function_266640(long actor_index)
 							score += 1.0f - decrease;
 						}
 						if (approach > 0.5f) score += 1.0f;
-						positive = score > 0.0f;
 					}
-					else positive = visible && !(distance > 3.5f && approach < 0.5f) && score > 0.0f;
+					if (established || !(distance > 3.5f && approach < 0.5f)) positive = score > 0.0f;
 				}
 				if (positive)
 				{
