@@ -4530,6 +4530,9 @@ long function_14de70(long local_player_index);
 // N357: Complete rejection outcome in bool/byte/char/signed-char/short/word/int/long:
 // 98/98/98/98/372/372/372/372. NOT kept: no byte match from these source forms.
 // Original executable source restored; Late ESI NONE, byte shift acquisition and progress/result transport remain.
+// B449: Presence via word flags/normalized bit-vector/normalized unsigned/plain unsigned masks,
+// each with original/shifted membership: 954/960/363/42/966/967/717/706.
+// NOT kept: no exact bitmap repair; original mask, iterator observations, native word slot and body restored.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5737,6 +5740,9 @@ void __stdcall function_d6bc0(long object_index);
 // N359: Complete expiry-deferral/removal/creation join in bool/byte/char/signed-char/short/word/int/long:
 // 144/144/144/144/144/144/144/144. NOT kept: no byte match; complete original body restored.
 // Frame 0x14/0x18 and independent timer/entry-base ownership remain.
+// B449: Independent entry/current phase remainders in long-long/short-long/long-short/short-short,
+// current-first then entry-first: 144/157/151/151/144/157/151/151.
+// NOT kept: no exact phase-lifetime repair; original divisions, loop, timer observations and body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
