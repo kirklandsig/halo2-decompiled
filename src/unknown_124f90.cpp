@@ -2937,6 +2937,9 @@ static inline short sound_voice_find_available_channel(char type)
 // N385: Independent finder completion state, found/searching polarity in bool/byte/long/dword:
 // 125/125/125/125/125/125/125/125. NOT kept: no equality; completion flags and whole finder/body restored.
 // Frame twelve/eight, saved byte normalization and early failure tail remain.
+// N389: Complete byte/short/long/dword failure results at original/entry lifetimes:
+// 130/130/104/104/136/136/136/136. NOT kept: no native result/frame recovery;
+// original byte-success result, helper and full body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3875,6 +3878,9 @@ struct s_128ca0
 // signed readonly-reference early/completed and unsigned readonly-reference early/completed:
 // 237/231/237/237/222/237/237/237. NOT kept: no byte match; original pin and full body restored.
 // Frame 0x49c/0x494, initial gain homes and integer pin joins remain.
+// N389: Complete state-word bit6 extraction, paired bit3 extractions and paired bit3
+// updates, seven subsets, then the complete bit6 update: 222/222/222/222/222/222/222/222.
+// NOT kept: no frame/gain-home improvement; original state accesses and full body restored.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

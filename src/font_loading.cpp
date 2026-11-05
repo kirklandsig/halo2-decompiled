@@ -720,6 +720,9 @@ static inline word font_character_pixel(long alpha, long color)
 // boundaries, eight nonoriginal indexed/counted/endpoint pairs: 165/184/173/242/198/183/203/214.
 // NOT kept: all regress; original indexed fills, helper, includes and entire decoder restored.
 // Frame 0xc and alpha extension/literal assembly/two-run differences remain.
+// N389: Pixel alpha word/uint, color short/uint, result short/uint: 92/91/92/80/85/106/85/105.
+// NOT kept: word alpha with uint color/result 80 gains only five; other type forms tie or regress.
+// Original helper and decoder restored; alpha widening, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
