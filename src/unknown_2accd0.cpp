@@ -900,6 +900,22 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // subsets 1/2/4/3/5/6/7 and all complementary incompleteness: eight at 34.
 // NOT kept: no exact comparison-result form; original body, getter, API boundaries
 // and cleanup restored. Entry total and seek/size carriers remain.
+// Round 57 (m3 lane 15, fast; brackets aligned with registers kept, stack masked; base [23]): cross of total, signature
+// sum and clamp (36 forms): no total local, helper at the signature only, `MIN(g_4fa0c8.size, remaining)` with a buffer_size local 153 (689) [4], left: the signature
+// sum coalesces body_size into ESI, so its load is not head-merged with the body case; the same with the original clamp 28 (687) [17] (one-caller helper, not kept); field
+// clamp alone 161 [12]; two-site helper 155 [31], with remaining 151 [27], with the field clamp 152 [23]; helper at the signature with the field clamp 156 [7]. On
+// the [4] form: sum repeated with named parts 175, by field 217; named body local in the equality 214, in the sum 175; two-statement position 175; `default:` for the
+// case 156; flipped body test 157; named position with `__assume(position >= body_size)` 175; `__assume` on the state, file or body size at the dispatch, the
+// signature or the body case 153/156.
+// AC553: Existing unsigned-total and real-denominator lexical identities, four
+// independent names each: 34/34/34/34/34/34/34/34. NOT kept: no native fresh-register
+// or size/seek allocation change; original scalar names and complete body restored.
+// DL269: Shared scratch task/buffer/size reference interfaces, subsets 1..7: 34 each;
+// all with ordinary inline 174 (fast/full control 34). NOT kept: no gain or equality.
+// Original helper, all three uses and callback restored; total/seek/size homes remain.
+// DL271: Standard-library capacity minimum, shared/separate capacity and direct/named
+// remaining expressions, both native bound directions: eight at 207, 717/719 bytes.
+// NOT kept: no equality; original macro, capacity output, total/seek homes and body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

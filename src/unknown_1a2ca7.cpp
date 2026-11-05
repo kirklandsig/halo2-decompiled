@@ -1402,6 +1402,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 
 /* copies the presence task's results into the friends and team members
    lists */
+// MiniMax H (11-05): no new form, no lower score; the friend count is still homed at [ebp-8] and
+// the clan count at [ebp-4] where retail reads the friend count first into [ebp-4] and reloads it
+// into ESI, and flags20 is still held in a register across the membership helpers.
 // MiniMax B (11-04): no new form, no lower score.
 // MiniMax A (11-03): no new form, no lower score: the friend count is still homed at [ebp-8] and the
 // clan count at [ebp-4] where retail reads the friend count first into [ebp-4] and reloads it into ESI,
@@ -1522,6 +1525,17 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // buffers 124; friend-first counts declared then assigned as statements 124; the user and both presence
 // buffers declared after the counts 117 (same code); the clan count read after the 0x18ff47 call 124;
 // the merged state as one chained assignment, friend store first, 122. BLOCKED-BY 0x63d00 stands.
+// AC557: Native friend/member/nested iterator sentinel chains, masks 1/2/4/3/5/6/7,
+// 195/195/195/198/198/198/198; all with reversed sentinel publication 200.
+// NOT kept: no gain; original descriptors, observations and complete body restored.
+// Round 400: payload-size result arms member/friend/both 191/199/180;
+// destination-first caps 181/192/160; CRT minima 196; admitted-size arms 181.
+// NOT kept: result-arm bodies grow to 858/858/863/863 versus 835;
+// destination-first forms add a raw-size store before the native final-size
+// store (181/192/160), absent in retail. Original clamps and body restored.
+// Plain pretested friend/member/both searches 195/195/195; outer merge 195;
+// outer+friend/outer+member/outer+both/all four loops 195/195/195/195.
+// NOT kept: count homes and membership reloads remain; original loops restored.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

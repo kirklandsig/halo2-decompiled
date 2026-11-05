@@ -1208,6 +1208,9 @@ done:
 // N378: Complete object completion chain with eligibility/model/fallback results in the actual return result:
 // 181/133/181/133/200/147/200/147. NOT kept: no byte equality or qualifying native-shape gain;
 // original executable source restored; exclusion/result/NONE and direction homes remain.
+// Lane 12 r92: matches (0) with `bool const *unused_reference = &unused; __assume(*unused_reference);` plus
+// `__assume(!found)` in the !found arm, hit/found flags and plain locals; held, not kept: the assume on the
+// unread parameter states a value nobody checks (patch build/held/lane12-r92-14af40-assume-unused.patch).
 // T60: Overwritten result-parameter char/short/word/int/long/dword/unsigned-int domains
 // 119/115/115/118/118/118/118; independent long result 120 (caller lost). NOT kept:
 // wider result operations lack native byte storage/equality; other gains below margin.

@@ -179,6 +179,7 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// MiniMax G (11-05): swapping the offset and previous declarations is the same code (347); retail keeps the offset in EBX and the current in EDI, ours the other way round, and the four-byte frame difference and the segment-arm layout stay unmatched; no new form, no lower score.
 // MiniMax S (11-01): the result/limit declaration swap reaches retail's frame but scores worse; no lower score.
 // score 209 (was 347): frame 0x1054 now as retail (the deletion walk's struct holds the never-touched dword at esp+0x54); page-offset/ring-tail allocation and policy blocks differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but

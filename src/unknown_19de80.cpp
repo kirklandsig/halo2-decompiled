@@ -527,9 +527,25 @@ static inline bool teams_enabled_19e1c0()
 // AC537: Complete absent-team eligibility at both name branches, bool/byte/short/long
 // with inherited/native result: 390/390/390/390/691/691/691/691. NOT kept: no match; original admission,
 // result qualifier, all name-copy/format paths and complete body restored.
+// M3 lane 4 r167 (fast; one-file link with the callee files and ballast 413/693 for 390/691): `remaining` takes a register only
+// when something reads it in the entry block, before the first compare. A plain result with one read of it there (a store to a
+// probe global, or a volatile read into a local used everywhere; diagnostics, reverted) keeps the name/team tails apart, stores
+// text[0] from SI, reloads token per compare and loads EBP at entry as retail: 455/444 (1472/1466 bytes), with team fields at
+// each use, `remaining <= length` clamps, long opponent team 437 (1458 bytes, event EDI spilled where retail has EBX). Sixteen
+// reads inside the first arm, reads in the first two arms, two at the function's end: no flip (534-684). Code-free reads at
+// entry all fold before allocation: empty if, void ternary, unused local, += 0, `__assume(remaining > 0)`, a bound const
+// reference through a conversion, a read through its address 691 each; a dead for 586 (1274 bytes). The natural entry
+// reference is still unknown; it is the lead.
 // AC548: Shared event-presence lifetime, bool/byte/short/long with inherited/ordinary result
 // 454/454/446/441/671/671/630/626. NOT kept: no qualifying supported gain or byte match.
 // Native frame/result/capacity/token homes and independent copy tails remain. Original complete body restored.
+// M3 lane 12 r93 (fast): the twelve compares through an inline predicate taking `token` by const reference 390
+// (identical: the reference folds, token stays in EDI), with the plain result 691 (identical to the plain result);
+// the volatile result declared bare and set by a statement 390; plain result with both event teams read at each use
+// and every copy clamp as `remaining <= result` 661 (listed combination re-measured); the teams test returned as one
+// conjunction (no bool local) 454 (1394 bytes; listed as the conjunction, re-measured).
+// Every format failure as `result = result < 0 ? remaining : result;` 514 (1524 bytes); the opponent score's
+// number/time arms swapped (`mode < 3 || mode > 4 && mode != 8` takes the number format) 390 (same code).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

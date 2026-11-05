@@ -106,25 +106,7 @@ PRIVATE __forceinline void function_294b56(vector3f *arg_0, vector3f *arg_1,
     *arg_2 += *arg_3;
 }
 
-PRIVATE __forceinline void function_2950bd(transform4x3f const *arg_0,
-    vector3f const *arg_1, vector3f *arg_2)
-{
-    real local_0 = arg_1->i;
-    real local_1 = arg_1->j;
-    real local_2 = arg_1->k;
-    arg_2->i = arg_0->up.i * local_2 + arg_0->left.i * local_1 + arg_0->forward.i * local_0;
-    arg_2->j = arg_0->up.j * local_2 + arg_0->left.j * local_1 + arg_0->forward.j * local_0;
-    arg_2->k = arg_0->up.k * local_2 + arg_0->left.k * local_1 + arg_0->forward.k * local_0;
-}
-PRIVATE __forceinline void function_295027(long arg_0, vector3f *arg_1)
-{
-    s_slot_object_view *local_0 = object_get(arg_0);
-    if (local_0->parent_index == NONE)
-        *arg_1 = local_0->forward;
-    else
-        function_2950bd(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node),
-            &local_0->forward, arg_1);
-}
+__forceinline void object_get_forward(long object_index, vector3f *forward);
 
 // score 446 (was 523): entry and registers now retail's (first difference +0x72, masked aligned 25 lines). Left: retail's
 // dead store of zero to the speed vector's i (0x294552, overwritten at 0x294feb) is missing, 9 bytes, so the walk head gets
@@ -151,7 +133,7 @@ PRIVATE __forceinline void function_295027(long arg_0, vector3f *arg_1)
 // membership and size, not scopes or names: find the real record over 16 bytes that holds the speed vector and still leaves frame 0xdc.
 // Earlier first line: score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
 // MiniMax B (11-04): no new form, no lower score.
-// score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
+// Earlier first line, after MiniMax B: score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
 // Earlier score 523 (was 581): frame 0xdc agrees; since round 67 the neighbour walk is the shared inline member
 // step (retail's head-tested loop) and 0x118fe0 stays out of line as in retail. Left: retail keeps the
 // walk's position at 0x20 sharing its slot with the post-walk vector (ours shares the offset vector,
@@ -171,6 +153,11 @@ PRIVATE __forceinline void function_295027(long arg_0, vector3f *arg_1)
 // all seven nonempty combinations, then alternate complete home ranking 521/521/521/521/521/521/521/521.
 // Reduced preview is 521/3707 versus full 523/3706; every trial ties that preview.
 // Original body and helpers restored; Frame 0xdc agrees; early ESI ownership and neighbor/steering homes remain.
+// Round 65 (m3 lane 14, fast, control 465): the private copy of the forward getter replaced by the existing object_get_forward with a
+// `__forceinline` declaration here 465 (same code, kept; plain 446); the speed vector as a local union with a real[3] 465 (vector3f is
+// already a union); the three-member struct re-measured 293 (3718, frame 0xc0, store back, masked 39); with the request declared first 293;
+// with the value read after the request's init 374 (3734, frame still 0xc0: the struct overlaps the request even then); with the request's
+// +0xc copy after the +0x24 call 293.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
@@ -343,7 +330,7 @@ void function_294380(long arg_0, long arg_1)
     else
     {
         local_6 = *g_4687a4;
-        function_295027(arg_1, &local_19);
+        object_get_forward(arg_1, &local_19);
         local_3->field_d = false;
     }
     s_orientation_request_118f90 local_39;

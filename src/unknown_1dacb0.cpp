@@ -1273,6 +1273,14 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // iterator outputs renamed either way 755 (same homes), type first 755, the result set before the search test 1005, a direct result
 // with a default 1021 (206/151/86, 2841 bytes). Retail's late zero is a temp in EBP from the first kinds lookup on; ours keeps
 // a parameter in EBP over that block and re-reads it (retail reads it from the stack), so the zero stays immediates. Flag form: match-only.
+// M3 lane 12 r93 (fast): the second request's keys copied into named locals first 828 (identical: the copies coalesce);
+// `if (result.index == NONE) return result;` with the calls unguarded 1012 (2839 bytes); the inheritance loop as a while
+// with `long i = 0;` above the kinds request 1011 (0x1dbc80 1011, loses 0x1dc8c0 to 474: the zero is stored at the top);
+// the inherited graph named in the loop 828; the siblings' iterator store order 828; the search, outputs and requests in
+// one `while (true)` with a found `continue` and a closing break 828 (same code). Diagnostics: the second request dropped
+// 2235 (no zero register even then); 1dd9d0 and both requests inside the loop's found pass (outputs after the loop) 991 at
+// 2825 bytes with retail's `xor ebp, ebp; cmp eax, ebp` zero and `mov [i], ebp` stores; the outputs after the requests,
+// outside the loop, 1009 without it. Our build makes the EBP zero only for request code inside the search loop.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1522,6 +1530,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // direct result producer: 828/828/1011/932/978/979/828/977. NOT kept: no exact return-contract
 // keeper; original interface and complete body restored. Frame 0x2c agrees; class/NONE,
 // output/candidate homes and late zero remain.
+// Round 65 (m3 lane 14, fast, on the siblings' body plus record, 732 at 2825, masked 55; without the record 755, masked 57): `this` named
+// for both requests 732; the found keys named for the second request 732; the first request from the iterator's stored keys 1019 (2875);
+// the requests guarded on the found flag 1019 (2841); the keys through a local table 732. Retail keeps `this` in EBX and the found mode in
+// EBP through the second request; ours gives EBX the +0x34 table pointer and EBP `this`, and no zero register forms.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
