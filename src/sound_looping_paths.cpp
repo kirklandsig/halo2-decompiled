@@ -353,6 +353,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // local 866, tag local 866, both 866, hoisted sounds 924 (3327 B), choice pointer 962 (3284 B), long query count 919 (aligned
 // 584), long choice count 956 (3281 B), both 942 (3297 B, masked 288), with the pointer 960. With hoisted sounds: long query 881
 // (3327 B), long choice 976, both 963, with flags and tag 949/881.
+// M398: Complete choice/existing-index output defaults, aggregate/CRT pairs
+// at phase/entry lifetimes: 923/987/921/958/971/979/962/979.
+// NOT kept: all regress and grow; original arrays, helpers and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
