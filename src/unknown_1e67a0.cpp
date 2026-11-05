@@ -4,6 +4,8 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
+#include "vector_products.h"
+#include "reciprocal_normalize.h"
 
 struct s_shape_contact;
 struct s_shape_side;
@@ -571,19 +573,7 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
-/* the approximate reciprocal square root, read from and written to memory */
-PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
-{
- real inverse;
- __asm
- {
-  rsqrtss xmm0, squared
-  movss inverse, xmm0
- }
- return inverse;
-}
-
-// score 132 (was 132): 1.0 sits in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
+// score 118 (was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
 // y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
 // 1020 bytes; aligned difference 129 against this body's 154); on/off first in a jitter vector 163 (1048 bytes,
@@ -764,6 +754,16 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // DH347: Last-consumer input/factor/acceleration, sampled-scale and direction/projection
 // scopes, seven subsets then complete scopes with descriptive limit naming: eight at 132.
 // Original body restored; frame 0x28 agrees, unity/limit/direction ownership and jitter homes remain.
+// Round 134 (m3 lane 8, fast, 0x24590 listed; al = aligned raw/masked/masked+stack, base 154/85/65). Kept: plain long with if-form
+// on/off and sign values, plain limits and the existing dot3f, vector3f_add_scaled and vector3f_add 129 (1087 bytes, first 118 lines
+// exact), plus the pointer normalise shared with the particle code 118 (1077 bytes, al 110/35/32). Tried: retail-order ternary jitter 233
+// (1020, al 129/60/54); the normalise summed k, i, j 128; limits through vector3f_assign 187 (1064) and a component-product inline 156
+// (1077); all three value kinds in the if form 163 (1098); on/off only 148 (1090); scale values in the if form 136/140; products added
+// straight 167-203; on/off, x/y/z declared in any order, or x as the on/off variable 57/59; velocity pointer local 145-169 (1027-1048);
+// scalar limits 95-200; bit-value inline for the values 90-198; body identity chains (diagnostic) 112-137. NOT kept, a new one-caller
+// inline: dot and scaled add in an inline taking velocity/direction pointers 66 (1077, written rows 61), with the dot terms named 57
+// (1078), with a statement dot 59 (1079), with a statement dot and a separate result pointer 52 (1079, al 65/23/20: 188 lines exact but
+// for the i term's x-operand; only the jitter block's spills and products left). A match should start from that 52 form.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -800,38 +800,37 @@ void function_1e6360(s_biped_physics_output *output, real rate, long object_inde
   movement.j *= scale;
   movement.k *= scale;
   vector3f direction = movement;
-  real length_squared = direction.i * direction.i + direction.j * direction.j + direction.k * direction.k;
-  if (length_squared != 0.0f)
-  {
-   real inverse = inverse_sqrt_1e6360(length_squared);
-   direction.i *= inverse;
-   direction.j *= inverse;
-   direction.k *= inverse;
-  }
-  real projection = 0.0f - (state->velocity.k * direction.k + state->velocity.j * direction.j + state->velocity.i * direction.i);
-  state->velocity.i += projection * direction.i;
-  state->velocity.j += projection * direction.j;
-  state->velocity.k += projection * direction.k;
-  state->velocity.i += movement.i;
-  state->velocity.j += movement.j;
-  state->velocity.k += movement.k;
+  normalize_particle_direction_2b(&direction);
+  real projection = 0.0f - dot3f(&state->velocity, &direction);
+  vector3f_add_scaled(&state->velocity, &direction, projection, &state->velocity);
+  vector3f_add(&state->velocity, &movement, &state->velocity);
  }
  if (g_51e9bc)
  {
-  volatile long bits = g_510c54->game_time * *(long *)((byte *)state + 0x18);
-  real x = ((bits & 8) ? 1.0f : -1.0f) * ((bits & 1) ? 1.0f : 0.0f);
-  real y = ((bits & 16) ? 1.0f : -1.0f) * ((bits & 2) ? 1.0f : 0.0f);
-  real z = ((bits & 32) ? 1.0f : -1.0f) * ((bits & 4) ? 1.0f : 0.0f);
-  x *= (bits & 64) ? 1.0f : 0.5f;
-  y *= (bits & 128) ? 1.0f : 0.5f;
-  z *= (bits & 256) ? 1.0f : 0.5f;
+  long bits = g_510c54->game_time * *(long *)((byte *)state + 0x18);
+  real on_x = 1.0f;
+  if (!(bits & 1)) on_x = 0.0f;
+  real on_y = 1.0f;
+  if (!(bits & 2)) on_y = 0.0f;
+  real on_z = 1.0f;
+  if (!(bits & 4)) on_z = 0.0f;
+  real sign_x = 1.0f;
+  if (!(bits & 8)) sign_x = -1.0f;
+  real x = sign_x * on_x;
+  real sign_y = 1.0f;
+  if (!(bits & 16)) sign_y = -1.0f;
+  real y = sign_y * on_y;
+  real sign_z = 1.0f;
+  if (!(bits & 32)) sign_z = -1.0f;
+  real z = sign_z * on_z;
+  x = ((bits & 64) ? 1.0f : 0.5f) * x;
+  y = ((bits & 128) ? 1.0f : 0.5f) * y;
+  z = ((bits & 256) ? 1.0f : 0.5f) * z;
   vector3f offset;
   offset.i = x * 0.2f * limits.i;
   offset.j = y * 0.2f * limits.j;
   offset.k = z * 0.2f * limits.k;
-  state->velocity.i += offset.i;
-  state->velocity.j += offset.j;
-  state->velocity.k += offset.k;
+  vector3f_add(&state->velocity, &offset, &state->velocity);
  }
 }
 
