@@ -1562,6 +1562,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH379: Actual iterator/request/slot declarations before entry admission, seven
 // subsets then both native arrays too: eight at 32. NOT kept: no exact storage
 // boundary or iterator/request recovery; original complete body restored.
+// DH383: Existing load-request scalar seat inputs, object/seat/both/reversed, immutable complete pairs
+// and after-type pairs: eight at 32. NOT kept: no exact one-use acquisition form; all 66 calibrated
+// matches survive. Original helper, inputs, request publication and complete body restored; iterator and
+// leave/request schedules remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

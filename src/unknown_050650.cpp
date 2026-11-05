@@ -992,6 +992,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // DH377: Successful dispatch breaks in cases 3/5/6/all three/1/2/both reference cases/all five:
 // eight at 258 (fast control 258; full 257). NOT kept: identical code, no match or gain.
 // Original success transfers and complete decoder restored; result/presence homes and shared-tail predecessor remain.
+// DH383: Whole-decoder success default with false produced by every rejected dispatch,
+// bool/byte/short/long, original comparison results 389/380/375/372; failure-only normalization
+// 267/280/300/301. NOT kept: every full-graph lifetime regresses against calibrated 258 (full 257);
+// original result/presence, all calls, cases and entire decoder restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

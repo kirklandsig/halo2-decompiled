@@ -1131,6 +1131,10 @@ bool function_2715a0(byte *buffer)
 // DH379: Original back-edge/flag/exclusion/diameter/distance/child-index positive
 // pipeline owners, then split distance and flag rejections: eight at 486. NOT kept:
 // no native state/register recovery; original guards and complete body restored.
+// DH383: Complete link vector/point/both input values, mutable then immutable, 518/525/510/518/525/510;
+// paired acquisition 510/510. NOT kept: no exact record-copy form; frame or length moves away from
+// retail. Original live geometry inputs, fresh denominator, inherited result qualifier and entire body
+// restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
