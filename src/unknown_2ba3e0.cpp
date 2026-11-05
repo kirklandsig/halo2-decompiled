@@ -927,6 +927,15 @@ real g_55e618;
 // M380: Displacement/sweep scalar, aggregate and immutable aggregate producers,
 // all eight non-original pairs: 129 each at 1549 bytes. NOT kept: all regress;
 // original interleaved travel products, reflection, collision extent and full body restored.
+// M3 lane 4 r164: LEAD for 0x247950: retail builds placement_set's last argument in its stack slot there (`push ecx; mov eax, esp;
+// mov word ptr [eax], 0`), so it is a by-value word-sized class with a constructor. The class (2 or 4 bytes) leaves this body at 102
+// (same code) and takes 0x247950 from 356 to 351, 1643 to 1653 B against retail's 1652 (not kept: five points without a match).
+// The position or the value declared last 102, but 0x2ba3e0 0 -> 6. Round 75's form rebuilt: normal locals in six orders 44 (aligned
+// 8 for i,j,k; j,i,k; j,k,i; 15 for the others). On it: the class read into a local at the top, keep, velocity or perpendicular 208
+// (1545 B, the class gets a stack home); a named short 59 (aligned 27: load and stores land as retail, EAX for EDX, later blocks
+// rotate); the position set nested as the argument with named sums 44 (aligned 7), written out 44 (aligned 9), assignments in a
+// comma argument 44 (aligned 8): the stores still precede the load; a plain collision record for the union with the class member or a
+// short member 44 (aligned 8); the normal as direct record fields 44 (aligned 15), with no normal pointer 647 (1745 B).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

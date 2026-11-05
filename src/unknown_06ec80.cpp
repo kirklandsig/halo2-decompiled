@@ -70,6 +70,12 @@ struct s_6ec83
 // Round 31 (lane 17, fast): mask zeroed at entry and again in the guard 223; inverted guard with the
 // mask outside it 13; the pointer renamed `machines` 13; the counter zeroed beside the mask before the
 // guard 33; the two flags declared first 13. A 600 s permuter run: 4 tries, none below 13.
+// Round 163: both slots hold 4 references, and the more referenced home sits lower (word short, compile-only:
+// the pointer gets 5 and goes below it), so retail breaks a tie or has one more pointer reference. An inline
+// readiness predicate 308 (928 bytes); an inline short getter 13, early return 245, scoped 223/244; the short as
+// a long written through a short pointer or as a long/short union 25 (974 bytes, slots unchanged), scoped 222/222;
+// pointer and short as the settings' first fields 18 (974 bytes, slots right), scoped 222; a word short 175
+// (982 bytes; its NONE is not the shared register), scoped 182.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

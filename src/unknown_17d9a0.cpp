@@ -416,6 +416,19 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // helper and full body restored. Plane base, first selectors and product memory sides remain.
 // T57: Normal component-array transfer, long/short/dword/word ordinals, forward then reverse
 // 206/223/206/223/219/219/219/219. NOT kept: no exact or qualifying structural gain; original complete body restored.
+// Round 54 (m3 lane 15; `--fast 0x17d9a0 0x120850 0x22bbca` is exact here, 46: listing 0x22bbca brings point2f_set's file in; a one-link harness
+// with those files is 54 for 46, 0x120850 taking ECX there, with its product pairs as retail's). Ours differs from retail in 1, 4, 6, 0 of
+// the 6 pairs of corners 0-3. Harness, plane helper / axis form / lookup / helper types (320 + 288 forms): nothing below 54; plane helper with
+// a `short axis` local and the existing 0x120810 taking the point built in its first argument 182 (975 bytes, aligned 37), with a named index
+// and horizontal/vertical locals instead 182 (975, aligned 35); plane helper with a named row index 161 (983 bytes, aligned 42, pairs 1, 5, 0, 0:
+// the side load folds to one `movzx`, shifting every later corner by one instruction); axis stored directly 169 to 203; the arguments as
+// `bounds + n` same code. Diagnostic tables of 0-7 locals at the top by 0-7 in the helper: base best 6 of 24 pairs (50, t7 h3), plane helper with a named
+// row index best 4 (158, aligned 37); no state reaches retail's pairs.
+// Real (fast, same round): real px, py named before the setter 48; short horizontal, vertical named 54; the plane helper on the current corner
+// 61; plane helper with a named row index 153; plane helper with 0x120810's body named 151; plane helper, `short axis` local, 0x120810 taking
+// the point in its first argument 173 (975 bytes); plane helper, `short axis` local, named index and coordinates 173 (975 bytes).
+// M391: Computed plane-dot/paired squared-edge/reciprocal double receivers, seven subsets, then complete real receivers: 101/133/179/79/131/141/174/54.
+// NOT kept: No exact live-plane, selector or product-memory-side recovery; nonmatching one-use/precision lifetimes are discarded. Original complete body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -1022,6 +1035,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // T57: Accepted endpoint coordinate-array transfers, long/short/dword/word ordinals,
 // paired then separate loops
 // 547/541/547/541/539/574/539/574. NOT kept: no exact or qualifying structural gain; original complete body restored.
+// DH372: Partial angular/first-distance grouping decisions, bool/byte/short/long,
+// 529 each at 3647 bytes. NOT kept: one-use outcomes are unmatched and enlarge the
+// native 0x21dc frame to 0x21e4; original body/helpers restored, tag/count/plane homes remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

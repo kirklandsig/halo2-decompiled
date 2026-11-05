@@ -114,7 +114,7 @@ void function_7f930(void);
 void pending_messages_reset(void);
 void function_53210(void);
 void function_8dd70(void);
-// score 221 (was 221): four-byte frame and entry predicate agree; helper boundaries,
+// score 253 (was 221): 0x8dd70 reads three of these pointers through their addresses, which moves this function off retail's length (915 bytes); four-byte frame and entry predicate agree; helper boundaries,
 // readiness storage and global reloads differ.
 // Round 110 (diagnostic chain, not kept): the six pointers 0x510560..0x510574 as one struct
 // global whose address 0x8dd70 takes (a memset of it in place of the six clears) give retail's
@@ -243,6 +243,9 @@ void function_8dd70(void);
 // seven subsets and complete receiver role names: 221 each. Original lifetimes restored.
 // Final-completion bool/byte/short/long at admitted/entry scope all 230; original success return
 // and cleanup restored. No flagged completion form matches.
+// Round 86 (plain, with 0x8dd70's address reads in place): inline gateway and handler initialize helpers 249 (910 bytes); bool stage
+// flags link/link+observer/link+sessions/all/observer/observer+sessions 264/267/260/263/262/258. Address reads of the other three
+// pointers too 301/263/263 alone, 312/311/283 in pairs, 330 all (fast). All restored. Without the address reads this form scored 221 (892 bytes).
 // @retail 0x8d9f0
 void function_8d9f0(void)
 {
