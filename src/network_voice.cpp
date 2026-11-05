@@ -3361,6 +3361,8 @@ struct s_voice_route_choice
 // forced inline 363/363/363/363; ordinary inline 1347/1344/1343/1339. NOT kept:
 // no exact match; ordinary providers suppress native expansion and stay called.
 // Original complete body restored; talker/zero, cursor and priority merge remain.
+// DH381: Excluded-route iteration completion with seven nearest-guard graphs, then split
+// guards and native radio branch: 363/363/363/363/363/363/363/411. NOT kept: no exact loop/frame graph; original body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

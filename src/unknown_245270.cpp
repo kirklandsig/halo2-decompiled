@@ -631,6 +631,8 @@ void function_245400(s_source_245400 const *source, long index,
 // second material's record (forceinline, inline, reference; with a named record) 208 or 204 late, no dead lea, no arrival change.
 // Plane table and pointers inside the plane test 222 (766 bytes): the source does arrive in ECX and copies to a callee-saved
 // register at entry as retail's, but the matrix then becomes a register argument too (no push, caller 43).
+// DH381: Existing array edge producer at unit scale, late-plane/independent-side/staged-cross
+// subsets 0..7: 208/204/226/227/208/204/226/227. NOT kept: best gains five and loses caller 0x245aa0; original body restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

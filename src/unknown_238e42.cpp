@@ -1118,6 +1118,9 @@ bool __stdcall function_2399da(long controller_index)
 // at three places (a rotation test, diagnostic) keep the identity in ECX: no missing rotation step. 130 combinations (own rank local or field, identity
 // test spelling, permission spelling, task index preset, chain/over-rank first/nested dispatch, store order, nested or guard returns) 89-96 with no
 // identity in EAX.
+// DH381: Validated selected-pointer producers on original/dedicated results, eight forms
+// 159/163/163/159/97/98/98/97; native-register completion follow-ups 97/97/90/90.
+// NOT kept: extra null-result/re-test or original rank conflict; original complete body restored.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
