@@ -3945,6 +3945,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M374: Actual physics/orientation/index parameter-home identities, seven role graphs,
 // then all with input basis identity: 136/136/136/136/136/136/136/136. NOT kept: no native
 // projection/trig home repair; original complete body and all contracts restored.
+// J257: Existing double-factor scale at projection/up/axis and native default-forward product boundaries, with x87 angle/fraction diagnostics:
+// 205/218/229/232/251/241/255/208/200/204/208/159/228. NOT kept: all thirteen regress; prologue/storage gaps remain; existing helper already inlines and precision forms lack equality.
+// Original executable source restored; allocation gaps remain.
 // M378: Complete default placements 1/D/2, 2/D/1, D/1/2, D/2/1; paired real cases
 // in both label/default orders: 136/136/136/136/165/165/165/165. NOT kept: no native projection/
 // trig repair or byte equality; original cases, precision and complete body restored.
