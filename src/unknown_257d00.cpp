@@ -1816,6 +1816,12 @@ void function_b7360(long object_index);
 // B430: Selection-owned common validity publication, bool/byte/short/long, default
 // invalid/admitted-arm production 358/358/487/487; default valid/explicit rejection
 // 355/355/345/357. NOT kept: no byte match; original stores, result and callback restored.
+// M3 lane 13 r63 (fast, restored): lead for a ruling. The reloads at the 1/19 and case 5 sites are 0x25ab50's IL effect on its callers: on lane 9's goto form (246, 1848 bytes, masked aligned 67), one store through a
+// non-parameter pointer in 0x25ab50 (a pointer to a local, or a reference to a member of a local record; 0x25ab50 still matches) gives 91 at 1848 bytes, masked 10, with retail's arg_0 EBP and output ESI. A full check of
+// that store loses only 0x1b13b0 and 0x25a380, which hold the reference across the call. An array element in 0x25ab50 or a by-value struct helper there have no effect (246; 0x25ab50 itself 47 with the helper). Left on 91:
+// `xor eax, eax`/`mov eax, 2` for `xor ax, ax`/`mov ax, 2` from the short result, case 7's dot sides, and the 0x8c, 0x99 and 0x9a constant stores one line later than retail. On it: `if (success) return 0;` tails 159 (1816),
+// if/else returns 177 (1820), `if (!success) return 2;` 169 (1812), unknown06 as a real short field 91 (same code). Without the store: the empty cases 301 (same code), with actor first 487, word flags 309, all three 497;
+// per-arm returns with no join `if (success) return 0;` 582/478 with actor first (1724), `if (!success) return 2;` 581/478, ternary 528/538 (1800); all with actor first and word flags 491/491/544, with the store 632/632/542.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2371,6 +2377,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B430: Existing byte-flag writers at classification/request/motion publications,
 // masks 1/2/3/4/5/6/7: 488/485/488/485/488/485/488; all plus pooled flags 513
 // (fast control 485; full 469). NOT kept: no match or gain; original body restored.
+// M3 lane 13 r63 (fast, control 485, masked aligned 167; restored): case 1 as `if (d > 1.f)` 622 (2384, masked 159); the facing fields written at each use 519 (2368, masked 142); the existing dot3f for case 4 508 (2368, masked 133); both with dot3f
+// 656 (2356, masked 128); with field writes 639 (2368, masked 137); the state local first 485 (same code); case 14 before 20 491 (2400, masked 178), with `!(d > 1.f)` 615, with dot3f 508 (masked 124), all three 644 (masked 121). The callee store
+// from 0x258cf0's note 485 (masked 215), with the fields 639 (masked 186): retail keeps the reference across 0x25ab50 at cases 18 and 21, so those would need a local. Retail lays the post-switch test right after the case 7/8 and case 0 `sete` tail.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -486,6 +486,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // 1c710/1cdd0/2c3b0/1bd50: 117/117/117/117/117/117/117/117. NOT kept: no gain.
 // Every declaration and whole body restored; fallback EDX, stage/pass ownership,
 // unfused element loads and mask lifetime remain.
+// M3 lane 13 r63 (fast, restored; 0x2243c0 and 0x224d90 checked): chain-8 rebuilt from the recipe; tag read before the instance is what gets 8 from 91 (552 bytes); instance from local_tag 67 (0x224d90 lost). On 8: pass definition bound 36, material bound 92 (552),
+// both 86 (0x224d90 lost); named copies of either or both 8 (same code); the 0x20 block pointer named 8; the pass field read twice through a by-value element pointer 121, through a bound one with no local 8; lookups through the by-value accessor 8. Same 7 lines left.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
