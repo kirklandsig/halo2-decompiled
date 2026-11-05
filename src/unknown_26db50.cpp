@@ -752,6 +752,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // the copies 96, scalar cross terms 143, with the trace form 148, angle written twice 96. On the 89: rotation reading
 // `vector->` with no copies 89, three cross terms that way 142, a copy of the vector 263, written-out dot 89, dot
 // arguments swapped 89.
+// Round 133 (m3 lane 7, fast; aligned = difflib count, control 93): the two rings as a plain `for (long ring = 0; ring < 2;
+// ring++)` 266 (1057 bytes, frame 0xd4: no countdown, so retail's countdown is real); in the rotation helper the component
+// copies before the dot 90 (same code), the rows' first two terms swapped 90 (same code); the direction copied after the
+// sine and cosine 101 (aligned 114); the pathfinding pointer as a ternary 217 (aligned 101). Body unchanged at 90.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

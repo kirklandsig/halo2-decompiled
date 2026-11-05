@@ -385,6 +385,24 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // pointer named `settings` 306 (names do not order these slots); `local_15` as `*(vector2f const *)local_3` 306, both planar locals that way
 // 306; the turn dot through the existing dot_product2d 306 (all the same code). Retail sums the first planar length j, i and the second i, j,
 // and multiplies the turn dot local_13-first; ours puts local_15 first in both products.
+// AC551: Immutable saved direction; XY memcpy/memmove/field producers; immutable saved direction
+// with each library transfer; pre-call destination declaration; transfer after actor publication:
+// 306/305/344/306/305/344/305/305. NOT kept: no qualifying supported improvement; complete
+// executable source restored. Saved-direction and planar homes, operand ranks and floor registers
+// remain. The 305 XY memcpy form gains only one; the memmove forms miss native frame/length.
+// DL268: Saved-direction assignment/memcpy/memmove/existing setter on the native-frame graph
+// 306/306/419/308; complete vector-transfer memcpy/memmove, complete input memcpy and complete
+// setter publication 306/445/306/430. NOT kept: ties/regressions or nonnative extent/frame;
+// original copies, saved vector, helpers and entire body restored. Settings/magnitude and saved-direction homes remain.
+// DL270: Typed two-element range copies at saved/requested/facing planar producers,
+// seven subsets then complete backward ranges: 346/327/366/325/371/326/420/420.
+// NOT kept: all regress or move frame/length away; native copies and full body restored.
+// M396: Immutable original magnitude/turn-factor/blend-factor producer subsets
+// 1/2/4/3/5/6/7, then immutable settings receiver: eight at 306. NOT kept: no
+// settings/magnitude or saved-direction/planar home repair; original body restored.
+// M402: Ordinary private magnitude/planar/clamp declarations, seven subsets,
+// then complete ordinary graph with planar inline metadata: eight at 306. NOT kept:
+// no settings/magnitude or saved-direction/planar home repair; original helpers/body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

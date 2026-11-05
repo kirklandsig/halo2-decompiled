@@ -954,8 +954,8 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 		real const *local_rate = (real const *)(local_0 + 0x670);
 		*(real *)(local_0 + 0x674) = *local_rate;
 	}
-	vector3f const *local_forward = (vector3f const *)(local_0 + 0x290);
-	vector3f local_5 = *local_forward;
+	vector3f const *facing_axis = (vector3f const *)(local_0 + 0x290);
+	vector3f local_5 = *facing_axis;
 	bool *local_turning = (bool *)(local_0 + 0x6d1);
 	*local_turning = false;
 	function_29a20e(&local_5);
@@ -1112,7 +1112,7 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 				arg_3->i = local_5.i * local_32 - local_31 * local_5.j;
 				arg_3->j = local_31 * local_5.i + local_32 * local_5.j;
 				if (function_30bf0(arg_3) == 0.0f)
-					*arg_3 = *local_forward;
+					*arg_3 = *facing_axis;
 				real local_33;
 				if (local_15->field_4 >= 0.0f)
 				{

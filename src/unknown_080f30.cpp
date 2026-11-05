@@ -317,6 +317,12 @@ struct s_pending_message_storage : s_pending_message_header
 // loop's end 14 each; result declared before start 15; pump count declared at the size block 14; `if (result != 0) break;` for the result test 14; the elapsed arm first 75; elapsed
 // declared with the pump count 14; a named seconds value 14. The frame stays 0x1c in all. Reading of the layout: 8-byte start's spilled half and the 4-byte pump count both fit the dead
 // first time stamp's slot, and whichever is spilled first takes it; ours spills the pump count first, retail spills start first (then 4+4+8+8 = 0x18).
+// Round 153 (fast, in the shared helper, all nine helper users checked): the pump step as `function_12c600(); pumps++;` 75 (0x8c790 73,
+// 0x1241b0 91); the size and page-count guards as early returns 78 (0x1241b0 120); start as a LARGE_INTEGER 14 (every user unchanged); the
+// timeout test without the (real) cast 15 (0x8c790 1, 0x1241b0 1); an int pump count 14. Re-measured: start renamed to sort before the pump
+// count 14; the pump count zeroed before start 105 (286 bytes); a _ReadWriteBarrier() after start 17 (0x18f260 82). Matched 0x1241b0 packs
+// the pump count into the first time stamp's slot as ours does here (its start stays in registers); matched 0x8c790 keeps start in EDI:EBP
+// and gives both time stamps one slot. A 600 s permuter run on the body (47 tries) found none below 14.
 // @retail 0x80e10
 bool function_80e10(s_pending_message_storage *request, void **output, long *size)
 {

@@ -27,10 +27,12 @@ extern real g_4c9798[36];
 // form not kept), both 222; long height limit 250; sequential border multiply/divide 180 (the
 // border order is fixed but the body regresses); early size declaration and dimension rename
 // 174 each. Original executable body restored; mode/size homes and rounding reloads remain.
-// score 178 (was 197): the width is rounded before the height, the overflow fix-up compares
+// Earlier 178 (was 197): the width is rounded before the height, the overflow fix-up compares
 // the width against the height the other way round and the near-plane distance is read from
 // the tag; the mode bit still loads the flags into edx where retail uses eax.
-// score 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
+// Earlier 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
+// Earlier form (178 from 197): the width is rounded before the height, the overflow fix-up compares
+// Earlier form (197 from 197): the mode bit loads the flags into edx where retail uses eax, so
 // MiniMax lane E (11-01): no new form, no lower score.
 // Earlier: the mode bit loads the flags into edx where retail uses eax, so
 // the mode bit loads the flags into edx where retail uses eax, so
@@ -202,6 +204,24 @@ extern real g_4c9798[36];
 // for the aspect, size root and tangent 180 (1491 B); `g_485a47 = (byte)mode` right after the mode is chosen 339 (1488 B); the three
 // small-target tests as one inline predicate 380 (1514 B); `mode` declared first 174 (same code); the first plane's dot as dot3f(point,
 // normal) 174. Retail's max_height is a full dword (`mov eax, [h]; imul eax, [w]`, `cvtsi2ss xmm0, [h]`), ours sign-extends a short.
+// AC551: Complete immediate projection/near-point/far-point multiplication nodes in subsets
+// 1/2/4/3/5/6/7, then the complete homogeneous projection on all three families:
+// 174/180/174/180/174/180/180/180. NOT kept: no qualifying supported improvement; complete
+// executable source restored. Mode-flag register and protected rounding-call reloads remain.
+// DL268: Native sqrtf aspect/size, tanf cone, all root/tangent pairs and all three,
+// then a double half-angle at its producer: 180/180/180/180/180/180/180/180. NOT kept:
+// no supported improvement; original math and body restored, stacked score headings merged.
+// Mode/size homes and the protected rounding-call reload boundary remain.
+// DL270: Published far-normal dot control 343; native near/far scale-helper
+// subsets, published dot pairs, complete graph, dead snapshot removal and complete
+// projection/plane scale graph 174/343/174/343/174/343/343/343. NOT kept:
+// ties or nonnative frame/short extent; original copies, normal consumers and body restored.
+// M396: Actual mode/width-limit/height-limit enum domains, subsets 1/2/4/3/5/6/7,
+// 174/174/250/174/250/250/250; complete immutable limit graph 250. NOT kept:
+// ties/regressions; original body restored. Mode/size homes and rounding reloads remain.
+// M402: Complete reciprocal/depth-scale/offset result arms, seven subsets, then
+// complete fallback-first reciprocal: 174/174/323/174/323/323/323/323. NOT kept:
+// offset default moves after its branch; original scalar results and whole body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

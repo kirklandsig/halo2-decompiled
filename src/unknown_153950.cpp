@@ -527,6 +527,13 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // the rotate call 81 (1109 bytes); sine/cosine before the normalize call 106. Unused-local probes (1-16,
 // diagnostic) repeat with period 8 (13/19/15/25/21/21/17/23) and move only the dot/cross operand orders;
 // the j/k rows stay in every residue, so they are no numbering tie.
+// AC551: Immutable angle/timer, flattened input through the existing setter/aggregate, angle/cross
+// declarations at their producers, ordinary-inline range declaration, and post-copy duration from
+// the input: 13/13/259/259/13/13/13/161. NOT kept: no qualifying supported improvement; complete
+// executable source restored. Rotation j/k sum and input-load ranks remain.
+// M396: Complete memmove direction/angle/bounds transfer subsets 1/2/4/3/5/6/7
+// 210/284/293/279/300/296/296; signed-angle conditional result 13. NOT kept:
+// no exact rotation/load repair; original complete body restored.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

@@ -508,6 +508,13 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // clock pointer gives result EBX and NONE EBP but clock EDI and ticks EBP 91 (415 bytes); a ticks-to-seconds inline
 // helper 15; the elapsed test as a bool helper 84; field_6 tested in its own if 15; dword ticks 108 (438 bytes); the
 // settings factor first with the call second 15.
+// Round 75 (lane 1, fast): a named clock, also const, with an `__assume` on the clock or the ticks, declared at function
+// top or with the result, the ticks declared first, `local_3 -= local_5`: 91 each (415 bytes, aligned 15): result EBX and
+// NONE EBP as in retail, but clock EDI, ticks EBP, and the node block's scratch and the EBX save move; declared at the node
+// block 102; the rate through the global 15. `__assume` on the result at three places, on the clock global, on the ticks,
+// on the tested field 15 each. A compiled-out `do { } while (false);` before or after the result, at the settings block
+// head, before the unit index or the first node read 15 each. Diagnostic: one or two dead result reads 82/85: the
+// result goes to EDI and NONE stays EBX. Sibling 0x1ae440 keeps NONE in EBX and reads the clock inline.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

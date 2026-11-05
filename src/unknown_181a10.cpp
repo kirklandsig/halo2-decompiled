@@ -764,6 +764,22 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // long root type 319 (80), plus a next-shape local 319 (79), plus a one-use bool for the byte test 323 (79). Normal row terms in six orders 239 each (aligned 106-116).
 // long plane index locals 239 (same `mov dx`: the short formal narrows; the callee's formal is the real blocker, a caller rose before). Hit through
 // a contact position pointer 310 (folds). Left: contact takes a register once the hit is read by components (retail keeps it on the stack), three data reads.
+// Y603: Separate queried planes, earlier uninitialized material/coefficient outputs and
+// source-arm plane names: 239/231/239/231/239/231/239/231/231/239/231. NOT kept: 231 recovers frame 0x44
+// but moves the first-node home to +0x14 (retail +0x10); unmatched frame-only steering.
+// Material-only isolation also gives 231; original body and all declarations restored.
+// DH377: On the scalar-normal/actual-node graph, typed final-normal setter, complete plane-normal
+// setter and both 239/239/239; native hit publication alone/with either/both 340 each (1227 bytes),
+// standard hit memcpy 340. NOT kept: no gain; original publications, captures and full body restored.
+// Frame 0x40 versus 0x44, classifier observations and plane/point homes remain.
+// DH380: Original predecessor/shape/query key-admission boundaries, seven partitions and complete
+// partition with separate original root guards: 239/239/239/239/239/239/239/239. NOT kept: frame/receiver
+// homes remain; original tests, observations, query contracts and complete collector restored.
+// N395: Actual first/second/root/component/key/bounded-key names individually, then
+// two complete node/key identity orders: 239/239/239/239/239/239/239/239. NOT kept: no equality or
+// frame/home recovery; original names and complete collector restored.
+// N397: Complete scalar origin xzy/yxz/yzx/zxy orders, original then early material output 308/308/308/308/311/311/311/311.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
