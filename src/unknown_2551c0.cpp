@@ -707,6 +707,10 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // DL273: Default side completion at entry/admission/heading/probe phases, short then long:
 // 214/208/205/169/245/239/235/202. NOT kept: nonexact result storage and lifetimes;
 // original default arms and full body restored; unit-call/scalar/query homes remain.
+// Round 133 (m3 lane 7, fast, on lane 17's match-only 17 form rebuilt): adjusted projection in the length variable 17
+// (groups retail's, {length} at 0x14 and {sum, second side, timing} at 0x18 swapped); on it the plain `length > 0 &&
+// 0x30bf0(heading) > 0` guard 17, the length named aa_/zz_ 17/17, the lateral declared at function top 17, the size
+// declared at function top 17 (all the same code). Body unchanged at 89.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -204,6 +204,9 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 // 28 each (275 bytes: the type is re-read by a memory movsx and the rotation moves one step the other way,
 // reference EDX); the guard, call and stores all through a block data-block or `s_slot_23 *` pointer 7/7 (same
 // code); the block pointer declared ahead of the guard with the guard on `state` 28.
+// Round 73 (m3 lane 11, fast): the two stores after the 0x1f4f40 call swapped 9; readiness `... != false` 7; the
+// type passed as `(short)(signed char)` 7; the done flag tested first in the guard 13; the completion cleared as
+// `!state->unknown10` right after setting it 7. All four callees match.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {

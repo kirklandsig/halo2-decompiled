@@ -1276,6 +1276,14 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // DL274: Six native stack-formal home reads individually, mode/class pair, then all six: 828/828/828/828/828/828/828/828.
 // NOT kept: native class/NONE, candidate/output/result homes and late zero remain; no eligible byte match or native repair.
 // Original complete executable source restored.
+// M3 lane 12 r93 (fast): the second request's keys copied into named locals first 828 (identical: the copies coalesce);
+// `if (result.index == NONE) return result;` with the calls unguarded 1012 (2839 bytes); the inheritance loop as a while
+// with `long i = 0;` above the kinds request 1011 (0x1dbc80 1011, loses 0x1dc8c0 to 474: the zero is stored at the top);
+// the inherited graph named in the loop 828; the siblings' iterator store order 828; the search, outputs and requests in
+// one `while (true)` with a found `continue` and a closing break 828 (same code). Diagnostics: the second request dropped
+// 2235 (no zero register even then); 1dd9d0 and both requests inside the loop's found pass (outputs after the loop) 991 at
+// 2825 bytes with retail's `xor ebp, ebp; cmp eax, ebp` zero and `mov [i], ebp` stores; the outputs after the requests,
+// outside the loop, 1009 without it. Our build makes the EBP zero only for request code inside the search loop.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
