@@ -1672,6 +1672,9 @@ struct s_actor_looking_turn_request
 // looking_valid declared with valid at the block top 442; the marker workspace at the block top 442; case 0's
 // movement request at the block top 442; the turn request at the turn block's top 442 (all same code). Retail
 // never inlines 0x1fdd90 anywhere (its byte pattern occurs only at 0x1fdd90), so BLOCKED-BY 0x1fdd90 stands.
+// DH379: Terminal attention presence/absence bool/byte/short/long, after the output getter:
+// 548/548/548/548/548/548/548/548 fast, against its unchanged reduced control. NOT kept: no exact
+// attention result or frame/pool recovery; original field test and complete body restored.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

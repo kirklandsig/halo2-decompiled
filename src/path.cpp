@@ -1128,6 +1128,9 @@ bool function_2715a0(byte *buffer)
 // DH368: Direct named link/root/child array elements, seven subsets then collision candidate:
 // 624/528/486/659/624/528/659/684. NOT kept: child-only ties, others regress or grow;
 // original array receivers, inherited fallback qualifier and complete body restored.
+// DH379: Original back-edge/flag/exclusion/diameter/distance/child-index positive
+// pipeline owners, then split distance and flag rejections: eight at 486. NOT kept:
+// no native state/register recovery; original guards and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
