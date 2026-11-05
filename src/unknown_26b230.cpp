@@ -1983,6 +1983,9 @@ void function_269250(long clump_index, long actor_index);
 // the improve test 126 (39). The walk written out in this body (diagnostic): the found arm assigning the group directly 128 (64: pool promoted into EDI and the
 // selection memory-only as retail, but the not-found path threads); the helper's exact shape, one level or both levels, 126/126 (39, same code). So the pool wins
 // only once the not-found path threads; retail has both.
+// N391: Actual retained best bool/byte/short/word/int/long/dword/unsigned-char:
+// 177/160/145/155/141/141/155/160. NOT kept: all regress against reduced control 89/full 87;
+// original real best and full body restored. Memory-only selection, pool and x87 homes remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

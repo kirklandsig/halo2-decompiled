@@ -723,6 +723,9 @@ static inline word font_character_pixel(long alpha, long color)
 // N389: Pixel alpha word/uint, color short/uint, result short/uint: 92/91/92/80/85/106/85/105.
 // NOT kept: word alpha with uint color/result 80 gains only five; other type forms tie or regress.
 // Original helper and decoder restored; alpha widening, literal assembly and run-two reuse remain.
+// N391: Case orders 04651237/04615237/04165237/01465237/06415237/06451237/
+// 06145237/01645237: 115/116/113/113/117/116/115/114. NOT kept: all regress;
+// original cases/body restored. Alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
