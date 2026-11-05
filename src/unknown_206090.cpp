@@ -422,6 +422,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 136 (fast): the magnitude helper's input copy and result in an inner block 1395 (6195 bytes, frame 0x5cc);
 // the copy const 1355; `sqrtf` 1415 (6259 bytes); the copy declared, then assigned 1355; the first normalizer with
 // one exit (zero in the if arm, the scaling in the else) 1355.
+// M3 lane 12 r93 (fast; 0x2056e0 matches): the first loop's element position through a named point pointer (also
+// for the ray origin) 1385 (6195 bytes); its offset through the existing vector3d_from_points3d 1407 (6259 bytes); the
+// magnitude summed i, j, k 1355 (same code); the magnitude from three named component locals 1608 (6022 bytes, as the
+// pointer-read form); the snapshot declared const 1355 (same code). The frame excess is the snapshot copy (ours stores
+// each component, copies it to the snapshot and loads x87 from there; retail loads x87 from the first store).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

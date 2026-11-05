@@ -103,6 +103,12 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // k, j, i 44, all three scalings as `*=` 37, `!(scale == 1.f)` 37, the helper returning `out` into the
 // final call 37; the transform written in the body without the helper 9 (current form, same code) or 68
 // (that helper's form, 254 bytes).
+// Round 67 (m3 lane 14, fast): 0x194d30's decoder statements (k first, `* (1/63)` then `* 2`, which the
+// compiler folds into one 2/63 product, and the x, y, z-read transform) 61 (254 bytes: zero in XMM2, step
+// in XMM3 as with k stored first), with the dword index 134; the face index passed to the helper with the
+// lookup inside 9 on this body, 68 (254 bytes) on the x, y, z-read helper; on the x, y, z-read helper with
+// the scale at each use (37) `1.f != face->scale` 37 (243 bytes), one combined declaration 37 (same code);
+// stores i, k, j there 29 (retail's code with the step and zero registers swapped).
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {

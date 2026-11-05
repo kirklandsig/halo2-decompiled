@@ -616,6 +616,8 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// MiniMax A (11-05): no new form, no lower score; the plane-0 term still loads `vector_e4.i` after the
+// forward copy and keeps the zero in xmm3 where retail has it in xmm4.
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.
 // Round 16: retail loads the three `view->vector_e4` coefficients into xmm0, xmm3 and xmm4
 // before it copies the point and then reloads the point's components from that copy, ours reloads
@@ -864,6 +866,23 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // planes' d written j, k, i 152 (emitted i, k, j: VC emits these sums last term first), normal-first products 115 (same
 // code), `i + (k + j)` without casts 247 (1867 bytes); dot3f for both re-measured 155 either order. Classification
 // with the j term point-first 115, all terms point-first 115 (same code: retail's first-row j term loads n.j first).
+// M3 lane 4 r168 (one-file harness, exact at 115). New: all 120 declaration orders of the five top-level locals (points,
+// outside flags, segment flags, planes, culled) 115 each; both planes' normals copied before plane 0's d 133; the near clamp
+// as `near_sum < k ? k : near_sum` 115 (same code), as `near_sum > k ? near_sum : k` 117. Re-measured listed forms: plane
+// 0's d as j, k, i 133, normal-first 115, `i + (k + j)` 145, through dot3f either order 278 (1867 bytes); the normal copied
+// component by component 460 (1819 bytes, as through vector3f_assign).
+// AC552: Existing shared point transform output return/explicit inline/once-observed scale,
+// subsets 1/2/4/3/5/6/7, then forced expansion: 115/115/243/115/243/243/243/115.
+// NOT kept: no gain; every scale observation also raises the other user 0 to 94. Original helper/body restored.
+// AC556: Copied near/far normal components in native scalar consumers, mutable/const
+// and confined producer scopes: 295/287/309/295/287/309/309/309. NOT kept:
+// all grow sixteen bytes; original normal copies, reads, helpers and complete body restored.
+// AC558: Complete native byte enable-input contracts (bool/byte/char pairs except
+// original bool/bool): eight at 115, 1851 bytes. NOT kept: no exact match;
+// original definition, every prototype, both caller tuples and entire body restored.
+// M398: Original delta/transformed-point/intersection zero defaults, masks
+// 1/2/3/4/5/6/7, then all at entry: 115/212/212/115/115/212/212/415.
+// NOT kept: no coefficient/zero-home gain; original outputs, helpers and body restored.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -1097,6 +1097,11 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // retail except the probe itself (first difference at the probe); a constant store at the end of the else arm
 // also gives retail's colouring; the same store after the loop in the true arm, or a store of `joining` after
 // the if/else, does not. `(void)count`, an unused copy or an empty `if (count > 16)` change nothing.
+// Round 65 (m3 lane 13, plain; recipes that take the destination's lea into the branch): `identities[count++]` re-measured 40, only the copy's registers
+// (the side effect evaluates the destination before the source); with a named player or source and destination locals 40; `identities[count]; count++` 195;
+// on it `__assume(count <= 16)` or `>= 0` 195, `long identity_count = count` at the call 195, `s_session_owner *owner` 195, a mask local 357 (559 bytes, no
+// unrolling), else-arm named source, named size, field read twice 195 each; destination assigned in each arm 195, with a dead advance at the else arm's end
+// 195 (three spellings); a parameter read through its address 195, with the post-increment 40.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

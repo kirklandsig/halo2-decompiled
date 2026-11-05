@@ -101,6 +101,14 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // The plain-reads listing (116) already has the sound index in ESI and the copy to ESI at the call: there the spatialization
 // pointer is the spilled variable (frame 0xa4) and the object holds EBP, where retail spills the object to its parameter home
 // and keeps spatialization in EDI and the tag in EBP. A form that ranks spatialization above the object is the next thing to find.
+// Round 90 (m3 lane 9, plain): a fresh else-scope local assigned from the reference inside the playback call's arguments and
+// used for the started test and the dispatch 85 (523 bytes; the one late read takes ESI, the sound index EDI, the NONE branch
+// changes); reference read at the call and the dispatch with a plain test 28 (531 bytes); plain call and test with the
+// dispatch through the reference 95 (528 bytes); plain call and dispatch with the test through the reference 96 (528 bytes);
+// the slot store and the return test written out in both branches 90 (530 bytes), the same with plain late reads 87 (525
+// bytes). Every one-load form gives the late object ESI before the sound index is coloured; retail colours the sound index
+// ESI and copies an EBX object into ESI for the call. Plain reads throughout (diagnostic, 116) put the object in EBP and
+// the tag in EDI from the early test on and spill spatialization. Restored.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

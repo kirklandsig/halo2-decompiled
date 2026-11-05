@@ -1556,6 +1556,7 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 			prism->plane.n.n[indices[1]] * point->y) / prism->plane.n.n[axis];
 }
 
+// MiniMax C (11-05): no new form, no lower score; retail's prism loop walks &prism->plane.j (plane.i at [esi-4], the point count at [esi+0x14]) where ours walks &prism->point_count (plane.i at [esi-0x18]), and our accumulator homes sit sixteen bytes above retail's.
 // score 552 (was 552): frame 0xb964 agrees; sum/zero homes and point-count-biased prism cursor remain.
 // frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
@@ -1749,6 +1750,25 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // point_count (our base), plane.j, plane.d. The count clamp before the distance 553, after it 553; the projected
 // point through a named negated distance 618 (2911 bytes); `inside` set before the nearest default 552; a const prism
 // pointer 552 (same code). No read order tried moves the cursor base.
+// M3 lane 11 r72 (fast, control 552; "masked" = register/immediate-masked aligned count, control 309): both points through the existing
+// 0x120790 re-measured 651 (2925, masked 334: retail's word table reads appear, but ours reads the axis once into BX where retail re-reads it per
+// point); long counts renamed so the names sort as retail's dword homes 572 (same code as plain long counts: ours edge radius +0x5c, edge count
+// +0x7c, face count +0x80, face radius +0x84; retail face count +0x80, edge radius +0x84, edge count +0x88, face radius +0x8c); no anonymous struct,
+// `point3f face_sum; real nearest_squared_local; point3f edge_sum;` 594 (2896: edge sum at retail's +0x5c, face sum +0x50 against +0x4c, nearest
+// stays +0x6c against +0x58); long counts + 0x120790 for both points + no outer guard + `radius * radius` in the test 640 (2918, masked 335);
+// projected declared ahead of distance 552 (same code); `return true`/`return false` with no result local 593 (2901, first difference +0x13).
+// AC552: Existing reconstruction output as real pointer/array reference, point/real pointer
+// return and point/array reference return: six at 552; native value result ordinary/forced 769/709.
+// NOT kept: no gain; value results 2740/2975 bytes, frame 0xb97c versus 0xb964. Original helper/body restored.
+// AC554: Paired reconstruction plane-axis degeneracy truth in bool/byte/char/signed-char/
+// short/word/int/long 553/553/553/553/553/553/553/553. NOT kept: no exact test-producer repair;
+// original helper and body restored.
+// AC556: Complete output-path-produced returned status in bool/byte/char/signed-char/
+// short/word/int/long: 589/635/635/635/652/652/647/647. NOT kept: all regress and
+// lengthen; original entry result, fallback writes, geometry, word counts and full body restored.
+// AC558: Complete post-query prism-presence/rejection results in bool/byte/short/long:
+// eight at 553, 2898 bytes (control 552). NOT kept: unmatched one-consumer outcomes;
+// original signed count guard, all live count reads, sums and full body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
