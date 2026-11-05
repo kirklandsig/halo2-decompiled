@@ -68,6 +68,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_1->i * arg_0->i;
 }
 
+// MiniMax H (11-05): no new form, no lower score; retail saves EBX around the middle for the +0x290
+// pointer and re-reads its arguments from their stack homes per region, where ours holds the input in
+// EBX from the prologue, and the 748 form is a held lead under the keep bar.
 // score 750 (was 750): Frame 0x88 agrees; early input/heading and normalizer memory-product homes remain.
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading homes and normalizer storage remain. Alias-free normalizer loop 822; early-return clamp 829; output scale loop 824; output clamp loop 812; smoothing loop 825 (fast).
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading and normalization homes remain. Alias-free

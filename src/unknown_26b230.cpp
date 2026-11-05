@@ -1986,6 +1986,7 @@ void function_269250(long clump_index, long actor_index);
 // M403: Native selected/created 32-bit long/int/dword declaration pairs on the common
 // score graph, eight nonoriginal pairs: eight at 87/482. NOT kept: pool/selection
 // residency and x87 score homes unchanged; original domains and complete body restored.
+// MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
