@@ -1994,6 +1994,8 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax R (11-04): no new form, no lower score; retail's early colour read still needs a form that
+// spills only color A and keeps color B in EDI, which every snapshot point tried so far fails.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax R (10-31): no kept form, no lower score: colour locals reach the frame 0x44 but spill both colours
 // (195/188); the permuter's 124 promotes the unknown to xmm0 and breaks retail's argument layout.
@@ -3149,6 +3151,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax R (11-04): the location mode read late from the definition reaches retail's 0x54 frame but
+// scores 108, the pool declaration swap 114 (345 bytes); no new form, no lower score.
 // score 93 (was 93): frame 0x4c versus 0x54 (retail spills the definition and keeps two more
 // dwords), the particle system in EDI (retail ESI), color B spilled (retail EDI) and the cached
 // mode differ. Tried: transform name 109; query results, particle cursor and colors at entry 109;
@@ -3484,6 +3488,8 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 	return result;
 }
 
+// MiniMax R (11-04): the round 117 form again (default-first scale, `scale = scale_b * scale`, `(void)position.y;`
+// before the transform) matches byte for byte; not kept: the dead read is a steering statement (coordinator).
 // score 74 (was 74): the scale block and the point transform's y copy remain; the lens call now agrees (round 67).
 // Earlier: frame 0x94 agrees; the scale default/conditional branch, the point transform's
 // y copy (retail keeps y in xmm5 and copies it to xmm4; ours scales it in place) and the lens call

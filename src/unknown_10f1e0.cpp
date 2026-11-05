@@ -1393,6 +1393,10 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax R (11-04): the case list with 0xb000061 (170), the split depletion queries (330) and a bool
+// result (194) all lose against 164; splitting only the first query (328) and the retail-shaped second
+// query that clears the flag on a positive value (330) lose too, though the latter reaches setle; no
+// new form, no lower score.
 // MiniMax R (10-31): no new form, no lower score.
 // score 164 (was 164): this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
 // the unit through that offset for both depletion queries, and it writes the first depletion with setle;
@@ -1660,6 +1664,7 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax R (11-04): no new form, no lower score.
 // MiniMax R (10-31): no new form, no lower score.
 // score 450 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
