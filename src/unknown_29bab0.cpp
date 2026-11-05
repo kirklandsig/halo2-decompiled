@@ -325,6 +325,10 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // 834/807/837/834/805/834/834/832. NOT kept: all regress, lose the native frame and shorten away from
 // retail. Original input access, clamp and every helper/body restored; early object/input/heading homes
 // remain.
+// DH385: Direct-input complete initial heading/default/normalizer memmove producers,
+// seven subsets then native history transfer: 849/840/822/834/835/835/836/799. NOT kept:
+// no gain or native frame/entry recovery; original input storage, helper arithmetic,
+// vector transfers and complete body restored. Early object/input/heading homes remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -1135,6 +1135,9 @@ bool function_2715a0(byte *buffer)
 // paired acquisition 510/510. NOT kept: no exact record-copy form; frame or length moves away from
 // retail. Original live geometry inputs, fresh denominator, inherited result qualifier and entire body
 // restored.
+// DH385: Whole native heap-root/child-metadata transfers, copy/move singly and paired,
+// 486/542/486/498/486/560/498/542. NOT kept: ties or frame/length regressions; original
+// aggregate heap transfer, metadata store and complete body restored. State/node/link/scalar homes remain.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
