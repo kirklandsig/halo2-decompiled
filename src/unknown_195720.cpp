@@ -57,6 +57,10 @@ bool function_1946f0(s_bitstream *stream)
 // a distinct clear index after the data load 2; count formed by subtract then decrement, or size minus one
 // then subtract 2/2; clear start derived from size minus count 45 (142); index reread from the checkpoint 60;
 // saved declaration split from its assignment 2. Original body restored.
+// Round 72 (m3 lane 10, fast): the index copied in the subscript by an embedded assignment 2; block-local data, copied index and a pointer to
+// the byte 9; block-local data, own division, direct subscript 35 (its memory operand is [index + data], not a LEA); inline mask helper 35;
+// inline address helper with the index first 2. One-file harness (exact here; diagnostics): identity pointer chains of 1 to 8 locals, at the top
+// or used for both reads 2 each; one or two new stored fields 3/4; extra arithmetic at the top, in the block or after it 33/16/6, always data first.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {
