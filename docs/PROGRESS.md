@@ -10,6 +10,16 @@ matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
 ```
 
 0 new matches, none lost:
+- @coldspear's #1072: `0x4f7e0` 383 -> 325 (callers `0x4f010` and `0x508d0` also closer), no new match.
+
+## 2026-11-04: 10452 functions match
+
+```
+matched 10452 of 11326 game functions (1926226 of 2786206 bytes, 69.13%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
 - @andrewnakas's #1002: three new permuter mutations (single exit, inline helper, field bit test) with tests; tools only, no match change.
 
 ## 2026-11-04: 10452 functions match
