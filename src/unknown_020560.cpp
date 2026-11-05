@@ -1039,6 +1039,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // M380: Actual offset/delta aggregate initializers at nearest/anchor/opposite,
 // seven subsets then immutable full vectors: 547 each at 2122 bytes. NOT kept: native
 // frame/query/search homes remain; original scalar producers and complete body restored.
+// T60: Actual source/query/direction object-reference contracts, seven subsets and
+// all with the existing copier sample reference: eight at 547/2122. NOT kept:
+// native query register, vector/ordinal homes and frame 0x2c are not recovered.
+// Original interfaces, both caller sites, copier and complete body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

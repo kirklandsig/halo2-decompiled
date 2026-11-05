@@ -307,6 +307,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH367: Standard coordinate transforms at axis/cross/direction scales, seven subsets,
 // then native two-stage sum transforms: 407/395/395/427/459/417/442/464. NOT kept: no byte match;
 // original scales, sums, draws and complete helper/body restored; frame/cross/trig homes remain.
+// T60: Existing tilt-angle pointer/reference crossed with axis/output references:
+// eight at 173/1209. NOT kept: no native frame/cross/trig-home recovery.
+// Original value-angle/vector-pointer producer, consumed-axis phases, ordinary
+// pooled reads, draws, request and complete body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

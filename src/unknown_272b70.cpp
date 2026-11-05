@@ -1552,6 +1552,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // T58: Candidate-count zero after unit/position/seat/positive admission, local then entry declarations:
 // 36/45/46/53/36/45/46/53. NOT kept: no eligible match or gain; complete original source restored.
 // Iterator/candidate scheduling, leave-selector and request/slot publication homes remain.
+// T60: Actual actor pointer/reference and request pointer/reference at the existing
+// producer, forced/ordinary expansion on the retained slot graph: eight at 81/846.
+// NOT kept: regressions; original unit-value producer, slot publication and entire
+// body restored. Iterator/leave-selector/request homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
