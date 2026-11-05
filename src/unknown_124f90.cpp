@@ -2943,6 +2943,8 @@ static inline short sound_voice_find_available_channel(char type)
 // N391: Existing finder with actual system pointer/reference and char/signed-char/short/long
 // selector 128/128/128/128/99/99/128/128. NOT kept: inline contracts remain unmatched;
 // original finder, result, defaults and full body restored. Frame and failure tail remain.
+// N397: Complete byte-result, channel, driver, buffer and status native home identities 96/96/96/96/96/96/96/96.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3887,6 +3889,8 @@ struct s_128ca0
 // N391: Paired mutable/immutable short/long/real/double pitch endpoints:
 // 263/263/253/253/222/222/277/277. NOT kept: no equality; extra argument
 // homes and pin joins remain. Original endpoint expression and full body restored.
+// N397: Complete native pitch, processed-gain and both submission-gain home identities 222/222/222/222/222/222/222/222.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
