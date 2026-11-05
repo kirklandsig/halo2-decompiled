@@ -782,6 +782,9 @@ bool sound_driver_voice_create_buffer(
 // voice placement, declaration order): best 73 here, the early count above.
 // MiniMax A (11-05): the two flag bools in the other order 181 (the play bit is then computed eagerly from ECX as retail, but the count argument takes EBP, the frame drops to 0x7c and the flags byte copy goes to AL); the same with the count declared before the result 181, with the play bit as an unsigned char 181, with the bools ahead of the count store 180 and with a dword count 182; a byte copy of the flags 68 and the declarations reordered 68 (the same code); the 3D test inlined as `flags & 1` 180; no lower score.
 // MiniMax A (11-05): the 3D test spelled `flags & 1` on its own 180 (604 bytes, the flags word then reaches the callee as a stack argument and the voice index takes EAX) and the same with the play bit computed ahead of the count 180; the 3D flag local first 181, both bools at the top of the block 180; the bools between the count store and the voice reference 172 (the play bit then reaches the stack byte and the voice offset ECX as retail, but the 3D flag goes to AL and the voice index to EBP), the play bit spelled as a mask test 68 (the same code) and the 3D flag first with the play bit from the flags word 180; no lower score.
+// P351: Raw playback-bit byte/word/long/dword with playback-first/spatial-first production:
+// 79/152/166/166/179/165/168/168. NOT kept: no byte match; spatial/play and descriptor zero/input homes remain.
+// Original complete body and existing helpers restored.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

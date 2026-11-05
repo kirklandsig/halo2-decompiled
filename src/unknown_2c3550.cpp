@@ -749,6 +749,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // B437: Stored passthrough-point producers with four count/receiver contracts
 // 738/760/741/744; with bool success 766/783/773/755. NOT kept: all regress;
 // byte success, radius/path acquisition and scalar/geometry homes remain.
+// P351: Complementary complete-step truth in bool/byte/short/long with long/Boolean result:
+// 675/675/719/705/754/754/713/719. NOT kept: no byte match; radius/path acquisition, success byte and scalar/geometry homes remain.
+// Original complete body and existing helpers restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

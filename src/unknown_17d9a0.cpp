@@ -1075,6 +1075,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // capture and separate/matrix-position pivot: 536/661/585/600/536/661/585/600.
 // NOT kept: three-point lead is below eight and matrix grouping is unmatched; other forms
 // lose native frame/extent. Original basis vectors, alias-safe helper and whole body restored.
+// P351: Angle first/final clamp bound-comparison truths in bool/byte/short/long:
+// 566/566/566/566/611/611/611/611. NOT kept: no byte match; tag/count/plane homes and rotation spills remain.
+// Original complete body and existing helpers restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
