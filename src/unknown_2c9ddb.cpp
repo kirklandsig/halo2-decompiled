@@ -55,6 +55,7 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// MiniMax H (11-04): no new form, no lower score; the two 0x212bc0 arms with a copy in each (174) and the selection read as a long after the call (77) are worse than the one call site with the classification spill, and retail's out-of-line 0x13fac0 copy is inlined into our build, which lives in another lane's file.
 // MiniMax R (11-01): no new form, no lower score; the permuter (900 s) found only 60, so the creation
 // classification spill and the expanded string copy remain.
 // MiniMax G (11-04): no new form, no lower score; the creation classification spill and the
@@ -179,6 +180,10 @@ extern long g_55c154;
 // 174, one load 61; the bit test through a one-bit field with TEST_FIELD_BIT 174 (one load 61), bare in the `&&` 184. Diagnostics, not kept: dropping
 // either `saved` store 164-166, all shifts 160, all &g_54e4a0 uses 256 (`this` ESI, no spill). Next: why retail does not hoist &g_54e4a0.
 // Round 55, second pass: the id and variant stores through a same-file forceinline helper at all three sites, two arms 174; that with the 0x238c69 order and both named locals 183.
+// T62: complete sole exit and target inline metadata 61/61; conditional load-call
+// result direct/named 178/178, short-circuit result direct/named 110/110; complete
+// exit with conditional/short-circuit load 178/110. NOT kept: no gain; load-result
+// graphs lose the biased frame. Classification spill and copy expansion remain.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

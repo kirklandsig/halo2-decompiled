@@ -1413,13 +1413,7 @@ struct s_voice_routing
 
 extern s_voice_routing g_527104;
 
-struct s_prop_pool_storage
-{
-	s_record_pool *field_2418;
-	s_record_pool *field_241c;
-};
-extern s_prop_pool_storage g_prop_pool_storage;
-#define g_502418 (g_prop_pool_storage.field_2418)
-#define g_50241c (g_prop_pool_storage.field_241c)
+extern s_record_pool *g_502418;
+extern s_record_pool *g_50241c;
 
 #endif

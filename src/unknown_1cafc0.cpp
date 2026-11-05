@@ -687,6 +687,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // DL259: Primary success enters the sole request/return completion,
 // byte/bool/char/signed-char/short/word/int/long: 348/478/348/348/545/545/496/496.
 // NOT kept: no native graph/base or return-byte repair; original complete body restored.
+// J257: Two-use permission payload at entry/after primary and in native cold failure, with canonical Boolean return controls:
+// 642/640/640/640/545/544/632/632/587/642/478. NOT kept: all eleven regress; cold flag payload and canonical Boolean result fail to recover native graph/base ownership; Boolean graphs increase extent. Matched callers regress in 5 trials, up to 8 losses.
+// Original executable source restored; allocation gaps remain.
 // Y591: Status after found publication/primary query on the twelve-byte expansion,
 // each byte/bool/short/long: 392/520/570/523/397/525/574/527. NOT kept: no native graph/base
 // repair; original status lifetime, queries, request expansion and body restored.

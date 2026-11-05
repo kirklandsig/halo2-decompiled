@@ -1362,6 +1362,7 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax C (11-04): no new form, no lower score: an item_count declaration initialiser moves its home to ebp-0xc but grows the frame to 0x58 and spills the mode (121), dropping the branch-one zeroing gives 137, seven declaration orders give 123.
 // MiniMax H (11-03): no new form, no lower score; ours puts item_count at ebp-8 and index_count at ebp-0xc where retail puts index_count at ebp-8 and item_count at ebp-0xc, and the permuter's best candidate (the mode-one call to 0x199dc9 with its two arguments the other way round) gives 79 in both images, under the keep bar.
 // MiniMax I (11-01): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score: the index_count/item_count homes stay swapped and the tail fill stays a pointer loop.

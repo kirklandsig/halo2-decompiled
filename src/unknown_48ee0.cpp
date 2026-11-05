@@ -192,6 +192,12 @@ extern real g_4c9798[36];
 // branch/conditional clamp, height/width-first rounding and native/full height-limit
 // combinations. Mode/size homes and rounding reloads remain.
 // Scores 197/197/196/196/245/245/245/245; original executable body restored.
+// Round 72 (m3 lane 1; harness exact against the listing, masked aligned in brackets, base [58]): BLOCKED-BY 0x48e70: retail reloads size and aspect around the rounding calls because it does not see that callee's XMM use, which takes `inline` on
+// its definition (machine 1's file, scratch copy only; the same reload pattern is in 0x184440). On that scratch copy [51]: long height limit, the border product in parentheses, `real raw = size;` with one ternary clamp [43]; plus the near plane's
+// normal copied directly into the plane and the dot on the plane [11]; plus `__assume(near_distance >= 0.0f)` after the named near distance **[0], 9 differing instructions at retail's length**: distance and extent slots swapped, and the mode flags in EDX. Other near-point forms on it: read at
+// each use [9], reference or tag struct [9], y, z, x statement order [6], origin first, swapped products, casts, const, earlier declaration [11], shared forced-inline point helper [36]. For the last 9: `__assume` on extent, distance, aspect, offset, inverse, the global, the half cone [0] (no change);
+// six renamings of distance and extent [0] (no change); square helper, `extent = extent + ...`, `... + extent`, other product orders [0] (no change); named half cone or area, mode test without `~`, `== 1` or a switch for the tag test, swapped or moved declarations all [2]-[19], higher.
+// Real `--fast` without the scratch `inline`, all 32 subsets of long height, border, raw clamp, direct normal, near at each use: base 174, raw clamp alone 174 (same code), near 178 (1489 bytes), border 180 (1491), long height 250, height with border 243, direct normal 255-337 (under 1465); none under 174, so nothing is kept. The known 0x1ddd0 match form leaves this at 174.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
