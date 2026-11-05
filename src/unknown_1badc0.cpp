@@ -442,7 +442,7 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
             local_15 = *(long *)(local_14 + 0xc8);
         s_1badc0 local_16;
         local_16.field_24 = NONE;
-        long local_17 = function_26d100(g_4687b0, (long *)arg_3, (s_collision_result_1697c0 *)&local_16, &local_1);
+        long local_17 = function_26d100(g_4687b0, &local_1, (long *)arg_3, (s_collision_result_1697c0 *)&local_16);
         if (local_17 != NONE)
         {
             if (arg_4)

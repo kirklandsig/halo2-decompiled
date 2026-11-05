@@ -456,6 +456,8 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax E (11-05): no new form, no lower score; the second fabs inlined into the fmod call
+// gives 86 and a separate blend seed variable compiles the same as the reused one (84); both reverted.
 // MiniMax H (11-04): the permuter was stopped before it reported any variant (no output in 240 s
 // under the shared load); no lower score.
 // Round 30 (lane D): the permuter found no better form (82 tries, best 84, the baseline). On this body

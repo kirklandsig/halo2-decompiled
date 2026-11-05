@@ -307,6 +307,9 @@ struct s_visibility_bound_record
 // (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
 // chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
 // movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
+// M3 lane 10 r73 (fast; aligned/masked in brackets, control 406 [357/254]): retail's `lea ebx, [eax + table]` reads as a repeated sum, so the tag read
+// through the array expression 467 (1768) [351/251], the flags through it 448 (1742) [346/242], both 467 [351/251] (the read folds instead); the entry as
+// `table + index`, through a long index and through a const reference to the index 406 each (same code); the plane copy as two statements 406 (same code).
 // T61: Ordered parts-mode result, preset-false and exhaustive outcomes in bool/byte/short/long:
 // 411/411/450/450 and 408/408/413/446. NOT kept: test-produced flags miss equality;
 // original conjunction and full body restored. Entry/table and plane/query homes remain.

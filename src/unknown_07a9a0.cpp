@@ -1051,6 +1051,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 	default: __assume(0);
 	}
 }
+// MiniMax E (11-05): no new form, no lower score; the session's EAX home belongs to the caller's
+// declaration, which this lane may not change.
 // score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
@@ -1248,6 +1250,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // reverse of retail); that with the player value through 0x63220 1067 (2556 bytes, 0x63220 still out of line); the
 // team-count switch grouped alone 940 (2704 bytes); the capacity helper with external `inline` linkage 840 (2828
 // bytes). Our link inlines the first 0x192e60 call site in source order and keeps 0x63220 out of line.
+// M3 lane 4 r167 (fast, 13 s; the one-file link reads 943 because it keeps the top call out of line, so it is no judge here): retail's top
+// call stays out of line only when its site's frequency is lower than the entry block's. Written as an always-true ternary (no code, diagnostic)
+// 942 (2700 bytes, 0x73530 byte for byte); the whole body in the positive arm of the admission test 815 (2868 bytes), as the else arm of
+// `result = false` 815, plus the out-of-line top call 904 (2740 bytes). The player loop through a call to 0x63220 1097, with the out-of-line
+// top 1145 (2476 bytes), plus the capacity helper forced inline 1106 (2512 bytes), in the positive arm 1061/1109/1070: 0x63220 stays a call in
+// every form, so retail's frequency there comes from something else. The top lookup through a one-line inline wrapper, inline or forced,
+// with a result local: 766 (no effect); `__assume(session != NULL)` first 766; the lookup after the capacity 942 (2732 bytes). The written-out
+// loop passes `lower` to 0x1931a0 where retail passes `highest` (ECX still holds it at the call); passing `highest` 820 (2836 bytes).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

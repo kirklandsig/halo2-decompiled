@@ -1530,6 +1530,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // direct result producer: 828/828/1011/932/978/979/828/977. NOT kept: no exact return-contract
 // keeper; original interface and complete body restored. Frame 0x2c agrees; class/NONE,
 // output/candidate homes and late zero remain.
+// Round 65 (m3 lane 14, fast, on the siblings' body plus record, 732 at 2825, masked 55; without the record 755, masked 57): `this` named
+// for both requests 732; the found keys named for the second request 732; the first request from the iterator's stored keys 1019 (2875);
+// the requests guarded on the found flag 1019 (2841); the keys through a local table 732. Retail keeps `this` in EBX and the found mode in
+// EBP through the second request; ours gives EBX the +0x34 table pointer and EBP `this`, and no zero register forms.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
