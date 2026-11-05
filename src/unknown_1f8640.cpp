@@ -367,7 +367,7 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
-// score 188 (was 228): Frame 0x80, prologue and first exit agree; the route test's layout, case 7's stores and the result's home differ.
+// score 188 (was 188): Frame 0x80, prologue and first exit agree; the route test's layout, case 7's stores and the result's home differ.
 // Earlier at 228: Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
 // MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
 // 0x80 frame and prologue exactly (the first difference moves from +0x0 to +0x33), but the aligned body
@@ -613,6 +613,25 @@ struct s_1f8a70_actor
 // N367: Early active/arrival/mode success joins on the two-result word-selector graph, seven subsets
 // 424/418/425/446/443/441/316; complete joins with terminal literals 306. NOT kept: all regress; original
 // early exits and result assignments restored. Unit/result +0x10/+0x12 and late route-result home remain.
+// Round 129 (m3 lane 7, fast, control 188 = full; aligned = difflib count on normalized lines, control 37): causes found, none keepable alone.
+// (1) One result variable (no route_found) gives retail's failure block with `mov [m], 0` / reload: 340 (1680 B, aligned 47); its first exit
+// folds to memory or `xor al, al`. Retail's `xor bl, bl` .. `mov al, bl` needs a second value at the final return: `result = true; goto done;`
+// on the 0x480 test and the mode 0/1 exit, the mode-2 exit `return true;`, the route phase `return result;`, one `done: return result;` 312
+// (1628 B, 434 lines as retail, aligned 37, masked 28): first exit exact, one exit still `mov bl, 1`. All three exits by goto 288 (1632 B, aligned
+// 42); mode-2 only 286 (41); x480 only 429; x480 + mode-2 293; mode-2 + mode 0/1 429. Route phase in `do {} while (false)` from the route_mode or
+// the switch 442/327 (first exit exact but the returns read BL; the former inlines 0xe70b0); returns inside that region 447 (first false folds);
+// a tested `result = !flag` 466/450, flag-then-test forms 447.
+// (2) `bool valid` set in if/else on the route test gives retail's `setne al; test al, al` 309 (1636 B, aligned 39); as `if (route != 0)` 311; initialised
+// true or false, or with the failing arm first, the same; a named has-node flag folds 188; the ternary reversed 188 (aligned 46); `route > 0 ?` 307.
+// (3) Layout: when the join follows case 5, case 6's store cross-jumps to case 5's by itself (`jne`, cases 6,7 first in source 383 shows it), so the
+// store is an effect. On matched 0x2ad5f0 (scratch perturbations, restored) all stores distinct puts the join behind the first case; a shared store
+// pulls it behind that case. Here, on the 312 form: the join stays after case 7 with case 2 or 4 radius-before-node 357/356, case 3 or 5 likewise 345,
+// shared `goto direct` tails 343/345/312, a larger shared tail 397, the failure block as the mode switch's default 312, no default 389, short route_mode
+// volatile, address-taken, in an array or in a one-member struct 312/312/396/327/327 (all same stores: a memory-homed short is retail's dword store
+// with word reads), any shape of case 6's nesting 312 (five forms, same code). Only dropping `if (!movement) goto failed;`, or all three target tests,
+// moves the join (behind case 6's then-arm, 348-435, not the same behaviour, diagnostic). A `valid` flag through the mode switch with `break`s also moves
+// it behind case 6's then-arm 450-467 (flag in BL, not threaded to the failure block). A long route_mode with its address escaped and (short) reads 396, a 10-byte field store after each `route_mode = 1` 305: join stays.
+// Left: why retail's join follows case 5; then the unit/result slot +2.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

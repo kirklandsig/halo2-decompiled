@@ -715,6 +715,14 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 275 each; ijk/kji with native radius CRT capture 276/276. NOT kept: frame/length
 // regress and no exact boundary. Original helper, radius reference and full body restored;
 // radius schedule, ring SSE conversion and rotation spill remain.
+// Round 129 (m3 lane 7, fast, control 90; aligned/masked = difflib counts, control 58/37). On the 96 form (63/20): the helper reading vector-> directly in place, no
+// component copies, 96 (same code; correct without copies because j and k cross terms are taken before the i row stores). What the named ring phase costs is the top block
+// (helper alone 100 keeps retail's `mov edx, [ebp + ecx + 0x34]; add ebp, ecx` and the movss radius copy, phase alone 143, phase with the helper 96, phase after the distance 96);
+// sector read first 263 (the sector then stores at once and the loop head padding goes, 1074 B), through its own record lookup before/after the radius 260/255, object pointer
+// local first with sector before/after radius 263/96, radius before the record 108, ring value named and shared 90 (x87 fild stays). Dot order: retail's (j + i) + k follows
+// component scalars declared k, i, j ahead of the dot, with scalar cross terms 143 (retail's dot loads, but the cross subtrahends sink and j spills, frame 0xdc); with the vector
+// cross those declarations change nothing 96; dot terms written k,i,j or j,i,k or swapped sides 96 each (same code), accumulated from k or j 213/218 (1083 B); cross before the dot
+// 98 (i in xmm4 as retail; (k + j) + i stays), j then k or k then j cross 96/105. The rotation written in the caller, not a helper, 233/243/232/240 (copy-first products).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
