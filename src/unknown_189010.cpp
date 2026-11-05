@@ -149,6 +149,14 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax D (11-04): no lower score. With the source in a local declared before the sound lookup our
+// load order is retail's (the tag table's base, the source, then the lookup) and the priority comes from
+// the request byte, but the link still gives EAX to the source and EDX to the tag table's base where retail
+// gives EAX to the base and EDX to the source, so the flag word is built in EDX; that form scores 135 at
+// 486 bytes, and 149 at 499 bytes with retail's set-or-clear object and platform bits. With the sound
+// lookup written first the base keeps EAX, but then the source's load lands after the lookup. The priority
+// read from the request alone is 109 at 472 bytes, and the permuter's best form (the 0x400 bit set after
+// the variant stores) is 109 as well; both gains are too small to keep. Body restored to the original.
 // MiniMax G (11-04): the priority read from the request and stored before the location copy 106 (a gain of
 // four, dropped by the review rule); the end test split into the 0x100 and the 0x800 masks, or written as a
 // shift, 106; the class test as nested ifs 106; the class lookup nested under the sound-flag test 160 (446

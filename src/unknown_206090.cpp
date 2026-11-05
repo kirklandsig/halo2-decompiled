@@ -415,6 +415,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // x87 tree `(... * 0.1f + 0.9f) * (double)game_time * rate * 0.3f + index * 42.0f` 1383 (6211 bytes, 982/579): dword
 // constants as retail's except the one after the double; retail's are all dword, as under a `sin` root (0x1a2197).
 // Found arm first with `continue` in the impact loop 1408 (6253 bytes, 975/593). Original body restored.
+// T60: Actual escaped-query schema, material initialization by long index/pointer/short/unsigned,
+// private/native ray type: 1355/1421/1382/1355 in both sets. NOT kept: no native
+// frame/home recovery; pointer/short traversal changes miss extent. Original raw query
+// storage, private ray, captures, scaled translation and entire body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

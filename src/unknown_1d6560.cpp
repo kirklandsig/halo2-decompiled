@@ -272,6 +272,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // direct/captured header base: 97/97/136/136/93/93/95/95. NOT kept: every form loses
 // the matched caller (146/213/13); best gain three is below the gate.
 // Original handle capture, dispatch observations and complete body restored.
+// DH373: Original-site secondary-kind equality/inequality outcomes in bool/byte/short/long:
+// eight at 96; matched caller and file controls unchanged. NOT kept: no native entry repair
+// or equality; original repeated dispatch, body flags, result and full convention restored.
 // M3 lane 4 r164 (fast, caller in brackets): round 60's 24 form rebuilt 24 [0]; headers, object index, rigid body, type through the
 // object index with case 0 through it 124 (228 B) [209]; the 21 form (headers, object index, rigid body, absolute index, type) in 8
 // parameter orders, definition, declaration and call together, 21 [13] each (identical code: the component stays in EDX and the
@@ -607,6 +610,9 @@ struct s_physics_component_walk : s_havok_component
 // N369: Persistent input/output/recursive-operand lexical families, seven subsets
 // and full-family common names: 146 each. No latch or carrier change;
 // NOT kept: all tie. Original identities and complete method restored.
+// AC547: Actual indexed body-array receivers, mutable/readonly at admitted/entry
+// scope 335/335/337/337; walking counterparts 351/351/354/354. NOT kept: non-native
+// residence and 948/964-byte extents; original complete method and observations restored.
 // P335: Readonly owner/group/opaque recursive-input contracts, seven subsets then
 // complete contracts with fixed component binding: 146/146/146/146/146/146/146/146. NOT kept: all tie;
 // original method interface and full body restored. Latch reload and neighbor/key homes remain.
@@ -626,6 +632,9 @@ struct s_physics_component_walk : s_havok_component
 // written inline is also 120). The 120 is the `open` flag set in the arms; written as one direct condition the same body scores
 // 161 and the continue form with the helper 151, so none of it is kept (test-set flag rule, kept only with a byte match);
 // build/held/lane1-r72-1d6630-flag.patch is the whole 49 form, a lead toward the match.
+// T57: Persistent actual current-group pointer/const-pointer/reference/const-reference,
+// selected by index then receiver, spanning body and entry phases
+// 356/356/356/356/338/338/338/338. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
