@@ -1695,6 +1695,9 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax D (11-04): no lower score: the mode helpers parameterised on the availability bytes (92, 0x56b70 keeps its
+// match) and a bitwise muted gate (105) leave the eager byte pair, the esi remote mask and the inlined second port-flag
+// query out of reach.
 // MiniMax A (11-04, run 41): no new form, no lower score (85); the second availability byte is still loaded
 // lazily where retail loads both before the muted test and keeps the remote mask in esi.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
