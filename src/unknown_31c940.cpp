@@ -52,6 +52,19 @@ static __forceinline void sum_three_into_projection(__m128 const &v, solver_proj
 	out.store(xyz);
 }
 
+// The first error has already been stored to float. Borrow that word while
+// retaining the second error's extended intermediate through the two sums.
+static __forceinline float second_pair_first_candidate(double mass,
+ float const &diagonal, double other, float coupling)
+{
+ return mass * diagonal + other * coupling;
+}
+
+static __forceinline float second_pair_second_candidate(float mass,
+ double diagonal, float const &other, float coupling)
+{
+ return mass * diagonal + other * coupling;
+}
 // Paired projections retain retail's separate loads of A's velocity fields.
 static __forceinline solver_projection_31c940 project_first_linear_velocity(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b, __m128 const &linear_axis)
@@ -546,13 +559,13 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 		- projected_b.value * parameters->velocity_scale;
 	float const volatile &mass_a_source = terms[2].m128_f32[3];
 	float mass_a = mass_a_source;
-	mass_a *= error_a;
-	float impulse_a = mass_a + error_b * operation_float(op, 4);
+	float impulse_a = second_pair_first_candidate(mass_a, (float const &)error_a,
+		error_b, operation_float(op, 4));
 	// Capture the second mass before its coupled product.
 	float const volatile &mass_b_source = terms[5].m128_f32[3];
 	float mass_b = mass_b_source;
-	mass_b *= error_b;
-	float impulse_b = mass_b + error_a * operation_float(op, 4);
+	float impulse_b = second_pair_second_candidate(mass_b, error_b,
+		(float const &)error_a, operation_float(op, 4));
 	// Keep the first-row fallback in both source paths. The compiler merges
 	// that tail while retaining retail's unordered second-row branch direction.
 	if (load_stored_impulse(impulse_a) > 0.0f)
@@ -1120,7 +1133,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				// Both projections finish before these shared parameter reads.
 				solver_step_31c940 *parameters = step;
 				float error_a = target_a * parameters->friction_scale - projected_a.value * parameters->velocity_scale;
-				float error_b = ((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] * parameters->friction_scale - projected_b.value * parameters->velocity_scale;
+				// Retain the row target before its scale product.
+				float const &target_b = ((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
+				float error_b = target_b * parameters->friction_scale
+					- projected_b.value * parameters->velocity_scale;
 				float maximum = operation_float(op, 12);
 				// Round the circular limit to its float home before comparison and
 				// division; the reads can then use that home directly.
