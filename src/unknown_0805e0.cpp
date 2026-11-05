@@ -265,6 +265,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // keep; `cmp ecx, -1` stays in the code). `index = *iterator` on the back edge 49-57h (forwarded before allocation, one web). An index
 // predicate helper, the found copy through `&g_4cf98c[index].player` or a getter, every test through a second lookup 49-53h. Left: index
 // and successor share a web in every form without a live re-use of the index, and only the forms with a live result hoist the mask.
+// P350: Existing exclusion helper result in bool/byte/short/long, false/true defaults:
+// 43 each. NOT kept: no early-save, independent successor, mask-hoist or exit repair;
+// original predicate and complete body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

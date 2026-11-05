@@ -1543,6 +1543,8 @@ long function_cbd50(long unit_index, short weapon_index);
 // P345: Joint false-default chain, success/depletion/interruptibility-owned defaults,
 // byte then bool success: 164/165/165/164/194/193/195/194. NOT kept: no byte match;
 // original complete body restored; pool/displacement, SETLE/default homes and normalization remain.
+// P350: Shared negative depletion/base expressions, bool/byte/short/long, direct/branch producers:
+// 397/397/424/424/404/404/434/434. NOT kept: all regress and lengthen; original status graph and body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1815,6 +1817,9 @@ bool __stdcall function_110ab0(long unit_index)
 // DH372: First/second held-query presence bool/byte/short/long: 450 each.
 // NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
 // Original body and queries restored; state/request/result homes remain.
+// P350: Allow parameter byte/signed-byte/short/word/long/dword, then unsigned request
+// with bool/byte allow: 441/441/441/441/441/441/451/444. NOT kept: 430/433 code
+// differences versus 424; apparent gain is table/extent only. Original Boolean contract restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2241,6 +2246,8 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // Y597: Complete common primary sampling weights, both-first/single-first producers,
 // sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
 // NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
+// P350: Complete unit/state/graph/control/definition lexical home orders, eight forms
+// 776 each. NOT kept: no native frame or first-angle/overlay expansion repair; original body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
