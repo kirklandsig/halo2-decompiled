@@ -535,7 +535,7 @@ struct s_particle_impact;
 void function_249170(real const *arg_0, s_particle_spawn_state *arg_1, s_particle_spawn_definition const *arg_2, s_particle_system_datum const *arg_3);
 vector3f *function_143070(matrix3x3 const *arg_1, vector3f const *arg_0, vector3f *arg_2);
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, short arg_4);
-void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4);
+void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
 // score 356 (was 356): frame 0xb0, 1643 bytes against 1652. Left: retail saves EBP at entry and
 // shares one epilogue (ours saves it after the early exits); retail keeps the blend in XMM2-4
@@ -910,7 +910,7 @@ void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition
 			long local_19 = local_3->tag_index;
 			long local_20 = local_12->function_247957();
 			dword local_21 = local_12->function_247956();
-			function_246e60(local_20, local_21, (s_particle_impact const *)&local_23.field_70, (s_object_246eb0 const *)local_2, local_19);
+			function_246e60((s_particle_impact const *)&local_23.field_70, (s_object_246eb0 const *)local_2, local_19, local_21, local_20);
 		}
 	}
 }
