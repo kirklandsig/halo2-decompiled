@@ -2156,6 +2156,8 @@ bool function_1e11b0(long actor_index, bool active);
 // stack with no address read, 0x203d70 keeps its match (50, 199 B; the squad is then reloaded into EAX past the loop);
 // a third reference (flag store, or a word flags pointer) sends the squad to ESI with the split and the index to EBX
 // as a register argument. Lead: retail's squad holds ESI with its split yet the index stays EBP; no form reaches both.
+// MiniMax C (11-05): no new form, no lower score: the squad and loop index still swap roles here, the
+// argument is still not materialised in a register and the return is still narrowed to a byte.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2833,6 +2835,8 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// MiniMax C (11-05): no new form, no lower score: the first call still reloads the squad index from its stack
+// home where retail keeps it in EBP.
 // score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
 // squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
 // which shifts the later jump targets and drops the actor loop's alignment nop.
