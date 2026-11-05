@@ -3720,6 +3720,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // subtraction and local/entry declaration, indexed/cursor traversal: 175/175/175/175/159/159/159/159.
 // NOT kept: all regress; indexed forms also lose 0x564c0 to 12. Original body restored;
 // channel/member/cursor and route homes remain.
+// Y605: Complete positive header/size/relay-member admission scopes, seven subsets
+// on indexed traversal then all with packet cursor: 163/139/139/163/163/139/163/160.
+// NOT kept: header ownership regresses, other scopes tie; original full body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

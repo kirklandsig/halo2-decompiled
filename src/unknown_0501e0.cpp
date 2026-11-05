@@ -377,6 +377,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Y603: Captured-vector existing in-place vector/particle scale producers with
 // uninitialized weight/segment lifetime subsets: 206/206/206/206/206/206/206/206. NOT kept:
 // all tie; original helper/body restored, frame 0x20 and coefficient/raw-input homes remain.
+// Y605: Caller-owned complete scaled vectors with aggregate/native/shared-setter/CRT defaults,
+// rotation-only existing helper with input pointer then reference: 272/330/274/330/272/330/274/330.
+// NOT kept: all regress and lengthen; original aggregate-scaled helper and full body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
