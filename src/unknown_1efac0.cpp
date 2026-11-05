@@ -415,6 +415,9 @@ struct s_surface_object_header
 // Round 50 (m3 lane 2, fast): the whole of case 3/4 as a helper of (object index, surface index) returning the test, force-inline with
 // `if (!helper) result = false;` 86, with `result = helper;` 22 (the block keeps these colours), plain inline 168/156; the value test
 // as a helper of (object, position) force-inline 8 (same colours), plain inline 125.
+// Round 111: function-scope values 8; byte/char result 84/84; a dword object index 8; a mutable owner
+// pointer 8; read-only surface pointers in the earlier cases 8; char values 8; the value-array base read
+// directly from the header with the offset through the named object 8. All restored.
 /* the first argument is the caller's shape owner (or its object reference); the body
    never reads it, but every retail caller still computes it before the call */
 // @retail 0x1ef3e0

@@ -1250,6 +1250,11 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 
 // MiniMax D (11-01): no new form, no lower score; the declaration order may not change, and the
 // flag's register follows the shared helper that the matched 0x56160 and 0x56380 pin.
+// score 94 (was 94): this round's new forms - the flag declared ahead of the total and the
+// cursor (108), between the two (111), the channel reached by index (109) and the value read
+// into a named local (94) - all leave the flag in bl where retail keeps it in al.
+// score 94 (was 94): this round found no gain - the flag stays in bl where retail keeps it in al, and the
+// two availability globals are tested in the opposite order from retail.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
 // into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
@@ -1534,6 +1539,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Round 207 (lane 3, fast with 0x56380): the clamp written inline in the test, no local, 135; a short
 // clamped value 180 (0x56380 2); entry size as `11` plus `sizeof(word)` under include_mask 191 (486
 // bytes); a long player bit 134 (same code); `entry_size * written + 2` 134 (same code).
+// Round 145: direct membership mask 140 (446 bytes); staged player bit, split written initialization and staged
+// retained decrement 134 each; direct membership with retained mask in the capacity scope, also with staged bit,
+// with per-arm first-byte stores, and with both 142 each (449/449/446/449 bytes). Original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -1748,6 +1756,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // bytes); the inner skip as `if (!(mask & bit)) continue;` 85 (same code); `if (!values->enabled) return;` 85 (same code).
 // Round 402: Complete per-target rejected/allowed query-chain results in bool/byte/short/long after mask admission.
 // Scores 85/85/85/85/85/85/85/85. NOT kept: unmatched outcome forms; original complete body restored.
+// Round 146: definition below the matched callers 85; later inline second query 102 (both callers lost);
+// inline/force-inline target 85/85; direct second/both getters 85/122; force first query/player-mask helper
+// 85/85. Original declarations, position and body restored.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -2389,6 +2400,11 @@ long voice_players_share_team(long other, long player)
 // voice_get_player_mask_inlined() inside the mode block 118; `else if (mode == 2)` for the mask arm 51 (373 bytes);
 // the entry test on settings alone (getter's own tests) 49 (376 bytes); the loop bit named `dword bit = 1 << i` 98;
 // the mode read from the field before the mask 25 (same code); `mode != 2` 25 (same code). BLOCKED-BY 0x59670.
+// Lane 13 r62 (fast, global test with the mode and mask inside the block unless noted): the block's mode read through a
+// `long const` / `dword const` view of the field 56/56, all three reads through the view 56; a force-inline mask helper
+// taking the mode 123 (again ECX for settings); 0x53c30 taking a `c_class_58d20 *&` 56, on the kept body 25; a
+// pointer local for the out-parameter in 0x53c30 56; diagnostic, restored at once: that pointer local in the getters
+// 0x59670/0x596a0 56 (a pointer copied from a parameter still counts as a parameter store; 0x53de0 and 0x565c0 stay matched).
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)
 {
@@ -3312,6 +3328,14 @@ struct s_voice_route_choice
 // Y579: One-based visitation with original/one-based selection, element receiver
 // and bitwise/conditional radio: 427/376/427/369/371/390/371/390.
 // NOT kept: no gain; cursor/entry repair fails despite three retail-length forms. Original body restored.
+// Y583: Walking choice formal with original selection base, ordinal/end bounds,
+// ordinal/difference selection and bitwise/conditional radio: 393/1074/474/1083/
+// 430/1080/474/1081. NOT kept: native frame/entry fail and both callers lose;
+// original full body restored; stream-end forms suppress four-way expansion.
+// B447: Whole ordered scan provider with headset/nearest/radio/all-output completion,
+// forced inline 363/363/363/363; ordinary inline 1347/1344/1343/1339. NOT kept:
+// no exact match; ordinary providers suppress native expansion and stay called.
+// Original complete body restored; talker/zero, cursor and priority merge remain.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3655,6 +3679,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y579: Actual stream-end bounds with offset/cursor/walking-formal/difference results,
 // admission-time producer 161/165/172/174, entry producer 161/145/167/163.
 // NOT kept: no gain or native channel-home recovery; original whole body restored.
+// Y583: Separate original relay/direct remote-query return storage bool/byte/short/long,
+// original/independent cursor 139/139/139/139/164/164/164/164. NOT kept: one-use
+// return carriers do not match; complete original body restored; channel/cursor homes remain.
+// Y587: Complete parse-validation state bool/byte/short/long, indexed then independent
+// cursor: 207/207/215/214/221/221/230/230; caller stays matched. NOT kept:
+// test-produced state misses and adds a frame word; original direct failures and full body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

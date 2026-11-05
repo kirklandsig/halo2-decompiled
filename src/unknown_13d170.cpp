@@ -412,6 +412,21 @@ struct s_block_candidate
 // N367: Joined callback/expiry busy result, expression bool/byte/short/long 360/360/365/365; branch
 // producers before oldest admission 347/347/365/367. NOT kept: ties or regressions, wider forms grow beyond
 // retail. Original busy/oldest graph restored; missing frame dword and page/ring homes remain.
+// N371: Saved ring successor in the ordinary inner for increment, bare scan/segment/
+// admitted/entry lifetimes, original then semantic cursor names: 347/347/347/347/347/347/347/347.
+// NOT kept: unmatched successor-slot forms; full body restored; missing frame dword and page/ring homes remain.
+// N374: Full-width unsigned insertion successor/scan ordinal/saved successor,
+// masks 1..7 and immutable complete graph: 347/350/350/347/347/350/350/350.
+// Original signed cursors, modulo and full body restored; NOT kept:
+// no native signed-remainder/frame recovery or byte match.
+// N376: Complete best-record memmove/range-copy/backward-copy contracts, with native
+// zeroed/aggregate ring insertion, eight forms 370/369/369/372/391/392/392/404. NOT kept: no exact
+// record/frame recovery; original transfers, signed ring and complete body restored.
+// m3 lane 1 r71 (one-link harness, exact on control 347; al = register-inclusive aligned count, control 366): LEAD, retail's EDI in the scan is the candidate's running
+// total: `long total = candidate->pages + segment_pages;` used by the store, the test and the policies 349/1212 (al 304), with one read of the clock in the default policy
+// 348 (al 312). On total: offset first with previous in the block 371/1200 (302), offset after the result 393/1200 (299), with previous in the block 393/1200 (298), offset
+// in the block 387/1211 (292), with previous there too 379/1211 (292). About 280 annealed forms of block declaration order, offset/previous position, candidate store order, case
+// order, time/zero order and segment/next scope: best aligned 381/1211 (al 292), best positional 349/1212, none under 347. Register roles remain: retail gives offset EBX and current EDI and keeps tail in memory.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

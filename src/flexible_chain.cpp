@@ -474,6 +474,30 @@ void __stdcall function_1160c0(real dt)
 // DH354: Complete outer fixed/timestep admission result in bool/char/signed-char/
 // byte/short/word/int/long: 171/171/171/171/171/171/171/171. NOT kept: no exact admission residence;
 // direct guard/body restored; segment EDX and scalar/axis/previous/rest-offset homes remain.
+// AC540: Complete axial projection term staging, six producer orders, then direct/staged dot accumulators:
+// 171/171/171/171/171/171/171/171. NOT kept: unmatched product residence; segment/axis/previous/rest-offset
+// homes remain.
+// Y594: Persistent segment cursor with preceding-segment terminal selection,
+// for/while short/word/long/int node traversals: 252/252/317/317/252/252/317/317.
+// NOT kept: cursor/domain forms enlarge the frame to 0xa8 and body to
+// 1386/1380 bytes; native EDX/axis/previous homes remain. Original body restored.
+// F381: Existing complete setters at recurrent previous/rest offset/current and initial
+// position-direction boundaries, subsets 1/2/4/3/5/6/7, then node publication:
+// 345/277/367/336/352/354/339/345. NOT kept: regressions and nonnative
+// homes or extent; original complete copies/body restored, segment/axis homes remain.
+// F388: Existing axis/rest-offset/recurrent-previous component-array views,
+// subsets 1/2/4/3/5/6/7: 171 each; all with working direction/position/prediction 183.
+// NOT kept: no gain; original body restored, segment and mirrored homes remain.
+// P334: Native k-j-i distance/axis/projection reduction contracts, seven subsets
+// then plain component reductions: 380/384/306/507/471/469/589/614. NOT kept: regressions and larger
+// extents; original complete body restored; segment/axis/previous homes remain.
+// M389: Double blend/time/projection coefficient receivers, seven subsets, then
+// full graph with double axis root: 375/339/382/348/464/465/481/484.
+// NOT kept: all regress and lose native frame or extent. Original real coefficients,
+// axis root, arithmetic trees and complete body restored; segment and vector homes remain.
+// N376: Separate raw/normalized rotation axes with complete scalar setters and staged-cross
+// producers, eight forms 308/307/291/303/291/303/239/263. NOT kept: no exact match; original
+// axis storage, body and homes restored. Segment EDX and mirrored vector/scalar homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

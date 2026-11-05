@@ -402,6 +402,10 @@ struct s_object_damage_view
 // J257: Completed selected/reported validation outcomes, bool subsets and byte/short/long pairs, pointers and direct credit results:
 // 353/353/353/353/353/353/353/425. NOT kept: seven validation forms tie 353; direct credit production grows to 1580 bytes at 425 and leaves scalar/history homes unresolved.
 // Original executable source restored; allocation gaps remain.
+// DH371: Actual engine/reported-source/selected-validation/fallback-validation/credit-hostility/
+// assist-admission/credit-pair/related-owner Boolean test results: 353 each.
+// NOT kept: no gain or equality; original validation, record observations and full body restored.
+// Native scalar homes and amount-biased history cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -585,6 +589,10 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // `value = *entry; value += delta` 25, delta through a short local 84; a table pointer local 13; the index
 // before the field read 83; a `(word)` index 13; the clamp as one ternary in the store 13; statistics through
 // a volatile reference with a plain field 85; a short field local 81 (263 bytes).
+// Round 89 (m3 lane 12, fast), plain field read: the element indexed twice, with the entry pointer first or the value first, or the entry pointer
+// after the clamp, delta on either side of the sum: 85 each (the field stays folded; two reads do not unfold it). The engine pointer named at the top 24 (the
+// note's form, re-measured: the entry block is then exact but for that load's place, plus the engine test swap); named after the entry 69; named at the top and
+// assigned again at the join 85, declared without a value and assigned at the join 85, NULL then assigned at the join 85 (a dead definition does not unfold it).
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)

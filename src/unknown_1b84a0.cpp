@@ -199,6 +199,11 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 // Round 136: node/view hoisted in either order 7/7; actor-first 7; state-first 9; node and view
 // hoisted separately 7/7; const actor/state 7; all four pointer locals const 7; read-only view and
 // read-only actor/view 7/7. Original declarations restored; NOT kept: no exact match from declaration/lifetime forms.
+// Round 133 (fast, which agrees with the full build here): the call and its two stores through a block-scoped
+// `s_slot_23 *` pointer, a block data-block pointer re-derived from the slot, or `((s_slot_23 *)slot)->` casts
+// 28 each (275 bytes: the type is re-read by a memory movsx and the rotation moves one step the other way,
+// reference EDX); the guard, call and stores all through a block data-block or `s_slot_23 *` pointer 7/7 (same
+// code); the block pointer declared ahead of the guard with the guard on `state` 28.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {

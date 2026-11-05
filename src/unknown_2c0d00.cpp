@@ -368,6 +368,20 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M371: Paired object/sphere ordered-radius overlap/exclusion truth in
 // bool/byte/short/long: eight 931 (reduced control 931; full 882). NOT kept:
 // byte-neutral decisions; original tests, qualifiers and complete body restored.
+// Y591: Positive complete classification in bool/byte/short/long, entry/admitted defaults:
+// 939/939/919/933/936/936/919/933 reduced (control 931, full 882). NOT kept:
+// no byte match or native frame repair; original decisions, qualifiers and body restored.
+// F383: Paired normalized enemy results byte/short/word 931/902/902 fast;
+// complementary bool/byte/short/word/long 937/914/920/920/915 (control 931; full 882).
+// NOT kept: result domains/polarity do not recover native frame or byte-result transport;
+// original complete body, query storage, qualifiers and all consumers restored.
+// F385: Persistent actor-mode presence byte/char/word/short/long, reduced
+// 931/931/954/954/955; absence bool/byte/long 931/931/942 (control 931, full 882).
+// NOT kept: frames 0x2cb8/0x2cbc miss 0x2cac; original complete body/qualifiers restored.
+// P343: Actual first/second marker and sphere element lvalues, seven subsets then mutable records:
+// 931/931/931/931/931/931/931/931 reduced (unchanged control 931; full 882). NOT kept: no equality;
+// original buffers, observations, query, qualifiers, helpers and full body restored; native
+// frame/actor/unit and priority/query/marker homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1536,6 +1550,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // F372: Existing two-use location address at entry/data/multi-step/traversal/step/
 // selected-step/corner-pair/pre-endpoint phases: 470/431/463/470/465/416/414/418.
 // NOT kept: two-/four-point leads below gate; original address phase and full body restored.
+// F379: Actual emission/continuation departure-limit outcomes, bool/byte/short/long,
+// positive/complementary 456/456/456/456/456/456/456/456. NOT kept: regressions; original
+// whole body restored, frame 0x114 versus 0x10c and zero/radius/metadata homes remain.
 // P325: Existing normalizer mutable/readonly squared-length results crossed with
 // magnitude/inverse entry declaration lifetimes all tie 418 (eight forms); every user stays calibrated.
 // NOT kept: no byte match for the one-use call-result intermediate. Original complete helper
@@ -1543,10 +1560,24 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // P328: Complete final squared-distance expression/compound/separate/partial reductions,
 // point then vector displacement: 418/418/418/418/418/418/418/418. Original body restored;
 // frame 0x114/0x10c, radius/zero/count and metadata/trace homes remain.
+// Round 586: Two-corner side-table traversal, short/word/long/dword ordinal with
+// indexed/body-advanced corner output: 491/491/484/484/491/491/484/484. NOT kept: nonexact
+// loop/result-array residence; original direct calls, radii and complete body restored.
 // J255: Scan-result scope ending before corner results, second-trace admission scope,
 // and complete Boolean role names, subsets 1/2/4/3/5/6/7 then alternate complete names:
 // 439/418/418/439/439/418/439/439. NOT kept: ties/regressions; scan scope also grows
 // to 1754 bytes. Original full body restored; frame 0x114/0x10c and radius/zero/count homes remain.
+// P335: Actual corner/tangent/trace eight-byte alignment, seven subsets and complete
+// graph with direction alignment: 652/652/655/652/652/652/652/652. NOT kept: prologue/extent
+// diverge and three exact providers regress. Original objects, alignment and complete body restored.
+// P342: Standard record copies at fallback/singleton, forward/backward/lifetime single sites then paired
+// forward/backward: 403/423/429/429/427/425/428/440. NOT kept: fallback forward reaches 403 and native
+// length but outlines its copy, keeps frame 0x114 and loses exact caller; all algorithms lose that
+// caller. Native copy-then-count commit 418. Original full body restored; frame 0x114/0x10c and
+// radius/zero/count/metadata homes remain.
+// P344: Actual current/selected/output array-element lvalues on the corrected two-radius graph, seven
+// subsets then actual source subobject: 418/418/418/418/418/418/418/418. NOT kept: no byte match;
+// original complete body restored. Native frame, radius/zero/count and metadata/trace homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

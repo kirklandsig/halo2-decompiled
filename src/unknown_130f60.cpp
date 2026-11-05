@@ -176,7 +176,7 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
-// score 295 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
+// score 295 (was 295): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
 // Round 121 (fast control 336, aligned 103): the helper's clamp as if/else if 336 (103); remaining first 348 (156); weight before
 // height 345 (129); remaining before weight 348 (144); a named inverse weight 337 (108).
 // Round 291: Paired double-square terms, complete direction-square terms, both, ordered accumulator
@@ -371,6 +371,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // DH340: Actual accumulation-output parameter homes, seven nonempty subsets and complete
 // graph with the existing helper output renamed: eight 336 (fast control 336; full 295).
 // NOT kept: no byte match or gain; original parameter/helper names and complete body restored.
+// P331: Final base-layer admission results, masks 1/2/4/3/5/6/7 then complementary all:
+// 336/336/336/336/336/336/335/335 (reduced control 336; full 295). NOT kept: one-point lead below
+// margin; original body restored.
 // Y580: On the shared-normalizer/case-specific graph, actual descriptor indexed pointer,
 // walking pointer, case-produced pointer and indexed reference, long/dword side ordinals:
 // 468/468/424/424/364/364/468/468 (fast control 336, full 295). NOT kept: all regress;
@@ -385,6 +388,23 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // M373: Real side-ordinal while traversal consumed at dispatch, long/dword/short/word
 // 508/508/402/402; each with ordinary outer while 508/508/402/402 (reduced control 336).
 // NOT kept: all regress and lengthen; original loops, helpers and full body restored.
+// Y589: Six-use RGB existing fused add-scaled / scale-add destination-first /
+// contribution-first / native color-capture scale-add, force/ordinary inline:
+// 274/514/514/731 twice (reduced control 336; full 295). NOT kept: fused
+// 1879/1892 grows the length gap; staging grows frames/lengths. Full helper/body restored.
+// P333: Last-consumer pitch-cosine/selected-axis/paired-remainder phases, seven subsets,
+// then all with angle-snapshot end scope: eight 336s (reduced control 336; full 295).
+// NOT kept: byte-neutral; original lifetimes, helper and complete body restored.
+// N375: Actual common input-record boundary at all six accumulations, base/member prefix,
+// pointer/reference input and output, eight forms 369 each (fast control 336; full 295).
+// NOT kept: all regress and shorten to 1874/1892; original record/helper/body restored.
+// Round 62 (m3 lane 14; fast control 336 at 1885 bytes, plain 295): the helper's clamp through the PIN macro 336 (same
+// code); a pointer to the three sample factors 336 (same code); height accumulated first 336 (aligned 116 -> 144); colour
+// last 335 (1874 bytes, aligned 236); red, height, green, blue, weight, intensity, distance 332 fast at retail's 1892
+// bytes, plain 342. Original helper order restored.
+// P345: Complete angular offset/span/fraction production in native/double domain subsets
+// 0-7 on the shared-normalizer graph: 398/417/417/417/342/367/367/367 (reduced control 336).
+// NOT kept: no precision/observation match; original body restored; full 295, ESI/unit/scale homes remain.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
