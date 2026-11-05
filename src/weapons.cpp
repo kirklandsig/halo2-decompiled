@@ -2048,6 +2048,10 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // minimum as its own `take` local added to `taken` 178 (589 bytes); `definition` read after the 0x1008f0 call
 // 174; the taken placement without the definition-index local 196 (569 bytes, 0x102b90 5); the taken placement
 // with `return true` in the success block and `return result` at the end 130 (0x102b90 5).
+// w1D (11-05): walked against retail (magazine and unit slot loops, minimum, guards, exits): no logic difference;
+// the score is register roles only (retail keeps the magazine index in ESI and the available/taken value in EDI,
+// ours the reverse, and it pushes EDI later). One variable for available and taken 107 (same code); taken and/or
+// result declared at the top 180/110/110.
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {
@@ -2525,6 +2529,9 @@ bool function_106280(long object_index, long *out_index, byte *out_entry);
 // active 192; loaded/total/both capacity values 130/130/130; target query/status noinline 130/130;
 // idle through the entry weapon 171; with the magazine pointer declared first 171; with the
 // magazine fields read in full 225; with a short state 170; with new locals for the final reread 171.
+// w1D (11-05): walked against retail (field offsets, magazine entries at 10-byte stride, trigger and target
+// paths, charging test, marker copy): no logic difference. One byte shared by the loop's active flag and the
+// target query's entry 178; magazine pointer declared before the state read 171.
 // @retail 0x100520
 void function_100520(long weapon_index, s_weapon_status *status)
 {
@@ -2860,9 +2867,14 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
-// MiniMax G (11-04): no new form, no lower score; retail's magazine-%10 case value is 0x1600056b, the source has 0x1700056b.
 // MiniMax C (11-01): no new form, no lower score.
-// score 398 (was 398): one 27-label switch whose tree retail lays out inverted on the path to 0x1d0007ba
+// score 389 (was 398): the active flag is published as `*active = result > 0.0f;`, which gives retail's two-exit
+// tail (eax 1/0 stored through al) byte for byte. Walked against retail statement by statement (w1D, 11-05):
+// all 27 selectors, every field offset (0x180/0x184/0x18c/0x175/0x16c/0x16e/0x17e/0x248, barrels 0x1a4+0x34*i,
+// magazines 0x224+0x10*i, definition 0x150/0x164/0x2c0/0x2c4/0x2c8/0x2cc/0x2d0), the progress tests (retail
+// tests 0x0f0006e5, 0x0e0006e6, 0x0d0006e7 in that order; disjoint, so the same result), the activity maxima,
+// the clamp and both exits agree; the magazine-%10 selector is 0x1700056b (0x16000571 + 8 + 0xfffff2). The
+// remaining score is the switch tree and register homes. Retail's tree: one 27-label switch laid out inverted on the path to 0x1d0007ba
 // (root, 0x1500056e and 0x1700056c fall through to the high side; no other function in the image has that node
 // shape); frame eight versus four and object/tag/activity homes remain.
 // Early activity plus final maximum 398; barrel read 422; scale reads 422; property bits 420; branch maxima 404;
@@ -2954,6 +2966,8 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // switch with `default: return false;` 425; the activity cases before 0x0b0005a9 409; the activity-first
 // switch on `(dword)name` 409 (`ja` root). Compile-only: activity cases first/last, with a returning
 // default, separate activity cases and the default first all keep the `jg` root.
+// w1D (11-05): fallthrough `case 0x1d0007ba:` into `case 0x0c000569:` with the definition recomputed 408; progress
+// tests in retail's order without the trailing else 420; `long` instead of `short` case index 424.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3051,8 +3065,7 @@ bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *a
 	else if (result > 1.0f)
 		result = 1.0f;
 	*value = result;
-	if (result > 0.0f) *active = true;
-	else *active = false;
+	*active = result > 0.0f;
 	return true;
 }
 
@@ -3286,6 +3299,12 @@ struct s_ammo_conversion_entry
 // Round 455: Actual persistent source header pointer/reference, with acquisition declaration priority
 // and retained-rounds constant lifetime: 209/211/209/211/209/211/209/211, 713/720 bytes.
 // Original lookup graph, declarations, transfer expressions and complete body restored.
+// Walk against retail (w1C, 11-05): all blocks of 0xffc60 match retail's logic (fields, conditions, callees and
+// arguments, loop bounds). What differs is only homes (retail weapon EBP spilled around the scan, other EBX, other's
+// definition index EDI) and the conversion scan's shape: retail computes &entries[j] at the top of each pass and jumps
+// from the match straight to the shared `available > 0` tail, with no test after the loop. Tried: entry pointer at the
+// top of the pass with `if (j >= count) continue;` after the loop 207 (713 bytes); a goto from the match to the tail 214
+// (712 bytes) (both fast, control 190).
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3388,6 +3407,8 @@ void function_176970(s_effect_owner const *owner, real scale_a, long tag_index, 
 #define WEAPON_SHORT_AT(base, offset) (*(short *)((byte *)(base) + (offset)))
 #define WEAPON_LONG_AT(base, offset) (*(long *)((byte *)(base) + (offset)))
 #define WEAPON_BYTE_AT(base, offset) (*((byte *)(base) + (offset)))
+/* one bit of a long, as retail's `shr; test 1` */
+#define WEAPON_BIT_AT(base, offset, bit) ((bool)(((dword)WEAPON_LONG_AT(base, offset) >> (bit)) & 1))
 
 #define WEAPON_WORD_AT_102FB0(base, offset) (*(word *)((byte *)(base) + (offset)))
 
@@ -3467,6 +3488,12 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Round 246: live magazine/metadata/both/both with ordinal 653/602/581/634;
 // ordinary-holder counterparts 641/666/659/672 (fast control 640). Ordinary
 // metadata/both 643/649 versus full 604. Original receiver graph and body restored.
+// Walk against retail (w1C, 11-05): every block of 0x102fb0 was compared with retail statement by statement; the only
+// logic difference was the effect marker's direction, now read from markers[].matrix.forward (retail 0x1038f0-0x103914
+// copies element+0x3c, the matrix forward, not element+0x8 of the node matrix); fast 640 -> 643, 2542 -> 2545 bytes (retail 2533).
+// Dropping the `volatile` on unit_index gives fast 657 / 2501 bytes (retail keeps it in [esp+0x24], stored at entry and
+// reloaded into EDI after each call). What remains differs only in homes: retail EBX = weapon_index, EDI = barrel offset
+// (index*0x34, the barrel is never a pointer), definition spilled to [esp+0x14]; ours EDI = definition, EBX = offset.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -3639,7 +3666,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
         WEAPON_REAL_AT(definition, 0x15c) > function_x82e52f(&g_4e7408->unknown0, NULL, 0))
         function_104030(weapon_index);
     barrel->timer = 0;
-    if ((bool)(((dword)WEAPON_LONG_AT(barrel_definition, 0) >> 12) & 1))
+    if (WEAPON_BIT_AT(barrel_definition, 0, 12))
     {
         s_object_marker markers[64];
         long marker_name = function_101b10(weapon_index, barrel_index);
@@ -3652,7 +3679,7 @@ void __stdcall function_102fb0(long weapon_index, short barrel_index)
             s_effect_marker marker;
             marker.name = marker_name;
             marker.position = markers[selected].matrix.position;
-            marker.forward = markers[selected].node_matrix.forward;
+            marker.forward = markers[selected].matrix.forward;
             function_176970(NULL, scale_b, tag_index, model_owner_102fb0,
                 markers[selected].node_index, 1, &marker, scale_a, NULL, NULL, false);
         }
@@ -3693,7 +3720,25 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
         if (weapon->parent_index != NONE) weapon_index = weapon->parent_index;
     return weapon_index;
 }
-// score 1420 (was 1420): Frame 0x3c/0x38 and pool/offset/dual/scalar homes remain.
+// score 1420: walked statement by statement against retail 11-05 (w1A), with the jump tables at 0xff57c/0xff59c/
+// 0xff5b4/0xff5c4/0xff5d4 mapped. No behaviour difference: the setup, animation state, ramp, heat and overheat, trigger
+// and barrel state machines, barrel scale/ramp and the final heat/byte/x87 update agree, and all 77 call sites exist in
+// both. The code is unchanged here, since the forms retail shows together score 1485 (5724 bytes), although the
+// opcode shape (registers ignored) then matches 950 of 1471 instructions instead of 789: result a bool in a byte
+// (0xfe0b5, 0xff56b); no hoisted `1.0f - scale` (0xff479); the +0x20 ramp clamps against double constants (fld qword
+// 0x45dcc0/0x45dbe0 at 0xff42d/0xff4c8; the +0x1c clamps stay float); blocked a bool cleared at entry and set inside its
+// test (0xfe038, 0xfe5bf); down/up bool bytes zeroed first (0xfe633, 0xfe64d-0xfe674); press/hold/release not cleared
+// before 0x1027b0 (0xfe996); primary/secondary re-read from the trigger entry at each use (0xfe6b9, 0xfe6eb movsx);
+// trigger fields indexed off the weapon ([ebx+ebp+0x210]); flag words unsigned (shr at 0xfe02c); behaviour cases laid
+// out 0 1 4 5 2 3 and trigger states 0 1 2 3/7 5 6; the request helper keeps the barrel pointer (lea +0x1a4 after the or).
+// With those, what differs is homes (retail keeps the weapon in EBP and the trigger offset in EBX; that form folds &timer
+// into EBP and spills the weapon; retail's loop index lives at [esp+0x28]), retail's single tail for the flag3/flag4
+// clear and the two 0x102f70 calls (emitted twice there), `or byte [ebp+0x16c], n` flag stores (load/or/store there) and
+// the frame (0x38 against 0x30). Also tried on that form: a word-typed 0x16c flag view for retail's shr tests 1535; case
+// 4/5 as separate primary/secondary paths 1580. Retail reads the trigger and barrel state bytes signed (movsx at 0xfe680,
+// 0xff0af), and the trigger definition's barrel selectors are the words at +0x8 (read at 0xfe6b9) and +0xa (the struct
+// names only +0xa, as primary_barrel).
+// Earlier score 1420: Frame 0x3c/0x38 and pool/offset/dual/scalar homes remain.
 // Earlier score 1420 (was 1420; round 449 reached 1408 but is not kept, see the review line): Frame 0x3c versus 0x38 and pool/dual/scalar homes remain.
 // Earlier: frame 0x3c versus 0x38; pool/offset registers and dual/scalar homes remain.
 // Long blocked fast 1518, barrel active 1513, down/up 1506, overheated 1520; depth one 1521;
@@ -4201,7 +4246,7 @@ bool __stdcall function_fdfb0(long weapon_index)
 
 void __stdcall function_104150(long weapon_index, short barrel_index);
 
-struct s_entry_pair { long object_index; long entry_index; };
+struct s_entry_pair { long object_index; short entry_index; };
 struct s_damage_owner;
 struct s_type_1e6529;
 struct s_location;
@@ -4221,7 +4266,6 @@ short function_15cca0(long player_index, byte code);
 void function_b7930(void *data, long tag_index, long object_index, s_effect_owner const *owner);
 long __stdcall function_b7b40(void *data);
 void random_vector_in_cone(vector3f const *forward, vector3f *result, dword *seed, real min_angle, real max_angle);
-real function_30bf0(vector3f *vector);
 void __stdcall function_a7870(long object_index);
 void function_fa100(long projectile_index);
 transform4x3f *function_b8c00(long object_index, long *node_count);
@@ -4262,6 +4306,37 @@ static inline bool weapon_game_mode_is_4(void)
     return result;
 }
 
+/* what function_b7930 builds and function_b7b40 makes a projectile from */
+struct s_weapon_projectile_creation
+{
+	byte unknown00[0x18];
+	dword flags;
+	point3f position;
+	vector3f forward;
+	vector3f up;
+	vector3f linear_velocity;
+	byte unknown4c[0xc4 - 0x4c];
+};
+
+// score 1143 (was 1161): walked statement by statement against retail 11-05 (w1B). Behaviour fixes: the shot spread is
+// computed only while it is still 0 (0x104dbe-0x104dcb: ucomiss, lahf, test ah 0x44, jp past the block) and low/high fall
+// back to +0x74/+0x78 when +0x5c/+0x60 are 0, writing `spread` itself (0x104e4a; the cone call at 0x104e8b reads it);
+// function_1fddd0 gets (average-or-origin, direction) (0x1048a9-0x1048da; the source passed the average as the direction);
+// function_109e00 fills its own vector (0x1046a1: [esp+0xec]) for the has_motion blend (0x1050c8) while the speed dot
+// product reads the function_c8290 vector (0x1046b8-0x1046e0; the source shared one vector, which differed whenever
+// function_109e00 wrote it); the mark code passed to function_15cca0 is tag+0x128 & 0x3f with no 0x40 bit (0x104437-0x104444).
+// The normalize is inline as in retail (0x104f1d-0x105044), summing i*i + k*k + j*j where function_30bf0 sums i, j, k
+// (last-ulp only). Same results, retail's shape: the second function_101fb0 call (a lookup) only when the projectile tag is
+// set (0x104c8b); the target entry is a short (0x104835, 0x104866) copied with the object index as 8 bytes (0x105276-0x105284);
+// marker index and shot counter are shorts; node_count starts at 0 (0x10535b); the synchronized point starts as {0.0f}
+// (0x104260, the value g_468788 points at); up/forward/velocity live in the creation block; the projectile is re-fetched
+// for the target store and `&= ~2` (0x10526f, 0x105292).
+// Left: retail lays the player-controlled/actor `else if` straight after the player branch (0x104890-0x104935) but ours
+// outlines it after the pre-loop code; the mark-code expression (retail 0x104437: `xor/and/xor` merge of the network flag
+// with the low six bits, then `and 0xffffff3f`) is not reproduced (plain `& 0x3f` here); the average loop is not rotated
+// as retail's (0x104360); frame is 0x1ea4 against retail 0x1e98 and the locals' slots differ (flags 0x15/0x17/0x29).
+// Steps (fast check): behaviour fixes 1221, creation block 1314, normalize_inline instead of the function_30bf0 call 1274,
+// short target + loop-top initialisers 1252, shift-style flag tests + projectile refetches 1143.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {
@@ -4284,7 +4359,7 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
     real scale = function_d1490(unit_index, *weapon_reference);
     long synchronized_target = NONE;
     short synchronized_node = NONE;
-    point3f synchronized_point = *g_468788;
+    point3f synchronized_point = { 0.0f };
     if (TEST_FIELD_BIT(definition->flag27)) scale = dual ? 1.0f : 0.0f;
     long mode = g_4e6948->mode;
     if (mode >= 4 && mode <= 5)
@@ -4307,16 +4382,16 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
     short marker_count = function_b8d30(function_101ec0(*weapon_reference),
         function_101b10(*barrel_reference, *weapon_reference), markers, 64, false);
     if (!marker_count) marker_count = 1;
-    if (!(WEAPON_LONG_AT(barrel_definition, 0) & 8)) marker_count = 1;
+    if (!WEAPON_BIT_AT(barrel_definition, 0, 3)) marker_count = 1;
     point3f average;
-    if (WEAPON_LONG_AT(barrel_definition, 0) & 0x100)
+    if (WEAPON_BIT_AT(barrel_definition, 0, 8))
     {
         average = *g_468788;
         for (short i = 0; i < marker_count; ++i)
         {
-            average.x += markers[i].matrix.position.x;
-            average.y += markers[i].matrix.position.y;
-            average.z += markers[i].matrix.position.z;
+            average.x = markers[i].matrix.position.x + average.x;
+            average.y = markers[i].matrix.position.y + average.y;
+            average.z = markers[i].matrix.position.z + average.z;
         }
         real reciprocal = 1.0f / (real)marker_count;
         average.x *= reciprocal; average.y *= reciprocal; average.z *= reciprocal;
@@ -4332,23 +4407,25 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
         long player_index = WEAPON_LONG_AT(WEAPON_GET(owner_index), 0x13c);
         if (player_index != NONE)
         {
-            byte code = (WEAPON_BYTE_AT(g_4e3b44[projectile_tag & 0xffff].bytes, 0x128) & 0x3f) |
-                (network_projectile ? 0x40 : 0);
+            byte code = WEAPON_BYTE_AT(g_4e3b44[projectile_tag & 0xffff].bytes, 0x128) & 0x3f;
             projectile_code = function_15cca0(player_index, code);
         }
     }
     vector3f repeated_direction;
-    for (long marker_index = 0; marker_index < marker_count; ++marker_index)
+    for (short marker_index = 0; marker_index < marker_count; ++marker_index)
     {
-        s_object_marker const *marker = &markers[marker_index];
-        if (marker_count > 1 && (bool)(((dword)WEAPON_LONG_AT(barrel_definition, 0) >> 12) & 1) &&
+        vector3f motion = *g_4687a4;
+        vector3f unit_velocity;
+        bool has_motion = false;
+        real inherited_speed = 0.0f;
+        real spread = 0.0f;
+        real actor_speed = 0.0f;
+        bool player_controlled = false;
+        if (marker_count > 1 && WEAPON_BIT_AT(barrel_definition, 0, 12) &&
             WEAPON_BYTE_AT(barrel, 0x2e) % marker_count != marker_index) continue;
+        s_object_marker const *marker = &markers[marker_index];
         point3f origin = marker->matrix.position;
         vector3f direction = marker->matrix.forward;
-        vector3f motion = *g_4687a4;
-        real inherited_speed = 0.0f, spread = 0.0f;
-        real actor_speed = 0.0f;
-        bool has_motion = false, player_controlled = false;
         s_entry_pair target = { NONE, NONE };
         if (!(TEST_FIELD_BIT(((s_weapon_barrel_definition *)barrel_definition)->flag6)) && unit_index != NONE)
         {
@@ -4377,10 +4454,10 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
                 if (WEAPON_LONG_AT(unit, 0x24c) != NONE) use_aim = false;
                 function_c8290(&direction, &origin, active_index, &motion,
                     player_index != NONE ? (real *)(barrel_definition + 0x7c) : NULL, project, use_aim, true);
-                has_motion = function_109e00(active_index, &motion, true);
+                has_motion = function_109e00(active_index, &unit_velocity, true);
                 inherited_speed = direction.i * motion.i + direction.j * motion.j + direction.k * motion.k;
                 if (inherited_speed < 0.0f) inherited_speed = 0.0f;
-                if (WEAPON_LONG_AT(barrel_definition, 0) & 8)
+                if (WEAPON_BIT_AT(barrel_definition, 0, 3))
                 {
                     origin = marker->matrix.position;
                     point3f center, clipped;
@@ -4397,9 +4474,9 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
                         WEAPON_REAL_AT(aim, 0x1c) > 0.0f)
                     {
                         if (!(function_106400(*weapon_reference, true) && *barrel_reference == 1 && !function_106320(aim)))
-                            target = *aim;
+                            { target.object_index = aim->object_index; target.entry_index = aim->entry_index; }
                     }
-                    else if ((bool)(((dword)WEAPON_LONG_AT(barrel_definition, 0) >> 13) & 1) && weapon->object_index_194 != NONE)
+                    else if (WEAPON_BIT_AT(barrel_definition, 0, 13) && weapon->object_index_194 != NONE)
                     {
                         target.object_index = weapon->object_index_194;
                         target.entry_index = weapon->entry_177;
@@ -4408,10 +4485,10 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
                 }
                 else if (actor_index != NONE)
                 {
-                    bool aimed = function_1fddd0(actor_index, &origin,
-                        (WEAPON_LONG_AT(barrel_definition, 0) & 0x100) ? (vector3f *)&average : &direction,
+                    bool aimed = function_1fddd0(actor_index,
+                        WEAPON_BIT_AT(barrel_definition, 0, 8) ? &average : &origin, &direction,
                         (long *)&actor_speed, &spread, &target.object_index);
-                    if ((bool)(((dword)WEAPON_LONG_AT(barrel_definition, 0) >> 13) & 1) && target.object_index != NONE)
+                    if (WEAPON_BIT_AT(barrel_definition, 0, 13) && target.object_index != NONE)
                     {
                         byte *header = (byte *)g_4e0300->data + (target.object_index & 0xffff) * 12;
                         byte type = header[3];
@@ -4442,117 +4519,115 @@ void __stdcall function_104150(long weapon_index, short barrel_index)
         }
         word delayed = (word)WEAPON_SHORT_AT(barrel, 0x2c);
         if (delayed) { projectile_count = (short)(projectile_count * (delayed + 1)); WEAPON_SHORT_AT(barrel, 0x2c) = 0; }
-        owner_index = function_101fb0(*weapon_reference);
-        for (short i = 0; projectile_index != NONE && i < projectile_count; ++i)
+        if (projectile_index != NONE)
         {
-            s_effect_owner owner;
-            owner.unknown0 = owner_index != NONE ? WEAPON_LONG_AT(WEAPON_GET(owner_index), 0x13c) : NONE;
-            owner.unknown4 = owner_index;
-            owner.unknown8 = owner_index != NONE ? WEAPON_SHORT_AT(WEAPON_GET(owner_index), 0x138) : NONE;
-            byte creation[0xc4];
-            function_b7930(creation, projectile_index, owner_index, &owner);
-            *(point3f *)(creation + 0x1c) = origin;
-            *(vector3f *)(creation + 0x28) = direction;
-            if (player_controlled) WEAPON_LONG_AT(creation, 0x18) |= 4;
-            /* retail: a barrel whose +0x10 is zero always fires a tracer; otherwise the
-               signed shot counter at +0xe counts up to the definition's +0x2e */
-            bool tracer = WEAPON_REAL_AT(barrel, 0x10) == 0.0f;
-            if (!tracer)
+            long projectile_owner_index = function_101fb0(*weapon_reference);
+            for (short i = 0; i < projectile_count; ++i)
             {
-                short previous = WEAPON_SHORT_AT(barrel, 0xe);
-                WEAPON_SHORT_AT(barrel, 0xe) = (short)(previous + 1);
-                if (previous >= WEAPON_SHORT_AT(barrel_definition, 0x2e)) tracer = true;
-            }
-            if (tracer) WEAPON_SHORT_AT(barrel, 0xe) = 0;
-            vector3f *shot_direction = (vector3f *)(creation + 0x28);
-            real shot_spread = spread;
-            if (shot_spread != 0.0f)
-            {
-                real low = WEAPON_REAL_AT(barrel_definition, 0x5c);
-                real high = WEAPON_REAL_AT(barrel_definition, 0x60);
-                if (low != 0.0f) low = WEAPON_REAL_AT(barrel_definition, 0x74);
-                if (high != 0.0f) high = WEAPON_REAL_AT(barrel_definition, 0x78);
-                low = low * scale + WEAPON_REAL_AT(barrel_definition, 0x74) * (1.0f - scale);
-                high = high * scale + WEAPON_REAL_AT(barrel_definition, 0x78) * (1.0f - scale);
-                shot_spread = low + (high - low) * WEAPON_REAL_AT(barrel, 0x1c);
-            }
-            if (!((WEAPON_LONG_AT(barrel_definition, 0) & 0x20) && (WEAPON_BYTE_AT(weapon, 0x16e) & 0x40)))
-            {
-                real minimum = WEAPON_REAL_AT(barrel_definition, 0x58) * scale +
-                    WEAPON_REAL_AT(barrel_definition, 0x70) * (1.0f - scale);
-                random_vector_in_cone(shot_direction, shot_direction, &g_4e7408->unknown0, minimum, shot_spread);
-            }
-            if (WEAPON_LONG_AT(barrel_definition, 0) & 0x80)
-            {
-                if (!i) repeated_direction = *shot_direction;
-                else *shot_direction = repeated_direction;
-            }
-            vector3f up;
-            real ax = (real)fabs(shot_direction->i), ay = (real)fabs(shot_direction->j), az = (real)fabs(shot_direction->k);
-            if (ax <= ay && ax <= az) { up.i = 0.0f; up.j = shot_direction->k; up.k = -shot_direction->j; }
-            else if (!(ay <= az)) { up.i = shot_direction->j; up.j = -shot_direction->i; up.k = 0.0f; }
-            else { up.i = -shot_direction->k; up.j = 0.0f; up.k = shot_direction->i; }
-            function_30bf0(&up);
-            *(vector3f *)(creation + 0x34) = up;
-            function_1055b0(shot_direction, &up, i, WEAPON_SHORT_AT(barrel_definition, 0x68),
-                WEAPON_REAL_AT(barrel_definition, 0x6c), projectile_count);
-            vector3f velocity;
-            velocity.i = shot_direction->i * inherited_speed;
-            velocity.j = shot_direction->j * inherited_speed;
-            velocity.k = shot_direction->k * inherited_speed;
-            if (has_motion)
-            {
-                real along = shot_direction->i * motion.i + shot_direction->j * motion.j + shot_direction->k * motion.k;
-                velocity.i += motion.i - along * shot_direction->i;
-                velocity.j += motion.j - along * shot_direction->j;
-                velocity.k += motion.k - along * shot_direction->k;
-            }
-            if (actor_speed > 0)
-            {
-                real speed = WEAPON_REAL_AT(g_4e3b44[WEAPON_LONG_AT(barrel_definition, 0x90) & 0xffff].bytes, 0x17c);
-                real desired = actor_speed;
-                if (speed > desired)
+                bool tracer = false;
+                s_effect_owner owner;
+                owner.unknown0 = projectile_owner_index != NONE ? WEAPON_LONG_AT(WEAPON_GET(projectile_owner_index), 0x13c) : NONE;
+                owner.unknown4 = projectile_owner_index;
+                owner.unknown8 = projectile_owner_index != NONE ? WEAPON_SHORT_AT(WEAPON_GET(projectile_owner_index), 0x138) : NONE;
+                s_weapon_projectile_creation creation;
+                function_b7930(&creation, projectile_index, projectile_owner_index, &owner);
+                creation.position = origin;
+                creation.forward = direction;
+                if (player_controlled) creation.flags |= 4;
+                /* retail: a barrel whose +0x10 is zero always fires a tracer; otherwise the
+                   signed shot counter at +0xe counts up to the definition's +0x2e */
+                if (WEAPON_REAL_AT(barrel, 0x10) == 0.0f) tracer = true;
+                else
                 {
-                    velocity.i += (desired - speed) * shot_direction->i;
-                    velocity.j += (desired - speed) * shot_direction->j;
-                    velocity.k += (desired - speed) * shot_direction->k;
+                    short previous = WEAPON_SHORT_AT(barrel, 0xe);
+                    WEAPON_SHORT_AT(barrel, 0xe) = (short)(previous + 1);
+                    if (previous >= WEAPON_SHORT_AT(barrel_definition, 0x2e)) tracer = true;
                 }
-            }
-            *(vector3f *)(creation + 0x40) = velocity;
-            if (create_projectile)
-            {
-                long index = function_b7b40(creation);
-                if (index != NONE)
+                if (tracer) WEAPON_SHORT_AT(barrel, 0xe) = 0;
+                if (spread == 0.0f)
                 {
-                    byte *projectile = (byte *)WEAPON_GET(index);
-                    WEAPON_REAL_AT(projectile, 0x188) = (1.0f - scale) + WEAPON_REAL_AT(barrel_definition, 0x64) * scale;
-                    WEAPON_SHORT_AT(projectile, 0x1a8) = projectile_code;
-                    if (actor_speed > 0) WEAPON_LONG_AT(projectile, 0x12c) |= 0x100;
-                    WEAPON_LONG_AT(projectile, 0x144) = target.object_index;
-                    WEAPON_LONG_AT(projectile, 0x148) = target.entry_index;
-                    if (!tracer) WEAPON_LONG_AT(projectile, 0x12c) &= ~2;
-                    if (network_projectile) function_a7870(index);
-                    WEAPON_LONG_AT(projectile, 0x1a4) = weapon->definition_index;
-                    function_fa100(index);
-                    byte *projectile_tag_bytes = g_4e3b44[WEAPON_LONG_AT(projectile, 0) & 0xffff].bytes;
-                    if (synchronize && WEAPON_SHORT_AT(barrel_definition, 0x34) == 2 && (WEAPON_LONG_AT(projectile, 0x12c) & 0x800) &&
-                        (WEAPON_LONG_AT(projectile_tag_bytes, 0xbc) & 0x20) && (WEAPON_LONG_AT(projectile, 0x12c) & 0x2000))
+                    real low = WEAPON_REAL_AT(barrel_definition, 0x5c);
+                    real high = WEAPON_REAL_AT(barrel_definition, 0x60);
+                    if (low == 0.0f) low = WEAPON_REAL_AT(barrel_definition, 0x74);
+                    if (high == 0.0f) high = WEAPON_REAL_AT(barrel_definition, 0x78);
+                    low = low * scale + WEAPON_REAL_AT(barrel_definition, 0x74) * (1.0f - scale);
+                    high = high * scale + WEAPON_REAL_AT(barrel_definition, 0x78) * (1.0f - scale);
+                    spread = low + (high - low) * WEAPON_REAL_AT(barrel, 0x1c);
+                }
+                if (!(WEAPON_BIT_AT(barrel_definition, 0, 5) && ((WEAPON_BYTE_AT(weapon, 0x16e) >> 6) & 1)))
+                {
+                    real minimum = WEAPON_REAL_AT(barrel_definition, 0x58) * scale +
+                        WEAPON_REAL_AT(barrel_definition, 0x70) * (1.0f - scale);
+                    random_vector_in_cone(&creation.forward, &creation.forward, &g_4e7408->unknown0, minimum, spread);
+                }
+                if (WEAPON_BIT_AT(barrel_definition, 0, 7))
+                {
+                    if (!i) repeated_direction = creation.forward;
+                    else creation.forward = repeated_direction;
+                }
+                real ax = (real)fabs(creation.forward.i), ay = (real)fabs(creation.forward.j), az = (real)fabs(creation.forward.k);
+                if (ax <= ay && ax <= az) { creation.up.i = 0.0f; creation.up.j = creation.forward.k; creation.up.k = -creation.forward.j; }
+                else if (!(ay <= az)) { creation.up.i = creation.forward.j; creation.up.j = -creation.forward.i; creation.up.k = 0.0f; }
+                else { creation.up.i = -creation.forward.k; creation.up.j = 0.0f; creation.up.k = creation.forward.i; }
+                normalize_inline(&creation.up);
+                function_1055b0(&creation.forward, &creation.up, i, WEAPON_SHORT_AT(barrel_definition, 0x68),
+                    WEAPON_REAL_AT(barrel_definition, 0x6c), projectile_count);
+                creation.linear_velocity.i = creation.forward.i * inherited_speed;
+                creation.linear_velocity.j = creation.forward.j * inherited_speed;
+                creation.linear_velocity.k = creation.forward.k * inherited_speed;
+                if (has_motion)
+                {
+                    real along = creation.forward.i * unit_velocity.i + creation.forward.j * unit_velocity.j +
+                        creation.forward.k * unit_velocity.k;
+                    creation.linear_velocity.i += unit_velocity.i - along * creation.forward.i;
+                    creation.linear_velocity.j += unit_velocity.j - along * creation.forward.j;
+                    creation.linear_velocity.k += unit_velocity.k - along * creation.forward.k;
+                }
+                if (actor_speed > 0)
+                {
+                    real speed = WEAPON_REAL_AT(g_4e3b44[WEAPON_LONG_AT(barrel_definition, 0x90) & 0xffff].bytes, 0x17c);
+                    real desired = actor_speed;
+                    if (speed > desired)
                     {
-                        long parent_index = WEAPON_LONG_AT(projectile, 0x150);
-                        if (WEAPON_LONG_AT(WEAPON_GET(parent_index), 0xd4) != NONE)
+                        creation.linear_velocity.i += (desired - speed) * creation.forward.i;
+                        creation.linear_velocity.j += (desired - speed) * creation.forward.j;
+                        creation.linear_velocity.k += (desired - speed) * creation.forward.k;
+                    }
+                }
+                if (create_projectile)
+                {
+                    long index = function_b7b40(&creation);
+                    if (index != NONE)
+                    {
+                        byte *projectile = (byte *)WEAPON_GET(index);
+                        WEAPON_REAL_AT(projectile, 0x188) = (1.0f - scale) + WEAPON_REAL_AT(barrel_definition, 0x64) * scale;
+                        WEAPON_SHORT_AT(projectile, 0x1a8) = projectile_code;
+                        if (actor_speed > 0) WEAPON_LONG_AT(projectile, 0x12c) |= 0x100;
+                        *(s_entry_pair *)((byte *)WEAPON_GET(index) + 0x144) = target;
+                        if (!tracer) WEAPON_LONG_AT(WEAPON_GET(index), 0x12c) &= ~2;
+                        if (network_projectile) function_a7870(index);
+                        WEAPON_LONG_AT(projectile, 0x1a4) = weapon->definition_index;
+                        function_fa100(index);
+                        byte *projectile_tag_bytes = g_4e3b44[WEAPON_LONG_AT(projectile, 0) & 0xffff].bytes;
+                        if (synchronize && WEAPON_SHORT_AT(barrel_definition, 0x34) == 2 && WEAPON_BIT_AT(projectile, 0x12c, 11) &&
+                            WEAPON_BIT_AT(projectile_tag_bytes, 0xbc, 5) && WEAPON_BIT_AT(projectile, 0x12c, 13))
                         {
-                            long node_count;
-                            transform4x3f *matrices = function_b8c00(parent_index, &node_count);
-                            short node = WEAPON_SHORT_AT(projectile, 0x154);
-                            if (node >= 0 && node < node_count)
+                            long parent_index = WEAPON_LONG_AT(projectile, 0x150);
+                            if (WEAPON_LONG_AT(WEAPON_GET(parent_index), 0xd4) != NONE)
                             {
-                                point3f point;
-                                transform4x3f inverse;
-                                function_b9dd0(index, &point);
-                                function_141590(&matrices[node], &inverse);
-                                transform4x3f_apply_point(&inverse, &point, &synchronized_point);
-                                synchronized_target = parent_index;
-                                synchronized_node = node;
+                                long node_count = 0;
+                                transform4x3f *matrices = function_b8c00(parent_index, &node_count);
+                                short node = WEAPON_SHORT_AT(projectile, 0x154);
+                                if (node >= 0 && node < node_count)
+                                {
+                                    point3f point;
+                                    transform4x3f inverse;
+                                    function_b9dd0(index, &point);
+                                    function_141590(&matrices[node], &inverse);
+                                    transform4x3f_apply_point(&inverse, &point, &synchronized_point);
+                                    synchronized_target = parent_index;
+                                    synchronized_node = node;
+                                }
                             }
                         }
                     }
