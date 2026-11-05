@@ -4986,6 +4986,10 @@ struct s_membership_update_snapshot
 // +0x6c; five points, below the keep floor); on that: 0x5f900 storing unknown00, flag1, unknown04 564 plain (0x5f900 kept),
 // the state pointer 519, per-case `long player_index` reads 525, memset for both player_indices fills 669, a long loop-1
 // index 693.
+// Round 149 (m3 lane 5, fast, base 523; 2591 bytes): named update count with a long/short first-loop index 697/664; named new index in the
+// first loop 548; masks on one line, chained, typed long 523 each. All 11 calls' setups compared with retail: only register rotation (0x600f0's
+// convention agrees), so no parameter order to change. An aligned diff (registers and slots ignored) puts the rest in the unrotated first loops:
+// lane 15's result chain remains the lead, it needs a match for its implied `result &&` heads.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {

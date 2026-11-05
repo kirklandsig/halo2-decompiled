@@ -690,6 +690,13 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // NOT kept: every form regresses; heading captures grow frame 0x54 to 0x60 and all lengths grow.
 // Original full vector inputs, zero-k stores, target acquisition, normalizations and whole body restored;
 // unit-call scratch register and first-length/projection/query homes remain.
+// Round 150 (m3 lane 5, fast, on the match-only 17 form rebuilt, masked aligned 0): adjusted as a new variable, as a const ref, size as a const ref 17 each (homes
+// unchanged); reach, length, radius as const refs 196 (951), 162 (967), 61 (957); radius bound through a cast temporary 61, with a named reach 196, no size 192; adjusted in the
+// length variable 17 (groups right, 0x14/0x18 swapped); on that, embedded length assignment, joined guards, copy then subtract, whole adjustment in it, four timing declarations 17
+// each, sides declared swapped 18; named maximum, named sums, negated compare, ternary max helper, lateral copy or const ref in the block, second side first in the max 17 each
+// (XMM2/XMM3 unchanged); max as a second ternary 51, if-form helper 19, lateral const ref at its definition 25, `||` of the sides 90; side outputs declared at top, heading, dot,
+// sum, fabs or 0.95 block, each side, shared and unshared, 17 each (scope does not move them). Diagnostics, reverted: one more read of the sum moves it to 0x10 (166), of the length
+// or second side no move (187/96), of a timing output no move (63/70/79); one or two more lateral uses keep XMM3 (92/103). Body unchanged at 89.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
