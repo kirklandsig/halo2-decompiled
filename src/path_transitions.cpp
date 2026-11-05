@@ -726,6 +726,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // declared 219; `second` declared in its block 219; both reciprocal forms 219; both products turned 219; the radius
 // product turned 219. Left: the entry (actor loaded at entry, pathfinding moved to EBX), which colours case 5, and
 // the projection sum (retail (j + k) + i with j in XMM3, ours (k + j) + i).
+// DH377: Read-only root/state and actual mutable-entry contracts, seven coordinated subsets
+// 219/219/220/219/220/220/220; complete contracts with a const surface receiver 220.
+// NOT kept: no equality or gain; both original declarations, entry alias and body restored.
+// Native early root/actor ownership and paired projection/limit scheduling remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

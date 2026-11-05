@@ -773,6 +773,13 @@ bool g_51e9bc;
 // N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
 // forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
 // body restored; unity/limit/direction ownership and jitter spill homes remain.
+// DH377: Direct dot at the existing scaled-add argument 57 (1078 bytes); complete dot then negation 112.
+// Existing vector scale, direct/named projection 140/131; particle scale, named/direct 131/140;
+// separate correction, named/direct 133/137. Initial velocity setter/complete row products 152/122.
+// On the direct-dot lead, native jitter scale/limit stages 65/45/67/56, then output
+// declaration/setter 45/65 (best 1081 bytes).
+// NOT kept: closer forms move away from retail's 1077 bytes; the native-length 112 gains only six.
+// Original body restored at 118; initial i-row ownership, projection operands and jitter factor homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

@@ -759,6 +759,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // long root type 319 (80), plus a next-shape local 319 (79), plus a one-use bool for the byte test 323 (79). Normal row terms in six orders 239 each (aligned 106-116).
 // long plane index locals 239 (same `mov dx`: the short formal narrows; the callee's formal is the real blocker, a caller rose before). Hit through
 // a contact position pointer 310 (folds). Left: contact takes a register once the hit is read by components (retail keeps it on the stack), three data reads.
+// DH377: On the scalar-normal/actual-node graph, typed final-normal setter, complete plane-normal
+// setter and both 239/239/239; native hit publication alone/with either/both 340 each (1227 bytes),
+// standard hit memcpy 340. NOT kept: no gain; original publications, captures and full body restored.
+// Frame 0x40 versus 0x44, classifier observations and plane/point homes remain.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
