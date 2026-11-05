@@ -1481,7 +1481,7 @@ long function_1766b0(long object_index, long tag_index, long unknown34, long unk
 }
 
 // @retail 0x176780
-long function_176780(s_effect_owner const *owner, long object_index, real scale_a, long tag_index, real scale_b, point3f const *origin, vector3f const *direction)
+long function_176780(long tag_index, s_effect_owner const *owner, long object_index, real scale_a, real scale_b, point3f const *origin, vector3f const *direction)
 {
 	s_effect_parameters parameters;
 	point3f point;
@@ -1747,131 +1747,19 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 	return index;
 }
 
-// score 9 (was 9): only the node/matrix entry order remains (round 67, round 70).
-// MiniMax D (11-01): no new form and no lower score; the bounded permute search was stopped before
-// it measured a variant.
-// Earlier: node/matrix entry order and
-// the forward/up xmm homes remained (retail forward
-// in xmm4/2/3 and up in xmm5/1/0; the marker forward values take xmm2 first here); frame 0x1c agrees.
-// The point computed into position, normalize3d and cross3f give retail's early up.j/up.k loads.
-// Node index first 107 (marker index sign extension hoisted); forward without locals 132;
-// locals k,j,i 80, j,k,i 81; dot3f for forward 132, for position 82; written cross 119;
-// marker pointer in the else branch 198. Shared difference 187; shared scale 94; both helpers 186;
-// separate point workspace 125; normalized workspace 164; scale snapshot 185; marker vector
-// snapshot 184; point setters 227. Cartesian scalar names, ordered direction/point accumulation,
-// displacement scalars, output-matrix receiver, early direction inputs and immutable accumulation
-// 77 each; existing inverse-point call 417. Native node copy 77; copy first 107;
-// complete/immutable/shared marker inputs 212/212/208; node-first marker value 211 (marker values
-// lose the matched caller); direction results 77; results with node first 107. Direction inputs
-// i,k,j / j,i,k / k,i,j 79/80/81; with node copied first 109/110/111. Read-only node-matrix input
-// and marker-array input 77/77.
-// Node copy first (retail entry and length 758, index sign extension hoisted into the entry) 107;
-// with the matrix local inside the branch 107; marker forward value copy 166; marker forward
-// fields read directly 139; forward locals named x/y/z or forward_i/j/k 107/107; declarations
-// forward/position/up or up/forward/position 107/107.
-// Round 95: node copy before the matrix load 107 (758 bytes; the marker index sign extension is
-// hoisted above the matrix test, retail extends it in each arm); with a marker pointer in the else
-// arm 198 (762 bytes), the same pointer without node-first 198; node-first with pointer-sum marker
-// address 107; node-first with the else arm copying forward first 121. Original body restored.
-// Product order inside each forward row (any of six per row) 77 (identical code); the
-// tail as matched 0x1420f0's body (scale, forward, two-step cross, up, zeroed position,
-// position) through a forceinline copy 137 (its extra tuples flip the magnitude's sum
-// order and move 1.0 out of xmm7), with the node copied first 149, with a direction
-// pointer for the forward rows 158, the zero position or the inverse scale through the
-// existing setters 137/137; `up` declared just before the 0x11d000 call 77; branches
-// swapped (`if (!matrix)`) 163. Round 7 (lane 14): the staged cross product 77 (same code); node copy
-// first 107 (758 bytes; aligned 66, the markers base then stays in EBX); the cross product before
-// the forward copy 85; scale stored last 101 (766 bytes); forward locals read before the scale test
-// 236 (795 bytes).
-// Round 165: the five other position/forward/up declaration orders 77 (identical); forward rows before the
-// position block 198; cross product from the stored output forward 169 (758 bytes); forward rows with `+=`
-// 77 (identical); node matrix read through the source at each use 202 (caller 0x178360 86).
-// 236 (795 bytes). Round 99: the xmm rotation is one joint choice: retail's normalize puts up.i/up.j
-// in xmm5/xmm1, leaving xmm2-4 for forward across 0x11d000; ours puts them in xmm1/xmm2, forward in
-// xmm3-5. Cross product reading the stored forward field 169 (758 bytes, forward reloaded); up
-// declared first 77 (same code); normalize3d on 0x11d000's returned pointer 187; forward stored
-// before the 0x11d000 call 111; node copied first with the matrix read from the source at each use
-// 202 (768 bytes).
-// Round 170: node copy first 107 (the marker index extension hoists into the entry); with a per-arm
-// long index 107; with the branches inverted 173; forward components at function scope 77; read
-// before the position block 236 (795 bytes).
-// Round 172: the forward rows' accumulators follow row statement order (XMM5, XMM4, XMM3); statement
-// orders i,k,j / j,i,k / j,k,i / k,i,j / k,j,i 82/77/82/81/81.
-// Round 450: complete live marker fields alone/node-first/matrix-live/both
-// 215/218/223/223; with staged cross 215/218/223/223. All lose the matched caller;
-// original point, marker, normalizer and cross producers restored.
-// Round 51 (lane 16, fast with 0x178360): the inverse scaling through the existing vector3f_scale and
-// the null-scale zero position through real_point3d_set 77 (identical code, kept); the offset through
-// vector3d_from_points3d 190 (752 bytes), with vector3f_scale too 189; the output position zeroed
-// through real_point3d_set and then assigned 109 (766 bytes: the position pointer local gives retail's
-// `lea eax, [esi + 0x2c]` stores). A compile-only build does not model this function (retail keeps
-// forward in xmm2-4 across the LTCG 0x11d000 call).
-// Round 118 (lane 5, fast with 0x178360): node copy first with one function-scope marker pointer assigned
-// in each arm 198 (762 bytes); node copy first with the direction inputs read j, k, i 111 (758 bytes);
-// the direction inputs read j, k, i 81, read k, j, i 80; the cross product into a `left` local then
-// assigned 143 (792 bytes). 0x11d000 is a leaf using only xmm0/xmm1, so any of xmm2-xmm5 can carry
-// forward across it; retail picks xmm4/2/3 (the marker's k lands in xmm5 where ours takes xmm2).
-// Round 42 (lane 1, fast with 0x178360): node copy first re-viewed (107: the hoisted extension also
-// moves the markers base to EBX in the matrix arm; the xmm rotation is unchanged); with one marker
-// pointer taken before the matrix test 202 (747 bytes); up stored before the cross product 86; the
-// else arm copying forward before position 115 (762 bytes); `(long)marker_index` at the three
-// indexings 77 (identical); the zero position as a chained assignment 79.
-// Round 67 (lane 12, fast with 0x178360; plain 9): the forward rows through the existing vector3f_assign
-// (forward's fields then written only through the setter) give retail's forward block, xmm homes and
-// cross product: 77 -> 9 (758 bytes, kept). Left: retail copies the node index first (CX, before the
-// matrix load) where ours loads the matrix first and copies the index through DI, and keeps the markers
-// base in EAX (ours EBX). Node copy first on this body 101 (entry exact, but the marker index sign
-// extension hoists above the matrix test and is shared by both arms); with the matrix read in the arm
-// 101; declarations first 101; with an else-arm marker pointer 198; with the arms inverted 189. Earlier
-// on the old body: the position rows in each of the other five product orders (all rows or row 2 only)
-// 77 (identical); one or two unused locals 77; an extra named store to forward.i/j/k or position.x/y/z
-// in the else arm (diagnostic) 128/94/92/211/212/212.
-// Round 105 (lane 7, fast with 0x178360): node copy first 107 (758 bytes, entry as retail up to the hoisted marker
-// index extension; aligned 66), with the position/forward/up declarations above it 107, with up declared first
-// 107, with the forward inputs declared at function scope 107; node first with the marker fields read at each
-// use (no marker pointer) 218 (779 bytes, caller 0x178360 86).
-// Round 59 (lane 16, fast with 0x178360): node-first loses because VC merges the two arms' identical
-// leading `movsx edx, dx` into the entry, where retail's else arm extends into ECX (base in EDX, `lea eax,
-// [ecx + edx]`), so its arms differ. On node-first: the else arm copying a whole marker local 141 (774
-// bytes, 0x178360 56); the matrix arm reading the marker directly 218 (779 bytes, 0x178360 86); the arms
-// swapped 173; one markers base local for both arms 124; the scale test inverted (zero arm first) 156.
-// Round 70 (lane 12, fast with 0x178360): node-first re-measured 101 (the arms' identical `movsx edx, dx`
-// moves above the test); on it the matrix-arm marker as `source->markers + marker_index` 101, `matrix != NULL`
-// 101, one `markers` local for both arms 102 (0x178360 1); the parameters as (source, out, marker_index) or
-// (source, marker_index, out), the order retail's esi-before-eax setup suggests, 9/9 (callee unchanged, 0x178360
-// 2 each; with node-first 101/101), so the current order is retail's.
-// Round 260: null-arm point/vector setters, singly/both and node-first/reversed publication,
-// 210/215/193/208/212/191/193/191; native block-copy equivalents 9/9/9/101/101/101/9/101.
-// Setters lose the matched caller; native copies retain it but do not fix entry or index hoisting.
-// Round 260: a 600 s bounded search, 55 attempts (7 failed), none below 9.
-// Round 116: else-arm array base 40; with node-first 101; both arms' array bases with node-first 101;
-// reversed matrix-arm pointer addition 9, with node-first 101; reversed else-arm pointer addition 9,
-// with node-first 101; comma-sequenced node store and matrix initialization 101. Original body restored.
-// Round 123 (lane 8, fast with 0x178360): node-first merges `movsx edx, dx` upward because its else arm's index
-// takes EDX and its base EAX, where this order (and retail) has index ECX, base EDX. On node-first: the scale in a
-// local read before the marker 101; the node index through a local 101 (alone 9); the marker address by byte offset
-// 101; a reference to the else arm's position 101; a forceinline marker getter in the matrix arm, the else arm or both
-// 101/101/101 (alone 9/9/9); a matrix-arm base local 101 (alone 9). Diagnostic only: `> 0.0f` for the scale test (no
-// lahf) 193, alone 192: the matrix-arm base still avoids EAX, so the flags read does not explain it.
-// Diagnostics: with the else arm's marker reads removed the base folds (`add edx, [eax + 0xc]`, 234 with node first), so
-// the else arm's read of the same field is what makes it a temporary; with no node copy, node-first aligned 7 and the
-// base is still EBX. Retail's base takes EAX as the source dies; none of these forms gets that.
-// Round 42 (m3 lane 18, fast with 0x178360): the marker index parameter `long`, narrowed `(short)` at its uses with the
-// callers passing the long index, node copy first 101, in this order 9 (same code); node copy first with `matrix`
-// declared uninitialized and assigned after the copy 101; node copy first with `up` declared just before the 0x11d000
-// call 101; the scale read once into a local before the marker pointer 192.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
-	transform4x3f const *matrix = source->node_matrix;
 	point3f position;
 	vector3f forward;
 	vector3f up;
 
 	out->node_index = source->node_index;
+	transform4x3f const *matrix = source->node_matrix;
 	if (matrix)
 	{
-		s_effect_marker const *marker = &source->markers[marker_index];
+		s_effect_marker const *markers = source->markers;
+		s_effect_marker const *marker = &markers[marker_index];
 
 		if (matrix->scale != 0.0f)
 		{
@@ -1890,9 +1778,9 @@ void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *
 		{
 			real_point3d_set(&position, 0.0f, 0.0f, 0.0f);
 		}
-		real i = marker->forward.i;
-		real j = marker->forward.j;
-		real k = marker->forward.k;
+		real i = markers[marker_index].forward.i;
+		real j = markers[marker_index].forward.j;
+		real k = markers[marker_index].forward.k;
 
 		vector3f_assign(&forward,
 			matrix->forward.k * k + matrix->forward.j * j + matrix->forward.i * i,

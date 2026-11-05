@@ -366,6 +366,11 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // [546]; file-local inline or forceinline declaration 1069; each form alone on the body below 964/955/947/906/968/977/926, so
 // none is keepable. Plain check of the callers with `inline`, nothing lost, 0x1d24a0 861, but 0xf8eb0 946->1030, 0xd1e10 542->596,
 // 0x185be0 622->958, 0x1aa0d0 375->402, 0x2c0d60 882->952, 0xf6d10 749->759 (aligned mixed: three fall, three rise).
+// M3 lane 10 r73 (fast; aligned/masked in brackets, control 902 [681/535]): an empty else arm on the body block 1002 (4283) [690/542]; three-statement
+// scale helper re-measured 1181 (4026) [546/436], with that else arm 1185 [555/440], as plain `inline` 1181; one flags local for both entry tests 926
+// (4283) [686/546]; the element read through its array expression at the attached-object test 902 (same code); response fraction as a struct member
+// through a reference 926 (4283) [686/546]; const record flags 902 (same code). Two untried leads from matched 0x247fd0: `lea dst, [idx + base]` where ours
+// has `add idx, base; mov dst, idx` is the sum written twice; and an x87 store followed by a split memory compare wants the existing cross-file helper.
 // M383: Absolute-value APIs at entry/radial/planar bound families, subsets 1/2/4/3/5/6/7,
 // then all double APIs with real results: 900/927/944/931/945/974/975/974. NOT kept:
 // two-point entry lead fails the gate; native conditional bounds, helpers and full body restored.

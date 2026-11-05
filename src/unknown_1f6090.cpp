@@ -130,7 +130,7 @@ bool function_2702a0(long actor_index, long mode, long set, long target_mode, lo
 	point3f const *position, vector3f const *forward, point3f *out_position,
 	long *location, vector3f *out_forward, long *node_index);
 void function_1fa600(vector3f *vector, word flags);
-long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point);
+long function_26d100(vector3f const *up, point3f const *point, long *unknown, s_collision_result_1697c0 *collision);
 bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, vector3f *direction_out,
 	short *type_out, vector3f *movement_out);
 bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point);
@@ -724,7 +724,7 @@ void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f
 				collision.unknown24 = NONE;
 				function_210850(&entry->point, &entry_point);
 				function_1fa600((vector3f *)&point, node->flags);
-				if (function_26d100((vector3f const *)&point, NULL, &collision, &entry_point) != NONE)
+				if (function_26d100((vector3f const *)&point, &entry_point, NULL, &collision) != NONE)
 				{
 					vector3f const *normal = (vector3f const *)((byte const *)&collision + 0x28);
 					vector3f vector;

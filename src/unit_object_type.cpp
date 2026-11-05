@@ -449,7 +449,7 @@ struct s_damage_report
 };
 
 extern s_damage_owner const *g_467420;
-void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown);
+void __stdcall function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown);
 void function_d6a70(long object_index);
 void __stdcall function_caa60(long unit_index, long object_index, point3f const *point, bool knocked, bool force);
 void __stdcall function_bd020(long object_index);
