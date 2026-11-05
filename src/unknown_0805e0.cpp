@@ -265,6 +265,19 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // keep; `cmp ecx, -1` stays in the code). `index = *iterator` on the back edge 49-57h (forwarded before allocation, one web). An index
 // predicate helper, the found copy through `&g_4cf98c[index].player` or a getter, every test through a second lookup 49-53h. Left: index
 // and successor share a web in every form without a live re-use of the index, and only the forms with a live result hoist the mask.
+// M3 lane 4 r168 (one-file harness exact at 43, also at 37/42 for the forms that move the convention): names in three sort
+// positions for index/entry/successor/result on the current, separate-successor and early-return loops 43/51/49 in all 97
+// forms; a priming lookup before the loop and a second at its end with the tests as the loop condition 54 (retail's early
+// ESI save, `imul esi, esi` and cross-jumped back edge `cmp next, -1; je; mov esi, next; jmp`, but the successor in EDX and
+// no mask hoist); that as `for (;;) { result = tests; if (result) { copy; break; } ... }` 46 (retail's register plan, no
+// hoist), with the validity test as `(xuid != 0 || guest)` 41 (132 bytes: prologue, `mov al, 3`, loop and exit as retail,
+// the first guest test not threaded away); `(xuid != 0 || guest)` with early returns 44 (mask in BL), in the current loop 67
+// (140); value-context tests with early returns 49, `result = tests; ... break` 59 (135); the guest test repeated after
+// itself 71/43/38/70 (VC keeps both); an index-returning iterate helper in the condition 82 (99 bytes); the entry iterate
+// helper before the loop and at its end 64/56; advance-until-valid do-while 79/55/48, `for (;;)` 65; a carried successor
+// (`long index = next;` at the top) with value tests 59 (135), with early returns 52, the twice-used mask 67/51;
+// XOnlineIsUserGuest on the xuid flags compiles as the byte test. Among these, the twice-used mask in the current loop 67
+// and `result = tests; ... break` 59 re-measure listed forms (scores agree). All restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

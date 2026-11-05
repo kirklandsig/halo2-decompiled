@@ -322,6 +322,14 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // The negated j named for its three uses reaches retail's 3499 with the reference scale, planar copies and the complement, 758 (masked 152).
 // EBX save still in the prologue (retail pushes it after the 0x26c test, which shifts about 40 lines): empty else arm on the 0x26c test or the arg_8 test, both, a compiled-out loop at the
 // join, or around the whole middle: same code at 748. Retail re-reads its arguments from their stack homes per region (arg_0 in ESI at the top, arg_1 in ESI in the arm).
+// M3 lane 4 r168 (fast; a one-file harness does not reproduce this function, 844). New: the parameter as a function-scope
+// `vector3f const *const &` reference 750 (same code); the stuck test as `*arg_7 || !actor[0x5d0]` 750 (same code); the
+// definition test's arms swapped (`if (local_2) { ... } else` the 0x654 clear) 844 (3524 bytes); the final output stores
+// with arg_3 first 753; the first arm's 0x654 clear before its 0x655 set 749 (one point, under the bar). Re-measured
+// listed forms: arg_2 read directly 804 (LTCG passes it in EAX, frame 0x8c); the input copy before the position query
+// 758; the heading pointer right after the actor lookup 833 (3510 bytes); the reference declared at its first use 750.
+// Retail keeps arg_1 in EDI and reads arg_2 from its slot, loading it into EDI only for the long else arm (a memory
+// variable's loads combined per region); ours holds arg_2 in EBX from the prologue. All restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

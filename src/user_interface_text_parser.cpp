@@ -708,6 +708,11 @@ done:
 // join, before the call, after the call 44/44/44; name preset NONE with an else arm 44; two copies with an else arm 48; the copy calling 0x8cc20 directly 44;
 // the translator through an inline wrapper 44; a block-local buffer pointer 44; late-folded addresses: `g + k` at the copy 44, an inline scratch getter at the
 // copy 44, at both 44, a const reference at the copy 44 (the hoist stays in all of them).
+// M3 lane 4 r168 (fast; 0x22d503 and 0x22d52e matched): no untried natural form found. Re-measured listed forms (scores
+// agree): per-case translator calls with one copy at the join, retail's block order 42 (171 bytes), ascending 37 (171), the
+// tag read in each call 45 (171), with an explicit `default: break;` 42; `name_id = NONE` with a guard, one copy 54.
+// 0x2c9ddb's note records the same re-materialized address constant (&g_54e4a0), and retail's 0x22d503 reuses one only
+// when it is already in a register (the first copy's ESI destination).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

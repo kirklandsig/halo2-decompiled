@@ -1984,6 +1984,10 @@ void function_269250(long clump_index, long actor_index);
 // selection memory-only as retail, but the not-found path threads); the helper's exact shape, one level or both levels, 126/126 (39, same code). So the pool wins
 // only once the not-found path threads; retail has both.
 // MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
+// M3 lane 4 r168 (fast, this body 89). New: a 600 s permuter run (55 tries, none below 87); the selection as a dword 89
+// (same code). Re-measured listed forms: in-arm compare 126 (480 bytes); the walk as a for loop with the step in its init
+// and increment 339 (624 bytes), with the in-arm compare 343 (625; round 127 listed the pair as 343/339). Retail hoists the walk's pool field into EBX (reloaded after the bit scan uses EBX
+// as the mask) and keeps the selection memory-only; matched 0x26ae30's retail walk reads the pool each step. All restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
