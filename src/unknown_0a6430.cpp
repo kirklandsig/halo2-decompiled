@@ -40,6 +40,10 @@ PRIVATE byte *update_object_0a6430(long index)
 // with the 0x100 compare state-first 17; the 0x40 flag written in place at the store 36 (548 bytes).
 // Round 134: typed final/0x100/both object views 16/16/16; typed 0x2 header/object 16; count after
 // definition 16; final/0x100 masked index 16/16; const state pointer 16. Opening body restored.
+// Round 163: a named level, a named state byte, a named `state + 0x51`, the object read in place, a named
+// offset in the getter, an inline level getter, an inline definition lookup, the tag index read into a local (two
+// forms) 16 each; the 0x80 flag as a named bool 32 (550 bytes); the count zeroed after the definition read 20
+// (550 bytes, the tag pool load joins the head). Opening body restored.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

@@ -685,6 +685,9 @@ struct s_collision_result_buffer_1697c0
 // widened rounded-root/root-producer/reciprocal receivers 546/546/651;
 // float root/absolute with double reciprocal 651/651. NOT kept: five-point best
 // is below eight and length grows; double forms outline. Original helper/body restored.
+// Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
+// results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
+// contract or gain; original magnitude return, all consumers and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -972,6 +975,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 258/258/327/327; shared/test-owned real/const-real/double/const-double 258/258/327/327.
 // NOT kept: one-use scalar/result residence did not match; double forms grow to 1480/1444.
 // Original comparison producers, calls and complete body restored (fast control 258; full 257).
+// P345: Movement/attention/object admission-produced return results, subsets
+// 1/2/4/3/5/6/7 then separate false defaults: 378/335/335/369/369/323/358/356
+// (reduced control 341; full 257). NOT kept: extra SETG/SETNE result stores absent from
+// retail; original body restored; byte homes and direction-tail predecessor remain.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1431,6 +1438,13 @@ struct s_actor_looking_structure_view
 // and output 478 (660 bytes); score `dot3f(&directions[i], &forward)` 33; named angle with sine and cosine passed to the in-place
 // helper 146 (927 bytes); axis local in the loop body with the fraction before the copy 174 (910 bytes); `dot3f(axis, vector)` in
 // the helper plus the dot3f score 142 (926 bytes).
+// Round 86 (fast): k identity locals, k = 1..8, on the forward vector 33 at k = 1 and 23 otherwise; of the actor 141 (927 bytes); of the
+// axis in the helper 61/61/61/173/173/173/83/61; of the helper's vector 23 each; on the call's axis argument 173/173/61/61/61/61/83/61; on its
+// vector argument 23 each. Compile-only (register-mapped rotation region, control 15): real chains on cosine, sine and projection and
+// axis chains for the dot or the cross only, none below 15; axis components in named reals, six orders, 46-81. Retail's axis j reads lead two
+// products, an order the plain field reads have not given.
+// Source forms (fast): fraction declared before the copy and set after the rotate 136 (927 bytes); `best_score < score` 23; the clamp as
+// `score < 0.6f` 23; the angle named before the copy 33; the selected test as `dot < 0.7f` 23.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

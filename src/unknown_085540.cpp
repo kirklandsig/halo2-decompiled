@@ -813,82 +813,6 @@ static inline void view_buffer_read(c_simulation_view *view, long count, void *d
 }
 bool function_1995a0(const byte *source, dword source_size, byte *destination, long *compressed_size, dword capacity, long level);
 
-// score 14 (was 14): retail's code apart from two single differences: retail stores kind 1
-// between the header's two zero stores (ours after both), and forms the data address with
-// `add eax, ebp` (ours `lea ecx, [eax + ebp]`). The loop runs while the writes succeed: the
-// unrotated head (zero and kind 1 before the count test, ring base rebuilt each pass) only
-// appears when the loop tests a value the failures clear, and the compressed size has to end
-// with its block for the remaining count to share its slot.
-// Round 81: `while (result)` with the terminal record's break 14 (kept); the same with a named
-// `byte *data = destination + offset;` for the data write 2 (the add is retail's; only the kind
-// store order is left, so it waits on a match); harness: `= { 1 }`, union or nested-struct
-// initialisers, kind set in both arms, `|=`/`++` kind, an init helper, two partial memsets (the
-// order is retail's, but the zero then feeds `cmp eax, ecx`), a named count test, the clamp as an
-// if, offset declared at the top (worse), write_wrapped parameter orders, /G5-/G7 and /Ob2: none
-// moves the kind store.
-// Earlier (score 49, the old for-loop body): left were the prologue (retail pushes
-// ebp before ebx and copies the count into the compressed size's slot), the loop head (retail sets
-// the header's zero and kind 1 at the head, before the count test, and rebuilds the ring base each
-// pass; ours peeled the test) and the count and data-address registers in the loop body.
-// Retail's unrotated head only appears with a flag tested at the head (a bool set by the count
-// test, or `while (!done)` with `done` set by the terminal record), which the compiler keeps;
-// with the compressed size scoped to the compressor call, a `remaining` copy made on success and
-// single-exit breaks that form gives 20 (aligned 10); with the offset zeroed beside the count
-// copy and the offset advanced before the count it gives 14 (aligned 4), but every flag-free
-// spelling rotates the loop (128), so it is not kept. Its two single differences: retail sets
-// kind 1 between the two zero stores and forms `destination + offset` with `add eax, ebp` (ours
-// `lea ecx, [eax + ebp]`).
-// Tried: flag 130; plus remaining 58; scoped 51; copy on success 38; failures returned 63;
-// single-exit breaks 38; success first 20; then element address 20; offset first 20;
-// header = { 1 } 22; flag before the header 125; count before cursors 24; all of it without the
-// flag 128; direct view plus writer forceinline 93; unsigned writer result 93; writer reference 93;
-// native count 93; unsigned offset 93; word kind 93; named packet record 93; moving payload
-// pointer 144; terminal-record do loops 89; positive-chunk finalization 85. On the 20 form: the
-// view read through its address or directly 20/20; offset declared at the top 42; `&destination[offset]`,
-// a const void cast or `offset + destination` 20 each; remaining declared first 20; a named
-// condition or a plain test 128; offset stored before the size 66; ring base first 34;
-// `while (result && !done)` 136; `while (!done)` 20; a named chunk size 111; view count first 24;
-// offset zeroed with the count copy 18; then offset advanced first 14. On the 14 form: header
-// `= { 0 }` 21; `memset(&header, 0, 8)` 14; helper source before count 14; byte data cast 14;
-// destination read once through its address 14; a void destination 14; dword offset 14; offset
-// declared first 14; word size 15; the terminal record at the loop head with a break 128; a
-// break to a terminal record after the loop 159.
-// Round 95 (lane 14's 14 form reproduced; one-file harness exact for it): deleting any other
-// statement moves neither single, so both are local. `add eax, ebp`: `&destination[offset]`,
-// `offset + destination` or a const void cast 14 each; the real s_ring_buffer::write at the data
-// write 162 (stays out of line); that method declared inline in its file 14 (LTCG inlines it with
-// the same `lea ecx`; 0x869a0 2 -> 99); harness: byte source, forceinline copy, position local,
-// size local, kind cast, `memset(&header, 0, 8)`, header declared outside the loop, word kind,
-// a pointer-based kind store, `0 < remaining`, a long flag: no change.
-// Round 22 (one-file harness with src/unknown_199560.cpp, exact): `header.size = 0;` or
-// `header.offset = 0;` after the kind 14/14; the header value-initialised from a named type
-// (`= s_header()`, declared or assigned) 24/24; `= { 0, 0, 0 }` then the kind 117.
-// Round 84: the terminal arm written first 14; memset and kind 1 in each arm 74; a value-initialised
-// header (`= s_header()`) 24 (410 bytes); the clamp as `remaining < 1024 ? remaining : 1024` 17; a
-// do/while under `if (result)` 14. Compile-only probes (a constructor, a constant zero header copy,
-// a memset of a copy, bitfield or union kinds, `*(char *)&kind`, a pointer memset) all store both
-// zeros before the kind; no other retail function stores between an 8-byte memset's two halves.
-// Round 89, each with the named data pointer: two partial memsets 18; direct offset zero after
-// the first partial memset 112; explicit field stores 118; aggregate `= { 0 }` 9; named-type value
-// initialization 17; early data address with two partial memsets 18; header outside the loop 18;
-// named positive-count test 18; terminal size memset 18. All restored because none matched.
-// Round 137 (lane 4), each with the named data pointer (2): `header.offset = offset;` before the size in both arms
-// 56 (the offset stores merge into the head); the offset stored once in the head before the kind 126 (414 bytes;
-// stores keep program order); two partial memsets 18 again (head store order is retail's, but the zero is a shared
-// constant: `cmp eax, ecx` and the terminal `mov word [esp+0x16], cx`), with `remaining >= 1` 21, `0 < remaining`
-// 18; `= { 0 }` in place of the memset 9 (409 bytes); permuter 2.
-// Round 49: memset and kind 1 in each arm 74 (424 bytes; a /FAs compile hoists the arms' stores into retail's
-// zero/kind/zero head with `test eax, eax`, but LTCG keeps them in the arms); a named header type 14; header
-// declared at function scope 14; with the named data pointer: the header at function scope 2, the named type 2.
-// Round 31 (lane 18, fast): the header as a union with a 64-bit member cleared by assignment 25 (408 bytes;
-// the zero becomes a shared register and the kind still follows both zero stores), with the named data
-// pointer 20; a copy from a static const zero header 120 (419 bytes); the data address as `destination +
-// header.offset` 106 (410 bytes), as `header.offset + destination` 106. Original body restored.
-// Round 98: a four-byte clear, kind, then a direct offset zero 111 (400 bytes); two partial clears with
-// the terminal arm first and the data pointer 18, also with the terminal buffer declared first 18; a dword
-// first-half view with the offset memset 18, with kind `+= 1` 18; the full clear and kind `+= 1` with the
-// data pointer 10 (interleaves the stores but emits `inc` and moves the count test), with a named positive
-// test 10; kind `= !kind` there 116 (414 bytes). Original body restored.
 // @retail 0x86800
 bool function_86800(dword capacity, c_simulation_view *view, dword source_size, byte *destination)
 {
@@ -906,16 +830,18 @@ bool function_86800(dword capacity, c_simulation_view *view, dword source_size, 
  }
  while (result)
  {
-  struct { short kind; short size; long offset; } header;
-  memset(&header, 0, sizeof(header));
-  header.kind = 1;
+  struct s_chunk_header { short kind; short size; long offset; };
   if (remaining > 0)
   {
+   s_chunk_header header;
+   memset(&header, 0, sizeof(header));
+   header.kind = 1;
    header.size = (short)(remaining > 1024 ? 1024 : remaining);
    s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
    header.offset = offset;
+   byte *data = destination + offset;
    if (view_buffer_write(buffer, sizeof(header), &header) == NONE ||
-    view_buffer_write(buffer, header.size, destination + offset) == NONE)
+    view_buffer_write(buffer, header.size, data) == NONE)
     result = false;
    else
    {
@@ -926,6 +852,9 @@ bool function_86800(dword capacity, c_simulation_view *view, dword source_size, 
   }
   else
   {
+   s_chunk_header header;
+   memset(&header, 0, sizeof(header));
+   header.kind = 1;
    header.size = 0;
    s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
    header.offset = offset;
@@ -1311,6 +1240,12 @@ bool function_68670(byte *source, long size, void *block);
 // 24 and the payload passed as `&payload` 24 (both re-measured on this body: round 34 listed them on its 21 form);
 // the cases in source order 1, 0, 2 24; the header read with a literal 8 24 (all identical code). Left as before: the first read keeps the start in ESI across 0x1a19a0, and 0x68670's
 // arguments are set up ESI before EAX (retail EAX first): BLOCKED-BY 0x68670 (contributor code, single caller).
+// M3 lane 10 r71 (fast; aligned in brackets, base 24 [9]): first-read forms without a helper offset parameter: a getter member for the
+// read position 24 [9]; the read call in its own inline helper 121 (554) [25]; a `long &start` reference for read and update 137 (562) [16];
+// the read through the view with the buffer pointer taken after it 24 (556) [5]; a real ring member at +0x9c in the view class (`&view->ring`
+// at all five sites) 24 [9]; ring local with plain statements and no helper 153 (534) [52]; ring local + read call + advance helper taking the
+// view 121 (554) [25], taking the ring 154 (533) [51]. Control: the 2 form re-measured 2 [2]; it needs the ring local's `start` evaluated by the
+// caller while the callee's receiver comes from the helper's own derivation. Case 2's two loads stay BLOCKED-BY 0x68670.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

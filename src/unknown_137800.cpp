@@ -37,14 +37,12 @@ struct s_137801
 long function_1376c0(long model_index, s_node_matrix *matrices, transform4x3f const *nodes);
 transform4x3f const *__stdcall function_bd610(long arg_1, byte const *arg_2, transform4x3f const *arg_3);
 
-// @retail 0x137800
-void function_137800(long arg_2, long arg_1, transform4x3f const *arg_3, byte const *arg_4, long arg_5, bool arg_6, s_137801 *arg_7)
+/* builds the node matrices for 0x137800. The 16-byte aligned array lives here because a function that declares one itself
+   moves the register arguments of the functions it reaches to the stack, and LTCG sets those conventions before inlining */
+PRIVATE __forceinline void node_matrices_build(long arg_1, transform4x3f const *arg_3, byte const *arg_4, s_137801 *arg_7,
+	s_137800 *local_2, long local_3)
 {
 	__declspec(align(16)) s_node_matrix local_1[255];
-	s_137800 *local_2 = (s_137800 *)g_4e3b44[arg_1 & 0xffff].bytes;
-	long local_3 = local_2->field_3c[arg_5];
-	if (!arg_6 && arg_2 != NONE)
-		arg_3 = function_bd610(arg_2, arg_4, arg_3);
 	s_node_matrix *local_4 = (local_2->field_4 & 4) ? local_1 : arg_7->field_44;
 	arg_7->field_2 = (short)local_2->field_1c;
 	long local_5 = function_1376c0(arg_1, local_4, arg_3);
@@ -115,4 +113,14 @@ void function_137800(long arg_2, long arg_1, transform4x3f const *arg_3, byte co
 			arg_7->field_4[local_15][1] = 0;
 		}
 	}
+}
+
+// @retail 0x137800
+void function_137800(long arg_2, long arg_1, transform4x3f const *arg_3, byte const *arg_4, long arg_5, bool arg_6, s_137801 *arg_7)
+{
+	s_137800 *local_2 = (s_137800 *)g_4e3b44[arg_1 & 0xffff].bytes;
+	long local_3 = local_2->field_3c[arg_5];
+	if (!arg_6 && arg_2 != NONE)
+		arg_3 = function_bd610(arg_2, arg_4, arg_3);
+	node_matrices_build(arg_1, arg_3, arg_4, arg_7, local_2, local_3);
 }
