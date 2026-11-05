@@ -1362,6 +1362,7 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax C (11-04): no new form, no lower score: an item_count declaration initialiser moves its home to ebp-0xc but grows the frame to 0x58 and spills the mode (121), dropping the branch-one zeroing gives 137, seven declaration orders give 123.
 // MiniMax H (11-03): no new form, no lower score; ours puts item_count at ebp-8 and index_count at ebp-0xc where retail puts index_count at ebp-8 and item_count at ebp-0xc, and the permuter's best candidate (the mode-one call to 0x199dc9 with its two arguments the other way round) gives 79 in both images, under the keep bar.
 // MiniMax I (11-01): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score: the index_count/item_count homes stay swapped and the tail fill stays a pointer loop.
@@ -2718,6 +2719,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // Round 107: single-output helper returns text_a/text_b/bitmap_a/bitmap_b 95 each; first-loop
 // item/player/local declaration orders player-item-local, local-player-item, local-item-player and
 // item-local-player 95 each. All the same code; original helper and declarations restored.
+// Round 55 (m3 lane 15, fast): the spill slots form one list, +0x1c, +0xc, -0x10, -0xc, -0x14, -8; with the separate counters ours fills it text_a,
+// text_b, shown count, player/no_team, bitmap_a, bitmap_b and retail bitmap_b, text_a, text_b, shown count, player/no_team, bitmap_a, so retail has
+// bitmap_b one step ahead of all five. Tried on the plain body: the helper taking bitmap_b first 95; the second loop declaring bitmap_b first 95; that with
+// bitmap_a and text in reverse 95; bitmap_b stored first in every arm of the helper 177 (932 bytes); players[i] named once in the voice block 95 (same code).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

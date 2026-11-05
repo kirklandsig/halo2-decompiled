@@ -33,31 +33,30 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
 
 PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 {
-	real result;
-	real local_0 = (real)sqrt(arg_0.k * arg_0.k + arg_0.j * arg_0.j + arg_0.i * arg_0.i);
-	if (fabs(local_0) < 0.0001f) result = 0.0f;
-	else result = local_0;
-	return result;
+	real local_0 = (real)sqrt(arg_0.i * arg_0.i + arg_0.j * arg_0.j + arg_0.k * arg_0.k);
+	if (fabs(local_0) < 0.0001f) local_0 = 0.0f;
+	return local_0;
 }
 PRIVATE __forceinline real function_29ab92(vector2f *arg_0)
 {
-	real result = 0.0f;
 	real local_0 = magnitude2d(arg_0);
 	if (!(fabs(local_0) < 0.0001f))
 	{
 		real local_1 = 1.0f / local_0;
 		arg_0->i = local_1 * arg_0->i;
 		arg_0->j = arg_0->j * local_1;
-		result = local_0;
 	}
-	return result;
+	else
+		local_0 = 0.0f;
+	return local_0;
 }
+
 PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 {
 	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
 }
 
-// score 345 (was 345): frame 0x58 versus 0x64 (query output vector shares the magnitude copy slot) and magnitude/vector/query homes remain; actor EAX and stack input now agree.
+// score 306 (was 345): frame 0x64, retail's entry copies and retail's 1863-byte length now agree; saved-direction homes, planar operand order and xmm numbers of the floors remain.
 // Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
 // MiniMax D: the requested direction read through its own address (a stack argument, as
 // retail's) 366, not kept (an address-taken read needs a byte match); the magnitude summed in
@@ -345,6 +344,28 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // DH355: Plain indexed working/constant/history coordinate-copy subsets and all
 // with full pre-update direction: 345/502/355/502/355/490/490/550. NOT kept: ties/regressions and
 // nonnative extents; original vectors, observations, helpers and complete body restored.
+// Round 52 (m3 lane 2, fast; no-stack = aligned count ignoring stack offsets; base 345, no-stack about 225): CALL FIX: retail's 0x29b2e0 reads
+// its first vector from EBX and retail's EBX at the call is the +0x290 pointer, so retail passes (arg_0, arg_1, local_3, &local_4, speed,
+// &local_4); ours passed &local_4 twice, which is why the pointer left EBX. Fixed call 351 (1852 bytes); with whole-struct entry copies (now
+// retail's entry code) 399 (1841, no-stack 163); in-place zero results in both magnitude helpers 361 (1824, 148); magnitude sum written
+// i, j, k 355 (146); default-first floors and in-place clamp 350 (131); the tail written from retail's listing (saved direction copy before the
+// call, scale read before the planar step, output clamps in place) 280 (1873, frame 0x64); fresh speed local and separate correction vector
+// 278 (142); current+correction sums and a named complement 267 (1877, 134), which reads the +0x50 scale into a one-use local before the planar step as
+// retail does (match-only; the same body reading the field at its use 306, 1863 bytes, no-stack 145, kept: local_2 then loses its +0x10 slot). On the 267 form: the saved direction by fields 311, as two reals 335
+// (frame 0x5c), through a pointer 266 (one-use pointer, not kept); ternary zero floor 307, ternary squared floor 267, ternary turn floor 267
+// (no-stack 171); planar vectors declared in other orders 267 (same code); flagged settings bodies in a compiled-out loop 345 each on the old
+// body; whole-struct copies alone (old call) 442. Diagnostic: identity pointer locals before the planar step k=1..7
+// 267/267/266/266/267/267/267 (k=2-4 flip the dot's operand order to retail's). What is left: the saved direction's i stays in ESI across the
+// call and the planar copy after it uses integer moves in retail (ours reads the saved copy directly with float moves, so local_2 takes ESI);
+// planar #2 reads x first where #1/#3 read y first and #1/#3 multiply y load-first (operand-state flips with symbol numbering); xmm numbers of
+// the floors (zero web stays separate from the floor value).
+// Same round, on the kept 306 form (fast): the file's clamp helper at the four clamps or if/else clamps 306 (same code; helper kept); names for the
+// vectors, definition and magnitude 306 (same code: names do not order these slots). Match-only leads: the planar copy after the call as a whole
+// `vector2f` read of the saved direction (`*(vector2f const *)&saved`) gives retail's ESI for its i, 305 (no-stack 113); that with the one-use scale local
+// 302 (1869 bytes, no-stack 103, retail's local_2 slot); also storing the correction in the output vector 303 (retail's shared +0x38 home for its i, but
+// the vector homes stay swapped); saved direction as a planar vector copied before the call 351 (1841, frame 0x60); planar copy before the call with no
+// saved vector 370 (1810, frame 0x58). Left on the 302 form: the working and output vector homes swapped (+0x38/+0x44), planar #2's x-first order and #1's load-first y,
+// floor registers, the zero web apart from the turn floor, and row order of the blend.
 // DH360: Explicit epsilon-test truth in existing magnitude/planar helpers, bool/byte/short/long,
 // eight at 345. NOT kept: unmatched one-use predicates do not recover the 0x64 frame or separate
 // magnitude/query homes; original helpers, all native copies and complete body restored.
@@ -376,9 +397,9 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	if (*(long *)(local_0 + 0x26c) == NONE)
 		*(long *)(local_0 + 0x7fc) = function_1f5f30(arg_0);
 	vector3f const *local_3 = (vector3f const *)(local_0 + 0x290);
-	vector3f local_4 = { local_3->i, local_3->j, local_3->k };
+	vector3f local_4 = *local_3;
 	vector3f local_5 = *g_4687a4;
-	vector3f local_6 = { g_4687a4->i, g_4687a4->j, g_4687a4->k };
+	vector3f local_6 = *g_4687a4;
 	point3f local_7;
 	function_b9dd0(arg_1, &local_7);
 	real local_9 = function_29ab91(*arg_2);
@@ -404,50 +425,58 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 		real local_17;
 		function_2922b0(arg_0, arg_1, &local_4, &local_6, &local_16, &local_17, true);
 		if (function_30bf0(&local_4) == 0.0f) local_4 = *local_3;
+		real local_19 = 0.05f;
 		real local_18;
 		if (*(real *)(local_0 + 0x47c) != 0.0f)
 			local_18 = *(real *)(local_0 + 0x47c);
 		else
 		{
-			real local_19 = local_14 * local_14;
-			if (!(local_19 > 0.001f)) local_19 = 0.001f;
+			real local_24 = 0.001f;
+			real local_25 = local_14 * local_14;
+			if (local_25 > local_24) local_24 = local_25;
 			real local_20 = local_2->field_1c * 0.5f;
 			real numerator = local_20 * local_20;
-			local_20 = numerator / local_19;
+			local_20 = numerator / local_24;
 			real local_21 = local_13.i * local_15.i + local_13.j * local_15.j;
-			if (!(local_21 > 0.0f)) local_21 = 0.0f;
-			real turn_weight = (1.0f - local_21) * 0.5f;
-			real scaled_ratio = local_20 * 0.5f;
-			local_18 = turn_weight * scaled_ratio * 4.0f;
+			local_20 = local_20 * 0.5f;
+			real local_26 = 0.0f;
+			if (local_21 > local_26) local_26 = local_21;
+			local_18 = (1.0f - local_26) * 0.5f * local_20 * 4.0f;
 		}
-		real local_19 = local_2->field_4c > 0.05f ? local_2->field_4c : 0.05f;
+		if (local_2->field_4c > local_19) local_19 = local_2->field_4c;
 		local_18 = function_29ab93(local_18, local_19, 1.0f);
 		if (!(local_18 > local_17)) local_18 = local_17;
-		vector2f local_20 = { local_4.i, local_4.j };
-		function_29b2e0(arg_0, arg_1, &local_4, &local_4, local_18, &local_4);
+		vector3f local_27 = local_4;
+		function_29b2e0(arg_0, arg_1, local_3, &local_4, local_18, &local_4);
+		vector2f local_20 = { local_27.i, local_27.j };
 		*(real *)(local_0 + 0x668) = local_18;
 		function_29ab92(&local_20);
-		local_18 = function_1f9e70(arg_0, arg_1, (point2f const *)&local_7,
+		real local_30 = function_1f9e70(arg_0, arg_1, (point2f const *)&local_7,
 			&local_13, &local_15, &local_20, NULL, local_9, false) * local_2->field_50;
 		*arg_6 = false;
-		if (local_18 > local_16) local_18 = local_16;
+		if (local_30 > local_16) local_30 = local_16;
 		vector3f local_22;
-		local_22.i = local_18;
-		local_22.j = local_18 * 0.0f;
-		local_22.k = local_18 * 0.0f;
+		local_22.i = local_30;
+		local_22.j = local_30 * 0.0f;
+		local_22.k = local_30 * 0.0f;
 		if (local_2->field_68 > 0.0f)
 		{
 			vector3f const *local_23 = &local_1->velocity;
 			real local_24 = local_23->k * local_3->k + local_23->j * local_3->j + local_23->i * local_3->i;
-			real local_25 = local_18 - local_24 / local_2->field_68;
+			real local_25 = local_30 - local_24 / local_2->field_68;
 			long local_26 = local_25 < 0.0f ? -1 : 1;
 			local_22.i = (real)(sqrt(fabs((double)local_25)) * local_2->field_6c * local_26 + local_22.i);
 		}
-		vector3f history = *(vector3f const *)(local_0 + 0x678);
+		vector3f const *history = (vector3f const *)(local_0 + 0x678);
 		real history_weight = local_2->field_64;
-		local_5.i = (local_6.i + local_22.i) * (1.0f - history_weight) + history.i * history_weight;
-		local_5.j = (local_6.j + local_22.j) * (1.0f - history_weight) + history.j * history_weight;
-		local_5.k = (local_6.k + local_22.k) * (1.0f - history_weight) + history.k * history_weight;
+		vector3f local_31;
+		local_31.i = local_6.i + local_22.i;
+		local_31.j = local_6.j + local_22.j;
+		local_31.k = local_6.k + local_22.k;
+		real local_32 = 1.0f - local_2->field_64;
+		local_5.i = local_31.i * local_32 + history->i * history_weight;
+		local_5.j = local_31.j * local_32 + history->j * history_weight;
+		local_5.k = local_31.k * local_32 + history->k * history_weight;
 		local_5.i = function_29ab93(local_5.i, -1.0f, 1.0f);
 		local_5.j = function_29ab93(local_5.j, -1.0f, 1.0f);
 		local_5.k = function_29ab93(local_5.k, -1.0f, 1.0f);

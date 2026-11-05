@@ -1390,6 +1390,9 @@ long function_2197f0(real gain);
 // M387: Composite fraction eager division/select/positive and complementary complete results,
 // original then eager simple upper caps: 160/160/163/159/140/140/143/101. NOT kept: no gain;
 // original body restored, native reciprocal/elapsed roles and first gain-load schedule remain.
+// B449: Entry gain real construction/default-member/default-assignment/explicit-copy acquisition,
+// each with encoded/real zero endpoints: 232/232/94/94/228/228/187/187.
+// NOT kept: no exact construction repair; original entry gain, endpoint domain and complete body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2466,6 +2469,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // a short chunk index 17; literal zero chunk index and fade times 17, as one chained store 19.
 // Round 73 (plain): flag0 set before the start-time store 18; `delay + SOUND_SYSTEM->time` 17;
 // `sound->flags |= 1` for flag0 17, before the start-time store 18; `delay + time` with flag0 first 18.
+// P346: Existing word/byte delayed-start writers with selected-permutation and delay results:
+// reduced 198/204/198/204/198/204/198/204 against control 197 (868 bytes; full 17/865).
+// NOT kept: reduced scores and byte-writer length regress; all one-use results, include and body restored.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {

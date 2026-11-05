@@ -263,6 +263,11 @@ void c_widget::v16()
 // copied at the body's head 2; the step assigned in a do-while condition 2; a function-scope current assigned in
 // the while condition 2; the direct two-arm step with a condition-declared current 2; native base traversal and
 // calls with that condition 2; base entry/step with a derived condition value 2. Original body restored.
+// Round 72 (m3 lane 10, fast): a done flag at the loop head, `while (!found && widget)` 32 (84 bytes: retail's copy-then-test and
+// `push esi`, but the loop stays top-tested and shares one exit); `do {} while (false);` between entry and loop 2, with the if/else step
+// 35 (92 bytes); results bound to const references at entry and step 2; widget initialised to NULL with a named first value and if/else
+// entry and step 12. One-file harness (exact here): a separate first value at the entry always takes the widget's register and its test
+// is threaded into the body; the long-typed result, a named long first value and a `this` widget change nothing.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

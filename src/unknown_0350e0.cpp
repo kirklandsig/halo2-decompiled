@@ -149,6 +149,8 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // original/twice-used angle graphs: 355/355/368/368/357/357/362/362. NOT kept: one-point
 // lead below gate; every frame stays 0x98 versus 0x90. Both original helpers, real-angle contract
 // and full body restored; concurrent x87 inputs and scalar publication homes remain, caller exact.
+// F392: Actual aggregate forward/left/up row producers in the existing builder, seven subsets then complete aggregate rotation-result initialization: 391/421/406/440/425/491/507/507. Forward+left, forward+up and complete rows recover frame 0x90 but grow/regress.
+// NOT kept: no exact match. Original two helpers and complete body restored; native concurrent x87 inputs, frame 0x90 and scalar publications remain unresolved.
 // B446: Existing builder owns step/rate multiplication, direct products, real/double
 // angle and native trig, original/native in-place publication: 356/356/357/357/368/368/370/369. NOT kept:
 // all tie or regress; original private helper contract, helpers and entire body restored.
@@ -1785,9 +1787,15 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // DH366: Original final projection zero/nonzero admission, bool/byte/short/long outcomes:
 // 193/193/193/193/193/193/193/193. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// DH373: Complete default-mode admission/rejection before the original switch,
+// bool/byte/short/long: eight at 286 (696 bytes; caller 610). NOT kept: regression and
+// larger length gap; original dispatch, projections, helper and result restored.
 // AC546: Alias-safe second cross in its actual first-cross receiver, native/library/setter/
 // scalar output: ordinary 421/421/198/197, forced 247/247/198/197. NOT kept: no gain;
 // ordinary value copies worsen the caller to 610; original private helper and full body restored.
+// DH366: Original final projection zero/nonzero admission, bool/byte/short/long outcomes:
+// 193/193/193/193/193/193/193/193. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -1931,6 +1939,10 @@ real game_time_get_seconds();
 // F372: Internal hash, animation/sample and draw workspace role names, seven
 // subsets then all with offset/reflection names: eight at 507. Native frame and
 // output homes remain; original names, scopes, APIs and complete body restored.
+// N385: Coherent forward-component, three-use far-angle and paired camera-axis snapshots,
+// seven subsets, then complete inputs with the native forward vector value: 586/537/583/507/586/537/583/519.
+// NOT kept: no qualifying gain or equality; all scalar/copy input forms and complete body restored.
+// Native frame 0x94, addressed outputs and definition/NONE homes remain.
 // F390: Actual position/direction/color eight-byte alignments, seven subsets, then sampled-color
 // alignment: 584/584/594/564/567/567/568/568. NOT kept: each introduces a frame-pointer prologue
 // absent from retail; complete original output alignments, API and body restored. Native
@@ -1945,6 +1957,8 @@ real game_time_get_seconds();
 // seven subsets then immutable original clock: 547/560/533/547/539/542/539/539. NOT kept: all regress;
 // native 0x94 frame, output homes and definition/NONE roles remain. Original field reads, time updates,
 // vector transfers, APIs and whole body restored.
+// P347: Complete first/subsequent-entry scale/angle/both/both-with-predicate outcomes, first/subsequent arm priority:
+// 537/512/535/535/537/512/535/535. NOT kept: All eight regress and retain frame 0x90 versus native 0x94. Original scalar producers, tint work, APIs and complete body restored.
 // N385: Coherent forward-component, three-use far-angle and paired camera-axis snapshots,
 // seven subsets, then complete inputs with the native forward vector value: 586/537/583/507/586/537/583/519.
 // NOT kept: no qualifying gain or equality; all scalar/copy input forms and complete body restored.
@@ -2580,12 +2594,18 @@ real magnitude3d(vector3f const *v);
 // named double inverse-cosine result 196; named cosine complement, existing bounded
 // helper in fallback, named axis projection: 170/170/170. Original body restored;
 // raw-length/promoted-dot homes remain. NOT kept: no eligible gain.
+// M392: Computed paired trig/projection/rotation-size double receiver families, subsets 1/2/4/3/5/6/7 then immutable all: 299/294/277/296/354/350/350/350.
+// NOT kept: nonexact precision/lifetime forms; native raw-length and promoted-dot homes remain. Original complete body restored.
 // B440: Independent angle-only and complete rotation-admission outcomes in
 // bool/byte/short/long: eight 170 at 1045/1045 bytes. NOT kept: no equality
 // or gain; raw-length and promoted-dot homes remain. Original full body restored.
 // B442: Existing complete axis-angle matrix with returned/axis/output/in-place
 // vector application, matrix at producer/entry: 388/248/327/242/388/248/327/242.
 // NOT kept: changed floating expansion misses equality and grows; original full body restored.
+// AC549: Common final vector across rotation/fallback, separate/consumed rotation
+// receivers with native/setter/memcpy publication, then native copies with entry
+// declarations: 179/179/180/180/179/179/179/179. NOT kept: raw-length/promoted-dot
+// homes persist at frame 0x38; 1054/1033 versus 1045 bytes. Original body restored.
 // J256: Complete admission/axis dot loops, parallel product parts, immutable and separated producers:
 // 184/170/184/170/170/170/170/170. NOT kept: admission loops regress and every other form ties 170; raw-length and promoted-dot homes do not recover
 // Original executable source restored; native frame and allocation gaps remain.
@@ -2770,6 +2790,12 @@ s_cached_input_list g_5234e8[4];
 // M387: Radius-first position native/memcpy/memmove/setter captures, without/with list:
 // 147/147/136/162/136/136/132/150 fast (control 147, full 113). NOT kept: native/library
 // copies equal preview/list-only controls; memmove adds a call and 0xa4/0xa8 frames, setter shrinks. All restored.
+// AC549: Progressive object classification long/dword/bool/byte, without/with
+// once-read list: 143/132/143/132/142/140/142/140 fast (control 146; full 113).
+// NOT kept: isolated full-width lead only three; snapshot retains list EBP and
+// adds a validity Boolean absent natively; narrow forms miss equality. Original body restored.
+// M392: Fast control 147, full 113; Repeated-use source/tag/destination pointer name priorities, subsets 1/2/4/3/5/6/7 then center point: 147/147/147/147/147/147/147/147.
+// NOT kept: no eligible native list/frame/output ownership repair; original names and body retained. Original complete body restored.
 // J256: Coherent cache-update/filter/queued-producer inline contracts and forced updater expansion:
 // 123/113/123/113/123/113/123/1561. NOT kept: no target gain; updater inline loses a matched caller and forced expansion loses two, with length growing to 1660
 // Original executable source restored; native frame and allocation gaps remain.
@@ -2967,6 +2993,8 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // expansion, complete forced expansion and complete clamp reference input: eight at 317. Original
 // alias-safe copies, pointer contracts, helpers and whole body restored; frame 0x30, native
 // prefix/state and ordinal homes plus decay rotation remain.
+// F392: Distinct-entry admission in the existing four-use swap with standard capture/publication copy subsets, then original assignments: 407/407/407/407/407/407/407/407.
+// NOT kept: no exact match. Original alias-safe assignment helper and full body restored; native state/prefix/ordinal homes remain unresolved.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3183,6 +3211,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // M387: Existing projection producer as two genuine matrix-row iterations, long/int/dword/uint,
 // full expressions then complete accumulators: 498/498/498/498/510/510/510/510. NOT kept:
 // frames 0x68/0x70 grow beyond native 0x38; original helper/body restored, velocity/projection homes remain.
+// AC549: Complete actual input fields, scalar/vector/array/named-record triples,
+// each with direct typed accesses or one typed receiver: eight 486s, frame 0x60
+// versus 0x38, 2036/2035 bytes. NOT kept: no velocity/frame/projection repair;
+// original raw input observations, types and entire body restored.
+// M392: Actual three-pass main ordinal int/uint/dword/short/word/schar/byte/char: 486/492/492/485/485/485/485/485.
+// NOT kept: no eligible native frame and stored-velocity recovery; original long ordinal retained. Original complete body restored.
 // J256: Native maximum/divisor/projection-scale observation subsets and complete projection initialization:
 // 508/490/518/495/496/515/504/504. NOT kept: every form regresses from 486; maximum observations recover only four frame bytes, while scale capture enlarges it
 // Original executable source restored; native frame and allocation gaps remain.
@@ -3571,9 +3605,15 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // DH366: Original-site first raw/clamped fade equality, accepted/rejected bool/byte/short/long outcomes:
 // 177/177/177/177/177/177/177/177. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// DH373: Lazy parent-presence/absence outcomes at their original recursive admission,
+// bool/byte/short/long: eight at 177. NOT kept: no native frame repair or equality; original
+// positive recursive result and full body restored. Initial/final fade scratch homes remain.
 // AC546: Original-site case-zero kind admission/rejection outcomes in bool/byte/short/long:
 // eight at 177. NOT kept: one-use outcomes do not match or repair the frame; original
 // predicate, qualified kind observations, positive result and complete body restored.
+// DH366: Original-site first raw/clamped fade equality, accepted/rejected bool/byte/short/long outcomes:
+// 177/177/177/177/177/177/177/177. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -3953,6 +3993,8 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // N383: Full existing collision-output fields with scalar/alpha-first/SDK RGBA/const SDK RGBA
 // colors: 231/225/232/232; genuine three-use negative radius: 398/379/375/375.
 // NOT kept: ties/regressions or gain six with larger extent; original view, geometry and body restored.
+// P347: Complete opacity-gated collision result, bool/byte/short/long, positive/complementary truth:
+// 231/231/403/401/402/402/404/403. NOT kept: Two ties and six regressions; all retain frame 0xd0 versus native 0xe0. State-result forms do not match; original complete body restored.
 // N385: Complete forward/left/up scalar snapshots in the corner producer, seven subsets,
 // then all with complete translation captures on the native color frame: 362/369/362/361/362/221/355/355.
 // NOT kept: left/up 221 uses one-use field copies and grows to 1827/1819 bytes; its single
@@ -4191,6 +4233,8 @@ bool __stdcall function_391f0(void *state);
 // views, then find/search iterator results: 353/352/394/353/352/394/353/394. NOT kept: frames
 // 0x84/0x8c versus native 0x70 and extents 1087/1119 versus 1014; original side loop, whole body
 // and include set restored. Early zero and portal/fog homes remain.
+// F392: Actual distance aggregate initialization with CRT/aggregate flags and independent constant-array entry lifetimes: 302/332/319/349/305/340/305/340.
+// NOT kept: no exact match. Original arrays, initialization loop, CRT zero, reads and full body restored; native zero and frame 0x70 remain unresolved.
 // @retail 0x36b50
 void function_36b50()
 {
@@ -5022,10 +5066,16 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // AC544: Original two-stage enabled result in bool/char/signed-char/short/word/long/dword,
 // then bool with the raw mode-eight gate: 138/138/138/187/187/222/222/138. NOT kept: target ties or
 // regresses; wide results also regress both shared users. Original helper and full caller restored.
+// AC546: Existing shared pass helper returns availability to all three draw callers in
+// bool/signed-char/byte/short/word/long/dword/int: eight at 138. NOT kept: no gain or
+// native publication repair; original shared helper and every complete caller restored.
 // DH366: Existing provider forced-inline contract, original caller then configured
 // culled/gated/both/unculled/culled-unculled/gated-unculled/all families:
 // 1445/1683/1635/1841/1772/1984/1937/2137. NOT kept: every graph expands and worsens shared users;
 // original full contract and caller restored. Late pass bytes and mode loads remain.
+// DH373: Existing shared-pass result, gate, cull, depth, filter, mode, group and target
+// lexical identities: eight at 138. NOT kept: no byte match or gain. Original helper and
+// complete callback restored; late enabled bytes, dead mode loads and clear convention remain.
 // AC546: Existing shared pass helper returns availability to all three draw callers in
 // bool/signed-char/byte/short/word/long/dword/int: eight at 138. NOT kept: no gain or
 // native publication repair; original shared helper and every complete caller restored.

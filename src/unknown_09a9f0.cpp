@@ -599,6 +599,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // six ranks then coherent names at both endpoint ranks: 49 each at 176/176 bytes.
 // NOT kept: no byte match; original initialized declarations and complete body restored.
 // False BL, temporary EBP and independent header/object computations remain.
+// Round 55 (m3 lane 15, fast): on the bool result (false first, true after the attach): both lookups as `[index & 0xFFFF].flags` and
+// `.object` with no `&` 77, on the long result 49 (same code); `object_index == NONE || !flag` with the attach block under an inner
+// `entity->object_index != NONE` or `object_index != NONE` and the store in the else 75/75 (threaded, the lookup is shared);
+// the header flag through the stored index 77; the object store through it 77, with the attach too 82. Retail loads the pool after
+// the NONE test, so no NONE path reaches the second lookup there (unlike 0x10fa80, which loads the pool above its test). BL also
+// keeps `f` out of EBP only in retail: every bool form here caches `f` in EBP.
 // M380: Native index/attached-identity/both publications through memcpy 49/49/49,
 // memmove 109/76/122; both with early Boolean completion 77/94. NOT kept: no byte match;
 // original scalar stores, validity result, virtual tuples and complete body restored.
