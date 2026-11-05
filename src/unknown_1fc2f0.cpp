@@ -200,6 +200,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax D (run 46): the rate chains j, i, k with the tick products and the deltas interleaved
+// i, j, k 73 (chains, stores, deltas and the k, j, i sum are then retail's, but the tick products
+// run i, j and the tick stays in XMM4); the products grouped 77; the conversion after the chains 73
+// (XMM3 as retail, but the chains run k, j, i and the products copy the tick register); the velocity
+// copied before the subtractions 34; the deltas i, j, k 79.
 // score 32 (was 32): Frame 0x10 and prediction prefix agree; first +0x59 converts ticks
 // into XMM4 rather than XMM3. Velocity/delta scheduling and correction products/adds remain.
 // Earlier: the limit test is written the other way round, so the comparison matches
