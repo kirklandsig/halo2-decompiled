@@ -708,6 +708,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // NOT kept: no byte match or eligible native repair; original executable source restored.
 // DL272: Repeated fallback input names in original same-role formals, seven subsets then all with Boolean success; native graph-base/reload homes and byte normalization remain. Scores 348/357/355/357/355/357/357/482.
 // NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL274: Two-use permission mask after resolution/after found publication, dword/byte/word/long: 639/639/515/515/509/509/639/639.
+// NOT kept: native graph/base reload and byte normalization remain; no eligible byte match or native repair.
+// Original complete executable source restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

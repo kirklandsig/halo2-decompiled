@@ -1273,6 +1273,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // iterator outputs renamed either way 755 (same homes), type first 755, the result set before the search test 1005, a direct result
 // with a default 1021 (206/151/86, 2841 bytes). Retail's late zero is a temp in EBP from the first kinds lookup on; ours keeps
 // a parameter in EBP over that block and re-reads it (retail reads it from the stack), so the zero stays immediates. Flag form: match-only.
+// DL274: Six native stack-formal home reads individually, mode/class pair, then all six: 828/828/828/828/828/828/828/828.
+// NOT kept: native class/NONE, candidate/output/result homes and late zero remain; no eligible byte match or native repair.
+// Original complete executable source restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

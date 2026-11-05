@@ -2799,6 +2799,9 @@ s_cached_input_list g_5234e8[4];
 // J256: Coherent cache-update/filter/queued-producer inline contracts and forced updater expansion:
 // 123/113/123/113/123/113/123/1561. NOT kept: no target gain; updater inline loses a matched caller and forced expansion loses two, with length growing to 1660
 // Original executable source restored; native frame and allocation gaps remain.
+// DL274: Independent query phase before capacity admission, bool/byte/short/long, false/handle-valid entry (fast control 146; full 113): 146/146/140/139/136/136/162/159.
+// NOT kept: native list/total spills, frame and output/index homes remain; no eligible byte match or native repair.
+// Original complete executable source restored.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3220,6 +3223,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // J256: Native maximum/divisor/projection-scale observation subsets and complete projection initialization:
 // 508/490/518/495/496/515/504/504. NOT kept: every form regresses from 486; maximum observations recover only four frame bytes, while scale capture enlarges it
 // Original executable source restored; native frame and allocation gaps remain.
+// DL274: Entry capture/position-transform/first-projection scopes, seven subsets then both output declarations: 486/486/486/486/486/486/486/486.
+// NOT kept: native velocity reloads and frame/projection homes remain; no eligible byte match or native repair.
+// Original complete executable source restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
