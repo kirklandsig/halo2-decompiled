@@ -480,6 +480,8 @@ evaluate:
 // flag retested 84; guard returns with the slot field read first 74; nested with it 73; an actor local with it 73. Diagnostic (reverted): 0x25d740
 // pinned out of line 102 (231 bytes): ESI/EDI are still pushed at entry and the exits merge, where retail pushes ESI after the first test, EDI
 // at the call, and has five separate exits, so the inlining is not the only cause.
+// Round 609: actual count/expected-prop lvalues on payload/whole-slot graphs, then native node identity,
+// 73/73/73/73/73/73/73/73. NOT kept: alias forms require a match; delayed saves and getter expansion remain.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

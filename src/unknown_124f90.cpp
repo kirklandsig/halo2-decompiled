@@ -4120,6 +4120,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // Round 164: state pointer sunk into the branch and recomputed in the fallback 598; with 0x16f3a0
 // calls 553; fallback in both arms 633, with 0x16f3a0 calls 706, plus 0x14ddc0/0x14de70 at the loop
 // head 740 (retail's loop head, aligned 426 -> 402).
+// Round 609: existing fallback constant plus complete listener/player/environment lvalue identities,
+// seven subsets and the actual entry lvalue, 760 each (2065 bytes, frame 0xe8). NOT kept: native frame alone
+// leaves early saves, loop/helper expansion and record homes different; original body and constant linkage restored.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {

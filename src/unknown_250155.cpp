@@ -2723,6 +2723,8 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // text_b, shown count, player/no_team, bitmap_a, bitmap_b and retail bitmap_b, text_a, text_b, shown count, player/no_team, bitmap_a, so retail has
 // bitmap_b one step ahead of all five. Tried on the plain body: the helper taking bitmap_b first 95; the second loop declaring bitmap_b first 95; that with
 // bitmap_a and text in reverse 95; bitmap_b stored first in every arm of the helper 177 (932 bytes); players[i] named once in the voice block 95 (same code).
+// Round 609: existing item/team/name validity bitfields, seven complete family subsets and
+// chained paired team flags, 95 each (926 bytes). Scalar homes, voice reload and final receiver stay different; restored.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {
