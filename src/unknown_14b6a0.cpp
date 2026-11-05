@@ -484,6 +484,9 @@ void function_14bac0()
 // N383: Existing typed player iterator at the first traversal, selected-player type, native
 // result-tested recipients and early uninitialized iterator declaration: 222/222/228/228/222/222/228/228.
 // NOT kept: ties/regressions; original fields, points, iterators, includes and full body restored.
+// N390: Actual second-phase state-count admission, positive/complementary bool/byte/short/long,
+// 222/222/222/222/222/222/222/222. NOT kept: no exact phase-result/lifetime form;
+// original body restored; native frame, point/recipient overlap and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

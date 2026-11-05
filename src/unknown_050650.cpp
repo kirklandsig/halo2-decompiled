@@ -694,6 +694,9 @@ struct s_collision_result_buffer_1697c0
 // Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
 // results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
 // contract or gain; original magnitude return, all consumers and complete sampler restored.
+// N390: Explicit absolute-magnitude real/immutable-real producers, success/early-failure exits,
+// 307/303/307/303; double/immutable-double producers 360/360/360/360. NOT kept:
+// no exact lifetime recovery; original normalizer and sampler restored, native scratch/axis homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

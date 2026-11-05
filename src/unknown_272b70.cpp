@@ -2859,6 +2859,9 @@ struct s_scenario_scripting_view
 // control 80; full 80).
 // NOT kept: no byte match or eligible gain. Original direct final test, signed-short traversal/wrap, strict
 // selection, geometry branches and complete search restored; actor/counter/set and guarded-data homes remain.
+// N390: Whole packed-input value at entry/actor/scenario/decode, long 80/80/80/80;
+// dword 81/81/81/81. NOT kept: no exact single-use input residency;
+// original decode, signed search and body restored; actor/counter/selector and early data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
