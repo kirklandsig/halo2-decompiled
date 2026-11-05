@@ -88,6 +88,11 @@ PRIVATE __forceinline long texture_floor(real value)
 // Round 67: bitmap declared at loop-body scope ahead of the NONE test 14, with the bias too 18, both at the top
 // of the body 21; a loop-scope copy of a pending mask 38; a for loop clearing the bit in its increment with
 // the NONE test as `continue` 4. Diagnostic: one to eight unused locals at entry leave EDX (symbol count not it).
+// Round 132 (m3 lane 7, fast): the call's short arguments without casts 4; the level truncated in the
+// clamp statement 4; an explicit return after the loop 4; the level test as `level < entry level` 4;
+// bitmap's zero as the else arm of the magnitude test 90 (399 bytes). Lead: lane 8 r114 found VC's
+// scratch choice a round robin (one extra early temp rotates every later block, 0x5c720); the EDX here
+// may be one hidden allocation off retail rather than a property of the clear.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
