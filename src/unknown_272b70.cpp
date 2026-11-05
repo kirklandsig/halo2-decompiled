@@ -2862,6 +2862,9 @@ struct s_scenario_scripting_view
 // control 80; full 80).
 // NOT kept: no byte match or eligible gain. Original direct final test, signed-short traversal/wrap, strict
 // selection, geometry branches and complete search restored; actor/counter/set and guarded-data homes remain.
+// DH380: Actual decoded selector/candidate-pointer/metric bindings immutable, seven subsets,
+// then complete bindings with the actual packed input: 80/80/80/80/80/80/80/80. NOT kept:
+// actor/counter/set and guarded-data homes remain; original bindings and complete search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

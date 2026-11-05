@@ -763,6 +763,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // setter and both 239/239/239; native hit publication alone/with either/both 340 each (1227 bytes),
 // standard hit memcpy 340. NOT kept: no gain; original publications, captures and full body restored.
 // Frame 0x40 versus 0x44, classifier observations and plane/point homes remain.
+// DH380: Original predecessor/shape/query key-admission boundaries, seven partitions and complete
+// partition with separate original root guards: 239/239/239/239/239/239/239/239. NOT kept: frame/receiver
+// homes remain; original tests, observations, query contracts and complete collector restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

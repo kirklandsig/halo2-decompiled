@@ -344,6 +344,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH378: Single-exit failure ownership for complete root/reference, reference bound, provider and compatibility
 // guards, then root count/pointer/count-in-pointer/reference-in-root guards: 390 each in eight forms.
 // NOT kept: all canonicalize at 1596 bytes; original full body, guards, sole return and helpers restored.
+// DH380: Actual incoming origin/record/output pointer bindings made immutable, seven subsets,
+// then all with the packed-reference binding: 390/390/390/390/390/390/390/390. NOT kept: no native
+// selected/default/root-home recovery; original parameter bindings, helpers and full body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
