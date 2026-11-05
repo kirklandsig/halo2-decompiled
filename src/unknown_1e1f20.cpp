@@ -757,6 +757,13 @@ void swarm_leader_detach(long actor_index);
 // Original body restored; frame 0x1c/0x20, actor/displacement and cleanup homes remain.
 // M305: Native terminal parallel-table bound walk, for/while, less/not-equal and pointer declaration orders
 // 270/269/270/269/270/269/270/269 fast versus unchanged fast 266 (ordinary 281).
+// T61: Actual memory-entry/callback-field/terminal-actor record references, seven subsets
+// 266/282/282/266/266/282/282; all with bounded short memory ordinal 282
+// (unchanged reduced control 266, full 281). NOT kept: no exact receiver graph;
+// original observations, ordinal, iterators and complete body restored.
+// MiniMax E (11-04): no new form, no lower score; the memory walk's pointer walk, its index
+// body, the twice-read slot and the for-loop forms score 285, 370, 286, 288 and 555 against the
+// unchanged 266 (fast; 281 ordinary).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

@@ -290,6 +290,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // scope, or taken after the normalizations; a private dot with chains on either or both inputs (0-8); six named transforms in either order; the working matrix at 1-8 dwords into a
 // struct, which rules out field offset modulo 8 as the rank (retail's three operand pairs do fit it); named i inputs, either order; `(&matrix.forward)->k` and `((real *)&matrix.forward)[2]`
 // for the k row 2 (both count as a direct read). Taking the axis address through a local before the normalizer (ahead of forward or up) loses retail's sums 25-92.
+// Round 166 (m3 lane 4, one-file harness, axis block scored, 2 on the 2-form; none kept, body unchanged): new forms on the 2-form:
+// the whole block as a forced inline helper taking forward, up and left in all six orders 105 each, taking the matrix 130,
+// matrix plus forward and up either order 104; a dot helper with the i term written either way 2; `up` through a reference 2; the
+// normalizer's result not used for the pointer 64/68/89; projection rows in all six orders with `f * d`, `d * f` and `x = x - f * d`
+// 2 each; cross3f_staged 120; a left pointer for the cross and its normalization 4. The dot's i term stays up-first.
+// Declaration placement on the 2-form: the dot's local first in the block or between the pointers, `up` declared ahead of forward and assigned
+// after, all three declared first, the dot in its own scope, the pointers or the dot's local at function or loop scope: 2 each.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

@@ -3638,6 +3638,12 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // original/negated-disjunction exclusion and both reply orders. Held timeout owner spill and
 // message/reply allocation remain.
 // Scores 104/104/104/104/97/97/97/97; original executable body restored.
+// MiniMax H (11-04): no new form kept, no lower score: the reply member-state pointer before the id 94 (seven
+// under the bar, restored), the identity address named before the memset 94, the two-epilogue return 115, an
+// owner local read at the top and used in the reply 132, the timed-out call's member state taken through a
+// pointer 101; the thirteen bytes retail has more are exactly the timed-out call's value10 spill, its split
+// member-state lea and the extra load, and the owner spill is a dead store in retail too, so it is not
+// reachable from a live local here.
 // Round 139 (m3 lane 5, fast): reply member-state pointer before the id 94 (seven, under the bar); with the identity
 // address named before the memset 94; with an early not-peer `return false` and `return true` 116 (428 bytes); with the
 // announcement id field by field 94; with the identity as a structure assignment 94; with `leave` declared first 96.
@@ -3707,6 +3713,9 @@ struct s_network_session_list;
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, const s_session_id *id);
 bool function_07ab10(long key_index, s_type_99af70 *address, long local, word port, const XNADDR *xnaddr);
 
+// MiniMax H (11-04): no new form, no lower score: at the 0x7ab10 call retail copies the host through ESI
+// into EBX and reloads the session into EAX, ours loads the host straight into EBX and reaches the session
+// through ESI; with the callee matched, that staging follows from the argument order and not from here.
 // MiniMax G (11-04): no new form, no lower score; the host/session staging at the 0x7ab10 call
 // (retail reloads the session and keeps the host in ESI) and the cleanup placement still differ.
 // score 136 (was 136): host/session staging, clock boundary and cleanup placement differ;
@@ -4986,6 +4995,16 @@ struct s_membership_update_snapshot
 // +0x6c; five points, below the keep floor); on that: 0x5f900 storing unknown00, flag1, unknown04 564 plain (0x5f900 kept),
 // the state pointer 519, per-case `long player_index` reads 525, memset for both player_indices fills 669, a long loop-1
 // index 693.
+// Round 149 (m3 lane 5, fast, base 523; 2591 bytes): named update count with a long/short first-loop index 697/664; named new index in the
+// first loop 548; masks on one line, chained, typed long 523 each. All 11 calls' setups compared with retail: only register rotation (0x600f0's
+// convention agrees), so no parameter order to change. An aligned diff (registers and slots ignored) puts the rest in the unrotated first loops:
+// lane 15's result chain remains the lead, it needs a match for its implied `result &&` heads.
+// M3 lane 9 r88 (fast; aligned+stack = aligned count with registers and stack homes masked): lane 15's result chain with 0x5f900 storing unknown00, flag1, unknown04 is 457 at 2589 bytes but aligned+stack 10: only stack homes
+// and case 1 differ. Retail's homes +0x14 i and the player cursor, +0x18 change cursor, +0x1c moved and the player index, +0x20 count, +0x24 base copy, +0x28 added, +0x2c removed; ours +0x14 removed and the player cursor,
+// +0x1c added, +0x20 moved, +0x24 count, +0x28 i, +0x2c base. Case 1: retail holds the cursor in ESI, then member in EDI and slot in ESI, and rebuilds the id pointer from the stack twice; ours holds the cursor in EDX, spills
+// member, slot EDI, and keeps the id pointer in ESI across the find call. Tried on it: named short member/slot 671 (2614, session leaves EBX); nested tests with long locals, the id through the index, embedded assignments 457 each
+// (same code); block scopes around the member phase (masks, all, masks + i) 457 each; ten renames of removed/added/moved/i 457 each (names do not move these slots); change fields through the index, no change pointer, loop 1 726,
+// both 728 (slots move, structure regresses). Not kept: the loop heads' `result &&` is implied by the breaks, so that form needs a match.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {

@@ -1247,6 +1247,21 @@ public:
 // 178, with normalize_inline 184, with the spawn location stored first 177, plus the position copy before the 1.0
 // scale 177; the matrix before the child loop with the location first 177; parent colour local on that 253 (1367);
 // on the 177 form: spawn dt stored before the scale 179, the fallback cross through cross3f_staged 177.
+// Round 212 (m3 lane 3; aligned in brackets, base 184 [59]): the fallback through existing helpers only (vector3f_scale,
+// normalize3d, 0x11d000, which LTCG does inline there, cross3f) 286 (1327) [68]: retail's x, y, z magnitudes and xmm
+// registers appear, but j and k both hoist and the sum runs k, j, i. Retail hoists j alone and sums j, i, k, which needs
+// matrix.forward.k named directly by a read anywhere in the body (position does not matter; i, j, up.k, left.k, scale or
+// position.z instead do not do it; __noop and sizeof do not). On the helpers, with such a read: 110 (1355) [22]; parent
+// colour in a local after the position copy 43 (1358) [19]; the tag read through a named child definition 18 (1355) [12];
+// the matrix declared at the loop-body top 9 [2]; the position copy ahead of the 1.0 scale store: MATCH in the plain
+// check (0x175270, 0x248750 stay matched). Not kept: the read is `(void)matrix.forward.k;`, a redundant statement, and
+// no real statement reads that field alone; hand-written perpendicular with z direct and the rest through a pointer 179
+// (1357) [50], with only j through the pointer 260 (1359) [17]; the same forms without the read 279 (1332) [49]. On the
+// current body: matrix at the loop-body top with the position copy first 178, plus location first 177, plus the named
+// child definition 166 (one-use local, not kept), the colour local on these 253 (1367). Also tried: orientation in a static
+// inline helper 1026 (not inlined), forceinline 357 (1259); 0x30bf0 in the fallback stays a call whatever the nesting 326
+// (1253); `inline` on 0x11d000 326; capture of the matrix parameter in 0x175270 no change (175270 2); an empty join at
+// five places around the spawn statements, helpers for the matrix finish or the spawn fill, spawn scale spellings 18 each.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1788,6 +1803,10 @@ bool function_17afd0(long effect_index, long value);
 // DH350: Independent visibility/drawing getter lifetimes, availability default
 // after getter/owner/view, joined/nested success, view-default and conditional:
 // 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
+// DH371: Partial owner-equality/attachment/camera-admission/camera-test/rejection/view-guard/
+// owner-validity/location-admission Boolean results: 47 each on the recovered owner-arm graph.
+// NOT kept: no match or gain; original snapshots, query gates and complete body restored.
+// Native availability clearing/branch production and later current-view observation remain.
 // AC541: Both downstream same-view/attachment outcomes with availability-owned or complete
 // rejection-owned results, bool/byte/short/long: 120/115/126/133/120/99/127/133.
 // NOT kept: all regress; original availability, snapshots, query gates and complete body restored.

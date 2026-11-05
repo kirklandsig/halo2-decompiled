@@ -671,6 +671,9 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // Round 143 (plain): explicit start/end numerators with end = start + 32 2; prefix increment 2; reversed bound 2;
 // a short query-group local 2; &ids[0] 2; return after the build 2; != loop bound 3; compound increment 2.
 // All restored; the post-loop hill/index reload order remains.
+// Lane 11 round 70 (plain): half as `count >> 1` 50; the first guard alone as `count > 3` 4; `count -= count % 2 != 0` 75 (180 bytes); a named remainder 2;
+// the outer guard as `index >= 0` 6. Compile-only: distinct constant divisions added to the else arm flip the pair at counts 1-4 and 8, not at 5-7; `%`,
+// adds, mul, float forms, a call and a memset do not, nor dead or folded divisions, nor up to 32 named copies; 400 random no-extra-code forms gave no same-code flip.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {
@@ -1105,7 +1108,7 @@ struct s_point_list_2bf
 };
 
 /* the values the points get (unknown_157450.cpp) */
-extern dword g_502258[0x27];
+extern dword g_502250[0x29];
 
 /* adds a point to the list, unless it is full */
 static __forceinline void point_list_add_2bf(s_point_list_2bf *list, point3f position, real a, real b, real c, real d, real e)
@@ -1141,7 +1144,7 @@ void c_game_engine_45c948::v32(long player_index, long list_pointer)
 			{
 				point3f const *source = &g_4e0350->marker_entries[(short)state->w60[i]].position;
 				point_list_add_2bf(list, *source,
-					*(real *)&g_502258[35], *(real *)&g_502258[36], *(real *)&g_502258[0], *(real *)&g_502258[1], *(real *)&g_502258[37]);
+					*(real *)&g_502250[37], *(real *)&g_502250[38], *(real *)&g_502250[2], *(real *)&g_502250[3], *(real *)&g_502250[39]);
 			}
 		}
 	}

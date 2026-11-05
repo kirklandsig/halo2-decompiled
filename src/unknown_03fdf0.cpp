@@ -135,7 +135,7 @@ extern vector3f g_485950;
 extern byte g_4ba022;
 byte g_4ba018;
 
-__declspec(noinline) void *function_449e0(short index, bool load, bool instance);
+__declspec(noinline) void *function_449e0(short index, bool instance, bool load);
 bool function_45ce0(short index, byte *out, short part, short transform_index);
 bool function_460d0(dword const *mask, short index, long part_index);
 void function_41040(short index, long part_index, long group, byte weight,
@@ -534,7 +534,7 @@ void function_402b0(long cache_index, long mode)
                 long material = NONE;
                 if (material_index != 0xff)
                     material = g_4c0b78.materials[material_index];
-                byte *geometry = (byte *)function_449e0((short)index, false, (bool)((entry->unknown00 >> 12) & 1));
+                byte *geometry = (byte *)function_449e0((short)index, (bool)((entry->unknown00 >> 12) & 1), false);
                 if (geometry)
                 {
                     for (long part = 0; part < *(long *)geometry; ++part)
@@ -844,7 +844,7 @@ bool function_3fdf0(long mode, bool single_pass)
         long material = NONE;
         if (material_index != 0xff)
             material = g_4c0b78.materials[material_index];
-        byte *geometry = (byte *)function_449e0((short)index_bits, false, (bool)((entry->unknown00 >> 12) & 1));
+        byte *geometry = (byte *)function_449e0((short)index_bits, (bool)((entry->unknown00 >> 12) & 1), false);
         if (!geometry) continue;
         for (long part = 0; part < *(long *)geometry; ++part)
         {
