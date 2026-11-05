@@ -519,6 +519,9 @@ s_1a8a10 g_4453c0[] =
 // address-taken is not what re-reads j; the point and four values in one record with the values passed on 27 (frame
 // moves, j still folded); the y store placed after the facing copy, y carried in a local through the switch 24 (j still
 // folded), in the one record 88.
+// Round 90 (m3 lane 16, fast): both sums with the y product first 17 (same code); the best index, identifier and
+// score declared in reverse order 77; the sums written straight into the four-value array 21; the second sum as the
+// existing dot_product2d (kept out of line by inline_depth(0)) 77; the copy declared before the array 17 (same code).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
