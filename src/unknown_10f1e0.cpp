@@ -405,6 +405,8 @@ bool function_1d9320(s_1d9240 *slot);
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
 
+// MiniMax A (11-04, run 45): no new form, no lower score (37); a mask test in either signedness still splits the
+// visited update (42) and the 0x1d90e0 arguments through locals are the same code (37).
 // MiniMax A (11-04, run 41): no new form, no lower score (37); the mask form for the visited-bit test (the
 // existing bit_vector_test, and the same set written out inline) matches retail's test but turns the following
 // update into load/OR/store and shifts two call setups (42).
