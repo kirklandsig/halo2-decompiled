@@ -2059,7 +2059,7 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // 201, 212 and 269).
 // MiniMax lane A (11-04): the 0x400 block's parent value re-read as a short instead of truncated
 // from the long matches retail's block exactly (135, from 155).
-// score 135 (was 155): The 0x400 block matches; the entry/unit stack homes, the 0x2000 block's dead
+// score 136 (was 155): The 0x400 block matches; the entry/unit stack homes, the 0x2000 block's dead
 // add, the loop's mask home and register split and the float constants still differ.
 // Lane 18 r37 (fast): plain 0x400000 mask test 168 (1070 B); a pointer to the 0x214 field used for
 // test and store 155; both tail compares written source-first 155; the 0x214 value named for test and
@@ -2357,6 +2357,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // F382: Complete three-component position field with short-circuit comparison traversal,
 // long/dword/short/byte ordinals, break/condition admission: 293/293/297/298 repeated.
 // NOT kept: regressions and shorter extents; original scalar fields, comparisons and body restored.
+// AC548: Root/snapshot/request-result lexical homes, subsets 1-7, then source-first declarations on the recovered head
+// 136/136/136/136/136/136/136/136. NOT kept: no qualifying supported gain or byte match.
+// Native object/offset homes, low-mask spill and dead field add remain. Original complete body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

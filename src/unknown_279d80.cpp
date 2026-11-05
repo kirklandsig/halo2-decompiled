@@ -2112,6 +2112,9 @@ void function_2818e0(void)
 // Round 143: real sign lanes with negative zero 245 (1685 bytes, all controls regressed); the sign mask renamed 2;
 // prefix / += / assignment counter updates 2 each; register flags 2; register count 2; a const group bound 2.
 // All restored; the count/flags reload pair and frame 0x34 remain.
+// Lane 11 round 70 (fast): a ternary lvalue counter update 2; a counter pointer by ternary at the increment 2 or at the helper's top 2 (0x288570 120 in
+// all three); the bit flags shifted by an explicit assignment 2; the bit test as `(flags & 1) == 1` 2 (0x288570 3, 0x289580 78). Here and in 0x2bdc70
+// ours reloads the later-declared variable first, retail the earlier-declared one.
 // @retail 0x281b60
 void function_281b60(void)
 {

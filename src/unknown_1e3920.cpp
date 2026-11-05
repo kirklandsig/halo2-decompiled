@@ -721,6 +721,12 @@ real function_267370(long object_index);
 // DL262: Signed zone byte 20 plain; const cluster/plane receivers isolated, then signed
 // combinations and const BSP receiver: 20/98/98/20/20/98/20/20.
 // Keep only the native byte/sentinel declaration; all optional const receivers restored.
+// DL264: Existing staged cross scalar inputs/setter/returned receiver,
+// combinations then immutable inputs: 83/24/20/87/83/24/87/87.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
+// B449: Existing cross producer with whole-vector field/aggregate/setter/const construction,
+// each with aggregate/library publication: 135/135/135/135/135/135/135/135.
+// NOT kept: aggregate staging has no byte match; every shared helper and target body restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1239,6 +1245,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // DH356: Common Boolean query-default chains in both directions, probability zero
 // before/after, inner/outer query storage: eight at 253. Original body restored;
 // sentinel EDI/ESI, squad/query homes and rotated substitution head remain.
+// DL264: Matched alternate/ordinary creation and cleanup inline
+// contracts, seven subsets then all with the target inline: 253/253/253/253/253/253/253/253.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
 // Y589: Actual creation-payload/equipment-selection/actor-object last-use scopes,
 // seven subsets then all with immutable settings view: eight at 253. NOT kept:
 // sentinel/squad/query homes unchanged; original complete body restored.
@@ -1251,6 +1260,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // original guards, producer scope, sentinel defaults and entire body restored.
 // P333: Complete initial substitution admission, allowed/blocked in bool/byte/short/long:
 // eight 389s at 1307/1272. NOT kept: entry/query homes and extent regress; full body restored.
+// DH374: Successor-NONE result owned by while condition, bool/byte/signed-char/short/word/int/long/dword:
+// 253/253/253/253/253/253/253/253 (fast control 253; full 253).
+// NOT kept: no byte match or eligible gain. Original dynamic successor test, replacement result, query
+// defaults, refreshes, cleanup and full body restored; sentinel ESI and squad/query homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1993,6 +2006,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P335: Standard min/max probability/increased/delay producers, seven subsets and
 // complete graph with final maximum consumer: 322/325/275/354/323/323/346/395. NOT kept: all regress;
 // original clamps, field observations, includes and complete body restored. Actor/options/pool homes remain.
+// B449: Repeated unit-handle/fraction-bound/round-bound field addresses, seven subsets
+// then complete readonly actor receiver: 361/251/361/251/361/251/361/361.
+// NOT kept: no exact field-receiver repair; all original per-use observations, queries and body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

@@ -587,6 +587,21 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // N367: Capacity-owned link eligibility reused for surface work, expression bool/byte/short/long
 // 286/286/290/289; branch producers 359/359/370/366. NOT kept: no equality or gain; original predicates,
 // flags and indexed memcpy restored. Extra frame word, predecessor and flag homes remain.
+// M3 lane 13 r63 (fast, then plain; masked = aligned with registers and stack offsets ignored): retail's code is the plain combination of the short link count, `special` false at the
+// in-range arm's start and set by an if, count declared after the fill and `origin` for the delta block 336 (1388 bytes, aligned 234 -> 111, masked 87 -> 34). On it: split increment 245; the
+// link test as a forceinline predicate with a result variable 139, and as a local `usable` with a `data` pointer local 114 (no helper); `real distance` per arm through vector3d_from_points3d
+// 195 (retail's tail in xmm0); node at function scope for the entry read 256, with parent first in the two-step arm 75 (retail's type in CX and `mov al, 1` special sequence), length_sq3f in
+// each arm 65, complete before the link count 66, the clamp through a MIN macro of the shape the project's other files define (its two reads keep retail's `lea`, `movsx [eax + 0x3e]`; one read 66): kept, 16.
+// Left: the start/end homes swapped, and two reloads at the scan loop's tail. `point3f points[2]` for start/end gives retail's homes, 2, match-only (groups locals); then only `mov edx, [esp + 0x10]`
+// and `mov ebp, [esp + 0x104]` are in the other order. On that 2: indexed fill loop 270; fill pointers declared swapped 2; `end`/`start` declared swapped, renamed, or in other scopes (without the
+// array) 195 (same code); extra field references to start 211 and end 246 do not move them; complete assignment first 4; link cast dropped 2; dot arguments swapped 2; j declared at top, after the
+// edges or before margin 2; while loop 2; shared v 2; previous point if/else 2; point before edge 332; edge first 25; point, edge, previous 167; origin at the scan top 384; data pointer in the scan
+// 397; long count 396; long j 197; result copy of count 2; adjacent declaration swaps 2-53. Unused locals, an unused getter call, `if (false)`, `do {} while (false)` before the special test: same
+// code. Without parent first 236; `long parent_index` for it 16 (one-use). Named `type` 351. A permuter run was killed by its 2400 s timeout before printing anything.
+// Lane 13 r63 (held, coordinator): the 16 rests on two test-set flags, `usable` built by if / else if before the memcpy and
+// `special` false at the arm's start then set by an if; written as direct conditions the same body scores 338 (usable only
+// direct 322, special only direct 130), so none of it is kept under the match-only rule (kept only with a byte match);
+// build/held/lane13-r63-270d90-flags.patch is the whole body, a lead toward the match.
 // AC534: Positive-domain initialization with actual step/edge end pointers, range/equality
 // termination and separate/chained NONE stores: 413/413/380/380/393/393/407/407.
 // NOT kept: all regress and lengthen; original counters, signed empty domains, indexed
@@ -1088,6 +1103,10 @@ bool function_2715a0(byte *buffer)
 // DH357: Fresh post-conversion denominator squares, with complete segment,
 // projection and collision operation families in eight forms: 486 each.
 // NOT kept: all tie; original fresh reads, sum trees and complete body restored.
+// M3 lane 13 r63 (fast, restored; masked = aligned with registers and stack offsets ignored, control 228): pop-or-NONE forceinline helper 512 (masked 211); location order 489 (224); `!(d > 0.09f)` 502 (2060, 217); per-case depth stores 481 (195);
+// both flag masks 522 (2052, 226); a named link point pointer for the midpoint, the 0x210be0 argument and the projection 486 (226: retail's `lea esi, [edi + 0xc]` and `[esi + 4]`); `> 0` for the 0x3c0 mask 486 (228). Per-case, `!(d > 0.09f)` and location
+// order together 486 (195); with masks 523 (193); with the pointer and `> 0` 523 (192); helper with per-case 504 (179); with `!(d > 0.09f)` and location order 526 (2056, 167); everything 544 (2040, 169). Left: state EBP, node EBX, link EDI for ours EBX, ESI, EBP,
+// the length root before the 0x210be0 call, the location flags read once, the NONE type test ahead of the penalty switch, and the inlined insertion.
 // Y595: Per-iteration 64-link output at iteration/after-sift/after-sentinel/query boundaries, inherited/descriptive names:
 // 486/486/486/486/486/486/486/486. NOT kept: no byte equality; original complete body restored.
 // DH359: Separate terminal reached result bool/byte/short/long with inherited fallback

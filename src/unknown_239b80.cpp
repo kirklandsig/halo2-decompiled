@@ -483,9 +483,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B430: Complete coordinate-bound producers on the retained native output ordinal,
 // four producer orders, without/with paired angle bounds: 179 each. NOT kept: no
 // match or gain; original body restored. Frame remains 0x18 versus native 0x14.
+// F393: Actual classifier result short/long/int/dword, then complementary admission bool/byte/short/long:
+// 170/170/170/170/170/170/170/170. NOT kept: no byte match; original complete body/helpers restored;
+// extra frame word and produced-length/departure/count/compaction homes remain.
 // P345: Actual advancing output cursor retaining the independent pass bound/eager length,
 // long/short pass, long/bool departure and memcpy/memmove: 251/267/251/276/299/258/253/266.
 // NOT kept: no byte match; original complete body restored; extra frame word remains.
+// T58: Whole-scan current-point pointer/reference, indexed/advancing candidate, original/overlap CRT:
+// 228/228/259/259/222/222/249/249. NOT kept: no eligible match or gain; complete original source restored.
+// Extra frame word, produced-length/departure homes and compaction remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -878,6 +884,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // orders of dx/dy/fraction/denominator, statement orders with a fraction default and every product operand order:
 // none below aligned 25; retail's x output copies the fraction and its y output multiplies dy in place, and no spelling
 // gives that split; `i = 0` before a guard folds the guard away, so the store stays after the `jle`.
+// Round 166 (m3 lane 4, one-file LTCG harness exact at 129; no source change): random search, 1500 forms over the loop
+// guard, fraction (default, if/else, zero arm first, ternary), clamp (ternary, if/else-if, in the nonzero arm), delta order,
+// dx or dy at their uses, x/y output operand orders, output order, denominator terms, fraction declaration, previous and
+// current side spellings, tail order and declaration order: no guard best 131 (887); `if (count > 0)` around the for
+// 95 (890), around a for with an outer index 98 (890); guarded do-while 102 (891), and 131 (887) where the guard folds.
+// B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
+// 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

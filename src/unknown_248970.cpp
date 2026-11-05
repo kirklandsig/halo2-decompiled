@@ -40,7 +40,7 @@ struct s_248971
 class c_247470
 {
 public:
-	word field_0;
+	short field_0;
 	word field_2;
 	long field_4;
 	long field_8;
@@ -52,6 +52,8 @@ public:
 		s_247fd0 *arg_3, transform4x3f const *arg_4, dword arg_5);
 };
 
+/* updates a particle location: its position, its fade over the viewers, then its chain of emitters,
+   allocating and linking any it lacks */
 // score 54 (was 54): the prologue, the position copy and the whole viewer loop agree since the
 // distance goes through the existing vector3d_from_points3d + magnitude3d (retail's x87 pops right
 // after the square root). Left: the child loop: retail keeps the pool in EBX and NONE in EDI (ours
@@ -325,14 +327,6 @@ public:
 // wrapper dropped and `inline` on its definition 259 (0x175270 100, 0x248620 6; a pragma change, diagnostic); head
 // declared in the for-init beside the index 59 (identical to the indexed table alone). Lead: the indexed table with a head
 // whose load lands in the loop preheader without local_0 taking a register for the whole function.
-// Round 18 (lane 17, fast, with 0x175270): head declared before the child offset 68 (the prologue changes);
-// the existing 0x2483f0 called for the link with `inline` on its definition and its inline_depth(1) pair removed
-// 261 (the link inlines, 712 bytes, but the location becomes an EBX register argument: 0x175270 100; 0x2483f0,
-// 0x248cc0, 0x248d90 still match); that with the location read once through its address 244 (stacked again,
-// but held in EBX all through, frame 8; 0x175270 21); the child table indexed by the counter
-// (`field_34 + i * 0xb8`, no offset local) 59: the strength-reduced offset is set after the zero-trip test and
-// the count compared in ECX as retail, but head is still copied before the test, so the snapshot and the
-// offset share a slot (frame 0x10); on it the snapshot walked as the head 243, head declared in the for-init 59.
 // Round 501: six complete initial-head/ordinal/byte-offset lexical orders 54 each;
 // first two with the allocation-result role name 54/54. Original identities and body
 // restored; child preheader, pool/NONE ranks and link-index construction remain.
@@ -451,16 +445,18 @@ public:
 // 505/505/505/505. NOT kept: forced forms disturb the matching viewer x87
 // schedule; ordinary providers stay called. Original full body restored;
 // child preheader, pool/NONE, allocation retest and salted index remain.
+// T58: Paired existing allocator/updater declaration boundaries, original/ordinary/forced inline policies:
+// 54/54/54/54/54/54/54/54. NOT kept: no eligible match or gain; complete original source restored.
+// Child preheader, pool/NONE ranks, allocation retest and salted-index construction remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
 {
 	s_248970 *local_20 = (s_248970 *)arg_0;
-	long local_0 = local_20->field_4;
+	long head = local_20->field_4;
 	s_248971 *local_1 = (s_248971 *)arg_2->function_1751d0();
 	long child_count = local_1->field_30;
 	local_20->field_10 = arg_4->position;
-	point3f *position = &local_20->field_10;
 	local_20->field_2 = arg_5;
 	if (!arg_5)
 	{
@@ -471,7 +467,7 @@ void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s
 			if (local_3 != NONE && g_4686c4 != NONE)
 				local_6 = (s_player_state const *)((byte const *)(g_4e9bd4 + local_3) + 0xb8);
 			vector3f offset;
-			vector3d_from_points3d(&local_6->position, position, &offset);
+			vector3d_from_points3d(&local_6->position, &local_20->field_10, &offset);
 			real local_10 = magnitude3d(&offset) * local_6->radius;
 			real local_11 = 0.f;
 			if (g_510c50 && ((byte *)g_510c50)[5])
@@ -491,8 +487,6 @@ void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s
 	else
 		local_20->field_1c = 1.f;
 	*(real *)((byte *)arg_3 + 0x1c) = local_20->field_1c;
-	long child_offset = 0;
-	long head = local_0;
 	for (long local_14 = 0; local_14 < child_count; ++local_14)
 	{
 		s_record_pool *local_15 = g_51ec88;
@@ -507,11 +501,14 @@ void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s
 				local_16->field_4 = NONE;
 				local_16->field_c = 0.f;
 			}
-			if (child_index == NONE)
-				break;
 			head = child_index;
+			if (head == NONE)
+				break;
 			c_247470 *local_17 = DATUM(local_15, c_247470, head);
-			long local_18 = data_datum_index(local_15, local_17 - (c_247470 *)local_15->data);
+			/* the salt is read ahead of the division, as 0x2483f0 does */
+			long const &salt = local_17->field_0;
+			long const &ordinal = local_17 - (c_247470 *)local_15->data;
+			long local_18 = (salt << 16) | ordinal;
 			local_17->field_8 = NONE;
 			if (local_20->field_4 == NONE)
 				local_20->field_4 = local_18;
@@ -520,8 +517,7 @@ void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s
 			local_20->field_8 = local_18;
 		}
 		c_247470 *local_19 = DATUM(local_15, c_247470, head);
-		local_19->function_247470(arg_1, arg_2, (s_object_2470e0 *)(local_1->field_34 + child_offset), (s_247fd0 *)arg_3, arg_4, arg_2->color);
-		child_offset += 0xb8;
+		local_19->function_247470(arg_1, arg_2, (s_object_2470e0 *)(local_1->field_34 + local_14 * 0xb8), (s_247fd0 *)arg_3, arg_4, arg_2->color);
 		head = local_19->field_8;
 	}
 }

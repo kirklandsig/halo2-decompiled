@@ -1248,6 +1248,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax R (11-04): forms tried - the flag declared before the cursor and the total 93 (the channels argument leaves eax, and the gain is under the review threshold, so the original body is restored), the shared helper rewritten with an early return 94 here but 0x56160 falls to 25, the contribution written constant-first 94 (the same bytes) and a pointer-indexed walk 128, a nested four-by-four group loop 94 (it reproduces retail's unrolled four-channel block, its memory counter and its prologue, but the identity flag stays in bl), the same nest with a separate group cursor 112 and 118 and with the flag first 111 (the channels argument leaves eax), the declaration orders on that nest 93, 99 and 108, and the fast permuter 47 tries with no lower score.
 // MiniMax D (11-01): no new form, no lower score; the declaration order may not change, and the
 // flag's register follows the shared helper that the matched 0x56160 and 0x56380 pin.
 // score 94 (was 94): this round's new forms - the flag declared ahead of the total and the
@@ -1542,6 +1543,20 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Round 145: direct membership mask 140 (446 bytes); staged player bit, split written initialization and staged
 // retained decrement 134 each; direct membership with retained mask in the capacity scope, also with staged bit,
 // with per-arm first-byte stores, and with both 142 each (449/449/446/449 bytes). Original body restored.
+// Round 72 (m3 lane 1, one-file harness, exact: control 134 at 460 bytes, 0x56380 0; masked aligned in brackets, base [25]): the two
+// `result = NONE; goto done;` as an else chain 134 [25] (same code, kept: no goto left). Retail keeps `result` as one web in EAX from the
+// entry to the capacity-fail exit, which is why kept takes EBX, written and the clamp use literal zeros and the capacity-fail edge joins the main epilogue; ours
+// duplicates the return and rematerialises the zero. Diagnostic only, `long result = <global read>`: no `cmp edi, eax`, literal zero, `mov eax, edi` before the pops
+// and one epilogue, 145 [28], with written, kept, capacity, size first 126 [41] (player then goes on the stack, 0x56380 12). Tried on it: named total assigned last
+// 134 [25]; return NONE at both tests 170 [55], with total 159 [52], and written-first 152 [58], kept-first 149 [59] (each 0x56380 73); written-first without them
+// 137 [38], kept-first 137 [38] (0x56380 12); positive nesting 158 [38], `has && clamped == player` 172 [54], `!has || clamped != player` 175 [52], the clamp inside the
+// test 158 [38]; `__assume(result >= NONE)` or an empty `do { } while (false)` before the return 134 [25]; `__assume(result == 0)`, `(result != NONE)`, `(result >= 0)`
+// before the capacity test or in its else arm 134 [25]; empty else 134 [25], `do { } while (false)` in it 190 [51] (0x56380 11), `result = 0` in it 201 [47] (0x56380 73);
+// a one-pass `do ... while (false)` over the body 190 [51] (0x56380 11), inside the init test 190 [51], with the capacity test as a break 134 [25]; arms' first-byte
+// stores on the else form 178 [37]. 24 return-structure combinations all had 0x56380 at 73 (scores 191-219).
+// T57: Existing removal/fallback word-flag helpers and retained-bit helper, subsets
+// 1/2/3/4/5/6/7, then complete shared flags with positive capacity admission
+// 134/134/134/184/184/184/184/184. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -1550,60 +1565,59 @@ long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *outpu
 	{
 		dword player_bit = 1 << player;
 		if (!voice_channel_has_player((s_voice_channel const *)queue, player))
-		{
 			result = NONE;
-			goto done;
-		}
-		long clamped = player < 0 ? 0 : player > 15 ? 15 : player;
-		if (clamped != player)
+		else
 		{
-			result = NONE;
-			goto done;
-		}
-		capacity -= 2;
-		long entry_size = include_mask ? 13 : 11;
-		long written = 0;
-		dword kept = (1 << queue->count) - 1;
-		if (capacity >= entry_size)
-		{
-			for (long i = 0; i < queue->count; i++)
+			long clamped = player < 0 ? 0 : player > 15 ? 15 : player;
+			if (clamped != player)
+				result = NONE;
+			else
 			{
-				byte *entry = (byte *)&queue->entries[i];
-				if (*(word *)(entry + 6) & player_bit)
+				capacity -= 2;
+				long entry_size = include_mask ? 13 : 11;
+				long written = 0;
+				dword kept = (1 << queue->count) - 1;
+				if (capacity >= entry_size)
 				{
-					if (capacity < entry_size)
-						break;
-					*cursor = entry[4];
-					if (include_mask)
+					for (long i = 0; i < queue->count; i++)
 					{
-						*(word *)(cursor + 1) = *(word *)(entry + 2);
-						if (!*(word *)(cursor + 1))
-							*(word *)(cursor + 1) = (word)(1 << player);
-						cursor += 3;
+						byte *entry = (byte *)&queue->entries[i];
+						if (*(word *)(entry + 6) & player_bit)
+						{
+							if (capacity < entry_size)
+								break;
+							*cursor = entry[4];
+							if (include_mask)
+							{
+								*(word *)(cursor + 1) = *(word *)(entry + 2);
+								if (!*(word *)(cursor + 1))
+									*(word *)(cursor + 1) = (word)(1 << player);
+								cursor += 3;
+							}
+							else
+								cursor++;
+							memcpy(cursor, entry + 8, 10);
+							cursor += 10;
+							*(word *)(entry + 6) &= ~(1 << player);
+							queue->player_counts[player]--;
+							if (!*(word *)(entry + 6))
+								kept &= ~(1 << i);
+							written++;
+							capacity -= entry_size;
+						}
 					}
-					else
-						cursor++;
-					memcpy(cursor, entry + 8, 10);
-					cursor += 10;
-					*(word *)(entry + 6) &= ~(1 << player);
-					queue->player_counts[player]--;
-					if (!*(word *)(entry + 6))
-						kept &= ~(1 << i);
-					written++;
-					capacity -= entry_size;
+					result = written * entry_size + 2;
+					output[1] = (byte)written;
+					output[0] = queue->unknown08[4];
+					if ((word)kept != (1 << queue->count) - 1)
+						voice_queue_compact(queue, (word)kept);
+					*(word *)queue->unknown08 = 0;
+					for (long i = 0; i < queue->count; i++)
+						*(word *)queue->unknown08 |= *(word *)((byte *)&queue->entries[i] + 6);
 				}
 			}
-			result = written * entry_size + 2;
-			output[1] = (byte)written;
-			output[0] = queue->unknown08[4];
-			if ((word)kept != (1 << queue->count) - 1)
-				voice_queue_compact(queue, (word)kept);
-			*(word *)queue->unknown08 = 0;
-			for (long i = 0; i < queue->count; i++)
-				*(word *)queue->unknown08 |= *(word *)((byte *)&queue->entries[i] + 6);
 		}
 	}
-done:
 	return result;
 }
 
@@ -1682,6 +1696,9 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax D (11-04): no lower score: the mode helpers parameterised on the availability bytes (92, 0x56b70 keeps its
+// match) and a bitwise muted gate (105) leave the eager byte pair, the esi remote mask and the inlined second port-flag
+// query out of reach.
 // MiniMax A (11-04, run 41): no new form, no lower score (85); the second availability byte is still loaded
 // lazily where retail loads both before the muted test and keeps the remote mask in esi.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
@@ -3328,6 +3345,10 @@ struct s_voice_route_choice
 // Y579: One-based visitation with original/one-based selection, element receiver
 // and bitwise/conditional radio: 427/376/427/369/371/390/371/390.
 // NOT kept: no gain; cursor/entry repair fails despite three retail-length forms. Original body restored.
+// B447: Whole ordered scan provider with headset/nearest/radio/all-output completion,
+// forced inline 363/363/363/363; ordinary inline 1347/1344/1343/1339. NOT kept:
+// no exact match; ordinary providers suppress native expansion and stay called.
+// Original complete body restored; talker/zero, cursor and priority merge remain.
 // Y583: Walking choice formal with original selection base, ordinal/end bounds,
 // ordinal/difference selection and bitwise/conditional radio: 393/1074/474/1083/
 // 430/1080/474/1081. NOT kept: native frame/entry fail and both callers lose;
@@ -3683,12 +3704,18 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y579: Actual stream-end bounds with offset/cursor/walking-formal/difference results,
 // admission-time producer 161/165/172/174, entry producer 161/145/167/163.
 // NOT kept: no gain or native channel-home recovery; original whole body restored.
+// AC547: Actual kind-byte pointer/reference at packet/dispatch-arm scope,
+// indexed traversal 139/139/139/139; independent packet cursor 164/164/164/164.
+// NOT kept: alias-only forms do not match; original byte reads and full body restored.
 // Y583: Separate original relay/direct remote-query return storage bool/byte/short/long,
 // original/independent cursor 139/139/139/139/164/164/164/164. NOT kept: one-use
 // return carriers do not match; complete original body restored; channel/cursor homes remain.
 // Y587: Complete parse-validation state bool/byte/short/long, indexed then independent
 // cursor: 207/207/215/214/221/221/230/230; caller stays matched. NOT kept:
 // test-produced state misses and adds a frame word; original direct failures and full body restored.
+// Round 72 (m3 lane 1, one-file harness: control 139 [48] at 483 bytes, 0x564c0 0; masked aligned in brackets): consumed, size, a packet cursor, stride, tail size, consumed, cursor 161 [33] (478 bytes); index form as
+// written that way 155 [48]; channel index through an inline getter 160 [33], without the cursor 144 [44]; `__assume(channel != NULL)` at the entry, `data`, both, or `(channel != NULL)` ahead of the relay test or the route, or
+// `__assume(member >= NONE)` 161 [33] each (same code). The member still takes EBP over the channel; not kept, body unchanged.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

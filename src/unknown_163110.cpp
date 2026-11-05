@@ -1051,6 +1051,14 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // AC528: Complete cumulative segment rejection/survival in bool/byte/short/long
 // 298/384/369/371/404/404/406/405. NOT kept: no exact match or eligible gain; original complete body restored.
 // Coefficient preload, zero SIMD roles and clipping/projection homes remain. The native memory-OR result was preserved logically; no retained candidate.
+// M3 lane 4 r165 (one-file harness, exact at 18 for lane 6 r147's form, then 500 climbed forms; none below 18; none keepable below a match):
+// const references bound to temporaries (the form that matched 0x45560) for the deltas: x 148 (1830 B), y 254 (1830), z 218 (1830), all three
+// 118 (1851), x and named y 253 or the reverse 257 (1830); all three named 247 (1830); denominator staged i, k, j (retail's order and
+// roles) with named x 34, with x referenced 164 (1830), with x and y named 253 (1830). Classification through a named value, before or after
+// the plane's d, 146 (1830), through a const reference 148 (1830). Walking source pointer instead of `&source[k]` 160 (1835) at either place in
+// the tail and in five store orders: `total` then takes retail's EAX with `mov ecx, ebx` ahead of its store, but the walker's base loses
+// retail's +8 and the loop head its alignment. Dead locals at eight sites (diagnostic, 1 to 7): top and pass loop 150, 166, 45, 18, 22, 38, 30; all
+// later sites 146, 146, then 18. Left at 18: remainder row's j operands, denominator x/y roles, numerator k operands, total's register.
 // Round 211 (m3 lane 3, fast; a stdcall copy under the compile-only listing tracks the clip block; aligned with registers
 // and stack/both masked, control 64/22). Dot helpers grid, 360 compile-only: classification or distance through dot3f or
 // plane_distance_to_point only raise it; denominator through dot3f with direct rows is its best, real 226 (51/15). Clip
@@ -1062,6 +1070,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // `[eax] * [ecx + 4]`: a named point pointer 171 (52/31), point-first terms 171, staged through a sum 179 (50/28), staged on
 // the array 334 (54/30), plane_distance_to_point 171, a named sum 58 (30/14). Keepable forms: no delta local 235/239 (54/19,
 // 63/18), all three named 246/247 (78/27, 79/29), only the `out++` tail 249 (65/23). Original body restored.
+// M3 lane 12 r91 (one-link harness exact at 115; masked aligned 33): retail's registers read as temps numbered e4.j, e4.k, e4.i, n.j,
+// n.k, n.i, ours has n.i before n.j; the far plane already loads its first camera term early. e4.i named before the normal copy 141 (masked 46),
+// as a const reference 119 (38); the i product named after the copy 159 (57); an e4 pointer 251 (35, 1867 bytes); a normal pointer for d 150 (41);
+// `(real)(j + k) + i` 176 (54), `i + (real)(j + k)` 176 (54), `(real)(k + j) + i` 145 (51), all products cast 146 (36), a double subtotal 413 (158, 1835 bytes).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -402,6 +402,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // N365: Existing color helper with separate twice-used scalar opacity, crossed with
 // shared RGB/clamped-weight/native per-use palette, 699/699/699/699/696/696/696/696.
 // Original helper and body restored; NOT kept: unmatched input/contract ownership.
+// Round 149 (m3 lane 6, fast; control 616, aligned 497, masked 249; masked ignores registers and stack offsets): accumulator statement orders (r g b, i d h, w weight, m remaining)
+// rgbidhwm 723 (masked 225); rgbidhmw 703 (3836 bytes, 214); rhgwbidm 723 (226); rgbwidhm 723 (213); rgwbidhm 723 (211); rhgwidmb 721 (247); hrgwbidm 723 (222). Products written `t * x` no
+// change on any order; helper parameters with the weight before the scalars no change on four orders; a fresh clamped local 704/724/722, kept order 617. `char` slot 705 (3835, 250), with orders
+// 718/676 (676 at 3832 bytes, 215); slot read at the test then `long` from a second read 756 (246), with orders 752/769 (211/210). Retail holds 0.0 in xmm7 across the palette arm's
+// accumulators, so its products run in place (`mulss xmm1, xmm0`); ours overwrites the zero and rematerialises it, leaving a spare temporary and `movaps t, x` products.
 // M383: Existing scalar destination/color/scalars/weight, merge and publication formal
 // lexical homes, then scalar-merge/all helpers: eight 616s. NOT kept: no palette/SIMD
 // allocation repair; original helper symbols, input-weight capture and complete body restored.
@@ -413,6 +418,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // other three accumulations direct, so no helper takes an accumulator's address, 711 (3804, 521/157), still one field at
 // a time. On the original helpers, char slot and body publications together 723 (3846, 403/102), the best register-blind
 // helper form; that with all six values computed before any store 738 (3852, 412/90). Original body restored.
+// Round 64 (m3 lane 14, fast listed with 0x131030; masked aligned 247 at 785 instructions on both sides): the key to the accumulator
+// blocks is retail's `mulss scalar, t` in place ([scalar, t]; ours copies t), which is what lets its schedule interleave the
+// preloaded scalars. Weight after the height, field order 723 (3845, aligned 223); retail's scheduled order red, height, green, weight, intensity,
+// distance, remaining, blue 721 (245); weight parameter first, after the accumulator, after the colour 616 each (same code);
+// the scalars `real const` 616 (same), `real const &` 699 (3828, 241), with field order 723 (223) and 694 (251); a named clamped
+// weight in field order 724 (223), in the old order 617 (247). Body unchanged.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
