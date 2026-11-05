@@ -548,6 +548,7 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// MiniMax C (11-04): no new form, no lower score: the flag-0 mask is the same literal 1 as the type tests and the shift, so the compiler hoists it into EBX and the frame stays 0x84 (a unique mask value folds to `test byte ptr [esi+4], imm`); a byte flags field with byte or word bitfield views, the mask spelled byte, unsigned, long, short, true or character, `== 0`, `!= 0` and `% 2`, the type test as a switch, and the audibility form that reproduces retail's neg/sbb/inc store all score 265 or worse.
 // score 264 (was 264): frame 0x84 versus 0x80: our build keeps the constant 1 in EBX from the datum flag test
 // (`test bl, al`, the type tests, the shift, b8d30's `push ebx`) and leaves a dead store of it in a stack slot,
 // so the object pointer goes to ECX; retail tests with immediates and loads `mov bl, 1` only after the b8d30
