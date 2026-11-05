@@ -1867,6 +1867,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 479 reduced each; all with complete native request 477 (control 479; full 305).
 // NOT kept: two reduced points without equality or ordinary gain; original
 // acquisitions, pointer scopes, request and full body restored. Frame/range homes remain.
+// J257: Actual gain-step/pitch/random-delay scalar residence, double subsets and complete clamped-pitch producer:
+// 456/535/344/541/456/535/541/563. NOT kept: no byte match; scalar precision forms lack equality and do not jointly recover native frame and playback/range ownership.
+// Original executable source restored; allocation gaps remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2568,6 +2571,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 674/749/675/675; immutable counterparts 674/749/675/675 reduced (control 694,
 // full 597). NOT kept: frame grows from 0x3c to 0x40/0x44; entry true/flags and
 // record/track homes remain. Original Boolean producer and complete body restored.
+// J257: One complete repeated stopping/continuing classification across result, release and track tests, bool/byte/short/long:
+// 729/761/790/780/761/761/790/780. NOT kept: no byte match; shared terminal classification does not recover native entry truth and record/track ownership.
+// Original executable source restored; allocation gaps remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
