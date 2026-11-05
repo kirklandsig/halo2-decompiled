@@ -56,7 +56,7 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
 }
 
-// score 306 (was 345): frame 0x64, retail's entry copies and retail's 1863-byte length now agree; saved-direction homes, planar operand order and xmm numbers of the floors remain.
+// score 306 (was 306; 345 before): frame 0x64, retail's entry copies and retail's 1863-byte length now agree; saved-direction homes, planar operand order and xmm numbers of the floors remain.
 // Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
 // MiniMax D: the requested direction read through its own address (a stack argument, as
 // retail's) 366, not kept (an address-taken read needs a byte match); the magnitude summed in
@@ -380,6 +380,11 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // then paired final public transfers: 447/363/376/440/501/388/473/480. History-only and secondary/history
 // recover frame 0x64 and first +0x42 but grow to 1907/1894 versus 1863. NOT kept: all regress;
 // original copies, helpers and complete body restored; frame/query-magnitude homes remain.
+// Round 59 (m3 lane 15, fast; the convention agrees: arg_0 EAX, ret 0x20; first difference +0x54 is the definition pointer at frame+4 and
+// the magnitude at frame+0 where retail has them the other way round): the magnitude helper's local named `magnitude` 306 and the definition
+// pointer named `settings` 306 (names do not order these slots); `local_15` as `*(vector2f const *)local_3` 306, both planar locals that way
+// 306; the turn dot through the existing dot_product2d 306 (all the same code). Retail sums the first planar length j, i and the second i, j,
+// and multiplies the turn dot local_13-first; ours puts local_15 first in both products.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
