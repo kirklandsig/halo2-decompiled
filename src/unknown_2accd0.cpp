@@ -903,6 +903,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // DL269: Shared scratch task/buffer/size reference interfaces, subsets 1..7: 34 each;
 // all with ordinary inline 174 (fast/full control 34). NOT kept: no gain or equality.
 // Original helper, all three uses and callback restored; total/seek/size homes remain.
+// DL271: Standard-library capacity minimum, shared/separate capacity and direct/named
+// remaining expressions, both native bound directions: eight at 207, 717/719 bytes.
+// NOT kept: no equality; original macro, capacity output, total/seek homes and body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

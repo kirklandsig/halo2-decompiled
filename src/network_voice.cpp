@@ -3361,6 +3361,9 @@ struct s_voice_route_choice
 // forced inline 363/363/363/363; ordinary inline 1347/1344/1343/1339. NOT kept:
 // no exact match; ordinary providers suppress native expansion and stay called.
 // Original complete body restored; talker/zero, cursor and priority merge remain.
+// DL271: Typed native pair-array zero fills, forward range/count then reverse
+// range/count, bitwise radio 383/384/421/403; conditional radio 412/411/409/405.
+// NOT kept: no equality or gain; original routing, mixer initialization and full body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
