@@ -376,6 +376,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // M380: Shared copier short/word/int64/uint64 size contracts with native/void return:
 // 39/39/56/56/39/39/56/56. NOT kept: narrow forms gain one and grow to 103 bytes;
 // wide forms regress at 112 bytes. Original helper, scanner and complete body restored.
+// Round 153 (fast with 0xb5f10/0xb61d0): the add as pointer arithmetic, `start = (long)(string + start)` 40 (same code). On round 48's 21
+// form (re-measured 21: start arrives in ECX and lives in EDI as retail, but the scan walks in ECX and counts in EDX, retail EDX/ECX, and
+// the one-use source sum precedes the compare): the length helper as `while (length < 0x1ff && *string++) length++` 21 (same code); the
+// helper walking a local declared after the counter 21 (0xb61d0 2); `count <= length - start` 35 (0xb5f10 35); a const length local 21.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
