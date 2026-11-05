@@ -319,6 +319,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // The negated j named for its three uses reaches retail's 3499 with the reference scale, planar copies and the complement, 758 (masked 152).
 // EBX save still in the prologue (retail pushes it after the 0x26c test, which shifts about 40 lines): empty else arm on the 0x26c test or the arg_8 test, both, a compiled-out loop at the
 // join, or around the whole middle: same code at 748. Retail re-reads its arguments from their stack homes per region (arg_0 in ESI at the top, arg_1 in ESI in the arm).
+// M397: Direct input with fixed absolute-residual producer and double root/signed-root/
+// scaled-correction parts, masks 0..7: 804/804/804/810/804/810/810/810. NOT kept: no exact or
+// eligible native-frame gain; original input storage, private helpers and full body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

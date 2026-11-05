@@ -3361,6 +3361,9 @@ struct s_voice_route_choice
 // forced inline 363/363/363/363; ordinary inline 1347/1344/1343/1339. NOT kept:
 // no exact match; ordinary providers suppress native expansion and stay called.
 // Original complete body restored; talker/zero, cursor and priority merge remain.
+// M397: Actual ordinal/player/source-table lexical identities, masks 1/2/4/3/5/6/7,
+// then all with conditional radio: 363/363/363/363/363/363/363/411. NOT kept: no exact or eligible
+// gain; original complete body restored. Entry saves and cursor bias remain.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

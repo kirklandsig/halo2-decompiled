@@ -1118,6 +1118,9 @@ bool __stdcall function_2399da(long controller_index)
 // at three places (a rotation test, diagnostic) keep the identity in ECX: no missing rotation step. 130 combinations (own rank local or field, identity
 // test spelling, permission spelling, task index preset, chain/over-rank first/nested dispatch, store order, nested or guard returns) 89-96 with no
 // identity in EAX.
+// M397: Complete selection/member/membership output-buffer defaults, masks 1/2/4/3/5/6/7,
+// then all aggregate-initialized at entry: 174/158/123/193/196/181/212/234. NOT kept: added
+// stores and no exact or eligible gain; original buffers and full body restored.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
