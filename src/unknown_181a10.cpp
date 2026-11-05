@@ -416,6 +416,11 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // call 8; entry pointers for both bodies 8; `result = true` first in the closer-contact arm 10; that test with
 // its operands swapped 8. Diagnostics: `(void)j`, `(void)i`, `(void)first` and unused initialised copies of
 // them (one or two) leave the slots, so no-code references do not order these spill homes.
+// Round 57 (m3 lane 15, fast): `__assume` at the loop top, before the kind calls or before the contacts: j >= 0 8, j < count 8, both 9, i >= 0 8, first or second
+// != NULL 8, two assumes 8, ahead of the loops 9; naming body_b 8, body_a 79, both 8 (no-code references do not move these homes). Second's extra body read 24 and
+// first's flag through the indexed expression 47 both give retail's j, first, i, but also move second to the top and swap the scaled indices (retail second, scaled i,
+// scaled j); with both 47; second's flag indexed 230, both flags 233; first's count in a local 36, with the extra read 42, with the flag 174; contact count local 865;
+// entry pointer for one body 8/8. So one reference fewer on first or one more on j is the right direction; the second group is what is left.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
