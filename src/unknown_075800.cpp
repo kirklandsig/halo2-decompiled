@@ -1310,6 +1310,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Round 150 (m3 lane 5, plain, on the one retail-order switch, control 217/420, 0x7afd0 3): lookup argument through a const ref bound to a cast temporary in each connection case
 // 219/424 (address still EAX); connection cases as plain file-local handlers or `inline` ones 270/372 each (stay out of line, 0x7afd0 6); a forced-inline lookup helper taking the
 // address by const ref 218/468 (0x92ef0 inlines, 0x7afd0 5).
+// Round 74 (m3 lane 10, all plain; caller 0x7afd0 and 0x93aa0, 0x92ef0, 0x92d10 checked): on the one retail-order switch (control 217, 420 bytes, 0x7afd0 3): 0x92ef0 declared in the order its callers set its registers up, (kind, address, link), with definition,
+// declarations and every call 236 (404, 0x7afd0 6); (address, kind, link) 236 (404, 0x7afd0 6); `default: return;` as the switch's first label 217; case 10 first 217; case 10 last 220. A harness without the ballast object: `__assume` on the address, the message,
+// the type or `this` at entry or around the lookups, and nesting the lookups under extra tests, left the address's EAX home alone; not representative, so listed only as a lead that block depth alone doesn't look like the cause.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
