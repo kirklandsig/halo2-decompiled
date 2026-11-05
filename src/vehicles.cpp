@@ -3008,6 +3008,8 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // N378: Existing complete basis constructors current/desired/both/distinct output, inline then force-inline:
 // 742/734/755/763/742/734/755/763. NOT kept: no byte equality or qualifying native-shape gain;
 // original executable source restored; other constructor users regress; native frame 0xfc and scalar/transform homes remain.
+// P347: Complete branch-owned turn/speed-fraction/slip-scale results, seven subsets then all with independent relative output:
+// 676/676/676/676/676/676/676/682. NOT kept: Seven ties and one regression; frames remain 0xd0/0x104 versus native 0xfc. Original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3948,6 +3950,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // J257: Existing double-factor scale at projection/up/axis and native default-forward product boundaries, with x87 angle/fraction diagnostics:
 // 205/218/229/232/251/241/255/208/200/204/208/159/228. NOT kept: all thirteen regress; prologue/storage gaps remain; existing helper already inlines and precision forms lack equality.
 // Original executable source restored; allocation gaps remain.
+// P344: Isolated normalizer return with original entry flip truth, mutable/immutable real/double at
+// producer, then real/double declarations before fraction/basis: 159/159/217/217/159/217/159/217. NOT
+// kept: no byte match; original whole body restored. Projection/cross ranks and angle/trig homes
+// remain.
 // M378: Complete default placements 1/D/2, 2/D/1, D/1/2, D/2/1; paired real cases
 // in both label/default orders: 136/136/136/136/165/165/165/165. NOT kept: no native projection/
 // trig repair or byte equality; original cases, precision and complete body restored.

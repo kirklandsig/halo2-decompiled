@@ -973,6 +973,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 253/253/265/267; before the read-only query 279/279/296/296 (calibrated fast control 258).
 // NOT kept: best gain five is below eight; predicate/observation forms need equality. Original
 // reference observations and complete body restored; Boolean homes and shared-tail predecessor remain.
+// P345: Movement/attention/object admission-produced return results, subsets
+// 1/2/4/3/5/6/7 then separate false defaults: 378/335/335/369/369/323/358/356
+// (reduced control 341; full 257). NOT kept: extra SETG/SETNE result stores absent from
+// retail; original body restored; byte homes and direction-tail predecessor remain.
 // M389: Both native normalization-return scalar receivers, local real/const-real/double/const-double
 // 258/258/327/327; shared/test-owned real/const-real/double/const-double 258/258/327/327.
 // NOT kept: one-use scalar/result residence did not match; double forms grow to 1480/1444.

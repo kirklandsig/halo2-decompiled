@@ -1028,6 +1028,8 @@ extern long *g_51e9cc;
 // explicit-query real/double results: 121/121/137/144/121/144/121/144. NOT kept: no equality; original
 // height observation, branch and full body restored. Lookup rematerialization and crouch/contact
 // publication schedules remain.
+// P346: Complete query/decoder contact admission, valid/invalid bool/byte/short/long results:
+// 42/42/42/42/42/42/42/42. NOT kept: no native lookup retention or equality; original callback restored.
 // M383: Actual contiguous contact-field CRT fills at initial/object/instance phase subsets
 // 1/2/4/3/5/6/7, then fallback too: 255/214/204/259/275/221/266/272. NOT kept:
 // lookup receiver/store schedule not recovered; original scalar clears and complete body restored.
@@ -2080,6 +2082,12 @@ void function_dfd70(long arg_159e6d)
 // P321: Initial zero/one crouch with ternary/complete/crouch-default/zero-default
 // switch results: 233/233/252/233/233/233/264/234. NOT kept: no gain;
 // crouch-default and zero-default also raise shared users. Helpers restored.
+// P344: Actual first-ray fraction and hit/head projection declarations at the collision workspace,
+// seven subsets then reversed declarations: 233/233/233/233/233/233/233/233. NOT kept: no byte match;
+// both original helpers and complete target restored. Mode-three placement and basis/ray homes remain.
+// P346: Unified adjusted-head result with one final eye publication, original/final setter,
+// start setter and returned-up call ownership: 238/239/239/248/245/240/240/249.
+// NOT kept: native output/frame schedule not recovered and shared users regress. Both helpers restored.
 // F384: Actual side-vector setter/point-setter/mutable/immutable initializer,
 // native or memmove origin transfer: 235/235/233/233/256/256/253/253. NOT kept:
 // no gain; memmove with either initializer also raises a shared user. Original
@@ -4989,6 +4997,7 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 
 /* jumps: an upward kick to the definition's jump speed (less for a tired
    player), relative to what the biped stands on; an actor may refuse. */
+// Matches with a false result, success after the support query and one return.
 // MiniMax A (11-03): no new form, no lower score: retail keeps the riding flag at [ebp-0x25] and writes a
 // dead 1 into the 0x109e00 argument slot, while ours keeps the flag in that slot.
 // score 68 (was 68): 683 bytes and frame 0x28 agree; only result=true's position and result/riding's swapped slots left. Earlier (640 bytes against retail 683, frame 0x24 versus 0x28): Walked against retail block by block
@@ -5122,7 +5131,6 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // success: 144/144/146/146/160/160/167/167. NOT kept: no equality; original state observation,
 // call criterion and complete body restored. Support/result byte homes and
 // native early success remain.
-// Matches with a false result, success after the support query and one return.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
