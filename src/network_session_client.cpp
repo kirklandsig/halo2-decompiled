@@ -781,6 +781,13 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // 49; both by ternary 156 (499 bytes, the second flag test stays, callers keep matching); a named present bool 218 (361);
 // a presence helper with local copies of both addresses 218 (361); a pair helper with local copies behind the flag test 22
 // (same code). Both callers are lost in every 46, 49, 108 and 218 form.
+// Round 75 (m3 lane 10, fast with both callers; control 22): the address pointer named before the clears 22, the
+// copy index declared with the buffers 22, the mask stored after the address pointer 22 (all same code); the member
+// count read before the clears 124; the variant and summary fetched before the opening test 32 (the summary lea then
+// takes retail's EAX, the mask and copy-loop rotation stay). Plain `for` copy loop 100 (477 bytes: its copy loop and
+// prologue are byte for byte retail's; the player loop then folds the mask read and rotates its argument registers);
+// on it the bit-first mask test 100, the mask in a loop local 100, the bit in a loop local 100, nested mask and slot
+// tests 100, the slot test first 99, the copy bounded by `session->member_count` 138 (both callers lost).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
