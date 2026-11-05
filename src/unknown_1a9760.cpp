@@ -183,6 +183,12 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // NOT kept: no exact or eligible gain; original flag store, arithmetic and loop restored.
 // Round 146 (fast): the flag through a byte or char cast 4/4; half-step row accumulated in a local 4, in local_3 198 (1004 bytes);
 // half product named per row 4.
+// Round 151 (fast 182, the rest a harness whose head block is the real build's): flag and rows after a named `i*i + k*k` partial, then
+// `sqrt(j*j + partial)`, 182 (1002 bytes): the whole x87/SSE schedule is retail's with the flag early, but a named partial stays on the x87 stack
+// (`fadd st(1)` for `faddp`, then `fstp; fstp st(0); fld`). Same stack with the flag first, as double, `+=`, `= j*j + partial`, `= partial + j*j`, on the
+// length local itself, const, register, in a block, through a second named total. Partial with rows then flag 200 (harness), rows, partial, flag 102;
+// `k*k` named alone 188, `k*k` then `+= i*i` 193; an unused partial 88 (same code); the flag as memset of one byte, or a one-byte struct copy, 88 (same code);
+// 107 cast shapes of the square sum: best 88 (same code as the base). The open question is a temporary, not a named local, split around the flag.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
