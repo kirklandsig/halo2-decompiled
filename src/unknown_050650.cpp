@@ -697,6 +697,9 @@ struct s_collision_result_buffer_1697c0
 // M398: Immutable rounded magnitude/reciprocal/paired angular results, subsets
 // 1/2/3/4/5/6/7, then complete immutable rotation products: 303/303/303/303/303/303/303/303.
 // NOT kept: no native scratch/home recovery; original producers and entire body restored.
+// M402: Existing inline header normalization at axis/candidate/fallback, seven subsets,
+// then complete graph with observed axis length: 307/303/299/307/305/299/305/410. NOT kept:
+// four-point best is below eight; axis forms recover early homes but grow. Original body restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

@@ -201,6 +201,9 @@ extern real g_4c9798[36];
 // M396: Actual mode/width-limit/height-limit enum domains, subsets 1/2/4/3/5/6/7,
 // 174/174/250/174/250/250/250; complete immutable limit graph 250. NOT kept:
 // ties/regressions; original body restored. Mode/size homes and rounding reloads remain.
+// M402: Complete reciprocal/depth-scale/offset result arms, seven subsets, then
+// complete fallback-first reciprocal: 174/174/323/174/323/323/323/323. NOT kept:
+// offset default moves after its branch; original scalar results and whole body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

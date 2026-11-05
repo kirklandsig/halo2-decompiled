@@ -356,6 +356,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // M398: Complete choice/existing-index output defaults, aggregate/CRT pairs
 // at phase/entry lifetimes: 923/987/921/958/971/979/962/979.
 // NOT kept: all regress and grow; original arrays, helpers and complete body restored.
+// M402: Native dword query/choice counts and duplicate-failure-first search,
+// direct count/repeated flags/repeated tag subsets 0..7: 966/966/966/966/966/966/965/965.
+// NOT kept: earlier entry mismatch and 3301/3327 extent; original counters/search/body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
