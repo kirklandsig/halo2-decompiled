@@ -331,6 +331,9 @@ struct c_aggregate : c_child
 // MiniMax B (11-04): this body is byte-exact when its file is built /GL- (the build's
 // per-file flag), but 0x97f60, 0x97fe0 and 0x980d0 then lose their matches (52/80/56)
 // because LTCG's rotated argument registers are gone, so the flag is not kept.
+// Lane 13 r62 (fast; spills and `produced` in inlined scopes so the slots can pack): the dispatch loop in a force-inline helper 31,
+// the cleanup loop 31, both 31 (frame 0x8024 each, same code); the collection step plus the cleanup in force-inline helpers 146 (389
+// bytes), plus the dispatch too 146. Still BLOCKED by the build flag: frame 0x8020 needs `produced` to share a slot.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

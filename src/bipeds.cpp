@@ -1031,6 +1031,9 @@ extern long *g_51e9cc;
 // M383: Actual contiguous contact-field CRT fills at initial/object/instance phase subsets
 // 1/2/4/3/5/6/7, then fallback too: 255/214/204/259/275/221/266/272. NOT kept:
 // lookup receiver/store schedule not recovered; original scalar clears and complete body restored.
+// J256: Sparse contact-kind exclusive comparisons in six orders, named kind and independent tests:
+// 260/135/260/110/139/136/261/276. NOT kept: all sparse dispatch forms regress from 42; lookup address rematerialization persists and the independent tests also grow the frame
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1531,6 +1534,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // object/tag/component/state/animation/airborne/ground/facing boundaries:
 // 589/585/585/585/585/585/600/618. NOT kept: no equality; original whole body restored; frame 0xf8
 // versus 0xfc and material/airborne/animation homes remain.
+// F391: Material constant-default lifetime before object/tag/component/state/animation/airborne,
+// then after position and after velocity: 584/584/584/584/584/584/590/610, all 2828 bytes.
+// NOT kept: best gains one and every frame stays 0xf8 versus native 0xfc. Original material
+// initialization, all memory observations, animation refresh, packed output, shared eye helpers and
+// complete body restored; material/airborne/animation homes and missing frame word remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2085,6 +2093,9 @@ void function_dfd70(long arg_159e6d)
 // then complete backward ranges: 236/239/244/270/267/272/263/259. NOT kept: target and shared users
 // regress; original helpers and complete wrapper restored. Native mode-three
 // placement and forward/up/second-ray homes remain.
+// P344: Actual first-ray fraction and hit/head projection declarations at the collision workspace,
+// seven subsets then reversed declarations: 233/233/233/233/233/233/233/233. NOT kept: no byte match;
+// both original helpers and complete target restored. Mode-three placement and basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2532,6 +2543,8 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // B444: Explicit flag read/modify/write assignments at pre-call/post-call/failure
 // boundaries, seven subsets then all mask-first: 63/63/63/63/63/63/63/63. NOT kept: no byte equality
 // or native EBP/body/flag repair; original complete body and word fields restored.
+// M391: Removed-bit dependencies at the three flag-reset sites, seven subsets, then all with missing-bit fallback publication: 63/63/63/63/63/63/63/72.
+// NOT kept: No exact native mask/count/EBP repair; original field widths, call roles and helpers retained. Original complete body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -2905,7 +2918,7 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
-// score 530 (was 530): Frame 0x44 versus 0x4c; result byte, scalar homes and native point loading remain.
+// score 520 (was 530): Frame 0x44 versus 0x4c; result byte, scalar homes and native point loading remain.
 // Earlier: 540 (was 568; the old 774 was stale): the logic was walked against retail block by block and agrees
 // (conditions, field offsets and widths, constants 1.0/0.001/0.7/0.65/2.0/0.3, call order and arguments, three
 // loops). The flag tests are TEST_FIELD_BIT (retail `shr; test r8, 1` at 0xe1079, 0xe109d, 0xe10a8, 0xe118c).
@@ -3011,6 +3024,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // M388: Actual bound-selected push, maximum-distance result and side-factor producers,
 // masks 1/2/4/3/5/6/7, then named reciprocal: eight fast 530s, 1834/1908 bytes.
 // NOT kept: no frame/result-home repair; original complete body restored.
+// AC546: Existing owning-word writer for deferred/failure/notification publications,
+// seven subsets then existing state bitfields: 520/545/535/530/520/545/535/534.
+// Set-only 530; clear-only 520 plain, 1844/1908 bytes. Kept the clear-only writer:
+// native direct byte AND in both completion paths; frame/result/state homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3177,7 +3194,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 				}
 			}
 		}
-		*((byte *)&biped->flags_348 + 1) &= ~1;
+		word_flags_set(&biped->flags_348, 8, false);
 		return result;
 	}
 	case 1:
@@ -3357,6 +3374,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Original publications/body restored; result/flight homes and vector schedule remain.
 // Direct flight-rate argument on the current full-width-special graph, alone/with byte writer:
 // 610/603 (control 600); both regress. Original scalar producer and whole body restored.
+// AC546: In-place first-wall/clamp/yaw output phases, seven subsets then coordinate
+// publication: 624/622/585/672/737/643/695/623 (control 605). NOT kept: 585
+// lengthens away and combines regressing parts; yaw adds an out-of-line call.
+// Isolated forced native/setter yaw 635/605; 18 calls recovered, but frame 0x8c
+// or a tie remains. Original complete body, helper and long special restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4518,6 +4540,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // magnitude carriers at two producer boundaries: 210/210/210/210/157/157/157/157. NOT kept: unmatched
 // one-use carrier graph; original product, coefficients, helper and complete body restored. Native 0x24
 // frame, normalization SIMD and trig/basis homes remain.
+// J256: Twice-used cosine complement at cosine/sine boundaries, mutable/immutable and ordinary/forced rotation:
+// 163/163/163/163/163/163/163/163. NOT kept: all eight common-factor forms regress from 145 to 163; the added inline formal and hoisted factor miss required byte equality
+// Original executable source restored; native frame and allocation gaps remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -5030,6 +5055,7 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // success: 144/144/146/146/160/160/167/167. NOT kept: no equality; original state observation,
 // call criterion and complete body restored. Support/result byte homes and
 // native early success remain.
+// Matches with a false result, success after the support query and one return.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -5042,15 +5068,16 @@ bool __stdcall function_e4770(long arg_159e6d)
 	vector3f velocity;
 	vector3f relative;
 	bool riding;
-	bool result;
+	bool result = false;
 	real along;
 
 	if (function_e4050(arg_159e6d) || biped->unknown34c == 1)
 	{
-		return false;
+		goto done;
 	}
 	jump = *(real *)(definition + 0x1f8);
 	riding = function_109e00(arg_159e6d, &ground, false);
+	result = true;
 	if (biped->unknown13c != NONE)
 	{
 		byte *globals = *(byte **)((byte *)g_4e034c + 0x134);
@@ -5075,7 +5102,6 @@ bool __stdcall function_e4770(long arg_159e6d)
 		velocity.j += biped->up.j * kick;
 		velocity.k += biped->up.k * kick;
 	}
-	result = true;
 	if (biped->actor_index != NONE)
 	{
 		long name = *(long *)(state + 0x7c);
@@ -5083,7 +5109,7 @@ bool __stdcall function_e4770(long arg_159e6d)
 		result = function_1f5560(biped->actor_index, &velocity, name == 0xa00003e || name == 0xd00003f);
 		if (!result)
 		{
-			return false;
+			goto done;
 		}
 		if (riding)
 		{
@@ -5103,6 +5129,7 @@ bool __stdcall function_e4770(long arg_159e6d)
 		function_b7360(arg_159e6d);
 		function_bba20(arg_159e6d);
 	}
+done:
 	return result;
 }
 

@@ -97,6 +97,10 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // body, contributor code at 429, decides its LTCG convention), which accounts for all 16 differences.
 // Round 120 (lane 7, fast): direction declared at function scope 16; pitch computed before yaw 23; the
 // spawn counter short 75 (355 bytes) and word 41; the two mask bits as named bools 40.
+// Round 70 (m3 lane 1, fast): the source cast from NULL 16; palette types in a local 16; an entries local offset by the
+// first index 86 (356 B); an unsigned inner counter 17; one entry's effect as an inline helper 230 (223 B); the palette
+// index named before the tag 17. Diagnostic on scratch copies (one-link harness, exact at 16 on this body): 0x17e670
+// declared (point, source, ...) 7, and with the entry declared before the tag 0. Still BLOCKED-BY 0x17e670.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

@@ -553,6 +553,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // Round 87 (m3 lane 16, fast): tick_scale declared after the chains (ticks in XMM3 as retail, but the products copy it: `movaps xmm4, xmm3; mulss
 // xmm4, xmm0`), tick products i, j, k 73 (369 bytes); products j, i, k 72 (369); products j, i, k with deltas i, j, k 72 (369); products and deltas i, j, k 73
 // (369); fused product and delta rows i, j, k 73 (369), rows j, i, k 72 (369); `v = v * t` 73 (369); `v = t * v` 73 (369). Original body restored.
+// Lane 13 r62 (fast; rate rows into a `predicted` point, then scaled_difference3f with `(real)ticks`, which gives retail's XMM3
+// and in-place products): predicted through vector3f_add_scaled, deltas i, j, k 79 (re-measured), deltas j, i, k 32 (re-measured,
+// first +0x65, chains and products agree with retail, the stores and deltas run j, i); predicted by statements j, i, k with deltas
+// i, j, k 63 (369 bytes), k, j, i with deltas i, j, k 78, j, i, k with deltas k, i, j 78. Rate rows follow the delta order in every
+// form, so retail's chains j, i, k with stores and deltas i, j, k stay unreached.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

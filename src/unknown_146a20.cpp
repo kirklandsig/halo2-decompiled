@@ -306,6 +306,9 @@ bool g_47f05b;
 // src/unknown_1470f0.cpp 34 (fast, same code); a raw block struct with fixed/buffer/pool members 34, all through the global 38
 // (144 bytes); placement from the global with the buffer from `block` 36 (146 bytes, still no store); the global tested
 // with placement through `block` 35 (140 bytes).
+// N384: Actual fixed/pool placement admission in bool/byte/short/long: eight 34.
+// NOT kept: unmatched admission carriers; original complete body restored. Shared
+// constructors untouched; intermediate vtable store and successful-arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {

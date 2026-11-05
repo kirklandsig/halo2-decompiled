@@ -73,6 +73,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
+// score 545 (was 545): this round found no gain - the frame is 0x22c against retail's 0x224 and the
+// stream and gain homes still differ; the permuter needs a full build per trial and ran past the
+// per-function time budget, so it was stopped without a result.
 // score 545 (was 545): frame 0x22c versus 0x224; stream/gain homes and mixed math remain.
 // the level-energy block summed in double (the gain converter returning double) 528, but the
 // shared converter costs the matched 0x21f8a0 (0 -> 67): restored (MiniMax E run 12).

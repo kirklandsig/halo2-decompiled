@@ -254,6 +254,8 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // AC532: Complete complementary rejection in bool/byte/short/long, outer-result
 // 43/43/43/43 and direct-return 52/52/52/52. NOT kept: no exact mask/successor
 // allocation; original result, iterator, predicates and memcpy restored.
+// M391: Eligibility scopes split at individual flag/identity/online/exclusion boundaries 1,3,4,5,1+3,1+4,1+5,3+4+5: 43/43/43/43/43/43/43/43.
+// NOT kept: No exact native index/successor, mask-hoist or loop-exit repair. Original complete body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -827,6 +829,9 @@ void function_1537f0(s_profile_record *record);
 // DH358: Existing unused eight-byte source field as signed integer, native SDK integer/time
 // records, dword/word/byte field arrays and double: eight scores 53; every file control unchanged.
 // NOT kept: identity homes still fold and frame 0x98/end-bound remain; original record and body restored.
+// Y597: Current pointer/no-tail graph with whole source-header zero field subsets
+// 1/2/4/3/5/6/7, then contiguous header fill: 53/77/53/86/53/77/86/115.
+// NOT kept: no exact publication graph or gain; full original body and initializers restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1379,6 +1384,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // DH358: Branch-set capacity result with empty/full defaults in bool/byte/word/dword:
 // eight scores 395 at 1162/1171 bytes. NOT kept: every form regresses and loses native extent;
 // original predicate, removed-index producer, bounds, copy loops and full tail restored.
+// N384: Actual returned insertion ordinal at entry/post-removal/immutable-bound/
+// completed-shift lifetimes, two result-role names: 378/377/377/66 twice. Original
+// mutable input/result and full body restored; count/upper/copy allocation remains.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
