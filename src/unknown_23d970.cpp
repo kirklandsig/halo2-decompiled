@@ -563,6 +563,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
+// MiniMax R (11-04): no new form, no lower score.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
@@ -814,6 +815,8 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // B430: Counted component-array prior-up/forward/default-vector transfers, masks
 // 1/2/3/4/5/6/7: 106/233/272/259/275/254/286; all with chained equal defaults 300.
 // NOT kept: no byte match; original aggregate transfers, products and body restored.
+// M391: Normalized-distance/delay-subtraction/transition-clamp double receivers, seven subsets, then complete real receivers: 227/114/240/135/245/150/256/103.
+// NOT kept: No exact product-color, forward-K reuse or angle-store-base repair; nonmatching result lifetimes are discarded. Original complete body restored.
 // B432: Caller-visible inline declarations for the existing staged cross, normalizer
 // and perpendicular producers, seven subsets, then staged-cross forceinline: eight 45s.
 // Original declarations and callback restored; right i/j, forward.k and angle bases remain.
@@ -830,6 +833,12 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // neither, crossed with function_1f087b, staged and plain second products and the else pointer: 43 to 222, none below 45 without that
 // pointer. Diagnostic: 0-7 identity locals before the first product by 0-7 before the second, with function_1f087b or staged: best 45,
 // best at 1261 bytes 64.
+// B432: Caller-visible inline declarations for the existing staged cross, normalizer
+// and perpendicular producers, seven subsets, then staged-cross forceinline: eight 45s.
+// Original declarations and callback restored; right i/j, forward.k and angle bases remain.
+// B434: Missing-object/missing-target/ordinary-orientation arms first, seven
+// subsets 361/219/222/250/367/333/337; nullable acquisition with common fallback 358.
+// NOT kept: all regress; original branches, products and full body restored.
 // M391: Normalized-distance/delay-subtraction/transition-clamp double receivers, seven subsets, then complete real receivers: 227/114/240/135/245/150/256/103.
 // NOT kept: No exact product-color, forward-K reuse or angle-store-base repair; nonmatching result lifetimes are discarded. Original complete body restored.
 // @retail 0x23de50

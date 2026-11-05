@@ -1248,6 +1248,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax R (11-04): forms tried - the flag declared before the cursor and the total 93 (the channels argument leaves eax, and the gain is under the review threshold, so the original body is restored), the shared helper rewritten with an early return 94 here but 0x56160 falls to 25, the contribution written constant-first 94 (the same bytes) and a pointer-indexed walk 128, a nested four-by-four group loop 94 (it reproduces retail's unrolled four-channel block, its memory counter and its prologue, but the identity flag stays in bl), the same nest with a separate group cursor 112 and 118 and with the flag first 111 (the channels argument leaves eax), the declaration orders on that nest 93, 99 and 108, and the fast permuter 47 tries with no lower score.
 // MiniMax D (11-01): no new form, no lower score; the declaration order may not change, and the
 // flag's register follows the shared helper that the matched 0x56160 and 0x56380 pin.
 // score 94 (was 94): this round's new forms - the flag declared ahead of the total and the
@@ -1553,6 +1554,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // before the capacity test or in its else arm 134 [25]; empty else 134 [25], `do { } while (false)` in it 190 [51] (0x56380 11), `result = 0` in it 201 [47] (0x56380 73);
 // a one-pass `do ... while (false)` over the body 190 [51] (0x56380 11), inside the init test 190 [51], with the capacity test as a break 134 [25]; arms' first-byte
 // stores on the else form 178 [37]. 24 return-structure combinations all had 0x56380 at 73 (scores 191-219).
+// T57: Existing removal/fallback word-flag helpers and retained-bit helper, subsets
+// 1/2/3/4/5/6/7, then complete shared flags with positive capacity admission
+// 134/134/134/184/184/184/184/184. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -1692,6 +1696,9 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax D (11-04): no lower score: the mode helpers parameterised on the availability bytes (92, 0x56b70 keeps its
+// match) and a bitwise muted gate (105) leave the eager byte pair, the esi remote mask and the inlined second port-flag
+// query out of reach.
 // MiniMax A (11-04, run 41): no new form, no lower score (85); the second availability byte is still loaded
 // lazily where retail loads both before the muted test and keeps the remote mask in esi.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
@@ -3338,10 +3345,18 @@ struct s_voice_route_choice
 // Y579: One-based visitation with original/one-based selection, element receiver
 // and bitwise/conditional radio: 427/376/427/369/371/390/371/390.
 // NOT kept: no gain; cursor/entry repair fails despite three retail-length forms. Original body restored.
+// B447: Whole ordered scan provider with headset/nearest/radio/all-output completion,
+// forced inline 363/363/363/363; ordinary inline 1347/1344/1343/1339. NOT kept:
+// no exact match; ordinary providers suppress native expansion and stay called.
+// Original complete body restored; talker/zero, cursor and priority merge remain.
 // Y583: Walking choice formal with original selection base, ordinal/end bounds,
 // ordinal/difference selection and bitwise/conditional radio: 393/1074/474/1083/
 // 430/1080/474/1081. NOT kept: native frame/entry fail and both callers lose;
 // original full body restored; stream-end forms suppress four-way expansion.
+// Y599: Fixed-base local range cursor, end inequality/equality, selected ordinal/pointer,
+// bitwise/conditional radio: 1090/468/1099/459/1157/530/1137/549. NOT kept: no verified exact
+// traversal/frame recovery; original complete body restored. Entry/cursor roles remain.
+// All lose both matched callers (13/14, seventh 19/23); native 0x54 frame also regresses.
 // B447: Whole ordered scan provider with headset/nearest/radio/all-output completion,
 // forced inline 363/363/363/363; ordinary inline 1347/1344/1343/1339. NOT kept:
 // no exact match; ordinary providers suppress native expansion and stay called.
@@ -3689,6 +3704,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y579: Actual stream-end bounds with offset/cursor/walking-formal/difference results,
 // admission-time producer 161/165/172/174, entry producer 161/145/167/163.
 // NOT kept: no gain or native channel-home recovery; original whole body restored.
+// AC547: Actual kind-byte pointer/reference at packet/dispatch-arm scope,
+// indexed traversal 139/139/139/139; independent packet cursor 164/164/164/164.
+// NOT kept: alias-only forms do not match; original byte reads and full body restored.
 // Y583: Separate original relay/direct remote-query return storage bool/byte/short/long,
 // original/independent cursor 139/139/139/139/164/164/164/164. NOT kept: one-use
 // return carriers do not match; complete original body restored; channel/cursor homes remain.

@@ -748,6 +748,9 @@ struct s_item_collision_bsp
 // N371: Single-marker spin lifetime after contact, factor-first/enclosed-phase/scalar-role-name
 // subsets 0..7: 202/202/202/202/202/202/202/202. NOT kept: unmatched storage-only forms;
 // original complete body restored; protected plane width, plane joins and spin/speed homes remain.
+// N386: Complete CRT plane/marker-axis/fallback-axis transports, subsets 1..7:
+// 337/251/324/202/333/268/307; native copy construction at all three boundaries 307.
+// NOT kept: no byte equality; original planes, axis copies, arithmetic and full body restored.
 // F391: Standard backward axial-input/normal transports and complete paired final range sums,
 // individual/pair/complete graphs, then backward final traversal: 267/343/370/313/397/334/343/411.
 // NOT kept: all regress; normal/range graphs also displace the native frame or extent. Original
@@ -1350,6 +1353,9 @@ struct s_item_flags_view_10b850
 // angular projection regress. Individual output producers reach retail length at 820; frame and entry
 // Boolean/collision/carrier/rotation homes remain. Original body and helpers restored. Scores
 // 820/820/858/820/858/858/855/906. NOT kept: unmatched result-ownership forms.
+// P346: Actual flow-query available/missing bool/byte/short/long results:
+// 887/887/887/887/887/887/887/887, 4068 bytes and frame 0x148. NOT kept:
+// comparison regresses and length moves away from retail; original body and all helpers restored.
 // N375: Actual collision impact-prefix member with direct/pointer/reference ownership
 // and consistent point/normal fields: 911/887/887/887/887/904/858/858. NOT kept:
 // all regress; original record, field observations, helpers and complete body restored.
