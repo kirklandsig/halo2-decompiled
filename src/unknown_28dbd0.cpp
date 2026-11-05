@@ -318,6 +318,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // eight at 173/1209. NOT kept: no native frame/cross/trig-home recovery.
 // Original value-angle/vector-pointer producer, consumed-axis phases, ordinary
 // pooled reads, draws, request and complete body restored.
+// DL269: Native double C trig inputs at heading/tilt cosine/sine producers,
+// singly, paired, all and mixed: 186/186/185/185/173/173/173/185 (control 173).
+// NOT kept: no gain or equality; original real API inputs, frame and full body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

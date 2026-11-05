@@ -989,6 +989,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 1/2/4/3/5/6/7 then separate false defaults: 378/335/335/369/369/323/358/356
 // (reduced control 341; full 257). NOT kept: extra SETG/SETNE result stores absent from
 // retail; original body restored; byte homes and direction-tail predecessor remain.
+// DL269: Shared post-dispatch origin selection and normalization, phase/entry/mutable
+// origin pointer or native origin workspace, success-owned then guarded publication:
+// 311/311/311/286/311/311/311/286 (fast control 258; full 257).
+// NOT kept: every form regresses and shortens the body; original decoder restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

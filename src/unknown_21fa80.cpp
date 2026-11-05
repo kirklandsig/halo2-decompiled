@@ -281,6 +281,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // M381: Actual voice/buffer/submix API-output zero initialization, seven subsets, then
 // all with initialized status: 566/615/591/615/591/621/607/608 (fast control 532, full 545).
 // NOT kept: unsupported extra stores and regressions; original outputs, helpers and full body restored.
+// DL269: Existing decibel value types at real-pin output, bit-pin output and linear input,
+// subsets 1..7: 532 each; all with native selected gain 546 (fast control 532, full 545).
+// NOT kept: no gain or exact match; original producer interfaces, frame and body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
