@@ -3200,6 +3200,10 @@ struct s_unit_flags_14d8b0
 // All leave +0x304 and the same scratch choices; original helpers and body restored.
 // Round 127 (lane 8, fast): ticks-arm unit assigned inside the arm 9; root walk on its own local 9; root walk as
 // do/while with no pre-loop init 9; low-time limit compared directly 9; own local in the limit block 9.
+// Round 92 (m3 lane 16, fast): the late reset countdown as nested ifs 9; the tick field read at each use with no
+// reference 9; the damage flags or-ed before the 0x29 byte store 11; the byte countdowns as signed-char casts with
+// postfix decrements 9; the root walk's root left uninitialised 9. The first engine-slot block (ticks arm) already
+// has retail's EDX/EAX; only the second one, after the late mode test, takes EAX/ECX.
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {
