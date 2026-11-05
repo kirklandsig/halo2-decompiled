@@ -876,12 +876,12 @@ static __forceinline void solve_unilateral_linear(float target,
 }
 
 static __forceinline void update_linear_limit_values(float impulse, solver_linear_row_31e7b0 const *row,
- solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b,
+ solver_velocity_31c940 *a, __m128 const &inverse_b,
  float *linear_b, __m128 &angular_b, float *result)
 {
 	__m128 scalar = _mm_set_ss(impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
 	// Capture both linear contributions before either body write.
 	__m128 linear_contribution[2] =
 	{
@@ -1324,13 +1324,16 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 						_mm_mul_ps(_mm_sub_ps(_mm_load_ps((float const *)&(a->linear)),
 							*(__m128 const *)linear_b_pointer), row->linear));
 					float projected = sum_three_projection(work_b).value;
-					float velocity = projected * load_velocity_scale(step);
-					float low = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 4)) * load_error_scale(step) - velocity;
+					// Capture the step pointer for velocity and the first bound. The
+					// second bound reloads it after any first-bound result write.
+					solver_step_31c940 *parameters = step;
+					float velocity = projected * parameters->velocity_scale;
+					float low = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 4)) * parameters->error_scale - velocity;
 					if (low > 0.0f)
-						update_linear_limit_values(low * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, b, linear_b_pointer, *angular_b_pointer, result);
+						update_linear_limit_values(low * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, b->inverse_inertia, linear_b_pointer, *angular_b_pointer, result);
 					float high = (((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3] - operation_float(op, 8)) * load_error_scale(step) - velocity;
 					if (high < 0.0f)
-						update_linear_limit_values(high * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, b, linear_b_pointer, *angular_b_pointer, result);
+						update_linear_limit_values(high * ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, b->inverse_inertia, linear_b_pointer, *angular_b_pointer, result);
 					terms += 3; ++result; op += 12;
 				} while (*op == 11);
 

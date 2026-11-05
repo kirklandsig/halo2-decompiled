@@ -80,3 +80,49 @@ def test_angular_error_reloads_step_between_rows(solver_images, precision):
         assert snapshot == (bytes(data), 1)
         snapshots.append((snapshot, output))
     assert snapshots[0] == snapshots[1]
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_linear_limit_reloads_step_between_bounds(solver_images, precision):
+    def as_float(bits):
+        return struct.unpack('<f', struct.pack('<I', bits))[0]
+
+    for rounding in range(4):
+        data = solver_case(11, 2)
+        replacement_step = STEP + 0x100
+        final_step = STEP - 0x100
+        delta = as_float(replacement_step) - as_float(STEP)
+        for location, gain in ((STEP, 1), (replacement_step, 2), (final_step, 1)):
+            put(data, location, '7fi', 0, gain, 0, 0, 1, 0, 0, 1)
+        put(data, OPS + 24, 'I2fI', 11 | 12 << 8 | 3 << 16, 0, 2 * delta, 0x400)
+        for body in (HEAP, HEAP + 0x80):
+            for offset in (0x10, 0x20, 0x30, 0x40, 0x50):
+                put(data, body + offset, '4f', 0, 0, 0, 0)
+        put(data, TERMS, '12f', 0, 0, 0, delta, 0, 0, 0, 1, 0, 0, 0, 0)
+
+        # Accumulating the lower-bound impulse replaces the step argument.
+        # The upper bound must reload its scale: gain 2 moves the argument to
+        # final_step, whereas retaining gain 1 would restore the original STEP.
+        stack_arguments = STACK + 32768 + 4
+        retail, compiled, symbols = solver_images
+        snapshots = []
+        for machine, entry, gate in (
+                (retail, 0x31c940, 0x480c60),
+                (compiled, address(symbols, 'solve_operations_31c940'),
+                 address(symbols, 'g_480c60'))):
+            observed = []
+
+            def after_lower_bound(uc, address_, size_, user):
+                observed.append(words(uc, stack_arguments, 1)[0])
+
+            hooks = [(0x31de83, after_lower_bound)] if machine is retail else ()
+            machine.mem_write(gate, b'\x01')
+            snapshot = execute(machine, entry, data,
+                               [STEP, OPS, HEAP, stack_arguments], hooks=hooks,
+                               precision=precision | (rounding << 10))
+            output = words(machine, stack_arguments, 4)
+            assert output == (final_step, OPS, HEAP, stack_arguments)
+            if machine is retail:
+                assert observed == [replacement_step]
+            snapshots.append((snapshot, output))
+        assert snapshots[0] == snapshots[1]
