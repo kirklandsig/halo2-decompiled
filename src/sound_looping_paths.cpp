@@ -346,6 +346,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // logarithmic subsets 1/2/4/3/5/6/7, then all with forced pin: eight at 866.
 // NOT kept: no exact expansion form; original declarations, helpers and full body
 // restored. Entry zero, target/primary/query homes and exponent staging remain.
+// Round 130 (m3 lane 7, fast): retail's own shape: long query and choice counts (`mov eax, [count]`, `cmp esi, 2`), the choice as a
+// pointer from the post-incremented count (`inc esi; lea esi, [esi+esi*4]`), flags and tag in registers across the stores, bsp
+// left as a stack argument, sounds hoisted ahead of the second loop. First loop written that way 960 (3308 B, aligned 703 -> 583),
+// with the second phase 969 (3276 B, aligned 779). Singly: existing 0x13cb40 getter for the flag read 866 (same code), flags
+// local 866, tag local 866, both 866, hoisted sounds 924 (3327 B), choice pointer 962 (3284 B), long query count 919 (aligned
+// 584), long choice count 956 (3281 B), both 942 (3297 B, masked 288), with the pointer 960. With hoisted sounds: long query 881
+// (3327 B), long choice 976, both 963, with flags and tag 949/881.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

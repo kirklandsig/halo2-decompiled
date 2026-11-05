@@ -182,6 +182,7 @@ __forceinline bool function_184448(long arg_0)
 }
 
 #pragma inline_depth(1)
+// MiniMax B (11-04): no new form, no lower score.
 // score 965 (was 965): Frame 0x11d4 versus 0x11cc and scene/surface geometry homes remain.
 // Earlier (965, was 977): the same frame and homes.
 // Round 419: scene field observations 983; effect record reference 977; scene field observations/effect

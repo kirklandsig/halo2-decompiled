@@ -351,6 +351,25 @@ real normalize2d(point2f *arg_0);
 // const-long/const-short/const-word: 180/180/180/203/203/180/203/203.
 // NOT kept: full-width contracts tie; 16-bit contracts grow and lose three callers.
 // Original long contract and every declaration restored; mask/copy/SSE schedules remain.
+// Round 130 (m3 lane 7, fast; 0x1ba5c0/0x1bdad0/0x1bff80/0x30c60/0x24d8d3/0x24da7d matching each time). New causes, match-only:
+// retail's center and radius are the existing 0x30c60 inlined (`lea edx` center pointer, radius as a movss): `inline` on its
+// definition, its radius read as a real and lane 14 r63's recipe (see its report) 47 -> 19 (1025 B, aligned 10; through its `long *` 80, 1021 B).
+// A helper accumulating the third dot (`real result = a->j * b->j; result += a->i * b->i;`) 15; written j first, swapped,
+// direct, named 19/19/44/25. BLOCKED-BY 0x26d100: its `&point` read makes this function's point copy escape, so the copy's
+// stores are ordered against later pointer loads, which is the whole opening schedule (`and edx`, y store, x read). With
+// 0x26d100 as (up, point, output, collision), reading `point` directly, start before direction and result first (round 61's
+// form in src/unknown_1c20f0.cpp's note): this function 4 (fast). That reorder alone, plain: 0x26d100 and 0x1c19b0 match, no listed caller moves. Left
+// at 4: the first dot's operands. Direct rows interleaved (c.i, 5.i, c.j, 5.j, which is the order the operand ranks imply)
+// fix them but the second dot's i product takes the perpendicular's temporary first, 177 (1028 B); with a dead `(void)local_9.x`
+// after the getter that too is retail's: MATCH in a plain check (0x3d7f0 177 -> 224 from the `inline`: retail calls 0x30c60 there; a
+// redundant statement, not keepable, so scratch only; the statement must precede the c.i
+// row: after it or after all rows 177, `.y` 177; through a scalar declared early 177). Without the callee's reorder the same
+// form 11, opening only. On the way: interleaved orders 187-191, in-place rows 68-70; both differences through helpers 174-197;
+// through one interleaving helper, 24 row orders, 172-208, with a directly stored perpendicular 161-197; 2-D helpers for the
+// center and in-place differences 19 (same code); center rows before the copy 198 (1031 B); named center scalars 190-198;
+// center difference unnamed at both dots 229 (1022 B); block-top declaration orders 174-197; early masked index 25; copy helper
+// 15, memcpy 15, pointer local 21, scalar copies 245/256, statement orders 51-85. No written-out rows (existing helpers only)
+// 177 at best (1031 B). Identity pointer chains of 1..7 locals 25/187 each. The rows and helpers stay match-only: body restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

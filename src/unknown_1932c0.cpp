@@ -970,6 +970,9 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // Round 109: unnamed parameter 3; explicit unused-parameter statement 3; direct result initialization 3;
 // direct allocation initialization 3; explicit null-return else 98 (237 bytes); double-negated write test 3;
 // write test against zero 3; explicit false assignment in the write's else 47 (250). Opening body restored.
+// Lane 11 round 70 (fast): the result declared, then set false 3; the ticks const volatile 3, direct-initialized 3, as a volatile dword pair object 3; rdtsc
+// as two emitted bytes 3. Compile-only: no option changes the store order; non-volatile, parameter, aggregate-initialized and memset readers lose the stores.
+// The low store outranks `push edi` because the volatile pair chains low, high, asm; retail's order has no such chain.
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {

@@ -1732,6 +1732,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC527: Shared idle-animation selection as long/dword/int/unsigned-int, at consumption
 // or iteration scope: eight at 220 fast (control 220, full 218). NOT kept: selected-result
 // residence unmatched; original draws, counters, setter paths and complete body restored.
+// Lane 9 r87 (fast; aligned counts by sequence alignment, base 218/104): the overlay play written per arm with its constants 376/95
+// (2191 bytes; `mode` then outweighs `unit` and both take retail's homes), with the active preset 377/83 (2195), plus callback and
+// movzx 377/83; positive zoomed/scoped alone, plain else 385/61 (2198), with the rest 376/49 (2202 bytes). Retail's own bytes show the
+// `else if (zoomed)` test under `(zoomed || scoped)` (`cmp byte [ebp - 2], 0; je` past the play), so it is real, but it stays out
+// without a match. Look locals' addresses taken 220/104 (reciprocal still shared); look value and clamp in separate statements 223;
+// aiming velocity through a pointer 542/114; `mode` declared first, assigned later 220. Positional stays above 218 until the look
+// block's bytes agree, because every form shifts what follows it.
 // AC535: Peer processing/final activation-resource phases gated by one entry result,
 // positive/complementary bool/byte/short/long: 542/542/573/571/542/542/573/571 fast
 // (control 220, full 218). NOT kept: frame 0x28 and native unit/mode/look/save gaps

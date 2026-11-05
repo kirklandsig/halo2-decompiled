@@ -506,6 +506,14 @@ void __stdcall function_1160c0(real dt)
 // N376: Separate raw/normalized rotation axes with complete scalar setters and staged-cross
 // producers, eight forms 308/307/291/303/291/303/239/263. NOT kept: no exact match; original
 // axis storage, body and homes restored. Segment EDX and mirrored vector/scalar homes remain.
+// Round 130 (m3 lane 7, fast; 0x116750 and 0x73360 kept matching): the rotation through a local helper writing an
+// output, then `+= position`, 165, with the cross terms named in 0x170d70's order 163 (aligned 132 -> 123; one-caller
+// helper, match-only); position added inside the helper 171; the angle passed in 218/224; in place on the offset 235.
+// Named cross terms in the body, four statement orders, 171 (same code). Axis through cross3f or cross3f_staged, crossed
+// with normalize3d and the helper, 18 forms 163-196. `segment = definition->segments; segment += index` 281 (aligned 115):
+// the segment then takes EDX and every later scratch register is retail's, but the load sits ahead of the ternary. With
+// the index computed first (long, block helper, byte offset, reference, const, bound element) 171 (same code), short
+// index 290 (1356); stiffness read first 270; stiffness through the element 279; segment before node 279.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

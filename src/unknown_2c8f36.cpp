@@ -201,6 +201,9 @@ c_button_widget_45d5d0::c_button_widget_45d5d0(short valuef8, word user_flags) :
 // Round 109: explicit null tests in either operand order 2; direct-initialized widget 2; explicit else step 2;
 // multi-use current-widget local 2; two-phase type/enabled traversal 74 (131 bytes); scoped for with explicit null test 2;
 // nested eligibility with the current shared helper 2. Opening body restored.
+// Lane 11 round 70 (fast, both twins): `for (;;)` with a head return 2; an entry return, then a do-while 2; a named self for the walk and focus 2; an
+// early-return free helper with the walk in place at both ends 12; that helper into a `first` local copied to the widget 37 (98 bytes); the eligibility operands swapped 7. Compile-only: of the
+// optimization options only /Ob0 gives the copy-then-test tail (real calls). Retail keeps no out-of-line copy of the walk.
 // @retail 0x2c8f56
 void c_button_widget_45d5d0::v8()
 {
@@ -264,6 +267,9 @@ void c_button_widget_45d5d0::v8()
 // never give both retail's tail and its layout. A walk variable that takes ESI at entry keeps the first load in EAX but moves the walk into ESI.
 // Round 110: direct-previous/wrapped-step hybrids 37 each; focus break 2; selected-widget break 2;
 // qualified entry, predicate and focus calls 2 each; direct step with continue 37 (98 bytes). Opening body restored.
+// Lane 11 round 70 (fast, both twins): `for (;;)` with a head return 2; an entry return, then a do-while 2; a named self for the walk and focus 2; an
+// early-return free helper with the walk in place at both ends 12; that helper into a `first` local copied to the widget 37 (98 bytes); the eligibility operands swapped 7. Compile-only: of the
+// optimization options only /Ob0 gives the copy-then-test tail (real calls). Retail keeps no out-of-line copy of the walk.
 // @retail 0x2c8fb4
 void c_button_widget_45d5d0::v9()
 {

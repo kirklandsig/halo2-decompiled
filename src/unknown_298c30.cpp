@@ -292,6 +292,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // byte/short candidate count: 428/428/428/428/419/464/464/464. NOT kept: all regress;
 // short/word/long results on short count regress caller 389 to 699. Original emitter,
 // counters and whole body restored; entry and native XY/magnitude homes remain.
+// Round 134 (m3 lane 8, fast with caller 0x29a190): the first arm's rows through a pointer-output rotate inline, field_4 stored first 418 (1743
+// bytes), stored after 421; with the loop's rows through it too, named or inline 416/418; double sine/cosine parameters 439 (caller 405); rows
+// written operand-first 418; y row first 416. Retail stores the centre's x before computing y (x and y share XMM0), ours keeps x in XMM3 with 1.0
+// and the temporaries rotated one register against retail's.
 // DH361: Existing normalizer epsilon decision as rejection/normalization bool/byte/short/long,
 // eight at 395; the other normalizer user stays 719 and scoring stays exact. NOT kept: no match
 // or native XY/magnitude-home recovery; original comparison, shared helper and full body restored.
@@ -667,6 +671,15 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DH357: Actual advancing obstacle-entry cursor, short/long/int/word ordinal,
 // consumed/explicit head steps: 785/779/779/781/785/779/779/781.
 // NOT kept: all regress and lengthen; original traversal and whole body restored.
+// Round 134 (m3 lane 8, fast; al = aligned raw/masked/masked+stack, base 666/572/276). The NONE exit moved to the end (retail's far `mov al, 1`
+// block) 778 (al -/560/264); the three sweep scales through a pointer-output scale inline, each followed by its products 797 (3355, al -/534/251),
+// with the exit moved 800 (3354, al -/520/237); products with each scale written out 813 (3419), with the exit moved 791 (3418). `inline` on the
+// definitions of 0x2108a0 and 0x210770 (retail reloads arg_6 after those calls, ours keeps XMM5 across them) 759 (3387, either or both, al 661/571/
+// 272), with the exit moved 764, with the scale inline 756 at retail's 3372 bytes (al 674/532/246), with both 756 (3372, al 663/521/235). On that:
+// the cosine scoped to each use 759 (frame 0x120); a block around the sweep 759 (same frame: scopes share no homes); a point local for the obstacle
+// distance 756; inner return false 756; the sweep endpoints as scalars 778/769 (frame 0x11c, al masked+stack 214/201), without the scoped cosine
+// 761, without inline 787, without the moved exit 766. Retail's points and traces take the same space; ours has four more scalar homes, and retail
+// reuses the homes of the sweep endpoints for later temporaries.
 // DH359: Conditional owner query excluded bool/byte/short/long 719/719/752/750;
 // admitted counterparts 738/738/737/735. NOT kept: no gain or byte match;
 // original query guards, outcome, geometry, helpers and complete body restored.
