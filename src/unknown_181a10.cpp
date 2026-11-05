@@ -729,6 +729,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // AC524: Complete root admission bool/byte/short/long, then complementary
 // rejection, 308 each at 1243 bytes. NOT kept: frame 0x4c versus 0x44, root-kind
 // transport and classifier/plane/output homes remain; original collector restored.
+// Lane 9 r87 (fast; aligned against 308/210): the classifier as `long limited = 1; if (limited <= data) { limited = 16; if (limited >= data)
+// limited = data; }` keeps the constants in the result register and the unthreaded `mov ecx, eax` as retail 327/205 (retail also reads the
+// data three times where ours shares one); data through a local 339 (1227 bytes), through a long reference 326; the byte test in a bool
+// helper or a bool local, on either 326-327 (setne still folds). Plane normal as three scalars, stored before or after the side, 357/216,
+// 357/216, 359/221 (frame 0x40, 1208 bytes). Root type in a local 308 (same code).
 // AC539: Post-clamp bounded-key rejection result, positive then complementary
 // bool/byte/short/long: eight at 308. NOT kept: unmatched one-use decision storage;
 // original clamp, snapshots, plane math and full collector restored.
