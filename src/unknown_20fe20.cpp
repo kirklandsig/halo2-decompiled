@@ -1156,6 +1156,10 @@ void function_2118c0(void)
 // char with `<`, `!=`, `<=` tests 150; word/byte/char row stepped by 8 beside b 130, long 150; short/word row from `b * 8` 166 (764
 // bytes), char/byte 166 (767); short/word from a cast `b << 3` 163 (782), char/byte 166 (767); wrapped indices through a long array
 // or pointers 181 (755 bytes)/114.
+// Round 151 (m3 lane 5, fast): this body is 0x212100 inlined with b = 1.0f: a call with `inline` on a forward declaration is
+// exactly 777 bytes and 0x212100 stays matched, but 150 (all rows reduce); plain declaration 437 (495), forceinline 150. On the
+// inlined call: all rows from `long row = b << 3` 162 (767), wrapped rows only 123 (790); `long row = b * 8` 150 either way;
+// wrapped rows from `short row = b * 8` 157; sums cast to short or word 179/179 (808).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2578,6 +2582,10 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // bytes), the same z, x, y locals with the helper's differences in x, y, z order 432. Unused-local probes
 // (diagnostic): 3 or 8 extra symbols in the function move only case 7's fold (32) or nothing (3), others 333;
 // in the helper nothing.
+// Round 67 (m3 lane 14, fast): the helper `__forceinline` 3 (same code) or plain `static` 416 (1916
+// bytes, not inlined); its first two squares as one `dz * dz + dy * dy` 7 (dz scheduled first, the
+// square registers swapped); its differences in one declaration 3; the outer x, y, z written where the
+// cases use them 366.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2870,6 +2878,12 @@ void function_20fda0(long arg_0);
 // 49 (144 bytes) or between the team read and the call 48 (145 bytes; both keep the loads ahead of the call and
 // cost 0x114e80 13); permuter (600 s, 46 tries): nothing valid below 19 (its 16 reads the team as a dword).
 // The team field passed straight to the call without the long local 20.
+// Round 67 (m3 lane 14, fast): the owner as `local_1 * 0x7dc + (byte *)g_4f939c` 19, the node as
+// `(arg_1 & 0xffff) * 0x54 + g_4f9398->data` 19, both 19, the owner as `&((byte *)g_4f939c)[...]` 19, the
+// flag read as `*(bool *)(local_3 + 0x41)` 19, the pool read into a local after the owner 19 (all same
+// code). Reading: retail's owner base takes EAX (loaded after the MOVSX), the pool EDX and the node offset
+// ECX, so the node add must come before the flag byte load into CL; ours gives the owner base EDX, the
+// pool ECX and the offset EAX, which lets the flag load fold the add.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

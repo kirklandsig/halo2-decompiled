@@ -88,6 +88,11 @@ PRIVATE __forceinline long texture_floor(real value)
 // Round 67: bitmap declared at loop-body scope ahead of the NONE test 14, with the bias too 18, both at the top
 // of the body 21; a loop-scope copy of a pending mask 38; a for loop clearing the bit in its increment with
 // the NONE test as `continue` 4. Diagnostic: one to eight unused locals at entry leave EDX (symbol count not it).
+// Round 132 (m3 lane 7, fast): the call's short arguments without casts 4; the level truncated in the
+// clamp statement 4; an explicit return after the loop 4; the level test as `level < entry level` 4;
+// bitmap's zero as the else arm of the magnitude test 90 (399 bytes). Lead: lane 8 r114 found VC's
+// scratch choice a round robin (one extra early temp rotates every later block, 0x5c720); the EDX here
+// may be one hidden allocation off retail rather than a property of the clear.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -865,6 +870,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// MiniMax D (11-05): no new form, no lower score; the argument slots agree with retail's (the source
+// pointer in the first stack slot, the order byte in the fifth), so the whole difference is the frame,
+// 0x18 against retail's 0x2c.
 // score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // Earlier: Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
@@ -1051,10 +1059,31 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // M380: Actual offset/delta aggregate initializers at nearest/anchor/opposite,
 // seven subsets then immutable full vectors: 547 each at 2122 bytes. NOT kept: native
 // frame/query/search homes remain; original scalar producers and complete body restored.
+// Round 151 (fast; body restored): the index body re-measured: entries direct everywhere 576 (2094 bytes), samples local read after scan 1 459 (2070); a mix, kept only on a match; the local
+// used by scan 2 is what gives retail's head and nearest in EDI (ldd/ddl 576; lld/dll/dld 459). On the direct body: `count >= 1` 532 (2096; no shared zero, but `cmp ebx, 1; jl` where retail has
+// `test ebx, ebx; jle`: not kept), with `opposite` declared first 527 (2091), other_distance first 543, `source->entries + nearest` 532, delta or first at the top 532, a plain second pointer with
+// `opposite != NONE` 533 (2089), length_sq3f(&offset) 610; nearest at function top 575, at the arm 575, after closest 577; one shared index 576; `1 == count` 576. Offset fields written j, k, i 779
+// (2335; frame 0x2c, but the subtractions no longer share with the distance), jki/opposite first 772, kji 779. A cross-file difference (function_28e774) for delta, offset or both 459 (same code).
+// Retail's frame: opposite +0x10, nearest +0x14, pass counter +0x18, samples +0x20, offset home +0x24 (x spilled before each `jb`), delta home +0x30 (k spilled at +0x38).
 // T60: Actual source/query/direction object-reference contracts, seven subsets and
 // all with the existing copier sample reference: eight at 547/2122. NOT kept:
 // native query register, vector/ordinal homes and frame 0x2c are not recovered.
 // Original interfaces, both caller sites, copier and complete body restored.
+// Y602: Coordinate/reduction/minimum scalar lexical identities, then immutable original-site scratch:
+// 547/547/547/547/547/547/547/547.
+// NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
+// Y607: Existing scalar coordinate scratch shared across both searches, x/y/z subsets
+// then all with shared candidate distance: 547/547/547/547/547/547/547/547. NOT kept: shared
+// lifetime forms do not match. Original complete body restored; native frame/query/ordinal/fraction homes remain.
+// M403: Native sample position/coefficient-triplet/direction readonly members,
+// seven subsets then readonly table input: eight at 547/2122. NOT kept: native
+// frame/query/vector/ordinal/fraction homes unchanged; original record and body restored.
+// N391: Nearest/opposite cutoffs and paired candidate distances in double, seven subsets:
+// 593/630/706/648/692/716/714; all plus projection 820. NOT kept: all regress;
+// original scalar domains, expressions and full body restored. Native vector/query homes remain.
+// N393: Native nearest/anchor/opposite coordinate-difference double residency, seven
+// subsets 648/640/730/645/731/665/753; all plus projection 753. NOT kept: larger,
+// unmatched storage domains; original scalar graph restored. Frame/query/vector homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

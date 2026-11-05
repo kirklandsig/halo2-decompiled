@@ -200,6 +200,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax D (run 46): the rate chains j, i, k with the tick products and the deltas interleaved
+// i, j, k 73 (chains, stores, deltas and the k, j, i sum are then retail's, but the tick products
+// run i, j and the tick stays in XMM4); the products grouped 77; the conversion after the chains 73
+// (XMM3 as retail, but the chains run k, j, i and the products copy the tick register); the velocity
+// copied before the subtractions 34; the deltas i, j, k 79.
 // score 32 (was 32): Frame 0x10 and prediction prefix agree; first +0x59 converts ticks
 // into XMM4 rather than XMM3. Velocity/delta scheduling and correction products/adds remain.
 // Earlier: the limit test is written the other way round, so the comparison matches
@@ -550,6 +555,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // P327: Complete scalar prediction on the named-length graph, six declaration orders,
 // then producer definitions with original/late ticks, direct update argument: 117/117/117/117/117/117/117/117.
 // NOT kept: all regress and lose native frame/extent; original body and parameter storage restored.
+// Round 87 (m3 lane 16, fast): tick_scale declared after the chains (ticks in XMM3 as retail, but the products copy it: `movaps xmm4, xmm3; mulss
+// xmm4, xmm0`), tick products i, j, k 73 (369 bytes); products j, i, k 72 (369); products j, i, k with deltas i, j, k 72 (369); products and deltas i, j, k 73
+// (369); fused product and delta rows i, j, k 73 (369), rows j, i, k 72 (369); `v = v * t` 73 (369); `v = t * v` 73 (369). Original body restored.
 // Lane 13 r62 (fast; rate rows into a `predicted` point, then scaled_difference3f with `(real)ticks`, which gives retail's XMM3
 // and in-place products): predicted through vector3f_add_scaled, deltas i, j, k 79 (re-measured), deltas j, i, k 32 (re-measured,
 // first +0x65, chains and products agree with retail, the stores and deltas run j, i); predicted by statements j, i, k with deltas

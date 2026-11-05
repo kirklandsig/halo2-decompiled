@@ -74,6 +74,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// MiniMax I (11-05): no new form, no lower score. Retail's null-datum `je` jumps to the function's
+// end (offset 0x920 of 2345) where ours jumps to a near block, and the child, text and layout stack
+// homes still differ (retail's suffix at -0x258 and its message at -0x458, ours at -0x2cc and -0x4cc).
 // MiniMax H (11-04): declaration-order and scope moves compile identically; no lower score.
 // score 316 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // Lane 18 r37 (fast): received text preset then overridden 662 (2347 B); the text id as dword 330;
@@ -213,6 +216,16 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // (2193), the first switch alone shared 552. Left (masked 18): title/display_name and suffix/layout homes swapped (retail weighs
 // title over display_name and suffix over layout), the value04 cases' loads merged at the IL level (ours `mov ecx, id; jmp`, retail
 // `lea esi; mov ecx, id; jmp`), the loop's >> 10 arm, the received arm's ebx clear and threading, and the !online host.
+// Round 400: zero-session library clear/const/online/status/entry workspace
+// 505/330/331/368/712; complete zero-reject/admit/reject results 375/330/330.
+// NOT kept: no byte match or qualifying gain; original workspace and body restored.
+// F402: Existing active-player producer, positive/failure early returns, default/
+// failure-first/nested results, output-owned and reused admissions,
+// 330/330/597/330/330/330/377/604. NOT kept: no exact or qualifying result;
+// original complete body and existing helper restored.
+// Three-way suffix selectors: native 2,3,default; alternatives 2,default,3 and
+// 3,default,2. All eight non-native order pairs 330, still 2334/2345 bytes.
+// NOT kept: no native case-layout recovery; original complete cases restored.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)
