@@ -856,6 +856,9 @@ void c_session_client::function_06dbc0()
 // M399: Read-only actual session pointee/session binding/id binding, seven nonempty subsets 43 each;
 // all with immediate const memcmp result 51 at 139/136 bytes. NOT kept: ties or a longer nonexact one-use result.
 // Original entire body restored; this/mode/id register homes and compressed versus direct case table remain.
+// M401: Actual admitted identity/recipient pointer results, nested/combined/conditional/guarded:
+// 44/44/44/50 and 43/43/43/50. NOT kept: no exact match; pointer-result flags and aliases restored.
+// Original cases, comparison and update call restored; this/mode/id homes and compressed case table remain.
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {

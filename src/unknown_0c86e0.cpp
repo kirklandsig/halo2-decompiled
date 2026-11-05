@@ -234,6 +234,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // M399: Immutable existing unit pointer/weapon handle/query result, seven nonempty subsets 107 each;
 // all with existing slot-helper read-only unit input 107. NOT kept: every form ties; original entire file restored.
 // Frameless entry, merged post-query unit fetch and late prior-state home remain.
+// M401: Ordinary private player/slot/sound producers, subsets 1/2/3/4/5/6/7,
+// then ordinary slot/sound with forced player expansion: 107/107/107/162/162/162/162/162.
+// NOT kept: ties or shorter nonnative expansion; original producers and body restored.
+// Frameless entry, post-query unit fetch and late prior-state carrier remain.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

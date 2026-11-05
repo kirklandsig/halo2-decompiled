@@ -308,6 +308,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // M399: Existing post-playback class input read-only, immutable variant binding/completed-time producer,
 // seven nonempty subsets 110 each; all with immutable tag-index formal 110. NOT kept: every form ties.
 // Original whole body restored; early source/header work, first query expansion and playback register homes remain.
+// M401: Playback definition/declaration/sole call reordered together to (tag, state), default/stdcall/cdecl/fastcall,
+// then the same four with inline metadata: 110/110/134/110/110/110/134/110.
+// NOT kept: native EAX state/stack tag setup is not recovered; all interface, provider and caller changes restored.
+// Frame 0xa8 agrees; early header work, first class-query expansion and playback homes remain.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
