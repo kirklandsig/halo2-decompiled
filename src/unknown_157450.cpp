@@ -2233,6 +2233,20 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // and release_entry called on `this` (0x162060's call updated) 8; both 9; the scenario in a named
 // local for the bounds test 8; the upper bound tested first 13. A compile-only copy gives data-first,
 // in-place scaling for every spelling of the lookup (getter, absolute-index local, header local).
+// Round 54 (lane 2, fast): the lookup by byte offset 8, through a byte-offset header 8; a named absolute
+// index 8; a named scaled offset 8; a named old index 8; `do { } while (false)` before the release or
+// around the lookup 8/8; an elements local 8, after an index local 8; a header pointer local 8; the
+// index-first pointer sum 8; a pool local 8; `inline`/`__forceinline` on the release's definition 8/8, with
+// the getter 9/9; an entry reference 8; a const reference to the old index 8; a whole-entry copy 47 (198
+// bytes); a copy of the index 8; the object index read ahead of the old-index test 8. Re-measured: entry
+// pointer, typed equipment receiver, negated bounds test, getter in the release 8/8/8/9.
+// Diagnostics, all reverted at once: the release written out in the caller 8/8, with the getter 9, so
+// inlining is not the cause; a volatile pool read 4 (only the tail's registers); a dead field store or read
+// ahead of the lookup leaves its order. Lead: one or three dead volatile loads after the bounds test and
+// before the old-index test give retail's `and; lea edx; mov eax, [edi + 0x44]` and the tail's registers,
+// and no other placement does (one load before the index read, ahead of the bounds test or inside the
+// old-index guard changes nothing): the lookup wants one more temporary allocated between those two tests.
+// Matched 0x1e06b0 and 0xe3700 test and look up the same way with a field of an object pointer.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {

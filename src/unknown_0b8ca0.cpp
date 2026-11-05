@@ -253,6 +253,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // compile-only copy reproduces our order for every lookup spelling, and only a second use of the pool
 // data after the add (diagnostic store, 75 at 210 bytes) gives retail's exact data-first sequence, so
 // retail's register allocator saw the data live past the add.
+// Round 54 (lane 2, fast): `do { } while (false)` around the activation arm, around the call, ahead of the
+// test 4/4/4; a const reference to the component index for the test and the lookup 4; a component local inside
+// the arm 4; `disable == false` 4. Diagnostics, reverted at once: one to three volatile probes at the top, ahead
+// of the `disable` test or inside it leave the data load after the `lea` in EAX, so unlike 0x15adb0 this is no
+// missing rotation step: retail allocates the data load while the masked index still holds EAX.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -1606,6 +1611,17 @@ done:
 // every placement read at the call with only the definition local 67 (236 bytes, EBX pushed lazily); the
 // type at each use with the palette added at the call 37 (240 bytes), with a long size 27 (236 bytes);
 // the type local with the definition table read at each use, all at the call, 67 (236 bytes).
+// Round 54 (lane 2, fast; palette added at the call, long size; all 236 bytes): type local or read at each use x
+// definition local, read at each use or first read in place x offset long or inline: placements local 27 (long
+// index), 32 (short index), placements at the call 28 (long index), 28 or 34 (short index). With the type and
+// definition locals, a long index at seven points 30/31/26/26/27/27/32 (26: size EAX, palette EBX, index EDI as
+// retail; left: type ESI, definition ECX, no copy). Palette and block through local helpers of 0xd5260's shape
+// (out-parameter size), palette first or last, global or scenario local, inline or forced: short or late long
+// index 23 (scenario ESI, index BX, a dead block add), long index ahead of the helpers 25/26. The palette offset
+// through an inline read, then the definition local, long index at five points: placements local 31/26/26/27/27,
+// at the call 32/28/28/28/34; the palette pointer through it: local 33/32/32/33/33, at the call 33/32/32/33/27.
+// Lead: retail's `mov esi, eax` fits a definition local taking a value already read, with the size coalesced to
+// EAX for the product; every form above propagates the copy, so the type never reaches ECX.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
