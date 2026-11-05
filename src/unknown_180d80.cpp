@@ -182,6 +182,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // `y * left.j`, y row), and these spellings change neither, while their length change moves the whole listing. The short strip index re-measured 547 (aligned 85
 // against 67 now: retail's prologue, but the field sums flip to `field_8c + field_90` and the loop head gains a jmp). A compile-only build gives xmm4/xmm5 for the
 // rows, retail and the link xmm3/xmm4, so screen rows only in a real build. BLOCKED-BY 0x17cfa0 (contributor, still 70).
+// AC557: Complete transform scale observed once, mutable/immutable at late/early
+// input boundaries, then each with a named scale test: 227/227/379/379/317/317/392/392.
+// NOT kept: all regress and shorten away from retail; original transform inputs,
+// field reads, interpolation qualifiers and complete body restored.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

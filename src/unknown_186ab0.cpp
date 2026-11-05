@@ -156,7 +156,7 @@ void player_action_initialize(s_player_action *arg_0);
 // Earlier: frame 0x54 and selection inputs agree; comparison order,
 // MiniMax R (11-01): no new form, no lower score (the score-1 form needs a new inline_depth region
 // and a one-caller forceinline wrapper of 0x14d040; the retail callees stay out of line at inline_depth(0)).
-// score 134 (was 134): frame 0x54 and selection inputs agree; comparison order,
+// Earlier: frame 0x54 and selection inputs agree; comparison order,
 // byte-count extension, cyclic operand order, cold clear and output/angle scheduling differ.
 // MiniMax I run 21 (not kept, m3 review): 113 with 0xcdff0 called at the count test, 0xcbec0(unit, type, 1)
 // for the cycle loop and the field-first selection comparison, both calls inlined only with this function at
@@ -296,6 +296,9 @@ void player_action_initialize(s_player_action *arg_0);
 // locals' declarations swapped 1; first two locals assigned apart from their declarations 1; element pointer for the first unit lookup 1. Direction as a variable 419 (1444 bytes);
 // a one-caller inline wrapper of the cycle call 451 (1431 bytes). Diagnostic only: inline_depth 1, 2 and 3 in place of 255, 1 each.
 // Retail holds two copies of this read: the out-of-line 0xcbec0 (base type) and this site (base unit). BLOCKED-BY 0xcbec0 stands.
+// AC557: Complete held-action session gate as bool/byte/short/long admission
+// and complementary rejection results: eight at 134 (1486/1515). NOT kept:
+// no exact match; original short-circuit gate, cold latch and full body restored.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

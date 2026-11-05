@@ -1522,6 +1522,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // buffers 124; friend-first counts declared then assigned as statements 124; the user and both presence
 // buffers declared after the counts 117 (same code); the clan count read after the 0x18ff47 call 124;
 // the merged state as one chained assignment, friend store first, 122. BLOCKED-BY 0x63d00 stands.
+// AC557: Native friend/member/nested iterator sentinel chains, masks 1/2/4/3/5/6/7,
+// 195/195/195/198/198/198/198; all with reversed sentinel publication 200.
+// NOT kept: no gain; original descriptors, observations and complete body restored.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

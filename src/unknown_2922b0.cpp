@@ -74,7 +74,7 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
+// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // Frame 0x108 agrees; success/input/minimum/hit homes differ from +0x31.
 // Earlier: the true initializer uses BL, saving EBX early.
 // Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
@@ -376,6 +376,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // bool/byte/short/long, eight at 630 (2813/2886). NOT kept: all regress and
 // shorten away from retail; original root helper and complete body restored. Frame
 // 0x108, success/input/minimum/hit homes and inactive-exit/rotation scheduling remain.
+// AC557: Native root quotient producer, optional remaining/clamped scalar stages,
+// mutable/immutable complete families: eight at 607 (2817/2886). NOT kept:
+// all regress and shorten farther from retail; original helper and body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
