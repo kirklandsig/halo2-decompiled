@@ -486,6 +486,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P345: Actual advancing output cursor retaining the independent pass bound/eager length,
 // long/short pass, long/bool departure and memcpy/memmove: 251/267/251/276/299/258/253/266.
 // NOT kept: no byte match; original complete body restored; extra frame word remains.
+// B451: Actual output cursor supplies produced length from its difference to
+// indices, plain for/while, long/bool departure and memcpy/memmove: 266/271/250/275/266/271/250/275.
+// NOT kept: no eligible exact count/storage graph. Original full body restored;
+// extra frame word and count/departure/compaction homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
