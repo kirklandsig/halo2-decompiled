@@ -760,6 +760,21 @@ bool sound_driver_voice_create_buffer(
 // bool/byte/short/long: 71/71/71/71/71/71/71/71. NOT kept: unmatched decision/storage forms; original
 // complete body restored.
 // Spatial/play carriers and descriptor zero/input homes remain.
+// M3 lane 10 r71 (fast with 0x191420; one-file harness in brackets for screens): the flags tested as `(bool)((flags >> n) & 1)`, play first 71 (same code), 3D flag first 182 (599);
+// a bitfield view of the flags word, play first 71 (same code); a byte copy of the flags for both tests, 3D flag first 173 (603, 0x191420 1); both flags as bytes of a local option record,
+// 3D flag first 182 (599). Reading: in the play-first form it is the flags word kept for play's late shift (`mov ebx, ecx`) that outranks the voice index, so the voice index spills as
+// retail; with the 3D flag first the word dies in ECX and the voice index takes EBP, so whatever retail's source is, it must keep a register busy until the first creation.
+// Round 166 (m3 lane 4, one-file harness, 80 there for 71; confirmed --fast where noted): the count stored as the block's first
+// statement, ahead of the voice reference, 68 (fast, a gain of 3, not kept; retail's `lea eax, [esi + 1]; mov [edx + 6], ax`
+// ahead of the clear). Reading: the bool defined first gets the byte copy, the second is shifted in place in ECX and spills, so
+// retail's `mov bl, cl; shr ecx, 1; and cl, 1` is the source order 3D flag, then play (185 here, 598 bytes, the index then wins
+// EBP over the 3D flag and the zero takes EBX). With that order the index still takes EBP in every form: `voice_count++`, a named
+// next index, `result = voice_index` at the block top or after the voice, the index through a long, the bools at function
+// scope 178, a byte copy of the flags; dword flags 160 (618). The 3D flag read again (`if (!three_d)` as a second test, in the
+// select, before the play test) 185 each: they fold before allocation and add no weight. `short result = voice_index` with
+// `else result = NONE` 175 (flags arrive in EAX), play first 164. The 3D block as a forced inline helper taking play 113 (620),
+// frame 0x88, play keeps BL; plain inline stays out of line. Random search of 400 forms (order, spellings, byte types, count and
+// voice placement, declaration order): best 73 here, the early count above.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
@@ -910,6 +925,12 @@ extern "C" void _ReadWriteBarrier(void);
 // 0x220fd0 216); the rolloff and obstruction LF zeros chained 23; the room difference stored into lRoom and
 // pinned in place 21 (same code); the 0x12aff0 call ahead of the three float stores 49 (672 bytes); the second
 // barrier removed 22.
+// Round 61: `__assume` on the voice after its pointer, the memset, either of the first two volume stores or before the
+// 0x12aff0 call 21 each, on the globals 21, on the decibels 21, on the buffer 21; the memset's value in a named local 21;
+// a voice-array local 21; the voice pointer as a sum 21; the voice pointer assigned after the memset 25.
+// Compile-only (decibels stay in ecx, the truncated value in edx): a decibels local, with a pointer `__assume` before the
+// call's block; locals for either or both of the first two volumes; the barrier ahead of the second store; `__assume` after
+// each of the first two stores; the attenuation through a local.
 // Round 105: the memset result as a multi-use environment pointer 182 (667); clearing from lDirect 21;
 // both voice HF conversions before attenuation 127 (679), obstruction only / occlusion only 96/96 (672);
 // nine explicit aggregate zeros 96 (662); const attenuation / const room 21/21. Original body restored.

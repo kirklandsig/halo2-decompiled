@@ -385,6 +385,17 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // F365: Vector-owned captured magnitude and paired normalizers, masks 1/2/4/3/5/6/7, then ordinary inline:
 // 1354/1354/1355/1354/1354/1354/1354/1354 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
 // F367: Complete pointer-boundary aggregate magnitude/first-normalizer/second-normalizer input captures, masks 1/2/4/3/5/6/7, then all via existing setter: 1608/1413/1395/1618/1569/1453/1641/1666. NOT kept: all regress and miss native storage/extent; original captures, private helpers, APIs and full body restored.
+// M3 lane 4 r165 (fast; count/aligned/bytes, control 1355/a969/6243, register-masked aligned 584 for g_contact below): LEAD: retail's first normalizer
+// has no input snapshot: with the magnitude as `(real)sqrt(dot3f(v, v))` and normalize3d() ours gives retail's `movss [home], xmm; fld [home]; fmul
+// [home]` at retail's offsets, `fst`, `fabs`, the epsilon `ja`, frame 0x590, but it threads the zero exit past the compare; a `do {} while (false);`
+// between `real length = ...` and the compare (or an out parameter) stops that and gives retail's exact scale block and `xorps; ucomiss; lahf`:
+// 1584/a946/6038 (masked 568), out parameter 1580/a947/6038. Length falls because of forms still to find. Steps: magnitude alone 1608/a967/6022; normalize3d
+// for the first normalizer 1492/a1033/6112, for the double one 1384/a970/6259, both 1486/a1034/6112; magnitude with the first 1639/a977/5974, all three
+// 1643/a977/5974. A const reference for the result does not stop the threading: 1395/a983/6195 on this body, on the magnitude form 1568/a963/6022,
+// with normalize3d 1639/a977/5974, plus the double one's result 1608/a967/6022, all 1643/a977/5974. One result local in the normalizer 1639/a978/5974;
+// `0.0f != x` 1642/a976/5974; `!(x == 0.0f)` 1639/a977/5974. Contact pointer local (retail's `imul; lea edi, [eax + ebp + 0xb10]` head) 1401/a962/6211;
+// k/j/i cross in the first loop 1426/a984/6238, contact cross in place 1388/a983/6238, both 1451/a967/6185; with the join form 1610/a944/6022,
+// 1631/a964/5980, 1675/a966/5964.
 // Round 586: Magnitude input last-consumer scope at real/double squared-length or
 // real/double magnitude producer, direct/complete named products: 1395/1383/1395/1433/1355/1386/1355/1383.
 // NOT kept: nonexact lifetime/precision/staging; original helper and whole body restored.
@@ -394,6 +405,16 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P331: Point activity/query/compression admission results, masks 1/2/4/3/5/6/7 then complementary
 // all: 1355/1355/1354/1351/1350/1350/1350/1380. NOT kept: at most five points, below margin; no
 // exact predicate-storage match. Original helpers and body restored.
+// Round 211 (m3 lane 3, fast; aligned with registers/register-blind, control 969/590): retail's contact loop keeps
+// its three `imul` per iteration and no induction pointers. On Round 201's pair (re-measured 1689, 969 -> 933/575) a
+// `short` contact index gives them from a dword load 1498 (6102 bytes, 918/484), but adds `movsx eax, ax` to the latch;
+// the short alone 1631 (6496 bytes, 973/571). Compile-only on the pair, still reduced: while, do-while, two increments,
+// a next-index local, a pointer or reference to the index, by-value and by-reference inline helpers, the whole body as
+// a by-value inline helper, a dword index, one index shared with the first loop, 800 extra calls in the loop. Only the
+// short or an address that survives (a real call taking it, `&index &&`) stop the reduction, so the real cause is open.
+// x87 tree `(... * 0.1f + 0.9f) * (double)game_time * rate * 0.3f + index * 42.0f` 1383 (6211 bytes, 982/579): dword
+// constants as retail's except the one after the double; retail's are all dword, as under a `sin` root (0x1a2197).
+// Found arm first with `continue` in the impact loop 1408 (6253 bytes, 975/593). Original body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

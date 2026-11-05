@@ -1112,7 +1112,7 @@ short __stdcall function_1ba4e0(long actor_index, s_slot *slot, bool active)
 	return result;
 }
 
-long __stdcall function_c7160(long unit_index, short seat_index, long marker_position, long vehicle_index, long position);
+long __stdcall function_c7160(long unit_index, short seat_index, long vehicle_index, long marker_position, long position);
 bool function_cc750(long unit_index, short seat_index);
 bool function_cc7b0(long unit_index, short seat_index);
 real normalize2d(point2f *vector);
@@ -1148,7 +1148,7 @@ bool function_1baae0(long actor_index, long object_index, short seat_index, bool
 	{
 		point3f marker;
 		point3f position;
-		if (function_c7160(actor->unknown018, seat_index, (long)&marker, object_index, (long)&position) != NONE)
+		if (function_c7160(actor->unknown018, seat_index, object_index, (long)&marker, (long)&position) != NONE)
 		{
 			real bonus = 0.0f;
 			vector3f direction;
@@ -1552,6 +1552,18 @@ void function_1f86a0(long actor_index);
 // post-search producers, then conditional with direct fallback; native member/full-slot pairs:
 // 134/134/134/134/235/235/233/233. NOT kept: no frame/mask/entry recovery;
 // original handle lifetime, fallback, payload and complete body restored.
+// M3 lane 4 r164 (fast; aligned count in brackets, control 134 [84]): EBX holds the joint index after the loop in both builds, and in
+// the loop the byte mask (only BL can hold it across the calls) takes it where retail gives it to the entry. Positive predicate 134
+// [83]; the element looked up again through the entry in the predicate 254 (874 B), in the root compare 243 (862 B), in both 254; the
+// predicate re-lookup with the positive predicate 250 (874 B), with both 250. Volatile mask (diagnostic, reverted) 254 (879 B): frame
+// 0x14 and the mask at +0x13, but the flags read is then shared and BL holds it, so retail's spilled mask is not a volatile's shape.
+// Round 150 (m3 lane 5, fast; m = masked aligned, control m29): mask as byte, bool, long const ref 134, 241 (863), 248 (873); positive predicate 134 m24; on it same as const ref 134,
+// element or index const ref 134, same inside a do-while(false) 246 (872) m20 (frame 0x14, same at +0x13), nested if or named roots 245 m29, roots through a ternary 250 m37, for-form
+// iterator 134 m24; flags local ahead of the slot test 141, with positive 142 m25. No mask local, positive: 240 (864) m18 (masked byte at +0x13 as retail, but the flags byte takes BL
+// for `test bl, 0x40`); the 0x40 test through a word, dword, short read 138, 135, 138, a slot-offset byte 230 m21 (the masked value takes BL), a shift or bool conversion 240.
+// Diagnostics, reverted: one more read of the entry or the mask 263, 254 (mask keeps BL); a compiler barrier after the two root calls on the mask form 134, no mask 230 m26, volatile
+// mask 247 m17: that last gives retail's EBX entry with `mov ebx, eax` for the first root, so the difference is which byte value holds BL. 0xbaf40's memory summary as a cause is
+// untested, its file was held this round.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

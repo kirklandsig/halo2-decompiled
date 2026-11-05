@@ -86,4 +86,5 @@ long *g_51e9a0;
 bool g_47f058;
 long g_47ff38 = NONE;
 
-s_prop_pool_storage g_prop_pool_storage;
+s_record_pool *g_502418;
+s_record_pool *g_50241c;

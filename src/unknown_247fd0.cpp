@@ -387,6 +387,15 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // B438: Allocator success/failure outcomes in bool/byte/short/long: eight 55 at 870/870.
 // NOT kept: no exact outcome-lifetime form or gain; original full body restored.
 // Post-sample split cache comparison and evaluator/child scratch homes remain.
+// M3 lane 10 r71 (fast; aligned in brackets, base 55 [54]): the child loop as a plain while 55 [54]; the cache block's cleared mask named and stored
+// after the record 55 [54]; the child pool in a named pointer 55 [54]; a parent local for both link arguments and the parent store 55 [54]; the
+// owner's flags read once for mask and update, on the current graph, 60 [50]. Re-measured: 0x173ba0's record read back from field_50 133 (876)
+// [19], which is the real closest form: only the split compare, its loop pad and the child loop's rotation are left. Harness (one file, entry in the
+// source; nothing folds): the compare or the store under an implied test, the store through a one-pass for/do, switches on the store or compare, a
+// bool result. A retail-wide scan of `fstp m` followed by an ALU operand finds 5 folds and no split of this shape: two folds are jump targets, and all
+// three non-target folds (0x39e24, 0x18700b, 0x2481bf) sit in unmatched functions, so no matched function shows this fold under the build's tuning.
+// Diagnostic only: in the one-file link /G7 on the entry object alone folds it (file-level /G7 does not), so tuning is link-wide, but it also turns
+// `inc` into `add r, 1`, which retail does not do; /G6 and /Ot on every object still split, /Os folds at 175 instructions. No flag change proposed.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -526,7 +535,7 @@ struct s_particle_impact;
 void function_249170(real const *arg_0, s_particle_spawn_state *arg_1, s_particle_spawn_definition const *arg_2, s_particle_system_datum const *arg_3);
 vector3f *function_143070(matrix3x3 const *arg_1, vector3f const *arg_0, vector3f *arg_2);
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, short arg_4);
-void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4);
+void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
 // score 356 (was 356): frame 0xb0, 1643 bytes against 1652. Left: retail saves EBP at entry and
 // shares one epilogue (ours saves it after the early exits); retail keeps the blend in XMM2-4
@@ -772,6 +781,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // B436: Native constant-index blend/contact/velocity observations, seven subsets,
 // then complete initial-scale coordinates: 356/356/356/356/356/356/356/356. NOT kept: no exact form or eligible gain;
 // original complete body and helpers restored. Native frame/register differences remain.
+// Round 72 (m3 lane 1, harness with the callees' 8 files: control 386 [112] at 1636 bytes against the plain 356 at 1643, so ranked only; masked aligned in brackets): EBP's entry save on the early exit: empty else 386 [112], `do { } while (false)` in that
+// else or after the block 386 [112], in the exit arm 386 [112] (same code each); `__assume(local_0 >= NONE)` after the block 418 [131] (1652 bytes, EBP still late); flag byte not volatile 440 [129]. Effect flag read: named datum pointer 402 [114], shifted byte local 425 [116],
+// pointer and one-bit bool 414 [127]. Retail's flag byte store at [esp+0x1b] is never read back; no form tried here gives it without the volatile. Not kept; body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
@@ -898,7 +910,7 @@ void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition
 			long local_19 = local_3->tag_index;
 			long local_20 = local_12->function_247957();
 			dword local_21 = local_12->function_247956();
-			function_246e60(local_20, local_21, (s_particle_impact const *)&local_23.field_70, (s_object_246eb0 const *)local_2, local_19);
+			function_246e60((s_particle_impact const *)&local_23.field_70, (s_object_246eb0 const *)local_2, local_19, local_21, local_20);
 		}
 	}
 }

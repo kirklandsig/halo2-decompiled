@@ -273,9 +273,52 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // side width, response reciprocal, complete residuals and correction distance: eight at
 // 804/3499, frame 0x8c. Original input storage and body restored; early input/object/
 // heading retention and normalizer memory products remain.
+// Round 52 (m3 lane 2, fast; lead, not kept, score rises): retail's 0x29b2e0 reads its first vector from EBX and retail's EBX at this
+// function's call is the +0x290 pointer, so the call is (arg_0, arg_1, local_4, &local_5, local_24, &local_5), not &local_5 first. That
+// corrected call alone 848 (3464 bytes). The same correction on 0x29ab90 (with its tail rewritten around it) took that function 345 -> 267.
+// M3 lane 4 r165 (fast with 0x1f9e70/0x110ab0; count/aligned/bytes, control 750/a430/3508, register-masked aligned 156): retail reads the input from its stack
+// home only for the copy and again into EDI in the final arm, with the object index in EDI until then and the heading pointer in EBX. Input read directly 804/a439/3499;
+// directly with an arm-local const reference bound to a converted temporary (the form that matched 0x45560; the input stays on the stack with no
+// address taken, but EBX still holds it from the prologue) 750/a429/3508, with the reference kept for the first read 750/a431/3508; arm-local plain copy on direct input
+// 748/a442/3501 (the input arrives in EAX), on the reference 750/a432/3508. Grid with planar struct copies and normalize3d: reference + copies 750/a439/3499, + normalize3d 771/a429/3499, both
+// 797/a420/3474; arm const reference + copies 750/a438/3499, + normalize3d 771/a428/3499 (masked 136), both 797/a419/3474; arm plain copy + copies 760/a443/3485, + normalize3d
+// 785/a440/3485 (masked 138), both 802/a433/3469. Two definitions of the arm's input (diagnostic) 748/a442/3501, with normalize3d 785/a440/3485. Volatile read at the copy and arm
+// (diagnostic, reverted at once) 790/a447/3479.
 // B433: Library transfers at history/working-direction/pre-blend copies, seven subsets,
 // then all with the initial heading: eight at 804 on direct input. NOT kept: frame
 // grows to 0x8c despite retail length; original transfers, input storage and body restored.
+// Round 211 (m3 lane 3, fast; aligned with registers and stack/both masked, control 430/156): applied together, retail's
+// forms take the aligned count to 391/87 at 3499 bytes, but 783 positional, so none kept. They are: normalize3d for the
+// private normalizer; `*(vector2f const *)` whole copies for the 2D views; `real perp = -local_17.j` before the half
+// span; the two `1.0f > expr ? expr : 1.0f` clamps with the expression written twice, each `(1.0f - t) * k` / `t * k`;
+// `sqrt(1.0f - g * g)` on floats; `MAX` written out for the squared distance and the dot; `(... * 0.5f) ^ 2 / d * 0.5f`;
+// the three velocity dots named before the reciprocal; the signed root with `real const &` for the sum and scale
+// (retail's `fmul [esi + 0x6c]`); `local_7.i + local_6.i`; a named blend complement; the radial test once, false exits
+// in one `||`. Single forms: admission as a forceinline helper with early returns 829 (3454 bytes, 415/141), that with
+// all above 788 (3514 bytes, 395/91); the `||` 790 (3507, 400/89); `result != false` 787 (401/95); y then x named 797
+// (416/103); delta rows j then i 781 (3499, 459/97); no helper, a `blocked` bool 787 (3507, 396/102); y inside each
+// side arm 766 (3540 bytes, 401/98, x87 deltas); field_50 named first +8 frame 0x90, unnamed 783 (3499, frame 0x8c,
+// 391/91); old double-root admission with the rest 783 (3499, frame 0x88, 411/104). Bare blocks around the out-query,
+// the admission point or the later body: same code. Diagnostics, reverted: `volatile` input reads 790 and 835; `standard`
+// marker with direct input 818 (local_2 takes EBX); `(void)&arg_2` and `if (&arg_2)` leave it in EAX; input unused in
+// the arm (wrong values) still pushes EBX first. What decides the rest: retail keeps arg_1 in EDI to the position query
+// and pushes EBX late for the +0x290 pointer (EDI then the input, then the mode; local_2 stays in memory), and ours loads
+// arg_2 into EBX at entry. Original body and helpers restored.
+// Lane 12 r91 (held, coordinator): the 750 -> 748 below is under the keep bar (a gain of 8 for a function above 30), and it rests on
+// score-picked forms (the float root, the planar struct copies, MIN) that pay back the corrected argument's 848; main's body kept,
+// build/held/lane12-r91-29bab0-748.patch is the whole 748 form with the corrected 0x29b2e0 argument, a lead toward the match.
+// M3 lane 12 r91 (fast; masked with registers and stack offsets, 255 of 844 at 750): retail's third argument at the 0x29b2e0 call is the +0x290 pointer in EBX;
+// this body passed &local_5, a wrong value, now corrected. Kept together, 748 (3502 bytes, masked 164): the corrected argument, direct input (the reference local to it gone), normalize3d in
+// place of the private normalizer, planar struct copies, the float root, MIN at both clamps (retail evaluates the expression twice in each), a named blend complement.
+// LEAD, not kept (an inlined helper's parameter chosen by score, needs a ruling): retail's `fmul [esi + 0x6c]` comes from the signed-root helper reading the scale at the product. The scale as `real const &` on
+// the set above 724 (3466, 161); that set without the planar copies and complement 713 (3484, 165), the definition pointer as the parameter 713 (same code), the helper as a macro 753 (3480). The same set by value 774 (3520, 174).
+// Steps: corrected argument 848 (3464; EBX pushed mid-function as retail); with direct input 823 (3460, masked 227), direct input alone 804 (3499, frame 0x8c); with normalize3d 806
+// (3446, 207); planar copies 814 (3430, 197); float root 819; both clamps 750 (3504, 174); the complement 748. By value without planar copies 774, complement only 772, planar only 750.
+// Leave-one-out at 724: no corrected argument 730 (3512, 186), reference input 724 (158), no normalize3d 834, no planar copies 716 (3482, 169), no float root 784, no clamps 862 (3388), no complement 724
+// (3468, 171), no reference 748. On 713: reference input 730 (3486, 262), with the complement 716 and 718, half-span scale folded 713 (173), velocity dots named first 728 (3488, 172), `local_7.i + local_6.i` 713 (same code).
+// The negated j named for its three uses reaches retail's 3499 with the reference scale, planar copies and the complement, 758 (masked 152).
+// EBX save still in the prologue (retail pushes it after the 0x26c test, which shifts about 40 lines): empty else arm on the 0x26c test or the arg_8 test, both, a compiled-out loop at the
+// join, or around the whole middle: same code at 748. Retail re-reads its arguments from their stack homes per region (arg_0 in ESI at the top, arg_1 in ESI in the arm).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

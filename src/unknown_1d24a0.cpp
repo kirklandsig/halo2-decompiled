@@ -348,6 +348,23 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // (retail reads it first) 951; the attached component set in an if/else 901 (one point, not kept). All restored.
 // DL260: Existing scale/add/subtract kernels with deduced actual vector input types, seven subsets, then existing planar kernel: 1087/1140/1099/1327/1320/1295/1505/1644.
 // NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// Round 129 (m3 lane 7, fast; aligned/masked control 548/232): the attached object index named before the lookups 951 (556/237), with the lookup nested under its test 977 (555/236), nested without the name 977 (551/235); removal as an else arm after
+// the body 902 (same code); position copied by field 947 (4283 B, 530/219), both 947. Register-masked 366 by line: retail's lower vector/scalar homes still rest on the rolled scale loops; the `inline` lead on 0x24590 stays a coordinator question (it raises other callers).
+// M383: Absolute-value APIs at entry/radial/planar bound families, subsets 1/2/4/3/5/6/7,
+// then all double APIs with real results: 900/927/944/931/945/974/975/974. NOT kept:
+// two-point entry lead fails the gate; native conditional bounds, helpers and full body restored.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 902 [681]): HELD LEAD, needs a ruling on a shared helper: `inline` on
+// magnitude3d's definition (0x24590) makes our build spill live xmm values across that call as retail does. Recipe, 849 [384],
+// 4241 bytes: the scale helper as three statements (retail's frame 0x1d4 and calls), the rigid-body position copied field by
+// field, the subtract in both arms at the two limit sites, the record flags read from the field at each pair (second-bit flag
+// first), the removal path as an else arm after the body with no long index local at the test, `inline` on 0x24590. On the way:
+// three statements 1181 (4026) [546], with n[] the same, through local pointers 1174; position copy 1173 [539]; both arms 1144
+// (4070); `inline` alone 934 (4299) [707]; all with it 956 (4252) [415]; flag reads 897 (4241); product operand swaps 897; else
+// arm 861 [395]; attached index first 987; coefficients at each use 893 (4211) [366], frame 0x1cc; `!(a > b)` limit form 863;
+// flag order second pair 862; rate product swap 861; local copy field by field 964. Without `inline`: that recipe 1069 (4068)
+// [546]; file-local inline or forceinline declaration 1069; each form alone on the body below 964/955/947/906/968/977/926, so
+// none is keepable. Plain check of the callers with `inline`, nothing lost, 0x1d24a0 861, but 0xf8eb0 946->1030, 0xd1e10 542->596,
+// 0x185be0 622->958, 0x1aa0d0 375->402, 0x2c0d60 882->952, 0xf6d10 749->759 (aligned mixed: three fall, three rise).
 // M383: Absolute-value APIs at entry/radial/planar bound families, subsets 1/2/4/3/5/6/7,
 // then all double APIs with real results: 900/927/944/931/945/974/975/974. NOT kept:
 // two-point entry lead fails the gate; native conditional bounds, helpers and full body restored.

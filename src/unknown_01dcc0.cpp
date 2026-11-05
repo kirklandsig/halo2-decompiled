@@ -162,69 +162,12 @@ bool function_01dd60(long index, long *width, long *height)
 	return result;
 }
 
-// score 24 (was 24): width stack/height ESI differ from ESI/EDI inputs; packed gate differs.
-// width/height/both unit subtraction before shifts 25/28/30; native packed words 30;
-// row-byte part 30; selected/masked new packed word 27/28; early dimensions 30.
-// width/height input registers and byte-gate normalization differ.
-// Byte storage 33; direct byte input 25; byte mask 35/27; byte selection 25/23; gated packing 30/24.
-// width remains stacked and height/register saves differ; retail masks the packed fields.
-// Direct width 24; byte pitch expression 24; field store schedule 22; zero flag branch 25; Boolean mask 25; flag result selection 25; complete height field 28; packed role names 24; direct input and mask 22.
-// Width remains on the stack and height in saved ESI instead of retail ESI/EDI
-// inputs; the unsigned packing and Boolean gate still lower differently; height expression 21;
-// width expression 21; packed expression 21; direct width height expression 24; direct packed
-// expression 24; late entry 21; shared publication 21; separate gated result 21.
-// Selecting the size by the flag before the width/height stores, with no
-// width reference, gives retail's ESI/EDI inputs, ret 0 and retail's tail, but the compiler
-// folds the shifts ((w*4/64)<<24 to (w<<20)&mask, (h<<12)-0x1000 to (h+0xfffff)<<12) where
-// retail keeps shr/shl/sub: (p-1)<<24 form 28; shift-then-subtract 24; reversed or order 28;
-// pitch local 28; sums 29; multiply forms 22-30; signed forms 27-28; size helper 39; size
-// helper without global optimisation (diagnostic) 24. Only builds without global
-// optimisation keep retail's shr/shl/sub.
-// Width/height input registers and flag normalization still differ. Native
-// index/width/height parameter-type sets 24 in all seven forms; native contract with separate
-// noinline declaration 24, all at 79 bytes.
-// The XDK D3DSIZE_* shifts with `flag94 ? size : 0` 28 (shifts merged and Horner-factored);
-// `(p * 0x1000000 - 0x1000000) | (h * 0x1000 - 0x1000)` with the ternary after the stores 22
-// (79 bytes, ret 0, retail's neg/sbb/and select), before the stores 22 (retail's ESI/EDI
-// inputs; index EAX/size ECX where retail has ECX/EAX, and the -1 folded into the shifts),
-// with the size computed before the entry pointer 22; a forced-inline size helper 27; favour
-// size (diagnostic) 21. A compile-only build folds the -1 inside every shift/multiply spelling.
-// Round 60 (no width reference, all 79 bytes and ret 0 unless noted): the one-expression multiply
-// packing with a select after the stores 22 (index in EAX); the packed word as one shift
-// expression with a named select 23; 0x1df20's three-statement packing with the select stored
-// directly and copied to the element 23 (width EDX, height ESI); that with an if/else store 40
-// (91 bytes); packing from the stored width/height fields 25. The shifts fold in every form.
-// Round 44 (lane 14): no width reference, with `value = e->flag94 ? value : 0;` before the width/height
-// stores, gives retail's exact convention (index ECX, width ESI, height EDI, plain ret) 24: only the
-// folded shifts differ. Callers then: 0x48ee0 226 (189 with its width rounded first and a long mode),
-// 0x2d140 637 -> 686 at retail's 2652 bytes (aligned 593 -> 543), 0x335e0 42. Not kept (score rises).
-// Round 109: now the select before the stores with no width reference (index/width/height in ECX/ESI/EDI, plain
-// ret, retail's tail): 21 -> 24 positional, LCS-aligned 17 -> 10, and caller 0x335e0 matches with it. Left: the
-// folded shifts (`shl 0x14; and` for retail's `lea [esi*4]; shr 6; shl 0x18`, `lea [edi+0xfffff]; shl 0xc` for
-// `mov; shl 0xc; sub 0x1000`), which the notes above tie to retail building without global optimisation.
-// Round 136 (m3 lane 6, fast): `((w*4/64 - 1) << 24) | ((h - 1) << 12) | (w - 1)` with the select before the stores
-// 28; a switch-returned bytes-per-pixel inline helper 22, but 0x335e0 0 -> 1 and the index moves to EAX; `if
-// (!e->flag94) value = 0;` 24 with 0x335e0 0 -> 17; width term first 24; height as `(height - 1) << 12` 27.
-// Compile-only: separate statements, compound assignments, `+ 0xff000000`, `(1 << 24)`, fields read back after the
-// stores, a pitch helper with a constant and a const multiplier table all fold. In all of retail the unfolded
-// `shr 6`/`shl 0x18` and `shl`/`sub 0x1000` pairs occur only here and in 0x1df20.
-// Also round 136: the packing as compound-assignment statements 24; the subtractions as added 0xff000000/0xfffff000 24.
-// Round 131: byte pitch 18 (80 bytes, movzx; NOT kept: added widening and length); byte pitch and word
-// height 26; pre-subtracted byte pitch 20 (movzx; NOT kept: width-only score steering); pitch subtraction
-// in x 18; word height 18 (movzx, index EAX; NOT kept: retail uses the full input); pre-subtracted word
-// height 21; both pre-subtracted 23; typed SDK Size stores 24.
-// Round 85 (m3 lane 12, fast): a signed pitch keeps retail's unfolded `lea [esi*4]; shr 6; shl 0x18`: `long pitch =
-// (width * 4) / 64;` 22, `(long)` casts on x/y 22, pitch/x/y all long 22, compound x/y subtractions on it 22, a long
-// height copy 22, dword subtractions of long x/y 22 (all: the -1 still folds as `add 0xff`/`lea [edi+0xfffff]` before
-// the shifts, index in EAX); `((pitch - 1) << 24) | ((height - 1) << 12)` with long pitch 28 (Horner); 0x12c0d0's
-// Horner spelling 28; `>> 6` for `/ 64` 24 (same code); `+` for `|` 30. Not kept (2 points).
 // @retail 0x1ddd0
 void function_01ddd0(long index, dword width, dword height)
 {
 	s_unknown_01dcc0 *e = &g_4b4b58[index];
-	dword x = ((width * 4) / 64) << 24;
-	dword y = height << 12;
-	dword value = (x - 0x1000000) | (y - 0x1000) | (width - 1);
+	long pitch = width * sizeof(dword) / 64;
+	long value = ((pitch - 1) << 24) | ((height - 1) << 12) | (width - 1);
 	value = e->flag94 ? value : 0;
 	e->width = width;
 	e->height = height;
@@ -296,6 +239,15 @@ long g_55e6c0;
 // the typed select 97; raw level-count local at the clamp/at entry 29/29; multi-use height/width/
 // both dimension locals 29/29/29; native pitch only 31; native height only 96. The typed native
 // form unfolds its shifts but factors the two 12-bit shifts; original packing and body restored.
+// Round 51 (fast): LEAD: signed locals stop VC pulling the subtraction under the shift. `long pitch = width * sizeof(dword) / 64; long packed = ((pitch - 1) << 24) |
+// ((height - 1) << 12) | (width - 1);` is 29 (484 bytes) with every packing instruction retail's (lea/shr 6/shl 24/sub, shl 12/sub); what is left is height in EDX and the clamped
+// count in EAX where retail has them the other way (the extra byte is `sub edx, imm`), and so the top block's load order. The same code: shift-then-subtract statements, own height
+// local, accumulated pitch, pitch decremented first, the cast `(long)(...) << 24` 29; multiply forms unsigned 28 (484), `dword packed` with a signed height 29 (483, folded); a
+// signed pitch as a plain shift of the dword quotient 29 (483, folded). Register swap, on the natural form: clamped local published after the packing, after the flag, after the
+// select's constant 29 each; arms assigning from count 29; nested else 29; zero first 43; store after the clears 35; declared at the top 29; packed declared at the top 29; height
+// stored before width 30; pitch before the stores 155 (495 bytes); stored fields 29; height part before the clamp 37; packing before the clamp 31 (483: height EAX, zero EDX); copy
+// of count before the stores 166 (503), at the clamp 166 (497); forced-inline pin as a ternary or with returns 29, with a result local 166; forced-inline size helper 29; format local
+// for the call 29; `count >= 0 ?` first 32. Field stores in the clamp's arms 139 (495) give retail's top block and registers exactly, so the merged clamp value is what takes EAX.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

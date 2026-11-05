@@ -368,6 +368,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M371: Paired object/sphere ordered-radius overlap/exclusion truth in
 // bool/byte/short/long: eight 931 (reduced control 931; full 882). NOT kept:
 // byte-neutral decisions; original tests, qualifiers and complete body restored.
+// Round 212 (m3 lane 3, fast control 931, plain 882; aligned 460 at control): marker arrays at the top of the function 931; object matrix at
+// the loop-body top 931; object offset at the loop-body top 931; sphere centre and difference at the loop-body top 931 (identical code each);
+// unit volatile dropped 918; actor volatile dropped 991 (3648); both 1014 (3632, frame 0x2cb4); both plus location and raised as separate
+// locals 1005 (3643, frame 0x2cb0, aligned 419); the query struct alone dropped 904 fast (3702, frame 0x2cb4).
 // Y591: Positive complete classification in bool/byte/short/long, entry/admitted defaults:
 // 939/939/919/933/936/936/919/933 reduced (control 931, full 882). NOT kept:
 // no byte match or native frame repair; original decisions, qualifiers and body restored.
@@ -1575,6 +1579,15 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // length but outlines its copy, keeps frame 0x114 and loses exact caller; all algorithms lose that
 // caller. Native copy-then-count commit 418. Original full body restored; frame 0x114/0x10c and
 // radius/zero/count/metadata homes remain.
+// P344: Actual current/selected/output array-element lvalues on the corrected two-radius graph, seven
+// subsets then actual source subobject: 418/418/418/418/418/418/418/418. NOT kept: no byte match;
+// original complete body restored. Native frame, radius/zero/count and metadata/trace homes remain.
+// M3 lane 8 r135 (fast; raw/register-masked/stack-masked aligned, base 352/265/105 at 418): tuple phases through a no-op chain 418
+// x3 (no effect here; the difference is integer homes). Diagnostics, removed: count read volatile at the outer test 399
+// (355/267/106), scan 489, both 456; with the second edge store (380, 352/262/103) 453/458; one real extra use, at the loop
+// top, of next/type/link 419, step/points 421, edge 464 (2 and 4 uses 464: edge never leaves its stack slot), found/copied
+// 477, index/result 484, count 483 (336/236/114: the only one that moves roles toward retail), source 436, sector/data 492,
+// query 493, used 519. No form tried recovers the 0x10c frame.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

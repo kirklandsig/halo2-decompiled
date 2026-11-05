@@ -272,6 +272,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // direct/captured header base: 97/97/136/136/93/93/95/95. NOT kept: every form loses
 // the matched caller (146/213/13); best gain three is below the gate.
 // Original handle capture, dispatch observations and complete body restored.
+// M3 lane 4 r164 (fast, caller in brackets): round 60's 24 form rebuilt 24 [0]; headers, object index, rigid body, type through the
+// object index with case 0 through it 124 (228 B) [209]; the 21 form (headers, object index, rigid body, absolute index, type) in 8
+// parameter orders, definition, declaration and call together, 21 [13] each (identical code: the component stays in EDX and the
+// index in EAX); a named object index for case 0 with the type read through the field, byte type in six declaration orders 99/102
+// [13], long type 98 [171] or 112 (236 B) [13].
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -608,6 +613,22 @@ struct s_physics_component_walk : s_havok_component
 // P335: Readonly owner/group/opaque recursive-input contracts, seven subsets then
 // complete contracts with fixed component binding: 146/146/146/146/146/146/146/146. NOT kept: all tie;
 // original method interface and full body restored. Latch reload and neighbor/key homes remain.
+// Round 72 (m3 lane 1, harness with damage.cpp, exact; masked aligned in brackets, base 146 [27]): kept: both section scans through one forced-inline helper with the object index read through an
+// inline getter (first scan byte-exact, retail's load order included), and one `open` flag taking the scan or the kind test in the arms and then `*active` or the recursion 104 [9] (all of retail's layout);
+// char body locals with `__assume(this_body != NONE)` 49 [6]. Steps on the old body: getter at all four calls 178 [167], neighbor scan only 147 [25], first scan only 178 [33], first calls 179 [37], second calls
+// 178 [31]; named object index or forced-inline section test 343 [61]; scan helper with no getter 151 [24], on the flag form 78 [16]; helper + getter 134 [16]; `long j` and a test after the first scan 177 [168]; char
+// bodies 134 [16], next first 107 [18]; arms swapped or the neighbor arm first with `continue` 189 [126]; out-parameter or `found` scan helper 134 [14]. On the 49 form, all 49 [6] with `next` still in EAX: the chain written
+// without a short local, a short next local, no `short` name for either; first body through a forced-inline helper (both forms) or a ternary; bit_vector_test / bit_vector_set at each mask; first_body or next
+// declared at the loop or block top in every order; `__assume` on next or first_body at five sites; on the body locals (next, both, >= 0); the next body through a named pointer, reference or getter, declared ahead of the
+// ternary or not. Higher: next through if/else short 54 [6], long 68 [14]; group_a/group_b locals 58 [12]; first body default then test 298 [53]; named group pointer 51 [9]; first-body group pointer 272 [35]; terminal flag 169 [11].
+// Diagnostics (not kept): rotation probes before next move nothing (124, 176, 177 [9-11]); next's use dropped at each site, only the next-body read flips next to EDX (84 [10], al 22); next body read before
+// the ternary also gives EDX (107) but loads ahead of the ternary. Retail reads it after the ternary and still has next in EDX: that is what is left.
+// Arm and end orders of the flag: end `next != NONE` first 172 [156], first_body tested first 88 [14]; neighbor arm first 184 [77], with that end 189 [165]; arms merged on `next == NONE || count > 0` 278 [102] (817 bytes).
+// Lane 1 r72 (held, coordinator): the 146 -> 49 rests on match-only forms. Without `__assume(this_body != NONE)` and the char body
+// locals it is 104, without the object-index getter 120 (the scan helper itself adds nothing: the same flag form with the scans
+// written inline is also 120). The 120 is the `open` flag set in the arms; written as one direct condition the same body scores
+// 161 and the continue form with the helper 151, so none of it is kept (test-set flag rule, kept only with a byte match);
+// build/held/lane1-r72-1d6630-flag.patch is the whole 49 form, a lead toward the match.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

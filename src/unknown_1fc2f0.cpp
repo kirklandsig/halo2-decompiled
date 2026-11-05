@@ -550,6 +550,15 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // P327: Complete scalar prediction on the named-length graph, six declaration orders,
 // then producer definitions with original/late ticks, direct update argument: 117/117/117/117/117/117/117/117.
 // NOT kept: all regress and lose native frame/extent; original body and parameter storage restored.
+// Lane 13 r62 (fast; rate rows into a `predicted` point, then scaled_difference3f with `(real)ticks`, which gives retail's XMM3
+// and in-place products): predicted through vector3f_add_scaled, deltas i, j, k 79 (re-measured), deltas j, i, k 32 (re-measured,
+// first +0x65, chains and products agree with retail, the stores and deltas run j, i); predicted by statements j, i, k with deltas
+// i, j, k 63 (369 bytes), k, j, i with deltas i, j, k 78, j, i, k with deltas k, i, j 78. Rate rows follow the delta order in every
+// form, so retail's chains j, i, k with stores and deltas i, j, k stay unreached.
+// M3 lane 9 r88 (fast): rate rows j,i,k or i,j,k crossed with tick+delta rows i,j,k or j,i,k, as statements or one expression, conversion after the rate rows: 74 74 78 78 73 73 72 72 (369 bytes: direct field
+// references give the copied tick product). Prediction through a pointer helper with rows j,i,k or i,j,k, then scaled_difference3f with `(real)ticks`, deltas i,j,k or j,i,k: 61 81 79 32 (366, in-place tick products);
+// j,i,k helper + i,j,k deltas swaps XMM0/XMM1 (loads follow the helper's rows). Length as dot3f, k-j-i, j-k-i, accumulated k first, accumulated j first: 79 79 79 79 55 on i,j,k, 61 61 61 61 82 on j,i,k.
+// Retail loads i, j, k into XMM0-2 but prints the j chain first with stores and deltas i, j, k; nothing here separates the chain order from the delta order.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

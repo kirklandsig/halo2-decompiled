@@ -399,6 +399,20 @@ struct s_object_damage_view
 // DH350: Both award-prefix searches own duplicate/unique outcomes,
 // bool/byte/short/long: 366/366/366/366/366/366/366/366. NOT kept: test-set outcomes need equality;
 // original ordinal searches, scalar homes and complete body restored.
+// DH371: Actual engine/reported-source/selected-validation/fallback-validation/credit-hostility/
+// assist-admission/credit-pair/related-owner Boolean test results: 353 each.
+// NOT kept: no gain or equality; original validation, record observations and full body restored.
+// Native scalar homes and amount-biased history cursor remain.
+// Round 53 (m3 lane 2, fast; positional/aligned/masked aligned, baseline 353/160/56): consider_team as a true default
+// cleared by an if 344/156/52 (retail's store, but a flag form: match-only, not kept); the killer test as `if (killer !=
+// NONE) { if (killer == reported) code; } else if (reported is valid) { ... }` (retail's layout) 363 (1532)/157/52, with the
+// default 354 (1532)/153/48; a walked record pointer from a history local in the selection loop 374/169/68, with the default
+// 368/165/64; a `&history[selected]` pointer 454 (1583)/264/106, with the new test 438 (1567)/264/102; a named selected
+// player 403 (1596)/174/105, with the new test 354/160/58; pointer and player together 491 (1617)/275/192, with the test
+// 433 (1569)/272/142; those with the walked pointer and default 438 (1585)/259/89, with history reads in the assists 417
+// (1569)/247/81. Slots follow memory references, heaviest lowest: ours victim_team 8, damage_code 7, killer 6 references
+// (+0x14/+0x18/+0x1c); retail killer 8, victim_team 8, damage_code 6 (+0x14/+0x18/+0x1c). So retail's killer is read from
+// its home two more times and its damage code once less; the record pointer forms lose `selected`'s EDI and grow the frame.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -582,6 +596,10 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // `value = *entry; value += delta` 25, delta through a short local 84; a table pointer local 13; the index
 // before the field read 83; a `(word)` index 13; the clamp as one ternary in the store 13; statistics through
 // a volatile reference with a plain field 85; a short field local 81 (263 bytes).
+// Round 89 (m3 lane 12, fast), plain field read: the element indexed twice, with the entry pointer first or the value first, or the entry pointer
+// after the clamp, delta on either side of the sum: 85 each (the field stays folded; two reads do not unfold it). The engine pointer named at the top 24 (the
+// note's form, re-measured: the entry block is then exact but for that load's place, plus the engine test swap); named after the entry 69; named at the top and
+// assigned again at the join 85, declared without a value and assigned at the join 85, NULL then assigned at the join 85 (a dead definition does not unfold it).
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)

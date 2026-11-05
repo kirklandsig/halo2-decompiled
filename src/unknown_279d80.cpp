@@ -1994,6 +1994,12 @@ void function_27dd10(void)
 // Round 79 (fast; 0x281b60 has the same tie through function_288572): the count by const reference 2; the clamp operands reversed 53;
 // the flags byte read and pointer step split 2; the shift before the tail steps 2 (0x288570 12); a per-pass count copy 2 (0x281b60 62,
 // 0x288570 120); the shift in the for increment 12.
+// Round 86 (fast and compile-only over all six walk users): k identity locals at the walk's top, k = 1..8, 2 each (no period, the
+// reload pair does not follow symbol numbering); bit flags declared first in the wrapper, passed by reference 39 (0x281b60 87, 0x288570 152; compile-only shows no change, so not usable there); all 24 orders of the
+// index, flags pointer, count and inheritance parameters 2 each; natural rewrites of the arms of other blend methods (+=, *=, named
+// weight, interpolate_real, no scale local) 2 each, so arms folded away do not count; saved frame state as dword or long, fraction
+// first 2, next index first 6; apply index named in both arms 2; counters pre-incremented or += 1 2; the group end with the compare reversed 8;
+// a named table pointer for the outputs 2.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2106,6 +2112,9 @@ void function_2818e0(void)
 // Round 143: real sign lanes with negative zero 245 (1685 bytes, all controls regressed); the sign mask renamed 2;
 // prefix / += / assignment counter updates 2 each; register flags 2; register count 2; a const group bound 2.
 // All restored; the count/flags reload pair and frame 0x34 remain.
+// Lane 11 round 70 (fast): a ternary lvalue counter update 2; a counter pointer by ternary at the increment 2 or at the helper's top 2 (0x288570 120 in
+// all three); the bit flags shifted by an explicit assignment 2; the bit test as `(flags & 1) == 1` 2 (0x288570 3, 0x289580 78). Here and in 0x2bdc70
+// ours reloads the later-declared variable first, retail the earlier-declared one.
 // @retail 0x281b60
 void function_281b60(void)
 {
