@@ -3999,6 +3999,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // then all with complete translation captures on the native color frame: 362/369/362/361/362/221/355/355.
 // NOT kept: left/up 221 uses one-use field copies and grows to 1827/1819 bytes; its single
 // families regress. All other forms regress. Original scalar alpha, helper and full body restored.
+// AC560: Complete planar corner input, pointer/reference/value/scalars, scalar/native-color
+// frames: 231/231/449/396/365/365/520/374. NOT kept: no byte equality; native frame/scalar homes remain.
+// Original helper, all input captures, full geometry, scalar alpha and body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

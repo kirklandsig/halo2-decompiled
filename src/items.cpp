@@ -757,6 +757,9 @@ struct s_item_collision_bsp
 // planes, axis/spin homes, arithmetic, random draws, pending-k join, calls and include set restored.
 // Paired range sums also raise matched 0xd9640 from 0 to 3 in the reduced image; restored.
 // Protected plane-index width, plane joins and native spin/speed homes remain.
+// AC560: Actual optional-effect admission at its original guard, positive/complementary
+// bool/byte/short/long: 204/204/204/204/204/204/204/204. NOT kept: one-use outcomes do not match; original
+// complete body restored. Protected plane width, plane joins and spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

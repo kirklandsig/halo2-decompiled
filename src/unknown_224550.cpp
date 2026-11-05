@@ -434,6 +434,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 211/211/211/211/211/211/211/211 (fast control 211; full 211).
 // NOT kept: no byte match or eligible gain. Original direct aspect decisions, all interpolation trees, alias-
 // safe UV captures and complete callback restored; tint/secondary-UV homes and persistent blend remain.
+// AC560: Selected-sequence availability at its original guard, positive/complementary
+// bool/byte/short/long: 211/211/211/211/211/211/211/211. NOT kept: one-use outcomes do not match; original
+// callback and alias-safe UV captures restored. Tint/secondary-UV and blend homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

@@ -606,6 +606,9 @@ extern point2f *g_468778;
 // order, `comiss` against the memory zero after the normalize, and the request's word/dword store order. On that base the slot as the parameter itself 422/1532 (60), the
 // prop at function scope 397/1560 (73). Same code, no change: slot declared first or middle, all six dot term orders, dot operands swapped, renamed locals (three sets).
 // One-link harness not faithful here (control 442 at 1580 bytes).
+// AC560: Proven metadata/returned state/view record references, seven subsets, then facing
+// reference: 375/375/375/375/375/375/375/375. NOT kept: no byte equality; early actor/settings/prop homes remain.
+// Original receivers, early distance, result, observations and full body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1002,6 +1005,9 @@ static __forceinline long real_to_long(real value);
 // F385: Existing vector-union component-array observations in target velocity, facing
 // and working vectors, seven subsets, then actual position arrays: eight at 382.
 // NOT kept: byte-neutral homes/exit diagnostic; original complete body and query aliases restored.
+// AC560: Returned actor/state/view record references, seven subsets, then complete facing
+// reference: 382/382/382/382/382/382/382/382. NOT kept: no byte equality; early rejection and magnitude/query
+// homes remain. Original receivers, query aliases, arithmetic and full body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
