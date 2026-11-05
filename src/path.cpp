@@ -1124,6 +1124,8 @@ bool function_2715a0(byte *buffer)
 // DH368: Direct named link/root/child array elements, seven subsets then collision candidate:
 // 624/528/486/659/624/528/659/684. NOT kept: child-only ties, others regress or grow;
 // original array receivers, inherited fallback qualifier and complete body restored.
+// F396: Complete per-link flags/type/node scalar observations, seven subsets then all immutable: 505/490/485/506/478/524/547/547.
+// NOT kept: 478 grows frame to 0xc58 versus native 0xc54 and combines nonqualifying snapshots; native repeated reads/state EBP remain. Original complete body and helpers restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

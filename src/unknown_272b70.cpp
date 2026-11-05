@@ -1559,6 +1559,8 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // producer, forced/ordinary expansion on the retained slot graph: eight at 81/846.
 // NOT kept: regressions; original unit-value producer, slot publication and entire
 // body restored. Iterator/leave-selector/request homes remain.
+// F396: Winning unit/object/seat field storage borrowed at all marked-body uses, seven subsets then immutable bindings: 32/32/32/32/32/32/32/32.
+// NOT kept: no byte equality; iterator scaling, leave-selector and request/slot publication homes remain. Original complete body and helpers restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

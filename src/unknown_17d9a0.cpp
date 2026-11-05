@@ -1075,6 +1075,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // capture and separate/matrix-position pivot: 536/661/585/600/536/661/585/600.
 // NOT kept: three-point lead is below eight and matrix grouping is unmatched; other forms
 // lose native frame/extent. Original basis vectors, alias-safe helper and whole body restored.
+// F396: Complete normal-identity reduction, Boolean AND and full-word XOR/OR, long/int/short/word ordinals: 780/780/803/803/715/715/742/742.
+// NOT kept: no byte equality; native short-circuit identity, tag/count/plane homes and rotation spills remain. Original complete body and helpers restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
