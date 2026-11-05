@@ -3363,6 +3363,11 @@ struct s_voice_route_choice
 // Original complete body restored; talker/zero, cursor and priority merge remain.
 // DH381: Excluded-route iteration completion with seven nearest-guard graphs, then split
 // guards and native radio branch: 363/363/363/363/363/363/363/411. NOT kept: no exact loop/frame graph; original body restored.
+// Round 92 (m3 lane 12, fast): `__assume` ahead of the loop on talker, count, choices or settings 363 each, with branch radio 411, with its named bit
+// 422; on the player inside the loop 1091 (any assume there stops the unrolling, callers 22/18), with branch radio 1103, with the bit 1104. The player
+// read inside each headset arm 363 (branch 411, with the bit 422). On branch radio and the bit: a mode local, `mode << player`, pre-increment, the counter
+// declared apart, the comparison reversed 422 each (same code). That form has retail's frame and branches; its cursor bias (+4, retail +0x10) offsets
+// every displacement, and retail's first copy sinks the player bit into the headset arms with headset read from its stack home.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

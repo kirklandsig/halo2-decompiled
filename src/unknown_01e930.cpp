@@ -344,6 +344,12 @@ PRIVATE inline __int64 bink_read_tsc(void)
 	volatile __int64 t = 0;
 	__asm rdtsc
 }
+// MiniMax I (11-05): no new form, no lower score. Our frame is 0x3c against retail's 0x40 because we
+// save esi at the entry, and retail's `movss` stores and `fcompi` timeout compare need /arch:SSE, which
+// this file's flags do not carry (its thirteen other functions match with them). Also tried: /arch:SSE on
+// this file's flags (256, the other fifteen unchanged), the size read back from permanent_memory_size
+// (276, 278), the block pointer declared after the early calls so that esi is shrink-wrapped as in
+// retail (264) with a dword mask (290) and with retail's branchless size (292).
 // MiniMax B (11-03): no new form, no lower score. Retail's frame is 0x40 against our 0x3c and its
 // timeout compare (`fld`/`fcompi`) and its `movss` stores need /arch:SSE, which this file's flags line
 // does not carry; the build flags are the user's decision, so this file was not changed.
