@@ -1106,6 +1106,14 @@ bool __stdcall function_2399da(long controller_index)
 // identity stays in ECX whatever its use count. `long requested = rank` at the dispatch 90, an identity local at the dispatch
 // or ahead of its test 90/90 (same code). No removal call 104 (417 bytes): the identity then loads into EAX as retail's, so
 // the rank's overlap with its long range is what gives the rank EAX, not a tie on uses.
+// Round 150 (m3 lane 6, harness exact at 90, aligned 13, masked 3): lead: the rank's store is what gives the rank EAX. The store removed
+// 94 (429 bytes, aligned 8, masked 5) or storing a constant 92 (aligned 10, masked 7) puts the identity in EAX as retail, with the rank then
+// read from memory; without the rank-3 test 157 or the over-rank test 120 the identity stays out of EAX. Retail also stores right before the
+// call, after the pushes. Store shapes: forceinline wrapper taking the rank 90, the rank first in it 90, inside the last or first argument 90/90,
+// before the rank-3 test 89, ahead of the dispatch 90, through argument pointers 90, through a properties pointer 90. Dead volatile global loads
+// at three places (a rotation test, diagnostic) keep the identity in ECX: no missing rotation step. 130 combinations (own rank local or field, identity
+// test spelling, permission spelling, task index preset, chain/over-rank first/nested dispatch, store order, nested or guard returns) 89-96 with no
+// identity in EAX.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
