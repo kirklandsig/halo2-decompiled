@@ -126,7 +126,7 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 }
 
 // @retail 0x246e60
-void function_246e60(long tag_index, dword group, s_particle_impact const *impact, s_object_246eb0 const *particle, long definition_index)
+void function_246e60(s_particle_impact const *impact, s_object_246eb0 const *particle, long definition_index, dword group, long tag_index)
 {
 	if (tag_index != NONE)
 	{

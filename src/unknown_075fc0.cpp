@@ -158,6 +158,17 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // M352: Reliable payload producer/native failure arms/positive arms/test-produced result/
 // failure predicate/quotient producer/nested capacity gate/payload with failure arms 408/418/426/416/408/408/408/418.
 // All restored; frame 0x3c versus 0x34 and observer/channel/result/counter homes remain.
+// Round 72 (m3 lane 10, fast; each form with a register-masked aligned count after the slash, baseline 393/179). Not kept, because it needs a flag set in a test (match-only): 312/82 at retail's 413
+// lines, plain, all callees matched: the channel's fields declared in the header and read as channels[local_0].field (s_75fc0 gone), the has-host result as `local_8 = false; if (has_host(...)) { ...; local_8
+// = true; }`, the two NONE locals ahead of the search, the capacity test as if / else if / else, the window factor `= 0; if`, the callback scale as if/else, the first threshold through local_2 as now, the tail as
+// `if (local_34 >= 0) { ...; return local_2; } return false; done: return local_2;`. Its has-host result as a plain initialiser, with every on/off grid of window factor, threshold test, NONE locals and tail: 418 to 453.
+// On the way: all exits as `return local_2` 438/124; single exit 410/94; every field through a channel pointer local 425/126; that pointer unused, or a dead read of the state 410/94; a byte-pointer base at
+// observer + index * size 415/105. A second flag set in the arms for the first threshold, flat `if (!ok) goto done` 422/88 (`setge; test; je` as retail), plus the capacity test 417/80, plus the NONE locals first
+// 397/81, plus the window factor as its ternary 367/69 (retail's whole block layout, the zero test out of line before the exit). That threshold with `bool ok = a >= b` in the arm or a direct compare 399/85, through local_2
+// 391/89. Nested or && capacity test 422/88; the two budget picks as ifs, or with `do {} while (false);` between them 422/88 (ours merges their tests, retail tests twice). Search loop `i < n && found == NONE` 546 (unrolled),
+// `found == NONE && i < n` 395/88. NONE locals after the search or split round it 414/80; a dead init of the index or another local 417/80 (no entry register). On 312: second threshold through local_2 390/89; the tail's false arm
+// into local_2 416/81; the label inside the tail block 347/75; local_14 set in an arm 311/86. Lead: retail computes the channel base right after the connection (lea esi, [eax + edi]), so the index stays live in EBP, NONE shares ESI and
+// `this` takes EDI; ours computes it at the first field read and coalesces it with the index. One field through a pointer local with the rest direct gives that early base (419/86, one-use pointer: match-only); the byte-pointer base on the 367 form 379/88.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
