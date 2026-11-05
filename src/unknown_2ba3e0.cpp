@@ -6,6 +6,7 @@
 #include "unknown_1eb550.h"
 #include "normalize3d.h"
 #include "vector_products.h"
+#include "reciprocal_normalize.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -48,17 +49,6 @@ struct s_particle_2b96
     byte unknown34[12];
 };
 
-PRIVATE __forceinline real inverse_sqrt_2b96(real squared)
-{
-    real inverse;
-    __asm
-    {
-        rsqrtss xmm0, squared
-        movss inverse, xmm0
-    }
-    return inverse;
-}
-
 // @retail 0x2b9670
 s_particle_2b96 *function_2b9670(s_particle_2b96 *particle, long index)
 {
@@ -92,49 +82,6 @@ s_particle_2b96 *function_2b9670(s_particle_2b96 *particle, long index)
         }
     }
     return result;
-}
-
-PRIVATE __forceinline real particle_vector_squared_2b(vector3f const *v)
-{
-    real squared = v->k * v->k;
-    squared += v->i * v->i;
-    squared += v->j * v->j;
-    return squared;
-}
-
-PRIVATE __forceinline void scale_particle_vector_2b(real scale, vector3f *v)
-{
-    v->i = scale * v->i;
-    v->j = v->j * scale;
-    v->k = v->k * scale;
-}
-
-PRIVATE __forceinline void normalize_particle_vector_2b(vector3f *v)
-{
-    real squared = particle_vector_squared_2b(v);
-    if (squared != 0.0f)
-    {
-        real inverse = inverse_sqrt_2b96(squared);
-        scale_particle_vector_2b(inverse, v);
-    }
-}
-
-PRIVATE __forceinline real particle_direction_squared_2b(vector3f const *v)
-{
-    real squared = v->k * v->k;
-    squared += v->j * v->j;
-    squared += v->i * v->i;
-    return squared;
-}
-
-PRIVATE __forceinline void normalize_particle_direction_2b(vector3f *v)
-{
-    real squared = particle_direction_squared_2b(v);
-    if (squared != 0.0f)
-    {
-        real inverse = inverse_sqrt_2b96(squared);
-        scale_particle_vector_2b(inverse, v);
-    }
 }
 
 // @retail 0x2b98b0

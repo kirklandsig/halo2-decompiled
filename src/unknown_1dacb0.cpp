@@ -1268,6 +1268,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // N371: Actual selector/output-pointer/search-key formal lexical families, seven
 // subsets then complete result/local roles: 828/828/828/828/828/828/828/828. NOT kept: unmatched
 // parameter-home forms; original body restored; class/NONE, result/output/candidate homes and zero remain.
+// M3 lane 8 r135 (fast; raw/register-masked/stack-masked aligned, base 580/234/76): the siblings' form again 755 (297/525/57, 2825
+// bytes), through the mode's address 755; on it the candidate at the block top or after the entry pointer 1028 (2856 bytes), the
+// iterator outputs renamed either way 755 (same homes), type first 755, the result set before the search test 1005, a direct result
+// with a default 1021 (206/151/86, 2841 bytes). Retail's late zero is a temp in EBP from the first kinds lookup on; ours keeps
+// a parameter in EBP over that block and re-reads it (retail reads it from the stack), so the zero stays immediates. Flag form: match-only.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
