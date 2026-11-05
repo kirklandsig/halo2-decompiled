@@ -69,6 +69,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // state and result bytes keep their homes; retail still calls 0x5b080 out of line at this site, so the
 // remaining gap needs a noinline on the existing getter, whose declaration is in a header this lane
 // may not edit.
+// MiniMax D (11-05): the transition flag as a bool makes our frame 0x3e4 (retail's) and moves the first
+// difference to +0x27, but the result byte home stays at 0x0e against retail's 0x0f: 429; the balance flag
+// as a bool gives 420, a gain under 8. No lower score.
 // score 426 (was 439): the two session-state tests now call the existing c_class_58d20::function_058d20
 // (0x58d20), which gives retail's dead state stores; 1593 bytes against 1589, frame 0x3e8 versus 0x3e4, both
 // dead stores share one slot (retail 0x20/0x18), and 0x5b080 is still inlined here.

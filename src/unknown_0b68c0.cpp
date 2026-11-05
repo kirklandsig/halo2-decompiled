@@ -253,28 +253,6 @@ static __forceinline s_object_visibility_header_ab *visibility_header_step(s_rec
     return result;
 }
 
-// score 2 (was 2): the two values are copied into EAX and ECX in the opposite order.
-// Unsigned callee parameter declarations 2 each; reversed snapshot declarations 2;
-// predeclared loop index 2; header before iterator 2; read-only headers 2; inline depth zero 91.
-// BLOCKED-BY 0x109660: its body takes the entry index in EAX and the object in ECX whatever
-// the declared order. Callee forms: pool local 2; entries + index 2; header pointer 2;
-// entry before object 2; that plus both parameters swapped at all three places 2.
-// Round 37 (0x109660 forms): entry pointer computed before the object 2; entry as `entries + index` 2; component
-// index read before the entry pointer 2; entry by pointer arithmetic on the cast array 2; entry as an element of
-// the cast array 2. Our 0x109660 copies the entry index from EAX (retail ECX into EBX) whatever its body order.
-// Round 70 (--fast): in our 0x109660 the object index is coalesced with the object pointer in ECX, which leaves EAX
-// to the entry index; retail keeps the index in EAX and loads the pointer into ECX. 0x109660 forms: a named masked
-// object index 2 (0x109660 132), a header element pointer 2 (132), the entry by byte offset 2 (112). Here: the call
-// reading the index array again 19; the object index declared before the loop 2.
-// Round 112: an object-list state pointer 14; a pool pointer shared by both passes 99, also with
-// the state pointer 99; nested first-pass flag tests 2; an entry-index argument carrier 2; an
-// object-index argument carrier after the first call 2; preincrement 2; a const indices pointer 2.
-// Round 123 (lane 8, fast): still BLOCKED-BY 0x109660: the caller matches whenever the callee takes the object index in
-// EAX and the entry index in ECX (reached only with probes or three failure arms, see that function's note; 0xb7060 0 in
-// each). Natural callee forms that keep its count do not reach it. The call's arguments are not swapped: that would pass
-// wrong values to our callee.
-// Round 85 (m3 lane 9, fast; 0x109660's file was another lane's, so caller forms only): the callee declarations swapped 2; a const object index 2;
-// a flags byte local for both tests 67; the iterator declared before the first loop 2; `i != count` 4. Still BLOCKED-BY 0x109660.
 // @retail 0xb7060
 void function_b7060()
 {

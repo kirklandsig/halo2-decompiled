@@ -1588,6 +1588,8 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax R (11-05): no new form, no lower score; the plain origin copy 278 and the flipped side test 239;
+// retail keeps its length in the dead origin argument slot at [esp+0x54] and its radius at [esp+0x14].
 // MiniMax H (11-04): the left flag declared just before its comparison 287; not kept, the
 // original body is restored.
 // MiniMax R (10-31): origin read directly 255, plain origin copy 278, inlined direction normalization 272; permuter found no better variant; no lower score.

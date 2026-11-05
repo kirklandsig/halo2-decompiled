@@ -138,6 +138,8 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // value between the enable gates 110; separate player/team inner results 109/109; two-call by-value
 // accessor 107; player record copy 71 (434 bytes), read-only copy 71, with the team-mode helper 78.
 // NOT kept: the one-use record copy spills through the code slot, absent in retail; original body restored.
+// MiniMax C (11-05): no new form, no lower score: the enable reload, the maximum homes and the word
+// schedule still differ here.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -418,6 +420,7 @@ struct s_object_damage_view
 // its home two more times and its damage code once less; the record pointer forms lose `selected`'s EDI and grow the frame.
 // N398: Native post-root shared object-header raw/typed/readonly tables, then related-player observations at every use 353/353/353/353/357/357/357/357.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// MiniMax R (11-05): the team-consideration result is a true default cleared by the query, 344 (was 353); not kept: a test-set flag, match only.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

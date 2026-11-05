@@ -507,6 +507,9 @@ static inline word font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax S (11-05): no new form, no lower score: a long helper result 105, an unmasked parity with a word run pixel
+// 208, an int or a long cast on the parity 85, a byte parity local 85 and the OR operands swapped 85 all leave the
+// alpha parity masked in 16 bits where retail widens it to 32 bits.
 // MiniMax B (11-04): no new form, no lower score: the alpha parity is still masked in 16 bits where retail
 // widens it to 32 bits; a `(long)(byte)` cast 85, a byte alpha parameter 201, a named long parity 176, a long
 // helper return 212 and a long alpha 105 keep the structure but not the parity bytes, and the best form found

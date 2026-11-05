@@ -430,6 +430,8 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
+// MiniMax R (11-05): no new form, no lower score; retail takes the actor index in EAX and pushes ebx/ebp/esi
+// before the actor lookup, ours reads the argument from the stack and pushes after it.
 // MiniMax B (11-04): no new form, no lower score.
 // score 412 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
 // index in EAX where ours loads the argument from the stack. The body is 1620 bytes

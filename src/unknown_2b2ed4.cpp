@@ -74,6 +74,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// MiniMax I (11-05): no new form, no lower score. Retail's null-datum `je` jumps to the function's
+// end (offset 0x920 of 2345) where ours jumps to a near block, and the child, text and layout stack
+// homes still differ (retail's suffix at -0x258 and its message at -0x458, ours at -0x2cc and -0x4cc).
 // MiniMax H (11-04): declaration-order and scope moves compile identically; no lower score.
 // score 330 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // Lane 18 r37 (fast): received text preset then overridden 662 (2347 B); the text id as dword 330;
