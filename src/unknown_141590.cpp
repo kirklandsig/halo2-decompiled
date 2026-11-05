@@ -370,6 +370,9 @@ static inline void quaternion_transform_vector(
 // no change (canonicalised). The matched 0x11cb00 helper's exact operand and row forms on plain halves 198/1324 (99), on the struct 258/1303 (155); s computed before the identity copy as a
 // helper parameter, plain halves 308/1262 (170) and 302/1270 (163), on the struct 309/1262 (139) and 305/1270 (107). Three annealed searches over statement order, operand
 // forms and row orders, about 700 forms, none under 198 or below masked 84. None plain-confirmed, none kept. The two-member half struct stays until a form beats it.
+// N399: Destructive scalar/cross-scale/cross-result ownership, families 1..7 then
+// independent cross scalars: fast 256/306/253/313/333/333/312/306. Original ordered output trees and all three
+// in-place users preserved. NOT kept: unmatched storage/result forms; original helper/body restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1135,6 +1138,10 @@ void function_143250(
 // N376: Same-type copy contraction by actual input/product/root-or-literal/sum
 // producers within bands, eight forms 1947/1766/1766/1771/1761/1766/1925/1948. All typed outputs/call
 // phases agree. NOT kept: no exact native storage recovery; full scalar graph restored.
+// N399: Native-located disjoint scalar reuse, second-band spills/third-band spills/SIMD
+// families 1..7 then all at first declarations: fast 1766/2001/2001/2612/2528/2341/2278/2278. All 84 ordered typed outputs
+// and application tuples agree. SIMD forms recover EAX/ret 4 and improve both callers, but grow
+// the frame/extent (all-SIMD 0x334, 11540 bytes). NOT kept: unmatched physical-storage forms; original body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

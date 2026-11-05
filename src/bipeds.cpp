@@ -1546,6 +1546,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // NOT kept: best gains one and every frame stays 0xf8 versus native 0xfc. Original material
 // initialization, all memory observations, animation refresh, packed output, shared eye helpers and
 // complete body restored; material/airborne/animation homes and missing frame word remain.
+// N399: Native initial-motion/contact-query/eye-body vector and point lexical homes,
+// families 1..7 then alternate complete prefix: fast 585/585/585/585/585/585/585/585. Every original executable
+// statement and lifetime preserved. NOT kept: unmatched home allocation; original body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

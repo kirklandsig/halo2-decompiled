@@ -155,6 +155,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // angle and native trig, original/native in-place publication: 356/356/357/357/368/368/370/369. NOT kept:
 // all tie or regress; original private helper contract, helpers and entire body restored.
 // Frame 0x98 versus 0x90, concurrent x87 inputs and scalar publication homes remain.
+// N399: Matrix-field diagonal/positive/negative compound producers, families 1..7
+// then full returned-component accumulation: fast 356/356/356/356/356/356/356/356. Original ordered outputs
+// preserved. NOT kept: no native frame/equality recovery; original two helpers/body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -5082,6 +5085,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // AC546: Existing shared pass helper returns availability to all three draw callers in
 // bool/signed-char/byte/short/word/long/dword/int: eight at 138. NOT kept: no gain or
 // native publication repair; original shared helper and every complete caller restored.
+// N399: Shared selector formal in int/dword/unsigned int/short/word/char/signed char/byte,
+// unchanged representable literal modes and all shared users checked: fast 138/138/138/138/138/138/138/138.
+// NOT kept: no native publication/equality recovery; original helper/caller restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
