@@ -1240,6 +1240,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Round 148 (m3 lane 6, fast): `inline` on 0x192e60 766, on 0x1934f0 766, both 766. Player loop through a call to 0x63220:
 // forceinline on its definition 1032 (2588), `inline` on its definition 1097 (2524), with `inline` on 0x192e60 1097; each gives
 // 0x73530 its match (session in EAX, ret 4), but a score rise is not kept: held lead. Result first and capacity before the summary 785.
+// M3 lane 4 r167 (fast, 13 s; the one-file link reads 943 because it keeps the top call out of line, so it is no judge here): retail's top
+// call stays out of line only when its site's frequency is lower than the entry block's. Written as an always-true ternary (no code, diagnostic)
+// 942 (2700 bytes, 0x73530 byte for byte); the whole body in the positive arm of the admission test 815 (2868 bytes), as the else arm of
+// `result = false` 815, plus the out-of-line top call 904 (2740 bytes). The player loop through a call to 0x63220 1097, with the out-of-line
+// top 1145 (2476 bytes), plus the capacity helper forced inline 1106 (2512 bytes), in the positive arm 1061/1109/1070: 0x63220 stays a call in
+// every form, so retail's frequency there comes from something else. The top lookup through a one-line inline wrapper, inline or forced,
+// with a result local: 766 (no effect); `__assume(session != NULL)` first 766; the lookup after the capacity 942 (2732 bytes). The written-out
+// loop passes `lower` to 0x1931a0 where retail passes `highest` (ECX still holds it at the call); passing `highest` 820 (2836 bytes).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
