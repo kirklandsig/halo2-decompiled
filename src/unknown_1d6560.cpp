@@ -605,6 +605,9 @@ struct s_physics_component_walk : s_havok_component
 // P335: Readonly owner/group/opaque recursive-input contracts, seven subsets then
 // complete contracts with fixed component binding: 146/146/146/146/146/146/146/146. NOT kept: all tie;
 // original method interface and full body restored. Latch reload and neighbor/key homes remain.
+// T57: Persistent actual current-group pointer/const-pointer/reference/const-reference,
+// selected by index then receiver, spanning body and entry phases
+// 356/356/356/356/338/338/338/338. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

@@ -414,6 +414,8 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // array pointer/reference and vector/point pointers, first-corner then entry declarations:
 // 54/54/54/54/54/54/54/54. NOT kept: dot divergence moves earlier to +0x67; original
 // helper and full body restored. Plane base, first selectors and product memory sides remain.
+// T57: Normal component-array transfer, long/short/dword/word ordinals, forward then reverse
+// 206/223/206/223/219/219/219/219. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -1017,6 +1019,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC535: Complete candidate-plane grouping acceptance, positive then complementary
 // bool/byte/short/long: 529/529/529/529/531/531/531/531 at 3647 bytes. NOT kept:
 // frame grows to 0x21e4 versus native 0x21dc; original body/helpers restored.
+// T57: Accepted endpoint coordinate-array transfers, long/short/dword/word ordinals,
+// paired then separate loops
+// 547/541/547/541/539/574/539/574. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

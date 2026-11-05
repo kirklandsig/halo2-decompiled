@@ -1537,6 +1537,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // Round 145: direct membership mask 140 (446 bytes); staged player bit, split written initialization and staged
 // retained decrement 134 each; direct membership with retained mask in the capacity scope, also with staged bit,
 // with per-arm first-byte stores, and with both 142 each (449/449/446/449 bytes). Original body restored.
+// T57: Existing removal/fallback word-flag helpers and retained-bit helper, subsets
+// 1/2/3/4/5/6/7, then complete shared flags with positive capacity admission
+// 134/134/134/184/184/184/184/184. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

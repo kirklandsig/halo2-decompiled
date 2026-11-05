@@ -822,6 +822,8 @@ void function_1537f0(s_profile_record *record);
 // DH358: Existing unused eight-byte source field as signed integer, native SDK integer/time
 // records, dword/word/byte field arrays and double: eight scores 53; every file control unchanged.
 // NOT kept: identity homes still fold and frame 0x98/end-bound remain; original record and body restored.
+// T57: Plain linkage-array reset, long/short/dword/word indices, forward then reverse
+// 66/66/66/66/62/62/62/62. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
