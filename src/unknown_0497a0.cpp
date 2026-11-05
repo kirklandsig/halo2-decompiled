@@ -5,6 +5,7 @@
 #include "unknown_11c920.h"
 #include "camera_storage.h"
 #include <math.h>
+#include "unknown_11cc90.h"
 #include "unknown_0494b0.h"
 #include "globals.h"
 
@@ -19,6 +20,10 @@
 // and the inverse at [esp+0x10], ours holds the secondary shape at [esp+0x10] and the inverse at
 // [esp+0x14], and our frame is eight bytes short of retail's.
 // MiniMax R (10-31): shape0 hoisted above the inverse 712, shape0 first in the switch 581; permuter 22 tries, best 571 (baseline 571); no lower score.
+// MiniMax D (11-05): retail's single test on source->type_low, with the shape0 pointer in the home at
+// [esp+0x14] and the inverse scalar below it at [esp+0x10], was tried as an if/else over both shape
+// pointers in three declaration orders: 621/621/626; the frame stays 0x58 against retail's 0x60, so no
+// lower score.
 // score 581 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
 // thirteen bytes longer; retail keeps the primary shape in the stack slot at [esp+0x14]
 // and the secondary shape in EDI, ours keeps the inverse at [esp+0x14] and the
@@ -257,6 +262,12 @@
 // Y587: Actual two-axis cross table for traversal long/dword/short/word/byte/
 // signed-char, then long/short while: 728/728/803/803/803/803/728/803.
 // NOT kept: table/output residence regresses and grows; original direct calls and full body restored.
+// M3 lane 4 r167 (fast, one-file link with ballast exact at 581, 3 s a form; masked aligned 204): entry shapes and global sine reads and
+// a plain sixth product 600 (2636 bytes, aligned 392 against 460); entry shapes alone 622 (listed, 2622 bytes, aligned 396); the four trig
+// factors as named doubles there 601 (2630 bytes), the 8.2 argument as a named double with the three other factors named 629 (2632 bytes,
+// aligned 391, shape 203), as a real 600, the same with the 8.2 product written (x * b) * c order 600, the factors as reals with a double argument 628
+// (2632 bytes). Retail's s0 leaves sin(x), cos(7.8y) and cos(7.75y) on the x87 stack and pops all three dead after
+// the product (fstp st(2), st(1), st(0)), with fsin of the 8.2 argument done last; no form here forward-substitutes them that way yet.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -585,6 +596,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
+// score 250 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// MiniMax D (11-05): four declaration orders for the u and v scalars and their step and width partners
+// give 274/287/285 against 265; the frame stays 0xa8 against retail's 0xac, so no lower score.
 // score 265 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Earlier: Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
 // dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing
@@ -883,6 +897,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Y587: Float root API at vertical/planar/camera-side/camera-normal/vertical-planar/
 // camera-pair/all/all with float epsilon consumers: eight 265s. NOT kept:
 // API boundaries canonicalize; native frame/spill homes remain; original body restored.
+// M3 lane 4 r167 (kept 250 fast, one-file link with the ballast object 251, ranked by aligned count and shape): both arms of case 0's
+// normal setting i before j 255, plus case 1/2's dx/dy as a vector2f through the existing normalize2d_fast 250 (both kept). Not kept:
+// side length i, j, k alone 374 (2588 B: retail's k, j, i x87 order and fst, shape better); that on round 155's scale vector and case 0
+// order 349 (2588 B, everything up to the switch exact; aligned 108, shape 30); those without the side length 218 (2592 B); named
+// offsets i and j in case 1/2 476-495 (2584 B), named offsets in case 4 428, offset vector in case 4 459 (2580 B); first.z, first.y,
+// first.x weight probes (extra reads after the switch, up to 3/2/1): aligned 104-118, no colouring flip. Left: retail colours first.z
+// XMM3 and the half width XMM4, first.y XMM5 and first.x XMM6 (ours half width XMM3, first.z XMM4, first.x XMM5, first.y XMM6).
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -982,14 +1003,14 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
             {
                 if (previous)
                 {
-                    normal.j = point->position.x - previous->position.x;
                     normal.i = previous->position.y - point->position.y;
+                    normal.j = point->position.x - previous->position.x;
                 }
                 else
                 {
                     s_ribbon_point *neighbor = (s_ribbon_point *)(g_4ea940->data + (point->next & 0xffff) * 0x38);
-                    normal.j = neighbor->position.x - point->position.x;
                     normal.i = point->position.y - neighbor->position.y;
+                    normal.j = neighbor->position.x - point->position.x;
                 }
                 normal.k = 0.0f;
                 real length = (real)sqrt(normal.j * normal.j + normal.i * normal.i);
@@ -1003,26 +1024,21 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         case 1:
         case 2:
             {
-                real dx, dy;
+                vector2f side;
                 if (previous)
                 {
-                    dy = previous->position.y - point->position.y;
-                    dx = point->position.x - previous->position.x;
+                    side.i = previous->position.y - point->position.y;
+                    side.j = point->position.x - previous->position.x;
                 }
                 else
                 {
                     s_ribbon_point *neighbor = (s_ribbon_point *)(g_4ea940->data + (point->next & 0xffff) * 0x38);
-                    dy = point->position.y - neighbor->position.y;
-                    dx = neighbor->position.x - point->position.x;
+                    side.i = point->position.y - neighbor->position.y;
+                    side.j = neighbor->position.x - point->position.x;
                 }
-                real length = (real)sqrt(dx * dx + dy * dy);
-                if (!(fabs(length) < 0.0001f))
-                {
-                    real inverse = 1.0f / length;
-                    dx *= inverse; dy *= inverse;
-                }
-                second.y = point->position.y - dx * half_width; first.y = point->position.y + dx * half_width;
-                second.x = point->position.x - dy * half_width; first.x = point->position.x + dy * half_width;
+                normalize2d_fast(&side);
+                second.y = point->position.y - side.j * half_width; first.y = point->position.y + side.j * half_width;
+                second.x = point->position.x - side.i * half_width; first.x = point->position.x + side.i * half_width;
                 second.z = point->position.z; first.z = point->position.z;
                 if (input->normal) normal = *g_4687b0;
             }

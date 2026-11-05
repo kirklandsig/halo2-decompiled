@@ -36,7 +36,7 @@ struct s_location_structure_view
 void function_dfdb0(long object_index, long *unknown, long *location_index, point3f *point, long *a, long *b);
 void function_f1070(long object_index, long *unknown, long *location_index, point3f *point, long *a, long *b);
 bool function_210420(point3f const *point, long object_index, long marker, s_type_c3b527 *node_point); /* unknown_210420.cpp */
-long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point);
+long function_26d100(vector3f const *up, point3f const *point, long *unknown, s_collision_result_1697c0 *collision);
 
 /* finds the location of the object's root: a unit's (0), a vehicle's (1),
    otherwise the pathfinding location under its center */
@@ -111,7 +111,7 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 
 				query_point = object->center;
 				contact.collision.unknown24 = NONE;
-				result = function_26d100(g_4687b0, (long *)location, &contact.collision, &query_point);
+				result = function_26d100(g_4687b0, &query_point, (long *)location, &contact.collision);
 			}
 		}
 		break;
@@ -265,7 +265,7 @@ void __stdcall function_26c2d0(long prop_index)
   if (structure->pathfinding_count > 0)
    request.pathfinding = structure->pathfinding;
   request.collision.unknown24 = NONE;
-  state->location_index = function_26d100(g_4687b0, (long *)&state->location, &request.collision, &state->position);
+  state->location_index = function_26d100(g_4687b0, &state->position, (long *)&state->location, &request.collision);
   state->valid = true;
  }
 }

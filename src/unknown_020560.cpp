@@ -865,6 +865,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// MiniMax D (11-05): no new form, no lower score; the argument slots agree with retail's (the source
+// pointer in the first stack slot, the order byte in the fifth), so the whole difference is the frame,
+// 0x18 against retail's 0x2c.
 // score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // Earlier: Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
@@ -1051,6 +1054,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // M380: Actual offset/delta aggregate initializers at nearest/anchor/opposite,
 // seven subsets then immutable full vectors: 547 each at 2122 bytes. NOT kept: native
 // frame/query/search homes remain; original scalar producers and complete body restored.
+// Round 151 (fast; body restored): the index body re-measured: entries direct everywhere 576 (2094 bytes), samples local read after scan 1 459 (2070); a mix, kept only on a match; the local
+// used by scan 2 is what gives retail's head and nearest in EDI (ldd/ddl 576; lld/dll/dld 459). On the direct body: `count >= 1` 532 (2096; no shared zero, but `cmp ebx, 1; jl` where retail has
+// `test ebx, ebx; jle`: not kept), with `opposite` declared first 527 (2091), other_distance first 543, `source->entries + nearest` 532, delta or first at the top 532, a plain second pointer with
+// `opposite != NONE` 533 (2089), length_sq3f(&offset) 610; nearest at function top 575, at the arm 575, after closest 577; one shared index 576; `1 == count` 576. Offset fields written j, k, i 779
+// (2335; frame 0x2c, but the subtractions no longer share with the distance), jki/opposite first 772, kji 779. A cross-file difference (function_28e774) for delta, offset or both 459 (same code).
+// Retail's frame: opposite +0x10, nearest +0x14, pass counter +0x18, samples +0x20, offset home +0x24 (x spilled before each `jb`), delta home +0x30 (k spilled at +0x38).
 // T60: Actual source/query/direction object-reference contracts, seven subsets and
 // all with the existing copier sample reference: eight at 547/2122. NOT kept:
 // native query register, vector/ordinal homes and frame 0x2c are not recovered.

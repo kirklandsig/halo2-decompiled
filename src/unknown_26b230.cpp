@@ -1986,6 +1986,7 @@ void function_269250(long clump_index, long actor_index);
 // Y607: Complete common merge/removal/transfer continuation, selected/separate destination,
 // existing/creation-first admission and aggregate/CRT center copy: 164/164/168/168/176/176/179/179.
 // NOT kept: no exact native continuation/storage recovery; original full body restored.
+// MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
