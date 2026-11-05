@@ -133,6 +133,8 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 	arg_0->field_14 *= 1.0f - arg_2;
 }
 
+// MiniMax E (11-05): no new form, no lower score; the palette and accumulator carriers are as the earlier
+// rounds left them, and retail's `mulss scalar, t` product form has no legal spelling here.
 // score 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier: Frame 0x4820 and metadata cursor agree; native palette width and accumulator carriers differ.
 // Frame, clear prefix and metadata cursor agree; palette/cluster carriers and accumulator scheduling remain.

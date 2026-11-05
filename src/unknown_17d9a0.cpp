@@ -129,6 +129,8 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // (46), a short axis result scores 162, the short axis passed to the corners 186, and a plane pointer for
 // the copy, the dot and the store 65 (the store base then matches retail but the dot's sides flip); the
 // store-only and copy-only pointer forms give 51 and 61; no new form, no lower score.
+// MiniMax E (11-05): no new form, no lower score; the products' load and memory sides are as the earlier
+// rounds left them, and the fast image cannot measure this body (four unresolved calls).
 // score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
 // ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
 // and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
@@ -807,6 +809,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax E (11-05): no new form, no lower score; the first +0x41 tag spill, the plane base, the first
+// selectors and the product memory sides are as the earlier rounds left them.
 // score 539 (was 539): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag

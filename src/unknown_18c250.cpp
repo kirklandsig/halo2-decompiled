@@ -327,6 +327,8 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // (7), and passing the scale itself gives retail's lea ecx and its late object index but loads the scale
 // last (8). A named local for the curve set's address gives the same bytes (7). The permuter ran past its
 // 900-second budget on a loaded machine and was stopped by the harness's background limit; it wrote nothing.
+// MiniMax E (11-05): no new form, no lower score; the seven differences stay the sample base against the
+// entry's data offset, the object index load and the curve pointer setup; passing the scale directly gives 8.
 // score 7 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched

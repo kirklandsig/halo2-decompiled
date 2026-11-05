@@ -635,6 +635,8 @@ void function_1537f0(s_profile_record *record);
 
 // MiniMax D (11-04): no new form, no lower score; the identity as three named dwords instead of an array
 // 53 (same code), it still folds into registers and the frame stays 0x98.
+// MiniMax E (11-05): no new form, no lower score; splitting the source record's 8-byte field into two
+// dwords to make it 4-aligned leaves the record at +0x18 and the frame at 0x98, and an index loop gives 78.
 // score 53 (was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
 // 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);

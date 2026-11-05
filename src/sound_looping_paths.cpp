@@ -156,6 +156,8 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
+// MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
+// and the choice carriers are as the earlier rounds left them.
 // score 866 (was 866): frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice carriers remain.
 // Earlier 919 (was 919): count/array homes and choice registers differ in the 0x4e0 frame;
 // count/array homes and choice registers differ in the 0x4e0 frame;
