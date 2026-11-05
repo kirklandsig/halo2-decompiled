@@ -349,6 +349,10 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // the existing vector3f_add_scaled with a real quotient 220 (0x11f0d0 89, its `double angle` still pads
 // this frame); here: turn velocity declared before forward 224; world-up computed before the forward
 // branch 285 (1010 bytes); the second turn's scale as `acceleration + acceleration` 224.
+// DH384: shared xyz requested/default/turn/orientation/all native transfers
+// 256/262/289/260/361; complete point-helper transfers 361; all-output zero
+// construction 392, with shared transfers 491. NOT kept: all regress and grow;
+// the native 0x6c frame, late ESI and basis/position homes remain unresolved.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
