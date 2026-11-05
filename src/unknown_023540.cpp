@@ -3491,6 +3491,8 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // NOT kept: specialization outlines both quantizers and moves extent away from retail.
 // Original helper, runtime policy formal, eight calls, repeated conversions and whole body restored;
 // selector scheduling, post-bias reload pairs and six shift-versus-clip input homes remain.
+// N386: Existing quantizer explicit cdecl/stdcall inputs, bool/byte policy and mutable/immutable
+// real samples: eight 31s at 4828 bytes. NOT kept: no byte equality; original helper and body restored.
 // P332: Native quantizer lower/upper/both conversion producers 32/31/32;
 // split lower arms alone/with upper producer 31/31; both with single-exit,
 // positive-default and split/conditional results 30/790/646. NOT kept:

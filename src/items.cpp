@@ -748,6 +748,9 @@ struct s_item_collision_bsp
 // N371: Single-marker spin lifetime after contact, factor-first/enclosed-phase/scalar-role-name
 // subsets 0..7: 202/202/202/202/202/202/202/202. NOT kept: unmatched storage-only forms;
 // original complete body restored; protected plane width, plane joins and spin/speed homes remain.
+// N386: Complete CRT plane/marker-axis/fallback-axis transports, subsets 1..7:
+// 337/251/324/202/333/268/307; native copy construction at all three boundaries 307.
+// NOT kept: no byte equality; original planes, axis copies, arithmetic and full body restored.
 // F391: Standard backward axial-input/normal transports and complete paired final range sums,
 // individual/pair/complete graphs, then backward final traversal: 267/343/370/313/397/334/343/411.
 // NOT kept: all regress; normal/range graphs also displace the native frame or extent. Original

@@ -1939,6 +1939,10 @@ real game_time_get_seconds();
 // F372: Internal hash, animation/sample and draw workspace role names, seven
 // subsets then all with offset/reflection names: eight at 507. Native frame and
 // output homes remain; original names, scopes, APIs and complete body restored.
+// N385: Coherent forward-component, three-use far-angle and paired camera-axis snapshots,
+// seven subsets, then complete inputs with the native forward vector value: 586/537/583/507/586/537/583/519.
+// NOT kept: no qualifying gain or equality; all scalar/copy input forms and complete body restored.
+// Native frame 0x94, addressed outputs and definition/NONE homes remain.
 // F390: Actual position/direction/color eight-byte alignments, seven subsets, then sampled-color
 // alignment: 584/584/594/564/567/567/568/568. NOT kept: each introduces a frame-pointer prologue
 // absent from retail; complete original output alignments, API and body restored. Native

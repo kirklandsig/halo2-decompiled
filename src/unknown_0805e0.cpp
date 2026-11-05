@@ -1399,6 +1399,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // stores, so none is kept. Upper in ECX still comes only from the stepped cursor.
 // The scaled index in its own local before a cast cursor 40h (same three-placement result), `from` and `to` from the index 404h (1203 bytes),
 // `to` as `&g[i] - 1` per pass 349h (1178 bytes). In the 40h forms the tail's head repairs rotate EAX/ECX as well.
+// N384: Actual returned insertion ordinal at entry/post-removal/immutable-bound/
+// completed-shift lifetimes, two result-role names: 378/377/377/66 twice. Original
+// mutable input/result and full body restored; count/upper/copy allocation remains.
 // M379: Per-iteration forward/reverse/both memcpy, then forward/reverse/both memmove,
 // then memcpy/memmove and memmove/memcpy: 49/49/49/386/371/333/371/386. NOT kept: ties/regressions;
 // original copies, direct head repairs and entire body restored; admission/upper homes remain.
