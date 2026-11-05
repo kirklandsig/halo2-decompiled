@@ -1145,6 +1145,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // P341: Existing native component getter/support input, pointer/reference and mutable/read-only, shifted
 // word/native bitfield: 114/114/114/114/114/114/114/114. NOT kept: no native rotation-product or
 // side/output allocation recovery; original raw input, include set and complete body restored.
+// Round 64 (m3 lane 14, fast with 0x24590, 0x1cd6c0, 0x1ecf50 listed; masked aligned 55 at 114): the goal copy by components 120
+// (aligned 51; direct [edi+N] stores, retail keeps ECX), the rotated copy by components 169 (aligned 129, forwards the products),
+// both with the preset flag 176; memcpy for either or both exits 114 (identical to the struct copy); dead reads ahead of the turn test
+// 8/15/20/30/45 112/144/150/140/140, ahead of the crosses 8/15/30 112/145/140 (the axis loads first in all of them). Retail's exits load
+// all three dwords into ESI/EDX/EAX before any store; no copy form gives three registers. Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

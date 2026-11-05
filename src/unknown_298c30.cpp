@@ -905,8 +905,8 @@ __forceinline void function_29a20e(vector3f *arg_0)
 	}
 }
 
-// score 445 (was 445): Frame 0x580 agrees; scalar/vector homes, planar root scheduling and tail placement differ.
-// Earlier score 445 (was 493): the callee's pointer-to-parameter trick is gone, so the call site and the entry
+// score 343 (was 389): Frame 0x580 agrees; the first dot's operand order, the turn sum's operands, slot homes and the final clamp's tail differ.
+// Earlier 445 (was 493): the callee's pointer-to-parameter trick is gone, so the call site and the entry
 // the callee's pointer-to-parameter trick is gone, so the call site and the entry
 // schedule agree with retail; the frame homes still differ (our s_298c30 pointer at esp+0x14 and our
 // float at esp+0x10 against retail's esp+0x10 and esp+0x18), and retail keeps the flattened forward
@@ -938,6 +938,17 @@ __forceinline void function_29a20e(vector3f *arg_0)
 // swapped 445; angle declared first 445 or beside the flags 445; the two flags declared the other
 // way 446; final clamp as if/else 504 (no tail duplication, 2467 bytes); the flatten through a
 // two-statement inline helper 577; the axis global declared as the 2-D vector it is defined as 577.
+// Round 64 (m3 lane 14; rank on a register- and stack-masked aligned diff, the score jumps on any shift; aligned 112 at
+// 389): the failure gotos replaced by one success flag tested after the search 352 (aligned 66: retail's block order, kept);
+// the lower final clamp sharing the plain tail, the facing dot through dot3f, the rate clamp as an `if` reading the field at each
+// use, all kept: 343 (2541 bytes, aligned 47). Match-only recipe on top: the delta written out in each angle arm (retail's
+// store in each arm, clamp reloads and `addss delta, [angle]`; named, an arm-scoped name, const or a reference to the field
+// hoist the load instead) with the whole point2f copy 282 (2561 bytes, aligned 29; 464 with normalize3d, aligned 25). Left on
+// that recipe: first dot [a.i, b.i] and [a.j, b.j]: ours flips the i row, a pointer local to the axis flips the j row instead
+// (chains of 1-7 pointer locals, 1-8 dead locals before the vector or the dot: no form has both; &g->x, &g[0], a reference: no
+// change); `addss turn, [angle]` in the first turn arm (declared early, `+=`, one variable, operands swapped, the value read from the owner
+// pointer, a field pointer: all still load the angle first; ternary value 330); the path point's `movsx` ahead of the pushes
+// (one-use pointer 311); slots 0x10/0x14/0x18 (retail: settings, byte flag, angle); the final clamp's `movaps xmm1, xmm0`.
 // @retail 0x29a190
 void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, real *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -997,6 +1008,7 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 	}
 	s_298c46 *local_15 = (s_298c46 *)(local_0 + 0x654);
 	bool local_16 = true;
+	bool local_21 = true;
 	if (!*(bool *)(local_0 + 0x40) && *(bool *)(local_0 + 0x678))
 	{
 		real local_17 = local_15->field_c.y * local_5.j + local_15->field_c.x * local_5.i;
@@ -1019,7 +1031,7 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 		if (local_19 >= 0 && local_19 < g_504938)
 			g_5047f8[local_19].field_8 *= 1.25f;
 		short local_20 = 0;
-		bool local_21 = false;
+		local_21 = false;
 		for (;;)
 		{
 			short local_22 = NONE;
@@ -1033,11 +1045,11 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 				}
 			}
 			if (local_22 == NONE)
-				goto local_25;
+				break;
 			if (local_20 & (1 << local_22))
 			{
 				if (!(g_5047f8[local_22].field_8 > 0.0f))
-					goto local_25;
+					break;
 				local_21 = true;
 			}
 			if (function_299460(arg_0, &g_5047f8[local_22], local_2, &local_7,
@@ -1056,8 +1068,6 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 			local_15->field_c = g_5047f8[local_22].field_c;
 			local_15->field_18 = g_5047f8[local_22].field_18;
 			*(bool *)(local_0 + 0x678) = true;
-			if (!local_21)
-				goto local_25;
 			break;
 		}
 	}
@@ -1071,6 +1081,7 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 		local_15->field_4 = -3.1415927410125732f > local_15->field_4 ? -3.1415927410125732f :
 			(local_15->field_4 > 3.1415927410125732f ? 3.1415927410125732f : local_15->field_4);
 	}
+	if (local_21)
 	{
 		real local_27 = 0.0f;
 		if (local_3 && local_15->field_4 > 0.0f && !local_15->field_1)
@@ -1113,7 +1124,7 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 		}
 		else
 			local_33 = -1.0f;
-		real local_35 = *(real *)((byte *)local_1 + 0x8c) * local_5.j + *(real *)((byte *)local_1 + 0x90) * local_5.k + *(real *)((byte *)local_1 + 0x88) * local_5.i;
+		real local_35 = dot3f((vector3f const *)((byte *)local_1 + 0x88), &local_5);
 		real local_36 = *(real *)((byte const *)local_2 + 0x68);
 		real local_37;
 		if (local_36 > 0.0f)
@@ -1124,11 +1135,12 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 			local_36 = 6.0f;
 		}
 		real local_38 = (local_33 - local_35 / local_36) * local_37 + local_33;
-		real local_39 = *(real *)((byte const *)local_2 + 0x60);
-		if (local_38 > 0.0f && local_39 > 0.0f)
+		if (local_38 > 0.0f && *(real *)((byte const *)local_2 + 0x60) > 0.0f)
 		{
 			real local_40 = local_38 - *(real *)(local_0 + 0x674);
-			local_38 = *(real *)(local_0 + 0x674) + (local_40 > local_39 ? local_39 : local_40);
+			if (local_40 > *(real *)((byte const *)local_2 + 0x60))
+				local_40 = *(real *)((byte const *)local_2 + 0x60);
+			local_38 = *(real *)(local_0 + 0x674) + local_40;
 		}
 		*(real *)(local_0 + 0x670) = 0.0f > local_38 ? 0.0f : local_38;
 		*arg_5 = local_38;
@@ -1145,19 +1157,12 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 			return;
 		}
 		if (-1.0f > *arg_5)
-		{
 			*arg_5 = -1.0f;
-			*arg_6 = false;
-			*arg_4 = 0;
-			*(real *)(local_0 + 0x668) = local_6;
-			return;
-		}
 		*arg_6 = false;
 		*arg_4 = 0;
 		*(real *)(local_0 + 0x668) = local_6;
 		return;
 	}
-local_25:
 	*(bool *)(local_0 + 0x5d0) = false;
 	*(short *)(local_0 + 0x5d6) = 0;
 	*(bool *)(local_0 + 0x6d1) = false;
