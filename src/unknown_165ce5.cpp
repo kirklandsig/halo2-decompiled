@@ -1762,6 +1762,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (2191, aligned 103). Retail's logic decoded: zoomed = speed > 0.1; scoped = zoomed && query; both cleared on the second query; scoped cleared
 // when the overlay lookup fails; the play's `else if (zoomed)` under `if (zoomed || scoped)` is retail's own implied test (`cmp [ebp-2], 0; je`).
 // Still BLOCKED by the stand-in (round 98) for ESI/EDI; no byte match is reachable without it, so no match-only form can stay. Body unchanged.
+// AC552: Existing object/definition getter forced expansion and outlined magnitude inline,
+// subsets 1/2/4/3/5/6/7, then outlined tick-provider inline: eight at 220 fast
+// (control 220, full 218). NOT kept: no gain; original helper declarations and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

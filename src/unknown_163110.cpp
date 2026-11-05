@@ -1074,6 +1074,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // n.k, n.i, ours has n.i before n.j; the far plane already loads its first camera term early. e4.i named before the normal copy 141 (masked 46),
 // as a const reference 119 (38); the i product named after the copy 159 (57); an e4 pointer 251 (35, 1867 bytes); a normal pointer for d 150 (41);
 // `(real)(j + k) + i` 176 (54), `i + (real)(j + k)` 176 (54), `(real)(k + j) + i` 145 (51), all products cast 146 (36), a double subtotal 413 (158, 1835 bytes).
+// AC552: Existing shared point transform output return/explicit inline/once-observed scale,
+// subsets 1/2/4/3/5/6/7, then forced expansion: 115/115/243/115/243/243/243/115.
+// NOT kept: no gain; every scale observation also raises the other user 0 to 94. Original helper/body restored.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
