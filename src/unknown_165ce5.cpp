@@ -1769,6 +1769,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // bool/byte/short activity carriers: 218/218/218/415/415/415/414/414
 // (unchanged complete-file fast control 218, full 218). NOT kept: query provider loses
 // its match; original return declarations, activity domain and entire body restored.
+// AC558: Complete primary-weapon override admission/rejection result in
+// bool/byte/short/long: eight at 220 (unchanged fast 220, full 218). NOT kept:
+// one-consumer truth unmatched; original early gate and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
