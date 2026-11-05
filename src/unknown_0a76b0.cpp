@@ -1562,6 +1562,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // M367: Optional ready-query completion/fallback result bool/byte/short/long:
 // 95/95/95/95/95/95/95/95. NOT kept: one-use result producers do not match.
 // Original terminal returns and complete body restored; early hand spill and second unit load remain.
+// M395: Actual two-slot pointer scan, equality/ordered ends with long/short/char/int selected slots:
+// 103/103/204/204/187/187/103/103. NOT kept: no exact native-shape candidate; native early hand/table setup and second unit load remain.
+// Original complete body restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1867,6 +1870,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // DH343: Signed slot/hand domains char-long/long-char/char-char/short-long/short-char/
 // char-short/short-short/char-word: 144/146/146/136/143/134/131/134. NOT kept: short slot/hand 131
 // gains seven below the gate. Original body restored; pool reload and weapon/mode homes remain.
+// M395: Six-interruption plain table cursors, automatic/static long/short/char/byte entries:
+// 326/331/311/311/273/274/271/271. NOT kept: no exact native-shape candidate; native pool-data reload and selected-weapon/mode homes remain.
+// Original complete body restored.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2081,6 +2087,9 @@ done:
 // N363: All failure edges join the sole persistent-result exit, admission plus empty-weapon/
 // rollback/missing-recipient masks 0..7: 122 each at 314 bytes. Original body and exits restored;
 // NOT kept: unmatched exit forms. Frame, result byte and pool/unit/weapon homes remain.
+// M395: Actual exchange/drop request layouts, mutable/readonly input, bool/byte flag, original/call-ended workspace:
+// 97/97/97/97/97/97/97/97. NOT kept: no exact native-shape candidate; native 0x20 frame, BL result and independent pool-data reads remain.
+// Original complete body restored.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

@@ -2290,6 +2290,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // M390: Double paired luminances/magnitudes/reciprocal scales, subsets 1/2/4/3/5/6/7,
 // then all with double final length: 726/658/640/708/663/648/676/697. NOT kept: nonexact precision
 // forms; original body restored, native status/mesh and output homes remain.
+// M395: Component aggregate default normal/base/lightmap families 1/2/4/3/5/6/7, then complete member assignment construction:
+// 623/621/618/621/621/621/666/666. NOT kept: no exact native-shape candidate; native status/part/mesh homes and selective helper expansion remain.
+// Original complete body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
