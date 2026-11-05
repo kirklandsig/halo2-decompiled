@@ -1798,6 +1798,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // DH366: Original final projection zero/nonzero admission, bool/byte/short/long outcomes:
 // 193/193/193/193/193/193/193/193. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// F397: Position/direction declaration and sole call reordered together, original/sole exit
+// and ordinary/forced perpendicular expansion: 193/193/193/193; cdecl counterparts
+// 194/194/194/194. NOT kept: default forms tie, cdecl raises caller to 509;
+// original signature, call, helper and body restored. Independent result home remains.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3624,6 +3628,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // DH366: Original-site first raw/clamped fade equality, accepted/rejected bool/byte/short/long outcomes:
 // 177/177/177/177/177/177/177/177. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// F397: Branch-owned first/opacity bytes and shared native position, seven subsets,
+// then query-entry region output: 177/177/177/177/177/177/177/177. NOT kept: all tie;
+// original output scopes and body restored. Native frame/fade scratch homes remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -5089,6 +5096,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // AC546: Existing shared pass helper returns availability to all three draw callers in
 // bool/signed-char/byte/short/word/long/dword/int: eight at 138. NOT kept: no gain or
 // native publication repair; original shared helper and every complete caller restored.
+// F397: Separate byte result with bool/char/signed-char/short/word/int/long/dword gate
+// formals: 138/138/138/138/138/138/138/138. NOT kept: target ties; bool changes shared
+// caller to 307 without repairing native raw-byte publication. Original helper/body restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

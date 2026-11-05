@@ -624,6 +624,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // N376: Paired conversion success/fallback outcomes, independent/shared carriers and
 // expression/branch producers: 282/282/282/305/282/282/282/305. NOT kept: four-point leads
 // fall below the margin and no form matches; original conversion graph/body restored.
+// F397: Geometry previous-point/edge/output object references, seven subsets and complete endpoint
+// references: 282/286/286/282/282/286/282/282. NOT kept: best gains four only; original
+// receivers, memcpy and body restored. Extra frame word and predecessor/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
