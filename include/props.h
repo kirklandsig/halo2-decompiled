@@ -199,10 +199,9 @@ struct s_actor_prop_view
 	byte unknown690[0x888 - 0x690];
 };
 
-inline s_type_76cf92 *prop_get(long prop_index)
-{
-	return (s_type_76cf92 *)(g_50241c->data + (prop_index & 0xffff) * sizeof(s_type_76cf92));
-}
+/* a macro, so the pool read is the caller's own: a loop that also walks prop refs through an inlined
+   helper then loads this pool first (0x25d770, 0x25d810, 0x26ae30) */
+#define prop_get(prop_index) ((s_type_76cf92 *)(g_50241c->data + ((prop_index) & 0xffff) * sizeof(s_type_76cf92)))
 
 inline s_prop_datum *prop_ref_get(long prop_ref_index)
 {
