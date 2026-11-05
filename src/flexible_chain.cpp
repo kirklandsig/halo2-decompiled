@@ -474,6 +474,14 @@ void __stdcall function_1160c0(real dt)
 // DH354: Complete outer fixed/timestep admission result in bool/char/signed-char/
 // byte/short/word/int/long: 171/171/171/171/171/171/171/171. NOT kept: no exact admission residence;
 // direct guard/body restored; segment EDX and scalar/axis/previous/rest-offset homes remain.
+// Round 63 (m3 lane 14, fast): axis rows as statements in the orders ikj/jik/jki/kij/kji 183/174/186/183/186 (ijk 171);
+// length_sq3f for the axis length 171, dot3f for the projection, either argument order, 171/171, both 171, length_sq3f
+// for the segment scale 171, all 171 (same code); the tail blocks (prediction P, velocity V, node position N, previous
+// R) ordered PVRN 171, PRVN 184, VPNR 208, VPRN 208, VNPR 207, VNRP 207, VRPN 205, VRNP 207, RPVN 183, RVPN 205, RVNP 207.
+// Slot use in the listing shows the homes follow the registers: retail reads the offset's k four times from memory where
+// ours keeps it in xmm1, so offset (8 uses) ranks below previous (7) in retail and above it in ours; retail's axis has 20
+// uses where ours has 23, which puts it above the length and segment slots. Retail also leaves the prediction's z store in
+// xmm5 to the end of the block in every order tried above.
 // AC540: Complete axial projection term staging, six producer orders, then direct/staged dot accumulators:
 // 171/171/171/171/171/171/171/171. NOT kept: unmatched product residence; segment/axis/previous/rest-offset
 // homes remain.

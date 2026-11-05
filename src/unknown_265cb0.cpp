@@ -1399,6 +1399,13 @@ long function_146650(void);
 // aggregate initializer 14 (same code); offset zeroed by a chained assignment after its declaration 18; a state_position
 // pointer for the three queries 125; an origin pointer for the actor position at all four uses 36. Permuter (600 s):
 // its reduced image scores 248 against the full 14, nothing better in 49 tries.
+// Round 63 (m3 lane 14, fast): the prop test as nested ifs 14; as an inverted test with `continue` 14; the movement test as
+// nested ifs 14; the target query's result named in a nested if 14; the query's point/direction/position parameters not
+// const 14; ahead a const aggregate 14. Compile-only frame screen, references dropped with liveness kept: without the
+// first query's direction, ahead > direction > target; without the second's, direction > ahead > target (no change);
+// without both, retail's ahead > target > direction. So the two query references do not weigh the same, and an unused
+// or input-only vector shares target_direction's slot, so a new vector does not test a reference's weight. The direction
+// output and first query references are what retail's order lacks.
 // Round 144: actor-reference reads at entry/all behavior queries/final callback, then direct actor_index at the
 // direction producer/iterator setup/movement callback, and split proximity/projected declarations: 14 each,
 // identical listings. NOT kept: no allocation change; the original parameter observations and declarations restored.

@@ -306,6 +306,29 @@ real normalize2d(point2f *arg_0);
 // F375: Actual direct/adjusted mode selector at its byte observation, bool/byte/short/long:
 // 180/180/180/180/180/180/180/180. NOT kept: no byte match; original body restored.
 // Early object mask, copied-input/SSE and query-success schedules remain.
+// Round 63 (m3 lane 14, fast, plain confirms 47 with 0x1ba5c0/0x1bdad0/0x1bff80 matching). Match-only recipe at 47 (1025 B, aligned 13), not
+// kept because it writes the difference helpers out: an actor-to-center vector through vector3d_from_points3d right after the
+// center copy, used through dot_product2d at both projections; the second input copy, then the actor difference from it as direct
+// i and j rows only (no k); center minus copy in place through the helper; one inline 2-D perpendicular helper and one negate
+// helper for both perpendiculars, so their i and j have no direct reference before the scale; `local_12.k = 0` direct, which
+// is what gives retail's load-first i and j rows with `mulss t, [k]` last; `local_4 *= 1.1f` for the radius; `2.0f - local_11`
+// inside the normalize-success block; local_10 as direct i, j, k rows; dot_product2d(&local_10, &local_12) for the second
+// dot; `result = true` before the output store. Left: the opening's copy registers (retail: `and edx` second, center pointer
+// `lea edx`, copy x read early in EAX, center temps in EBX, copy z before y, ECX never reused), the first dot's operands, the
+// second dot's term order, ECX for the block address with the up global read ahead of the first push, and EAX/EDX in the else
+// arm's point copy. Steps: named vector first 223 (1036 B, aligned 50); with clearance in the block 212, result first 231, both
+// 217; radius named 217, `local_4 *=` 219 (aligned 28); local_10 rows ijk 214 (1029 B, aligned 21), kji 218, jki 218, kij 219;
+// dot_product2d at both projections 193 (1026 B), with the squared length too 189; actor difference rows 69 (1023 B, aligned
+// 17); dot for local_12 65; perpendicular and negate helpers 47 (only local_12's are needed; local_9's alone 65).
+// From 47: helpers for both differences 206, actor rows with a local_10 helper 194, actor helper with local_10 rows 195,
+// vector2d_from_points2d for the actor difference 195; one variable for both perpendiculars 194 (1020 B), for both differences
+// 51, both 69; projections direct 208, center vector as rows 213, as j then i 209-213; interleaved rows 204-242; opening
+// orders 69-258 (on 69); a named center pointer 51-65 (aligned 12 at best), center by fields 243; first dot arguments
+// swapped 47; second dot arguments swapped 47; one variable for block count and value 51; `void *volatile` 47; the block
+// global re-read 51; dead `&local_15` instead of volatile 49, one-element array or one-member struct 151 (store removed);
+// up global in a local 68 (1021 B; reads it ahead of the push); point copy by `*(point3f *)arg_3` 47, by a pointer local 51;
+// output index before the copy 102 (callers lose 5, 6, 11). Permuter (600 s on 47): 63 tries, none below 47. Without
+// written-out helpers no subset gains: clearance, result, radius, local_12 helpers, local_9 helpers in all 31 combinations 180-245.
 // AC543: Genuine point-pair/direction-trio/perpendicular-pair role-name groups on the
 // recovered in-place input graph, subsets 1..7 and complete collision/receiver names:
 // eight at 180, 1025 bytes. NOT kept: no equality; early mask/copy/SSE and query-success

@@ -315,6 +315,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P326: Named smoothstep contributions/active gain difference/paired inactive fade
 // differences, subsets 1..7, then all plus the choice blend difference: 866 each.
 // Original grouping and observation sites preserved. NOT kept: no gain; original body restored.
+// Round 63 (m3 lane 14, fast): the pin helper in place on its value (`if (lower > value) value = lower; else if (value > upper)
+// value = upper;`) 949 (3353 B, aligned 503 -> 827), written value < lower first 949, the upper test first 948 (3357 B), through a
+// result local 949, as a ternary with the upper test first 936 (3353 B). This function's clamps are retail's ternary form.
 // F384: Actual override admission bool/byte/short/long at its phase boundary
 // 866/866/866/866; entry-owned 959/959/949/980. NOT kept: one-use results
 // do not match; early lifetimes grow to 3345-3361/3327. Original body restored;

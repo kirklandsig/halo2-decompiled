@@ -1756,6 +1756,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // tail consumer, bool/byte/short/long: eight at 220 fast (control 220, full 218).
 // NOT kept: one-use outcomes unmatched; frame, unit/mode/look homes and late restores
 // remain. Original final gate, smoothing tuples, observations and complete body restored.
+// Round 64 (m3 lane 14, fast control 220, full 218; masked aligned 112, 578 instructions on both sides): the channel byte's `long` copy
+// under the update test 412 (2195, aligned 110; shift only); callback `== 0 ? right : left` 220 (aligned 111); both 412 (109); the channel name read once
+// 399 (2189, 112); the rate as `if (scoped) 1 else if (zoomed) pin` 407 (2187, 117), with the name read once 409 (2183, 117); the overlay play written per arm 376
+// (2191, aligned 103). Retail's logic decoded: zoomed = speed > 0.1; scoped = zoomed && query; both cleared on the second query; scoped cleared
+// when the overlay lookup fails; the play's `else if (zoomed)` under `if (zoomed || scoped)` is retail's own implied test (`cmp [ebp-2], 0; je`).
+// Still BLOCKED by the stand-in (round 98) for ESI/EDI; no byte match is reachable without it, so no match-only form can stay. Body unchanged.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
