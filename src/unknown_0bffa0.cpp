@@ -1157,6 +1157,9 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // at the loop top 470/470/466/466/466/467/467/472 (diagnostic). After the normalize retail reads left.j and left.k before up.*, and up.* before left.i; ours reads up.* first.
 // Directions as `real [6][3]` 290; the 0x11f5f0 count as a constant 4 600 (2777 bytes). Lead, gains too small to keep: `entry` declared before `bounds` 288 (aligned 198); in the cone arm
 // `entry = entries; memset(entry, 0, sizeof(*entry));` 290 but aligned 181: the loop tail after 0x141590 becomes retail's (entry reloaded into ECX, the cursors' slots); both 288, aligned 180.
+// Round 56 (m3 lane 15, plain; masked = aligned diff with stack offsets and registers masked, 137 here): rows in stages (forward j, i, k; left i, k, j; up k, i, j) as retail's sum trees,
+// x first 573 (2801 B, masked 167), y first 571 (2803 B, masked 174); plain rows with y stored first 299 at retail's 2840 B (masked 154); the reference as a ternary 643 (2797 B), as if/else
+// 574 (2822 B). Harness with the 0x11f5f0, 0x141590, 0x163db0 files and the ballast is not exact (414 for 290): source term order is canonicalised (same code in five orders).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

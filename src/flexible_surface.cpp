@@ -584,6 +584,13 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the complete old snapshot; staged-cross/projection-first/projection-accumulator masks 0..7:
 // 159/159/157/157/159/159/157/157. NOT kept: unmatched mixed observations; original complete body restored.
 // Frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// Round 56 (m3 lane 15; one-link harness: entry calling 0x118140 plus src/unknown_030290.cpp, exact, 2 s a form). Recipe, kept only with a match since it writes
+// out dot3f and cross3f: sine, cosine, axis; `real axis_i = axis.i; real old_k = g.k; real old_j = g.j;`; the dot in stages `p = axis.k*old_k; p += axis.j*old_j; p += g.i*axis_i;
+// p *= 1 - cosine`; scalar cross j, k, i and rows; tail `(cosf(time*0.001)*cosf(time*0.0006f) + sinf(time*0.005)) * cosf(time*0.0001f)`: 103 (885 B, masked 25: frame, spills, dot and
+// tail are retail's). With `short ticks = field_2_3;`, the draw, then the time 96 (885 B, first difference +0x35); `long ticks` and a separate draw statement, harness, 159 (882 B, aligned 28).
+// Left: `axis.k*g.i` and `axis.j*g.i` load g.i first where retail copies the axis, `sine*cross_j/k` reloads, the opening's RNG/time schedule. Source operand order, cross statement order,
+// staged cross or rows, sine/cosine placed later, pointer or reference reads of the global and a rotation helper taking (vector, axis, sine, cosine) do not change them (about 6,500 forms).
+// Fast: the float tail alone on this body 171 (892 B); dot3f with a scalar cross 104 (880 B); `short ticks` alone 110. NOT kept: helper bodies written out, one-use local under 8.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

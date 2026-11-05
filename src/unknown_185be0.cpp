@@ -104,6 +104,8 @@ vector2f *function_11df30(vector2f *arg_0, vector3f const *arg_1);
 void __stdcall function_1a4900(long arg_0, s_186ab2 *arg_1, vector3f *arg_2);
 void player_control_update_action_flags(s_player_action *arg_0, s_player_action_triggers const *arg_1);
 
+#define FLAG(bit) (1 << (bit))
+#define SET_FLAG(flags, bit, value) ((value) ? ((flags) |= FLAG(bit)) : ((flags) &= ~FLAG(bit)))
 __forceinline real function_185be1(real arg_0, real arg_1, real arg_2)
 {
     if (arg_0 < arg_1) arg_0 = arg_1;
@@ -142,7 +144,22 @@ union s_185be7
 };
 
 #pragma inline_depth(1)
-// score 622 (was 690): Frame 0xe0 and state/output carriers agree (3787/3777 B); control-root EBX versus NONE,
+// Coordinator (m3, round 56 review): kept at 590 is the consistent part of the 516 form: the five `field_20` flags through SET_FLAG on
+// the word field (no byte casts) and the selected input as `long`. The 516 form puts PIN and SET_FLAG on a subset of call sites picked
+// by score while the rest stay on 0x185be1/0x185be4 (all clamps through PIN 860 on 589; all 22 flags through SET_FLAG 792 on 590), a
+// match-only form; it is held as build/held/lane15-r56-185be0-mixed.patch.
+// score 590 (was 622; the lane's mixed form 516): 3773/3777 B, masked aligned about 157 (stack offsets and registers masked; 233 at 622). Round 56 (m3 lane 15, plain): PIN on
+// yaw/pitch 608, plus settings 781, plus limit clamps 827, plus turn rates 602, turn rates alone 619, yaw/pitch + turn rates + settings 589 (kept);
+// a ternary on named yaw/pitch values 608. Flags: all 22 through a set-flag macro 614 (3760 B, masked 140: retail's threaded tests), with long selected
+// input 606, bitfield selectors 604, selector struct copy 606, named selector dword 604, byte-pointer flags 609, word flags 687 (3742 B). On 589, word
+// `field_20` flags through SET_FLAG 569 (kept); on that long selected input 562, the four `local_11` flags 526, both 518 (kept), `local_3[5]` flags 577,
+// `local_3[4]` flags 566, three `field_1c` flags 569. On 518, `local_3[4]` flags 760 (masked 149), two `field_1c` flags 671 (masked 147), three single-use
+// flags 518 (same code), fraction clamped in place as if/else or PIN 515, named `input_3_active` kept 516 (kept); a selected-input mask as long 712 (3778 B).
+// Diagnostic, restored: a volatile read of the root global at the flag test 1020: EBX stops holding the root but NONE still stays out of it, masked 232.
+// Next: byte offsets run 29 to 49 ahead from the fraction clamp on, because retail sinks that clamp's upper arm and the range <= 0 arm out of line and
+// remakes zero after the 0x24590 call (ours keeps XMM1/XMM6 live across it, which `inline` on 0x24590 may change; that file was on the avoid list);
+// retail reads the selector bytes as one dword (`mov ebx, [esp+0xb8]`, `movzx ecx, bl`/`bh`) and holds NONE in EBX for the first three tests.
+// Earlier 622 (was 690): Frame 0xe0 and state/output carriers agree (3787/3777 B); control-root EBX versus NONE,
 // settings/zero homes, the range-fraction clamp (retail clamps in local_16's slot, upper arm out of line) and
 // the materialized `&&` flag arguments (retail threads them) remain.
 // Round 130 (m3 lane 8, fast, kept forms plain): the rigid-body index from 0x0b67a0 as `long` (retail's
@@ -686,7 +703,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             arg_5->field_8 = local_2.field_34;
             arg_5->field_c = local_2.field_30;
         }
-        byte local_11 = local_3[local_2.field_4c];
+        long local_11 = local_3[local_2.field_4c];
         byte *local_12 = &local_3[local_2.field_4c];
         if (local_1->field_0 != NONE && function_185be2(local_1->field_0)[0x212] != 0xff && function_185be2(local_1->field_0)[0x213] != 0xff)
         {
@@ -718,17 +735,16 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
         function_185be4((dword *)&arg_5->field_1c, 2, local_3[1] == 1);
         function_185be4((dword *)&arg_5->field_1c, 0x10, local_3[14] != 0);
         function_185be4((dword *)&arg_5->field_1c, 0x20, local_3[15] != 0);
-        if (local_3[14] == 1) ((byte *)arg_5)[0x21] |= 1;
-        else ((byte *)arg_5)[0x21] &= ~1;
+        SET_FLAG(arg_5->field_20, 8, local_3[14] == 1);
         s_input_state *local_14 = NULL;
         if (g_4e61cc[(short)arg_0]) local_14 = g_4e61b9 ? &g_4e630c : &g_4e61dc[(short)arg_0];
         if (local_14 && ((byte *)local_14)[0x19]) *(dword *)&arg_5->field_1c |= 0x40;
         long local_15 = (long)(*(real *)(*(byte **)((byte *)g_4e034c + 0xf4) + 0x7c) * 1000.0f);
-        if (local_3[2] > 0) ((byte *)arg_5)[0x20] |= 1; else ((byte *)arg_5)[0x20] &= ~1;
-        if (local_4[2] >= local_15) ((byte *)arg_5)[0x20] |= 2; else ((byte *)arg_5)[0x20] &= ~2;
+        SET_FLAG(arg_5->field_20, 0, local_3[2] > 0);
+        SET_FLAG(arg_5->field_20, 1, local_4[2] >= local_15);
         bool input_3_active = local_3[3] > 0;
-        if (input_3_active) ((byte *)arg_5)[0x20] |= 0x10; else ((byte *)arg_5)[0x20] &= ~0x10;
-        if (local_4[3] >= local_15) arg_5->field_20 |= 0x20; else ((byte *)arg_5)[0x20] &= ~0x20;
+        SET_FLAG(arg_5->field_20, 4, input_3_active);
+        SET_FLAG(arg_5->field_20, 5, local_4[3] >= local_15);
         if (input_3_active) local_1->field_8e = 1;
         else
         {
