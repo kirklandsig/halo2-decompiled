@@ -1681,6 +1681,9 @@ real function_30bf0(vector3f *vector);
 // in both functions); (k, i, j) alone 357; with the colour2 positive checks as stored selects 433 (1878 B).
 // Round 402: Complete applied/fallback query outcomes, bool/byte/short/long, at the real query boundary.
 // Scores 450/450/450/450/450/450/450/450. NOT kept: unmatched outcome forms; original complete body restored.
+// Round 398: Original-boundary normal scalar observations, six component read orders, immutable
+// channels and the existing vector setter: 458/458/458/458/458/458/458/457. NOT kept: all regress
+// and grow away from retail; original independent length observation, normal copy and full body restored.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

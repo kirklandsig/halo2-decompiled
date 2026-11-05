@@ -273,6 +273,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // spills it and uses EBX for the owner, ESI for scratch. Restored.
 // Round 402: Actual returned entry-state admissions, independent/sequential bool/byte/short/long outcomes at unchanged call boundaries.
 // Scores 426/426/426/426/426/426/426/426. NOT kept: unmatched outcome forms; original complete body restored.
+// Round 398: Final result produced by primary/secondary admission, bool/byte/short/long:
+// 470/484/468/469/475/477/469/447. NOT kept: result/admission coupling does not match; original
+// final result, method-call boundaries and complete body restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
