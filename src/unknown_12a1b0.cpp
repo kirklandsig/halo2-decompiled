@@ -1463,6 +1463,12 @@ struct s_looping_detail_request
 // M390: Success-owned common request-flags publication, dword/long/word/byte,
 // original output then native temporary/copy: 167/167/171/157/196/196/200/191. NOT kept: tested
 // completion needs equality; original body restored, query/offset transport remains.
+// Round 53 (m3 lane 2, fast with 0x21b0e0): shapes meant to cool the query's call site: the player arm with its own
+// finalization and `return true` 190 (535 B); both arms returning 180 (533); an early `return false` with its own
+// finalization when no player 180 (524); the audible arm jumping past the else 110; the query in a `for` initializer
+// 110; the mode through a named long 110 (same code). The query stays inlined in all six; `return` shapes do not cool it.
+// B448: Complete fallback selection/placement/publication provider, detail and source pointer/reference, forced/ordinary inline:
+// 159/159/159/159/434/434/434/434. NOT kept: no byte match; complete original body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1889,6 +1895,17 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Boolean guard results: 479/479/479/479/452/479/479/479 reduced (control 479, full 305).
 // NOT kept: unmatched one-use outcomes; range-blend retains reduced frame 0x118/0x128.
 // Original request, observations and complete body restored; native frame/range/ring homes remain.
+// Round 53 (m3 lane 2, plain; positional/aligned/masked aligned, baseline 305/192/80). Lead, not kept (positional rises): a
+// named count for the second pitch loop (`long count = playback->pitch_range_count;`, retail's `mov [esp+0x38], eax`) with
+// 0x21b940's `s_short_bounds *bounds` and named lower: 372 at 1923 bytes, 142/70, frame 0x128 and the first 150 lines exact.
+// Left on it: NONE stays in EDX through the iterator loop, so the pool takes ESI and the iterator's count goes to memory
+// (retail count ESI, pool EDX, `cmp ecx, -1`), which shifts the arrays by 0x10 (ours +0x60/+0x84, retail +0x50/+0x74); the
+// array stores run gains first (retail sounds first). Tried: bounds alone 418/194/80; request padded to 0xa0 305/192/80
+// (frame 0x12c), with the bounds 418/194/80, with counts 368/181/73 and 378/147/75, with both 462/186/76 (frame 0x138, too
+// large); plain loops for the array inits 335/218/99, 334/216/99 (NONE leaves EBP, playback still spilled); chained or named
+// constant inits 305/192/80; count in both loops 365/179/71, first only 427 (1907)/179/78, one local for both 460
+// (1939)/187/77, both with bounds 460/184/74; second only 375/145/73; on the lead, gains declared first 373/143/69, mask
+// first 373/143/68, iterator first or mask between 372/142/70. `--fast` is off here (reduced 479), use the plain check.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

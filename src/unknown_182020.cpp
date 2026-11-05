@@ -3,8 +3,8 @@
 #include "globals.h"
 #include "unknown_1cec30.h"
 
-void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component,
-	point3f const *point, vector3f *velocity);
+void havok_component_rigid_body_point_velocity_get(vector3f *velocity, long rigid_body_index, s_havok_component *component,
+	point3f const *point);
 void function_141590(transform4x3f const *in, transform4x3f *out);
 int __fastcall function_142a60(transform4x3f const *a, transform4x3f const *b, transform4x3f *result);
 extern transform4x3f *g_4687d0;
@@ -39,7 +39,7 @@ bool function_182020(long component_index, vector3f *previous_velocity, point3f 
 			function_142a60(transform, &inverse, &relative);
 			function_141590(&relative, &relative);
 			*rotation = relative.rotation;
-			havok_component_rigid_body_point_velocity_get(body_index, component, point, &velocity_sample);
+			havok_component_rigid_body_point_velocity_get(&velocity_sample, body_index, component, point);
 			*velocity = velocity_sample;
 			*rotation = g_4687d0->rotation;
 			delta_velocity->i = velocity_sample.i - previous_velocity->i;

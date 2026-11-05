@@ -409,6 +409,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // M375: Native secondary encoded-UV library transfers, object/array/bounds/encoder-result,
 // memcpy then memmove: 211/211/211/211/366/366/366/366. NOT kept: no byte match or native home repair;
 // original whole callback, encoder result contract and all alias-safe input captures restored.
+// DL264: Matched scalar/RGB property producer inline/forced contracts,
+// independent and complete pairs: 211/211/211/1257/742/1257/742/1541.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
 // AC533: Requested-sequence clamp result, conditional/complete/lower-default/upper-default,
 // original/positive-produced count: 218/218/288/218/223/223/288/223. NOT kept: all regress;
 // tint/secondary-UV homes and blend join remain. Original whole body restored.
@@ -427,6 +430,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // N373: Actual tint/input RGB subobject pointer/reference ownership, eight ordered forms
 // 211/211/211/211/211/211/211/211. NOT kept: no equality; original complete color object, callback,
 // clamp, input observations and alias-safe UV captures restored. Tint/secondary-UV homes remain.
+// DH374: Paired primary/secondary aspect outcomes, positive/complementary bool/byte/short/long:
+// 211/211/211/211/211/211/211/211 (fast control 211; full 211).
+// NOT kept: no byte match or eligible gain. Original direct aspect decisions, all interpolation trees, alias-
+// safe UV captures and complete callback restored; tint/secondary-UV homes and persistent blend remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

@@ -331,6 +331,8 @@ struct c_aggregate : c_child
 // Lane 13 r62 (fast; spills and `produced` in inlined scopes so the slots can pack): the dispatch loop in a force-inline helper 31,
 // the cleanup loop 31, both 31 (frame 0x8024 each, same code); the collection step plus the cleanup in force-inline helpers 146 (389
 // bytes), plus the dispatch too 146. Still BLOCKED by the build flag: frame 0x8020 needs `produced` to share a slot.
+// M3 lane 9 r88 (fast): one output local shared by both calls, 4 names by first/middle/last declaration, 31 each (frame 0x8020 but the shared slot and the two spills exchange; retail keeps `result` apart at +0x1c and packs
+// produced with a spill at +0x10); produced declared then assigned 31, a one-element array 31, through an output pointer local 31, at the loop body top 141 (389). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
