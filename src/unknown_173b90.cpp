@@ -1800,6 +1800,10 @@ bool function_17afd0(long effect_index, long value);
 // M381: View-validity-produced availability then unavailability, bool/byte/short/long
 // on the recovered owner-arm graph: 124/124/146/143/121/121/152/149. NOT kept: all regress;
 // original query gates, view snapshot, Boolean homes and complete body restored.
+// DH371: Partial owner-equality/attachment/camera-admission/camera-test/rejection/view-guard/
+// owner-validity/location-admission Boolean results: 47 each on the recovered owner-arm graph.
+// NOT kept: no match or gain; original snapshots, query gates and complete body restored.
+// Native availability clearing/branch production and later current-view observation remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

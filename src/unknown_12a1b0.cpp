@@ -1233,6 +1233,12 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // element getter forced inline 24; a comma-separated assignment/test condition 24; an empty-step for 24; index declared
 // before the iterator 24; an unsigned index 47 (215 bytes); the provider call in its own lexical block 24. The matched
 // provider, gain query and both iterator siblings stayed matched. Original body and declarations restored.
+// Round 89 (m3 lane 12, fast with the same list): the ESI/EDI tie follows element against index weight: a volatile local reading a field through
+// the macro in the arm (diagnostic, reverted) 62 (226 bytes, unchanged order), two 58 (231 bytes, index EDI and element ESI as retail), one ahead of
+// the state test 73 (229 bytes, unchanged); a volatile copy of the index 44 (214 bytes, unchanged). The state test written twice 24 (it threads
+// away before the tie). A force-inline fade-in helper taking the index in place of the 0x126df0 call 24. Iterator fields set here in place of
+// its helper: first then index from first 24, count first 25, index then first from index 24. In 0x126df0: every field through the macro 132
+// (134 bytes; 0x126df0 82), the gain stores 74 (0x126df0 76), bit test and flag store 80 (0x126df0 72), one gain store with a ternary 37 (0x126df0 15).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -1454,6 +1460,9 @@ struct s_looping_detail_request
 // original request offset 110/131/135/134; native temporary/copy 134/151/188/187.
 // NOT kept: tested completion requires equality; first-player query still expands.
 // Original whole body restored; native detail/offset transport remains.
+// M390: Success-owned common request-flags publication, dword/long/word/byte,
+// original output then native temporary/copy: 167/167/171/157/196/196/200/191. NOT kept: tested
+// completion needs equality; original body restored, query/offset transport remains.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

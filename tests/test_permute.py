@@ -486,6 +486,7 @@ typedef unsigned short word;
 typedef unsigned long dword;
 typedef float real;
 #define NONE -1
+#define PRIVATE
 
 struct s_point
 {
@@ -506,6 +507,20 @@ extern s_thing *g_thing;
 long helper(long a, short b);
 bool test(long a);
 void store(long a, bool b);
+#define TEST_FIELD_BIT(field) ((bool)(field))
+static inline long doubled(long a) { return a + a; }
+static inline bool has_flags(s_thing *t, word mask) { return (t->flags & mask) != 0; }
+static inline long twice(short a) { return a + a; }
+static inline long first(long a, long b) { return a; }
+static inline bool any_flags(s_thing *t, word flags) { return (t->flags & flags) != 0; }
+static inline long by_ref(long &a) { return a; }
+PRIVATE __forceinline real halved(real x) { return x * 0.5f; }
+static inline bool both(long a, long b) { return a && b; }
+static inline bool above(long v, long limit) { return v>limit; }
+extern long g_scale;
+static inline long scaled(long a) { return a * g_scale; }
+static inline long sq(long x) { return x * x; }
+static inline real sq(real x) { return x * x; }
 '''
 PARAMS = 's_thing *thing, long index, short count'
 
@@ -594,6 +609,28 @@ CASES = [
     (permute.mut_redundant_cast, '\n\tstore(index, true);\n\treturn 0;\n', {'\n\tstore((long)index, true);\n\treturn 0;\n'}),
     (permute.mut_do_while, '\n\twhile (index > 0)\n\t{\n\t\tindex--;\n\t}\n\treturn index;\n',
      {'\n\tif (index > 0)\n\t{\n\t\tdo\n\t\t{\n\t\t\tindex--;\n\t\t} while (index > 0);\n\t}\n\treturn index;\n'}),
+    (permute.mut_single_exit, '\n\tif (index)\n\t\treturn 1;\n\treturn index + 2;\n',
+     {'\n\tlong result;\n\tif (index)\n\t\treturn 1;\n\tresult = index + 2;\n\treturn result;\n'}),
+    (permute.mut_inline_helper, '\n\treturn doubled(index) + has_flags(thing, 4);\n',
+     {'\n\treturn ((long)(((long)index) + ((long)index))) + has_flags(thing, 4);\n',
+      '\n\treturn doubled(index) + ((bool)((((s_thing *)thing)->flags & ((word)4)) != 0));\n'}),
+    # the argument keeps the conversion to the parameter's type (here the truncation to short)
+    (permute.mut_inline_helper, '\n\treturn twice(index);\n', {'\n\treturn ((long)(((short)index) + ((short)index)));\n'}),
+    # a parameter named like a member: only the parameter is replaced, not '->flags'
+    (permute.mut_inline_helper, '\n\treturn any_flags(thing, 4);\n',
+     {'\n\treturn ((bool)((((s_thing *)thing)->flags & ((word)4)) != 0));\n'}),
+    # an unused parameter whose argument is a name: nothing is lost
+    (permute.mut_inline_helper, '\n\treturn first(index, count);\n', {'\n\treturn ((long)(((long)index)));\n'}),
+    # a PRIVATE helper (file-local, defined empty) is inlined too
+    (permute.mut_inline_helper, '\n\treturn halved(index);\n', {'\n\treturn ((real)(((real)index) * 0.5f));\n'}),
+    # 'v>limit' reads limit (once), though '>' comes right before it
+    (permute.mut_inline_helper, '\n\treturn above(index, helper(index, count));\n',
+     {'\n\treturn ((bool)(((long)index)>((long)(helper(index, count)))));\n'}),
+    (permute.mut_test_field_bit, '\n\tif (thing->ready && !g_thing->ready)\n\t\treturn 1;\n\treturn 0;\n',
+     {'\n\tif (TEST_FIELD_BIT(thing->ready) && !g_thing->ready)\n\t\treturn 1;\n\treturn 0;\n',
+      '\n\tif (thing->ready && !TEST_FIELD_BIT(g_thing->ready))\n\t\treturn 1;\n\treturn 0;\n'}),
+    (permute.mut_test_field_bit, '\n\twhile (TEST_FIELD_BIT(thing->ready))\n\t\tindex++;\n\treturn index;\n',
+     {'\n\twhile (thing->ready)\n\t\tindex++;\n\treturn index;\n'}),
 ]
 
 
@@ -638,6 +675,45 @@ def test_typed_mutations_leave_alone_what_they_must():
         '\n\tlong a = 0;\n\tlong *volatile p = &a;\n'
     # a local read once is the inline mutations' business
     assert permute.mut_uncache_field('\n\tword flags = thing->flags;\n\treturn flags;\n', rng(), ctx) is None
+    # one exit already; the last return is a local (mut_early_return's case); a void function
+    assert permute.mut_single_exit('\n\treturn index + 2;\n', rng(), ctx) is None
+    assert permute.mut_single_exit('\n\tlong r = 0;\n\tif (index)\n\t\treturn 1;\n\treturn r;\n', rng(), ctx) is None
+    assert permute.mut_single_exit('\n\tif (index)\n\t\treturn 1;\n\treturn 2;\n', rng(),
+                                   permute.Context(PARAMS, 'void', HEADER)) is None
+    # the last return the unbraced body of a while or an if: two statements would go there
+    assert permute.mut_single_exit('\n\tif (index)\n\t\treturn 1;\n\twhile (thing)\n\t\treturn thing->value;\n',
+                                   rng(), ctx) is None
+    assert permute.mut_single_exit('\n\tif (index)\n\t\treturn 1;\n\tif (thing)\n\t\treturn thing->value;\n',
+                                   rng(), ctx) is None
+    # an argument the helper reads twice is evaluated once only when it is a name or a literal
+    assert permute.mut_inline_helper('\n\treturn doubled(index + 1);\n', rng(), ctx) is None
+    # an argument the helper never reads is kept as a call unless it is a name or a literal
+    assert permute.mut_inline_helper('\n\treturn first(index, helper(index, count));\n', rng(), ctx) is None
+    # a parameter type that cannot be written as a cast (a reference) leaves the call alone
+    assert permute.mut_inline_helper('\n\treturn by_ref(index);\n', rng(), ctx) is None
+    # a helper from another file (an included header) stays a call: the file has helpers of its own, not this one
+    assert permute.mut_inline_helper('\n\treturn doubled(index);\n', rng(),
+                                     permute.Context(PARAMS, 'long', HEADER,
+                                                     own='static inline long other(long a) { return a; }\n')) is None
+    # an argument whose one read can be skipped (after '&&', '||' or in a '?:' arm) must be a name or literal
+    assert permute.mut_inline_helper('\n\treturn both(index, helper(index, count));\n', rng(), ctx) is None
+    # two definitions of one name: the call might be the other overload
+    assert permute.mut_inline_helper('\n\treturn sq(index);\n', rng(), ctx) is None
+    # a volatile local is read as often as the helper reads it
+    assert permute.mut_inline_helper('\n\tvolatile long v = index;\n\treturn doubled(v);\n', rng(), ctx) is None
+    # a member function of the same name is not the helper
+    assert permute.mut_inline_helper('\n\treturn thing->doubled(index);\n', rng(), ctx) is None
+    # the helper reads a global the function has a local of
+    assert permute.mut_inline_helper('\n\tlong g_scale = 2;\n\treturn scaled(index) + g_scale;\n', rng(), ctx) is None
+    # a parameter named only in a comment is not read
+    commented = permute.Context(PARAMS, 'long', HEADER + 'static inline long pick(long a, long b) { return a /* b */; }\n')
+    assert permute.mut_inline_helper('\n\treturn pick(index, helper(index, count));\n', rng(), commented) is None
+    # no TEST_FIELD_BIT in the file, or a field that is not the whole condition
+    assert permute.mut_test_field_bit('\n\tif (thing->ready)\n\t\treturn 1;\n\treturn 0;\n', rng(),
+                                      permute.Context(PARAMS, 'long', '')) is None
+    assert permute.mut_test_field_bit('\n\tif (thing->value > 2)\n\t\treturn 1;\n\treturn 0;\n', rng(), ctx) is None
+    # the macro is undone only where it is tested, not where its bool is stored
+    assert permute.mut_test_field_bit('\n\tlong n = TEST_FIELD_BIT(thing->count);\n\treturn n;\n', rng(), ctx) is None
 
 
 def test_a_declaration_in_a_switch_gets_braces():

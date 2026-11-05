@@ -192,6 +192,12 @@ static __forceinline long function_925c2()
 // one register choice, the user flags loaded into eax where retail loads them into the dying user
 // pointer register ecx; our two shorter encodings leave the function two bytes short, so every
 // later field (the globals and the calls) is reported as differing as well.
+// MiniMax H (11-04): no new form, no lower score; the flags still load into eax where retail
+// loads them into the dying pointer register ecx (14 variants: the pointer non-const, the flags in
+// dword/unsigned/short locals, the flags through a pointer or an index cast, a reference to the
+// user, a void pointer, the two tests in the other order, the two tests split, the user pointer
+// from a ternary, the kind in a switch, the mask test first: 14, 14, 14, 14, 14, 14, 14, 15,
+// 125, 116, 15).
 // This round: the flags in a const dword local 14, in an unsigned long local 14, a const kind 14,
 // the kind declared before the user pointer 14, the mask test before the equality test 15 (all
 // reverted).

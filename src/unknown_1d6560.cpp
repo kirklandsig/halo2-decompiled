@@ -275,6 +275,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // DH373: Original-site secondary-kind equality/inequality outcomes in bool/byte/short/long:
 // eight at 96; matched caller and file controls unchanged. NOT kept: no native entry repair
 // or equality; original repeated dispatch, body flags, result and full convention restored.
+// M3 lane 4 r164 (fast, caller in brackets): round 60's 24 form rebuilt 24 [0]; headers, object index, rigid body, type through the
+// object index with case 0 through it 124 (228 B) [209]; the 21 form (headers, object index, rigid body, absolute index, type) in 8
+// parameter orders, definition, declaration and call together, 21 [13] each (identical code: the component stays in EDX and the
+// index in EAX); a named object index for case 0 with the type read through the field, byte type in six declaration orders 99/102
+// [13], long type 98 [171] or 112 (236 B) [13].
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

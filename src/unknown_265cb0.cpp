@@ -559,6 +559,9 @@ real function_30bf0(vector3f *vector);
 // DH346: Projected displacement in motion via native stores/setter, independent vector, complete
 // mutable/immutable scalar results via stores/setter, then scalar-to-motion transfer: 316/316/316/150/150/150/150/316.
 // NOT kept: 150 gains only two; native result/range/projection homes remain. Original body restored.
+// P331: Geometry admission results at endpoint/length/query, masks 1/2/4/3/5/6/7 then complementary
+// all: 188/189/189/197/197/197/190/230. NOT kept: no equality or gain; original complete body
+// restored.
 // DH371: Actual outer/scaled/secondary/primary/near/secondary-improvement/primary-improvement/
 // player-eligibility Boolean test results: 188/188/152/152/152/152/152/191.
 // NOT kept: no equality or gain; original complete body restored. Result/range/projection
@@ -1258,6 +1261,13 @@ struct s_equipped_object_view
 // Round 139 (lane 6): the comparison written definition >= threshold 12; a tag-instance pointer for
 // the held definition 6; the definition read inside the compare 6; thresholds read after the
 // definition 6; a real pointer to the definition field 6.
+// Round 89 (m3 lane 12, fast), no volatile unless named: plain pool reads keep the data in ESI 28, with the held index stored through a
+// pointer local 28, through a force-inline out-parameter helper 28, or NONE stored by a force-inline helper 28, so a store through a
+// pointer does not stop the data CSE. The held or the entry read as another type (byte pointer, long, const view) 28 each. On the
+// second-lookup form (selected through its own lookup, 4): exact tag chain, data EDX and widened index ECX for retail's ECX and EDX.
+// A volatile probe local (diagnostic, reverted) ahead of any entry statement does not move the widened index (59, 152 bytes; 51, 149).
+// The pool and its data compete for ESI by references, so the entry's second lookup is what hands ESI to the pool, but it also swaps
+// the entry's registers. That form stays unkept: a local for some reads and a lookup for others is a hand reload without a match.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
