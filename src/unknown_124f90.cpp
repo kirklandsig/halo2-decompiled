@@ -1393,6 +1393,9 @@ long function_2197f0(real gain);
 // B449: Entry gain real construction/default-member/default-assignment/explicit-copy acquisition,
 // each with encoded/real zero endpoints: 232/232/94/94/228/228/187/187.
 // NOT kept: no exact construction repair; original entry gain, endpoint domain and complete body restored.
+// AC554: Current native-entry reciprocal graph; reciprocal identities attack_scale/duration_inverse/
+// fade_inverse/phase_inverse and elapsed identities ambience_elapsed/elapsed_time/hold_elapsed/
+// transition_elapsed 94/94/94/94/94/94/94/94. NOT kept: no exact native allocation repair; original body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

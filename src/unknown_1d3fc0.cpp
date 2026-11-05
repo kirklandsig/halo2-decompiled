@@ -297,6 +297,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // 2 each; cross3f_staged 120; a left pointer for the cross and its normalization 4. The dot's i term stays up-first.
 // Declaration placement on the 2-form: the dot's local first in the block or between the pointers, `up` declared ahead of forward and assigned
 // after, all three declared first, the dot in its own scope, the pointers or the dot's local at function or loop scope: 2 each.
+// AC554: Existing pointer-return normalizer short-vector guard truth in bool/byte/char/
+// signed-char/short/word/int/long 110/110/110/110/110/110/110/110. NOT kept: no exact
+// guard-producer repair; original four-use helper and entire body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

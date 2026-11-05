@@ -1747,6 +1747,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // AC552: Existing reconstruction output as real pointer/array reference, point/real pointer
 // return and point/array reference return: six at 552; native value result ordinary/forced 769/709.
 // NOT kept: no gain; value results 2740/2975 bytes, frame 0xb97c versus 0xb964. Original helper/body restored.
+// AC554: Paired reconstruction plane-axis degeneracy truth in bool/byte/char/signed-char/
+// short/word/int/long 553/553/553/553/553/553/553/553. NOT kept: no exact test-producer repair;
+// original helper and body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
