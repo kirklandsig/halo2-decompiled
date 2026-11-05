@@ -786,6 +786,8 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax H (11-04, run 33): no new form, no lower score; the walk is still the out-of-line
+// 0xbaf80 pinned by another file, so the entry test and the root stay in the callee.
 // MiniMax H (11-04): no new form, no lower score; the player/unit carriers and the root-walk entry stay.
 // score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // Earlier: the datum address is still computed in EBX where retail computes it in EDI, and the
@@ -2811,6 +2813,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax H (11-04, run 33): the two stores through the named `globals` local again lower the
+// reduced image (193 -> 180), but the full build measured that form at 180 against the 103
+// baseline, so it is reverted; no lower score.
 // MiniMax H (11-04): no new form, no lower score; the globals pointer and the iterator's index array still swap registers.
 // score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
 // `globals` local builds to the same bytes in the full build (611 = 611, first difference
