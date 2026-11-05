@@ -823,6 +823,15 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // F393: Masked target ordinal long/dword/int/word, then actual reset-capability decision bool/byte/short/long:
 // 45/45/45/185/55/55/55/45. NOT kept: no byte match; original complete body/helpers restored;
 // right i/j carriers, forward.k reuse and ordinary-angle store bases remain.
+// Round 54 (m3 lane 15; a one-link harness with 0x30bf0, 0x11d090, 0x16f3a0, 0xbadc0, 0x172520, 0x1f0870's files and an address-taken
+// entry is exact, 45/43/53/217 as listed, 4.6 s a form): first product written out 219 (1261 bytes), with `(real)` on row i's second, first
+// or both products 219/216/224, on the whole row 219, with parentheses on all rows 224, row i as a negated sum or difference 219/232;
+// first product through a local helper by row order ikj 57, jik 59 (1261), jki 63 (1261), kij 56, kji 56; no command local, no observer local,
+// neither, crossed with function_1f087b, staged and plain second products and the else pointer: 43 to 222, none below 45 without that
+// pointer. Diagnostic: 0-7 identity locals before the first product by 0-7 before the second, with function_1f087b or staged: best 45,
+// best at 1261 bytes 64.
+// M391: Normalized-distance/delay-subtraction/transition-clamp double receivers, seven subsets, then complete real receivers: 227/114/240/135/245/150/256/103.
+// NOT kept: No exact product-color, forward-K reuse or angle-store-base repair; nonmatching result lifetimes are discarded. Original complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

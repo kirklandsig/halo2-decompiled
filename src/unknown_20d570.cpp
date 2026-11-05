@@ -76,36 +76,12 @@ bool __stdcall function_20cdc0(long arg_0, long arg_1, long arg_2, s_audio_selec
 void function_20d870(long actor_index, short channel, short value);
 void __stdcall function_1fbac0(long unknown, long unit_index, bool unknown2, long unknown3, s_1fbac0_event *event);
 
-// score 21 (was 21): the scaled-index computation swaps registers: ours uses EAX/EDX,
-// retail uses EDX/EAX. Tried: a forceinline record getter for both lookups 21,
-// for the first only 21; the masked index in a local first 21; typed record
-// pointer arithmetic for both lookups 21; a record reference 21; the field read into a
-// local before the flag store 21; a block-scoped record for each lookup 21; the pool in a
-// local 21; the lookup, store and call through an inline helper taking both indices 21 (all
-// identical code); record initialised to NULL at its declaration 222 (callers change).
-// Only this lookup differs: retail colours pool/record eax, index/field edx (lea), ours
-// index/record/field eax (add).
-// Round 11 (lane 18), fast scores (the fast build gives 23 where the plain check gives 21): the tag
-// header global read at each use instead of the globals local 23; the first lookup as a byte pointer
-// with offset fields (the sibling files' form for this pool) 23; the tag pointer set in both arms
-// instead of initialised 195; the record declared first 23; the object through the existing
-// object_get 23 (identical code; kept: it replaces that helper's body written out). All identical
-// code except the tag arms: the lookup's colouring does not follow any local form tried.
-// Round 116 (fast scores; 23 fast is the plain 21): retail's colours fit pool, data, index allocated in that
-// order round-robin (EAX, ECX, EDX, then a fresh EAX for the record), ours fit index, data, pool (EAX, ECX,
-// EDX, the record added in place). The entry as `tag->entries + arg_1` 23; the record block moved after the
-// event data clear 23 (both identical code); the entry computed after the record block 199; the index as
-// `(word)arg_0 * sizeof` 221; the tag as one ternary 195.
-// Round 46 (fast; 23 fast is the plain 21): the first record address with the scaled index written first
-// 23; the record as `&((s_cue_record *)data)[index]` 23 (both identical code); the entry as one ternary 64
-// (759 bytes); the entry initialised to NULL at its declaration 212 (747 bytes); the first lookup written
-// out at both uses without the record local 25 (756 bytes).
-// Round 95 (fast): the stride's operands reversed 23; a literal 0x54 stride 23; both together 23;
-// an unsigned mask 23 (target-only previews); an unsigned handle with that mask 21; an unsigned
-// handle alone 21; a const first-record pointer 21; `sizeof(*record)` 21; the flag stored as 1
-// rather than true 21 (the last five with the three callers included). The restored control with
-// those callers also scores 21; its target-only preview is 23 and its plain score is 21. The handle
-// declarations were restored everywhere; the original body stays at 754 bytes.
+/* the playing cue at a pool index */
+PRIVATE __forceinline s_cue_record *cue_record_get(long index)
+{
+	return (s_cue_record *)(g_4f9398->data + (index & 0xffff) * sizeof(s_cue_record));
+}
+
 // @retail 0x20d570
 void __stdcall function_20d570(short arg_1, long arg_0, long arg_2, void *arg_3)
 {
@@ -127,8 +103,8 @@ void __stdcall function_20d570(short arg_1, long arg_0, long arg_2, void *arg_3)
 			entry = &tag->entries[arg_1];
 		if (arg_0 != NONE)
 		{
-			record = (s_cue_record *)(g_4f9398->data + (arg_0 & 0xffff) * sizeof(s_cue_record));
-			record->unknown41 = true;
+			record = cue_record_get(arg_0);
+			cue_record_get(arg_0)->unknown41 = true;
 			function_20cdc0(arg_2, record->unknown28, arg_0, NULL, NULL);
 		}
 		data.unknown00 = 0;
@@ -188,7 +164,7 @@ void __stdcall function_20d570(short arg_1, long arg_0, long arg_2, void *arg_3)
 
 				record = NULL;
 				if (arg_0 != NONE)
-					record = (s_cue_record *)(g_4f9398->data + (arg_0 & 0xffff) * sizeof(s_cue_record));
+					record = cue_record_get(arg_0);
 				if (record)
 					seconds = (real)record->ticks * g_510c54->rate + 1.0f;
 				if (actor->unknown684 <= 0)
