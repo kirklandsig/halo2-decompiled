@@ -484,6 +484,9 @@ void function_14bac0()
 // N383: Existing typed player iterator at the first traversal, selected-player type, native
 // result-tested recipients and early uninitialized iterator declaration: 222/222/228/228/222/222/228/228.
 // NOT kept: ties/regressions; original fields, points, iterators, includes and full body restored.
+// M399: Complete original accepted-point/bounds/relocation-output zero defaults, subsets 1..7:
+// 279/267/313/258/312/293/332; complete CRT point defaults 319. NOT kept: every form grows and regresses.
+// Original entire body restored; frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

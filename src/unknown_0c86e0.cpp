@@ -231,6 +231,9 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // not in src): the current body 134, the long index and late flag 47, plus the `== NONE` ternary 42, plus the early-return helper or the one-expression
 // helper 2 at retail's 376 bytes (left: the 0x100f70 argument register and the harness's jump address); the else-arm helper 32, the sound index as one ternary
 // 42. A store in this function instead 129 (folded before CSE). So the blocker is only 0xbadc0's memory summary, BLOCKED-BY 0xbadc0.
+// M399: Immutable existing unit pointer/weapon handle/query result, seven nonempty subsets 107 each;
+// all with existing slot-helper read-only unit input 107. NOT kept: every form ties; original entire file restored.
+// Frameless entry, merged post-query unit fetch and late prior-state home remain.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {
