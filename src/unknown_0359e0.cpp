@@ -68,7 +68,8 @@ PRIVATE inline long swizzle_log2(dword value)
 // taken by retail's branch, so the height count sits in ebx as in retail; left: the row
 // coordinate (retail keeps it 16-bit in si and widens it late), the column (retail
 // widens dx only after the mask) and the two bit registers (retail x in edi, ours in edx).
-// score 82 (was 82): the coordinates now take retail's registers (the second in
+// Earlier at 82 (was 82): the coordinates now take retail's registers (the second in
+// Earlier score 82 (was 82): the coordinates now take retail's registers (the second in
 // cx, the third in dx) with the column local declared first; retail still keeps
 // the row coordinate 16-bit in si, promotes the column one after the mask, uses
 // log2_floor's loop shape and picks the common count with a branch (ours cmov).
@@ -262,6 +263,12 @@ PRIVATE inline long swizzle_log2(dword value)
 // Y577: Direct axis-count suffix comparisons, width/height/both with private/shared
 // logarithms, then both with branch-owned stores: 95/96/116/77/93/104/111/99. NOT kept:
 // five-point best below gate. Original body restored; narrow-coordinate/count homes and minimum branch remain.
+// P347: Coupled independent axis scans, terminate at one or zero then convert bit length, short/word/long/dword counts:
+// 113/125/132/132/102/95/106/106. NOT kept: All regress; terminate-at-one forms lose both exact caller controls. Native independent scans and complete body restored.
+// T61: Actual two-word output array references, original formal order and seven other
+// interleavings preserving the native register/stack banks: eight at 57; both callers exact.
+// NOT kept: output identity does not delay coordinate promotion; original contract, caller
+// declaration/call, helper and full body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

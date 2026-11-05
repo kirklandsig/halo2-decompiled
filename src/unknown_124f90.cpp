@@ -1381,6 +1381,9 @@ long function_2197f0(real gain);
 // B429: Complete native compound/scalar compound/scalar assignment/constructor
 // addition boundaries 105/105/105/105 at 678 bytes; each with disabled early
 // return 188 at 652. NOT kept: sums/tails regress; original body restored.
+// DL264: Existing aggregate gain addition with receiver-first expression,
+// result/copy storage, value/reference right input and immutable returns: 185/185/105/105/158/154/185/105.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
 // M385: Existing aggregate interpolation endpoint/result compound accumulation, native-copy,
 // constructed difference/product, scalar product, twice-used start and uninitialized result:
 // 94/94/102/94/94/94/94/94. NOT kept: no native reciprocal, gain-load or tail repair; full producer restored.
@@ -2466,6 +2469,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // a short chunk index 17; literal zero chunk index and fade times 17, as one chained store 19.
 // Round 73 (plain): flag0 set before the start-time store 18; `delay + SOUND_SYSTEM->time` 17;
 // `sound->flags |= 1` for flag0 17, before the start-time store 18; `delay + time` with flag0 first 18.
+// P346: Existing word/byte delayed-start writers with selected-permutation and delay results:
+// reduced 198/204/198/204/198/204/198/204 against control 197 (868 bytes; full 17/865).
+// NOT kept: reduced scores and byte-writer length regress; all one-use results, include and body restored.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
