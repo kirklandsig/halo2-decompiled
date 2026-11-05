@@ -1393,6 +1393,8 @@ long function_2197f0(real gain);
 // B449: Entry gain real construction/default-member/default-assignment/explicit-copy acquisition,
 // each with encoded/real zero endpoints: 232/232/94/94/228/228/187/187.
 // NOT kept: no exact construction repair; original entry gain, endpoint domain and complete body restored.
+// DL267: Explicit copy constructor member/body/object-byte/member-byte publication, then reference/value-return assignment with scalar/overlap-safe byte publication: 280/280/179/179/94/190/94/190.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

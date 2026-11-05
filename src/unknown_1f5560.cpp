@@ -1048,6 +1048,8 @@ real normalize2d(point2f *v);
 // with double base speed: 257/188/279/135/257/191/277/266. NOT kept: ties/regressions;
 // queried/chosen domains disturb native frame setup. Original real speed producers,
 // numerical predicates, address-passed outputs, calls and complete body restored.
+// DL267: Existing request point setter; direction/facing zero setters; actor/default facing vector setters; actor/direction/default point setters: 166/135/175/135/229/175/135/229.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
