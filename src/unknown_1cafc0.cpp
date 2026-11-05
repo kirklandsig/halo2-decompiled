@@ -704,6 +704,10 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // B446: Late completed lookup truth, request guard and sole return, bool/byte/char/
 // signed-char/short/word/int/long: 645/640/640/640/629/629/615/615. NOT kept: changed result lifetimes
 // disturb the agreeing lookup prefix and native request homes; original complete body restored.
+// DH382: Saved graph receivers for paired animation queries/fallback queries/separate
+// query phases/complete lookup phase, byte then Boolean status: 348/348/348/348/478/478/478/478.
+// NOT kept: aliases give no native graph-base/reload repair, Boolean status lengthens;
+// original entire body and byte return producer restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

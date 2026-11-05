@@ -370,6 +370,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // DH378: Existing object-tag/actor-fallback/object-axis member sources, subsets 1/2/4/3/5/6/7,
 // then all with a read-only object receiver: 176 each. NOT kept: all canonicalize; original complete body,
 // raw address expressions, helpers, arithmetic and both alias-safe rotations restored; native root/yaw homes remain.
+// DH382: Existing alias-safe rotation results as row-local/full-phase cosine-add-subtract
+// or initial-sum/subtract accumulators: 176/178/176/178; with actual dot accumulation
+// 178/176/178/176. NOT kept: no gain or native root/yaw repair; original helper and full body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

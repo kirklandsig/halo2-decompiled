@@ -1393,6 +1393,10 @@ long function_2197f0(real gain);
 // B449: Entry gain real construction/default-member/default-assignment/explicit-copy acquisition,
 // each with encoded/real zero endpoints: 232/232/94/94/228/228/187/187.
 // NOT kept: no exact construction repair; original entry gain, endpoint domain and complete body restored.
+// DH382: Independent terminal completion for composite/simple/current attack, held gain,
+// same-ambience group, absent-current gain, rejected attack duration and disabled admission:
+// 183/184/176/184/184/184/165/175. NOT kept: every form regresses and shortens away from retail;
+// original complete body restored; reciprocal/elapsed, first gain load and late attack join remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {

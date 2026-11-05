@@ -1048,6 +1048,10 @@ real normalize2d(point2f *v);
 // with double base speed: 257/188/279/135/257/191/277/266. NOT kept: ties/regressions;
 // queried/chosen domains disturb native frame setup. Original real speed producers,
 // numerical predicates, address-passed outputs, calls and complete body restored.
+// DH382: Completed invalid type admission at absent definition/rejected forced mask/
+// exhausted short search, seven subsets 136/244/253/238/253/267/267; all typed-first 249.
+// NOT kept: all regress and disturb the native entry/type prefix; original entire body,
+// trajectory inputs, movement/request stores and independent result producers restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
