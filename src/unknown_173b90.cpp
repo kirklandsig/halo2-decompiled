@@ -702,6 +702,20 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // B446: Shared complete emitter/particle property evaluator, free/member provider,
 // color/scale pointer/reference outputs: 77/77/77/77/77/77/77/77. NOT kept: no exact result;
 // original complete body, types and helpers restored. Offset/default/reload and row-i schedules remain.
+// M3 lane 8 r135 (fast and a compile-only screen of about 3300 forms; aligned in brackets, base 42 [38]): row order follows
+// one global tuple phase (period 4; extra products in any row or at the callback only shift it) and the rotate helper's
+// symbol numbering, which earlier forms never moved: a scratch copy taking (vector, matrix, out) or (out, vector, matrix)
+// gives odd row i states 45 [45]; with a `result` local for out in the helper 40 [36], scale first 38 [34]. On indexed
+// definitions with scale first (113, every integer difference fixed): helper (vector, matrix, out) with `result` and a
+// `matrix` local 39 [33] at 1130 bytes, no chain, only product forms left; with `result` alone and a diagnostic 4-deep
+// no-op chain 31 [26], the sums retail's and only row i F*x and row j L*y copy-first in both rotations (`movaps t, x; mulss
+// t, [m]` for `movss t, [m]; mulss t, x`); that helper with the mask read at each use has `yxz xzy zxy`, retail's rows, in
+// both rotations but the homes turn over 229-231 (retail keeps the mask's slot). In the 31 state: row term orders (216)
+// identical, 256 named-term subsets 13-26 block differences against 13, operand swaps identical, helper shapes
+// (unconditional copy, block-scoped copy, source pointer, in/matrix locals, dummy parameters) and six parameter orders no
+// better. Index spellings (typed sum, dword, ++, += 1) identical; declaration moves and the particle mask inline identical.
+// Named input components x, y, z in every subset, order and phase (336 forms) no better than 13 block differences.
+// Left for a match: all products load-first in the retail phase. A new one-caller helper is match-only: body unchanged.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1800,6 +1814,18 @@ bool function_17afd0(long effect_index, long value);
 // owner-validity/location-admission Boolean results: 47 each on the recovered owner-arm graph.
 // NOT kept: no match or gain; original snapshots, query gates and complete body restored.
 // Native availability clearing/branch production and later current-view observation remain.
+// M3 lane 8 r135 (fast; the view read from the global at each use, availability false late and set on success, aligned
+// count in brackets; plain form 138 [70]): one real use of effect_index right before the availability or right before
+// attached (diagnostic, removed) gives retail's whole allocation, 104 [1], the store itself the only difference; it counts
+// only there (after attached, in an arm or before the view read 134-142). Empty tests, `(void)`, `__assume`, an unused
+// bool, inline helpers or copies for availability/attached, `x * 1` no-ops, separate definition lookups, a named absolute
+// index, declaration orders: 138 [70], removed before allocation. Same view true at the arm's top and cleared on the
+// failed test 25 [2], placed just before the availability 12 [2] (only the true store's place differs), after the
+// availability 141; false at the arm's top with a nested set 28 [4]. Attached written in both same-view arms (true: effect
+// test and call; false: available test, effect test and call) 17 [8] at 498 bytes: retail's allocation with no early
+// store, only the arm layout left (retail's first arm jumps into the second's copy), the condition inverted 17; with direct
+// availability 120, with a view local 27 [5] (494 bytes); `attached = same_view ? short : full` or an if/else on same_view
+// 91 [2] (500 bytes: `je; mov; jmp` for retail's `mov; jne`). All need the flag form, so match-only: body kept at 47.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
