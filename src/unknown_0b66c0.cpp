@@ -132,6 +132,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 	return destination;
 }
 
+// MiniMax D (run 46): the start copied into a local before or after the guard gives retail's body
+// (28) but LTCG then passes the start in EDX and the matched caller 0xb5f10 differs at 6; not kept.
+// A second local for the count gives 51, the guard still testing the parameter gives 28 with the same
+// caller loss, and the scanner helper without __forceinline gives 56 here and 49 for 0xb61d0.
 // score 40 (was 40): the string pointer and the character counter are kept in different registers
 // here, and an extra register is pushed and restored around the copy loop. Tried: count before
 // start in the parameter list 40; the length in a named local after the sign tests 40;

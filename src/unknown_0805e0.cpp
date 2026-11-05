@@ -52,6 +52,8 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 
 /* the next recent player after the iterator's: a valid, online, known player
    with a name; iterator starts at the first entry and ends at NONE */
+// MiniMax D (run 46): early returns with a successor local and the index stepped at the loop end 49,
+// the successor read through the table 53; no lower score.
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
