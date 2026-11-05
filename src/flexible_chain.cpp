@@ -514,6 +514,10 @@ void __stdcall function_1160c0(real dt)
 // the segment then takes EDX and every later scratch register is retail's, but the load sits ahead of the ternary. With
 // the index computed first (long, block helper, byte offset, reference, const, bound element) 171 (same code), short
 // index 290 (1356); stiffness read first 270; stiffness through the element 279; segment before node 279.
+// Round 66 (m3 lane 14, fast): the rotation in 0x146320's statement shape (dot k/j/i, named cross j and k, cross i inline in
+// row i, offset-first products) 171; with cross i named too 171; in 0x170d70's order (cross i, projection, cross j, k) 171;
+// the cosine complement named 171 (all same code); `segment = &segments[i]` then reassigned for the last node 284 (1358 bytes);
+// the fixed/time-step guard as two nested ifs 171; the node index declared ahead of its loop 171 (same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

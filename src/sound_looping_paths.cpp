@@ -353,6 +353,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // local 866, tag local 866, both 866, hoisted sounds 924 (3327 B), choice pointer 962 (3284 B), long query count 919 (aligned
 // 584), long choice count 956 (3281 B), both 942 (3297 B, masked 288), with the pointer 960. With hoisted sounds: long query 881
 // (3327 B), long choice 976, both 963, with flags and tag 949/881.
+// Round 66 (m3 lane 14, fast): retail reloads the address-taken count at every use (`mov eax, [esp+0x10]` at each loop test and
+// for `> 1`, no copy): count used directly with no query copy 919 (same as the long copy); with a long choice count 942 (3297 B);
+// with the choice taken as `&choices[choice_count++]` 960 (3308 B; the cursor is strength-reduced into a hoisted pointer), with a
+// short choice count 970 (3284 B); targets/count/primary declared primary, targets, count and count, primary, targets 866/866
+// (same code). Retail's target count homes just above the choices (frame +0x78) and primary at +0x18; ours +0x14 and +0x24.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
