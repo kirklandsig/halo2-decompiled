@@ -726,6 +726,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // declared 219; `second` declared in its block 219; both reciprocal forms 219; both products turned 219; the radius
 // product turned 219. Left: the entry (actor loaded at entry, pathfinding moved to EBX), which colours case 5, and
 // the projection sum (retail (j + k) + i with j in XMM3, ours (k + j) + i).
+// Y603: Complete root-vertex table values/field references at dispatch/case scope,
+// original/shared negation: 230/219/219/219/230/219/219/219. NOT kept: no equality or gain;
+// original body restored, early root/actor ingress and projection schedule remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

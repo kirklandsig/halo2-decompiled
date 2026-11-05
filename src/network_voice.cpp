@@ -3716,6 +3716,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 72 (m3 lane 1, one-file harness: control 139 [48] at 483 bytes, 0x564c0 0; masked aligned in brackets): consumed, size, a packet cursor, stride, tail size, consumed, cursor 161 [33] (478 bytes); index form as
 // written that way 155 [48]; channel index through an inline getter 160 [33], without the cursor 144 [44]; `__assume(channel != NULL)` at the entry, `data`, both, or `(channel != NULL)` ahead of the relay test or the route, or
 // `__assume(member >= NONE)` 161 [33] each (same code). The member still takes EBP over the channel; not kept, body unchanged.
+// Y603: Independent remaining budget with original signed debits, initializer/separate
+// subtraction and local/entry declaration, indexed/cursor traversal: 175/175/175/175/159/159/159/159.
+// NOT kept: all regress; indexed forms also lose 0x564c0 to 12. Original body restored;
+// channel/member/cursor and route homes remain.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

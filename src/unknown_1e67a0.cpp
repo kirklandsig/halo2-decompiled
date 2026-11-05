@@ -773,6 +773,9 @@ bool g_51e9bc;
 // N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
 // forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
 // body restored; unity/limit/direction ownership and jitter spill homes remain.
+// Y603: Complete indexed velocity product/copy producers, original/direct projection argument:
+// 114/227/237/218/51/226/238/222. NOT kept: 114 gains only four; 51 grows from native 1077 to 1078 bytes.
+// Original body restored; projection ownership and native jitter factor spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
