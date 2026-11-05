@@ -273,14 +273,11 @@ struct s_item_object_2bc1
 /* updates a team's item each tick: how long it has been away from home, its
    return home once it has waited too long, and the points of the player
    holding it */
-// score 34 (was 62): the item pointer is still spilled to the stack after the
-// rate is read, and the rate still lands in esi where retail reads it into ecx
-// before the multiply; the countdown is still decremented in al and tested
-// through two branches, while retail copies the timer into cl, decrements it
-// there and tests one copy in al with a single branch.
-// MiniMax B (11-04): the ceiling is still built straight in esi instead of ecx after the item pointer
-// is spilled, and the countdown is still decremented in al instead of a cl copy compared through al;
-// an unsigned timer with the countdown hoisted scored 57, under the keep bar, so it was reverted.
+// MiniMax B (11-04, not kept, m3 review): 34 with `unsigned char timer` (the field is a signed char) tested
+// `!= 0xff` and the countdown computed before the test; the unsigned local is the same steering as MiniMax G's
+// `(unsigned char)` cast (a type picked by score), and without it the form is 55, under the keep bar. Left at 34:
+// the ceiling is built in esi instead of ecx after the item pointer is spilled, and the countdown is decremented
+// in al where retail copies the timer into cl, decrements it there and tests one copy in al with a single branch.
 // MiniMax G run (not kept, m3 review): 33 with the countdown computed before the timer's test, the tally
 // counted before the timer reset, and the test written `(unsigned char)timer != 0xff` (a byte compare, as
 // retail's cmp al,0xff); the cast is the steering part: without it the same form is 55, under the keep bar.
@@ -377,11 +374,11 @@ void __stdcall function_2bc990(long team)
 		}
 		if (entry->player_index != NONE)
 		{
-			unsigned char timer = state->point_timers[team];
-			char countdown = (char)(timer - 1);
+			char timer = state->point_timers[team];
 
-			if (timer != 0xff)
+			if (timer != NONE)
 			{
+				char countdown = (char)(timer - 1);
 				state->point_timers[team] = countdown;
 				if ((unsigned char)countdown == 0 || countdown < 0)
 				{
