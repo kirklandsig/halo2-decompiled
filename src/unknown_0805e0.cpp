@@ -633,6 +633,8 @@ bool function_80660(void)
 struct s_profile_record;
 void function_1537f0(s_profile_record *record);
 
+// MiniMax D (11-04): no new form, no lower score; the identity as three named dwords instead of an array
+// 53 (same code), it still folds into registers and the frame stays 0x98.
 // score 53 (was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
 // 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
@@ -828,6 +830,9 @@ void function_1537f0(s_profile_record *record);
 // copied from each other, links and heads through by-value helpers: all 44h (same code); heads after the loop 69h. Diagnostics, value-wrong:
 // the hoist ends at 4 links + 2 heads (37h, 258 bytes) or 3 links + 4 heads (39h with two flag stores); with the hoist gone and two flag
 // stores 29h, left the byte-store schedule around the record's `rep movsd`. Retail does not hoist NONE: it reloads `or eax, -1` in the loop.
+// Y597: Current pointer/no-tail graph with whole source-header zero field subsets
+// 1/2/4/3/5/6/7, then contiguous header fill: 53/77/53/86/53/77/86/115.
+// NOT kept: no exact publication graph or gain; full original body and initializers restored.
 // P332: Named actual array endpoint, mutable/const pointer, strict/equality
 // termination and per-visit/outer input storage: eight 53 at 255 bytes; both
 // initializers stay exact. NOT kept: no gain; original body restored, identity
@@ -841,6 +846,8 @@ void function_1537f0(s_profile_record *record);
 // M393: Positive pointer do latch, strict then equality endpoint, per-visit/outer identity/source declaration pairs:
 // 53/53/53/53/53/53/53/53. NOT kept: nonexact lifetime/latch forms; identity homes still fold and native frame/end-bound remain.
 // Original complete body restored.
+// T57: Plain linkage-array reset, long/short/dword/word indices, forward then reverse
+// 66/66/66/66/62/62/62/62. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // Y597: Current pointer/no-tail graph with whole source-header zero field subsets
 // 1/2/4/3/5/6/7, then contiguous header fill: 53/77/53/86/53/77/86/115.
 // NOT kept: no exact publication graph or gain; full original body and initializers restored.
@@ -1396,6 +1403,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // stores, so none is kept. Upper in ECX still comes only from the stepped cursor.
 // The scaled index in its own local before a cast cursor 40h (same three-placement result), `from` and `to` from the index 404h (1203 bytes),
 // `to` as `&g[i] - 1` per pass 349h (1178 bytes). In the 40h forms the tail's head repairs rotate EAX/ECX as well.
+// N384: Actual returned insertion ordinal at entry/post-removal/immutable-bound/
+// completed-shift lifetimes, two result-role names: 378/377/377/66 twice. Original
+// mutable input/result and full body restored; count/upper/copy allocation remains.
 // M379: Per-iteration forward/reverse/both memcpy, then forward/reverse/both memmove,
 // then memcpy/memmove and memmove/memcpy: 49/49/49/386/371/333/371/386. NOT kept: ties/regressions;
 // original copies, direct head repairs and entire body restored; admission/upper homes remain.

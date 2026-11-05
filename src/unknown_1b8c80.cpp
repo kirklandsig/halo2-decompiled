@@ -385,6 +385,15 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // exclusive conditional/failure-first publication 11/11; exclusive bound with
 // seat_index/selected_seat/target_state names 11/11/11; complete direct tag
 // reads at every use 27. All at 541 bytes; original complete body restored.
+// MiniMax E (11-04, not kept, m3 review: the 8 -> 6 rests on a seat-count test
+// that repeats the loop's own bound, a redundant compare kept only with a byte
+// match; main's loop restored): with that test the count and the index occupy
+// ESI/EBP as retail and the loop test is cmp/jl; retail keeps the index's zero in
+// EBP for that test and for the selected pointer's NULL store, ours materialises
+// a second zero in EAX for both. The index declared before the test 6; the same
+// with the count in a local 11, the test as count != 0 6, a
+// while loop 6, a seats local 25, a pointer loop 139, the index inside the
+// loop 135, the test as i < count 11.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -1545,6 +1554,13 @@ void function_1f86a0(long actor_index);
 // AC527: Post-search reservation observation as bool/byte/short/long, native member/full-slot
 // payload pairs, eight at 134. NOT kept: one-use result residence unmatched; original types,
 // observation, raw mask, root short circuit and complete body restored; mask/entry homes remain.
+// AC547: Existing root/iterator/accept-decline/all ordinary-inline declaration
+// policies, native member payload first in each pair: eight at 134. NOT kept:
+// no frame/mask/entry recovery; original declarations, payload and body restored.
+// AC549: Selected handle absent throughout search, conditional/exhaustive/default
+// post-search producers, then conditional with direct fallback; native member/full-slot pairs:
+// 134/134/134/134/235/235/233/233. NOT kept: no frame/mask/entry recovery;
+// original handle lifetime, fallback, payload and complete body restored.
 // M3 lane 4 r164 (fast; aligned count in brackets, control 134 [84]): EBX holds the joint index after the loop in both builds, and in
 // the loop the byte mask (only BL can hold it across the calls) takes it where retail gives it to the entry. Positive predicate 134
 // [83]; the element looked up again through the entry in the predicate 254 (874 B), in the root compare 243 (862 B), in both 254; the
@@ -1557,6 +1573,9 @@ void function_1f86a0(long actor_index);
 // Diagnostics, reverted: one more read of the entry or the mask 263, 254 (mask keeps BL); a compiler barrier after the two root calls on the mask form 134, no mask 230 m26, volatile
 // mask 247 m17: that last gives retail's EBX entry with `mov ebx, eax` for the first root, so the difference is which byte value holds BL. 0xbaf40's memory summary as a cause is
 // untested, its file was held this round.
+// T58: Actual iterator aggregate/reference-tuple/value/library construction, native member/full-slot payload pairs:
+// 134/134/259/259/256/256/256/256. NOT kept: no eligible match or gain; complete original source restored.
+// Mask spill, EBX entry and actor/root homes remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

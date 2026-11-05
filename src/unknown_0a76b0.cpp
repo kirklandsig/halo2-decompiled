@@ -1175,6 +1175,8 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 }
 
 /* starts throwing a grenade (type 22) */
+// MiniMax H (11-04): no new form, no lower score (19); the earlier rounds' forms still leave the
+// three unit lookups data-first and the exit block with its own copy, so the body stands.
 // MiniMax E (11-01): 16 with the unit's ordinal masked once into a local and the table entry read
 // through it as a raw address cast (`*(s_unit_action_unit **)(g_4e0300->data + ordinal * 12 + 8)`) in all
 // three lookups, so they use retail's address operand order, and the result stored before the action's
@@ -1565,6 +1567,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // M395: Actual two-slot pointer scan, equality/ordered ends with long/short/char/int selected slots:
 // 103/103/204/204/187/187/103/103. NOT kept: no exact native-shape candidate; native early hand/table setup and second unit load remain.
 // Original complete body restored.
+// Y598: Actual late state/tag/selected-weapon lexical identities, seven subsets
+// and complete entry-uninitialized storage: 95/95/95/95/95/95/95/95. NOT kept:
+// no exact home repair; original body restored; early hand spill and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1729,6 +1734,9 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax H (11-04, run 33): no new form, no lower score (11); the permuter managed one try in
+// 326.9 s (best 11, baseline 11, no confirming build), and the entry block keeps the same eleven
+// instructions in another order.
 // MiniMax A (11-04): no new form, no lower score (11). What still differs: the entry block's
 // order. Retail loads the object-pool global, then the unit header, then the type argument,
 // computes the unit and the actions pointer, and only then does `cmp ecx, 8; sete bl`; ours
@@ -1873,6 +1881,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // M395: Six-interruption plain table cursors, automatic/static long/short/char/byte entries:
 // 326/331/311/311/273/274/271/271. NOT kept: no exact native-shape candidate; native pool-data reload and selected-weapon/mode homes remain.
 // Original complete body restored.
+// Y598: Complete paired tag-comparison inputs long/dword/int64/unsigned-int64,
+// producer then entry declarations: 138/138/138/138/138/138/138/138. NOT kept:
+// single-use field copies lack equality; original body restored; pool reload and weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2090,6 +2101,9 @@ done:
 // M395: Actual exchange/drop request layouts, mutable/readonly input, bool/byte flag, original/call-ended workspace:
 // 97/97/97/97/97/97/97/97. NOT kept: no exact native-shape candidate; native 0x20 frame, BL result and independent pool-data reads remain.
 // Original complete body restored.
+// AC548: Literal failure returns at admission/empty-weapon/rollback edges, subsets 1-7, then direct accepted return
+// 97/117/117/103/103/111/111/122. NOT kept: no qualifying supported gain or byte match.
+// Native frame/result byte, unit/weapon homes and pool reloads remain. Original complete body restored.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -4104,6 +4118,8 @@ bool __stdcall function_ec2d0(long unit_index, s_unit_request *request)
 
 void function_e5750(long unit_index);
 
+// MiniMax H (11-04): no new form, no lower score (52); the inlined callee is still the whole
+// difference and the noinline spelling is not allowed.
 // MiniMax A (11-04): no new form, no lower score (52). What still differs: our build inlines
 // function_e5750 here (95 bytes) where retail calls it out of line (67 bytes). The callee is in
 // this file and matches, as do its other callers 0xec9a0 and 0xe5930; only this call site differs.
@@ -4213,6 +4229,9 @@ extern vector3f *g_4687bc;
 /* a raised weapon's point (type 41 update): when its time is up, it
    shoves the target in front of the unit, with damage and an impact
    effect */
+// MiniMax H (11-04): no new form, no lower score (45); the first difference is the two-byte branch
+// offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
+// that callee's parameter order in another file.
 // score 45 (was 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
 // data and offset registers swap in its address add, and the 0x188180 call setup differs
 // (BLOCKED-BY 0x188180: ours takes the effect value in ecx and forward in edx; retail passes the point
@@ -5106,6 +5125,9 @@ void function_edfa0(long unit_index, point2f const *facing)
 }
 
 /* faces a unit along its aiming direction */
+// MiniMax H (11-04): no new form, no lower score (13); the y product still folds into the dying
+// inverse register. The compound assignment on the local, the two products in the other order and
+// the products through a pointer to the local all compile to the same folded multiply.
 // MiniMax E (11-01): no new form, no lower score; the same helper without the zeroed
 // length (26) and the symmetric operand order (13) keep the commuted multiply.
 // score 13 (was 24): retail stores x before it loads y (`movss xmm2, y; mulss xmm2, xmm0`); ours
@@ -5392,6 +5414,8 @@ long function_1039a0(long object_index, long tag_index, long effect_index, real 
 short first_person_weapon_animation_ticks(long weapon_index, long animation_name, short type);
 bool function_1058b0(long weapon_index, long state, bool force);
 
+// MiniMax H (11-04): no new form, no lower score (54); the difference is still inside the inlined
+// 0x1058b0, which lives in src/weapons.cpp and is not mine to edit.
 // MiniMax A (11-04): no new form, no lower score (54 reduced / 54 full; the full build no longer
 // adds the 12 bytes of the inlined 0xc9d00, so the earlier note's 70 is stale). What still differs:
 // the first difference is inside the inlined body of function_1058b0, which lives in

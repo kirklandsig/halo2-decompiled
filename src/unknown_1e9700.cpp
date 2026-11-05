@@ -399,6 +399,9 @@ struct s_object_damage_view
 // DH350: Both award-prefix searches own duplicate/unique outcomes,
 // bool/byte/short/long: 366/366/366/366/366/366/366/366. NOT kept: test-set outcomes need equality;
 // original ordinal searches, scalar homes and complete body restored.
+// J257: Completed selected/reported validation outcomes, bool subsets and byte/short/long pairs, pointers and direct credit results:
+// 353/353/353/353/353/353/353/425. NOT kept: seven validation forms tie 353; direct credit production grows to 1580 bytes at 425 and leaves scalar/history homes unresolved.
+// Original executable source restored; allocation gaps remain.
 // DH371: Actual engine/reported-source/selected-validation/fallback-validation/credit-hostility/
 // assist-admission/credit-pair/related-owner Boolean test results: 353 each.
 // NOT kept: no gain or equality; original validation, record observations and full body restored.

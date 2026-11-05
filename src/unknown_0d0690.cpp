@@ -2284,9 +2284,13 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // P326: Model luminance weights/normal magnitudes/final rescale declaration lifetimes,
 // subsets 1..7 at model entry, then all at function entry: 542 each. Every initializer
 // stayed at its producer. NOT kept: no gain; original body, status/mesh homes and helpers remain.
+// B448: Complete structure/model shading-path providers, query pointer/reference and forced/ordinary inline:
+// 880/880/1676/1676/805/805/3015/3015. NOT kept: no byte match; complete original body restored.
 // M379: Complete default normal/base/lightmap memmove transfers, subsets 1/2/4/3/5/6/7,
 // then all normal publications: 589/599/561/744/736/732/757/773. NOT kept: all regress;
 // original copies and body restored; status/mesh/sample homes and selective expansion remain.
+// P347: Actual twice-consumed dynamic-brightness result, bool/byte/short/long, positive/complementary truth:
+// 542/542/542/542/542/542/542/542. NOT kept: All eight tie 542 at native extent and frame; status/mesh homes and selective helper expansion remain. Original complete body restored.
 // M390: Double paired luminances/magnitudes/reciprocal scales, subsets 1/2/4/3/5/6/7,
 // then all with double final length: 726/658/640/708/663/648/676/697. NOT kept: nonexact precision
 // forms; original body restored, native status/mesh and output homes remain.
