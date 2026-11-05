@@ -745,6 +745,14 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // Round 75 (plain; --fast matches with a CAVEAT): the 0x1895f0 call cast to void 2; the perpendicular
 // distance computed before the along test 140 (660 bytes); the distance before the forward copy 2; the
 // position sums camera-first 2; the velocity before the forward normalize 41.
+// Round 210 (fast with 0x188180, whose 533-source image reproduces the plain 2): the sound call's result tested and
+// ignored (`!= 0 || true`) 2; `return result ? true : false` 170 (657 bytes); `return result` right after setting it
+// 175 (659 bytes); `goto` after setting it with a `result = false` fall-through 2; the camera lookup before the result
+// declaration 5. Retail scan: with an own epilogue and an esp frame `pop; mov al, 1; pop` is the rule (172 sites); `mov al,
+// 1` before two or more pops appears only where other paths jump into those pops, or in ebp frames. Images today: with
+// 0xfcdd0, 0x184440 (67 sources), 0x1201a0, 0xfd410 or 0x17bbd0 (57) it matches; with any member of the large call cycle
+// (0xfc330, 0x10c880, 0x17a8a0, 0x188180, 0xfcea0, 0x1765e0, 0x247470 ...; 533+ sources) the swap appears, so 0xfcdd0 and
+// 0x184440 no longer bring it. Direct calls of 0x1895f0: retail 10, ours the same 10 plus the stand-in.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

@@ -317,7 +317,7 @@ bool function_1af530(long actor_index, long *b, long *a)
 }
 
 static __forceinline long real_to_long(real value);
-short *function_e70b0(long unit_index, short *value);
+short *function_e70b0(short *value, long unit_index);
 
 // MiniMax G (11-04): no new form, no lower score; the actor index still takes ECX and the actor
 // data EDX, where retail keeps the index in EDX and the actor data in ECX, and the exchange
@@ -475,7 +475,7 @@ void __stdcall function_1afb30(long actor_index, s_slot *slot)
 	if (state->unknown16 && !state->unknown17 && state->unknown34 && actor_get(actor_index)->unknown504 == 2)
 	{
 		short action;
-		if (*function_e70b0(actor->unknown018, &action) != 7)
+		if (*function_e70b0(&action, actor->unknown018) != 7)
 		{
 			function_1f4f40(actor_index, &state->facing, state->unknown34, &state->point, true);
 			state->unknown17 = true;
