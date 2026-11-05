@@ -294,6 +294,13 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH352: Existing double-factor axis/cross/direction publishers, subsets 1/2/4/3/5/6/7,
 // then all with the double-factor launch publisher: 233/217/236/278/238/230/298/300. NOT kept:
 // no exact precision/API form; original helper, real products and full body restored.
+// Round 52 (m3 lane 2, fast; aligned count ignoring stack offsets in brackets, base 173 [154]; lead, not kept, scores rise): the rotation written in the
+// caller as matched 0x117dd0 writes it, not in a helper: sine and cosine, cross3f(vector, axis), projection, rows `axis * projection + vector * cosine
+// - cross * sine` 228 (1196 bytes, frame 0x11c) [125]; sine, cosine, projection, cross 222 (1209 bytes, frame 0x120) [123], with a named dot or
+// cross3f_staged same code; axis x vector added 222 (1209) [128]; a copy of the vector 210 (1220) [148]; scalar X.j/X.k with X.i in row i 231 (1209, frame
+// 0x114) [139], X.k/X.j 231 (1210) [121], all three scalars 231, cross before projection 228 twice [141]. Each view of the rotation or the whole arm in a
+// compiled-out `do { } while (false)` same code. Retail's frame 0x118 sits between the aggregate cross (0x11c, 0x120) and the scalar cross (0x114); retail
+// drops the zero k's register after the dot, then uses memory 0.0 and an `xorps`, ours keeps one register for it.
 // DH360: Existing native axis/direction/point-output coordinate-array contracts, seven subsets
 // and complete interfaces with immutable angle: eight at 173. NOT kept: unmatched interface casts;
 // original vector contracts, consumed-axis stages, ordinary pooled reads and full body restored.

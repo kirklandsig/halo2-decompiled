@@ -17,12 +17,14 @@ s_object *function_badc0(long object_index, dword mask);
 void function_3e5a0(vector3f *current, vector3f const *target, real step);
 void function_3e4e0(dword *current, dword const *target, real step);
 
+// score 21 (was 23): the tail's flag local is declared before the type local, so the zero
 // MiniMax G (11-04): no new form, no lower score: the object pointer and force flag keep their stack homes, and the object stays in eax.
 // 0x3dfe0 score 21 (was 23): the tail's flag local is declared before the type local, so the zero
 // score 21 (was 23): the tail's flag local is declared before the type local, so the zero
 // store comes before the NONE store as in retail; the object pointer and force flag still swap
 // stack homes (retail object 0x14 in ebx, force 0x10) and the object is loaded into eax instead of
 // ebx.
+// earlier, at 23 (was 23): the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
 // Earlier at 23: the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
 // force 0x10), update's false store sits after the force test, and special takes esi for edi.
 // update = false before force 218 (homes as retail, sample/update timestamps swap esi/edi);
@@ -65,6 +67,14 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // Round 137: the existing object getter for the initial, parent or both lookups 23 each; early update with the
 // immediate clamp 246 (816 bytes), with unsigned timestamp values or field references 218 each, with the initial
 // getter 218; the squared-length helper 34. Original body and declarations restored.
+// Round 149 (m3 lane 6, fast; aligned counts, masked = registers and stack offsets ignored): `bool update = false;` first in the block leaves
+// masked 13: retail's EBX reload in the force arm, object index in ESI with `mov edi, esi` at 0xd1850, and its reload on the skip path; the timestamps then swap
+// esi/edi. Tried: `if (!force && flag) return;` ahead of the update test 25 (aligned 16); update first with braced arms 216 (26); the flag test as the first arm 218
+// (33); named initialized read 218 (28); `char update` 218 (28); the clamp right after the zero return 246 (816 bytes); inline stale-cache helper 218 (28); sample
+// set in an if/else on the NONE test 168 (28); update_time and elapsed as two tests 218 (28); sample declared with the entry locals 253 (836 bytes); update
+// declared before force and assigned after it 21 (same code); update between update_elapsed and the object 216 (26); the object looked up again in the force arm
+// 156 (27: a home store in the arm, not a reload), on the kept order 226 (813 bytes); separate flag-test and later object pointers 216 / 21; sample as one ternary
+// chain 166 (26).
 // Y596: Complementary interpolation result, force-arm/direct producers in bool/byte/short/long:
 // 24/24/158/66/229/229/141/139. NOT kept: no equality; object/force spill homes and early update store remain; original whole body restored.
 // @retail 0x3dfe0

@@ -878,6 +878,11 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // orders of dx/dy/fraction/denominator, statement orders with a fraction default and every product operand order:
 // none below aligned 25; retail's x output copies the fraction and its y output multiplies dy in place, and no spelling
 // gives that split; `i = 0` before a guard folds the guard away, so the store stays after the `jle`.
+// Round 166 (m3 lane 4, one-file LTCG harness exact at 129; no source change): random search, 1500 forms over the loop
+// guard, fraction (default, if/else, zero arm first, ternary), clamp (ternary, if/else-if, in the nonzero arm), delta order,
+// dx or dy at their uses, x/y output operand orders, output order, denominator terms, fraction declaration, previous and
+// current side spellings, tail order and declaration order: no guard best 131 (887); `if (count > 0)` around the for
+// 95 (890), around a for with an outer index 98 (890); guarded do-while 102 (891), and 131 (887) where the guard folds.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
