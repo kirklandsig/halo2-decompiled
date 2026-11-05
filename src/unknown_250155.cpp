@@ -2718,6 +2718,10 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // Round 107: single-output helper returns text_a/text_b/bitmap_a/bitmap_b 95 each; first-loop
 // item/player/local declaration orders player-item-local, local-player-item, local-item-player and
 // item-local-player 95 each. All the same code; original helper and declarations restored.
+// Round 55 (m3 lane 15, fast): the spill slots form one list, +0x1c, +0xc, -0x10, -0xc, -0x14, -8; with the separate counters ours fills it text_a,
+// text_b, shown count, player/no_team, bitmap_a, bitmap_b and retail bitmap_b, text_a, text_b, shown count, player/no_team, bitmap_a, so retail has
+// bitmap_b one step ahead of all five. Tried on the plain body: the helper taking bitmap_b first 95; the second loop declaring bitmap_b first 95; that with
+// bitmap_a and text in reverse 95; bitmap_b stored first in every arm of the helper 177 (932 bytes); players[i] named once in the voice block 95 (same code).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

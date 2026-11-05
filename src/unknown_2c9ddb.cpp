@@ -166,6 +166,19 @@ extern long g_55c154;
 // scoped variant 174. Compile-only (/O1 /Oi /Gr): every two-arm shape (either order, nested, no else, a mode
 // variable with one 0x238c69 call, one copy, fewer constant-1 uses) hoists the constant 1 into EBX and moves
 // `this` out of EBX; the one-load body with a second load call or per-branch copies does not.
+// Round 55 (m3 lane 15, fast): cause of the two-arm flip found. `this` and the hoisted constants (1, then &g_54e4a0) must survive `rep movs`, so
+// they fight for EBX; retail hoists neither. One extra `this` read in the block after the NONE test (diagnostic only, `flag_c = true;` or a
+// user_flags read) gives `this` EBX, entry ESI, saved EDI, the 0x250 frame and retail's whole two-arm layout (173 with the probe, frame still
+// unbiased and &g_54e4a0 hoisted in EAX); the same read deeper, at the first half's top or the second half's, does nothing. Retail evidence
+// for `function_238c69(long controller, long mode, long type, word *name, long maximum_count)`: 0x2ba9f4 and this function load ECX after the
+// 0x216a50 call, as the sibling 0x238c21 declares it. That order keeps 0x238c69 and 0x2ba9f4 matched and gives retail's `push eax; push 7; mov eax,
+// [controller]` tail: one load 76 (574 bytes), two arms 167 (590), with a named destination and/or a named count (0x13fac0 out of line as retail) 183
+// (575) each, with the copy written through variant_bytes 183. Not kept (each rises above 61). Two arms: if/else instead of the first half's return 174;
+// `if (*item != NONE)` around the body 174, both 174; a failure call in each failing arm or in two (tail-merged) 174/174/174;
+// top test nested or as `!flag_a || !bit` or `selected == NONE || ...` with an empty arm 174 each; `memcpy` for the copies (the sibling 0x2c4e9c's form)
+// 174, one load 61; the bit test through a one-bit field with TEST_FIELD_BIT 174 (one load 61), bare in the `&&` 184. Diagnostics, not kept: dropping
+// either `saved` store 164-166, all shifts 160, all &g_54e4a0 uses 256 (`this` ESI, no spill). Next: why retail does not hoist &g_54e4a0.
+// Round 55, second pass: the id and variant stores through a same-file forceinline helper at all three sites, two arms 174; that with the 0x238c69 order and both named locals 183.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

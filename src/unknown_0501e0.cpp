@@ -367,6 +367,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // P333: Standard binary differences with one captured origin, seven producer subsets
 // then complete raw copy: 324/328/260/304/300/297/277/386. NOT kept: no match or gain; original helper/body restored.
 // Excluded standard-transform global-array arguments; uncredited and restored.
+// Round 56 (m3 lane 15, fast; one-link harness exact; masked = aligned diff with stack offsets and registers masked, 192 here): 0x142640's shape with staged rows 230 (1113 B,
+// masked 161); plain rows and the depth limits in the condition 260 (1113 B, masked 155); `vector3f scaled` copied by field and overwritten from the input under the test, loop rows,
+// offsets as three-statement rows 274 (1156 B, masked 121: retail's opening 32 instructions); scaled reals, loop rows, limits in the condition 292 (1176 B, masked 149); scaled by field,
+// plain rows, limits in the condition 260 (1113 B, masked 155). 214 harness forms of copy x scale arm x rows x depth x offsets: none below 206.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
