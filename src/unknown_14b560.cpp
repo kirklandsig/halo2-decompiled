@@ -1428,6 +1428,8 @@ static inline s_players_globals *players_globals_14f2e0()
 // short/long/const-short/const-long, without/with complete timers: 46/87/46/87/86/98/86/98.
 // NOT kept: no equality; original observations, timer stores and complete body restored.
 // NONE materialization and tail zero/flag scheduling remain.
+// P349: Complete representation/spawn/player/global same-size lexical home orders:
+// 46/46/46/46/46/46/46/46. NOT kept: no byte equality; original executable source restored.
 // AC548: Separate retained/spawned handles, mutable/immutable and entry/phase declaration, then complete timer clear
 // 46/46/46/46/43/43/43/43. NOT kept: no qualifying supported gain or byte match.
 // Native NONE producer and timer/flag schedule remain. Original complete body restored.
