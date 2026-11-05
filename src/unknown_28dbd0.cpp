@@ -324,6 +324,13 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // eight at 173/1209. NOT kept: no native frame/cross/trig-home recovery.
 // Original value-angle/vector-pointer producer, consumed-axis phases, ordinary
 // pooled reads, draws, request and complete body restored.
+// Round 66 (m3 lane 14, fast): the rotation helper in 0x146320's statement shape (sine, cosine, projection, scalar cross j/k,
+// cross i inline in row i), dot k/j/i, i/j/k and j/k/i, 231/231/231 (1192 bytes; register-masked aligned 46 against the
+// baseline's 63, but the colouring regresses); that body with the axis passed as three scalars and the sine/cosine from the
+// caller, named or as arguments, 240/240 (1193). Retail's outer cross reads each up-vector field into a register per product
+// (`movss xmm5, [u.k]; mulss xmm5, h.j`) where ours folds one operand from memory. The axis as up x heading with the helper's
+// cross taken vector x axis (the same values) 190 (1209 bytes: ours then loads each up field per product too, but in another
+// order), with the outer cross staged 233 (1199).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

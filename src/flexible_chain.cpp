@@ -518,6 +518,10 @@ void __stdcall function_1160c0(real dt)
 // if/else 297; inverse_dt declared once before the loop 181; the node pointer taken after the segment 279;
 // inverse_dt after the node and segment 171 (same code); `++node->ticks` before the stiffness 175. Retail builds the
 // segment address in EDX (the node offset's register) and keeps it at +0x14, ours borrows EDI and keeps it at +0x1c.
+// Round 66 (m3 lane 14, fast): the rotation in 0x146320's statement shape (dot k/j/i, named cross j and k, cross i inline in
+// row i, offset-first products) 171; with cross i named too 171; in 0x170d70's order (cross i, projection, cross j, k) 171;
+// the cosine complement named 171 (all same code); `segment = &segments[i]` then reassigned for the last node 284 (1358 bytes);
+// the fixed/time-step guard as two nested ifs 171; the node index declared ahead of its loop 171 (same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
