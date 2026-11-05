@@ -2105,9 +2105,13 @@ void function_269250(long clump_index, long actor_index)
 	g_4de2f8 = false;
 }
 
+// MiniMax H (11-04): the removed prop continues to the loop's completion test instead of repeating the
+// unit test, so the removal arm joins the latch: the frame, the flag homes and the length match retail now.
 // MiniMax B (11-03): no new form, no lower score; the two flag homes stay swapped (0x12/0x13) whatever
 // the order the flags are declared in.
-// score 89 (was 89): frame 0x24 agrees; category-byte homes and deletion completion differ. With the removed
+// score 4 (was 89): the length, the frame and the two flag homes agree; what differs is the hoisted pool
+// registers (ours carries the node pool in edi and the prop pool in ebp, retail the other way round) and
+// the removal arm's jump (ours to the prop loop's head, retail to the latch's unit test at 0x26b093).
 // prop cleared and tested (3) only the hoisted prop/node pool registers differ: retail loads the prop pool
 // first into edi, ours always loads the node pool first; an extra prop lookup (93) or an index node loop (76)
 // gives retail's registers but keeps the node-first load order.
@@ -2331,7 +2335,6 @@ void function_26ae30(long object_index)
 				else
 				{
 					function_26aaf0((s_clump *)group, props.index);
-					if (!unit) break;
 					continue;
 				}
 			}
