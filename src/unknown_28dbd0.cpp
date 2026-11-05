@@ -318,6 +318,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // eight at 173/1209. NOT kept: no native frame/cross/trig-home recovery.
 // Original value-angle/vector-pointer producer, consumed-axis phases, ordinary
 // pooled reads, draws, request and complete body restored.
+// AC553: Complete source-record initializer/readonly/assignment/memcpy before
+// or after request initialization: 330/330/330/330/335/335/335/335. NOT kept: copied
+// input grows the frame and loses caller 0x28dab0; complete original body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

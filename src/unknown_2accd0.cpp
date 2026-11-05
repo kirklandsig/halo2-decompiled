@@ -900,6 +900,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // subsets 1/2/4/3/5/6/7 and all complementary incompleteness: eight at 34.
 // NOT kept: no exact comparison-result form; original body, getter, API boundaries
 // and cleanup restored. Entry total and seek/size carriers remain.
+// AC553: Existing unsigned-total and real-denominator lexical identities, four
+// independent names each: 34/34/34/34/34/34/34/34. NOT kept: no native fresh-register
+// or size/seek allocation change; original scalar names and complete body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

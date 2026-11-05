@@ -281,6 +281,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // M381: Actual voice/buffer/submix API-output zero initialization, seven subsets, then
 // all with initialized status: 566/615/591/615/591/621/607/608 (fast control 532, full 545).
 // NOT kept: unsupported extra stores and regressions; original outputs, helpers and full body restored.
+// AC553: Existing integer-bit pin input-first/lower-default/upper-default/early-return
+// results, ordinary then forced expansion: 534/534/534/537/534/534/534/537 (fast control 532).
+// NOT kept: no native frame/register/math recovery; original helper and body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
