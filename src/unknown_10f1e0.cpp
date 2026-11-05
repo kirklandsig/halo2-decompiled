@@ -2215,6 +2215,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // N373: Ordered primary/secondary null-or-found screen producers, conditional/default/total-if forms
 // 830/775/835/830/775/835/835/835. NOT kept: at most one point; original full body restored.
 // Frame 0xcc/0xd4, entry computation and first-angle/overlay expansion remain.
+// DL265: Existing set/sample/play inline policy subsets, then aiming-sample inline:
+// 776/776/776/776/776/776/776/776. NOT kept: no qualifying provider contract; every provider/header restored.
+// Frame 0xcc/0xd4 and first-angle/overlay expansion remain.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

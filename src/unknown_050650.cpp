@@ -685,6 +685,9 @@ struct s_collision_result_buffer_1697c0
 // widened rounded-root/root-producer/reciprocal receivers 546/546/651;
 // float root/absolute with double reciprocal 651/651. NOT kept: five-point best
 // is below eight and length grows; double forms outline. Original helper/body restored.
+// DL265: Complete rotation value/const-value/receiver pointer/const-pointer/reference/const-reference/
+// output-pointer/output-reference protocols: 431/431/303/303/303/303/303/303. NOT kept: no exact native
+// transport; original shared producer and body restored; root/axis/result scratch homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

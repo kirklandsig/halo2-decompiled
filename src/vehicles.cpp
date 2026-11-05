@@ -4902,6 +4902,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P341: Getter-produced vehicle-record lvalues, mutable/read-only, native/immutable table records and
 // original/early pure table acquisition: 749/764/749/764/749/764/749/764. NOT kept: no native entry-
 // definition or zero/result/one residence; original entire body and pointer receivers restored.
+// DL265: Magnitude selector widened return, seven real-magnitude result graphs, then native
+// combined speed/turn first-limit MAX: 749/946/749/946/846/888/749/764. NOT kept: no eligible native result;
+// MAX regressed and shortened to 2958/2974; original helper/body restored.
+// Entry definition and zero/result/one homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
