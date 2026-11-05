@@ -1117,6 +1117,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // one store; a gain of 4, not kept), flying, direct, gravity, damping 415, others to 500. On it: input pointer after the flags 417 (entry exact, 3037 bytes), first arm's cross through
 // 0x1f087b 577, staged 573, up pointer 419, facing pointer 417; identity locals 1-7 415/490/584/574/493/493/491 (register-masked aligned 182/174/182/151/128/129/171 from 173); scaled before left 430;
 // step after limited 412 in the direct arm, 422 in the general arm; desired before magnitude 412; scale expression as the helper's argument 493. Base identity locals 416/496/593/583/502/499/492.
+// Round 91 (m3 lane 9, fast): the shared cross helper's products written with every operand pair swapped, only the
+// second of each pair swapped, only the first swapped 416/416/416 (same code everywhere: VC orders the product
+// operands itself; retail puts up.k ahead of facing.i/j where ours puts it after); the flags declared in retail's
+// computation order (damping, direct, gravity, flying) 427; the input pointer declared after the flags 421 (3037
+// bytes). The call sequence (eight 0x30bf0 calls, 0xa75d0, both `ret 8`) and the block layout agree with retail.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
