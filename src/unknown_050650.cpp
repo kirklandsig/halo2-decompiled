@@ -694,6 +694,10 @@ struct s_collision_result_buffer_1697c0
 // Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
 // results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
 // contract or gain; original magnitude return, all consumers and complete sampler restored.
+// DL270: Complete normalized-vector returns with pointer/value inputs, optional
+// real length/Boolean success outputs, ordinary/forced expansion:
+// 634/551/642/573/458/458/475/475. NOT kept: all regress and move length away;
+// four forms lose the matched caller (39/39/4/4). Original helper and sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -992,6 +996,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // AC553: Existing actor/object getters forced/private-inline/external-inline, eight
 // expansion/linkage pairs: 258 each (fast control 258; full 257). NOT kept: no
 // native allocation change; original getter contracts and complete body restored.
+// DL269: Shared post-dispatch origin selection and normalization, phase/entry/mutable
+// origin pointer or native origin workspace, success-owned then guarded publication:
+// 311/311/311/286/311/311/311/286 (fast control 258; full 257).
+// NOT kept: every form regresses and shortens the body; original decoder restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

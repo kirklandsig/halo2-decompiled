@@ -602,6 +602,12 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // 182/182/182/182/182/341/341/341. NOT kept: no qualifying supported improvement; complete
 // executable source restored. Entry/index spill and center/query/bound homes remain. Ordinary
 // inline also raises the other selector user 107 to 280.
+// DL268: Actual query type alignment/SIMD-backed scalar view, SIMD set/setr fills, then the four
+// with a separate persistent center: 182/182/236/237/191/191/236/237. NOT kept: ties or
+// nonnative frame/length regressions; original record, full body and shared selector restored.
+// DL270: Native common geometry field-address selection, mutable/readonly entry
+// pointer/reference and mutable/readonly field-location contracts, eight 222s.
+// NOT kept: target regresses and shared user 107 -> 137; original selector/body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

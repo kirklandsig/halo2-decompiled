@@ -3385,6 +3385,9 @@ struct s_voice_route_choice
 // read inside each headset arm 363 (branch 411, with the bit 422). On branch radio and the bit: a mode local, `mode << player`, pre-increment, the counter
 // declared apart, the comparison reversed 422 each (same code). That form has retail's frame and branches; its cursor bias (+4, retail +0x10) offsets
 // every displacement, and retail's first copy sinks the player bit into the headset arms with headset read from its stack home.
+// DL271: Typed native pair-array zero fills, forward range/count then reverse
+// range/count, bitwise radio 383/384/421/403; conditional radio 412/411/409/405.
+// NOT kept: no equality or gain; original routing, mixer initialization and full body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

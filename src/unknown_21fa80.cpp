@@ -289,6 +289,12 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // AC553: Existing integer-bit pin input-first/lower-default/upper-default/early-return
 // results, ordinary then forced expansion: 534/534/534/537/534/534/534/537 (fast control 532).
 // NOT kept: no native frame/register/math recovery; original helper and body restored.
+// DL269: Existing decibel value types at real-pin output, bit-pin output and linear input,
+// subsets 1..7: 532 each; all with native selected gain 546 (fast control 532, full 545).
+// NOT kept: no gain or exact match; original producer interfaces, frame and body restored.
+// DL271: Existing integer-clamp pointer/in-place/returned-pointer/reference outputs
+// 548/548/548/548; real-clamp output protocols 549/549/545/549 (control 545).
+// NOT kept: no equality or gain; original producer ownership, frame and body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

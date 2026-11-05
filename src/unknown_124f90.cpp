@@ -1396,6 +1396,9 @@ long function_2197f0(real gain);
 // AC554: Current native-entry reciprocal graph; reciprocal identities attack_scale/duration_inverse/
 // fade_inverse/phase_inverse and elapsed identities ambience_elapsed/elapsed_time/hold_elapsed/
 // transition_elapsed 94/94/94/94/94/94/94/94. NOT kept: no exact native allocation repair; original body restored.
+// DL267: Explicit copy constructor member/body/object-byte/member-byte publication, then reference/value-return assignment with scalar/overlap-safe byte publication: 280/280/179/179/94/190/94/190.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Standard minimum at simple/current attack caps and standard release interval, seven subsets then the alternate complete interval nesting; reciprocal/elapsed and first gain-load gaps remain. Scores 144/103/160/235/211/213/189/189.
 // @retail 0x127010
 long function_127010(short class_index)
 {

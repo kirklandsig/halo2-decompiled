@@ -361,6 +361,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // AC552: Existing allocator private linkage/failure-first admission/ordinary inline, subsets
 // 1/2/4/3/5/6/7: 866/864/866/864/866/864/864; allocated-or-NONE initializer 870.
 // NOT kept: two-point best only; original allocator and whole body restored. Entry zero and native homes remain.
+// DL270: Existing datum getter readonly-pool/pool-reference/datum-reference
+// contracts, seven subsets then forced complete graph: eight 866s. Natural
+// first-pool while scan 909 (3265 bytes). NOT kept: ties or shorter nonnative
+// extent; original getter, all callers, both scans and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

@@ -374,6 +374,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // 169. Re-measured listed forms (scores agree): single-exit normalizer 171, with the XY vector before the second copy 169,
 // zeros chained 179 / 172. On 169 the roots and the inlined 0x11cc90's acos result sit at +0x10 with local_11 where retail
 // packs them at +0xc with the acos argument and the yaw; first root and scaled X in XMM6/XMM5 (retail XMM3/XMM6). Restored.
+// DL268: Rotation sinf/cosf/pair, normalizer fabsf/sqrtf/both, all native float APIs,
+// then all with one numeric normalizer exit: 179/179/177/263/263/176/177/172.
+// NOT kept: four-point best gain is below the eight-point gate; unity changes but root/yaw
+// and rotation homes still differ. Original helpers, alias-safe inputs/stores and full body restored.
+// DL272: Standard native ranges at final output, failed-normalization restore and facing fallback, seven subsets then backward transfers; unity/root/yaw homes remain. Scores 464/450/471/514/460/512/515/512.
+// NOT kept: all forms regress and seven lose matched sibling 0x29b990; original executable source restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

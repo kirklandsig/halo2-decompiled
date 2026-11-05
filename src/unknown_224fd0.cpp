@@ -271,6 +271,13 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // AC553: Complete native diagonal-result/cosine-product vectors, initialized,
 // readonly, shared-setter or field-produced: 373/373/411/373/398/398/406/398. NOT kept:
 // grouped outputs do not match; original helper and complete body restored.
+// DL269: Native real/double sine-cosine API pairs: 491/491/204/204/204/219/495/495.
+// The 204 forms have 196 executable differences versus 198; thirteen more points are
+// table/padding rows. NOT kept: cast-only and coupled API steering; original producers restored.
+// DL271: Existing vector scaler on native diagonal complements, direct/shared setter
+// and in-place/distinct product outputs: 455/455/436/436; shared complete sums
+// 441/441/385/385. NOT kept: no equality; native frame/product spills not recovered.
+// Original producer, all output stores and complete body restored.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
