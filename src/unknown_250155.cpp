@@ -2592,6 +2592,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax A (11-05): the four widget indices at function scope with the last loop's inline switch score 89 (was 95), but the gain is under eight, so the original body stands.
 // MiniMax A (11-04): the four widget-index shorts' declaration order (seven orders) 95 each; the players[i] address kept in a local (function scope and loop scope) 95 each; no lower score.
 // MiniMax I (11-01): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score: the locals' homes and the players[i] reload after the voice-state query stay as they are.

@@ -2160,6 +2160,8 @@ bool function_1e11b0(long actor_index, bool active);
 // without the current store 72/72 (216 B); address read at the +0x34 store 13; flag before stamp 15; both calls in the
 // depth pair 13; dead read of next or current, a named copy of next (diagnostics) 13 each; squad assigned apart from its
 // declaration, iterator at function scope, address local late or const, dword parameter 13 each. Rank never moves the swap.
+// MiniMax C (11-05): no new form, no lower score: the squad and loop index still swap roles here, the
+// argument is still not materialised in a register and the return is still narrowed to a byte.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2362,6 +2364,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 
 // score 157 (was 275): 1118 bytes against 1122, aligned 4. Left: frame 0x44 against 0x54 (point packs with the area
 // iterator) and the intersection's store with no read. Earlier scores in this note are on the older body.
+// MiniMax R (11-05): no new form, no lower score; retail's frame is 0x54 with the elapsed conversion before
+// the pushes and its clusters/elapsed/structure at +0x04/+0x08/+0x0c, ours 0x48 with them at +0x14/+0x18.
+// score 275 (was 275): Frame 0x48 versus 0x54, early saved-register pushes, iterator/point homes and intersection spill remain.
 // Round 73: retail keeps the squad walk's pool pointer in memory (reloaded each pass), ours in EBX,
 // which forces the pushes first. Walk as `while ((squad = step) != NULL)` 319; long squad index 275;
 // flags at +2 read as a word, plain/(dword) cast 294/294 (retail's xor/mov bx load; aligned diff
@@ -2872,6 +2877,8 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// MiniMax C (11-05): no new form, no lower score: the first call still reloads the squad index from its stack
+// home where retail keeps it in EBP.
 // score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
 // squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
 // which shifts the later jump targets and drops the actor loop's alignment nop.
@@ -3302,6 +3309,8 @@ long function_203780(long arg_0, short arg_1, short arg_2, bool arg_3);
 long function_201010(long arg_0, short arg_1, short arg_2, short *arg_3);
 void function_2011f0(long arg_0);
 
+// MiniMax R (11-05): no new form, no lower score; retail reads the index and the 0x98 stride before the pushes and
+// keeps the squad pointer in its own slot, ours sinks that load into the definition test (a named squad pointer 403).
 // score 318 (was 318): 1332 bytes against 1328. Left: the squad index is kept as a zero-extended word in EBP
 // and passed masked to the calls where retail keeps the third parameter in EBP, masks the index with AND,
 // keeps the squad address and the 0x98 offset in their own slots and passes the index unmasked; the frame
