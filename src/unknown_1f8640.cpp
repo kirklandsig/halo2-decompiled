@@ -648,6 +648,9 @@ struct s_1f8a70_actor
 // M381: Independent outer byte/short/long/dword completion after terminal stores/cleanup,
 // route-result copies then branch facts: 435/429/432/432/435/429/432/432. NOT kept: result-home
 // diagnostics regress; original outer/inner results, native-word selector and full body restored.
+// DL273: Outer completion at directed/reference/path call producers, seven subsets and
+// all with existing false producers: eight 188s. NOT kept: no byte match; original
+// two-result body restored. Unit/result homes, dispatch and late memory result remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

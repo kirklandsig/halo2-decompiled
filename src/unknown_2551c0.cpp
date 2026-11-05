@@ -703,6 +703,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // T58: Complete readiness partitions 1/2/4/3/5/6/7 and sole-exit entry rejection without a unit snapshot:
 // 89/89/89/89/89/89/89/89. NOT kept: no eligible match or gain; complete original source restored.
 // Unit-call scratch register and first-length/projection/query homes remain.
+// DL273: Default side completion at entry/admission/heading/probe phases, short then long:
+// 214/208/205/169/245/239/235/202. NOT kept: nonexact result storage and lifetimes;
+// original default arms and full body restored; unit-call/scalar/query homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

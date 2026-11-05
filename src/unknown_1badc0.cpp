@@ -370,6 +370,9 @@ real normalize2d(point2f *arg_0);
 // center difference unnamed at both dots 229 (1022 B); block-top declaration orders 174-197; early masked index 25; copy helper
 // 15, memcpy 15, pointer local 21, scalar copies 245/256, statement orders 51-85. No written-out rows (existing helpers only)
 // 177 at best (1031 B). Identity pointer chains of 1..7 locals 25/187 each. The rows and helpers stay match-only: body restored.
+// DL273: Shared planar cross products at both side tests and dot projection, seven
+// boundary subsets then squared dot: 248/184/249/248/231/249/231/231. NOT kept:
+// no byte match; native object-mask/copy/SSE and query-success schedules remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
