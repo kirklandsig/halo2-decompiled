@@ -273,6 +273,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // side width, response reciprocal, complete residuals and correction distance: eight at
 // 804/3499, frame 0x8c. Original input storage and body restored; early input/object/
 // heading retention and normalizer memory products remain.
+// Round 52 (m3 lane 2, fast; lead, not kept, score rises): retail's 0x29b2e0 reads its first vector from EBX and retail's EBX at this
+// function's call is the +0x290 pointer, so the call is (arg_0, arg_1, local_4, &local_5, local_24, &local_5), not &local_5 first. That
+// corrected call alone 848 (3464 bytes). The same correction on 0x29ab90 (with its tail rewritten around it) took that function 345 -> 267.
 // B433: Library transfers at history/working-direction/pre-blend copies, seven subsets,
 // then all with the initial heading: eight at 804 on direct input. NOT kept: frame
 // grows to 0x8c despite retail length; original transfers, input storage and body restored.
