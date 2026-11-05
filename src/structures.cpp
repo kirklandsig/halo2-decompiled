@@ -867,6 +867,8 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // vertex-node declaration before the array 4; index declaration after the vertex ordinal 6; counter
 // preincrement in that context 6; exact-count exit 7; direct success return 335 (822). Original body restored;
 // the four triangle-test argument registers remain BLOCKED-BY 0x11e800.
+// Round 210 (fast, diagnostic, reverted): 0x11e800 declared (p, a, b, c, u, v) still gives 0 (0x11e800 126, 0x14ac60
+// 172); all four differences are its argument registers. BLOCKED-BY 0x11e800 (contributor).
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)

@@ -415,6 +415,9 @@ void c_class_2c9e69::select_last_variant()
 // name buffer before that receiver 13; with returned-name local 17; plain renamed original receiver 36 (154). Restored by
 // the round; the coordinator kept the name-arm base receiver with direct empty text (13 at 159 bytes; any gain at 30 or
 // below is kept, whatever the length).
+// Round 61 (fast): the name arm through an inline helper taking the text 96 (120 bytes, stays out of line), through a forceinline
+// helper 36 (154 bytes), both arms through forceinline helpers 36; the variant named once with a nested `else { if (text) }` 43 (150 bytes);
+// the interface result named 36; a name pointer local 36; name-arm copy only re-measured 13 (159 bytes). Existing 0x253af2 adds a compare retail lacks here.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {

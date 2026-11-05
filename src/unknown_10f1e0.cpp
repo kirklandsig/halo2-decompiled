@@ -1534,6 +1534,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // at entry/controlled scope: 347/347/347/347/344/344/344/344. NOT kept: all regress
 // and lengthen to 1300/1299 versus 1286; original lookup observations and body restored.
 // Native pool/displacement ownership, SETLE/default homes and byte normalization remain.
+// P345: Joint false-default chain, success/depletion/interruptibility-owned defaults,
+// byte then bool success: 164/165/165/164/194/193/195/194. NOT kept: no byte match;
+// original complete body restored; pool/displacement, SETLE/default homes and normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1798,6 +1801,9 @@ bool __stdcall function_110ab0(long unit_index)
 // P327: Complete base/depletion/overlay true-false result producers, masks 1/2/4/3/5/6/7,
 // then all with result at entry: 465/430/450/465/465/430/465/465. NOT kept: 430
 // still has 424 code differences; only table/extent improves. Original full body restored.
+// DH372: First/second held-query presence bool/byte/short/long: 450 each.
+// NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
+// Original body and queries restored; state/request/result homes remain.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2215,6 +2221,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // N373: Ordered primary/secondary null-or-found screen producers, conditional/default/total-if forms
 // 830/775/835/830/775/835/835/835. NOT kept: at most one point; original full body restored.
 // Frame 0xcc/0xd4, entry computation and first-angle/overlay expansion remain.
+// Y597: Complete common primary sampling weights, both-first/single-first producers,
+// sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
+// NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -2846,6 +2855,9 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
+// score 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
+// pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
+// costs both callers in other lanes' files.
 // score 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // (663) costs both callers in other lanes' files.
@@ -3270,7 +3282,7 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
     return active;
 }
 
-short *function_e70b0(long unit_index, short *value);
+short *function_e70b0(short *value, long unit_index);
 bool function_e4050(long object_index);
 const long g_4408f8[8] = { NONE, 0, 1, 2, 2, NONE, NONE, 3 };
 const long g_440918[8] = { NONE, NONE, 0x600008c, 0xc000043, 0xc000043, 0xd000042, 0xc000043, 0xc000043 };
@@ -3442,7 +3454,7 @@ bool function_10ff40(long unit_index, long type, short side, short value,
                 force_overlay = true;
             else
             {
-                if (*function_e70b0(unit_index, &action) != 0 ||
+                if (*function_e70b0(&action, unit_index) != 0 ||
                     (*((byte *)g_4e0300->data + (unit_index & 0xffff) * 12 + 3) == 0 && function_e4050(unit_index)))
                     force_overlay = true;
             }
