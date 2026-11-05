@@ -134,28 +134,42 @@ static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 c
 static __forceinline void apply_circular_linear(float impulse, solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b, float *result)
 {
-	// SSE consumes a rounded float while result accumulation retains the x87
-	// value. Passing the impulse by reference would round both paths early.
+	// Reuse each working vector after its previous contribution is consumed.
+	__m128 work[5];
+	work[2] = a->inverse_inertia;
+	// SIMD consumes a rounded float; accumulation retains the x87 impulse.
 	float rounded_impulse;
 	float volatile &store = rounded_impulse;
 	store = impulse;
-	__m128 scalar = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
-	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
-	a->linear = _mm_add_ps(a->linear, linear_a);
-	b->linear = _mm_sub_ps(b->linear, linear_b);
-	// Reload the axes after both linear writes, then form both contributions
-	// before either angular write. Row storage may overlap the body fields.
-	// The circular pair retains both angular contributions before either write.
-	__m128 angular[2] =
-	{
-		_mm_mul_ps(change_a, row->a),
-		_mm_mul_ps(change_b, row->b)
-	};
-	a->angular = _mm_add_ps(a->angular, angular[0]);
-	b->angular = _mm_add_ps(b->angular, angular[1]);
+	work[4] = row->linear;
+	work[1] = _mm_load_ss(&rounded_impulse);
+	work[0] = _mm_shuffle_ps(work[1], work[1], 0);
+	work[0] = _mm_mul_ps(work[0], work[2]);
+	work[2] = b->inverse_inertia;
+	work[1] = _mm_shuffle_ps(work[1], work[1], 0);
+	work[1] = _mm_mul_ps(work[1], work[2]);
+	work[2] = _mm_shuffle_ps(work[0], work[0], 0xff);
+	work[2] = _mm_mul_ps(work[2], work[4]);
+	work[3] = _mm_shuffle_ps(work[1], work[1], 0xff);
+	work[3] = _mm_mul_ps(work[3], work[4]);
+	work[4] = a->linear;
+	work[4] = _mm_add_ps(work[4], work[2]);
+	a->linear = work[4];
+	work[2] = b->linear;
+	work[2] = _mm_sub_ps(work[2], work[3]);
+	b->linear = work[2];
+	// Row storage may overlap either body. Reload both angular axes after
+	// the linear writes, and form both contributions before the angular writes.
+	work[2] = row->a;
+	work[0] = _mm_mul_ps(work[0], work[2]);
+	work[2] = row->b;
+	work[1] = _mm_mul_ps(work[1], work[2]);
+	work[2] = a->angular;
+	work[2] = _mm_add_ps(work[2], work[0]);
+	a->angular = work[2];
+	work[0] = b->angular;
+	work[0] = _mm_add_ps(work[0], work[1]);
+	b->angular = work[0];
 	*result += impulse;
 }
 
