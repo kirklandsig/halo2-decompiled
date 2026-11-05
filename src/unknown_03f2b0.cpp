@@ -739,10 +739,10 @@ void *function_44940(short index, bool instance)
 	return *(byte **)(structure + 0x13c) + definition_index * 0xc8;
 }
 
-__declspec(noinline) void *function_449e0(short index, bool load, bool instance);
+__declspec(noinline) void *function_449e0(short index, bool instance, bool load);
 
 // @retail 0x449e0
-void *function_449e0(short index, bool load, bool instance)
+void *function_449e0(short index, bool instance, bool load)
 {
 	bool const *instance_reference = &instance;
 	s_44940_entry *entry = &g_4ba138[index];
@@ -1152,6 +1152,14 @@ long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
 void function_4ff50(byte const *definition, byte const *state, bool facing, real time, real cosine, real *strength, real *horizontal, real *vertical, real *out);
 
 
+/* the permutation of each of a model's regions, as 0x3e420 chooses them */
+struct s_model_permutations
+{
+    signed char indices[16];
+
+    long function_3e380(long model_index, byte lod, transform4x3f const *nodes, long *node_count, long extra_bytes);
+};
+
 struct s_137801;
 long function_137650(long model_index, long lod, byte const *permutations);
 void function_137800(long object_index, long model_index, transform4x3f const *nodes,
@@ -1181,36 +1189,20 @@ static inline long render_memory_allocate(long bytes)
     return result;
 }
 
-// score 1 (was 1): the permutation pointer arrives in eax, retail passes it in ecx; the register is fixed by the caller function_4c690, which is not retail's yet
-// frame pointer 27; alias analysis off 1; global expressions off 62; inline depths one/zero 1/89; native result/count 1/1; input role names 1;
-// the permutations last or first (old order kept for the caller by a forwarding overload) 1/1; a const member of a 16-byte permutation type 1;
-// extra_bytes read once through its address 1; (void)&node_count 1; the node-count callee's parameters
-// reordered (permutations first, both callers) 1; the count read back through node_count 1; the output
-// pointer as a conditional argument 27; the byte count as a conditional expression 54; bytes declared
-// before the count call 15. Every parameter position, __stdcall/__cdecl and flag set keeps eax.
-// Round 10: model index and lod address-taken 1; node count and extra bytes address-taken 1; the count read
-// back through node_count 1; the output pointer as a conditional expression 27; bytes assigned in an else 54.
-// One-file LTCG probe (this file + 0x137650/0x137800's files): an entry calling this function directly
-// also gets eax, so the caller does not fix it; unused extra parameters are dropped and every position of
-// the permutations still gets eax.
-// Round 63: const count 1; const result 1; permutation-array and node-array declarators 1/1;
-// sizeof(transform4x3f) in the size product 10; const extra_bytes 1; inline/forceinline target 1/1.
-// Round 71 (one-file LTCG harness): the permutations take ECX exactly when another parameter takes EAX: an
-// early test of node_count or lod, a shift by lod, a division of extra_bytes, `long level = lod & 0xff` (each
-// leaves the stack, ret 0x10 or 0xc). Still eax: local copies of lod, permutations and the model index;
-// result, out, count or bytes declared first; NONE and false locals; a seventh parameter unused, read into a
-// dead local, under if (false), or passed to an empty or identity function in another file; existing
-// parameters passed to the empty function; the allocator out of line in another file; a long or short lod
-// with byte casts at both uses or one. Without the second call the three arrive in eax, edx and ebx directly.
-// Fast: a lod local 1; a permutations local 1; result declared first 1; a false local 1; bytes declared first 15 (157 bytes);
-// out declared first 28 (158 bytes).
-// Round 79 (fast): a dword extra_bytes 1; a dword model index 1; dword bytes 1; a named total 1; the count read back through
-// *node_count 1; the output test as `result >= 0` 2 (jl for js).
-// @retail 0x3e380
-long function_3e380(long model_index, byte lod, transform4x3f const *nodes,
-    byte const *permutations, long *node_count, long extra_bytes)
+/* "standard": retail's 0x3e380 is a plain thiscall: this in ecx, five stack arguments, `ret 0x14`.
+   1. The body matches byte for byte only with this convention; without the marker LTCG moves this to
+      eax (`mov ebx, eax`, one difference).
+   2. Retail holds no reference to its address (the address appears as a dword in no section). Its only
+      caller, 0x4c690, is LTCG code that pushes the five arguments and loads this into ecx.
+   3. Tried without the marker, all still eax: the pointer as a parameter in each of the six positions,
+      with the default convention, __stdcall and __cdecl; parameters read through their addresses; a
+      result, count, bytes or output local declared first; the callee's parameters reordered; other
+      parameter types; other flag sets (/Ob1, /Oy-, without /Gr). The pointer leaves eax only when
+      another parameter takes eax, which changes `ret 0x14`. */
+// @retail 0x3e380 standard
+long s_model_permutations::function_3e380(long model_index, byte lod, transform4x3f const *nodes, long *node_count, long extra_bytes)
 {
-    long count = function_137650(model_index, lod, permutations);
+    long count = function_137650(model_index, lod, (byte const *)indices);
     *node_count = count;
     long bytes = 0;
     if (count > 0)
@@ -1221,7 +1213,7 @@ long function_3e380(long model_index, byte lod, transform4x3f const *nodes,
         s_137801 *out = NULL;
         if ((result & 0x80000000) == 0)
             out = (s_137801 *)(g_487b18.data + (result & 0x0fffffff));
-        function_137800(NONE, model_index, nodes, permutations, lod, false, out);
+        function_137800(NONE, model_index, nodes, (byte const *)indices, lod, false, out);
     }
     return result;
 }

@@ -451,6 +451,13 @@ void function_14bac0()
 // N365: Complete real scenario-table/marker/origin field layouts, seven nonempty
 // subsets 222 each; all with native result-tested recipients 228. Original external
 // views and full body restored; NOT kept: unmatched layout/alias ownership.
+// Round 212 (m3 lane 3, fast; aligned/masked in brackets, kept form [122/60]): the scoped form re-measured 259 (1048, frame 0x48) [103/40];
+// on it 0x6b380 reading its iterator through the parameter's address 254 (1064, frame 0x40, the one form that packs the second iterator
+// nearer, but 0x6b380 itself 47); 0x6b380 through the existing set_current helper 259, 0x6b380 34; the second iterator, both iterators or
+// the first set up through an inline helper 259/259/259; the second iterator declared with the block's points 259. Frame stays 0x48.
+// Round 212, later: retail's final loop has one index in EAX, `inc eax; js`, and the found block after the ret, which an early-return scan
+// (`return index` in the loop, `return NONE` at the end) gives where the shared single-exit helper does not; on the kept body in a new inline
+// helper 280 (1015) [146/67], on the scoped form 267 (1027) [138/61]: the tail is retail's, the length falls and the score rises. Not kept.
 // N375: Entry request admission in positive/complementary bool/byte/short/long
 // storage, eight forms 222 each. NOT kept: no frame/home or byte-match gain; original
 // request, point/iterator/readiness graph and complete executable body restored.

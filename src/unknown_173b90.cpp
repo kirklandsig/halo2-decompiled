@@ -702,6 +702,20 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // B446: Shared complete emitter/particle property evaluator, free/member provider,
 // color/scale pointer/reference outputs: 77/77/77/77/77/77/77/77. NOT kept: no exact result;
 // original complete body, types and helpers restored. Offset/default/reload and row-i schedules remain.
+// M3 lane 8 r135 (fast and a compile-only screen of about 3300 forms; aligned in brackets, base 42 [38]): row order follows
+// one global tuple phase (period 4; extra products in any row or at the callback only shift it) and the rotate helper's
+// symbol numbering, which earlier forms never moved: a scratch copy taking (vector, matrix, out) or (out, vector, matrix)
+// gives odd row i states 45 [45]; with a `result` local for out in the helper 40 [36], scale first 38 [34]. On indexed
+// definitions with scale first (113, every integer difference fixed): helper (vector, matrix, out) with `result` and a
+// `matrix` local 39 [33] at 1130 bytes, no chain, only product forms left; with `result` alone and a diagnostic 4-deep
+// no-op chain 31 [26], the sums retail's and only row i F*x and row j L*y copy-first in both rotations (`movaps t, x; mulss
+// t, [m]` for `movss t, [m]; mulss t, x`); that helper with the mask read at each use has `yxz xzy zxy`, retail's rows, in
+// both rotations but the homes turn over 229-231 (retail keeps the mask's slot). In the 31 state: row term orders (216)
+// identical, 256 named-term subsets 13-26 block differences against 13, operand swaps identical, helper shapes
+// (unconditional copy, block-scoped copy, source pointer, in/matrix locals, dummy parameters) and six parameter orders no
+// better. Index spellings (typed sum, dword, ++, += 1) identical; declaration moves and the particle mask inline identical.
+// Named input components x, y, z in every subset, order and phase (336 forms) no better than 13 block differences.
+// Left for a match: all products load-first in the retail phase. A new one-caller helper is match-only: body unchanged.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1233,6 +1247,21 @@ public:
 // 178, with normalize_inline 184, with the spawn location stored first 177, plus the position copy before the 1.0
 // scale 177; the matrix before the child loop with the location first 177; parent colour local on that 253 (1367);
 // on the 177 form: spawn dt stored before the scale 179, the fallback cross through cross3f_staged 177.
+// Round 212 (m3 lane 3; aligned in brackets, base 184 [59]): the fallback through existing helpers only (vector3f_scale,
+// normalize3d, 0x11d000, which LTCG does inline there, cross3f) 286 (1327) [68]: retail's x, y, z magnitudes and xmm
+// registers appear, but j and k both hoist and the sum runs k, j, i. Retail hoists j alone and sums j, i, k, which needs
+// matrix.forward.k named directly by a read anywhere in the body (position does not matter; i, j, up.k, left.k, scale or
+// position.z instead do not do it; __noop and sizeof do not). On the helpers, with such a read: 110 (1355) [22]; parent
+// colour in a local after the position copy 43 (1358) [19]; the tag read through a named child definition 18 (1355) [12];
+// the matrix declared at the loop-body top 9 [2]; the position copy ahead of the 1.0 scale store: MATCH in the plain
+// check (0x175270, 0x248750 stay matched). Not kept: the read is `(void)matrix.forward.k;`, a redundant statement, and
+// no real statement reads that field alone; hand-written perpendicular with z direct and the rest through a pointer 179
+// (1357) [50], with only j through the pointer 260 (1359) [17]; the same forms without the read 279 (1332) [49]. On the
+// current body: matrix at the loop-body top with the position copy first 178, plus location first 177, plus the named
+// child definition 166 (one-use local, not kept), the colour local on these 253 (1367). Also tried: orientation in a static
+// inline helper 1026 (not inlined), forceinline 357 (1259); 0x30bf0 in the fallback stays a call whatever the nesting 326
+// (1253); `inline` on 0x11d000 326; capture of the matrix parameter in 0x175270 no change (175270 2); an empty join at
+// five places around the spawn statements, helpers for the matrix finish or the spawn fill, spawn scale spellings 18 each.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1796,6 +1825,22 @@ bool function_17afd0(long effect_index, long value);
 // M381: View-validity-produced availability then unavailability, bool/byte/short/long
 // on the recovered owner-arm graph: 124/124/146/143/121/121/152/149. NOT kept: all regress;
 // original query gates, view snapshot, Boolean homes and complete body restored.
+// DH371: Partial owner-equality/attachment/camera-admission/camera-test/rejection/view-guard/
+// owner-validity/location-admission Boolean results: 47 each on the recovered owner-arm graph.
+// NOT kept: no match or gain; original snapshots, query gates and complete body restored.
+// Native availability clearing/branch production and later current-view observation remain.
+// M3 lane 8 r135 (fast; the view read from the global at each use, availability false late and set on success, aligned
+// count in brackets; plain form 138 [70]): one real use of effect_index right before the availability or right before
+// attached (diagnostic, removed) gives retail's whole allocation, 104 [1], the store itself the only difference; it counts
+// only there (after attached, in an arm or before the view read 134-142). Empty tests, `(void)`, `__assume`, an unused
+// bool, inline helpers or copies for availability/attached, `x * 1` no-ops, separate definition lookups, a named absolute
+// index, declaration orders: 138 [70], removed before allocation. Same view true at the arm's top and cleared on the
+// failed test 25 [2], placed just before the availability 12 [2] (only the true store's place differs), after the
+// availability 141; false at the arm's top with a nested set 28 [4]. Attached written in both same-view arms (true: effect
+// test and call; false: available test, effect test and call) 17 [8] at 498 bytes: retail's allocation with no early
+// store, only the arm layout left (retail's first arm jumps into the second's copy), the condition inverted 17; with direct
+// availability 120, with a view local 27 [5] (494 bytes); `attached = same_view ? short : full` or an if/else on same_view
+// 91 [2] (500 bytes: `je; mov; jmp` for retail's `mov; jne`). All need the flag form, so match-only: body kept at 47.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

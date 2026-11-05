@@ -301,6 +301,14 @@ bool g_47f05b;
 // F377: Direct exhaustive constructor stores, terminal/zero-first arms and long/int/short/
 // signed-char ordinals: 34/34/34/34/43/54/43/54. NOT kept: narrow forms worsen other
 // constructor users; shared header and full body restored; base-vtable/arm reload remain.
+// N384: Actual fixed/pool placement admission in bool/byte/short/long: eight 34.
+// NOT kept: unmatched admission carriers; original complete body restored. Shared
+// constructors untouched; intermediate vtable store and successful-arm reload remain.
+// Lane 4 r166 (held, coordinator): MATCH only with a second c_havok_fixed_memory_base constructor taking the size alone
+// (buffer = this + 1, the same stores as the (buffer, size) one) that ends in _ReadWriteBarrier(), plus __declspec(novtable)
+// on the base: a same-behaviour constructor twin for this one caller carrying a barrier steer, not kept (twin ruling, as
+// 0x45560 in lane 4 r165). Retail keeps the base's abstract vtable store only in this construction (not 0x146b80 or 0x146e30).
+// build/held/lane4-r166-146a20-ctor-twin.patch is the whole change, a lead toward the match.
 // @retail 0x146a20
 void function_146a20(void)
 {

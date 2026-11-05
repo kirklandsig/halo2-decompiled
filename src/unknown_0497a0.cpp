@@ -1099,8 +1099,8 @@ struct D3DTexture;
 struct s_bitmap_view;
 D3DTexture *function_12360(s_bitmap_view *bitmap, real priority);
 void function_52d40(long bitmap_index, byte *shader, long tag, dword flags);
-bool function_1e5e0(long size, point3f const *position, long a, long b, long c,
-    long d, long e, long f, long g, void const *data);
+bool function_1e5e0(long size, long a, long b, long c,
+    long d, long e, long f, long g, void const *data, point3f const *position);
 
 struct s_43740_input
 {
@@ -1115,6 +1115,7 @@ void __stdcall function_43720(s_43740_input *input)
     function_52d40(input->bitmap, input->vertices.shader, input->tag, false);
 }
 
+/* queues one slot of a ribbon for sorted drawing, once its bitmap's texture is available */
 // score 62 (was 62): retail reads the object's field before the frame is set up
 // and compares it with -1, ours loads it into ebp and compares ebp. Retail
 // rereads the tag for input.tag (now matched), keeps the slot index in ebp after
@@ -1233,14 +1234,6 @@ void __stdcall function_43720(s_43740_input *input)
 // at +0x68 and the count/position schedule; a mix of field and local reads, kept only with a match); that
 // with the record's tag read through the stored definition pointer 68 (the definition takes ESI, the source
 // goes to the stack: ret 8, 0x42b20 60).
-// Round 36 (lane 15, fast; 0x42b20 checked each time): the field test with a block-local tag used for
-// the lookup (placed before the index call), the call and the record 63 (206 bytes, no split); the
-// function-scope tag with the lookup first and the record's tag from it 63; the field read at each use
-// with the lookup first (listed 68: the head splits like retail's, but the tag takes EBX, the source
-// becomes a stack argument in EBP, ret 8, 0x42b20 60) with the record filled in retail's store order 68,
-// with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
-// 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
-// split tag below both parameters in retail's colouring is open.
 // Round 135 (m3 lane 5): retail's 0x1e5e0 copies the record with an inline rep movs and calls nothing. Diagnostics
 // only: the record passed to a scratch callee that stores the pointer 119 (152 bytes: VC drops the record stores),
 // to one that only reads it 66. Renames (slot/register ties): tag 62, bitmap 62, group 62, image 62, the definition
@@ -1313,26 +1306,26 @@ void __stdcall function_43720(s_43740_input *input)
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
     byte *bytes = (byte *)definition;
-    long tag = *(long *)(bytes + 0x34);
-    if (tag != NONE)
+    if (*(long *)(bytes + 0x34) != NONE)
     {
-        long bitmap = function_137590(tag, *(short *)((byte *)source + 0x1a), *(short *)((byte *)source + 0x18));
+        long tag = *(long *)(bytes + 0x34);
+        long bitmap = function_137590(*(long *)(bytes + 0x34), *(short *)((byte *)source + 0x1a), *(short *)((byte *)source + 0x18));
         byte *group = g_4e3b44[tag & 0xffff].bytes;
         s_bitmap_view *image = (s_bitmap_view *)(*(byte **)(group + 0x48) + bitmap * 0x74);
         if (function_12360(image, 0.0f))
         {
             s_43740_input input;
+            short count = source->point_count[slot] * 2;
             input.vertices.source = source;
             input.vertices.definition = definition;
-            input.vertices.slot = slot;
             input.vertices.shader = bytes + 0x3c;
-            input.vertices.normal = *(short *)(bytes + 0x68) != 0;
-            input.vertices.vertex_count = (short)(source->point_count[slot] * 2);
+            input.vertices.normal = *(short *)(input.vertices.shader + 0x2c) != 0;
+            input.vertices.slot = slot;
             input.tag = *(long *)(bytes + 0x34);
+            input.vertices.vertex_count = count;
             input.bitmap = bitmap;
-            point3f const *position = (point3f *)(g_4ea940->data + (source->point_index[slot] & 0xffff) * 0x38 + 0x1c);
-            function_1e5e0(0x20, position, (long)function_43720, (long)function_42cf0,
-                0, 4, 0x28, 0x18, input.vertices.vertex_count, &input);
+            function_1e5e0(0x20, (long)function_43720, (long)function_42cf0, 0, 4, 0x28, 0x18, count, &input,
+                (point3f *)(g_4ea940->data + (source->point_index[slot] & 0xffff) * 0x38 + 0x1c));
         }
     }
 }

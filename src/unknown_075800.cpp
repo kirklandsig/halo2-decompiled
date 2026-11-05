@@ -1297,6 +1297,19 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M383: Native-input peer-first primary priorities PDQCS/PDSCQ/PDCQS/PDCSQ/PQDSC/
 // PQDCS/PQSDC/PQSCD: 198/194/204/201/197/204/195/202 (reduced control 196; full 153).
 // NOT kept: at most two points; original classifiers, all handler tuples and body restored.
+// m3 lane 1 r71 (all plain, on the one retail-order switch, base 217/420): CAUSE of the convention: the three direct address arguments to
+// 0x92ef0 (EAX) outweigh the one EDI argument to 0x94220, so address takes EAX and type ECX. Diagnostics, wrong values, never kept: the three
+// lookups given message instead 3/444 (0x7afd0 MATCH; only those three `mov eax, edi` differ), two of them 213/424, one 213/424; five EDI calls
+// against three lookups 185/380 (retail's convention), three against three 213/404; two or six other address uses removed 217/420. So a use
+// crossing a call is one way to lose EAX, not the only one. Correct-value forms, no gain: lookup through a forced-inline helper taking the link
+// or the handler 218/468 (retail's convention, because 0x92ef0 then inlines; this ECX, message EDX->ESI), one such helper per connection case
+// 247/508, with 0x92ef0's `inline` removed 217/420 (copies propagated; 0x92d10 97); `&address[0]`, the first field's address, a read through its own
+// address, a function-scope copy or `long` copy, a forced-inline function returning it, an inline link getter, `address ? address : NULL` 217/420
+// each (all folded); a pointer-to-pointer local read at the lookups 219/424; cases in numeric source order 210/432. Needed: a correct form of the
+// lookup argument that is not a direct EAX use at allocation.
+// Round 150 (m3 lane 5, plain, on the one retail-order switch, control 217/420, 0x7afd0 3): lookup argument through a const ref bound to a cast temporary in each connection case
+// 219/424 (address still EAX); connection cases as plain file-local handlers or `inline` ones 270/372 each (stay out of line, 0x7afd0 6); a forced-inline lookup helper taking the
+// address by const ref 218/468 (0x92ef0 inlines, 0x7afd0 5).
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

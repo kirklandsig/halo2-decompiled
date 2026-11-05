@@ -159,7 +159,7 @@ struct s_engine_options
 	s_options_player players[16];
 };
 
-dword g_502258[0x27];
+dword g_502250[0x29];
 s_local_engine_state g_4e9af0;
 
 bool player_iterator_next(long *iterator);
@@ -199,7 +199,7 @@ void function_157450(void)
 	s_mp_globals *data = (s_mp_globals *)function_123d40("unknown", "unknown", sizeof(s_mp_globals));
 
 	memset(data, 0, sizeof(*data));
-	memset(g_502258, 0, sizeof(g_502258));
+	memset(g_502250 + 2, 0, 0x27 * sizeof(dword));
 	g_4e9ae8 = data;
 	data->engine_index = NONE;
 }
@@ -4933,6 +4933,8 @@ bool function_158eb0()
 // Round 124 (m3 lane 7, fast): `g_4e6948->flag1128 != 0` in the argument 38 (144 bytes); result declared
 // before the count 7; the iterator fields stored index, absolute index, data 7; `/ 2 >= 1` 11 (147 bytes);
 // a long mode cleared then set under `if (flag)` 62 (130 bytes). Original body restored.
+// Round 147 (m3 lane 6, fast): the index through a `long const &` 5; the flag declared at function scope 5;
+// `flag == true` 6; a long flag local 12 (147 bytes); `!flag ? 0 : 1` 5. Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {

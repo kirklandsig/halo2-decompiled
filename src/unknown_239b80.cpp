@@ -100,6 +100,13 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // Round 124 (m3 lane 7, fast): the copy as `output[result] = ...; result++;` 5; the arms swapped (`!= 0` arm
 // first) 93; the helper's points as references 5; plane, points and output all references 5; a point pointer in
 // the classification loop 9. Original body restored.
+// Round 70 (lane 10; a one-file LTCG harness that reproduces the real build's hunks, 64 loop-top pointer placements
+// with 0-15 probe locals): retail's setup store order appears only with a side local plus a current-point pointer
+// used by the second intersection and the copy (6: the first intersection then sums x first; with 4 probe locals 4);
+// probe locals rotate only the second intersection's products. Tried (--fast): current- and previous-point pointers
+// for both intersections and the copy 28; a current-point pointer for the first intersection only 5; a side local
+// only 7; a current-point pointer for the second intersection only 7. Numerator spellings and probes in the helper
+// or the first arm never change the first intersection's term order.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -476,6 +483,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B430: Complete coordinate-bound producers on the retained native output ordinal,
 // four producer orders, without/with paired angle bounds: 179 each. NOT kept: no
 // match or gain; original body restored. Frame remains 0x18 versus native 0x14.
+// P345: Actual advancing output cursor retaining the independent pass bound/eager length,
+// long/short pass, long/bool departure and memcpy/memmove: 251/267/251/276/299/258/253/266.
+// NOT kept: no byte match; original complete body restored; extra frame word remains.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -862,6 +872,19 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // NOT kept: no exact match; original fraction clamp, include set and complete body restored.
 // B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
 // 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
+// Round 62 (m3 lane 14, fast; each with the `if (count > 0)` guard, match-only, restored): if/else fraction and the
+// previous side folded into its initializer 93 (889 bytes, aligned 36); if/else with the fraction declared at function
+// scope `= 0.f` 151 (887; zero set first but in XMM3); if/else, folded side, dx at its uses 154 (887, aligned 33, zero
+// XMM2 as retail, first difference +0x9e); the same with dy at its uses instead 300 (926). Without the guard: `short i
+// = 0; if (count > 0) do ... while (i < count);` 235. Compile-only screen (900 forms, base aligned 81): declaration
+// orders of dx/dy/fraction/denominator, statement orders with a fraction default and every product operand order:
+// none below aligned 25; retail's x output copies the fraction and its y output multiplies dy in place, and no spelling
+// gives that split; `i = 0` before a guard folds the guard away, so the store stays after the `jle`.
+// Round 166 (m3 lane 4, one-file LTCG harness exact at 129; no source change): random search, 1500 forms over the loop
+// guard, fraction (default, if/else, zero arm first, ternary), clamp (ternary, if/else-if, in the nonzero arm), delta order,
+// dx or dy at their uses, x/y output operand orders, output order, denominator terms, fraction declaration, previous and
+// current side spellings, tail order and declaration order: no guard best 131 (887); `if (count > 0)` around the for
+// 95 (890), around a for with an outer index 98 (890); guarded do-while 102 (891), and 131 (887) where the guard folds.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

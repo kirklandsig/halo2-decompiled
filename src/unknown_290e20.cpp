@@ -474,6 +474,15 @@ struct s_ai_scene_assignment
 // copy from the entry for the entry uses and the stores 59/59 [37], the long one also for the recursion 102 [76];
 // a threaded `full` flag in the loop test on the direct form 74 [30] and on the int copy 79 [16] (347 bytes,
 // retail's dword load only without the int copy, the loop tail then out of line).
+// Round 150 (m3 lane 6, one-file harness with 0x272b70 and squads, exact at 12): only the movsx and the two loads at the
+// store block's head differ. The maximum/role widths (short, word, long, dword, int, unsigned) crossed with copy types 12
+// on an int copy, 59 or 60 otherwise; a test helper called at both compares (forceinline or inline, eight signatures) 59;
+// `do {} while (false)` around either compare, the stores or the recursion 59; a full flag, a room local, a count copy,
+// the compare before the iterator step 59-67; a store helper in three parameter orders, the actor or the index as a named,
+// const or reference local, a row pointer 12 (load order unchanged). Diagnostic only: one extra read of the maximum in the
+// loop body gives retail's dword load in ESI and the role's two reloads, so the choice is a use count, but entry reads
+// don't move it and nothing tried adds a read without code; a real escape of the role's address re-reads it at each store
+// (retail reuses one movsx across all four), so it isn't address-taken; extra code ahead of the loop never swaps the two loads.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

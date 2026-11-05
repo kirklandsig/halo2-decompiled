@@ -716,10 +716,23 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // then all with the outer ring phase:
 // 92/90/90/92/92/90/92/144. NOT kept: no exact publication form; radius schedule, ring conversion and rotation spill remain.
 // Original complete executable source restored.
+// Round 147 (m3 lane 6, fast). The current body with a named object pointer read before the sector index 109 (1085 bytes). On
+// the 96 form (rebuilt 96, 1090 bytes): that object pointer with the radius reference 263 (1074), with a plain radius 271 (1067),
+// the sector index first with the reference 263 again; `1.0f - cosine` named 96; the dot named 96; both named 96; a const sector
+// index 96; the i cross term named 96. The 96 form still reads the sector after `add ebp, ecx` and copies the radius through EDX.
+// The one-file harness is not faithful here (227, 1103 bytes, with three callee files). Original body restored.
 // DH348: Rotation scalar-input CRT captures in ijk/ikj/jik/jki/kij/kji order
 // 275 each; ijk/kji with native radius CRT capture 276/276. NOT kept: frame/length
 // regress and no exact boundary. Original helper, radius reference and full body restored;
 // radius schedule, ring SSE conversion and rotation spill remain.
+// Round 129 (m3 lane 7, fast, control 90; aligned/masked = difflib counts, control 58/37). On the 96 form (63/20): the helper reading vector-> directly in place, no
+// component copies, 96 (same code; correct without copies because j and k cross terms are taken before the i row stores). What the named ring phase costs is the top block
+// (helper alone 100 keeps retail's `mov edx, [ebp + ecx + 0x34]; add ebp, ecx` and the movss radius copy, phase alone 143, phase with the helper 96, phase after the distance 96);
+// sector read first 263 (the sector then stores at once and the loop head padding goes, 1074 B), through its own record lookup before/after the radius 260/255, object pointer
+// local first with sector before/after radius 263/96, radius before the record 108, ring value named and shared 90 (x87 fild stays). Dot order: retail's (j + i) + k follows
+// component scalars declared k, i, j ahead of the dot, with scalar cross terms 143 (retail's dot loads, but the cross subtrahends sink and j spills, frame 0xdc); with the vector
+// cross those declarations change nothing 96; dot terms written k,i,j or j,i,k or swapped sides 96 each (same code), accumulated from k or j 213/218 (1083 B); cross before the dot
+// 98 (i in xmm4 as retail; (k + j) + i stays), j then k or k then j cross 96/105. The rotation written in the caller, not a helper, 233/243/232/240 (copy-first products).
 // N382: Native record/origin/entry object references, seven ownership subsets, then all
 // with outer ring phase: 90/90/90/90/90/90/90/143. NOT kept: no equality or gain;
 // original complete body restored. Radius schedule, ring conversion and rotation spill remain.

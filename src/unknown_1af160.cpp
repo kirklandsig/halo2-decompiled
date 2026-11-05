@@ -17,7 +17,7 @@ bool function_1f4a20(s_1f4a20_entry const *arg_2, long arg_0, s_reference arg_1,
 bool function_1af530(long arg_0, long *arg_1, long *arg_2);
 void function_265c30(long arg_0, long arg_1, bool arg_2);
 
-// score 9 (was 9): the three dword homes still rotate against retail's (ours: flag,
+// score 12 (was 12): the three dword homes still rotate against retail's (ours: flag,
 // temp, actor, result; retail: actor, temp, result, flag); this round's source
 // permuter (19 tries, 670 s) found no lower form of that order.
 // Earlier: the frame homes for the actor, the result and the completion flag
@@ -110,6 +110,16 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // address-taken locals in ours and with the spilled pointers in retail. The output as long, byte or char with a cast
 // at the call 179/169/169; a named copy of it for 0x2626b0 9; a bare scope around the three outputs 57, around the bool
 // alone 9. Still BLOCKED-BY 0x260670 (its stub keeps the bool's address escaped).
+// Round 148 (m3 lane 5, fast with 0x1b0540's chain in the list; other lists read 210): no longer blocked: 0x260670's real body is in src/unknown_260670.cpp, 12: two home
+// pairs swapped against retail (actor pointer with the actor offset, the prop node with the bool output), where the stub gave 9 with three rotated. The 0x1e4be0 result declared
+// apart from its call 12; the second 0x25d690 result passed straight 12; the five cleared flags written `false` 12; the outputs bool first 12; a named copy of the bool 12.
+// Round 150 (m3 lane 6, plain): the two swapped pairs are ties on reference count (actor pointer 4 against the offset temp's
+// shared slot 4; prop node 2 against the bool output 2). Names, re-checked once for this two-pair state: the bool output to sort
+// first 12, the prop node to sort last 12, the actor to sort last or first 12/12, all three 12 (same code). Weight forms: the second
+// 0x25d690 call on a fresh prop node lookup 87 (1002 bytes), the range test on a fresh lookup 236 (998 bytes), the equal-arm flag
+// test on a fresh actor lookup 61, the prop index named for its two uses 256. A one-file harness with the callee files and the
+// ballast is not exact (275, 959 bytes). Open lead: pointer-typed outputs on 0x2605d0/0x260670 need a prototype edit in held
+// src/unknown_261280.cpp.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {
