@@ -827,6 +827,9 @@ void function_1537f0(s_profile_record *record);
 // M393: Positive pointer do latch, strict then equality endpoint, per-visit/outer identity/source declaration pairs:
 // 53/53/53/53/53/53/53/53. NOT kept: nonexact lifetime/latch forms; identity homes still fold and native frame/end-bound remain.
 // Original complete body restored.
+// Y597: Current pointer/no-tail graph with whole source-header zero field subsets
+// 1/2/4/3/5/6/7, then contiguous header fill: 53/77/53/86/53/77/86/115.
+// NOT kept: no exact publication graph or gain; full original body and initializers restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1382,6 +1385,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // M393: Phase-owned reloaded long/int count, shared/direct admission, original then complete direction arms:
 // 383/383/395/395/385/385/59/59. NOT kept: nonexact count/direction completion forms; native count/removal and upper-bound register ownership remain.
 // Original complete body restored.
+// N384: Actual returned insertion ordinal at entry/post-removal/immutable-bound/
+// completed-shift lifetimes, two result-role names: 378/377/377/66 twice. Original
+// mutable input/result and full body restored; count/upper/copy allocation remains.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

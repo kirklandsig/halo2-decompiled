@@ -1236,6 +1236,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // than native 0xb4. Original element copies, arrays and complete body restored.
 // M392: Native initial reject scopes after gate boundaries 1/3/1+3/1+2/1+4/2+3/1+2+3/all: 766/766/766/766/766/766/766/766.
 // NOT kept: no native ingress/frame/lookup recovery; original short-circuit guard restored. Original complete body restored.
+// Round 148 (m3 lane 6, fast): `inline` on 0x192e60 766, on 0x1934f0 766, both 766. Player loop through a call to 0x63220:
+// forceinline on its definition 1032 (2588), `inline` on its definition 1097 (2524), with `inline` on 0x192e60 1097; each gives
+// 0x73530 its match (session in EAX, ret 4), but a score rise is not kept: held lead. Result first and capacity before the summary 785.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

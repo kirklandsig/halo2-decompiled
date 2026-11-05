@@ -1233,6 +1233,12 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // element getter forced inline 24; a comma-separated assignment/test condition 24; an empty-step for 24; index declared
 // before the iterator 24; an unsigned index 47 (215 bytes); the provider call in its own lexical block 24. The matched
 // provider, gain query and both iterator siblings stayed matched. Original body and declarations restored.
+// Round 89 (m3 lane 12, fast with the same list): the ESI/EDI tie follows element against index weight: a volatile local reading a field through
+// the macro in the arm (diagnostic, reverted) 62 (226 bytes, unchanged order), two 58 (231 bytes, index EDI and element ESI as retail), one ahead of
+// the state test 73 (229 bytes, unchanged); a volatile copy of the index 44 (214 bytes, unchanged). The state test written twice 24 (it threads
+// away before the tie). A force-inline fade-in helper taking the index in place of the 0x126df0 call 24. Iterator fields set here in place of
+// its helper: first then index from first 24, count first 25, index then first from index 24. In 0x126df0: every field through the macro 132
+// (134 bytes; 0x126df0 82), the gain stores 74 (0x126df0 76), bit test and flag store 80 (0x126df0 72), one gain store with a ternary 37 (0x126df0 15).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -1876,6 +1882,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 479 reduced each; all with complete native request 477 (control 479; full 305).
 // NOT kept: two reduced points without equality or ordinary gain; original
 // acquisitions, pointer scopes, request and full body restored. Frame/range homes remain.
+// DH371: Actual release/stopped/gain-rate/update/range-blend/ring-match/pitch/detail
+// Boolean guard results: 479/479/479/479/452/479/479/479 reduced (control 479, full 305).
+// NOT kept: unmatched one-use outcomes; range-blend retains reduced frame 0x118/0x128.
+// Original request, observations and complete body restored; native frame/range/ring homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2579,6 +2589,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 674/749/675/675; immutable counterparts 674/749/675/675 reduced (control 694,
 // full 597). NOT kept: frame grows from 0x3c to 0x40/0x44; entry true/flags and
 // record/track homes remain. Original Boolean producer and complete body restored.
+// DH371: Actual definition/system/copy/listener/normalization/release/track-init/start
+// Boolean guard results: 694/694/734/694/694/694/694/670 reduced (control 694, full 597).
+// NOT kept: unmatched one-use outcomes, including the reduced-only 670; original complete
+// body restored. Entry true/flags, record/scalar homes and track/state ownership remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

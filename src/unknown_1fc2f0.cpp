@@ -550,6 +550,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // P327: Complete scalar prediction on the named-length graph, six declaration orders,
 // then producer definitions with original/late ticks, direct update argument: 117/117/117/117/117/117/117/117.
 // NOT kept: all regress and lose native frame/extent; original body and parameter storage restored.
+// Lane 13 r62 (fast; rate rows into a `predicted` point, then scaled_difference3f with `(real)ticks`, which gives retail's XMM3
+// and in-place products): predicted through vector3f_add_scaled, deltas i, j, k 79 (re-measured), deltas j, i, k 32 (re-measured,
+// first +0x65, chains and products agree with retail, the stores and deltas run j, i); predicted by statements j, i, k with deltas
+// i, j, k 63 (369 bytes), k, j, i with deltas i, j, k 78, j, i, k with deltas k, i, j 78. Rate rows follow the delta order in every
+// form, so retail's chains j, i, k with stores and deltas i, j, k stay unreached.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

@@ -1168,46 +1168,14 @@ long function_d2bb0(void *source, s_effect_color_query *query)
     return result;
 }
 
+/* a query's flags without the option that samples several directions */
+#define SURFACE_QUERY_FLAGS_ONE_DIRECTION(flags) ((flags) & 1 ? (flags) & ~1 : (flags))
+
 PRIVATE __forceinline bool surface_status_failed(long status)
 {
     return status == 1 || status == 2 || status == 3;
 }
 
-// score 2 (was 2): the retry call computes `flags & ~1` after pushing the object index; retail
-// computes it before (`flags ^ 1` keeps the same order, so the operator is not the cause).
-// Earlier, with volatile tag pointer and flags locals (44): zero then OR 148; const tag 44;
-// byte tag bitfield 135; dword object bitfield 44; named query failure 44;
-// explicit final exits 181; inverse failure result 44; retry flag update 44.
-// Status predicate as byte 65, short 69, long 68; arm-assigned result 129;
-// signed status bounds 130; selected predicate 161; staged result 58;
-// ordinary predicate inline 139.
-// Now (no volatiles, object bit 13 and the tag's word bit 1 as bitfields, flags = 0 then
-// |= 1 twice) 2: retry flags snapshot 2; `flags &= ~1` before the retry 2; retry flags in
-// a local 2; dword flags 2; flags declared before the tag pointer 4; point declared first 24;
-// failed set after the retry 104.
-// Current bitfield forms (fast): nonzero retry 85; exact retry flag 131; word flags 117;
-// short flags 117; bool option 115; first failure workspace 120; combined bits 147;
-// initial object option 140. XOR 2; subtract 18; clear extracted bit 2; subtract extracted
-// bit 133; retry status scope 2; one failure store 98; long failure 83; entry status 2;
-// mask assignment in the call 2; nested retry status predicate 2; direct status
-// initialization 2; two-call index local 2; read-only point 2; byte failure 2; negated
-// return 2; guarded mask assignment 87. Round 44: in-place clear with `failed = failed(status)
-// || failed` 93; forceinline query wrapper for both calls 2; failure assigned from the
-// predicate then tested 120; sky decision as a per-type bool 62; dword flags parameter in
-// the query and its callers 2. Round 55: the query's point parameter second, third, fourth
-// or fifth in its list (definition, declarations and calls) 2 each, first 2 (0x17b5d0 2); byte
-// flags parameter 2 (0xd2a50 12); its fifth parameter as a direction pointer passed NULL 2; the
-// retry test as a bool conversion 2, as `(flags & 1) == 1` 2. Round 27 (lane 17, fast): `flags &= ~1`
-// first in the retry block 2 (same code); `failed = true` in both arms of the flag test 2 (same code);
-// status declared at function scope 2 (same code); the point defined before the flag tests 66 (464
-// bytes); permuter 46 tries, best 2. Compile-only, every spelling of the retry value (xor, subtract,
-// hex mask, a local in or before the block, a force-inline call wrapper) is computed right at its push.
-// Round 128: sequenced AND/XOR/subtract before the call 2/2/18; standalone XOR/subtract 2/18;
-// extracted-bit XOR/subtract sequences 2/133. NOT kept: one-use const retry mask 2; original body restored.
-// Round 31 (lane 18, fast): flags initialised from the object bit with a ternary 140 (454 bytes); flags
-// declared at function scope 2; a force-inline helper returning the flags without bit 0 at the retry 2; a
-// force-inline query wrapper (flags, object, value, query, point) with a status local for both calls 2;
-// permuter 600 s (46 tries) 2. Original body restored.
 // @retail 0xd1850
 long function_d1850(long object_index, bool value, s_effect_color_query *query)
 {
@@ -1229,7 +1197,7 @@ long function_d1850(long object_index, bool value, s_effect_color_query *query)
                 failed = true;
                 if (flags & 1)
                 {
-                    status = function_d2a50(flags & ~1, object_index, value, query, 0, point);
+                    status = function_d2a50(SURFACE_QUERY_FLAGS_ONE_DIRECTION(flags), object_index, value, query, 0, point);
                     if (surface_status_failed(status)) failed = true;
                 }
                 if (status != 3)
@@ -1867,6 +1835,14 @@ dword function_015cd0(long index, dword entry);
 // kept); a permuter run on that body, 54 tries, best 4; texture-field test arms swapped 68 (312 B); the
 // conversion as `bitmap = convert ? temporary : NULL; if (bitmap) result = 3;` 39 (314 B); bitmap stored
 // before result = 3 in the success arm 6.
+// Round 89 (m3 lane 12, fast): the two leas follow one scratch rotation (retail is one temp behind or two ahead): a volatile probe
+// local (diagnostic, reverted) anywhere ahead of the first lea moves ECX/EDX to EDX/EAX, a test of the global ahead of the prelude
+// to EAX/ECX, and a probe in the sample block moves only the second. 0xd1630 returning void 4 (0xd1630 27). Removing (diagnostic)
+// the texture-field test, the flag block, the count test, the 0xd1680 test, the 0xd1630 call or the palette call: leas unchanged;
+// removing both prelude tests: EDX/EAX. A locations pointer defaulting to NULL and tested, by helper or ternary: EAX/ECX but 90
+// (312 B; the extra test stays). No shift (4 each): nested prelude tests; tag defaulting to NONE, by if, ternary or helper; a count
+// defaulting to 0, by local, helper or in the test; a named bool or bool helper for the prelude; a locations local, with or without
+// `do {} while (false)` or declared outside the block; a globals getter at each use or in a local; a location getter; `0 < count`.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
