@@ -629,6 +629,12 @@ struct s_1f8a70_actor
 // M381: Independent outer byte/short/long/dword completion after terminal stores/cleanup,
 // route-result copies then branch facts: 435/429/432/432/435/429/432/432. NOT kept: result-home
 // diagnostics regress; original outer/inner results, native-word selector and full body restored.
+// M3 lane 11 r71 (fast, control 188 at 1632 bytes). Retail: cases through 5, the route dispatch, cases 6 and 7, then
+// the zero test and a failure block with its own 0x1f8750 call and return. Route test nonzero side first: `route != 0
+// ? ... : ...` 188 (retail's `je` to the zero test), `route ? ... : ...` 188, assigned bool 188, `(route != 0 && ...)
+// || (route == 0 && ...)` 188, `... || (route == 0 && ...)` 309, `(route == 0 && ...) || ...` 188 (register-blind
+// aligned 44 for 56). Failure block in the default arm with its own call: returning there 453, with the zero test
+// first 475; through `result` and a goto to the only return 370, with the zero test first 319.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

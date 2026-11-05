@@ -1838,6 +1838,19 @@ void function_b7360(long object_index);
 // then conditional producers: 301 each, all 1824/1848 bytes. NOT kept: no
 // byte match; original full callback restored. Entry actor/output roles,
 // reference retention and 24-byte deficit remain; all calibrated peers unchanged.
+// M3 lane 11 r71 (fast; masked = aligned with registers and stack offsets ignored). The point-set getter as a real
+// inline function in 0x25ab50, forceinline or static inline, 301, same code, no reload at the callers; with the point
+// getter built on it 301, loses 0x259ec0 (238). Lane 9's goto form rebuilt 246 (1848); with the diagnostic store in
+// 0x25ab50 91 (1848, 0x25a380 lost, not kept), where the real causes left are the returns' width, case 7's dot sides
+// and the stores in cases 10, 5 and 9, the rest being jump offsets from the width.
+// Tails on the 91: `if (success) return 0; return 2;` 159 (1816: the empty return-0 block merges into case 20's tail,
+// so `mov ax, 2` follows the test), inverted 169 (1812), if/else 177 (1820), ternary 603 (1728), `short result = 2`
+// 599 (1732), a goto to a `failed:` label 169/159, word result 91, an inline status helper 89 (1848, still `xor eax,
+// eax`), a ternary into a short 603, the empty cases back to `return 0` 159/169, with the helper 91.
+// Per-arm `if (success) return 0; break;` with `return 2;` after the switch, over actor order, flag width and store:
+// 601, 609, 504, 513, 591, 605, 620, 628 (1696-1708). Per-arm `if (!success) return 2; return 0;`, empty cases last
+// or falling through after case 15/16: 491 clean, 632 with the store. One shared result test with the empty cases
+// falling through and other arms using `goto`: 485, 503, 494, 496 (1812-1824). The store lead still needs a ruling.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2415,6 +2428,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // with original/early facing capture: 502/502/517/517/500/500/517/517. NOT kept: all regress
 // and grow to 2420 bytes; early facing grows frame 0x1c to 0x28.
 // Original anchor observations/facing/full body restored; actor/state and first-point homes remain.
+// M3 lane 11 r71 (fast, control 485 at 2396 bytes; plain 469 at 2400). No state local, every use through the
+// parameter 485 (same code); the result as bool 485 (same code); actor and datum written directly from the pools 485
+// (same code); the two remaining parameter uses through the local 485 (same code); the case 7/8 bool written at its
+// condition 515 (2372); case 1 as an if setting the result false 622 (2384). Diagnostics, not kept: extra actor or
+// state references before the post-switch test 630-710, any such `if` moves the result into BL and leaves the actor
+// and state registers swapped. Left: actor EBX and state EDI for ours EDI and EBX, and the post-switch test's layout.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
