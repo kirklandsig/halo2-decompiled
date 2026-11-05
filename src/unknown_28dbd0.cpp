@@ -314,6 +314,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH367: Standard coordinate transforms at axis/cross/direction scales, seven subsets,
 // then native two-stage sum transforms: 407/395/395/427/459/417/442/464. NOT kept: no byte match;
 // original scales, sums, draws and complete helper/body restored; frame/cross/trig homes remain.
+// Round 151 (fast): the rotation through a same-file copy of the existing rotate_direction with direct `(real)sin(a), (real)cos(a)` arguments 236 (1190 bytes, frame 0x114),
+// of rotate_vector_170d70 direct 236 (1190), axis term first with (cosine, sine) parameters 238 (1190), named sine and cosine with each 241/241/241 (1193). Original helper restored.
+// Retail's rotation read from its listing: `v * cosine + axis * projection - cross(v, axis) * sine`, v.k a constant zero; sine named before the copy or the cross with cosine named before the rotation 241/241, both named before
+// the copy or the cross 241/241, sine named early with cosine direct 236/236 (all frame 0x114). Frame slots: +0xc scale, +0x10 cosine, +0x14-0x1c v, +0x20 cross k, +0x24 sine, +0x28 cross j.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

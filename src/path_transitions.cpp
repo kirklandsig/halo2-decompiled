@@ -726,6 +726,14 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // declared 219; `second` declared in its block 219; both reciprocal forms 219; both products turned 219; the radius
 // product turned 219. Left: the entry (actor loaded at entry, pathfinding moved to EBX), which colours case 5, and
 // the projection sum (retail (j + k) + i with j in XMM3, ours (k + j) + i).
+// Round 151 (harness 232 for the real 219, aligned 89, masked 47): a plain read of actor_index through its address after the surface, after the result or first,
+// used at the test and the call or at the test only, 233 each (the read folds to the use, no entry load); dot sums through a `(j + k) + i` helper, both, either,
+// arguments swapped, 232 each (same code); written out grouped, both or either, 371 (1288 bytes); one final `return result` with breaks 242 (aligned 107), without
+// volatile 322 (1256 bytes, result in CL), declared later 322, first 321; multiple returns without volatile 335.
+// Random grid of 160 natural forms: lead, corners a, b, c, d load actor_index into EAX at entry with no volatile and move pathfinding to EBX, masked 28 (base 47), aligned 64 (base 89), but 289 at 1284 bytes:
+// the load comes first, so pathfinding arrives in EDX where retail has EAX (retail's load follows `mov ebx, eax`). Without case 5's position first 287 (masked 33), with `*= -1.f` or the old negation 290 (35);
+// corners d, c, b, a 354, c, d, a, b 355, a, b, d, c 304. On the lead: a copy of actor_index after the surface or result 297, the surface after the result 289, origin after projected 289, the
+// first three parameters declared in five other orders, with the call changed, 289 each (no effect on the arrival registers), on the old corners 278. Left on the lead: pathfinding's arrival, first.j/first.k, 1.0/radius*2 colours.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
