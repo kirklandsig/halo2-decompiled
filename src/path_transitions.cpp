@@ -474,7 +474,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // MiniMax H (11-05): no new form, no lower score; the projection sum's order ((j + k) + i in retail,
 // (k + j) + i here) comes from the shared dot3f in include/unknown_0259d0.h, and the entry still loads
 // the actor in case 5 where retail loads it at entry and moves pathfinding into EBX.
-// score 219 (was 270): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// score 219 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // Earlier (270, was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
 // Round 132 (m3 lane 5, fast): case 5's success stores with the output index first 341; case 5's direction
@@ -737,6 +737,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // the load comes first, so pathfinding arrives in EDX where retail has EAX (retail's load follows `mov ebx, eax`). Without case 5's position first 287 (masked 33), with `*= -1.f` or the old negation 290 (35);
 // corners d, c, b, a 354, c, d, a, b 355, a, b, d, c 304. On the lead: a copy of actor_index after the surface or result 297, the surface after the result 289, origin after projected 289, the
 // first three parameters declared in five other orders, with the call changed, 289 each (no effect on the arrival registers), on the old corners 278. Left on the lead: pathfinding's arrival, first.j/first.k, 1.0/radius*2 colours.
+// Round 153 (m3 lane 5, fast; 0x270d90 286 throughout), re-measured on the 219 base: case 5's position declared before its
+// direction 266; case 5's call under an outer actor test 219 (same code); result, surface, start_out declared in that order
+// 219; the radius read once into a named local for the test and the margin 214 (1284 bytes, gain under the gate), with the
+// margin product turned 214, with the test written `radius * 2.f < first_length` 214; second_distance computed first 219.
+// Case 2 and everything after case 5's actor test agree; the entry (actor_index loaded at entry, pathfinding moved to EBX)
+// shifts every line of cases 1/6 and 5.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -654,6 +654,12 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Round 138: split turn/direction declarations 77 each; sine after direction/at entry 77 each; outer side
 // predicate with entry sine 77; speed declared at entry/after direction with its read at the original point
 // 77 each; named second-normalization result 85 (842 bytes). Original body restored; zero lifetime remains.
+// Round 153 (m3 lane 5, fast with 0x1ecf50 and 0x2b400): turned copied by components 149 (828 B); turned declared at
+// function scope and assigned at its copy 77 (same code); the side as `long side = left ? 1 : -1;` times 0.5 77 (same code);
+// output products as `direction.i * speed` 77 (same code); rotate_direction's body in an axis-first form (dot, (1 - c) * dot,
+// axis-first cross, `+ sine * cross`) 101 and matched 0x1ecf50 135 (restored). Compile-only diagnostic: with the rotation's
+// cosine not a literal zero (or no rotation) the test zero is materialised after the scale products in XMM0, exactly
+// retail's placement, so the remaining difference is the literal 0.0 cosine sharing the tests' zero register.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
