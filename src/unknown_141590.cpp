@@ -373,6 +373,9 @@ static inline void quaternion_transform_vector(
 // N399: Destructive scalar/cross-scale/cross-result ownership, families 1..7 then
 // independent cross scalars: fast 256/306/253/313/333/333/312/306. Original ordered output trees and all three
 // in-place users preserved. NOT kept: unmatched storage/result forms; original helper/body restored.
+// Round 90 (m3 lane 16, fast): the doubled sine product written 2.f first 200 (same code); the clamp testing the
+// cosine copy 200 (same code); the construction scale computed before the axis cross 252 (1317 bytes); the cosine
+// arms swapped (`cosine >= 0.f` takes the identity) 210; rotation.w stored between the cross and the scale 200.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1142,6 +1145,11 @@ void function_143250(
 // families 1..7 then all at first declarations: fast 1766/2001/2001/2612/2528/2341/2278/2278. All 84 ordered typed outputs
 // and application tuples agree. SIMD forms recover EAX/ret 4 and improve both callers, but grow
 // the frame/extent (all-SIMD 0x334, 11540 bytes). NOT kept: unmatched physical-storage forms; original body restored.
+// Round 90 (m3 lane 16): the workspace declared after the terms 1766 (fast, same code); every same-type plain copy
+// propagated (404 copies, 937 declarations) 1986 plain (10988 bytes, rotation EAX and ret 4, frame 0x30c; 0x22850 235,
+// 0x23690 467); the workspace matrix ahead of the rotation terms 1766 (fast); that with the 648 single-use terms in
+// their next statement 1775 plain (10763 bytes, ret 4, frame 0x314; 0x22850 235, 0x23690 467); only the 37 rotation
+// snapshot copies propagated 1948 (fast, 10949 bytes: the band-start copies keep the snapshots out of the workspace).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

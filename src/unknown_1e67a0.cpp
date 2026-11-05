@@ -773,6 +773,19 @@ bool g_51e9bc;
 // N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
 // forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
 // body restored; unity/limit/direction ownership and jitter spill homes remain.
+// Y603: Complete indexed velocity product/copy producers, original/direct projection argument:
+// 114/227/237/218/51/226/238/222. NOT kept: 114 gains only four; 51 grows from native 1077 to 1078 bytes.
+// Original body restored; projection ownership and native jitter factor spills remain.
+// DH377: Direct dot at the existing scaled-add argument 57 (1078 bytes); complete dot then negation 112.
+// Existing vector scale, direct/named projection 140/131; particle scale, named/direct 131/140;
+// separate correction, named/direct 133/137. Initial velocity setter/complete row products 152/122.
+// On the direct-dot lead, native jitter scale/limit stages 65/45/67/56, then output
+// declaration/setter 45/65 (best 1081 bytes).
+// NOT kept: closer forms move away from retail's 1077 bytes; the native-length 112 gains only six.
+// Original body restored at 118; initial i-row ownership, projection operands and jitter factor homes remain.
+// DH380: Destination-owned control copy then limit modulation via assignment/memcpy/setter/rows,
+// original then direct shared projection: 230/228/242/112/227/225/247/56. NOT kept: intermediate
+// output transfers require equality; original products, observations, projection and complete body restored.
 // N395: Complete limit-owned destination assignment/memcpy/setter/coordinate modulation,
 // original/direct projection: 238/237/238/237/198/201/112/56. NOT kept: coordinate form
 // gains six; direct form grows away from 1077 bytes; all transfer forms require equality.
@@ -1234,16 +1247,19 @@ void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animat
 
 struct s_shape_state;
 struct s_direction_rotation_input;
-void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up, vector3f *forward);
+void function_1f1460(s_shape_state const *ground, vector3f *up, vector3f *forward, byte const *state);
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks);
 void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input *input);
 
+/* parameter order from retail's call setups, which load the register
+   arguments last to first after pushing forward: 0xe3c90 and 0x118700 load
+   output (EAX), up (ECX), then physics (EDX); 0xdd360 loads up before output */
 // @retail 0x1e5af0
-void function_1e5af0(void *physics, s_biped_physics_output *output, vector3f const *up, vector3f const *forward)
+void function_1e5af0(void *physics, vector3f const *forward, vector3f const *up, s_biped_physics_output *output)
 {
  switch (*(byte *)physics)
  {
- case 1: function_1f1460((byte *)output, (s_shape_state *)((byte *)physics + 0x10), (vector3f *)up, (vector3f *)forward); break;
+ case 1: function_1f1460((s_shape_state *)((byte *)physics + 0x10), (vector3f *)up, (vector3f *)forward, (byte *)output); break;
  case 2: function_1faa20((vector3f *)up, (byte *)output, (vector3f *)forward, (long *)((byte *)physics + 0x10)); break;
  case 3: function_1ecf50((vector3f *)forward, (vector3f *)up, (s_direction_rotation_input *)output); break;
  case 4: break;

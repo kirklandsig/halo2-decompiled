@@ -1318,6 +1318,8 @@ struct s_batch_cache_4b5d0
 
 struct s_133f70;
 
+// MiniMax A (11-05): no new form, no lower score; the call to 0x4bcc0 already carries its six stack
+// arguments in retail's order and with retail's values, so what is left is the frame size and the entry/result homes.
 // MiniMax h (11-04): no lower score; the 0x4bcc0 call takes the distance from the third stack slot where retail takes it from the second, and that slot layout follows the unmatched callers in src/unknown_133790.cpp.
 // score 175 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // Round 22 (lane G, machine 3; no code change kept): retail's byte home and its split record base
@@ -1476,6 +1478,9 @@ struct s_133f70;
 // [esp + 0x218]`); order declared long in both declarations 175 (caller `movsx eax`, still passed in EAX,
 // 0x23690 484); header via the existing object_header_get 175; initial level declared first 177; failure
 // count declared after the 0x4bcc0 call 370; a named active-flag pointer for the call and test 175.
+// Y608: Actual compacted source/tag/handle output-slot references, seven subsets,
+// then all with the writable count-slot reference: eight 175s at 1309/1309.
+// NOT kept: no equality; first distance setup and cache/coefficient homes remain.
 // Round 394: initial-level/fallback/builder/success/reuse/level-change result-home names
 // individually 175/175/175/175/175/175; both complete byte-result naming orders 175/175.
 // Original names and complete body restored; distance/cache staging and coefficient transport remain.

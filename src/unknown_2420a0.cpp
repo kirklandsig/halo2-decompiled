@@ -1556,6 +1556,12 @@ void function_2422d0(long slot)
 // object declared at function scope 7; an inline slot accessor at every read 79, with the slot local 7.
 // A copy of the index for both stores 7, across a pointer `__assume` 7; a second read of the team entry for the stores
 // across one 7; a pointer `__assume` between the getter and the slot read 7.
+// Round 75 (lane 1, fast): a compiled-out `do { } while (false);` at the loop top, after the index, object or slot, at
+// either end of each arm, at the loop end, or before or after the first loop 7 each (11 places); the index through an
+// inline getter 7; the index declared at function top 7; object then index declared bare at the loop top 7; the getter
+// taking the index by const reference 7, or filling an out parameter 7; a NULL object seed before the getter, in the
+// loop or at function top, 7/7; an accepted flag then a reject test 7; a named element pointer with `continue` in the
+// accepted arm 7.
 // @retail 0x2423f0
 bool function_2423f0()
 {

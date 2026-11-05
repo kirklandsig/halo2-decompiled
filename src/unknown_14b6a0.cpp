@@ -484,6 +484,22 @@ void function_14bac0()
 // N383: Existing typed player iterator at the first traversal, selected-player type, native
 // result-tested recipients and early uninitialized iterator declaration: 222/222/228/228/222/222/228/228.
 // NOT kept: ties/regressions; original fields, points, iterators, includes and full body restored.
+// M3 lane 11 r72 (fast, control 222, masked 85; retail frame 0x3c: flag byte +0x13, player +0x14, scenario/radius +0x18, height +0x1c, relocation
+// point/destination +0x20, offset/probe points/centre/second iterator +0x2c, first iterator/alternate +0x3c): second loop on a block-local
+// s_data_datum_iterator through the existing data_datum_iterator_next 228 (frame 0x50, masked 68, readiness bytes in retail's homes); with the unit
+// read from the player at both calls 264 (frame 0x54); its iterator declared at the alternate block's top 228 (same code); the 0x6b380 form with
+// the relocation point used directly (retail ignores 0xb9dd0's return) 237 (1052 bytes, frame 0x44, masked 61: relocation point shares the
+// destination's home, every home 4 bytes under retail's, the centre shares the first iterator's slot where retail gives it the offset's); that with
+// the unit read at both calls 259 (1048, frame 0x48, height at retail's +0x1c); with the centre declared first 259 (same code).
+// Y607: Actual marker-pointer field mutable/readonly pointers and references, original/native
+// result-tested recipients: 222/222/222/222/228/228/228/228. NOT kept: extra field aliases
+// do not match; original observations, native records, both traversals and full body restored.
+// M399: Complete original accepted-point/bounds/relocation-output zero defaults, subsets 1..7:
+// 279/267/313/258/312/293/332; complete CRT point defaults 319. NOT kept: every form grows and regresses.
+// Original entire body restored; frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
+// M403: Immutable request/paired probe points/paired marker ordinals, seven subsets
+// then immutable selected unit: eight at 222/1036. NOT kept: native frame and
+// point/recipient/readiness homes unchanged; original complete body restored.
 // N390: Actual second-phase state-count admission, positive/complementary bool/byte/short/long,
 // 222/222/222/222/222/222/222/222. NOT kept: no exact phase-result/lifetime form;
 // original body restored; native frame, point/recipient overlap and readiness homes remain.

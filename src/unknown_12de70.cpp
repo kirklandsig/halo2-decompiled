@@ -559,6 +559,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // Round 61 (fast): the count named and stored after the block read 73 (266 bytes: the count moves to EDI, the group keeps ESI); a block local for the tail's test and
 // pointer 51 (tail exact, cache block and index*24 swap EDI/EBP); a group local inside the tail's arm 27 (a temp plus a copy, identical), the pointer offset read first 27;
 // a group local inside the loop's arm 27 (the copy coalesces into ESI, no EDX), with the tail's block local 51.
+// Round 89 (fast): named count with the flag read straight from the block before the store and the block re-read in the arm 18 (266 bytes, aligned 6: the block goes to EDX as retail and the tail is
+// exact with no helper, the store stays after the load and the arm reloads; one-use count and bool, so not kept without a match), with `!= 0` 48 (271); count and block named with the flag from it 73
+// (266), block named then the store 73 (266); store first with the flag or block and flag named 27/27; loop read at each use 27, with the tail's named block 51; the tail's block named inside the arm 27,
+// with the loop's read at each use 27; a group and base named in the arm 27, the base named with the block direct 27; the arm's read as `*(s_fixup_group **)&` 27, as long 27, the test's through a cast
+// view 27 (a typed view does not stop the CSE). Diagnostic: the release callee as (base, group) 27 (same code; a contributor's function). Retail's block looks like a scratch temp with the arm's own load forwarded to `mov esi, edx`.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

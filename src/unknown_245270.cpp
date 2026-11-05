@@ -631,6 +631,18 @@ void function_245400(s_source_245400 const *source, long index,
 // second material's record (forceinline, inline, reference; with a named record) 208 or 204 late, no dead lea, no arrival change.
 // Plane table and pointers inside the plane test 222 (766 bytes): the source does arrive in ECX and copies to a callee-saved
 // register at entry as retail's, but the matrix then becomes a register argument too (no push, caller 43).
+// Round 132 (m3 lane 7, fast; 0x245aa0 and 0x245400 checked): the second material through a record
+// pointer (retail's dead `lea edx, [ecx + edx*8]`), the first through one also at the final call, both:
+// 209 each (no dead lea, callers keep their matches); the plane table read after the edge vector
+// 203 with 0x245aa0 at 3 (the source then arrives in EDX); the scaled edge transform as a scaled copy
+// rotated back through a forceinline helper taking the matrix 234 (811 bytes; plain inline stays out
+// of line, 387). Retail pushes EBP only around the plane code (`push ebp ... pop ebp` mid-body) and
+// reads the matrix at its test; ours keeps the matrix in EBP from entry, so EBP is a prologue save.
+// M397: Complete edge/cross/transformed-point defaults, masks 1/2/4/3/5/6/7,
+// then all at entry: 213/209/223/213/230/223/230/230. NOT kept: no equality or eligible native-
+// frame gain; original workspaces and complete body restored. Four exact controls survive.
+// DH381: Existing array edge producer at unit scale, late-plane/independent-side/staged-cross
+// subsets 0..7: 208/204/226/227/208/204/226/227. NOT kept: best gains five and loses caller 0x245aa0; original body restored.
 // N396: Signed eight-byte primary ordinal/first decoded code/second decoded code,
 // seven subsets then complete encoded/decoded residence: 208/281/270/278/279/263/294/298.
 // NOT kept: native narrow domains, no qualifying gain and longer decoded forms; original body restored.

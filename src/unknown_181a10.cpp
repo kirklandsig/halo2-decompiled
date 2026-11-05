@@ -416,6 +416,11 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // call 8; entry pointers for both bodies 8; `result = true` first in the closer-contact arm 10; that test with
 // its operands swapped 8. Diagnostics: `(void)j`, `(void)i`, `(void)first` and unused initialised copies of
 // them (one or two) leave the slots, so no-code references do not order these spill homes.
+// Round 57 (m3 lane 15, fast): `__assume` at the loop top, before the kind calls or before the contacts: j >= 0 8, j < count 8, both 9, i >= 0 8, first or second
+// != NULL 8, two assumes 8, ahead of the loops 9; naming body_b 8, body_a 79, both 8 (no-code references do not move these homes). Second's extra body read 24 and
+// first's flag through the indexed expression 47 both give retail's j, first, i, but also move second to the top and swap the scaled indices (retail second, scaled i,
+// scaled j); with both 47; second's flag indexed 230, both flags 233; first's count in a local 36, with the extra read 42, with the flag 174; contact count local 865;
+// entry pointer for one body 8/8. So one reference fewer on first or one more on j is the right direction; the second group is what is left.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -759,6 +764,17 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // long root type 319 (80), plus a next-shape local 319 (79), plus a one-use bool for the byte test 323 (79). Normal row terms in six orders 239 each (aligned 106-116).
 // long plane index locals 239 (same `mov dx`: the short formal narrows; the callee's formal is the real blocker, a caller rose before). Hit through
 // a contact position pointer 310 (folds). Left: contact takes a register once the hit is read by components (retail keeps it on the stack), three data reads.
+// Y603: Separate queried planes, earlier uninitialized material/coefficient outputs and
+// source-arm plane names: 239/231/239/231/239/231/239/231/231/239/231. NOT kept: 231 recovers frame 0x44
+// but moves the first-node home to +0x14 (retail +0x10); unmatched frame-only steering.
+// Material-only isolation also gives 231; original body and all declarations restored.
+// DH377: On the scalar-normal/actual-node graph, typed final-normal setter, complete plane-normal
+// setter and both 239/239/239; native hit publication alone/with either/both 340 each (1227 bytes),
+// standard hit memcpy 340. NOT kept: no gain; original publications, captures and full body restored.
+// Frame 0x40 versus 0x44, classifier observations and plane/point homes remain.
+// DH380: Original predecessor/shape/query key-admission boundaries, seven partitions and complete
+// partition with separate original root guards: 239/239/239/239/239/239/239/239. NOT kept: frame/receiver
+// homes remain; original tests, observations, query contracts and complete collector restored.
 // N395: Actual first/second/root/component/key/bounded-key names individually, then
 // two complete node/key identity orders: 239/239/239/239/239/239/239/239. NOT kept: no equality or
 // frame/home recovery; original names and complete collector restored.

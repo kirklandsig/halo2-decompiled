@@ -630,6 +630,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // positions 220-221; field locals moved after the group 216-224; `!count` 208; section NULL as a statement
 // 208; permuter 198 (a volatile only). Left: VC keeps constant 0 in EBP (retail gives EBP to the range at the
 // join and tests with `test`), which shifts the positional score, and BLOCKED-BY 0x11e800's registers.
+// Round 216 (m3 lane 3, fast): a bool result declared first with definition and section NULL at their declarations
+// (no branch NULL stores) 197 (713 bytes); the section declared first, before the point copy 172 (same code); the byte
+// result cleared before the type branches 197 (742 bytes); the surface test written as one plane comparison (no
+// surface local) 201; the 0x16e1b0 call moved after the vertex fetches 282 (774 bytes). Body restored.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -871,6 +875,7 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // the four triangle-test argument registers remain BLOCKED-BY 0x11e800.
 // Round 210 (fast, diagnostic, reverted): 0x11e800 declared (p, a, b, c, u, v) still gives 0 (0x11e800 126, 0x14ac60
 // 172); all four differences are its argument registers. BLOCKED-BY 0x11e800 (contributor).
+// Round 216 (m3 lane 3): baseline listing still differs only in 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
@@ -1210,6 +1215,10 @@ done:
 // 119/115/115/118/118/118/118; independent long result 120 (caller lost). NOT kept:
 // wider result operations lack native byte storage/equality; other gains below margin.
 // Original Boolean contract/body restored; exclusion/result/NONE and direction homes remain.
+// Round 216 (m3 lane 3, fast with 0xd2a50): the existing availability helper with the entry order NONE short, probe
+// copy, flags, result 151 (440 bytes); that entry order alone 127; the flag in two steps (type test, then `excluded =
+// policy != 2` under it) 155 (480 bytes, sete/setne); the first query as the `while` condition with one `break` retry
+// test 155 (480 bytes, 0xd2a50 lost); the flag as a byte member of the state aggregate 152 (483 bytes). Body restored.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

@@ -239,6 +239,9 @@ void function_1d56f0(s_havok_component *component)
 // return 153; persistent body/query receivers 77/77; placement/registration and body/
 // registration 153/153. NOT kept: no gain; registration moves the frame, and cdecl
 // raises both setter users. Original contracts restored; lookup and setter transport remain.
+// DH384: shared xyz rotation/translation/all 77/77/77; all-row scalar inputs 77;
+// accepted-pose snapshot 180; shared point setter 77; output/moving-pose zero
+// construction 116/244. NOT kept: no gain; record/zero forms grow the native body.
 // Round 394: complementary blocked result bool/signed-byte/short/long
 // 82/82/147/146; each with nonpositive direction 88/88/153/152. All grow the
 // body; original result, direction, frame homes and complete executable source restored.
