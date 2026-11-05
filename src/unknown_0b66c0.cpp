@@ -368,6 +368,19 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // length 21, with an `end` local too 21; `long end` before the scan 49 (94 bytes); source after the compare 32; `start +=`
 // before the clamp 36; nested tests with the text read 27, named length with it 27, `length >= start + count` with it 28;
 // named length with `string + start` 28, with `start +=` 40.
+// Round 55 (m3 lane 15, fast with 0xb5f10/0xb61d0; one-file LTCG harness exact at 40 / 0xb5f10 0): count tested first with a text
+// local and `start += (long)text` 39 (start arrives unsaved in EDI, 0xb5f10 35); `long source = start; source += (long)string;` 28
+// (0xb5f10 6); `start = (long)&text[start]` from a text local 27 (0xb5f10 6); (start, count, string, destination) in every
+// declaration and call with the text local 27 (237 bytes for 0xb5f10, 38); that order with a plain string 48 (93 bytes, 0xb5f10 82).
+// Harness: plain string x orders (string/start/count/destination, string/start/destination/count, string/destination/start/count,
+// start/string/count/destination, start/string/destination/count, start/count/string/destination) x `start += (long)string`,
+// `string + start`, `start + (long)string` 41 or 48; on the string-first and start-first orders flat, nested, three-level with a
+// length local, early returns, result set in an else arm, result from the whole test x the same sums and a text local 41-54, never
+// string on the stack (it arrives in ECX or EBX and the scan's byte then takes AL); volatile string x the four orders x start or count
+// tested first x sums 28-40. Compile-only: the declared order alone picks the sum's register (string first `add ebp, edi`, start
+// first `add edi, ebp`, retail's direction). Probes (harness only, not kept): extra uses of the walk or of destination move
+// the walk or start between scratch registers and start then arrives there, never in ECX with an EDI home, so re-weighting the scan
+// does not reach retail's convention.
 // M380: Shared copier short/word/int64/uint64 size contracts with native/void return:
 // 39/39/56/56/39/39/56/56. NOT kept: narrow forms gain one and grow to 103 bytes;
 // wide forms regress at 112 bytes. Original helper, scanner and complete body restored.

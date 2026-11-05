@@ -121,6 +121,16 @@ void function_14bac0()
 // MiniMax B (11-04): no new form, no lower score.
 // MiniMax S (11-01): no new form, no lower score.
 // score 222 (was 222): Frame 0x50 versus 0x3c, exchanged player/scenario spills, point/recipient overlap and readiness homes remain.
+// Round 64 (fast; masked aligned count in brackets, base 222 [87]; ranks by structure where the positional score hides it): stamp through
+// `index`/`stamp` locals and the relocation point used directly 244 [78]; on that: second loop on a block-local datum iterator through
+// 0x6b380 242 [56], unit read at each call 236 [66], marker element pointer 208 [74] (retail's add/add, but a one-use pointer: not kept),
+// block around centre/height/radius 244 [78]; iterator + unit + marker 259 [55] at 1048 bytes, aligned 153 -> 92, the closest structure yet:
+// entry, both marker scans, the centre call and the second loop are retail's but for registers; with an early-return next-used scan for the tail
+// 268 [47] at 1027 (retail's found block after the ret; a new one-caller helper, and NONE then takes EDI so the pushes change). Same code:
+// point difference through vector3d_from_points3d, readiness declarations swapped [54], stamp declared first, scenario read before the player.
+// Existing 0xbaf80 and 0xbec70 stay out of line here (the first in an avoid-listed file, the second in an /Ob1 file): 261-334; retail's
+// `mov edx, ecx` stamp copy looks like 0xbec70 inlined, a forceinline copy of its body gives 244 [78] without the copy. Retail keeps player in ESI
+// and scenario in EDI with iterator.data in memory; ours swaps them and holds iterator.data in EDI across the first loop.
 // Earlier at 222 (was 222): Frame 0x50 (original 0x44) versus retail 0x3c; centre/second-iterator slot sharing, readiness homes and the second scan's call remain.
 // Round 9 (lane 11, fast): second loop through data_datum_iterator_next as retail calls it 257 (frame 0x44:
 // center 0x10, destination 0x1c, alternate 0x28, second iterator 0x34; retail packs the iterator over the
@@ -451,6 +461,13 @@ void function_14bac0()
 // N365: Complete real scenario-table/marker/origin field layouts, seven nonempty
 // subsets 222 each; all with native result-tested recipients 228. Original external
 // views and full body restored; NOT kept: unmatched layout/alias ownership.
+// Round 212 (m3 lane 3, fast; aligned/masked in brackets, kept form [122/60]): the scoped form re-measured 259 (1048, frame 0x48) [103/40];
+// on it 0x6b380 reading its iterator through the parameter's address 254 (1064, frame 0x40, the one form that packs the second iterator
+// nearer, but 0x6b380 itself 47); 0x6b380 through the existing set_current helper 259, 0x6b380 34; the second iterator, both iterators or
+// the first set up through an inline helper 259/259/259; the second iterator declared with the block's points 259. Frame stays 0x48.
+// Round 212, later: retail's final loop has one index in EAX, `inc eax; js`, and the found block after the ret, which an early-return scan
+// (`return index` in the loop, `return NONE` at the end) gives where the shared single-exit helper does not; on the kept body in a new inline
+// helper 280 (1015) [146/67], on the scoped form 267 (1027) [138/61]: the tail is retail's, the length falls and the score rises. Not kept.
 // N375: Entry request admission in positive/complementary bool/byte/short/long
 // storage, eight forms 222 each. NOT kept: no frame/home or byte-match gain; original
 // request, point/iterator/readiness graph and complete executable body restored.
