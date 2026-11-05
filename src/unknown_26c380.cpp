@@ -392,6 +392,18 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // and it still matches.
 // Held form at 34: 1605 bytes as retail, first difference +0x94, aligned count with registers and stack homes masked 4. Left: the cross's row j operands and the magnitude's j/i order, XMM1-3 rotated
 // (retail line offset, normal j, normal i; ours normal j, normal i, line offset), the line offset's and previous sector's stack slots, tail C's edge/distance store order.
+// Round 137 (m3 lane 8, fast, all on the held 34 form rebuilt from this body: the two exits as `success = false; goto finish;`,
+// which needs the `success = false;` as well, without it 106 at 1600 bytes): tail C stored blocked, edge, distance 245 (1500
+// bytes: it merges into tail A), with `success = false;` first in it 65 (1605, no merge, but the blocked store takes AL's
+// zero); the private magnitude sum in all six orders 34 (identical: the x87 sum follows the cross's component order);
+// cross3f_staged 34 (identical); a named result in the magnitude helper 361, in the dot helper 38, in both 349 (the cross
+// and magnitude are then retail's, but the line offset's dot copies the normal's j and one loop-entry jmp is lost); on that
+// the dot as y-first, vector-first or both 349 (identical), accumulated 360, two named products 357, named point coordinates
+// 357; the magnitude named at the call 350, with the named dot 338 (1612 bytes); the line as the code base's plane2f
+// (n, d), whose layout gives retail's normal/offset slots (0x34/0x38/0x3c, previous sector at 0x30) 304 (1612 bytes: the
+// point loads then stop folding into the products), with the named results 350/306/338; the offset declared before the
+// normal, at function scope, both at function scope 34 (identical). Retail's XMM1-3 = offset, normal j, normal i is a
+// register-priority tie between the offset and the normal components (four uses each in the edge loop).
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
