@@ -3638,6 +3638,12 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // original/negated-disjunction exclusion and both reply orders. Held timeout owner spill and
 // message/reply allocation remain.
 // Scores 104/104/104/104/97/97/97/97; original executable body restored.
+// MiniMax H (11-04): no new form kept, no lower score: the reply member-state pointer before the id 94 (seven
+// under the bar, restored), the identity address named before the memset 94, the two-epilogue return 115, an
+// owner local read at the top and used in the reply 132, the timed-out call's member state taken through a
+// pointer 101; the thirteen bytes retail has more are exactly the timed-out call's value10 spill, its split
+// member-state lea and the extra load, and the owner spill is a dead store in retail too, so it is not
+// reachable from a live local here.
 // Round 139 (m3 lane 5, fast): reply member-state pointer before the id 94 (seven, under the bar); with the identity
 // address named before the memset 94; with an early not-peer `return false` and `return true` 116 (428 bytes); with the
 // announcement id field by field 94; with the identity as a structure assignment 94; with `leave` declared first 96.
@@ -3707,6 +3713,9 @@ struct s_network_session_list;
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, const s_session_id *id);
 bool function_07ab10(long key_index, s_type_99af70 *address, long local, word port, const XNADDR *xnaddr);
 
+// MiniMax H (11-04): no new form, no lower score: at the 0x7ab10 call retail copies the host through ESI
+// into EBX and reloads the session into EAX, ours loads the host straight into EBX and reaches the session
+// through ESI; with the callee matched, that staging follows from the argument order and not from here.
 // MiniMax G (11-04): no new form, no lower score; the host/session staging at the 0x7ab10 call
 // (retail reloads the session and keeps the host in ESI) and the cleanup placement still differ.
 // score 136 (was 136): host/session staging, clock boundary and cleanup placement differ;
