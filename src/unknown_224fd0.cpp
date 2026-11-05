@@ -278,6 +278,8 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // and in-place/distinct product outputs: 455/455/436/436; shared complete sums
 // 441/441/385/385. NOT kept: no equality; native frame/product spills not recovered.
 // Original producer, all output stores and complete body restored.
+// Round 89 (fast; a = aligned, kept form 214): retail's first-arm statement order with k*complement as a const reference 392 (1792) a221, as a plain local 394 (1792) a165; the kept order with
+// k*complement as a const reference 366 (1824) a194, the complement as one 409 (1796) a342, the squares as const references 445 (1768) a278.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

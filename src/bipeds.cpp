@@ -651,7 +651,7 @@ bool function_e68c0(long type, long unit_index);
 bool __stdcall function_e2d80(long arg_159e6d);
 bool __stdcall function_e01d0(long arg_159e6d, long *names);
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output);
-void function_1e5af0(void *physics, s_biped_physics_output *output, vector3f const *up, vector3f const *forward);
+void function_1e5af0(void *physics, vector3f const *forward, vector3f const *up, s_biped_physics_output *output);
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output);
 bool __stdcall function_e0ef0(long arg_159e6d);
 bool __stdcall function_e3c90(long arg_159e6d, long *names, s_biped_physics_output *output);
@@ -824,7 +824,7 @@ bool __stdcall function_dd360(long arg_159e6d)
 		output.unknown52 = NONE;
 		changed |= function_e01d0(arg_159e6d, names);
 		function_dc5c0(arg_159e6d, &output);
-		function_1e5af0(&biped->physics_mode, &output, &biped->up, &biped->forward);
+		function_1e5af0(&biped->physics_mode, &biped->forward, &biped->up, &output);
 		changed |= function_e24f0(arg_159e6d, names, &output);
 		switch (biped->physics_mode)
 		{
@@ -4779,61 +4779,11 @@ void __stdcall function_e3380(long arg_159e6d)
 
 /* the dead biped's animation: its getting-up animation once it can stand,
    the ragdoll's pose while it lies, or its landing */
-// score 13 (was 13): Frame 0xc agrees; three object lookups read [data + index] where retail reads [index + data],
-// the 0x1e5af0 push temp is ecx (retail edx) and the not-found arm keeps names in edx and copies it to ecx (retail
-// loads it twice, into eax for the store and ecx for the join).
-// Earlier (score 31 (was 158)): retail reloads the result byte at the second block's and the 0x34b block's false
-// returns (ours folded them to xor/sete).
-// Result first 174; explicit status exits 173; current/primary/tag receivers at uses 182/177/206;
-// initial success joined to result 201; current observations/status exits 185; result first too 186.
-// Original body and every callee contract restored.
-// Round 408: real object ordinal long/dword/word 169/169/179; actual later query result alone/with
-// those carriers 201/201/201/203, sequential result 203. Declared animation flags 164; with existing
-// biped bit view 158 plain at 617/617, kept. Native ordinal coupled 156/156: additional two-point
-// gain rejected; retain the confirmed field graph and all original lookups, calls and result lifetimes.
-// Round 96, kept: bit-29 set/clear through the shared inline helper (its own lookup gives retail's re-test
-// and read-modify-write), the outer bit-29 tests read through a fresh lookup, the state flag tested as a
-// TEST_FIELD_BIT, `if (unknown34b == 1) return true; return result;`. Tried: fresh lookup at the inner
-// test only 149; at block 2's test 101, at its store 159; fresh lookup at every use 178/168/176/172;
-// result set in the 0x34b block 151/105; state flag through a fresh state read 118; single exit through
-// goto for block 2 and/or the 0x34b block 187/195/176/186; result declared first/second/third 34/34/33;
-// state declared before the definition 33; `return unknown34b == 1 || result;` 91.
-// Logic walk (2026-10-31): every block agrees with retail 0xe3c90-0xe3ef6 (callees and argument order, 0x7000101/
-// 0xd000042/0xc000043/0x6000087/0x400000c, the 0x3e88b439 blend, +0xc1 bit 0, +0x11 mask 0xa, +0x6c bit 0, +0x10a bit 2, +0x39d
-// unsigned > 0, the 0x1e5af0 order: output in eax, physics in edx, +0x7c in ecx, +0x70 pushed); no behaviour difference.
-// Retail returns the result byte at [esp+0x13] reloaded at the 0xe3dc2 tail shared by the block-2 return and the
-// 0x34b != 1 return; an address-taken `bool const *result_reference = &result;` local changes nothing (31).
-// Round 48, kept: one if/else-if chain with a single `return result` (the first block sets result, the second
-// block, the 0x34b block and the rest are its arms): the block-2 and 0x34b != 1 exits share retail's result-byte
-// reload (31 -> 13, plain). Tried: an index-first getter (`index = i & 0xffff;` before the table pointer) for the
-// four lookups 10 (all three [esi + data] as retail; a new one-caller helper, not kept); the existing object_get
-// 13; a named absolute-index local at each lookup 213 (argument moves to the stack); the two zero stores swapped
-// 15; `result = true` before the names store 15; the inner if/else inverted 13; result declared first 16; a 600 s
-// permuter run (44 tries), none below 13.
-// Round 39 (fast): only the top lookup decides the order of all three: the index formed before the table pointer
-// there gives retail's [index + data] in all three (13 -> 10): a header pointer local (`header = &headers[i]`,
-// `biped = header->biped`) 10, a named absolute index 10 (both one-use, kept only with a match), the index-first
-// getter on the inner tests or in the flag helper only 13; BIPED_GET file-wide as an index-first inline getter 10
-// (0xdd0d0 and 0xe4450 stop matching). On the header local: the names store in both inner arms 199, `result = true`
-// first in the found arm 12, the output zero store first 12, `state->flags & 1` unwrapped 67, physics as a byte
-// offset 10, output as `((real *)output)[10]` 10, result declared before state 12, inner if/else inverted 10, the
-// blend constant passed directly 13 (10 on the header local; same code). Left
-// (10): the push temp and the names registers, a one-step scratch rotation; 0xdd360's 0x1e5af0 call also takes edx
-// for the push temp in retail where ours takes the first free register (lead: 0x1e5af0's parameter order; its file
-// is held this round).
-// Round 118: chained zero store (output first) 13; top lookup through the existing object_header_get 13; the
-// final names block inverted (else arm first) 13; 0x1e5af0's parameters as (output, physics, up, forward) at the
-// definition, both declarations and all five calls 13 (push temp still ecx; 0xdd360/0x118700 worse); a named
-// real field at output + 0x28 13. Retail's 0x1e5af0 call setups disagree on an order (0xdd360 ecx/eax/edx,
-// 0x118700 eax/ecx/edx), so none is evidence for a reorder.
-// score 13 (was 13): the three lookup address orders, the forward push and the names reloads remain.
-// Round 102: a shared absolute index 213; forward/up/physics/output/names pointer locals 13 each;
-// direct first recovery return 199; direct unknown34b == 1 return 190; an explicit masked top lookup 13;
-// names[9] defaulted before the final test 165. Original body restored.
 // @retail 0xe3c90
 bool __stdcall function_e3c90(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
-	s_biped *biped = BIPED_GET(arg_159e6d);
+	s_object_header_view *header = object_header_get(arg_159e6d);
+	s_biped *biped = (s_biped *)header->object;
 	byte *definition = BIPED_DEFINITION_GET(biped);
 	s_animation_state *state = (s_animation_state *)((byte *)biped + *(short *)((byte *)biped + 0x12a));
 	bool result = false;
@@ -4886,7 +4836,7 @@ bool __stdcall function_e3c90(long arg_159e6d, long *names, s_biped_physics_outp
 			{
 				biped->unknown3a0 = 0.0f;
 				*(real *)((byte *)output + 0x28) = 0.0f;
-				function_1e5af0(&biped->physics_mode, output, &biped->up, &biped->forward);
+				function_1e5af0(&biped->physics_mode, &biped->forward, &biped->up, output);
 			}
 			names[1] = 0xc000043;
 		}
@@ -5680,7 +5630,7 @@ bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_outp
 	biped->forward = move.forward;
 	*(vector3f *)((byte *)output + 0xf4) = move.forward;
 	biped->up = move.up;
-	function_1e5af0(&biped->physics_mode, output, &biped->up, &biped->forward);
+	function_1e5af0(&biped->physics_mode, &biped->forward, &biped->up, output);
 	function_e2e90(arg_159e6d, &names[0], &names[1], move.direction, move.value, (byte *)&names[2]);
 	if ((biped->physics_mode == 4 || biped->physics_mode == 5) && move.placed)
 	{

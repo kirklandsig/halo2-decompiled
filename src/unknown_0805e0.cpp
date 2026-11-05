@@ -248,6 +248,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // flags and high identity dword as retail, next in EDX and low dword in EBX where retail has them the other way round); the successor read through the table, then the iterator store and the entry, then the entry
 // and the iterator store, or after the entry, 62/62/62 (138, al 28, callers keep): next in EBX, flags in ECX, identity in EDX:ECX, mask in AL as retail, the index still in ECX through `lea esi` and the head still padded.
 // Lead: retail's index, its product and the entry are one web in ESI, so the successor stays apart; the back-edge `mov esi, ebx; jmp` looks like a tail-merged copy of the entry computation.
+// Round 86 (m3 lane 16, fast with 0x1a303b/0x2b393c): `*iterator` read at each use with a `!result` loop 79 (102 bytes), with
+// `break` 71 (109), flag then copy after the loop 86 (95), per-pass result 70 (110), each the same with the parameters as
+// (iterator, player) and all with the iterator in EBX, callers lose; a local index with the `!result` loop 57 in both orders;
+// per-pass result with a successor, with `index = *iterator` and as a guarded do-while 59 each (135); a guarded `for (;;)` or
+// `while (true)` ending `if (next == NONE) break; index = next;` 59 per-pass, 52 with `result = true; break;` (127); a done flag 54.
 // M391: Eligibility scopes split at individual flag/identity/online/exclusion boundaries 1,3,4,5,1+3,1+4,1+5,3+4+5: 43/43/43/43/43/43/43/43.
 // NOT kept: No exact native index/successor, mask-hoist or loop-exit repair. Original complete body restored.
 // AC532: Complete complementary rejection in bool/byte/short/long, outer-result
