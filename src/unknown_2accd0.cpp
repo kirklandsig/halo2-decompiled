@@ -870,6 +870,19 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // P327: API-returned file/signing handles, original/mutable/const producer pairs
 // excluding both original: 34/34/34/161/161/34/161/161. NOT kept: ties or larger
 // 689-byte bodies; original API publications, field observations and full body restored.
+// Round 212 (m3 lane 3; compile-only exact here, real --fast where given, aligned in brackets, base [23]): no total local with the signature
+// seek through a new inline (file, position) helper 28 fast (687) [17]; the same code from no total local plus a one-use `HANDLE file` in the
+// signature case 17 compile-only (one-use local, not kept); that file local used for the ReadFile too 195 (682) [53]; plus the clamp through
+// the record's field 153 fast (689) [3]: only retail's dispatch hoist and `lea esi, [ecx + edx]` are then left (the signature sum still
+// coalesces body_size into ESI). On that form: the seek helper with a long or const-reference parameter, forceinline, an internal copy, or
+// named/cast parts for the sum 148-149 compile-only (no change); a body-size local in the body case 152 [7] (sums turn header first and the
+// compare flips); with an offset local too 152 [7]; one multi-definition body-size local across both cases 152 [7]; the body test as
+// `body_size > body_offset` 152 [9]; the sum repeated in the equality through named parts 171 [45]; `dword const &position` 171 [43], in the
+// helper 148 [4]; a shared signature-offset helper at the entry and the signature case 118 [47]. No total local alone 68 [57]; the signature
+// position declared after or between the buffers 68 [57].
+// Round 212, later (real --fast): no total local plus a one-use `HANDLE file` 28 [17]; plus a named remaining in the clamp, direct arm's size first and
+// the flipped body test 29 [18]; the same with the seek helper and a file local 29 [18]; no total cast, the clamp re-reading the record's size twice, seek helper 28 [17].
+// Grid of 143 compile-only forms over these: lowest positional 17, lowest aligned 4 at 148. Not kept: each needs a new one-caller helper or a one-use local.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

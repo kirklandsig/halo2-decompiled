@@ -257,6 +257,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // B426: Existing SDK C entry points at first/later query, volume, status, playback,
 // mixbin, pitch and complete call phases: 532/532/532/532/532/532/532/532. Original SDK receivers,
 // workspaces and complete body restored; frame/stream/gain and mixed math remain.
+// Round 212 (m3 lane 3, fast control 532, plain 545; aligned 344): the sends as a fall-through two-case switch 545 fast (1901, aligned 331);
+// on it direct declared uninitialised beside changed 545, ahead of changed 545, the send state at the function's top 545, status at the
+// function's top 545; direct beside changed on the loop form 532. Frame stays 0x22c: retail's byte flags sit together at +0xe/+0xf, ours at
+// +0x13/+0x1b, and the declarations do not move them.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

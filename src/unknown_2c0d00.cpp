@@ -368,6 +368,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M371: Paired object/sphere ordered-radius overlap/exclusion truth in
 // bool/byte/short/long: eight 931 (reduced control 931; full 882). NOT kept:
 // byte-neutral decisions; original tests, qualifiers and complete body restored.
+// Round 212 (m3 lane 3, fast control 931, plain 882; aligned 460 at control): marker arrays at the top of the function 931; object matrix at
+// the loop-body top 931; object offset at the loop-body top 931; sphere centre and difference at the loop-body top 931 (identical code each);
+// unit volatile dropped 918; actor volatile dropped 991 (3648); both 1014 (3632, frame 0x2cb4); both plus location and raised as separate
+// locals 1005 (3643, frame 0x2cb0, aligned 419); the query struct alone dropped 904 fast (3702, frame 0x2cb4).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
