@@ -3723,6 +3723,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y605: Complete positive header/size/relay-member admission scopes, seven subsets
 // on indexed traversal then all with packet cursor: 163/139/139/163/163/139/163/160.
 // NOT kept: header ownership regresses, other scopes tie; original full body restored.
+// Y607: Current-member char/signed-char/64-bit signed/unsigned result carriers,
+// indexed then independent packet traversal: 168/168/156/156/164/164/156/156. NOT kept:
+// no byte match from non-native result carriers; original whole body and observations restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -484,6 +484,9 @@ void function_14bac0()
 // N383: Existing typed player iterator at the first traversal, selected-player type, native
 // result-tested recipients and early uninitialized iterator declaration: 222/222/228/228/222/222/228/228.
 // NOT kept: ties/regressions; original fields, points, iterators, includes and full body restored.
+// Y607: Actual marker-pointer field mutable/readonly pointers and references, original/native
+// result-tested recipients: 222/222/222/222/228/228/228/228. NOT kept: extra field aliases
+// do not match; original observations, native records, both traversals and full body restored.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
