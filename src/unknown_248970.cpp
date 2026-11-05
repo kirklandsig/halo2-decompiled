@@ -445,6 +445,9 @@ public:
 // 505/505/505/505. NOT kept: forced forms disturb the matching viewer x87
 // schedule; ordinary providers stay called. Original full body restored;
 // child preheader, pool/NONE, allocation retest and salted index remain.
+// T58: Paired existing allocator/updater declaration boundaries, original/ordinary/forced inline policies:
+// 54/54/54/54/54/54/54/54. NOT kept: no eligible match or gain; complete original source restored.
+// Child preheader, pool/NONE ranks, allocation retest and salted-index construction remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

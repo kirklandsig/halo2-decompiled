@@ -700,6 +700,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // (XMM2/XMM3 unchanged); max as a second ternary 51, if-form helper 19, lateral const ref at its definition 25, `||` of the sides 90; side outputs declared at top, heading, dot,
 // sum, fabs or 0.95 block, each side, shared and unshared, 17 each (scope does not move them). Diagnostics, reverted: one more read of the sum moves it to 0x10 (166), of the length
 // or second side no move (187/96), of a timing output no move (63/70/79); one or two more lateral uses keep XMM3 (92/103). Body unchanged at 89.
+// T58: Complete readiness partitions 1/2/4/3/5/6/7 and sole-exit entry rejection without a unit snapshot:
+// 89/89/89/89/89/89/89/89. NOT kept: no eligible match or gain; complete original source restored.
+// Unit-call scratch register and first-length/projection/query homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

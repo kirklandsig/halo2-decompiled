@@ -179,6 +179,10 @@ extern long g_55c154;
 // 174, one load 61; the bit test through a one-bit field with TEST_FIELD_BIT 174 (one load 61), bare in the `&&` 184. Diagnostics, not kept: dropping
 // either `saved` store 164-166, all shifts 160, all &g_54e4a0 uses 256 (`this` ESI, no spill). Next: why retail does not hoist &g_54e4a0.
 // Round 55, second pass: the id and variant stores through a same-file forceinline helper at all three sites, two arms 174; that with the 0x238c69 order and both named locals 183.
+// T62: complete sole exit and target inline metadata 61/61; conditional load-call
+// result direct/named 178/178, short-circuit result direct/named 110/110; complete
+// exit with conditional/short-circuit load 178/110. NOT kept: no gain; load-result
+// graphs lose the biased frame. Classification spill and copy expansion remain.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

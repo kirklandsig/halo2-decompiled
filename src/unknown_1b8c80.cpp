@@ -1564,6 +1564,9 @@ void function_1f86a0(long actor_index);
 // Diagnostics, reverted: one more read of the entry or the mask 263, 254 (mask keeps BL); a compiler barrier after the two root calls on the mask form 134, no mask 230 m26, volatile
 // mask 247 m17: that last gives retail's EBX entry with `mov ebx, eax` for the first root, so the difference is which byte value holds BL. 0xbaf40's memory summary as a cause is
 // untested, its file was held this round.
+// T58: Actual iterator aggregate/reference-tuple/value/library construction, native member/full-slot payload pairs:
+// 134/134/259/259/256/256/256/256. NOT kept: no eligible match or gain; complete original source restored.
+// Mask spill, EBX entry and actor/root homes remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

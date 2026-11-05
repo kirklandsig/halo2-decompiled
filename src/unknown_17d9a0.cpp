@@ -419,6 +419,8 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // F393: Complete two-use projection row ordinal long/dword/int/word after/before point construction:
 // 163/163/163/196/158/158/158/198. NOT kept: no byte match; original complete body/helpers restored;
 // live-plane distance base, first selectors and product memory sides remain.
+// T57: Normal component-array transfer, long/short/dword/word ordinals, forward then reverse
+// 206/223/206/223/219/219/219/219. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // Round 54 (m3 lane 15; `--fast 0x17d9a0 0x120850 0x22bbca` is exact here, 46: listing 0x22bbca brings point2f_set's file in; a one-link harness
 // with those files is 54 for 46, 0x120850 taking ECX there, with its product pairs as retail's). Ours differs from retail in 1, 4, 6, 0 of
 // the 6 pairs of corners 0-3. Harness, plane helper / axis form / lookup / helper types (320 + 288 forms): nothing below 54; plane helper with
@@ -444,6 +446,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // axis, x, side, out) 40, (axis, y, side, matrix, out, x) with `.n[axis]` 42, (matrix, y, x, axis, side, out) with a byte side 42, (y, x, matrix, axis, side, out),
 // short axis, named px/py 164; `.n[axis]` alone 46 (same code). NOT kept: no retail call shows these orders and the gain is under 8. Harness: all 720 orders best 48;
 // 792 random forms of order x plane helper x axis form x lookup x types best 48; order x plane helper x axis form, 720 forms, best 63.
+// T59: Existing corner producer as an actual quad member, coordinate pointer/reference,
+// corner ordinal/output reference and inline/force-inline contracts: 160/160/150/150/160/160/150/150.
+// NOT kept: selector and product ranks regress; original free producer and complete body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -1059,6 +1064,13 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // 0x1546f0's statements, squares j, k, i, trig after 607 (3663 B, masked 303), squares i, j, k 607 (3663 B, masked 294); `t * k` shared, rows forward, left j/i/k, up k/i/j
 // 648 (3647 B, masked 270); matrix3x3 basis with accumulating rotate rows in place 646 (3647 B, masked 384). All but the first change the frame (+0x7), which moves every home; the first keeps it, 32 bytes short. Harness: accumulating rows
 // (`real i = up.i*k; i += left.i*j; ...`) as retail's spill pattern suggests, with or without an in==out copy, m397-423; 241 + 151 + 482 + 304 random basis forms best masked 258.
+// T57: Accepted endpoint coordinate-array transfers, long/short/dword/word ordinals,
+// paired then separate loops
+// 547/541/547/541/539/574/539/574. NOT kept: no exact or qualifying structural gain; original complete body restored.
+// T59: Native matrix3x3 rotation basis, original/group lifetime, original/complete input
+// capture and separate/matrix-position pivot: 536/661/585/600/536/661/585/600.
+// NOT kept: three-point lead is below eight and matrix grouping is unmatched; other forms
+// lose native frame/extent. Original basis vectors, alias-safe helper and whole body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

@@ -632,6 +632,9 @@ struct s_physics_component_walk : s_havok_component
 // written inline is also 120). The 120 is the `open` flag set in the arms; written as one direct condition the same body scores
 // 161 and the continue form with the helper 151, so none of it is kept (test-set flag rule, kept only with a byte match);
 // build/held/lane1-r72-1d6630-flag.patch is the whole 49 form, a lead toward the match.
+// T57: Persistent actual current-group pointer/const-pointer/reference/const-reference,
+// selected by index then receiver, spanning body and entry phases
+// 356/356/356/356/338/338/338/338. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

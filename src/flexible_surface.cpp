@@ -599,6 +599,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // Left: `axis.k*g.i` and `axis.j*g.i` load g.i first where retail copies the axis, `sine*cross_j/k` reloads, the opening's RNG/time schedule. Source operand order, cross statement order,
 // staged cross or rows, sine/cosine placed later, pointer or reference reads of the global and a rotation helper taking (vector, axis, sine, cosine) do not change them (about 6,500 forms).
 // Fast: the float tail alone on this body 171 (892 B); dot3f with a scalar cross 104 (880 B); `short ticks` alone 110. NOT kept: helper bodies written out, one-use local under 8.
+// T59: Consumed direction/axis/cross workspaces through the existing scaler on the retained
+// mixed-row/split-wave graph, subsets 1/2/4/3/5/6/7 and all with staged cross:
+// 172/181/164/182/180/187/174/174. NOT kept: frames and extents miss retail; original
+// complete captures, shared products, row trees, observations and body restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

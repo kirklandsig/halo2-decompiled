@@ -844,6 +844,8 @@ void function_1537f0(s_profile_record *record);
 // M393: Positive pointer do latch, strict then equality endpoint, per-visit/outer identity/source declaration pairs:
 // 53/53/53/53/53/53/53/53. NOT kept: nonexact lifetime/latch forms; identity homes still fold and native frame/end-bound remain.
 // Original complete body restored.
+// T57: Plain linkage-array reset, long/short/dword/word indices, forward then reverse
+// 66/66/66/66/62/62/62/62. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // Y597: Current pointer/no-tail graph with whole source-header zero field subsets
 // 1/2/4/3/5/6/7, then contiguous header fill: 53/77/53/86/53/77/86/115.
 // NOT kept: no exact publication graph or gain; full original body and initializers restored.

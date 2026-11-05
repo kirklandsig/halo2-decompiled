@@ -306,6 +306,9 @@ struct s_visibility_bound_record
 // (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
 // chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
 // movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
+// T61: Ordered parts-mode result, preset-false and exhaustive outcomes in bool/byte/short/long:
+// 411/411/450/450 and 408/408/413/446. NOT kept: test-produced flags miss equality;
+// original conjunction and full body restored. Entry/table and plane/query homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

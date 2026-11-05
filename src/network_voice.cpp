@@ -1553,6 +1553,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // before the capacity test or in its else arm 134 [25]; empty else 134 [25], `do { } while (false)` in it 190 [51] (0x56380 11), `result = 0` in it 201 [47] (0x56380 73);
 // a one-pass `do ... while (false)` over the body 190 [51] (0x56380 11), inside the init test 190 [51], with the capacity test as a break 134 [25]; arms' first-byte
 // stores on the else form 178 [37]. 24 return-structure combinations all had 0x56380 at 73 (scores 191-219).
+// T57: Existing removal/fallback word-flag helpers and retained-bit helper, subsets
+// 1/2/3/4/5/6/7, then complete shared flags with positive capacity admission
+// 134/134/134/184/184/184/184/184. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {

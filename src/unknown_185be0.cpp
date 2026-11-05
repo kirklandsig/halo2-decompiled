@@ -503,6 +503,9 @@ union s_185be7
 // real/rounded double/immutable double/seconds/seconds+milliseconds/immutable producers:
 // 638/638/638/709/709/638/638/638. NOT kept: unmatched conversion ownership; original cast and complete
 // body restored. Control-root/NONE, settings/zero and flag joins remain.
+// T59: Complete writable clamp inputs at all nine consumers, pointer/reference inputs and
+// void/value/pointer/reference results: 622 each. NOT kept: native x87 slot and control-root/NONE
+// ownership unchanged; original value clamp, observations and complete body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

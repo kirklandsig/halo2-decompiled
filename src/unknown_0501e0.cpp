@@ -371,6 +371,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // masked 161); plain rows and the depth limits in the condition 260 (1113 B, masked 155); `vector3f scaled` copied by field and overwritten from the input under the test, loop rows,
 // offsets as three-statement rows 274 (1156 B, masked 121: retail's opening 32 instructions); scaled reals, loop rows, limits in the condition 292 (1176 B, masked 149); scaled by field,
 // plain rows, limits in the condition 260 (1113 B, masked 155). 214 harness forms of copy x scale arm x rows x depth x offsets: none below 206.
+// T59: On the retained aggregate-scaled graph, complete coefficient-row dot with reversed
+// input before/after scale, aggregate/shared-setter rows and both dot input roles: 254 each.
+// NOT kept: all regress at 1136 bytes; original helper and whole body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
