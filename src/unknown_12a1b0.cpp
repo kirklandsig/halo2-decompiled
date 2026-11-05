@@ -387,6 +387,8 @@ void function_11bed0(s_location *location, point3f const *point);
 // Round 111: location pointer, const position pointer, both pointers, and mutable position pointer 93 each;
 // a pool local on the native iterator 93; the iterator's pool assigned last 93; guarded native do/while and
 // its early-empty-return form 93 each. One-use receiver locals restored unmatched; the call still expands.
+// MiniMax C (11-05): no new form, no lower score: the location call is still expanded here; the walk still
+// keeps the iterator struct where retail keeps a packed datum index (that datum form is 127).
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -1469,6 +1471,8 @@ struct s_looping_detail_request
 // 110; the mode through a named long 110 (same code). The query stays inlined in all six; `return` shapes do not cool it.
 // B448: Complete fallback selection/placement/publication provider, detail and source pointer/reference, forced/ordinary inline:
 // 159/159/159/159/434/434/434/434. NOT kept: no byte match; complete original body restored.
+// MiniMax C (11-05): no new form, no lower score: the first-player query is still expanded here, and
+// the audible arm still stores the offset in the request instead of retail's temporary and copy.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1652,6 +1656,8 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // Round 110: two-use long/short track-index locals 142/162 (619/628 bytes); force-inline get/set
 // declarations 50 each (same code); long or nested previous 129 each; force-inline previous helper 129;
 // implicit previous conversions 50 (same code). NOT kept: every gain-free form; original body restored.
+// MiniMax C (11-05): no new form, no lower score: the take path still tests the flags in memory where retail
+// loads them into EAX, and the previous value still comes back without retail's movsx.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {

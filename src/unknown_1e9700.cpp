@@ -138,6 +138,8 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // value between the enable gates 110; separate player/team inner results 109/109; two-call by-value
 // accessor 107; player record copy 71 (434 bytes), read-only copy 71, with the team-mode helper 78.
 // NOT kept: the one-use record copy spills through the code slot, absent in retail; original body restored.
+// MiniMax C (11-05): no new form, no lower score: the enable reload, the maximum homes and the word
+// schedule still differ here.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

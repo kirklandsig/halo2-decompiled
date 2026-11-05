@@ -4429,6 +4429,8 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
+// MiniMax C (11-05): no new form, no lower score: the normalization SIMD numbering and the trigonometric
+// and rotation homes remain.
 // MiniMax A (11-03): no new form, no lower score: the normalization SIMD numbering and the trigonometric
 // and basis homes remain.
 // score 145 (was 145): frame 0x24 and retail length agree; first +0x4f is normalization SIMD numbering,

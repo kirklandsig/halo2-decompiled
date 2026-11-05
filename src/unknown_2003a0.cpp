@@ -2160,6 +2160,8 @@ bool function_1e11b0(long actor_index, bool active);
 // without the current store 72/72 (216 B); address read at the +0x34 store 13; flag before stamp 15; both calls in the
 // depth pair 13; dead read of next or current, a named copy of next (diagnostics) 13 each; squad assigned apart from its
 // declaration, iterator at function scope, address local late or const, dword parameter 13 each. Rank never moves the swap.
+// MiniMax C (11-05): no new form, no lower score: the squad and loop index still swap roles here, the
+// argument is still not materialised in a register and the return is still narrowed to a byte.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2872,6 +2874,8 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// MiniMax C (11-05): no new form, no lower score: the first call still reloads the squad index from its stack
+// home where retail keeps it in EBP.
 // score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
 // squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
 // which shifts the later jump targets and drops the actor loop's alignment nop.
