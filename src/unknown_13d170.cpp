@@ -170,8 +170,15 @@ struct s_block_candidate
 	long pages;
 };
 
+/* a walk over the blocks, the current one ahead of the iterator */
+struct s_physical_block_iterator
+{
+	s_physical_block *block;
+	s_record_pool_iterator iterator;
+};
+
 // MiniMax S (11-01): the result/limit declaration swap reaches retail's frame but scores worse; no lower score.
-// score 347 (was 347): Frame 0x1050 versus 0x1054; page-offset/ring-tail allocation and policy blocks differ.
+// score 338 (was 347): frame 0x1054 now as retail (the deletion walk's struct holds the never-touched dword at esp+0x54); page-offset/ring-tail allocation and policy blocks differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but
 // ours moves the else arm past the scan; retail also uses the page offset (EBX) as its zero from
 // the limit clamp on, so EBX is pushed first. Candidate stores offset before time 370; busy as
@@ -436,6 +443,17 @@ struct s_block_candidate
 // 390 m76, `!have_best` default 396 (1200) m86, case 0 as an if 390, both 390; `continue` for the page test 390 m76, true default with the test reversed 390 m78, a prefetch pointer 390
 // m76; no-selection arm first with its own return 393 (1229) m109. Left under the guard: case 0 and 1 bodies past the end of the function (retail in place, not threaded), the 4 missing
 // frame bytes, and head not cached in EDX at the loop entry. Body unchanged at 347.
+// Round 215 (lane 3, fast; x = register-inclusive aligned, m = masked aligned, control 347 x260 m151): kept: the walk's block pointer ahead of the iterator 341 (x249 m146), block-arm time first 338 (m137).
+// Measured on that: offset after the result 377; previous in the block 352; candidate offset before time 338 (m135); total 339; none-arm time first 338; gap-arm time first 338; clock local 338; offset before the link update 338;
+// time compare reversed 338; inner while 338; no ring local 338; ternary clamps in the case 339 (x215 m117); re-derived insertion 355 (1230).
+// LEAD, unmatched and not kept (new helpers, a written-out successor): offset after the result + previous in the block + candidate/none/gap orders + successor written at both uses (`candidates[(i + 1) % 256]`, `i = (i + 1) % 256`)
+// gives retail's roles (offset EBX, current EDI, tail in memory, successor in ECX with its spill): 378 (x224 m123). Plus an early `return result` in the success path, plus two forced-inline policies with one result each (time then pages; weighted age with
+// `now - a->time > 0 ? now - a->time : 0`, the shape of 0x13d320, called from the switch or from a forced-inline switch in the `!have_best ||` test): 364 (1194, x121 m41), policy blocks in place. Plus the insertion re-derived per use (element macro, `next` local,
+// `before` read after the arms; `first` as a pointer ahead of `entry->previous = NONE` in each arm of the first-block test): 353 (1213, x98 m30), NONE in EBX as retail. On that: guard around a do-while 417 (1181); total 344 (1195); a maximum helper 349; overlap helper 321 (1200, x139);
+// duplicated tails in the after/none arms 352 (x134); limit test as an early return 398 (1224); head and tail as a local struct 361 (0x104c); head from tail, chained zeros, offset named in the limit tests 353; a local start 353.
+// Left there: an early zero register at the limit clamp (retail's zero is offset's EBX, NONE in EAX, type in ECX; dropping any two real zero literals removes it, a threshold, so retail's source has fewer: not found), the skip path's `xor esi, esi` (retail literal zero in the none arm),
+// late `push edi` (follows NONE in EAX), the walk's `movsx` before the add and `mov edx, edi`, the after arm past the epilogue, and the slot order.
+// On the zero register: one real zero literal fewer (candidate time, one segment time, head, one clamp arm, the limit clamp's zero) removes it; copies of a zero (head from tail, chained stores, a helper's parameter) do not.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
@@ -481,8 +499,8 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 				s_physical_block *block = &((s_physical_block *)physical->blocks->data)[current & 0xffff];
 				if (offset == block->offset)
 				{
-					segment_pages = block->pages;
 					segment_time = block->time;
+					segment_pages = block->pages;
 					bool busy = physical->busy_proc && physical->busy_proc(current);
 					if ((dword)(block->time + type) >= (dword)physical->time)
 						busy = true;
@@ -552,15 +570,14 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 		}
 		if (have_best)
 		{
-			s_record_pool_iterator iterator;
-			iterator.data = physical->blocks;
-			iterator.index = NONE;
-			iterator.datum_index = NONE;
-			s_physical_block *block;
-			while ((block = (s_physical_block *)data_iterator_next_inlined(&iterator)) != NULL)
+			s_physical_block_iterator blocks;
+			blocks.iterator.data = physical->blocks;
+			blocks.iterator.index = NONE;
+			blocks.iterator.datum_index = NONE;
+			while ((blocks.block = (s_physical_block *)data_iterator_next_inlined(&blocks.iterator)) != NULL)
 			{
-				if (block->offset < best.offset + pages && block->offset + block->pages > best.offset)
-					physical->block_delete(iterator.datum_index);
+				if (blocks.block->offset < best.offset + pages && blocks.block->offset + blocks.block->pages > best.offset)
+					physical->block_delete(blocks.iterator.datum_index);
 			}
 			if (physical->blocks->actual_count == physical->blocks->maximum_count && oldest != NONE)
 			{

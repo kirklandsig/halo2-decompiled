@@ -695,6 +695,14 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // Round 102: const position 10; the send count declared at the iteration top 10; position/written declarations
 // swapped 10; a direct completion return 67; direct builder and ordinary-failure returns 64; direct builder and
 // would-block returns 28; all three failure paths direct 64; an inline method declaration 10. Original body restored.
+// Round 215 (lane 3, fast): the would-block arm as a goto to a block after the shared return, `return true` 44 (208 bytes), ending
+// `result = true; return result` 44 (208), with `if (sent != -2) goto` first 44 (208), and falling into a single shared return 10; a
+// one-case switch on sent 10; `if (sent != -2)` with the restore in the else arm and an empty do-while 10, plus a goto 10, a dead
+// `written = 0` 10, a dead `sent = 0` 10, `__assume(!result)` 10, `result = result != false` 74 (226), `result = sent == -2` 74 (226);
+// the shared return as a label inside `if (sent != -2)` with the restore's goto to it 67, with an else 67, with the restore ahead of the
+// label 67 (the false result in a stack byte); that label with `return true` 72, plus `result = false` ahead of the test 72 (false folds,
+// EBP dropped). Every form that puts the false exit between the sentinel test and the restore adds a third false copy or folds or
+// spills the false result. Original body restored.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

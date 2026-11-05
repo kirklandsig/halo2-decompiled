@@ -950,6 +950,9 @@ bool c_projectile_type::v8(long a, long b)
 // boundaries 12 (47, 188 bytes, at the two after the 0x800 store); the power copied as long, both stores or the first only,
 // 12/12; the index by value 12; the power through a const pointer 12; a group index local before the entry 12; the NONE
 // test as `index + 1 != 0` 12; `b` throughout with no flags local 12.
+// Round 215 (lane 3, fast), full-width mask unless noted: the mask alone 12; a dword bitfield's low word 12; a 12-byte group array indexed
+// `[index & 0xffff]` 12; a by-value one-long handle with inline accessors 12; a group local masked after the test 12; `(dword)(index << 16) >> 16` 12;
+// the object through a typed view 12; a word bitfield's low word 5 (movzx, no mask).
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
