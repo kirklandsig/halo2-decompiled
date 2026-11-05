@@ -311,6 +311,7 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// MiniMax H (11-04): no new form, no lower score; the tail still loads the entry offset into EDX and the samples into ESI where retail loads the samples into EDX and the offset into the dying EDI, and the object index still loads into ECX before the pushes; every spelling of the sum gives the same bytes (7).
 // MiniMax D (11-01): no new form, no lower score; the sample sum still puts the entry offset in EDX and the
 // samples in ESI where retail has the samples in EDX and the offset in the dying EDI, the object index still
 // loads before the pushes, and the permuter's 1806 tries never beat 7.
@@ -548,6 +549,7 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// MiniMax C (11-04): no new form, no lower score: the flag-0 mask is the same literal 1 as the type tests and the shift, so the compiler hoists it into EBX and the frame stays 0x84 (a unique mask value folds to `test byte ptr [esi+4], imm`); a byte flags field with byte or word bitfield views, the mask spelled byte, unsigned, long, short, true or character, `== 0`, `!= 0` and `% 2`, the type test as a switch, and the audibility form that reproduces retail's neg/sbb/inc store all score 265 or worse.
 // score 264 (was 264): frame 0x84 versus 0x80: our build keeps the constant 1 in EBX from the datum flag test
 // (`test bl, al`, the type tests, the shift, b8d30's `push ebx`) and leaves a dead store of it in a stack slot,
 // so the object pointer goes to ECX; retail tests with immediates and loads `mov bl, 1` only after the b8d30

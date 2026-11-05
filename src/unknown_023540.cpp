@@ -2389,6 +2389,14 @@ dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
 // MiniMax D (11-01): no new form tried, no lower score.
+// MiniMax G (11-04, not kept, m3 review: the destination default moved inside the source-null block, so a null
+// destination with a non-null source read an unset rectangle; a behaviour change): 132 (was 140) with the two default rectangles built in retail's
+// store order (source[3] first, then the 320-based pair, the 240-based pair and the last 320-based
+// one) inside the source-null block, which matches retail's fallback arithmetic instruction for
+// instruction. Still: retail builds both defaults unconditionally and writes each selected default
+// into the parameter's home, ours branches over the block and leaves the parameters alone, so the
+// vertex emission that follows is one instruction out of step; retail also reloads preserve_alpha
+// after the call in the short arm where ours keeps the value in a register.
 // score 140 (was 154): Frame and retail extent agree; caller flag residency and native
 // fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
 // Earlier 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
@@ -2841,6 +2849,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 }
 
 // MiniMax D (11-01): no new form tried, no lower score.
+// MiniMax G (11-04): no new form, no lower score.
 // score 211 (was 247): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
 // the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
 // Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
@@ -3486,6 +3495,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // N350: Immutable shift/clip/center parameter subsets and all with immutable
 // state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
 // selector, reload-pair and six quantizer input-home differences remain.
+// F391: Existing quantizer policy as bool/int template argument, mutable/immutable real
+// input and conditional/separate lower admissions: 1218 each in eight forms, 4404/4828 bytes.
+// NOT kept: specialization outlines both quantizers and moves extent away from retail.
+// Original helper, runtime policy formal, eight calls, repeated conversions and whole body restored;
+// selector scheduling, post-bias reload pairs and six shift-versus-clip input homes remain.
 // N386: Existing quantizer explicit cdecl/stdcall inputs, bool/byte policy and mutable/immutable
 // real samples: eight 31s at 4828 bytes. NOT kept: no byte equality; original helper and body restored.
 // P332: Native quantizer lower/upper/both conversion producers 32/31/32;

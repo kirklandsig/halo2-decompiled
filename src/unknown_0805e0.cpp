@@ -246,11 +246,25 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // flags and high identity dword as retail, next in EDX and low dword in EBX where retail has them the other way round); the successor read through the table, then the iterator store and the entry, then the entry
 // and the iterator store, or after the entry, 62/62/62 (138, al 28, callers keep): next in EBX, flags in ECX, identity in EDX:ECX, mask in AL as retail, the index still in ECX through `lea esi` and the head still padded.
 // Lead: retail's index, its product and the entry are one web in ESI, so the successor stays apart; the back-edge `mov esi, ebx; jmp` looks like a tail-merged copy of the entry computation.
+// M391: Eligibility scopes split at individual flag/identity/online/exclusion boundaries 1,3,4,5,1+3,1+4,1+5,3+4+5: 43/43/43/43/43/43/43/43.
+// NOT kept: No exact native index/successor, mask-hoist or loop-exit repair. Original complete body restored.
 // AC532: Complete complementary rejection in bool/byte/short/long, outer-result
 // 43/43/43/43 and direct-return 52/52/52/52. NOT kept: no exact mask/successor
 // allocation; original result, iterator, predicates and memcpy restored.
 // M391: Eligibility scopes split at individual flag/identity/online/exclusion boundaries 1,3,4,5,1+3,1+4,1+5,3+4+5: 43/43/43/43/43/43/43/43.
 // NOT kept: No exact native index/successor, mask-hoist or loop-exit repair. Original complete body restored.
+// Round 213 (m3 lane 3; "h" = a one-file LTCG harness whose base reads 43, confirmed with fast where given): about 2,900
+// combinations of loop, entry, test and copy forms lowest 37 (the listed `!result` loop, player on the stack). Closest by shape: a
+// guarded `while (!result)` with `else if (next == NONE) break; else index = next;` 52 (fast and h): retail's latch and block layout
+// (`cmp next, -1; je; jmp head`) on one web, no hoist; a guarded `while (true)` with the per-pass result, next read through a first
+// lookup and the entry looked up after it 55h (68 at 140 bytes in fast): AL mask, EBX successor and the back-edge copy as retail, index
+// still in ECX through `imul` and a padded head. Carried successor (`long index = next;` at the top) in the `!result` loop 57 (fast):
+// index, product and entry in ESI, mask hoisted, copy at the head. The first flag test through the table 53h: hoists 4 into AL instead
+// of 3 (the hoist follows the mask test's block frequency) and splits the successor. Implied index tests, not kept: `tests && index !=
+// NONE` in the guarded `!result` loop 39 (fast, both callers 2), `index != NONE && tests` in the guarded `while (true)` 41 (fast, callers
+// keep; `cmp ecx, -1` stays in the code). `index = *iterator` on the back edge 49-57h (forwarded before allocation, one web). An index
+// predicate helper, the found copy through `&g_4cf98c[index].player` or a getter, every test through a second lookup 49-53h. Left: index
+// and successor share a web in every form without a live re-use of the index, and only the forms with a live result hoist the mask.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -619,6 +633,8 @@ bool function_80660(void)
 struct s_profile_record;
 void function_1537f0(s_profile_record *record);
 
+// MiniMax D (11-04): no new form, no lower score; the identity as three named dwords instead of an array
+// 53 (same code), it still folds into registers and the frame stays 0x98.
 // score 53 (was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
 // 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
@@ -814,6 +830,9 @@ void function_1537f0(s_profile_record *record);
 // copied from each other, links and heads through by-value helpers: all 44h (same code); heads after the loop 69h. Diagnostics, value-wrong:
 // the hoist ends at 4 links + 2 heads (37h, 258 bytes) or 3 links + 4 heads (39h with two flag stores); with the hoist gone and two flag
 // stores 29h, left the byte-store schedule around the record's `rep movsd`. Retail does not hoist NONE: it reloads `or eax, -1` in the loop.
+// Y597: Current pointer/no-tail graph with whole source-header zero field subsets
+// 1/2/4/3/5/6/7, then contiguous header fill: 53/77/53/86/53/77/86/115.
+// NOT kept: no exact publication graph or gain; full original body and initializers restored.
 // P332: Named actual array endpoint, mutable/const pointer, strict/equality
 // termination and per-visit/outer input storage: eight 53 at 255 bytes; both
 // initializers stay exact. NOT kept: no gain; original body restored, identity
@@ -824,9 +843,20 @@ void function_1537f0(s_profile_record *record);
 // DH358: Existing unused eight-byte source field as signed integer, native SDK integer/time
 // records, dword/word/byte field arrays and double: eight scores 53; every file control unchanged.
 // NOT kept: identity homes still fold and frame 0x98/end-bound remain; original record and body restored.
+// M393: Positive pointer do latch, strict then equality endpoint, per-visit/outer identity/source declaration pairs:
+// 53/53/53/53/53/53/53/53. NOT kept: nonexact lifetime/latch forms; identity homes still fold and native frame/end-bound remain.
+// Original complete body restored.
+// T57: Plain linkage-array reset, long/short/dword/word indices, forward then reverse
+// 66/66/66/66/62/62/62/62. NOT kept: no exact or qualifying structural gain; original complete body restored.
 // Y597: Current pointer/no-tail graph with whole source-header zero field subsets
 // 1/2/4/3/5/6/7, then contiguous header fill: 53/77/53/86/53/77/86/115.
 // NOT kept: no exact publication graph or gain; full original body and initializers restored.
+// Round 213 (m3 lane 3; "h" = a one-file LTCG harness with 0x1537f0's file, base 53): on the invented two-member object (not an accepted
+// form) 45 (259 bytes, fast), two flag stores 49 (258, fast), links through 2-byte memset 43 at 259 and 43 at 258 (fast; NONE stays in EBP,
+// only the flag tail changes). `do {} while (false)` around, before or after the loop, the heads or the body, and between any link or head
+// stores 45/49h (no change); the record's NONE stores removed or spelled 0xff in a hand copy 45/49h (no change: dead stores do not count
+// toward the hoist); heads through 4-byte memset 45/49h, through two 8-byte memsets 86-93h (272-274 bytes). On the current pointer walk,
+// links through 2-byte memset 53 (fast, same code).
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1382,9 +1412,22 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // DH358: Branch-set capacity result with empty/full defaults in bool/byte/word/dword:
 // eight scores 395 at 1162/1171 bytes. NOT kept: every form regresses and loses native extent;
 // original predicate, removed-index producer, bounds, copy loops and full tail restored.
+// M393: Phase-owned reloaded long/int count, shared/direct admission, original then complete direction arms:
+// 383/383/395/395/385/385/59/59. NOT kept: nonexact count/direction completion forms; native count/removal and upper-bound register ownership remain.
+// Original complete body restored.
 // N384: Actual returned insertion ordinal at entry/post-removal/immutable-bound/
 // completed-shift lifetimes, two result-role names: 378/377/377/66 twice. Original
 // mutable input/result and full body restored; count/upper/copy allocation remains.
+// Round 213 (m3 lane 3; "h" = a one-file LTCG harness with the two callers, base 49, confirmed with fast where given): round 141's forms rebuilt
+// (redundant flag stores, match-only): stepped cursor 8, guarded 7, with the mixed read 6 and 5 (fast). What is left of the 5: retail's `mov ecx,
+// eax; imul ecx, ecx, 0x68; lea esi, [ecx + base]` ahead of the upper reload, where ours merges the product into the cursor (`mov esi, edx; imul
+// esi; add esi`). Matched 0x65cb0 and 0x241c0 have that exact shape with an unnamed source (intrinsic or struct copy), so a named stepped cursor may
+// be what is wrong; per-pass forms keep `lea` off a temp but lose upper in ECX (53) and use two leas. On the 5 form: cursor from a named index 54 (fast,
+// 1174 bytes, head repairs rotate EAX/ECX), with the index named but the cursor from `lower + 1` 5 (fast, so `&g[i]` alone rotates the tail); that
+// cursor as `i + g`, `&i[g]`, byte or dword arithmetic in both operand orders, a `.player` member, a copy of a first pointer, an offset local, a
+// null or table first value 56-71h; inline entry getter in four spellings across nine shapes 5-349h; forward copy through an inline helper 5-56h, a
+// pointer-param copy helper 5-361h; `do {} while (false)` around, before or after the loop 5 or 56h (no change); memcpy/memmove with a count 351-367h;
+// paired indices 349-365h; per-pass `from`, `from[-1]`, `&g[i] - 1`, memcpy, reference 53h; per-pass `to = from - 1` 361h (rep stays per element).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
