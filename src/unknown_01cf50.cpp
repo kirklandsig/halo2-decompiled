@@ -3971,6 +3971,8 @@ void function_12fa0(byte const *camera, real const *projection, bool scaled, lon
 real *table_entry_data(long handle);
 long function_184000(long index, long bit);
 
+// MiniMax D (11-05): the permuter run on this function ended with a candidate that only swaps two
+// argument lists and adds a volatile qualifier, so it is not keepable; no new form, no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 332 (was 332): our body is 53 bytes shorter than retail's (944 against 997); the
 // transform lookup and the outlined helper's argument order still differ from retail's.
@@ -6891,11 +6893,13 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax D (11-05): the inherited 309 change stays reverted (its gain is under 8 and the function is
+// still above 30), so the body is the original one; no new form, no lower score.
 // MiniMax D (11-01): 309 (was 312) with the two integer comparisons against zero written against
 // one (the zero literal is no longer promoted into ebp and the frame loses its extra push); not kept
 // (gain under 8, still above 30). The call to 0x4f7e0 passes all nine arguments on the stack, one
 // push more than retail's.
-// score 312 (was 312): retail's frame is 0x1894 bytes and ours 0x1890, and our locals sit four
+// score 308 (was 312): retail's frame is 0x1894 bytes and ours 0x1890, and our locals sit four
 // bytes higher than retail's (the fade at [esp+0x10] against our [esp+0x18], the direction
 // vector at [esp+0x6c] against our [esp+0x70]), so every reference in the body is at another offset.
 // @retail 0x4f010
