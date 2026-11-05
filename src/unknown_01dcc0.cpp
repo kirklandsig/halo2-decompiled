@@ -248,6 +248,11 @@ long g_55e6c0;
 // stored before width 30; pitch before the stores 155 (495 bytes); stored fields 29; height part before the clamp 37; packing before the clamp 31 (483: height EAX, zero EDX); copy
 // of count before the stores 166 (503), at the clamp 166 (497); forced-inline pin as a ternary or with returns 29, with a result local 166; forced-inline size helper 29; format local
 // for the call 29; `count >= 0 ?` first 32. Field stores in the clamp's arms 139 (495) give retail's top block and registers exactly, so the merged clamp value is what takes EAX.
+// Round 216 (m3 lane 3, fast): the entry's +0x00/+0x7c/+0x8c typed as long fields (no `*(long *)` casts in the file)
+// 29 (same code; every function of the file still matches); that with the round-51 signed pitch/packed lead 29 (484
+// bytes, packing instructions retail's); on it the height term first in the OR 29 and as its own first statement 29
+// (VC canonicalises both: pitch in ECX first, height in EDX); a named clamped local set by if/else-if 166 (497 bytes).
+// Retail loads the count first (EDX) for the clamp compare, hoisted above the kind store, and the height after it (EAX).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
