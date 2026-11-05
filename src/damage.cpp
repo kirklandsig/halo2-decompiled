@@ -2567,6 +2567,10 @@ struct s_unit_event
 // masked 86; with long drops (`not eax; and eax, 1`) 500 at 1868, masked 75; NOT kept, the flag is set in the arms and tested after, the
 // direct ternary on it 541 at 1900. Object first and no region local 513 (masked 83, retail's EBX permutation and EBP region, but no dead
 // add); region spellings 500/500/474/515; long drop alone 531; `destroy` flag 570; nested kept 533; no `__stdcall` 545 (ECX/EDX, 1868).
+// Y610: Permutation-flag/paired state-key/accumulator lvalue identities,
+// subsets 1/2/4/3/5/6/7, then all with info-record identity:
+// 472/472/472/472/472/472/472/472 (fast control 472).
+// NOT kept: no exact identity-form match; original complete body restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -4823,6 +4827,10 @@ struct s_damage_object_creation
 // on the all-retail form 225h, on the zero-moved form 172h; masks as one-member structs, inline mask helpers 217-225h (still
 // enregistered); loop-local detached mask copied out 201/180/218h; top loop named mask, named bit, word_flags_set 232/230/230h (zero
 // moved) and 246h; piece node local 156, piece object pointer 157 (aligned 25 -> 15); `standard` 173 (diagnostic).
+// Y610: Paired section-word/node-state-byte/creation-tag lvalue identities,
+// subsets 1/2/4/3/5/6/7, then all with component-record identity:
+// 156/156/156/156/156/156/156/156 (fast control 156).
+// NOT kept: no exact identity-form match; original complete body restored.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

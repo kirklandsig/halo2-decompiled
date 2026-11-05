@@ -3050,6 +3050,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // seven subsets then existing state bitfields: 520/545/535/530/520/545/535/534.
 // Set-only 530; clear-only 520 plain, 1844/1908 bytes. Kept the clear-only writer:
 // native direct byte AND in both completion paths; frame/result/state homes remain.
+// Y610: Actual state-byte/flag-word/body-array lvalue identities, subsets 1/2/4/3/5/6/7,
+// then all with component-record identity: 520/520/520/520/520/520/520/520 (fast control 520).
+// NOT kept: no byte equality;
+// original memory observations, complete body and names restored; frame/result homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {

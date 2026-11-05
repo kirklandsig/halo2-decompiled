@@ -2443,6 +2443,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // condition 515 (2372); case 1 as an if setting the result false 622 (2384). Diagnostics, not kept: extra actor or
 // state references before the post-switch test 630-710, any such `if` moves the result into BL and leaves the actor
 // and state registers swapped. Left: actor EBX and state EDI for ours EDI and EBX, and the post-switch test's layout.
+// Y610: Paired countdown/state-byte/motion-direction lvalue identities,
+// subsets 1/2/4/3/5/6/7, then all with actual classification-byte identities:
+// 590/500/577/590/588/500/588/604 (fast control 469).
+// NOT kept: no exact identity-form match; original complete body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
