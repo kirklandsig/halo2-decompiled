@@ -1718,6 +1718,7 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
+// MiniMax E (11-05): no new form, no lower score.
 // score 305 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
@@ -2456,6 +2457,10 @@ real function_192d70(real minimum, real maximum, real distance);
 point3f *function_142700(transform4x3f const *matrix, point3f const *point, point3f *out);
 real function_30bf0(vector3f *vector);
 void function_192ce0(point3f const *direction, real *gains, bool linear);
+// MiniMax E (11-05): no new form, no lower score; the alternate mask spelled `(flags & 1) == 1`
+// scores 749 and is reverted. Retail's parameter order is ours (arg1 definition index, arg6 state,
+// arg7 flags, eight stack args); only the entry's mask carrier differs - ours hoists the raw flags
+// byte into BL before the pushes, retail masks it with 1 after them and keeps it in a stack slot.
 // score 597 (was 597): retail length recovered; saved-register order, record homes, energy-loop
 // padding and track/state ownership remain. Round 439: entry tag/handle/record/all-record
 // declarations and entry Boolean declarations 716/716/716/716/716 reduced; alternate before
