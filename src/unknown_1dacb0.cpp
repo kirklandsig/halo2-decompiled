@@ -1504,6 +1504,17 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // N361: Existing iterator/sorted-lookup/registration/resource inline call visibility, four
 // individuals, three iterator pairs and all four: 828 each. Original declarations and full body
 // restored. NOT kept: no result/candidate/output home or class/NONE/zero-carrier recovery.
+// Lane 9 r87 (fast; masked = registers and stack homes masked, sequence aligned; base 828, masked 48): the siblings' body (`if
+// (weapon_class != NONE)`, iterator stores graph/step/entries then keys, first iterate before `while (!found && entry)`, `found` or
+// re-iterate in the else arm) 755 at 2825 bytes, masked 36, then the three outputs and the result as one record `{ long mode, weapon_class,
+// weapon_type; c_type_709360 result; }` 732: the candidate and the mode-table temp then take the dead home, and the first 255 lines are
+// byte-identical to retail. Not kept, a flag set in a test and grouped storage need a match. Outputs alone as a record, in either member
+// order, or an array 755 (the result takes the dead home instead); the record with the members reversed 738. The one structural cause
+// left is the zero: retail's `xor ebp, ebp; cmp eax, ebp` from the fifth type request on, ours `test` and immediates. On the 732 form:
+// the real 0x1ddd00 with `inline` on it alone 3273 (558 bytes, out of line), on all three 732 (same code, all three still match);
+// `bool other = false` as a local 825 (2809). Diagnostics: only the second request kept, or the output stores removed, and the zero
+// appears in that request (`xor ebp, ebp` plus five `cmp reg, ebp`); only the first request kept, no zero; requests swapped 964 (2873);
+// no 0x1dd9d0 call 978, no loop 1019. Also on the old body: a while with a break 998 (2839 bytes); early `return result` for a NONE id 828.
 // DL261: Actual iterator/sorted-search/registration definitions and every declaration inline, seven subsets then explicit iterator expansion: 828/828/828/828/828/828/828/1265.
 // NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
 // DL263: Const complete value-return interface with original producer, explicit return copy,

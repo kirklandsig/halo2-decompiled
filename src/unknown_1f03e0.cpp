@@ -182,7 +182,7 @@ struct s_component
 };
 
 // @retail 0x1f1df0
-void function_1f1df0(long component_index, long material_index, vector3f const *normal, s_shape_state *state)
+void function_1f1df0(long component_index, long material_index, s_shape_state *state, vector3f const *normal)
 {
 	union { short field_0; word field_2; } local_0;
 	local_0.field_0 = 0;
@@ -873,7 +873,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
-// score 433 (was 433): 3037 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
+// score 416 (was 433): 3038 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
 // direct arm's rows, the low-normal arm and the history row. Closest form so far: `input->i` for `state->input.i` in the direct
 // arm's rows and the low arm's projected rows, one settings local for the ground compares: 433 at 3047 bytes, aligned 138 and the ground
 // chain exact (mixed reads, not kept).
@@ -1090,6 +1090,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // subsets 1/2/4/3/5/6/7, then all with general raw delta: 423/433/435/423/435/441/441/465.
 // NOT kept: 423 shortens farther from retail (3034/3047); remaining forms tie or regress.
 // Original whole body and helpers restored; damping and raw/bounded homes remain.
+// Lane 9 r87 (fast; aligned counts by sequence alignment, base 433/344): up, facing and the low arm's normal read from the field at each
+// use, speed read first in the direct arm 416/311 (kept). Each alone 423/313, 424/308, 415/326; the same three with no speed local at
+// all, 421/167 at 3050 bytes (the closest shape, retail's rotated roles in the direct arm; speed loads twice where retail loads once);
+// speed local after rotated 460/356; speed alone removed 443/189 (3047). Identity pointer locals at the top, 1-7, on the base
+// 428/427/431/559/420/473/423, repeating every 8, with no speed local 423/424/427/561/558/548/429 (548 is 3047 bytes, aligned 157), with
+// speed first 416/496/593/583/502/499/492. rotated.x and y as scalars 581/560; product sides in delta or limited declared first 421.
+// On the kept form: restoring up, facing, the low normal, up and facing 416/416/420/499; the low facing removed too 447.
 // J254: Plain history input/anchor/relative component-array producer loops, subsets 1/2/4/3/5/6/7 then
 // unsigned ordinals: 601/556/556/469/469/563/546/546. All preserve matches but grow to 3090-3103
 // versus 3047. Original complete body restored; damping ECX/EDX, raw/bounded homes and
@@ -1104,23 +1111,21 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
     bool gravity = ((state->flags >> 3) & 1) != 0;
     if (!(state->flags & 1))
     {
-        vector3f const *up = &state->up;
-        vector3f const *facing = &state->facing;
         vector3f left;
-        contact_cross(up, facing, &left);
+        contact_cross(&state->up, &state->facing, &left);
         vector3f scaled;
         vector3f_scale(input, state->speed, &scaled);
-        vector3f_scale(facing, scaled.i, (vector3f *)(out + 0xc));
+        vector3f_scale(&state->facing, scaled.i, (vector3f *)(out + 0xc));
         vector3f_add_scaled((vector3f *)(out + 0xc), &left, scaled.j, (vector3f *)(out + 0xc));
-        vector3f_add_scaled((vector3f *)(out + 0xc), up, scaled.k, (vector3f *)(out + 0xc));
+        vector3f_add_scaled((vector3f *)(out + 0xc), &state->up, scaled.k, (vector3f *)(out + 0xc));
         gravity = false;
     }
     else if (direct)
     {
+        real speed = state->speed;
         point2f rotated;
         rotated.x = state->facing.i * state->input.i - state->facing.j * state->input.j;
         rotated.y = state->facing.j * state->input.i + state->facing.i * state->input.j;
-        real speed = state->speed;
         point2f delta;
         delta.x = speed * rotated.x - current->i;
         delta.y = speed * rotated.y - current->j;
@@ -1169,10 +1174,9 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
             if (state->normal.k > 0.001f)
             {
                 vector3f const *facing = &state->facing;
-                vector3f const *normal = &state->normal;
                 desired.i = facing->i * state->input.i - facing->j * state->input.j;
                 desired.j = facing->j * state->input.i + facing->i * state->input.j;
-                desired.k = state->input.k - (normal->j * desired.j + normal->i * desired.i) / state->normal.k;
+                desired.k = state->input.k - (state->normal.j * desired.j + state->normal.i * desired.i) / state->normal.k;
             }
             else
             {
@@ -1634,8 +1638,25 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
 real function_1201a0(vector3f *vector, vector3f const *fallback);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 
-// score 213 (was 221): Frame 0x28 and the 1066-byte length agree; the motion-pointer load ahead of the reset, the speed dot's
-// product order, the cold not-supported arms (retail tests the height in each) and the second 0x1f1df0 expansion remain.
+// score 96 (was 213): Frame 0x28 and the 1066-byte length agree; the supported byte's definition (retail stores 1/0 straight to
+// its stack byte, ours builds it in BL), the k products' sides and the material store's slot in the reset block remain.
+// Lane 9 r87 (fast, plain confirmed): the impulse test after the arms, re-testing `supported`, lets VC sink the not-supported arms
+// past the first post-loop block as retail (an arm sinks once threading stops it falling through to the block after it; 0x14d2a0
+// shows the rule); no other form gets there: about 1100 compile-only spellings of the arms (flag set per arm, if/else on constants,
+// inline helpers with early returns, empty `do {} while (false)` joins, sequential `!supported` tests) stay inline.
+// 213 -> 234 (1109 bytes); flag arm as `best_flag ? ... : true` 232; the loop as `while` with `++i` last keeps the second 0x1f1df0
+// call out of line with no noinline 239 (1046); velocity first in the reset 188 (1048); airborne as `(flags & 8) || (flags & 0x10)`
+// 105 (1066); 0x1f1df0's last two parameters swapped (retail sets ECX before ESI at both calls) 103, the other 22 orders 97-165 (97
+// loses retail's `mov ecx, eax`); supported as `... ? approach >= -0.001f : false` 96 (retail's three stack bytes). On it: a per-arm
+// `better` flag 96 (one condition kept instead); 0x1f1df0 through havok_component_get or a contact-array operator 213 before the
+// re-test, more locals in it 1109 unless they break its match (a `contacts` pointer 1044 but 0x1f1df0 16); `inline` on 0x1f1df0 or
+// 0x1f2250 96, on 0x1201a0 79 but it loses `mov ecx, eax`; contact local names 103 (names don't move the bytes), the two floats and
+// bools in other orders 96-101; helper arguments or dot3f in either dot, 15 pairs, 96; supported as if/else, `&&`, two locals or
+// byte/char 86-211, BL stays. Not kept (exact-only, a one-use field pointer, written-out dots and an identity local): `short *material
+// = &history->material` gives retail's reset store order, both dots accumulated k/j/i with the k operand read into the accumulator and
+// one identity pointer before the approach dot make both dots exact but for one k product, 86. A selected-contact pointer gives
+// retail's `add eax, 0x28` 225 (+2 bytes until BL is gone). A diagnostic volatile on supported 238, removed at once. 600 s permuter: none below 96.
+// Next: supported's direct stores appear in the build where the second call is inlined and in a compile-only listing, not here.
 // The real movement carrier fixes the x87 prefix through +0x8b (233 overall); retail
 // forms the contact dot k/j before i while our products schedule differently.
 // Frame 0x28 agrees; zero-load width, reset/selection homes and material-call
@@ -1854,27 +1875,28 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
     *(dword *)(out + 4) &= ~1;
     if (!preserve)
     {
+        vector3f const *velocity = (vector3f const *)(*(byte **)(component + 0x70) + 0xc);
         history->normal = *g_4687b0;
         history->material = g_47d8e0;
         history->unknown58 = NONE;
         long selected = NONE;
         long highest = NONE;
         history->unknown70 = 0.0f;
-        vector3f const *velocity = (vector3f const *)(*(byte **)(component + 0x70) + 0xc);
         bool flying = ((**(dword **)request >> 3) & 1) != 0;
         bool best_supported = false;
         bool best_flag = false;
         real best_height = -3.4028234663852886e+38f;
         real best_speed = -3.4028234663852886e+38f;
         real highest_z = -3.4028234663852886e+38f;
-        for (long i = 0; i < *(long *)(component + 0x8c); ++i)
+        long i = 0;
+        while (i < *(long *)(component + 0x8c))
         {
             byte *contact = *(byte **)(component + 0x88) + i * 0x48;
             vector3f *normal = (vector3f *)(contact + 0x28);
             real speed = 0.0f - shape_dot(*normal, *velocity);
             real approach = 0.0f - shape_dot(*normal, *(vector3f *)(request + 0x28)) * *(real *)(request + 0x34);
             bool flag = ((*(byte *)(contact + 0x44) >> 1) & 1) != 0;
-            bool supported = (flying || (*(byte *)(contact + 0x44) & 4)) && approach >= -0.001f;
+            bool supported = (flying || (*(byte *)(contact + 0x44) & 4)) ? approach >= -0.001f : false;
             if (normal->k > highest_z)
             {
                 highest = i;
@@ -1882,34 +1904,28 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
             }
             if (*(long *)(contact + 0x14) != NONE || speed > 0.0f)
             {
-                if (supported)
+                if ((supported
+                        ? (flying || !(normal->j * velocity->j + normal->i * velocity->i > 0.5f))
+                            && (!best_supported || speed > best_speed)
+                        : flag
+                            ? (best_flag ? normal->k > best_height : true)
+                            : !best_supported && !best_flag && normal->k > best_height)
+                    && (!supported || !(fabs(*(real *)(contact + 0x38)) < 0.0001f)))
                 {
-                    if (!flying && normal->j * velocity->j + normal->i * velocity->i > 0.5f)
-                        continue;
-                    if (best_supported && !(speed > best_speed))
-                        continue;
-                    if (fabs(*(real *)(contact + 0x38)) < 0.0001f)
-                        continue;
+                    selected = i;
+                    best_height = normal->k;
+                    best_supported = supported;
+                    best_speed = speed;
+                    best_flag = flag;
                 }
-                else if (flag)
-                {
-                    if (best_flag && !(normal->k > best_height))
-                        continue;
-                }
-                else if (best_supported || best_flag || !(normal->k > best_height))
-                    continue;
-                selected = i;
-                best_height = normal->k;
-                best_supported = supported;
-                best_speed = speed;
-                best_flag = flag;
             }
+            ++i;
         }
         if ((short)selected != NONE && best_supported)
         {
             vector3f normal = *(vector3f *)(*(byte **)(component + 0x88) + (short)selected * 0x48 + 0x28);
             function_1201a0(&normal, g_4687b0);
-            function_1f1df0(*(long *)(request + 0x40), (short)selected, &normal, history);
+            function_1f1df0(*(long *)(request + 0x40), (short)selected, history, &normal);
         }
         else
         {
@@ -1918,7 +1934,7 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
             if (function_1f2250((vector3f *)history, request, velocity, moving, &normal, &surface,
                 &history->unknown70, (long *)(out + 0xc)))
             {
-                function_1f1df0(*(long *)(request + 0x40), highest, &normal, history);
+                function_1f1df0(*(long *)(request + 0x40), highest, history, &normal);
                 if ((short)selected != NONE)
                 {
                     if (history->unknown70 > 0.0f)
@@ -1934,7 +1950,7 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
     else
     {
         flags = *(dword *)(request + 0x18);
-        bool airborne = (flags & 0x18) != 0;
+        bool airborne = (flags & 8) || (flags & 0x10);
         if ((flags & 2) || airborne)
         {
             history->normal = *g_4687b0;
