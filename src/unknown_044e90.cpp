@@ -10,8 +10,6 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
-// MiniMax E (11-04): entry flags read per branch 442, the same with a shifted instance flag 444, the tag table read once at the top 455, an int index local 406, the entry address as an explicit stride and with named offset and index locals 406, the permuter's best 403 (that variant swaps call arguments); no lower score.
-// MiniMax S (11-01): the entry address and the flags load keep the first difference at +0x10; no lower score.
 // score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
 // Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
@@ -313,6 +311,15 @@ struct s_visibility_bound_record
 // T61: Ordered parts-mode result, preset-false and exhaustive outcomes in bool/byte/short/long:
 // 411/411/450/450 and 408/408/413/446. NOT kept: test-produced flags miss equality;
 // original conjunction and full body restored. Entry/table and plane/query homes remain.
+// MiniMax E (11-04): entry flags read per branch 442, the same with a shifted instance flag 444, the tag table read once at the top 455, an int index local 406, the entry address as an explicit stride and with named offset and index locals 406, the permuter's best 403 (that variant swaps call arguments); no lower score.
+// MiniMax S (11-01): the entry address and the flags load keep the first difference at +0x10; no lower score.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 406 [286]): retail builds the four lists in the order
+// second, first, third, fourth (the reverse of its releases) and releases them on a sign-bit test (`js`) after reading all
+// four capacities. Counts and capacities as two chained assignments 407 [284]; the four list starts in retail's order 405
+// [284] (one point, not kept); the same through a four-caller inline list-start helper 405 (same code); with the plane
+// query declared ahead of the lists 407; the starts in retail's order with the tag table read once at the top 454 (1728 B)
+// [263]; with `!(capacity & 0x80000000)` release tests 482 (1776 B: the release block and the init's `mov esi, ecx`
+// copies become retail's, but the plane loop's registers turn over) [264]; that plus the table local 462 (1792 B) [277].
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

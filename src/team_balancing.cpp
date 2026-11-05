@@ -714,6 +714,14 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // bytes, 0x91dd0 8); the spread query declared `__stdcall` or `__cdecl` so its `this` is pushed 67/67 (same code; 0x91860 still matches).
 // M391: Shared spread-query pair in plain two-pass long/short/word/byte loops, positive then complementary decision: 172/172/172/175/158/158/158/169.
 // NOT kept: No exact candidate-first query repair; frame grows from 0x2694 to 0x269c and extent moves away from native. Decision flags require equality. Original complete body restored.
+// M3 lane 16 r91 (fast with 0x91dd0/0x91b90, control 67; compile-only /FAs screens without /GL agree on the call order):
+// the selection written inside each comparison (`improved ? best.count_spread() : current.count_spread()`, which the
+// compiler folds back into one selected `this`) 150 (566 B); count_spread's definition moved below this function 67 (same
+// code); a `const` reference pointer with the reference on the left 65 (the listed reference-left code); the reference
+// from a two-entry pointer table indexed by `improved` 108 (523 B); the candidate through a pointer local 67. Screens:
+// between two stack solutions the right operand's query runs first (`a < b` queries b, `b > a` queries a), but a query
+// whose `this` is a register pointer (the reference, or `best` itself) runs before one on a stack address whatever the
+// side; count_spread's body left out of the unit, const-reference helper parameters and operand order do not change that.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

@@ -422,6 +422,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 136 (fast): the magnitude helper's input copy and result in an inner block 1395 (6195 bytes, frame 0x5cc);
 // the copy const 1355; `sqrtf` 1415 (6259 bytes); the copy declared, then assigned 1355; the first normalizer with
 // one exit (zero in the if arm, the scaling in the else) 1355.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 1355 [969]): the first loop's offset and point-velocity
+// vectors written as element expressions at each use (no pointer locals) 1403 (6211 B) [997]; the duplicate-impact search
+// with the compare in the loop condition 1355 (same code); the k/j/i cross with the +0x88 factor named once for both
+// steering products 1425 (6211 B) [983]; the add helper written `a = b + a` (retail loads the added vector first) 1355
+// (same code), with the k/j/i cross 1426 (6238 B, round 79's code) [984]. Retail keeps the first loop's cross stores and
+// re-reads j and k for the add (only i is forwarded); ours drops the cross stores and sums in registers.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
