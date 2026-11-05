@@ -169,6 +169,9 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // bool/byte/short/long results: 665/665/665/665/585/585/585/585. NOT kept: native branch ownership/frame
 // and extent are not recovered; original helper and complete body restored. Frame 0x38/0x40 and
 // angle/snap homes remain; both exact callers survive.
+// DL268: Native sqrtf first/second/both magnitudes, fabsf paired offsets/angles/trig magnitudes,
+// float trig functions and atan2f producer: 25/25/25/25/25/25/25/25. NOT kept: no gain;
+// original scalar interfaces and complete body restored. First offset x87 retention and literal-load order remain.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

@@ -594,6 +594,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P342: Actual provider-node and table-base matrix record lvalues, mutable/read-only alone and all four
 // pairs: 182/182/182/182/182/182/182/182. NOT kept: no equality; original matrix receivers and whole
 // body restored. Entry/index spill and center/query/bound homes remain.
+// DL268: Actual query type alignment/SIMD-backed scalar view, SIMD set/setr fills, then the four
+// with a separate persistent center: 182/182/236/237/191/191/236/237. NOT kept: ties or
+// nonnative frame/length regressions; original record, full body and shared selector restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

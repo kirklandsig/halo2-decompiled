@@ -367,6 +367,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // 1/2/4/3/5/6/7, all 176; full references with the angle also referenced 178.
 // NOT kept: no byte match; original helper and both in-place calls restored;
 // unity/root/yaw and rotation homes remain. The numeric helper and sibling stay fixed.
+// DL268: Rotation sinf/cosf/pair, normalizer fabsf/sqrtf/both, all native float APIs,
+// then all with one numeric normalizer exit: 179/179/177/263/263/176/177/172.
+// NOT kept: four-point best gain is below the eight-point gate; unity changes but root/yaw
+// and rotation homes still differ. Original helpers, alias-safe inputs/stores and full body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
