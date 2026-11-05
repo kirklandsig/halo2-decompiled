@@ -687,6 +687,10 @@ done:
 // default, one copy 54; `do { if (!globals) break; ... } while (false)` around the translator, one copy 54. Matched siblings cache their buffer (0x22d5a7 in
 // ESI); here retail's ESI holds the tag, coalesced from the definition pointer, while ours gives ESI to the constant and the tag EDX. The buffer as a member of a
 // one-member record 32; a `static wchar_t *const` pointing at the buffer, one copy 54.
+// Round 149 (m3 lane 6, fast; natural one-copy form 54, 173 bytes, aligned 22): the whole `if (globals)` as `do { if (!globals) break; ... } while (false);` 54 (aligned 26); `do { } while (false)`
+// around the translator call 54 (26), around switch and call with `continue` for the default 54 (22); a file-scope const pointer at the translator 54, at both uses 54;
+// `(word *)(dword)` at the translator 54; an index folding to zero at the translator 54. The address hoist survives all of them; the early EDI save is already gone on
+// the one-copy form, so the hoist, the tag load's slot and the selector register are what remain there.
 // B444: Explicit unsigned selector admission >9/>=10/<=9/<10, repeated/shared copy:
 // 32/64/32/64/54/61/54/61. NOT kept: redundant admission without byte equality; original complete parser restored.
 // Early EDI save, tag/selector schedule and scratch-address cache remain.
