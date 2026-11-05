@@ -367,6 +367,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // 1/2/4/3/5/6/7, all 176; full references with the angle also referenced 178.
 // NOT kept: no byte match; original helper and both in-place calls restored;
 // unity/root/yaw and rotation homes remain. The numeric helper and sibling stay fixed.
+// DH378: Existing object-tag/actor-fallback/object-axis member sources, subsets 1/2/4/3/5/6/7,
+// then all with a read-only object receiver: 176 each. NOT kept: all canonicalize; original complete body,
+// raw address expressions, helpers, arithmetic and both alias-safe rotations restored; native root/yaw homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -269,6 +269,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // interleavings preserving the native register/stack banks: eight at 57; both callers exact.
 // NOT kept: output identity does not delay coordinate promotion; original contract, caller
 // declaration/call, helper and full body restored.
+// DH378: Whole-register x/y/both formals with original signed-word captures 96/97/97;
+// native short x/y/both working values 120/136/150; both whole formals with mixed short/long captures 134/138.
+// NOT kept: all regress and alter native entry/caller allocation; original body, sole declaration and contract restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

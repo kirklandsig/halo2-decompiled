@@ -169,6 +169,9 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // bool/byte/short/long results: 665/665/665/665/585/585/585/585. NOT kept: native branch ownership/frame
 // and extent are not recovered; original helper and complete body restored. Frame 0x38/0x40 and
 // angle/snap homes remain; both exact callers survive.
+// DH378: Paired real-angle identities (two orders), offset identities and absolute-offset identities 25 each;
+// first/second/both compound offset subtraction producers 25/25/25; existing paired magnitude API 26.
+// NOT kept: no exact match or improvement; original complete body, helper, inputs and includes restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {
