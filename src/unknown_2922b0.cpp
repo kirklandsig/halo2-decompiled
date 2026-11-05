@@ -376,6 +376,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // bool/byte/short/long, eight at 630 (2813/2886). NOT kept: all regress and
 // shorten away from retail; original root helper and complete body restored. Frame
 // 0x108, success/input/minimum/hit homes and inactive-exit/rotation scheduling remain.
+// J259: Full root/sine/cosine return storage, separate/paired/all and immutable all: 689/706/698/690/682/701/683/683.
+// NOT kept: no eligible native repair; opening executable source restored. Native frame 0x108 is lost; original real helpers and every in-place capture restored; success/input/minimum/hit homes and inactive exit remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

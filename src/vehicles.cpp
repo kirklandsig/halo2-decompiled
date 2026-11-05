@@ -3013,6 +3013,8 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // original executable source restored; other constructor users regress; native frame 0xfc and scalar/transform homes remain.
 // P347: Complete branch-owned turn/speed-fraction/slip-scale results, seven subsets then all with independent relative output:
 // 676/676/676/676/676/676/676/682. NOT kept: Seven ties and one regression; frames remain 0xd0/0x104 versus native 0xfc. Original complete body restored.
+// J259: Separate force multiplier with time-factor ownership, independent relative output and uniform mass reads: 711/811/708/803/705/784/711/774; three precomputed friction results with mass snapshots/reads and existing final-vector scaling: 683/711/690/711.
+// NOT kept: no eligible native repair; opening executable source restored. Native frame 0xfc and first difference +0x66 recovered at 774; scalar homes and force scheduling still differ. Association, initialization and early one-use results require exact equality; all restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
