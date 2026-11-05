@@ -118,9 +118,7 @@ void network_session_reset_membership(c_class_58d20 *session, bool reset_limits)
 // @retail 0x616b0
 void network_session_disconnect(c_class_58d20 *session, long reason)
 {
-	memset(&session->value7420, 0, 0x1f8);
-	session->value7420 = reason;
-	session->state = 10;
+	network_session_enter_state_with_data(session, 10, &reason, sizeof(reason));
 }
 
 // @retail 0x61950
@@ -864,6 +862,12 @@ union s_60403
 // it: old_members at member-loop scope 262 (same code), a named old index 262, the array form 262, the flag declared before the old member 262; without the plain bool 273, without the at-each-use reads 302. Keeping the else
 // arm on previous directly, with the entry weight moved elsewhere: old_members inside the else arm 362 (masked 65), the same forms with no pointer 362, old_members for the mapping or removal loop only 400/400 (frame 0x98), a
 // players pointer for the retained loop 359, for the emission loop 295 (1497 bytes, masked 92; retail's EBX entry, but EBP no longer loads current and the later loops move). The lead without the late mask does not compile as written.
+// Round 148 (m3 lane 5; a one-file LTCG harness with an entry calling this is exact here, base 149; aligned counts from a line diff, base 84): plain bool + `old_players`
+// (previous + 0x10d4 before the retained loop) + mapped member at each use 277 (1513 bytes, aligned 81); `old_players` before the member loop for the retained and emission
+// loops 329 (1482, aligned 117); `members` (current + 0xc) instead 278 (aligned 64); old member sum written `previous + index * 0x10c + 0xc` 278 (aligned 64); on the 146 form the
+// member copy written once before the flag test 265 (1513, aligned 39). 90 random combinations of those with test order, map pointer spelling, old index local, count locals,
+// flag and old member declared at the loop top: none below 146, aligned none below 39. In all of them previous + 0xc is rebuilt from the stack; retail keeps previous in EBX through
+// the member loop's head (`lea esi, [ecx + ebx + 0xc]`, reloaded at the latch).
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

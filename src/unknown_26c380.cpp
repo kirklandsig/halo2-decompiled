@@ -797,6 +797,9 @@ bool function_210690(short output_index, point3f const *point, point3f *out);
 // unused third argument and 0x26d570 computes before its call) is dropped by LTCG: every caller's code unchanged,
 // 28. Kept only with every call passing it: BLOCKED-BY 0x270400 (two call lines in contributor code); a
 // defaulted parameter would avoid them but needs a ruling. The plain check hit a Wine hang; body restored.
+// Round 70 (m3 lane 1, fast): point read directly with result and start first 30, with the output and hit views first 30,
+// a named local at every read 30 (each loses five matched callers); its address read once into that local 37; its
+// address taken only for the else arm's copy 37.
 // @retail 0x26d100
 long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point)
 {

@@ -285,49 +285,6 @@ void motion_sensor_blip_set_position(point2f const *point, s_motion_sensor_blip 
 	blip->y = (char)y;
 }
 
-// score 26 (was 26): retail keeps the object pool from the first lookup in eax on the
-// no-call path and reloads it only after the friendly-team call (the type mask then in edx);
-// ours reloads it at the rider lookup and keeps the mask in eax. Tried: a pool local read
-// before the rider choice 26 (sunk to its use); the object lookup as a file-local inline
-// getter 26 (0x1a2965 lost); the header array read at the vehicle test 111; the pool read
-// there 105 (kept in ebx); the rider through object_get 26; an explicit pool re-read after
-// the call with a goto to the exit gives the reload but not the registers (24).
-// pool/index/mask registers differ and the pool reload
-// follows rider selection. Selected header reference 26; object reference 26;
-// player reference 26; full-width absolute slot 26; word slot 35; header pointer
-// 26; conditional pool refresh with header reference 24, with absolute slot 24.
-// the sensor table pointer is kept in ECX, retail keeps it in EAX. Tried (r27b): the
-// mask written inline at each test 26; the friendly-team test as `!= NONE && call` with
-// the rider branch in the else 26. The rider lookup in both arms of the friendly test through a
-// forceinline vehicle-type helper 261 (480 bytes: no cross-jump; the no-call arm also keeps
-// the data pointer, which retail re-reads); one pool local for both lookups 108 (pool in EBX,
-// NONE no longer a register); rider index as a ternary 26; no-rider arm first 60 (366); a named
-// rider pointer 26.
-// Round 59: the existing object accessor at the initial/both lookups 26/26; the existing header
-// accessor at the initial/both lookups 26/26; direct team reads 137; a pre-call pool with inline
-// masks 119; a post-test pool select 87; a single-exit pool refresh 83; a shared initial/rider
-// pool with the single-exit refresh 114. Original body restored.
-// Round 57 (m3 lane 9): without the friendly-team call ours keeps the data pointer for the rider lookup, so only
-// retail's partial reload of the array pointer after the call is missing (a load our build never inserts on
-// one path); a global store in 0x1df560 (diagnostic) changes nothing (26). The array pointer in a local at the
-// rider block start 26 (sunk); the same local for the first lookup only 26; an unsigned mask 26; a char team
-// local 121; a byte result 26.
-// Round 152: retail's first lookup leaves the pool global in eax (scaled index ecx, data and then the
-// mask in edx), and its no-call branch targets the instruction after the rider block's global reload
-// (0x1a1edc, past 0x1a1ed7), possibly a late pass acting because eax still holds the value (not tested); ours
-// puts the global and data in ecx and the mask in eax, so nothing survives. The friendly test as a bool
-// `!= NONE && call` local 26, as a flag set under the 0x12c test 26; the type in a long local 26, in a
-// char local 26; a short mask 26.
-// Round 52 (lane 14, fast): ours gives the mask EAX, retail keeps EAX for the pool global, so the mask colouring and the reload look like one
-// cause (the global read at the block's top in retail). The pool local for the first lookup with a direct rider read 26; the header array
-// named for the first lookup 26; the type in a long ahead of the mask 26; a pool local inside the rider arm 26, at the not-friendly block's
-// top 26; a pool local for the first lookup and a second direct read 26; one pool local refreshed after the call in a friendly flag 106
-// (360 bytes, pool in EBX).
-// Round 101: a pool snapshot in the unit/vehicle branch, refreshed only after the friendly call with a
-// single done exit, 24 (NOT kept: two-point gain; pool/mask registers remain reversed); a const mask or
-// const object on that form 24 each; the pool before the first object 118; a rider ternary, unsigned rider
-// index or named header base on the 24 form 24 each; type shifts repeated at the mask tests 84 (361 bytes).
-// Original body restored.
 // @retail 0x1a1e49
 char motion_sensor_object_type(long local_player_index, long object_index)
 {
@@ -358,12 +315,16 @@ char motion_sensor_object_type(long local_player_index, long object_index)
 				{
 					if (object->unknown12c == NONE || !function_1df560(object->team138, team))
 					{
-						long rider_index = object->unknown24c;
-						if (rider_index == NONE)
-							rider_index = object->unknown248;
-						if (rider_index != NONE)
+						if (object->unknown24c != NONE)
 						{
-							if (function_1df560(SENSOR_OBJECT(rider_index)->team138, team))
+							if (function_1df560(SENSOR_OBJECT(object->unknown24c)->team138, team))
+								result = 5;
+							else
+								result = 4;
+						}
+						else if (object->unknown248 != NONE)
+						{
+							if (function_1df560(SENSOR_OBJECT(object->unknown248)->team138, team))
 								result = 5;
 							else
 								result = 4;

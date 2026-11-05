@@ -392,6 +392,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 642/642/642/642/642/642/642/642. NOT kept: unmatched decision/storage forms; original complete body
 // restored.
 // Native sample/direction homes and coefficient schedules remain.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 642 [757]): rate constant selected before the multiply at the first
+// site 718 (2861) [630]; both sites 744 (2855) [601]; cap computed ahead too, first site 710 (2858) [622], both sites 668
+// (2864) [597]. Each of these loses the matched caller 0x1eb6f0 (22). `t >= 0.001f` for `!(0.001f > t)` 642, same code.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

@@ -659,6 +659,11 @@ void function_1a6d80(void)
 // parameters 6; indexed valid output 6; count value named after the call 6. Opening body restored.
 // Round 79 (fast): a return local set between the two stores 6, before the call 6; output references at the top 6;
 // a named call result with a count output local 6, with both output locals 6; the valid store as an if/else 15 (106 bytes).
+// Round 86 (fast): k identity locals on the node list, k = 1..8, 6 each (these registers do not follow symbol numbering);
+// an output-setting helper with reference or pointer parameters, the call result first or third, forceinline or inline,
+// or the whole tail in a helper returning the list, 6 each; output parameters char/byte with short/word/unsigned short 6 each;
+// the call result stored last 6 (count pointer EDX and valid pointer ECX as retail, stores reversed); the list returned from a
+// second table read 59 (126 bytes). Retail's registers need the count pointer loaded before the valid store.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {

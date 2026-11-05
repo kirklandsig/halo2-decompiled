@@ -776,6 +776,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // read after it 22 (same code); the summary getter written in the call 147 (493 bytes, both callers lost); a
 // `dword` copy index 22; the player buffer as an s_unknown_3648 block indexed through a cast 22; the player mask
 // read into a local before the player loop 130 (493 bytes).
+// Round 68 (m3 lane 11, fast with both callers; control 22): preset pair with the summary read under its flag 46; with a
+// plain `for` copy 108 (477 bytes); both addresses through a small pair struct 46; first address by ternary, second plain
+// 49; both by ternary 156 (499 bytes, the second flag test stays, callers keep matching); a named present bool 218 (361);
+// a presence helper with local copies of both addresses 218 (361); a pair helper with local copies behind the flag test 22
+// (same code). Both callers are lost in every 46, 49, 108 and 218 form.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

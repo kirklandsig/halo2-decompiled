@@ -1002,6 +1002,9 @@ struct s_bitmap_texture_view
 // EDX where retail reuses the base register, which is dead after that load: the raw address in a
 // named local, the cast around the whole expression, the masked value in a named local and the
 // zero-padded mask literal all give the same three instructions.
+// score 3 (was 3): this round found no gain - the masked level address is still loaded into EDX where
+// retail reuses the dead base register; copying the bitmap into a named local and storing through a
+// dword cast of the field both compile byte-identically to the baseline.
 // score 3 (was 3): the plain (full) check agrees with the fast one; the whole difference is the
 // masked level address loaded into EDX where retail reuses the base register, which is dead after
 // that load.
