@@ -368,11 +368,7 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
-// score 6 (was 11): native 0x2c frame and 541-byte length; first +0x79.
-// The count and the index occupy ESI/EBP as retail and the loop test is
-// cmp/jl, after a seat-count test that skips the loop when there is no seat.
-// Retail keeps the index's zero in EBP for that test and for the selected
-// pointer's NULL store; ours materialises a second zero in EAX for both.
+// score 8 (was 11): native 0x2c frame and 541-byte length; first +0x79.
 // Count and index now occupy ESI/EBP as retail; the inclusive last-index bound
 // decrements the count and uses js/jle instead of native cmp/jle and cmp/jl.
 // The selected pointer's NULL store still uses a separate EAX zero.
@@ -389,8 +385,13 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // exclusive conditional/failure-first publication 11/11; exclusive bound with
 // seat_index/selected_seat/target_state names 11/11/11; complete direct tag
 // reads at every use 27. All at 541 bytes; original complete body restored.
-// MiniMax E (11-04): the index declared before a seat-count test of its own 6
-// (kept); the same with the count in a local 11, the test as count != 0 6, a
+// MiniMax E (11-04, not kept, m3 review: the 8 -> 6 rests on a seat-count test
+// that repeats the loop's own bound, a redundant compare kept only with a byte
+// match; main's loop restored): with that test the count and the index occupy
+// ESI/EBP as retail and the loop test is cmp/jl; retail keeps the index's zero in
+// EBP for that test and for the selected pointer's NULL store, ours materialises
+// a second zero in EAX for both. The index declared before the test 6; the same
+// with the count in a local 11, the test as count != 0 6, a
 // while loop 6, a seats local 25, a pointer loop 139, the index inside the
 // loop 135, the test as i < count 11.
 // @retail 0x1b9200
@@ -405,16 +406,12 @@ bool function_1b9200(long object_index, long prop_index)
 		result = true;
 		if (!(tag->flagsbc & 1))
 		{
-			short i = 0;
 			s_vehicle_seat_definition *seat = NULL;
 
-			if (tag->seat_count > 0)
+			for (short i = 0; i <= tag->seat_count - 1; i++)
 			{
-				for (; i < tag->seat_count; i++)
-				{
-					if (TEST_FIELD_BIT(tag->seats[i].flags.bit3))
-						seat = &tag->seats[i];
-				}
+				if (TEST_FIELD_BIT(tag->seats[i].flags.bit3))
+					seat = &tag->seats[i];
 			}
 			if (seat)
 			{
