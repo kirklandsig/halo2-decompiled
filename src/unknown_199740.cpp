@@ -94,6 +94,14 @@ long __stdcall function_2cb5b0(byte *destination, long *destination_size, byte c
 // asm block references (each one step from it), so result, low, high keep their source order.
 // Barrier forms (real, fast): after the result default 4 (only `xor ebx` differs, below the pushes), ahead of it 6, a null pool
 // ahead of it 4, a char result ahead of it 120 (303 bytes); compile-only `_WriteBarrier` matches `_ReadWriteBarrier`'s code.
+// Round 54 (m3 lane 15): a lead, not kept. The reader as a plain `__int64` with the address taken only in a branch that never runs
+// (`if (false) QueryPerformanceCounter((LARGE_INTEGER *)&local_0);` ahead of rdtsc, no volatile, no new asm) gives retail's store order:
+// 0x199740 and 0x6a8a0 MATCH (fast), 0x80e10 14 -> 13, but 0x12d400 2 -> 11, 0x18f260 4 -> 12, 0x862e0 22 -> 24, 0x146e30 120 -> 124
+// (an address-taken local packs after the spilled scalars, so retail's low half and pump counter stop sharing a slot); as
+// LARGE_INTEGER or a two-long array the same numbers. Separate long low/high locals 14; volatile low, plain high 15; plain low,
+// volatile high 13; a reference to the plain local 116 (stores lost); a dead asm read of it 116 (diagnostic; stores lost). Compile-only:
+// block-scope volatile low and high, a volatile union, a two-dword array and a 64-bit integer for rdtsc keep the hoist; a volatile double
+// stores through x87; a constructor or a store through a pointer helper loses the stores; no SDK header has a reader.
 // @retail 0x199740
 bool __stdcall function_199740(byte *buffer, long size, byte *destination, long *decompressed_size)
 {

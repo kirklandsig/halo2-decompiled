@@ -507,6 +507,14 @@ s_1a8a10 g_4453c0[] =
 // j re-read, but the stores then stay where written: the second sum and its stores first 30, the second sum
 // first with the stores in [3], [1], [2], [0] order around the first sum 31; the point and the four values in
 // one array 99; the second sum written j * y + i * x 17 (same code); the copy ahead of the switch 54.
+// K148: both leading products with stores [3], [1], [2], [0] 21; dead score store 17;
+// successive leading-product accumulators 17; those accumulators with a four-value initializer 18;
+// separate score declarations 17; one-use second i copy 17; direct actor second i 38;
+// second vector snapshot 146. NOT kept: no equality; original float block restored.
+// Round 163: the point's address taken in the final switch (read through a pointer, or only named there) 17/17, so
+// address-taken is not what re-reads j; the point and four values in one record with the values passed on 27 (frame
+// moves, j still folded); the y store placed after the facing copy, y carried in a local through the switch 24 (j still
+// folded), in the one record 88.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

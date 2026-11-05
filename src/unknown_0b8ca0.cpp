@@ -653,6 +653,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax H (11-04): no new form, no lower score; retail's frame pointer and 8-byte self-alignment are not ours (frame 0xac against 0xb4).
 // MiniMax R (11-01): no new form, no lower score: our frame is still 0xac against retail's self-aligned 0xb4; the alignment is decided by LTCG from the call chain (callers 0xbf2c0 and 0x268c90), not by this body.
 // MiniMax A (11-03): no new form, no lower score.
 // score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
@@ -777,6 +778,11 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // use 225; else-arm zero + ternary with the radius square before the model index 227; the rest of the
 // body inside the cluster loop's found branch 230 (the found path then skips the `cluster == NONE`
 // re-test as retail's does), with the 224 forms 239.
+// Round 115 (fast, both callers matched): single-result query 259 (926 bytes); with range/model forms 261 (927);
+// ternary query with those forms 225; guarded root table 231; delayed flags 241; if/else query result 272 (928);
+// named ternary result 264 (929); non-NONE-first input with the direct ternary 224 (895); one-variable query result
+// 258 (923). NOT kept: 224 is only a six-point gain; every other form regresses or moves the frame/length away.
+// Original helper, range, model, root and flag forms restored.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -1766,6 +1772,7 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax H (11-04): no new form, no lower score; the body still differs from its first instruction.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60

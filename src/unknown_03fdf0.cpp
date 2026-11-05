@@ -499,6 +499,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // computed at the block top before first 167 (491 bytes); mode read once through its address for the selection 2
 // (the indirection folds); entry declared at the block top before first 2; n declared at the block top 2; a 600 s
 // permuter run (44 tries) none below 2. The cursor and first still share mode's home (no range conflict).
+// Round 54 (m3 lane 15, fast): the counter as a plain `while` with `++n` last 2; selection typed long with NONE 2; entry as
+// `entries + n` 2, with `index = n + first` 2; current as `current = current + count` 2; the material lookup as a plain inline
+// helper taking a short index 2, forceinline with a result local 2, taking a long index 2; a forceinline reader of the material
+// index byte 2; shape read before weight 19; the selection through an inline helper taking mode 2, forceinline with an if/else
+// result 2, taking mode by const reference 2, defaulting to ~0UL then `if (mode)` 115. Original body restored.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

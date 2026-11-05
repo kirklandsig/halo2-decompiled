@@ -248,6 +248,12 @@
 // then all with ordinary w transfer: 676/736/661/739/719/749/765/803. Full basis
 // recovers frame 0x60 but grows to 2712 bytes. NOT kept: all regress; original
 // native copies, helpers, integer conversion and complete body restored.
+// Y585: Complete first/second/combined branch-owned maximum result subsets
+// 1/2/4/3/5/6/7: 581 each; all with fallback-first arms 662. NOT kept:
+// no frame recovery or eligible gain; original maxima and complete body restored.
+// Y587: Actual two-axis cross table for traversal long/dword/short/word/byte/
+// signed-char, then long/short while: 728/728/803/803/803/803/728/803.
+// NOT kept: table/output residence regresses and grows; original direct calls and full body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -865,6 +871,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Y582: On current paired-point geometry, original/shared normalizer pairs for camera side
 // and surface normal, all eight nonoriginal pairs: 270/270/377/377/377/377/377/377.
 // NOT kept: no byte match; original roots/scales, shared crosses and full body restored.
+// Y585: Current paired geometry, initial/next/blend output-stream cursor subsets
+// 1/2/4/3/5/6/7: 265/265/265/268/268/352/350; all with tint cursor 265.
+// NOT kept: no native frame recovery or eligible gain; original counters and complete body restored.
+// Y587: Float root API at vertical/planar/camera-side/camera-normal/vertical-planar/
+// camera-pair/all/all with float epsilon consumers: eight 265s. NOT kept:
+// API boundaries canonicalize; native frame/spill homes remain; original body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1087,8 +1099,8 @@ struct D3DTexture;
 struct s_bitmap_view;
 D3DTexture *function_12360(s_bitmap_view *bitmap, real priority);
 void function_52d40(long bitmap_index, byte *shader, long tag, dword flags);
-bool function_1e5e0(long size, point3f const *position, long a, long b, long c,
-    long d, long e, long f, long g, void const *data);
+bool function_1e5e0(long size, long a, long b, long c,
+    long d, long e, long f, long g, void const *data, point3f const *position);
 
 struct s_43740_input
 {
@@ -1103,6 +1115,7 @@ void __stdcall function_43720(s_43740_input *input)
     function_52d40(input->bitmap, input->vertices.shader, input->tag, false);
 }
 
+/* queues one slot of a ribbon for sorted drawing, once its bitmap's texture is available */
 // score 62 (was 62): retail reads the object's field before the frame is set up
 // and compares it with -1, ours loads it into ebp and compares ebp. Retail
 // rereads the tag for input.tag (now matched), keeps the slot index in ebp after
@@ -1288,30 +1301,39 @@ void __stdcall function_43720(s_43740_input *input)
 // Y572: Joint original source/definition/slot formal-name priorities, seven
 // subsets then complete tag/bitmap role names: eight 62s. NOT kept: native
 // tag EAX/EBP split and signed-slot/shader homes stay wrong; body restored.
+// Y583: Actual texture-return pointer/bool/byte/long ownership, original image local
+// then direct image expression: 62/62/62/62/62/62/62/62. NOT kept: one-use return
+// carriers miss equality; complete body restored; early tag/EBP and slot/shader homes remain.
+// Y585: External tag/frame-pair/point-index field bindings, seven subsets and
+// all read-only, eight 62s. NOT kept: exact-only identities do not match;
+// original captured tag, field observations, complete body and matched caller preserved.
+// Y587: Tag producer ending at group/image, positive/NONE admission and positive/failure
+// texture admission: eight 62s. NOT kept: scoped lookup outputs do not recover
+// early EAX/EBP split or signed-slot/shader homes; original full body restored.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
     byte *bytes = (byte *)definition;
-    long tag = *(long *)(bytes + 0x34);
-    if (tag != NONE)
+    if (*(long *)(bytes + 0x34) != NONE)
     {
-        long bitmap = function_137590(tag, *(short *)((byte *)source + 0x1a), *(short *)((byte *)source + 0x18));
+        long tag = *(long *)(bytes + 0x34);
+        long bitmap = function_137590(*(long *)(bytes + 0x34), *(short *)((byte *)source + 0x1a), *(short *)((byte *)source + 0x18));
         byte *group = g_4e3b44[tag & 0xffff].bytes;
         s_bitmap_view *image = (s_bitmap_view *)(*(byte **)(group + 0x48) + bitmap * 0x74);
         if (function_12360(image, 0.0f))
         {
             s_43740_input input;
+            short count = source->point_count[slot] * 2;
             input.vertices.source = source;
             input.vertices.definition = definition;
-            input.vertices.slot = slot;
             input.vertices.shader = bytes + 0x3c;
-            input.vertices.normal = *(short *)(bytes + 0x68) != 0;
-            input.vertices.vertex_count = (short)(source->point_count[slot] * 2);
+            input.vertices.normal = *(short *)(input.vertices.shader + 0x2c) != 0;
+            input.vertices.slot = slot;
             input.tag = *(long *)(bytes + 0x34);
+            input.vertices.vertex_count = count;
             input.bitmap = bitmap;
-            point3f const *position = (point3f *)(g_4ea940->data + (source->point_index[slot] & 0xffff) * 0x38 + 0x1c);
-            function_1e5e0(0x20, position, (long)function_43720, (long)function_42cf0,
-                0, 4, 0x28, 0x18, input.vertices.vertex_count, &input);
+            function_1e5e0(0x20, (long)function_43720, (long)function_42cf0, 0, 4, 0x28, 0x18, count, &input,
+                (point3f *)(g_4ea940->data + (source->point_index[slot] & 0xffff) * 0x38 + 0x1c));
         }
     }
 }

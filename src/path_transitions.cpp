@@ -689,6 +689,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH347: Last-consumer first/second receiver and projection scopes, seven subsets then
 // all with a descriptive trace name: 271/346/270/346/271/346/346/346. All restored;
 // frame 0x40 and extent agree, but early root/actor ingress and vector scheduling remain.
+// N370: Persistent root/actor, parent and actual-output lexical families, seven
+// subsets then complete native local identities: 270 each. NOT kept: no equality
+// or gain; early root/actor retention and paired-vector scheduling remain.
 // F372: Paired-case normalized-length/projection/distance declaration lifetimes,
 // seven complete subsets and all with margin: 270/270/270/270/270/270/270/270.
 // Producers never moved; original declarations and complete body restored.
@@ -701,6 +704,18 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH356: Plain coordinate-copy induction at paired/actor/trace publications, seven
 // subsets then all with ordinary result: 356/344/357/351/353/345/347/363. All restored;
 // native root/actor ingress remains; original record fallback and all helpers retained.
+// Y589: Complete sole-exit success bool/byte/short/long 278/358/356/347;
+// complementary failure 402/359/356/354. NOT kept: ingress/frame/length
+// not recovered; original native case returns and complete body restored.
+// F383: Literal outcomes after paired/actor/trace publications, seven case subsets,
+// then complete literal returns without the result: 365/361/373/390/370/406/371/384.
+// NOT kept: root/actor ingress persists and extents regress; original result, all
+// publications, native helpers and complete body restored.
+// B433: Called normalizer/trace contracts, each ordinary/inline/forced, excluding
+// the ordinary pair: eight at 270. Original declarations and full body restored;
+// early root/actor retention and paired-vector scheduling remain.
+// P333: Native direction/point-publication/parent-record/all transfers through memcpy/memmove:
+// 270/354/270/433/270/414/270/396. NOT kept: no match or gain; original copies, helper and full body restored.
 // Round 62 (m3 lane 14, fast): 219 (was 270): corners b, a, c, d, vector3d_from_points3d for both edges and dot3f for
 // the projection and origin 266 (aligned 181 -> 143); case 5's direction first 264 (110); case 2 through a `vertices`
 // local (no `data`) 219 (70; case 2 is retail's byte for byte, kept). Tried on the way: the reciprocal multiplied in

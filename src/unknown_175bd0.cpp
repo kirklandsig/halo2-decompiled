@@ -2129,6 +2129,15 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // AC528: First-traversal cursor acquisition with late spawn-field masks 0..7
 // 167/166/166/160/163/164/164/165. NOT kept: no exact match or eligible gain; original complete body restored.
 // Early color/query/cursor homes and frame remain. These changed observation/residence forms require equality; no retained candidate.
+// AC531: Actual plane-field pointer/reference at entry lookup or after index admission,
+// ordinary/forced existing zone expansion: eight at 129/556 bytes. NOT kept: no frame
+// or color-home recovery; original producer, all live reads and complete body restored.
+// AC535: Positive tint/multiplication query results with false/true-default publication,
+// single queries then four pairs: 190/190/189/189/189/189/189/189 at 572 bytes. NOT kept:
+// all regress/lengthen; original complete body restored, early color/query/cursor homes remain.
+// DH372: Partial clipped-zone halfspace acceptance/rejection, bool/byte/short/long,
+// 131 each at 556 bytes. NOT kept: regressions; original helper and body restored.
+// Missing early color home and frame 0x40/0x44 remain; all checked controls survive.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2408,6 +2417,9 @@ event_done:
 // the 0xbadc0 validity call, and 0xbadc0's body is in another file.
 // MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
 // and 0xbaf80's bodies (src/unknown_0bad50.cpp) that decide it.
+// score 63 (was 63): this round found no gain - retail adds the record base into the scaled index before
+// its first load and keeps the object index in eax across 0xbadc0, whose argument convention is set in
+// src/unknown_0bad50.cpp.
 // score 63 (was 63): only the object index differs: ours keeps it in ESI from entry across 0xbadc0
 // Four-byte frame agrees; initial object handle remains retained across read-only queries.
 // Earlier: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
@@ -2915,6 +2927,10 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // before 'ligh' 23; light test inverted with the detached call first 23. Every other 0x1895f0 caller fills the
 // record as position, compressed forward, velocity, location (retail's order here too); that order needs
 // 0x189060's register order (round 117 lead), BLOCKED-BY 0xbf600's call (contributor).
+// Round 54 (m3 lane 15, fast): every order of the detached record's position, compression, location and velocity: 23 for the current
+// one, then 26 (location, position, velocity, compression), 27 (three forms), 28 (nine), 29 (six), 40 (retail's order), 42, 43, 43.
+// The attached call loads scale into EDI because position and direction already hold EAX and ECX in our evaluation order; that and
+// the detached arm's rotation still need 0x189060's order. BLOCKED-BY 0xbf600, 0xceee0 (their calls) and 0x17e670.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3302,6 +3318,15 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // AC528: Complete positive node classification, exhaustive then false-default in bool/byte/short/long
 // 96/110/106/107/94/96/95/96. NOT kept: no exact match or eligible gain; original complete body restored.
 // Native frame and system/successor/color homes remain. Several exhaustive non-Boolean forms also lose the exact caller; no qualifying gain or equality.
+// AC531: Complete immutable color pair, dword/long/unsigned-int/int, active/query-owned
+// scopes: eight at 93/338 bytes. NOT kept: color residence canonicalizes; native
+// frame, definition spill and system/successor roles remain. Original whole body restored.
+// AC535: Positive tint result with false/true default publication, bool/byte/short/long:
+// 113/112/117/116/113/112/117/116. NOT kept: all regress and lose matched caller
+// 0x176f60 (25); original full body restored, native frame and system/successor homes remain.
+// DH372: Particle availability/exhaustion across the original transform call,
+// bool/byte/short/long 119/119/126/132/119/119/126/132. NOT kept: regressions; original body
+// restored, frame 0x4c/0x54 and system/successor/color homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3590,6 +3615,10 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // at the loop top 270 (same code); forward and up transformed before the point 312 (1500); forward and up copied
 // before the position 282. The y copy (retail keeps raw y and scales into a fresh register) still appears only
 // with a by-name reference to position.y.
+// Round 111: direct copy construction with the scale after the position 312; a shared point pointer there 320;
+// on the default-before-color scale, a shared point pointer 280, output-only 272, input-only 278, and the same
+// pointer at both render calls 280; direct copy construction 272; an explicit temporary copy 272. None preserves
+// position.y; both matched helper users and both callers stay matched. Opening body restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

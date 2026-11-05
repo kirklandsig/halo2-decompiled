@@ -351,6 +351,12 @@ bool function_a9820(long *block, long index)
 	return result;
 }
 
+// MiniMax B (11-04): no new form, no lower score: the database pointer is still loaded into ECX where retail
+// loads it into EDX, and the active byte is still read through the materialised record address; an active
+// byte in a local read before the record pointer 14, a database local with the byte read from the array 14,
+// the byte read from the array with the record taken inside the branch 14, the record pointer read before the
+// byte 14, and a world local used for both reads 18 (the database is then overwritten in place, but in ECX
+// with the world).
 // MiniMax I (11-01): the database pointer is still loaded into ECX where retail loads it into EDX, so the active byte is still read through the materialised record address; a world local in the inner block, a database local, a record reference, the record fields without any pointer and the active test read from the array element all leave the code as it was.
 // MiniMax A (11-03): no new form, no lower score.
 // score 11 (was 11): this round: the database as a byte pointer with the active byte read from the
