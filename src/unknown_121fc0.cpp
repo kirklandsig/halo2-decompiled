@@ -46,6 +46,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 	return token;
 }
 
+/* loads the font table file named by the build's text path and maps its tokens to font files; the read
+   runs on the async thread, which writes the size while this thread waits, and the failed read's else
+   arm holds only a statement the release build compiles out */
 // MiniMax A (11-04, run 41): no new form, no lower score (128); EBP is still saved at the token traversal
 // rather than in retail's prologue, and the scalar homes still sit 4 below retail's.
 // score 128 (was 128): frame 0xa44 agrees; EBP is saved at token traversal rather than the
@@ -87,9 +90,6 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // size, cursor, count; ours cursor, count, size). Token declared at the block top 128; tokenizer as a
 // for loop 128; token = NULL at the block top 128; size/cursor renamed (size, token_end) 128 (same
 // code); clamp in MIN order 128. EBP's save stays at the loop in every form.
-// Round 231: existing tokenizer null guard / empty guard / nested result / result-first
-// 217/206/213/221; each with current table-entry token observations 217/206/213/221.
-// Original tokenizer and body restored; outer EBP preservation and read-size homes remain.
 // Round 53: the next/token pointers declared before the success test 128; the found index declared
 // outside the count test 128; the clamp as `if (size >= sizeof) size = sizeof - 1` 128; `while (token != NULL)`
 // 128; the token array cleared by memset 256 (724 bytes, rep stosd). Moving the token loop out of the
@@ -177,23 +177,11 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // unique (five orders) never moves their slots; the slot order matches the count of memory references (retail:
 // cursor 5, size 5, next 4, count 4, unique 3; ours gives size 3, so it sits after count), so the size home
 // follows from the memory-resident clamp.
-// Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
-// mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
-// delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
-// Round 20 (lane 17, fast): round 60's `long size = 0` passed as `(dword *)&size`, re-measured with round
-// 33's counters declared before the token array, 122 (the gain is the zero store, which retail does not
-// have); the counters before the token array alone re-measured 126; diagnostic, the token loop hand-inverted (`if (token) do ... while (token)`) 128
-// (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
-// loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
-// its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
 // Round 58 (m3 lane 1, fast): the three buffers at function scope 128; buffers, flags and size at function scope
 // 128; flags and size at the block's top 128, ahead of the buffers 128; a named path pointer for the three path
 // uses 128 (all same code). Compile-only: token declared outside the success block, or NULL there with the walk
 // after it, or one goto to the block's end leave the code unchanged; only a real use of the token after the
 // block (`g_4e3b40 = token == NULL`, diagnostic) saves EBP at the block's top, which retail's code does not show.
-// Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
-// mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
-// delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
 // Round 47 (m3 lane 14, fast): diagnostic, the token declared NULL at the block top and stored to a global
 // after the success block: 129 at 779 bytes, but aligned 51 -> 40, `push ebp` at the block start with ESI/EDI
 // and popped after the g_4e3b40 store as retail (a compile-only screen agrees: only a token live across the
@@ -251,9 +239,6 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // original ordinal search 128/128/232/232; predecessor-pointer search 205/205/203/203. Shared-storage forms
 // did not match; original complete body restored. Outer EBP preservation and read-size/count/cursor homes remain.
 // NOT kept: shared ordinal storage/domain forms did not match.
-// N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
-// then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
-// result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
 // Round 69 (m3 lane 10, fast): EBP's late save comes from where the walk's exits land. When the no-token exit and the
 // loop's exit reach one block, the restore goes on a block of its own around the walk; when the no-token exit jumps past
 // the success test's join and the loop's exit falls into that join, the restore lands in the join with ESI/EDI and the
@@ -327,14 +312,14 @@ void function_121fc0(void)
 		function_122810(local_3, local_4);
 		bool local_6;
 		bool local_7;
-		dword local_8;
-		function_1a1480(local_3, local_5, sizeof(local_5) - 1, 7, 6, &local_7, &local_8, &local_6);
+		dword volatile local_8;
+		function_1a1480(local_3, local_5, sizeof(local_5) - 1, 7, 6, &local_8, &local_7, &local_6);
 		function_120d50(&local_6, false);
 		if (local_7)
 		{
-			char *local_9[11] = {0};
 			long local_10 = 0;
 			long local_11 = 0;
+			char *local_9[11] = {0};
 			local_8 = local_8 > sizeof(local_5) - 1 ? sizeof(local_5) - 1 : local_8;
 			local_5[local_8] = 0;
 			char *local_12;
@@ -365,6 +350,10 @@ void function_121fc0(void)
 				}
 				local_13 = function_xe9ecc4(local_12, "\t\n\r ", &local_12);
 			}
+		}
+		else
+		{
+			do {} while (false);
 		}
 		g_4e3b40 = true;
 	}

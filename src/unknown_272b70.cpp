@@ -1535,6 +1535,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH352: Complete parent/seat departure predicate in bool/byte/char/short/word/int/long/dword
 // storage: eight at 32. NOT kept: no exact predicate-owner form. Original guard,
 // leave/load/walk requests and body restored; iterator and publication homes remain.
+// N386: Actual best-score storage before sort/iterator/seat discovery/entry, original-site zeros;
+// zero before candidate/actor, row-entry declaration and double score: 32/32/32/32/32/32/32/285.
+// NOT kept: no equality or gain; original score storage, strict selection and full body restored.
 // DH360: Busy-query presence/absence truth at its original publication, bool/byte/short/long,
 // eight at 32; constrained 600s search, 53 proposals, best 32. NOT kept: no exact result;
 // original direct busy store, iterator, geometry, requests, slot publication and full body restored.
@@ -1549,6 +1552,13 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // producers, subsets 1/2/4/3/5/6/7 then all complementary: eight at 32.
 // NOT kept: no exact selection-result form; original full body and helper restored.
 // Iterator scaling, leave-selector and request/publication schedules remain.
+// T58: Candidate-count zero after unit/position/seat/positive admission, local then entry declarations:
+// 36/45/46/53/36/45/46/53. NOT kept: no eligible match or gain; complete original source restored.
+// Iterator/candidate scheduling, leave-selector and request/slot publication homes remain.
+// T60: Actual actor pointer/reference and request pointer/reference at the existing
+// producer, forced/ordinary expansion on the retained slot graph: eight at 81/846.
+// NOT kept: regressions; original unit-value producer, slot publication and entire
+// body restored. Iterator/leave-selector/request homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2845,6 +2855,10 @@ struct s_scenario_scripting_view
 // signed-char/short/word/int/long/dword: eight at 80, exact 367-byte extent.
 // NOT kept: no exact loop-result form; original dynamic reads, short wrapping,
 // separate point branches and full body restored; actor/set/counter homes remain.
+// DH374: Final short-NONE commit presence/absence in bool/byte/short/long: 80/80/80/80/80/80/80/80 (fast
+// control 80; full 80).
+// NOT kept: no byte match or eligible gain. Original direct final test, signed-short traversal/wrap, strict
+// selection, geometry branches and complete search restored; actor/counter/set and guarded-data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
