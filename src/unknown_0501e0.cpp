@@ -374,6 +374,14 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // T59: On the retained aggregate-scaled graph, complete coefficient-row dot with reversed
 // input before/after scale, aggregate/shared-setter rows and both dot input roles: 254 each.
 // NOT kept: all regress at 1136 bytes; original helper and whole body restored.
+// M3 lane 11 r72 (fast, control 206, masked 170): the matched 0x30290 inlines src/unknown_030290.cpp's transform_vector in place after a
+// vector3d_from_points3d offset, and its retail code is this function's first view exactly (unscaled copies before the scale test, then
+// `movaps xmm, scale; mulss xmm, x`, (forward*z + up*y) + right*x). A local copy of that helper out of place 306 (1081, masked 156); in place after
+// vector3d_from_points3d offsets 231 (1113, masked 155); the file's own helper in place after vector3d_from_points3d offsets 273 (1155, masked 110:
+// second offset spilled to retail's +8..+0x10, first in registers, copy-then-scale as retail; left: 1.0 held in XMM7, first-view coefficients as
+// memory operands where retail loads them and keeps right.i in XMM7, both depth limits hoisted ahead of the k tests, frame 0x20); on it the depth
+// limits in the condition 289 (1170, masked 150); its products written variable-first 273 (same code); the helper in place on the original offset
+// loops 276 (1111, masked 109), so the in-place transform is what gives the copy-then-scale.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

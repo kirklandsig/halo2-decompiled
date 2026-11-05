@@ -1744,6 +1744,13 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // radius * radius inside the loop (hoisted to the preheader): plain `for` with the product inside 554 (2901, entry shape as retail), the product inside alone 555. The next index named before the first point with
 // 0x120790 for both points 686 (2955, masked+stack 280: retail's axis re-reads, table reads and early idiv appear), with the file's helper 602 (293), plain for + next + 0x120790 669 (2942, 282), + the file's helper
 // 606 (294), plain for + 0x120790 without next 654 (342); 0x120790 alone 651 (339). Lead: those three together fix most of the inner edge loop; what remains first is the zero in ESI (retail) against EBX and the cursor at plane.j.
+// M3 lane 11 r72 (fast, control 552; "masked" = register/immediate-masked aligned count, control 309): both points through the existing
+// 0x120790 re-measured 651 (2925, masked 334: retail's word table reads appear, but ours reads the axis once into BX where retail re-reads it per
+// point); long counts renamed so the names sort as retail's dword homes 572 (same code as plain long counts: ours edge radius +0x5c, edge count
+// +0x7c, face count +0x80, face radius +0x84; retail face count +0x80, edge radius +0x84, edge count +0x88, face radius +0x8c); no anonymous struct,
+// `point3f face_sum; real nearest_squared_local; point3f edge_sum;` 594 (2896: edge sum at retail's +0x5c, face sum +0x50 against +0x4c, nearest
+// stays +0x6c against +0x58); long counts + 0x120790 for both points + no outer guard + `radius * radius` in the test 640 (2918, masked 335);
+// projected declared ahead of distance 552 (same code); `return true`/`return false` with no result local 593 (2901, first difference +0x13).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
