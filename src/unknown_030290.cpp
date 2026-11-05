@@ -476,6 +476,13 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // for/while with long/dword/short/word ordinals: 197/197/224/224/197/197/224/224.
 // NOT kept: native table residence is nonexact; narrow ordinals recover frame
 // 0x2c but shorten to 937/955. Original alias-safe helper and body restored.
+// Round 130 (m3 lane 7, fast): the first cause is the second transform: retail keeps its x in the displaced point's XMM7, ours
+// moves x to XMM4 and spills x and z; that then gives ours the 1.0 in XMM6 (retail XMM7), the second inverse stored in the
+// scale slot (retail a register phi) and fa/zero swapped. Parameters (d, a, camera, scale) 193 (re-measured, 2 points); on it rows
+// zxy 216, zyx 211, yxz 216 (x XMM7, y XMM6 as retail, the transform still moves x), xzy 217. Defaults in an array, point2f or
+// scalars read in the else arm, if/else, else/if, ternary: 301/297/301 each (folded, 890-894 B). Scale read through a pointer
+// to the camera parameter 234, with the order 232, with yxz 232 (971 B); separate result scalars 195/193; displaced point
+// through a pointer local 216.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
