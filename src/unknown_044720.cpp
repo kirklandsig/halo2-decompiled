@@ -594,6 +594,11 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P342: Actual provider-node and table-base matrix record lvalues, mutable/read-only alone and all four
 // pairs: 182/182/182/182/182/182/182/182. NOT kept: no equality; original matrix receivers and whole
 // body restored. Entry/index spill and center/query/bound homes remain.
+// AC551: Shared selector entry by mutable/const reference; readonly result with pointer/mutable-
+// ref/const-ref input; ordinary inline with pointer/mutable-ref/const-ref input:
+// 182/182/182/182/182/341/341/341. NOT kept: no qualifying supported improvement; complete
+// executable source restored. Entry/index spill and center/query/bound homes remain. Ordinary
+// inline also raises the other selector user 107 to 280.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
