@@ -1093,6 +1093,11 @@ bool __stdcall function_2399da(long controller_index)
 // B416: Membership output ends after exporting its native twice-used privilege value;
 // query-buffer/selected-member/privilege role-name domains on that completed-buffer graph,
 // eight at 90. Original body restored; identity/rank EAX/ECX ownership and removal move remain.
+// Round 147 (m3 lane 6, fast): a `new_rank` local in a flat non-removal arm 90; a local for the removed identity in the
+// removal arm 90; the team pointer named in that arm 90; the task test and progress call in the removal arm with its
+// own return 90; the permission test as a named bool 90. Harness only (exact at 90): that local const 90, a reference 90;
+// a flat arm on the parameter 90; a `requested` local after the own-rank read 90; a const own rank 90. Extra identity
+// uses take ESI, not EAX (diagnostic, 154-163; 173 with extra zero uses). Original body restored.
 // B425: Complementary member/permission states singly/both as bool and byte, then
 // both short/long: 93/122/124/93/122/124/166/155. NOT kept: no exact match; original flags and body
 // restored. Selected identity/rank homes and the extra removal move remain.

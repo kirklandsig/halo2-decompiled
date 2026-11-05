@@ -360,6 +360,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // M366: Canonical success signed-byte/short/word/int64 storage, false default then true-default rejection:
 // 41/47/47/48/62/64/64/48. NOT kept: all regress; false defaults and true int64 also lose
 // the matched caller. Original Boolean body restored; saved-start/scan register split remains.
+// M380: Shared copier short/word/int64/uint64 size contracts with native/void return:
+// 39/39/56/56/39/39/56/56. NOT kept: narrow forms gain one and grow to 103 bytes;
+// wide forms regress at 112 bytes. Original helper, scanner and complete body restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

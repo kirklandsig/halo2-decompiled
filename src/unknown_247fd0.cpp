@@ -368,6 +368,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DH329: Six native own-input first-consumer reads 55 each; entry cache/parent input-slot
 // pointers 168/55. NOT kept: own-input forms lack equality; cache input also loses caller
 // (24). Original inputs, cache comparison and complete body restored.
+// Y584: Persistent validity/cached-record/value-array field references, seven subsets
+// and complete metadata-scope binding: 128/128/128/55/128/128/128/128. NOT kept:
+// post-sample compare stays split; other forms shorten to 863 bytes. Full original body restored.
 // AC528: Native parent-list slot identities on the current reconciliation graph
 // 55/55/55/55/55/55/136/136. NOT kept: no exact match or eligible gain; original complete body restored.
 // Split post-sample comparison and evaluator/child scratch homes remain. One-use field bindings require equality; no retained candidate.
@@ -375,6 +378,24 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // point-direction pairs, then all five: 55 each. NOT kept: no exact boundary-contract
 // form or gain. Original signature, sole caller and full body restored; split post-sample
 // cache comparison and evaluator/child scratch homes remain.
+// B434: Post-link positive/complementary duration-admission results in bool/byte/short/long:
+// eight 55. NOT kept: no exact result form or gain; original live field reads, reciprocals
+// and full body restored. Split post-sample compare and child scratch homes remain.
+// B436: Full-width signed int allocation/ordinal/child carriers, seven subsets, then
+// all with a native while pretest: eight 55 at 870/870. NOT kept: no exact type/control
+// form or gain; original complete body restored. Split cache compare and child homes remain.
+// B438: Allocator success/failure outcomes in bool/byte/short/long: eight 55 at 870/870.
+// NOT kept: no exact outcome-lifetime form or gain; original full body restored.
+// Post-sample split cache comparison and evaluator/child scratch homes remain.
+// M3 lane 10 r71 (fast; aligned in brackets, base 55 [54]): the child loop as a plain while 55 [54]; the cache block's cleared mask named and stored
+// after the record 55 [54]; the child pool in a named pointer 55 [54]; a parent local for both link arguments and the parent store 55 [54]; the
+// owner's flags read once for mask and update, on the current graph, 60 [50]. Re-measured: 0x173ba0's record read back from field_50 133 (876)
+// [19], which is the real closest form: only the split compare, its loop pad and the child loop's rotation are left. Harness (one file, entry in the
+// source; nothing folds): the compare or the store under an implied test, the store through a one-pass for/do, switches on the store or compare, a
+// bool result. A retail-wide scan of `fstp m` followed by an ALU operand finds 5 folds and no split of this shape: two folds are jump targets, and all
+// three non-target folds (0x39e24, 0x18700b, 0x2481bf) sit in unmatched functions, so no matched function shows this fold under the build's tuning.
+// Diagnostic only: in the one-file link /G7 on the entry object alone folds it (file-level /G7 does not), so tuning is link-wide, but it also turns
+// `inc` into `add r, 1`, which retail does not do; /G6 and /Ot on every object still split, /Os folds at 175 instructions. No flag change proposed.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -757,6 +778,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // F377: Complete contact-position/normal/inherited-velocity setters, single/pair/all graphs,
 // then all with the probe-direction setter: 356/366/363/366/366/367/367/367. NOT kept: no gain;
 // original complete body restored; late EBP save and sample/blend/getter homes remain.
+// B436: Native constant-index blend/contact/velocity observations, seven subsets,
+// then complete initial-scale coordinates: 356/356/356/356/356/356/356/356. NOT kept: no exact form or eligible gain;
+// original complete body and helpers restored. Native frame/register differences remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -36,9 +36,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 	return memory;
 }
 
-// score 42. MiniMax H (11-04): `bool volatile success` (the read's result is written by the I/O worker,
-// like `done`) with the widened handle test stored to it and the array element passed directly MATCHES;
-// NOT kept (a new volatile on a local is outside the volatile rule), held for the user's ruling.
+// score 0 (was 42): matches (MiniMax H, 11-04). The read's success byte is written by the I/O
+// worker, like `done`, so it is volatile: retail stores the widened handle test to it and reads
+// the byte back before the branch. The array element is passed directly, so the handle is
+// compared in ECX and copied to EAX for the by-value argument.
 // Earlier rounds (42): retail tests the handle in ECX and copies it to EAX for the by-value
 // argument, builds the success byte with `xor edx, edx; setne dl`, stores it and re-reads it from
 // memory before the test, as a volatile flag would; ours tests a register copy. Only a volatile
@@ -337,6 +338,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // boolean-bitfield consumer views 55/55/54/55/54; word/unsigned-long/signed-long
 // eight-bit views 81/80/80. NOT kept: ordinary views still forward the byte; wider
 // containers grow frame 0xfc to 0x100. Original long-outcome body restored.
+// Round 147 (m3 lane 6, fast): an empty `do {} while (false);` join between the success store and its test (a block
+// boundary with no code), branching on success: `(long)` test on the copy / on the element passed directly 55/55, plain
+// test on the copy / element 55/55, from the long on the copy 55 (351 bytes each, still forwarded). A scan of all game
+// functions for a register stored to a stack byte and re-read at once: the 8 matched hits are 6 joins and 2 volatile locals.
 // DH353: Completion initialization/handle aggregate/immutable open result, subsets
 // 1/2/4/3/5/6/7: 86/42/42/86/86/42/86; complete direct-member form 86. NOT kept:
 // no gain or match; original object, result, completion declaration and waits restored.
@@ -352,18 +357,18 @@ void game_state_cache_files_open(void)
 	{
 		char path[200];
 		bool volatile done;
-		bool success;
+		/* the read's result is written by the worker thread, so retail keeps
+		   the flag in memory: it stores the handle test and reads the byte
+		   back before branching on it */
+		bool volatile success;
 
 		function_11c9c0(path, sizeof(path), g_470050, i);
 		function_1a0b40(path, 3, 3, 0, 8, 6, &g_5020f8[i], &done);
 		function_120d50(&done, false);
-		s_file_handle file = g_5020f8[i];
-
-		long opened = file.handle != INVALID_HANDLE_VALUE;
-		success = opened != 0;
-		if (opened)
+		success = (long)(g_5020f8[i].handle != INVALID_HANDLE_VALUE);
+		if (success)
 		{
-			function_1a1310(file, 0x40b000, 8, 6, &success, &done);
+			function_1a1310(g_5020f8[i], 0x40b000, 8, 6, (bool *)&success, &done);
 			function_120d50(&done, false);
 		}
 	}

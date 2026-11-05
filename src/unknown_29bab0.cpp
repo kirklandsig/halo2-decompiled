@@ -273,6 +273,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // side width, response reciprocal, complete residuals and correction distance: eight at
 // 804/3499, frame 0x8c. Original input storage and body restored; early input/object/
 // heading retention and normalizer memory products remain.
+// B433: Library transfers at history/working-direction/pre-blend copies, seven subsets,
+// then all with the initial heading: eight at 804 on direct input. NOT kept: frame
+// grows to 0x8c despite retail length; original transfers, input storage and body restored.
 // Round 211 (m3 lane 3, fast; aligned with registers and stack/both masked, control 430/156): applied together, retail's
 // forms take the aligned count to 391/87 at 3499 bytes, but 783 positional, so none kept. They are: normalize3d for the
 // private normalizer; `*(vector2f const *)` whole copies for the 2D views; `real perp = -local_17.j` before the half

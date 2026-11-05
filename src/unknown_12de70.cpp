@@ -556,6 +556,9 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // pointer declared before its assignment 27; the loop block initialized before the loop and
 // refreshed in it 27; the tail pointer declaration split 27; the pool release written in both
 // block arms 75 at 277 bytes; the parameter renamed by its cache role 27 (all others 265 bytes).
+// Round 61 (fast): the count named and stored after the block read 73 (266 bytes: the count moves to EDI, the group keeps ESI); a block local for the tail's test and
+// pointer 51 (tail exact, cache block and index*24 swap EDI/EBP); a group local inside the tail's arm 27 (a temp plus a copy, identical), the pointer offset read first 27;
+// a group local inside the loop's arm 27 (the copy coalesces into ESI, no EDX), with the tail's block local 51.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

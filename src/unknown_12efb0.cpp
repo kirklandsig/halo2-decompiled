@@ -402,6 +402,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // N365: Existing color helper with separate twice-used scalar opacity, crossed with
 // shared RGB/clamped-weight/native per-use palette, 699/699/699/699/696/696/696/696.
 // Original helper and body restored; NOT kept: unmatched input/contract ownership.
+// M383: Existing scalar destination/color/scalars/weight, merge and publication formal
+// lexical homes, then scalar-merge/all helpers: eight 616s. NOT kept: no palette/SIMD
+// allocation repair; original helper symbols, input-weight capture and complete body restored.
 // Round 211 (m3 lane 3, fast; aligned with registers and stack/both masked, control 353/130): retail's six-field
 // accumulation runs in parallel registers (red, height, green, weight, blue, intensity, distance, remaining, with arguments
 // loaded ahead and multiplied in place); ours finishes one field before the next in every form. The three six-field

@@ -705,6 +705,15 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // then all with entry selector declaration: 67/132/67/132/67/132/132/132. NOT kept:
 // inner advance regresses to 523/512 bytes and first +0x3e; original body restored;
 // reference-first spread queries and two extra bytes remain.
+// M377: Actual memcpy/memmove destination as candidate query/all-use receiver,
+// ordinary/immutable bindings: 174/174/218/218/216/216/210/210. NOT kept: aliases do not match,
+// construction/receiver changes regress and lose the matched caller. Original
+// native copy, four spread queries, party edits and complete body restored.
+// Lane 13 r62 (fast with 0x91dd0): the first pair named with `do {} while (false);` between the queries 67 (the reference's query
+// still runs first); both pairs that way under a bool result 75 (519 bytes); under if/else with the improvement in both arms 150 (517
+// bytes, 0x91dd0 8); the spread query declared `__stdcall` or `__cdecl` so its `this` is pushed 67/67 (same code; 0x91860 still matches).
+// M391: Shared spread-query pair in plain two-pass long/short/word/byte loops, positive then complementary decision: 172/172/172/175/158/158/158/169.
+// NOT kept: No exact candidate-first query repair; frame grows from 0x2694 to 0x269c and extent moves away from native. Decision flags require equality. Original complete body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -1098,6 +1107,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // endpoints, original excess 67/66/66/66; expression excess 70/69/69/69.
 // NOT kept: all regress and grow to 196/198 versus native 190 bytes; original
 // combined scan, assignment fill, clamp, includes and full body restored.
+// B447: Complete copy/maximum/fill boundary, pointer/actual-array reference,
+// forced inline consuming total 34/34, returning computed total 71/71; ordinary
+// inline 144/144/143/143. NOT kept: no exact match; ordinary providers stay called.
+// Original complete body restored; frame/count/fill-value and clamp roles remain.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
