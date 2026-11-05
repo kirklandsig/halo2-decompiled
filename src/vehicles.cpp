@@ -2594,6 +2594,12 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // native frame agrees, turn-product and spin scratch/store schedules remain.
 // Y592: Complete two-side torque result as native vector/actual pair array, entry/producer declarations and mutable/readonly initializers:
 // 48/48/48/48/48/48/48/48. NOT kept: grouped storage lacks equality; original scalar results, spin helper and complete body restored.
+// Y596: Complete side-result conditionals/branches, positive/complement, joint branches/defaults:
+// 142/123/142/123/107/107/104/104. NOT kept: no exact result selection; native turn/spin schedules remain; original body/helper restored.
+// Y598: Existing spin scratch/input identities, producer/entry declarations: eight 42s.
+// Complete per-use turn fabs/fabsf/nonnegative-unary/negative-unary, original/float torque
+// magnitude: 139/139/42/46/169/169/116/115. NOT kept: no exact magnitude/spill result;
+// original helper and body restored; native turn-product and spin spill/store schedules remain.
 // J254: Native side-result stages with double return/double join/real return/advanced join,
 // ordinary/forced: 30/55/133/127/30/55/133/127. Branch-produced real result, returned/field
 // output and original/gate-owned input: 127/60/127/60. NOT kept: unmatched statement/result-
@@ -2990,6 +2996,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // original/distinct relative output: 677/721/709/739/685/725/700/749. NOT kept: nonnative aggregate clears;
 // 677 reaches native length but inserts rep stosd. Current axes and three position-zero stores before
 // left cross, original/distinct output 676/682; original output kept at 3244 bytes, plain confirmed.
+// Y598: Actual velocity/basis/applied-force lexical identities, separate and complete,
+// original then distinct relative output: 676/676/676/676/682/682/682/682. NOT kept:
+// no exact slot repair; frames remain 0xd0/0x104 versus 0xfc. Original complete body restored.
 // P336: Normalized up/lateral/bank-axis in actual matrix rows, seven separate-output
 // graphs then all with in-place output: 720/738/776/754/797/772/782/774. Bank-axis alone
 // recovers frame 0xfc but grows to 3311/3244 and regresses; all equality-only forms restored.
@@ -3332,11 +3341,14 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // normalization traversals: 1125/1125/1114/1114/1125/1125/1114/1114. NOT kept:
 // frames 0x84/0x88 and lengths 4706/4694 move away from native 0x74/4666.
 // Original complete body restored; incoming velocity and force homes remain.
+// Y596: Complete planar projection pair/array, assigned/entry/initialized/readonly outputs:
+// 1057/1057/1057/1057/1057/1057/1057/1057. NOT kept: no equality; frame stays 0x80 versus 0x74; original full body restored.
+// Y598: Persistent default outputs, aggregate/scalar force/torque/both, then force/both assignments:
+// 1074/1095/1078/1074/1095/1078/1052/1052. NOT kept: no exact constructor result.
+// Original complete body restored; frame 0x80 versus 0x74 and velocity/force homes remain.
 // P334: Native inverse/damping/paired-mass component-transform contracts,
 // seven subsets then queried-velocity range copy: 1090/1105/1078/1074/1093/1138/1118/1138.
 // NOT kept: no eligible native frame/velocity/force-home recovery; original complete body restored.
-// Y596: Complete planar projection pair/array, assigned/entry/initialized/readonly outputs:
-// 1057/1057/1057/1057/1057/1057/1057/1057. NOT kept: no equality; frame stays 0x80 versus 0x74; original full body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4580,6 +4592,8 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // for/while scans: 173/173/198/197/173/173/198/197. NOT kept: inside-search
 // decision requires a byte match; best gain three is below the gate and 1359 bytes
 // is farther from native 1361. Original whole search and body restored.
+// Y596: Identity/validity hit flag before the original later threshold, positive/complement bool/byte/short/long:
+// 161/161/161/161/161/161/161/161. NOT kept: search flag needs equality; 1354/1361 bytes moves away from native; full original body restored.
 // M378: Complete ray point/up library transfers, memcpy alone/both, memmove alone/both,
 // and mixed transfers: 176/176/176/269/267/277/267/269. NOT kept: no native
 // first-match/world/result repair; original complete copies and body restored.

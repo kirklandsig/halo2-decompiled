@@ -681,6 +681,9 @@ struct s_collision_result_buffer_1697c0
 // AC530: Plain native-array normalization publication, short/long/word/dword indices, explicit/compound
 // scaling: 650/305/650/305/650/305/650/305 (fast control 303). Short/word forms outline; full-width forms
 // retain 1435 bytes but regress. Original helper and body restored; scratch/axis/result homes remain.
+// Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
+// results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
+// contract or gain; original magnitude return, all consumers and complete sampler restored.
 // M389: Root/absolute-value float-library boundaries, singly/together, 307/298/303;
 // widened rounded-root/root-producer/reciprocal receivers 546/546/651;
 // float root/absolute with double reciprocal 651/651. NOT kept: five-point best

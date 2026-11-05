@@ -1801,6 +1801,10 @@ bool __stdcall function_110ab0(long unit_index)
 // P327: Complete base/depletion/overlay true-false result producers, masks 1/2/4/3/5/6/7,
 // then all with result at entry: 465/430/450/465/465/430/465/465. NOT kept: 430
 // still has 424 code differences; only table/extent improves. Original full body restored.
+// Y599: Terminal first/second/both overlay decisions return directly, original/Boolean
+// overlay, then both with Boolean depletion: 450/560/560/466/567/567/575/581. NOT kept:
+// no verified native frame/result-join gain; original full body restored.
+// Best code prefix stays 424 differences; all frames remain eight versus twelve.
 // DH372: First/second held-query presence bool/byte/short/long: 450 each.
 // NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
 // Original body and queries restored; state/request/result homes remain.
@@ -2215,6 +2219,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // N368: Nested persistent-valid/direct-set/default-and-overlay admissions, seven family
 // subsets, then all with split outer definition/graph guard: 776 each. NOT kept: no gain;
 // original admission graph restored, frame 0xcc/0xd4 and opposite selective expansion remain.
+// Y597: Complete common primary sampling weights, both-first/single-first producers,
+// sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
+// NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
 // AC533: Test-produced whole terminal paired-slot gate, missing/present bool/byte/short/long:
 // 724 each (3413/3403; frame 0xcc). NOT kept: one-use/test-produced state needs equality;
 // first-angle/overlay calls stay 2/4 versus native 1/5. Original complete body restored.
