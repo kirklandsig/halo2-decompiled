@@ -451,6 +451,16 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Y577: Native final planar delta, field/aggregate producers, scalar/record/memcpy/memmove
 // publication: 195/251/251/272/195/251/251/272. NOT kept: no equality; grouped residence
 // and copies tie or regress. Original helper/body restored; inverse homes and displaced-transform spill remain.
+// Round 63 (m3 lane 14, fast): the parameters as (d, a, camera, scale, ...) with every declaration and call changed 193
+// (retail's calls set up EBX out, ECX camera, EDX a, ESI d, last to first in that order; retail's three displaced-sum load
+// orders become exact, caller 0x4ff50 aligned 12 -> 9, 0x4f7e0 108 -> 105; under the keep bar, restored): lead, keep it
+// for a form that fixes the second transform. Also (d, camera, a) 193; (camera, d, a) 193; (camera, a, d) 195; (a, d, camera)
+// 195. On (d, a, camera): displaced rows xzy 217, yxz 216 (b.x, b.y then in retail's XMM7, XMM6), yzx 213, zxy 216, zyx 211;
+// helper coordinate/scale orders, 36 forms 183-235, best zyx with zyx 183 (973 B) but aligned 49 -> 71: retail's first transform
+// runs x, y, z, so not kept; yxz rows with coordinate orders xzy 225, yxz 205, yzx 234, zxy 225, zyx 230. Old parameters: rows
+// xzy 217, yxz 218, yzx 213, zxy 216, zyx 213; identity pointer chains of 1..7 locals ahead of the sums 195 each (same
+// code). Retail's second and third transforms share a rule: the component computed first (z, then x) goes through XMM0 into
+// XMM4 while the other two stay in XMM7/XMM6. Ours gets this in the third but gives x XMM4 in the second.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
