@@ -67,6 +67,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax I (11-05): no new form, no lower score. Retail takes its first argument in eax and keeps the
+// output in ebx and the physics pointer in edi, ours takes all three on the stack; retail's case-3
+// callee 0x1ec690 also takes the input in edi and the state in eax (src/stubs/bipeds.cpp, another lane).
 // MiniMax B (11-04): no new form, no lower score.
 // score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // Earlier: Aligned frame 0x94 agrees; move/input ownership, physics reloads and native velocity guard remain.

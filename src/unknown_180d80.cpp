@@ -108,6 +108,9 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
+// MiniMax E (11-05): no new form, no lower score; a named local for the guard's struct pointer
+// scores 287 (the load moves ahead of the callee-saved pushes and the frame shrinks to 2663 bytes),
+// so it is reverted.
 // MiniMax B (11-03): no new form, no lower score. The entry still loads the sixth parameter into ECX
 // and the fourth into EAX against retail's EAX for the sixth and ECX for the fourth (the two stack
 // homes agree, so this is the allocator's choice, not the parameter order); the guard split into three

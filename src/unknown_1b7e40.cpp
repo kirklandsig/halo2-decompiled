@@ -69,6 +69,9 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax H (11-05): no new form, no lower score; the busy test still becomes a numeric select
+// where retail branches to a last `return priority` and falls into the shared `xor eax, eax` exit,
+// and the fallback still tests the prop index where retail tests the node.
 // MiniMax B (11-04): no new form, no lower score.
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
@@ -322,6 +325,9 @@ evaluate:
 	return 0;
 }
 
+// MiniMax H (11-05): no new form, no lower score; retail calls function_25d740 out of line and sinks
+// the ESI/EDI saves, while our build inlines it at this site only, and the inline-ness of that
+// helper is set in src/unknown_25d690.cpp.
 // MiniMax B (11-04): no new form, no lower score.
 // MiniMax R (11-01): no lower score; reading the slot's expected index into a local before the actor lookup
 // and the file's /Ob1 setting both leave it at 73 (0x25d740 is still inlined here); calling the view getter
