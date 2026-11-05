@@ -1012,6 +1012,11 @@ struct s_string_buffer
 // Round 100 (plain): membership assigned in the condition 50 (481 bytes); split low/final assignments 87 (486);
 // a two-use value pointer in the final or low arm 68 each (500), in both 63 (478); staged final values 50;
 // an inline two-output loader in the final or both arms 50 each (481). All leave 9 in line; range body restored.
+// Round 163 (plain): cross-jumping folds the first arm into the last (compile-only), so retail's `jmp <loads>` after RET suggests the
+// `== 9` arm sat past the return before the merge. Chain, `== 8` and `== 9` arms with differing loads 97 (525 bytes);
+// the negated chain holding the `== 9` arm, a row pointer in that arm, 81 (505); an explicit zeroing else arm 114 (504);
+// a `!= 9` empty arm with the loads in the else 50 (481); the negated chain with a goto past the loads 50 (481).
+// Compile-only, all 9 in line: multi-return, flag and switch inline predicates, gotos in and out of the arm.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

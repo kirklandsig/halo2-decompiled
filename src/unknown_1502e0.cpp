@@ -1149,6 +1149,10 @@ struct s_tail_transfer_traits
 // DL265: Weapon/timestamp walks, weapon/time/both, dword/short/word selectors, range end;
 // matched serializer inline: 172/153/163/163/268/268/304/153. NOT kept: no eligible native result; original
 // traversals, serializer and body restored; traits/unit/NONE homes and pool reloads remain.
+// Y597: Independent minimum-scan rejection continuations, six guard orders, then
+// weapon/grouped-rejection and age/grouped-rejection: 153/169/151/153/180/153/153/180.
+// NOT kept: two-point best gain below the gate; other forms tie or regress. Original
+// scan, observations and whole body restored; traits/unit/NONE homes and reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1310,6 +1314,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // DL265: Flag producer table-base domains late/early, then caller-owned object input/byte output:
 // 284/284/284/284/284/284/284/284/284/284. NOT kept: unmatched base/input/output ownership; helper/body restored.
 // Retained pool/player and lazy tag-table allocation remain.
+// N384: Existing whole-metadata pointer/reference result, mutable/read-only and
+// captured/direct object input: eight 284. No field-address result is introduced, but
+// native pool/player/tag homes remain. Original getter and entire body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1529,6 +1536,9 @@ void function_150820(dword *bits, bool local_only)
 // indexed then conditional on primary: 70/70/70/70/81/82/104/86. Original selector,
 // lifetimes and full body restored; NOT kept: unmatched shorter extents
 // and native ESI-player/EDI-hand ownership remains.
+// DH372: Isolated mode-success/command-success/actual-command exits, then both success-exit
+// pairs 90/86/110/112/110; sole-return common success in bool/byte/long 63/73/91.
+// NOT kept: no byte match or gain; original body restored, saved player/hand roles remain.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1771,6 +1781,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // DH359: Full-width signed option/user/controller masks, seven subsets 285 each;
 // word option mask 297; existing release-helper inline/forced declarations 285/285.
 // NOT kept: no gain; scalar homes and release expansion remain. All bodies and declarations restored.
+// N384: Actual controller/user/option array role names, seven subsets and alternate complete
+// names: 285 each. Original names and full body restored; mask/index homes and missing
+// release expansion remain. NOT kept: no byte match or gain.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
@@ -2269,6 +2282,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // producer masks 0..7: 202/202/202/202/202/202/202/202. Original returns,
 // arithmetic and full body restored; NOT kept: no byte match or native
 // player/header-offset recovery. Native frame 0x28 remains.
+// Y597: Complete single void exit, parent-admission bool/byte/short/long,
+// direct/complete named squared-distance and radius nodes: 202/202/211/210/202/202/211/210.
+// NOT kept: no gain; all original exits, observations and complete body restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

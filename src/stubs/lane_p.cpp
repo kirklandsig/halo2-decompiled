@@ -18,8 +18,3 @@ public:
 
 
 
-// @stub 0xbd610
-transform4x3f const *__stdcall function_bd610(long arg_1, byte const *arg_2, transform4x3f const *arg_3)
-{
-	return 0;
-}

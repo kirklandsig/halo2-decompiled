@@ -884,6 +884,12 @@ struct s_1ac612
 // takes EDI; best value declared before best index 29; marker record pointer declared before the handle 31;
 // the forward product's i term with its operands swapped (diagnostic) 29, the load order is canonicalised.
 // Restored. 0x15adb0 shows the same index-scaled-after-base order in an inlined lookup.
+// Round 68 (m3 lane 11, fast): `inline` on 0x26def0's definition with the cleanup as a real call 29, but 0x1e17d0 141 and
+// 0x1e4570 126 then inline it; `inline` on 0x26f8f0's definition with the forward test as a real call (diagnostic, not
+// this machine's) 155; the scalars, scan and selection nested in a positive-count block 255 (968 bytes, NONE takes EDI at
+// entry); the marker index declared before its `for` 29; the scan as a `while` 29; the cleanup copied into a no-owner arm
+// 348 (1039 bytes) or an early no-owner exit 337 (1029). Deletion diagnostics: no cleanup 326 (895), no owner compare 266,
+// no 0x26df40 call 261 (actor EDI, offset EBX), selection off 751, cleanup without 0x26dc20 67. Body unchanged.
 // @retail 0x1ac610
 bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	s_object_marker *arg_2, short *arg_3)
