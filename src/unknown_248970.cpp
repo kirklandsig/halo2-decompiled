@@ -424,6 +424,14 @@ public:
 // loop/child-phase declarations and for/while: 142 each, 726/743 bytes, frame 0x10/0x14.
 // NOT kept: result ownership loses the native frame and regresses; original body restored.
 // Child preheader, pool/NONE ranks, allocation retest and salted-link construction remain.
+// B433: Existing canonical index provider inline/forced; pointer-difference/allocation
+// ordinals and separate/shared initialization/link receivers: 261/261/287/287/268/268/291/291.
+// NOT kept: frame/length and matched caller regress; complete body/provider declarations
+// restored. Child preheader, pool/NONE ranks, retest and index construction remain.
+// B435: Equal-value child initialization chains on the original head-assignment graph,
+// two invalid-link chains, two zero flag/age chains, then all four pairs: 54 each.
+// NOT kept: no exact initialization or allocation gain; original stores/body restored.
+// Native child preheader, pool/NONE ranks, allocation retest and salted index remain.
 // Lane 13 r62 (fast with 0x175270; 248 = retest + salt in place, 723 bytes, location an EBX register argument, 0x175270 100):
 // the location read through a `T *const *` of the parameter at the link, on that form, 220 (743, 0x175270 21: repeat, re-measured); a
 // `T *const &` at the link 220 (743, 0x175270 21); a separate cast copy at the link 248; a force-inline link helper taking the
@@ -434,6 +442,11 @@ public:
 // frame 0x10, 0x175270 matches, location no longer a register argument), three there 148 (758), three at the loop head
 // 235 (753, 0x175270 100). So on the retest + salt form the location keeps EBX only because the NONE constant has one use too few
 // for its register across the allocation call; what gives retail that use (or takes one from the location) is the lead.
+// B447: Complete child traversal/allocation/link/update boundary, location/metadata
+// pointer/reference receivers: forced inline 58/58/58/58; ordinary inline
+// 505/505/505/505. NOT kept: forced forms disturb the matching viewer x87
+// schedule; ordinary providers stay called. Original full body restored;
+// child preheader, pool/NONE, allocation retest and salted index remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

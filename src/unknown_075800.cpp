@@ -1288,6 +1288,25 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // remainder and terminal/default remaining handler: 195/195/195/195/189/189/189/189 fast (control 196, full 153).
 // NOT kept: seven-point best is below the gate and entry/save shape still differs;
 // original classifiers, all handler tuples and matched caller restored.
+// M377: Individual connection cases 5/6/7 inserted after direct 0/2/3 on
+// native-input primary root (last 7-after-3 excluded): 199/197/198/199/197/198/199/199 fast, control 196.
+// NOT kept: all regress and grow to 448/444; original dispatch/caller restored.
+// M379: Intact native-input family priorities QSPDC/QSPCD/QPSDC/QPSCD/SQPCD/SQPDC/SPQDC/SPQCD
+// 195/202/195/202/202/195/195/201 reduced (control 196, full 153). NOT kept: no qualifying gain;
+// original classifiers, all handler tuples and body restored; delayed ESI/late expansion remain.
+// M383: Native-input peer-first primary priorities PDQCS/PDSCQ/PDCQS/PDCSQ/PQDSC/
+// PQDCS/PQSDC/PQSCD: 198/194/204/201/197/204/195/202 (reduced control 196; full 153).
+// NOT kept: at most two points; original classifiers, all handler tuples and body restored.
+// m3 lane 1 r71 (all plain, on the one retail-order switch, base 217/420): CAUSE of the convention: the three direct address arguments to
+// 0x92ef0 (EAX) outweigh the one EDI argument to 0x94220, so address takes EAX and type ECX. Diagnostics, wrong values, never kept: the three
+// lookups given message instead 3/444 (0x7afd0 MATCH; only those three `mov eax, edi` differ), two of them 213/424, one 213/424; five EDI calls
+// against three lookups 185/380 (retail's convention), three against three 213/404; two or six other address uses removed 217/420. So a use
+// crossing a call is one way to lose EAX, not the only one. Correct-value forms, no gain: lookup through a forced-inline helper taking the link
+// or the handler 218/468 (retail's convention, because 0x92ef0 then inlines; this ECX, message EDX->ESI), one such helper per connection case
+// 247/508, with 0x92ef0's `inline` removed 217/420 (copies propagated; 0x92d10 97); `&address[0]`, the first field's address, a read through its own
+// address, a function-scope copy or `long` copy, a forced-inline function returning it, an inline link getter, `address ? address : NULL` 217/420
+// each (all folded); a pointer-to-pointer local read at the lookups 219/424; cases in numeric source order 210/432. Needed: a correct form of the
+// lookup argument that is not a direct EAX use at allocation.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

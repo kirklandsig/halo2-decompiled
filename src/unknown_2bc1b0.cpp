@@ -178,6 +178,9 @@ struct s_placement_2bc1
 // EAX copy and tail; loads after the copy fix only the tail; stores that need no register change nothing;
 // 0x2bc1b0 returning char changes nothing. So retail allocates one scratch value fewer (or two more) before the
 // copy, with the same code.
+// K148: tag-header owner 5; tag-instance owner 5; both owners 5; tag-present Boolean 5;
+// object-created Boolean 5; engine-enabled Boolean 5; unsigned object index 5; unsigned tag index 5.
+// NOT kept: no equality or allocation change; original body restored.
 // @retail 0x2bc1f0
 void function_2bc1f0(long team)
 {

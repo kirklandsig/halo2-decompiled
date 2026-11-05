@@ -169,6 +169,9 @@ void c_widget::v15(c_widget *widget)
 // with next_wrapped at the step 42 (90); the base helpers as `result = next; if (!result) result = first
 // sibling` 42 (90; the twins 42/44/44); the search in the loop condition with the focus after it 37 (94);
 // the step through a block-scoped `following` local 2.
+// Round 114: direct base eligibility/focus calls 2/2; `!!widget` 2; eligibility `!= false` 2 and `== true` 4;
+// ternary null condition 2; guarded found loop with `!found && widget` 2; pre-tested `widget && !found` 62;
+// guarded `widget && !found` 63; pre-tested `!found && widget` 32 (84 bytes). Original body restored.
 // @retail 0x22ebc3
 void c_widget::v16()
 {

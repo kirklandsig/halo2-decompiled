@@ -3347,9 +3347,8 @@ void function_15c000(void)
 void function_1628f0(long player_index, char state);
 
 // @retail 0x15cbf0
-void function_15cbf0(long attacker_index, long player_index, long flags)
+void function_15cbf0(long attacker_index, long player_index, bool flags)
 {
-	long const *flags_reference = &flags;
 	if (!datum_get_inlined(g_4e8c24, attacker_index))
 		attacker_index = NONE;
 	if (!datum_get_inlined(g_4e8c24, player_index))
@@ -3358,7 +3357,7 @@ void function_15cbf0(long attacker_index, long player_index, long flags)
 		function_1628f0(player_index, 3);
 	c_engine_peer *engine = game_engine_get();
 	if (engine && player_index != NONE)
-		engine->p29(attacker_index, player_index, *flags_reference);
+		engine->p29(attacker_index, player_index, flags);
 }
 
 struct s_engine_border_state
@@ -4931,6 +4930,8 @@ bool function_158eb0()
 // Round 124 (m3 lane 7, fast): `g_4e6948->flag1128 != 0` in the argument 38 (144 bytes); result declared
 // before the count 7; the iterator fields stored index, absolute index, data 7; `/ 2 >= 1` 11 (147 bytes);
 // a long mode cleared then set under `if (flag)` 62 (130 bytes). Original body restored.
+// Round 147 (m3 lane 6, fast): the index through a `long const &` 5; the flag declared at function scope 5;
+// `flag == true` 6; a long flag local 12 (147 bytes); `!flag ? 0 : 1` 5. Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {

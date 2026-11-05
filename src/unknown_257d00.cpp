@@ -1822,6 +1822,28 @@ void function_b7360(long object_index);
 // `xor eax, eax`/`mov eax, 2` for `xor ax, ax`/`mov ax, 2` from the short result, case 7's dot sides, and the 0x8c, 0x99 and 0x9a constant stores one line later than retail. On it: `if (success) return 0;` tails 159 (1816),
 // if/else returns 177 (1820), `if (!success) return 2;` 169 (1812), unknown06 as a real short field 91 (same code). Without the store: the empty cases 301 (same code), with actor first 487, word flags 309, all three 497;
 // per-arm returns with no join `if (success) return 0;` 582/478 with actor first (1724), `if (!success) return 2;` 581/478, ternary 528/538 (1800); all with actor first and word flags 491/491/544, with the store 632/632/542.
+// Y590: Standard bounded byte-copy publications at initial/recording/current-state
+// point records, seven subsets then complete backward copy: 454/309/309/481/472/319/489/489.
+// NOT kept: native ownership is unrecovered and all extents shrink away from 1848;
+// original complete callback and transfers restored.
+// Y595: Shared secondary/primary reference-validation phase, positive/complementary bool/byte/short/long results:
+// 472/472/465/461/500/500/499/498. NOT kept: no byte equality; original complete body restored.
+// J254: Existing notification/reference/movement inline then forced contracts, one provider at a time
+// then all: 301/507/301/919/301/1893/301/2376. Ordinary target code ties through the ret-16
+// prefix; forced extents 1872/2200/3008/3380 versus 1848. NOT kept: shared-user regressions and
+// native outlined-call/length mismatch. Original complete body and all declarations restored;
+// actor/output carriers and packed-reference retention remain.
+// B432: Original notification switch produces a positive/complementary classification
+// in bool/byte/short/long: 303/303/303/303 in either polarity. NOT kept: no exact
+// condition-storage form; original callback restored, pool/input/output homes remain.
+// B443: Separate original byte clear/set producers at orientation/moving/directed
+// payloads, seven subsets then all with set before clear: 301/301/301/301/301/301/301/301.
+// NOT kept: no equality or gain; original byte expressions/full callback restored.
+// Pool/input/output ownership, retained point-reference carrier and 24-byte gap remain.
+// P339: Selected case-seven delay in short/word/int/dword, exhaustive branch
+// then conditional producers: 301 each, all 1824/1848 bytes. NOT kept: no
+// byte match; original full callback restored. Entry actor/output roles,
+// reference retention and 24-byte deficit remain; all calibrated peers unchanged.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2380,6 +2402,28 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // M3 lane 13 r63 (fast, control 485, masked aligned 167; restored): case 1 as `if (d > 1.f)` 622 (2384, masked 159); the facing fields written at each use 519 (2368, masked 142); the existing dot3f for case 4 508 (2368, masked 133); both with dot3f
 // 656 (2356, masked 128); with field writes 639 (2368, masked 137); the state local first 485 (same code); case 14 before 20 491 (2400, masked 178), with `!(d > 1.f)` 615, with dot3f 508 (masked 124), all three 644 (masked 121). The callee store
 // from 0x258cf0's note 485 (masked 215), with the fields 639 (masked 186): retail keeps the reference across 0x25ab50 at cases 18 and 21, so those would need a local. Retail lays the post-switch test right after the case 7/8 and case 0 `sete` tail.
+// Y595: Complete turning/fallback normalization admissions, positive/complementary bool/byte/short/long results:
+// 469/469/469/469/469/469/469/469. NOT kept: no byte equality; original complete body restored.
+// B432: Native counted turning/state/current vector publications, seven subsets,
+// 560/581/625/608/615/622/620; all with facing input loop 597. Turning-only recovers
+// actor/state and point +0x10 but regresses. Original aggregate copies and full
+// callback restored; actor/state/point homes, later geometry and tail remain.
+// B434: Four untried nested subtype orders 0/2/1, 1/0/2, 1/2/0, 2/0/1; pending-first
+// state arm; classification default refinements; combined graph: seven fast 485; shared
+// classification phase 488 (fast control 485, full 469). NOT kept: no gain; original body restored.
+// B436: Both live countdown computations in int/long/short/word storage, mutable/readonly:
+// 615/615/615/615/469/469/469/469 on the retained request graph. NOT kept: no exact
+// storage form or gain; signed admissions and gated observations preserved, original body restored.
+// B438: Candidate-handle sentinel admission, positive/complementary bool/byte/short/long:
+// eight fast 485 (unchanged reduced control; full 469). NOT kept: no exact lifetime
+// form or gain; original body restored. Actor/state and first-point homes remain.
+// B441: Complete state/actor arm after query/request arms 9/10/12/11/6/14/18/21:
+// 500/501/502/499/497/497/500/507 (fast control 485; full 469). NOT kept: all regress and shorten
+// away from retail; original complete body restored. Actor/state and first-point homes remain.
+// B443: Native/CRT turning-anchor snapshots before/after the point query,
+// with original/early facing capture: 502/502/517/517/500/500/517/517. NOT kept: all regress
+// and grow to 2420 bytes; early facing grows frame 0x1c to 0x28.
+// Original anchor observations/facing/full body restored; actor/state and first-point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

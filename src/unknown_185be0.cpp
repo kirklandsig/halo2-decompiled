@@ -457,10 +457,30 @@ union s_185be7
 // gate, resets, observations and complete body restored; control-root/NONE homes remain.
 // AC529: Complete post-callback correction admission, allowed/blocked bool/byte/short/long:
 // 622/622/622/622/626/626/626/626. NOT kept: predicate residence does not match; control-root/NONE and scalar/flag homes remain.
+// AC532: Controlled/parent-tag/bounds expiry subsets 1/2/4/3/5/6/7:
+// 622/626/626/626/626/626/626; complete scopes with immutable index 626.
+// NOT kept: no match or gain; original observations, scopes and full body restored.
 // N366: Complete initial/interpolated angle and curve-response adjacent result producers, seven families
 // and complete duration-scaled outputs, all tie. Original body and helpers restored; control-root/NONE,
 // settings/zero homes and clamp/flag joins remain. Scores 622/622/622/622/622/622/622/622. NOT kept:
 // unmatched result-ownership forms.
+// AC534: First held-input scan collects released/retained word/dword masks for both
+// metadata words, indexed then source-cursor reads: 1099/1116/1039/1097/1026/1039/984/998.
+// NOT kept: deferred publication regresses, frame moves from 0xe0 and first gap to +2;
+// original two scans, per-bit stores and full body restored. Root/NONE and scalar homes remain.
+// AC536: Complete post-filter override-query allowed/blocked results in bool/byte/short/long:
+// 714/714/726/725/714/714/726/725. NOT kept: result residence lacks equality; original query,
+// short circuits, latch, helpers and full body restored. Control-root/NONE homes remain.
+// AC538: Complete positive-span admission before range-fraction production, positive/complementary
+// bool/byte/short/long: 624/624/624/624/624/624/624/624. NOT kept: unmatched decision/storage forms;
+// original complete body restored.
+// Control-root/NONE, settings/zero homes and clamp/flag joins remain.
+// AC540: Paired range-angle override/default decisions, bool/byte/short/long: 622/622/622/622/750/750/750/750.
+// NOT kept: unmatched result residence; control-root/NONE and settings/zero homes remain.
+// P340: Existing real truncation helper at hold-threshold conversion, direct/native real/immutable
+// real/rounded double/immutable double/seconds/seconds+milliseconds/immutable producers:
+// 638/638/638/709/709/638/638/638. NOT kept: unmatched conversion ownership; original cast and complete
+// body restored. Control-root/NONE, settings/zero and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

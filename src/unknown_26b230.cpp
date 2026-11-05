@@ -1970,6 +1970,11 @@ void function_269250(long clump_index, long actor_index);
 // DH355: Strict improvement truth at the common score join, positive/complementary
 // bool/byte/short/long: 89/89/89/89/89/89/89/89 (reduced control 89; full 87).
 // NOT kept: no exact one-use decision; original pool/selection and complete body restored.
+// M3 lane 4 r164 (fast; this body 89 fast, in-arm 126): a compiled-out `do {} while (false);` at the walk's join with the in-arm
+// compare 126, with the selection from the datum index 128 (the empty join does not stop the not-found path threading; that
+// form's head and pool hoist are retail's shape, with EDI for EBX and the selection memory-only); the selected arm's transfer in a
+// forceinline helper, in-arm 126, common graph 89 (same code); a block-local actor index in the selected arm, in-arm 126 (same
+// code); the walk's result index in a local at the top of the body, in-arm 126, with the actor index local 126.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2266,6 +2271,12 @@ void function_269250(long clump_index, long actor_index)
 // P327: Complete group-category definite assignment in bool/bool, byte/bool, bool/byte,
 // byte/byte domains 152 each; complete unit assignment as well 193 each. NOT kept:
 // all regress; original classification stores, deletion continuation and pools restored.
+// M3 lane 4 r164: the cleared-prop form with separate pool globals and a probe reading the prop pool at the top of the third linked
+// object (plain, diagnostic): this function matches, 0x25d770 2, 0x25d810 91, so first reference in link order does not break the
+// tie. Under separate pools (fast): a front-end forceinline node walk 2/91; the prop pointer declared outside the loop 2/91; 1 to 8
+// identity locals in 0x25d770 (diagnostic) 2/91 each; a second merged prop lookup at the first test 48/116, at the middle test 49/115,
+// as its own statement 2/91. Under the struct the last-referenced pool takes the first register, so the prop walk as a plain `for` with
+// the call in init and step 229 (789 B), with the cleared prop 206 (773 B): the step is duplicated and the pools are not hoisted.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
