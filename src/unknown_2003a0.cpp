@@ -2162,6 +2162,11 @@ bool function_1e11b0(long actor_index, bool active);
 // declaration, iterator at function scope, address local late or const, dword parameter 13 each. Rank never moves the swap.
 // MiniMax C (11-05): no new form, no lower score: the squad and loop index still swap roles here, the
 // argument is still not materialised in a register and the return is still narrowed to a byte.
+// Round 76 (m3 lane 1, fast; on the 13 form, index EBX/next EBP against retail's EBP/EBX): the +0x34 store
+// through a second actor_datum_get 95 (232 B); the stamp and flag stores written in both arms of the flag
+// test 83 (217 B, not merged); the existing next_actor_204390 step 13 (same code); the second lookup as
+// squad_get((word)squad_index) 69 (205 B, not combined); the squad re-fetched after the loop through the
+// address read 75 (212 B). Our 0x201ea0 also passes the index from EDI, so no caller preference differs.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2366,7 +2371,7 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // iterator) and the intersection's store with no read. Earlier scores in this note are on the older body.
 // MiniMax R (11-05): no new form, no lower score; retail's frame is 0x54 with the elapsed conversion before
 // the pushes and its clusters/elapsed/structure at +0x04/+0x08/+0x0c, ours 0x48 with them at +0x14/+0x18.
-// score 275 (was 275): Frame 0x48 versus 0x54, early saved-register pushes, iterator/point homes and intersection spill remain.
+// Earlier 275 (was 275): Frame 0x48 versus 0x54, early saved-register pushes, iterator/point homes and intersection spill remain.
 // Round 73: retail keeps the squad walk's pool pointer in memory (reloaded each pass), ours in EBX,
 // which forces the pushes first. Walk as `while ((squad = step) != NULL)` 319; long squad index 275;
 // flags at +2 read as a word, plain/(dword) cast 294/294 (retail's xor/mov bx load; aligned diff
@@ -2505,6 +2510,13 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // that spelling changes 0x142570 (207 bytes) and 0x2104b0 (10). The same read in 0x210850 or 0x2104b0, or a reference to a
 // cast copy of `out`, also gives frame 0x54 but changes those two (63-73 and 251 bytes). Next: a spelling in 0x142570
 // that keeps its bytes.
+// Round 76 (m3 lane 1, fast; on the 16 form): the raised point read through 0x210850's returned pointer 38 (1119 B, frame
+// 0x48); that with the point at function scope 21 (1119 B): retail's frame 0x54 and every slot, only the three reads go
+// through EAX where retail reads the point's slot, so a used return value is enough for the escape (a pointer to
+// the whole local, so not keepable even with a match); the raised point
+// through the existing vector3f_add_scaled with `&point`, point at block or function scope, 16/16 (forceinline folds,
+// no escape); 0x210850's two copies as memcpy 16 (no escape; 0x210850 keeps its bytes). 0x142570's file is held by
+// another lane this round, so BLOCKED-BY 0x142570 stands.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -3509,6 +3521,16 @@ void function_2011f0(long arg_0);
 // as long 320 [163]; no cursor copy 346 (1356) [169]; defaults before the lookups 348 (1352) [155]; no outer count test
 // 324 [161]; with the defaults first 330 (1340) [154]. Retail stores the seat as a dword (`mov dword ptr [esp+0x14], -1`
 // and from 0x200ee0's result) but compares it as a word: a lead for the seat's real type.
+// Round 76 (m3 lane 1, fast): the 221 form rebuilt from lane 2's steps: squad pointer, flag declared before the typed
+// row, head after it, options and difficulty by if/else with `switch ((short)difficulty)`, memset count from a fresh
+// `squads[(word)arg_1].count`, `for (short attempt ...)` with no outer count test, per-arm spawn index, seat NONE once,
+// `short` placement index from placement_entry compared with NONE, arg_1 unmasked to the calls, guarded cursor do-while
+// with one squad lookup per pass, tail flag test: 331 -> 272 -> 261 -> 221 (1328 B, aligned 15). Its keepable subset
+// (row count for the memset, plain while through the squad pointer) 373 (1308 B); the plain while with the per-pass
+// lookup 271 (1332 B); declarations squad/row/head/flag 269; flag before the active test 281; `(void)&row` 221; entry
+// address before the range test 269/266 (1312 B); a named range bool 221/229. Lead: the entry pointer set NULL then from
+// the range test with `if (entry)` 257/255 (both orders) gives retail's loop-top row reload and retail's row/seat
+// slots, but the row takes EBP/arg_2 EBX and the NULL test stays; the arg_2 test moved first on it 326.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
