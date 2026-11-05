@@ -1156,6 +1156,10 @@ void function_2118c0(void)
 // char with `<`, `!=`, `<=` tests 150; word/byte/char row stepped by 8 beside b 130, long 150; short/word row from `b * 8` 166 (764
 // bytes), char/byte 166 (767); short/word from a cast `b << 3` 163 (782), char/byte 166 (767); wrapped indices through a long array
 // or pointers 181 (755 bytes)/114.
+// Round 151 (m3 lane 5, fast): this body is 0x212100 inlined with b = 1.0f: a call with `inline` on a forward declaration is
+// exactly 777 bytes and 0x212100 stays matched, but 150 (all rows reduce); plain declaration 437 (495), forceinline 150. On the
+// inlined call: all rows from `long row = b << 3` 162 (767), wrapped rows only 123 (790); `long row = b * 8` 150 either way;
+// wrapped rows from `short row = b * 8` 157; sums cast to short or word 179/179 (808).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
