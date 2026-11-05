@@ -3204,7 +3204,7 @@ void function_14d8b0(void)
             byte *globals = *(byte **)((byte *)g_4e034c + 0x134);
             long effect = *(long *)(globals + 0xb4);
             long unit = *(long *)(player + 0x2c);
-            if (unit != 0 && effect != NONE) function_176780((s_effect_owner const *)NULL, unit, 0.0f, effect, 0.0f, NULL, NULL);
+            if (unit != 0 && effect != NONE) function_176780(effect, (s_effect_owner const *)NULL, unit, 0.0f, 0.0f, NULL, NULL);
             player[3] &= ~0x20;
         }
         long unit = *(long *)(player + 0x2c);

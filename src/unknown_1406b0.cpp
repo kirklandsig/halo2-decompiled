@@ -824,6 +824,11 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // swapped at the definition and call 17 (0x13eeb0 2); for and pre-tested loops 114/114; the iterator datum initialized
 // 14; allocation in iterator.datum_index 14; the allocation pointer through iterator.data 38; the allocation call
 // through iterator.data 14.
+// Round 136 (fast): both parameters as the file's two-long character key passed by value (0x13eeb0 building it) 14
+// (0x13eeb0 2); the match as a named bool 14; the character test nested under the font test 14; the iterator's datum
+// index initialized 14; the header compared with NULL 14. Diagnostics: without the font store 77, with a zero font
+// store 70, comparing only the character 76, without the character store 45: whichever parameter stays in a register
+// takes EBX and the mask EBP, whatever its use count.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

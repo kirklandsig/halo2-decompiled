@@ -1154,7 +1154,7 @@ long function_1039a0(long object_index, long tag_index, long effect_index, real 
 		case 'effe':
 			result = effect_index;
 			if (!function_17b160(effect_index, tag_index))
-				result = function_176780((s_effect_owner const *)NULL, owner_index, scale_a, tag_index, scale_b, NULL, NULL);
+				result = function_176780(tag_index, (s_effect_owner const *)NULL, owner_index, scale_a, scale_b, NULL, NULL);
 			break;
 		case 'snd!':
 			function_189060(unit_index, NONE, scale_a, g_468788, g_4687a8, tag_index);
