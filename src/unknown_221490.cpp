@@ -488,6 +488,11 @@ bool sound_driver_voice_create_buffer(
 	return result;
 }
 
+// MiniMax A (11-05): the count stored as the block's first statement, ahead of the voice reference, and the play
+// bit spelled `(flags >> 1) & 1`, keeps retail's 618-byte length and the frame, and lowers the diff to 68 (not kept: under the keep bar).
+// Still differs: the play bool sits in BL and the 3D bool in a stack byte where retail keeps the 3D bool in BL
+// and the play bool in the stack byte; with that, the EAX/ECX roles for the voice offset, the descriptor zero
+// and the input mixbin are swapped.
 // score 71 (was 71): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
 // and the failure exit agree. Still differs: the 3D bool sits in a stack byte and the play bool in BL where
 // retail keeps the 3D bool in BL and the play bool in the stack byte; with that, the EAX/ECX roles for the
@@ -775,6 +780,8 @@ bool sound_driver_voice_create_buffer(
 // `else result = NONE` 175 (flags arrive in EAX), play first 164. The 3D block as a forced inline helper taking play 113 (620),
 // frame 0x88, play keeps BL; plain inline stays out of line. Random search of 400 forms (order, spellings, byte types, count and
 // voice placement, declaration order): best 73 here, the early count above.
+// MiniMax A (11-05): the two flag bools in the other order 181 (the play bit is then computed eagerly from ECX as retail, but the count argument takes EBP, the frame drops to 0x7c and the flags byte copy goes to AL); the same with the count declared before the result 181, with the play bit as an unsigned char 181, with the bools ahead of the count store 180 and with a dword count 182; a byte copy of the flags 68 and the declarations reordered 68 (the same code); the 3D test inlined as `flags & 1` 180; no lower score.
+// MiniMax A (11-05): the 3D test spelled `flags & 1` on its own 180 (604 bytes, the flags word then reaches the callee as a stack argument and the voice index takes EAX) and the same with the play bit computed ahead of the count 180; the 3D flag local first 181, both bools at the top of the block 180; the bools between the count store and the voice reference 172 (the play bit then reaches the stack byte and the voice offset ECX as retail, but the 3D flag goes to AL and the voice index to EBP), the play bit spelled as a mask test 68 (the same code) and the 3D flag first with the play bit from the flags word 180; no lower score.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
