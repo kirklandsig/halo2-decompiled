@@ -73,6 +73,8 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
+// MiniMax R (11-05): no new form, no lower score; the result local declared last or without its initializer
+// changes nothing, every slot sits at the same address as retail's and only the frame size differs (0x11c/0x118).
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.

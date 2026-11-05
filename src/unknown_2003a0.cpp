@@ -2337,6 +2337,8 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
     return result;
 }
 
+// MiniMax R (11-05): no new form, no lower score; retail's frame is 0x54 with the elapsed conversion before
+// the pushes and its clusters/elapsed/structure at +0x04/+0x08/+0x0c, ours 0x48 with them at +0x14/+0x18.
 // score 275 (was 275): Frame 0x48 versus 0x54, early saved-register pushes, iterator/point homes and intersection spill remain.
 // Round 73: retail keeps the squad walk's pool pointer in memory (reloaded each pass), ours in EBX,
 // which forces the pushes first. Walk as `while ((squad = step) != NULL)` 319; long squad index 275;
@@ -3279,6 +3281,8 @@ long function_203780(long arg_0, short arg_1, short arg_2, bool arg_3);
 long function_201010(long arg_0, short arg_1, short arg_2, short *arg_3);
 void function_2011f0(long arg_0);
 
+// MiniMax R (11-05): no new form, no lower score; retail reads the index and the 0x98 stride before the pushes and
+// keeps the squad pointer in its own slot, ours sinks that load into the definition test (a named squad pointer 403).
 // score 318 (was 318): 1332 bytes against 1328. Left: the squad index is kept as a zero-extended word in EBP
 // and passed masked to the calls where retail keeps the third parameter in EBP, masks the index with AND,
 // keeps the squad address and the 0x98 offset in their own slots and passes the index unmasked; the frame
