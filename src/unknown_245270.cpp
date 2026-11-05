@@ -631,6 +631,15 @@ void function_245400(s_source_245400 const *source, long index,
 // second material's record (forceinline, inline, reference; with a named record) 208 or 204 late, no dead lea, no arrival change.
 // Plane table and pointers inside the plane test 222 (766 bytes): the source does arrive in ECX and copies to a callee-saved
 // register at entry as retail's, but the matrix then becomes a register argument too (no push, caller 43).
+// M3 lane 4 r170 (one-file harness with 0x245aa0's file, exact at 209, caller 0 unless noted; masked aligned in brackets, base [77]):
+// the matrix named inside its block with a true `__assume(matrix != NULL)` 205 (also --fast; aligned 162 -> 134 [73]: the matrix
+// leaves EBP, the source stays ECX, caller matched; a renaming pointer, so not kept); the three transforms in a plain `inline`
+// helper 592 (401 B, out of line), force-inlined 209, with the plane table late 203 (caller 3); a volatile matrix read (diagnostic,
+// removed) 209, with the late table 214 (caller 3). On the named matrix: second material read first 205 [70], through `short const &`
+// 237 (752 B) [67], through a word reference, a record reference or a record pointer 223 (766 B) [64] (the lea comes ahead of the
+// load, retail's after), the second index named with the reference 220 (764 B); a vertex-table local 235 (750 B), with a surface
+// local 220 (764 B); `__assume(arg_1 != NULL)` 235 (750 B); the source copied to a named local with an assume 209-214, without
+// 208-223 (never retail's `mov esi, ecx`); dword codes with named plane indices 221 (765 B), sides as `!= 0` 207 (aligned 128).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

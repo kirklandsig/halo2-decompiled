@@ -20,8 +20,8 @@
 // and the inverse at [esp+0x10], ours holds the secondary shape at [esp+0x10] and the inverse at
 // [esp+0x14], and our frame is eight bytes short of retail's.
 // MiniMax R (10-31): shape0 hoisted above the inverse 712, shape0 first in the switch 581; permuter 22 tries, best 571 (baseline 571); no lower score.
-// score 581 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
-// thirteen bytes longer; retail keeps the primary shape in the stack slot at [esp+0x14]
+// score 537 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
+// fourteen bytes longer (earlier thirteen); retail keeps the primary shape in the stack slot at [esp+0x14]
 // and the secondary shape in EDI, ours keeps the inverse at [esp+0x14] and the
 // secondary shape at [esp+0x10].
 // Behaviour difference kept for score: `long tmp2 = scale * d.k` truncates the sixth input
@@ -264,6 +264,20 @@
 // aligned 391, shape 203), as a real 600, the same with the 8.2 product written (x * b) * c order 600, the factors as reals with a double argument 628
 // (2632 bytes). Retail's s0 leaves sin(x), cos(7.8y) and cos(7.75y) on the x87 stack and pops all three dead after
 // the product (fstp st(2), st(1), st(0)), with fsin of the 8.2 argument done last; no form here forward-substitutes them that way yet.
+// M3 lane 4 r170 (one-file harness with the ballast object, exact at 581; masked aligned in brackets, base [209]). Kept 537 (plain 536
+// with a named `type` local, not kept: it mixes a local copy with direct field reads): both shape pointers NULL then one if/else at
+// entry, the type switch as `if (source->type == 0) ... else if (source->type != 1)`, the special-flag arm first in the
+// `0x20 & flags` test, the second wave through the existing vector3f_add_scaled. Each part removed alone: 706/631/602/629.
+// `sin(v1.y + v1.x * 5.6f)` 537 (identical, dropped). Grid on the kept form: first/second wave as scale+copy, add_scaled, direct
+// `+=` either operand order, scale+vector3f_add; amp/k named or inline; cross/sine statement orders; default-arm declaration and
+// row orders: best 536 (s0 first, amp and k written inline). Type `if` with a local read everywhere 699. Older forms on this base:
+// type if 580 [175], flag arm first 673 [198], both 670 [164], plain sixth product (behaviour fix) 648 [192], both with it 617.
+// x87 lead (diagnostic, not kept): retail's non-popping `fmul st(1); fmul st(2); fadd st(3)` and the three late `fstp st(k)` pops
+// appear only when sin x, cos 7.8y and cos 7.75y have a second use that is removed late: a dead write through a pointer to a local
+// gives retail's x87 sequence exactly with the 8.2 argument named first (frame 0x60, [111], 656 at 2587 B); `if (false)`, an empty
+// inline taking them, unread aggregate members 620; `if (!special)` same pops, frame 0x64. An inline helper filling a local wave
+// vector from the global point (first sine, then the named factors, the unused third component written through a copy of the
+// result pointer) gives the same sequence (659 at 2584 B): retail's direct global reads may come from such a helper.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -278,7 +292,12 @@ void function_0497a0(
 	vector4f *old30)
 {
 	real inv = -1.0f;
-	s_view_shape_1 *shape1 = source->type_low == 0 ? 0 : &source->shape1;
+	s_view_shape_0 *shape0 = NULL;
+	s_view_shape_1 *shape1 = NULL;
+	if (source->type_low == 0)
+		shape0 = &source->shape0;
+	else
+		shape1 = &source->shape1;
 
 	bool special = ((0x20 & flags->flags)) && (0x40000 & flags->flags);
 	point3f v1 = special ? g_4b9da0 : source->v2c;
@@ -300,8 +319,7 @@ void function_0497a0(
 		v1.y += wave_shift.j;
 		v1.z = v1.z + (wave_shift.k);
 		real k = s1 * 0.025f;
-		vector3f_scale(&c, k, &wave_shift);
-		vector3f_add((vector3f const *)&v1, &wave_shift, (vector3f *)&v1);
+		vector3f_add_scaled((vector3f const *)&v1, &c, k, (vector3f *)&v1);
 		cross3f(&v2, &v4, &w);
 	}
 	else
@@ -320,7 +338,6 @@ void function_0497a0(
 
 		default:
 		{
-			s_view_shape_0 *shape0 = source->type_low == 0 ? &source->shape0 : 0;
 			inv = -1.0f / (shape0 ? shape0->f0c : shape1->f2c);
 			break;
 		}
@@ -333,9 +350,7 @@ void function_0497a0(
 		result->p10 = v1;
 	}
 
-	switch (source->type)
-	{
-	case 0:
+	if (source->type == 0)
 	{
 		result->v20.i = source->v1c.i * inv;
 		result->v20.j = (inv * source->v1c.j);
@@ -345,13 +360,8 @@ void function_0497a0(
 		result->v30.k = inv * camera->v34.k;
 		result->f2c = 0.0f;
 		result->f3c = 0.0f;
-		break;
 	}
-
-	case 1:
-		break;
-
-	default:
+	else if (source->type != 1)
 	{
 		vector3f r;
 		vector3f s;
@@ -368,8 +378,6 @@ void function_0497a0(
 		result->v30.k = k * (s.k * sy + v2.k);
 		result->f2c = 0.0f;
 		result->f3c = 0.0f;
-		break;
-	}
 	}
 
 	switch (flags->w8e)
@@ -394,18 +402,18 @@ void function_0497a0(
 			result->v40.j = inv * up->j;
 			result->v40.k = inv * up->k;
 			result->f4c = inv * (shape1->f28 + source->f28);
-			if (!(0x20 & flags->flags))
+			if (0x20 & flags->flags)
+			{
+				result->v50 = *g_4687a4;
+				result->f5c = 1.0f;
+			}
+			else
 			{
 				real h = (shape1->f2c - shape1->f28) * 0.025f * 0.5f;
 				result->v50.i = h * result->v40.i;
 				result->v50.j = h * result->v40.j;
 				result->v50.k = result->v40.k * h;
 				result->f5c = (source->f28 + 0.0078125f) * h * inv + 0.5f;
-			}
-			else
-			{
-				result->v50 = *g_4687a4;
-				result->f5c = 1.0f;
 			}
 		}
 		break;
@@ -592,7 +600,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 250 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// score 250 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Earlier: Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
 // dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing
 // normalize2d_fast, and case 0's second point takes XMM0-2 as retail; the first point's z/x/y and the half width take
@@ -897,6 +905,14 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // offsets i and j in case 1/2 476-495 (2584 B), named offsets in case 4 428, offset vector in case 4 459 (2580 B); first.z, first.y,
 // first.x weight probes (extra reads after the switch, up to 3/2/1): aligned 104-118, no colouring flip. Left: retail colours first.z
 // XMM3 and the half width XMM4, first.y XMM5 and first.x XMM6 (ours half width XMM3, first.z XMM4, first.x XMM5, first.y XMM6).
+// M3 lane 4 r170 (fast in the tree; one-file harness with the ballast object for the searches, 251 for the real 250): the colour
+// stored to the outer vertex first 248; case 0's points set second x, z, y then first x, y, z 246; both 244 (order picked by score,
+// under the bar); case 4's side scaled in place by the existing vector3f_scale then added and subtracted 423 (frame 0xa4), with case
+// 1/2's side scaled in place too 435 (2608 B). Harness lead: retail's colouring of case 0's tail (half width XMM4, first.z XMM3,
+// first.y XMM5, first.x XMM6) appears as soon as case 4 stops writing `side.i * half_width` twice per axis (named offsets, in-place
+// scaling, an offset vector); then case 0 differs only by retail's first.y spill and two movaps, but the frame drops to 0xa4 and the
+// positional score rises to 410-435 (masked aligned 30 -> 47). About 1,500 harness forms over case 0/1-2/4 statement orders, offset
+// forms, length orders and case 0's normal block: best positional 245, best aligned 90; no frame 0xac without the rejected u/v vector.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

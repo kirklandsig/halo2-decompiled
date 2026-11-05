@@ -448,6 +448,11 @@ short *function_e70b0(short *value, long unit_index);
 // Round 145 (m3 lane 6, fast): ticks decremented through a short local stored back 111 (446 bytes); the timer
 // expiry as a named bool 49; `short action = NONE;` 49; elapsed ticks as a named long 49; the node's object
 // index named before the prop lookup 49. BLOCKED-BY 0xe70b0 (avoid-listed file this round).
+// M3 lane 4 r170 (fast, each restored): dead volatile reads at the top of the index, the actor or the game globals and in the final
+// block 74-136 (diagnostics; the index never leaves ECX); deleting a part of the body (the final block, the prop block, the ticks
+// reset, 0x1f86a0's call, the timer block, the mode test) moves the first difference but never gives retail's EDX; true assumes on
+// the actor, the slot state, the index, both, and the final block's actor 49 each, a named facing-rate byte 49 (identical code); the
+// query's result pointer named with an assume 114. Permuter (600 s, 34 tries): best 49; its reduced image scores 133, not the full 49.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

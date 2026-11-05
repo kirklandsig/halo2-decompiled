@@ -231,6 +231,9 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // not in src): the current body 134, the long index and late flag 47, plus the `== NONE` ternary 42, plus the early-return helper or the one-expression
 // helper 2 at retail's 376 bytes (left: the 0x100f70 argument register and the harness's jump address); the else-arm helper 32, the sound index as one ternary
 // 42. A store in this function instead 129 (folded before CSE). So the blocker is only 0xbadc0's memory summary, BLOCKED-BY 0xbadc0.
+// M3 lane 4 r170 (fast; 0x103b10 matched each time): the existing out-of-line 0x14de90 for the player index 107; the existing
+// 0xcbd50 for the weapon lookup 107; both 107; `__assume(unit != NULL)` after the first fetch 107; both helpers and the assume 107
+// (identical code: the second unit fetch stays merged into the entry fetch). Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp).
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {
