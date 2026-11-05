@@ -1469,6 +1469,9 @@ struct s_looping_detail_request
 // 110; the mode through a named long 110 (same code). The query stays inlined in all six; `return` shapes do not cool it.
 // B448: Complete fallback selection/placement/publication provider, detail and source pointer/reference, forced/ordinary inline:
 // 159/159/159/159/434/434/434/434. NOT kept: no byte match; complete original body restored.
+// AC559: Whole signed player-count admission/rejection, bool/byte/short/long:
+// eight at 110, 508/508. NOT kept: no equality or query-call recovery; original
+// result, live count, request transport, queries and complete body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1906,6 +1909,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // constant inits 305/192/80; count in both loops 365/179/71, first only 427 (1907)/179/78, one local for both 460
 // (1939)/187/77, both with bounds 460/184/74; second only 375/145/73; on the lead, gains declared first 373/143/69, mask
 // first 373/143/68, iterator first or mask between 372/142/70. `--fast` is off here (reduced 479), use the plain check.
+// AC559: Shared update-input positive/complementary bool/byte/short/long residence:
+// 479/479/492/495/473/473/461/552 reduced (control 479; full 305). NOT kept:
+// native stack ingress/frame not recovered; original parameter observations and body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

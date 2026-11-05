@@ -379,6 +379,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // AC557: Native root quotient producer, optional remaining/clamped scalar stages,
 // mutable/immutable complete families: eight at 607 (2817/2886). NOT kept:
 // all regress and shorten farther from retail; original helper and body restored.
+// AC559: Whole active-range admission/rejection, bool/byte/short/long: eight at 687
+// (2830/2886). NOT kept: all regress; original live guard, complete helpers and
+// in-place snapshots restored. Success/input/minimum/hit homes and inactive exit remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
