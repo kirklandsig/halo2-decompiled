@@ -295,6 +295,12 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // Round 144: the direction copy before the coordinate draws 112; read-only selected-entry, angle and vector snapshots
 // 30 each; vector-input, axis and output union array views 30 each; unsigned field_18 38 (1407 B). All original
 // declarations, input views, store order and complete helper/body restored.
+// Round 150 (m3 lane 6, fast): a scripted search of 90 combinations: dot3f either way, grouped j + (i + k), i, k, j in one
+// expression or accumulated, each with and without the vector names (i,j,k / j,i,k / j,k,i or none), cross terms first, one-
+// expression rows, cosine first, the angle read after the copy, the tail as written, a +0x18 pair pointer, a flags pointer,
+// the true flag first or the +0x18 pair first, loop counters shared. Best 29 (true flag first, one point, not kept), then 30;
+// the shared counters, the pair pointer and the accumulated dots range 40-120. A one-file harness with 0x259d0, 0xb7930,
+// 0x2936b0 and the ballast is not exact (508, 1268 bytes). Original body restored.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

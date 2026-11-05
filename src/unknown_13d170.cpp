@@ -427,6 +427,15 @@ struct s_block_candidate
 // 348 (al 312). On total: offset first with previous in the block 371/1200 (302), offset after the result 393/1200 (299), with previous in the block 393/1200 (298), offset
 // in the block 387/1211 (292), with previous there too 379/1211 (292). About 280 annealed forms of block declaration order, offset/previous position, candidate store order, case
 // order, time/zero order and segment/next scope: best aligned 381/1211 (al 292), best positional 349/1212, none under 347. Register roles remain: retail gives offset EBX and current EDI and keeps tail in memory.
+// Round 150 (m3 lane 5, fast; m = masked aligned, x = register-inclusive aligned, control 347 m97 x213): LEAD, the ring successor written twice (`i = (i + 1) % 256` in the for,
+// `candidates[(i + 1) % 256]` at the prefetch, no next local) 385 m96 x196 gives retail's spilled successor store ahead of the jbe; plus total 385 m98 x185, offset after the result 382
+// m97 x181, previous in the block 381 m96 x181; successor, offset, previous, no total 380 m94 x192. Early `return result` in the success path, alone 384 m99 x203, with all above 382 m97
+// x187. LEAD, measured only since it repeats the loop test: `if (offset < count) do ... while` with the early return 392 (1196) m79 x193 gives retail's layout exactly (zero-trip `jg`,
+// failure tail, first epilogue, loop). On it: candidate offset stored before time 390 m78, tail declared first 390 m78, no total 390 m76 x194; policy as a forced-inline helper with a
+// return per case 390 m76, static inline 507 (1086), the helper with no guard 381 m95; empty do-while(false) at the policy join, in the block, both, in case 0 390 m76 each; true default
+// 390 m76, `!have_best` default 396 (1200) m86, case 0 as an if 390, both 390; `continue` for the page test 390 m76, true default with the test reversed 390 m78, a prefetch pointer 390
+// m76; no-selection arm first with its own return 393 (1229) m109. Left under the guard: case 0 and 1 bodies past the end of the function (retail in place, not threaded), the 4 missing
+// frame bytes, and head not cached in EDX at the loop entry. Body unchanged at 347.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

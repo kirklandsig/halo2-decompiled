@@ -1268,6 +1268,11 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // N371: Actual selector/output-pointer/search-key formal lexical families, seven
 // subsets then complete result/local roles: 828/828/828/828/828/828/828/828. NOT kept: unmatched
 // parameter-home forms; original body restored; class/NONE, result/output/candidate homes and zero remain.
+// M3 lane 8 r135 (fast; raw/register-masked/stack-masked aligned, base 580/234/76): the siblings' form again 755 (297/525/57, 2825
+// bytes), through the mode's address 755; on it the candidate at the block top or after the entry pointer 1028 (2856 bytes), the
+// iterator outputs renamed either way 755 (same homes), type first 755, the result set before the search test 1005, a direct result
+// with a default 1021 (206/151/86, 2841 bytes). Retail's late zero is a temp in EBP from the first kinds lookup on; ours keeps
+// a parameter in EBP over that block and re-reads it (retail reads it from the stack), so the zero stays immediates. Flag form: match-only.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1499,6 +1504,17 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // N361: Existing iterator/sorted-lookup/registration/resource inline call visibility, four
 // individuals, three iterator pairs and all four: 828 each. Original declarations and full body
 // restored. NOT kept: no result/candidate/output home or class/NONE/zero-carrier recovery.
+// Lane 9 r87 (fast; masked = registers and stack homes masked, sequence aligned; base 828, masked 48): the siblings' body (`if
+// (weapon_class != NONE)`, iterator stores graph/step/entries then keys, first iterate before `while (!found && entry)`, `found` or
+// re-iterate in the else arm) 755 at 2825 bytes, masked 36, then the three outputs and the result as one record `{ long mode, weapon_class,
+// weapon_type; c_type_709360 result; }` 732: the candidate and the mode-table temp then take the dead home, and the first 255 lines are
+// byte-identical to retail. Not kept, a flag set in a test and grouped storage need a match. Outputs alone as a record, in either member
+// order, or an array 755 (the result takes the dead home instead); the record with the members reversed 738. The one structural cause
+// left is the zero: retail's `xor ebp, ebp; cmp eax, ebp` from the fifth type request on, ours `test` and immediates. On the 732 form:
+// the real 0x1ddd00 with `inline` on it alone 3273 (558 bytes, out of line), on all three 732 (same code, all three still match);
+// `bool other = false` as a local 825 (2809). Diagnostics: only the second request kept, or the output stores removed, and the zero
+// appears in that request (`xor ebp, ebp` plus five `cmp reg, ebp`); only the first request kept, no zero; requests swapped 964 (2873);
+// no 0x1dd9d0 call 978, no loop 1019. Also on the old body: a while with a break 998 (2839 bytes); early `return result` for a NONE id 828.
 // DL261: Actual iterator/sorted-search/registration definitions and every declaration inline, seven subsets then explicit iterator expansion: 828/828/828/828/828/828/828/1265.
 // NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
 // DL263: Const complete value-return interface with original producer, explicit return copy,

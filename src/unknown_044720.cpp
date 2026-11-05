@@ -571,6 +571,12 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // AC530: Bound-only ordered intersection/separation results in byte/char/short/long, keeping
 // both original marking sites: eight 182s. NOT kept: no equality or gain; original comparison
 // and full body restored. Entry/index spill and center/query/bound homes remain.
+// Lane 4 r165 (held, coordinator): MATCH with a second, single-exit forceinline copy of visible_entry_geometry
+// used only here (one result through both arms; this file's other caller and 03f2b0.cpp's copy return early),
+// plus the entry index widened to long, the tree as a one-use reference, the center copied through a
+// query_center local and the node byte also compared with NONE (retail's own movzx/cmp -1). Not kept: a
+// same-behaviour twin of an existing helper picked for one caller (noinline/twin ruling). Patch
+// build/held/lane4-r165-45560-twin.patch. The lead: retail inlines a single-exit shape here.
 // J255: Genuine displacement-array producers with long/dword/short/word ordinals,
 // native/shared squared-length consumers: 184/184/257/257, 182/182/257/257.
 // NOT kept: ties/regressions; narrow loops also enlarge the frame and extent. Original

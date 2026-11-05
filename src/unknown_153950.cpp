@@ -406,6 +406,9 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// Lane 8 r134 (held, coordinator): MATCH with a one-caller copy of rotate_vector_170d70 whose j and k rows add
+// projection * axis before vector * cosine (rotate_slot_vector); a same-behaviour twin picked for this caller, not kept
+// (twin ruling); build/held/lane8-r134-154df0-twin.patch. Kept only through the shared helper (one text for every caller).
 // score 13 (was 13): only the j and k rows of the inlined rotation differ: retail adds
 // projection * axis + vector * cosine (u.j loaded before the u.i store), ours the other way round
 // (the i row agrees).

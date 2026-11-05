@@ -159,7 +159,7 @@ struct s_engine_options
 	s_options_player players[16];
 };
 
-dword g_502258[0x27];
+dword g_502250[0x29];
 s_local_engine_state g_4e9af0;
 
 bool player_iterator_next(long *iterator);
@@ -199,7 +199,7 @@ void function_157450(void)
 	s_mp_globals *data = (s_mp_globals *)function_123d40("unknown", "unknown", sizeof(s_mp_globals));
 
 	memset(data, 0, sizeof(*data));
-	memset(g_502258, 0, sizeof(g_502258));
+	memset(g_502250 + 2, 0, 0x27 * sizeof(dword));
 	g_4e9ae8 = data;
 	data->engine_index = NONE;
 }

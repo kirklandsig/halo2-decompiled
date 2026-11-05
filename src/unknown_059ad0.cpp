@@ -4986,6 +4986,16 @@ struct s_membership_update_snapshot
 // +0x6c; five points, below the keep floor); on that: 0x5f900 storing unknown00, flag1, unknown04 564 plain (0x5f900 kept),
 // the state pointer 519, per-case `long player_index` reads 525, memset for both player_indices fills 669, a long loop-1
 // index 693.
+// Round 149 (m3 lane 5, fast, base 523; 2591 bytes): named update count with a long/short first-loop index 697/664; named new index in the
+// first loop 548; masks on one line, chained, typed long 523 each. All 11 calls' setups compared with retail: only register rotation (0x600f0's
+// convention agrees), so no parameter order to change. An aligned diff (registers and slots ignored) puts the rest in the unrotated first loops:
+// lane 15's result chain remains the lead, it needs a match for its implied `result &&` heads.
+// M3 lane 9 r88 (fast; aligned+stack = aligned count with registers and stack homes masked): lane 15's result chain with 0x5f900 storing unknown00, flag1, unknown04 is 457 at 2589 bytes but aligned+stack 10: only stack homes
+// and case 1 differ. Retail's homes +0x14 i and the player cursor, +0x18 change cursor, +0x1c moved and the player index, +0x20 count, +0x24 base copy, +0x28 added, +0x2c removed; ours +0x14 removed and the player cursor,
+// +0x1c added, +0x20 moved, +0x24 count, +0x28 i, +0x2c base. Case 1: retail holds the cursor in ESI, then member in EDI and slot in ESI, and rebuilds the id pointer from the stack twice; ours holds the cursor in EDX, spills
+// member, slot EDI, and keeps the id pointer in ESI across the find call. Tried on it: named short member/slot 671 (2614, session leaves EBX); nested tests with long locals, the id through the index, embedded assignments 457 each
+// (same code); block scopes around the member phase (masks, all, masks + i) 457 each; ten renames of removed/added/moved/i 457 each (names do not move these slots); change fields through the index, no change pointer, loop 1 726,
+// both 728 (slots move, structure regresses). Not kept: the loop heads' `result &&` is implied by the breaks, so that form needs a match.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {

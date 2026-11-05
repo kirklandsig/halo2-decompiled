@@ -747,7 +747,7 @@ void havok_component_rigid_body_angular_velocity_get(s_havok_component *componen
 }
 
 // @retail 0x1d0a20
-void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity)
+void havok_component_rigid_body_point_velocity_get(vector3f *velocity, long rigid_body_index, s_havok_component *component, point3f const *point)
 {
     s_havok_component *const *local_0 = &component;
     s_havok_component *local_1 = *local_0;

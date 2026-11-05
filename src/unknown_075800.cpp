@@ -1307,6 +1307,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // address, a function-scope copy or `long` copy, a forced-inline function returning it, an inline link getter, `address ? address : NULL` 217/420
 // each (all folded); a pointer-to-pointer local read at the lookups 219/424; cases in numeric source order 210/432. Needed: a correct form of the
 // lookup argument that is not a direct EAX use at allocation.
+// Round 150 (m3 lane 5, plain, on the one retail-order switch, control 217/420, 0x7afd0 3): lookup argument through a const ref bound to a cast temporary in each connection case
+// 219/424 (address still EAX); connection cases as plain file-local handlers or `inline` ones 270/372 each (stay out of line, 0x7afd0 6); a forced-inline lookup helper taking the
+// address by const ref 218/468 (0x92ef0 inlines, 0x7afd0 5).
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

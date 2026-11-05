@@ -253,7 +253,7 @@ long havok_component_impact_find(s_havok_component *component, s_havok_impact_co
 bool havok_component_impact_make_room(long rigid_body_index, s_havok_component *component, real strength);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 real havok_component_rigid_body_mass_get(long rigid_body_index, s_havok_component *component);
-void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity);
+void havok_component_rigid_body_point_velocity_get(vector3f *velocity, long rigid_body_index, s_havok_component *component, point3f const *point);
 void havok_component_rigid_body_linear_velocity_get(s_havok_component *component, long rigid_body_index, vector3f *velocity);
 void havok_component_impact_add(s_havok_component *component, long impact_index);
 
@@ -1879,20 +1879,20 @@ void function_228770(
 
 		impact->normal = normal;
 		function_1201a0(&impact->normal, g_4687b0);
-		havok_component_rigid_body_point_velocity_get(rigid_body_index_a, component, &impact->position, &velocity_b);
+		havok_component_rigid_body_point_velocity_get(&velocity_b, rigid_body_index_a, component, &impact->position);
 		if (impact->component_b != NONE)
 		{
-			havok_component_rigid_body_point_velocity_get(rigid_body_index_b, havok_component_get(impact->component_b), &impact->position, &velocity_b);
+			havok_component_rigid_body_point_velocity_get(&velocity_b, rigid_body_index_b, havok_component_get(impact->component_b), &impact->position);
 		}
 		if (impact->shape.type == NONE)
 		{
 			vector3f relative_velocity;
 			real dot;
 
-			havok_component_rigid_body_point_velocity_get(rigid_body_index_a, component, &impact->position, &velocity_a);
+			havok_component_rigid_body_point_velocity_get(&velocity_a, rigid_body_index_a, component, &impact->position);
 			if (impact->component_b != NONE)
 			{
-				havok_component_rigid_body_point_velocity_get(rigid_body_index_b, havok_component_get(impact->component_b), &impact->position, &velocity_b);
+				havok_component_rigid_body_point_velocity_get(&velocity_b, rigid_body_index_b, havok_component_get(impact->component_b), &impact->position);
 				relative_velocity.i = velocity_a.i - velocity_b.i;
 				relative_velocity.j = velocity_a.j - velocity_b.j;
 				relative_velocity.k = velocity_a.k - velocity_b.k;
