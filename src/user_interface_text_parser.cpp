@@ -708,6 +708,10 @@ done:
 // join, before the call, after the call 44/44/44; name preset NONE with an else arm 44; two copies with an else arm 48; the copy calling 0x8cc20 directly 44;
 // the translator through an inline wrapper 44; a block-local buffer pointer 44; late-folded addresses: `g + k` at the copy 44, an inline scratch getter at the
 // copy 44, at both 44, a const reference at the copy 44 (the hoist stays in all of them).
+// Y604: Actual copy-object pointer/reference receiver, entry/post-getter binding
+// and repeated/shared completion: 32/32/32/32/54/54/54/54. NOT kept: no equality;
+// direct native receiver ownership retains the early save or scratch-address cache.
+// Original getter, calls and complete body restored.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

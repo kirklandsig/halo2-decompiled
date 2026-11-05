@@ -493,6 +493,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // scalars read in the else arm, if/else, else/if, ternary: 301/297/301 each (folded, 890-894 B). Scale read through a pointer
 // to the camera parameter 234, with the order 232, with yxz 232 (971 B); separate result scalars 195/193; displaced point
 // through a pointer local 216.
+// Y604: Complete rotation followed by actual component translation, output/native
+// rotated storage with indexed for/while, pointer and standard traversal:
+// 237/237/338/347/236/236/690/306. NOT kept: no equality; indexed output reaches
+// native length but loses native allocation. Original alias-safe helper/body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

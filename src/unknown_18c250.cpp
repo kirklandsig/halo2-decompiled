@@ -683,6 +683,10 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // 311/311/311/264; raw word with the first three 311/311/311; byte owning
 // declaration plus direct bit-zero admission 311. NOT kept: no equality or
 // gain; original datum layout and body restored, native one-spill/failure byte remain.
+// Y604: Existing clear pointer/reference input and complete location result,
+// ignored/rebound at both actual calls: 264/264/264/264/264/264/264/264.
+// NOT kept: no equality; complete clear ownership leaves the early constant-one
+// spill, frame and failure-byte differences. Original helper/body restored.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {
