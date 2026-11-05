@@ -1327,6 +1327,7 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// MiniMax C (11-04): no new form, no lower score; 0xffffffff literals, int outputs, a chained second output and reordered or chained tail clears all stay at 46 (the outputs declared outside the branch give 268).
 // score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
 // uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
 // zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
