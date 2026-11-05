@@ -61,70 +61,6 @@ bool object_dispatch_query_function_value(long object_index, long name, real *va
 bool function_10aac0(long object_index, long name, real *value, long *index);
 bool function_ba8c0(s_object_function_ab const *function, long object_index, real *out);
 
-// score 23 (was 23): retail gives the 1.0 case its own epilogue (`mov al, 1`, no store of the
-// enabled byte); ours stores the byte and shares the final return (the three jumps to that return
-// differ with it). Before round 55 the recursive call's parent
-// index and name sat in ECX/EAX where retail has EAX/ECX. Tried: `enabled = true; return enabled;`
-// 117 (358 bytes: forwarded to `mov al, 1` and cross-jumped with the 0x10aac0 return); the result set
-// before the value store 117; the 1.0 case as the chain's final else 28; a second `return enabled`
-// in the dispatch branch 28; a separate register result for the 1.0 case and the final return 117.
-// A plain `return true` in the 1.0 case 117 (the early return jumps into its pops); the early
-// 0x10aac0 result as `enabled = true` at the head of the chain 124; a switch on the name 104;
-// the early result as a named bool returned when set 28, with the 1.0 `return true` 117. The
-// recursive call's EAX/ECX swap is absent from a compile-only build (an LTCG effect).
-// Round 55: the recursive result through `enabled = function_bab40(...); return enabled;` 23 (kept: the
-// call's EAX/ECX as retail; a parent index local or the parent test nested: no gain in a one-file
-// screen); with that kept, the 1.0 case's `return true` 117, `return true` with the early result in a
-// `found` local 117, through a `real one` local 117, `enabled = true; return enabled;` 117, the name
-// tests chained as an else of the early test 117 (each 1.0 return cross-jumps into the early return).
-// Round 24 (m3 lane 2): `result = true;` ahead of the 1.0 store, `result = enabled;` for the other paths
-// and one `return result;` 117 (the constant still reaches the return and the early return still
-// jumps into the 1.0 block's pops); the override and 1.0 paths sharing one `return true` at the end 117;
-// the constant names setting a bool, then one `*value = one ? 1.0f : 0.0f; return one;` 141 (380
-// bytes, the value pointer leaves EBP). Lead: the 1.0 path and the not-found path through one shared
-// `*value = constant; return result;` tail (a goto, diagnostic only) keep the early return apart and
-// give retail's 1.0 block with the store between the pops (compile-only), but under LTCG the value
-// pointer leaves EBP: 112 with the tail after the loop, 112 with it at the 1.0 case. Compile-only, all
-// still merged: the early test nested, through a named bool, a single-exit result, a forceinline
-// helper for the override test or for everything after it, the 1.0 return through `enabled`.
-// Round 466: Enabled declared after override, declared at entry but initialized after override,
-// initialized on complete name/lookup paths, and that graph with its own one-value exit:
-// 51/51/119/131; with override index scoped to the actual flag branch 51/51/119/131.
-// Original output lifetimes and separate recursive result restored; constant epilogue remains.
-// Round 107 (lane 8, fast): the zero case as `enabled = false` into the shared return 95 (VC copies
-// the byte-load return into it, store kept, nothing forwarded); also the not-found case as an else
-// setting `enabled = false` 94 (377 bytes); the early path as `enabled = true; return enabled;` with
-// the 1.0 `return true` 117, with the 1.0 case `enabled = true; *value = 1.0f; return enabled;` 117
-// (the early store is gone before the merge, the early `jne` joins the 1.0 block's pops); the 1.0
-// case last after `if (name != 0 && name != 0x030005a6) {...; return enabled;}` with `return true`
-// 117. Every form whose 1.0 return is a constant loses the early return's own epilogue.
-// Round 104: the 1.0 assignment return 117; both true paths as assignment returns 117; the early lookup
-// through enabled with the 1.0 assignment return 164; preincrement enabled 117; enabled & 1 / != false
-// 117/117; a direct dispatch test with a scan-local found 82; that with the assignment return 118. Restored.
-// Round 135: without the merge (a real store in the early arm, diagnostic, 141) the 1.0 store sinks
-// between the pops as retail, but the `return enabled` block stays ahead of the 1.0 block, retail
-// has it last. All paths through one bool, store first 115, then the 1.0 case as the name test's
-// else 148; result set before the store 117; early `return true` with result = enabled at the join
-// 117; a named bool from the name tests with `return one` 86, enabled = one 102; one store of
-// one ? 1 : 0, 153; three-name test 145, 105; 1.0 as else `return true` 117, enabled = true 23, plus
-// return enabled 117; a separate `return enabled` per exit 126, 126, as else 95, through enabled 126, 126;
-// early `index = 0` or `enabled = true` 117, 117 (gone before the merge); enabled set ahead of the
-// 1.0 store 117; `return *value != 0` 117; a switch on the name, eight case orders, 104 each (368 or 363 bytes).
-// Round 33 (lane 17): the early lookup nested under the flag test with the 1.0 `return true` 117 (358
-// bytes); the 0x040005a7 case first, the lookup under `name != 0 && name != 0x030005a6` and the 1.0 case
-// as the last else setting enabled 37; the early lookup as `enabled = true` in the name chain 124 (353
-// bytes); the lookup result in a named bool returned when set, 1.0 `return true` 115; the body under
-// `if (!(override && lookup))` with `return true` after it 117. Every constant 1.0 return still jumps into
-// the early return's tail (or the reverse).
-// Round 67 (fast): everything after the early test in a forceinline helper with the 1.0 `return true` 132 (357
-// bytes; under LTCG the inline boundary still merges the early return into the 1.0 block); a register bool set
-// true before the 1.0 store and returned 117; the override bit in a named bool 23; the override index scoped to
-// the flag test with the call nested 23; enabled set before the 1.0 store 23.
-// Round 147: value store in a comma return 117; early result through enabled with a direct 1.0 return 164;
-// shared native-long query result 113; value store plus enabled assignment in a comma return 117; enabled/index
-// declarations swapped with a direct 1.0 return 117; index scoped around the unchanged short-circuit with a
-// direct 1.0 return 117; early result through enabled with the original 1.0 arm, in the condition or nested,
-// 164/164. Repeat, not counted: shared bool query result with a direct 1.0 return 115. Original restored.
 // @retail 0xbab40
 bool __stdcall function_bab40(long object_index, long name, real *value)
 {
@@ -135,10 +71,15 @@ bool __stdcall function_bab40(long object_index, long name, real *value)
     s_object *object = headers[object_index & 0xffff].object;
     if ((bool)(((dword)object->flags_c0 >> 9) & 1) && function_10aac0(object_index, name, value, &index))
         return true;
+    // found: the value came from the object itself (or there is none) and `enabled` is returned;
+    // otherwise the value is a constant and `result` is returned
+    bool found = true;
+    bool result;
     if (name == 0 || name == 0x030005a6)
     {
         *value = 1.0f;
-        enabled = true;
+        result = true;
+        found = false;
     }
     else if (name == 0x040005a7)
     {
@@ -147,7 +88,7 @@ bool __stdcall function_bab40(long object_index, long name, real *value)
     }
     else if (object_index != NONE)
     {
-        bool found = object_dispatch_query_function_value(object_index, name, value, &enabled);
+        found = object_dispatch_query_function_value(object_index, name, value, &enabled);
         if (!found)
         {
             object = ((s_object_header *)g_4e0300->data)[object_index & 0xffff].object;
@@ -169,9 +110,11 @@ bool __stdcall function_bab40(long object_index, long name, real *value)
                     return enabled;
                 }
                 *value = 0.0f;
-                return false;
+                result = false;
             }
         }
     }
+    if (!found)
+        return result;
     return enabled;
 }

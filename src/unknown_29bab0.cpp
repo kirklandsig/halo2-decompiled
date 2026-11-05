@@ -68,6 +68,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 	return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_1->i * arg_0->i;
 }
 
+// MiniMax H (11-05): no new form, no lower score; retail saves EBX around the middle for the +0x290
+// pointer and re-reads its arguments from their stack homes per region, where ours holds the input in
+// EBX from the prologue, and the 748 form is a held lead under the keep bar.
 // score 750 (was 750): Frame 0x88 agrees; early input/heading and normalizer memory-product homes remain.
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading homes and normalizer storage remain. Alias-free normalizer loop 822; early-return clamp 829; output scale loop 824; output clamp loop 812; smoothing loop 825 (fast).
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading and normalization homes remain. Alias-free
@@ -327,6 +330,15 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // 758; the heading pointer right after the actor lookup 833 (3510 bytes); the reference declared at its first use 750.
 // Retail keeps arg_1 in EDI and reads arg_2 from its slot, loading it into EDI only for the long else arm (a memory
 // variable's loads combined per region); ours holds arg_2 in EBX from the prologue. All restored.
+// M397: Direct input with fixed absolute-residual producer and double root/signed-root/
+// scaled-correction parts, masks 0..7: 804/804/804/810/804/810/810/810. NOT kept: no exact or
+// eligible native-frame gain; original input storage, private helpers and full body restored.
+// DH381: Direct-input query-admission positive/rejecting prefixes at four ordered boundaries
+// 750/750/750/750/750/750/750/750. NOT kept: ties retain frame 0x8c versus 0x88; original body restored.
+// DH383: Complete lower-priority/default numeric clamp producers on direct input:
+// 834/807/837/834/805/834/834/832. NOT kept: all regress, lose the native frame and shorten away from
+// retail. Original input access, clamp and every helper/body restored; early object/input/heading homes
+// remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

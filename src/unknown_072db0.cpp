@@ -1575,6 +1575,7 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
 // `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
 // score 709 (was 709): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
@@ -1808,6 +1809,8 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M384: Complete identity/property cache-refresh changed/current result, bool/byte/short/long:
 // 709/709/709/709/709/709/709/709. NOT kept: no equality for one-use result residence;
 // original full body restored; initial cursor/slot and request/completion homes remain.
+// Round 74 (m3 lane 10, fast, callers 0x641a0 and 0x8df50 checked): on the note's 702 form rebuilt (`received != 6` first, `failed = true` in each state arm, 2862 bytes, a gain of 7, not kept): bound limits through a
+// `long const *` local 702; `value` as `= 0; if (type)` 703; write poll `state == 0 || state == 1` 718 (2878); `long failed` 719 (2878); properties_used declared first 702; `now` read first 702.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -22,6 +22,12 @@
 // MiniMax R (10-31): shape0 hoisted above the inverse 712, shape0 first in the switch 581; permuter 22 tries, best 571 (baseline 571); no lower score.
 // score 537 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
 // fourteen bytes longer (earlier thirteen); retail keeps the primary shape in the stack slot at [esp+0x14]
+// MiniMax D (11-05): retail's single test on source->type_low, with the shape0 pointer in the home at
+// [esp+0x14] and the inverse scalar below it at [esp+0x10], was tried as an if/else over both shape
+// pointers in three declaration orders: 621/621/626; the frame stays 0x58 against retail's 0x60, so no
+// lower score.
+// score 581 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
+// thirteen bytes longer; retail keeps the primary shape in the stack slot at [esp+0x14]
 // and the secondary shape in EDI, ours keeps the inverse at [esp+0x14] and the
 // secondary shape at [esp+0x10].
 // Behaviour difference kept for score: `long tmp2 = scale * d.k` truncates the sixth input
@@ -601,6 +607,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
 // score 250 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// MiniMax D (11-05): four declaration orders for the u and v scalars and their step and width partners
+// give 274/287/285 against 265; the frame stays 0xa8 against retail's 0xac, so no lower score.
+// score 265 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Earlier: Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
 // dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing
 // normalize2d_fast, and case 0's second point takes XMM0-2 as retail; the first point's z/x/y and the half width take

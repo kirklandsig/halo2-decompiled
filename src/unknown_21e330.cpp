@@ -714,87 +714,27 @@ void function_2201f0(long channel_index, s_sound_channel_parameters const *param
 
 real g_468834 = 1.0f;
 
-PRIVATE inline real reverb_decibels_add(long first, long second)
-{
-	return (real)((double)*(real *)&first + *(real *)&second);
-}
-
-PRIVATE __forceinline real function_21ece1(real arg_0, real arg_1)
-{
-	real volatile local_0 = arg_1;
-	return (real)((double)arg_0 + local_0);
-}
-
-// score 25 (was 25): retail loads the x87 accumulator before the value it
-// adds to it, ours loads that value first, so the fadd order differs.
-// Only the first sum loads the gain first in retail (later sums load the
-// copied field first, as ours); the rest is x87/SSE interleaving. Tried: the
-// gain as `*(real *)&gain_bits` 25, or read that way at each call 25; the
-// existing bit-pattern helper with the field's bits 89 (the gain bits stay in
-// edi and are stored again for each sum); the helper's sum written field first
-// 25; the field read through its parameter's address instead of the copy 144;
-// a float add without the copy 118 (SSE); each sum passed straight into the
-// clamp call 106; each next sum computed before the previous level's scaling
-// 81; the field passed as its bits to a long parameter 106; the sum stored back
-// into the copy 120. A volatile copy is always loaded first (compile-only
-// screens), so retail's first sum suggests a non-volatile copy.
-// Round 118: the operand order follows argument evaluation: a gain that has to be
-// loaded at the call (a volatile gain) goes first. Volatile gain with the volatile
-// copy 35 (the first sum exact, every later sum gain first); volatile gain with a
-// plain helper 144; the field passed as a one-real struct 106, as its bits to a
-// long parameter 106, with the gain as `*(real *)&gain_bits` 106. The header's
-// bits-in/bits-out decibel sum compiles to SSE (compile-only; retail's own uses of
-// it are SSE too), so this function's x87 sum is a double sum. Round 69: the existing
-// decibel-to-volume helper for room / both room fields 25/25; aggregate description
-// initialization 116; split first / all result declarations 25/25; the first gain read
-// through its own address 25, through the integer bits' address 92; helper conversion
-// order 25.
-// Round 134: each next sum named before the previous level's scaling, the levels named 81 (0x12aff0
-// touches no memory, so the sums hoist above the calls); the gain by const reference with the field by
-// value read through its address, as bits 107 (391 bytes), as real 144 (360 bytes), a real gain reference
-// 144; the field as bits by value with a real gain, a real gain reference or a local copy of the bits 106
-// each (392 bytes; the copy is propagated away); one function-scope variable for all four sums 55 (399
-// bytes); the double cast on the copy's side 25. Compile-only: the sum on a 4-byte struct or union by value
-// (new result, in place on the copy, or returning real) is SSE with no x87.
-// Round 52 (lane 14, fast): retail's later sums read as an in-place `copy += gain` on a value copied through a GPR (the result lands in the copy's
-// slot), but as x87. Double sum in place on s_decibels by value, field first or gain first, gain by reference 144/144 (360 bytes: the copy is gone), gain
-// by value 125; the header's operator+ field left or gain left 103/122 (SSE); plain real with a const reference gain 144; a memcpy copy of the field
-// field first, gain first, in place either way 144 each (copy gone); a memcpy from a field pointer 106; a double local summed with `+=` 105. The header
-// operator in another file without /arch:SSE did not inline on the reduced image (132, inconclusive; a move for flags is not keepable anyway).
-// Round 149: the bit-level helper for the first sum 62 (411); gain bits with a real field 119 (431);
-// helper arguments reversed 25; the first sum direct into the clamp 81; const bit-view gain 25;
-// const result values 25; double-return helper rechecked 26; real first three/double last 29;
-// diffusion before reverb delay 24 (restored by the round as one point, then kept by the coordinator: any gain at 30
-// or below is kept); diffusion and density before delay 29.
-// Round 61: a by-value sum helper defined in an existing file without /arch:SSE and inlined under LTCG 119 (plain, 435 bytes: it compiles to
-// addss, so the caller's setting applies and retail's x87 is a double sum, not a non-SSE helper; closes round 52's lead). On the volatile copy (fast):
-// the gain by const reference 25; the sum in a double local 106 (395 bytes); the helper returning double 26; a double gain parameter 63 (415 bytes).
+/* programs one environment's reverb into its effect: the levels are decibels
+   offset by the global reverb gain */
 // @retail 0x21ece0
 void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 {
 	DSFX_HIGH_LEVEL_EFFECT_DESCRIPTION description;
 	description.effectType = DSFX_EFFECT_TYPE_I3DL2REVERB;
 	long gain_bits = function_2197f0(g_468834);
-	real gain;
-	memcpy(&gain, &gain_bits, sizeof(gain));
-	real room_value = function_21ece1(gain, reverb->room);
-	description.I3DL2Reverb.lRoom = (long)(function_12aff0(-64.0f, 0.0f,
-		room_value, true) * 6400.0f - 6400.0f);
-	real room_hf_value = function_21ece1(gain, reverb->room_hf);
-	description.I3DL2Reverb.lRoomHF = (long)(function_12aff0(-64.0f, 0.0f,
-		room_hf_value, true) * 6400.0f - 6400.0f);
+	s_decibels gain = *(s_decibels *)&gain_bits;
+	description.I3DL2Reverb.lRoom = sound_decibels_to_volume(gain + *(s_decibels const *)&reverb->room);
+	description.I3DL2Reverb.lRoomHF = sound_decibels_to_volume(gain + *(s_decibels const *)&reverb->room_hf);
 	description.I3DL2Reverb.flRoomRolloffFactor = reverb->room_rolloff;
 	description.I3DL2Reverb.flDecayTime = reverb->decay_time;
 	description.I3DL2Reverb.flDecayHFRatio = reverb->decay_hf_ratio;
-	real reflections_value = function_21ece1(gain, reverb->reflections);
 	description.I3DL2Reverb.lReflections = (long)(function_12aff0(-64.0f, 10.0f,
-		reflections_value, true) * 7400.0f - 6400.0f);
+		(gain + *(s_decibels const *)&reverb->reflections).value, true) * 7400.0f - 6400.0f);
 	description.I3DL2Reverb.flReflectionsDelay = reverb->reflections_delay;
-	real reverb_value = function_21ece1(gain, reverb->reverb);
 	description.I3DL2Reverb.lReverb = (long)(function_12aff0(-64.0f, 20.0f,
-		reverb_value, true) * 8400.0f - 6400.0f);
-	description.I3DL2Reverb.flDiffusion = reverb->diffusion * 100.0f;
+		(gain + *(s_decibels const *)&reverb->reverb).value, true) * 8400.0f - 6400.0f);
 	description.I3DL2Reverb.flReverbDelay = reverb->reverb_delay;
+	description.I3DL2Reverb.flDiffusion = reverb->diffusion * 100.0f;
 	description.I3DL2Reverb.flDensity = reverb->density * 100.0f;
 	description.I3DL2Reverb.flHFReference = reverb->hf_reference;
 	XAudioSetEffectData(effect_index, &description, NULL);

@@ -640,6 +640,22 @@ void function_245400(s_source_245400 const *source, long index,
 // load, retail's after), the second index named with the reference 220 (764 B); a vertex-table local 235 (750 B), with a surface
 // local 220 (764 B); `__assume(arg_1 != NULL)` 235 (750 B); the source copied to a named local with an assume 209-214, without
 // 208-223 (never retail's `mov esi, ecx`); dword codes with named plane indices 221 (765 B), sides as `!= 0` 207 (aligned 128).
+// Round 132 (m3 lane 7, fast; 0x245aa0 and 0x245400 checked): the second material through a record
+// pointer (retail's dead `lea edx, [ecx + edx*8]`), the first through one also at the final call, both:
+// 209 each (no dead lea, callers keep their matches); the plane table read after the edge vector
+// 203 with 0x245aa0 at 3 (the source then arrives in EDX); the scaled edge transform as a scaled copy
+// rotated back through a forceinline helper taking the matrix 234 (811 bytes; plain inline stays out
+// of line, 387). Retail pushes EBP only around the plane code (`push ebp ... pop ebp` mid-body) and
+// reads the matrix at its test; ours keeps the matrix in EBP from entry, so EBP is a prologue save.
+// M397: Complete edge/cross/transformed-point defaults, masks 1/2/4/3/5/6/7,
+// then all at entry: 213/209/223/213/230/223/230/230. NOT kept: no equality or eligible native-
+// frame gain; original workspaces and complete body restored. Four exact controls survive.
+// DH381: Existing array edge producer at unit scale, late-plane/independent-side/staged-cross
+// subsets 0..7: 208/204/226/227/208/204/226/227. NOT kept: best gains five and loses caller 0x245aa0; original body restored.
+// N396: Signed eight-byte primary ordinal/first decoded code/second decoded code,
+// seven subsets then complete encoded/decoded residence: 208/281/270/278/279/263/294/298.
+// NOT kept: native narrow domains, no qualifying gain and longer decoded forms; original body restored.
+// Frame 0x24/0x2c, independent side homes and delayed matrix acquisition remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

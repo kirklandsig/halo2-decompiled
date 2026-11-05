@@ -176,6 +176,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
+// MiniMax E (11-05): no new form, no lower score; retail restores ESI right after the outer loop
+// (pop esi at 0x13152f) while ours restores it at the function's end, and the third accumulator's
+// remaining is spilled to [esp + 0x38] in retail against our [esp + 0x40].
 // score 295 (was 295): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
 // Round 121 (fast control 336, aligned 103): the helper's clamp as if/else if 336 (103); remaining first 348 (156); weight before
 // height 345 (129); remaining before weight 348 (144); a named inverse weight 337 (108).
@@ -410,6 +413,8 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // code); a pointer to the three sample factors 336 (same code); height accumulated first 336 (aligned 116 -> 144); colour
 // last 335 (1874 bytes, aligned 236); red, height, green, blue, weight, intensity, distance 332 fast at retail's 1892
 // bytes, plain 342. Original helper order restored.
+// P349: Complete six-formal lexical home orders at all six accumulation expansions:
+// 336/336/336/336/336/336/336/336 (fast control 336; full 295). NOT kept: no byte equality; original executable source restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

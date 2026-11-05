@@ -138,6 +138,8 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // value between the enable gates 110; separate player/team inner results 109/109; two-call by-value
 // accessor 107; player record copy 71 (434 bytes), read-only copy 71, with the team-mode helper 78.
 // NOT kept: the one-use record copy spills through the code slot, absent in retail; original body restored.
+// MiniMax C (11-05): no new form, no lower score: the enable reload, the maximum homes and the word
+// schedule still differ here.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -416,6 +418,7 @@ struct s_object_damage_view
 // (1569)/247/81. Slots follow memory references, heaviest lowest: ours victim_team 8, damage_code 7, killer 6 references
 // (+0x14/+0x18/+0x1c); retail killer 8, victim_team 8, damage_code 6 (+0x14/+0x18/+0x1c). So retail's killer is read from
 // its home two more times and its damage code once less; the record pointer forms lose `selected`'s EDI and grow the frame.
+// MiniMax R (11-05): the team-consideration result is a true default cleared by the query, 344 (was 353); not kept: a test-set flag, match only.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -1021,6 +1024,8 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // storage as one rectangle member 2; inner and piece declared together with piece assigned 2; the
 // coordinates or the points declared at the top of the block 2/2. Unused-local probes (1 to 16) at
 // the top leave it at 2, so the load order is no numbering tie.
+// Lane 9 r89 (fast): window x offset as a named short before each inset statement 41, after the insets 38; window y before the bottom inset 44; both 44; address-cast reads
+// 2; pointer to the window pair at the top or before the bottom inset 2/2; `-8 + field` for bottom and right 2/2; whole-record copy first 218; a data pointer to the field or storage (diagnostic) 2/2.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {

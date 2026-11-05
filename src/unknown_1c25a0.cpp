@@ -849,6 +849,13 @@ void function_1c54b0(char const *variants, long object_index)
 // flag declared at the count test 69, stored after the call 82; a world local reassigned on the back edge 37 (253
 // bytes). Compile-only, 31 forms (world getter, for-scoped index, while, guarded do, ternary and `== false` steps):
 // the reload pair never flips. Original body restored.
+// Round 131 (lane 7, fast, all with the flag after the call): 1-3 unused locals at the top or inside the loop 18 each; the flag stored both before
+// and after the call 18 (the first store dies before allocation); the flag declared then assigned 18; i declared before the flag 18; the flag
+// declared before the count 20; the flag assigned from `count == entity_count` 18, from `!removed` 18; a two-use local for the index step 18.
+// Diagnostics: an index offset in the island read 12, a count offset 64 (253 bytes), an entity index offset 69 (254 bytes): none moves the pair or
+// the ebx/ebp choice. With the flag ahead of the call it crosses the call and retail's ebx/ebp follow; after the call, cursor takes ebx. An inline
+// helper for the discard taking the world and island, or the island: flag first 4/4, flag after 18/18, forced inline after 18; one returning true 18;
+// the whole per-island body as a plain inline helper is not inlined here 286/288 (45-47 bytes), four call forms with either flag order.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -1182,6 +1189,12 @@ struct s_1c4040
 // Round 103: forward declaration before/after the cycle callees 8 each; fixed-island direct global read 8;
 // shared island/entity/priority locals 8 each; block-scoped world with the direct fixed read 8;
 // effect pointer at function scope 8. Original body and declaration order restored.
+// Round 137 (m3 lane 8, plain over the 149 cycle members): round 127's walk set without its src/damage.cpp step (array store
+// without its cast, fixed island through g_51e9a4, 0x1d1540 before 0x1d1260 here, 0x278f00 before 0x1c51c0 in
+// src/unknown_1c39c0.cpp, 0x1d1260 ahead of the include in src/unknown_278f00.cpp) 17 (still DL), none lost; plus 0x146bf0
+// first in src/unknown_278f00.cpp 34 (still DL, 0x1d1540 custom 215, 15 lost); plus 0x2266a0 before 0x278f00 in
+// src/unknown_1d1260.cpp 17; plus 0x146bf0 before 0x278f00 here 17; plus 0x1c51c0 defined after this function 17. Every
+// path from 0x1d1260 or 0x1d1540 to 0x146bf0 passes 0xb7b40 or 0x2902b0 (both disabled): BLOCKED-BY 0xb7b40.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
@@ -1620,6 +1633,12 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // 0x1d1160's aligned locals in a force-inline helper 232 (0x1d1160 35); mirror declared at the function's top and
 // zeroed at the label 3; `i = 0` then `if (i < count)` around a mirror set from i 5; a named count before the mirror
 // 3; a named count with i declared before the mirror 3. Restored.
+// Round 137 (m3 lane 8; plain unless fast): 0x1d10b0 as a member of s_havok_component (index, velocity), retail's ecx-then-edx
+// setup, 1 plain with 0x1d10b0 still matched (not kept: 2 points without a match); on it: no mirror 126 (858 bytes, fast);
+// `inline` on 0x1d1010's definition 249 (0x1d1010, 0x1d1160 and 0xe5300 lost); the goto as a default-NONE selected index 1
+// (same code, fast); `local_0 = ++i` as the for increment 1; `local_0 = i = 0` with i declared before the for 1; a volatile
+// copy of i saved just around the impulse call 100 (fast). Retail's +0x30 slot is a register spill of i (the entry test
+// uses the constant, the store follows it), as if LTCG believed 0x1d1160 clobbers EBX; no source store reproduces that.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

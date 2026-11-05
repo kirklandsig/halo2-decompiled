@@ -401,6 +401,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // the frame recomputed 192 (654 bytes). A dispose test at the join ahead of (or after) the restart test, with the arms' break kept 1/1;
 // the arms' break replaced by `if (!dispose) { restart...; switch }` with `if (dispose) break;` at the join, or `dispose || restart`
 // in either order, on one arm or both 1 each: the thread passes both tests.
+// Round 151 (m3 lane 5, fast): restart written through `&restart` in a forceinline helper at all three sites, expression,
+// if/else, plain inline, by reference 1 each (the address folds away); that helper reading its pointer parameter through its
+// address, expression 186 (zero materialised, jump still threaded), if/else 1.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
