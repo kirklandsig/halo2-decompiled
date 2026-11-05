@@ -281,6 +281,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // M381: Actual voice/buffer/submix API-output zero initialization, seven subsets, then
 // all with initialized status: 566/615/591/615/591/621/607/608 (fast control 532, full 545).
 // NOT kept: unsupported extra stores and regressions; original outputs, helpers and full body restored.
+// M3 lane 11 r72 (fast screens only: fast control 532 at 1905 bytes, masked 235, CAVEAT builds differently; plain 545): `(bool)` on the first
+// send bit 550 (1907; still folded to a shift, retail selects with `and al, 1; neg al; sbb; and 4`); gain as a value copy 532 (same code); gain bits
+// read before the stream pointer 577 (1920, first difference +0x0); send state declared at function scope 532 (same code); energy loop over
+// `input->levels[i]` with no levels pointer 563 (1923, masked 223). Lead unchanged: retail subtracts in SSE and keeps x87 temporaries on the stack
+// (`fsub st(1)`) with no rounding stores, which ours has after every step under the file's /Op; the extra temporary is likely the frame's 8 bytes.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

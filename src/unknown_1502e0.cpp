@@ -1159,6 +1159,9 @@ struct s_tail_transfer_traits
 // weapon/grouped-rejection and age/grouped-rejection: 153/169/151/153/180/153/153/180.
 // NOT kept: two-point best gain below the gate; other forms tie or regress. Original
 // scan, observations and whole body restored; traits/unit/NONE homes and reloads remain.
+// Round 73 (m3 lane 11, fast): unit_index read before the identifier scan 193; `!memcmp(...)` without the
+// difference local 240 (804 bytes); `traits[alternate]` 196 (809 bytes); primary/secondary/other declared before
+// the unit_index read 159; selection arms swapped 153.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1270,7 +1273,7 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 	return ((s_player_weapon_definition *)g_4e3b44[weapon->definition_index & 0xffff].bytes)->flags;
 }
 
-// score 284 (was 322):
+// score 284 (was 284):
 // The logic matches retail block by block (reads, flag bits 3/4/22/23, stores, count >= 2 pass); only the
 // register allocation differs. Retail keeps g_4e0300 in edi for the whole function and loads g_4e3b44 lazily
 // into ecx, with the player in ebp; this build reloads g_4e0300 every iteration of the first loop and hoists
@@ -1323,6 +1326,11 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // N384: Existing whole-metadata pointer/reference result, mutable/read-only and
 // captured/direct object input: eight 284. No field-address result is introduced, but
 // native pool/player/tag homes remain. Original getter and entire body restored.
+// Round 73 (m3 lane 11, fast): held/pending as a NONE default then a slot test 286; positive ternaries 282; one
+// unit_index local for the three lookups 300 (992 bytes); a short hand counter 345 (1053 bytes); the flags helper
+// as plain inline 284. Diagnostics: a char store through modes between the held and pending lookups gives retail's
+// first loop (g_4e0300 hoisted, both lookups redone, no loop pad, lazy g_4e3b44) at 308; held/pending stores
+// through element pointers do not (292).
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1555,6 +1563,10 @@ void function_150820(dword *bits, bool local_only)
 // DH372: Isolated mode-success/command-success/actual-command exits, then both success-exit
 // pairs 90/86/110/112/110; sole-return common success in bool/byte/long 63/73/91.
 // NOT kept: no byte match or gain; original body restored, saved player/hand roles remain.
+// Round 73 (m3 lane 11, fast): weapon test folded into the slot test as 0x151b80 has it 43; mode arms swapped 72
+// (219 bytes); modes declared before the slot 43; weapon index declared with the hand 43; result set before the
+// a8f80 call 71 (215 bytes). A dword load/store probe at entry, after the result, before or after the hand and
+// before the unit lookup (87/84/81/79) never moves the player/unit-index homes: the swap is not a scratch rotation.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1731,7 +1743,12 @@ void __stdcall function_167e86(long user_index, long hand);
 void __stdcall player_set_local_user(long player_index, long user_index);
 void __stdcall function_14f270(long player_index, long controller_index);
 
-// score 285 (was 587): frame 0xe4, 78 bytes short; mask/index homes, release expansion and late binding homes remain.
+// score 12 (was 285): retail's length (1992 bytes). The unbind arm calls player_set_local_user(index, NONE) and
+// function_14f270(index, NONE), which LTCG expands as retail does, and 0x1682bf (inline on its definition) now
+// expands inside it. Left: in the binding pass retail tests local_index (`cmp word ptr [esi+0x28], -1`) before
+// the address copy and pushes both player_set_local_user arguments before the machine_user store; ours tests
+// after the copy and stores between the pushes.
+// Earlier 285 (was 587): frame 0xe4, 78 bytes short; mask/index homes, release expansion and late binding homes remain.
 // The existing controller iterator restores the native memory cursor and pool reload (plain 285).
 // Earlier 587 (was 628): the unbind in the second-to-last loop follows retail's expansion of 0x14f190/0x14f270's
 // NONE arms (through freshly fetched player pointers), the machine fields come from s_player_census_counts, the
@@ -1806,6 +1823,11 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // N384: Actual controller/user/option array role names, seven subsets and alternate complete
 // names: 285 each. Original names and full body restored; mask/index homes and missing
 // release expansion remain. NOT kept: no byte match or gain.
+// Round 73 (m3 lane 11, fast): unbind through the two existing calls 285 (same code as the hand-written arms, kept);
+// inline on 0x1682bf 12 (kept). On 12: the bind call passing the stored machine_user field, with/without the user
+// local 37/37; the local_index test taken into a bool before the copy 57; the machine_index store in both arms of
+// that test 56; machine_controller stored before machine_user 13; the user local read before the copy 27; a 600 s
+// permuter run (44 tries) none below 12. Renaming the per-player index local never moved its frame slot.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
@@ -1930,22 +1952,8 @@ void __stdcall function_152f80(void *address, void *option_data)
         long index = (short)state.iterator.datum_index;
         if (state.player->local_index != NONE && (state.player->local_index != users[index] || state.player->controller_index != controllers[index]))
         {
-            s_tail_player *unbound = tail_player_get(state.iterator.datum_index);
-            if (unbound->local_index != NONE)
-            {
-                player_control_set_unit(unbound->local_index, NONE);
-                function_1682bf(NONE, unbound->local_index, NONE);
-                ((s_player_census_counts *)g_4e8c20)->users[unbound->local_index] = NONE;
-                ((s_player_census_counts *)g_4e8c20)->user_count--;
-                unbound->local_index = NONE;
-            }
-            unbound = tail_player_get(state.iterator.datum_index);
-            if (unbound->controller_index != NONE)
-            {
-                ((s_player_census_counts *)g_4e8c20)->controllers[unbound->controller_index] = NONE;
-                ((s_player_census_counts *)g_4e8c20)->controller_count--;
-                unbound->controller_index = NONE;
-            }
+            player_set_local_user(state.iterator.datum_index, NONE);
+            function_14f270(state.iterator.datum_index, NONE);
             state.player->machine_user = NONE;
             state.player->machine_controller = NONE;
         }
@@ -2253,11 +2261,11 @@ void function_15e8e0(long object_index, long player_index);
 void __stdcall function_191ec4(long definition_index, long player_index, short count);
 void __stdcall function_191e51(long definition_index, long player_index);
 
-// score 130 (was 202): the object index is masked once into a local (object_slot) used by both the object
+// score 130 (was 130): the object index is masked once into a local (object_slot) used by both the object
 // lookup and its type, so the scaled header offset stays in a register across the calls as retail's EBP does;
 // the parent index is read in place instead of through a local, which leaves the object pointer in ESI and the
 // parent index in EAX as retail has them. The player lookup and the object header setup now match retail.
-// score 202 (was 202): Frame 0x28 agrees; player data uses ECX versus EDX,
+// Earlier 202: Frame 0x28 agrees; player data uses ECX versus EDX,
 // the object uses EBP versus ESI and the scaled header offset spills instead of staying in EBP.
 // Earlier: the prologue's registers differ: retail keeps the player base in ebx
 // and the object index*12 in ebp, ours gives ebp to the player and spills the index; the
@@ -2314,6 +2322,11 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // Y597: Complete single void exit, parent-admission bool/byte/short/long,
 // direct/complete named squared-distance and radius nodes: 202/202/211/210/202/202/211/210.
 // NOT kept: no gain; all original exits, observations and complete body restored.
+// Round 73 (m3 lane 11, fast): object_slot as word, cast or masked 145/145 (714 bytes; EBP then holds retail's
+// scaled offset but movzx replaces mov/and); declaration orders slot-unit-object 144, slot-object-unit 163, slot at
+// entry 248, slot before the unit test 244; the shared `object_index & 0xffff` form 209 (714 bytes; retail's EBP
+// offset, but the unit load sinks below the object's, data stays in ECX and parent_ok takes DL where retail keeps
+// g_4e0300 in EDX and parent_ok in CL); parent_ok declared at entry 239; byte parent_type 135.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
