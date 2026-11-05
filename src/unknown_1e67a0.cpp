@@ -1228,7 +1228,7 @@ void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animat
 
 struct s_shape_state;
 struct s_direction_rotation_input;
-void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up, vector3f *forward);
+void function_1f1460(s_shape_state const *ground, vector3f *up, vector3f *forward, byte const *state);
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks);
 void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input *input);
 
@@ -1237,7 +1237,7 @@ void function_1e5af0(void *physics, s_biped_physics_output *output, vector3f con
 {
  switch (*(byte *)physics)
  {
- case 1: function_1f1460((byte *)output, (s_shape_state *)((byte *)physics + 0x10), (vector3f *)up, (vector3f *)forward); break;
+ case 1: function_1f1460((s_shape_state *)((byte *)physics + 0x10), (vector3f *)up, (vector3f *)forward, (byte *)output); break;
  case 2: function_1faa20((vector3f *)up, (byte *)output, (vector3f *)forward, (long *)((byte *)physics + 0x10)); break;
  case 3: function_1ecf50((vector3f *)forward, (vector3f *)up, (s_direction_rotation_input *)output); break;
  case 4: break;

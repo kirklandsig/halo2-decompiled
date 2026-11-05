@@ -1590,7 +1590,12 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
-// score 301 (was 301): the object index stays in ESI and the output pointer in EBP (retail EBP and ESI), the first exit test falls into the failure return, and some bodies are 24 bytes short. Earlier summary: (MiniMax E run 26) retail keeps the object index in EBP and the scaled actor base in EBX and reads the case word through EBX, ours keeps the index in ESI and the base in EDI, so the whole dispatch prologue and the case bodies are four bytes out; the forty-byte length deficit and the pool/actor/output ownership remain.
+// score 301 (was 301): the object index stays in ESI and the output pointer in EBP (retail EBP and ESI), the first exit test falls into the failure return, and some bodies are 24 bytes short.
+// Lead (round 91, m3 lane 9): at the 1/19 site, the `field_3 |= 0x40` store written before the point copy (a store through the
+// output ahead of the reference re-read) gives retail's arg_0 EBP and output ESI and the reload `mov edi, [edi + 0x28]`, 297
+// (fast, 1824 bytes, aligned 112); the store then sits ahead of the copy where retail has it after, and the join
+// still falls into the shared `mov ax, 2` block where retail falls into `xor ax, ax` and keeps the failure block last.
+// Earlier summary: (MiniMax E run 26) retail keeps the object index in EBP and the scaled actor base in EBX and reads the case word through EBX, ours keeps the index in ESI and the base in EDI, so the whole dispatch prologue and the case bodies are four bytes out; the forty-byte length deficit and the pool/actor/output ownership remain.
 // Earlier (471): No allocated frame; actor/pool/output acquisition, dispatch layout and forty missing bytes remain.
 // the body is 40 bytes short; retail loads the actor and cs-datum
 // table globals before the actor index and keeps the actor base in EBX, ours loads the
@@ -1844,6 +1849,18 @@ void function_b7360(long object_index);
 // then conditional producers: 301 each, all 1824/1848 bytes. NOT kept: no
 // byte match; original full callback restored. Entry actor/output roles,
 // reference retention and 24-byte deficit remain; all calibrated peers unchanged.
+// Round 91 (m3 lane 9, fast; plain for the 289): case 5's two failures as separate ifs 301 (same code); the first test as
+// `perception != NONE && type != 1 && type != 4` 332 (1828 bytes); the empty cases listed before case 0 301 (same code);
+// at the 1/19 site the flag store before the point copy 297 (roles as retail, see the lead above); the wait test inverted
+// (`unknown018 == NONE` arm first) 300 (1840). On the 297 form: actor local first 476 (1836); empty cases as `success =
+// true; break;` 297; the tail as `short result` if/else 289 plain (1860 bytes, `xor eax, eax`/`mov eax, 2` for retail's ax
+// forms, case 9's failure gets its own epilogue; not kept: a tail-only result while the other returns stay); `if
+// (!success) return 2; return 0;` 307 (1820); if/else returns 317 (1828); `short result = 2; if (success) result = 0;`
+// 490; that result with the empty cases 289; case 9's/case 5's/both failures as `break` 297/297/297 (same code). The
+// tail alone as the `short result` if/else 300 (1860). Case 13's flag RMW stays `mov dl; or dl; mov` where retail ORs
+// the byte in memory (lead: a real byte field at +0x10a in the object view, a shared-header change).
+// Also: the first switch's `default: return 2;` listed before `case 1: case 4:` 301 (same code), on the 297 form 297, that
+// with `if (!success) return 2; return 0;` 307 (1820).
 // M3 lane 11 r71 (fast; masked = aligned with registers and stack offsets ignored). The point-set getter as a real
 // inline function in 0x25ab50, forceinline or static inline, 301, same code, no reload at the callers; with the point
 // getter built on it 301, loses 0x259ec0 (238). Lane 9's goto form rebuilt 246 (1848); with the diagnostic store in

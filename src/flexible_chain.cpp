@@ -514,6 +514,10 @@ void __stdcall function_1160c0(real dt)
 // the segment then takes EDX and every later scratch register is retail's, but the load sits ahead of the ternary. With
 // the index computed first (long, block helper, byte offset, reference, const, bound element) 171 (same code), short
 // index 290 (1356); stiffness read first 270; stiffness through the element 279; segment before node 279.
+// Round 91 (m3 lane 9, fast): the segment chosen as a ternary of two element addresses 297 (1379 bytes), as an
+// if/else 297; inverse_dt declared once before the loop 181; the node pointer taken after the segment 279;
+// inverse_dt after the node and segment 171 (same code); `++node->ticks` before the stiffness 175. Retail builds the
+// segment address in EDX (the node offset's register) and keeps it at +0x14, ours borrows EDI and keeps it at +0x1c.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
