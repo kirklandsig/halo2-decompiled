@@ -1425,6 +1425,8 @@ static inline s_players_globals *players_globals_14f2e0()
 // short/long/const-short/const-long, without/with complete timers: 46/87/46/87/86/98/86/98.
 // NOT kept: no equality; original observations, timer stores and complete body restored.
 // NONE materialization and tail zero/flag scheduling remain.
+// P349: Complete representation/spawn/player/global same-size lexical home orders:
+// 46/46/46/46/46/46/46/46. NOT kept: no byte equality; original executable source restored.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

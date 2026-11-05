@@ -2855,10 +2855,12 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
-// score 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
+// score 670 (was 713): frame 0x7c versus native 0x80; request/control/tag homes,
+// request-byte normalization and selected validity expansion remain. Both arguments stay on the stack; ret 8 agrees.
+// Earlier 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // costs both callers in other lanes' files.
-// score 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
+// Earlier 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // (663) costs both callers in other lanes' files.
 // MiniMax R (10-31): no new form, no lower score.
@@ -3006,6 +3008,9 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
 // local_5 == 0x400000c)` 665 (callers 223/562; the request is still loaded into ESI at entry); all three
 // 692; bool flags with the threaded test 698; the definition pointer computed second with the threaded
 // test 685. BLOCKED-BY 0xe6a20 (contributor) and 0xe6b00 (held file) as before.
+// P349: Complete transition producers on the all-stack graph, bool/byte/signed-char/short, positive/complementary:
+// 670/670/670/670/670/670/708/682. Kept the original-polarity Boolean transition, plain 670 at 2579/2577.
+// Its zero/one/comparison stores use native byte home +0x11; the other forms are restored.
 // @retail 0x111650
 bool __stdcall function_111650(long arg_0, long *arg_1)
 {
@@ -3015,7 +3020,7 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
     s_unit_animation_definition *local_3 = (s_unit_animation_definition *)TAG_BYTES(local_0->definition_index);
     long local_4 = 0x7000101;
     long local_5 = 0x7000101;
-    long local_6 = false;
+    bool local_6 = false;
     bool local_7 = false;
     bool local_8 = false;
     long local_9 = 0;
