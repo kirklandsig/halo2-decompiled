@@ -735,6 +735,12 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // B437: Stored passthrough-point producers with four count/receiver contracts
 // 738/760/741/744; with bool success 766/783/773/755. NOT kept: all regress;
 // byte success, radius/path acquisition and scalar/geometry homes remain.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 675 [601]): short index and entry pointer in both transform loops
+// (retail's movsx/lea/cmp si form) 697 [569]; bool result 754; radius ternary 708; first_output zeroed at entry 700;
+// inserted count and truncation flag before the value28 test 710 (2976); start and start node if/else 750 (2960); retail's
+// retry flow, two calls 779 (3012); all together 789 (2974) [623], without bool result 721 (2965) [596]. Greedy on aligned:
+// transform loops plus early count and flag 681 [567]; with short node index 734 (2963) [543]; with the frame re-read 732 [632];
+// positive obstacle-count arm first 715 [527]; all four 734 (2964) [631]. `inline` on 0x210690, 0x2104b0, both, or 0x2c4030 675.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

@@ -92,6 +92,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax H (11-04): no new form, no lower score; retail re-fetches the unit after the two 0xbadc0 calls (the index times twelve kept in esi) where ours reuses the entry fetch, and 0xbadc0's memory effects are unknown, so the frameless entry and the carriers stand as they are.
 // score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
 // Earlier 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail re-fetches the unit after
 // the two 0xbadc0 calls (index * 12 kept in ESI), ours reuses the entry fetch. Earlier notes:

@@ -179,6 +179,10 @@ static __forceinline long real_to_long(real value);
 // Round 101: a countdown field pointer used for the test, decrement and reset 24; an actor reference 24;
 // a joint reference 24; const state, joint or actor pointers 24 each; const node and view pointers 24;
 // an explicit outer missing-prop else 24. Every form kept the same return graph and 445-byte length.
+// Round 51 (fast): a compiled-out `do {} while (false);` at the loop end, after the pause, in the countdown arm, at the count test, at the join, at node level or at the
+// outer level, each on the current returns 24, on expiry falling to the node return 87 (457 bytes), on one continuing return at the end through gotos 24, on outer else returns
+// 24. One e4 fall-through at the end with a goto to the last e8 return 81 (430 bytes), with the node-level e4 kept 24; a status local from the top with two e8 assignments
+// 159 (440 bytes); both tests returning e8 with one final e4 131 (437 bytes). Matched 0x1b2630 and 0x1bbf40 get unmerged e4 blocks by tail duplication after a join.
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {

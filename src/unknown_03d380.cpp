@@ -314,6 +314,7 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax H (11-04): no new form, no lower score; retail multiplies the element index in eax and lea's the address, ours multiplies in esi, and 0x221810 stays out of line.
 // MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
 // byte is read, and the special, remove, ordinary and keep blocks stay in our order.
 // MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
