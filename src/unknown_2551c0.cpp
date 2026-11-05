@@ -685,6 +685,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // 1/2/4/3/5/6/7, then all as plain while loops: 215/218/89/223/215/218/223/223.
 // NOT kept: no gain; original aggregate inputs, reverse products and full body restored.
 // Unit-call scratch and first-length/projection/query homes remain.
+// N386: Complete CRT motion/heading/reverse-probe transports, subsets 1..7:
+// 184/198/220/203/218/225/252; native construction at all three boundaries 201.
+// NOT kept: no equality or gain; original copies, reverse products and complete body restored.
 // F391: Native motion/heading inputs through standard forward/backward range capture,
 // each alone then all four paired directions: 184/184/201/201/197/197/197/197.
 // NOT kept: every form regresses; heading captures grow frame 0x54 to 0x60 and all lengths grow.
@@ -697,6 +700,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // (XMM2/XMM3 unchanged); max as a second ternary 51, if-form helper 19, lateral const ref at its definition 25, `||` of the sides 90; side outputs declared at top, heading, dot,
 // sum, fabs or 0.95 block, each side, shared and unshared, 17 each (scope does not move them). Diagnostics, reverted: one more read of the sum moves it to 0x10 (166), of the length
 // or second side no move (187/96), of a timing output no move (63/70/79); one or two more lateral uses keep XMM3 (92/103). Body unchanged at 89.
+// T58: Complete readiness partitions 1/2/4/3/5/6/7 and sole-exit entry rejection without a unit snapshot:
+// 89/89/89/89/89/89/89/89. NOT kept: no eligible match or gain; complete original source restored.
+// Unit-call scratch register and first-length/projection/query homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

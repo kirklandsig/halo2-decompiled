@@ -1381,12 +1381,18 @@ long function_2197f0(real gain);
 // B429: Complete native compound/scalar compound/scalar assignment/constructor
 // addition boundaries 105/105/105/105 at 678 bytes; each with disabled early
 // return 188 at 652. NOT kept: sums/tails regress; original body restored.
+// DL264: Existing aggregate gain addition with receiver-first expression,
+// result/copy storage, value/reference right input and immutable returns: 185/185/105/105/158/154/185/105.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
 // M385: Existing aggregate interpolation endpoint/result compound accumulation, native-copy,
 // constructed difference/product, scalar product, twice-used start and uninitialized result:
 // 94/94/102/94/94/94/94/94. NOT kept: no native reciprocal, gain-load or tail repair; full producer restored.
 // M387: Composite fraction eager division/select/positive and complementary complete results,
 // original then eager simple upper caps: 160/160/163/159/140/140/143/101. NOT kept: no gain;
 // original body restored, native reciprocal/elapsed roles and first gain-load schedule remain.
+// B449: Entry gain real construction/default-member/default-assignment/explicit-copy acquisition,
+// each with encoded/real zero endpoints: 232/232/94/94/228/228/187/187.
+// NOT kept: no exact construction repair; original entry gain, endpoint domain and complete body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

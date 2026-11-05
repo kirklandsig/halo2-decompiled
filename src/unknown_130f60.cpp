@@ -401,6 +401,11 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // N375: Actual common input-record boundary at all six accumulations, base/member prefix,
 // pointer/reference input and output, eight forms 369 each (fast control 336; full 295).
 // NOT kept: all regress and shorten to 1874/1892; original record/helper/body restored.
+// DH374: Dynamic outer bound owned by for condition, bool/unsigned-char/signed-char/short/unsigned-
+// short/int/long/unsigned-long: 336/336/336/336/336/336/336/336 (fast control 336; full 295).
+// NOT kept: no byte match or eligible gain. Original dynamic outer test, loops, angle reads/copy, normalizer,
+// accumulator and full body restored; entry ESI/unit/scale/accumulation homes remain.
+// Byte typedef in the for condition failed to compile; built-in unsigned type spellings compiled.
 // Round 62 (m3 lane 14; fast control 336 at 1885 bytes, plain 295): the helper's clamp through the PIN macro 336 (same
 // code); a pointer to the three sample factors 336 (same code); height accumulated first 336 (aligned 116 -> 144); colour
 // last 335 (1874 bytes, aligned 236); red, height, green, blue, weight, intensity, distance 332 fast at retail's 1892

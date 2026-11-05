@@ -273,6 +273,11 @@ struct s_item_object_2bc1
 /* updates a team's item each tick: how long it has been away from home, its
    return home once it has waited too long, and the points of the player
    holding it */
+// MiniMax B (11-04, not kept, m3 review): 34 with `unsigned char timer` (the field is a signed char) tested
+// `!= 0xff` and the countdown computed before the test; the unsigned local is the same steering as MiniMax G's
+// `(unsigned char)` cast (a type picked by score), and without it the form is 55, under the keep bar. Left at 34:
+// the ceiling is built in esi instead of ecx after the item pointer is spilled, and the countdown is decremented
+// in al where retail copies the timer into cl, decrements it there and tests one copy in al with a single branch.
 // MiniMax G run (not kept, m3 review): 33 with the countdown computed before the timer's test, the tally
 // counted before the timer reset, and the test written `(unsigned char)timer != 0xff` (a byte compare, as
 // retail's cmp al,0xff); the cast is the steering part: without it the same form is 55, under the keep bar.

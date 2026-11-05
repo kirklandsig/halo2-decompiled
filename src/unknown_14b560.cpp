@@ -786,6 +786,8 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax H (11-04, run 33): no new form, no lower score; the walk is still the out-of-line
+// 0xbaf80 pinned by another file, so the entry test and the root stay in the callee.
 // MiniMax H (11-04): no new form, no lower score; the player/unit carriers and the root-walk entry stay.
 // score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // Earlier: the datum address is still computed in EBX where retail computes it in EDI, and the
@@ -1327,6 +1329,7 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// MiniMax C (11-04): no new form, no lower score; 0xffffffff literals, int outputs, a chained second output and reordered or chained tail clears all stay at 46 (the outputs declared outside the branch give 268).
 // score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
 // uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
 // zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
@@ -1427,6 +1430,9 @@ static inline s_players_globals *players_globals_14f2e0()
 // NONE materialization and tail zero/flag scheduling remain.
 // P349: Complete representation/spawn/player/global same-size lexical home orders:
 // 46/46/46/46/46/46/46/46. NOT kept: no byte equality; original executable source restored.
+// AC548: Separate retained/spawned handles, mutable/immutable and entry/phase declaration, then complete timer clear
+// 46/46/46/46/43/43/43/43. NOT kept: no qualifying supported gain or byte match.
+// Native NONE producer and timer/flag schedule remain. Original complete body restored.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -2813,6 +2819,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax H (11-04, run 33): the two stores through the named `globals` local again lower the
+// reduced image (193 -> 180), but the full build measured that form at 180 against the 103
+// baseline, so it is reverted; no lower score.
 // MiniMax H (11-04): no new form, no lower score; the globals pointer and the iterator's index array still swap registers.
 // score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
 // `globals` local builds to the same bytes in the full build (611 = 611, first difference
