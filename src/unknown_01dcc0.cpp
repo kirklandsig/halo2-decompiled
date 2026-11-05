@@ -239,6 +239,15 @@ long g_55e6c0;
 // the typed select 97; raw level-count local at the clamp/at entry 29/29; multi-use height/width/
 // both dimension locals 29/29/29; native pitch only 31; native height only 96. The typed native
 // form unfolds its shifts but factors the two 12-bit shifts; original packing and body restored.
+// Round 51 (fast): LEAD: signed locals stop VC pulling the subtraction under the shift. `long pitch = width * sizeof(dword) / 64; long packed = ((pitch - 1) << 24) |
+// ((height - 1) << 12) | (width - 1);` is 29 (484 bytes) with every packing instruction retail's (lea/shr 6/shl 24/sub, shl 12/sub); what is left is height in EDX and the clamped
+// count in EAX where retail has them the other way (the extra byte is `sub edx, imm`), and so the top block's load order. The same code: shift-then-subtract statements, own height
+// local, accumulated pitch, pitch decremented first, the cast `(long)(...) << 24` 29; multiply forms unsigned 28 (484), `dword packed` with a signed height 29 (483, folded); a
+// signed pitch as a plain shift of the dword quotient 29 (483, folded). Register swap, on the natural form: clamped local published after the packing, after the flag, after the
+// select's constant 29 each; arms assigning from count 29; nested else 29; zero first 43; store after the clears 35; declared at the top 29; packed declared at the top 29; height
+// stored before width 30; pitch before the stores 155 (495 bytes); stored fields 29; height part before the clamp 37; packing before the clamp 31 (483: height EAX, zero EDX); copy
+// of count before the stores 166 (503), at the clamp 166 (497); forced-inline pin as a ternary or with returns 29, with a result local 166; forced-inline size helper 29; format local
+// for the call 29; `count >= 0 ?` first 32. Field stores in the clamp's arms 139 (495) give retail's top block and registers exactly, so the merged clamp value is what takes EAX.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

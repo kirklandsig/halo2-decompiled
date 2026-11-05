@@ -409,6 +409,7 @@ real function_30bf0(vector3f *arg_0);
 real normalize2d(point2f *arg_0);
 extern point2f *g_468778;
 
+// MiniMax H (11-04): no new form, no lower score; the four orders of the entry declarations (the actor first, the actor and its slot first, the actor second and the slot before the actor) give 413, 413, 375 and 413 against 375.
 // score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
 // Lane 6 r85: retail returns constants (`mov al, 1` / `xor al, al`, every push at entry, the early tests
 // jumping to the false exit); `if (...) return true; ... return false;` without the result byte gives that
@@ -595,6 +596,16 @@ extern point2f *g_468778;
 // AC527: Complete distance-or-deadline stop result, positive/complementary bool/byte/short/long,
 // 383/383/383/383/383/383/383/383. NOT kept: result residence unmatched; original short circuit,
 // state-publication arms, clock/rounding observations and complete body restored; early carriers remain.
+// M384: Complete prediction/heading ready/blocked request results, bool/byte/short/long:
+// 375/375/375/375/375/375/375/375. NOT kept: no byte equality for the flag lifetime;
+// original request admission and full body restored; early actor/settings/prop homes remain.
+// m3 lane 1 r71 (--fast; masked = aligned count with registers and esp offsets masked, base 163): LEAD, not kept because the score rises: the actor looked up first with
+// constant returns 413/1523 (masked 86); plus the velocity field as a named pointer used eight times 398/1549 (75); plus the direction pointer declared inside its test
+// 398 (65); plus the second distance's zero assigned in its arm 406 (65); plus the planar pair copied whole 414 (59). Settings then sit in memory and the prop in EBX as
+// retail; what is left: arg_0 ESI (retail EDI), actor EDI spilled (retail EBP, the extra slot makes frame 0x44 against 0x40), slot EBP (retail ESI), the first dot's term
+// order, `comiss` against the memory zero after the normalize, and the request's word/dword store order. On that base the slot as the parameter itself 422/1532 (60), the
+// prop at function scope 397/1560 (73). Same code, no change: slot declared first or middle, all six dot term orders, dot operands swapped, renamed locals (three sets).
+// One-link harness not faithful here (control 442 at 1580 bytes).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -978,6 +989,19 @@ static __forceinline long real_to_long(real value);
 // AC527: Shared two-mode timeout publication, positive/complementary bool/byte/short/long,
 // 422/422/434/433/422/422/434/433. NOT kept: assigned-result residence unmatched and
 // extent grows; original comparisons, publication paths, query aliases and whole body restored.
+// AC531: Live unit-handle field references/pointers acquired at actor/metadata/prop/action
+// boundaries, eight at 382/1904 bytes. NOT kept: native field identity canonicalizes;
+// early rejection and magnitude/query homes remain. Original whole body restored.
+// AC534: Request-submission accepted/rejected results in bool/byte/short/long,
+// at the original call with the admitted return live: 382/382/382/382/382/382/382/382.
+// NOT kept: one-use call-result ownership lacks equality; original dispatch, state stores,
+// query aliases and whole body restored. Early rejection and magnitude/query homes remain.
+// AC536: Complete initial near-stop stop/continuation result in bool/byte/short/long:
+// 381/381/381/381/381/381/381/381. NOT kept: one-point gain below the gate and no equality;
+// original near gate, provider timing, query aliases and full body restored. Early rejection island remains.
+// F385: Existing vector-union component-array observations in target velocity, facing
+// and working vectors, seven subsets, then actual position arrays: eight at 382.
+// NOT kept: byte-neutral homes/exit diagnostic; original complete body and query aliases restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

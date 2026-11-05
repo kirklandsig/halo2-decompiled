@@ -28,13 +28,14 @@ struct s_unit_0c_view
    given */
 static inline void function_x84d9e8(vector3f *vector, vector3f const *axis, real sine, real cosine)
 {
-	real projection = (vector->i * axis->i + vector->j * axis->j + vector->k * axis->k) * (1.f - cosine);
-	real cross_i = vector->j * axis->k - vector->k * axis->j;
-	real cross_j = vector->k * axis->i - vector->i * axis->k;
+	real vector_k = vector->k;
+	real projection = (vector->i * axis->i + vector->j * axis->j + vector_k * axis->k) * (1.f - cosine);
+	real cross_i = vector->j * axis->k - vector_k * axis->j;
+	real cross_j = vector_k * axis->i - vector->i * axis->k;
 	real cross_k = vector->i * axis->j - vector->j * axis->i;
 	vector->i = vector->i * cosine + projection * axis->i - cross_i * sine;
 	vector->j = vector->j * cosine + projection * axis->j - cross_j * sine;
-	vector->k = vector->k * cosine + projection * axis->k - cross_k * sine;
+	vector->k = vector_k * cosine + projection * axis->k - cross_k * sine;
 }
 
 real function_30bf0(vector3f *v);
@@ -71,225 +72,17 @@ short __stdcall function_2551c0(long actor_index)
 	return local_0;
 }
 
-// score 43 (was 43): cross-product schedule and score-dot registers still differ.
-// Round 102 (lane 7, fast): the rotation outputs assigned k, j, i 59 (the score dot keeps k, i, j);
-// the direction copied field by field (diagnostic) 167 (792 bytes); the trace result declared before
-// the direction copy 43; the score as distance part times dot part 43; sinf/cosf for the angle 72
-// (820 bytes). Retail's score dot j, k, i is the reverse of the copy's store order (i, k, j), ours
-// k, i, j the reverse of the rotation's output stores (j, i, k); without the rotation (diagnostic)
-// the dot is hoisted before the call, so that lead is unconfirmed.
-// Round 37 (lane 16): the rotation's dot as a named local before the projection 56 (gives
-// retail's early cross_j product a.k*v.i, but the dot then sums i, k); after the cross terms 70;
-// the named dot's terms in the 11 other orders 56 each; the named dot at each position among the
-// cross terms with all six cross orders 56-125; the score's dot through the file's accumulating
-// dot (0x255741's helper, either operand order) 72/72; the projection's dot through it 74/74.
-// Round 78: score as (1 + dot) 43; best_score < score 43; 0.2f * distance 43; angle as
-// 0.7853982f * i 43; distance * 0.2f * (dot + 1) without the grouping 118. A diagnostic no-op
-// product (not kept) reorders the projection dot and fixes the length (814) without touching the
-// score dot: both orders follow VC's tuple numbering, not statement position.
-// Earlier allocation: retail computes the second products of the j and k cross terms before
-// the call's pushes (ours the first j product: 2 bytes longer, j/k cross registers swapped) and
-// sums the score's dot product j, k, i (ours k, i, j). Kept: the rotation as projection first, then
-// three named cross terms, each output `v * cos + projection * axis - cross * sin` (frame now
-// retail's). Tried: cross before projection 109, any other statement order 49-112; product operand
-// orders 43; the original output forms 72; i/j/k locals 116; cross as a struct or cross3f 154/159;
-// dot3f for the projection 72; output statements reordered 59-124; one_minus_cosine local 56;
-// forceinline 43; the score's dot written out in any order 72-146 or swapped 43; loop-local
-// declaration orders 43.
-// Earlier: our frame was four bytes larger than retail's and the
-// inlined rotation helper ran on a different SSE schedule.
-// Round 132: shared cosine/axial/both/transverse/cosine+transverse/axial+transverse/all scaling
-// [143, 203, 195, 189, 140, 197, 165]; native helper references 43. Early cross products and
-// score-dot schedule remain.
-// Named second j/k products 109/109; both second products 65; both first products 65;
-// named j/k cosine products 120/109; both cosine products 61;
-// second products plus cosine parts 139.
-// Output base sums i/j/k 109/109/109; all base sums 68; success word/long 106/76;
-// signed/unsigned byte direction counters 43/43.
-// Round 138: axis value 233; input value 213; projection i/j/k parts 109/109/124; transverse i/j/k parts 109/109/109.
-// Round 85: about 90 helper forms screened (cross order, product operand order, output form,
-// projection form): VC canonicalizes the product and sum forms, so only the cross statement
-// order and the output term order change code. Cross i/k/j 49; projection (1 - cosine) first
-// 72; dot3f(axis, vector) 72; outputs v*cos - cross*sin + projection*axis 133 (814 bytes);
-// score as the distance part times the dot part 43.
-// Round 16 (lane 10): the score's dot as a named local 109 (it also reshuffles the rotation schedule);
-// the helper returning the vector 43; sine and cosine named before the call 43; the rotated vector
-// renamed to sort after forward 43; the helper's axis parameter first 43; cosine before sine 72.
-// Round 181: native slot data block 89 (820 bytes, larger frame); restored slot view with rotation
-// inputs axis/vector/sine/cosine or axis/sine/cosine/vector or cosine/sine/axis/vector 43 each;
-// vector/sine/cosine/axis, sine/cosine/axis/vector, axis/cosine/sine/vector and
-// sine/cosine/vector/axis 72 each. Early cross products and score-dot carriers remain.
-// Round 18 (lane 10): the vector by value with the rotated vector returned 377 (619 bytes); outputs through
-// a local vector copied back 200; the helper taking the angle (sine/cosine inside) 43; a long loop
-// counter 167; the axis components as helper locals 197.
-// Round 93: axis global through a local pointer 203 (835 bytes); direction declared beside forward
-// 43; helper taking the angle (sine/cosine inside) 43; helper copying the source vector itself 43;
-// score dot grouped i + (j + k) 146 (814 bytes, frame slots and rotation schedule reshuffled).
-// Lane 14 r9: one or two extra no-op products (diagnostic) leave the score dot's k, i, j order; angle
-// as constant times index 43; `1.f + dot` 43; `0.2f * distance` 43; direction copy before the angle 43;
-// found declared before the best score 45.
-// score dot grouped i + (j + k) 146 (814 bytes, frame slots and rotation schedule reshuffled). Round
-// 37: the unit's action state read through the existing 0xe70b0 call (tail and frame unchanged, but
-// the rotation's dot then sums j, k, i and the score's k, j, i) 70, with its local declared at the top
-// or before the length test 70/70, with the score's dot operands swapped 70; the early exit as a
-// nested if 43 (70 with the call); forward/direction renamed (three spellings) 43 each; the state
-// point copied as a point 43. Round 101: the rotation as Rodrigues with `cross3f(axis, vector)`
-// added (`+ cross * sine`) 159 (820 bytes); the same with three scalar axis-by-vector cross terms
-// 139 (814 bytes; the early products become retail's pair but the whole rotation reschedules);
-// found declared before best_score 45; found set before the best score and direction 48; the
-// direction loop as a do/while 43 (same code).
-// Round 3 (lane 17): the rotation helper's locals declared first in four orders, then assigned in the
-// kept order 43 each (VC numbers by assignment); the helper reading the axis global itself (no axis
-// parameter) 75 (820 bytes); the trace result declared outside the loop 43.
-// direction loop as a do/while 43 (same code). Round 19 (lane 13), on the existing 0xe70b0 call (70, 820
-// bytes; its inlined body perturbs the early cross products and both dots): its state local declared at
-// the function top 70; found before the best score 72; forward and best direction declared first 70; trace
-// first in the loop 70; direction first in the loop 70.
-// Round 20 (lane 15, fast): `0.f < length` 43 (same code); the best update as direction, found, score 48 and as
-// direction, score, found 47; the distance part named (`reach`) 56 (815 bytes); the loop as `i != 8` 109 (814 bytes).
-// Round 26 (lane 15, fast): the extra two bytes are two pre-call products loaded from the axis where retail keeps
-// the vector's component in a register and folds the axis (cross_j's v.i * a.k and cross_k's v.j * a.i). The real
-// 0x26c590 overload in place of the header's argument-order wrapper 109 (814 bytes); one parenthesised product in
-// the rotation helper, each of its 18 in turn: the projection's j product 49 (815 bytes), its i product 78 (820
-// bytes), its k product 116, the six cross products 109 each, the outputs' cosine products 109-138, projection and
-// sine products 109-123; source permuter (600 s, 43 tries) no gain.
-// Round 36 (lane 10, fast), the rotation helper in the forms of other files' rotations: matched 0x1ecf50's
-// forceinline helper (named dot3f dot, then the projection) 56 (815 bytes), the same as plain inline 56; the
-// projection dot j, k, i with the j/k outputs projection-first 43; the dot i + (j + k) with crosses j, k, i
-// and axis-first projection terms 116 (814 bytes); matched 0x11d3b0's form (dot k, j, i) 43. Compile-only
-// (reproduces the pre-call SSE schedule): 216 forms (6 dot orders x 6 cross orders x 3 output forms, named
-// dot or not) never give retail's early a.k*v.i / v.j*a.i products (aligned 11-34 against 14).
-// Round 105 (lane 8, fast), the helper in the forms of other matched files' rotations: 0x170d70's
-// (cross_i, then the projection, then cross_j/cross_k) 109 (814 bytes); 0x175bd0's (`(1 - cosine) *
-// dot3f(vector, axis)`, axis-first output products) 72 (820 bytes); weapons.cpp's (a result vector
-// with the cross terms written in the outputs, copied back) 200 (851 bytes); a call to the existing
-// rotate_vector_170d70 in place of the helper 389 (kept out of line, 584 bytes); outputs
-// `v * cos + (projection * axis - cross * sin)` 129 (822 bytes); all three outputs projection-first
-// 43 (same code).
-// Round 22 (lane 2, fast): the existing 0xe70b0 call for the tail's state test 70 (820 bytes; the tail
-// and frame are then retail's, only the rotation and score dot differ); on it the projection dot in its
-// five other orders 70 each (same code), axis-by-vector cross terms added 146 (814 bytes), cross
-// statements j/k/i, k/i/j, i/k/j 70/71/71, the score as `(1 + dot)` 70.
-// Round 45 (lane 11, fast), the rotation helper in other files' forms: 0x26db50's (dot3f(axis, vector)
-// projection, the components in locals, crosses written in the outputs) 117 (817 bytes); 0x1f6090's
-// (mixed operand orders, outputs into a local vector copied back) 197 (848 bytes); the components read
-// into locals in the copy's store order i, k, j 116; the three outputs into locals stored after 181
-// (837 bytes); the crosses written in the outputs with the named projection 151 (799 bytes).
-// Round 122 (lane 5, fast; the current tail and frame are already retail's): the existing 0xe70b0
-// call for the state test re-measured 70 (820 bytes); the rotation into a local vector with inline
-// cross terms, then `*vector = rotated` 200 (851 bytes); `cross3f_staged(vector, axis, &cross)` 159
-// (820 bytes); each cross term as a negated axis-by-vector term 175 (841 bytes); axis-by-vector terms
-// added on this base 139 (814 bytes, addss where retail subtracts).
-// Round 106 (lane 7): one component of the rotation helper copied into a named local used at each of
-// its four uses: `real vector_k = vector->k;` 36 (815 bytes, plain and fast; a partial naming, kept
-// only on a match): the whole rotation is retail's but cross_k's v.j * a.i product, still loaded from
-// the axis (`movss xmm7, [axis]` early, where retail copies v.j and folds the axis: the extra byte),
-// and the score dot (still k, i, j); on it the score dot's operands swapped, either cross_k product
-// written axis-first 36 each (same code). Alone: vector_i 126, vector_j 116 (814 bytes), axis_i 151
-// (822), axis_j 164 (828), axis_k 164 (828); with vector_k: axis_i first or second 150 (822),
-// vector_j 70 (819), vector_i 154, axis_k 163 (832), axis_j 173 (835). The existing cross-file helpers
-// in place of this file's (plain build; --fast keeps them out of line): rotate_direction 56 (815),
-// rotate_vector_170d70 109 (814), record_rotate_vector 117 (817), biped_rotate_about 159 (820, fast).
-// With vector_k, the helper statements as projection/cross i, k, j 48, projection/cross k, i, j 48;
-// cross i first, projection then cross j, i, k or j, k, i 36 each (same code).
-// Round 127 (lane 5): vector_k re-measured 36 (fast); trace declared before the direction copy with best
-// direction before forward 43; forward and best direction before the best score and found 43; direction
-// copied before the angle with sine and cosine named before the call 43; all three vector components
-// named at the helper's top (i,j,k / k,i,j / k,j,i / j,k,i) 115/116/116/115; the existing cross-file
-// rotate_direction (plain) 56 (815 bytes): the score dot stays k, i, j, so an LTCG-inlined rotation
-// writing through its pointer does not give retail's j, k, i; biped_rotate_about (plain, never measured
-// plain before) 159 (820 bytes), record_rotate_vector (plain) 117 (817 bytes).
-// Round 48 (lane 10, fast): all three vector components named in the rotation helper (read at each of
-// their uses), declared k/j/i, k/i/j, j/k/i or i/k/j: 116/116/115/116 (816 bytes; the frame grows to 0x64);
-// the score's `dot + 1` named as an alignment local 56 (815 bytes).
-// Round 494: native slot data block with complete vector/axis/output component arrays 89;
-// vector/axis/both/output/vector-output/axis-output/all component-array roles
-// 43/43/43/43/43/43/43. Member/array accesses canonicalize; helper and slot view restored.
-// Round 51 (lane 10, fast): the score's `dot + 1` named (`alignment`) 56 (815 bytes); `1.f - cosine` named in the
-// rotation helper 56 (815); the helper's dot named before the projection 56 (815: these three flip the projection
-// dot to i first and swap v.i/v.k between XMM4/XMM5, cross_j's early product becomes retail's); vector_k plus the
-// named `1.f - cosine` 36 (815, same as vector_k alone); outputs as `v * cos - cross * sin + projection * axis`
-// 133 (814). Compile-only screen (SSE block only, about 300 forms): the cross statement order, the direction copy
-// (initialised, assigned, before or after the trace, declared outside the loop), forward/best declaration order,
-// the score dot's argument order and 1-6 unused locals never move the score dot from k, i, j (j as d * f); only a
-// written-out dot in i, k, j order with direction first gives retail's j, k, i (not keepable: dot3f by hand, and the
-// rotation then reschedules); no form on the vector_k base gives retail's cross_k product (v.j copied, axis folded).
-// The state read through a typed `slot->unknownc` data struct (offsets 0xc lower) 89 (820 bytes).
-// Round 329: Complete first/second/both cross-product parts named across all rows
-// 68/68/67; with cosine complement, first/second/both 118/118/67; both with
-// named dot, without/with complement 67/67. Original helper and callback restored.
-// Round 446: native projection/cross/angular scalar precision, seven subsets 392/392/392/72/392/392/392;
-// all with complete score storage precision 414. Exact-only forms restored with original helper and body.
-// Round 494: native slot data block with complete vector/axis/output component arrays 89;
-// vector/axis/both/output/vector-output/axis-output/all component-array roles
-// 43/43/43/43/43/43/43. Member/array accesses canonicalize; helper and slot view restored.
-// Round 348: indexed slot payload on the complete setter graph 171; complete direction,
-// best-copy and rotation-output setter subsets 166/111/166/178/153/188/166.
-// Original helper and copies restored; early cross products and score-dot schedule remain.
-// Round 351: Complete mutable output-row bases, row/field accumulators and paired
-// projection accumulation, first with the native slot payload: 150/131/68/130/134/42/133/133.
-// On the 42 graph, complete rowwise/phasewise cross accumulators without/with
-// cosine complement 73/73/126/126. The 42 form gains only one; all original source restored.
-// Round 275: Complete sequential/interleaved cross accumulators, crossed with the
-// cosine complement and complete dot, 72/72/70/70/70/70/68/68; payload-view counterpart 89.
-// Original helper, payload view and complete body restored.
-// Round 74 (lane 9, fast): vector_k named with `dot + 1` and the distance part named (`alignment`, `reach`, in
-// either order) 6 (814 bytes, first +0x23c): every line is retail's but the score dot's six (ours k, i, j with
-// the j term direction first; retail j, k, i, forward first). Not kept: vector_k is a partial naming, kept
-// only on a match. The two names without vector_k 42 (first +0xf5). On that base: the dot's arguments swapped
-// 6; `1.f + dot` 6; `reach * alignment` 6; the comparison flipped 6; forward after best 6; trace at outer
-// scope 6; direction at outer scope 6; sine and cosine named 6; found declared first 8; best update direction
-// first 10, found first 11; the dot named first 65 (818 bytes); `alignment += 1.f` 65 (818); a distance local
-// 65 (818); the angle inline 122; an axis local 75 (820). Other component sets on it: i, j, k named in six
-// orders 114/115/114/114/115/115 (815); j 116; i 125; j and k 65 (818); i and k 154; i and j 116 (816).
-// Without `alignment`: vector_k with reach alone 36 (815). Written-out dots with vector_k 146 in four orders;
-// without it 72 (i, j, k and j, k, i), 146 (i, k, j and k, j, i). Diagnostics, not keepable: a dead leaf on
-// the base, forward.i 118, forward.j 25, forward.k 25, direction.i 140 (847), direction.j 52, direction.k 51.
-// A private dot helper (not kept, a body written by hand): right-grouped i + (k + j) 61 (818), staged j, k, i
-// 120, and the 60 helper and naming sets that give retail's dot order in a compile-only screen, best 30 (815).
-// Compile-only: 299 neutral forms on the base and all output statement orders leave the dot at k, i, j.
-// The state through the typed slot data block: tried before, 89 (820 bytes).
-// Round 343: Angle/trace-output last-consumer scopes 43/43/43; completed score/forward
-// search scope alone and with those scopes 45 each; joint scopes with library best-vector copy 45.
-// Original helper and complete body restored; early cross products and score-dot schedule remain.
-// Round 77 (lane 16, fast): found declared after the two vectors 43; the helper taking the input vector by value
-// with an output pointer (no direction copy) 143 (834 bytes); the loop counter declared at block scope 43; reach
-// then alignment named (no vector_k) 42 (814 bytes, first +0xf5: early cross products become retail's, but the
-// forward copy's loads and the projection dot reorder); that as `reach * alignment` 42.
-// Round 34 (lane 17, fast), on the vector_k helper (36, partial naming, kept only on a match): the
-// projection dot k-first 36; cross_k computed first 48; the k output written first 118 (814 bytes);
-// cross_i before the projection 36; `1 - cosine` named versine 36. Original helper restored.
-// Round 80 (m3 lane 9, fast), on the 6 form above (vector_k, alignment, reach; only the score dot differs, match-only):
-// dead reads before the dot: forward j,k 43 (816 bytes); forward j,k,i 121; direction j,k 74; forward j, direction j
-// 66; forward j, direction j, forward k, direction k 72. Pointer views of the dot's arguments: forward 72 (818),
-// direction 70 (818), both 25 (814, dot still not j,k,i, one rotation step moves), both swapped 25; swapped
-// with the forward view 72, with the direction view 70. The body stays at 43 without those names.
-// Round 40 (lane 17, fast): single product operands swapped in the cross terms (no vector_k): cross_j's
-// second product axis-first 43, its first product axis-first 43, both 43; cross_k's second product
-// axis-first 43, its first 43 (all the same code: VC canonicalises the operand order). Restored.
-// N354: Normalization admission: native payload plus real 120; real 70; terminal
-// rejection 43; real plus rejection 70; positive/negative bool 56/56; promoted
-// double 195; early true-result lifetime 110. On the earlier exact-only partial
-// component/score graph, those admissions give 82/72/6/72/133/133/185/91.
-// NOT kept: no new qualifying gain; the six needs partial component naming and
-// equality. Original helper, observations and complete callback restored.
-// Round 40 (m3 lane 18, fast), on lane 9's match-only 6 form rebuilt (vector_k, alignment, reach; only the score dot
-// differs): the dot through the file's accumulating helper (0x255741's), either operand order, 120/120; the direction copy
-// before the angle 6; trace declared first in the loop 6; forward and best direction declared before the best score and
-// found 6; best direction declared before forward 6; a 600 s permuter run (53 tries) none below 6. Body restored at 43.
-// B416: Plain native three-coordinate rotation-output traversal with staged cross,
-// indexed/original slot view, projection/cross order and row accumulators: 168/161/170/206/161/144/170/187.
-// NOT kept: all regress and enlarge the retail frame or extent; original helper and body restored.
-// B418: Winning-score search success on the recovered rotation frame, indexed/
-// original slot, direct/named score factors and early/late zero: 143/145/137/143/146/148/140/146.
-// NOT kept: no exact match; original success byte, slot view and full body restored.
-// B425: Complementary search state, bool/byte/short/long, native slot payload first
-// then original view: 92/46/92/46/145/106/122/77. NOT kept: no exact match. Original state, slot view,
-// helper and body restored; early cross products and score-dot schedule remain.
-// B431: Native startup/direction/winner component-copy loops, all with indexed payload first,
-// then subsets 1/2/4/3/5/6/7: 247/256/109/109/240/240/42/247. NOT kept: one-point gain
-// is below threshold; original payload, aggregate transfers, rotation/dot helpers and full body
-// restored. Early j/k cross products and score-dot allocation remain.
+/* how good a turned direction is: how close it stays to forward, scaled by
+   how far the trace along it reached */
+static inline real direction_score(vector3f const *forward_direction, vector3f const *turned_direction, real distance)
+{
+	vector3f const *forward = forward_direction;
+	vector3f const *direction = turned_direction;
+	real alignment = dot3f(forward, direction) + 1.f;
+	real reach = distance * 0.2f;
+	return alignment * reach;
+}
+
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -329,7 +122,7 @@ bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 					function_26c590(actor->unknown27c.unknown10, &actor->unknown27c.point.point, &trace, pathfinding,
 						&actor->unknown27c.point.point, NONE, &direction, 5.f, 0);
 
-					real score = (dot3f(&forward, &direction) + 1.f) * (trace.distance * 0.2f);
+					real score = direction_score(&forward, &direction, trace.distance);
 					if (score > best_score)
 					{
 						best_score = score;
@@ -892,6 +685,11 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // 1/2/4/3/5/6/7, then all as plain while loops: 215/218/89/223/215/218/223/223.
 // NOT kept: no gain; original aggregate inputs, reverse products and full body restored.
 // Unit-call scratch and first-length/projection/query homes remain.
+// F391: Native motion/heading inputs through standard forward/backward range capture,
+// each alone then all four paired directions: 184/184/201/201/197/197/197/197.
+// NOT kept: every form regresses; heading captures grow frame 0x54 to 0x60 and all lengths grow.
+// Original full vector inputs, zero-k stores, target acquisition, normalizations and whole body restored;
+// unit-call scratch register and first-length/projection/query homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -93,6 +93,14 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // spatialization 21; object declared at slot-block scope 21; sound result declared after the clamp 21;
 // inline started-dispatch declaration 21 (0x109220 MATCH); inline spatial playback declaration 21
 // (0x189340 MATCH); nested late playback scope 21. All restored; the late object load still differs.
+// Round 51 (plain): `(void)&object_index` with plain reads 116 (531 bytes); `inline` on 0x189340's definition with the plain
+// late read 90 (the callers keep their match, no change); the call and dispatch in a by-value helper taking the label, plain
+// inline 156 (468 bytes, stays out of line), __forceinline 57 (521 bytes, retail's call order, object in ESI, sound index in EDI);
+// the plain late read with `sound_index = NONE` at its declaration 90, with the test nested and the final test on the stored
+// field 90; plain reads with spatialization declared before the class 116, with an if/else class getter forced inline 116.
+// The plain-reads listing (116) already has the sound index in ESI and the copy to ESI at the call: there the spatialization
+// pointer is the spilled variable (frame 0xa4) and the object holds EBP, where retail spills the object to its parameter home
+// and keeps spatialization in EDI and the tag in EBP. A form that ranks spatialization above the object is the next thing to find.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

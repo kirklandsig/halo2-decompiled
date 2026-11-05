@@ -70,6 +70,11 @@ s_player_state *function_16f3a0(long index);
 // its code. An unused later local 79 (removed early: z in place); z written before y 79 (the last row goes in place), z first 79. On the named height:
 // z before y 70; a const reference or a local for k 66/66, a vector pointer for k or i/j 66/66, a const reference height 66, sides swapped 66, k's
 // product named ahead 66. On the expression x/y: the z sum reversed 79, all sums reversed 79, z built with `+=` 79, z's product named 79.
+// Round 149 (plain): height-copy x/y accumulators through `*=` 28; the same in the feet fields 28;
+// height declared before the eye with split assignment 28; const eye aggregate 28; const feet aggregate 28;
+// z-only const with expression x/y 57 (607); vector eye/feet 28; full x/y accumulators through `+=` 28. Restored.
+// Round 61 (plain): up i/j read into locals before the height 28; up k read into a local after the height 28; both 28; z built in a local with
+// `*=` and `+=` 28 (all propagated back, x/y stay memory-first); a state pointer with the negated read at x/y and in z's steps 72 (616 bytes, the negation is split).
 // @retail 0x1396c7
 void function_1396c7(long a, point2f *point)
 {

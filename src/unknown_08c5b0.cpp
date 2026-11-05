@@ -139,6 +139,9 @@ static inline long bungienet_user_voice_setting(short kind)
 // `long setting = kind; if (setting == 1 && available)` 32 (95 bytes); seeded `setting = 1; if (kind == setting && available)` 30
 // (94 bytes); `setting = kind` first in the kind arm 12; inner `else setting = kind` with `available && kind == 1` 4 (same code).
 // The pair follows the kind's surviving references: it outranks the request only with a third use that reaches allocation.
+// Round 114: direct kind as the selector argument 5; register kind/request 4/4; pointer/reference request aliases 4/4
+// (NOT kept: aliases require a match); request-taking selector with the index before/after it 5/23;
+// request-member selector with a kind local/direct kind 4/5. Original helper and body restored.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

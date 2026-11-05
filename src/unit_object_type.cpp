@@ -579,7 +579,7 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes);
 void function_a8a30(long unit_index, long definition_index);
 real normalize2d(point2f *v);
 real function_11cc90(vector2f const *a, vector2f const *b);
-short *function_e70b0(long unit_index, short *state);
+short *function_e70b0(short *state, long unit_index);
 bool function_10ff40(long unit_index, long type, short side, short value, bool *flag, short *side_out, short *value_out);
 void function_ba350(long object_index, real seconds);
 bool function_101240(long weapon_index);
@@ -612,7 +612,7 @@ void function_11f0d0(vector3f *position, vector3f *forward, vector3f const *targ
 void function_bba20(long object_index);
 long function_176780(long object_index, s_effect_owner const *owner, real scale_a, long tag_index, real scale_b,
 	point3f const *origin, vector3f const *direction);
-void function_15cbf0(long attacker_index, long player_index, long flags);
+void function_15cbf0(long attacker_index, long player_index, bool flags);
 bool function_1147e0(long unit_index, bool a, real b, real c, long definition_index, bool hard);
 void function_c86e0(long unit_index, bool keep_weapon_zoom);
 void function_1c95d0(long unit_index, long attacker_index, short type, real amount);
@@ -3549,7 +3549,7 @@ void function_c6990(long unit_index)
 /* the entry animation (of five) whose end point on the vehicle's seat is
    nearest the unit's center; the seat marker's position and that point */
 // @retail 0xc7160
-long __stdcall function_c7160(long unit_index, short seat_index, long a, long vehicle_index, long b)
+long __stdcall function_c7160(long unit_index, short seat_index, long vehicle_index, long a, long b)
 {
 	point3f *marker_position = (point3f *)a;
 	point3f *position = (point3f *)b;
@@ -5306,7 +5306,7 @@ void function_c8bb0(long unit_index, long vehicle_index, long *object_index, sho
 		}
 		point3f marker_position;
 		point3f entry_position;
-		if (function_c7160(unit_index, seat, (long)&marker_position, candidate_index, (long)&entry_position) == NONE)
+		if (function_c7160(unit_index, seat, candidate_index, (long)&marker_position, (long)&entry_position) == NONE)
 		{
 			continue;
 		}
@@ -6326,7 +6326,7 @@ bool __stdcall function_c98a0(point2f const *direction, long unit_index, long ty
 				{
 					short state;
 
-					if (*function_e70b0(unit_index, &state) == NONE)
+					if (*function_e70b0(&state, unit_index) == NONE)
 					{
 						facing = toward;
 						turn = true;
@@ -6699,10 +6699,10 @@ bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes)
 				weapon_empty = true;
 			}
 		}
-		byte *weapon_definition = UNIT_DEFINITION_GET(UNIT_GET(weapon_index));
-		dword weapon_flags = *(dword *)(weapon_definition + 0x12c);
+		byte *local_67e06b_4 = UNIT_DEFINITION_GET(UNIT_GET(weapon_index));
+		dword weapon_flags = *(dword *)(local_67e06b_4 + 0x12c);
 		dual_wieldable = TEST_FIELD_BIT((weapon_flags >> 22) & 1) || TEST_FIELD_BIT((weapon_flags >> 23) & 1);
-		second_hand_only = (*(dword *)(weapon_definition + 0x12c) >> 23) & 1;
+		second_hand_only = (*(dword *)(local_67e06b_4 + 0x12c) >> 23) & 1;
 		long *slot = unit->weapon_object_indices;
 		for (long i = 0; i < 4; i++, slot++)
 		{
@@ -7699,11 +7699,11 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
    delay and stun, the timer +0x2bc, its death direction, the player and
    betrayal bookkeeping, the hit animation, the actor's perception of the
    attacker, its camera shake and, when it was a killing blow, its death */
-// score 343 (was 413): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
+// score 370 (was 413): only register allocation is left. Retail keeps unit_index in ebx (reloaded after the grenade
 // block), report in ebp and the unit in esi, and spills the definition to [esp+0x10]; ours spills unit_index and the
 // definition and uses ebx and edi as temporaries, so the prologue order, the stack slots (retail: definition 0x10,
-// total 0x18, unit 0x1c, hard 0x20) and the byte re-load of flags for the sign test differ. Retail also passes the
-// bit of flags to function_15cbf0 masked with 0xffffff01 (a bool; its parameter is a long in unknown_157450.cpp).
+// total 0x18, unit 0x1c, hard 0x20) and the byte re-load of flags for the sign test differ. Retail passes the bit of
+// flags to function_15cbf0 masked with 0xffffff01, as a bool (its parameter and c_engine_peer::p29's are bool, 379 -> 370).
 // Tried: definition written out at every use (605), unit declared after the other locals (353), total as one sum
 // expression (367; it loads +0x44 first, so total is built with += to load +0x48 first), a (bool) cast on the
 // function_15cbf0 argument (343, no change).
@@ -7715,8 +7715,7 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 // source converted it to a bool (`test cl, cl; setne cl`), storing a nonzero byte other than 1 as 1. ca700's `flag` is
 // a `byte` and `unknown330` a `byte[4]` now (ca700 stays 140, d9640 stays MATCH); this function's score goes 344 -> 379
 // because the call is one instruction shorter and the positional score shifts (without the array change ca700 grows to
-// 517). (2) Retail's function_15cbf0 takes a bool (`and 0xffffff01`); unknown_157450.cpp declares it long (left to
-// machine 3's lanes, #104).
+// 517). (2) Retail's function_15cbf0 takes a bool (`and 0xffffff01`): fixed, 379 -> 370 (0x15cbf0 still matches).
 // What decides the rest: retail enregisters unit_index in ebx from entry (`mov ebx, [esp+0xc0]`; the non-grenade path
 // reaches the badc0 call with it, only the grenade path reloads it) and spills the definition (reloaded from [esp+0x10]
 // in five places, edi holds attacker_index); ours loads the argument straight into eax, uses bl for the hard temp,

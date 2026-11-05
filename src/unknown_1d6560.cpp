@@ -272,6 +272,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // direct/captured header base: 97/97/136/136/93/93/95/95. NOT kept: every form loses
 // the matched caller (146/213/13); best gain three is below the gate.
 // Original handle capture, dispatch observations and complete body restored.
+// M3 lane 4 r164 (fast, caller in brackets): round 60's 24 form rebuilt 24 [0]; headers, object index, rigid body, type through the
+// object index with case 0 through it 124 (228 B) [209]; the 21 form (headers, object index, rigid body, absolute index, type) in 8
+// parameter orders, definition, declaration and call together, 21 [13] each (identical code: the component stays in EDX and the
+// index in EAX); a named object index for case 0 with the type read through the field, byte type in six declaration orders 99/102
+// [13], long type 98 [171] or 112 (236 B) [13].
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -596,9 +601,15 @@ struct s_physics_component_walk : s_havok_component
 // __forceinline scan helper rebuilt 168, with the no-next-group arm ending in `continue` 168; the next-group arms
 // swapped 192 (901 B); one `connected` result set by the kind-7 test and the scan 151 (910 B); the group fields read
 // at each use for the admission test and next selection 146 (same code).
+// Y584: Loop-owned complete section rejection, terminal/neighbor bounded for/while
+// forms 301/288/310/301/288/310/310/310. NOT kept: completion observations
+// and native neighbor/key allocation do not match; original scans and full method restored.
 // N369: Persistent input/output/recursive-operand lexical families, seven subsets
 // and full-family common names: 146 each. No latch or carrier change;
 // NOT kept: all tie. Original identities and complete method restored.
+// P335: Readonly owner/group/opaque recursive-input contracts, seven subsets then
+// complete contracts with fixed component binding: 146/146/146/146/146/146/146/146. NOT kept: all tie;
+// original method interface and full body restored. Latch reload and neighbor/key homes remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

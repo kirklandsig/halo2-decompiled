@@ -573,6 +573,8 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
+// MiniMax G (11-04): no new form; the fast check cannot score this function (its callees fall outside
+// the reduced image, so the diff misaligns from the first instruction), so it stands at 132.
 // score 118 (was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
 // y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
@@ -764,6 +766,13 @@ bool g_51e9bc;
 // inline: dot and scaled add in an inline taking velocity/direction pointers 66 (1077, written rows 61), with the dot terms named 57
 // (1078), with a statement dot 59 (1079), with a statement dot and a separate result pointer 52 (1079, al 65/23/20: 188 lines exact but
 // for the i term's x-operand; only the jitter block's spills and products left). A match should start from that 52 form.
+// DL263: Ordinary native sample with reused on/sign/half three-bit groups, seven subsets then
+// complete immutable groups: 161/156/158/150/149/153/150/150. NOT kept: no eligible native keeper;
+// original sample qualifier and complete body restored. Unity/limit/direction registers and jitter
+// spill homes remain.
+// N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
+// forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
+// body restored; unity/limit/direction ownership and jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1112,11 +1121,29 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // the side crosses: 140/140/140/140/172/172/176/175. NOT kept: no match;
 // original body restored, rotation multiplicands, side-dot residence and
 // final load-all copies remain.
+// F379: Isolated oriented-side crossing/complement outcomes, bool/byte/short/long,
+// 140/140/140/140/140/140/140/140 at retail length. NOT kept: regressions;
+// original complete body restored, native j/k multiplicands and final copy scheduling remain.
 // N366: Native direction-output copy ranges at goal/rotated/initial-forward boundaries and complete
 // backward ranges do not recover eager inline copies. The 100-point output forms add out-of-line copy
 // calls absent from retail, including the retail-length form. Original direction copies, shared rotation
 // and full body restored; j/k products, side-dot and exit scheduling remain. Scores
 // 100/110/100/303/308/307/312/318. NOT kept: unmatched result-ownership forms.
+// Round 588: Complete scalar captures at goal/turned final copies and rotation input,
+// seven subsets then all immutable: 150/174/192/181/206/223/221/221. NOT kept: one-use
+// input captures miss equality. Original shared rotation and complete body restored;
+// j/k rotation products, side-dot residence and final load-all copies remain.
+// P337: Complementary moved-away bool/byte/short/long, complete logical producers
+// 95/95/101/99; exhaustive arms 115/115/119/118. NOT kept: inverted result/test
+// branches miss native early zero; j/k multiplicands and eager final copies remain.
+// Original complete body and every existing helper restored.
+// P339: Complete absolute-angle producer at sample/scale boundaries, mutable/const
+// real/double: 144/144/172/172/144/144/172/172. NOT kept: all regress;
+// original complete body restored. Native rotation multiplicands, side dots and
+// eager final copies remain; shared rotation and movement providers stay exact.
+// P341: Existing native component getter/support input, pointer/reference and mutable/read-only, shifted
+// word/native bitfield: 114/114/114/114/114/114/114/114. NOT kept: no native rotation-product or
+// side/output allocation recovery; original raw input, include set and complete body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

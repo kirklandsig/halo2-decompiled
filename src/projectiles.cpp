@@ -385,6 +385,7 @@ bool function_fa580(real speed, point3f const *origin, point3f const *target, ve
 }
 
 /* the rotation a spinning projectile makes each tick */
+// MiniMax H (11-04): no new form, no lower score; retail keeps the rotating-flag OR and store ahead of the first axis load and ours hoists that load above the flag store.
 // MiniMax A (11-03): no new form, no lower score.
 // score 3 (was 3): this round: the rate computed after the flag write scores 10, and the axis stored
 // after both trigonometry calls scores 21 with a shorter body (283 bytes); both were reverted.
@@ -906,6 +907,7 @@ real function_30bf0(vector3f *v);
 /* aims a falling projectile along an arc: the slowest speed that reaches
    the target, then the time to it at the speed used (high or low arc),
    falling back to the slowest arc when the speed can't reach it */
+// MiniMax H (11-04): no new form, no lower score; the difference the earlier rounds describe is still there.
 // MiniMax A (11-03): no new form, no lower score.
 // score 232 (was 232): the convention now agrees with retail (target EAX, origin ECX, direction
 // ESI, the rest on the stack, `ret 0x2c`): the forced-speed and time-scale pointers are each read
@@ -1222,6 +1224,7 @@ extern vector3f *g_4687ac;
 
 /* whether a projectile's path to a point hits anything: the line from it,
    and for projectiles with a radius the two lines either side of it */
+// MiniMax H (11-04): no new form, no lower score; the three ray queries have to inline 0x16a040, whose defining file is not this lane's.
 // MiniMax A (11-03): no new form, no lower score.
 // score 163 (was 163): simultaneous offset endpoints recover 757/756 bytes; frame 0x48
 // versus 0x34 and endpoint/query homes still differ. Shared input differences 220;
@@ -1373,6 +1376,7 @@ long function_189fe0(s_sound_request const *request, long tag_index);
 
 /* the effects and sounds of an effects block (a material's response) at
    a point */
+// MiniMax H (11-04): no new form, no lower score; the four register arguments of the 0xfd740 call follow that callee's own parameter order, which this lane may not change.
 // MiniMax A (11-03): no new form, no lower score.
 // score 4 (was 4): only the four register arguments of the 0xfd740 call differ: retail passes
 // effect index 1 in ecx, effect index 2 in edx, sound 0 in esi and sound 1 in edi, ours passes
@@ -1468,6 +1472,7 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 
 /* a projectile's detonation effects and sounds at a point, attached to an
    object's node when it stuck to one */
+// MiniMax H (11-04): no new form, no lower score; the selector call's registers and the point's lifetime follow the unmatched 0xfd740 in this file.
 // MiniMax A (11-03): no new form, no lower score.
 // score 115 (was 115): frame 0x150 and extent agree; point EBX/EDI, zero lifetime and selector call registers differ.
 // Round 196: array-size bounds, unsigned shared ordinal and distinct unsigned ordinals 148 each;
