@@ -312,7 +312,7 @@ bool function_1f2e60(s_shape_ground const *ground, bool moving, vector3f const *
 }
 
 struct s_havok_component;
-void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity);
+void havok_component_rigid_body_point_velocity_get(vector3f *velocity, long rigid_body_index, s_havok_component *component, point3f const *point);
 void function_141590(transform4x3f const *in, transform4x3f *out);
 int __fastcall function_142a60(transform4x3f const *a, transform4x3f const *b, transform4x3f *result);
 real function_f5e00(long vehicle_index);
@@ -365,7 +365,7 @@ bool function_1f1ee0(s_shape_carrier_contact const *contact, s_shape_state *stat
                     transform4x3f relative;
                     function_141590(&matrix, &inverse);
                     function_142a60(&contact->transform, &inverse, &relative);
-                    havok_component_rigid_body_point_velocity_get(*(signed char *)(entry + 0x46), other, &contact->point, velocity);
+                    havok_component_rigid_body_point_velocity_get(velocity, *(signed char *)(entry + 0x46), other, &contact->point);
                     function_141590(&relative, &relative);
                     *rotation = relative.rotation;
                     result = true;
@@ -542,6 +542,21 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // Seven within-row second-product-first declaration orders all 73, with the same
 // caller counts; original product order and selected helper restored. Existing
 // unmatched callers: 0x1f1460 182 -> 200, 0x1f2250 418 -> 419, 0x1f0870 stays 590.
+// M3 lane 8 r135 (fast and compile-only; aligned in brackets, base 122 [93]; body unchanged, the lead below is match-only): the first
+// cross's registers and the arm merge follow the function's tuple phase (period 4): a diagnostic one-product chain with the
+// arms computing k, j, i or i, k, j gave retail's XMM1/2/0 and the merged arms (191 [41]); other phases 207-225. Lead: a pointer
+// local for the up vector scoped to case 3 at all four of its reads, the existing cross3f_staged in the two selected arms (retail
+// computes k, j, i there) and `*out` copies in the averaging arm: 21 [27], 978 bytes, plain, nothing else moved. Not kept: entry and
+// tail read the global directly, a hand-reload mix unless it matches. `up` at the entry copy and the fallback instead 21 [19], at entry
+// only or as a reference 21; `up` at the whole function 214, entry and case 3 178, arm-only 178. Without any `up` 178. 0x1f087b itself
+// reordered gives the same 21 but raises 0x23de50 45 -> 217 (it inlines 0x1f087b across files), so it stays i, j, k. The entry copy as
+// memcpy, by index or through a value 178, by fields 317. No other natural form gives the odd phase step: a case-2 or function entries
+// pointer shifts by two (needs a further step, compile-only 39-43 with a chain, 75-82 without), named indices and other one-use locals
+// shift nothing. On the lead: statement dots `dot = i; dot += k; dot += j` 9 [7] (dot3f's body by hand; dots k,i,j 17, j,i,k 21),
+// leaving only b.i's two operands (retail loads b.i: the j term's first product and average.i) and the tail's j product.
+// Compile-only, those two unchanged: cross in six parameter orders, arrays, references, `(real)` products, existing cross3f (same
+// code), named terms 33-68, a and b declared at function top, in either order, per arm 103, at each use 137, 13 declaration moves
+// in pairs; tuple shifts before and after the cross 24-62; b computed first 217 (every product then takes b first).
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -763,6 +778,12 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // Round 481: Complete fallback plane/forward candidate with publication after normalization,
 // eight independent fallback/forward-phase/active-entry declaration pairs 247 each (1243 bytes).
 // Original in-place fallback and full body restored.
+// M3 lane 8 r135 (fast; aligned in brackets, base 182 [214]): diagnostic tuple phases 183/186/186 [200/207/207]; rotation rows
+// and cross components written out, 108 orders compile-only, best real rows j,k,i with cross j,i,k 242 [184], cross k,i,j 260
+// [192]. The first cross's `state + 0x100` temp is retail's ESI; retail keeps it across the first call for the state dot,
+// but every form that does (dot3f in both argument orders 262 [196], a named pointer at each use 265 [203], each with the
+// phases 264-268 [188-203]) colours the state EBX and the forward result EDI (retail EDI/EBX) and drops 0x1e5af0 to 20. On
+// dot3f: settings or old-forward alias removed, result stores swapped in either arm, all 16 subsets 260-267, caller still 20.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {

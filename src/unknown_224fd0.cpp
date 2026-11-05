@@ -264,6 +264,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // m3 lane 1 r71 (--fast): a 50-minute annealed search over the rotation helper's statement order and product operand forms, 204 forms, ranked by an aligned count of the
 // rotation block: base 219 (aligned 164), retail's flow 357/1820 (147), aligned best 366/1848 (85), positional best 213/1840 (168; six under the base at the wrong length, not kept). With registers and esp offsets masked,
 // everything outside the two rotation arms already agrees (168 of 168 masked differences are in the arms). One-link harness not faithful (control 715 at 1521 bytes).
+// Round 150 (m3 lane 5, fast; m = masked aligned, control m88): retail's flow with scalar products as const refs, complement plain or const ref, all plain scalars 469 (1736) m83,
+// 505 (1708) m79, 505 (1708) m79; kept helper with ij, ik, jk, all three as const refs 495, 495, 495, 491 (1716-1720); retail's statement order on the kept vector locals, plain 357
+// (1820) m68, const refs 409 (1780) m83.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

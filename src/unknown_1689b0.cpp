@@ -1723,6 +1723,11 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // AC526: Entry-radius admission bool/byte/short/long, then complementary exclusion:
 // 620/620/620/620/619/619/619/619. NOT kept: all regress, frame shrinks to 0xb958 versus
 // 0xb964; original body/helper restored; sum homes, query zero and prism anchor remain.
+// M3 lane 12 r90 (fast, base 552, masked 446): the cursor anchor follows which fields are read, not their order: no point-count read in the cap 613 (anchor prism+0x20),
+// no read in the modulo 620 (still point_count), neither 618 (anchor plane.k), a local points pointer 598 (axis), the named index with no cap read 621, retail's anchor plane.j not reached; distance with the j term first and
+// `shapes.prisms + index` 552 (same code). The cap reading the count once 554, as `if (count > 8)` 605; (edge_index + 1) % point_count named before both reconstructions, retail's early idiv, 602
+// (2909, masked 400), with the single read 602; short index locals in the reconstruction 621; combinations 622/662/661/657; a long axis 593 at retail's 2882 bytes. Retail's sum homes are not contiguous
+// (+0x5c/+0x64/+0x68, +0x50/+0x54/+0x60), but plain scalar sums 630 (2897), face first 630, with the named index 619/630, two point3f locals 594.
 // AC537: Complete near-plane/interior direction-admission truth, positive and
 // complementary bool/byte/short/long: 553/553/553/553/553/553/553/553. NOT kept: no match; original
 // normal selection, sums, word counters, geometry and whole body restored.

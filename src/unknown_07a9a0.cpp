@@ -1230,10 +1230,15 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // M372: Plain while identity/player/group traversal, seven phase subsets 766;
 // all plus initial histogram while 907, 2764/2828 bytes, frame 0xd8/0xb4. Original
 // loops/body restored; frame 0xd4, stacked session and initial lookup remain.
+// Round 148 (m3 lane 6, fast): `inline` on 0x192e60 766, on 0x1934f0 766, both 766. Player loop through a call to 0x63220:
+// forceinline on its definition 1032 (2588), `inline` on its definition 1097 (2524), with `inline` on 0x192e60 1097; each gives
+// 0x73530 its match (session in EAX, ret 4), but a score rise is not kept: held lead. Result first and capacity before the summary 785.
 // M377: Whole native ID/output-identity library transfers before/after the
 // call-free group phase, singles and joint placements: 937/937/838/831/986/957/986/957.
 // NOT kept: all regress and shorten; ID transfers shrink frame to 0x50 rather
 // than native 0xb4. Original element copies, arrays and complete body restored.
+// M392: Native initial reject scopes after gate boundaries 1/3/1+3/1+2/1+4/2+3/1+2+3/all: 766/766/766/766/766/766/766/766.
+// NOT kept: no native ingress/frame/lookup recovery; original short-circuit guard restored. Original complete body restored.
 // Round 148 (m3 lane 6, fast): `inline` on 0x192e60 766, on 0x1934f0 766, both 766. Player loop through a call to 0x63220:
 // forceinline on its definition 1032 (2588), `inline` on its definition 1097 (2524), with `inline` on 0x192e60 1097; each gives
 // 0x73530 its match (session in EAX, ret 4), but a score rise is not kept: held lead. Result first and capacity before the summary 785.

@@ -405,6 +405,8 @@ bool function_1d9320(s_1d9240 *slot);
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
 
+// MiniMax A (11-04, run 45): no new form, no lower score (37); a mask test in either signedness still splits the
+// visited update (42) and the 0x1d90e0 arguments through locals are the same code (37).
 // MiniMax A (11-04, run 41): no new form, no lower score (37); the mask form for the visited-bit test (the
 // existing bit_vector_test, and the same set written out inline) matches retail's test but turns the following
 // update into load/OR/store and shifts two call setups (42).
@@ -1391,6 +1393,10 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax R (11-04): the case list with 0xb000061 (170), the split depletion queries (330) and a bool
+// result (194) all lose against 164; splitting only the first query (328) and the retail-shaped second
+// query that clears the flag on a positive value (330) lose too, though the latter reaches setle; no
+// new form, no lower score.
 // MiniMax R (10-31): no new form, no lower score.
 // score 164 (was 164): this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
 // the unit through that offset for both depletion queries, and it writes the first depletion with setle;
@@ -1658,6 +1664,7 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax R (11-04): no new form, no lower score.
 // MiniMax R (10-31): no new form, no lower score.
 // score 450 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
@@ -1801,6 +1808,10 @@ bool __stdcall function_110ab0(long unit_index)
 // P327: Complete base/depletion/overlay true-false result producers, masks 1/2/4/3/5/6/7,
 // then all with result at entry: 465/430/450/465/465/430/465/465. NOT kept: 430
 // still has 424 code differences; only table/extent improves. Original full body restored.
+// Y599: Terminal first/second/both overlay decisions return directly, original/Boolean
+// overlay, then both with Boolean depletion: 450/560/560/466/567/567/575/581. NOT kept:
+// no verified native frame/result-join gain; original full body restored.
+// Best code prefix stays 424 differences; all frames remain eight versus twelve.
 // DH372: First/second held-query presence bool/byte/short/long: 450 each.
 // NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
 // Original body and queries restored; state/request/result homes remain.
@@ -2215,12 +2226,18 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // N368: Nested persistent-valid/direct-set/default-and-overlay admissions, seven family
 // subsets, then all with split outer definition/graph guard: 776 each. NOT kept: no gain;
 // original admission graph restored, frame 0xcc/0xd4 and opposite selective expansion remain.
+// Y597: Complete common primary sampling weights, both-first/single-first producers,
+// sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
+// NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
 // AC533: Test-produced whole terminal paired-slot gate, missing/present bool/byte/short/long:
 // 724 each (3413/3403; frame 0xcc). NOT kept: one-use/test-produced state needs equality;
 // first-angle/overlay calls stay 2/4 versus native 1/5. Original complete body restored.
 // N373: Ordered primary/secondary null-or-found screen producers, conditional/default/total-if forms
 // 830/775/835/830/775/835/835/835. NOT kept: at most one point; original full body restored.
 // Frame 0xcc/0xd4, entry computation and first-angle/overlay expansion remain.
+// DL265: Existing set/sample/play inline policy subsets, then aiming-sample inline:
+// 776/776/776/776/776/776/776/776. NOT kept: no qualifying provider contract; every provider/header restored.
+// Frame 0xcc/0xd4 and first-angle/overlay expansion remain.
 // Y597: Complete common primary sampling weights, both-first/single-first producers,
 // sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
 // NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.

@@ -2147,6 +2147,15 @@ bool function_1e11b0(long actor_index, bool active);
 // DL262: Coherent matched predicate/removal/return-provider inline declaration subsets, then
 // explicit predicate expansion on the complete graph: 64/64/64/64/64/64/64/64.
 // NOT kept: no exact native form; original complete body and all provider contracts restored.
+// Round 53 (m3 lane 2, fast; on the 13 form, index EBX/next EBP against retail's EBP/EBX): `do { } while (false)` around
+// the loop or the flag arm 13/13; one masked-index local for both lookups 14; a squads-array local 43 (205 B); a plain
+// local for the walk's next index 68 (214 B); that with 2/6/12 extra uses of next (diagnostic) 80/88/89, four extra
+// iterator reads (diagnostic) 62: next stays EBP, so its weight does not decide it; flag-store and return spellings,
+// 18 forms with and without the address read, 13-73, same roles. Diagnostics without the address read: with only two
+// squad references after the loop (stamp store + return) the index takes EBP, next EBX and the argument stays on the
+// stack with no address read, 0x203d70 keeps its match (50, 199 B; the squad is then reloaded into EAX past the loop);
+// a third reference (flag store, or a word flags pointer) sends the squad to ESI with the split and the index to EBX
+// as a register argument. Lead: retail's squad holds ESI with its split yet the index stays EBP; no form reaches both.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2429,6 +2438,14 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
 // complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
 // Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
+// Round 69 (lane 11, fast; [aligned]/{registers masked}): 0x202720's walk, long elapsed, long index, word wake read, word active
+// tail 312 (1103) [75] {31}, without the definition block (diagnostic) 381 (1041) [107], the same with the walk in a bare scope, areas at function scope or nested, or both renamed to sort
+// first 312 each (frame stays 0x48); walk_index read directly at each use 312; a short index 309 [80]; a short elapsed 311. The walk
+// inside `while (active)` with `if (!squad) break;` 289 (1104) [51] {30}: retail's late pushes and the pool reloaded per pass in
+// EDI; on it a short active or a word flags local 289 (same code), intersection assigned in the test 289, overlap `|=` 289 (1109)
+// [92], structure ahead of clusters 285 (1103) [48] {26}: retail's head registers, the next round's lead. Left there: frame, the
+// 16-bit active test kept in CX and re-tested at the deactivate block, overlap in DL with the intersection's dead store. Diagnostic,
+// not kept: a function-scope point used again in the area loop gives frame 0x54 (290, 1119 with the extra call, [48] {25}).
 // J255: Coherent ordinary-inline squad-test, actor state update and actor-cluster
 // provider subsets, then squad-deactivation boundary: 275/275/275/275/275/275/275/275.
 // NOT kept: ties/regressions. Every provider contract and complete body restored;
@@ -2956,6 +2973,17 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // N372: Delay-owned pending conditional/exhaustive results 135/50; computed candidate
 // admission joins 156/50/50; complete graphs 156/50/50. NOT kept: no byte match; original
 // word/result graph restored. The first-event index reload and actor-loop pad remain.
+// Round 53 (m3 lane 2, fast; aligned 2 = the reload and the pad it shifts): `do { } while (false)` around the second
+// half, the first chain, both, the 0x1fb8a0 call, the task block, the follow-up test, the trigger `for`, the first arm's
+// call, nested or after it, all 50; a folded one-pass loop around the call 50; `for (;;)`, `switch (0)`, an implied
+// guard around the first call 50 (all same code); `> 0` with an empty then-arm on the delay, the else-if, the task and
+// the count tests 50/50/50/50; flag tests as `!= 0`/`== 0` 50/50; count before task 54; squad_get(arg_1) for any one
+// first-half read 134/157/157/134/182/134/134/134/182 (B3 gets `mov eax, ebp` but the entry and the spill change); the
+// first call written out per failing test (identical arms, diagnostic) 183-206 (not merged). Diagnostics that give
+// `mov eax, ebp`: deleting any single first-half test (L6 the delay test 156, the event test 131, aligned 3 each), a
+// real diamond before or after the first arm's call (aligned 4-5); those that do not: plain stores or reads in the first
+// arm, the else-if head or after the chain, a diamond in the pending arm, deleting any second-half test. So it is a
+// marginal weight decision in the first half, and block count alone does not move it.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3429,6 +3457,21 @@ void function_2011f0(long arg_0);
 // N372: Range/reuse/category continuation guards at the common attempt latch, seven subsets
 // and complete tail completion guard: 318 each. Original body restored; native 0x134 frame
 // agrees, but masked-input/placement, seat and final-chain homes remain.
+// Round 53 (m3 lane 2, fast; positional/aligned/masked aligned, baseline 318/116/93). Match-only recipe, not kept: squad
+// pointer through squad_get, flag declared before the typed row, head after it, per-arm spawn index, seat NONE once,
+// the +0x3c index through placement_entry, `for (short attempt = 0; attempt < arg_0; attempt++)`, the memset sized by a
+// fresh `squads[(word)arg_1].count`, `if (head != NONE) { long cursor = head; do { ...; one squad_get per pass } while
+// (cursor != NONE); }`, `if (!flag) function_2011f0(arg_1);` at the end: 221 at 1328 bytes, aligned 4 (retail's entry,
+// hoisted pool, tail and exit). Left on it: flag before the row gives retail's arg_2 EBP/row EBX but stores the flag ahead
+// of the row's home (row before flag: the stores are retail's, 229/18/4, roles swapped); the row's reload sits after the
+// 0x201b70 call where retail reloads it on the back edge; row and seat slots swapped (+0x14/+0x18). Steps: rebuilt form
+// with the cursor unguarded 338/53/31; walking the head itself 279/34/11; declaration orders (12) 220-231. On the 221
+// form, same result: local names in both orders 221/221/221 (slots never move), the seat at function, loop or body
+// scope 221, a while or a declared-out counter 221/221, `continue` for the range, flag, field and actor tests in seven
+// subsets 221, a row copy at the loop or the body top 221/221, flag as byte 221. Worse: count-down `long remaining`
+// 88/51/25 (positional only), `next`-local walks 263/26/22 and 336/66/52, cursor unguarded 340/49/37, helper taking the
+// head 340/49/37, plain-inline helper 432 (1252). Not keepable without a match: without the fresh memset read 356-360
+// (1328) or function-scope squad 373-375 (1308); squad_get at each use everywhere 356-357 (1352); arg_2 test first 337.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
