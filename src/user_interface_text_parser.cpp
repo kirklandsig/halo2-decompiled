@@ -716,6 +716,10 @@ done:
 // AC555: One genuine selector case split from the complementary switch, cases
 // 0/1/9/2/3/4/7/8, 73/70/70/70/70/70/70/70. NOT kept: no equality; early EDI,
 // tag/selector and scratch ownership remain. Original complete parser restored.
+// Y604: Actual copy-object pointer/reference receiver, entry/post-getter binding
+// and repeated/shared completion: 32/32/32/32/54/54/54/54. NOT kept: no equality;
+// direct native receiver ownership retains the early save or scratch-address cache.
+// Original getter, calls and complete body restored.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

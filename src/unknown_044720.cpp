@@ -284,6 +284,9 @@ void function_44720(void)
 // selected material as `NONE` then `if (force || ...)` 136 (486 B); the parts under `if (geometry)` on the
 // current form 107 (same code); level at the call with that if/else selection 137 (485 B); the geometry lookup
 // with one exit and the structure global read per arm 132 (488 B, 0x45560 239). Original body restored.
+// Y608: Actual flags/selection/detail-array field lvalues, seven subsets,
+// 125/107/107/125/125/107/125; complete identities with call-use level 133/486 bytes.
+// NOT kept: no exact frame/geometry graph; original whole body and shared selector restored.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)

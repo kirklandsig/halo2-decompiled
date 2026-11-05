@@ -3743,6 +3743,16 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 90 (m3 lane 9, fast with 0x564c0): the channel parameter `*const` 139 (same code), on the packet-cursor form 164;
 // the relay flag copied into a local before the stride 139 (same code), on the packet-cursor form 164; the packet as a
 // const pointer `&data[consumed]` 139 (same code). Restored.
+// Y603: Independent remaining budget with original signed debits, initializer/separate
+// subtraction and local/entry declaration, indexed/cursor traversal: 175/175/175/175/159/159/159/159.
+// NOT kept: all regress; indexed forms also lose 0x564c0 to 12. Original body restored;
+// channel/member/cursor and route homes remain.
+// Y605: Complete positive header/size/relay-member admission scopes, seven subsets
+// on indexed traversal then all with packet cursor: 163/139/139/163/163/139/163/160.
+// NOT kept: header ownership regresses, other scopes tie; original full body restored.
+// Y607: Current-member char/signed-char/64-bit signed/unsigned result carriers,
+// indexed then independent packet traversal: 168/168/156/156/164/164/156/156. NOT kept:
+// no byte match from non-native result carriers; original whole body and observations restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

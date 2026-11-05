@@ -269,6 +269,12 @@ PRIVATE inline long swizzle_log2(dword value)
 // interleavings preserving the native register/stack banks: eight at 57; both callers exact.
 // NOT kept: output identity does not delay coordinate promotion; original contract, caller
 // declaration/call, helper and full body restored.
+// Y605: On the retained branched-minimum graph, width/other then three-way
+// output completions with long/long, short/long, long/short, short/short x/y: 58/109/128/134/85/143/161/177.
+// NOT kept: all regress; narrow forms lose the caller. Original body and contract restored.
+// Y607: Destructive width/height/both dimension-to-bit-count parameters, private/shared
+// logarithms, then complete early-common/height-first lifetimes: 57/57/57/87/87/87/91/79.
+// NOT kept: no exact native coordinate/count lifetime recovery; original body and interface restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

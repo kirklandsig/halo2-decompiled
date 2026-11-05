@@ -1069,6 +1069,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // all with the existing copier sample reference: eight at 547/2122. NOT kept:
 // native query register, vector/ordinal homes and frame 0x2c are not recovered.
 // Original interfaces, both caller sites, copier and complete body restored.
+// Y602: Coordinate/reduction/minimum scalar lexical identities, then immutable original-site scratch:
+// 547/547/547/547/547/547/547/547.
+// NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
+// Y607: Existing scalar coordinate scratch shared across both searches, x/y/z subsets
+// then all with shared candidate distance: 547/547/547/547/547/547/547/547. NOT kept: shared
+// lifetime forms do not match. Original complete body restored; native frame/query/ordinal/fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

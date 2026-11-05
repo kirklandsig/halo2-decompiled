@@ -660,6 +660,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // AC558: Complete two-step admission/rejection truth in bool/byte/short/long:
 // eight at 333, 1388 bytes (control 286/1389). NOT kept: all regress; original
 // type-2 fallback, metadata stores, long link total and complete body restored.
+// Y605: Complete transition-step pointer/reference, branch-owned/shared admitted metadata,
+// original long then bounded short link total: 375/375/385/385/392/392/391/391.
+// NOT kept: all regress and shorten away from retail; original indexed fields and body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -1165,6 +1168,9 @@ bool function_2715a0(byte *buffer)
 // update 488 (masked lower, retail's four loads), declared before the whole test 488; NONE type test ahead of the
 // penalty 578 (2128), after it 579 (2128); location count and flags read once before the walk 486, count only 486
 // (both same code).
+// Y606: Actual short link discriminator with paired metadata halves/direct depth/shared
+// point producers, masks 0..7: 486/492/481/498/486/492/481/498. NOT kept:
+// five-point leads below eight; half transfers grow extent. Original type/body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

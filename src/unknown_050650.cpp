@@ -1672,6 +1672,14 @@ struct s_actor_looking_turn_request
 // looking_valid declared with valid at the block top 442; the marker workspace at the block top 442; case 0's
 // movement request at the block top 442; the turn request at the turn block's top 442 (all same code). Retail
 // never inlines 0x1fdd90 anywhere (its byte pattern occurs only at 0x1fdd90), so BLOCKED-BY 0x1fdd90 stands.
+// Y606: Real vector arrays, initial plain long/int/short/dword loops 564/564/568/564;
+// CRT copy/move 564/527, components 541, both initial/final 564, final alone 548
+// (fast control 548; full 442). NOT kept: CRT move rolls calls absent from retail
+// and loses the input register; other forms regress or tie. Original type/body restored.
+// Y608: Whole-lifecycle forward/aiming/looking member references, seven subsets,
+// 548/548/540/548/540/540/540 fast; complete set with reference-vector member 526
+// (control 548, full 442). NOT kept: no exact out-of-line predicate/forward-address
+// residence; member-address lifetimes are unproven. Original complete body restored.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

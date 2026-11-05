@@ -257,6 +257,10 @@ static __forceinline long floor_to_long_inline(real value)
 // AC555: Owning combined low-29 payload/section-selector fields, subsets
 // 1/2/4/3/5/6/7, 10 each; all with final kind-field store 79. NOT kept: no
 // equality or gain; original header/body restored; OR/shift/pool schedules remain.
+// Y604: Actual declared record bitfields for initial/geometry/final packed words,
+// seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
+// NOT kept: no equality; the real declaration does not recover native OR/shift/pool
+// scheduling. Original record declaration, packed expressions and body restored.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,

@@ -461,6 +461,14 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // AC555: Allocator status/handle outputs, bool/long and pointer/reference,
 // immediate/completed publication: 147/174/147/174/176/176/176/176. NOT kept:
 // first four lose eight callers; five-point lead is below gate. Original body restored.
+// Y604: Existing allocator returns its record with pointer/reference handle output,
+// either role order and initial/complete handle publication: 177/158/177/158/177/158/177/158.
+// NOT kept: frame grows to twelve; 177 is below the gain floor, while 158 moves the
+// request convention and loses eight matched callers. Original helper/body restored.
+// Y608: Genuine starter input parameter reused as rate-stage output, retained tag
+// mutable/immutable: original/nested admission 160 each; sequential failure 164 each;
+// combined admission 160 each. NOT kept: starter remains outlined; its new input
+// stack home is absent from the retail call graph despite frame four and no caller losses.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

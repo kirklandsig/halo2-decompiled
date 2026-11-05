@@ -1476,6 +1476,9 @@ struct s_133f70;
 // [esp + 0x218]`); order declared long in both declarations 175 (caller `movsx eax`, still passed in EAX,
 // 0x23690 484); header via the existing object_header_get 175; initial level declared first 177; failure
 // count declared after the 0x4bcc0 call 370; a named active-flag pointer for the call and test 175.
+// Y608: Actual compacted source/tag/handle output-slot references, seven subsets,
+// then all with the writable count-slot reference: eight 175s at 1309/1309.
+// NOT kept: no equality; first distance setup and cache/coefficient homes remain.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

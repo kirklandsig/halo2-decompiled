@@ -1988,6 +1988,9 @@ void function_269250(long clump_index, long actor_index);
 // (same code). Re-measured listed forms: in-arm compare 126 (480 bytes); the walk as a for loop with the step in its init
 // and increment 339 (624 bytes), with the in-arm compare 343 (625; round 127 listed the pair as 343/339). Retail hoists the walk's pool field into EBX (reloaded after the bit scan uses EBX
 // as the mask) and keeps the selection memory-only; matched 0x26ae30's retail walk reads the pool each step. All restored.
+// Y607: Complete common merge/removal/transfer continuation, selected/separate destination,
+// existing/creation-first admission and aggregate/CRT center copy: 164/164/168/168/176/176/179/179.
+// NOT kept: no exact native continuation/storage recovery; original full body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

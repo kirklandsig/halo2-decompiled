@@ -500,6 +500,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // AC555: Existing scale-comparison truth, bool/byte/word/long, unequal-scale
 // and unit-equality polarity, 270 each (1001/955 bytes). NOT kept: all regress;
 // original alias-safe helper/body restored; frame and inverse/X/Z homes remain.
+// Y604: Complete rotation followed by actual component translation, output/native
+// rotated storage with indexed for/while, pointer and standard traversal:
+// 237/237/338/347/236/236/690/306. NOT kept: no equality; indexed output reaches
+// native length but loses native allocation. Original alias-safe helper/body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

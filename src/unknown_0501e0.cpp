@@ -382,6 +382,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // memory operands where retail loads them and keeps right.i in XMM7, both depth limits hoisted ahead of the k tests, frame 0x20); on it the depth
 // limits in the condition 289 (1170, masked 150); its products written variable-first 273 (same code); the helper in place on the original offset
 // loops 276 (1111, masked 109), so the in-place transform is what gives the copy-then-scale.
+// Y603: Captured-vector existing in-place vector/particle scale producers with
+// uninitialized weight/segment lifetime subsets: 206/206/206/206/206/206/206/206. NOT kept:
+// all tie; original helper/body restored, frame 0x20 and coefficient/raw-input homes remain.
+// Y605: Caller-owned complete scaled vectors with aggregate/native/shared-setter/CRT defaults,
+// rotation-only existing helper with input pointer then reference: 272/330/274/330/272/330/274/330.
+// NOT kept: all regress and lengthen; original aggregate-scaled helper and full body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
