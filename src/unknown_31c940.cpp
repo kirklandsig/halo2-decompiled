@@ -35,6 +35,23 @@ static __forceinline solver_projection_31c940 sum_three_projection(__m128 const 
 	return solver_projection_31c940(xyz);
 }
 
+// The output view retains the scalar destination across the SSE reduction.
+// Its copy keeps the next projection's input reads after the first store.
+struct solver_projection_output_31c940
+{
+	float *address;
+	__forceinline explicit solver_projection_output_31c940(float &value) : address(&value) {}
+	__forceinline solver_projection_output_31c940(solver_projection_output_31c940 const &other) : address(other.address) {}
+	__forceinline void store(__m128 const &value) const { _mm_store_ss(address, value); }
+};
+
+static __forceinline void sum_three_into_projection(__m128 const &v, solver_projection_output_31c940 out)
+{
+	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+	out.store(xyz);
+}
+
 // Paired projections retain retail's separate loads of A's velocity fields.
 static __forceinline solver_projection_31c940 project_first_linear_velocity(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b, __m128 const &linear_axis)
@@ -261,9 +278,21 @@ static __forceinline float const &load_friction_scale(solver_step_31c940 * const
 static __forceinline __m128 project_first_spin_vector(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
 {
-	__m128 relative = _mm_sub_ps(_mm_load_ps((float const *)&a->linear), b->linear);
-	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(b->angular, row->b));
-	return _mm_add_ps(angular, _mm_mul_ps(relative, row->linear));
+	// Reuse each input vector only after its previous value is consumed.
+	__m128 work_a = _mm_load_ps((float const *)&(b->linear));
+	__m128 work_b = _mm_load_ps((float const *)&(a->linear));
+	__m128 work_c = _mm_load_ps((float const *)&(row->a));
+	__m128 work_d = b->angular;
+	work_a = _mm_sub_ps(work_b, work_a);
+	work_b = _mm_load_ps((float const *)&(a->angular));
+	work_b = _mm_mul_ps(work_b, work_c);
+	work_c = _mm_load_ps((float const *)&(row->linear));
+	work_c = _mm_mul_ps(work_a, work_c);
+	work_a = _mm_load_ps((float const *)&(row->b));
+	work_d = _mm_mul_ps(work_d, work_a);
+	work_a = _mm_add_ps(work_b, work_d);
+	work_a = _mm_add_ps(work_a, work_c);
+	return work_a;
 }
 
 static __forceinline __m128 project_second_spin_vector(solver_linear_row_31e7b0 const *row,
@@ -1027,14 +1056,18 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				__m128 *volatile linear_b_pointer = &body_b->linear;
 				__m128 *angular_b_pointer = &body_b->angular;
 				float spin_mass = spin->a.m128_f32[3], spin_target = spin->b.m128_f32[3];
-				solver_projection_31c940 projected_a = sum_three_projection(project_first_spin_vector(
-					((solver_linear_row_31e7b0 *)terms), a, body_b));
+				solver_scalar_31c940 projected_a;
+				sum_three_into_projection(project_first_spin_vector(
+					((solver_linear_row_31e7b0 *)terms), a, body_b), solver_projection_output_31c940(projected_a.value));
 				solver_projection_31c940 projected_b = sum_three_projection(project_second_spin_vector(
 					((solver_linear_row_31e7b0 *)terms) + 1, a, *linear_b_pointer, *angular_b_pointer));
 				// Round the initial spin before the coupled tangential calculation.
 				volatile float initial_spin = (spin_target * load_friction_scale(step) - project_spin_angular_velocity(spin, a, *angular_b_pointer) * load_velocity_scale(step)) * spin_mass;
-				float error_a = ((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3] * load_friction_scale(step) - projected_a.value * load_velocity_scale(step);
-				float error_b = ((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] * load_friction_scale(step) - projected_b.value * load_velocity_scale(step);
+				// Observe each target before multiplying by the current step scale.
+				float captured_target_a = (float const volatile &)((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3];
+				float error_a = captured_target_a * load_friction_scale(step) - projected_a.value * load_velocity_scale(step);
+				float captured_target_b = (float const volatile &)((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
+				float error_b = captured_target_b * load_friction_scale(step) - projected_b.value * load_velocity_scale(step);
 				float impulse_a = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3] * error_a + error_b * operation_float(op, 8);
 				float impulse_b = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3] * error_b + error_a * operation_float(op, 8);
 				// Reload after the tangential impulses to retain spin-squared first
