@@ -329,6 +329,12 @@ struct s_z_state_world
 // 11 (same code); the inactive record as an early return of the result 30 (137 bytes). Compile-only, every one of 17
 // forms keeps the database in ECX (pointer reuse of one world variable, a database local, an entity index, record
 // reference, active local, object local, char/byte/bitfield active byte, unsigned type and identifier).
+// Round 136 (compile-only through a thiscall copy that pins the index in ECX; it builds our head exactly, database in
+// ECX): forceinline entity, object and state-test getters, singly and all three 11-equivalent (database ECX); a header
+// pointer, an entity index, an `(identifier + 0)` index, a late result default, a definition local, the definitions
+// before the type: database ECX; the record by pointer addition with the byte from the array (either order), a bool
+// active from the array: `add eax, ecx` and the offsets folded (14-equivalent); the world local with the index pinned in
+// ECX: database still ECX (so the LTCG world local's ECX is the database's own preference, not the index's).
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {

@@ -46,6 +46,10 @@ public:
 // constructor, none volatile: the zero stores vanish (frame 8); `do {} while (false);` before the reader, between its store
 // and rdtsc, before or after the start read, before the call, the reader or start declared then assigned, a const key
 // pointer: head unchanged, 4; the intrinsic tried is not one this toolchain has (an unresolved call).
+// Round 136 (compile-only, which builds this head exactly): the reader's local as a volatile dword pair zeroed
+// `{0, 0}` 4; as a volatile two-dword struct 25 (the stores vanish, 64 instructions); a const start 4; a const
+// receiver pointer local 4; the key fields unqualified 4. BLOCKED-BY 0x80e13 (the shared reader in unknown_080e10.h): the
+// same low-half hoist above the last push is in 0x199740, 0x6a8a0 and 0x12d400.
 // @retail 0x18f260
 long c_resource_lock::method0(long handle)
 {
