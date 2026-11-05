@@ -1852,6 +1852,8 @@ bool function_0b6760(s_index_pair const *pair);
 // before the device, or read after the device header 248/248/248; one bool for the result and the direction 248
 // (same code); byte/char result 243/243 (1482). A volatile result (diagnostic, reverted at once) reaches retail's
 // 1495 bytes, 231: the stack byte is most of the length gap; it crosses no call on any path.
+// J259: Activity from manual/group power and position tests, separate/paired/all with logical/bitwise joins: 396/417/404/329/359/380/470/424.
+// NOT kept: no eligible native repair; opening executable source restored. Native index/header and result residency remain; group-result forms grow the frame to 0x24.
 // @retail 0x106790
 bool __stdcall function_106790(long device_index)
 {

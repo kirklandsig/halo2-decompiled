@@ -493,6 +493,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P345: Actual advancing output cursor retaining the independent pass bound/eager length,
 // long/short pass, long/bool departure and memcpy/memmove: 251/267/251/276/299/258/253/266.
 // NOT kept: no byte match; original complete body restored; extra frame word remains.
+// B451: Actual output cursor supplies produced length from its difference to
+// indices, plain for/while, long/bool departure and memcpy/memmove: 266/271/250/275/266/271/250/275.
+// NOT kept: no eligible exact count/storage graph. Original full body restored;
+// extra frame word and count/departure/compaction homes remain.
 // T58: Whole-scan current-point pointer/reference, indexed/advancing candidate, original/overlap CRT:
 // 228/228/259/259/222/222/249/249. NOT kept: no eligible match or gain; complete original source restored.
 // Extra frame word, produced-length/departure homes and compaction remain.
@@ -882,6 +886,8 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B424: Standard min/max interpolation clamp, nested lower/upper, sequential lower/upper,
 // named lower/upper and single standard lower/upper boundary: 357/357/371/372/371/372/376/383.
 // NOT kept: no exact match; original fraction clamp, include set and complete body restored.
+// B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
+// 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
 // Round 62 (m3 lane 14, fast; each with the `if (count > 0)` guard, match-only, restored): if/else fraction and the
 // previous side folded into its initializer 93 (889 bytes, aligned 36); if/else with the fraction declared at function
 // scope `= 0.f` 151 (887; zero set first but in XMM3); if/else, folded side, dx at its uses 154 (887, aligned 33, zero
@@ -898,6 +904,8 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
 // 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
 // MiniMax A (11-05): retail reads the count argument as a dword and narrows it (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word (`movsx edi, word ptr [ebp + 8]`), so the parameter type, not the body, keeps the rest of the function out of step; no lower score.
+// F396: Complete scalar coordinate-pair equality input, real/double epsilon, bool/byte result, forced/ordinary inline: 129/129/244/244/129/129/244/244.
+// NOT kept: no byte equality; count ECX, prior-side byte and SIMD homes remain. Original complete body and helpers restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

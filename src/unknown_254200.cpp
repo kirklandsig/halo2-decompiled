@@ -135,6 +135,7 @@ void function_254200(void)
 
 #undef program_words_254200
 
+// MiniMax C (11-05): no new form, no lower score; the only difference left is the order of the two loads after the buffer reservation in the second and third vertex records, where retail loads the 16777215 constant before it reloads the spilled y+h and we reload first; the permuter tried 173 forms in 1803 s and none beat 4.
 // MiniMax G (11-04): the point's x and y taken through parallel pointers 341 (the point copy is
 // retail's shape); the permuter did not reach a variant on this loaded machine, so it was stopped:
 // no lower score.

@@ -2000,6 +2000,10 @@ void function_27dd10(void)
 // weight, interpolate_real, no scale local) 2 each, so arms folded away do not count; saved frame state as dword or long, fraction
 // first 2, next index first 6; apply index named in both arms 2; counters pre-incremented or += 1 2; the group end with the compare reversed 8;
 // a named table pointer for the outputs 2.
+// Round 67 (m3 lane 14, fast; 0x281b60 moves with it): in function_288572 the inner bound as an if-clamp
+// after `arg_5 + 8` 208 (0x281b60 241, 0x288570 401), as `local_3 = arg_7; if (arg_5 + 8 < local_3) ...` 5
+// (`jge` for retail's `jg`, the reload pair unchanged; 0x281b60 64); the outer for as a while 2; the
+// output selection as if/else 2; in function_288573 the blend-1 rotation weight named 2.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

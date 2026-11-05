@@ -1593,6 +1593,12 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // Harness (exact): that statement at the found arm's top, the not-found top, the join or both arm ends 2 each; a named offset 2; found
 // stores in either other order 2/2; named datum 2; named bound 2; two sequential index tests 2; datum NONE stored first 114; both
 // not-found stores first 111; `local_2 == NONE` first 80; pointer from a ternary then tested 86.
+// Round 74 (m3 lane 10, full and fast checks, exact one-file harness): the reload placement is decided by the shared search's loop shape, not by this body. The search in
+// include/data_array.h as `if (index >= 0 && index < high) do { ...; index++; } while (index < high)`, also with `while (++index < high)`, two nested ifs or early returns, 0 here
+// and 0 on 0x1c8700 (its body untouched), but 0x294050 MATCH -> 62 (817 bytes; both field_20 products load the field first); about 100 forms on 0x294050 did not bring it back and a 600 s permuter
+// run stopped at 25 with a value-changing `word` read. Not kept: a hand-inverted loop that costs a match; the question is with the coordinator. The same guard on for or while 2; for with `continue` and `do { if
+// (index >= high) break; ... } while (true)` keep 0x294050 and leave this at 2; a local for the high-water count 2 (0x1c8700 136); bitmap/mask/word locals change nothing. Out-of-line
+// 0x16bc00 matches under for and do alike, so it doesn't discriminate. In the squad step: the iterator helper with a do search 101 (368 bytes), same with for.
 // @retail 0x204b20
 long function_204b20(long actor_index, short mode)
 {

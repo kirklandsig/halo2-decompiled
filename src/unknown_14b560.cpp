@@ -1110,6 +1110,10 @@ bool function_14ed80(void)
 // Round 94 (fast): the representation index read once into a `char` local 48; the clamp's count read from the global
 // 53; NONE defaults in an else arm of the bound test 61 (152 bytes); the upper clamp as a ternary 19 (166 bytes); an
 // appearance pointer for both reads 13 (167 bytes); index initialised from the byte before the sign test 52.
+// Round 85 (fast): NONE assigned in an else arm instead of at the declarations 61 (152 bytes), the same without
+// the representation local 60 (153 bytes); the fields read through the globals without the representation local
+// 10 (the dead `add` stays); the representation index read into a char local 51, with the player getter folded
+// into it 48. Retail's 0x14f0f0/0x14f2e0 calls set up EBX then EAX after the push: the declared order already.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -1431,6 +1435,8 @@ static inline s_players_globals *players_globals_14f2e0()
 // short/long/const-short/const-long, without/with complete timers: 46/87/46/87/86/98/86/98.
 // NOT kept: no equality; original observations, timer stores and complete body restored.
 // NONE materialization and tail zero/flag scheduling remain.
+// P349: Complete representation/spawn/player/global same-size lexical home orders:
+// 46/46/46/46/46/46/46/46. NOT kept: no byte equality; original executable source restored.
 // AC548: Separate retained/spawned handles, mutable/immutable and entry/phase declaration, then complete timer clear
 // 46/46/46/46/43/43/43/43. NOT kept: no qualifying supported gain or byte match.
 // Native NONE producer and timer/flag schedule remain. Original complete body restored.
@@ -1742,6 +1748,11 @@ struct s_unit_player_assignment
 // lookup 28; the old unit pointer re-derived for its second lookup 17; the control-set and 0x1682bf unit arguments read back
 // from the player 16 (449 bytes, registers unchanged); the representation declared before the control call 17. A dummy load
 // before 0xcbf60, or the notification made unconditional, moves only its own block's temporary: separate ties per block.
+// Round 85 (fast; all callees match): retail avoids ECX for the first load after the 0xb58c0, 0x1872d0 and engine
+// reads where ours takes it. Callee parameter orders (definition, declarations, every call): 0x1872d0 swapped 17
+// (0x14cdd0, 0x185b00 worse); 0x1682bf's five other orders 17/17/18/18/18 (its matched callers lose); this
+// function's own parameters swapped 17 (retail's callers push the player then set EBX, which fits either order);
+// a named engine pointer for the final test 17; the existing function_a7a30 for the old unit's notification 17.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {

@@ -413,6 +413,8 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // code); a pointer to the three sample factors 336 (same code); height accumulated first 336 (aligned 116 -> 144); colour
 // last 335 (1874 bytes, aligned 236); red, height, green, blue, weight, intensity, distance 332 fast at retail's 1892
 // bytes, plain 342. Original helper order restored.
+// P349: Complete six-formal lexical home orders at all six accumulation expansions:
+// 336/336/336/336/336/336/336/336 (fast control 336; full 295). NOT kept: no byte equality; original executable source restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
