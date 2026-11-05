@@ -474,6 +474,14 @@ void __stdcall function_1160c0(real dt)
 // DH354: Complete outer fixed/timestep admission result in bool/char/signed-char/
 // byte/short/word/int/long: 171/171/171/171/171/171/171/171. NOT kept: no exact admission residence;
 // direct guard/body restored; segment EDX and scalar/axis/previous/rest-offset homes remain.
+// Round 63 (m3 lane 14, fast): axis rows as statements in the orders ikj/jik/jki/kij/kji 183/174/186/183/186 (ijk 171);
+// length_sq3f for the axis length 171, dot3f for the projection, either argument order, 171/171, both 171, length_sq3f
+// for the segment scale 171, all 171 (same code); the tail blocks (prediction P, velocity V, node position N, previous
+// R) ordered PVRN 171, PRVN 184, VPNR 208, VPRN 208, VNPR 207, VNRP 207, VRPN 205, VRNP 207, RPVN 183, RVPN 205, RVNP 207.
+// Slot use in the listing shows the homes follow the registers: retail reads the offset's k four times from memory where
+// ours keeps it in xmm1, so offset (8 uses) ranks below previous (7) in retail and above it in ours; retail's axis has 20
+// uses where ours has 23, which puts it above the length and segment slots. Retail also leaves the prediction's z store in
+// xmm5 to the end of the block in every order tried above.
 // AC540: Complete axial projection term staging, six producer orders, then direct/staged dot accumulators:
 // 171/171/171/171/171/171/171/171. NOT kept: unmatched product residence; segment/axis/previous/rest-offset
 // homes remain.
@@ -498,6 +506,14 @@ void __stdcall function_1160c0(real dt)
 // N376: Separate raw/normalized rotation axes with complete scalar setters and staged-cross
 // producers, eight forms 308/307/291/303/291/303/239/263. NOT kept: no exact match; original
 // axis storage, body and homes restored. Segment EDX and mirrored vector/scalar homes remain.
+// Round 130 (m3 lane 7, fast; 0x116750 and 0x73360 kept matching): the rotation through a local helper writing an
+// output, then `+= position`, 165, with the cross terms named in 0x170d70's order 163 (aligned 132 -> 123; one-caller
+// helper, match-only); position added inside the helper 171; the angle passed in 218/224; in place on the offset 235.
+// Named cross terms in the body, four statement orders, 171 (same code). Axis through cross3f or cross3f_staged, crossed
+// with normalize3d and the helper, 18 forms 163-196. `segment = definition->segments; segment += index` 281 (aligned 115):
+// the segment then takes EDX and every later scratch register is retail's, but the load sits ahead of the ternary. With
+// the index computed first (long, block helper, byte offset, reference, const, bound element) 171 (same code), short
+// index 290 (1356); stiffness read first 270; stiffness through the element 279; segment before node 279.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

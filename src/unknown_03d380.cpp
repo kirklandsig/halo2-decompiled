@@ -314,6 +314,9 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax lane G (11-04): no new form, no lower score; two separate type cases give retail's chain
+// (je to the special arm, jne to the kind arm) with 0x221810 out of line, but the pool pointer moves
+// to edi and the score is 83; the named `||` gives the same chain and the a/b slots but inlines 0x221810.
 // MiniMax H (11-04): no new form, no lower score; retail multiplies the element index in eax and lea's the address, ours multiplies in esi, and 0x221810 stays out of line.
 // MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
 // byte is read, and the special, remove, ordinary and keep blocks stay in our order.
