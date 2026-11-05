@@ -146,6 +146,14 @@ static inline long bungienet_user_voice_setting(short kind)
 // Round 114: direct kind as the selector argument 5; register kind/request 4/4; pointer/reference request aliases 4/4
 // (NOT kept: aliases require a match); request-taking selector with the index before/after it 5/23;
 // request-member selector with a kind local/direct kind 4/5. Original helper and body restored.
+// Round 75 (lane 1, fast): an `__assume` on the kind keeps its word load in a register without the
+// volatile read: plain read with `__assume(kind == 1)` in the kind arm 4 (same code; not kept, it is always true where
+// it stands and only holds the value in a register), `__assume(kind >= 0)` after the read, the index or the setting,
+// or in the helper 4 each, two and three assumes 4/4. The pair stays EAX/CX; retail ranks the kind above the request.
+// A 600 s permuter run on the plain-read form: 48 tries, none below 4. With the assume or the volatile read: `__assume(request != NULL)`
+// 4 (plain 32), the index first 5, const reference or pointer local for the kind 4/4, const reference for the index
+// 4, getter helper 4/4, the request read once through its own address 4/4. `setting = kind` on both failing arms 4,
+// a byte-width second test of the kind 33 (103 bytes).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

@@ -428,6 +428,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // steering products 1425 (6211 B) [983]; the add helper written `a = b + a` (retail loads the added vector first) 1355
 // (same code), with the k/j/i cross 1426 (6238 B, round 79's code) [984]. Retail keeps the first loop's cross stores and
 // re-reads j and k for the add (only i is forwarded); ours drops the cross stores and sums in registers.
+// M3 lane 12 r93 (fast; 0x2056e0 matches): the first loop's element position through a named point pointer (also
+// for the ray origin) 1385 (6195 bytes); its offset through the existing vector3d_from_points3d 1407 (6259 bytes); the
+// magnitude summed i, j, k 1355 (same code); the magnitude from three named component locals 1608 (6022 bytes, as the
+// pointer-read form); the snapshot declared const 1355 (same code). The frame excess is the snapshot copy (ours stores
+// each component, copies it to the snapshot and loads x87 from there; retail loads x87 from the first store).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

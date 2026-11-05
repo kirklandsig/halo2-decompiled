@@ -268,6 +268,16 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Round 150 (m3 lane 5, fast; m = masked aligned, control m88): retail's flow with scalar products as const refs, complement plain or const ref, all plain scalars 469 (1736) m83,
 // 505 (1708) m79, 505 (1708) m79; kept helper with ij, ik, jk, all three as const refs 495, 495, 495, 491 (1716-1720); retail's statement order on the kept vector locals, plain 357
 // (1820) m68, const refs 409 (1780) m83.
+// AC553: Complete native diagonal-result/cosine-product vectors, initialized,
+// readonly, shared-setter or field-produced: 373/373/411/373/398/398/406/398. NOT kept:
+// grouped outputs do not match; original helper and complete body restored.
+// DL269: Native real/double sine-cosine API pairs: 491/491/204/204/204/219/495/495.
+// The 204 forms have 196 executable differences versus 198; thirteen more points are
+// table/padding rows. NOT kept: cast-only and coupled API steering; original producers restored.
+// DL271: Existing vector scaler on native diagonal complements, direct/shared setter
+// and in-place/distinct product outputs: 455/455/436/436; shared complete sums
+// 441/441/385/385. NOT kept: no equality; native frame/product spills not recovered.
+// Original producer, all output stores and complete body restored.
 // Round 89 (fast; a = aligned, kept form 214): retail's first-arm statement order with k*complement as a const reference 392 (1792) a221, as a plain local 394 (1792) a165; the kept order with
 // k*complement as a const reference 366 (1824) a194, the complement as one 409 (1796) a342, the squares as const references 445 (1768) a278.
 // @retail 0x224fd0

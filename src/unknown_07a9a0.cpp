@@ -1252,6 +1252,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // every form, so retail's frequency there comes from something else. The top lookup through a one-line inline wrapper, inline or forced,
 // with a result local: 766 (no effect); `__assume(session != NULL)` first 766; the lookup after the capacity 942 (2732 bytes). The written-out
 // loop passes `lower` to 0x1931a0 where retail passes `highest` (ECX still holds it at the call); passing `highest` 820 (2836 bytes).
+// M3 lane 12 r93 (fast; 0x73530 8 throughout): the capacity switch with grouped case labels (1-2 height, 3-5 product)
+// 876 (2852 bytes: the switch now inlines as retail's jump table, but the top 0x192e60 call still inlines); that with
+// the loop's variant through 0x192e60 864 (2804 bytes: the loop call stays out of line, the top one inlines, the
+// reverse of retail); that with the player value through 0x63220 1067 (2556 bytes, 0x63220 still out of line); the
+// team-count switch grouped alone 940 (2704 bytes); the capacity helper with external `inline` linkage 840 (2828
+// bytes). Our link inlines the first 0x192e60 call site in source order and keeps 0x63220 out of line.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

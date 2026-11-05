@@ -184,6 +184,12 @@ extern long g_55c154;
 // result direct/named 178/178, short-circuit result direct/named 110/110; complete
 // exit with conditional/short-circuit load 178/110. NOT kept: no gain; load-result
 // graphs lose the biased frame. Classification spill and copy expansion remain.
+// DH384: byte-array record publication, first/creation/both: memmove 139/143/157,
+// memcpy 61/61/61; bounded loaded-name memcpy/memmove input 99/104. NOT kept:
+// no gain; name snapshots lose the biased frame, even at retail length.
+// Round 394: actual selected/saved/source-index eight-byte homes 177/74/61;
+// selected+saved/selected+source/saved+source/all 182/187/104/193; all unsigned 193.
+// Original narrow values and complete body restored; classification spill/copy expansion remain.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

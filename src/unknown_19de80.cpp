@@ -545,6 +545,13 @@ static inline bool teams_enabled_19e1c0()
 // `result = remaining` on the volatile result 431 (1398 B, the round 181 code); a named player pointer for the local
 // team's score case 390 (same code). Retail's local team read is `add eax, edx; mov al, [eax + 0xc0]` where ours folds
 // the sum.
+// M3 lane 12 r93 (fast): the twelve compares through an inline predicate taking `token` by const reference 390
+// (identical: the reference folds, token stays in EDI), with the plain result 691 (identical to the plain result);
+// the volatile result declared bare and set by a statement 390; plain result with both event teams read at each use
+// and every copy clamp as `remaining <= result` 661 (listed combination re-measured); the teams test returned as one
+// conjunction (no bool local) 454 (1394 bytes; listed as the conjunction, re-measured).
+// Every format failure as `result = result < 0 ? remaining : result;` 514 (1524 bytes); the opponent score's
+// number/time arms swapped (`mode < 3 || mode > 4 && mode != 8` takes the number format) 390 (same code).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

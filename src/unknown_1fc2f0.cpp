@@ -200,6 +200,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax D (run 46): the rate chains j, i, k with the tick products and the deltas interleaved
+// i, j, k 73 (chains, stores, deltas and the k, j, i sum are then retail's, but the tick products
+// run i, j and the tick stays in XMM4); the products grouped 77; the conversion after the chains 73
+// (XMM3 as retail, but the chains run k, j, i and the products copy the tick register); the velocity
+// copied before the subtractions 34; the deltas i, j, k 79.
 // score 32 (was 32): Frame 0x10 and prediction prefix agree; first +0x59 converts ticks
 // into XMM4 rather than XMM3. Velocity/delta scheduling and correction products/adds remain.
 // Earlier: the limit test is written the other way round, so the comparison matches
@@ -562,6 +567,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // references give the copied tick product). Prediction through a pointer helper with rows j,i,k or i,j,k, then scaled_difference3f with `(real)ticks`, deltas i,j,k or j,i,k: 61 81 79 32 (366, in-place tick products);
 // j,i,k helper + i,j,k deltas swaps XMM0/XMM1 (loads follow the helper's rows). Length as dot3f, k-j-i, j-k-i, accumulated k first, accumulated j first: 79 79 79 79 55 on i,j,k, 61 61 61 61 82 on j,i,k.
 // Retail loads i, j, k into XMM0-2 but prints the j chain first with stores and deltas i, j, k; nothing here separates the chain order from the delta order.
+// Round 137 (m3 lane 8, fast): rate chains and tick products j, i, k with deltas i, j, k and the squared length written
+// `k*k + j*j + i*i`, conversion at the top 77, after the chains 72 (369 bytes); the round 46 prediction (vector3f_add_scaled,
+// then scaled_difference3f with `(real)ticks`) with deltas i, j, k and that written-out length 79 (first +0x2f), with deltas
+// k, i, j 30 and j, i, k 32 (both the same code as length_sq3f): MSVC orders the summed squares by the deltas' definition
+// order whatever the expression's order, so retail's (k + j) + i sum implies deltas defined i, j, k.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

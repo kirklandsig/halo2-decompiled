@@ -722,6 +722,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // between two stack solutions the right operand's query runs first (`a < b` queries b, `b > a` queries a), but a query
 // whose `this` is a register pointer (the reference, or `best` itself) runs before one on a stack address whatever the
 // side; count_spread's body left out of the unit, const-reference helper parameters and operand order do not change that.
+// Round 91 (m3 lane 9, fast): the reference spreads written `(improved ? best.count_spread() :
+// current.count_spread())` at both uses 128 (546 bytes; the arm calls are not merged), that with the costs too
+// 150 (566 bytes); the party pointers as `s_balance_party const &` 67 (same code); the reference defaulting to
+// `&best` with `if (!improved) reference = &current;` 117 (540 bytes); `improved` read into a `bool const`
+// after the swaps 67; cost() summing two named queries 67. The candidate's count_spread still runs second.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -1119,6 +1124,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // forced inline consuming total 34/34, returning computed total 71/71; ordinary
 // inline 144/144/143/143. NOT kept: no exact match; ordinary providers stay called.
 // Original complete body restored; frame/count/fill-value and clamp roles remain.
+// Round 91 (m3 lane 9, fast with 0x91e30): open slots from `team_count * maximum_team_size - (player_count +
+// extra_count)` with the total declared after 71; that with the fill bound and the call written `player_count +
+// extra_count` (no total local) 74; the copy through a `long const *` to the element 34 (same code); the tail as
+// `imbalance -= open_slots; if (imbalance < 0) imbalance = 0;` 46; the fill under `if (extra_count > 0)` 74 (198
+// bytes); a `long const` of the index plus one named for the maximum and the copy 87 (169 bytes).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

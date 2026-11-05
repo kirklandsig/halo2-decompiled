@@ -320,6 +320,11 @@ struct s_visibility_bound_record
 // query declared ahead of the lists 407; the starts in retail's order with the tag table read once at the top 454 (1728 B)
 // [263]; with `!(capacity & 0x80000000)` release tests 482 (1776 B: the release block and the init's `mov esi, ecx`
 // copies become retail's, but the plane loop's registers turn over) [264]; that plus the table local 462 (1792 B) [277].
+// M3 lane 12 r93 (fast, 0x44720/0x458d0/0x45a80 match, 0x45560 182): the entry as `g_4ba138 + entry_index` 406
+// (same code); the tag test's arms swapped (NONE arm first) 450 (1748 bytes); the geometry query count named and
+// used for both tests 406; the tag in a named local for the test and the definition 406; the bottom arm's object
+// index read before its tag 406. Retail's bottom arm reads the tag again, then the visibility word pointer, with
+// the table still in ESI from entry.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

@@ -737,6 +737,21 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // the load comes first, so pathfinding arrives in EDX where retail has EAX (retail's load follows `mov ebx, eax`). Without case 5's position first 287 (masked 33), with `*= -1.f` or the old negation 290 (35);
 // corners d, c, b, a 354, c, d, a, b 355, a, b, d, c 304. On the lead: a copy of actor_index after the surface or result 297, the surface after the result 289, origin after projected 289, the
 // first three parameters declared in five other orders, with the call changed, 289 each (no effect on the arrival registers), on the old corners 278. Left on the lead: pathfinding's arrival, first.j/first.k, 1.0/radius*2 colours.
+// Y603: Complete root-vertex table values/field references at dispatch/case scope,
+// original/shared negation: 230/219/219/219/230/219/219/219. NOT kept: no equality or gain;
+// original body restored, early root/actor ingress and projection schedule remain.
+// DH377: Read-only root/state and actual mutable-entry contracts, seven coordinated subsets
+// 219/219/220/219/220/220/220; complete contracts with a const surface receiver 220.
+// NOT kept: no equality or gain; both original declarations, entry alias and body restored.
+// Native early root/actor ownership and paired projection/limit scheduling remain.
+// DH380: Original five-test corner admission partitioned at four boundaries, positive nested then
+// rejecting-prefix returns: 219/219/219/219/219/219/219/219. NOT kept: no native ingress recovery;
+// original complete geometry, tests, result, helpers and body restored.
+// N395: Actual actor/surface/parent index eight-byte homes, signed/unsigned individually
+// 371/371/219/219/370/370; complete signed/unsigned 398/398. NOT kept: native values are narrow,
+// ingress is not recovered, and wider actor/parent homes grow the frame/extent. Original body restored.
+// N397: Current retained-graph corner orders acbd/acdb/adbc/adcb/bcad/bcda/bdac/bdca 357/355/357/353/356/354/356/353.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

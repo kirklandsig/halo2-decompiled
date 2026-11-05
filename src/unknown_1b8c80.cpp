@@ -257,6 +257,10 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // Round 34 (lane 17, fast): occupant declared at the loop top 3; team compare written actor-first 4;
 // occupant test as `== NONE` with the team arm in the else 49; last_object_index stored before the
 // object test 8; result declared after the count 52 (366 bytes). Restored.
+// Round 169 (lane 4, fast): occupant renamed 3; `continue` closing the occupant arm with the reservation
+// test unnested 3; the reservation result in a named bool 3; `continue` when reserved, c8200 test after 3;
+// the bit11 skip as `continue` (a repeat) 3; the loop as `while` with the increment at its end 3; a 600 s
+// fast annealing permuter run: 25 tries, its reduced image scores the original 112, none below 3. Restored.
 // Round 85 (fast, 0xc8200 matched): 0xc8200's parameter orders again, at its definition, declaration and
 // all five calls: (unit, seat, object) 3 (0x11ade0, 0x1b8eb0 lost), (object, unit, seat) 2 (0x11b0c0 lost;
 // the unit load then moves ahead of the object load), (object, seat, unit) 3 (0x11b0c0 lost), (seat, unit, object) 4,
@@ -632,6 +636,12 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 34 (lane 17, fast): an early return for a busy actor with the barrier 14 (209 bytes); the
 // state declared inside the NONE block 6; the flags block's stores 0x41c first 6; flags read into a
 // byte before the barrier 38; the busy field in a named long 6. Without the barrier (re-measured) 44.
+// Round 169 (lane 4, fast): without the barrier the only change is the 0x26c test loaded into ECX ahead of the
+// add (208 bytes), so the slot load is the one cause. The flags test inverted with its arms swapped 38; the slot
+// read through its address, then the barrier, then the actor 44; the flags through a seat-selection pointer at
+// slot+0x1c formed at the top (0x1ba5c0's view), no barrier, 44; the 0x86 arm with its own final store and
+// return 14; the 0x86 test inverted (`< 7` arm first) 22; a 600 s fast annealing permuter run (its reduced image
+// scores the original 6): 53 tries, none below 6.
 // Round 85 (fast; a compile-only screen reproduces this function exactly): slot used in both successors of the
 // NONE test (diagnostic, an extra store in an else) 52 (240 bytes), the load is still not hoisted, unlike
 // 0x1b22e0 where the use sits in a join block; the existing seat-selection view for the flags test 6; the point
