@@ -42,6 +42,7 @@ extern byte g_4670bc;
 extern long g_4858b8;
 extern dword g_4b8448, g_4b8308, g_4b82e0, g_4b8438, g_4b8450;
 extern dword g_4b82fc, g_4b843c, g_4b82e8, g_4b82ec, g_4b82f4;
+extern dword g_4b81fc[];
 struct s_render_reset_state;
 void function_16b10(s_render_reset_state *state);
 bool function_14480(long tag, short stage, short index);
@@ -2302,6 +2303,7 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // last push either, and the stipple block's order lies inside the XDK macro.
 // MiniMax D (11-01): no new form, no lower score.
 // MiniMax A (11-03): no new form, no lower score.
+// MiniMax G (11-04): no new form, no lower score.
 // score 4 (was 4): the subtraction of the stream count must come before the last push of the
 // sorter call, and the add of the stipple stride must follow the second rep movsd of the
 // inlined device call.
@@ -2423,6 +2425,21 @@ DWORD const g_43fdc0[5] = {1, 2, 5, 8, 6};
 bool g_47fe85 = true;
 typedef void (__stdcall *t_4b220_fill)(void *, long, void *);
 
+// MiniMax G (11-04): score 8 (was 8): retail's callee takes the count in ecx and reads the zero
+// it is given at [esp + 4] before it saves ebx, ours takes the count in eax and reads the same
+// argument at [esp + 8]; the only form that puts the zero back on the stack (its address taken)
+// moves the count to eax as well, and the form that moves the count into ecx passes the zero in
+// a register and costs this function its score. Later in the round: the early-return shape gives
+// retail's length but puts the exit block first, a copy of the mode in a local and a volatile
+// pointer to it leave the body as it is, and declaring the function __fastcall changes nothing,
+// since LTCG gives the count eax either way.
+// Later still: retail's callee never reads eax, so the eax slot is spent on an argument its body
+// does not use and the count sits in ecx; retail's source therefore has a parameter before the
+// count that LTCG does not promote, and none of the forms here reproduce that: a mode declared
+// as a pointer (a change to the declaration, which this lane may not make) lowers 0x35b00 to 1
+// but still passes the mode in eax, a volatile mode moves the count into ecx but drops this
+// function to 57, and mentioning the mode directly while its address is taken keeps the mode on
+// the stack but leaves the count in eax.
 // @retail 0x4b220
 long function_4b220(long count, long mode, long primitive, long stride, t_4b220_fill fill, void *context)
 {
@@ -2662,6 +2679,11 @@ struct s_queued_material_payload
 // MiniMax D (11-01): no new form, no lower score; the declaration of 0x4b220 may not grow a
 // seventh parameter to give its count retail's register home.
 // MiniMax A (11-03): no new form, no lower score.
+// MiniMax G (11-04): no new form, no lower score; retail's 0x4b220 takes the count in ecx and
+// reads the zero it is given at [esp + 4], ours takes the count in eax; the callee is in this
+// file, but the form that moves the count into ecx also moves the zero into a register and
+// costs the callee its score; declaring the mode as a pointer lowers this function to 1 (the
+// caller then differs only in xor eax, eax against push 0), but that changes the declaration.
 // score 2 (was 2): the count of the payload is handed to 0x4b220 in eax, retail hands it over
 // in ecx.
 // @retail 0x35b00
@@ -3195,6 +3217,7 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // src/unknown_0158f0.cpp, which this lane may not edit.
 // MiniMax D (11-01): no new form, no lower score.
 // MiniMax A (11-03): no new form, no lower score.
+// MiniMax G (11-04): no new form, no lower score.
 // score 2 (was 2): the setup of the call to 0x15a60 zeroes ecx before it loads 9 into eax,
 // retail loads 9 first. The callee lives in src/unknown_0158f0.cpp and is itself unmatched,
 // and its parameter home decides the order of this setup.
@@ -4910,6 +4933,7 @@ void function_1bd50(void *state);
 // MiniMax D (11-01): the fallback as a word cast, as a ternary and as a word local all score 15
 // or worse; our load stays a movzx where retail widens the word with an xor.
 // MiniMax A (11-03): no new form, no lower score.
+// MiniMax G (11-04): no new form, no lower score.
 // score 13 (was 15): the fallback index is masked rather than narrowed to a word, so the load
 // is a dword and the mask; retail loads the word directly and keeps the element argument's
 // push before the branch.
@@ -6321,6 +6345,10 @@ struct s_2e3f0_record;
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record);
 void function_46ea0(long tag, point3f const *position);
 
+// matches: the ZENABLE shadow is written through the render-state table,
+// g_4b81fc[D3DRS_ZENABLE], which is the word retail keeps at 0x4b8438, so the
+// store stays where retail puts it, ahead of the device's push-buffer space
+// check, and the inlined SetRenderState keeps retail's own order.
 // MiniMax H (11-04): no new form, no lower score; the remaining difference would need the shadow global written through a cast of its own address.
 // Tried (MiniMax S run 10): writing the g_4b8438 store through an unsigned int lvalue
 // (*(unsigned int *)&g_4b8438 = 0) scores 73 against 76; not kept (a cast of the global's address).
@@ -6350,7 +6378,7 @@ void function_2df00()
     g_4b82f8 = 1; D3DDevice_SetRenderState(D3DRS_DESTBLEND, 1);
     g_4b8324 = 0x8006; D3DDevice_SetRenderState(D3DRS_BLENDOP, 0x8006);
     g_4b82ec = 0; D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
-    g_4b8438 = 0; D3DDevice_SetRenderState(D3DRS_ZENABLE, 0);
+    g_4b81fc[D3DRS_ZENABLE] = 0; D3DDevice_SetRenderState(D3DRS_ZENABLE, 0);
     g_4b82e0 = 0x203; D3DDevice_SetRenderState(D3DRS_ZFUNC, 0x203);
     g_4b82fc = 0; D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, 0);
     g_4b8450 = 0; D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
