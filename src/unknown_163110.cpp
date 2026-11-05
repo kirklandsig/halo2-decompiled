@@ -863,6 +863,15 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // as `near_sum < k ? k : near_sum` 115 (same code), as `near_sum > k ? near_sum : k` 117. Re-measured listed forms: plane
 // 0's d as j, k, i 133, normal-first 115, `i + (k + j)` 145, through dot3f either order 278 (1867 bytes); the normal copied
 // component by component 460 (1819 bytes, as through vector3f_assign).
+// AC552: Existing shared point transform output return/explicit inline/once-observed scale,
+// subsets 1/2/4/3/5/6/7, then forced expansion: 115/115/243/115/243/243/243/115.
+// NOT kept: no gain; every scale observation also raises the other user 0 to 94. Original helper/body restored.
+// AC556: Copied near/far normal components in native scalar consumers, mutable/const
+// and confined producer scopes: 295/287/309/295/287/309/309/309. NOT kept:
+// all grow sixteen bytes; original normal copies, reads, helpers and complete body restored.
+// AC558: Complete native byte enable-input contracts (bool/byte/char pairs except
+// original bool/bool): eight at 115, 1851 bytes. NOT kept: no exact match;
+// original definition, every prototype, both caller tuples and entire body restored.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

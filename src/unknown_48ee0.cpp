@@ -27,10 +27,10 @@ extern real g_4c9798[36];
 // form not kept), both 222; long height limit 250; sequential border multiply/divide 180 (the
 // border order is fixed but the body regresses); early size declaration and dimension rename
 // 174 each. Original executable body restored; mode/size homes and rounding reloads remain.
-// score 178 (was 197): the width is rounded before the height, the overflow fix-up compares
+// Earlier 178 (was 197): the width is rounded before the height, the overflow fix-up compares
 // the width against the height the other way round and the near-plane distance is read from
 // the tag; the mode bit still loads the flags into edx where retail uses eax.
-// score 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
+// Earlier 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
 // MiniMax lane E (11-01): no new form, no lower score.
 // Earlier: the mode bit loads the flags into edx where retail uses eax, so
 // the mode bit loads the flags into edx where retail uses eax, so
@@ -198,6 +198,10 @@ extern real g_4c9798[36];
 // each use [9], reference or tag struct [9], y, z, x statement order [6], origin first, swapped products, casts, const, earlier declaration [11], shared forced-inline point helper [36]. For the last 9: `__assume` on extent, distance, aspect, offset, inverse, the global, the half cone [0] (no change);
 // six renamings of distance and extent [0] (no change); square helper, `extent = extent + ...`, `... + extent`, other product orders [0] (no change); named half cone or area, mode test without `~`, `== 1` or a switch for the tag test, swapped or moved declarations all [2]-[19], higher.
 // Real `--fast` without the scratch `inline`, all 32 subsets of long height, border, raw clamp, direct normal, near at each use: base 174, raw clamp alone 174 (same code), near 178 (1489 bytes), border 180 (1491), long height 250, height with border 243, direct normal 255-337 (under 1465); none under 174, so nothing is kept. The known 0x1ddd0 match form leaves this at 174.
+// AC551: Complete immediate projection/near-point/far-point multiplication nodes in subsets
+// 1/2/4/3/5/6/7, then the complete homogeneous projection on all three families:
+// 174/180/174/180/174/180/180/180. NOT kept: no qualifying supported improvement; complete
+// executable source restored. Mode-flag register and protected rounding-call reloads remain.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

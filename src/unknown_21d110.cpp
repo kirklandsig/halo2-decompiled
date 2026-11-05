@@ -458,6 +458,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // unsigned allocator result alone 161 (445 bytes, frame four). NOT kept: both 161 forms
 // lose all eight sensitive callers and raise 0x189fe0 110->135; unsigned domain lacks equality.
 // Original helper interfaces, result domain, expansion and complete body restored.
+// AC555: Allocator status/handle outputs, bool/long and pointer/reference,
+// immediate/completed publication: 147/174/147/174/176/176/176/176. NOT kept:
+// first four lose eight callers; five-point lead is below gate. Original body restored.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

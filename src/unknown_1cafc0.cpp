@@ -704,6 +704,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // B446: Late completed lookup truth, request guard and sole return, bool/byte/char/
 // signed-char/short/word/int/long: 645/640/640/640/629/629/615/615. NOT kept: changed result lifetimes
 // disturb the agreeing lookup prefix and native request homes; original complete body restored.
+// AC554: Complete fallback INPUT-name record via native/readonly initialization, assignment,
+// library copy, field/readonly-field initialization and entry declaration with assignment/copy:
+// 498/498/498/498/560/560/498/498. NOT kept: no exact record-ownership repair; original body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

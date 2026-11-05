@@ -358,6 +358,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // with the choice taken as `&choices[choice_count++]` 960 (3308 B; the cursor is strength-reduced into a hoisted pointer), with a
 // short choice count 970 (3284 B); targets/count/primary declared primary, targets, count and count, primary, targets 866/866
 // (same code). Retail's target count homes just above the choices (frame +0x78) and primary at +0x18; ours +0x14 and +0x24.
+// AC552: Existing allocator private linkage/failure-first admission/ordinary inline, subsets
+// 1/2/4/3/5/6/7: 866/864/866/864/866/864/864; allocated-or-NONE initializer 870.
+// NOT kept: two-point best only; original allocator and whole body restored. Entry zero and native homes remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

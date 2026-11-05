@@ -657,6 +657,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // unless it reads `steps`; one between or after the loops does not; statements with no branch do not; the threaded
 // flags above do not. So the pair follows a block count inside a loop, and retail has one more block there that is
 // gone after allocation. A 600 s permuter run on the 2: 55 tries, best 2.
+// AC558: Complete two-step admission/rejection truth in bool/byte/short/long:
+// eight at 333, 1388 bytes (control 286/1389). NOT kept: all regress; original
+// type-2 fallback, metadata stores, long link total and complete body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

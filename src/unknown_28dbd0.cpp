@@ -331,6 +331,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // (`movss xmm5, [u.k]; mulss xmm5, h.j`) where ours folds one operand from memory. The axis as up x heading with the helper's
 // cross taken vector x axis (the same values) 190 (1209 bytes: ours then loads each up field per product too, but in another
 // order), with the outer cross staged 233 (1199).
+// AC553: Complete source-record initializer/readonly/assignment/memcpy before
+// or after request initialization: 330/330/330/330/335/335/335/335. NOT kept: copied
+// input grows the frame and loses caller 0x28dab0; complete original body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

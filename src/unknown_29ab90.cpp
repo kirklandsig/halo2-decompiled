@@ -380,6 +380,11 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // then paired final public transfers: 447/363/376/440/501/388/473/480. History-only and secondary/history
 // recover frame 0x64 and first +0x42 but grow to 1907/1894 versus 1863. NOT kept: all regress;
 // original copies, helpers and complete body restored; frame/query-magnitude homes remain.
+// AC551: Immutable saved direction; XY memcpy/memmove/field producers; immutable saved direction
+// with each library transfer; pre-call destination declaration; transfer after actor publication:
+// 306/305/344/306/305/344/305/305. NOT kept: no qualifying supported improvement; complete
+// executable source restored. Saved-direction and planar homes, operand ranks and floor registers
+// remain. The 305 XY memcpy form gains only one; the memmove forms miss native frame/length.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -497,6 +497,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // inside the negate block 222 (972); the displaced and reversed points through the existing vector3f_add_scaled with 1.f and
 // -1.f, both/forward only/reverse only, 195/195/195 (same code: the unit factors fold); the reversed retransform under its own
 // `perspective && fabs(tb.z) < epsilon` guard ahead of the factor block 195 (same code).
+// AC555: Existing scale-comparison truth, bool/byte/word/long, unequal-scale
+// and unit-equality polarity, 270 each (1001/955 bytes). NOT kept: all regress;
+// original alias-safe helper/body restored; frame and inverse/X/Z homes remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

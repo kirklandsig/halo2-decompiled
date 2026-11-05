@@ -1048,6 +1048,9 @@ real normalize2d(point2f *v);
 // with double base speed: 257/188/279/135/257/191/277/266. NOT kept: ties/regressions;
 // queried/chosen domains disturb native frame setup. Original real speed producers,
 // numerical predicates, address-passed outputs, calls and complete body restored.
+// AC554: Uninitialized independent completed result, actual invalid-branch production and
+// sole return, bool/byte/char/signed-char/short/word/int/long 208/189/189/189/179/179/186/186.
+// NOT kept: no exact DL/return-join repair; original independent validity and full body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

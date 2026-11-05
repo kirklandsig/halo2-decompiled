@@ -286,6 +286,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // read before the stream pointer 577 (1920, first difference +0x0); send state declared at function scope 532 (same code); energy loop over
 // `input->levels[i]` with no levels pointer 563 (1923, masked 223). Lead unchanged: retail subtracts in SSE and keeps x87 temporaries on the stack
 // (`fsub st(1)`) with no rounding stores, which ours has after every step under the file's /Op; the extra temporary is likely the frame's 8 bytes.
+// AC553: Existing integer-bit pin input-first/lower-default/upper-default/early-return
+// results, ordinary then forced expansion: 534/534/534/537/534/534/534/537 (fast control 532).
+// NOT kept: no native frame/register/math recovery; original helper and body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

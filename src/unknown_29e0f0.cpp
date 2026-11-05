@@ -347,6 +347,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // the output loop's record-base order. On this body: squared distance `x*x + (y*y + z*z)` 391 (masked 177); found flag declared first in the pass
 // 390 (same code); `short local_29` 446 (1563 bytes, frame changes at +0x2, masked 159); with `short local_2` too 431 (1577, masked 195); a group
 // entry pointer for both the group and start fields 390 (same code).
+// AC556: Selected-sentinel pair chains and six complete chains on the retained
+// long-terminal/output-cursor graph: eight at 390, 1596 bytes. Earlier chain trials
+// used the former short terminal. NOT kept: default homes and root roles unchanged;
+// original initializers, helpers, traversals and full body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

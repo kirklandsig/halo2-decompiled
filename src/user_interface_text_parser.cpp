@@ -713,6 +713,9 @@ done:
 // tag read in each call 45 (171), with an explicit `default: break;` 42; `name_id = NONE` with a guard, one copy 54.
 // 0x2c9ddb's note records the same re-materialized address constant (&g_54e4a0), and retail's 0x22d503 reuses one only
 // when it is already in a register (the first copy's ESI destination).
+// AC555: One genuine selector case split from the complementary switch, cases
+// 0/1/9/2/3/4/7/8, 73/70/70/70/70/70/70/70. NOT kept: no equality; early EDI,
+// tag/selector and scratch ownership remain. Original complete parser restored.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
