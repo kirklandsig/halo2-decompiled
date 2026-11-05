@@ -405,6 +405,16 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P331: Point activity/query/compression admission results, masks 1/2/4/3/5/6/7 then complementary
 // all: 1355/1355/1354/1351/1350/1350/1350/1380. NOT kept: at most five points, below margin; no
 // exact predicate-storage match. Original helpers and body restored.
+// Round 211 (m3 lane 3, fast; aligned with registers/register-blind, control 969/590): retail's contact loop keeps
+// its three `imul` per iteration and no induction pointers. On Round 201's pair (re-measured 1689, 969 -> 933/575) a
+// `short` contact index gives them from a dword load 1498 (6102 bytes, 918/484), but adds `movsx eax, ax` to the latch;
+// the short alone 1631 (6496 bytes, 973/571). Compile-only on the pair, still reduced: while, do-while, two increments,
+// a next-index local, a pointer or reference to the index, by-value and by-reference inline helpers, the whole body as
+// a by-value inline helper, a dword index, one index shared with the first loop, 800 extra calls in the loop. Only the
+// short or an address that survives (a real call taking it, `&index &&`) stop the reduction, so the real cause is open.
+// x87 tree `(... * 0.1f + 0.9f) * (double)game_time * rate * 0.3f + index * 42.0f` 1383 (6211 bytes, 982/579): dword
+// constants as retail's except the one after the double; retail's are all dword, as under a `sin` root (0x1a2197).
+// Found arm first with `continue` in the impact loop 1408 (6253 bytes, 975/593). Original body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

@@ -924,6 +924,9 @@ real g_55e618;
 // sums nested in the call 44 (aligned 14); a named `short` last argument read before the sums, named `surface_index` or
 // `a_value` 61 each (1535 bytes: the load moves to the block's top but in EAX whatever the name, so same-size name order
 // does not pick its register); that read with plain position stores after the impact index 234 (frame 0x12c).
+// M380: Displacement/sweep scalar, aggregate and immutable aggregate producers,
+// all eight non-original pairs: 129 each at 1549 bytes. NOT kept: all regress;
+// original interleaved travel products, reflection, collision extent and full body restored.
 // M3 lane 4 r164: LEAD for 0x247950: retail builds placement_set's last argument in its stack slot there (`push ecx; mov eax, esp;
 // mov word ptr [eax], 0`), so it is a by-value word-sized class with a constructor. The class (2 or 4 bytes) leaves this body at 102
 // (same code) and takes 0x247950 from 356 to 351, 1643 to 1653 B against retail's 1652 (not kept: five points without a match).

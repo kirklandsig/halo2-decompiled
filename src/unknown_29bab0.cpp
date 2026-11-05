@@ -284,6 +284,23 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // B433: Library transfers at history/working-direction/pre-blend copies, seven subsets,
 // then all with the initial heading: eight at 804 on direct input. NOT kept: frame
 // grows to 0x8c despite retail length; original transfers, input storage and body restored.
+// Round 211 (m3 lane 3, fast; aligned with registers and stack/both masked, control 430/156): applied together, retail's
+// forms take the aligned count to 391/87 at 3499 bytes, but 783 positional, so none kept. They are: normalize3d for the
+// private normalizer; `*(vector2f const *)` whole copies for the 2D views; `real perp = -local_17.j` before the half
+// span; the two `1.0f > expr ? expr : 1.0f` clamps with the expression written twice, each `(1.0f - t) * k` / `t * k`;
+// `sqrt(1.0f - g * g)` on floats; `MAX` written out for the squared distance and the dot; `(... * 0.5f) ^ 2 / d * 0.5f`;
+// the three velocity dots named before the reciprocal; the signed root with `real const &` for the sum and scale
+// (retail's `fmul [esi + 0x6c]`); `local_7.i + local_6.i`; a named blend complement; the radial test once, false exits
+// in one `||`. Single forms: admission as a forceinline helper with early returns 829 (3454 bytes, 415/141), that with
+// all above 788 (3514 bytes, 395/91); the `||` 790 (3507, 400/89); `result != false` 787 (401/95); y then x named 797
+// (416/103); delta rows j then i 781 (3499, 459/97); no helper, a `blocked` bool 787 (3507, 396/102); y inside each
+// side arm 766 (3540 bytes, 401/98, x87 deltas); field_50 named first +8 frame 0x90, unnamed 783 (3499, frame 0x8c,
+// 391/91); old double-root admission with the rest 783 (3499, frame 0x88, 411/104). Bare blocks around the out-query,
+// the admission point or the later body: same code. Diagnostics, reverted: `volatile` input reads 790 and 835; `standard`
+// marker with direct input 818 (local_2 takes EBX); `(void)&arg_2` and `if (&arg_2)` leave it in EAX; input unused in
+// the arm (wrong values) still pushes EBX first. What decides the rest: retail keeps arg_1 in EDI to the position query
+// and pushes EBX late for the +0x290 pointer (EDI then the input, then the mode; local_2 stays in memory), and ours loads
+// arg_2 into EBX at entry. Original body and helpers restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

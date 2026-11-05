@@ -1240,6 +1240,12 @@ bool function_68670(byte *source, long size, void *block);
 // 24 and the payload passed as `&payload` 24 (both re-measured on this body: round 34 listed them on its 21 form);
 // the cases in source order 1, 0, 2 24; the header read with a literal 8 24 (all identical code). Left as before: the first read keeps the start in ESI across 0x1a19a0, and 0x68670's
 // arguments are set up ESI before EAX (retail EAX first): BLOCKED-BY 0x68670 (contributor code, single caller).
+// M3 lane 10 r71 (fast; aligned in brackets, base 24 [9]): first-read forms without a helper offset parameter: a getter member for the
+// read position 24 [9]; the read call in its own inline helper 121 (554) [25]; a `long &start` reference for read and update 137 (562) [16];
+// the read through the view with the buffer pointer taken after it 24 (556) [5]; a real ring member at +0x9c in the view class (`&view->ring`
+// at all five sites) 24 [9]; ring local with plain statements and no helper 153 (534) [52]; ring local + read call + advance helper taking the
+// view 121 (554) [25], taking the ring 154 (533) [51]. Control: the 2 form re-measured 2 [2]; it needs the ring local's `start` evaluated by the
+// caller while the callee's receiver comes from the helper's own derivation. Case 2's two loads stay BLOCKED-BY 0x68670.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

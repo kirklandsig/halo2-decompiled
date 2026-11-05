@@ -1154,6 +1154,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// MiniMax H (11-04): no new form, no lower score; our expected-size and query-size locals sit four bytes above retail's in the frame, which moves every later access.
 // score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
 // the read-call value transport differed. The retained API and handle prefix now agree.

@@ -152,6 +152,9 @@ void function_3f450(long arg_0);
 // shared count/mode/both 2/2/2; early extent through three calls 2. Call tuples unchanged.
 // m3 lane 9 r76 (fast): grid locals declared local_2, local_1, local_3 2; local_0 declared in the if block 2; the
 // menu-count test as `> 0` first 31 (445 B); local_4 set in an if/else 126 (447 B); the header stores reversed 4.
+// Round 70 (m3 lane 1, fast): the dimensions argument cast to its const pointer 2; a `const &` local for it 2; the grid
+// locals as one struct and as one array 52/52 (447 B); an inline wrapper taking retail's order 2; the dimensions copied
+// to a const local 126 (466 B). Still BLOCKED-BY 0x2f640.
 // @retail 0x223080
 void function_223080(long arg_0, long arg_1, long arg_2, s_223080 *arg_3,
 	long arg_4, long arg_5, s_223081 const *arg_6)

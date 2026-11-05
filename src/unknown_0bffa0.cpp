@@ -1152,6 +1152,11 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // plane point) 315 (2826 bytes); one `offset` local for the plane offset, has_plane, depth and scale 486 (2807 bytes);
 // `orthogonal = has_plane = false` 292; half extents as `width * 0.5f * scale` 290 (same code); the centre point declared
 // at the cone arm's top 290 (same code). Retail stores the plane distance through the plane's own pointer ([ecx + 0xc]).
+// Round 148 (m3 lane 5, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0; aligned 199): a one-caller normalize scaling as `inverse * i`, `j * inverse`, `k * inverse` (retail's
+// product shapes) with dot3f 290, length_sq3f 290, the sum i, j, k 290, k, j, i 290 (same code each: product operands re-sort); with double products 463 (2817 bytes). Dead locals +13..+20
+// at the loop top 470/470/466/466/466/467/467/472 (diagnostic). After the normalize retail reads left.j and left.k before up.*, and up.* before left.i; ours reads up.* first.
+// Directions as `real [6][3]` 290; the 0x11f5f0 count as a constant 4 600 (2777 bytes). Lead, gains too small to keep: `entry` declared before `bounds` 288 (aligned 198); in the cone arm
+// `entry = entries; memset(entry, 0, sizeof(*entry));` 290 but aligned 181: the loop tail after 0x141590 becomes retail's (entry reloaded into ECX, the cursors' slots); both 288, aligned 180.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

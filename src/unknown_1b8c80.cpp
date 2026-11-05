@@ -1112,7 +1112,7 @@ short __stdcall function_1ba4e0(long actor_index, s_slot *slot, bool active)
 	return result;
 }
 
-long __stdcall function_c7160(long unit_index, short seat_index, long marker_position, long vehicle_index, long position);
+long __stdcall function_c7160(long unit_index, short seat_index, long vehicle_index, long marker_position, long position);
 bool function_cc750(long unit_index, short seat_index);
 bool function_cc7b0(long unit_index, short seat_index);
 real normalize2d(point2f *vector);
@@ -1148,7 +1148,7 @@ bool function_1baae0(long actor_index, long object_index, short seat_index, bool
 	{
 		point3f marker;
 		point3f position;
-		if (function_c7160(actor->unknown018, seat_index, (long)&marker, object_index, (long)&position) != NONE)
+		if (function_c7160(actor->unknown018, seat_index, object_index, (long)&marker, (long)&position) != NONE)
 		{
 			real bonus = 0.0f;
 			vector3f direction;

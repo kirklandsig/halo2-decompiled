@@ -283,6 +283,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // DL262: Four-use normalizer actual scaling-status bool/byte/short/long results, result-first
 // then exact short-vector return with post-call matrix receivers: 110/110/110/110/110/110/110/110.
 // NOT kept: no byte equality; original normalizer, receivers and complete body restored.
+// M3 lane 10 r71 (fast, 0x1c4a80 stays matched; aligned in brackets, base 110 [56]): the dot written as accumulating statements j,k,i / k,j,i / j,i,k 110 [55]/[56]/[52]; both axis
+// pointers taken after both normalizations 110 [56]; `up` declared before `forward` and assigned after 110 [56]; both pointers declared at function scope 110 [56]. One-file
+// harness on the 2 form (axis block scored, exact to the plain listing; 2 s a form), all still only the dot's i term: chains of 1-16 identity pointer locals at the function top, in the
+// else arm, between forward and up, before the dot and inside the normalizer (the i and k terms swap at 9-14, never the i operands); both pointers declared up first, at function
+// scope, or taken after the normalizations; a private dot with chains on either or both inputs (0-8); six named transforms in either order; the working matrix at 1-8 dwords into a
+// struct, which rules out field offset modulo 8 as the rank (retail's three operand pairs do fit it); named i inputs, either order; `(&matrix.forward)->k` and `((real *)&matrix.forward)[2]`
+// for the k row 2 (both count as a direct read). Taking the axis address through a local before the normalizer (ahead of forward or up) loses retail's sums 25-92.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
