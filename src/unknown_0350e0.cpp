@@ -1796,6 +1796,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // DH366: Original final projection zero/nonzero admission, bool/byte/short/long outcomes:
 // 193/193/193/193/193/193/193/193. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// B453: Plain reverse reductions of complete mode-2/4 projection sums: y/x/both for, y/x/both while,
+// paired for/while: 193/227/227/193/227/227/227/227. NOT kept: no byte match; original complete body
+// restored. Native independent result home and frame remain.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2617,6 +2620,9 @@ real magnitude3d(vector3f const *v);
 // fallback-loop frame, mutable then immutable, followed by exact widening of
 // current/target receivers: 251/309/320/251/309/320/284/321. NOT kept: no native-matching root/storage
 // graph. Original full body restored; raw-length and promoted-dot homes remain.
+// B453: Standard lower/upper clamp boundaries at current/target roots: lower current/target, upper
+// current/target, both current/target, lower both, both complete: 328/288/305/280/247/325/316/311. NOT
+// kept: no byte match; original complete body restored. Raw-length and promoted-dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3622,6 +3628,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // DH366: Original-site first raw/clamped fade equality, accepted/rejected bool/byte/short/long outcomes:
 // 177/177/177/177/177/177/177/177. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// B453: Common opacity query after the two genuine position producers, short/long category and both
+// complete admission/position arm orders: 311/322/310/299/312/323/311/300. NOT kept: no byte match;
+// original complete body restored. Native frame and initial/final fade scratch homes remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

@@ -657,6 +657,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // unless it reads `steps`; one between or after the loops does not; statements with no branch do not; the threaded
 // flags above do not. So the pair follows a block count inside a loop, and retail has one more block there that is
 // gone after allocation. A 600 s permuter run on the 2: 55 tries, best 2.
+// B453: Standard initial-count and lower/upper/complete projection clamp producers, individual and joint
+// boundaries: 384/351/342/338/429/413/409/410. NOT kept: no byte match; original complete body restored.
+// Native frame, indexed link transport and predecessor/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
