@@ -10,6 +10,7 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
+// MiniMax E (11-04): entry flags read per branch 442, the same with a shifted instance flag 444, the tag table read once at the top 455, an int index local 406, the entry address as an explicit stride and with named offset and index locals 406, the permuter's best 403 (that variant swaps call arguments); no lower score.
 // MiniMax S (11-01): the entry address and the flags load keep the first difference at +0x10; no lower score.
 // score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.

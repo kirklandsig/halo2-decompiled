@@ -105,6 +105,7 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
+// MiniMax E (11-04): the residual subtract in both limit arms 1065, the subtract helper taking a scale in both arms 1017 and with a scale variable 1009, the contact array hoisted out of the loop 1004, the fused scaled subtract in both limit arms 1016 and in the radial arm only 996 or the planar arm only 1017; no lower score.
 // score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Earlier score 902 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
 // Round 105: retail has 23 more mulss, 22 more movss and 15 more movaps, ours ~10 extra counted loops
