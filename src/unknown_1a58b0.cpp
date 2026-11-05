@@ -664,6 +664,11 @@ void function_1a6d80(void)
 // or the whole tail in a helper returning the list, 6 each; output parameters char/byte with short/word/unsigned short 6 each;
 // the call result stored last 6 (count pointer EDX and valid pointer ECX as retail, stores reversed); the list returned from a
 // second table read 59 (126 bytes). Retail's registers need the count pointer loaded before the valid store.
+// Round 67 (m3 lane 14, fast): a const copy of the count pointer, of the valid pointer, or of both at the
+// top 6/6/6 (same code); the count stored through a read of its own parameter's address 6; the call
+// result compared `!= false` 15 (106 bytes); the permuter (600 s, 65 tries) nothing below 6. Reading: ours
+// gives the count pointer EAX, free once the valid store has used AL, so its load waits for that store;
+// retail's EDX choice means EAX was taken (the return value) when the count pointer was allocated.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {

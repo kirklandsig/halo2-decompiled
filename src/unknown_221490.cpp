@@ -944,6 +944,17 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 105: the memset result as a multi-use environment pointer 182 (667); clearing from lDirect 21;
 // both voice HF conversions before attenuation 127 (679), obstruction only / occlusion only 96/96 (672);
 // nine explicit aggregate zeros 96 (662); const attenuation / const room 21/21. Original body restored.
+// Round 75 (lane 1, fast): diagnostic: two dead loads anywhere between the memset and the 0x12aff0 call with both
+// barriers removed differ from retail only by those two loads, so retail has no barriers and two more scratch steps (or
+// a decibels load that takes no step); one dead load gives decibels EDX but every later register right. Forms that
+// supply no step: the decibels forwarding helper 21 (without the first barrier 27, the second 22, both 28); forced-inline
+// direct-volume or room helpers with parameters 21/27/22/28 each; a defaults helper 21; decibels declared first,
+// definition and caller, 21/27/22/28. Without barriers: named gains 171 (681 bytes), gain fields named 172 (682);
+// named, const or struct-held bounds, an array of bounds, decibels through a local or a struct, a four-parameter
+// forwarder, decibels by const reference, a pointer local for the first stores, const references or an array pointer for
+// the two volumes, the macro at the two volumes, dead zero or floor stores to the room, HF or direct fields, memset
+// forwarders and a zero helper, a volume-store helper for two or four stores: 28 each. `= { 0 }` plus a barrier 192
+// (667 bytes), `= { }` or memset plus a barrier 35 (without the first barrier 41); the gain helper by const reference 183.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

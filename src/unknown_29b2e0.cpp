@@ -51,6 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
+// MiniMax C (11-05): no new form, no lower score; the XY vector before the second copy scores 174 and the single-exit normalizer 180/182, both under the eight-point bar, and the permuter reached no variant on this loaded machine.
 // score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // Frame 0x2c agrees at 1711/1706 bytes; unity XMM5/XMM4, root +0x10/yaw +0xc and rotation product/register homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
@@ -367,6 +368,35 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // 1/2/4/3/5/6/7, all 176; full references with the angle also referenced 178.
 // NOT kept: no byte match; original helper and both in-place calls restored;
 // unity/root/yaw and rotation homes remain. The numeric helper and sibling stay fixed.
+// M3 lane 4 r168 (one-file harness with src/unknown_11cc90.cpp and src/character_tag_accessors.cpp, exact at 176, sibling
+// 0x29b990 matched throughout). New: the else arm's zeros in reverse order 179, on 169 172; the success test's operands
+// swapped (`normalize2d_fast(&local_6) != 0.0f && local_4 > 0.0f`) 397 (1724 bytes), on 169 245; `0.0f < local_4` and
+// `0.0f != normalize2d_fast(...)` 176 (same code), on 169 169; the angles declared before the rotation result 176, on 169
+// 169. Re-measured listed forms (scores agree): single-exit normalizer 171, with the XY vector before the second copy 169,
+// zeros chained 179 / 172. On 169 the roots and the inlined 0x11cc90's acos result sit at +0x10 with local_11 where retail
+// packs them at +0xc with the acos argument and the yaw; first root and scaled X in XMM6/XMM5 (retail XMM3/XMM6). Restored.
+// DL268: Rotation sinf/cosf/pair, normalizer fabsf/sqrtf/both, all native float APIs,
+// then all with one numeric normalizer exit: 179/179/177/263/263/176/177/172.
+// NOT kept: four-point best gain is below the eight-point gate; unity changes but root/yaw
+// and rotation homes still differ. Original helpers, alias-safe inputs/stores and full body restored.
+// DL272: Standard native ranges at final output, failed-normalization restore and facing fallback, seven subsets then backward transfers; unity/root/yaw homes remain. Scores 464/450/471/514/460/512/515/512.
+// NOT kept: all forms regress and seven lose matched sibling 0x29b990; original executable source restored.
+// DH378: Existing object-tag/actor-fallback/object-axis member sources, subsets 1/2/4/3/5/6/7,
+// then all with a read-only object receiver: 176 each. NOT kept: all canonicalize; original complete body,
+// raw address expressions, helpers, arithmetic and both alias-safe rotations restored; native root/yaw homes remain.
+// DH382: Existing alias-safe rotation results as row-local/full-phase cosine-add-subtract
+// or initial-sum/subtract accumulators: 176/178/176/178; with actual dot accumulation
+// 178/176/178/176. NOT kept: no gain or native root/yaw repair; original helper and full body restored.
+// Round 88 (m3 lane 16, fast with 0x29b990/0x1e5450/0x11ce20/0x11cc90; aligned, masked in brackets; base 176 [229, 138]): single-exit
+// normalizer + XY first 169 [222, 136], still one short of the bar; direct rows 189 [180, 105] at 1706 bytes; all three 183 [175, 103]
+// at 1706: everything before the rotations then has retail's structure, the rest is the rotations' operand forms and schedule. Rows from
+// retail's listing with each cross in its row 264 (1670), with SE/XY 260; 0xd0080's rows with x/y copies 181 (1706) [208, 110]; 0xc7840's named rows
+// 176; retail-spelled named rows 176, with SE/XY 170. On all three: named axis at the first call 183 [180, 130]; helper axis link 227
+// [350, 157]; helper vector link 179 [177, 122]; both 233 (1694); call + helper axis 227; call axis + helper vector 183 [174, 103]; all
+// 233 (1694). Helper parameter orders vaso avso svao ovas vaos soav oasv asvo saov oavs 183 each (same code: copy-propagated). Rows named i 193
+// (1690), j 187 (1694), k 183, i+j 181 [244, 128], i+k 193, j+k 183; rows written k,j,i 199 (1683), j,k,i 198 (1687), k,i,j 256 (1675). On
+// SE + XY: limit updates as ternaries 169 (same code); named turn products 278 (1716); named low bounds 277 (1716); rate limits as ternaries
+// 242 (1715); else-arm zeros reversed 172; pitch computed in its target local 173.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

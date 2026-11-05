@@ -386,6 +386,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 931/931/931/931/931/931/931/931 reduced (unchanged control 931; full 882). NOT kept: no equality;
 // original buffers, observations, query, qualifiers, helpers and full body restored; native
 // frame/actor/unit and priority/query/marker homes remain.
+// Round 152 (m3 lane 5; plain unless marked, fast misleads here: fast base 931 against plain 882; [m, x] masked and exact aligned counts, body [185, 475]):
+// the unit no-obstacle bit as a word bitfield 917 [183, 464] (retail's `shr dl, 2; test dl, 1`); the unit looked up through a second
+// actor_get 918 [183, 475]; both 936 [181, 464]; self_unit declared first 931f; the actor flag after self_unit 933f; the continues
+// in the type arms as a flag tested after them, in a do-while 939f (3743 B) [206, 477], the arms do not sink. Retail's type 1/7/11 arms
+// and the unit arm's other branches sit past the function's `ret`, each jumping back to the distance test; ours keeps them in place.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

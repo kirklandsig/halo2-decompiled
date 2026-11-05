@@ -4,13 +4,18 @@
 #ifndef MAP_FILE_PATH_H
 #define MAP_FILE_PATH_H
 
-void map_file_path_get(char const *map_name, char *path);
+/* a map name, and the file path it stands for */
+struct s_map_name
+{
+	char text[256];
+	void map_file_path_get(char *path) const;
+};
 
 /* a buffer a map name's file path is printed into */
 struct s_map_file_path
 {
 	char text[256];
-	void get(char const *map_name) { map_file_path_get(map_name, text); }
+	void get(char const *map_name) { ((s_map_name const *)map_name)->map_file_path_get(text); }
 };
 
 #endif
