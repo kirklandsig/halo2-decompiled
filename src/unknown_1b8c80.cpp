@@ -1545,6 +1545,13 @@ void function_1f86a0(long actor_index);
 // AC527: Post-search reservation observation as bool/byte/short/long, native member/full-slot
 // payload pairs, eight at 134. NOT kept: one-use result residence unmatched; original types,
 // observation, raw mask, root short circuit and complete body restored; mask/entry homes remain.
+// AC547: Existing root/iterator/accept-decline/all ordinary-inline declaration
+// policies, native member payload first in each pair: eight at 134. NOT kept:
+// no frame/mask/entry recovery; original declarations, payload and body restored.
+// AC549: Selected handle absent throughout search, conditional/exhaustive/default
+// post-search producers, then conditional with direct fallback; native member/full-slot pairs:
+// 134/134/134/134/235/235/233/233. NOT kept: no frame/mask/entry recovery;
+// original handle lifetime, fallback, payload and complete body restored.
 // M3 lane 4 r164 (fast; aligned count in brackets, control 134 [84]): EBX holds the joint index after the loop in both builds, and in
 // the loop the byte mask (only BL can hold it across the calls) takes it where retail gives it to the entry. Positive predicate 134
 // [83]; the element looked up again through the entry in the predicate 254 (874 B), in the root compare 243 (862 B), in both 254; the

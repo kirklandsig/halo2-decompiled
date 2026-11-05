@@ -3012,6 +3012,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // bool/byte/char/signed-char/short/word/int/long: 530/530/530/530/530/530/530/530.
 // NOT kept: no native result/frame repair; original result, scans and body restored.
 // Native final-loop size observation remains a possible unretained correction.
+// AC546: Existing owning-word writer for deferred/failure/notification publications,
+// seven subsets then existing state bitfields: 520/545/535/530/520/545/535/534.
+// Set-only 530; clear-only 520 plain, 1844/1908 bytes. Kept the clear-only writer:
+// native direct byte AND in both completion paths; frame/result/state homes remain.
 // B437: Actual body byte offsets stepped inside mass/farthest/push loop subsets
 // 1/2/4/3/5/6/7 and complete unsigned offsets: 530 each. Original signed ordinals,
 // base observations and body restored; frame/result/state/point homes remain.
@@ -3024,6 +3028,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // M388: Actual bound-selected push, maximum-distance result and side-factor producers,
 // masks 1/2/4/3/5/6/7, then named reciprocal: eight fast 530s, 1834/1908 bytes.
 // NOT kept: no frame/result-home repair; original complete body restored.
+// AC549: Independent lexical identities for direction/center/hit/along/change/query value/
+// hit ordinal/completion result: eight 520s, 1844/1908 bytes. NOT kept: no native
+// frame or stack-home repair; original names and complete body restored.
 // AC546: Existing owning-word writer for deferred/failure/notification publications,
 // seven subsets then existing state bitfields: 520/545/535/530/520/545/535/534.
 // Set-only 530; clear-only 520 plain, 1844/1908 bytes. Kept the clear-only writer:
@@ -3357,6 +3364,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M364: Original early-return changed result in char/signed-
 // char/byte/short/word/int/long/dword storage: 610/610/610/623/623/625/625/625. NOT kept: no
 // native result-byte/flight-home match; original result domain and complete body restored.
+// AC546: In-place first-wall/clamp/yaw output phases, seven subsets then coordinate
+// publication: 624/622/585/672/737/643/695/623 (control 605). NOT kept: 585
+// lengthens away and combines regressing parts; yaw adds an out-of-line call.
+// Isolated forced native/setter yaw 635/605; 18 calls recovered, but frame 0x8c
+// or a tie remains. Original complete body, helper and long special restored.
 // Y590: Actual wall-projection/axial-scalar/matrix-conversion last-use scopes,
 // seven subsets then all with planar temporary termination: 600 each (fast control
 // 600, full 561). NOT kept: no byte change; complete original body restored.
