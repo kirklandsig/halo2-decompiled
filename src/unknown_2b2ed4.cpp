@@ -208,6 +208,10 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Round 400: zero-session library clear/const/online/status/entry workspace
 // 505/330/331/368/712; complete zero-reject/admit/reject results 375/330/330.
 // NOT kept: no byte match or qualifying gain; original workspace and body restored.
+// F402: Existing active-player producer, positive/failure early returns, default/
+// failure-first/nested results, output-owned and reused admissions,
+// 330/330/597/330/330/330/377/604. NOT kept: no exact or qualifying result;
+// original complete body and existing helper restored.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

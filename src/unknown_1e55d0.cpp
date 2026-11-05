@@ -194,6 +194,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // Round 398: Existing aligned capsule shape/component/flag-word object-reference contracts,
 // seven subsets then ordinary inline: 319/319/319/319/319/319/319/530. NOT kept: forced forms tie;
 // ordinary expansion loses the native frame and regresses. Original helper, caller and full body restored.
+// F402: Four-byte movement/input/state pointer-home lexical identities, seven
+// subsets then the complete graph with the velocity identity, 319 each. NOT kept:
+// all canonicalize; original names, aligned helper and complete body restored.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

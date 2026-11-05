@@ -1514,6 +1514,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // Round 400: existing sort-callback inline boundaries, all seven nonempty
 // subsets 83 each; all three with native three-call sort join 119. NOT kept:
 // no gain; original callback definitions and complete target body restored.
+// F402: Chained player/selected zero initialization in both target orders, before
+// array/row-count/query declarations or after the three queries,
+// 84/84/84/94/83/83/83/94. NOT kept: no exact or qualifying result;
+// original complete body restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {

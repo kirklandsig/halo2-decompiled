@@ -708,6 +708,9 @@ done:
 // join, before the call, after the call 44/44/44; name preset NONE with an else arm 44; two copies with an else arm 48; the copy calling 0x8cc20 directly 44;
 // the translator through an inline wrapper 44; a block-local buffer pointer 44; late-folded addresses: `g + k` at the copy 44, an inline scratch getter at the
 // copy 44, at both 44, a const reference at the copy 44 (the hoist stays in all of them).
+// F402: Complementary selector partitions at 1/2/3/4/5/7/8/9, retaining original
+// translation/copy completion, 70/65/63/63/69/69/63/69. NOT kept: all regress;
+// original complete dispatch restored; early EDI save and scratch/tag ownership remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
