@@ -24,13 +24,21 @@ extern vector3f *g_4687bc;
 
 real function_1201a0(vector3f *v, vector3f const *fallback);
 
+/* the placement's word-sized value: callers build it in the stack argument slot */
+class c_placement_value
+{
+public:
+	c_placement_value(short value) : m_value(value) {}
+	short m_value;
+};
+
 // @retail 0x2ba3e0
-void placement_set(s_placement *placement, vector3f const *direction, point3f const *position, vector3f const *up, short value)
+void placement_set(s_placement *placement, vector3f const *direction, point3f const *position, vector3f const *up, c_placement_value value)
 {
 	vector3f normal = *direction;
 
 	function_1201a0(&normal, g_4687bc);
-	placement->value24 = value;
+	placement->value24 = value.m_value;
 	placement->position = *position;
 	placement->direction = normal;
 	placement->up = *up;
@@ -1024,7 +1032,8 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
                     particle->position.z = normal->k * 0.005f + collision.value.point.z;
                     s_particle_impact impact;
                     impact.index = NONE;
-                    placement_set((s_placement *)&impact, &particle->velocity, &particle->position, normal, collision.value.unknown24);
+                    /* retail copies the collision's value whole (`mov edx, [esp + x]; push edx`), so it is this class there */
+                    placement_set((s_placement *)&impact, &particle->velocity, &particle->position, normal, *(c_placement_value const *)&collision.value.unknown24);
                     particle->velocity.i = tangent.i * keep - perpendicular.i * coefficients[1];
                     particle->velocity.j = tangent.j * keep - perpendicular.j * coefficients[1];
                     particle->velocity.k = tangent.k * keep - perpendicular.k * coefficients[1];
