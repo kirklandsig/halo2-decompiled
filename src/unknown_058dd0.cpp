@@ -745,7 +745,8 @@ void c_session_client::function_06dbc0()
 	function_06dc60(this, 3);
 }
 
-// MiniMax I (11-04, machine 3, second pass): score 24 (was 43); separate case 7 and case 8 bodies give
+// MiniMax I (11-04, machine 3, second pass; not kept, m3 review: the 24 rests on a one-use member-index local
+// read before the switch, kept only with a byte match; the case split alone is 47): 24 with separate case 7 and case 8 bodies, which give
 // retail's direct 7-entry table, and reading the member index into a local before the switch gives
 // retail's head: `this` copied to EBX at entry and the id in EBP. What is left is that our index load
 // is hoisted above the switch (retail reads it after the type test), so the mode takes ESI where retail
@@ -856,7 +857,6 @@ void c_session_client::function_06dbc0()
 void c_session_client::function_06dbd0(const s_session_id *id)
 {
 	c_class_58d20 *s = session;
-	long index = s->current_member;
 	switch (s->state)
 	{
 	case 2:
@@ -870,11 +870,6 @@ void c_session_client::function_06dbd0(const s_session_id *id)
 	case 6:
 		return;
 	case 7:
-		if (s->flag7420)
-		{
-			return;
-		}
-		break;
 	case 8:
 		if (s->flag7420)
 		{
@@ -884,7 +879,7 @@ void c_session_client::function_06dbd0(const s_session_id *id)
 	}
 	if (mode == 2 && s->type == 1)
 	{
-		if (memcmp(&s->members[index].id, id, sizeof(*id)) != 0)
+		if (memcmp(&s->members[s->current_member].id, id, sizeof(*id)) != 0)
 		{
 			function_06d380(this, id);
 		}
