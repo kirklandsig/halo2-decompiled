@@ -1762,6 +1762,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (2191, aligned 103). Retail's logic decoded: zoomed = speed > 0.1; scoped = zoomed && query; both cleared on the second query; scoped cleared
 // when the overlay lookup fails; the play's `else if (zoomed)` under `if (zoomed || scoped)` is retail's own implied test (`cmp [ebp-2], 0; je`).
 // Still BLOCKED by the stand-in (round 98) for ESI/EDI; no byte match is reachable without it, so no match-only form can stay. Body unchanged.
+// Round 132 (m3 lane 7, fast, control 220): the look values declared where they are computed 220, as
+// `real const` there 220, declared first in the block 220 (all same code: their homes stay -0xc/-8);
+// the look pointer, flags and weapon counter declared at first use 220; the pitch as `y * (-1 / rate)`
+// 221; divide then clamp in separate statements 223 (a repeat of lane 9 r87's form). Retail's look
+// slots -0x2c/-0x28 are never address-taken (no lea of them), yet retail reloads g_510c54 after each
+// look store; still BLOCKED by the stand-in (round 98) for the ESI/EDI save after the unit test.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
