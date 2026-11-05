@@ -254,6 +254,9 @@ static __forceinline long floor_to_long_inline(real value)
 // pointers 7/11 (flips only the second word, diagnostic); second word through one to four 7/279/279/279, with the array read 8/278/278/278.
 // On the 10 form: a local bitfield view for the first word (selection then category, or reversed) 14/14 (the second word's order flips too), for
 // the kind 79, both 83; low word built in two steps 10; kept bits named, the word's or as an assignment 79.
+// AC555: Owning combined low-29 payload/section-selector fields, subsets
+// 1/2/4/3/5/6/7, 10 each; all with final kind-field store 79. NOT kept: no
+// equality or gain; original header/body restored; OR/shift/pool schedules remain.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,
