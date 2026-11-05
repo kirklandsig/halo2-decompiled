@@ -4132,6 +4132,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // Round 164: state pointer sunk into the branch and recomputed in the fallback 598; with 0x16f3a0
 // calls 553; fallback in both arms 633, with 0x16f3a0 calls 706, plus 0x14ddc0/0x14de70 at the loop
 // head 740 (retail's loop head, aligned 426 -> 402).
+// Native player-array cursor, ordinal for/while 566/566; cursor bounds with retained
+// ordinal for/while 573/573; derived ordinal for/while/ordered bound 557/557/557;
+// cursor increment with ordinal bound 567. Original traversal restored.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {

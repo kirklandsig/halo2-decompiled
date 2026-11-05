@@ -205,6 +205,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // the > 1 icon as one call with `invitations + (received ? 18 : 7)` 383 (2357 bytes); the status visibility
 // as `(empty || self) ? false : true` 330 (same code); a short invitation count 339 (2338 bytes); voice
 // availability as `player != NONE && ...` 631 (2325 bytes). Homes still BLOCKED-BY 0x230134 as noted.
+// Three-way suffix selectors: native 2,3,default; alternatives 2,default,3 and
+// 3,default,2. All eight non-native order pairs 330, still 2334/2345 bytes.
+// NOT kept: no native case-layout recovery; original complete cases restored.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

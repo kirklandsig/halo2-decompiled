@@ -1522,6 +1522,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // buffers 124; friend-first counts declared then assigned as statements 124; the user and both presence
 // buffers declared after the counts 117 (same code); the clan count read after the 0x18ff47 call 124;
 // the merged state as one chained assignment, friend store first, 122. BLOCKED-BY 0x63d00 stands.
+// Plain pretested friend/member/both searches 195/195/195; outer merge 195;
+// outer+friend/outer+member/outer+both/all four loops 195/195/195/195.
+// NOT kept: count homes and membership reloads remain; original loops restored.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

@@ -1511,6 +1511,9 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // Scores 83/83/83/83/83/83/83/172. NOT kept: no lower count; declarations restored; original complete body restored.
 // Round 106: fixed-bound do scans first/second/both and a shared maximum 83 each;
 // guarded do fills first/second/both 110/103/127; guarded output do 83. Original body restored.
+// Full-array defaults before first/second/both collections 166/131/177; common
+// after queries/at declaration 193/188; slot defaults in first/second/both scans
+// 168/137/186. NOT kept: native post-scan tail shape not recovered; original restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {

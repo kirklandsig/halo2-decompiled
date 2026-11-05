@@ -349,6 +349,9 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // the existing vector3f_add_scaled with a real quotient 220 (0x11f0d0 89, its `double angle` still pads
 // this frame); here: turn velocity declared before forward 224; world-up computed before the forward
 // branch 285 (1010 bytes); the second turn's scale as `acceleration + acceleration` 224.
+// World-up row first sums/results at each publication 220/220; all first sums/results
+// before stores 224/225; sequential rows 220; early first products 225; all sequential
+// results 225; native output aggregate 299. NOT kept: ties or regressions; original restored.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
