@@ -966,6 +966,9 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Round 84 (--fast): j before i 10; a long index local 6; `T &flag` with dot reads 6; the pitch cosine first in both products 6; `real
 // forward[3]` 6; a 600 s permuter run (17 tries) none below 6. Matched retail sites have `imul; push; push; add` (0x17ae50, 0x1b0400, 0x1be840);
 // none has `imul; push; add; push`, which is what ours emits here.
+// Lane 11 round 70 (fast): flag and vector computed inside the call's arguments 41 (98 bytes); a flag local with the vector filled inline in the
+// arguments 6; parameters as (flag, effect), as 0x2a06a0 has them, caller updated 6 (0x2a1120 12); a scenario local before the element 6; a long index
+// parameter with a short cast 15 (93 bytes). Diagnostic: `inc eax` between movsx and imul still leaves one push before the add, so the add waits on the imul, then outranks `push esi`.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

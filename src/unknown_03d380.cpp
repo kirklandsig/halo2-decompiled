@@ -455,6 +455,13 @@ void function_125a90(long value);
 // named element byte offset 36; keep result 36; keep arm first 86; type declared at loop top 36;
 // index declared only at the iterator 51; const element pointer 36; const type 36. All restored;
 // the element multiply/LEA, early policy load and decision-block placement remain.
+// Round 69 (lane 11, fast; pool global at each use, no index local, direct keep store unless noted; [aligned]): no implied test, the call
+// stays out of line: `type == 0x20` keep, else `type == 0x26` `remove = !a`, else the kind test, 74 (positional only) [5]: retail's block
+// order and every register, only retail's `cmp eax, 0x26; jne` re-test is missing; 0x26 first 77 [7]. Under one `||`: `if (type == 0x26) remove
+// = !a; else remove = false;` 29 [12], as `remove = false; if ...` or a ternary 29 [12], the removal arm after the keep arm 25 [12] (kind arm
+// still falls through), that without the direct keep store 47 [23]; `remove = type == 0x26 && !a` under `||` 75 [15]; `type != 0x26 || a` 75;
+// inverted `&&` 75, inverted `!(||)` 29; each type test a named bool 29. Named special or ordinary, with two ifs or nested tests, and no
+// implied test: 151/142/162 (466-471 bytes, 0x221810 inlined). Not kept: 29 and 25 need the direct keep store, which is match-only.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

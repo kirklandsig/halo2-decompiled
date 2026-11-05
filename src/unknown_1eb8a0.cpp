@@ -388,6 +388,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // DH353: Existing double-factor publishers at displacement/impulse/all tick scales,
 // subsets 1/2/4/3/5/6/7: 716/716/724/783/783/766/817; complete sample graph 830.
 // NOT kept: native SSE/frame/extent disagree; original products and caller restored.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 642 [757]): rate constant selected before the multiply at the first
+// site 718 (2861) [630]; both sites 744 (2855) [601]; cap computed ahead too, first site 710 (2858) [622], both sites 668
+// (2864) [597]. Each of these loses the matched caller 0x1eb6f0 (22). `t >= 0.001f` for `!(0.001f > t)` 642, same code.
 // AC538: Complete settling-alignment admission, positive/complementary bool/byte/short/long:
 // 642/642/642/642/642/642/642/642. NOT kept: unmatched decision/storage forms; original complete body
 // restored.
@@ -1131,7 +1134,7 @@ counters_done:
 #include "unknown_1eb550.h"
 #include <xmmintrin.h>
 extern real g_47f05c;
-void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity);
+void havok_component_rigid_body_point_velocity_get(vector3f *velocity, long rigid_body_index, s_havok_component *component, point3f const *point);
 void __stdcall function_1c3770(long object_index, dword flags);
 bool function_1c5210(transform4x3f const *matrix, void *shape, long excluded_component, long filter);
 
@@ -1183,7 +1186,7 @@ void function_1ec690(byte const *input, s_state_c570 *state, byte *output)
   if (rigid_body_index != NONE)
   {
    vector3f &current = scratch.current;
-   havok_component_rigid_body_point_velocity_get(rigid_body_index, (s_havok_component *)other_component, (point3f *)(input + 0xe8), &current);
+   havok_component_rigid_body_point_velocity_get(&current, rigid_body_index, (s_havok_component *)other_component, (point3f *)(input + 0xe8));
    change.i = current.i - state->field_50.i;
    change.j = current.j - state->field_50.j;
    change.k = current.k - state->field_50.k;
