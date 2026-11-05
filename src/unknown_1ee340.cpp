@@ -202,6 +202,11 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax I (11-05): no new form, no lower score. The header normalize_inline for the normal gives 193
+// and the header cross3f_staged for the cross gives the same code; retail's normal length sums k, j, i
+// (with the components scaled inv*i, j*inv, k*inv) and neither header helper has that order. The rest
+// is blocked by 0x23a220: retail's callers pass the points before the point, and its definition is in
+// src/unknown_239b80.cpp, another lane's file.
 // MiniMax B (11-03): no new form, no lower score. Retail still keeps the ray's components and the two
 // edge vectors in xmm registers while ours spills the edge vectors to the stack and reloads them; the
 // cause is that `first` and `second` are address-taken locals that cross3f takes by reference, so
