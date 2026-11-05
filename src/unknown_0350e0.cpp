@@ -3250,6 +3250,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // scalar-array then native-vector receivers: 490/490/490/543/490/490/490/543.
 // NOT kept: all regress and enlarge the frame to 0x68/0x38; original complete body restored.
 // Native stored-velocity acquisition and projection/loop homes remain.
+// N390: Declared native cycle-byte/shared-dword flags, cycle bool/byte/schar/short/word/int/long/dword,
+// 490/490/490/497/497/493/493/493. NOT kept: all regress; original state observations,
+// type set and complete body restored; native frame, velocity reloads and projection/loop homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

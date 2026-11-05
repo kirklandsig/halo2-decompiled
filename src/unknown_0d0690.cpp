@@ -1518,6 +1518,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // M403: Actual serialized curve header, local/tag-field producer, native float/bounds
 // members and mutable/readonly input: eight at 529/2189. NOT kept: no native
 // frame/result/carrier recovery; original helper, records and entire body restored.
+// N390: Explicit absolute-magnitude real/immutable-real, success/early exits,
+// 574/574/574/574; double/immutable-double 573/573/573/573. NOT kept:
+// no exact scratch/result form, shared-user regressions; original normalizer and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2319,6 +2322,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // M395: Component aggregate default normal/base/lightmap families 1/2/4/3/5/6/7, then complete member assignment construction:
 // 623/621/618/621/621/621/666/666. NOT kept: no exact native-shape candidate; native status/part/mesh homes and selective helper expansion remain.
 // Original complete body restored.
+// N395: Actual dynamic-failure bool/byte/short/long outcomes 589/589/609/610;
+// actual base-failure outcomes 542/542/550/548. NOT kept: no native status/mesh
+// home recovery or equality; original positive validity and complete body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

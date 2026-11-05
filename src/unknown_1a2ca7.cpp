@@ -1533,6 +1533,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // NOT kept: result-arm bodies grow to 858/858/863/863 versus 835;
 // destination-first forms add a raw-size store before the native final-size
 // store (181/192/160), absent in retail. Original clamps and body restored.
+// Plain pretested friend/member/both searches 195/195/195; outer merge 195;
+// outer+friend/outer+member/outer+both/all four loops 195/195/195/195.
+// NOT kept: count homes and membership reloads remain; original loops restored.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

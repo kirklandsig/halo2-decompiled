@@ -786,6 +786,12 @@ bool g_51e9bc;
 // DH380: Destination-owned control copy then limit modulation via assignment/memcpy/setter/rows,
 // original then direct shared projection: 230/228/242/112/227/225/247/56. NOT kept: intermediate
 // output transfers require equality; original products, observations, projection and complete body restored.
+// N395: Complete limit-owned destination assignment/memcpy/setter/coordinate modulation,
+// original/direct projection: 238/237/238/237/198/201/112/56. NOT kept: coordinate form
+// gains six; direct form grows away from 1077 bytes; all transfer forms require equality.
+// Original complete body restored; projection ownership and jitter spill homes remain.
+// N397: Confined whole on/sign/weight scalar identities on the native-extent body 118/118/118/118/118/118/118/118.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

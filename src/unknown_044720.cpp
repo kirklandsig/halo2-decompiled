@@ -287,6 +287,9 @@ void function_44720(void)
 // Y608: Actual flags/selection/detail-array field lvalues, seven subsets,
 // 125/107/107/125/125/107/125; complete identities with call-use level 133/486 bytes.
 // NOT kept: no exact frame/geometry graph; original whole body and shared selector restored.
+// Round 394: complementary omit-level bool/byte/short/long at entry
+// 133/133/138/138; before the outer loop 150/150/143/144. Original restored.
+// Retail compares +0x60 after the first mask push, so that operand still reads level.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)

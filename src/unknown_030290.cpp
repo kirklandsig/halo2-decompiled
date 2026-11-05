@@ -504,6 +504,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // rotated storage with indexed for/while, pointer and standard traversal:
 // 237/237/338/347/236/236/690/306. NOT kept: no equality; indexed output reaches
 // native length but loses native allocation. Original alias-safe helper/body restored.
+// N396: Complete ordered epsilon outcomes, direct/exhaustive/default-false/default-true
+// bool and byte producers: eight at 195. NOT kept: no equality or gain; original complete body
+// restored, native inverse homes and the second-transform X/Z spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

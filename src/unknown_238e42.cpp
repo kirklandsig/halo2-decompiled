@@ -1128,6 +1128,9 @@ bool __stdcall function_2399da(long controller_index)
 // DH381: Validated selected-pointer producers on original/dedicated results, eight forms
 // 159/163/163/159/97/98/98/97; native-register completion follow-ups 97/97/90/90.
 // NOT kept: extra null-result/re-test or original rank conflict; original complete body restored.
+// N396: Signed eight-byte requested/own/task residency, seven subsets then late requested producer:
+// 198/195/243/126/208/207/253/198. NOT kept: native narrow domains and extent regress;
+// original body restored, selected identity/rank registers and extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

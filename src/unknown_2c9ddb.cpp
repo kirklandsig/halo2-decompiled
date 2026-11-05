@@ -187,6 +187,9 @@ extern long g_55c154;
 // DH384: byte-array record publication, first/creation/both: memmove 139/143/157,
 // memcpy 61/61/61; bounded loaded-name memcpy/memmove input 99/104. NOT kept:
 // no gain; name snapshots lose the biased frame, even at retail length.
+// Round 394: actual selected/saved/source-index eight-byte homes 177/74/61;
+// selected+saved/selected+source/saved+source/all 182/187/104/193; all unsigned 193.
+// Original narrow values and complete body restored; classification spill/copy expansion remain.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

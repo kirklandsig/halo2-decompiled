@@ -500,6 +500,9 @@ void function_14bac0()
 // M403: Immutable request/paired probe points/paired marker ordinals, seven subsets
 // then immutable selected unit: eight at 222/1036. NOT kept: native frame and
 // point/recipient/readiness homes unchanged; original complete body restored.
+// N390: Actual second-phase state-count admission, positive/complementary bool/byte/short/long,
+// 222/222/222/222/222/222/222/222. NOT kept: no exact phase-result/lifetime form;
+// original body restored; native frame, point/recipient overlap and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

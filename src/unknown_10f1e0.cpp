@@ -1543,6 +1543,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // P345: Joint false-default chain, success/depletion/interruptibility-owned defaults,
 // byte then bool success: 164/165/165/164/194/193/195/194. NOT kept: no byte match;
 // original complete body restored; pool/displacement, SETLE/default homes and normalization remain.
+// N389: Paired held-presence bool/byte/short/long with conjunction/guarded count stores:
+// 164/330/164/330/164/330/164/330. NOT kept: pool/SETLE/default/result homes remain;
+// original predicates, queries and complete body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1815,6 +1818,9 @@ bool __stdcall function_110ab0(long unit_index)
 // DH372: First/second held-query presence bool/byte/short/long: 450 each.
 // NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
 // Original body and queries restored; state/request/result homes remain.
+// N389: Actual base query owns the result or the true-default producer, bool/byte/short/long:
+// 450/495/574/554/490/477/540/514. NOT kept: missing frame word and state/request/result
+// homes remain; original query, permission graph and full body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

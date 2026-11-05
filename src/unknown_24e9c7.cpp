@@ -388,6 +388,9 @@ struct s_24e9c7_bounds
 // eligible gain; original records, observations and complete body restored. Early spill/homes remain.
 // DH381: Native scalar-SSE dimension conversion/full-expression producers, height/width
 // modes 10/01/11/20/02/22/12/21: 241/241/241/230/229/251/233/242. NOT kept: all force frame alignment absent in retail and expand the body; original restored.
+// N396: Signed eight-byte selected ordinal/pixel-height/half-width storage, seven subsets
+// then full bitmap-handle graph: 220/125/220/148/235/148/235/238. NOT kept: no native narrow-domain
+// equality or gain; original body restored, early across spill and eight-byte-high scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

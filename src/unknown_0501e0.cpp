@@ -388,6 +388,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Y605: Caller-owned complete scaled vectors with aggregate/native/shared-setter/CRT defaults,
 // rotation-only existing helper with input pointer then reference: 272/330/274/330/272/330/274/330.
 // NOT kept: all regress and lengthen; original aggregate-scaled helper and full body restored.
+// N395: Aggregate-scaled complete view returns with pointer/reference/value input,
+// cursor/indexed output 278/281/278/281/401/404; actual returned-output consumers
+// 276/273. NOT kept: no equality/native frame recovery; original helper and full body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

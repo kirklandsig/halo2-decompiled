@@ -496,6 +496,10 @@ evaluate:
 // flag retested 84; guard returns with the slot field read first 74; nested with it 73; an actor local with it 73. Diagnostic (reverted): 0x25d740
 // pinned out of line 102 (231 bytes): ESI/EDI are still pushed at entry and the exits merge, where retail pushes ESI after the first test, EDI
 // at the call, and has five separate exits, so the inlining is not the only cause.
+// Round 394: sole-return goto, short/word/long/dword status, payload/whole-slot
+// 88/88/92/92 in both (earlier single-result lowering, confirmations only).
+// Actual status/prop-index eight-byte homes: status signed/unsigned 83/83, index
+// signed/unsigned 92/92, four joint domains 106 each. Original body restored.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

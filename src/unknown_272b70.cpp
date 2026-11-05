@@ -2877,6 +2877,9 @@ struct s_scenario_scripting_view
 // DH380: Actual decoded selector/candidate-pointer/metric bindings immutable, seven subsets,
 // then complete bindings with the actual packed input: 80/80/80/80/80/80/80/80. NOT kept:
 // actor/counter/set and guarded-data homes remain; original bindings and complete search restored.
+// N390: Whole packed-input value at entry/actor/scenario/decode, long 80/80/80/80;
+// dword 81/81/81/81. NOT kept: no exact single-use input residency;
+// original decode, signed search and body restored; actor/counter/selector and early data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

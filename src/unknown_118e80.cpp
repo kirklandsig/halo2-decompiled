@@ -356,6 +356,9 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // 256/262/289/260/361; complete point-helper transfers 361; all-output zero
 // construction 392, with shared transfers 491. NOT kept: all regress and grow;
 // the native 0x6c frame, late ESI and basis/position homes remain unresolved.
+// World-up row first sums/results at each publication 220/220; all first sums/results
+// before stores 224/225; sequential rows 220; early first products 225; all sequential
+// results 225; native output aggregate 299. NOT kept: ties or regressions; original restored.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

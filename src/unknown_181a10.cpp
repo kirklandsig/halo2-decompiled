@@ -775,6 +775,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // DH380: Original predecessor/shape/query key-admission boundaries, seven partitions and complete
 // partition with separate original root guards: 239/239/239/239/239/239/239/239. NOT kept: frame/receiver
 // homes remain; original tests, observations, query contracts and complete collector restored.
+// N395: Actual first/second/root/component/key/bounded-key names individually, then
+// two complete node/key identity orders: 239/239/239/239/239/239/239/239. NOT kept: no equality or
+// frame/home recovery; original names and complete collector restored.
+// N397: Complete scalar origin xzy/yxz/yzx/zxy orders, original then early material output 308/308/308/308/311/311/311/311.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

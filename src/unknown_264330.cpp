@@ -636,6 +636,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // on the retained signed prior-state graph,
 // 423/434/421/417/448/421/450/440. NOT kept: no exact or qualifying result;
 // original complete body restored.
+// N393: Next/current/prior-state signed/unsigned eight-byte storage, eight forms 455/455/453/453/490/490/456/529.
+// NOT kept: all regress and enlarge frame/body; original handles, state, flags and body restored.
+// Frame 0xa4/0xa0 and stacked actor versus EAX/EBX remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

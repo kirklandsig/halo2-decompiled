@@ -643,6 +643,10 @@ void function_245400(s_source_245400 const *source, long index,
 // frame gain; original workspaces and complete body restored. Four exact controls survive.
 // DH381: Existing array edge producer at unit scale, late-plane/independent-side/staged-cross
 // subsets 0..7: 208/204/226/227/208/204/226/227. NOT kept: best gains five and loses caller 0x245aa0; original body restored.
+// N396: Signed eight-byte primary ordinal/first decoded code/second decoded code,
+// seven subsets then complete encoded/decoded residence: 208/281/270/278/279/263/294/298.
+// NOT kept: native narrow domains, no qualifying gain and longer decoded forms; original body restored.
+// Frame 0x24/0x2c, independent side homes and delayed matrix acquisition remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

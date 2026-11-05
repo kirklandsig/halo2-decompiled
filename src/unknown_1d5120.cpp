@@ -242,6 +242,9 @@ void function_1d56f0(s_havok_component *component)
 // DH384: shared xyz rotation/translation/all 77/77/77; all-row scalar inputs 77;
 // accepted-pose snapshot 180; shared point setter 77; output/moving-pose zero
 // construction 116/244. NOT kept: no gain; record/zero forms grow the native body.
+// Round 394: complementary blocked result bool/signed-byte/short/long
+// 82/82/147/146; each with nonpositive direction 88/88/153/152. All grow the
+// body; original result, direction, frame homes and complete executable source restored.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

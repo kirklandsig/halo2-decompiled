@@ -1479,6 +1479,9 @@ struct s_133f70;
 // Y608: Actual compacted source/tag/handle output-slot references, seven subsets,
 // then all with the writable count-slot reference: eight 175s at 1309/1309.
 // NOT kept: no equality; first distance setup and cache/coefficient homes remain.
+// Round 394: initial-level/fallback/builder/success/reuse/level-change result-home names
+// individually 175/175/175/175/175/175; both complete byte-result naming orders 175/175.
+// Original names and complete body restored; distance/cache staging and coefficient transport remain.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
