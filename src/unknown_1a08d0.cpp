@@ -498,8 +498,8 @@ long function_1a1480(
 	dword buffer_size,
 	long category,
 	long priority,
+	dword volatile *size,
 	bool *success,
-	dword *size,
 	bool volatile *done)
 {
 	if (success)

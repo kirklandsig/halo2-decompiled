@@ -620,6 +620,17 @@ void function_245400(s_source_245400 const *source, long index,
 // copy of the source pointer each give 209 at retail's 783 bytes, and retail still copies
 // the source into esi and frames 0x2c against our 0x24; the declaration and the call live
 // in src/unknown_245850.cpp.
+// Round 150 (m3 lane 6, one-file harness with 0x245aa0's file, exact at 209; masked aligned counts in brackets, base [132]): the first
+// pass with the plane table read after the edge vector has retail's shape (source in ESI, matrix read at its test); only the second
+// pass differs, where the source arrives in EDX with no copy and the matrix goes to EBP from entry. 300 random forms (second material
+// first or through a record, code copies long/dword and in either order, named plane indices, side forms, plane table, edge and
+// pointer orders, table read at each use): best 202 at 783 bytes [100] (named indices, sides before the pointers, edge last), masked
+// best [98] at 787 bytes, and every one of them costs caller 0x245aa0 its match (3), only the original keeps it. All six orders of
+// source, index and matrix, each with the table at the block top or late: arrival unchanged (ECX top, EDX late; 209/203, caller
+// 0/3 or 16; matrix first 231/227). Named surface, vertex or material locals with the late table 203-204; an inline accessor for the
+// second material's record (forceinline, inline, reference; with a named record) 208 or 204 late, no dead lea, no arrival change.
+// Plane table and pointers inside the plane test 222 (766 bytes): the source does arrive in ECX and copies to a callee-saved
+// register at entry as retail's, but the matrix then becomes a register argument too (no push, caller 43).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
