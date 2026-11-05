@@ -1050,6 +1050,8 @@ real normalize2d(point2f *v);
 // numerical predicates, address-passed outputs, calls and complete body restored.
 // DL267: Existing request point setter; direction/facing zero setters; actor/default facing vector setters; actor/direction/default point setters: 166/135/175/135/229/175/135/229.
 // NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Default persistent vertical/horizontal, their pair, retry vertical/horizontal, retry pair, all four and all with direction; native DL and separate return transport remain. Scores 118/117/157/138/137/158/190/221.
+// NOT kept: output default stores are absent in native code and the unmatched defaults are not retained; original executable source restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

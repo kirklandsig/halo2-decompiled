@@ -299,6 +299,8 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // after, all three declared first, the dot in its own scope, the pointers or the dot's local at function or loop scope: 2 each.
 // DL267: Four-use normalizer double magnitude, reciprocal, both, complete squared-length, squared plus magnitude/reciprocal/both, then double j-square: 266/266/281/239/266/266/281/239.
 // NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Shared planar dot at projection/magnitude boundaries, native/late-k/squared-length views, then zero/first-product standard numeric reductions with symmetric input roles; late-k mixed views reach 2 but remain unmatched. Scores 110/110/110/64/2/2/111/111/195/195/203/203.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

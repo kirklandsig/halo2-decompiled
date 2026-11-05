@@ -1395,6 +1395,8 @@ long function_2197f0(real gain);
 // NOT kept: no exact construction repair; original entry gain, endpoint domain and complete body restored.
 // DL267: Explicit copy constructor member/body/object-byte/member-byte publication, then reference/value-return assignment with scalar/overlap-safe byte publication: 280/280/179/179/94/190/94/190.
 // NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Standard minimum at simple/current attack caps and standard release interval, seven subsets then the alternate complete interval nesting; reciprocal/elapsed and first gain-load gaps remain. Scores 144/103/160/235/211/213/189/189.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
