@@ -6394,6 +6394,27 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     bool center, bool shift, bool clip, bool skip_state, real *depth_out);
 void function_47ea0(short stage, byte flags);
 
+// score 325 (was 383; 1582 bytes, retail 1592). Round 2 of #1066 found this form; it was held while it cost then-matched
+// 0x41640 (unknown_0350e0.cpp), which matched only through whole-image layout and was given up in r695. Walked against retail:
+// control flow, both clamps, the 0x3a5c0/0x484b0/0x480a0 arguments and the constants
+// (0.0001f at 0x45dbdc, 1.0f at 0x45dbc0) agree; no behaviour bug. Found: 0x30830 is called with
+// the camera and scale globals (retail loads 0x4b9e14 and pushes 0x4b9ecc; the callee would
+// substitute them for NULL, so only the bytes differed); retail tests its result as a byte (`test
+// al, al`), ours `test eax, eax`: a (byte) cast gives retail's test but the same score (325), dropped. The
+// 8-byte `double angle` local gave the frame a slot retail lacks (0x20bc) and moved the tag out of
+// ecx; cos/sin of atan2 written twice (one fpatan) gives tag in ecx, eight stack arguments and
+// retail's 0x20b8 frame, so the volatile pointer and `selected` local are gone (points/count are
+// assigned in place, as retail's stores to [esp+0x20cc]/[esp+0x20d0]). The width is formed inside
+// each branch as in retail; the (double) casts in the length are dropped (retail multiplies the
+// float stores directly). Still differs: retail reloads all three direction floats from memory for
+// the length (i, k, j order) where ours keeps the last store in st(0); loop 2's base is
+// points + 0x10 (ours points + 0xc); retail tests perspective per iteration (`test al, al; setne
+// dl`) where ours loads it as a bool; scheduling of the dot product and the vertex-shader
+// constants. Tried: `real radius = points[i].field_10;` first in loop 2 (320, but a stack slot
+// moves the arrays 4 bytes), `byte perspective` or `perspective != 0` (332: setne hoisted to a
+// stack byte), `long bitmap` (no change), all six orders of the length sum (the compiler
+// canonicalises them: 327/329), `source` local instead of assigning points (tag in ecx but 356),
+// vector3d_from_points3d for loop 2's delta (330).
 // MiniMax D (11-01): score 385 (was 406): the points are read through a local, so the parameter
 // stays on the stack and all nine arguments travel there (ret 0x24); retail takes the tag in ecx
 // with the other eight on the stack (ret 0x20), which our call to 0x14560 still cannot match.
@@ -6403,17 +6424,10 @@ void function_47ea0(short stage, byte flags);
 // (ret 0x1c), so every stack offset differs; retail also calls 0x14560 with the stage in
 // ecx, and holds 1.0f in the vertex-shader constants at indices 0, 5, 8, 13, 16, 21, 24
 // and 29 where ours holds it at 0, 5, 10, 15, 16, 21, 26 and 31.
-// Round 2 of #1066: the volatile bitmap and `selected` removed, the midpoints/total stored into the parameters,
-// cos and sin taken from atan2 directly (one fpatan, retail's 0x20b8 frame, tag then travels in ECX), the width per
-// branch, the direction through vector3d_from_points3d and 0x30830 given &g_4b9e14/&g_4b9ecc as retail gave 325 on
-// the fast image (callers 0x4f010 314 -> 308, 0x508d0 956 -> 955), but in the full build that set costs matched
-// 0x41640 (unknown_0350e0.cpp, two stack slots swap), so none of it is kept.
 // @retail 0x4f7e0
 bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short bitmap,
     real cosine, real sine, bool segments, bool perspective, bool filtered)
 {
-    short const volatile *bitmap_reference = &bitmap;
-    short bitmap_index = *bitmap_reference;
     point2f rotations[256];
     s_501e0 midpoints[256];
     if (filtered)
@@ -6427,36 +6441,33 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
     else
         function_4fe20();
     short stage = filtered ? 1 : 0;
-    bool skip = tag != NONE ? function_14560(stage, tag, 0, 1, bitmap_index) :
-        function_14480(*(long *)(g_485a80 + 0x34), stage, bitmap_index);
+    bool skip = tag != NONE ? function_14560(stage, tag, 0, 1, bitmap) :
+        function_14480(*(long *)(g_485a80 + 0x34), stage, bitmap);
     if (!skip)
     {
         function_47ea0(stage, 0);
-        s_501e0 const *source = points;
         if (segments)
         {
+            long i = 0;
             long total = count - 1;
-            for (long i = 0; i < total; ++i)
+            for (; i < total; ++i)
             {
                 function_501e0(points + i, perspective, midpoints + i);
                 vector3f direction;
-                direction.i = points[i + 1].field_0.x - points[i].field_0.x;
-                direction.j = points[i + 1].field_0.y - points[i].field_0.y;
-                direction.k = points[i + 1].field_0.z - points[i].field_0.z;
-                real length = (real)sqrt((double)direction.i * direction.i + (double)direction.k * direction.k + (double)direction.j * direction.j);
+                vector3d_from_points3d(&points[i].field_0, &points[i + 1].field_0, &direction);
+                real length = (real)sqrt(direction.i * direction.i + direction.j * direction.j + direction.k * direction.k);
                 if (!(fabs(length) < 0.0001f))
                 {
                     real reciprocal = 1.0f / length;
-                    direction.i *= reciprocal;
-                    direction.j *= reciprocal;
-                    direction.k *= reciprocal;
+                    direction.i = reciprocal * direction.i;
+                    direction.j = direction.j * reciprocal;
+                    direction.k = direction.k * reciprocal;
                 }
                 point2f screen;
-                if (function_30830(&midpoints[i].field_0, NULL, &direction, NULL, true, true, &screen))
+                if (function_30830(&midpoints[i].field_0, &g_4b9e14, &direction, &g_4b9ecc, true, true, &screen))
                 {
-                    double angle = atan2(screen.y, screen.x);
-                    rotations[i].x = (real)cos(angle);
-                    rotations[i].y = (real)sin(angle);
+                    rotations[i].x = (real)cos(atan2(screen.y, screen.x));
+                    rotations[i].y = (real)sin(atan2(screen.y, screen.x));
                 }
                 else
                 {
@@ -6464,8 +6475,7 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
                     rotations[i].y = 0.0f;
                 }
             }
-            s_501e0 const *volatile selected = midpoints;
-            source = selected;
+            points = midpoints;
             count = total;
         }
         else
@@ -6478,19 +6488,18 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
         }
         for (long i = 0; i < count; ++i)
         {
-            real width = source[i].field_c > source[i].field_10 ? source[i].field_c : source[i].field_10;
             if (filtered)
             {
                 vector3f delta;
-                delta.i = g_4b9da0.x - source[i].field_0.x;
-                delta.j = g_4b9da0.y - source[i].field_0.y;
-                delta.k = g_4b9da0.z - source[i].field_0.z;
+                delta.i = g_4b9da0.x - points[i].field_0.x;
+                delta.j = g_4b9da0.y - points[i].field_0.y;
+                delta.k = g_4b9da0.z - points[i].field_0.z;
                 real depth = 0.0f - (g_4b9dac.i * delta.i + g_4b9dac.k * delta.k + g_4b9dac.j * delta.j);
-                point3f position = source[i].field_0;
-                real low = depth - source[i].field_10;
+                point3f position = points[i].field_0;
+                real low = depth - points[i].field_10;
                 if (low < g_4b9de0) low = g_4b9de0;
                 else if (low > g_4b9de4) low = g_4b9de4;
-                real high = depth + source[i].field_10;
+                real high = depth + points[i].field_10;
                 if (high < g_4b9de0) high = g_4b9de0;
                 else if (high > g_4b9de4) high = g_4b9de4;
                 if (high > low && depth != 0.0f)
@@ -6499,10 +6508,10 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
                     if (function_3a5c0((byte const *)NONE, low, high, 0, true, true, true, false, &adjusted_depth) && depth != adjusted_depth)
                     {
                         real scale = (adjusted_depth / depth) * 0.0f + 1.0f;
-                        real shift = 0.0f - (depth - adjusted_depth) * source[i].field_10;
-                        position.x = delta.i * shift + source[i].field_0.x;
-                        position.y = delta.j * shift + source[i].field_0.y;
-                        position.z = delta.k * shift + source[i].field_0.z;
+                        real shift = 0.0f - (depth - adjusted_depth) * points[i].field_10;
+                        position.x = delta.i * shift + points[i].field_0.x;
+                        position.y = delta.j * shift + points[i].field_0.y;
+                        position.z = delta.k * shift + points[i].field_0.z;
                         function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x84), 0);
                         function_1c710(g_51f0f0);
                         function_1cf50();
@@ -6540,14 +6549,18 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
                         constants[30] = 0.0f;
                         constants[31] = 0.0f;
                         D3DDevice_SetVertexShaderConstant(-78, constants, 8);
-                        function_484b0(&position, adjusted_depth, width * scale, source[i].field_10 * scale,
-                            rotations[i].x, rotations[i].y, source[i].field_14);
+                        real width = points[i].field_c > points[i].field_10 ? points[i].field_c : points[i].field_10;
+                        function_484b0(&position, adjusted_depth, width * scale, points[i].field_10 * scale,
+                            rotations[i].x, rotations[i].y, points[i].field_14);
                     }
                 }
             }
             else
-                function_480a0(&source[i].field_0, width, source[i].field_10,
-                    rotations[i].x, rotations[i].y, source[i].field_14);
+            {
+                real width = points[i].field_c > points[i].field_10 ? points[i].field_c : points[i].field_10;
+                function_480a0(&points[i].field_0, width, points[i].field_10,
+                    rotations[i].x, rotations[i].y, points[i].field_14);
+            }
         }
     }
     return !skip;
