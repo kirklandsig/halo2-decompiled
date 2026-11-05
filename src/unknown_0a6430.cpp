@@ -44,6 +44,13 @@ PRIVATE byte *update_object_0a6430(long index)
 // offset in the getter, an inline level getter, an inline definition lookup, the tag index read into a local (two
 // forms) 16 each; the 0x80 flag as a named bool 32 (550 bytes); the count zeroed after the definition read 20
 // (550 bytes, the tag pool load joins the head). Opening body restored.
+// Round 75 (lane 1, fast): the 0x40 block as a setter helper inline or forced 16, with a bool flag 43 (550 bytes); a level
+// test helper 16; a count helper forced 16, plain inline 126 (471 bytes, not inlined); both forced 16; an unused states
+// read beside the level 16; the level named and divided in place 16; a forced region helper with count out or states out
+// 16/16; the compared byte read first 16; the object advanced to the field 16; the model info pointer with a NULL default
+// in place 45 (553 bytes), through a forced helper with the count first or after 45/48, as a ternary 59, plain inline
+// 113. Diagnostic: a dead load at the 0x100 head gives that block retail's 0x200 shape (index first, EDX object); no
+// count of dead loads gives retail's own 0x100 shape, where only the object differs (ours ECX, retail EAX).
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
