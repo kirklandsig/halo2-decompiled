@@ -353,6 +353,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // P333: Standard binary differences with one captured origin, seven producer subsets
 // then complete raw copy: 324/328/260/304/300/297/277/386. NOT kept: no match or gain; original helper/body restored.
 // Excluded standard-transform global-array arguments; uncredited and restored.
+// T59: On the retained aggregate-scaled graph, complete coefficient-row dot with reversed
+// input before/after scale, aggregate/shared-setter rows and both dot input roles: 254 each.
+// NOT kept: all regress at 1136 bytes; original helper and whole body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

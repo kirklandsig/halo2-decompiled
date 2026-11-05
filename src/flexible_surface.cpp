@@ -584,6 +584,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the complete old snapshot; staged-cross/projection-first/projection-accumulator masks 0..7:
 // 159/159/157/157/159/159/157/157. NOT kept: unmatched mixed observations; original complete body restored.
 // Frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// T59: Consumed direction/axis/cross workspaces through the existing scaler on the retained
+// mixed-row/split-wave graph, subsets 1/2/4/3/5/6/7 and all with staged cross:
+// 172/181/164/182/180/187/174/174. NOT kept: frames and extents miss retail; original
+// complete captures, shared products, row trees, observations and body restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

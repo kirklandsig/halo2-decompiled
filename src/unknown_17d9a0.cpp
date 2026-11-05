@@ -429,6 +429,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // the point in its first argument 173 (975 bytes); plane helper, `short axis` local, named index and coordinates 173 (975 bytes).
 // M391: Computed plane-dot/paired squared-edge/reciprocal double receivers, seven subsets, then complete real receivers: 101/133/179/79/131/141/174/54.
 // NOT kept: No exact live-plane, selector or product-memory-side recovery; nonmatching one-use/precision lifetimes are discarded. Original complete body restored.
+// T59: Existing corner producer as an actual quad member, coordinate pointer/reference,
+// corner ordinal/output reference and inline/force-inline contracts: 160/160/150/150/160/160/150/150.
+// NOT kept: selector and product ranks regress; original free producer and complete body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -1038,6 +1041,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // DH372: Partial angular/first-distance grouping decisions, bool/byte/short/long,
 // 529 each at 3647 bytes. NOT kept: one-use outcomes are unmatched and enlarge the
 // native 0x21dc frame to 0x21e4; original body/helpers restored, tag/count/plane homes remain.
+// T59: Native matrix3x3 rotation basis, original/group lifetime, original/complete input
+// capture and separate/matrix-position pivot: 536/661/585/600/536/661/585/600.
+// NOT kept: three-point lead is below eight and matrix grouping is unmatched; other forms
+// lose native frame/extent. Original basis vectors, alias-safe helper and whole body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
