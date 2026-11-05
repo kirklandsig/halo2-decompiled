@@ -716,6 +716,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // then all with the outer ring phase:
 // 92/90/90/92/92/90/92/144. NOT kept: no exact publication form; radius schedule, ring conversion and rotation spill remain.
 // Original complete executable source restored.
+// Round 147 (m3 lane 6, fast). The current body with a named object pointer read before the sector index 109 (1085 bytes). On
+// the 96 form (rebuilt 96, 1090 bytes): that object pointer with the radius reference 263 (1074), with a plain radius 271 (1067),
+// the sector index first with the reference 263 again; `1.0f - cosine` named 96; the dot named 96; both named 96; a const sector
+// index 96; the i cross term named 96. The 96 form still reads the sector after `add ebp, ecx` and copies the radius through EDX.
+// The one-file harness is not faithful here (227, 1103 bytes, with three callee files). Original body restored.
 // DH348: Rotation scalar-input CRT captures in ijk/ikj/jik/jki/kij/kji order
 // 275 each; ijk/kji with native radius CRT capture 276/276. NOT kept: frame/length
 // regress and no exact boundary. Original helper, radius reference and full body restored;

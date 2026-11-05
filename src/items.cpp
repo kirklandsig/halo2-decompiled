@@ -745,6 +745,12 @@ struct s_item_collision_bsp
 // N386: Complete CRT plane/marker-axis/fallback-axis transports, subsets 1..7:
 // 337/251/324/202/333/268/307; native copy construction at all three boundaries 307.
 // NOT kept: no byte equality; original planes, axis copies, arithmetic and full body restored.
+// F391: Standard backward axial-input/normal transports and complete paired final range sums,
+// individual/pair/complete graphs, then backward final traversal: 267/343/370/313/397/334/343/411.
+// NOT kept: all regress; normal/range graphs also displace the native frame or extent. Original
+// planes, axis/spin homes, arithmetic, random draws, pending-k join, calls and include set restored.
+// Paired range sums also raise matched 0xd9640 from 0 to 3 in the reduced image; restored.
+// Protected plane-index width, plane joins and native spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
