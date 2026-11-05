@@ -1465,6 +1465,8 @@ struct s_looping_detail_request
 // original request offset 110/131/135/134; native temporary/copy 134/151/188/187.
 // NOT kept: tested completion requires equality; first-player query still expands.
 // Original whole body restored; native detail/offset transport remains.
+// B448: Complete fallback selection/placement/publication provider, detail and source pointer/reference, forced/ordinary inline:
+// 159/159/159/159/434/434/434/434. NOT kept: no byte match; complete original body restored.
 // M390: Success-owned common request-flags publication, dword/long/word/byte,
 // original output then native temporary/copy: 167/167/171/157/196/196/200/191. NOT kept: tested
 // completion needs equality; original body restored, query/offset transport remains.

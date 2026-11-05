@@ -1972,6 +1972,10 @@ real game_time_get_seconds();
 // seven subsets, then complete inputs with the native forward vector value: 586/537/583/507/586/537/583/519.
 // NOT kept: no qualifying gain or equality; all scalar/copy input forms and complete body restored.
 // Native frame 0x94, addressed outputs and definition/NONE homes remain.
+// B451: Complete animation-channel scalar receivers at original/reflection/
+// attenuation/time/admitted/angle/curve phases, then separate default assignment:
+// 522/516/544/528/536/536/536/522. NOT kept: no exact output-storage graph. Original color record,
+// producers, APIs and full body restored; frame/output/definition/NONE homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2618,6 +2622,10 @@ real magnitude3d(vector3f const *v);
 // J256: Complete admission/axis dot loops, parallel product parts, immutable and separated producers:
 // 184/170/184/170/170/170/170/170. NOT kept: admission loops regress and every other form ties 170; raw-length and promoted-dot homes do not recover
 // Original executable source restored; native frame and allocation gaps remain.
+// B451: Explicit raw current/target/both magnitude receivers on the recovered
+// fallback-loop frame, mutable then immutable, followed by exact widening of
+// current/target receivers: 251/309/320/251/309/320/284/321. NOT kept: no native-matching root/storage
+// graph. Original full body restored; raw-length and promoted-dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
