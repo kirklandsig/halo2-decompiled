@@ -1379,6 +1379,8 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
+// MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
+// outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
 // score 218 (was 218): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // Earlier at 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
 // Round 25 (lane I, fast): the two locals whose homes are swapped (`unit` and `mode`, ours
