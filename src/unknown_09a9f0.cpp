@@ -608,6 +608,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // M380: Native index/attached-identity/both publications through memcpy 49/49/49,
 // memmove 109/76/122; both with early Boolean completion 77/94. NOT kept: no byte match;
 // original scalar stores, validity result, virtual tuples and complete body restored.
+// Round 153 (fast; 0xa5a00/0xa5b10/0xa5b40/0xa5b80/0x108e10 matched throughout): the validity branch on `object_index != NONE` with
+// the long result kept for the return 76 (189 bytes); the flagged arm clearing the result before the entity store 50; the in/out value
+// declared, then assigned 49; the creation result through a chained `entity->object_index = object_index = v29(...)` 49; `if (value != 0)`
+// 49 (same code each). Re-measured: the store and attach through 0xbb780 49.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

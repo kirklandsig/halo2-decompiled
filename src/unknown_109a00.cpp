@@ -535,6 +535,13 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // `up` before the validity test 145 (caller 11), declared first 56; a const forward pointer 65; found as long 75; direct products 69-73, scalar scaled_i/j/k 66, cross3f 69; the definition through a const
 // reference to its pointer 97 (911 bytes), through a reference to the record 65 (same code); a second definition test threaded away 65 (same code), `if (definition)` 247; failure stores in early returns 288 (943 bytes,
 // retail's pops before stores, caller 0), threaded through `body_index = NONE` and else 112 (same code), `== NONE` first with a return 218 (911), a success flag 132; on the earlier axis form, no `valid = true` or `valid = 2` flips EBX/EBP (diagnostic).
+// Round 153 (fast with 0xb7060): six of the 56 are `call` rows flagged only by a 9-byte offset shift (ours forms the axes from the transform
+// in EBP, 3-byte leas; retail from the entry in EBX, 6-byte leas) and ten are padding after our shorter tail, where the not-valid exit shares
+// the failure block's epilogue (retail gives it its own, so the failure block pops before its stores). Tried: the validity test as an early
+// return 56; the definition fetched after the default body 81; the axes from the entry with the transform kept for the matrix call 115
+// (928 bytes, the head flips, 0xb7060 11; close to round 151's pointers from entry); an explicit return closing the validity block 56 (same
+// code); the definition as a pointer to const 56; the matrix call given `&entry->transform` 56 (same code). Re-measured: `forward` named
+// beside `up` 65.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
