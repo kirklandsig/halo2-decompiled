@@ -1796,6 +1796,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // DH366: Original final projection zero/nonzero admission, bool/byte/short/long outcomes:
 // 193/193/193/193/193/193/193/193. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// Y602: Plain component negation/case-three/case-four displacement subsets, then forced existing
+// perpendicular producer: 193/193/193/193/193/193/193/193.
+// NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3614,6 +3617,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // DH366: Original-site first raw/clamped fade equality, accepted/rejected bool/byte/short/long outcomes:
 // 177/177/177/177/177/177/177/177. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// Y602: Standard min/max temporal/first/final clamp subsets and immutable consumers:
+// 155/252/258/289/283/288/322/322.
+// NOT kept: 155 restores frame 0x1c by adding two out-of-line clamp calls absent from retail; no native-
+// shape keeper; original complete body and helpers restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -5079,6 +5086,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // AC546: Existing shared pass helper returns availability to all three draw callers in
 // bool/signed-char/byte/short/word/long/dword/int: eight at 138. NOT kept: no gain or
 // native publication repair; original shared helper and every complete caller restored.
+// Y602: Existing bit-vector availability byte/bool/short/long, direct/repeated group receivers:
+// 138/138/213/222/138/138/213/222.
+// NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
