@@ -1196,6 +1196,9 @@ done:
 // N378: Complete object completion chain with eligibility/model/fallback results in the actual return result:
 // 181/133/181/133/200/147/200/147. NOT kept: no byte equality or qualifying native-shape gain;
 // original executable source restored; exclusion/result/NONE and direction homes remain.
+// Lane 12 r92: matches (0) with `bool const *unused_reference = &unused; __assume(*unused_reference);` plus
+// `__assume(!found)` in the !found arm, hit/found flags and plain locals; held, not kept: the assume on the
+// unread parameter states a value nobody checks (patch build/held/lane12-r92-14af40-assume-unused.patch).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
