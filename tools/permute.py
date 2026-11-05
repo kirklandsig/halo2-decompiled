@@ -2236,20 +2236,41 @@ def _reads_memory(lv, types):
     return False
 
 
+def _in_literal(spans, pos):
+    return any(a <= pos < b for a, b in spans)
+
+
+def _scope_end(body, pos, pairs):
+    """The end of the block a declaration at pos lives in (its '}', or the body's end)."""
+    o = _enclosing(body, pos, pairs)
+    return pairs[o] if o is not None else len(body)
+
+
 def mut_remove_alias(body, rng, context=None):
     """A local that only aliases something else -> that thing at each use:
     'T *r = &x;' (x a name or an lvalue chain) read as *r, r-> or r, or
-    'T &r = x;' read as r. Left alone when the alias's type is not known to be
-    the aliased object's (a const reference to another type binds a copy),
-    when anything between the declaration and the last use writes a name the
-    lvalue reads (its root, an index) or a pointer in its chain, or takes the
-    alias's address, when a call comes between and the chain goes through a
-    pointer loaded from memory, or when the alias is itself written (a pointer
-    alias) or declared twice. A call between counts when the address depends
-    on memory: a pointer loaded from a field or an element, a global the
-    chain goes through or indexes, or an index that reads memory."""
+    'T &r = x;' read as r. Left alone when:
+    - the lvalue has a side effect (r = &a[i++] would step i at each use);
+    - the alias's type is not known to be the aliased object's (a const
+      reference to another type binds a copy), or it is declared volatile;
+    - anything from the declaration to the end of its block (so a loop that
+      goes round again counts) writes a name the lvalue reads (its root, an
+      index) or a pointer in its chain, or takes a pointer alias's address,
+      or writes the pointer alias itself;
+    - the body takes the address of a name the lvalue reads anywhere (a write
+      through that pointer would not show);
+    - a call comes in that range and the address depends on memory: a pointer
+      loaded from a field or an element, a global the chain goes through or
+      indexes, or an index that reads memory;
+    - the declaration is the unbraced body of a control statement, the name is
+      declared twice, or it appears in a comment or a string."""
     lines = body.split('\n')
     types = declared_types(body, context)
+    pairs = _brace_map(body)
+    spans = _literal_spans(body)
+    starts = [0]
+    for l in lines[:-1]:
+        starts.append(starts[-1] + len(l) + 1)
     cands = []
     for i, line in enumerate(lines):
         m = ALIAS_DECL.match(line)
@@ -2259,25 +2280,36 @@ def mut_remove_alias(body, rng, context=None):
         if bool(ref) == bool(amp) or (amp and '*' not in m.group('ptr')):
             continue
         name, lv = m.group('name'), m.group('lv').strip()
-        if name in _lvalue_names(lv) or (context and re.search(r'\b%s\b' % name, context.params)):
+        if name in _lvalue_names(lv) or (context and re.search(r'\b%s\b' % name, context.params)) or not _pure(lv):
             continue
         declared = _normal(m.group('type'), m.group('ptr').count('*'))
         target = declared if ref else _deref(declared)
         got = expr_type(lv, types, context)
         if not target or got is None or _unconst(got) != _unconst(target):
             continue
+        at = starts[i] + len(m.group('indent'))
+        if _controlled(body, at):
+            continue                                            # deleting it would hand the if its next statement
         if sum(1 for l in lines if (d := DECLARATION.match(l)) and _is_declaration(d) and d.group('name') == name) > 1:
             continue
-        uses = [j for j, l in enumerate(lines) if j != i and re.search(r'(?<![\w.>])%s\b' % name, l)]
+        word = r'(?<![\w.])(?<!->)%s\b' % re.escape(name)
+        if any(_in_literal(spans, x.start()) for x in re.finditer(word, body)):
+            continue                                            # in a comment or a string
+        uses = [j for j, l in enumerate(lines) if j != i and re.search(word, l)]
         if not uses or uses[0] < i:
             continue
-        span = lines[i + 1:uses[-1] + 1]
+        end = _scope_end(body, at, pairs)
+        last = max(j for j in range(len(lines)) if starts[j] <= end)
+        span = lines[i + 1:last + 1]
         if amp and any(re.search(r'(?<!&)&\s*%s\b' % name, l) for l in span):
-            continue                                             # the pointer's address (a reference's is lv's)
+            continue                                            # the pointer's address (a reference's is lv's)
         if amp and any(_writes_variable(re.sub(r'\*\s*%s\b' % name, '', l), name) for l in span):
-            continue                                             # the pointer itself moves
+            continue                                            # the pointer itself moves
         if any(_writes_variable(l, n) for n in _lvalue_names(lv) for l in span):
             continue
+        others = '\n'.join(lines[:i] + lines[i + 1:])
+        if any(re.search(r'(?<!&)&\s*%s\b(?!\s*(?:->|\.|\[))' % re.escape(n), others) for n in _lvalue_names(lv)):
+            continue                                            # a pointer to it could write it unseen
         if any(_writes_chain(l, p) for p in _lvalue_pointers(lv) for l in span):
             continue
         if _reads_memory(lv, types) and any(_has_call(l) for l in span):
@@ -2301,15 +2333,21 @@ def mut_remove_alias(body, rng, context=None):
             return (star or '') + bare
         return (star or '') + lv + (arrow or '')
 
-    pat = re.compile(r'(?P<star>\*\s*)?(?<![\w.>])%s\b(?P<arrow>\s*->)?' % re.escape(name))
-    tight = re.compile(r'(?<![\w\])\]])\(\s*(%s)\s*\)' % re.escape(lv)) if _postfix(lv) else None
+    def untight(x):
+        # (x) -> x only where the parentheses are the operand's own: not after a name, a keyword, ')' or ']'
+        # (a call's, an if's or sizeof's, a cast's), and before a postfix operator or the operand's end
+        pre, post = x.string[:x.start()].rstrip(), x.string[x.end():].lstrip()
+        own = not re.search(r'[\w)\]]$', pre) and (post[:1] in (')', ',', ';', ']') or post.startswith(('->', '.', '[')))
+        return x.group(1) if own else x.group(0)
+
+    pat = re.compile(r'(?P<star>\*\s*)?(?<![\w.])(?<!->)%s\b(?P<arrow>\s*->)?' % re.escape(name))
+    tight = re.compile(r'\(\s*(%s)\s*\)' % re.escape(lv)) if _postfix(lv) else None
     for j in uses:
         lines[j] = pat.sub(use, lines[j])
         if tight:
-            lines[j] = tight.sub(r'\1', lines[j])                # (*r) -> (x) -> x
+            lines[j] = tight.sub(untight, lines[j])             # (*r) -> (x) -> x
     del lines[i]
     return '\n'.join(lines)
-
 
 HELPER_DEF = re.compile(r'^[ \t]*(?P<pre>(?:(?:static|PRIVATE|inline|__inline|__forceinline)[ \t]+)+)'
                         r'(?P<ret>(?:const[ \t]+)?[A-Za-z_]\w*(?:[ \t]*\*)*)[ \t]*\b(?P<name>[A-Za-z_]\w*)[ \t]*'
@@ -2341,6 +2379,20 @@ class _Helper:
                 if w not in params and w not in KEYWORDS}
 
 
+def _literal_type(e):
+    """The type of a number literal as the compiler reads it, or None: 0.5f real, 0.5 double,
+    1u and 0x80000000 (too big for long) dword, other integers long."""
+    m = re.fullmatch(r'(?:\d+\.\d*|\.\d+|\d+(?=[eE]))(?:[eE][-+]?\d+)?(?P<f>[fF])?|(?P<i>0[xX][0-9a-fA-F]+|\d+)'
+                     r'(?P<s>[uUlL]*)', e)
+    if not m:
+        return None
+    if m.group('i') is None:
+        return 'real' if m.group('f') else 'double'
+    if 'u' in m.group('s').lower() or int(m.group('i'), 0 if m.group('i').lower().startswith('0x') else 10) > 0x7fffffff:
+        return 'dword'
+    return 'long'
+
+
 def _arith_type(expr, types, context):
     """The type of an arithmetic expression after the usual conversions: real
     when an operand is real, dword when one is unsigned, long for the other
@@ -2352,9 +2404,14 @@ def _arith_type(expr, types, context):
     if not ops:
         if _parenthesized(e):
             return _arith_type(e[1:-1], types, context)
-        if e[0] in '-+~' and not re.match(r'-?\d', e):
+        if e[0] == '!':
+            return 'bool'
+        if e[0] in '-+~' and not e.startswith(('--', '++')):
             t = _arith_type(e[1:], types, context)
             return 'long' if t in ('short', 'word', 'char', 'byte', 'bool', 'int') else t
+        lit = _literal_type(e)
+        if lit:
+            return lit
         t = expr_type(e, types, context)
         return 'long' if t == 'int' else t
     names = {op for _, op in ops}
@@ -2565,9 +2622,14 @@ def _collapse(body, h, context, types):
         return []
     atomic, pats = got
     out = []
+    spans = _literal_spans(body)
     for pat in pats:
         for m in pat.finditer(body):
+            if any(a < m.end() and m.start() < b for a, b in spans):
+                continue                                        # in or across a comment or a string
             if h.kind == 'stmts':
+                if _controlled(body, m.start() + len(m.group('indent'))):
+                    continue                                    # the first store is an unbraced if's or loop's body
                 args = _helper_args(m, h, types, context, stmts=True)
                 if args is not None and not re.search(r'^[ \t]*(?:case\b|default\b|\w+\s*:(?!:))', m.group(0), re.M):
                     out.append((m.start(), m.end(), f'{m.group("indent")}{h.name}({", ".join(args)});'))
@@ -2585,8 +2647,17 @@ def _helper_args(m, h, types, context, stmts):
     compute something else: an argument with a side effect, one whose type is
     not the parameter's (helpers only), or, for stores (stmts), one that the
     stores could change (anything but a literal, a local or parameter whose
-    address is not taken, or the address of one)."""
+    address is not taken, or the address of one). Argument types are the
+    usual conversions' (_arith_type), so (x + y) with real x is real and 0.5
+    is a double. No volatile name may be in the code."""
     body = m.string
+    volatile = _volatile_names(body, context)
+    if volatile & set(re.findall(r'[A-Za-z_]\w*', m.group(0))):
+        return None                                             # a call would read a volatile name another number of times
+    if context and any(re.search(r'^[ \t]*#[ \t]*define[ \t]+%s\b' % re.escape(w), context.text, re.M)
+                       for g, v in m.groupdict().items() if g.startswith('h_') and v
+                       for w in set(re.findall(r'[A-Za-z_]\w*', v))):
+        return None                                             # a macro in an argument can stand for anything
     args = []
     for t, n in h.params:
         g = 'h_' + n
@@ -2597,7 +2668,7 @@ def _helper_args(m, h, types, context, stmts):
             root = re.match(r'\w+', a.lstrip('&')).group(0)
             if stmts and (not re.fullmatch(r'&?[A-Za-z_]\w*', a) or root not in types):
                 return None
-            if h.kind != 'macro' and not _same_type(expr_type(a, types, context), t):
+            if h.kind != 'macro' and not _same_type(_arith_type(a, types, context), t):
                 return None
         elif gd.get(g) is not None:
             a = gd[g].strip()
@@ -2605,7 +2676,7 @@ def _helper_args(m, h, types, context, stmts):
                 return None
             if stmts and not (re.fullmatch(r'-?\d[\w.]*', a) or (a in types and not re.search(r'(?<!&)&\s*%s\b' % a, body))):
                 return None
-            if h.kind != 'macro' and not _same_type(expr_type(a, types, context), t):
+            if h.kind != 'macro' and not _same_type(_arith_type(a, types, context), t):
                 return None
         else:
             return None                                         # a parameter the code does not read
@@ -2617,46 +2688,60 @@ def _helper_args(m, h, types, context, stmts):
     return args
 
 
+OPERATOR_CHARS = set('+-*/%&|^!=<>:')
+
+
 def _expand(body, h, context, types):
     """Calls of helper h in the body, each with the code it stands for: (start, end, code)."""
     out = []
-    for m in re.finditer(r'(?<![\w.>])%s\s*\(' % re.escape(h.name), body):
+    spans = _literal_spans(body)
+    volatile = _volatile_names(body, context)
+    whole = ' '.join(h.parts)
+    conditional = re.search(r'\?|&&|\|\|', whole) is not None
+    for m in re.finditer(r'(?<![\w.])(?<!->)%s\s*\(' % re.escape(h.name), body):
+        if _in_literal(spans, m.start()):
+            continue
         got = _call_args(body, m.end() - 1)
         if got is None:
             continue
-        spans, end = got
-        args = [body[s:e].strip() for s, e in spans]
+        spans_, end = got
+        args = [body[s:e].strip() for s, e in spans_]
         if args == [''] and not h.params:
             args = []
         if len(args) != len(h.params):
             continue
-        whole = ' '.join(h.parts)
-        if any(len(re.findall(_param_name(p) if h.kind != 'macro' else r'\b%s\b' % re.escape(p), whole)) != 1
-               and not SIMPLE_ARG.match(a) and not (h.kind != 'macro' and re.fullmatch(r'&\s*[A-Za-z_]\w*', a))
+        # #1002's single-read rule: an argument read other than once, or in an expression where a read can be
+        # skipped, must be a plain name or literal (not volatile, not a macro), or for a helper a local's address
+        if any((conditional or len(re.findall(_param_name(p) if h.kind != 'macro' else r'\b%s\b' % re.escape(p), whole)) != 1)
+               and not _plain_arg(a, volatile, context)
+               and not (h.kind != 'macro' and re.fullmatch(r'&\s*[A-Za-z_]\w*', a) and a.lstrip('&').strip() not in volatile)
                for (_, p), a in zip(h.params, args)):
             continue
         if h.kind == 'macro':
             raw = dict((p, a) for (_, p), a in zip(h.params, args))
             alt = '|'.join(map(re.escape, raw))
-            # as the preprocessor does; an argument goes in bare where the body already parenthesizes it,
-            # or where it is a name or a literal
+
+            # as the preprocessor does: each parameter becomes its argument's text, nothing added; the
+            # parentheses the body puts around a name or a literal go (they change nothing)
             def put(x):
                 if x.group(2):
-                    a = raw[x.group(2)]
-                    return a if SIMPLE_ARG.match(a) else f'({a})'
+                    return raw[x.group(2)]
                 a, before, after = raw[x.group(1)], x.string[:x.start()], x.string[x.end():]
                 call_or_cast = re.search(r'[\w\])]\s*$', before) or re.match(r'\s*[\w(]', after)
-                return a if SIMPLE_ARG.match(a) and not call_or_cast else f'({a})'
-            new = re.sub(r'\(\s*(%s)\s*\)|\b(%s)\b' % (alt, alt), put, h.parts[0])
+                return a if _plain_arg(a, volatile, context) and not call_or_cast else f'({a})'
+            new = re.sub(r'\(\s*(%s)\s*\)|(?<![\w.])(?<!->)\b(%s)\b' % (alt, alt), put, h.parts[0])
             if _parenthesized(new) and _postfix(new[1:-1]):
                 new = new[1:-1]
-            elif not _postfix(new):
-                new = f'({new})'
+            before, after = body[:m.start()], body[end:]
+            if before[-1:] in OPERATOR_CHARS and new[:1] in OPERATOR_CHARS:
+                new = ' ' + new                                 # '-' then '-x' must not read as '--x'
+            if after[:1] in OPERATOR_CHARS and new[-1:] in OPERATOR_CHARS:
+                new = new + ' '
             out.append((m.start(), end, new))
         elif h.kind == 'expr':
             # '&x' for a pointer parameter of x's type reads as x. before a member
             arrows = {p: a.lstrip('&').strip() + '.' for (t, p), a in zip(h.params, args)
-                      if re.fullmatch(r'&\s*[A-Za-z_]\w*', a) and _same_type(expr_type(a, types, context), t)}
+                      if re.fullmatch(r'&\s*[A-Za-z_]\w*', a) and _same_type(_arith_type(a, types, context), t)}
             lookup = {p: _cast_arg(a, t, types, context) for (t, p), a in zip(h.params, args)}
             new = _substitute(h.parts[0], lookup, arrows)
             c = re.match(r'\(\s*(?P<t>' + TYPE + POINTERS + r')\s*\)', new)
@@ -2669,27 +2754,29 @@ def _expand(body, h, context, types):
             line_start = body.rfind('\n', 0, m.start()) + 1
             if body[line_start:m.start()].strip() or not re.match(r'\s*;[ \t]*(?:\n|$)', body[end:]):
                 continue                                        # not a statement of its own
+            if _controlled(body, m.start()):
+                continue                                        # the unbraced body of an if or a loop: one statement
             semi = body.index(';', end) + 1
             ok, lookup, arrows = True, {}, {}
             for (t, p), a in zip(h.params, args):
                 if t.endswith('*'):
-                    pt = expr_type(a, types, context)
-                    if not _same_type(pt, t):
+                    if not _same_type(_arith_type(a, types, context), t):
                         ok = False
                         break
                     if re.fullmatch(r'&\s*[A-Za-z_]\w*', a):
                         arrows[p] = a.lstrip('&').strip() + '.'
-                    elif re.fullmatch(r'[A-Za-z_]\w*', a):
+                    elif re.fullmatch(r'[A-Za-z_]\w*', a) and a not in volatile:
                         arrows[p] = a + '->'
                     else:
                         ok = False
                         break
                     lookup[p] = a
                 else:
-                    if not (re.fullmatch(r'-?\d[\w.]*', a) or (a in types and not re.search(r'(?<!&)&\s*%s\b' % a, body))):
+                    if not (_literal_type(a.lstrip('-')) or (a in types and a not in volatile
+                                                             and not re.search(r'(?<!&)&\s*%s\b' % a, body))):
                         ok = False
                         break
-                    lookup[p] = a if _same_type(expr_type(a, types, context), t) else f'(({t}){a})'
+                    lookup[p] = a if _same_type(_arith_type(a, types, context), t) else f'(({t}){a})'
             if not ok or {v[:-1] for v in arrows.values() if v.endswith('.')} & set(lookup.values()):
                 continue
             indent = body[line_start:m.start()]
@@ -2711,13 +2798,14 @@ def _substitute(text, lookup, arrows):
         if arrow and p in arrows:
             return arrows[p]
         return lookup[p] + (arrow or '')
-    return re.sub(r'(?<![\w.>])(%s)\b(\s*->\s*)?' % '|'.join(map(re.escape, lookup)), one, text)
+    return re.sub(r'(?<![\w.])(?<!->)(%s)\b(\s*->\s*)?' % '|'.join(map(re.escape, lookup)), one, text)
 
 
 def _cast_arg(a, t, types, context):
-    if _same_type(expr_type(a, types, context), t):
-        return a if SIMPLE_ARG.match(a) else f'({a})'
-    return f'(({t}){a})' if SIMPLE_ARG.match(a) else f'(({t})({a}))'
+    plain = _plain_arg(a, set(), context)                      # a macro name goes in parentheses
+    if _same_type(_arith_type(a, types, context), t):
+        return a if plain else f'({a})'
+    return f'(({t}){a})' if plain else f'(({t})({a}))'
 
 
 def mut_existing_helper(body, rng, context=None):
@@ -2731,7 +2819,11 @@ def mut_existing_helper(body, rng, context=None):
     must be a literal, a local or parameter whose address is not taken, or the
     address of one. Expanding: a call -> the code, with #1002's argument casts
     and single-read rule (a helper's expression is cast to its return type; a
-    macro is substituted as the preprocessor does). Same-file one-expression
+    macro is substituted as the preprocessor does, nothing added). Types are
+    the usual conversions' (_arith_type: 0.5 is a double, (x + y) with real x
+    is real). Never: stores in or out of the unbraced body of a control
+    statement, code with a volatile name, a macro in a collapsed argument,
+    code in a comment or a string. Same-file one-expression
     helpers are mut_inline_helper's to expand, and TEST_FIELD_BIT is
     mut_test_field_bit's. A helper (not a macro) is left alone where the
     function has a local or parameter named like a global, type or function
