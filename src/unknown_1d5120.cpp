@@ -239,6 +239,9 @@ void function_1d56f0(s_havok_component *component)
 // return 153; persistent body/query receivers 77/77; placement/registration and body/
 // registration 153/153. NOT kept: no gain; registration moves the frame, and cdecl
 // raises both setter users. Original contracts restored; lookup and setter transport remain.
+// Round 394: complementary blocked result bool/signed-byte/short/long
+// 82/82/147/146; each with nonpositive direction 88/88/153/152. All grow the
+// body; original result, direction, frame homes and complete executable source restored.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)
