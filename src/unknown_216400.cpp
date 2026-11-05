@@ -427,6 +427,10 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // Round 147: pointer helper defined after its caller 20; bool helper after its caller 32, also plain and
 // force-inline 32/32; at that later position, entry/list order swapped 32, generic data input 32, explicit
 // data size 32, and a native list reference 32. The later bool family keeps EAX/CL/EDX, not retail's ESI/AL/ECX.
+// Round 136 (fast): the bool helper with one to three unused locals at the top or in the loop 51 each (in the bool
+// family every scratch pair is rotated, the format call's lea pair before the append included); a count local with an
+// index copy and `count + 1` stored first 51; a count local copied into `entries[count]`, then `count + 1` 33; a struct
+// assignment 51; through a count pointer with `index = (*count)++` 51.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

@@ -1261,6 +1261,10 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // the flag declared after the masks or after the setup call 123/127; split from its initial value 123; compared with `== false` 118.
 // Diagnostic, not kept: all sibling and all indexed behave alike, one/two/three masks uninitialised 119/111/123, with retail's loops from the first.
 // 0x13a532 keeps the zero with the same ten uses, so what lowers the count here is still unknown.
+// Round 92 (m3 lane 12, fast): two masks chained with a sibling first loop 122, three chained with an indexed first loop 122; the later counts named ahead
+// of their guards (second, third, both) with a sibling or indexed first loop 118 each (same code); offset-compared do re-measured 12. `__assume` forms: on the
+// count, the offset, the pointer, a count bound or `count > 0` in the for form 1 each; on the first offset, pointer, item, field or count with a sibling first
+// loop 118 each; on the later counts or offsets, the first mask or the pointer after the setup 118 each. A 600 s permuter run, none below 1.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

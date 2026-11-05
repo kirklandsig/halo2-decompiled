@@ -961,6 +961,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// MiniMax H (11-05): no new form, no lower score; forcing 0x94420 inline gives 106 with retail's
+// convention and the delayed ESI save, but 0x93aa0 then inlines it too and loses its match, and
+// retail's final code has no use that crosses a call to home the address in EDI.
 // MiniMax A (11-04, run 41): no new form, no lower score (196 in the 16-address set, 153 in the wider one);
 // the switch's cases still take their arguments in registers other than retail's (it pushes edi where ours
 // pushes esi), so the callee conventions decide this one.
