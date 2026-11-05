@@ -377,6 +377,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // N395: Aggregate-scaled complete view returns with pointer/reference/value input,
 // cursor/indexed output 278/281/278/281/401/404; actual returned-output consumers
 // 276/273. NOT kept: no equality/native frame recovery; original helper and full body restored.
+// N398: Current aggregate helper static-inline/static/external-inline/external-forceinline, void then output-pointer result 206/206/206/206/206/206/206/206.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
