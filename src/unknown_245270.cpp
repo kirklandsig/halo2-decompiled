@@ -641,6 +641,8 @@ void function_245400(s_source_245400 const *source, long index,
 // M397: Complete edge/cross/transformed-point defaults, masks 1/2/4/3/5/6/7,
 // then all at entry: 213/209/223/213/230/223/230/230. NOT kept: no equality or eligible native-
 // frame gain; original workspaces and complete body restored. Four exact controls survive.
+// DH381: Existing array edge producer at unit scale, late-plane/independent-side/staged-cross
+// subsets 0..7: 208/204/226/227/208/204/226/227. NOT kept: best gains five and loses caller 0x245aa0; original body restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

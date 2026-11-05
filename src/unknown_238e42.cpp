@@ -1125,6 +1125,9 @@ bool __stdcall function_2399da(long controller_index)
 // M397: Complete selection/member/membership output-buffer defaults, masks 1/2/4/3/5/6/7,
 // then all aggregate-initialized at entry: 174/158/123/193/196/181/212/234. NOT kept: added
 // stores and no exact or eligible gain; original buffers and full body restored.
+// DH381: Validated selected-pointer producers on original/dedicated results, eight forms
+// 159/163/163/159/97/98/98/97; native-register completion follow-ups 97/97/90/90.
+// NOT kept: extra null-result/re-test or original rank conflict; original complete body restored.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

@@ -333,6 +333,12 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // M397: Direct input with fixed absolute-residual producer and double root/signed-root/
 // scaled-correction parts, masks 0..7: 804/804/804/810/804/810/810/810. NOT kept: no exact or
 // eligible native-frame gain; original input storage, private helpers and full body restored.
+// DH381: Direct-input query-admission positive/rejecting prefixes at four ordered boundaries
+// 750/750/750/750/750/750/750/750. NOT kept: ties retain frame 0x8c versus 0x88; original body restored.
+// DH383: Complete lower-priority/default numeric clamp producers on direct input:
+// 834/807/837/834/805/834/834/832. NOT kept: all regress, lose the native frame and shorten away from
+// retail. Original input access, clamp and every helper/body restored; early object/input/heading homes
+// remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

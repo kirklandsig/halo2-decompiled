@@ -1399,6 +1399,10 @@ long function_2197f0(real gain);
 // DL267: Explicit copy constructor member/body/object-byte/member-byte publication, then reference/value-return assignment with scalar/overlap-safe byte publication: 280/280/179/179/94/190/94/190.
 // NOT kept: no byte match or eligible native repair; original executable source restored.
 // DL272: Standard minimum at simple/current attack caps and standard release interval, seven subsets then the alternate complete interval nesting; reciprocal/elapsed and first gain-load gaps remain. Scores 144/103/160/235/211/213/189/189.
+// DH382: Independent terminal completion for composite/simple/current attack, held gain,
+// same-ambience group, absent-current gain, rejected attack duration and disabled admission:
+// 183/184/176/184/184/184/165/175. NOT kept: every form regresses and shortens away from retail;
+// original complete body restored; reciprocal/elapsed, first gain load and late attack join remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {

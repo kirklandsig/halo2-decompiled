@@ -3408,6 +3408,8 @@ struct s_voice_route_choice
 // DL271: Typed native pair-array zero fills, forward range/count then reverse
 // range/count, bitwise radio 383/384/421/403; conditional radio 412/411/409/405.
 // NOT kept: no equality or gain; original routing, mixer initialization and full body restored.
+// DH381: Excluded-route iteration completion with seven nearest-guard graphs, then split
+// guards and native radio branch: 363/363/363/363/363/363/363/411. NOT kept: no exact loop/frame graph; original body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

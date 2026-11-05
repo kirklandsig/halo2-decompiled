@@ -352,6 +352,10 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // Round 400: complete ordinary zero-limit/admission results in bool, byte,
 // short and long domains 249 each, 1030/1030 bytes. NOT kept: no gain or
 // match; original scalar tests and body restored. Frame and early save remain.
+// DH384: shared xyz requested/default/turn/orientation/all native transfers
+// 256/262/289/260/361; complete point-helper transfers 361; all-output zero
+// construction 392, with shared transfers 491. NOT kept: all regress and grow;
+// the native 0x6c frame, late ESI and basis/position homes remain unresolved.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

@@ -386,6 +386,8 @@ struct s_24e9c7_bounds
 // M397: Immutable actual upper/side/reverse records, masks 1/2/4/3/5/6/7,
 // then all with immutable scalar producers: 125/125/125/125/125/125/125/125. NOT kept: no exact or
 // eligible gain; original records, observations and complete body restored. Early spill/homes remain.
+// DH381: Native scalar-SSE dimension conversion/full-expression producers, height/width
+// modes 10/01/11/20/02/22/12/21: 241/241/241/230/229/251/233/242. NOT kept: all force frame alignment absent in retail and expand the body; original restored.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

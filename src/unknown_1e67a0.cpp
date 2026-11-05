@@ -776,6 +776,16 @@ bool g_51e9bc;
 // Y603: Complete indexed velocity product/copy producers, original/direct projection argument:
 // 114/227/237/218/51/226/238/222. NOT kept: 114 gains only four; 51 grows from native 1077 to 1078 bytes.
 // Original body restored; projection ownership and native jitter factor spills remain.
+// DH377: Direct dot at the existing scaled-add argument 57 (1078 bytes); complete dot then negation 112.
+// Existing vector scale, direct/named projection 140/131; particle scale, named/direct 131/140;
+// separate correction, named/direct 133/137. Initial velocity setter/complete row products 152/122.
+// On the direct-dot lead, native jitter scale/limit stages 65/45/67/56, then output
+// declaration/setter 45/65 (best 1081 bytes).
+// NOT kept: closer forms move away from retail's 1077 bytes; the native-length 112 gains only six.
+// Original body restored at 118; initial i-row ownership, projection operands and jitter factor homes remain.
+// DH380: Destination-owned control copy then limit modulation via assignment/memcpy/setter/rows,
+// original then direct shared projection: 230/228/242/112/227/225/247/56. NOT kept: intermediate
+// output transfers require equality; original products, observations, projection and complete body restored.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
