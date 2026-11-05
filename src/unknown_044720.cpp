@@ -594,6 +594,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P342: Actual provider-node and table-base matrix record lvalues, mutable/read-only alone and all four
 // pairs: 182/182/182/182/182/182/182/182. NOT kept: no equality; original matrix receivers and whole
 // body restored. Entry/index spill and center/query/bound homes remain.
+// M396: Immutable bitmap/bound-point/displacement producer subsets 1/2/4/3/5/6/7,
+// then complete immutable value/receiver graph: eight at 182. NOT kept: no entry/index
+// spill or center/query/bound home repair; original complete body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

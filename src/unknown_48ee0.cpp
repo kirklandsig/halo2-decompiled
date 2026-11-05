@@ -27,10 +27,10 @@ extern real g_4c9798[36];
 // form not kept), both 222; long height limit 250; sequential border multiply/divide 180 (the
 // border order is fixed but the body regresses); early size declaration and dimension rename
 // 174 each. Original executable body restored; mode/size homes and rounding reloads remain.
-// score 178 (was 197): the width is rounded before the height, the overflow fix-up compares
+// Earlier form (178 from 197): the width is rounded before the height, the overflow fix-up compares
 // the width against the height the other way round and the near-plane distance is read from
 // the tag; the mode bit still loads the flags into edx where retail uses eax.
-// score 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
+// Earlier form (197 from 197): the mode bit loads the flags into edx where retail uses eax, so
 // MiniMax lane E (11-01): no new form, no lower score.
 // Earlier: the mode bit loads the flags into edx where retail uses eax, so
 // the mode bit loads the flags into edx where retail uses eax, so
@@ -198,6 +198,9 @@ extern real g_4c9798[36];
 // each use [9], reference or tag struct [9], y, z, x statement order [6], origin first, swapped products, casts, const, earlier declaration [11], shared forced-inline point helper [36]. For the last 9: `__assume` on extent, distance, aspect, offset, inverse, the global, the half cone [0] (no change);
 // six renamings of distance and extent [0] (no change); square helper, `extent = extent + ...`, `... + extent`, other product orders [0] (no change); named half cone or area, mode test without `~`, `== 1` or a switch for the tag test, swapped or moved declarations all [2]-[19], higher.
 // Real `--fast` without the scratch `inline`, all 32 subsets of long height, border, raw clamp, direct normal, near at each use: base 174, raw clamp alone 174 (same code), near 178 (1489 bytes), border 180 (1491), long height 250, height with border 243, direct normal 255-337 (under 1465); none under 174, so nothing is kept. The known 0x1ddd0 match form leaves this at 174.
+// M396: Actual mode/width-limit/height-limit enum domains, subsets 1/2/4/3/5/6/7,
+// 174/174/250/174/250/250/250; complete immutable limit graph 250. NOT kept:
+// ties/regressions; original body restored. Mode/size homes and rounding reloads remain.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
