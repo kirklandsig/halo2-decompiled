@@ -736,6 +736,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // N382: Native record/origin/entry object references, seven ownership subsets, then all
 // with outer ring phase: 90/90/90/90/90/90/90/143. NOT kept: no equality or gain;
 // original complete body restored. Radius schedule, ring conversion and rotation spill remain.
+// Round 133 (m3 lane 7, fast; aligned = difflib count, control 93): the two rings as a plain `for (long ring = 0; ring < 2;
+// ring++)` 266 (1057 bytes, frame 0xd4: no countdown, so retail's countdown is real); in the rotation helper the component
+// copies before the dot 90 (same code), the rows' first two terms swapped 90 (same code); the direction copied after the
+// sine and cosine 101 (aligned 114); the pathfinding pointer as a ternary 217 (aligned 101). Body unchanged at 90.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
