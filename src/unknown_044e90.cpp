@@ -10,6 +10,7 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
+// MiniMax E (11-04): entry flags read per branch 442, the same with a shifted instance flag 444, the tag table read once at the top 455, an int index local 406, the entry address as an explicit stride and with named offset and index locals 406, the permuter's best 403 (that variant swaps call arguments); no lower score.
 // MiniMax S (11-01): the entry address and the flags load keep the first difference at +0x10; no lower score.
 // score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
@@ -272,6 +273,12 @@ struct s_visibility_bound_record
 // Y582: Actual fallback sphere-query return in bool/byte/word/long, success publication
 // or failed-query continue: 406 each. NOT kept: one-use results miss equality; original
 // call, direct test, input observations and full body restored; entry/table/plane homes remain.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 406 [357]): part loop: named word-mask pointer 406; containment flag
+// set in the arm 406 [356]; both 406; `inline` on 0x142a60 407, on 0x165010 406, on 0x45a80 and 0x458d0 406. Plane transformed in
+// place with one store at the join and retail's zero-scale store 476 (1700) [278]; flags at each use with a (bool) bit test 474
+// (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
+// chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
+// movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
 // Round 129 (m3 lane 7, fast, 393 confirmed plain; aligned/masked = difflib counts, control 274/98; the score is positional, so forms were chosen on those first). NOT kept, 393 (1762 B, 208/65; restored, the gain needs the `visible` move, a field read moved ahead of calls): retail's plane block (zero scale
 // stores 0 through the tail shared with the division, normals copied then scaled, one store at the join with `0.0f - d`; this also fixes the zero-scale value difference earlier notes left open), flags read at each use and the (bool) bit test
 // (retail's `shr ecx, 0xc; test cl, 1`), the table local read before the tag test (retail's ESI, two uses), a structure local in the else arm (retail's read ahead of the test), a state local for the views and active reads, sign-mask capacity
@@ -300,6 +307,9 @@ struct s_visibility_bound_record
 // (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
 // chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
 // movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
+// T61: Ordered parts-mode result, preset-false and exhaustive outcomes in bool/byte/short/long:
+// 411/411/450/450 and 408/408/413/446. NOT kept: test-produced flags miss equality;
+// original conjunction and full body restored. Entry/table and plane/query homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

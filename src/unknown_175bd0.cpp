@@ -1994,6 +1994,8 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax R (11-04): no new form, no lower score; retail's early colour read still needs a form that
+// spills only color A and keeps color B in EDI, which every snapshot point tried so far fails.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax R (10-31): no kept form, no lower score: colour locals reach the frame 0x44 but spill both colours
 // (195/188); the permuter's 124 promotes the unknown to xmm0 and breaks retail's argument layout.
@@ -2129,12 +2131,19 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // AC528: First-traversal cursor acquisition with late spawn-field masks 0..7
 // 167/166/166/160/163/164/164/165. NOT kept: no exact match or eligible gain; original complete body restored.
 // Early color/query/cursor homes and frame remain. These changed observation/residence forms require equality; no retained candidate.
+// DH372: Partial clipped-zone halfspace acceptance/rejection, bool/byte/short/long,
+// 131 each at 556 bytes. NOT kept: regressions; original helper and body restored.
+// Missing early color home and frame 0x40/0x44 remain; all checked controls survive.
 // AC531: Actual plane-field pointer/reference at entry lookup or after index admission,
 // ordinary/forced existing zone expansion: eight at 129/556 bytes. NOT kept: no frame
 // or color-home recovery; original producer, all live reads and complete body restored.
 // AC535: Positive tint/multiplication query results with false/true-default publication,
 // single queries then four pairs: 190/190/189/189/189/189/189/189 at 572 bytes. NOT kept:
 // all regress/lengthen; original complete body restored, early color/query/cursor homes remain.
+// Y599: Complete early color/direct-final-query graph with actual cursor, matrix and
+// spawn lexical-home priorities: 178/178/178/178/178/178/178/178. NOT kept: no exact
+// color/query home recovery; original complete body and observations restored.
+// Frame 0x44 recovers but all eight grow to 572/552 bytes; input-home reuse remains.
 // DH372: Partial clipped-zone halfspace acceptance/rejection, bool/byte/short/long,
 // 131 each at 556 bytes. NOT kept: regressions; original helper and body restored.
 // Missing early color home and frame 0x40/0x44 remain; all checked controls survive.
@@ -3142,6 +3151,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax R (11-04): the location mode read late from the definition reaches retail's 0x54 frame but
+// scores 108, the pool declaration swap 114 (345 bytes); no new form, no lower score.
 // score 93 (was 93): frame 0x4c versus 0x54 (retail spills the definition and keeps two more
 // dwords), the particle system in EDI (retail ESI), color B spilled (retail EDI) and the cached
 // mode differ. Tried: transform name 109; query results, particle cursor and colors at entry 109;
@@ -3318,12 +3329,19 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // AC528: Complete positive node classification, exhaustive then false-default in bool/byte/short/long
 // 96/110/106/107/94/96/95/96. NOT kept: no exact match or eligible gain; original complete body restored.
 // Native frame and system/successor/color homes remain. Several exhaustive non-Boolean forms also lose the exact caller; no qualifying gain or equality.
+// DH372: Particle availability/exhaustion across the original transform call,
+// bool/byte/short/long 119/119/126/132/119/119/126/132. NOT kept: regressions; original body
+// restored, frame 0x4c/0x54 and system/successor/color homes remain.
 // AC531: Complete immutable color pair, dword/long/unsigned-int/int, active/query-owned
 // scopes: eight at 93/338 bytes. NOT kept: color residence canonicalizes; native
 // frame, definition spill and system/successor roles remain. Original whole body restored.
 // AC535: Positive tint result with false/true default publication, bool/byte/short/long:
 // 113/112/117/116/113/112/117/116. NOT kept: all regress and lose matched caller
 // 0x176f60 (25); original full body restored, native frame and system/successor homes remain.
+// Y599: Incoming system handle advanced to saved successor, effect/system lookup order,
+// cached/live mode and direct/native node word: 120/120/128/128/117/117/124/124.
+// NOT kept: no exact residence/frame recovery; original full body restored.
+// Frames 0x48/0x50 versus 0x54; every form loses the exact update caller.
 // DH372: Particle availability/exhaustion across the original transform call,
 // bool/byte/short/long 119/119/126/132/119/119/126/132. NOT kept: regressions; original body
 // restored, frame 0x4c/0x54 and system/successor/color homes remain.
@@ -3470,6 +3488,8 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 	return result;
 }
 
+// MiniMax R (11-04): the round 117 form again (default-first scale, `scale = scale_b * scale`, `(void)position.y;`
+// before the transform) matches byte for byte; not kept: the dead read is a steering statement (coordinator).
 // score 74 (was 74): the scale block and the point transform's y copy remain; the lens call now agrees (round 67).
 // Earlier: frame 0x94 agrees; the scale default/conditional branch, the point transform's
 // y copy (retail keeps y in xmm5 and copies it to xmm4; ours scales it in place) and the lens call

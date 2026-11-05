@@ -188,6 +188,16 @@ bool __stdcall function_71d70(c_session_state_matchmaking *arg_0)
 // `!= 0` flag, braces, `7L`) merge the copies before layout; only an extra session load keeps them apart.
 // Real (fast): timeout copy in a nested else 37; goto done after it 37; nonzero-state arm first, match or
 // !match first, 37/37; byte-offset search pointer in the timeout copy 37 (all 176 bytes).
+// Round 149 (m3 lane 5, fast), retail's arm order: only `do {} while (false)` as a final else arm keeps the copies apart with no
+// result store, 74 (227 bytes): the timeout copy then shares a second tail with its false edge (`mov bl, 1 ... mov al, bl`);
+// in the timeout else after its if 74, after the whole chain 37, in a `<=` arm 37; set/return grid with it in the final else
+// sss/ssr/srs/srr/rss/rsr/rrs/rrr 74/90/41/85/85/34/74/65, with `local_0 = false` there 12/112/49/109/101/56/90/65 (12 at 183 bytes:
+// retail's order, a separate `xor al, al` tail). Inside the first or timeout copy, four positions each, 37 each; final else
+// `;`, `while (false) {}`, `for (; false;) {}`, `if (false) {}`, `(void)0;`, empty, `__noop()`, `if (local_0)`, zero-range for, dead local store
+// (diagnostic), a label, `while (local_0) break` 37 each; nested do-while, do with break 74/74; after the inner match/timeout chain,
+// in both inner levels 85/85; named players_match `if (m)`, `if (!m && timeout)` or nested 37/37; after the first copy 37; the false
+// edge out of the block by `return local_0`/`return false`/goto to one exit 56/56/43, without the do-while 56/-/37; first-copy
+// form with a false return for the timeout 56, positive-guard form 54.
 // @retail 0x712d0
 bool function_712d0(c_session_state_matchmaking *arg_0)
 {

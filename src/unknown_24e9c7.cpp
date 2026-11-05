@@ -342,6 +342,19 @@ struct s_24e9c7_bounds
 // M376: Signed-int selected-bitmap/height/half-width producer domains, seven subsets,
 // then all with signed-int bitmap handle: 125/125/125/125/125/125/125/125. NOT kept: no match or qualifying gain;
 // original domains/body restored; early across spill and shifted scalar homes remain.
+// M3 lane 13 r63 (fast, restored; retail 9 `addss reg, [corner]` and 1 corner load, ours 7-9 loads whatever the spelling): retail's `mov eax, edx` before each
+// corner y is a post-allocation reuse of the first corner's y load, which appears when the first corner is copied before up while EAX still holds the width
+// (order height, result, width, first corner, up, side, later corners; early-across products unnamed forward_i) 147 (757 bytes, aligned 110). On it side and back
+// as scalars, `0.0f -`, side scaled in place 146 (757): first form with retail's frame 0x48, result -0x10, kind -0x14, bitmap -0x18 (masked aligned 94 -> 85), but the
+// across products sink into the side products, so -8/-0xc hold back and the half width. With forward_i named 145 (751, frame 0x4c, result -0xc); side as a point
+// 160 (761, frame 0x50: early across as retail, pair below bitmap). Same homes with up scalar, points/side/back declared first or reversed, sums written offset first
+// (same code). Corner orders on the `0.0f -` across form, plain/(real)height in up/forward_i unnamed: height width result first-corner 148/142/153; result before width
+// 142/142/147; first corner after up 148/133/153; first two corners before up 154/148/164; first corner before result 153/142/161; first corner before up, side
+// before the sums 152/146/146; first corner after side 149/148/144; second corner's sums after side 149/143/154; all four before up 151/145/161. Inline scale and add
+// helpers (diagnostic) 136-176 (best add helper with named forward_i 136, 749 bytes, frame 0x4c; 142, 738 bytes, without it); corner writes through a walking pointer,
+// named pointers or references 139-146. Result only assigned, (real)height for the up products, 142-156. Original body restored.
+// On that form the across pair given a second use (back written from the across products, so CSE merges it): side and back scalars 155 (758, frame 0x50), with forward_i named 159, a named real half width 162; no side or back locals 156 (728, frame 0x48, result -8);
+// back before side 150; `0.0f -` back 155. Original body restored.
 // B435: Existing vector2f component-array upper/side/reverse observations, seven
 // subsets, then all with the perpendicular pair: 125/125/125/125/125/125/125/144.
 // NOT kept: no exact vector-storage or early-spill recovery; original types/body restored.

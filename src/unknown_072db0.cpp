@@ -1796,6 +1796,18 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // write-side struct 703. Keepable-only climb from the body below: failed arm 703, then none lower; with retail's poll order 702
 // [523], online_logon_connected() 793, delay ternary 703, reversed state test 703, swapped failure counter 703.
 // Diagnostic, reverted at once: `word volatile count` 731/733/718 (retail's reload appears, `team` then takes EBX).
+// M377: Complete availability/provider truth, direct initialization then test-produced
+// true, bool/byte/short/long results: 719/719/719/719/719/719/719/719.
+// NOT kept: all regress; original producer, three callers and full body restored.
+// M379: Complete identity member production identifier/flags first at producer/group/function
+// scope, mutable/readonly native-member aggregate initialization: 744 each. NOT kept: all regress;
+// original packed-object snapshot and body restored; cursor/slot and later homes remain.
+// M382: Complementary initial admission then team decisions, bool/byte/short/long:
+// 709/709/709/709/710/710/779/759. NOT kept: no native cursor/slot repair or byte match; original
+// positive decisions, snapshots, helpers, task/builder roles and complete body restored.
+// M384: Complete identity/property cache-refresh changed/current result, bool/byte/short/long:
+// 709/709/709/709/709/709/709/709. NOT kept: no equality for one-use result residence;
+// original full body restored; initial cursor/slot and request/completion homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
