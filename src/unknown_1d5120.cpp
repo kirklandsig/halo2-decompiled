@@ -230,6 +230,11 @@ void function_1d56f0(s_havok_component *component)
 // receiver 77 each; entry reference/pointer returns through the component, entry reference through
 // the array and entry pointer through the array reference 77 each. All the same code; one-caller
 // diagnostic helper removed and the original shared getter restored.
+// Round 69 (lane 11, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10; 0x1d0cf0's body varied, restored each time): set copy, body pointer, flag5
+// first 15 (819 bytes, retail's length, aligned 5: the setter call and the frame are retail's but for the component in EDI where retail has EBX and
+// the lookup's operands), 0x1d0cf0 27, but 0x1d0c20 49, and matched 0x1d1b60 59 and 0x115b10 56 are lost; the refetch assigned to the body
+// pointer 15 (same losses); a two-use slot 15 (0x1d0cf0 60, same losses). m_fixed first 73 (820 bytes, nothing lost, 0x1d0cf0 88), with a named
+// fixed bool 73, with a component copy 73. Still BLOCKED-BY 0x1d0cf0's EBX. The cycle lead above may need 0xb8540 and 0xb7430, not tried here: their files' notes say enabling them loses matches (23 for 0xb8540 alone when measured).
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

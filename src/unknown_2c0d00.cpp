@@ -1582,6 +1582,12 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // P344: Actual current/selected/output array-element lvalues on the corrected two-radius graph, seven
 // subsets then actual source subobject: 418/418/418/418/418/418/418/418. NOT kept: no byte match;
 // original complete body restored. Native frame, radius/zero/count and metadata/trace homes remain.
+// M3 lane 8 r135 (fast; raw/register-masked/stack-masked aligned, base 352/265/105 at 418): tuple phases through a no-op chain 418
+// x3 (no effect here; the difference is integer homes). Diagnostics, removed: count read volatile at the outer test 399
+// (355/267/106), scan 489, both 456; with the second edge store (380, 352/262/103) 453/458; one real extra use, at the loop
+// top, of next/type/link 419, step/points 421, edge 464 (2 and 4 uses 464: edge never leaves its stack slot), found/copied
+// 477, index/result 484, count 483 (336/236/114: the only one that moves roles toward retail), source 436, sector/data 492,
+// query 493, used 519. No form tried recovers the 0x10c frame.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
