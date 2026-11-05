@@ -385,6 +385,15 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // exclusive conditional/failure-first publication 11/11; exclusive bound with
 // seat_index/selected_seat/target_state names 11/11/11; complete direct tag
 // reads at every use 27. All at 541 bytes; original complete body restored.
+// MiniMax E (11-04, not kept, m3 review: the 8 -> 6 rests on a seat-count test
+// that repeats the loop's own bound, a redundant compare kept only with a byte
+// match; main's loop restored): with that test the count and the index occupy
+// ESI/EBP as retail and the loop test is cmp/jl; retail keeps the index's zero in
+// EBP for that test and for the selected pointer's NULL store, ours materialises
+// a second zero in EAX for both. The index declared before the test 6; the same
+// with the count in a local 11, the test as count != 0 6, a
+// while loop 6, a seats local 25, a pointer loop 139, the index inside the
+// loop 135, the test as i < count 11.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {

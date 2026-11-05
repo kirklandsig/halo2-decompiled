@@ -761,6 +761,9 @@ void swarm_leader_detach(long actor_index);
 // 266/282/282/266/266/282/282; all with bounded short memory ordinal 282
 // (unchanged reduced control 266, full 281). NOT kept: no exact receiver graph;
 // original observations, ordinal, iterators and complete body restored.
+// MiniMax E (11-04): no new form, no lower score; the memory walk's pointer walk, its index
+// body, the twice-read slot and the for-loop forms score 285, 370, 286, 288 and 555 against the
+// unchanged 266 (fast; 281 ordinary).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
