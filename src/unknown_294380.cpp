@@ -141,6 +141,7 @@ PRIVATE __forceinline void function_295027(long arg_0, vector3f *arg_1)
             &local_0->forward, arg_1);
 }
 
+// MiniMax B (11-04): no new form, no lower score.
 // score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
 // Earlier score 523 (was 581): frame 0xdc agrees; since round 67 the neighbour walk is the shared inline member
 // step (retail's head-tested loop) and 0x118fe0 stays out of line as in retail. Left: retail keeps the
