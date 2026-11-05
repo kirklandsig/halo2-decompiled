@@ -1467,6 +1467,8 @@ struct s_looping_detail_request
 // finalization and `return true` 190 (535 B); both arms returning 180 (533); an early `return false` with its own
 // finalization when no player 180 (524); the audible arm jumping past the else 110; the query in a `for` initializer
 // 110; the mode through a named long 110 (same code). The query stays inlined in all six; `return` shapes do not cool it.
+// B448: Complete fallback selection/placement/publication provider, detail and source pointer/reference, forced/ordinary inline:
+// 159/159/159/159/434/434/434/434. NOT kept: no byte match; complete original body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

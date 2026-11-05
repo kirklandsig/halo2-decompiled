@@ -1390,6 +1390,9 @@ long function_2197f0(real gain);
 // M387: Composite fraction eager division/select/positive and complementary complete results,
 // original then eager simple upper caps: 160/160/163/159/140/140/143/101. NOT kept: no gain;
 // original body restored, native reciprocal/elapsed roles and first gain-load schedule remain.
+// B449: Entry gain real construction/default-member/default-assignment/explicit-copy acquisition,
+// each with encoded/real zero endpoints: 232/232/94/94/228/228/187/187.
+// NOT kept: no exact construction repair; original entry gain, endpoint domain and complete body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

@@ -886,6 +886,8 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // dx or dy at their uses, x/y output operand orders, output order, denominator terms, fraction declaration, previous and
 // current side spellings, tail order and declaration order: no guard best 131 (887); `if (count > 0)` around the for
 // 95 (890), around a for with an outer index 98 (890); guarded do-while 102 (891), and 131 (887) where the guard folds.
+// B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
+// 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

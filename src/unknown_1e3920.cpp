@@ -724,6 +724,9 @@ real function_267370(long object_index);
 // DL264: Existing staged cross scalar inputs/setter/returned receiver,
 // combinations then immutable inputs: 83/24/20/87/83/24/87/87.
 // NOT kept: no eligible native repair with preserved shared users; original executable source restored.
+// B449: Existing cross producer with whole-vector field/aggregate/setter/const construction,
+// each with aggregate/library publication: 135/135/135/135/135/135/135/135.
+// NOT kept: aggregate staging has no byte match; every shared helper and target body restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1999,6 +2002,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P335: Standard min/max probability/increased/delay producers, seven subsets and
 // complete graph with final maximum consumer: 322/325/275/354/323/323/346/395. NOT kept: all regress;
 // original clamps, field observations, includes and complete body restored. Actor/options/pool homes remain.
+// B449: Repeated unit-handle/fraction-bound/round-bound field addresses, seven subsets
+// then complete readonly actor receiver: 361/251/361/251/361/251/361/361.
+// NOT kept: no exact field-receiver repair; all original per-use observations, queries and body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
