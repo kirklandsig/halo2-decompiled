@@ -318,6 +318,10 @@ void c_window_channel::v9()
 // form 3; the callback called as `(*request.load)(&new_request)` 3; the channel's request
 // through a reference for every read and the type clear 3; every member access through `this->` 3.
 // Every retail caller that uses the request right after the builder copies ECX; v10 alone forms it again.
+// Round 54 (lane 2, fast): an empty `do { } while (false)` after the builder 3, after the load 3; the builder
+// call or the load call inside its own `do { } while (false)` 3/3; the builder in its own block 3 (a block
+// boundary does not stop the ECX copy). An inline constructor taking the builder's arguments was not tried: it
+// is the same one-caller wrapper as round 26's method.
 // @retail 0x23531c
 void c_window_channel::v10()
 {
