@@ -2616,6 +2616,14 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Boolean guard results: 694/694/734/694/694/694/694/670 reduced (control 694, full 597).
 // NOT kept: unmatched one-use outcomes, including the reduced-only 670; original complete
 // body restored. Entry true/flags, record/scalar homes and track/state ownership remain.
+// M3 lane 4 r167 (plain; rank on the register-masked aligned count, 102 for the kept 597): alternate read inside the definition
+// guard as bool 615 (2500 bytes, 767 instructions as retail, masked 89, first difference +0x1c: retail's `mov ebx, 1` hoisted constant and
+// flags in memory appear; a score rise, not kept); as a byte 698 with combine_sources/lookup id as if/else (2492 bytes, masked 91, frame
+// 0x40); read through the source-flags bitfield view on flags 615, with the two later flags tests through it too 615 (masked 90); if/else
+// combine_sources alone 630 (2499 bytes, masked 94). One-file link (reduced, 694 for 597; aligned/shape): gains clear through a zeroed
+// 16-byte local struct assigned to the field, reals or longs, 721/729 (direct [ebp+0xc4] stores from a zero register, as retail); chained
+// `= 0.f` 744; memset through a real pointer or a byte offset 717 (same as the alternate form). Next: the bool form's masked list
+// (index/created compare order, source in EDX copied to ESI for the rep movs, the track loop's per-iteration homes).
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
