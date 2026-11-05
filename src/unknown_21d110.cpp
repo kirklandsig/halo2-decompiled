@@ -980,6 +980,13 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // first use 175; the bool declared first with the state captured first 191; `(looping->flags & 0x10) != 0` 30.
 // Compile-only frame probe (our frame): none of these moves the bool out of the bottom byte unit; a short or long
 // flag lands just above repeat_state (retail's place) but reorders tag_index and widens the code.
+// Round 73 (m3 lane 1, plain): the flag returned by an inline getter over the looping record 30; inline getters for
+// both values 30; the 'lsnd' arm in a forced-inline helper taking the pair by value 30, with a long flag parameter 162
+// (836 bytes); a long flag with its bool conversion at the use 166 (832 bytes). One-file frame screen: an arm helper
+// left out of line pushes the flag and the bool then gets a dword slot (frame 0x10c; retail has no such push). A scan
+// of the matched functions' esp frames finds a lone byte in a dword-aligned home among dwords only as a dead parameter
+// slot, a struct member or a pushed bool. The record also lands where its two members' weights add up (below the
+// listener), where two separate locals land elsewhere, so retail's pair looks like one symbol.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
