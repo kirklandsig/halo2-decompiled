@@ -694,6 +694,10 @@ struct s_collision_result_buffer_1697c0
 // Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
 // results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
 // contract or gain; original magnitude return, all consumers and complete sampler restored.
+// DL270: Complete normalized-vector returns with pointer/value inputs, optional
+// real length/Boolean success outputs, ordinary/forced expansion:
+// 634/551/642/573/458/458/475/475. NOT kept: all regress and move length away;
+// four forms lose the matched caller (39/39/4/4). Original helper and sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

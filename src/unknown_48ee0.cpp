@@ -202,6 +202,10 @@ extern real g_4c9798[36];
 // then a double half-angle at its producer: 180/180/180/180/180/180/180/180. NOT kept:
 // no supported improvement; original math and body restored, stacked score headings merged.
 // Mode/size homes and the protected rounding-call reload boundary remain.
+// DL270: Published far-normal dot control 343; native near/far scale-helper
+// subsets, published dot pairs, complete graph, dead snapshot removal and complete
+// projection/plane scale graph 174/343/174/343/174/343/343/343. NOT kept:
+// ties or nonnative frame/short extent; original copies, normal consumers and body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
