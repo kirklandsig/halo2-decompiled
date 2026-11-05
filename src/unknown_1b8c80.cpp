@@ -1550,6 +1550,9 @@ void function_1f86a0(long actor_index);
 // [83]; the element looked up again through the entry in the predicate 254 (874 B), in the root compare 243 (862 B), in both 254; the
 // predicate re-lookup with the positive predicate 250 (874 B), with both 250. Volatile mask (diagnostic, reverted) 254 (879 B): frame
 // 0x14 and the mask at +0x13, but the flags read is then shared and BL holds it, so retail's spilled mask is not a volatile's shape.
+// T58: Actual iterator aggregate/reference-tuple/value/library construction, native member/full-slot payload pairs:
+// 134/134/259/259/256/256/256/256. NOT kept: no eligible match or gain; complete original source restored.
+// Mask spill, EBX entry and actor/root homes remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

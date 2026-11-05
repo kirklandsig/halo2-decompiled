@@ -486,6 +486,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P345: Actual advancing output cursor retaining the independent pass bound/eager length,
 // long/short pass, long/bool departure and memcpy/memmove: 251/267/251/276/299/258/253/266.
 // NOT kept: no byte match; original complete body restored; extra frame word remains.
+// T58: Whole-scan current-point pointer/reference, indexed/advancing candidate, original/overlap CRT:
+// 228/228/259/259/222/222/249/249. NOT kept: no eligible match or gain; complete original source restored.
+// Extra frame word, produced-length/departure homes and compaction remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

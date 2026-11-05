@@ -690,6 +690,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // NOT kept: every form regresses; heading captures grow frame 0x54 to 0x60 and all lengths grow.
 // Original full vector inputs, zero-k stores, target acquisition, normalizations and whole body restored;
 // unit-call scratch register and first-length/projection/query homes remain.
+// T58: Complete readiness partitions 1/2/4/3/5/6/7 and sole-exit entry rejection without a unit snapshot:
+// 89/89/89/89/89/89/89/89. NOT kept: no eligible match or gain; complete original source restored.
+// Unit-call scratch register and first-length/projection/query homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
