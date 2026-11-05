@@ -506,6 +506,14 @@ union s_185be7
 // T59: Complete writable clamp inputs at all nine consumers, pointer/reference inputs and
 // void/value/pointer/reference results: 622 each. NOT kept: native x87 slot and control-root/NONE
 // ownership unchanged; original value clamp, observations and complete body restored.
+// Round 152 (m3 lane 5, fast; [m, x] masked and exact aligned counts, body [121, 235]): local_2's copy ahead of the rate stores 589
+// [120, 235]; pitch rate first 588 [121, 234]. All 23 action flags through SET_FLAG 776 (3747 B) [96, 211], all ten clamps through PIN
+// 999 (3827 B) [128, 258], both 949 (3795 B) [100, 220]. On the all-flags form what is left in the flags part is mostly local_3's
+// slot (+0x24 for retail's +0x20), the selector pair (retail `mov ebx, [esp + 0xb8]`, then BL and BH) and which constant is CSE'd
+// (ours 0x10, retail 0x20 in ESI). Retail holds NONE in EBX for seven uses (the first test, the three stores, three unit tests), with
+// `or ebx, -1` ahead of the second memset; ours holds the root global there. Diagnostic, reverted: the root global reread through a
+// volatile at the flag test 1003 on the body, 956 (3747 B) [94, 201] on all flags: EBX is then free but NONE stays in ECX for the
+// first block only; one, two, three extra NONE compares in the unit block 953/951/959, with that reread 988: NONE still stays out.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
