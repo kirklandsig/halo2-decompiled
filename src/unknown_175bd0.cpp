@@ -3474,8 +3474,8 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 	return result;
 }
 
-// score 0 (was 74): matches retail byte for byte; the scale block, the point transform's y copy
-// and the lens call all agree now (whole-program check on 11-04).
+// MiniMax R (11-04): the round 117 form again (default-first scale, `scale = scale_b * scale`, `(void)position.y;`
+// before the transform) matches byte for byte; not kept: the dead read is a steering statement (coordinator).
 // score 74 (was 74): the scale block and the point transform's y copy remain; the lens call now agrees (round 67).
 // Earlier: frame 0x94 agrees; the scale default/conditional branch, the point transform's
 // y copy (retail keeps y in xmm5 and copies it to xmm4; ours scales it in place) and the lens call
@@ -3649,17 +3649,14 @@ void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 				point3f position = location->matrix.position;
 				vector3f forward = location->matrix.forward;
 				vector3f up = location->matrix.up;
-				real scale = 1.0f;
 				color3f color = *(color3f *)&g_4686cc->red;
-				if (part->a_scales & 0x20)
-					scale = effect->scale_a;
+				real scale = (part->a_scales & 0x20) ? effect->scale_a : 1.0f;
 				if (part->b_scales & 0x20)
-					scale = effect->scale_b * scale;
+					scale *= effect->scale_b;
 				if (location->node_index != NONE)
 				{
 					transform4x3f matrix;
 					function_17aec0(location->node_index, effect, &matrix);
-					(void)position.y;
 					effect_matrix_transform_point(&matrix, &position, &position);
 					effect_matrix_transform_normal_179880(&matrix, &forward, &forward);
 					effect_matrix_transform_normal_179880(&matrix, &up, &up);
