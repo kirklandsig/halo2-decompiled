@@ -81,6 +81,7 @@ void __stdcall function_1c710(void *state);
 // MiniMax D (10-30): the stage states through the existing sampler_state_write plus one more
 // inline_depth(0) pair around the (3, 1, 0) vertex call matched (full check); new in-body pragmas
 // are not kept, so the pair was dropped at review: 188 (fast, 1457 bytes, retail 1422; main 316).
+// Permuter (25 min on #1066, about 800 variants): 104 only with SetVertexData2s/4f arguments swapped; not kept.
 // @retail 0x46230
 void __stdcall function_46230(short target, real const *bounds)
 {
@@ -4145,6 +4146,8 @@ void function_1cf50();
 // operands of the four products (all 16 masks: no change), a/b or c/d declared in the other order (199), commuted
 // sums (199), x1/y1 as locals (368 before the move, 353 after), screen[1] or screen[0] hoisted into a local (412/504),
 // extent hoisted into locals (199), hs/hc before the colour write (344), c/d hoisted above the first vertex (391).
+// Permuter (25 min on #1066, about 610 variants): 195 only with vertex-data arguments swapped and float-to-int
+// truncations; not kept.
 // @retail 0x484b0
 void __stdcall function_484b0(point3f const *point, real depth, real width, real height, real cosine, real sine, dword color)
 {
@@ -4197,6 +4200,8 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
 // Earlier rounds: MiniMax A (11-04): the four products' declaration order (six orders) 152/164/152/163/152/163, the
 // multiply operands swapped 152, the products inlined into a/b/c/d 166; the permuter's best (148) rewrites the
 // vertex calls and so draws something else, not kept. MiniMax D (11-01): no new form tried, no lower score.
+// Permuter (25 min on #1066, about 650 variants, on its own rendering that loses the round 2 order): best 142, above
+// this source's 125; nothing kept.
 // @retail 0x480a0
 void __stdcall function_480a0(point3f const *point, real width, real height, real cosine, real sine, dword color)
 {
@@ -4325,6 +4330,8 @@ void function_48010(real const *color);
 // plus an if/else-if chain for 1-3 / 4-5 (287; 252 with the switch), a mode switch with case 0 (256, ours uses a jump
 // table), all 18 sites as function_0222d0 calls (259, all inlined), the 1e930-style `*(D3DRENDERSTATETYPE const *)&state`
 // at the six calls (288). None below 244, so the source is unchanged.
+// Permuter (25 min on #1066, about 850 variants): 228 only with the cull value stored through a word cast and a
+// word read of a long field; not kept.
 // @retail 0x47930
 void function_47930(word flags, long format, long mode)
 {
@@ -4509,7 +4516,7 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
     }
 }
 
-// score 585 (was 580; the fast image says 612), 1636 bytes against retail's 1700. Round 122: 0x144f0
+// score 585 (was 580; the fast image says 612), 1652 bytes against retail's 1700 (the fast image builds 1636). Round 122: 0x144f0
 // matches; both its calls pass retail's values (fallback 0, fallback index 1: `xor ebx, ebx`, `push ecx` with ECX 1).
 // Round 1 of #1066: the 24/25 else branch now calls function_14f60(stage, 1) (retail jumps to the case 2 block, which
 // does `mov edi, ecx` with ECX = 1; it used to pass the surface); case 8 follows case 13 as in retail's layout;
@@ -7512,7 +7519,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // clipped fill still writes the rows in another order than retail's.
 // Round 2 of #1066: a forced-inline removal helper (all three sites expanded, retail's 1133 bytes), the volatile
 // header as a plain local, one read of the pool and guarded do-while loops gave 279 on the fast image but 342 in the full
-// build, and that set cost matched 0x41640 (unknown_0350e0.cpp) there, so none of it is kept.
+// build, so none of it is kept.
 // @retail 0x1f5c0
 void __stdcall function_1f5c0(long character_index)
 {
