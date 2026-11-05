@@ -2941,6 +2941,9 @@ static inline short sound_voice_find_available_channel(char type)
 // predicates with byte final result 96/96/177/96, Boolean result 113/113/156/113.
 // NOT kept: no gain or equality; original private scan, byte result and whole body
 // restored. Twelve/eight-byte frame, saved true and early failure tail remain.
+// F401: Actual free/streaming table bases separately/both, then native bitmap-word lvalues,
+// with byte/Boolean final result: 96/142/142/96/113/132/132/113. NOT kept: ties or regressions; original finder
+// and full body restored. Twelve/eight-byte frame, saved normalization and failure tail remain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3883,6 +3886,9 @@ struct s_128ca0
 // results and direct/overloaded comparisons: 222/227/247/216/251/241/247/216.
 // NOT kept: six-point lead below eight, unmatched record contracts and regressed shared
 // clamp user; original pin, all three calls and whole body restored. Frame and pin joins remain.
+// F401: Existing reference sum at both parallel permutation-gain producers, mutable/readonly
+// converted parts crossed with inner reference sum and coherent scale: 222/222/269/269/277/277/249/249. NOT kept:
+// ties or regressions; original arithmetic/body restored. Frame/gain homes and pin joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

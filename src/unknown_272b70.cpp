@@ -2861,6 +2861,9 @@ struct s_scenario_scripting_view
 // control 80; full 80).
 // NOT kept: no byte match or eligible gain. Original direct final test, signed-short traversal/wrap, strict
 // selection, geometry branches and complete search restored; actor/counter/set and guarded-data homes remain.
+// F401: Actual actor-position field reference at post-actor/admitted-set/iteration/branch phases,
+// original then loop-owned short traversal: 95/99/80/80/102/103/87/87. NOT kept: no exact or eligible gain;
+// original search restored. Actor/counter/selector and guarded scripting-data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

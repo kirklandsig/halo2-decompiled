@@ -553,6 +553,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // N379: Immutable original start clock, with immutable mode/byte-count/decoder-input subsets
 // 0..7: 246/246/246/246/246/246/246/246. NOT kept: no byte-match gain; original native contracts and body restored.
 // Frame 0x3c/0x40, mode residency, status/clock/output homes and instruction policy remain.
+// F401: Original-site decoder-open success/failure outcome in bool/byte/short/long:
+// 246/246/246/246/246/246/246/246. NOT kept: no exact one-use outcome; original direct test and full body
+// restored. Frame 0x3c/0x40, status/clock/output homes and instruction policy remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

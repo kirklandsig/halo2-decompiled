@@ -627,6 +627,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // F397: Geometry previous-point/edge/output object references, seven subsets and complete endpoint
 // references: 282/286/286/282/282/286/282/282. NOT kept: best gains four only; original
 // receivers, memcpy and body restored. Extra frame word and predecessor/flag homes remain.
+// F401: Complete three-state transition publication/call result, expression byte/short/long/dword
+// and complete-arm producers: 350/346/344/344/378/368/368/368. NOT kept: all regress and no equality; original
+// metadata stores, calls and full body restored. Extra frame word and predecessor/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
