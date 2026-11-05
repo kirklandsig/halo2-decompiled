@@ -367,6 +367,13 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // 1/2/4/3/5/6/7, all 176; full references with the angle also referenced 178.
 // NOT kept: no byte match; original helper and both in-place calls restored;
 // unity/root/yaw and rotation homes remain. The numeric helper and sibling stay fixed.
+// M3 lane 4 r168 (one-file harness with src/unknown_11cc90.cpp and src/character_tag_accessors.cpp, exact at 176, sibling
+// 0x29b990 matched throughout). New: the else arm's zeros in reverse order 179, on 169 172; the success test's operands
+// swapped (`normalize2d_fast(&local_6) != 0.0f && local_4 > 0.0f`) 397 (1724 bytes), on 169 245; `0.0f < local_4` and
+// `0.0f != normalize2d_fast(...)` 176 (same code), on 169 169; the angles declared before the rotation result 176, on 169
+// 169. Re-measured listed forms (scores agree): single-exit normalizer 171, with the XY vector before the second copy 169,
+// zeros chained 179 / 172. On 169 the roots and the inlined 0x11cc90's acos result sit at +0x10 with local_11 where retail
+// packs them at +0xc with the acos argument and the yaw; first root and scaled X in XMM6/XMM5 (retail XMM3/XMM6). Restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

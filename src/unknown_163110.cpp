@@ -1074,6 +1074,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // n.k, n.i, ours has n.i before n.j; the far plane already loads its first camera term early. e4.i named before the normal copy 141 (masked 46),
 // as a const reference 119 (38); the i product named after the copy 159 (57); an e4 pointer 251 (35, 1867 bytes); a normal pointer for d 150 (41);
 // `(real)(j + k) + i` 176 (54), `i + (real)(j + k)` 176 (54), `(real)(k + j) + i` 145 (51), all products cast 146 (36), a double subtotal 413 (158, 1835 bytes).
+// M3 lane 4 r168 (one-file harness, exact at 115). New: all 120 declaration orders of the five top-level locals (points,
+// outside flags, segment flags, planes, culled) 115 each; both planes' normals copied before plane 0's d 133; the near clamp
+// as `near_sum < k ? k : near_sum` 115 (same code), as `near_sum > k ? near_sum : k` 117. Re-measured listed forms: plane
+// 0's d as j, k, i 133, normal-first 115, `i + (k + j)` 145, through dot3f either order 278 (1867 bytes); the normal copied
+// component by component 460 (1819 bytes, as through vector3f_assign).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

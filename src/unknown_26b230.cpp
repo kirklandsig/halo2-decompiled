@@ -1983,6 +1983,10 @@ void function_269250(long clump_index, long actor_index);
 // the improve test 126 (39). The walk written out in this body (diagnostic): the found arm assigning the group directly 128 (64: pool promoted into EDI and the
 // selection memory-only as retail, but the not-found path threads); the helper's exact shape, one level or both levels, 126/126 (39, same code). So the pool wins
 // only once the not-found path threads; retail has both.
+// M3 lane 4 r168 (fast, this body 89). New: a 600 s permuter run (55 tries, none below 87); the selection as a dword 89
+// (same code). Re-measured listed forms: in-arm compare 126 (480 bytes); the walk as a for loop with the step in its init
+// and increment 339 (624 bytes), with the in-arm compare 343 (625; round 127 listed the pair as 343/339). Retail hoists the walk's pool field into EBX (reloaded after the bit scan uses EBX
+// as the mask) and keeps the selection memory-only; matched 0x26ae30's retail walk reads the pool each step. All restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
