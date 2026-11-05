@@ -166,6 +166,10 @@ extern long g_55c154;
 // scoped variant 174. Compile-only (/O1 /Oi /Gr): every two-arm shape (either order, nested, no else, a mode
 // variable with one 0x238c69 call, one copy, fewer constant-1 uses) hoists the constant 1 into EBX and moves
 // `this` out of EBX; the one-load body with a second load call or per-branch copies does not.
+// T62: complete sole exit and target inline metadata 61/61; conditional load-call
+// result direct/named 178/178, short-circuit result direct/named 110/110; complete
+// exit with conditional/short-circuit load 178/110. NOT kept: no gain; load-result
+// graphs lose the biased frame. Classification spill and copy expansion remain.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

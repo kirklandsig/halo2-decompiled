@@ -230,6 +230,10 @@ void function_1d56f0(s_havok_component *component)
 // receiver 77 each; entry reference/pointer returns through the component, entry reference through
 // the array and entry pointer through the array reference 77 each. All the same code; one-caller
 // diagnostic helper removed and the original shared getter restored.
+// T62: setter cdecl/stdcall 80/77; existing allocator placement 77; actual registration
+// return 153; persistent body/query receivers 77/77; placement/registration and body/
+// registration 153/153. NOT kept: no gain; registration moves the frame, and cdecl
+// raises both setter users. Original contracts restored; lookup and setter transport remain.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)
