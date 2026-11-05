@@ -195,28 +195,38 @@ static __forceinline void apply_linear_spilled(float const volatile &source, sol
 	float impulse = source;
 	union { unsigned long bits; float value; } rounded;
 	rounded.bits = *(unsigned long const volatile *)&source;
-	__m128 scalar = _mm_set_ss(rounded.value);
-	__m128 inertia_a=a->inverse_inertia;
-	__m128 inverse_b = b->inverse_inertia;
-	solver_velocity_31c940 *linear_body_b = b;
-	// Retain both weighted impulses before either body is updated.
-	__m128 weights[2] =
-	{
-		_mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a),
-		_mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b)
-	};
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(weights[0], weights[0], 0xff), row->linear);
-	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(weights[1], weights[1], 0xff), row->linear);
-	a->linear = _mm_add_ps(a->linear, linear_a);
-	linear_body_b->linear = _mm_sub_ps(linear_body_b->linear, linear_b);
-	// Reload the axes after both linear writes, then form both contributions
-	// before either angular write. Row storage may overlap the body fields.
-	solver_velocity_31c940 *angular_body_b = b;
-	__m128 angular_a = _mm_mul_ps(weights[0], row->a);
-	__m128 angular_b = _mm_mul_ps(weights[1], row->b);
-	a->angular = _mm_add_ps(a->angular, angular_a);
-	angular_body_b->angular = _mm_add_ps(angular_body_b->angular, angular_b);
-	*result += impulse;
+	__m128 work_a, work_b, work_c, work_d, work_e;
+	work_c=a->inverse_inertia;
+	work_b=_mm_set_ss(rounded.value);
+	work_e=row->linear;
+	work_a=_mm_shuffle_ps(work_b, work_b, 0);
+	work_a=_mm_mul_ps(work_a, work_c);
+	work_c=b->inverse_inertia;
+	solver_velocity_31c940 *linear_body_b=b;
+	work_b=_mm_shuffle_ps(work_b, work_b, 0);
+	work_b=_mm_mul_ps(work_b, work_c);
+	work_c=_mm_shuffle_ps(work_a, work_a, 0xff);
+	work_c=_mm_mul_ps(work_c, work_e);
+	work_d=_mm_shuffle_ps(work_b, work_b, 0xff);
+	work_d=_mm_mul_ps(work_d, work_e);
+	work_e=a->linear;
+	work_e=_mm_add_ps(work_e, work_c);
+	a->linear=work_e;
+	work_c=linear_body_b->linear;
+	work_c=_mm_sub_ps(work_c, work_d);
+	linear_body_b->linear=work_c;
+	work_c=row->a;
+	solver_velocity_31c940 *angular_body_b=b;
+	work_a=_mm_mul_ps(work_a, work_c);
+	work_c=row->b;
+	work_b=_mm_mul_ps(work_b, work_c);
+	work_c=a->angular;
+	work_c=_mm_add_ps(work_c, work_a);
+	a->angular=work_c;
+	work_a=angular_body_b->angular;
+	work_a=_mm_add_ps(work_a, work_b);
+	angular_body_b->angular=work_a;
+	*result+=impulse;
 }
 
 // The first positive row retains its unshifted linear cursor while angular
