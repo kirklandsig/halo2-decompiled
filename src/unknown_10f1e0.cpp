@@ -2228,6 +2228,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // N373: Ordered primary/secondary null-or-found screen producers, conditional/default/total-if forms
 // 830/775/835/830/775/835/835/835. NOT kept: at most one point; original full body restored.
 // Frame 0xcc/0xd4, entry computation and first-angle/overlay expansion remain.
+// DL265: Existing set/sample/play inline policy subsets, then aiming-sample inline:
+// 776/776/776/776/776/776/776/776. NOT kept: no qualifying provider contract; every provider/header restored.
+// Frame 0xcc/0xd4 and first-angle/overlay expansion remain.
 // Y597: Complete common primary sampling weights, both-first/single-first producers,
 // sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
 // NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.

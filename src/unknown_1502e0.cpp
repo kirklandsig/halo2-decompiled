@@ -1150,6 +1150,9 @@ struct s_tail_transfer_traits
 // F382: Selected-traits, unit-receiver and selection-scalar lexical home groups,
 // seven subsets then all with the transfer parameter role name: eight 153 at 826 bytes.
 // NOT kept: no gain; original names, initializer sites, helpers and complete body restored.
+// DL265: Weapon/timestamp walks, weapon/time/both, dword/short/word selectors, range end;
+// matched serializer inline: 172/153/163/163/268/268/304/153. NOT kept: no eligible native result; original
+// traversals, serializer and body restored; traits/unit/NONE homes and pool reloads remain.
 // Y597: Independent minimum-scan rejection continuations, six guard orders, then
 // weapon/grouped-rejection and age/grouped-rejection: 153/169/151/153/180/153/153/180.
 // NOT kept: two-point best gain below the gate; other forms tie or regress. Original
@@ -1312,6 +1315,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // N372: Initial/attached chained false stores and absent-held continuation, seven subsets,
 // then complete flag rejection: 284 each at 1006 bytes with frame 0x18. Original body
 // restored; retained pool/player and lazy tag-table homes remain.
+// DL265: Flag producer table-base domains late/early, then caller-owned object input/byte output:
+// 284/284/284/284/284/284/284/284/284/284. NOT kept: unmatched base/input/output ownership; helper/body restored.
+// Retained pool/player and lazy tag-table allocation remain.
 // N384: Existing whole-metadata pointer/reference result, mutable/read-only and
 // captured/direct object input: eight 284. No field-address result is introduced, but
 // native pool/player/tag homes remain. Original getter and entire body restored.

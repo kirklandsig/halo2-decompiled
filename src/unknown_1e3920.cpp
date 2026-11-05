@@ -721,6 +721,9 @@ real function_267370(long object_index);
 // DL262: Signed zone byte 20 plain; const cluster/plane receivers isolated, then signed
 // combinations and const BSP receiver: 20/98/98/20/20/98/20/20.
 // Keep only the native byte/sentinel declaration; all optional const receivers restored.
+// DL264: Existing staged cross scalar inputs/setter/returned receiver,
+// combinations then immutable inputs: 83/24/20/87/83/24/87/87.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1239,6 +1242,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // DH356: Common Boolean query-default chains in both directions, probability zero
 // before/after, inner/outer query storage: eight at 253. Original body restored;
 // sentinel EDI/ESI, squad/query homes and rotated substitution head remain.
+// DL264: Matched alternate/ordinary creation and cleanup inline
+// contracts, seven subsets then all with the target inline: 253/253/253/253/253/253/253/253.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
 // Y589: Actual creation-payload/equipment-selection/actor-object last-use scopes,
 // seven subsets then all with immutable settings view: eight at 253. NOT kept:
 // sentinel/squad/query homes unchanged; original complete body restored.
