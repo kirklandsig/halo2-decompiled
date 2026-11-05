@@ -118,9 +118,7 @@ void network_session_reset_membership(c_class_58d20 *session, bool reset_limits)
 // @retail 0x616b0
 void network_session_disconnect(c_class_58d20 *session, long reason)
 {
-	memset(&session->value7420, 0, 0x1f8);
-	session->value7420 = reason;
-	session->state = 10;
+	network_session_enter_state_with_data(session, 10, &reason, sizeof(reason));
 }
 
 // @retail 0x61950

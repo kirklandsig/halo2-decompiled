@@ -97,6 +97,12 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // zero-initialized z 9, an inverted test 10 or split scale/z products 9; per-use scale reads 76 (259 bytes);
 // zero-initialized z declared first 29, or before a late scale with zero/input z 55/55 (253 bytes).
 // Original three-parameter helper and call restored; no exact match from the alias/lifetime forms.
+// Round 133 (fast): on the x, y, z-read helper with the scale read at each use (37: retail's code with the
+// zero in XMM2, made after the step products, and z in XMM3), 1-8 unused-local probes at the top, the helper
+// top, before z or before the test never move that register choice (diagnostic); on it stores j, i, k 42,
+// k, j, i 44, all three scalings as `*=` 37, `!(scale == 1.f)` 37, the helper returning `out` into the
+// final call 37; the transform written in the body without the helper 9 (current form, same code) or 68
+// (that helper's form, 254 bytes).
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {

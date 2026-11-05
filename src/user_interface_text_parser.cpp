@@ -693,6 +693,11 @@ done:
 // B446: Forced-inline complete selection/translation, scalar or record tag/selector inputs,
 // void/shared and admission/repeated completion: 54/54/54/54/32/32/32/32. NOT kept: no exact result;
 // original complete parser and helpers restored. Early EDI save, tag/selector schedule and scratch cache remain.
+// Round 148 (m3 lane 5, fast; parse_variant stays matched): the buffer as `g_55c2e4 + 0x200` (symbol plus offset is cached too) 32, on the one-copy form 54;
+// the variant getter in a ternary guarded by the definition, testing the variant 69 (186 bytes); `name_id = 0` with `if (name_id)` around the translator, no
+// default, one copy 54; `do { if (!globals) break; ... } while (false)` around the translator, one copy 54. Matched siblings cache their buffer (0x22d5a7 in
+// ESI); here retail's ESI holds the tag, coalesced from the definition pointer, while ours gives ESI to the constant and the tag EDX. The buffer as a member of a
+// one-member record 32; a `static wchar_t *const` pointing at the buffer, one copy 54.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
