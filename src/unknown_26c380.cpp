@@ -830,20 +830,19 @@ bool function_210690(short output_index, point3f const *point, point3f *out);
 // a named local at every read 30 (each loses five matched callers); its address read once into that local 37; its
 // address taken only for the else arm's copy 37.
 // @retail 0x26d100
-long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point)
+long function_26d100(vector3f const *up, point3f const *point, long *unknown, s_collision_result_1697c0 *collision)
 {
-    point3f const *const *point_reference = &point;
+    long result = NONE;
+    point3f start;
+    start.x = up->i * 0.5f + point->x;
+    start.y = up->j * 0.5f + point->y;
+    start.z = up->k * 0.5f + point->z;
     vector3f direction;
     direction.i = up->i * -4.0f;
     direction.j = up->j * -4.0f;
     direction.k = up->k * -4.0f;
-    point3f start;
-    start.x = up->i * 0.5f + (*point_reference)->x;
-    start.y = up->j * 0.5f + (*point_reference)->y;
-    start.z = up->k * 0.5f + (*point_reference)->z;
     s_path_collision *hit = (s_path_collision *)collision;
     s_path_node_point *output = (s_path_node_point *)unknown;
-    long result = NONE;
     if (function_1697c0(0x84000d, &start, &direction, NONE, NONE, collision))
     {
         result = function_1fa3a0(hit->structure_index, hit->surface_index, hit->object_index,
@@ -875,7 +874,7 @@ long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c
     }
     else if (output)
     {
-        output->point = **point_reference;
+        output->point = *point;
         output->output_index = NONE;
     }
     return result;
@@ -895,5 +894,5 @@ long __stdcall function_26d0e0(point3f const *point, s_type_c3b527 *output, long
     long const *unused_reference = &unused;
     (void)unused_reference;
     *(short *)((byte *)&collision + 0x24) = NONE;
-    return function_26d100(g_4687b0, (long *)output, (s_collision_result_1697c0 *)&collision, point);
+    return function_26d100(g_4687b0, point, (long *)output, (s_collision_result_1697c0 *)&collision);
 }
