@@ -174,6 +174,11 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // Round 136: a field-first sine snapshot 2; cosine or both field-first snapshots 24/24 (2352 bytes);
 // assignment-expression sine 2, cosine 24 or both 24; position.x before field-first sine 2; position.y before cosine 8.
 // Original case restored; NOT kept: one-use field copies and producer-only forms without an exact match.
+// Round 133 (fast): case 1 with sine and cosine named and the position stores first 510 (2352 bytes); the cosine
+// named before the sine 24 (2352 bytes); position.y from the sine ahead of velocity.j 2; velocity.i stored before
+// the sine is defined 2; a cosine local after velocity.j with both position products from the locals 24. With
+// either zero store removed (diagnostic) the xorps still fills the fld -> fsin slot.
+// Case 1's azimuth as one product of a direct function_x82e52f draw 510.
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {

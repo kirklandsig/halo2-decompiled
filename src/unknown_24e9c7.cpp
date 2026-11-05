@@ -115,6 +115,7 @@ struct s_24e9c7_bounds
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax b (11-04): no new form, no lower score; the result/kind/bitmap homes stay eight bytes above retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the geometric SSE schedule stays ours.
 // score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
 // left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
 // xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
@@ -341,6 +342,24 @@ struct s_24e9c7_bounds
 // M376: Signed-int selected-bitmap/height/half-width producer domains, seven subsets,
 // then all with signed-int bitmap handle: 125/125/125/125/125/125/125/125. NOT kept: no match or qualifying gain;
 // original domains/body restored; early across spill and shifted scalar homes remain.
+// B435: Existing vector2f component-array upper/side/reverse observations, seven
+// subsets, then all with the perpendicular pair: 125/125/125/125/125/125/125/144.
+// NOT kept: no exact vector-storage or early-spill recovery; original types/body restored.
+// Early across spill, eight-byte-high return/metadata homes and SSE scheduling remain.
+// B439: Output-origin transfers from the first real vertex, seven nonempty receiver
+// subsets then a successive output-copy chain: 129/129/129/129/129/129/129/129.
+// Original complete body restored; early across spill and scalar homes remain.
+// B441: Existing early perpendicular setter, separate/reused side ownership,
+// direct/pre-scaled complete inputs and unary/zero-minus negative direction:
+// 144/139/139/139/144/139/139/139. NOT kept: no equality; original scalar pair, full body and
+// declaration set restored. Early spill and eight-byte-shifted scalar homes remain.
+// B443: Exhaustive returned-height producers at three admission gates, all eight
+// rejection-first/success-first arm masks: 186/186/186/186/186/186/186/186. NOT kept: all grow
+// to 748 bytes at frame 0x48; original entry zero/full body restored.
+// Early across spill, eight-byte-high scalar homes and SSE scheduling remain.
+// B445: Complete opacity producer at global-copy/corner/reverse/side/upper/width/height/basis boundaries:
+// 139/173/172/185/166/171/171/172. NOT kept: moved one-use producers do not match; original whole body restored.
+// Early across spill and eight-byte-high scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

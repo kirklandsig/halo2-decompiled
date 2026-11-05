@@ -840,6 +840,7 @@ extern vector3f *g_4687b0;
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// MiniMax lane A (11-04): no new form, no lower score.
 // score 309 (was 309): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
@@ -1199,6 +1200,10 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // `return result` 43; `result = true` before function_a8c10 21. The three `[edi + ecx + 8]` unit
 // lookups stay data-first in a compile-only screen for every order of the entry declarations, an
 // unused header pointer and a header pointer for the first lookup.
+// Round 144: all three self lookups through the existing header accessor 19 (same code); the shared bit setter 19;
+// an explicit success goto 19; a computed active value with the result before its store 19 (NOT kept: one-use
+// local, no match); direct success return true/result 264/264 (948 B); an addressed result read 19 (same code);
+// a one-iteration do/break scope 646 (1266 B, frame 0x84). Original body restored.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -1442,6 +1447,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
+// MiniMax G (11-04): no new form, no lower score; retail loads the pool data and the unit twice with
+// a stack spill between the two loads, ours keeps one load, so the index form, the reload of the pool
+// data and the register allocation differ.
 // score 95 (was 95): frame 0x18 agrees; entry table/hand homes and second unit load remain.
 // Earlier (148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
 // Numeric primary/shared unit/both 195; direct hand and its combinations 200; conditional state
@@ -1718,6 +1726,11 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax A (11-04): no new form, no lower score (11). What still differs: the entry block's
+// order. Retail loads the object-pool global, then the unit header, then the type argument,
+// computes the unit and the actions pointer, and only then does `cmp ecx, 8; sete bl`; ours
+// compares the type first and reads the global afterwards. Same instructions, different schedule.
+// The permuter (300 s) managed one try and found nothing.
 // MiniMax E (11-01): no new form, no lower score; the entry block keeps the same eleven
 // instructions in a different order in every form tried.
 // score 11 (was 29): only the entry block's order differs (retail loads the global and the
@@ -1768,6 +1781,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 }
 
 /* drops the weapon in a hand (types 9 and 19) */
+// MiniMax G (11-04): no new form, no lower score; retail reloads the pool data and the unit after the
+// stored flag and reads the hand's slot byte from the reloaded unit, ours keeps the first unit, so
+// the pool reload, the second slot read and the weapon/mode homes differ.
 // score 138 (was 138): frame and entry homes agree through +0x34; pool reload, weapon/result
 // and mode/flag homes remain. Numeric-hand lookup selected/other/both 142/141/142;
 // both with success admission 138, persistent result 154, common primary mode 171,
@@ -1979,6 +1995,9 @@ done:
 
 /* gives a unit's weapon to a player's unit, taking the player's weapon
    in exchange (type 21) */
+// MiniMax G (11-04): no new form, no lower score; retail reloads the pool data for the second unit
+// lookup after storing the unit pointer into the dead argument slot, ours keeps the first pool load,
+// so the reload, the unit/weapon allocation and the result byte's home differ.
 // score 97 (was 97): frame 0x24 versus 0x20 (given in a stack byte, retail BL); unit/weapon allocation and
 // the inline unknown13c exit differ (retail hoists `xor al, al` and jumps into the epilogue tail).
 // Earlier: score 100 (was 127): frame 0x24 versus 0x20; unit/weapon allocation and transfer-call convention differ.
@@ -4076,6 +4095,10 @@ bool __stdcall function_ec2d0(long unit_index, s_unit_request *request)
 
 void function_e5750(long unit_index);
 
+// MiniMax A (11-04): no new form, no lower score (52). What still differs: our build inlines
+// function_e5750 here (95 bytes) where retail calls it out of line (67 bytes). The callee is in
+// this file and matches, as do its other callers 0xec9a0 and 0xe5930; only this call site differs.
+// BLOCKED-BY 0xe5750's inlining: __declspec(noinline) on its declaration is banned.
 // MiniMax E (11-01): no new form, no lower score; a plain check confirms the full
 // build inlines 0xe5750 here too (the unit read before the call: 72, 110 bytes).
 // score 52 (was 72): unit lookup is at use; the final helper remains expanded (95/67).
@@ -4087,6 +4110,8 @@ void function_e5750(long unit_index);
 // under one `if` from /d2inlT70 up, unconditionally from 62 and under 0xec9a0's two tests from 90, and
 // every source form here stays under the build's threshold. Pointer before the call with `!type` 72,
 // with an early return 72, a bool local before the call 83; after the call an early return 52, `!type` 52.
+// Round 146: definition below the final helper, post-call pointer/const pointer/header/byte/bool locals,
+// zero-path return and single-exit goto all 52; original restored.
 // @retail 0xec330
 void __stdcall function_ec330(long unit_index, long type)
 {
@@ -4193,6 +4218,8 @@ extern vector3f *g_4687bc;
 // pointer 90; both 89; result declared first 54; unknown14 stored first/second/last 51/51/56;
 // x + (y + z) 54; x + (z + y) 48; with unknown14 second 45; rigid body by pointer arithmetic 45;
 // the material NONE store back after function_d6660 148 (retail stores it first; d6660 then overwrites it).
+// Round 145: material declaration/assignment split, direct initialization and renamed material; rigid-body
+// reference, base then index, const component and first-node dereference all 45; shared array base 58. Original restored.
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
@@ -5356,6 +5383,13 @@ long function_1039a0(long object_index, long tag_index, long effect_index, real 
 short first_person_weapon_animation_ticks(long weapon_index, long animation_name, short type);
 bool function_1058b0(long weapon_index, long state, bool force);
 
+// MiniMax A (11-04): no new form, no lower score (54 reduced / 54 full; the full build no longer
+// adds the 12 bytes of the inlined 0xc9d00, so the earlier note's 70 is stale). What still differs:
+// the first difference is inside the inlined body of function_1058b0, which lives in
+// src/weapons.cpp. Retail keeps the object-pool data pointer in EDX and copies it (`mov ecx, edx`)
+// where ours keeps it in ECX, so retail's copy is two bytes longer there; at the tail retail
+// reads `mov ecx,[esp+0x18]; mov eax,[ecx+0x144]` and we read `mov eax,[esp+0x18]; mov eax,[eax+0x144]`.
+// BLOCKED-BY 0xc9d00/0x1058b0.
 // MiniMax E (11-01): no new form, no lower score; the reduced image scores 54 where the
 // full build gives 70.
 // score 70 (was 70): the first difference is inside the body of function_1058b0,

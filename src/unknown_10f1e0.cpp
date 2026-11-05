@@ -1534,6 +1534,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // at entry/controlled scope: 347/347/347/347/344/344/344/344. NOT kept: all regress
 // and lengthen to 1300/1299 versus 1286; original lookup observations and body restored.
 // Native pool/displacement ownership, SETLE/default homes and byte normalization remain.
+// P345: Joint false-default chain, success/depletion/interruptibility-owned defaults,
+// byte then bool success: 164/165/165/164/194/193/195/194. NOT kept: no byte match;
+// original complete body restored; pool/displacement, SETLE/default homes and normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1798,6 +1801,9 @@ bool __stdcall function_110ab0(long unit_index)
 // P327: Complete base/depletion/overlay true-false result producers, masks 1/2/4/3/5/6/7,
 // then all with result at entry: 465/430/450/465/465/430/465/465. NOT kept: 430
 // still has 424 code differences; only table/extent improves. Original full body restored.
+// DH372: First/second held-query presence bool/byte/short/long: 450 each.
+// NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
+// Original body and queries restored; state/request/result homes remain.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2200,12 +2206,24 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // clamps 776/841/841; complete overlay center-admission bool/byte/short/long/dword
 // storage 776 each. NOT kept: no gain or exact predicate/branch-layout form.
 // Original body restored; frame 0xcc/0xd4 and first-angle/overlay expansion remain.
+// F378: Secondary relative-sample eligibility after positive-weight admission, sample then skip
+// bool/byte/short/long: 807/807/807/807/776/776/776/776. NOT kept: one-use decisions remain unmatched;
+// original projection captures, angle tests, helpers and complete body restored.
 // P326: Existing primary blend scalars/secondary weight/overlay ratio declarations at their
 // owning phase, subsets 1..7, then all at entry: 776 each. Assignments stayed at their
 // producers. NOT kept: no gain; original body restored, frame and first-angle expansion remain.
 // N368: Nested persistent-valid/direct-set/default-and-overlay admissions, seven family
 // subsets, then all with split outer definition/graph guard: 776 each. NOT kept: no gain;
 // original admission graph restored, frame 0xcc/0xd4 and opposite selective expansion remain.
+// AC533: Test-produced whole terminal paired-slot gate, missing/present bool/byte/short/long:
+// 724 each (3413/3403; frame 0xcc). NOT kept: one-use/test-produced state needs equality;
+// first-angle/overlay calls stay 2/4 versus native 1/5. Original complete body restored.
+// N373: Ordered primary/secondary null-or-found screen producers, conditional/default/total-if forms
+// 830/775/835/830/775/835/835/835. NOT kept: at most one point; original full body restored.
+// Frame 0xcc/0xd4, entry computation and first-angle/overlay expansion remain.
+// Y597: Complete common primary sampling weights, both-first/single-first producers,
+// sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
+// NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -2465,6 +2483,21 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // `if (!0x114520) return false;` with the request block flat 98 (215 bytes); request priority captured after the
 // fallback block 85 (252 bytes); the request record zero-initialised with `= {0}` 65 (248 bytes); the index
 // declared then assigned after the priority 16; the index from an if/else on entry_index 16.
+// Round 54 (m3 lane 15; one-link harness with src/unknown_1130a0.cpp and src/unknown_20ba00.cpp, same roles, 22 for the check's
+// 16): the colouring order is the cause: the heaviest value takes EBX, the next ESI, the last EBP, and retail colours NONE first,
+// ours index, priority, NONE. Diagnostics with extra volatile NONE stores in the request block: 2 no change, 4 NONE ESI and
+// priority EBP, 8 retail's exact roles (index ESI, NONE EBX, priority EBP). Two more priority stores swap index and priority.
+// Overwritten NONE stores do not count; removing the copy, the memset or the test of extra moves the roles but not to retail's.
+// Real (fast): request setup through a forceinline helper 16; extra fill through one 16; both 16; entry_index tested and reassigned
+// then index declared 16; index from a ternary 16; index set in both arms of a test of entry_index 16; entry store first 16;
+// comparisons against `(short)NONE` 16; output cleared ahead of the fallback test 23; extra copied by struct assignment 16, through
+// a typed pointer 16; memmove 51; memcpy with a literal size 16. Harness (22 base): the call and return in both arms 41, the call in
+// both arms 41, the else as a fall-through 41, inverted arms 32; implied NONE tests in five places 22 to 28 (threaded, roles
+// unchanged); `!= false` 22, `== true` 24, a named bool 22; an empty `do {} while (false);` at all 16 statement boundaries 22;
+// every spelling of each NONE use (-1, typed casts, 0xffffffff) 22, word forms 83 to 88, a long index 31; index defaulting to NONE then set in
+// both arms 22; 72 combinations of an extra local, `!= NULL`, declaration order, memset spelling and priority casts keep our roles, with a
+// one-exit result 91 (224 bytes; index ESI, priority EBP, NONE EAX).
+// A 600 s permuter run (52 tries) none below 16.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -2822,6 +2855,9 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
+// score 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
+// pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
+// costs both callers in other lanes' files.
 // score 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // (663) costs both callers in other lanes' files.

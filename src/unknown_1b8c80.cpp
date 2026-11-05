@@ -1545,6 +1545,11 @@ void function_1f86a0(long actor_index);
 // AC527: Post-search reservation observation as bool/byte/short/long, native member/full-slot
 // payload pairs, eight at 134. NOT kept: one-use result residence unmatched; original types,
 // observation, raw mask, root short circuit and complete body restored; mask/entry homes remain.
+// M3 lane 4 r164 (fast; aligned count in brackets, control 134 [84]): EBX holds the joint index after the loop in both builds, and in
+// the loop the byte mask (only BL can hold it across the calls) takes it where retail gives it to the entry. Positive predicate 134
+// [83]; the element looked up again through the entry in the predicate 254 (874 B), in the root compare 243 (862 B), in both 254; the
+// predicate re-lookup with the positive predicate 250 (874 B), with both 250. Volatile mask (diagnostic, reverted) 254 (879 B): frame
+// 0x14 and the mask at +0x13, but the flags read is then shared and BL holds it, so retail's spilled mask is not a volatile's shape.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

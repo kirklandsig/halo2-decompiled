@@ -285,6 +285,21 @@ struct s_visibility_bound_record
 // On the kept 393: negated distance named before the stores 393, list pointers second/first/third/fourth 394, outputs declared i/k/j 393, normals scaled in place 393, visible after the object index 393, scaled copies declared k/i/j 406.
 // With `visible` left after the node loop, 64 combinations of state local, structure/section with and without the (bool) bit, chained lists, capacity tests and table local: best 411 (1760 B), then 435-440, none under 406; all restored. Behaviour difference still open:
 // retail stores 0 into the plane distance for a zero transform scale (`jnp` to the shared `movss [p.d], xmm0` with xmm0 zero); this body leaves the distance unchanged there. A fix alone raises the score (444 in round 97), so it stays recorded here.
+// Y585: Initialized containment false at unseen/bound-index/bound/transform/local-point/
+// scaled-point/first-center/completed-center boundaries: 406/406/406/406/406/417/417/417.
+// NOT kept: no eligible gain; original producer and full body restored; entry/table and plane/query homes remain.
+// Y587: Fallback-center component for traversal long/dword/short/word/byte/
+// signed-char, then long/short while: 406/406/502/502/502/502/406/502.
+// NOT kept: narrow traversal stays rolled and shortens away from retail; original full body restored.
+// Y589: Actual composed-node/frustum-plane/fallback-center input last-use scopes,
+// seven subsets then all with immutable query, eight at 406. NOT kept: no exact
+// entry/table or plane/query-home recovery; original complete body restored.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 406 [357]): part loop: named word-mask pointer 406; containment flag
+// set in the arm 406 [356]; both 406; `inline` on 0x142a60 407, on 0x165010 406, on 0x45a80 and 0x458d0 406. Plane transformed in
+// place with one store at the join and retail's zero-scale store 476 (1700) [278]; flags at each use with a (bool) bit test 474
+// (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
+// chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
+// movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
