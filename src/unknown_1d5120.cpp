@@ -235,6 +235,10 @@ void function_1d56f0(s_havok_component *component)
 // the lookup's operands), 0x1d0cf0 27, but 0x1d0c20 49, and matched 0x1d1b60 59 and 0x115b10 56 are lost; the refetch assigned to the body
 // pointer 15 (same losses); a two-use slot 15 (0x1d0cf0 60, same losses). m_fixed first 73 (820 bytes, nothing lost, 0x1d0cf0 88), with a named
 // fixed bool 73, with a component copy 73. Still BLOCKED-BY 0x1d0cf0's EBX. The cycle lead above may need 0xb8540 and 0xb7430, not tried here: their files' notes say enabling them loses matches (23 for 0xb8540 alone when measured).
+// T62: setter cdecl/stdcall 80/77; existing allocator placement 77; actual registration
+// return 153; persistent body/query receivers 77/77; placement/registration and body/
+// registration 153/153. NOT kept: no gain; registration moves the frame, and cdecl
+// raises both setter users. Original contracts restored; lookup and setter transport remain.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

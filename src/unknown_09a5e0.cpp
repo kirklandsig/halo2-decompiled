@@ -2054,6 +2054,294 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 }
 
 /* copies each requested unit field that changed into the update record and returns the mask of what changed */
+// MiniMax lane E (11-01): the pool index named in a local gives retail's SIB base (154, a gain of one
+// that the keep rule drops); the head block's register split is not reachable from the source (short
+// casts, declaration order, else, ternary, literal -1, masking and the truncated 0x13c read: 155,
+// 201, 212 and 269).
+// MiniMax lane A (11-04): the 0x400 block's parent value re-read as a short instead of truncated
+// from the long matches retail's block exactly (135, from 155).
+// score 136 (was 155): The 0x400 block matches; the entry/unit stack homes, the 0x2000 block's dead
+// add, the loop's mask home and register split and the float constants still differ.
+// Lane 18 r37 (fast): plain 0x400000 mask test 168 (1070 B); a pointer to the 0x214 field used for
+// test and store 155; both tail compares written source-first 155; the 0x214 value named for test and
+// store 155; one compare-and-store template helper (reference target and value) for the 0x2000,
+// 0x400000 and all three 0x800000 updates, inline or forced inline, 240/240 at 1081 bytes (it stays an
+// out-of-line call under both). Original body restored.
+// Earlier: this round's head-block forms (the 0x13c value truncated to a short and
+// compared against both NONE forms, in nine source shapes) all score 149, and naming the object
+// index in a local, so the object address keeps retail's SIB base, scores 148 - a gain of seven
+// that the keep rule drops, so the original body stands.
+// Earlier: this round's head-block forms (the 0x13c word truncated to a short and
+// compared against both NONE forms, so the tail keeps retail's ax/cx) score 149, a gain of six that
+// the keep rule drops, so the original body stands.
+// Earlier: this round's source permuter over the body found no better form (24 tries,
+// best 148 differing instructions, equal to the baseline 148, no confirming build), so the body is
+// unchanged; the four-slot loop still carries one value more than retail (ours reloads [esp+0x14] in
+// the loop head), the 0x400 block keeps its short in EAX where retail uses EDX/CX, and the reduced
+// image's global and thunk addresses differ.
+// Earlier: this round read the diff groups again: the four-slot loop carries one value
+// more than retail (ours reloads [esp+0x14] in the loop head), the 0x400 block keeps its short in
+// EAX where retail uses EDX/CX, and the reduced image's global and thunk addresses differ.
+// Earlier: object/offset homes and low-mask allocation remain;
+// Round 9 (lane 10): retail holds the 0x400 block's short in EAX (stores 0x90 before the result update);
+// its value as a ternary 201; its declaration after the field reads 168; set in if/else 201; both slot
+// masks at the loop head 285 (1041 bytes); first slot mask long 168.
+// frame 0x1c agrees; object/offset, low-mask and tail result homes remain.
+// Earlier: Frame 0x1c agrees; object/offset homes, low-mask and tail flag homes remain;
+// object/offset homes and low-mask allocation remain;
+// object/offset homes, low-mask allocation and the 23-byte deficit remain;
+// native unit view 184; read-only unit view 184; native child view 184;
+// both native views 184; unsigned result mask 184; child defaults reversed 186;
+// immutable output binding 184; read-only byte source 184.
+// frame 0x1c agrees; object/offset homes and slot mask differ.
+// Frame pointer 291; scalar clamp input 184; sample-first clamp result 189;
+// indexed snapshot records 230; native-word ordinary tail flags 192.
+// Frame 0x1c agrees; indexed lookup, object/offset homes and slot-mask allocation still
+// differ. offset receiver home 183; offset snapshot home 183; offset object home 183; offset
+// result home 183; receiver store lifetime 201; offset positive count 183; tail result mask
+// 208; offset tail result mask 207.
+// getter guard/exhaustive result 200; complete output receiver 184;
+// exhaustive child metadata/count/all results 234/299/311; ordered clamp results
+// and bound returns 191. Object/offset homes and low-mask allocation still differ.
+// getter byte slot 200; table/full identifier, object, table/decoded index 184;
+// header/object/table with byte slot 200; table word object slot plus byte slot 287.
+// reversed getter with short/byte/long slot 184/200/208; unsigned handle
+// combination 184/200/208; reversed short/long with scalar clamp 184/208.
+// header/object homes and low-mask allocation remain.
+// Clamp source/result names and source-first declarations 184/184/184;
+// tail fractions, child fraction, mask names and both scratch-home combinations 184 each.
+// forced/ordinary/compiler-selected getter and clamp inline contracts, all eight
+// alternatives 184 each. Both original helper contracts and bodies retained.
+// Native entry metadata+state/metadata/state 187/187/232; native reference 187; both request
+// predicates with native entry/raw cursor/metadata/state 237/238/238/263. All fast. Original
+// helpers, qualifiers and short cursor retained.
+// the clamps are PIN on the unit's fields (re-read at each use, as retail
+// does) in place of a helper that steered through a volatile local, the tail flags are declared
+// first and the dead volatile on the second flag is gone (aligned differences 126 -> 99; without
+// both volatiles the old body is 226). Retail keeps the requested flags in EDI and spills the
+// mask (EBP) in the child loop where ours keeps the mask in EDI, updates the result with
+// load/or/store, keeps the object pointer at +0xc and the offset at +0x10 (ours +4 and +0xc),
+// and reloads the unit pointer for the tail. The volatile copy of this gives retail's store of
+// ECX at entry (without it 294 [aligned 102]).
+// Tried this round: long second child value 191 (kept now on the PIN body: retail sign-extends
+// it); unit pointer with the data base first / as the object header array 184/184; no volatile
+// this 272; no volatile tail flag 184 (kept); no volatile clamp 226; PIN 212; PIN with the tail
+// flags first 213 [98]; chained flag initialisation 212; long first child value 210 [94] (not
+// kept: retail loads it 16-bit). Renaming the unit pointer does not move its slot.
+// Earlier (184): native unit view; read-only unit view; native child view; both native views;
+// unsigned result mask; immutable output binding; read-only byte source 184; child defaults
+// reversed 186; frame pointer 291; scalar clamp input 184; sample-first clamp result 189;
+// indexed snapshot records 230; native-word ordinary tail flags 192; offset receiver, snapshot,
+// object and result homes 183; receiver store lifetime 201; offset positive count 183; tail
+// result mask 208; offset tail result mask 207; getter guard/exhaustive result 200; complete
+// output receiver 184; exhaustive child metadata/count/all results 234/299/311; ordered clamp
+// results and bound returns 191; getter byte slot 200; table/full identifier, object,
+// table/decoded index 184; header/object/table with byte slot 200; table word object slot plus
+// byte slot 287; reversed getter with short/byte/long slot 184/200/208; unsigned handle
+// combination 184/200/208; reversed short/long with scalar clamp 184/208; clamp source/result
+// names and source-first declarations 184; tail fractions, child fraction, mask names and both
+// scratch-home combinations 184; forced/ordinary/compiler-selected getter and clamp inline
+// contracts 184.
+// Entry declarations 021/102/120/201/210 and typed array/pointer accesses 210 each;
+// header local 209, rejected. Original lookup and body restored.
+// Round 234 on direct field clamps: low request intersection 210; named low bit 210;
+// early high bit alone/with intersection 295/295; native record cursor alone/with
+// intersection 213/213; unsigned bit ordinal and reversed count defaults with intersection
+// 210/210. Original direct clamps, four-slot scan and executable body restored.
+// Direct tail flags from their tests: byte 207; first fraction 206; byte/first 203;
+// second fraction 216; byte/second 212; both fractions 211; all 211; all long 203.
+// Seven-point best gain rejected; original flags, field clamps and stores restored.
+// Complete payload observations through live lookup/header record/header array/decoded array
+// 402/274/370/325; unsigned changed-mask combinations 402/274/370/325. Header-record
+// forms reach 1081 bytes but regress; original cached object and signed result restored.
+// Direct-field-tail getter table/header/payload/decoded-table inputs, forced 210/210/210/318;
+// ordinary inline 210/210/210/318. Original getter and observations restored.
+// Independent child result timing: low before/high after integers or all 204/204;
+// low between/high before, after integers, after all 193/172/170;
+// low after/high before, after integers, after all 191/170/168.
+// Both mask updates after their original stores retained; 1070/1081 bytes.
+// Independent early parent result/store boundaries before/between/after: 288/288/285;
+// 267/266/169; 266/265. Original early stores and retained child timing restored.
+// Round 246: metadata/count/fraction defaults before the child getter in seven
+// combinations 276/258/230/210/276/258/280; all defaults before the slot mask 245.
+// Round 197: Existing base-sync/identifier-map ordinary-inline-noinline declaration pairs,
+// all eight alternatives, 168 each; original declaration graph and body restored.
+// Round 352: persistent, child-value and induction/mask scalar-home groups, singly and all
+// combinations, 168; complete homes plus native header offset 167 (one point, rejected).
+// Original executable body and retained post-store child masks restored at 168/1070.
+// Final source-field pointer 168; exhaustive first parent result alone/with pointer
+// 164/164 rejected; exhaustive mapped results alone/with pointer 223/223; both
+// parent result groups without/with pointer 219/219; named-offset combination 218.
+// Original receiver, result production, stores and lookup restored.
+// Round 62: first-block declaration orders, all five others 168 (identical code); NONE
+// default as a ternary 201; field-copy compare operands swapped 168; field pointer for the
+// copied field 168 (retail's dead `add ebp, 0x214` remains). The first block's goto became a
+// plain NONE guard (identical code).
+// Round 66 (fast, identical code each): tail compare operands swapped for the 0x23e field / the flag byte /
+// both 168/168/168; entry lookup with the pool base first 168 (SIB order unchanged); the child getter's
+// object read in the entry's offset form 168. Retail loads the record field into a register before each
+// tail compare and re-reads the object field for its store; it reloads the object once after the loop
+// (ours reloads it into EBP at the bottom of each iteration).
+// Round 29: the 0x2000 block is 8 of the 11 missing bytes: retail loads the record's
+// field and the unit's +0x214 into registers, compares them, and leaves a dead
+// `add ebp, 0x214`. memcmp for that test gives retail's loads and compare but no add
+// 193; with memcpy for the copy 193; with a named source pointer used for both 193;
+// with a four-byte struct copy 193; the unit pointer through OBJECT() 168 (identical).
+// Round 30 (fast): 0x400 block's flag set between its two stores (retail's order) 169; the 0x2000
+// update through a file-local pointer helper 168 (identical); its value named once for the test and
+// the store 168; the unit through the header-array index 168 (SIB order unchanged); the 0xee field and
+// its new value as bool 168 (retail loads the field into DL before the compare and keeps both float
+// flags in stack bytes; ours compares memory and keeps the first flag in DL).
+// Earlier 155 (was 168): a mask test read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift; the rest still differs.
+// Round 284: Complete native child-result record, direct request parameter, and
+// signed/unsigned bit ordinal 191/191/191/191; constant field defaults
+// before the getter 278/278/278/278. Exact-only records restored.
+// Original separate results with direct request parameter, signed/unsigned ordinal
+// 155/155; all executable source restored.
+// Round 215: original bit ordinal at short/word/byte widths, with long or short positive-four
+// countdown: 210/210/231/231/210/210/231/231. Original ordinal and countdown restored; frame 0x1c
+// agrees, object/offset homes and low-mask allocation remain.
+// Round 441: Boolean fixed request groups parent/position/both/tail/parent-tail/position-tail/all 285/271/289/178/286/272/290; both dynamic child predicates 223. Original request tests, observations and executable body restored; object/offset and low-mask homes remain.
+// Round 448: Decoded two-bit child request in dword/long/word/byte, masked and
+// unmasked shift domains 284/284/284/284/287/287/287/287.
+// Original body and helpers restored; Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership remain.
+// Round 454: Single low/high and paired mask recurrences on the retained post-store child
+// results 229/237/250; with both native request intersections 261/253/276; single low/high
+// recurrence with Boolean intersections 246/273. Two forms reach 1081 bytes but regress;
+// original ordinal, child stores, masks and whole body restored.
+// Round 462: Direct zero-based child slot, long/short/dword/word with original cursor/indexed
+// record fields: 218/224/255/255/218/224/255/255. Original ordinal, countdown, cursor and whole
+// body restored.
+// Round 267: dependency-safe child input orders tag/fraction/key/bytes, key/tag/fraction/bytes,
+// key/fraction/tag/bytes, fraction/tag/key/bytes, fraction/key/tag/bytes, tag/key/bytes/fraction,
+// tag/fraction/bytes/key and tag/bytes/key/fraction: 157/155/155/157/157/155/157/155.
+// Original observations restored; object/offset homes and low-mask EBP ownership remain.
+// Round 226: native-short first parent with direct immutable request, early parent-mask placement
+// subsets 0-3: 289/289/289/288; exhaustive mapped-parent outcomes with those subsets
+// 288/288/288/297. Original parent reads, request carrier, result timing, four-slot loop and
+// complete body restored; object/offset and low-mask homes remain.
+// Round 33 (lane 2, fast): the masked object index named before the entry lookup 154 (retail's SIB base
+// in the entry and child lookups; homes unchanged), with the raw offset form 154; the entry through
+// OBJECT() 155; the 0x400000 test as a plain mask 168, with the named index 167 (retail's
+// `test ecx, 0x400000`, but the result is then loaded in both arms and the unit stays in EBP); with the
+// named index, memcmp for the 0x2000 test 213 (retail's two-register compare, no dead add), memcmp plus
+// memcpy 213, memcpy for the copy alone 154. Retail reloads the unit from its home after the slot loop.
+// Round 20 (lane 18, fast): retail tests the 0x400000 bit with `test ecx, 0x400000` and keeps both later
+// tail flags memory-homed (false stored to the dead flag and record parameter slots), the first in CL.
+// The plain 0x400000 mask test 168; the child loop as a plain `for` over the bit with direct
+// `field_ac[bit - 18]` indexing 247 (1051 bytes), as a zero-based `for` with `field_ac[i]` 220 (1057);
+// the tail flags declared after the clamps 158 (both stores then sink after the flag compare); the flags
+// parameter used directly in place of its copy 155 (same code); renaming the unit pointer 155 (no move).
+// Round 55: object offset named as a local (`local_offset + data + 8`, retail's SIB order) 154;
+// `(local_3 & 0x400000)` for the field-bit test 168, with the named offset 167; the 0x2000 compare through
+// an inline pointer helper either way round 155/155; its copy through memcpy 155, through an inline pointer
+// helper 155, memcpy with the named offset 154; a compare-and-copy inline helper 155; a `long const *` or
+// `long const &` to the 0x214 field used for both, also inside the 0x2000 test, 155/155/155; memcmp for the
+// compare 214 (retail's two loads and register compare, no dead add), with memcpy for the copy 214; the
+// second slot mask named at the loop top for both tests 268 (1043 bytes); the first slot mask declared at
+// function scope 155; `for (local_5 = 18; local_5 < 22; local_5++)` without the countdown 247 (1051), with
+// the named offset 246. Retail's dead `add ebp, 0x214` is the idiom of a pointer-to-field variable whose
+// last use was folded away (matched 0x89df0 and 0xbb950 link walks, 0xa0c50's inlined flag setter); no
+// existing accessor reads the unit's 0x214 field.
+// Round 112 (lane 8, fast): first slot mask as long 155 (same code); the second mask named once at the
+// loop top for both tests 268 (1043 bytes: retail computes it twice); the slot pointer used directly with
+// no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags
+// read from the parameter at each use 155 (same code). Retail spills the first mask (EBP) and keeps the
+// flags in EDI in the loop, reloading the unit only after it; ours keeps the mask in EDI throughout.
+// Round 491: actual four-record end traversal != with long/short/word/byte ordinal 286/283/283/280; <
+// counterparts 286/283/283/280. Original countdown, cursor, ordinal and complete body restored.
+// Round 280: joint direct/conditional parent-short producers with decoded slot/header offset
+// and shifted/direct tail request 279/294/288/290/284/273/266/266. Original executable
+// body restored; object/offset homes and low-mask EBP ownership remain.
+// Round 282: Changed-mask production from parent-pair/child-metadata/child-state predicate
+// outcomes, seven subsets 291/208/307/189/300/235/329; all outcomes as bytes 329.
+// Native object/offset and low-mask homes remain; original tests, stores and body restored.
+// Round 286: named entry slot with uniform signed-byte/byte/short/long tail results before clamps
+// 154/154/165/168; after clamps 157/157/153/156. Two-point best gain rejected;
+// original tail domains, entry lookup and complete body restored.
+// DL220: Independent object/child/tail changed-mask accumulators, seven subsets; all with entry result declaration:
+// 274/262/274/166/290/267/257/257. Indexed lookup, object/offset homes and low-mask ownership remain. Original body restored.
+// Round 304: high-first/combined-mask/low-bank-fold/high-bank-fold admission 285/267/264/262;
+// with the actual entry slot named 285/267/264/262. Original request tests and full body restored.
+// Round 450: One native tail-change outcome bool/byte/short/long, original then captured object-
+// slot value: 202/202/193/194/202/202/193/194. Exact-match-only flags restored with the original
+// three outcomes, qualified receiver, child masks, cursor and countdown; indexed lookup,
+// object/offset homes and low-mask ownership remain.
+// M303: Positive-four countdown signed-char/byte/short/word at loop scope or entry: 155 in all eight forms; original long countdown and lifetime restored.
+// Round 120 (fast): the masked entry offset named at its computation 154 (retail's SIB base again, one
+// point); the 0x2000 test nested in its own if 155 (same code); a `byte const *` unit pointer 155 (same
+// code); the slot-loop counters and cursor declared right after the 0xa5e70 call 279 (1081 bytes, every
+// later home moves); the record cast declared after the flags copy 155 (same code); the flags copy as a
+// signed long 155 (same code). Retail's dead `add ebp, 0x214` is the unit pointer's EBP turned into the
+// field pointer in place, so retail's unit web ends in EBP at the 0x2000 block and is reloaded from its
+// stack home after the slot loop (EBP then holds the first slot mask); ours keeps the unit in EBP.
+// Round 317: Per-use native child metadata/count/fraction source groups 1..7, all with read-only child
+// view 304/257/292/243/273/315/347/347 fast. Exact-only source-observation graphs restored.
+// Indexed lookup, object/offset homes and low-mask ownership remain; original full body restored.
+// Round 40 (m3 lane 2, fast; all restored): named object offset 154 (index-first load as retail, aligned 94); memcmp for the 0x2000 test 214 (288
+// instructions, aligned 94), with the offset 213 (aligned 93: retail's two loads and register compare, only the dead `add ebp, 0x214` missing, the
+// slot loop gains an alignment jump). On the offset: a block-scope field pointer with memcmp, with memcmp and memcpy 213/213; the field read into a
+// local whose address goes to memcmp 212 (1081 bytes, aligned 102, the value goes to the stack); two named values compared 154; pointers to both
+// fields 154; a by-value pointer accessor bound to `long const *const &` with memcmp, compared directly, named values 213/154/154 (214/155 without
+// the offset): the pointer folds, no dead add. A second pointer local holding the unit for the tail, at entry, at the tail or as the first read
+// 154/154/154 (155 without the offset, 213 with memcmp; coalesced, same code). Head block: `(short)0xffff` compare 154, `(word)` compare 155, a
+// reinterpreting read of the long 154, a word local 264.
+// Round 40, continued (fast): the first slot mask written out at each use 222 (1066 bytes), the second 155, both 222; arg_3 and arg_1 used directly, singly or together
+// 155/155/155; all four 222. Compile-only (350 random forms of offset, 0x400 and 0x800 declaration orders, 0x2000 test, loop declarations, child defaults, slot pointer, tail
+// declarations, plain 0x400000 test): aligned 156 at best against a control of 160, no structural move.
+// DL238: Parent-root scope followed by raw/typed tail root, each original/named-slot/native-
+// short/both: 293/253/238/277 repeated. Complete parent-position memcpy in the same four
+// index/parent forms 155/154/289/288; memmove 247/247/298/298. One-point lead rejected; every
+// original observation, root lifetime, helper, store and loop restored. Header/object/offset and
+// low-mask homes remain.
+// M330: Complete missing-child metadata/count/fraction result arms, seven subsets,
+// then all with uninitialized declarations before the getter: 247/273/212/273/248/273/283/283.
+// Original defaults and body restored; object/offset and low-mask homes remain.
+// Lane 14 r53 (fast, baseline 155 aligned 95): the volatile `this` copy removed 285 (aligned 98); both slot masks
+// named at the loop top 268 (1043 bytes, aligned 170); the first masked test in a named local 155; 0x214 through a
+// scoped field pointer 155; 0x214 as a scoped named value 155; a named `local_5 - 4` shift 155 (all aligned 95).
+// M334: First/mapped-parent scalar identities, independent semantic lexical priorities
+// 10/01/11/20/02/22/12/21, all 155 at 1072/1081 bytes. Original complete body restored;
+// indexed lookup, object/offset homes and low-mask ownership remain.
+// Lane 14 r57 (fast, from 155): the 0x400000 tail as a plain mask with the unit field on the left 168 (1070 bytes);
+// a function-scope `long *` to the 0x214 field for the compare and the copy 155 (folded, no dead add); the parent
+// short as `local_5 != NONE ? (short)local_5 : NONE` 201; NONE declared after both parent reads 155; the unit
+// lookup declared before the state view 155. Retail's 0x400 block copies the parent into AX with `mov ax, dx`
+// before testing it (one byte more than ours), and the 0x2000 block's two loads and dead add make up the rest
+// of the 9 missing bytes.
+// M343: Complete approximate-position equality in bool/byte/short/long, direct initializer
+// or default-false test result: 155/155/155/155/155/155/155/155. Original full body restored;
+// object/offset and low-mask homes remain.
+// NOT kept: unmatched comparison-result lifetimes.
+// Round 84 (m3 lane 12, fast): the 0x400 flag update between the two stores 156 (ours still loads the
+// result first: retail must store 0x90 before it reuses EAX, which holds the NONE short there, so the order
+// follows the head block's EAX/EDX/ECX rotation, not the statements); the low request intersection named
+// once for the loop test and the first slot test 155; the child counts declared before the child
+// handle/slot defaults 155; the 0x23e compare with the unit field first 155; the child fraction declared
+// first 155.
+// M345: Per-child complete/separate metadata-state change masks, requested-child/iteration
+// scopes and dword/long carriers: 214/214/249/249/221/221/251/251.
+// NOT kept: deferred per-child mask joins miss; original per-store result updates and whole body restored.
+// Round 66 (m3 lane 11, fast): the slot loop's bit tests swapped 285 (1033 bytes); `(dword)1 << (local_5 - 4)`
+// 155; NONE declared after both parent reads 155 (a repeat); tail flags tested 10, 9, 8 177 (1081 bytes);
+// the 0x800 update before its stores 251 (1060 bytes, `or` on memory); the 0x1000 update before its
+// stores 164.
+// M347: Optional tag-count availability, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 155/155/155/155/155/155/155/155.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
+// DH347: Low-mask lifetime ends before independently gated high-state update, with native
+// record fields, child-handle extraction scope and whole traversal scope: eight at 240/1081.
+// NOT kept: allocation regresses earlier (+0x16); original complete body and mask updates restored.
+// M370: Existing tail clamp exhaustive native/lower/upper branch pairs, excluding native/native:
+// 155/182/155/155/182/154/154/181. NOT kept: one-point upper-first leads are below
+// threshold and lack native bound order; lower-first ties. Original field PIN producers
+// and whole body restored; indexed lookup, object/offset and low-mask homes remain.
+// F382: Complete three-component position field with short-circuit comparison traversal,
+// long/dword/short/byte ordinals, break/condition admission: 293/293/297/298 repeated.
+// NOT kept: regressions and shorter extents; original scalar fields, comparisons and body restored.
+// AC548: Root/snapshot/request-result lexical homes, subsets 1-7, then source-first declarations on the recovered head
+// 136/136/136/136/136/136/136/136. NOT kept: no qualifying supported gain or byte match.
+// Native object/offset homes, low-mask spill and dead field add remain. Original complete body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

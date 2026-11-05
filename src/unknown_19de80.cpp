@@ -536,6 +536,9 @@ static inline bool teams_enabled_19e1c0()
 // entry all fold before allocation: empty if, void ternary, unused local, += 0, `__assume(remaining > 0)`, a bound const
 // reference through a conversion, a read through its address 691 each; a dead for 586 (1274 bytes). The natural entry
 // reference is still unknown; it is the lead.
+// AC548: Shared event-presence lifetime, bool/byte/short/long with inherited/ordinary result
+// 454/454/446/441/671/671/630/626. NOT kept: no qualifying supported gain or byte match.
+// Native frame/result/capacity/token homes and independent copy tails remain. Original complete body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
