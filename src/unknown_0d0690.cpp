@@ -1512,6 +1512,15 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // bool/byte/char/signed-char/short/word/int/long: eight at 569, 2174 bytes.
 // NOT kept: all regress and shorten away from retail; original scan, result,
 // helpers, all nonqueued bodies and full target body restored.
+// M398: Original primary/bounded-base/bounded-lightmap output defaults, masks
+// 1/2/3/4/5/6/7, then all at entry: 529/529/529/553/553/529/529/580.
+// NOT kept: no frame/result/carrier gain; original workspaces, helpers and body restored.
+// M403: Actual serialized curve header, local/tag-field producer, native float/bounds
+// members and mutable/readonly input: eight at 529/2189. NOT kept: no native
+// frame/result/carrier recovery; original helper, records and entire body restored.
+// N390: Explicit absolute-magnitude real/immutable-real, success/early exits,
+// 574/574/574/574; double/immutable-double 573/573/573/573. NOT kept:
+// no exact scratch/result form, shared-user regressions; original normalizer and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1685,6 +1694,9 @@ real function_30bf0(vector3f *vector);
 // in both functions); (k, i, j) alone 357; with the colour2 positive checks as stored selects 433 (1878 B).
 // Round 402: Complete applied/fallback query outcomes, bool/byte/short/long, at the real query boundary.
 // Scores 450/450/450/450/450/450/450/450. NOT kept: unmatched outcome forms; original complete body restored.
+// Round 398: Original-boundary normal scalar observations, six component read orders, immutable
+// channels and the existing vector setter: 458/458/458/458/458/458/458/457. NOT kept: all regress
+// and grow away from retail; original independent length observation, normal copy and full body restored.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2301,6 +2313,18 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // AC558: Persistent positive dynamic/base validity bool/byte/char pairs except
 // original bool/bool: eight at 542, native frame/extent. NOT kept: no exact match;
 // original domains, providers, shared offsets, separate samples and body restored.
+// Y605: Actual query direction member with native/shared-setter/CRT-copy/CRT-move
+// publications, existing then direct weighted receiver: 542/611/542/613/542/611/542/613.
+// NOT kept: no byte match; original query declaration, helpers, publications and body restored.
+// F397: Existing color pin owns packed return/output, color pointer/reference and forced/ordinary
+// expansion: 667/667/1456/1456/667/667/1457/1457. NOT kept: all regress; original helper/body
+// restored, native status/mesh homes and selective expansion remain.
+// M395: Component aggregate default normal/base/lightmap families 1/2/4/3/5/6/7, then complete member assignment construction:
+// 623/621/618/621/621/621/666/666. NOT kept: no exact native-shape candidate; native status/part/mesh homes and selective helper expansion remain.
+// Original complete body restored.
+// N395: Actual dynamic-failure bool/byte/short/long outcomes 589/589/609/610;
+// actual base-failure outcomes 542/542/550/548. NOT kept: no native status/mesh
+// home recovery or equality; original positive validity and complete body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

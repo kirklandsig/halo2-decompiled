@@ -260,6 +260,13 @@ bool function_25d9b0(long prop_index);
 // AC557: Busy provider char/signed-char/byte/short/word/int/long/dword returns,
 // coherent definition and all prototypes: 49/49/49/51/51/49/49/49. NOT kept:
 // no target gain; wider transports also demote provider and five other users.
+// Round 398: Native velocity square/length producers, their paired/range-observation forms,
+// immutable complete graph and shared squared-length producer: eight at 49 (556/557 bytes).
+// An isolated range-copy control also scores 49 and is excluded from new-trial credit. NOT kept:
+// no score gain; original velocity/range observations, busy select and complete body restored.
+// M400: Original velocity/iterator defaults via aggregates or CRT, at original phases/entry,
+// separately/together: 95/90/163/211/231/187/187/230. NOT kept: all regress;
+// original twelve-byte workspace producers, busy test and all exits restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -489,6 +496,10 @@ evaluate:
 // flag retested 84; guard returns with the slot field read first 74; nested with it 73; an actor local with it 73. Diagnostic (reverted): 0x25d740
 // pinned out of line 102 (231 bytes): ESI/EDI are still pushed at entry and the exits merge, where retail pushes ESI after the first test, EDI
 // at the call, and has five separate exits, so the inlining is not the only cause.
+// Round 394: sole-return goto, short/word/long/dword status, payload/whole-slot
+// 88/88/92/92 in both (earlier single-result lowering, confirmations only).
+// Actual status/prop-index eight-byte homes: status signed/unsigned 83/83, index
+// signed/unsigned 92/92, four joint domains 106 each. Original body restored.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

@@ -722,6 +722,7 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
+// MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
 // score 236 (was 236): frame 72 agrees; the first real difference is the plane block's direction preload
 // (retail d.j, ours d.k) with the normal in XMM3/4/5 for i/j/k (ours XMM5/3/4), then the zero/length roles.
 // Earlier: the first difference was put at the switch's dispatch —

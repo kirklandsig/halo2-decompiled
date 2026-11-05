@@ -531,6 +531,9 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // declarations at their producers, ordinary-inline range declaration, and post-copy duration from
 // the input: 13/13/259/259/13/13/13/161. NOT kept: no qualifying supported improvement; complete
 // executable source restored. Rotation j/k sum and input-load ranks remain.
+// M396: Complete memmove direction/angle/bounds transfer subsets 1/2/4/3/5/6/7
+// 210/284/293/279/300/296/296; signed-angle conditional result 13. NOT kept:
+// no exact rotation/load repair; original complete body restored.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

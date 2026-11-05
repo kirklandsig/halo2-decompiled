@@ -760,6 +760,10 @@ struct s_item_collision_bsp
 // AC560: Actual optional-effect admission at its original guard, positive/complementary
 // bool/byte/short/long: 204/204/204/204/204/204/204/204. NOT kept: one-use outcomes do not match; original
 // complete body restored. Protected plane width, plane joins and spin/speed homes remain.
+// F395: Complete transformed-normal publication ikj/jik/jki/kij/kji on the retained distance
+// accumulator 203/206/205/206/204; dependency-preserving normal/distance publication
+// 206/205/200. NOT kept: two-point best below the keep threshold; original body restored.
+// Protected plane-index width, plane joins and native spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

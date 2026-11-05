@@ -300,6 +300,10 @@ void player_action_initialize(s_player_action *arg_0);
 // AC557: Complete held-action session gate as bool/byte/short/long admission
 // and complementary rejection results: eight at 134 (1486/1515). NOT kept:
 // no exact match; original short-circuit gate, cold latch and full body restored.
+// F399: Complete cyclic admission/rejection predicates in bool/byte/short/long
+// truth domains: eight forms 134 each. Earlier first-count ternaries excluded.
+// NOT kept: no gain or equality; original signed count test, short cyclic index,
+// observations and whole body restored. Comparison/count, cyclic ranks and cold clear remain.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

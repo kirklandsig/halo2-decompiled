@@ -686,6 +686,13 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // AC555: Effect-provider char/byte/signed-char returns with original Boolean
 // and native failure receivers, eight forms 264 each; provider stays exact. NOT
 // kept: no gain; original declarations/body restored; one-spill/failure byte remain.
+// Y604: Existing clear pointer/reference input and complete location result,
+// ignored/rebound at both actual calls: 264/264/264/264/264/264/264/264.
+// NOT kept: no equality; complete clear ownership leaves the early constant-one
+// spill, frame and failure-byte differences. Original helper/body restored.
+// N396: Selected owner-word memcpy/memmove through conditional/branch/selected-source/negative
+// sources: 264/307/280/324/264/307/267/310. NOT kept: no equality or gain; original owner transfer
+// and body restored, constant-one spill and native failure-byte store remain.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

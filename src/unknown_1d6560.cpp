@@ -283,6 +283,11 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // AC559: Original primary-kind-seven equality/inequality outcomes, bool/byte/short/long:
 // 109/109/102/102/109/109/102/102. NOT kept: all regress and grow to 272/276
 // versus native 256; original dispatch, body acquisition and caller convention restored.
+// Round 153 (fast, caller 0x1d5bf0 in brackets): round 60's 24 form rebuilt 24 [0]; on it the header-array local renamed to sort after the
+// object index 24 (same code); the type local as short 35 (260 B) [0], word 35 (260 B) [0], dword 89 [0]; the header-array local as a pointer to
+// const 24 (same code). The 21 form re-measured 21 [13]: it has the 24 form's colouring (headers ESI, object index EDX, rigid body ECX against
+// retail's EDX, ECX, ESI) and only flips the incoming pair. The fast check shows 0x1d5940 at 221 for every body, the current one included
+// (a reduced-image artifact; 9 in the full build).
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

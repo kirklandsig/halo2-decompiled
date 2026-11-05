@@ -665,6 +665,12 @@ struct s_1af5c6
 // header read written in the test 20; the header flag in a byte local 20; the resolved index as if/else 20; a named hit product with the distance
 // first 20; the ray vector in the call's argument list 20; the hit fraction in a local after the test, or declared at the top, 19; with one category
 // result as well 106 (601 bytes); the distance compared as `local_14 < 1.0f`, as in 0x1c8df0, 20; the distance declared before the second vector 20.
+// Round 216 (m3 lane 3, plain): the existing ai_object_get/object_header_get for the two header lookups 20 (same code);
+// the ignore index declared first 20 (same code); the ray in a fresh scoped vector, as the inlined query's own local,
+// 28 (frame changes, first difference +0x2); the distance declared with the other locals 20; the object index read
+// from the prop node at each use after 0x2640c0 20. Left: retail's tail is 0x1c8df0 inlined with constant arguments
+// (only this call site; LTCG keeps ours out of line), so the mask temp (EAX, retail ECX), the early ignore-index load
+// and the distance's slot follow that inlined body's temporaries.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

@@ -1262,6 +1262,11 @@ public:
 // inline helper 1026 (not inlined), forceinline 357 (1259); 0x30bf0 in the fallback stays a call whatever the nesting 326
 // (1253); `inline` on 0x11d000 326; capture of the matrix parameter in 0x175270 no change (175270 2); an empty join at
 // five places around the spawn statements, helpers for the matrix finish or the spawn fill, spawn scale spellings 18 each.
+// Round 57 (m3 lane 15, fast; 0x175270 and 0x248750 stay matched): round 212's form rebuilt (helpers in the fallback, colour local after the position, named child
+// definition, matrix at the loop top, position before the scale): any no-code read of matrix.forward.k gives MATCH (`(void)` read, unused real, empty if, bare
+// expression), and those are dead or redundant statements, so not kept; without one 279 (1332). Real forms of the read: `__assume` on the field (four spellings) 284
+// (1369, flips the whole function); component copy in a case arm 266; `if (0)` store 261; written-out cross in the fallback, default or both 285 (1376); scale result into the
+// normalizer, perpendicular result into the cross, named direction from the scale 279; the same in the default arm 272. Needs a ruling on that one read, or a real statement that names it.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {

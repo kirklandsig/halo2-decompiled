@@ -172,6 +172,9 @@ void c_widget::v15(c_widget *widget)
 // Round 114: direct base eligibility/focus calls 2/2; `!!widget` 2; eligibility `!= false` 2 and `== true` 4;
 // ternary null condition 2; guarded found loop with `!found && widget` 2; pre-tested `widget && !found` 62;
 // guarded `widget && !found` 63; pre-tested `!found && widget` 32 (84 bytes). Original body restored.
+// Round 65 (m3 lane 13, fast): `__assume((dword)widget != 1)` after the step 2, after the entry and the step 2; an empty do-while at the loop head or after
+// the step 2/2; guarded do-while with `break` 2; `self` and `candidate` locals 2; a forceinline presence helper as the condition 2; `found` flag with
+// `widget && !found` 56 (106 bytes).
 // @retail 0x22ebc3
 void c_widget::v16()
 {

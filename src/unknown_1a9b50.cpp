@@ -609,6 +609,10 @@ extern point2f *g_468778;
 // AC560: Proven metadata/returned state/view record references, seven subsets, then facing
 // reference: 375/375/375/375/375/375/375/375. NOT kept: no byte equality; early actor/settings/prop homes remain.
 // Original receivers, early distance, result, observations and full body restored.
+// Round 90 (m3 lane 16, fast, on the 375 form): the prop pointer uninitialised and cleared in the prop-less arm 399
+// (1558 bytes); the slot pointer declared first 375 (same code); the prop lookup before the clock 380; a velocity
+// pointer for the magnitude call and the eight prediction reads 397 (1576 bytes); the request direction stored
+// through its pointer 375 (same code). Aligned by sequence, 263 rows differ.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -1008,6 +1012,10 @@ static __forceinline long real_to_long(real value);
 // AC560: Returned actor/state/view record references, seven subsets, then complete facing
 // reference: 382/382/382/382/382/382/382/382. NOT kept: no byte equality; early rejection and magnitude/query
 // homes remain. Original receivers, query aliases, arithmetic and full body restored.
+// Round 90 (m3 lane 16, fast): the query vector and scalars declared in reverse order 382 (same code); the else arm as
+// `return false;` 509; the result declared before the slot view 382 (same code); the prediction scale written rate first
+// 382 (same code); the entry tests as `f13 || f14` and `else if (f2d)` false arms ahead of the body 382 (same code).
+// Aligned by sequence, 160 rows differ: the false exit placed last shifts everything up to retail's place for it.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
