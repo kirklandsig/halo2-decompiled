@@ -1542,6 +1542,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // B446: Complete resize/write/conditional-close inline workflow, handle pointer/reference,
 // cleanup in caller/boundary, original count/test-produced success: 33/33/33/33/83/83/83/83. NOT kept:
 // no exact result; original whole body, qualifier and helpers restored. Count homes, write setup and header/checksum joins remain.
+// Round 90 (m3 lane 16, fast): the close written in both arms of `if (resized)` with the count declared in the write
+// block and no zero store 179 (994 bytes; size and count take retail's homes, but the second close copies the handle
+// through EDX where the first uses ECX, so the two closes are not tail-merged); the failed-resize close arm first 215
+// (994 bytes); `(!resized || ...)` with `resized` declared at the top of the size-mismatch block 157, renamed
+// size_changed/extended 157/157, declared beside `done` 157 (frame 0x1140 each: resized packs beside done).
 // @retail 0x213970
 void function_213970(void)
 {

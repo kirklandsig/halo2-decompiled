@@ -472,6 +472,9 @@ void function_125a90(long value);
 // choice: 0x221810 stays out of line for an inline `||` class-type test, inlined for a named class-type bool) over 80 forms: every
 // inline `||` form lays the kind arm out as the class-type test's fall-through; a named bool, an inline class-test helper or the
 // kind test as `kind == 1 || ... == 4` (no bit test then) all inline 0x221810.
+// Round 398: Original single type observation with complete removal-result byte/signed-byte/short/word/
+// int/unsigned-int/long/dword storage: 36/36/95/95/94/94/94/94. NOT kept: no gain; original
+// Boolean removal result, policy captures, comparison widths and complete body restored.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
