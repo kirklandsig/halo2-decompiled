@@ -1393,6 +1393,16 @@ long function_2197f0(real gain);
 // B449: Entry gain real construction/default-member/default-assignment/explicit-copy acquisition,
 // each with encoded/real zero endpoints: 232/232/94/94/228/228/187/187.
 // NOT kept: no exact construction repair; original entry gain, endpoint domain and complete body restored.
+// AC554: Current native-entry reciprocal graph; reciprocal identities attack_scale/duration_inverse/
+// fade_inverse/phase_inverse and elapsed identities ambience_elapsed/elapsed_time/hold_elapsed/
+// transition_elapsed 94/94/94/94/94/94/94/94. NOT kept: no exact native allocation repair; original body restored.
+// DL267: Explicit copy constructor member/body/object-byte/member-byte publication, then reference/value-return assignment with scalar/overlap-safe byte publication: 280/280/179/179/94/190/94/190.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Standard minimum at simple/current attack caps and standard release interval, seven subsets then the alternate complete interval nesting; reciprocal/elapsed and first gain-load gaps remain. Scores 144/103/160/235/211/213/189/189.
+// DH382: Independent terminal completion for composite/simple/current attack, held gain,
+// same-ambience group, absent-current gain, rejected attack duration and disabled admission:
+// 183/184/176/184/184/184/165/175. NOT kept: every form regresses and shortens away from retail;
+// original complete body restored; reciprocal/elapsed, first gain load and late attack join remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2937,6 +2947,21 @@ static inline short sound_voice_find_available_channel(char type)
 // N385: Independent finder completion state, found/searching polarity in bool/byte/long/dword:
 // 125/125/125/125/125/125/125/125. NOT kept: no equality; completion flags and whole finder/body restored.
 // Frame twelve/eight, saved byte normalization and early failure tail remain.
+// F399: Explicit candidate admission/rejection/staged-admission/independent bitmap
+// predicates with byte final result 96/96/177/96, Boolean result 113/113/156/113.
+// NOT kept: no gain or equality; original private scan, byte result and whole body
+// restored. Twelve/eight-byte frame, saved true and early failure tail remain.
+// F401: Actual free/streaming table bases separately/both, then native bitmap-word lvalues,
+// with byte/Boolean final result: 96/142/142/96/113/132/132/113. NOT kept: ties or regressions; original finder
+// and full body restored. Twelve/eight-byte frame, saved normalization and failure tail remain.
+// N389: Complete byte/short/long/dword failure results at original/entry lifetimes:
+// 130/130/104/104/136/136/136/136. NOT kept: no native result/frame recovery;
+// original byte-success result, helper and full body restored.
+// N391: Existing finder with actual system pointer/reference and char/signed-char/short/long
+// selector 128/128/128/128/99/99/128/128. NOT kept: inline contracts remain unmatched;
+// original finder, result, defaults and full body restored. Frame and failure tail remain.
+// N397: Complete byte-result, channel, driver, buffer and status native home identities 96/96/96/96/96/96/96/96.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3875,6 +3900,21 @@ struct s_128ca0
 // signed readonly-reference early/completed and unsigned readonly-reference early/completed:
 // 237/231/237/237/222/237/237/237. NOT kept: no byte match; original pin and full body restored.
 // Frame 0x49c/0x494, initial gain homes and integer pin joins remain.
+// F399: Existing native gain-class pin input with integer/class returns, early/common
+// results and direct/overloaded comparisons: 222/227/247/216/251/241/247/216.
+// NOT kept: six-point lead below eight, unmatched record contracts and regressed shared
+// clamp user; original pin, all three calls and whole body restored. Frame and pin joins remain.
+// F401: Existing reference sum at both parallel permutation-gain producers, mutable/readonly
+// converted parts crossed with inner reference sum and coherent scale: 222/222/269/269/277/277/249/249. NOT kept:
+// ties or regressions; original arithmetic/body restored. Frame/gain homes and pin joins remain.
+// N389: Complete state-word bit6 extraction, paired bit3 extractions and paired bit3
+// updates, seven subsets, then the complete bit6 update: 222/222/222/222/222/222/222/222.
+// NOT kept: no frame/gain-home improvement; original state accesses and full body restored.
+// N391: Paired mutable/immutable short/long/real/double pitch endpoints:
+// 263/263/253/253/222/222/277/277. NOT kept: no equality; extra argument
+// homes and pin joins remain. Original endpoint expression and full body restored.
+// N397: Complete native pitch, processed-gain and both submission-gain home identities 222/222/222/222/222/222/222/222.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -4123,6 +4163,13 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // Round 609: existing fallback constant plus complete listener/player/environment lvalue identities,
 // seven subsets and the actual entry lvalue, 760 each (2065 bytes, frame 0xe8). NOT kept: native frame alone
 // leaves early saves, loop/helper expansion and record homes different; original body and constant linkage restored.
+// Round 400: shared zone predicate with original/direct publication, then
+// existing cross, point setter and both boundaries: 555/554/643/640/609/610/640/637.
+// NOT kept: every form regresses and lengthens; original predicate, helper
+// calls, includes and complete body restored. Frame excess remains.
+// Native player-array cursor, ordinal for/while 566/566; cursor bounds with retained
+// ordinal for/while 573/573; derived ordinal for/while/ordered bound 557/557/557;
+// cursor increment with ordinal bound 567. Original traversal restored.
 // @retail 0x127400
 void function_127400(bool arg_0)
 {

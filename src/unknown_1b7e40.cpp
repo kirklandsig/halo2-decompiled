@@ -257,6 +257,16 @@ bool function_25d9b0(long prop_index);
 // AC545: Native ordered admission in nested predicate groups, eight boundary
 // partitions, 49 each. Original busy call, zero/priority exits, iterator
 // exhaustion and fallback node test restored; the select and epilogues remain.
+// AC557: Busy provider char/signed-char/byte/short/word/int/long/dword returns,
+// coherent definition and all prototypes: 49/49/49/51/51/49/49/49. NOT kept:
+// no target gain; wider transports also demote provider and five other users.
+// Round 398: Native velocity square/length producers, their paired/range-observation forms,
+// immutable complete graph and shared squared-length producer: eight at 49 (556/557 bytes).
+// An isolated range-copy control also scores 49 and is excluded from new-trial credit. NOT kept:
+// no score gain; original velocity/range observations, busy select and complete body restored.
+// M400: Original velocity/iterator defaults via aggregates or CRT, at original phases/entry,
+// separately/together: 95/90/163/211/231/187/187/230. NOT kept: all regress;
+// original twelve-byte workspace producers, busy test and all exits restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -488,6 +498,10 @@ evaluate:
 // at the call, and has five separate exits, so the inlining is not the only cause.
 // Round 609: actual count/expected-prop lvalues on payload/whole-slot graphs, then native node identity,
 // 73/73/73/73/73/73/73/73. NOT kept: alias forms require a match; delayed saves and getter expansion remain.
+// Round 394: sole-return goto, short/word/long/dword status, payload/whole-slot
+// 88/88/92/92 in both (earlier single-result lowering, confirmations only).
+// Actual status/prop-index eight-byte homes: status signed/unsigned 83/83, index
+// signed/unsigned 92/92, four joint domains 106 each. Original body restored.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

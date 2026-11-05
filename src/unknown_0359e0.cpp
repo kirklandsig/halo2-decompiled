@@ -275,6 +275,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Y607: Destructive width/height/both dimension-to-bit-count parameters, private/shared
 // logarithms, then complete early-common/height-first lifetimes: 57/57/57/87/87/87/91/79.
 // NOT kept: no exact native coordinate/count lifetime recovery; original body and interface restored.
+// DH378: Whole-register x/y/both formals with original signed-word captures 96/97/97;
+// native short x/y/both working values 120/136/150; both whole formals with mixed short/long captures 134/138.
+// NOT kept: all regress and alter native entry/caller allocation; original body, sole declaration and contract restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
