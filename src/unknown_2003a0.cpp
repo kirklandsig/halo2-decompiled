@@ -2438,6 +2438,14 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
 // complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
 // Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
+// Round 69 (lane 11, fast; [aligned]/{registers masked}): 0x202720's walk, long elapsed, long index, word wake read, word active
+// tail 312 (1103) [75] {31}, without the definition block (diagnostic) 381 (1041) [107], the same with the walk in a bare scope, areas at function scope or nested, or both renamed to sort
+// first 312 each (frame stays 0x48); walk_index read directly at each use 312; a short index 309 [80]; a short elapsed 311. The walk
+// inside `while (active)` with `if (!squad) break;` 289 (1104) [51] {30}: retail's late pushes and the pool reloaded per pass in
+// EDI; on it a short active or a word flags local 289 (same code), intersection assigned in the test 289, overlap `|=` 289 (1109)
+// [92], structure ahead of clusters 285 (1103) [48] {26}: retail's head registers, the next round's lead. Left there: frame, the
+// 16-bit active test kept in CX and re-tested at the deactivate block, overlap in DL with the intersection's dead store. Diagnostic,
+// not kept: a function-scope point used again in the area loop gives frame 0x54 (290, 1119 with the extra call, [48] {25}).
 // J255: Coherent ordinary-inline squad-test, actor state update and actor-cluster
 // provider subsets, then squad-deactivation boundary: 275/275/275/275/275/275/275/275.
 // NOT kept: ties/regressions. Every provider contract and complete body restored;
