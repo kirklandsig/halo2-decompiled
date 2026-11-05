@@ -2584,6 +2584,8 @@ real magnitude3d(vector3f const *v);
 // named double inverse-cosine result 196; named cosine complement, existing bounded
 // helper in fallback, named axis projection: 170/170/170. Original body restored;
 // raw-length/promoted-dot homes remain. NOT kept: no eligible gain.
+// M392: Computed paired trig/projection/rotation-size double receiver families, subsets 1/2/4/3/5/6/7 then immutable all: 299/294/277/296/354/350/350/350.
+// NOT kept: nonexact precision/lifetime forms; native raw-length and promoted-dot homes remain. Original complete body restored.
 // B440: Independent angle-only and complete rotation-admission outcomes in
 // bool/byte/short/long: eight 170 at 1045/1045 bytes. NOT kept: no equality
 // or gain; raw-length and promoted-dot homes remain. Original full body restored.
@@ -2782,6 +2784,8 @@ s_cached_input_list g_5234e8[4];
 // once-read list: 143/132/143/132/142/140/142/140 fast (control 146; full 113).
 // NOT kept: isolated full-width lead only three; snapshot retains list EBP and
 // adds a validity Boolean absent natively; narrow forms miss equality. Original body restored.
+// M392: Fast control 147, full 113; Repeated-use source/tag/destination pointer name priorities, subsets 1/2/4/3/5/6/7 then center point: 147/147/147/147/147/147/147/147.
+// NOT kept: no eligible native list/frame/output ownership repair; original names and body retained. Original complete body restored.
 // J256: Coherent cache-update/filter/queued-producer inline contracts and forced updater expansion:
 // 123/113/123/113/123/113/123/1561. NOT kept: no target gain; updater inline loses a matched caller and forced expansion loses two, with length growing to 1660
 // Original executable source restored; native frame and allocation gaps remain.
@@ -3201,6 +3205,8 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // each with direct typed accesses or one typed receiver: eight 486s, frame 0x60
 // versus 0x38, 2036/2035 bytes. NOT kept: no velocity/frame/projection repair;
 // original raw input observations, types and entire body restored.
+// M392: Actual three-pass main ordinal int/uint/dword/short/word/schar/byte/char: 486/492/492/485/485/485/485/485.
+// NOT kept: no eligible native frame and stored-velocity recovery; original long ordinal retained. Original complete body restored.
 // J256: Native maximum/divisor/projection-scale observation subsets and complete projection initialization:
 // 508/490/518/495/496/515/504/504. NOT kept: every form regresses from 486; maximum observations recover only four frame bytes, while scale capture enlarges it
 // Original executable source restored; native frame and allocation gaps remain.

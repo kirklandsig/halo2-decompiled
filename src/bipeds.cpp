@@ -2546,6 +2546,8 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M366: Direct lower/upper body admission without selected sentinel, long/short/char/read-only-long,
 // combined/nested query: 70/64/65/70/70/64/65/70. NOT kept: no exact/native-sentinel repair;
 // original full body restored; extra EBP, count/body transport and flag schedules remain.
+// M391: Removed-bit dependencies at the three flag-reset sites, seven subsets, then all with missing-bit fallback publication: 63/63/63/63/63/63/63/72.
+// NOT kept: No exact native mask/count/EBP repair; original field widths, call roles and helpers retained. Original complete body restored.
 // F384: Complete admission-time object getter graph, retained/at-use count and
 // explicit long/short/shared-promoted/shared-short body contracts:
 // 80/85/101/91/85/86/104/100. NOT kept: all regress and grow; original body restored.

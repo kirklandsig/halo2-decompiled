@@ -1506,6 +1506,8 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // M390: Double square/three color scales/two luminances, subsets 1/2/4/3/5/6/7,
 // then all with immutable real length: 566/570/573/605/595/615/624/624. NOT kept: nonexact precision
 // forms; original body restored, frame/result and block/query homes remain.
+// M392: Existing normalization magnitude/paired rotation trig/projection double receivers, subsets 1/2/4/3/5/6/7 then immutable all: 628/618/617/676/673/622/678/678.
+// NOT kept: nonexact precision/lifetime forms; no supported native-frame repair. Original complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

@@ -406,6 +406,8 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC526: Whole inverse result if/else/default/conditional, successful/failed/nested
 // publication returns, default field and nested result: 63/98/63/46/46/46/108/98. NOT kept: no gain;
 // original corner producer and tail restored; plane base, selector/product ranks remain.
+// M391: Computed plane-dot/paired squared-edge/reciprocal double receivers, seven subsets, then complete real receivers: 101/133/179/79/131/141/174/54.
+// NOT kept: No exact live-plane, selector or product-memory-side recovery; nonmatching one-use/precision lifetimes are discarded. Original complete body restored.
 // AC531: Plain two-edge validation traversal, long/short/dword/word ordinal,
 // completed-ordinal publication then immediate failed publication/return:
 // 141/115/141/115/126/121/126/121. NOT kept: dot divergence moves to +0x67

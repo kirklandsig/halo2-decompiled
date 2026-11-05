@@ -814,6 +814,8 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // B430: Counted component-array prior-up/forward/default-vector transfers, masks
 // 1/2/3/4/5/6/7: 106/233/272/259/275/254/286; all with chained equal defaults 300.
 // NOT kept: no byte match; original aggregate transfers, products and body restored.
+// M391: Normalized-distance/delay-subtraction/transition-clamp double receivers, seven subsets, then complete real receivers: 227/114/240/135/245/150/256/103.
+// NOT kept: No exact product-color, forward-K reuse or angle-store-base repair; nonmatching result lifetimes are discarded. Original complete body restored.
 // B432: Caller-visible inline declarations for the existing staged cross, normalizer
 // and perpendicular producers, seven subsets, then staged-cross forceinline: eight 45s.
 // Original declarations and callback restored; right i/j, forward.k and angle bases remain.
