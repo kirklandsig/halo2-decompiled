@@ -736,6 +736,22 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // N382: Native record/origin/entry object references, seven ownership subsets, then all
 // with outer ring phase: 90/90/90/90/90/90/90/143. NOT kept: no equality or gain;
 // original complete body restored. Radius schedule, ring conversion and rotation spill remain.
+// M3 lane 11 r71 (fast, control 90 at 1085 bytes). Retail's rows subtract axis cross vector, with j and k ahead of
+// the rows and i in its row: three named cross terms 100 (1087), with the ring phase 149 (1090), dot after the cross
+// 231/251; j and k only 100 (1081), with the phase 96 (1090). On that 96, whose ring block and rotation are retail's
+// sequence apart from register names: sector first 263 (1074), plain radius 222, plain radius with sector first 271,
+// reference declared first 96, radius before the record 108, object pointer 263, const phase 96, ring counters
+// swapped 96, double term on the plain local 96, ring term on it 96, named double at function scope 96 (222 without
+// the reference), const local 96.
+// Bisect, without the cross: phase after the distance 143, its operands swapped 143, ring product swapped 143, sum
+// swapped 143, named double 142, phase from a named `(real)ring` 143. The phase in any position keeps `cvtsi2ss` and
+// copies the radius through an integer register with the sector read late; a named `(real)ring` with no phase keeps
+// `fild` and retail's XMM0 radius (90). The two never appeared together, and dead pointer chains of 1-8 links at
+// three sites change neither (96). On the 96: trace.distance at each use 89 at retail's 1089 bytes (one point, and
+// retail keeps the distance in a register, not kept), with direct sin/cos 228, direct sin/cos alone 230, along after
+// the copies 96, scalar cross terms 143, with the trace form 148, angle written twice 96. On the 89: rotation reading
+// `vector->` with no copies 89, three cross terms that way 142, a copy of the vector 263, written-out dot 89, dot
+// arguments swapped 89.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
