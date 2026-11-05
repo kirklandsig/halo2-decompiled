@@ -433,7 +433,7 @@ struct s_collision_result_1697c0;
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
 	s_path_trace_result *trace);
-long function_26d100(vector3f const *up, long *location, s_collision_result_1697c0 *collision, point3f const *point);
+long function_26d100(vector3f const *up, point3f const *point, long *location, s_collision_result_1697c0 *collision);
 
 struct s_record_pathfinding_view
 {
@@ -801,7 +801,7 @@ long function_26d570(long object_index)
 					structure = (s_record_pathfinding_view *)g_4e0348;
 					if (structure->count > 0)
 						saved_pathfinding = structure->pathfinding;
-					entry->owner = function_26d100(g_4687b0, (long *)&entry->location, (s_collision_result_1697c0 *)&collision, &world);
+					entry->owner = function_26d100(g_4687b0, &world, (long *)&entry->location, (s_collision_result_1697c0 *)&collision);
 					point.x = g_4687b0->i * 0.1f + collision.point.x;
 					point.y = g_4687b0->j * 0.1f + collision.point.y;
 					point.z = g_4687b0->k * 0.1f + collision.point.z;
