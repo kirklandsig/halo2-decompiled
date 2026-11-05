@@ -1469,6 +1469,12 @@ struct s_looping_detail_request
 // 110; the mode through a named long 110 (same code). The query stays inlined in all six; `return` shapes do not cool it.
 // B448: Complete fallback selection/placement/publication provider, detail and source pointer/reference, forced/ordinary inline:
 // 159/159/159/159/434/434/434/434. NOT kept: no byte match; complete original body restored.
+// Round 152 (m3 lane 6, fast with 0x21b0e0): `while (skip--)` 110; the offset declared at the top of the player block 110;
+// `result = true` before the player flags 110, at the end of the audible arm 110 (same code each); the player count read
+// before the audible test (plain else) 127. Diagnostic: a plain out-of-line next-player helper in this /Ob1 file stays a call
+// and the query stays inlined (143, 473 bytes). Lead: retail inlines 0x14de10 here through LTCG, ours through the header twin;
+// if LTCG spends its inline budget on the hotter skip-loop site first, the query would stay out of line. Testing it needs
+// 0x14de10 inlinable by LTCG (its file, src/unknown_14b560.cpp, was held by another lane this round).
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1906,6 +1912,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // constant inits 305/192/80; count in both loops 365/179/71, first only 427 (1907)/179/78, one local for both 460
 // (1939)/187/77, both with bounds 460/184/74; second only 375/145/73; on the lead, gains declared first 373/143/69, mask
 // first 373/143/68, iterator first or mask between 372/142/70. `--fast` is off here (reduced 479), use the plain check.
+// Round 152 (m3 lane 6, plain): the pitch sum grouped `((upper - lower) * gain + pitch) + lower` (retail adds the playing
+// pitch first) 418; the existing 0x2198f0 for the controller lookup 456 (1907 bytes: it stays a call, but the previous range
+// takes BP and the track EBX as in retail, while NONE moves to EDI and playback stays spilled); `dword sounds[9]` 305 (same
+// code); the track definition declared in the 0x2000 block 471; the active test as `pitch >= minimum && pitch <= maximum`
+// without the clamp 429 (1907 bytes). NONE is still CSE-d into a callee-saved register from the controller test on.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

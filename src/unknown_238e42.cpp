@@ -1118,6 +1118,10 @@ bool __stdcall function_2399da(long controller_index)
 // at three places (a rotation test, diagnostic) keep the identity in ECX: no missing rotation step. 130 combinations (own rank local or field, identity
 // test spelling, permission spelling, task index preset, chain/over-rank first/nested dispatch, store order, nested or guard returns) 89-96 with no
 // identity in EAX.
+// Round 152 (m3 lane 6, fast with 0xac050/0xac360/0x2399da): the rank stored before the rank-3 test (the test reading the
+// stored field) combined with `own_rank >= rank` 89, with the permission test as a named bool 89, with the task index preset
+// to NONE 89, with a removal-arm identity local 89, with own rank read ahead of the identity test 89: the identity stays in
+// ECX and the rank in EAX in every combination (a gain of 1, under the keep bar).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
