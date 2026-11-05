@@ -287,53 +287,13 @@ void c_juggernaut_engine::v15(long player_index)
 	}
 }
 
-// score 5 (was 5): the first bit test shifts by the low byte of the player index; retail shifts
-// by the 16-bit masked index and computes that mask before the shift (`mov esi, ebx; and esi,
-// 0xffff; ... mov ecx, esi; shl edx, cl`), but still recomputes `1 << index` at each later use.
-// Tried: `g_510c9c->players & (1 << absolute_index)` (81: the mask is right but the compiler
-// keeps `1 << index` in edi for the later uses and the registers all move),
-// juggernaut_is((short)absolute_index) or with no cast (8: mask first, but `mov cl, bl` and
-// ebx/esi swapped), the shift by (word)absolute_index or (short)absolute_index (8), by
-// (word)player_index or juggernaut_is((word)player_index) (5, same code as now).
-// Split mask with absolute membership 8; unsigned count 8; wide removal predicate 8;
-// predicate homes 8; early flags 15; flags reference 8; conditional for 8; early outer exit 8.
-// Round 39: a 32-bit shift count is CSE'd with the keep path's `1 << absolute_index` (the
-// result held in edi, g_4e9ae8 no longer hoisted into ebp): the keep shift on
-// `player_index & 0xffff` 81, the test on it 81; diagnostics with an out-of-line long or dword
-// twin of the test 81/81. A 16-bit count (`juggernaut_is(absolute_index)`, or a word twin) gives
-// retail's code with ebx/esi swapped (the byte use pulls the masked index into ebx): absolute
-// index declared first 8, both read from the iterator 8/8. Every retail call of 0x192950 pushes
-// a full register, so its parameter width is open.
-// Round 57 (--fast): a long parameter on the existing test 81 (the shift is CSE'd with the keep
-// path's, and 0x192950 itself differs); the masked index as a word local 85, also with the test
-// on the player index 85; the removal call on the masked index too 8; renaming the player index
-// (index, player) or the masked index (player_absolute_index, slot_index) with the masked-index
-// test 8 each.
-// Round 70 (--fast): the test shifted as `1u << absolute_index` 81 (the keep path's shift is still
-// CSE'd with it, `or ecx, edi`; the inlined removal's `~(1 << index)` never is); a long-parameter
-// inline twin of the test called with the masked index 81, the twin masking the datum index itself
-// 81; no masked-index local (each use masks the player index) 85 (the test shifts by bl and the
-// mask is computed per path); both indices declared at function scope with the masked-index test 8.
-// Round 112: a separate short membership carrier 8; with masked membership, the count incremented
-// first 52, the accumulator written as `players = players | mask` 8, a word shift count 8, a globals
-// pointer 17, the difference inlined 8, a player-record pointer 8, and count declared before players 10.
-// Lane 16 round 74 (--fast, all on the masked-index test, which differs from retail only by EBX/ESI
-// swapped): a dword masked index 8; the keep path masking the player index 85; the masked index read
-// from the iterator with the iterator's index at each player-index use 8; an early continue 8; the
-// keep path shifting by the short masked index 82 (CSE'd with the test).
-// Round 87 (m3 lane 12, fast): juggernaut_is with its own `long absolute_index = player_index & 0xffff;` (as
-// juggernaut_set) 5 (same code), called with the masked index 8; the test on `(char)absolute_index` 8; the test
-// written on the masked local (dword count) with the keep path shifting by `(short)absolute_index` 8 (retail's
-// mask-then-shift and `mov ecx, ...`, but the keep path's byte count pulls the masked index into ebx), with the
-// keep path shifting by `player_index & 0xffff` 81 (shifts combined). juggernaut_is's short parameter is also
-// declared in src/network_voice.cpp and src/unknown_157450.cpp.
 // @retail 0x192530
 void c_juggernaut_engine::v18()
 {
 	if (g_4e6948->mode != 4)
 	{
 		s_player_iterator iterator;
-		dword players = 0;
+		word players = 0;
 		long count = 0;
 
 		iterator.data = g_4e8c24;
@@ -344,7 +304,7 @@ void c_juggernaut_engine::v18()
 			long player_index = iterator.index;
 			long absolute_index = player_index & 0xffff;
 
-			if (juggernaut_is((short)player_index))
+			if (g_510c9c->players & (1 << absolute_index))
 			{
 				word flags = iterator.player->flags;
 
@@ -361,10 +321,10 @@ void c_juggernaut_engine::v18()
 			}
 		}
 
-		word difference = g_510c9c->players ^ (word)players;
+		word difference = g_510c9c->players ^ players;
 		if (difference)
 		{
-			g_510c9c->players = (word)players;
+			g_510c9c->players = players;
 			juggernaut_globals_changed();
 		}
 

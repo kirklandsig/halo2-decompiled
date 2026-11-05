@@ -682,6 +682,11 @@ done:
 // B422: Outer UI-definition admission in bool/byte/short/long, positive/complementary:
 // 32/32/32/32/32/32/32/32. NOT kept: no byte match; all canonicalize to the original complete body.
 // Early EDI save, tag/selector scheduling and the shared scratch-address cache remain.
+// Round 148 (m3 lane 5, fast; parse_variant stays matched): the buffer as `g_55c2e4 + 0x200` (symbol plus offset is cached too) 32, on the one-copy form 54;
+// the variant getter in a ternary guarded by the definition, testing the variant 69 (186 bytes); `name_id = 0` with `if (name_id)` around the translator, no
+// default, one copy 54; `do { if (!globals) break; ... } while (false)` around the translator, one copy 54. Matched siblings cache their buffer (0x22d5a7 in
+// ESI); here retail's ESI holds the tag, coalesced from the definition pointer, while ours gives ESI to the constant and the tag EDX. The buffer as a member of a
+// one-member record 32; a `static wchar_t *const` pointing at the buffer, one copy 54.
 // Round 149 (m3 lane 6, fast; natural one-copy form 54, 173 bytes, aligned 22): the whole `if (globals)` as `do { if (!globals) break; ... } while (false);` 54 (aligned 26); `do { } while (false)`
 // around the translator call 54 (26), around switch and call with `continue` for the default 54 (22); a file-scope const pointer at the translator 54, at both uses 54;
 // `(word *)(dword)` at the translator 54; an index folding to zero at the translator 54. The address hoist survives all of them; the early EDI save is already gone on
@@ -697,6 +702,12 @@ done:
 // default, one copy 54; `do { if (!globals) break; ... } while (false)` around the translator, one copy 54. Matched siblings cache their buffer (0x22d5a7 in
 // ESI); here retail's ESI holds the tag, coalesced from the definition pointer, while ours gives ESI to the constant and the tag EDX. The buffer as a member of a
 // one-member record 32; a `static wchar_t *const` pointing at the buffer, one copy 54.
+// M3 lane 12 r91 (one-link harness; one copy 44, two copies 48, harness figures): a different buffer symbol at the final copy (diagnostic, wrong value)
+// removes the EBX hoist and gives retail's mid-function `push edi` / `pop edi` with nothing else changed, 22, only the tag load and the selector register
+// left. So the missing cause is what keeps retail's two immediates of one address apart. One copy with an empty else arm 44; a compiled-out loop at the
+// join, before the call, after the call 44/44/44; name preset NONE with an else arm 44; two copies with an else arm 48; the copy calling 0x8cc20 directly 44;
+// the translator through an inline wrapper 44; a block-local buffer pointer 44; late-folded addresses: `g + k` at the copy 44, an inline scratch getter at the
+// copy 44, at both 44, a const reference at the copy 44 (the hoist stays in all of them).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

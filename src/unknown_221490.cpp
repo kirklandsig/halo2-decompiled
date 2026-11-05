@@ -764,6 +764,17 @@ bool sound_driver_voice_create_buffer(
 // a bitfield view of the flags word, play first 71 (same code); a byte copy of the flags for both tests, 3D flag first 173 (603, 0x191420 1); both flags as bytes of a local option record,
 // 3D flag first 182 (599). Reading: in the play-first form it is the flags word kept for play's late shift (`mov ebx, ecx`) that outranks the voice index, so the voice index spills as
 // retail; with the 3D flag first the word dies in ECX and the voice index takes EBP, so whatever retail's source is, it must keep a register busy until the first creation.
+// Round 166 (m3 lane 4, one-file harness, 80 there for 71; confirmed --fast where noted): the count stored as the block's first
+// statement, ahead of the voice reference, 68 (fast, a gain of 3, not kept; retail's `lea eax, [esi + 1]; mov [edx + 6], ax`
+// ahead of the clear). Reading: the bool defined first gets the byte copy, the second is shifted in place in ECX and spills, so
+// retail's `mov bl, cl; shr ecx, 1; and cl, 1` is the source order 3D flag, then play (185 here, 598 bytes, the index then wins
+// EBP over the 3D flag and the zero takes EBX). With that order the index still takes EBP in every form: `voice_count++`, a named
+// next index, `result = voice_index` at the block top or after the voice, the index through a long, the bools at function
+// scope 178, a byte copy of the flags; dword flags 160 (618). The 3D flag read again (`if (!three_d)` as a second test, in the
+// select, before the play test) 185 each: they fold before allocation and add no weight. `short result = voice_index` with
+// `else result = NONE` 175 (flags arrive in EAX), play first 164. The 3D block as a forced inline helper taking play 113 (620),
+// frame 0x88, play keeps BL; plain inline stays out of line. Random search of 400 forms (order, spellings, byte types, count and
+// voice placement, declaration order): best 73 here, the early count above.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

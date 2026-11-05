@@ -278,6 +278,19 @@ struct s_visibility_bound_record
 // (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
 // chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
 // movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
+// Round 129 (m3 lane 7, fast, 393 confirmed plain; aligned/masked = difflib counts, control 274/98; the score is positional, so forms were chosen on those first). NOT kept, 393 (1762 B, 208/65; restored, the gain needs the `visible` move, a field read moved ahead of calls): retail's plane block (zero scale
+// stores 0 through the tail shared with the division, normals copied then scaled, one store at the join with `0.0f - d`; this also fixes the zero-scale value difference earlier notes left open), flags read at each use and the (bool) bit test
+// (retail's `shr ecx, 0xc; test cl, 1`), the table local read before the tag test (retail's ESI, two uses), a structure local in the else arm (retail's read ahead of the test), a state local for the views and active reads, sign-mask capacity
+// tests, chained counts/capacities in retail's store order, and `visible` read before the node loop (retail reads it there; the matrix calls write only their output). Removing any from 393: visible 451, state 454, structure form 449, capacity tests 487,
+// chained lists 451, bit test 456, plane block 498; retail's arm order, explicit query fields, a word pointer and direct field forms change nothing here 393 (restored).
+// Match path, none of it keepable alone: 0x458d0/0x45a80's index as `long` (retail's calls push `movsx eax, word [ebp + 8]`; both stay matched with plain `(short)index`, no address-of; call arms then come out exactly as retail with the pushes
+// un-hoisted; 0x45560 182 -> 183, its body untouched), and the part components as scalars in place with a named scale in place of vector3f_scale: 377 (1763 B, 153/44). The existing geometry helper (short overload moved to a header) gives retail's
+// else arm at retail's 1742 B, 425 (152/39), entry-pointer overload 448 (124/35; 0x458d0 falls to 138 in that image). Retail re-reads entry->tag at the bottom where ours reuses EAX from the first read (the copy `mov ecx, eax`); a short read there
+// (a steering cast, diagnostic) frees EAX: 428 (127/33), with the state local 417 (112/30). Left then: count test `xor; cmp` for `test` and `mov; test` on active (zero register live from the list counts), query-data arms (written as if/else the bool
+// test threads away, 427, 117/37; one shared address-taken bool for parts and containment 427, a parts helper 417/427, `do {} while (false)` around it 417/427), lea entry, the plane cursor base at .k (ours .j; store orders move it but never to .k).
+// On the kept 393: negated distance named before the stores 393, list pointers second/first/third/fourth 394, outputs declared i/k/j 393, normals scaled in place 393, visible after the object index 393, scaled copies declared k/i/j 406.
+// With `visible` left after the node loop, 64 combinations of state local, structure/section with and without the (bool) bit, chained lists, capacity tests and table local: best 411 (1760 B), then 435-440, none under 406; all restored. Behaviour difference still open:
+// retail stores 0 into the plane distance for a zero transform scale (`jnp` to the shared `movss [p.d], xmm0` with xmm0 zero); this body leaves the distance unchanged there. A fix alone raises the score (444 in round 97), so it stays recorded here.
 // Y585: Initialized containment false at unseen/bound-index/bound/transform/local-point/
 // scaled-point/first-center/completed-center boundaries: 406/406/406/406/406/417/417/417.
 // NOT kept: no eligible gain; original producer and full body restored; entry/table and plane/query homes remain.

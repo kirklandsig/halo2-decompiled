@@ -1765,6 +1765,11 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M369: Existing availability boundary receives the actual descriptor by pointer/reference,
 // ordinary/forced inline and long/bool truth: 709/719/709/719/709/719/709/719.
 // NOT kept: all tie or regress; original ordinal helper, all three calls and whole body restored.
+// Round 129 (m3 lane 7, fast; aligned/masked control 344/215; a match still needs /arch:SSE for the slot's cmovne, a flag decision): `failed` set in the incomplete arm, without the
+// `failed || received != 6` line, as one store after the inner test 703 (2862 B), in each inner arm 728 (2894 B), first in each arm 728, with `received != 6` tested first and the store
+// in each arm 702 (2862 B, aligned 344: a gain of 7, under the keep threshold, not kept). On 702: retail's poll order (state store before the restore) 702, the failure counter's test
+// swapped 702, poll field order 702, delay ternary reversed 702, the last read time in a named local read ahead of the clock 703, `added < 4` first in the loop test 714 and with that local 715,
+// count and properties pointer swapped 730 (2846 B), the write poll as `state < 0 || state > 1` first 703, that with `added < 4` first 715.
 // M377: Complete availability/provider truth, direct initialization then test-produced
 // true, bool/byte/short/long results: 719/719/719/719/719/719/719/719.
 // NOT kept: all regress; original producer, three callers and full body restored.
