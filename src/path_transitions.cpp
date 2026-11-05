@@ -471,6 +471,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// MiniMax H (11-05): no new form, no lower score; the projection sum's order ((j + k) + i in retail,
+// (k + j) + i here) comes from the shared dot3f in include/unknown_0259d0.h, and the entry still loads
+// the actor in case 5 where retail loads it at entry and moves pathfinding into EBX.
 // score 219 (was 270): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // Earlier (270, was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
