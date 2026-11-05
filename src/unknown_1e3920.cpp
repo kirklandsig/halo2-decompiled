@@ -1260,6 +1260,8 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // original guards, producer scope, sentinel defaults and entire body restored.
 // P333: Complete initial substitution admission, allowed/blocked in bool/byte/short/long:
 // eight 389s at 1307/1272. NOT kept: entry/query homes and extent regress; full body restored.
+// P349: Complete return/cleanup/settings/squad same-size lexical home orders:
+// 253/253/253/253/253/253/253/253. NOT kept: no byte equality; original executable source restored.
 // DH374: Successor-NONE result owned by while condition, bool/byte/signed-char/short/word/int/long/dword:
 // 253/253/253/253/253/253/253/253 (fast control 253; full 253).
 // NOT kept: no byte match or eligible gain. Original dynamic successor test, replacement result, query
@@ -2012,6 +2014,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // B449: Repeated unit-handle/fraction-bound/round-bound field addresses, seven subsets
 // then complete readonly actor receiver: 361/251/361/251/361/251/361/361.
 // NOT kept: no exact field-receiver repair; all original per-use observations, queries and body restored.
+// Y602: Readonly equipment/grenade settings and fixed unit receivers, then fixed settings pointers:
+// 251/251/251/251/251/251/251/251.
+// NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

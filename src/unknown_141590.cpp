@@ -370,6 +370,9 @@ static inline void quaternion_transform_vector(
 // no change (canonicalised). The matched 0x11cb00 helper's exact operand and row forms on plain halves 198/1324 (99), on the struct 258/1303 (155); s computed before the identity copy as a
 // helper parameter, plain halves 308/1262 (170) and 302/1270 (163), on the struct 309/1262 (139) and 305/1270 (107). Three annealed searches over statement order, operand
 // forms and row orders, about 700 forms, none under 198 or below masked 84. None plain-confirmed, none kept. The two-member half struct stays until a form beats it.
+// Round 90 (m3 lane 16, fast): the doubled sine product written 2.f first 200 (same code); the clamp testing the
+// cosine copy 200 (same code); the construction scale computed before the axis cross 252 (1317 bytes); the cosine
+// arms swapped (`cosine >= 0.f` takes the identity) 210; rotation.w stored between the cross and the scale 200.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1135,6 +1138,11 @@ void function_143250(
 // N376: Same-type copy contraction by actual input/product/root-or-literal/sum
 // producers within bands, eight forms 1947/1766/1766/1771/1761/1766/1925/1948. All typed outputs/call
 // phases agree. NOT kept: no exact native storage recovery; full scalar graph restored.
+// Round 90 (m3 lane 16): the workspace declared after the terms 1766 (fast, same code); every same-type plain copy
+// propagated (404 copies, 937 declarations) 1986 plain (10988 bytes, rotation EAX and ret 4, frame 0x30c; 0x22850 235,
+// 0x23690 467); the workspace matrix ahead of the rotation terms 1766 (fast); that with the 648 single-use terms in
+// their next statement 1775 plain (10763 bytes, ret 4, frame 0x314; 0x22850 235, 0x23690 467); only the 37 rotation
+// snapshot copies propagated 1948 (fast, 10949 bytes: the band-start copies keep the snapshots out of the workspace).
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

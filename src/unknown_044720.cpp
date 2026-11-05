@@ -284,6 +284,12 @@ void function_44720(void)
 // selected material as `NONE` then `if (force || ...)` 136 (486 B); the parts under `if (geometry)` on the
 // current form 107 (same code); level at the call with that if/else selection 137 (485 B); the geometry lookup
 // with one exit and the structure global read per arm 132 (488 B, 0x45560 239). Original body restored.
+// Y608: Actual flags/selection/detail-array field lvalues, seven subsets,
+// 125/107/107/125/125/107/125; complete identities with call-use level 133/486 bytes.
+// NOT kept: no exact frame/geometry graph; original whole body and shared selector restored.
+// Round 394: complementary omit-level bool/byte/short/long at entry
+// 133/133/138/138; before the outer loop 150/150/143/144. Original restored.
+// Retail compares +0x60 after the first mask push, so that operand still reads level.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
@@ -594,6 +600,23 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P342: Actual provider-node and table-base matrix record lvalues, mutable/read-only alone and all four
 // pairs: 182/182/182/182/182/182/182/182. NOT kept: no equality; original matrix receivers and whole
 // body restored. Entry/index spill and center/query/bound homes remain.
+// AC551: Shared selector entry by mutable/const reference; readonly result with pointer/mutable-
+// ref/const-ref input; ordinary inline with pointer/mutable-ref/const-ref input:
+// 182/182/182/182/182/341/341/341. NOT kept: no qualifying supported improvement; complete
+// executable source restored. Entry/index spill and center/query/bound homes remain. Ordinary
+// inline also raises the other selector user 107 to 280.
+// DL268: Actual query type alignment/SIMD-backed scalar view, SIMD set/setr fills, then the four
+// with a separate persistent center: 182/182/236/237/191/191/236/237. NOT kept: ties or
+// nonnative frame/length regressions; original record, full body and shared selector restored.
+// DL270: Native common geometry field-address selection, mutable/readonly entry
+// pointer/reference and mutable/readonly field-location contracts, eight 222s.
+// NOT kept: target regresses and shared user 107 -> 137; original selector/body restored.
+// M396: Immutable bitmap/bound-point/displacement producer subsets 1/2/4/3/5/6/7,
+// then complete immutable value/receiver graph: eight at 182. NOT kept: no entry/index
+// spill or center/query/bound home repair; original complete body restored.
+// M402: Actual upstream tag/BSP/instance section record producers, seven subsets,
+// then complete read-only selector graph: eight at 182. NOT kept: no entry/index
+// spill or center/query/bound home repair; original shared selector and full body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

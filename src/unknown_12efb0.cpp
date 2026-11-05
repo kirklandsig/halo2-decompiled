@@ -427,6 +427,12 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // B452: Complete scalar inputs in reused scalar/merge/color helpers, seven subsets then
 // all with scalar publication: fast 751/658/770/717/809/738/780/769. NOT kept: no gain;
 // palette/SIMD homes remain, some frames grow; all original helper contracts/body restored.
+// Round 137 (m3 lane 8, fast; aligned = difflib count, base 497): retail keeps NONE in EAX from the slot test to the weighted
+// tag test deep in the palette arm (`cmp edi, eax` there, ours `cmp edi, -1`) and on into the fallback store, so -1 outranks the
+// 0x130f60 result for EAX. The 0xd4 tag in a named two-use local 723 (3850 bytes, its read hoists above the 0xa4 test); the
+// result declared first in the loop body and assigned at the call 616 (same code); both weight tests through the 0x88
+// pointer 687 (3830, aligned 792); the clamp helper as a result with two independent tests 778 (3865); the short slot with
+// the source-index store re-reading the byte 689 (3837).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
