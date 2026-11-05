@@ -388,6 +388,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // DH353: Existing double-factor publishers at displacement/impulse/all tick scales,
 // subsets 1/2/4/3/5/6/7: 716/716/724/783/783/766/817; complete sample graph 830.
 // NOT kept: native SSE/frame/extent disagree; original products and caller restored.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 642 [757]): rate constant selected before the multiply at the first
+// site 718 (2861) [630]; both sites 744 (2855) [601]; cap computed ahead too, first site 710 (2858) [622], both sites 668
+// (2864) [597]. Each of these loses the matched caller 0x1eb6f0 (22). `t >= 0.001f` for `!(0.001f > t)` 642, same code.
 // AC538: Complete settling-alignment admission, positive/complementary bool/byte/short/long:
 // 642/642/642/642/642/642/642/642. NOT kept: unmatched decision/storage forms; original complete body
 // restored.
@@ -395,6 +398,17 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 148 (m3 lane 6, fast; aligned in brackets, control 642 [757]): rate constant selected before the multiply at the first
 // site 718 (2861) [630]; both sites 744 (2855) [601]; cap computed ahead too, first site 710 (2858) [622], both sites 668
 // (2864) [597]. Each of these loses the matched caller 0x1eb6f0 (22). `t >= 0.001f` for `!(0.001f > t)` 642, same code.
+// Round 166 (m3 lane 4, one-file LTCG harness with 0x30bf0's and 0x109fd0's files, exact at 642 and caller 0; aligned/shape in
+// brackets, control [482/185]): the 12/8 factor selected first loses the caller only because that first-site flag read is CSEd
+// with the later reads and so takes ECX, pushing a/b out of ECX/EDX. The impulse written through a pointer (`vector3f *impulse =
+// &s->impulse`, or vector3f_scale) kills the CSE: retail's al/cl/al reads, caller 0. On that: all three sites as PIN 656 (2873)
+// [387/167]; site forms write/pin2/capfirst (best 1/2/3), `s->limit` read at each use, delta before v, target pointer 704
+// (2870) [371/135] (the current body 642 has the wrong shape; keep this as the lead for a whole rewrite); the factor first with no
+// pointer write: tern/if/if-else with write/PIN/capfirst, a bool local, `== true`, `!= 0`, `!`, factor at the block top, all
+// 671-757, caller 22. Up/down products named or with a shared half 699-737; a shared direction helper 646, with target 662;
+// direction pointer locals and dot3f at the 0.866 test no gain. Without the pointer write a descent on the positional score gets
+// only delta before v 641 (same shape), `q = counter == 0 ? g_4687a4 : q` 641, w as one expression 641. Diagnostic: 8 extra q
+// reads flip EBX from d to q, so that home is a matter of weight; retail's reference counts for it are not yet explained.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -1120,7 +1134,7 @@ counters_done:
 #include "unknown_1eb550.h"
 #include <xmmintrin.h>
 extern real g_47f05c;
-void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity);
+void havok_component_rigid_body_point_velocity_get(vector3f *velocity, long rigid_body_index, s_havok_component *component, point3f const *point);
 void __stdcall function_1c3770(long object_index, dword flags);
 bool function_1c5210(transform4x3f const *matrix, void *shape, long excluded_component, long filter);
 
@@ -1172,7 +1186,7 @@ void function_1ec690(byte const *input, s_state_c570 *state, byte *output)
   if (rigid_body_index != NONE)
   {
    vector3f &current = scratch.current;
-   havok_component_rigid_body_point_velocity_get(rigid_body_index, (s_havok_component *)other_component, (point3f *)(input + 0xe8), &current);
+   havok_component_rigid_body_point_velocity_get(&current, rigid_body_index, (s_havok_component *)other_component, (point3f *)(input + 0xe8));
    change.i = current.i - state->field_50.i;
    change.j = current.j - state->field_50.j;
    change.k = current.k - state->field_50.k;

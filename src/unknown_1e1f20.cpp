@@ -761,6 +761,13 @@ void swarm_leader_detach(long actor_index);
 // (981) [192/110], before it 283 [192/110], with a type local and a selected pointer 286 [193/114]; the memory test through the entry actor alone 293 (997)
 // [155/90], the best shape here; the actor refreshed after 0x258600 296 (997) [200/112]. Retail reads `.type` folded and computes the slot address with a
 // separate `lea` before the branch, with the stop pointer in ECX and the index in EDI; ours keeps the index in ECX, so stop takes EDI. Still BLOCKED-BY 0x26ed40.
+// T61: Actual memory-entry/callback-field/terminal-actor record references, seven subsets
+// 266/282/282/266/266/282/282; all with bounded short memory ordinal 282
+// (unchanged reduced control 266, full 281). NOT kept: no exact receiver graph;
+// original observations, ordinal, iterators and complete body restored.
+// MiniMax E (11-04): no new form, no lower score; the memory walk's pointer walk, its index
+// body, the twice-read slot and the for-loop forms score 285, 370, 286, 288 and 555 against the
+// unchanged 266 (fast; 281 ordinary).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

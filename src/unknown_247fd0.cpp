@@ -487,6 +487,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // stored twice 392; named remainder 334 no change; named short or velocity pointer no change; dead reads, duplicated pointers 415/410; 800 no-op inline
 // calls 415; class with destructor 415, with copy constructor 415 (0x2b9060 197); empty else on the effect block 356; global optimization off, once as a
 // diagnostic, 1853 (2916).
+// Round 72 (m3 lane 1, harness with the callees' 8 files: control 386 [112] at 1636 bytes against the plain 356 at 1643, so ranked only; masked aligned in brackets): EBP's entry save on the early exit: empty else 386 [112], `do { } while (false)` in that
+// else or after the block 386 [112], in the exit arm 386 [112] (same code each); `__assume(local_0 >= NONE)` after the block 418 [131] (1652 bytes, EBP still late); flag byte not volatile 440 [129]. Effect flag read: named datum pointer 402 [114], shifted byte local 425 [116],
+// pointer and one-bit bool 414 [127]. Retail's flag byte store at [esp+0x1b] is never read back; no form tried here gives it without the volatile. Not kept; body unchanged.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

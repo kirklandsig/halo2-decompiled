@@ -223,6 +223,14 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // player/sound early returns 116/113; all three early 102; weapon flag if/else 114; default-first
 // sound 107; forceinline current-weapon helper 110. NOT kept: 97 combines edits whose parts alone
 // do not both gain, without a byte match; original producers, sound control and ordinal restored.
+// Round 55 (m3 lane 15; fast, and a one-file LTCG harness with the ballast object and the files of 0xbadc0, 0x100f70, 0x1896c0, exact at 107/362 bytes):
+// on the plain 0xbadc0, in the real build: long user index with the flag declared after the weapon flag, weapon flag written `== NONE ? false : call`, sound helper
+// with an early return 128 (348 bytes); the same with the ternary as it stands 127; that helper alone 110 (359); the long index and late flag with the `== NONE`
+// ternary alone 126 (350); the helper as one conditional expression 110 (359); the `== NONE` ternary and early-return helper 111 (359). In the harness only, with
+// a scratch 0xbadc0 holding `long probe_local; long *probe_pointer = &probe_local; *probe_pointer = 0;` (a pointer to a whole local, a banned form, so not kept and
+// not in src): the current body 134, the long index and late flag 47, plus the `== NONE` ternary 42, plus the early-return helper or the one-expression
+// helper 2 at retail's 376 bytes (left: the 0x100f70 argument register and the harness's jump address); the else-arm helper 32, the sound index as one ternary
+// 42. A store in this function instead 129 (folded before CSE). So the blocker is only 0xbadc0's memory summary, BLOCKED-BY 0xbadc0.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

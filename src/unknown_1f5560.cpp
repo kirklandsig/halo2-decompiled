@@ -1038,6 +1038,9 @@ real normalize2d(point2f *v);
 // original publications and complete body restored; retained DL and return transport remain.
 // DL260: Complete persistent/candidate outputs, directions and speed identities; matched initial-speed provider ordinary inline: 135/135/135/135/135/135/135/135/141.
 // NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// DH373: Original-site facing-height zero/nonzero outcomes in bool/byte/short/long:
+// eight at 135. NOT kept: no native DL/return recovery or equality; original fallback
+// admission, result, outputs and complete body restored. Frame 0x48 still agrees.
 // DL262: Successful movement-producer identity long/dword/short/byte, zero then invalid-index absence:
 // 189/189/182/192/184/184/185/176. NOT kept: no byte equality; original independent result/validity
 // producers and complete body restored; DL retention and movement/request returns remain.

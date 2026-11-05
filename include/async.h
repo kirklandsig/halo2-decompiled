@@ -79,7 +79,7 @@ long function_1a1050(s_file_handle file, void const *buffer, dword size, dword o
 
 long async_copy_position(s_file_handle source, s_file_handle destination, void *buffer, dword size, dword source_offset, dword destination_offset, long category, long priority, dword *bytes_copied, bool volatile *done);
 long function_1a1310(s_file_handle file, dword size, long category, long priority, bool *success, bool volatile *done);
-long function_1a1480(char const *path, void *buffer, dword buffer_size, long category, long priority, bool *success, dword *size, bool volatile *done);
+long function_1a1480(char const *path, void *buffer, dword buffer_size, long category, long priority, dword volatile *size, bool *success, bool volatile *done);
 long function_1a1550(s_file_handle file, long category, long priority, bool volatile *done);
 long function_1a15f0(s_file_handle file, long category, long priority, dword *size, bool volatile *done);
 long async_flush_file(s_file_handle file, long category, long priority, bool volatile *done);
