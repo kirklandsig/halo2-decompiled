@@ -78,6 +78,19 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
 // score 390 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// Round 64 (fast; masked aligned count in brackets, base 390 [182]): NOT kept, scratch recipe reaching 155 [11] at retail's 1596 bytes with every stack
+// slot right (aligned 428 -> 22): (1) group as `long`, tested on the field read and copied after: `if (bit_vector_test(visited_groups, entry.field_0))
+// continue; long local_15 = entry.field_0;`, set through bit_vector_set: 398 [161] (read beside a local copy, match-only; without it the rest stays 435-461);
+// (2) endpoint and start `short`; record index set before the pass loop and after each step; output through `&out[count]` with a separate cursor and the
+// record pointer before the loop: 313 [67] (428 -> 87); (3) group bitmap by memset 225, found flag declared before the endpoint, `else result = false` on
+// the sentinel test: 190 [45] at 1596 (the else is a redundant store unless retail's `mov byte [esp+0x13], 0` counts as evidence); (4) output pointer named per
+// pass so it is computed before the point: 192 [39]; (5) x87 sums: scalars canonicalise (declaration order, written order, 4 identity locals: same code), but a
+// vector local through vector3d_from_points3d keeps the written order, reversed in the code; retail's sites are written (i,j,k) at the pass start, (k,i,j) at
+// the visited point, (j,k,i) twice at the pair: 159 [15] (needs per-site expressions); (6) squared distance helper as declared x, y, z with
+// `x*x + (y*y + z*z)` 155 [11]. Left then: the third distance loads arg_0 into ESI, where retail keeps arg_3 in ESI from the range test to the call, arg_0
+// in EDX, `mov ecx, esi; mov esi, edx` (one line, shifts all that follows); `mov [esp+0x80], al` for the flag; the step's EAX; `movsx edx, ax` ahead of the
+// record base. Same code at (a): arg_3 or arg_0 copied to a local, the range test as a helper, repeated subtests, helper arguments reversed. Other forms:
+// named total split 426 (1612 bytes). Each of (1)-(6) raises the score alone or is match-only, so nothing is kept without a match.
 // Round 27: the instruction order follows retail closely, but the locals sit in different frame
 // slots, the group pointer is in EBP where retail keeps EBX and retail parks the group index in the
 // incoming s_reference slot at 0x80; no form found this round.

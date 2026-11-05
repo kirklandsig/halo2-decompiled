@@ -73,10 +73,16 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
-// score 545 (was 545): this round found no gain - the frame is 0x22c against retail's 0x224 and the
+// score 545 (was 545): frame 0x22c versus 0x224; stream/gain homes and mixed math remain (masked aligned 233 of 565 lines, the most of this queue).
+// Round 64 (fast control 532, full 545; masked aligned in brackets, control [240]): send bits through a helper with a named bool result 532 [243] (no dead byte: the store
+// needs the flags in memory); mode sends as a fall-through two-case switch 545 at 1901 bytes [244], with the helper [247], with the gain difference named [240]; gain
+// difference named alone 537 [244], cast to real 532 (same code); direct as a bool cast 532 (same code); `changed` default-true 544 [246], default-false 543 [244], default-true with the
+// switch 550 [236]; gain pointer chosen by an if 532 (same code); stream through pointer arithmetic 532 (same code). Retail keeps one stack byte for every send bit and reloads
+// the flags after each store; only a volatile bool reproduces that shape, and it stays out. Flag lead unchanged: the /Op math is the file's largest difference and flags are not ours to change.
+// Earlier: this round found no gain - the frame is 0x22c against retail's 0x224 and the
 // stream and gain homes still differ; the permuter needs a full build per trial and ran past the
 // per-function time budget, so it was stopped without a result.
-// score 545 (was 545): frame 0x22c versus 0x224; stream/gain homes and mixed math remain.
+// Earlier first line: frame 0x22c versus 0x224; stream/gain homes and mixed math remain.
 // the level-energy block summed in double (the gain converter returning double) 528, but the
 // shared converter costs the matched 0x21f8a0 (0 -> 67): restored (MiniMax E run 12).
 // frame 0x22c versus 0x224; stream/gain homes and math expansion differ.
