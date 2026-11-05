@@ -539,6 +539,10 @@ void function_e5930(long unit_index);
 // TEST_FIELD_BIT with word-wide |= 8 / &= ~8 113; the mode stored before the index 114; word_flags_set with
 // field_bit_test and the call's index read back from +0x3e0 131. BLOCKED-BY 0xe5930 (contributor file): the fix
 // belongs to its definition.
+// Round 214 (m3 lane 3, fast): on this function TEST_FIELD_BIT 121, the bit member assigned 139 (427 bytes), word_flags_set with TEST_FIELD_BIT 113 [28]
+// at 415 (under the bar). Diagnostics on 0xe5930's body, restored: no mode local, switch cases with returns, six copies of the mode, the arm's biped or
+// state named, a forced-inline getter one or two levels deep, a forced-inline arm: 118 each, 0xe5930 still matching and still inlined here; an if chain
+// 121 (0xe5930 23), an explicit case 0 124 (27), the biped named at entry 110 (35). No spelling of its body keeps it out of line. Still BLOCKED-BY 0xe5930.
 // @retail 0xde4c0
 void __stdcall function_de4c0(long arg_159e6d)
 {
@@ -3609,17 +3613,19 @@ matrix3x3 *function_142eb0(matrix3x3 const *right, matrix3x3 const *left, matrix
 /* a point in a matrix's frame, scaled */
 PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f const *point, point3f *result)
 {
-	point3f scaled = *point;
+	real x = point->x;
+	real y = point->y;
+	real z = point->z;
 
 	if (matrix->scale != 1.0f)
 	{
-		scaled.x *= matrix->scale;
-		scaled.y *= matrix->scale;
-		scaled.z *= matrix->scale;
+		x = matrix->scale * x;
+		y = matrix->scale * y;
+		z = matrix->scale * z;
 	}
-	result->x = matrix->up.i * scaled.z + matrix->left.i * scaled.y + matrix->forward.i * scaled.x + matrix->position.x;
-	result->y = matrix->up.j * scaled.z + matrix->left.j * scaled.y + matrix->forward.j * scaled.x + matrix->position.y;
-	result->z = matrix->up.k * scaled.z + matrix->left.k * scaled.y + matrix->forward.k * scaled.x + matrix->position.z;
+	result->x = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x + matrix->position.x;
+	result->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
+	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
 PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, long rigid_body_index)
@@ -3631,7 +3637,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
-// score 368 (was 368): NOT kept (lane 1 r62): the pivot pair as two ternaries on the same property test gave 351
+// score 354 (was 368): frame 0x12c agrees, 1940 bytes against 1937, first +0x71. Earlier NOT kept (lane 1 r62): the pivot pair as two ternaries on the same property test gave 351
 // (frame 0x12c and 1937 bytes agree, first +0x71 the body-matrix home, +0x60 versus +0x50), but retail compares once:
 // a repeated test picked by score, match only; the if/else restored. Earlier: 368 (was 494; 488 before the logic walk of 2026-10-31, which adds 6 points but fixes behaviour): retail's final
 // placement subtracts the pivot rotated by the turned axes alone (0xe2260-0xe2312: no scale, no position, with the
@@ -3753,6 +3759,17 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // products: 369/369/369/368/369/369/369/369. NOT kept: no byte match or eligible native allocation gain;
 // original reductions, root expression and whole body restored. Matrix/origin and paired pivot/property
 // homes remain.
+// Round 214 (m3 lane 3), kept: the transform as 0x142570's x/y/z body, the target's two arms written out as retail has them, the pivot select
+// with its defaults first: 368 -> 354 at 1940 bytes (masked aligned 106 -> 93). Steps: x/y/z 421 [100]; arms 361 [94]; plain select with both 361;
+// arms alone 433; arms and select 428. Match-only, not kept (each a one-use flag or a repeated test): `reached` ahead of the target copy 329 [50],
+// default select 326 [49], retail's else arm through origin 364 [70] alone and in those; two pivot ternaries 309 [40]: then the select is byte
+// exact. Arms through vector3f_add_scaled, one or both, 326 [48/49]; collision.t in place 378; one row set after adjusting t 368 (1918 bytes);
+// length_sq3f in both squared sums 309 (same code); limit named ahead of the pivots 406; `real limit;` with the other locals 309.
+// Diagnostics: limit's second use spelled as the difference 309 [29], the rotated-pivot products become retail's memory-second shape; three fewer
+// `placed` reads or nine more matrix references put the matrix at retail's +0x50 but leave limit and property_b above placed, where retail has
+// them below it. Left on the 309 form: that slot order, the second transform's point loads, t's register in the arms and the else arm.
+// On the kept 354: length_sq3f in both squared sums 354, `real limit;` with the other locals 354, the first arm through vector3f_add_scaled 354, the arms inverted 354 [99],
+// the two pivot pointers declared the other way 354: five without a gain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -3789,15 +3806,12 @@ bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value,
 			havok_component_rigid_body_matrix_get(parent_body_index, component, &parent);
 			function_1cff80(&component->unknown7c.data[contact_index], &pivot_a, &pivot_b);
 			havok_component_contact_properties_get(component, contact_index, &property_a, &property_b);
+			parent_pivot = &pivot_b;
+			child_pivot = &pivot_a;
 			if (property_a == parent_body_index)
 			{
 				parent_pivot = &pivot_a;
 				child_pivot = &pivot_b;
-			}
-			else
-			{
-				parent_pivot = &pivot_b;
-				child_pivot = &pivot_a;
 			}
 			biped_matrix_transform(&parent, parent_pivot, &world_pivot);
 			biped_matrix_transform(&matrix, child_pivot, &child_world);
@@ -3812,11 +3826,21 @@ bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value,
 			{
 				if (function_1697c0(0x80040d, point, &offset, arg_159e6d, NONE, (s_collision_result_1697c0 *)&collision))
 				{
-					real t = limit > collision.t * distance ? collision.t : collision.t - 0.025f / distance;
+					real t = collision.t;
 
-					target.x = offset.i * t + point->x;
-					target.y = offset.j * t + point->y;
-					target.z = offset.k * t + point->z;
+					if (limit > t * distance)
+					{
+						target.x = offset.i * t + point->x;
+						target.y = offset.j * t + point->y;
+						target.z = offset.k * t + point->z;
+					}
+					else
+					{
+						t -= 0.025f / distance;
+						target.x = offset.i * t + point->x;
+						target.y = offset.j * t + point->y;
+						target.z = offset.k * t + point->z;
+					}
 				}
 			}
 			placed.x = target.x - child_world.x + origin.x;
@@ -4110,6 +4134,8 @@ void function_e4300(long arg_159e6d)
 // condition stays a call, as in 0xe2d80, 0xe24f0 and 0xec0d0); diagnostic `if (arg_159e6d != NONE)` around it (not
 // retail's, reverted) 7 at 62 bytes, the rest then being the TEST_FIELD_BIT flag test (98 alone). A named
 // `asleep` bool read after the calls 98; field_bit_test 98. Still BLOCKED-BY 0xe5930.
+// Round 214 (m3 lane 3, fast): TEST_FIELD_BIT on the flag test 98 (118 bytes); a named copy of the index 91. 0xe5930 body spellings as in 0xde4c0's note:
+// 91 while it still matches, 94 and 98 otherwise. 0xcaf00 stays 13 throughout. Still BLOCKED-BY 0xe5930.
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {
@@ -4386,25 +4412,15 @@ void __stdcall function_e40d0(long arg_159e6d, long *names)
 		names[1] = 0x800001e;
 }
 
-/* turns a vector about a unit axis (Rodrigues) */
-PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real sine, real cosine)
-{
-	real projection_i = v->i * axis->i;
-	real projection_j = v->j * axis->j;
-	real projection_k = v->k * axis->k;
-	real dot = (projection_i + projection_k + projection_j) * (1.0f - cosine);
-	vector3f cross;
-
-	cross3f(axis, v, &cross);
-	for (long component = 0; component < 3; ++component)
-		v->n[component] = v->n[component] * cosine + axis->n[component] * dot + cross.n[component] * sine;
-}
+void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
 // MiniMax A (11-03): no new form, no lower score: the normalization SIMD numbering and the trigonometric
 // and basis homes remain.
-// score 145 (was 145): frame 0x24 and retail length agree; first +0x4f is normalization SIMD numbering,
+// score 79 (was 145): frame 0x24 and the register homes agree, 894 bytes against 887, first +0x107. Left: the first rotation's cross terms read the
+// forward x load-first where retail multiplies by it in memory, and the final cross reads forward y load-first where retail has it
+// in memory (one extra load, the seven bytes). Earlier: 145: frame 0x24 and retail length agreed; first +0x4f was normalization SIMD numbering,
 // followed by rotation/basis carriers and trigonometric homes. Earlier frame 0x30 had cross spills.
 // Earlier (score 184 (was 184)): frame 0x24 and entry saves agreed; axis copy/norm order, early normalization loads.
 // Direct rotation output 235; scalar cross terms 246; all shared cross producers 184 (plain);
@@ -4543,6 +4559,17 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // J256: Twice-used cosine complement at cosine/sine boundaries, mutable/immutable and ordinary/forced rotation:
 // 163/163/163/163/163/163/163/163. NOT kept: all eight common-factor forms regress from 145 to 163; the added inline formal and hoisted factor miss required byte equality
 // Original executable source restored; native frame and allocation gaps remain.
+// Round 214 (m3 lane 3), kept: the existing rotate_direction in place of the private indexed helper, side = forward x up through
+// cross3f and up = side x forward through cross3f_staged (retail's signs and its k, j, i products with i, j, k stores), a named
+// `forward` at every use: 145 -> 79. Steps (masked aligned counts in brackets, base 61): shared scalar helper with the staged cross 154 [19]
+// at 879 bytes, with `forward` on the rotation and the normalize only 72 [17] at 887, at every use 79 [13] at 894. NOT kept: the first rotation
+// on the field and `forward` for the rest 63 [11] at 892, for the crosses only 60 [15] at 887 (a mix of the field and the pointer).
+// Tried on the helper: its dot and cross statements in every order 74+; accumulated dot in six orders 60+ [10 at best]; named dot terms 74+;
+// separate read paths for dot, cross and rows 60+. On the body: an up field pointer before or after the first rotation, seven use patterns,
+// 172+/72+; the pointer at the top of the body 130 [20]; a copy-taking rotation helper 139+; both crosses plain 203 [39], with a local
+// result or into the up copy 242 [50]; side through scalars 143 [28]. Diagnostics, not kept: identity pointer chains in the body and helper:
+// one dead up pointer plus one helper alias has all after the first call exact (57 at 887) with the first rotation 13 off; two dead pointers
+// have the first rotation 3 off and the rest 12 off; chains saturate at four. The operand state of the two blocks has to change separately.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4557,15 +4584,16 @@ void function_e3910(long arg_159e6d)
 	angle = normalize3d(&axis) * g_510c54->rate;
 	cosine = (real)cos(angle);
 	sine = (real)sin(angle);
-	biped_rotate_about(&biped->forward, &axis, sine, cosine);
-	function_30bf0(&biped->forward);
+	vector3f *forward = &biped->forward;
+	rotate_direction(forward, &axis, sine, cosine);
+	function_30bf0(forward);
 	up = biped->up;
-	biped_rotate_about(&up, &axis, sine, cosine);
-	cross3f(&up, &biped->forward, &side);
-	cross3f(&biped->forward, &side, &biped->up);
+	rotate_direction(&up, &axis, sine, cosine);
+	cross3f(forward, &up, &side);
+	cross3f_staged(&side, forward, &biped->up);
 	if (function_30bf0(&biped->up) == 0.0f)
 	{
-		biped->forward = *g_4687a8;
+		*forward = *g_4687a8;
 		biped->up = *g_4687b0;
 	}
 }
@@ -5343,6 +5371,12 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 // Marker in its own block scope 177 (frame 0x90); count test as `count - 1 >= 0`/`count > 0`/
 // `!(count - 1 < 0)` 173/169/173 (retail's lea/test/jge/jne not reproduced); down vector copied after
 // the point offset (retail's place) 174, with the marker scope 183.
+// Round 214 (m3 lane 3, fast; masked aligned in brackets, base 45), nothing kept: 0x188180's material as c_type_47f957 by value at its definition, every
+// declaration and call 153 [31] at 669 bytes, but 0x188180 77 -> 95, 0xceee0 94 -> 103, 0xec4f0 45 -> 49 (0x10c880 65, 0x247070 15). The same with
+// 0x188180 passing the dword on through a cast (diagnostic) 152 [31], 0x188180 77, 0xceee0 101, 0xec4f0 49; marker scope 153 [30] at 664; `down`
+// written after the point offset 136 [25] at 686 = retail's length; both 147 [23]. BLOCKED-BY 0x1883e0's long fifth parameter, which the matched
+// 0xfd740, 0xfd7d0 and 0x508d0 (contributor) feed from long values. On the long form: the count test as `PIN(0, 0, count - 1) == 0` 174 [41] at 657
+// (retail's `lea eax, [esi - 1]; test; jge; jne`, a raise, so restored); `0.0328f + probe.z` 154 (same code); both 174; with marker scope 180 [40].
 // @retail 0xe4d90
 void __stdcall function_e4d90(long arg_159e6d, long type, real scale, long marker)
 {

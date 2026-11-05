@@ -3498,6 +3498,12 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // NOT kept: specialization outlines both quantizers and moves extent away from retail.
 // Original helper, runtime policy formal, eight calls, repeated conversions and whole body restored;
 // selector scheduling, post-bias reload pairs and six shift-versus-clip input homes remain.
+// Round 214 (m3 lane 3, fast; masked aligned in brackets, base 9), nothing kept: the span ratio named after the mode-zero texture block 357 [17] at 4832;
+// the texture block's skip test merged as `extra_texture && !skip_state` 31 [9]; an empty compiled-out else on the skip test, mode zero or both 31/31;
+// gain from a separate 1.0f start 31; the span ratio named ahead of the gain 63 [16]; a named span copy 31. Selector forms: input first 939 [6] (one
+// instruction short, no `mov al, cl`), with a named copy of small the same; whole, input, fraction, alpha 976 [8] at 4840; `4 + small` 952 [11];
+// input ahead of `fixed` 974 [10]. All 24 orders of whole, fraction, alpha and input on this body: wari 30 (one point, picked by score), wrai and awri 31,
+// iwar and iawr 35, the rest 243..976. `mov cl, [small]` first needs alpha or input first, and then the whole/fraction moves come after both selectors.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
