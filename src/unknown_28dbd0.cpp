@@ -318,6 +318,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // of rotate_vector_170d70 direct 236 (1190), axis term first with (cosine, sine) parameters 238 (1190), named sine and cosine with each 241/241/241 (1193). Original helper restored.
 // Retail's rotation read from its listing: `v * cosine + axis * projection - cross(v, axis) * sine`, v.k a constant zero; sine named before the copy or the cross with cosine named before the rotation 241/241, both named before
 // the copy or the cross 241/241, sine named early with cosine direct 236/236 (all frame 0x114). Frame slots: +0xc scale, +0x10 cosine, +0x14-0x1c v, +0x20 cross k, +0x24 sine, +0x28 cross j.
+// T60: Existing tilt-angle pointer/reference crossed with axis/output references:
+// eight at 173/1209. NOT kept: no native frame/cross/trig-home recovery.
+// Original value-angle/vector-pointer producer, consumed-axis phases, ordinary
+// pooled reads, draws, request and complete body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

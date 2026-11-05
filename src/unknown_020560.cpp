@@ -1057,6 +1057,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // `opposite != NONE` 533 (2089), length_sq3f(&offset) 610; nearest at function top 575, at the arm 575, after closest 577; one shared index 576; `1 == count` 576. Offset fields written j, k, i 779
 // (2335; frame 0x2c, but the subtractions no longer share with the distance), jki/opposite first 772, kji 779. A cross-file difference (function_28e774) for delta, offset or both 459 (same code).
 // Retail's frame: opposite +0x10, nearest +0x14, pass counter +0x18, samples +0x20, offset home +0x24 (x spilled before each `jb`), delta home +0x30 (k spilled at +0x38).
+// T60: Actual source/query/direction object-reference contracts, seven subsets and
+// all with the existing copier sample reference: eight at 547/2122. NOT kept:
+// native query register, vector/ordinal homes and frame 0x2c are not recovered.
+// Original interfaces, both caller sites, copier and complete body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

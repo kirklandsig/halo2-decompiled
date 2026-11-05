@@ -948,6 +948,13 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // F383: Coherent existing basis-builder input order 234, but its matched callee becomes 2;
 // NOT kept. Immutable projection denominator/captured scale/pan fraction, seven
 // subsets, all 236. Original interfaces, copied plane and complete body restored.
+// Round 64 (m3 lane 14, fast; masked aligned 59, 462 instructions on both sides, register-sensitive 123): retail's field-of-view blend reads the
+// fields at each use: time and duration read directly 259 (1704, aligned 50), target too 258 (54), with a named start 264 (1708, aligned 48: that block
+// then has retail's shape, but the bytes grow); that with the dot3f length 266 (59), plus 1-7 pointer locals 265/265/265/265/376/376/261 (aligned
+// 52/54/52/52/51/51/58); the dot3f length with 1-7 dead locals in the plane block 250/250/250/250/374/374/254 (register-sensitive 126-127, 113 at 5-6, but
+// then d.k preloads again); the distance dot's operands swapped 236 (aligned 57, an order picked by score, not kept), through a forward pointer 236 (61);
+// the timer as if/else 244 (1700); the offset products before the negations 239 (62). Most of the count is the function-wide zero in XMM1
+// against retail's XMM0, which follows the length sum's d.j preload. Body unchanged.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
