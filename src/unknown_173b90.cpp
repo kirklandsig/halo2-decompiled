@@ -1425,6 +1425,7 @@ static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, 
     result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax S (11-06): the permuter's 41 rewrites all score 135 or worse on the reduced image; no new form, no lower score.
 // score 135 (was 135): frame and length agree, and so do the entry saves. Left: the tag index lands
 // in EAX (retail EDX, 0x137bd0's register) and the extra `mov edx, eax` shifts the camera block;
 // retail tests definition bit 5 as `mov dl; shr dl, 5; test dl, 1`; it reloads the location
