@@ -6698,7 +6698,7 @@ PRIVATE __forceinline real clamp_callback(real x, real low, real high);
 // field, offset, condition direction, callee, argument or constant differs. Differences fixed: the stage-1..3
 // loop stored ADDRESSV twice (retail 0x3810d stores ADDRESSU, ADDRESSV, then the filters, ten dirty-flag
 // updates; ADDRESSW is not stored); the colour block zero-filled all 0x34 bytes (rep stos) where retail stores
-// the thirteen fields one by one (0x37c79..0x37d8d, padding left alone); the two span-to-float conversions
+// the thirteen fields one by one (0x37c79..0x37d8d, padding left alone: bytes 1-3, unread by 0x3a5c0 mode 3, so `= {0}` is not wanted); the two span-to-float conversions
 // were before 0x16b10, retail converts after it (0x37e91, 0x37eb6) and keeps the spans as ints in the meantime;
 // extents are read at each use (retail reloads them, 0x37aae/0x37ab7) so the frame is retail's 0x120.
 // Stage states go through sampler_state_write (retail keeps one dirty-flag update per state).
@@ -6834,7 +6834,7 @@ bool __stdcall function_37a60(void *context)
             sampler_state_write(stage, D3DTSS_MIPMAPLODBIAS, 0);
             sampler_state_write(stage, D3DTSS_COLORSIGN, 0);
             sampler_state_write(stage, D3DTSS_ALPHAKILL, 0);
-    }
+        }
         function_1cf80();
         function_1cbe0(0, 0, 0x15);
         function_1c710(g_51f0f0);
@@ -7749,8 +7749,8 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // +0x1c, the three removal sites, the 0x1ff ring, the clipped fill, the row copy, the prediction inline, the tail).
 // The header lookup is the body of font_cache_character_get_header (unknown_1406b0.cpp, static inline over
 // s_font_character): retail's null header is dereferenced when the state is not 4, as ours is. Using the helper needs
-// its type moved to a header, outside this edit. The pointer is volatile in retail (it is reloaded from [esp+0x14] at
-// every use); a plain local gives 379. Fast-check, nothing changed: 342. Tried and dropped: __forceinline removal
+// its type moved to a header, outside this edit. Retail keeps the pointer stack-homed, stored at 0x1f613 and reloaded from [esp+0x14] at
+// every use (0x1f797, 0x1f8bb, 0x1f8d2, 0x1f946, 0x1f98a, 0x1f9a0, 0x1f9fe); a plain local gives 379. Fast-check, nothing changed: 342. Tried and dropped: __forceinline removal
 // helper 348 (1172 bytes); `pool = g_54d574` local 342; the wait argument as `removed` or `(long)removed` 341;
 // `long wait = 0; if (removed) wait = 1;` 321 (retail has that xor/test/je/mov shape, but it is a value set before
 // its test, so not kept); the clamps as `short end = bitmap - 1; if (right <= end) end = right;` 328 (not kept:

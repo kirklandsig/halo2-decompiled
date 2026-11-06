@@ -258,6 +258,7 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
+// MiniMax B (11-06): no new form, no lower score (32).
 // MiniMax A (11-05, second round): no new form, no lower score; the switch subject written as an inline
 // `get_game_variant()->field_xcb8724` puts the selector in EAX as retail has it but moves the tag into EBX
 // before the call (44), the tag read after the switch gives 45, and a field pointer for the tag or a named

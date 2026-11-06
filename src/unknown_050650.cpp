@@ -1035,6 +1035,14 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // bool/byte/short/long, original comparison results 389/380/375/372; failure-only normalization
 // 267/280/300/301. NOT kept: every full-graph lifetime regresses against calibrated 258 (full 257);
 // original result/presence, all calls, cases and entire decoder restored.
+// b5B (11-06) statement-by-statement walk against retail 0x2967b0-0x296d38, no source change: all seven
+// cases, the jump-table order, every offset (0x5d0/0x5ec/0x26c/0x84/0x539/0x53a/0x50c+0x3c, 0x338/0x33c/0x340,
+// 0x358/0x370, 0x18, 0x22c position), the signed short state tests (0x24: <1 / >2), the (1 << type) & 3 test on
+// [object+0xaa] with the player_index [+0x13c] != NONE test, the 1ffbd0 argument list, comiss > 0.0 (jbe fails),
+// the magnitude < 1.0 test (fld const; fcompi; jbe skips), and the optional outputs match retail; no float is
+// rounded through fst/fstp, point - origin / point - position are subss in x, y, z order as in retail. No
+// behaviour difference found. Only the point_valid/result stack homes (esp+0xa/0xb swapped) and the cross-jumped
+// cafc0 blocks differ. Declaring point_valid first 341, separate initialisers 343/341 (fast control 341): dropped.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

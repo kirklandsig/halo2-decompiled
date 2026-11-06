@@ -668,6 +668,10 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax G (11-06): the dot grouped explicitly 191, the same sum written with += 103, the tangent built by an
+// aggregate initialiser 102 and the dot's three terms reordered 102; retail's association is
+// (v.i*n.i + n.k*v.k) + (n.j*v.j) and the source spelling does not change it; the permuter tried no variant
+// in 900 s; no lower score.
 // MiniMax G (11-05): retail's sweep at F+0x44 against our F+0x38 leaves twelve bytes of frame that ours does not have (the cache at seventeen values is confirmed by the matched 0x2b8e10); the declaration orders give 102, the scope-hoisted forms 110 and the grown cache 125; reading the velocity in place gives 199, the dot product as three statements gives 103 and the displacement as a whole-struct copy gives 310, and retail's union at F+0xb0 against our F+0xa4 stays unmatched; no new form, no lower score.
 // score 102 (was 102): frame 0x124 agrees; sweep/collision homes and projection spills differ.
 // Velocity snapshot argument 676; reflection loop 102; reflected value 241; sweep scale 129;
