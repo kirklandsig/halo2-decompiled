@@ -716,6 +716,12 @@ done:
 // join, before the call, after the call 44/44/44; name preset NONE with an else arm 44; two copies with an else arm 48; the copy calling 0x8cc20 directly 44;
 // the translator through an inline wrapper 44; a block-local buffer pointer 44; late-folded addresses: `g + k` at the copy 44, an inline scratch getter at the
 // copy 44, at both 44, a const reference at the copy 44 (the hoist stays in all of them).
+// Round 138 (m3 lane 8, fast; parse_variant stays matched), control 32 at 178 bytes: one copy 54 (173); one copy with the tag read before the getter 57 (171; tag then in ESI, selector in EAX
+// and the mid-function `push edi` as retail, but globals in EAX, the load ahead of the call and the EBX hoist); that with the getter in the switch 57; two copies, tag first 44 (178); the getter written out
+// with the tag read before its fallback (diagnostic) two copies 33 (178), one copy 54 (173): that one-copy listing is retail's instruction for instruction but for the EBX hoist (`mov ebx`, `push ebx`,
+// `mov eax, ebx`, the save and restore), so the hoist is the only cause left once the tag load sits after the getter's call. Micro probes (compile-only, /O1): the hoist fires whenever the second use is partly
+// redundant with the first, in nested arms, through a member of a union, a one-member aggregate, a reference getter, a const local, a phi of the same address, a defined, static or extern buffer, and with two `mov reg, imm`
+// uses (so it is no byte-cost tie); only disjoint arms or `#pragma optimize("s", off)` (diagnostic, not kept) leave two immediates. A scan of the 2015 size-style retail functions finds no other global buffer in this shape.
 // M3 lane 4 r168 (fast; 0x22d503 and 0x22d52e matched): no untried natural form found. Re-measured listed forms (scores
 // agree): per-case translator calls with one copy at the join, retail's block order 42 (171 bytes), ascending 37 (171), the
 // tag read in each call 45 (171), with an explicit `default: break;` 42; `name_id = NONE` with a guard, one copy 54.

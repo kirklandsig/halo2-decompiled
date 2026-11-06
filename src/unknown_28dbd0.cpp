@@ -322,6 +322,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // eight at 173/1209. NOT kept: no native frame/cross/trig-home recovery.
 // Original value-angle/vector-pointer producer, consumed-axis phases, ordinary
 // pooled reads, draws, request and complete body restored.
+// F403: Existing stored forward as read-only rotation/outer-cross input, original
+// consumed-axis or distinct projected-axis output, eight protocols: 231/235/241/256/232/231/238/198.
+// NOT kept: no exact ownership form; original helper, input/output contracts and full body
+// restored. Frame 0x11c/0x118, retained heading zero and cross/trig homes remain.
 // Round 66 (m3 lane 14, fast): the rotation helper in 0x146320's statement shape (sine, cosine, projection, scalar cross j/k,
 // cross i inline in row i), dot k/j/i, i/j/k and j/k/i, 231/231/231 (1192 bytes; register-masked aligned 46 against the
 // baseline's 63, but the colouring regresses); that body with the axis passed as three scalars and the sine/cosine from the

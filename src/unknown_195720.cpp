@@ -61,6 +61,11 @@ bool function_1946f0(s_bitstream *stream)
 // the byte 9; block-local data, own division, direct subscript 35 (its memory operand is [index + data], not a LEA); inline mask helper 35;
 // inline address helper with the index first 2. One-file harness (exact here; diagnostics): identity pointer chains of 1 to 8 locals, at the top
 // or used for both reads 2 each; one or two new stored fields 3/4; extra arithmetic at the top, in the block or after it 33/16/6, always data first.
+// Round 77 (m3 lane 1, fast): the count tests and memset as a forceinline clear helper 2; a data local assigned
+// before the index, used for the masked byte only 39 (that access becomes index-first `[edx + edi]`); single-use
+// `saved / 8` index expressions and a single-use start index 2 (identical); the early data local used for the clear
+// only 40 (the clear LEA becomes retail's `[edx + edi + 1]`); the data local read at the function's top for both 52.
+// The newer value goes first, so retail orders its in-block field loads as values older than the index.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

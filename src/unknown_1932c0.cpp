@@ -973,6 +973,11 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // Lane 11 round 70 (fast): the result declared, then set false 3; the ticks const volatile 3, direct-initialized 3, as a volatile dword pair object 3; rdtsc
 // as two emitted bytes 3. Compile-only: no option changes the store order; non-volatile, parameter, aggregate-initialized and memset readers lose the stores.
 // The low store outranks `push edi` because the volatile pair chains low, high, asm; retail's order has no such chain.
+// Round 77 (m3 lane 1, fast, 0x194260 checked each time): a non-volatile tick local with `(void)&ticks;` and a
+// barrier 127 (the stores vanish; 0x194260 131), with `(void)&ticks;` alone 127; the zero as a volatile by-value
+// reader parameter 101 (0x194260 117); the volatile local in an inner block that ends before the asm 3. Diagnostic
+// only (barred, reverted): the non-volatile local made address-taken by a dead asm reference matches, with 0x194260
+// kept. Blocked by the asm ruling: retail's zero stores are non-volatile and survive because the address is taken.
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {
