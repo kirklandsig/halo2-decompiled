@@ -829,6 +829,10 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // index initialized 14; the header compared with NULL 14. Diagnostics: without the font store 77, with a zero font
 // store 70, comparing only the character 76, without the character store 45: whichever parameter stays in a register
 // takes EBX and the mask EBP, whatever its use count.
+// Round 77 (lane 10, fast): the iterator step as a forced-inline copy over the shared scan 14, over the
+// existing data_find_index scan 14, over a scan with the bit test either way round 14/14 (diagnostics, the
+// scan's shape is not the tie); the flags set field by field 71; the iterator and prediction declared ahead
+// of the flags 14; one exit with `result = true` first, a break and allocation only when not found 73 (187).
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

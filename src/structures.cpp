@@ -409,6 +409,11 @@ static __forceinline bool structure_bsp_collision_available()
 // requery after its block 56; before it, a byte flag `excluded |= 1` with the model query as its else-if 62 (threaded).
 // Round 149 (m3 lane 5, fast with 0xd2bb0): 0x14af40's matching shape here (named `found`, requery in its then-arm, `!(excluded | found)`), the found arm
 // storing the result 81 (291 bytes), `& 1` test 81, returning it 80 (286), store and return 79 (287): retail pushes EBX and EBP late here.
+// Round 70 (m3 lane 14, fast with 0x14a8e0/0x14af40/0xd2bb0/0x14ac60/0x10a0b0/0xbf9a0): retail keeps source.collision in
+// its stack slot (the requery's dead store to it stays, and only the model-query arm reloads it, before the un-threaded
+// test), so forms that keep the parameter in memory: `(void)&source;` 53 (same code); the flag set in if/else arms with
+// the collision re-read in the else arm and `if (excluded) return result;` 62, with `(void)&source;` 62, with the re-read
+// at the join 62, the join re-read through `&source.collision` 62 (all threaded, 286 bytes).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -480,6 +485,7 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	return false;
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (172); the promoted clone of function_11e800 still hands the four pointers to different registers (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in src/unknown_11cb00.cpp, not this lane's file.
 // MiniMax A (11-04): no new form, no lower score (172). What still differs: the promoted clone of
 // function_11e800 hands the four pointers to different registers. Retail calls it with
 // ECX=arg1, EDX=arg2, EAX=arg3, ESI=arg4; our build calls it with ECX=arg1, EDX=arg2, ESI=arg3,

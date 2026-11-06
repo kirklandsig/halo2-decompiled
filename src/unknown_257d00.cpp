@@ -1896,6 +1896,18 @@ void function_b7360(long object_index);
 // 301 (and 0x25ab50 itself 25, 82 bytes); case 5's two tests split 301; the 1/19 reference in a local used for the test
 // and the point 303; the 1/19 point through a pointer local after the actor test 303; the empty-success cases as one
 // label list 301.
+// MiniMax B (11-06) round 2: no new form, no lower score (301); the permuter's rewrite of the
+// field update as an explicit or of its own gives the same score (301), and its argument swap on
+// the recording call lowers this function to 292 on its own (0x259430 stays at 469) but is not
+// kept: retail's call site is `mov ecx, eax; mov eax, [esp + 0x18]; push 0; call`, which the
+// original call reproduces byte for byte, so the swap would replace an exact call with one that
+// passes the unit index as zero and truncates the recorded index; with the field update rewritten
+// as well the score of 0x259430 rises to 485, so that pair is dropped and the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (301); the entry still computes the cs datum
+// pointer before the actor pointer (retail computes the actor pointer first, keeps the actor
+// index in EBP and the actor pointer in EBX, and reads the cs index only after the four
+// register pushes), and the case that returns 2 still spells the value `mov ax,2` where retail
+// uses `xor ax,ax`; the actor local first stays at 487 and the function is unchanged.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2498,6 +2510,17 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // case 1 as `!(d > 1.f)` (retail's NaN-true `jbe`) 610; plain returns in place of the result/goto exits 493; the command
 // script looked up before the actor 617. A register-masked aligned diff of the baseline gives 152 (case 4's facing copy, the
 // countdown tail and retail's duplicated `if (result) return 1` epilogue).
+// MiniMax B (11-06) round 2: no new form, no lower score (469); the only variant the permuter
+// found in this file is the argument swap on the recording call, which belongs to 0x258cf0 and
+// raises this function to 485 when it is applied together with the field rewrite, so it is not
+// kept; the actor and state pointers still take the exchanged registers and the first point
+// still sits at +0x1c where retail keeps it at +0x10; the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (469); the actor and state pointers still take
+// the exchanged registers (ours EDI for the actor and EBX for the state, retail the other way
+// round), the first point still sits at +0x1c where retail keeps it at +0x10, and the post-switch
+// test and the countdown tail keep our layout; the case-1 point read, the plain returns in place
+// of the shared exit and the command script lookup before the actor all stay at 469 or worse,
+// so the body is unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
