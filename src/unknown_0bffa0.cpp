@@ -1055,7 +1055,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
     result->y = scale * transformed.j;
 }
 
-// score 290 (was 290; 315 before round 79, 482 before round 68): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
+// score 290 (was 315; 482 before round 68): (513 before round 91) the entry pointer's base (+0x4c), the direction cursor and the table stores
 // now agree; retail stores the +radius vertex group first (so 1.0 lands in XMM2, not XMM1) and
 // computes each projection's forward row first. Kept: the file's cross helper for both crosses
 // (it sets the +0x4c base; the shared cross3f for the forward one gives +0x50), normalize3d for
@@ -1164,10 +1164,6 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // Round 56 (m3 lane 15, plain; masked = aligned diff with stack offsets and registers masked, 137 here): rows in stages (forward j, i, k; left i, k, j; up k, i, j) as retail's sum trees,
 // x first 573 (2801 B, masked 167), y first 571 (2803 B, masked 174); plain rows with y stored first 299 at retail's 2840 B (masked 154); the reference as a ternary 643 (2797 B), as if/else
 // 574 (2822 B). Harness with the 0x11f5f0, 0x141590, 0x163db0 files and the ballast is not exact (414 for 290): source term order is canonicalised (same code in five orders).
-// Round 59 (m3 lane 15, fast, base 290): the plane normal copied before the plane point 560 (2817 B); the projection's matrix scale in a named local
-// for its test and divide 521 (2809 B); the cone reciprocal from `entry->plane_offset` 562 (2815 B); chained flag stores 290 (same code); the cone depth
-// summed from `entry->plane_offset` 291; at the first difference (+0x33, retail's memset `lea edi` inside the bounds copy) `memset(&entries[i], ..)`
-// before the entry pointer 628 (2821 B). Retail divides for the cone scale after the centre projection, with 1.0 in XMM6 (ours XMM4).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
