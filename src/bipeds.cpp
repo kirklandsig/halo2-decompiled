@@ -2131,6 +2131,11 @@ void function_dfd70(long arg_159e6d)
 // P344: Actual first-ray fraction and hit/head projection declarations at the collision workspace,
 // seven subsets then reversed declarations: 233/233/233/233/233/233/233/233. NOT kept: no byte match;
 // both original helpers and complete target restored. Mode-three placement and basis/ray homes remain.
+// J261: Complete forward/side displacement and double-factor backward-ray phases 246/248/246/245/238/236/238;
+// both offset vectors through the double-factor provider 305. Backward or double-offset forms lose de9d0,
+// several also c2d00; dc5c0 rises, and reduced-only 41640 also worsens.
+// NOT kept: no eligible native repair; opening executable source restored. Mode-three placement and native
+// basis/ray homes remain; both original helpers and wrapper restored.
 // Lane 15 round 58, NOT kept (233 -> 104, plain): lane 1 r62's form, the mode 3 arm inside the origin copy's else
 // with a return; with 0xdc5c0's gravity accessor 0xdc5c0 goes 461 -> 439 with it instead of rising, but that accessor
 // costs matched 0xc2d00 (see 0xdc5c0), and alone the form raises 0xdc5c0 585 -> 589. On it (fast):

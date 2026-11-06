@@ -409,6 +409,8 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // named side row `axis * 2 + (n[axis] > 0)` for all four table reads 251; the projected point as an aggregate
 // initializer 192 (same code); the polygon array declared before the hit point 192 (same code); the hit-point sums
 // written start-first in all three rows 192 (same code). All restored; still BLOCKED-BY 0x23a220.
+// J260: Direction dot/fraction/bounded comparison double storage singles 268/293/278; pairs 300/307/293; all 280; immutable all 280; frames 0x84/0x88 versus 0x90. No exact match; original SSE scalar widths restored.
+// NOT kept: no eligible native repair; opening executable source restored. Retained origin x/y, edge i spills and plane/ray/polygon homes remain.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

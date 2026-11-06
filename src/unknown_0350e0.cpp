@@ -1972,6 +1972,11 @@ real game_time_get_seconds();
 // seven subsets, then complete inputs with the native forward vector value: 586/537/583/507/586/537/583/519.
 // NOT kept: no qualifying gain or equality; all scalar/copy input forms and complete body restored.
 // Native frame 0x94, addressed outputs and definition/NONE homes remain.
+// J261: Existing angle provider inline/forced 610/1450; packed-color provider 507/627; sampled-color provider
+// 507/569; scalar-curve provider 507/659. Packed-color inline worsens another user, forced expansion loses
+// 0x26520 and 0x2e230; forced scalar curve loses 0x134fe0. All independent annotations restored repo-wide.
+// NOT kept: no eligible native repair; opening executable source restored. Native frame 0x94 versus 0x90 and
+// output/NONE homes remain unresolved.
 // B451: Complete animation-channel scalar receivers at original/reflection/
 // attenuation/time/admitted/angle/curve phases, then separate default assignment:
 // 522/516/544/528/536/536/536/522. NOT kept: no exact output-storage graph. Original color record,
@@ -3024,6 +3029,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // NOT kept: no exact match. Original alias-safe assignment helper and full body restored; native state/prefix/ordinal homes remain unresolved.
 // J259: Paired-entry result feeds prefix/found/both through bool and byte: 439/438/448/439/438/448; complete short/long results 449/442.
 // NOT kept: no eligible native repair; opening executable source restored. Single-consumer forms grow frame 0x30 to 0x34; shared forms retain 0x30 but grow length and regress. Original admission, alias-safe swaps, counts and full body restored; native state/prefix/ordinal homes and decay-copy base remain.
+// J261: Bounded prefix short/word 418/418 (frame 0x2c), signed-byte/byte 379/379 (native frame and extent);
+// signed tail short/byte 435/426; positive growth remainder short/word 347/363. Short growth first differs at
+// +0x33 but still regresses. Every form regresses; all controls preserved and original types restored.
+// NOT kept: no eligible native repair; opening executable source restored. Native state/prefix and ordinal
+// homes plus the decay-copy base remain unresolved.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4291,6 +4301,11 @@ bool __stdcall function_391f0(void *state);
 // NOT kept: no exact match. Original arrays, initialization loop, CRT zero, reads and full body restored; native zero and frame 0x70 remain unresolved.
 // J259: Failure-only positive outcomes in four phases, update/render pairs, all and nested all: 276/261/301/297/263/263/262/262.
 // NOT kept: no eligible native repair; opening executable source restored. Complete forms reach 1014 bytes but retain frame 0x74 versus 0x70; original outcomes, live bounds and all phase loops restored. Native zero/portal/fog homes remain; downstream interfaces untouched.
+// J261: Twice-used first-frame predicate bool/byte/dword 298/298/315; two-side ordinal byte/signed-byte
+// 297/297; bounded fog-pass ordinal byte/word/signed-byte 323/323/323. Every form regresses, grows the body and
+// retains frame 0x74. All matched controls preserved; original observations and domains restored.
+// NOT kept: no eligible native repair; opening executable source restored. Native frame 0x70, early zero and
+// portal/fog homes remain; narrowed domains did not repair them.
 // @retail 0x36b50
 void function_36b50()
 {
