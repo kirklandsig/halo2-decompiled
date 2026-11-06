@@ -4007,12 +4007,15 @@ long function_184000(long index, long bit);
 // MiniMax D (11-05): the permuter run on this function ended with a candidate that only swaps two
 // argument lists and adds a volatile qualifier, so it is not keepable; no new form, no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 332 (was 332): our body is 53 bytes shorter than retail's (944 against 997); the
+// MiniMax E (11-06): the bias term is now tested as a byte and masked again for the value, and the
+// transform lookup writes the three floats separately in each of its two paths, as retail does.
+// score 301 (was 332): our body is 26 bytes shorter than retail's (971 against 997); retail keeps the
+// output pointer in edi and the definition pointer in ecx, and passes the index in ecx and the output
+// pointer in eax, while ours takes the index in ax and the output pointer on the stack.
 // transform lookup and the outlined helper's argument order still differ from retail's.
 // @retail 0x45ce0
 bool function_45ce0(short index, byte *out, short part, short transform_index)
 {
-    out = *(byte *volatile *)&out;
     s_44940_entry *entry = &g_4ba138[index];
     byte *definition;
     if (entry->tag != NONE)
@@ -4061,18 +4064,27 @@ bool function_45ce0(short index, byte *out, short part, short transform_index)
         byte *section = *(byte **)(tag + 0x28) + section_index * 0x5c;
         byte *transforms = (byte *)table_entry_data(entry->unknown08);
         short selected = *(short *)(section + 0x2c);
-        byte *transform;
         if (selected != NONE)
         {
-            if (tag[4] & 4) selected = ((short *)(transforms + 4))[transform_index * 2];
-            transform = transforms + 0x44 + selected * 0x30;
+            byte *transform;
+            if (tag[4] & 4)
+            {
+                selected = ((short *)(transforms + 4))[transform_index * 2];
+                transform = transforms + 0x44 + selected * 0x30;
+            }
+            else transform = transforms + 0x44 + selected * 0x30;
+            *(real *)(out + 4) = *(real *)(transform + 0xc);
+            *(real *)(out + 8) = *(real *)(transform + 0x1c);
+            *(real *)(out + 0xc) = *(real *)(transform + 0x2c);
         }
-        else transform = transforms + 0x44;
-        *(real *)(out + 4) = *(real *)(transform + 0xc);
-        *(real *)(out + 8) = *(real *)(transform + 0x1c);
-        *(real *)(out + 0xc) = *(real *)(transform + 0x2c);
-        long bias = entry->unknown10[11] & 15;
-        if (bias) *(real *)(out + 0x10) = (bias - 5) * 0.001f;
+        else
+        {
+            *(real *)(out + 4) = *(real *)(transforms + 0x50);
+            *(real *)(out + 8) = *(real *)(transforms + 0x60);
+            *(real *)(out + 0xc) = *(real *)(transforms + 0x70);
+        }
+        if (entry->unknown10[11] & 15)
+            *(real *)(out + 0x10) = ((entry->unknown10[11] & 15) - 5) * 0.001f;
     }
     else if (entry->unknown00 & 0x1000)
     {
