@@ -1318,6 +1318,7 @@ struct s_batch_cache_4b5d0
 
 struct s_133f70;
 
+// MiniMax I (11-06): no new form, no lower score; the tail stays blocked by 0x23690 in src/unknown_023540.cpp, so the reduced image cannot inline it and the fast count depends on what the check pulls in.
 // MiniMax A (11-05): no new form, no lower score; the call to 0x4bcc0 already carries its six stack
 // arguments in retail's order and with retail's values, so what is left is the frame size and the entry/result homes.
 // MiniMax h (11-04): no lower score; the 0x4bcc0 call takes the distance from the third stack slot where retail takes it from the second, and that slot layout follows the unmatched callers in src/unknown_133790.cpp.

@@ -471,6 +471,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// MiniMax I (11-06): no new form, no lower score; the case-5 direction negated while it is copied from the vertex gives 379 and 391 against 219.
 // MiniMax H (11-05): no new form, no lower score; the projection sum's order ((j + k) + i in retail,
 // (k + j) + i here) comes from the shared dot3f in include/unknown_0259d0.h, and the entry still loads
 // the actor in case 5 where retail loads it at entry and moves pathfinding into EBX.

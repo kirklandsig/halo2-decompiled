@@ -171,7 +171,11 @@ static __forceinline bool structure_bsp_collision_available()
         *(long const *)((byte const *)g_4e0344->bsp + 4) == *(long const *)((byte const *)g_4e0348 + 8);
 }
 
-// score 53 (was 53): frame 0x60/prefix agree; exclusion BL and source-slot rewrite/reload remain absent; the byte result
+// MiniMax I (11-06): the model query's result is stored in `result` and one `goto done` reaches the shared
+// exit; the body is now retail's 286 bytes and the count drops from 53 to 45, while the exclusion flag is
+// still threaded to the return and the source slot is still not republished.
+// score 45 (was 53): frame 0x60/prefix agree and the body is now retail's 286 bytes; exclusion BL and
+// source-slot rewrite/reload remain absent; the byte result is still normalized with setne at both exits.
 // is still normalized with setne at both exits.
 // Earlier at 53 (was 61): the 0xbf9a0 probe is inverted, so the 0x14a8e0 return is laid out after the requery as
 // in retail. MiniMax E (10-31): with the type-6 test also setting a named exclusion flag 51 (a test-set flag,
@@ -444,12 +448,14 @@ bool function_14b120(s_surface_query_source source, void *surface)
         }
         else
         {
-            return function_14a8e0((s_structure_collision_result const *)source.collision,
+            result = function_14a8e0((s_structure_collision_result const *)source.collision,
                 *(long *)((byte *)triangle + 0xc), triangle);
+            goto done;
         }
     }
     if (found)
         result = structure_get_lightmap_triangle(collision, triangle);
+done:
     return result;
 }
 
