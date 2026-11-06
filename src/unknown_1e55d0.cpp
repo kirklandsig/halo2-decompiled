@@ -194,6 +194,12 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // 0x1ed340 where retail calls it; 0x2901e0 29, 0x1ed340 45, 0xb77d0 49, 0x1c4b00 133 stop matching, 0xfa100 holds); fast: state through a pointer to its parameter 319
 // at each use and read once 319, state written as the parameter at each use 319 (all same code); a named base pointer for the three position reads 319; with a named
 // component index too 319.
+// Round 138 (m3 lane 8; plain unless marked): the 0x1ec690 draft activated with its stub removed 349 again (0x2901e0 29, 0xb77d0 49,
+// 0x1c4b00 133, 0x1ed340 45 stop matching; restored), so the move/input roles (retail EBX/EDI, state kept on the stack) stay
+// BLOCKED-BY 0x1ec690. Fast: the shape test as an if/else on the compound result, each arm re-reading the current shape, 388 (1212);
+// `same = compound ? current == shape || inner == shape : current == shape` 335 (1204 bytes, masked 235 -> 110: retail's
+// `cmp eax, 0x17; jne` with the non-compound path out of line); the same ternary in the `if` 335; the `||` written in the `if` 319
+// (same code); the input flag as `(bool)((flags >> 5) & 1)` 325 (1180: retail's `shr ecx, 5; test cl, 1`), with the ternary 351.
 // Round 398: Existing aligned capsule shape/component/flag-word object-reference contracts,
 // seven subsets then ordinary inline: 319/319/319/319/319/319/319/530. NOT kept: forced forms tie;
 // ordinary expansion loses the native frame and regresses. Original helper, caller and full body restored.

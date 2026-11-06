@@ -684,6 +684,10 @@ struct s_player_axes_153d10
 // the slot register): all 63 sets of `(real)` casts on the six products 5 or above; dots before the cross 47; only the forward or
 // up dot before it 46/36; delta after the cross 47; rows jik/jki/kij/kji 48; six named products 48; three scalar cross locals 48;
 // negated j row 48; `real basis[2][3]` 48; a basis pointer 10; a pointer to the axes sub-struct 48, with the dots through it 10.
+// Round 56 (m3 lane 2; one-file harness over the whole file, control 5: this product plus 3 harness-only lines; plain not run because none beat the control): an inline cross helper with
+// pointer parameters in four parameter orders, all row orders, direct or staged, all product text orders, 4 phases: 240 samples, best 31 (helper forms flip far more products); per-read spelling of the 12 cross reads through axes
+// or forward/up, dot spellings, both pointer orders, 0-3 unused locals: 1,100 samples and three hill climbs, floor 5, several at 7/9 with this product right but the up.k-against-forward.j product or the up.i one wrong, none with all right;
+// origin and target swapped or split 5/5; state dropped, axes from the call 11; axes at the top of the block 5; the pointers after delta 5; relative before cross 5; owner index named 9; slot fields by array 5.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

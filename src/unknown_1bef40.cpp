@@ -63,6 +63,9 @@ short *function_e70b0(short *value, long unit_index);
 long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax G (11-05): no new form, no lower score; copying the slot reference into a long or into a
+// named local before the actor's arithmetic still scores 100 and moves the table's data into EBX,
+// and the inlined action lookup still scales the index in ECX where retail scales it into EDX.
 // MiniMax G (11-04): no new form, no lower score; the slot reference still loads into EDX after
 // the actor's index arithmetic where retail loads it into ECX before it, and the inlined action
 // lookup still scales the index in ECX where retail scales it into EDX.

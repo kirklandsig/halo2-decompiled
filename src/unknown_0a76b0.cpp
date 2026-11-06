@@ -841,7 +841,7 @@ extern vector3f *g_4687b0;
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
 // MiniMax lane A (11-04): no new form, no lower score.
-// score 309 (was 309): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
+// score 298 (was 309): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
 // slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
@@ -966,6 +966,14 @@ extern vector3f *g_4687b0;
 // loops, 0x120220's `+=` per component: none closer on either. Retail loads every sum product first
 // (`movss x0, [forward.i]; mulss x0, x1; addss x0, [origin.x]; movaps x3, x0`), as matched 0x137800 and 0xc28b0 do;
 // ours copies the scale. Dead pointer locals (diagnostic) flip only the aim's first product.
+// M3 lane 14 r68 (fast, plain-confirmed 298 at 1673 bytes): retail has one 0xb8540, one 0xa7870 and one 0xd0e60
+// call; the placement failure jumps into the release tail. `if (attach || function_bc1d0(...))` after the
+// `if (!attach)` block, its failure falling into the existing release tail, 309 -> 298 (kept; every integer
+// line of the tail now agrees). Also tried: one `thrown` flag and a single `if (!thrown) b8540` tail 310 (1665,
+// flag form); on 298, the direction copied once from a per-branch source pointer 330 (1644; aligned 221 -> 174),
+// the offset sum as three vector3f_add_scaled phases 312 (frame 0xc0); source pointer + a player-block direction
+// copy + the phases in place in the copy 308 (1662, frame 0xcc, aligned 137; copy and one-use pointer: diagnostic);
+// velocity declared inside the not-attached block 298 (same code); up declared before the throw globals 298 (same code).
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1106,27 +1114,23 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 			velocity.k -= projectile->linear_velocity.k;
 			function_fa820(projectile_index, &velocity);
 			function_cafc0(unit_index, &origin);
-			if (!function_bc1d0(projectile_index, &origin, unit_index))
-			{
-				function_b8540(projectile_index);
-				function_d0e60(unit_index, 0, 0);
-				actions->grenade_state = 3;
-				return;
-			}
 		}
 
-		function_a7870(projectile_index);
-		if (attach)
+		if (attach || function_bc1d0(projectile_index, &origin, unit_index))
 		{
-			s_object_marker marker;
+			function_a7870(projectile_index);
+			if (attach)
+			{
+				s_object_marker marker;
 
-			function_b8d30(unit->parent_object_index, marker_name, &marker, 1, false);
-			bit_vector_set((dword *)((byte *)UNIT_ACTION_UNIT_GET(projectile_index) + 0x12c), 10, true);
-			function_fd560(projectile_index, unit->parent_object_index, marker.node_index, &marker.matrix.position, NULL);
+				function_b8d30(unit->parent_object_index, marker_name, &marker, 1, false);
+				bit_vector_set((dword *)((byte *)UNIT_ACTION_UNIT_GET(projectile_index) + 0x12c), 10, true);
+				function_fd560(projectile_index, unit->parent_object_index, marker.node_index, &marker.matrix.position, NULL);
+			}
+			function_d0e60(unit_index, 0, 0);
+			actions->grenade_state = 3;
+			return;
 		}
-		function_d0e60(unit_index, 0, 0);
-		actions->grenade_state = 3;
-		return;
 	}
 	function_b8540(projectile_index);
 	function_d0e60(unit_index, 0, 0);
@@ -1449,6 +1453,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
+// MiniMax D (11-05): no new form, no lower score; retail loads the pool global after the prologue
+// pushes and keeps the hand in cl, ours loads the pool first and keeps the hand in al.
 // MiniMax G (11-04): no new form, no lower score; retail loads the pool data and the unit twice with
 // a stack spill between the two loads, ours keeps one load, so the index form, the reload of the pool
 // data and the register allocation differ.
@@ -1792,6 +1798,8 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 }
 
 /* drops the weapon in a hand (types 9 and 19) */
+// MiniMax D (11-05): no new form, no lower score; retail reloads the pool data and the unit before
+// the hand's slot read, ours keeps the first unit pointer for that read.
 // MiniMax G (11-04): no new form, no lower score; retail reloads the pool data and the unit after the
 // stored flag and reads the hand's slot byte from the reloaded unit, ours keeps the first unit, so
 // the pool reload, the second slot read and the weapon/mode homes differ.
@@ -2574,6 +2582,12 @@ __forceinline char unit_action_round(real value)
 // the weapon or actions, weapon getter written out, first_person_name at four positions, crossed with pool and
 // macro lookups: none gives the flag in dl with the pool in ebp and NONE in ebx. is_biped/result stay 0x12/0x13
 // against retail's 0x13/0x12 with up to two more result reads (diagnostic).
+// M3 lane 14 r68 (fast, on round 187's single-exit form, 110 at 1188 bytes, register-blind 14; match-only):
+// lunge speed read from the field at both uses (retail divides from memory) 357 (1142: the allocation flips),
+// through a melee-globals pointer read twice 357; first_person_name after actions 110; `real seconds =
+// frame_count * 0.033333335f;` times the field 107 (retail's product order); on 107 the lunge target read at each
+// use 161, read inside the `>= 1.0f` test with the NONE/0xbae20 test nested and target_index in both failure
+// arms 105 (retail's jb before the field load; regblind 10). On the 235 body: seconds + nested lunge read 233.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

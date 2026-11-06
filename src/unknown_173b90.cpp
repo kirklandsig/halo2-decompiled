@@ -1855,6 +1855,12 @@ bool function_17afd0(long effect_index, long value);
 // store, only the arm layout left (retail's first arm jumps into the second's copy), the condition inverted 17; with direct
 // availability 120, with a view local 27 [5] (494 bytes); `attached = same_view ? short : full` or an if/else on same_view
 // 91 [2] (500 bytes: `je; mov; jmp` for retail's `mov; jne`). All need the flag form, so match-only: body kept at 47.
+// M3 lane 14 r68 (fast; the 47 body differs from retail in 7 aligned instructions: the availability's `xor bl, bl`
+// before the 0x1751d0 call, `neg/sbb/inc` for retail's `test; jne; mov bl, 1`, and the view reload after 0x17afd0):
+// `if (view != NONE && !query(view)) available = true;` 135 (availability spilled, NONE in EBX); `available = view
+// != NONE && !query(view)` reassigned 125 (492); `query(view) ? false : true` 47 (same code); retail's shape with
+// the view global at each use and same_view declared at function scope 138 (510); same_view defaulted false at
+// the arm's top and reassigned whole 138. The branchy availability always hands BL to same_view.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

@@ -1185,6 +1185,10 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // moves, up to k 37); named range 44, named distance 38 -> 36 (one use), named definition index 40; 20 negate statement orders with
 // names at the row 41-42 or 286-289, names at the top 39-40, whole-normal forms 286/288/332, split sums 281/281; else arm k row spelled
 // out, read through a local, `&data->node_direction` for the normalize, rows reversed, add helper: no change; `standard` no change.
+// M404: complete near sums per row/all rows/existing setter/native traversal:
+// 38/38/40/192; corresponding named far sums: 40/40/40/192.
+// NOT kept: publication/scheduling diagnostics do not match the native near block.
+// Original sums, negations, stores and whole body restored; near-block extent remains.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1859,6 +1863,9 @@ long function_1e4a10(long index);
 // Round 489: separate scaled damage / conditional multiplier result / named reciprocal,
 // seven subsets 30/156/160/10/30/156/160; all with named depletion expression 160.
 // Original damage phases, reciprocal expression and whole body restored.
+// M404: complete stun admission in positive bool/byte/word/long and
+// complementary bool/byte/word/long forms: 8/8/8/8/8/8/8/8. Original damage phases,
+// constants and body restored; the post-call reload schedule remains.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2227,6 +2234,9 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // `!(a && b && c)` 224h, second entry for the 0xdb090 argument 223h; region flag inlines 190h/35h/35h/35h, index inline 35h, region
 // flags inline 35h, inline guard and flag-parameter guard 225h; word_flags_set for unknown12 35h, with the entry 225h; entry read in
 // both arms of `if (info)` 216h (load above the je, accumulator in EBP); datum head same guard, 228h with the entry.
+// M404: whole bounded-region admission in positive bool/byte/word/long and
+// complementary bool/byte/word/long forms: 3/3/3/3/3/3/3/3. Frame, extent and
+// region-load/address gaps unchanged; original nullable guard and complete body restored.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2567,6 +2577,10 @@ struct s_unit_event
 // masked 86; with long drops (`not eax; and eax, 1`) 500 at 1868, masked 75; NOT kept, the flag is set in the arms and tested after, the
 // direct ternary on it 541 at 1900. Object first and no region local 513 (masked 83, retail's EBX permutation and EBP region, but no dead
 // add); region spellings 500/500/474/515; long drop alone 531; `destroy` flag 570; nested kept 533; no `__stdcall` 545 (ECX/EDX, 1868).
+// Y610: Permutation-flag/paired state-key/accumulator lvalue identities,
+// subsets 1/2/4/3/5/6/7, then all with info-record identity:
+// 472/472/472/472/472/472/472/472 (fast control 472).
+// NOT kept: no exact identity-form match; original complete body restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -4823,6 +4837,10 @@ struct s_damage_object_creation
 // on the all-retail form 225h, on the zero-moved form 172h; masks as one-member structs, inline mask helpers 217-225h (still
 // enregistered); loop-local detached mask copied out 201/180/218h; top loop named mask, named bit, word_flags_set 232/230/230h (zero
 // moved) and 246h; piece node local 156, piece object pointer 157 (aligned 25 -> 15); `standard` 173 (diagnostic).
+// Y610: Paired section-word/node-state-byte/creation-tag lvalue identities,
+// subsets 1/2/4/3/5/6/7, then all with component-record identity:
+// 156/156/156/156/156/156/156/156 (fast control 156).
+// NOT kept: no exact identity-form match; original complete body restored.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

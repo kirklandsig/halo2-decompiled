@@ -624,6 +624,22 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // N376: Paired conversion success/fallback outcomes, independent/shared carriers and
 // expression/branch producers: 282/282/282/305/282/282/282/305. NOT kept: four-point leads
 // fall below the margin and no form matches; original conversion graph/body restored.
+// AC558: Complete two-step admission/rejection truth in bool/byte/short/long:
+// eight at 333, 1388 bytes (control 286/1389). NOT kept: all regress; original
+// type-2 fallback, metadata stores, long link total and complete body restored.
+// Y605: Complete transition-step pointer/reference, branch-owned/shared admitted metadata,
+// original long then bounded short link total: 375/375/385/385/392/392/391/391.
+// NOT kept: all regress and shorten away from retail; original indexed fields and body restored.
+// F397: Geometry previous-point/edge/output object references, seven subsets and complete endpoint
+// references: 282/286/286/282/282/286/282/282. NOT kept: best gains four only; original
+// receivers, memcpy and body restored. Extra frame word and predecessor/flag homes remain.
+// F401: Complete three-state transition publication/call result, expression byte/short/long/dword
+// and complete-arm producers: 350/346/344/344/378/368/368/368. NOT kept: all regress and no equality; original
+// metadata stores, calls and full body restored. Extra frame word and predecessor/flag homes remain.
+// DH377: Integer-index for traversal, parent update through the retained node/embedded array,
+// long link total 286/374; bounded word total 359/344; readonly node/predecessor counterparts
+// 286/374/359/344. NOT kept: no gain; original while, both histories, metadata memcpy and body restored.
+// Extra link cursor, frame 0xe8 versus 0xe4 and zero/flag/geometry homes remain.
 // M3 lane 11 r71 (fast, plain where marked; masked = aligned with registers and stack offsets ignored). Rebuilt the
 // flag
 // form (short link count; `special` false at the arm's start and set by an if; `usable` by if / else if with a `data`
@@ -657,6 +673,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // unless it reads `steps`; one between or after the loops does not; statements with no branch do not; the threaded
 // flags above do not. So the pair follows a block count inside a loop, and retail has one more block there that is
 // gone after allocation. A 600 s permuter run on the 2: 55 tries, best 2.
+// B453: Standard initial-count and lower/upper/complete projection clamp producers, individual and joint
+// boundaries: 384/351/342/338/429/413/409/410. NOT kept: no byte match; original complete body restored.
+// Native frame, indexed link transport and predecessor/flag homes remain.
 // AC558: Complete two-step admission/rejection truth in bool/byte/short/long:
 // eight at 333, 1388 bytes (control 286/1389). NOT kept: all regress; original
 // type-2 fallback, metadata stores, long link total and complete body restored.
@@ -1173,6 +1192,11 @@ bool function_2715a0(byte *buffer)
 // DH368: Direct named link/root/child array elements, seven subsets then collision candidate:
 // 624/528/486/659/624/528/659/684. NOT kept: child-only ties, others regress or grow;
 // original array receivers, inherited fallback qualifier and complete body restored.
+// Y606: Actual short link discriminator with paired metadata halves/direct depth/shared
+// point producers, masks 0..7: 486/492/481/498/486/492/481/498. NOT kept:
+// five-point leads below eight; half transfers grow extent. Original type/body restored.
+// F396: Complete per-link flags/type/node scalar observations, seven subsets then all immutable: 505/490/485/506/478/524/547/547.
+// NOT kept: 478 grows frame to 0xc58 versus native 0xc54 and combines nonqualifying snapshots; native repeated reads/state EBP remain. Original complete body and helpers restored.
 // M3 lane 11 r71 (fast, control 486 at 2076 bytes). Retail loads the child's entry point into four registers ahead of
 // the closest test's `jbe`: the entry point copied to a local inside `if (destination_valid)` and used by the closest
 // update 488 (masked lower, retail's four loads), declared before the whole test 488; NONE type test ahead of the
@@ -1190,6 +1214,14 @@ bool function_2715a0(byte *buffer)
 // paired acquisition 510/510. NOT kept: no exact record-copy form; frame or length moves away from
 // retail. Original live geometry inputs, fresh denominator, inherited result qualifier and entire body
 // restored.
+// DH385: Whole native heap-root/child-metadata transfers, copy/move singly and paired,
+// 486/542/486/498/486/560/498/542. NOT kept: ties or frame/length regressions; original
+// aggregate heap transfer, metadata store and complete body restored. State/node/link/scalar homes remain.
+// M3 lane 11 r71 (fast, control 486 at 2076 bytes). Retail loads the child's entry point into four registers ahead of
+// the closest test's `jbe`: the entry point copied to a local inside `if (destination_valid)` and used by the closest
+// update 488 (masked lower, retail's four loads), declared before the whole test 488; NONE type test ahead of the
+// penalty 578 (2128), after it 579 (2128); location count and flags read once before the walk 486, count only 486
+// (both same code).
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

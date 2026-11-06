@@ -100,6 +100,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax E (11-05): no new form, no lower score: the 24 form needs the object index and the absolute index, each used once (recorded not kept); the header array local with the type hoisted and case 0 through the object index 96 with the caller 0x1d5bf0 at 13.
 // score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must
@@ -280,6 +281,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // parameter orders, definition, declaration and call together, 21 [13] each (identical code: the component stays in EDX and the
 // index in EAX); a named object index for case 0 with the type read through the field, byte type in six declaration orders 99/102
 // [13], long type 98 [171] or 112 (236 B) [13].
+// AC559: Original primary-kind-seven equality/inequality outcomes, bool/byte/short/long:
+// 109/109/102/102/109/109/102/102. NOT kept: all regress and grow to 272/276
+// versus native 256; original dispatch, body acquisition and caller convention restored.
 // Round 153 (fast, caller 0x1d5bf0 in brackets): round 60's 24 form rebuilt 24 [0]; on it the header-array local renamed to sort after the
 // object index 24 (same code); the type local as short 35 (260 B) [0], word 35 (260 B) [0], dword 89 [0]; the header-array local as a pointer to
 // const 24 (same code). The 21 form re-measured 21 [13]: it has the 24 form's colouring (headers ESI, object index EDX, rigid body ECX against

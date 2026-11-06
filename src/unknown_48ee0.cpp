@@ -20,7 +20,7 @@ extern real g_4c9798[36];
 
 // MiniMax B (11-04): no lower score; the new forms tried and dropped are the flags and mode
 // placements, the width and height limit types and the mode's own block, all worse or identical.
-// score 174 (was 178): the far plane's near distance goes into a named local so the three
+// score 174 (was 174; 178 before): the far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
 // Round 112: direct far-plane output 343; scaled-add far point 174, near point 169 (five-point
@@ -200,6 +200,10 @@ extern real g_4c9798[36];
 // each use [9], reference or tag struct [9], y, z, x statement order [6], origin first, swapped products, casts, const, earlier declaration [11], shared forced-inline point helper [36]. For the last 9: `__assume` on extent, distance, aspect, offset, inverse, the global, the half cone [0] (no change);
 // six renamings of distance and extent [0] (no change); square helper, `extent = extent + ...`, `... + extent`, other product orders [0] (no change); named half cone or area, mode test without `~`, `== 1` or a switch for the tag test, swapped or moved declarations all [2]-[19], higher.
 // Real `--fast` without the scratch `inline`, all 32 subsets of long height, border, raw clamp, direct normal, near at each use: base 174, raw clamp alone 174 (same code), near 178 (1489 bytes), border 180 (1491), long height 250, height with border 243, direct normal 255-337 (under 1465); none under 174, so nothing is kept. The known 0x1ddd0 match form leaves this at 174.
+// Round 59 (m3 lane 15, fast, base 174; BLOCKED-BY 0x48e70 for the size/aspect reloads around the rounding calls, machine 1's file): sqrtf/tanf
+// for the aspect, size root and tangent 180 (1491 B); `g_485a47 = (byte)mode` right after the mode is chosen 339 (1488 B); the three
+// small-target tests as one inline predicate 380 (1514 B); `mode` declared first 174 (same code); the first plane's dot as dot3f(point,
+// normal) 174. Retail's max_height is a full dword (`mov eax, [h]; imul eax, [w]`, `cvtsi2ss xmm0, [h]`), ours sign-extends a short.
 // AC551: Complete immediate projection/near-point/far-point multiplication nodes in subsets
 // 1/2/4/3/5/6/7, then the complete homogeneous projection on all three families:
 // 174/180/174/180/174/180/180/180. NOT kept: no qualifying supported improvement; complete

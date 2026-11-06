@@ -2119,6 +2119,10 @@ void function_2818e0(void)
 // Lane 11 round 70 (fast): a ternary lvalue counter update 2; a counter pointer by ternary at the increment 2 or at the helper's top 2 (0x288570 120 in
 // all three); the bit flags shifted by an explicit assignment 2; the bit test as `(flags & 1) == 1` 2 (0x288570 3, 0x289580 78). Here and in 0x2bdc70
 // ours reloads the later-declared variable first, retail the earlier-declared one.
+// Round 154 (m3 lane 5, fast with 0x27dff0, which has the same pair): in function_288571 the counter resets before the
+// node-count read 6 (both); the resets in reverse order 2; in function_288572 the flags byte read and the cursor stepped
+// as separate statements 2; the outer group loop as `while` 2; the later passes' clamp tested count-first 2 (both
+// functions identical in each but the first).
 // @retail 0x281b60
 void function_281b60(void)
 {
