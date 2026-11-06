@@ -1083,6 +1083,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
+// iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
+// at frame+0x00, iterator_mode at frame+0x04 and iterator_weapon_class in the reused argument slot; our
+// result shorts therefore land at frame+0x08 instead of frame+0x0c and the tail compares out of step.
 // score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // result/output homes and initial ECX/EDX differ;
 // frame 0x2c agrees; class/NONE registers, result/output/candidate homes and later zero carrier remain.
@@ -1344,6 +1348,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 	return result;
 }
 
+// MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
+// iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
+// at frame+0x00, iterator_mode at frame+0x04 and iterator_weapon_class in the reused argument slot; our
+// result shorts therefore land at frame+0x08 instead of frame+0x0c and the tail compares out of step.
 // score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // result/output homes and initial ECX/EDX differ;
 // original mode/class/type via iterator 837/991/837; mode assigned only
