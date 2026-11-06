@@ -1164,6 +1164,19 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // Round 56 (m3 lane 15, plain; masked = aligned diff with stack offsets and registers masked, 137 here): rows in stages (forward j, i, k; left i, k, j; up k, i, j) as retail's sum trees,
 // x first 573 (2801 B, masked 167), y first 571 (2803 B, masked 174); plain rows with y stored first 299 at retail's 2840 B (masked 154); the reference as a ternary 643 (2797 B), as if/else
 // 574 (2822 B). Harness with the 0x11f5f0, 0x141590, 0x163db0 files and the ballast is not exact (414 for 290): source term order is canonicalised (same code in five orders).
+// Statement walk against retail (f1E, base r709, 2840 bytes): no logic or structure difference. Checked: count 6/1 and the
+// `i < *count` reload (0xc1da5-0xc1dc1, 0xc287e); entry stride 0x1bc and memset (0xc1e1c); the eight vertices (0xc1eb0-0xc1f57),
+// six faces (0xc1f67-0xc1fcf) and six directions (0xc1fd6-0xc206f); depth = radius, orthogonal/has_plane cleared (0xc1ea9,
+// 0xc2078, 0xc207b); up = -direction, reference g_4687a8 or g_4687ac for i == 1 or 3 (0xc20bc-0xc20e2); left = up x reference
+// and forward = left x up (0xc20e2-0xc213c, 0xc21b0-0xc21fb); normalize skipped for |len| < 1e-4 (0xc216e-0xc2172); four
+// projections through faces[i][0..3] (-1 / z, scale test against 1.0) into points[0..3], count 4, 0x11f5f0 (0xc2577); cone arm:
+// count 1, forward = shape->left, left = frame->up, up = -frame->forward, orthogonal = (kind == 1), has_plane = offset > 0,
+// plane n = frame->forward and d = n . (origin + offset * forward), depth = far_distance + offset, centre projection, half
+// extents = size * (1 / offset) * 0.5, corners x0y0 x1y0 x1y1 x0y1, bounds x0 x1 y0 y1 (0xc258f-0xc2820); tail flags,
+// 0x141590 (matrix -> ecx, inverse -> eax), 0x163db0 (0xc282a-0xc285f). The only differences are rounding-level:
+// retail sums the length as (i*i + k*k) + j*j (ours (j*j + i*i) + k*k), and the projection rows as forward (j, i, k),
+// left (i, k, j), up (k, i, j) (ours forward (k, i, j), left (j, k, i), up (j, i, k)); everything else left is
+// operand folding and register colours. Callers 0x31c80 (184) and 0x32350 (448) and callees unchanged by this note.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

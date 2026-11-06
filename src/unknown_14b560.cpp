@@ -2354,6 +2354,20 @@ static __forceinline long player_round_ticks(real value)
 }
 // MiniMax h (11-04): no new form, no lower score; the frame stays 0x4c against retail's 0x74 (two request workspaces reach 0x6c).
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
+// Walk against retail 0x14f820-0x1502d1 (f1A, r709, statement by statement, every block incl. the six flag sites,
+// seat/animation-progress test, lunge distance and its z,y,x order, request words 0x1b/0x16, idle/rest clamp, both
+// activity masks 0x10000001 / 0x4030031, target latch): no behaviour difference found; fields, offsets, condition
+// directions, constants (1.0, 0.81, 1.1, 5.0, +-0.017453) and callee arguments all agree. Retail evidence that fixes
+// the form: each of the six player flag stores is `or byte [eax+edi+2],n; add eax,edi` (the player POINTER is
+// formed and the next read is through it: `mov ax,[eax+0x28]` in the two view clears). `s_player *entry =
+// player_get(i)` at all six sites with the view clear taking that entry gives those instructions but 701 at 2720
+// bytes (retail 2740), so it is not kept; at the first site only 698.
+// Retail also stores `moving = 0` (esp+0x13) before the atan2 and sets 1 only inside the nested tests; the plain
+// `bool moving = false; if (a && b && c) moving = true;` gives that shape but scored 701 (not kept, flag form).
+// The view clear in retail is `mov edx,[g]; movsx ecx,ax; imul; lea eax,[ecx+edx+0x14]; mov cl,[eax+0x8e]` (pointer
+// first); every spelling (struct entry, helper taking the entry, base then index) folds the read into
+// `[edx+eax+0xa2]` as matched 0x1520f0 does: 701 each.
+// The tick cast written at each of the two uses (retail converts twice) 702.
 // Round 439: parent/tag/seat one-use intermediary elision in all seven subsets 701 each;
 // complete graph with all three target field-reference lifetimes at receiver acquisition 701.
 // Original entire body restored; every field observation and protected call boundary retained.

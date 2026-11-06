@@ -6939,15 +6939,28 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
-// MiniMax D (11-05): the inherited 309 change stays reverted (its gain is under 8 and the function is
-// still above 30), so the body is the original one; no new form, no lower score.
-// MiniMax D (11-01): 309 (was 312) with the two integer comparisons against zero written against
-// one (the zero literal is no longer promoted into ebp and the frame loses its extra push); not kept
-// (gain under 8, still above 30). The call to 0x4f7e0 passes all nine arguments on the stack, one
-// push more than retail's.
-// score 308 (was 312): retail's frame is 0x1894 bytes and ours 0x1890, and our locals sit four
-// bytes higher than retail's (the fade at [esp+0x10] against our [esp+0x18], the direction
-// vector at [esp+0x6c] against our [esp+0x70]), so every reference in the body is at another offset.
+// fast score 310 (was 308), statement-by-statement walk against retail (f1D, 11-05): every field, offset,
+// condition direction, callee, argument, constant and loop/branch shape agrees with retail; the one
+// behaviour difference found is the order of the x87 sum for the facing cosine. Retail adds
+// k, then j, then i (0x4f179..0x4f1af: fld [esp+0x7c]; fmul [ebx+0x1c]; fld [esp+0x78]; fmul [ebx+0x18];
+// faddp; fld [esp+0x74]; fmul [ebx+0x14]; faddp; fabs). The old single (double) expression compiled to
+// k, i, j whatever the order of its terms or the parentheses (all 6 orders and the a+(b+c) forms); the
+// three-statement accumulation below emits retail's instruction sequence exactly (the (double) casts are
+// not needed for the x87 form: no store between the products). This costs 2 fast-score points
+// because the surrounding scheduling shifts (movaps now before the first faddp, retail has it before).
+// MiniMax D (11-01/11-05): two integer comparisons against zero written against one gave 309, not kept (gain under 8).
+// What still differs: ours strength-reduces group * 0x98 into a second counter ([esp+0x40]),
+// retail keeps a single counter and an imul at 0x4f165, so our frame is 0x1898 against retail's 0x1894,
+// every local above that slot sits 4 bytes higher, and the zero for both counters lives in ebp
+// (retail: xor eax,eax, push ebp only around the loop at 0x4f15e). Tried, no change (308): dword group,
+// do/while with and without the count guard (675/330), group = group + 1, continue form, a
+// __forceinline element helper, a typed 0x98-byte struct pointer or array index, (group << 3) * 19,
+// entry += group * 0x98, a use of group after the loop; a `short group` removes the second counter
+// (frame 0x1894, imul kept, 2000 bytes, 421 with the old facing) but adds a movsx retail lacks; a cached
+// group count local gives 417 but retail reloads it. Positions written as `positions = NULL; if
+// (cond) positions = ...` is closer to retail (one jmp and one mov fewer) but scores 513 here because of
+// the shifted slots. Also unaddressed: the point iterator tracks points[i].field_c (retail [edi-0xc], ours [edi-0x10]).
+// The call to 0x4f7e0 matches retail's register setup (tag in ecx, eight stack words).
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {
@@ -6979,8 +6992,11 @@ void __stdcall function_4f010(void *payload)
         if (*(long *)(entry + 0xc) > 0)
         {
             bool filtered = (bool)((*(dword *)entry >> 3) & 1);
-            real facing = (real)fabs((double)direction.k * state->first.k +
-                (double)direction.j * state->first.j + (double)direction.i * state->first.i);
+            // retail sums k, j, i in that order (0x4f179-0x4f1af); one expression compiles as k, i, j
+            real facing = direction.k * state->first.k;
+            facing += direction.j * state->first.j;
+            facing += direction.i * state->first.i;
+            facing = fabsf(facing);
             real angle = clamp_callback(1.0f - facing, 0.0f, 1.0f);
             real time = 1.0f - function_13b390(entry + 0x30, angle, 0.0f);
             long count = *(long *)(entry + 0xc);
