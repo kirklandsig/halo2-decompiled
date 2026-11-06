@@ -516,6 +516,12 @@ union s_185be7
 // `or ebx, -1` ahead of the second memset; ours holds the root global there. Diagnostic, reverted: the root global reread through a
 // volatile at the flag test 1003 on the body, 956 (3747 B) [94, 201] on all flags: EBX is then free but NONE stays in ECX for the
 // first block only; one, two, three extra NONE compares in the unit block 953/951/959, with that reread 988: NONE still stays out.
+// Round s1C (statement-by-statement walk against retail 0x185be0-0x186a9e): no logic or behaviour difference found (fields, offsets, test
+// directions, callees, argument order, the 4x-unrolled mask loop and all 23 flag stores agree; float constants read from the XBE agree).
+// Tried, dropped: `real hold_ms` local before the (long) cast 590 (same code); the fraction clamp as `>= 0 ? (> 1) : zero` 950 (3795 B);
+// a `long none_index = NONE` local for the first test and the three unit tests 739. Diagnostics, not kept: an unknown extern in place of
+// pow 1013, or of magnitude3d 1017: the root global is then reloaded at the flag test as in retail (so retail's pow or 0x24590 acts as a
+// clobbering call where ours is known side-effect free), but EBX is still not given to NONE (stays `or ecx, -1`, immediates in the unit tests).
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
