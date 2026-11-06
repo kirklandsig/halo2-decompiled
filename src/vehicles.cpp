@@ -2905,6 +2905,8 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // 676/676/676/676/676/676/676/682. NOT kept: Seven ties and one regression; frames remain 0xd0/0x104 versus native 0xfc. Original complete body restored.
 // J259: Separate force multiplier with time-factor ownership, independent relative output and uniform mass reads: 711/811/708/803/705/784/711/774; three precomputed friction results with mass snapshots/reads and existing final-vector scaling: 683/711/690/711.
 // NOT kept: no eligible native repair; opening executable source restored. Native frame 0xfc and first difference +0x66 recovered at 774; scalar homes and force scheduling still differ. Association, initialization and early one-use results require exact equality; all restored.
+// Permuter, 30 minutes (11-06, on the form before PIN came back): 651 from 662, only with a volatile definition pointer and
+// vehicle_friction's arguments swapped. Not kept.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3258,6 +3260,8 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // P334: Native inverse/damping/paired-mass component-transform contracts,
 // seven subsets then queried-velocity range copy: 1090/1105/1078/1074/1093/1138/1118/1138.
 // NOT kept: no eligible native frame/velocity/force-home recovery; original complete body restored.
+// Permuter, 30 minutes (11-06): 913 from 976 (fast), only with both atan2 calls' arguments swapped (a behaviour change) and
+// a volatile heading_side. Not kept.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4873,6 +4877,8 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // M395: Complete result/blend/reverse-turning double receiver families 1/2/4/3/5/6/7, then immutable case receivers:
 // 1489/852/771/1538/1510/832/1537/1537. NOT kept: no exact native-shape candidate; native entry definition and zero/result/unit-constant residence remain.
 // Original complete body restored.
+// Permuter, 30 minutes (11-06): 609 from 749, only with a volatile `forced`, function_f78b0's (value, limit) arguments
+// swapped at every call (a behaviour change) and vehicle_larger's operands swapped. Not kept.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5484,6 +5490,8 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 3746/3746/3746/3746. NOT kept: forced forms retain frame 0xf8; ordinary
 // providers stay called, frame 0x94. Original complete body restored; native
 // frame 0xd8, handle/offset and matrix/vector ownership remain.
+// Permuter, 30 minutes (11-06): 1036 from 1087, only with function_f1380's two vector arguments swapped (a behaviour
+// change), a cast on function_f44a0's state argument and a temporary for g_51e9c4->unknown0. Not kept.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
