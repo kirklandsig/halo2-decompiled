@@ -352,6 +352,9 @@ struct c_aggregate : c_child
 // declaration and definition 31; the query output as a dword 31; produced at function scope, zeroed in the call's block
 // 42; a named destination block pointer for the collection call 31 (frame 0x8024 in each). Diagnostic, removed at once:
 // global optimization off around the body 441 (666 bytes, frame 0x804c). Still BLOCKED by the build flag.
+// Round 135 (m3 lane 7, fast; siblings stay matched): `register long produced` 31 (same code); the call's result in a
+// status local stored into error after the total 32; the dispatch gate named as a bool 31 (same code); the dispatch bound
+// tested with `!=` 32; produced's block written as a one-pass `do ... while (false)` region 31 (frame 0x8024 in each).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

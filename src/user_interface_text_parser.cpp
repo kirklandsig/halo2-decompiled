@@ -737,6 +737,11 @@ done:
 // F402: Complementary selector partitions at 1/2/3/4/5/7/8/9, retaining original
 // translation/copy completion, 70/65/63/63/69/69/63/69. NOT kept: all regress;
 // original complete dispatch restored; early EDI save and scratch/tag ownership remain.
+// Round 135 (m3 lane 7, fast; 0x22d503 and 0x22d52e stay matched): one copy with `__assume(variant != 0)` after the getter
+// 54 (173 bytes, `mov ebx, imm` still placed ahead of the globals test); one copy with the tag read after the switch,
+// just before the translator, 45 (171 bytes, hoist stays); one copy with a `dword` name 54; the two-copy body with the tag
+// read just before the translator 45 (178); the two-copy body with `__assume(variant != 0)` 32 (same code). The hoist is
+// a byte-cost tie (10 bytes either way), so only a cost change outside the source decides it.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
