@@ -2453,6 +2453,8 @@ static __forceinline long player_round_ticks(real value)
 // `mov bl, 1` with no clearing arm, but the listing shifts); the offsets declared x, y, z 701 (same code); both 704;
 // that with the sum written x, y, z 704 (same code: ours still subtracts x first, retail z first); the offset through
 // the existing vector3d_from_points3d and length_sq3f 704.
+// Permuter, 30 minutes (11-06): 686 only with the player and object getters written out, a volatile, and call
+// arguments swapped (player_current_weapon, function_e68c0). Not kept.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {

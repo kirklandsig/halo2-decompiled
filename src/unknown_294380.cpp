@@ -170,6 +170,11 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // already a union); the three-member struct re-measured 293 (3718, frame 0xc0, store back, masked 39); with the request declared first 293;
 // with the value read after the request's init 374 (3734, frame still 0xc0: the struct overlaps the request even then); with the request's
 // +0xc copy after the +0x24 call 293.
+// Permuter, 30 minutes (11-06): full image 348 from 442, only with a flag set inside a test and a temporary pointer.
+// Lead: the pointer alone (`vector3f *tmp0 = &local_19;` passed to vector3f_scale) gives 400 fast from 465, at the
+// same size and frame and without the dead store at 0x294552; the same form's declaration moves and statement orders
+// give 453 without it. How local_19 reaches vector3f_scale sways the whole function's registers, so vector3f_scale's
+// own form may be the place to look. Not kept (an alias with no other use).
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
