@@ -1745,6 +1745,11 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // radius * radius inside the loop (hoisted to the preheader): plain `for` with the product inside 554 (2901, entry shape as retail), the product inside alone 555. The next index named before the first point with
 // 0x120790 for both points 686 (2955, masked+stack 280: retail's axis re-reads, table reads and early idiv appear), with the file's helper 602 (293), plain for + next + 0x120790 669 (2942, 282), + the file's helper
 // 606 (294), plain for + 0x120790 without next 654 (342); 0x120790 alone 651 (339). Lead: those three together fix most of the inner edge loop; what remains first is the zero in ESI (retail) against EBX and the cursor at plane.j.
+// Round 75 (m3 lane 10, fast with 0xc2d00/0x17a380/0x16a440/0x2469b0/0x120790; control 552): retail's prism reads at the
+// loop head are plane.i, plane.j (the cursor base), plane.j again, point_count, plane.k, plane.d; ours plane.i, plane.k,
+// point_count (our base), plane.j, plane.d. The count clamp before the distance 553, after it 553; the projected
+// point through a named negated distance 618 (2911 bytes); `inside` set before the nearest default 552; a const prism
+// pointer 552 (same code). No read order tried moves the cursor base.
 // M3 lane 11 r72 (fast, control 552; "masked" = register/immediate-masked aligned count, control 309): both points through the existing
 // 0x120790 re-measured 651 (2925, masked 334: retail's word table reads appear, but ours reads the axis once into BX where retail re-reads it per
 // point); long counts renamed so the names sort as retail's dword homes 572 (same code as plain long counts: ours edge radius +0x5c, edge count

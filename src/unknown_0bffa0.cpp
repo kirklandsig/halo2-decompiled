@@ -1347,6 +1347,14 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius, lo
 void function_11bed0(s_location *location, point3f const *point);
 point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *point, point3f *out);
 
+// score 2 (was 2): exact in the reduced (--fast) image; in the full image the two reloads after the
+// marker call (light_index from its stack home into EBP, the definition spill into EBX) come out in
+// the other order, a scheduling tie that the contents of other files flip. Round 76 (m3 lane 10):
+// the light and definition through typed record fields 234 fast (1032 bytes: the weapon-marker byte
+// test becomes a dword shift-and-test); the same with that test written in the if 156 (1007 bytes);
+// the one-use weapon-marker bool removed alone 156 (1007); the marker declared in the else arm 8
+// fast (the forward load moves ahead of the position copy); the parameter-address local declared
+// before the marker 2 plain (the same tie).
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {

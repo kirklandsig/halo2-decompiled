@@ -280,6 +280,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Original producer, all output stores and complete body restored.
 // Round 89 (fast; a = aligned, kept form 214): retail's first-arm statement order with k*complement as a const reference 392 (1792) a221, as a plain local 394 (1792) a165; the kept order with
 // k*complement as a const reference 366 (1824) a194, the complement as one 409 (1796) a342, the squares as const references 445 (1768) a278.
+// Round 76 (m3 lane 10, fast): the diagonal terms written cosine first 219, the square added first 219; the i sine
+// product written axis first 219; the three cross sums written product first 219; sine and cosine declared together
+// and assigned in two statements 219 (all the same code). The four-byte table shift is a one-byte shorter case-body
+// schedule here: retail's code ends one byte later and pads to the table with a three-byte `lea ecx, [ecx]`.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

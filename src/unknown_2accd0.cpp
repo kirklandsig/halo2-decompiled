@@ -916,6 +916,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // DL271: Standard-library capacity minimum, shared/separate capacity and direct/named
 // remaining expressions, both native bound directions: eight at 207, 717/719 bytes.
 // NOT kept: no equality; original macro, capacity output, total/seek homes and body restored.
+// Round 76 (m3 lane 10; fast, a compile-only harness in brackets, base [27]): a two-caller inline read-at-position
+// helper (seek, read, byte-count test) for the body and signature cases 212 (691 bytes); no total local with the
+// position on the left of each seek compare 89; the signature seek and read as nested ifs 34; a const signature
+// position 34; the body pointer as `&body[offset]` 34. Harness only, all [27] (same code): the signature position
+// declared after the buffers, `body != NULL`, a const total or total_size; the position on the compare's left [28];
+// on the no-total base [82] each of those, the byte count declared later, the total summed body first, sizeof first
+// or through a dword cast; the signature sum written in both the seek and its compare [96] (it reloads after the call).
+// Retail's body_size temporary shares ECX with the body arm's remaining count, so the signature sum cannot fold into it.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

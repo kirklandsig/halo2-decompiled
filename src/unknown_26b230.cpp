@@ -1987,6 +1987,13 @@ void function_269250(long clump_index, long actor_index);
 // score graph, eight nonoriginal pairs: eight at 87/482. NOT kept: pool/selection
 // residency and x87 score homes unchanged; original domains and complete body restored.
 // MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
+// Round 75 (m3 lane 10, fast with 0x268840 and the six callees; this body 87 fast): retail sets the clump NULL before the
+// active test (`xor eax, eax`) and tests it once at the found/not-found join, so the not-found path is not threaded;
+// its pool sits in EBX but is clobbered by the scan's mask and reloaded. Re-measured: in-arm compare with the selection
+// stored first 126 (480 B), with the datum index 128 (pool in EDI, homes selection 0x1c / best 0x18 / score 0x14 against
+// retail's 0x14 / 0x1c / 0x18), datum index with best stored first 128. The shared walk helper respelled, checked on all
+// five users: datum-index copy before the clump store 144 (0x268510 119, 0x268840 81, 0x268c90 75, 0x26ae30 238), the
+// step folded into the active test with an else-NULL 146 (users lost too): the helper's shape is right for the others.
 // M3 lane 4 r168 (fast, this body 89). New: a 600 s permuter run (55 tries, none below 87); the selection as a dword 89
 // (same code). Re-measured listed forms: in-arm compare 126 (480 bytes); the walk as a for loop with the step in its init
 // and increment 339 (624 bytes), with the in-arm compare 343 (625; round 127 listed the pair as 343/339). Retail hoists the walk's pool field into EBX (reloaded after the bit scan uses EBX
