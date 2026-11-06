@@ -368,6 +368,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax R (11-06): forms tried, none lower (286; the permuter's best was 281 in the full image, below the eight-point gate and using a pointer to a local); the frame is 0xe8 here and 0xe4 in retail, and every frame slot differs between the two sides.
 // score 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
 // M3 lane 2 r47: the projection through the existing dot3f(&offset, &edge_vector) 286 plain (kept, 1389 bytes: retail's k, j, i
 // sum order; written out ours summed i first), dot3f(&edge_vector, &offset) 286. On 286 (fast): short link count 359 (1375);
@@ -1053,6 +1054,7 @@ bool function_2715a0(byte *buffer)
 	return result;
 }
 
+// MiniMax R (11-06): no new form, no lower score (486); the frame agrees and EBP is pushed here where retail keeps it as the state pointer.
 // score 486 (was 486): State/node/link registers, scalar homes and heap-helper expansion differ.
 // Earlier field-bit mask forms 501 (from 533).
 // State EBX/EBP, node/link cursors and scalar homes remain. Force-inline insertion 577 (loses matched caller);
