@@ -18,6 +18,15 @@ union s_6ec80
     __int64 field_2;
 };
 
+// MiniMax G (11-06): no new form, no lower score; five more forms that put the mask's zero inside the
+// guard — the two tests split into nested ifs, the mask declared outside and zeroed inside, the mask as
+// a signed int, the mask as an unsigned long, and the mask declared at the top of the function and
+// zeroed in the guard — all score 225. Retail has two `xor esi,esi`: one at the entry, where esi holds
+// the zero constant and ecx holds NONE, and one at the guard, which re-zeroes esi for the mask after esi
+// has been scratch in the setup block. Our baseline has both as well, but the guard's zero sits on the
+// block's dominator. Every form that moves the zero into the block also moves the constant registers
+// (NONE to edi, the zero to ecx) and takes the machines pointer out of ebx, so the placement and the
+// allocation cannot be won together from this source; the baseline stands.
 // score 5 (was 5): only the mask's zero differs: ours sits before the guard, retail's inside it.
 // Before round 75 (13, first written at 53): the two stack slots were swapped: retail keeps the short at esp+0x14 and
 // the pointer at esp+0x10, ours the other way round; the mask is zeroed before the guard.

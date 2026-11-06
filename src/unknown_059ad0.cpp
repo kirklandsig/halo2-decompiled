@@ -3550,6 +3550,11 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
 // session+0x10 into the reply id's stack slot before the timeout call, and returns through two
 // epilogues (1 and 0) where ours keeps the peer result in EBX.
+// MiniMax G (11-05, held at m3 review): a take flag set by the state tests, the host member state
+// taken through a named pointer, the reply id written from session+0x10 before the timeout call and
+// the peer block returning true/false match byte for byte only with __assume(host_state != NULL),
+// which is false when state 9 or value44 sets the flag (host_state stays NULL there); 120 without
+// it. Held: build/held/mmg-1105-5e3f0-false-assume.patch.
 // score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the

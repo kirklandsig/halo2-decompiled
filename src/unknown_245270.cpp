@@ -280,6 +280,7 @@ void function_245400(s_source_245400 const *source, long index,
 // threshold, so the body is restored); the source receiver, the frame and the stack homes still
 // differ: BLOCKED-BY the caller 0x245aa0 (src/unknown_245850.cpp).
 // MiniMax B (11-04b): no new form, no lower score; retail still copies the source into esi at the entry and frames 0x2c against our 0x24, and its declaration and call live in src/unknown_245850.cpp, which this lane may not edit.
+// MiniMax S (11-06): no new form, no lower score: reading the second material index before the first only gained one instruction (209 to 208, below the keep threshold) and was restored; retail still reads the two element material indices in the other order, keeps the source in ESI and frames 0x2c against our 0x24.
 // score 209 (was 209): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
 // source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's

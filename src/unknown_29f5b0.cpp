@@ -969,6 +969,9 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Lane 11 round 70 (fast): flag and vector computed inside the call's arguments 41 (98 bytes); a flag local with the vector filled inline in the
 // arguments 6; parameters as (flag, effect), as 0x2a06a0 has them, caller updated 6 (0x2a1120 12); a scenario local before the element 6; a long index
 // parameter with a short cast 15 (93 bytes). Diagnostic: `inc eax` between movsx and imul still leaves one push before the add, so the add waits on the imul, then outranks `push esi`.
+// Round 154 (m3 lane 5, fast): the flag as a `T &` reference with dot reads 6; the call's result kept in a local 6; the table
+// pointer in a local indexed at each use 34 (91 bytes); the vector and the call in their own block 6; the element as table +
+// index with k first 19. The ESI save still lands after the table add in each.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {
