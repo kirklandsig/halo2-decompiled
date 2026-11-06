@@ -633,6 +633,14 @@ struct s_device_machine_view
 };
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+// MiniMax A (11-06, run 52): score 2 (was 34) - the group flags are read straight through the
+// device-group macro into a word before the machine test and masked into a byte after it, which
+// gives retail's word load, and the result is zeroed in case 0x1200055f as retail does; what is
+// left is retail's address fold (a lea before the load) where ours loads the word through the
+// combined address, plus the mask instruction retail does not have. A named group pointer gives
+// retail's delayed word load but lands in ESI, not EAX; a dword local for the element address does
+// put the address in EAX but the load then narrows to a byte (115) or the address falls back to
+// ESI (122), and two separate reads of the flags do not merge either (122).
 
 // MiniMax D (11-05), not kept: 2 fast (from 34) with the group flags read into a word before the machine test, masked
 // into a byte (`byte group_flag_bits = (byte)(group_flags & 3)`), and `function_value = 0.0f;` added at the top of case
@@ -641,7 +649,9 @@ struct s_device_machine_view
 // zero store in that case suggests the result is not zero-initialized at entry the way ours is.
 // MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
 // with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
-// score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
+// score 2 (was 34): the group flags are loaded as a word through the combined address where retail
+// materialises the element address with a lea before the machine test and loads the word after it,
+// and the flags are masked with `and al, 3` where retail tests the two bits with al and no mask.
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
 // retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
@@ -912,14 +922,12 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 			function_value = 1.0f;
 		if (device->type == 7 && device->power_group_index != NONE)
 		{
-			s_device_group *group = DEVICE_GROUP_GET(device->power_group_index);
+			word group_flags = DEVICE_GROUP_GET(device->power_group_index)->flags;
 			dword machine_flags = ((s_device_machine_view *)device)->flags;
-			word group_flags;
 
 			if (machine_flags & 0xd)
 				function_value = 1.0f;
-			group_flags = group->flags;
-			dword group_flag_bits = group_flags & 3;
+			byte group_flag_bits = (byte)(group_flags & 3);
 			if ((group_flag_bits & 1) && (group_flag_bits & 2))
 				function_value = 1.0f;
 			if (device->power == 1.0f || (machine_flags & 0x10))
@@ -943,6 +951,7 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 	case 0x1200055f:
 		if (device->power_velocity != 0.0f)
 		{
+			function_value = 0.0f;
 			if (device->flags & 8)
 			{
 				if (!(device->flags & 0x20) && !(0.0001f > fabs(device->motion_14c.cruise_velocity)))
@@ -1106,6 +1115,10 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax A (11-06, run 52): no new form, no lower score (121) - retail keeps the initial velocity in
+// xmm6 and leaves the ramp-down time in memory, ours caches the ramp-down time and pushes the initial
+// velocity; both ramp-down clamps written as if-statements (retail's conditional-store form) score 122,
+// and the permuter was stopped after half an hour without producing a try.
 // MiniMax D (11-05): no new form, no lower score (121); the permuter run was killed at its time limit
 // before it produced any result.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.

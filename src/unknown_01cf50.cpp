@@ -392,6 +392,11 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 	D3DCubeTexture **out);
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
+// MiniMax A (11-06, run 52): score 70 (was 71) - the texture slot is cleared and handed over through
+// the bitmap itself and the mipmap limit is named; the mipmap call now hands the callee the height
+// and the depth in the order the callee reads them, so the depth byte reaches the call in eax and
+// the height word in the first stack slot as retail does; the width still lives in di where retail
+// keeps it in bx and the texture pointer in ebx where retail keeps edi.
 
 // MiniMax D (11-05): no new form, no lower score - retail keeps the width in bx and the texture slot in
 // edi, ours keeps the width in di and spills the texture pointer; dropping the texture local and
@@ -414,10 +419,10 @@ bool function_1d000(byte *bitmap)
 	char depth = *(char *)(bitmap + 8);
 	short width = *(short *)(bitmap + 4);
 	short format = *(short *)(bitmap + 0xc);
-	void **texture = (void **)(bitmap + 0x50);
-	*texture = NULL;
+	short maximum_levels = *(short *)(bitmap + 0x14);
+	*(void **)(bitmap + 0x50) = NULL;
 	short levels = bitmap_get_mipmap_count(width, height, depth, format, linear,
-		*(short *)(bitmap + 0x14));
+		maximum_levels);
 	*(short *)(bitmap + 0x14) = levels;
 	if (g_5093b0)
 	{
@@ -425,13 +430,13 @@ bool function_1d000(byte *bitmap)
 		{
 		case 0:
 			return function_0158f0(format, linear, width, height, levels, 0,
-				(D3DTexture **)texture);
+				(D3DTexture **)(bitmap + 0x50));
 		case 1:
 			return function_015a60(format, width, height, depth, levels, 0,
-				(D3DVolumeTexture **)texture);
+				(D3DVolumeTexture **)(bitmap + 0x50));
 		default:
 			return function_0159b0(width, format, levels, 0,
-				(D3DCubeTexture **)texture);
+				(D3DCubeTexture **)(bitmap + 0x50));
 		}
 	}
 	return true;
@@ -3179,6 +3184,12 @@ bool function_128c0(s_128c0_settings const *settings)
     }
     return result;
 }
+// MiniMax A (11-06, run 52): score 60 (was 62) - the destination column is now recomputed for each
+// column from the screen address as retail does and the rectangle's fields are read off the
+// rectangle itself; what is left is the frame slots of the locked rectangle, retail's in-memory OR
+// of the flag into the rectangle and the order of the two inner-loop increments. A running row
+// offset reproduces retail's length (399) and its shape but moves the source pointer into ebp
+// (67), so it was dropped.
 
 
 // MiniMax D (11-05): no new form, no lower score - retail ORs the flag into the locked rectangle in
@@ -3208,25 +3219,22 @@ void function_13d80()
         if (description.Size == description.Width * description.Height * 4)
         {
             D3DLOCKED_RECT locked;
-            D3DLOCKED_RECT *locked_result = &locked;
-            D3DSurface_LockRect(surface, locked_result, NULL, 0);
-            locked_result->pBits = (void *)((dword)locked_result->pBits | 0xf0000000);
-            if (locked_result->pBits)
+            D3DSurface_LockRect(surface, &locked, NULL, 0);
+            locked.pBits = (void *)((dword)locked.pBits | 0xf0000000);
+            if (locked.pBits)
             {
                 long width = (short)(g_5093c0.second >> 16) - (short)(g_5093c0.first >> 16);
                 long height = (short)g_5093c0.second - (short)g_5093c0.first;
                 byte const *source = (byte const *)g_5093c8;
-                byte *row = (byte *)locked_result->pBits + (short)g_5093c0.first * locked_result->Pitch;
                 for (long y = 0; y < height; ++y)
                 {
-                    dword *pixel = (dword *)row + (short)(g_5093c0.first >> 16);
+                    dword *column = (dword *)((byte *)locked.pBits + (short)(g_5093c0.first >> 16) * 4 + ((short)g_5093c0.first + y) * locked.Pitch);
                     for (long x = 0; x < width; ++x)
                     {
                         long value = source[x] * g_5093cc;
                         byte level = (byte)(value < 0 ? 0 : value > 255 ? 255 : value);
-                        *pixel++ = (((((dword)level << 8) | level) << 8 | level) << 8) | level;
+                        *column++ = (((((dword)level << 8) | level) << 8 | level) << 8) | level;
                     }
-                    row += locked_result->Pitch;
                     source += width;
                 }
             }
@@ -3349,6 +3357,8 @@ void __stdcall function_1e930(long opaque)
 }
 
 bool g_55e6bc;
+// MiniMax A (11-06, run 52): no new form, no lower score (87) - retail sums the three products in
+// source order and pops esi after the matrix loop, ours sums them rotated and pops esi early.
 
 // MiniMax D (11-05): no new form, no lower score - retail sums the three products in source order and pops esi after the matrix loop, ours sums them rotated and pops esi early; rotating the terms, an accumulator and the near-plane spelling all score 87.
 // MiniMax H (11-04): no new form, no lower score; the output stores written through an index give
@@ -3525,6 +3535,8 @@ void function_1eb00()
     g_4b6298 = 0;
     g_4b6294 = true;
 }
+// MiniMax A (11-06, run 52): no new form, no lower score (79) - retail copies the first five constants
+// into its own locals in a different order.
 
 // MiniMax D (11-05): no new form, no lower score - retail copies the first five constants into a
 // different global than the SDK helper writes and builds the pixel shader program through a device
@@ -5263,6 +5275,9 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
     function_16b10((s_render_reset_state *)g_485b48);
     g_485a78[0] = g_485a78[1] = NONE;
 }
+// MiniMax A (11-06, run 52): no new form, no lower score (62) - the two address-taken parameters are
+// dropped (the same code), and retail keeps the first argument in ecx where ours reads it from the
+// stack.
 
 // MiniMax D (11-05): no new form, no lower score - retail reads the second argument in ecx and keeps the
 // tag table in ebx, ours takes the fifth argument in eax and reloads the table into esi; the record
@@ -5280,7 +5295,6 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
 // @retail 0x4b2d0
 void function_4b2d0(long tag, long first, long second, long third, long fourth)
 {
-    (void)&third; (void)&fourth;
     long selected = tag == NONE ? *(long *)(g_485a80 + 0xd0) : tag;
     long first_offset = first * 10;
     dword group = ((dword *)g_4e3b44)[(short)tag * 4];
@@ -6041,6 +6055,9 @@ void geometry_cache_update(void);
 void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
+// MiniMax A (11-06, run 52): no new form, no lower score (153) - retail copies the timestamp into the
+// global as two dwords and uploads the gamma ramp into the device's own ramp buffer; the ramp's channel
+// stores now run red/green/blue as retail does, and a depth test as < 2 scores 176.
 
 // MiniMax D (11-05): no new form, no lower score - retail copies the timestamp into the global as two dwords, ours goes through x87 because the global is a double in include/timed_effect.h, and retail uploads the gamma ramp into the device's own ramp buffer where ours calls D3DDevice_SetGammaRamp.
 // MiniMax H (11-04): no new form, no lower score; the frame time copied through one union, through a
@@ -6113,8 +6130,10 @@ void function_12a50(s_frame_parameters_12a50 const *parameters)
         D3DGAMMARAMP ramp;
         for (long i = 0; i < 256; ++i)
         {
-            byte value = (byte)(long)(pow(i * (1.0f / 255.0f), gamma) * 255.0);
-            ramp.red[i] = ramp.green[i] = ramp.blue[i] = value;
+            byte value = (byte)(long)(pow(i * (1.0f / 255.0f), gamma) * 255.0f);
+            ramp.red[i] = value;
+            ramp.green[i] = value;
+            ramp.blue[i] = value;
         }
         D3DDevice_SetGammaRamp(0, &ramp);
         g_47fd10 = gamma;
@@ -6885,6 +6904,8 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
     real scale, bool blend, bool preserve);
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
+// MiniMax A (11-06, run 52): no new form, no lower score (139) - retail's frame is 0x58 bytes with the
+// grid filling it and the frame pointer pushed inside the loop.
 
 // MiniMax D (11-05): no new form, no lower score - retail's frame is 0x58 bytes with the grid filling it and the frame pointer pushed inside the loop, ours is 0x5c with the pointer pushed in the prologue, so every stack slot sits four bytes off.
 // MiniMax H (11-04): no new form, no lower score; the counter in the loop head gives 205, the entry
@@ -8540,6 +8561,8 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// MiniMax A (11-06, run 52): no new form, no lower score (171) - retail passes the two offsets to
+// 0x16a30 in its own order and reaches the palette through a different call sequence.
 // MiniMax D (11-05): no new form, no lower score - retail passes the two offsets to 0x16a30 in its own order and reaches the palette through a different call sequence, so the difference is in the call order rather than in a local form.
 // MiniMax H (11-04): no new form, no lower score; the two offsets passed to 0x16a30 in retail's order
 // (its third argument 0x18/0x24 in ecx and its second 0x20/0x30 in edx) match retail's behaviour but
