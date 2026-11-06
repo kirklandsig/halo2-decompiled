@@ -572,6 +572,12 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // forceinline copy of it (diagnostic) 42, so an inlined fill does not give the fused set (the 0x12afc0
 // lead is closed); with the mask test a byte `found` 42, each arm breaking on its own call 42, the source
 // name as a two-use local 48 (both names 51); unused initialised locals at four positions (probes) 42.
+// MiniMax C (11-05, held at m3 review): the mask test (the existing bit_vector_test) with the pair's target
+// name as a two-use local gives 49 at 539 bytes, retail's length, with retail's fused `or [eax], edx` set and
+// its 0x1d90e0 setup; with the second lookup in its own nested if that first re-reads the target name into
+// that local (target_name = iterator->b, the same value) 2 at 539 bytes, only the back edge differing
+// (retail reloads the state before the tag table); iterator->b passed directly there 46. The same-value
+// re-read is a form picked by score, kept only with a byte match: build/held/mmc-1106-113980-reread-local.patch.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
