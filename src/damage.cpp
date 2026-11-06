@@ -4207,7 +4207,9 @@ bool function_138880();
 /* an object's damage per tick: delayed permutations, stun timers, shield
    and body recharge, the regions' damage levels and the recent damage;
    returns whether anything changed */
-// score 402 (was 607): 2150 bytes against 2170, frame 0x70. Left: flag pairs that cross the word's bytes merge into one `and word` (three
+// score 400 (was 402, 607 before that): 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
+// one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
+// field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: still 393/400 (tried, no change). Left: flag pairs that cross the word's bytes merge into one `and word` (three
 // sites, each a line short, which shifts what follows), retail takes the 0xda110 permutation in EAX (`mov eax, esi`, BLOCKED-BY 0xda110's
 // convention), `xor ecx, ecx` ahead of the team word at both 0x1e9720 calls, bounds and info in swapped frame slots, the 0x80 notify
 // arguments hoisted over the clamp test, the second 0x138880 inlined (retail calls it), and scratch rotation in the region loop.
@@ -4457,33 +4459,30 @@ bool function_d5de0(long object_index)
 			{
 				if (state->unknown02 > 0)
 				{
-					if (state->damage_level_ticks == 0)
+					if (state->damage_level_ticks == 0 && info->region_count > i)
 					{
-						if (info->region_count > i)
+						s_damage_info_region *region = &info->regions[i];
+
+						if (*(real *)((byte *)region + 0x2c) > 0.0f)
 						{
-							s_damage_info_region *region = &info->regions[i];
+							real decay = g_510c54->rate * *(real *)((byte *)region + 0x2c) * 255.0f;
+							long amount;
 
-							if (*(real *)((byte *)region + 0x2c) > 0.0f)
+							__asm
 							{
-								real decay = g_510c54->rate * *(real *)((byte *)region + 0x2c) * 255.0f;
-								long amount;
-
-								__asm
-								{
-									fld decay
-									fistp amount
-								}
-								if ((long)state->unknown02 > amount)
-								{
-									state->unknown02 -= (byte)amount;
-								}
-								else
-								{
-									state->unknown02 = 0;
-									continue;
-								}
-								changed = true;
+								fld decay
+								fistp amount
 							}
+							if ((long)state->unknown02 > amount)
+							{
+								state->unknown02 -= (byte)amount;
+							}
+							else
+							{
+								state->unknown02 = 0;
+								continue;
+							}
+							changed = true;
 						}
 					}
 					else
