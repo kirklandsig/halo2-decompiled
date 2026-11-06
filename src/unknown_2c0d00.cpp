@@ -212,8 +212,6 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
     point3f const *position, real radius, vector3f const *direction, long unit_index, long ignore_index);
 
 // score 882 (was 882): frame 0x2cb8 versus 0x2cac; actor/unit retention and priority/query/marker homes remain.
-// MiniMax C (11-06): no new form, no lower score; the frame stays 0x2cb8 against retail's 0x2cac
-// (twelve excess bytes) and the actor/unit, priority, query and marker homes stay in different slots.
 // point workspace names 866; initial actor value 869; query index value 916;
 // conditional self-unit 911; wide initial predicates 1011; native location copy 911.
 // Frame pointer 1207; size preference 1436; native object fields 866;
