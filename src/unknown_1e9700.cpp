@@ -1032,6 +1032,9 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // the top leave it at 2, so the load order is no numbering tie.
 // Lane 9 r89 (fast): window x offset as a named short before each inset statement 41, after the insets 38; window y before the bottom inset 44; both 44; address-cast reads
 // 2; pointer to the window pair at the top or before the bottom inset 2/2; `-8 + field` for bottom and right 2/2; whole-record copy first 218; a data pointer to the field or storage (diagnostic) 2/2.
+// Round 155 (m3 lane 5, fast with 0x1e6fe0): coordinates as an initialiser 2; zeros stored before the ones 27; coordinates
+// filled before the piece copy 2; non-const bounds (with 0x1e6fe0's cast) 2; insets read through a const reference 2.
+// Compile-only gives retail's pair with or without the camera storage's address taken in this file.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {

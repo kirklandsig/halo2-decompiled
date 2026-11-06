@@ -93,6 +93,8 @@ PRIVATE __forceinline long texture_floor(real value)
 // bitmap's zero as the else arm of the magnitude test 90 (399 bytes). Lead: lane 8 r114 found VC's
 // scratch choice a round robin (one extra early temp rotates every later block, 0x5c720); the EDX here
 // may be one hidden allocation off retail rather than a property of the clear.
+// Round 155 (m3 lane 5, fast): the floor's asm split after cvttss2si 4; floor parameter `real const` 4; one-line asm
+// statements 4; adjusted bias as a ternary 65 (399 bytes). Permuter (600 s, 41 variants) found nothing below 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
