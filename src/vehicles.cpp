@@ -1199,9 +1199,23 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 562 (was 565): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
+// score 561 (was 562): frame 0x1990 versus retail 0x1984, native flag-result byte stores (the six dead [esp+0x13]
+// stores), sum-loop unrolling, the flags348 write/read forms and scalar/SSE homes remain.
+// Statement walk (b5L, 2026-11-06, retail 0xefde0-0xf0699, block by block against disasm and align.py): every field
+// offset, condition direction, callee/argument order, switch case, constant (0.3 at 0x45e610, 6.0, 1.0, 0.0) and
+// float operation order agrees, except the child damage record: retail stores the word at +0x7c (0xffff) BEFORE
+// 0xd6660 (0xf03f1, call 0xf03fb), and 0xd6660 itself overwrites that word with g_47d8e0 (0xd6681), so it is a dead
+// store; ours stored it after the call, which left it NONE (fixed, as 0xdbfb0 does it). The 0x205510 buffer is six
+// reals (the callee copies real values[6]; retail's home is 0x18 bytes): `real buffer[6]` replaces `byte[0x28]`
+// (frame 0x19ac -> 0x1990, same score). SET_FLAG for the +0x134 bit 23 and MAX for the open/powered select compile
+// the same as the written-out forms (561). Retail re-reads flags348 bit 5 after 0xba7f0 (0xf057a); ours keeps the
+// value from before the call (a fresh read there 570); 0xba7f0 does not obviously write it. Tried: MIN/MAX for the
+// boost clamps 576 (2252 bytes); the file's bit views (TEST_FIELD_BIT of VEHICLE_WORD_BITS/DEFINITION_FLAGS) for
+// the definition flag 575, flags348 bit 2 571, bit 5 576, flags_c0 bits 12/10 580/575 (dword view for flags_134 561);
+// bit-view writes of flags348 bits 0/1 571 (word read-modify-write; retail uses byte or/and); a named
+// `fast != lit` bool 561. Retail evaluates `fast != lit` with setne/test (0xf051b).
 // MiniMax R (11-06): forms tried, none lower (562; buffer 0x30/0x28/0x18 gives frames 0x19b4/0x19ac/0x1990, a function-scope buffer and split velocity blocks change nothing); retail's 0x18-byte buffer and the velocity share one home at esp+0x20, ours sits apart at esp+0x48.
-// score 565 (was 565): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
+// Earlier score 565 (was 565): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
 // and scalar/SSE homes remain.
 // Earlier at 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
@@ -1357,7 +1371,7 @@ bool __stdcall function_efde0(long vehicle_index)
 		s_havok_component *component = havok_component_get(vehicle->havok_component_index);
 		real powered = (vehicle->control_flags & 0x2000) ? 1.0f : 0.0f;
 		real open = ((flags_c0 >> 10) & 1) ? 1.0f : 0.0f;
-		real position = powered > open ? powered : open;
+		real position = MAX(powered, open);
 
 		function_1d24a0(component, position);
 		function_1d2460(component);
@@ -1389,7 +1403,7 @@ bool __stdcall function_efde0(long vehicle_index)
 				if ((vehicle->flags349 & 1) && vehicle->havok_component_index != NONE)
 				{
 					s_havok_component *component = havok_component_get(vehicle->havok_component_index);
-					byte buffer[0x28];
+					real buffer[6];
 
 					if (function_205510(component, definition + 0x2ac, buffer))
 					{
@@ -1508,8 +1522,8 @@ bool __stdcall function_efde0(long vehicle_index)
 				{
 					s_type_1e6529 damage;
 
-					function_d6660(&damage, *(long *)(globals + 0x28));
 					damage.material_index = NONE;
+					function_d6660(&damage, *(long *)(globals + 0x28));
 					function_d7b80(&damage, child_index, NONE, NONE, NONE, NULL);
 				}
 				child_index = *(long *)((byte *)child + 0xc);
@@ -1517,10 +1531,7 @@ bool __stdcall function_efde0(long vehicle_index)
 		}
 	}
 
-	if (vehicle->control_flags & 1)
-		vehicle->flags_134 |= 0x800000;
-	else
-		vehicle->flags_134 &= ~0x800000;
+	SET_FLAG(vehicle->flags_134, 23, vehicle->control_flags & 1);
 	if ((vehicle->flags_134 >> 23) & 1)
 	{
 		if (1.0f > vehicle->boost)

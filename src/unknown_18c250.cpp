@@ -717,6 +717,15 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // N396: Selected owner-word memcpy/memmove through conditional/branch/selected-source/negative
 // sources: 264/307/280/324/264/307/267/310. NOT kept: no equality or gain; original owner transfer
 // and body restored, constant-one spill and native failure-byte store remain.
+// b5F (11-06) statement walk against retail 0x18cbc0-0x18cfc4, no logic or precision difference found: every field, offset, test
+// direction, callee and argument matches (flag0 0x18cdab, type 1 owner/NONE selects 0x18cdb5/0x18cecd, object-type mask 0x400
+// 0x18cddf, field tests 0x134/0x138/0x13c/0x140 are > 0 and 0x144 is < 0 at 0x18ce14-0x18ce86, comiss only, no rounding steps;
+// case 0 cluster/leaf/bsp stores 0x18cd88-0x18cda7; case 2 impact stride 0xa0 at 0x18cd2f; case 3 effect stride 0x190 and velocity at +0x30
+// at 0x18cc83; audible merge 0x18cf7b-0x18cf9f; flag5 -> 0x400 at 0x18cfac). Spelled the case-0 location stores through
+// s_location's leaf_index/cluster_index/bsp_index (same bytes, 246) and dropped the (short) cast on the cluster store (246).
+// Tried: flags |= 0x1000 or unknown0c |= 1 in place of the byte-wide or 249 (word or); the case-3 failure as a block-local
+// without the true default (call path only, size 1029 as retail) 285 (loses the failure byte retail stores at 0x18cc60 on the
+// call path only); cluster as short 250. Not matched: frame 0x84/0x80, the constant 1 in EBX, case 2's `or byte [edi], 2` (ours folds to a word store).
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {
@@ -732,9 +741,9 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 		long cluster = sound->type == 0 ? sound->cluster : NONE;
 		if (cluster != NONE)
 		{
-			*(short *)((byte *)&location->spatial.location + 4) = (short)cluster;
-			*(long *)&location->spatial.location = NONE;
-			*(short *)((byte *)&location->spatial.location + 6) = sound->type == 0 ? sound->listener : NONE;
+			location->spatial.location.cluster_index = cluster;
+			location->spatial.location.leaf_index = NONE;
+			location->spatial.location.bsp_index = sound->type == 0 ? sound->listener : NONE;
 			((byte *)&location->flags)[1] |= 0x10;
 		}
 		break;

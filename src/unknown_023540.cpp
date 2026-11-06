@@ -364,7 +364,20 @@ extern real g_4b8940[9], g_4b8964[9], g_4b8988[9];
 void function_022750(real const *a, long size, real const *b, real *out, real t);
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result);
 
-// score 237 (was 237): frame 0x80/0x68, axis/trig homes and rolled coefficient calls remain.
+// score 252 (was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
+// false path last (0x22adc comiss, 0x22ae0 jbe 0x22c1d), so a NaN period clears g_5093f4 (was: ran the update);
+// rotation[5] and [7] use j*(k*complement) with k*complement shared with [2]/[6] (0x22a0e, 0x22a36), was (j*k)*complement.
+// Structure (retail shape): reset loop indexed with a signed bound, stores in retail order (0x22860-0x22888);
+// sample loop keeps the ebx offset and a countdown (0x22abf-0x22ace); samples, source and the structure pointer are re-read after the calls
+// (0x22900, 0x22ab5, 0x22b06); axis fields are read from memory at each use (0x2292f-0x2294f); squares once.
+// Remaining: frame 0x5c/0x68, ebp saved in the prologue (retail pushes it after the checks, 0x228f6), retail's
+// second load of [edi+0x84] (0x228d9; not reproduced), sine_i on the x87 stack (0x229a1), and callee 0x143600
+// has no source here so its argument registers differ. Retail makes three explicit coefficient calls with a copy
+// back (0x22a6f, 0x22a8a, 0x22aa5), but written that way the full build moves the callers 0x12a50 from 153 to 178 and
+// 0x2ca00 from 3 to 89, so the rolled loop stays. Tried, not kept: store g_5093f0 then clamp and store again (retail
+// 0x22b29-0x22b36) 240; first checks through a second [edi+0x84] expression 239; (double) multiply for sine_i 244;
+// cross_ji local 236; vector3f axis copy 255; `i < count` without the countdown 239.
+// Trials on the earlier shape (rolled coefficient loop, axis copy):
 // Earlier trials: frame 0x78 versus 0x68; axis/angle homes and rolled coefficient calls differ.
 // Sample cursor 258; sine-scaled axis 259; diagonals first 288; elapsed snapshot 258; size optimization 397.
 // frame 0x7c versus 0x68; axis/trigonometric homes and rotation-call layout differ.
@@ -387,48 +400,43 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 // @retail 0x22850
 void function_22850(void)
 {
-    for (s_table_entry *entry = g_4b89b0; entry != g_4b89b0 + 24; ++entry)
+    for (long entry_index = 0; entry_index < 24; ++entry_index)
     {
-        entry->key = NONE;
-        *(short *)&entry->unknown4 = NONE;
+        s_table_entry *entry = &g_4b89b0[entry_index];
         entry->data_handle = NONE;
+        *(short *)&entry->unknown4 = NONE;
+        entry->key = NONE;
         memset(entry->data_offset, 0, sizeof(entry->data_offset));
         memset(entry->data_count, 0, sizeof(entry->data_count));
     }
     g_5093e8 = 0;
-    byte const *structure = (byte *)g_4e0344;
-    if (!structure || *(long const *)(structure + 0x80) <= 0 || !g_4e0348) return;
-    byte *source = *(byte **)(structure + 0x84);
+    if (!g_4e0344 || *(long const *)((byte *)g_4e0344 + 0x80) <= 0 || !g_4e0348) return;
+    byte *source = *(byte **)((byte *)g_4e0344 + 0x84);
     if (*(long *)(source + 0x1c) == NONE || *(long *)(source + 4) != *(long *)((byte *)g_4e0348 + 8)) return;
     long count = *(long *)(source + 0x38);
     if (count <= 0) return;
-    byte *samples = *(byte **)(source + 0x3c);
     for (long i = 0, remaining = count; remaining > 0; ++i)
     {
-        byte *sample = samples + i * 0xdc;
-        real angle = *(real *)(sample + 0xa0);
-        if (angle != 0.0f)
+        byte *sample = *(byte **)(source + 0x3c) + i * 0xdc;
+        if (*(real *)(sample + 0xa0) != 0.0f)
         {
-            vector3f axis = *(vector3f *)(sample + 0x94);
-            real sine = (real)sin(angle), cosine = (real)cos(angle), complement = 1.0f - cosine;
-            real square_i = axis.i * axis.i;
-            real square_j = axis.j * axis.j;
-            real square_k = axis.k * axis.k;
-            real cross_ji = axis.j * complement * axis.i;
-            real cross_ki = axis.k * complement * axis.i;
-            real cross_jk = axis.j * axis.k * complement;
-            real sine_i = axis.i * sine;
-            real sine_j = axis.j * sine;
-            real sine_k = axis.k * sine;
+            vector3f const *axis = (vector3f const *)(sample + 0x94);
+            real sine = (real)sin(*(real *)(sample + 0xa0));
+            real cosine = (real)cos(*(real *)(sample + 0xa0));
+            real complement = 1.0f - cosine;
+            real square_i = axis->i * axis->i;
+            real square_j = axis->j * axis->j;
+            real square_k = axis->k * axis->k;
+            real k_complement = axis->k * complement;
             real rotation[9];
             rotation[0] = (1.0f - square_i) * cosine + square_i;
-            rotation[1] = cross_ji + sine_k;
-            rotation[2] = cross_ki - sine_j;
-            rotation[3] = cross_ji - sine_k;
+            rotation[1] = axis->j * complement * axis->i + axis->k * sine;
+            rotation[2] = k_complement * axis->i - axis->j * sine;
+            rotation[3] = axis->j * complement * axis->i - axis->k * sine;
             rotation[4] = (1.0f - square_j) * cosine + square_j;
-            rotation[5] = cross_jk + sine_i;
-            rotation[6] = cross_ki + sine_j;
-            rotation[7] = cross_jk - sine_i;
+            rotation[5] = k_complement * axis->j + axis->i * sine;
+            rotation[6] = k_complement * axis->i + axis->j * sine;
+            rotation[7] = k_complement * axis->j - axis->i * sine;
             rotation[8] = (1.0f - square_k) * cosine + square_k;
             for (real *coefficients = (real *)(sample + 0xc);
                 coefficients != (real *)(sample + 0x78); coefficients += 9)
@@ -440,36 +448,36 @@ void function_22850(void)
         }
         --remaining;
     }
-    real period = *(real const *)(structure + 0x34);
-    if (period <= 0.0f)
+    if (*(real const *)((byte *)g_4e0344 + 0x34) > 0.0f)
     {
-        g_5093f4 = false;
-        return;
-    }
-    real previous = g_5093ec;
-    g_5093ec = (real)g_4858a0;
-    real phase = (g_5093ec - previous) / period + g_5093f0;
-    phase -= real_truncate(phase);
-    g_5093f4 = true;
-    if (phase < 0.0f) phase = 0.0f;
-    g_5093f0 = phase;
-    if (count == 1)
-    {
-        memcpy(g_4b8940, samples + 0xc, sizeof(g_4b8940));
-        memcpy(g_4b8964, samples + 0x30, sizeof(g_4b8964));
-        memcpy(g_4b8988, samples + 0x54, sizeof(g_4b8988));
+        real previous = g_5093ec;
+        g_5093ec = (real)g_4858a0;
+        real phase = (g_5093ec - previous) / *(real const *)((byte *)g_4e0344 + 0x34) + g_5093f0;
+        phase -= real_truncate(phase);
+        g_5093f4 = true;
+        if (phase < 0.0f) phase = 0.0f;
+        g_5093f0 = phase;
+        if (count == 1)
+        {
+            byte *samples = *(byte **)(source + 0x3c);
+            memcpy(g_4b8940, samples + 0xc, sizeof(g_4b8940));
+            memcpy(g_4b8964, samples + 0x30, sizeof(g_4b8964));
+            memcpy(g_4b8988, samples + 0x54, sizeof(g_4b8988));
+        }
+        else
+        {
+            real step = 1.0f / (count - 1);
+            real inverse = 1.0f / step;
+            long index = real_truncate(phase * inverse);
+            real fraction = (phase - index * step) * inverse;
+            byte *sample = *(byte **)(source + 0x3c) + index * 0xdc;
+            function_022750((real *)(sample + 0xe8), 3, (real *)(sample + 0xc), g_4b8940, fraction);
+            function_022750((real *)(sample + 0x10c), 3, (real *)(sample + 0x30), g_4b8964, fraction);
+            function_022750((real *)(sample + 0x130), 3, (real *)(sample + 0x54), g_4b8988, fraction);
+        }
     }
     else
-    {
-        real step = 1.0f / (count - 1);
-        real inverse = 1.0f / step;
-        long index = real_truncate(phase * inverse);
-        real fraction = (phase - index * step) * inverse;
-        byte *sample = samples + index * 0xdc;
-        function_022750((real *)(sample + 0xe8), 3, (real *)(sample + 0xc), g_4b8940, fraction);
-        function_022750((real *)(sample + 0x10c), 3, (real *)(sample + 0x30), g_4b8964, fraction);
-        function_022750((real *)(sample + 0x130), 3, (real *)(sample + 0x54), g_4b8988, fraction);
-    }
+        g_5093f4 = false;
 }
 
 struct s_487b10_arena

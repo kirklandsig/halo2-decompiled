@@ -981,6 +981,17 @@ extern vector3f *g_4687b0;
 // 0xd8: at the else-if scope it cannot share); on 288: the blend through vector3f_scale + vector3f_add_scaled 316
 // (1655), `real inverse` in the blend 293 (1678), the normal through cross3f 288 (same code), up read through
 // g_4687b0 at each use 288 (same code), left through cross3f 292.
+// b5R (r725 walk, no change, 288): every block checked against retail, no behaviour or precision difference
+// found: projectile/type/clear and flag-17 save-restore 0xe7952-0xe79c6; seat test and marker name 0xe79cf-0xe7a29;
+// 0xa76b0 branch 0xe7a3a-0xe7a7b; cancelled test 0xe7aa6; attach skip 0xe7ab1; unknown12c center 0xe7ab9-0xe7af6;
+// override test (both non-null) 0xe7afb-0xe7b2a; unknown13c guard 0xe7b49; left/normal crosses, `== 0.0f` fallback
+// (0x45dbd8 is 0.0) and the ((dir*fwd + origin) + left*lo) + normal*uo sum 0xe7b75-0xe7d0b; velocity scale 0xe7d57;
+// spread (signed-byte counts, divss, comiss 1.0, 0x259d0 rounded by fstp dword 0xe7deb, 1-ratio once) 0xe7d92-0xe7e79;
+// parent add, projectile subtraction, 0xfa820, release point, 0xbc1d0 0xe7e7c-0xe7f2a; attach marker 0xe7f34-0xe7f9e.
+// Remaining differences are stack slots (retail shares one slot among center, normal, parent velocity and the release
+// point, direction at [esp+0x48]) and SSE schedule. Retail copies the direction once after the branches (both leave
+// eax at the source, dword loads at 0xe7b44-0xe7b50): a `vector3f const *source` chosen per branch and
+// `vector3f direction = *source` after them gives 323 (1652 bytes), the compiler copies per branch again (diagnostic).
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2504,7 +2515,7 @@ __forceinline char unit_action_round(real value)
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
 // MiniMax R (11-06): no new form, no lower score (235); the frame agrees and the pool, index, type, name and completion-byte homes of the note below are unchanged.
-// score 235 (was 235): Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// score 234 (was 235): Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
 // Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
@@ -2609,6 +2620,12 @@ __forceinline char unit_action_round(real value)
 // (1191 bytes; aligned 142 -> 117, the NONE register and the weapon's NONE default become retail's); is_biped
 // computed after the declarations 235, result declared before the weapon getter 235, the switch on
 // actions->melee_name with no local 235 (same code each); the channel declared with the top locals 301.
+// b5Q walk (11-06, fast): every block checked against retail 0xe9a20-0xe9ec1 (entry/hand getter, the 0x1b bit and the melee_name
+// switch, mode 2 and mode 1 selection, the e9780 fallbacks, the damage/end/total ticks, the lunge arm, the 0x7f/0xff tail):
+// fields, offsets, constants (1.0, 0.0, 0.9, 2.0, 1/30), condition directions, callees and arguments agree. One precision fix:
+// the total ticks are (frame_count * 0.033333335f) rounded to float, then * the field (retail 0xe9d61-0xe9d6d: cvtsi2ss,
+// mulss k, cvtsi2ss field, mulss); the single expression compiled as (field * frames) * k (235 -> 234). Left (no
+// behaviour difference): register homes, the result byte at [esp+0x12] vs duplicated returns, the divide from memory.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2765,7 +2782,9 @@ play:
 			actions->melee_end_ticks = (char)function_1469f0(end_frame * 0.033333335f);
 		else
 			actions->melee_end_ticks = NONE;
-		actions->melee_ticks = unit_action_round(frame_count * 0.033333335f * (real)g_510c54->field_2_3);
+		real seconds = frame_count * 0.033333335f;
+
+		actions->melee_ticks = unit_action_round(seconds * (real)g_510c54->field_2_3);
 	}
 	else
 	{

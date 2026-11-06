@@ -1224,6 +1224,20 @@ bool function_2715a0(byte *buffer)
 // update 488 (masked lower, retail's four loads), declared before the whole test 488; NONE type test ahead of the
 // penalty 578 (2128), after it 579 (2128); location count and flags read once before the walk 486, count only 486
 // (both same code).
+// b5M walk (11-06, 486, no source change): every block read against retail 0x271630-0x271e20; fields, offsets, condition
+// directions, callees, argument order, switch shapes and float rounding agree, with two code-shape differences and no logic one.
+// (1) Margin: retail rounds the link-length root to a stored float before the 0x210be0 call (0x2718f0 fsqrt, 0x2718f8 fstp [esp+0x14])
+// and divides in SSE (0x27194e divss radius, root); ours sinks fsqrt past the call and divides on x87 (fdivr), so radius / root uses the
+// unrounded root: a last-bit precision difference in the clamped projection (unfixed; see Rounds 33/106 above for the forms tried).
+// (2) Penalty switch: retail tests (short)link->type != NONE first (0x271a3b cmp ax, 0xffff; je); no behaviour change, since NONE
+// falls out of the 1..6 range check anyway; the explicit test is 579 (2128 bytes), as recorded above.
+// Checked and equal: radius = max(0.2, input radius) 0x271646; heap pop and heap[1] = heap[count] 0x271684-0x2716c6; closest/NONE
+// breaks 0x2716cb, 0x271db4; limit 5.0 / x10 prune 0x2716f2-0x271723; link skips 0x271760-0x271802 (location mask, type, node);
+// length_squared i,j,k sum 0x271808; diameter tests; midpoint 0.5; projection j,k,i dot and i,j,k denominator 0x271901-0x27195c;
+// margin clamp both arms; distance fst then fadd node path_distance (unrounded sum, one fstp) 0x2719cb-0x2719d7; attractor min and
+// (weight+1)*distance 0x2719eb-0x271a07; penalty types 1,2,5,6 only; remaining fst/fadd/fstp 0x271a81-0x271a93; x10 truncation and
+// 32767 / distance_limit rejects; hash & 0x1ff * 8, probe & 0xfff, 0.09 on x,z,y sum; unknownae < 1024; child field stores incl.
+// dword type at +0x10; depth +2 for 1,5,6, surface-word test for 2, +1 otherwise; heap insert or cost update; closest update; result.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
