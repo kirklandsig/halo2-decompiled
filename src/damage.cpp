@@ -1185,6 +1185,10 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // moves, up to k 37); named range 44, named distance 38 -> 36 (one use), named definition index 40; 20 negate statement orders with
 // names at the row 41-42 or 286-289, names at the top 39-40, whole-normal forms 286/288/332, split sums 281/281; else arm k row spelled
 // out, read through a local, `&data->node_direction` for the normalize, rows reversed, add helper: no change; `standard` no change.
+// M404: complete near sums per row/all rows/existing setter/native traversal:
+// 38/38/40/192; corresponding named far sums: 40/40/40/192.
+// NOT kept: publication/scheduling diagnostics do not match the native near block.
+// Original sums, negations, stores and whole body restored; near-block extent remains.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1859,6 +1863,9 @@ long function_1e4a10(long index);
 // Round 489: separate scaled damage / conditional multiplier result / named reciprocal,
 // seven subsets 30/156/160/10/30/156/160; all with named depletion expression 160.
 // Original damage phases, reciprocal expression and whole body restored.
+// M404: complete stun admission in positive bool/byte/word/long and
+// complementary bool/byte/word/long forms: 8/8/8/8/8/8/8/8. Original damage phases,
+// constants and body restored; the post-call reload schedule remains.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2227,6 +2234,9 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // `!(a && b && c)` 224h, second entry for the 0xdb090 argument 223h; region flag inlines 190h/35h/35h/35h, index inline 35h, region
 // flags inline 35h, inline guard and flag-parameter guard 225h; word_flags_set for unknown12 35h, with the entry 225h; entry read in
 // both arms of `if (info)` 216h (load above the je, accumulator in EBP); datum head same guard, 228h with the entry.
+// M404: whole bounded-region admission in positive bool/byte/word/long and
+// complementary bool/byte/word/long forms: 3/3/3/3/3/3/3/3. Frame, extent and
+// region-load/address gaps unchanged; original nullable guard and complete body restored.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
