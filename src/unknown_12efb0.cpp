@@ -427,6 +427,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // distance, remaining, blue 721 (245); weight parameter first, after the accumulator, after the colour 616 each (same code);
 // the scalars `real const` 616 (same), `real const &` 699 (3828, 241), with field order 723 (223) and 694 (251); a named clamped
 // weight in field order 724 (223), in the old order 617 (247). Body unchanged.
+// B452: Complete scalar inputs in reused scalar/merge/color helpers, seven subsets then
+// all with scalar publication: fast 751/658/770/717/809/738/780/769. NOT kept: no gain;
+// palette/SIMD homes remain, some frames grow; all original helper contracts/body restored.
 // Round 137 (m3 lane 8, fast; aligned = difflib count, base 497): retail keeps NONE in EAX from the slot test to the weighted
 // tag test deep in the palette arm (`cmp edi, eax` there, ours `cmp edi, -1`) and on into the fallback store, so -1 outranks the
 // 0x130f60 result for EAX. The 0xd4 tag in a named two-use local 723 (3850 bytes, its read hoists above the 0xa4 test); the

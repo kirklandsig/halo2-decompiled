@@ -1883,6 +1883,10 @@ void function_b7360(long object_index);
 // 601, 609, 504, 513, 591, 605, 620, 628 (1696-1708). Per-arm `if (!success) return 2; return 0;`, empty cases last
 // or falling through after case 15/16: 491 clean, 632 with the store. One shared result test with the empty cases
 // falling through and other arms using `goto`: 485, 503, 494, 496 (1812-1824). The store lead still needs a ruling.
+// B453: Complete motion pair before orientation, reversed motion pair, full orientation/motion group
+// after cases 10/5/9/13/20, then motion pair after case 20: 410/380/450/451/449/449/448/419. NOT kept:
+// no byte match; original complete body restored. Pool/input/output carriers and retained point
+// reference ownership remain.
 // Round 66 (m3 lane 14, fast): actor local first 487 (1836 bytes: our prologue then pushes three registers and inlines the
 // first failure return); output local first, success first, both 301 each (same code); in the 1/19 point arm the 0x40 flag
 // stored before the point copy 297 (not kept: four points and retail stores the flag after the copy), but the store makes
