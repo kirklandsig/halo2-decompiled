@@ -2,6 +2,8 @@
 #include "unknown_044e90.h"
 #include "normalize3d.h"
 
+plane3f *function_1428b0(transform4x3f const *matrix, plane3f const *plane, plane3f *out);
+
 struct s_visibility_bound_record
 {
     point3f center;
@@ -10,13 +12,14 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
-// score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
+// score 476 (was 406; fast, 1700 B, aligned ratio 0.675 -> 0.727): the plane transform is a call to function_1428b0, retail's inlined
+// body, which also stores 0 into the distance for a zero scale (behaviour fix, b2L walk 11-06). Entry/table and stack homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
 // Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
 // Storage headers are at 0xb0/0x10bc/0x20c8/0x40d4 versus retail 0xb0/0x10c0/0x20d0/0x40e0.
 // Input plane homes are 0x2c/0x30/0x34/0x38 versus 0x34/0x38/0x3c/0x40; normal registers,
 // inverse-scale reuse, distance division and capacity-release scheduling also differ.
-// Scale-zero distance handling may differ semantically; it remains unchanged pending a behavior fix.
+// (Scale-zero distance handling is now retail's, through function_1428b0.)
 // plain plane for 2649; native view ranges 438; plane copy blocks 438; center point setter 438; views read
 // before entry 442; entry bitfield 441
 // Round 310: long bound index 438; explicit plane query 438; visibility-word pointer 438;
@@ -289,7 +292,7 @@ struct s_visibility_bound_record
 // test threads away, 427, 117/37; one shared address-taken bool for parts and containment 427, a parts helper 417/427, `do {} while (false)` around it 417/427), lea entry, the plane cursor base at .k (ours .j; store orders move it but never to .k).
 // On the kept 393: negated distance named before the stores 393, list pointers second/first/third/fourth 394, outputs declared i/k/j 393, normals scaled in place 393, visible after the object index 393, scaled copies declared k/i/j 406.
 // With `visible` left after the node loop, 64 combinations of state local, structure/section with and without the (bool) bit, chained lists, capacity tests and table local: best 411 (1760 B), then 435-440, none under 406; all restored. Behaviour difference still open:
-// retail stores 0 into the plane distance for a zero transform scale (`jnp` to the shared `movss [p.d], xmm0` with xmm0 zero); this body leaves the distance unchanged there. A fix alone raises the score (444 in round 97), so it stays recorded here.
+// (fixed in the b2L walk: see the note above @retail.)
 // Y585: Initialized containment false at unseen/bound-index/bound/transform/local-point/
 // scaled-point/first-center/completed-center boundaries: 406/406/406/406/406/417/417/417.
 // NOT kept: no eligible gain; original producer and full body restored; entry/table and plane/query homes remain.
@@ -325,6 +328,14 @@ struct s_visibility_bound_record
 // used for both tests 406; the tag in a named local for the test and the definition 406; the bottom arm's object
 // index read before its tag 406. Retail's bottom arm reads the tag again, then the visibility word pointer, with
 // the table still in ESI from entry.
+// b2L walk (11-06, against retail statement by statement): entry/tag/section/geometry reads, query-count and parts test, list setup
+// (frame offsets 0xb0/0x10c0/0x20d0/0x40e0, capacities), the call and release order, the node loop (unsigned /0x34, 0x142a60 args),
+// the part loop (bound stride 0x14, scale test, centre rows, 0x165010 args, flag stores) all agree. One behaviour difference found
+// and fixed: for a zero transform scale retail stores 0 into the plane distance (0x450e3 jnp -> 0x45129 stores xmm0 = xorps zero);
+// the old body left it unchanged. The plane block is retail's 0x1428b0 inlined (same instructions), so it calls function_1428b0
+// (in place; 0x1428b0 and 0x17e670 unchanged). Tried with the call: whole-plane store 478, normal vector copy 478, d first 476,
+// views declared before the entry 487, tag table in a local 485. Remaining: retail spills views [esp+0x2c] and entry [esp+0x30]
+// and loads the table into ESI up front; ours keeps them in registers (42 bytes smaller).
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
@@ -385,31 +396,11 @@ void __stdcall function_44e90(short entry_index, short section_index)
                 {
                     plane3f p = *source;
                     if (transform)
-                    {
-                        real n_i = p.i, n_k = p.k, n_j = p.j;
-                        if (0.0f != transform->scale)
-                        {
-                            p.d -= transform->position.x * n_i + transform->position.z * n_k + transform->position.y * n_j;
-                            if (transform->scale != 1.0f)
-                                p.d /= transform->scale;
-                        }
-                        if (transform->scale != 1.0f)
-                        {
-                            real inverse = 1.0f / transform->scale;
-                            n_i *= inverse; n_j *= inverse; n_k *= inverse;
-                        }
-                        planes[j].i = transform->forward.k * n_k + transform->forward.j * n_j + transform->forward.i * n_i;
-                        planes[j].j = transform->left.k * n_k + transform->left.j * n_j + transform->left.i * n_i;
-                        planes[j].k = transform->up.k * n_k + transform->up.j * n_j + transform->up.i * n_i;
-                    }
-                    else
-                    {
-                        planes[j].i = p.i;
-                        planes[j].j = p.j;
-                        planes[j].k = p.k;
-                    }
-                    p.d = -p.d;
-                    planes[j].d = p.d;
+                        function_1428b0(transform, &p, &p);
+                    planes[j].i = p.i;
+                    planes[j].j = p.j;
+                    planes[j].k = p.k;
+                    planes[j].d = -p.d;
 
                     ++source;
                     ++j;

@@ -1145,6 +1145,7 @@ void utf8_string_to_utf16_string(char const *source, word *destination, long cou
 bool function_15f120(long player_index, word *buffer, long size, long suppress_score);
 
 bool function_15eaf0();
+bool function_15db30(long player_index);
 
 struct s_score_display
 {
@@ -1211,7 +1212,7 @@ PRIVATE inline long score_string_list_1608e0()
 }
 // MiniMax E (11-01): no new form, no lower score; left: the entry register roles (retail loads the
 // player index first), the colour/bounds local homes and the missing bytes.
-// score 680 (was 680): frame 0x790 versus retail 0x79c; early player/panel roles, the scroll clamp (one
+// score 679 (was 678 in the r718 fast check): frame 0x790 versus retail 0x79c; early player/panel roles, the scroll clamp (one
 // limit conversion in retail) and coordinate/color homes remain.
 // Earlier (score 689, was 689): baseline frame 0x78c versus retail 0x79c; early player/panel roles and coordinate/color homes remain.
 // this round's reduced listing shows the frame at 0x790 against retail's 0x79c
@@ -1385,6 +1386,15 @@ PRIVATE inline long score_string_list_1608e0()
 // (2903 B), as early dim 695, with bool show_icon 688, plus a `row_player_index` local read once per row 698
 // (frame 0x798, inlined call in retail's shape, but place takes EBX and the offset spills), int show_icon with
 // the row local 680 (2879 B), with a named masked index too 700.
+// Round w14E (walk against retail, no logic error found: every field, offset, condition direction, callee,
+// argument and loop matches 0x1608e0..0x161416): the hand-expanded 0x15eaf0 (header alternate_score and the team
+// activity test) and 0x15db30 (dim predicate, retail's inlined copy with `team == NONE` last) are now calls to the
+// helpers 678 -> 678/679/703 one at a time; the row's player index read once into `row_player` (retail keeps
+// the full value in [esp+0x38]) brings the three together to 679 at 2879 bytes. Dim set by `if (...) dim = true;`
+// after an early `bool dim = false` 679, single expression 681. Inner team search with `long team_row` 702
+// (2858 B; retail keeps a 32-bit counter but compares 16 bits). Volatile `height` / `fade_count`: retail keeps them in
+// their own slots ([esp+0x28] read at 0x160a10/0x160a52, [esp+0x54] read at 0x160b8a/0x160ed6/0x161174), not
+// a match, so Kirk may undo them (no volatile: 721/752 in round 110).
 // @retail 0x1608e0
 void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, real alpha)
 {
@@ -1399,6 +1409,7 @@ void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, r
 	s_score_display display;
 	function_23f3e0(&display, g_4e6948->flag1128 != false, true);
 	long total_rows = display.player_count + display.team_count + 2;
+	/* volatile: retail keeps the height in its own stack slot (see the note above) */
 	volatile long height = (display.team_count ? 0x15 : 0) +
 		(display.player_count + display.team_count) * 0x14 + 0x2c;
 	if (g_4e6948->flag1128)
@@ -1408,10 +1419,7 @@ void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, r
 	if (*(long *)((byte *)g_4e6948 + 0x188))
 	{
 		panel->score = true;
-		bool teams = false;
-		if (game_engine_get())
-			teams = g_4e6948->flags184.bit0;
-		panel->alternate_score = !teams;
+		panel->alternate_score = !function_15eaf0();
 	}
 	else
 	{
@@ -1432,6 +1440,7 @@ void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, r
 	short row_position[2];
 	row_position[0] = x;
 	row_position[1] = y;
+	/* volatile: retail keeps the fade count in its own stack slot (see the note above) */
 	real volatile fade_count = (real)total_rows;
 	color4f foreground;
 	color4f background = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -1536,12 +1545,8 @@ void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, r
 		else
 			seconds = *(short *)(entry + 0x1c4);
 		bool active = false;
-		if (game_engine_get())
-		{
-			byte teams = ((byte *)g_4e6948)[0x184] & 1;
-			if (teams && team >= 0 && team < 8)
-				active = (g_4e9ae8->wc & (1 << team)) != 0;
-		}
+		if (function_15eaf0() && team >= 0 && team < 8)
+			active = (g_4e9ae8->wc & (1 << team)) != 0;
 		game_engine_score_row_build(row_position, (s_score_row_columns const *)panel, &color, row_alpha, name,
 			display.team_ranks[team_row] / 2 + 1, *(short *)(entry + 0x1d2), seconds,
 			!active, &panel->teams[team_row]);
@@ -1552,9 +1557,11 @@ void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, r
 	{
 		real row_fade = (alpha - (real)row_number / fade_count * 0.5f) * 2.0f;
 		real row_alpha = PIN(row_fade, 0.0f, 1.0f);
-		byte *player = g_4e8c24->data + (display.players[player_row] & 0xffff) * 0x21c;
+		long row_player = display.players[player_row];
+		byte *player = g_4e8c24->data + (row_player & 0xffff) * 0x21c;
 		++row_number;
 		long place = display.player_ranks[player_row] / 2 + 1;
+		bool dim = false;
 
 		char const &team = *(char *)(player + 0xc0);
 		if (function_15eaf0() && team != NONE)
@@ -1570,21 +1577,20 @@ void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, r
 		function_7f790(function_15eaf0() ? team : NONE, team == NONE, (s_player_appearance *)(player + 0x84), colors);
 		color3f color = colors[0];
 		word flags = *(word *)(player + 2);
-		bool dim = (flags & 2) || !(flags & 1) || team == NONE ||
-			(g_4e6948->value1b8 > 0 && *(long *)(player + 0x2c) == NONE &&
-			*(short *)(player + 0x1ac) == 0);
+		if ((flags & 2) || !(flags & 1) || function_15db30(row_player) || team == NONE)
+			dim = true;
 		row_position[1] += 0x14;
 		long show_icon = team != NONE && *(long *)(player + 0x2c) == NONE && !(flags & 2);
 		short seconds;
 		if (g_4e6948->flag1128)
-			seconds = *(short *)(scores + (display.players[player_row] & 0xffff) * 0x1c + 6);
+			seconds = *(short *)(scores + (row_player & 0xffff) * 0x1c + 6);
 		else
-			seconds = *(short *)(scores + (display.players[player_row] & 0xffff) * 0x1c + 4);
+			seconds = *(short *)(scores + (row_player & 0xffff) * 0x1c + 4);
 		s_player_row_columns *columns = (s_player_row_columns *)panel;
-		game_engine_player_row_build(row_position, row_alpha, display.players[player_row], (word *)(player + 0x44), place,
-			*(short *)(scores + (display.players[player_row] & 0xffff) * 0x1c + 0x12), seconds, (bool)((flags >> 1) & 1), show_icon, team == NONE,
+		game_engine_player_row_build(row_position, row_alpha, row_player, (word *)(player + 0x44), place,
+			*(short *)(scores + (row_player & 0xffff) * 0x1c + 0x12), seconds, (bool)((flags >> 1) & 1), show_icon, team == NONE,
 			&color, dim, &panel->players[player_row].row, columns);
-		panel->players[player_row].selected = display.players[player_row] == player_index;
+		panel->players[player_row].selected = row_player == player_index;
 	}
 	panel->player_count = display.player_count;
 }

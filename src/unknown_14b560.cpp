@@ -2355,6 +2355,9 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax H (11-06): no new form, no lower score - retail's frame is 0x74 with two separate request homes and
+// its first 0x151b80 stays a call, while ours has one request home and LTCG expands that call into the body;
+// two separate request locals score 804 and 792.
 // MiniMax h (11-04): no new form, no lower score; the frame stays 0x4c against retail's 0x74 (two request workspaces reach 0x6c).
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // Walk against retail 0x14f820-0x1502d1 (f1A, r709, statement by statement, every block incl. the six flag sites,
