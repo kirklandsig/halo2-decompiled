@@ -659,6 +659,12 @@ struct s_1f8a70_actor
 // local copied out after the release 327 (1616 bytes, aligned 63); the route test and switch on route_mode directly, no
 // long copy, 398 (aligned 125); case 7 placed before case 6 in the mode switch 335 (1608 bytes, aligned 107). Retail
 // also keeps 0x10ff40's 0xe70b0 short at frame +2, so the +2 slot is not particular to this body. Body unchanged at 188.
+// Round 218 (m3 lane 3, fast; masked = register/stack-masked aligned line pairs x2, control 53): the route test inverted
+// with the failure arm (and its label) first 188 (same code); case 6's inner test with the `route_mode = 1` arm last
+// (`if (!(*movement & 0x20)) { ... = 2; } else route_mode = 1;`) 327 at 1616 bytes, masked 50: case 6 then jumps into
+// case 5's `route_mode = 1` store as retail does, but the join still follows case 7; on that, case 7 ahead of case 6
+// 304 (masked 136), the default label first 327 (same code), the route admission through an if/else `valid` flag 327
+// (same code). Left: the join after case 5, then the result byte's +0x12 home and the failure block's memory result.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
