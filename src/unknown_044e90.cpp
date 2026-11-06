@@ -10,6 +10,12 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
+// MiniMax H (11-06): the entry flags read inside the two branches instead of before the test gives 442; the
+// index copied into a local before the lookup gives 406, the same code; the first difference stays at +0x10,
+// where retail loads the index into eax and forms the entry address with lea, ours pushes ebx first and adds
+// the base into it.
+// MiniMax H (11-06): no new form, no lower score - the first difference stays at +0x10, where the entry flags
+// load and the tag entry pointer sit in other registers than retail's; the frame and the list strides agree.
 // score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
 // Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
