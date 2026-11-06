@@ -291,8 +291,15 @@ public:
 		char string4d10[0x80];
 	};
 	byte unknown4d90[0x4da0 - 0x4d90];
-	long value4da0;
-	long value4da4;
+	union
+	{
+		__int64 value4da0_pair;
+		struct
+		{
+			long value4da0;
+			long value4da4;
+		};
+	};
 	long value4da8;
 	long value4dac;
 	byte data4db0[0x130];

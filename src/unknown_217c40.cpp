@@ -169,6 +169,16 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // bool/byte/short/long results: 665/665/665/665/585/585/585/585. NOT kept: native branch ownership/frame
 // and extent are not recovered; original helper and complete body restored. Frame 0x38/0x40 and
 // angle/snap homes remain; both exact callers survive.
+// AC551: Double first/second/both offsets, double first/second/both absolute offsets, all four
+// doubles, all four immutable real offsets: 25/395/395/471/388/521/514/25. NOT kept: no qualifying
+// supported improvement; complete executable source restored. First offset x87 retention and
+// hoisted literal-load order remain.
+// DL268: Native sqrtf first/second/both magnitudes, fabsf paired offsets/angles/trig magnitudes,
+// float trig functions and atan2f producer: 25/25/25/25/25/25/25/25. NOT kept: no gain;
+// original scalar interfaces and complete body restored. First offset x87 retention and literal-load order remain.
+// DH378: Paired real-angle identities (two orders), offset identities and absolute-offset identities 25 each;
+// first/second/both compound offset subtraction producers 25/25/25; existing paired magnitude API 26.
+// NOT kept: no exact match or improvement; original complete body, helper, inputs and includes restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

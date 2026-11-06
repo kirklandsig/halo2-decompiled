@@ -467,6 +467,9 @@ void function_125a90(long value);
 // implied test: 151/142/162 (466-471 bytes, 0x221810 inlined). Not kept: 29 and 25 need the direct keep store, which is match-only.
 // J260: Immutable b/a/both policies 36/36/36; receiver initialized from the pool base then advanced by index, with no/b/a/both immutable policies, 36/36/36/36; receiver initialized from base then indexed 36. All eight complete target listings equal the unchanged preview.
 // NOT kept: no eligible native repair; opening executable source restored. EAX multiply/ESI LEA before policy loading and native type/removal block placement remain; original flags, loop, pool refresh, fields, calls and body restored.
+// Round 398: Original single type observation with complete removal-result byte/signed-byte/short/word/
+// int/unsigned-int/long/dword storage: 36/36/95/95/94/94/94/94. NOT kept: no gain; original
+// Boolean removal result, policy captures, comparison widths and complete body restored.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
