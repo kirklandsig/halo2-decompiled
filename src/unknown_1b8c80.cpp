@@ -1598,6 +1598,8 @@ void function_1f86a0(long actor_index);
 // T58: Actual iterator aggregate/reference-tuple/value/library construction, native member/full-slot payload pairs:
 // 134/134/259/259/256/256/256/256. NOT kept: no eligible match or gain; complete original source restored.
 // Mask spill, EBX entry and actor/root homes remain.
+// N398: Actual slot/state/header/byte callback reference formals, each with indexed member/full-slot payload 134/134/134/134/134/134/134/134.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // Round 92 (m3 lane 16, fast): `same` as a ternary with a false arm 223; the entry as a pointer to const 134; the mask
 // as a byte cast of the masked flags 134; the decline ternary negated with its arms swapped 231 (862 B); `specified != 0`
 // in `same` 134. Register-blind aligned difference 49 of 247: the prologue object-table load, the loop (decline path with

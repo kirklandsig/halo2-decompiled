@@ -634,6 +634,13 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// MiniMax D (11-05), not kept: 2 fast (from 34) with the group flags read into a word before the machine test, masked
+// into a byte (`byte group_flag_bits = (byte)(group_flags & 3)`), and `function_value = 0.0f;` added at the top of case
+// 0x1200055f's velocity block, where function_value is still its 0.0f initial value (a dead store kept only for the
+// code shape; the 10-30 rule keeps one only with a match). The flags form without the store is 89 fast. Lead: retail's
+// zero store in that case suggests the result is not zero-initialized at entry the way ours is.
+// MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
+// with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
 // score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
@@ -1099,6 +1106,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax D (11-05): no new form, no lower score (121); the permuter run was killed at its time limit
+// before it produced any result.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
 // MiniMax A (11-04, run 41): no new form, no lower score (121); the initial velocity is still stack-passed
 // where retail keeps it in xmm6, and the ramp-down time still takes a register through the clamps.
@@ -1447,6 +1456,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Round 70 (lane 10, fast): the time declared first in the block 2; the channel read as `channels->` 2; the sampled
 // matrix declared after the time 2; the 1/30 factor in a const local 2; `time *= 1.0f / 30.0f` 2. Compile-only (which
 // reproduces the order): 0-16 probe locals, `(void)&time`, a `(real)` cast and a named frame position move nothing.
+// Round 94 (fast): the animation default-constructed then assigned 2; `time - step` named in a nested test 2; speed
+// declared before had_animation 4; the state declared after both flags 2; the time renamed 2. With the time read only
+// by the second call (diagnostic) the fstp still precedes the animation push.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

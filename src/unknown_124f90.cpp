@@ -2457,6 +2457,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax E (11-05): no new form, no lower score; merging the two set-chunk calls into one site with the
+// range and permutation indices in named locals gives 193 (short indices) and 192 (long indices) - our frame
+// drops to 8 against retail's 0xc. Reverted.
 // score 17 (was 23): left: the range index is sign-extended (`movsx ebp, ax`, one byte) for
 // 0x219070's long set index, the 0x219070 call runs after the chunk index push, and the
 // delayed start sets flag0 before storing the start time. Earlier: the two set-chunk calls narrow their indices to char
@@ -2947,6 +2950,9 @@ static inline short sound_voice_find_available_channel(char type)
 // N385: Independent finder completion state, found/searching polarity in bool/byte/long/dword:
 // 125/125/125/125/125/125/125/125. NOT kept: no equality; completion flags and whole finder/body restored.
 // Frame twelve/eight, saved byte normalization and early failure tail remain.
+// P351: Low-byte requested-buffer bits in byte/word/long/dword with byte/Boolean result:
+// 96/101/101/101/113/109/109/109. NOT kept: no byte match; frame twelve/eight, saved-byte normalization and failure joins remain.
+// Original complete body and existing helpers restored.
 // F399: Explicit candidate admission/rejection/staged-admission/independent bitmap
 // predicates with byte final result 96/96/177/96, Boolean result 113/113/156/113.
 // NOT kept: no gain or equality; original private scan, byte result and whole body
@@ -3900,6 +3906,9 @@ struct s_128ca0
 // signed readonly-reference early/completed and unsigned readonly-reference early/completed:
 // 237/231/237/237/222/237/237/237. NOT kept: no byte match; original pin and full body restored.
 // Frame 0x49c/0x494, initial gain homes and integer pin joins remain.
+// P351: Pin lower-only/both bound comparison truths in bool/byte/short/long:
+// 222/222/222/222/222/222/222/222. NOT kept: no byte match; frame 0x49c/0x494, gain-input homes and pin joins remain.
+// Original complete body and existing helpers restored.
 // F399: Existing native gain-class pin input with integer/class returns, early/common
 // results and direct/overloaded comparisons: 222/227/247/216/251/241/247/216.
 // NOT kept: six-point lead below eight, unmatched record contracts and regressed shared
@@ -4160,6 +4169,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // Round 164: state pointer sunk into the branch and recomputed in the fallback 598; with 0x16f3a0
 // calls 553; fallback in both arms 633, with 0x16f3a0 calls 706, plus 0x14ddc0/0x14de70 at the loop
 // head 740 (retail's loop head, aligned 426 -> 402).
+// Round 609: existing fallback constant plus complete listener/player/environment lvalue identities,
+// seven subsets and the actual entry lvalue, 760 each (2065 bytes, frame 0xe8). NOT kept: native frame alone
+// leaves early saves, loop/helper expansion and record homes different; original body and constant linkage restored.
 // Round 400: shared zone predicate with original/direct publication, then
 // existing cross, point setter and both boundaries: 555/554/643/640/609/610/640/637.
 // NOT kept: every form regresses and lengthens; original predicate, helper
