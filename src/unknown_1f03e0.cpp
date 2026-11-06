@@ -383,8 +383,6 @@ bool function_1f1ee0(s_shape_carrier_contact const *contact, s_shape_state *stat
 real function_30bf0(vector3f *v);
 real function_1201a0(vector3f *v, vector3f const *fallback);
 
-PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
-
 PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f *out)
 {
     out->i = a->j * b->k - a->k * b->j;
@@ -392,7 +390,19 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 122 (was 122): frame 0x14 and scan prefix agree; first +0xd5 is a displaced case span; cross coloring and selected-tail sharing remain.
+// score 43 (was 122): 978/977 bytes; the first cross, both selected arms and their shared j/k tail are retail's. Left: case 3's
+// arms are laid out none-first (retail selected-first, about 22 lines), the first cross's a.k * b.i and average.i load a first
+// (retail b.i first), both dots sum k, j, i (retail i, k, j) and the inlined 0x1201a0 tail loads j first (retail copies inv first).
+// Round 219 (lane 3; fast, plain for the kept form): case 3's arms swapped (`selected == NONE` first), the existing cross3f_staged
+// in both selected arms and direct `*out = *a` / `*out = average` copies 43 (kept; each alone or in pairs 58-199). On that body:
+// case 3 selected-first again with a `break` 178; `if (selected == NONE) { copy; break; }` 43; case 3 through the existing
+// vector3f_add_scaled 43 (selected-first 178); cases 1, 3, 2 in source 43; `support` join 58; 0x1f087b arms 198; the selected normal
+// after the first cross 204 (82 selected-first); lowest/selected declarations swapped 45; dot_average first 43; average.i as
+// a.i + b.i 43; dots as dot3f(a, desired), shape_dot either order, inside the compare 43 each; first cross through cross3f or
+// cross3f_staged 43/43; case 3 with no none-arm copy (selected-first, or an early `break`) 192/192 (988); `0.0f - normal->k` 43 (178
+// selected-first). Selected-first case 3: average through vector3f_add either order 177 (962 bytes); dots inside the compare,
+// cross3f/cross3f_staged first cross, scale local, non-const a/b, loop index local 178 each; entry copy as a `default:` 214.
+// Earlier 122: frame 0x14 and scan prefix agree; first +0xd5 is a displaced case span; cross coloring and selected-tail sharing remain.
 // Earlier: the loop now agrees (0x1f2e60's base parameter before its stepping flag, so the
 // request dies at the base argument as in retail); left: `lowest` is stored after `selected` (retail first),
 // the first cross keeps i/j/k in XMM0/1/2 (retail XMM1/2/0) so the two selected arms are not tail-merged
@@ -593,16 +603,15 @@ void function_1f2a80(byte const *request, bool moving,
         {
             vector3f const *a = (vector3f *)(*(byte **)(component + 0x88) + indices[0] * 0x48 + 0x28);
             vector3f const *b = (vector3f *)(*(byte **)(component + 0x88) + indices[1] * 0x48 + 0x28);
-            vector3f support;
             if (selected != NONE)
             {
                 vector3f const *normal = (vector3f *)(*(byte **)(component + 0x88) + indices[selected] * 0x48 + 0x28);
                 vector3f axis;
                 contact_cross(a, b, &axis);
                 if (selected == 0)
-                    function_1f087b(&axis, normal, out);
+                    cross3f_staged(&axis, normal, out);
                 else
-                    function_1f087b(normal, &axis, out);
+                    cross3f_staged(normal, &axis, out);
             }
             else
             {
@@ -614,15 +623,16 @@ void function_1f2a80(byte const *request, bool moving,
                 real dot_a = dot3f(desired, a);
                 real dot_average = dot3f(desired, &average);
                 if (dot_a < dot_average)
-                    support = *a;
+                    *out = *a;
                 else
-                    support = average;
-                *out = support;
+                    *out = average;
             }
         }
         break;
     case 3:
-        if (selected != NONE)
+        if (selected == NONE)
+            *out = *g_4687b0;
+        else
         {
             vector3f const *normal = (vector3f *)(*(byte **)(component + 0x88) + indices[selected] * 0x48 + 0x28);
             real scale = -normal->k;
@@ -630,8 +640,6 @@ void function_1f2a80(byte const *request, bool moving,
             out->j = normal->j * scale + g_4687b0->j;
             out->k = scale * normal->k + g_4687b0->k;
         }
-        else
-            *out = *g_4687b0;
         break;
     }
     function_1201a0(out, g_4687b0);
@@ -642,7 +650,11 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
-// score 163 (was 182): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
+// score 163 (was 163): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
+// Round 219 (lane 3, fast, 0x1e5af0 listed; the arm-order and staged-cross levers that took 0x1f2a80 to 43): `if (!(dot > 0.0f)) axis = *old_up;
+// else rotate = false;` 163; the same as `dot <= 0.0f` 164; fallback stores forward first 186 (1230); up result stored first 196; inactive
+// arm's up store first 183 (1230); all five crosses through cross3f_staged or cross3f, the first only, the two rotation crosses only, the
+// four final ones only 163 each; the outer test inverted with the inactive arm first 302 (0x1e5af0 36).
 // Lane 9 r89: named old-up pointer with the parameters as retail's call sets them (forward at entry, up pushed, ground last) and state last 163 with 0x1e5af0 still matched;
 // that pointer with state first in six orders 196 (0x1e5af0 20-22), other orders 163 (g,f,s,u; g,f,u,s; f,s,g,u; f,g,s,u; f,g,u,s) with 0x1e5af0 2 for u,g,f,s; u,f,s,g; u,f,g,s; f,s,u,g; f,u,s,g; f,u,g,s.
 // On it: state dot written i + j + k 162 (retail's instruction order; one point, not kept), other term orders 163-165, through dot3f 253 (1242); rotation rows and dot orders, 18 forms, 228-248 [73-103];
@@ -884,6 +896,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+
+// MiniMax C (11-06): the direct arm's magnitude and the history arm's maximum now add their three squares in
+// retail's term order and grouping (344, 3052 bytes against retail's 3047). Left: the magnitude's x87 stack still
+// shuffles differently (ours fmulp/faddp/fxch/fstp against retail's fmul/faddp/fstp), the direct arm's four
+// products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
+// sides and the low-normal arm's homes remain as noted below.
 
 // score 416 (was 433): 3038 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
 // direct arm's rows, the low-normal arm and the history row. Closest form so far: `input->i` for `state->input.i` in the direct
@@ -1167,7 +1185,7 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
     }
     else
     {
-        real magnitude = (real)sqrt(input->i * input->i + input->j * input->j + input->k * input->k);
+        real magnitude = (real)sqrt(input->j * input->j + (input->i * input->i + input->k * input->k));
         vector3f desired;
         if (flying)
         {
@@ -1280,7 +1298,7 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
             difference.k = input->k - *(real *)(history + 0x18);
             vector3f change;
             vector3f_add((vector3f *)(out + 0x64), &difference, &change);
-            real maximum = (real)sqrt(change.k * change.k + change.j * change.j + change.i * change.i) + g_47ffb0;
+            real maximum = (real)sqrt(change.j * change.j + change.k * change.k + change.i * change.i) + g_47ffb0;
             vector3f offset;
             offset.i = state->velocity.i - *(real *)(out + 0x64);
             offset.j = state->velocity.j - *(real *)(out + 0x68);
@@ -1403,6 +1421,10 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 }
 
 // score 418 (was 418): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
+// Round 219 (lane 3, fast, 0x1f2a80 and 0x1f19c0 listed): both negations through vector3f_scale(normal, -1.0f, &desired) 425, the first
+// loop's only 425, the fallback's only 418; the fallback's minimum/selected stores before the negation 418, its direction copy after
+// them 418; one inline helper for the 0x1f2e60 request call (base point, stepping bit, height) at the three calls here and 0x1f2a80's
+// loop, inline or forced inline, 425/425 (0x1f2a80 43 either way).
 // Retail keeps zero in XMM6 and count at the frame bottom, component in the dead request slot;
 // count initialization between the NONE stores 417, unqualified count 530; homes remain swapped.
 // Contact-dot order and material-call expansion still differ.

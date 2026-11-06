@@ -790,6 +790,7 @@ done:
 }
 
 #include "object_markers.h"
+#include "object_dispatch.h"
 
 struct s_record_motion_view;
 point3f *function_b9dd0(long arg_0, point3f *arg_1);
@@ -827,69 +828,6 @@ struct s_1ac612
 	byte field_44[0x484 - 0x44];
 };
 
-// score 29 (was 29): frame 0x8c agrees; the actor pointer and actor offset swap EDI/EBP (so the
-// candidate takes EDI), their spill homes swap with the selected index (+0x1c/+0x20), the best
-// value/index initialisations sit before the zero-count branch, one product loads its operands the
-// other way and the up.j load runs before the up-vector address.
-// Round 49: result declared first 30; global factor first in the third product 29; best index and
-// value before the query 258 (983 bytes); one-expression distance 137; named unit index 29;
-// candidate comparison reversed, new actor local for the cleanup and one-expression up product
-// 29/29/128 (screened); 36 combinations of these, none below 29.
-// Earlier: separate cleanup receiver 29; success return 74; shared displacement 29; scan scope
-// 44; unsigned candidate counter 227; unsigned marker counter 153; const source/marker 29;
-// shared offset 29; lifetime names 29; actor parameter name 29; unsigned handles 29; location
-// memcpy 58; distance scope 29; continue guards 29; joint vector helpers 41; result declared
-// first 30; best index named before actor home 29; source actor named after index home 29;
-// best index and source actor named homes 29; candidate/marker difference shared helpers 29;
-// forward product shared helper 135; up product shared helper 41; native source location 58;
-// query outputs at loop/entry and source receiver at entry 29; marker reference, readonly
-// candidate tag, distance predicate and aligned up-product scope 29; positive-count scope 254;
-// up-vector private pointer 41; actor-input private reference 137.
-// actor offset/candidate registers and two spill homes differ;
-// separate cleanup receiver 29; success return 74; shared displacement 29; scan scope 44;
-// unsigned candidate counter 227; unsigned marker counter 153; const source/marker 29/29.
-// actor/candidate registers and two spill homes differ; shared offset 29, lifetime names 29, actor parameter name 29, unsigned handles 29, location memcpy 58, distance scope 29, continue guards 29, joint vector helpers 41 (round 115).
-// frame 0x8c agrees; EBP/EDI, two spill homes and product/address scheduling still differ;
-// tried result declared first 30; best index named before actor home 29;
-// source actor named after index home 29; best index and source actor named homes 29;
-// candidate difference shared helper 29; marker difference shared helper 29;
-// forward product shared helper 135; up product shared helper 41. Restored.
-// Earlier: frame 0x8c agrees; EBP/EDI and offset/selection spill homes remain exchanged.
-// Native source location 58; query outputs at loop/entry and source receiver at entry 29 each;
-// marker reference/readonly candidate tag/distance predicate/aligned up-product scope 29 each.
-// All executable forms and the experimental include restored.
-// Earlier: actor-offset/selection registers and spill homes still differ.
-// Candidate cursor 244; marker cursor 234; both cursors 249; distance first 29;
-// distance across queries 266; point declaration first 29; selection update first 30;
-// short ordinal entry scopes 29. Restored.
-// Round 41: candidate read from the query array at each use 58; forward test through the existing
-// 0x26f8f0 helper (retail inlines it here; its /Ob1 file keeps it out of line even with an inline or
-// __forceinline declaration) 206/206/206; best-index renames (best_index, winner, zz_index) 29;
-// forward product in the helper's operand order 137; up product after the forward test 29, both 137.
-// Round 41 (lane 10): the closing cleanup is the body of the existing 0x26def0 with a NONE owner
-// (retail calls 0x26def0 out of line at 0x1ac270/0x1ad400 but has this body in line here); the call
-// itself stays out of line 301 (918 bytes); the body as a file-local forceinline helper 29, as a
-// plain inline helper 29; through actor_datum_get with the location-record field names 29; best
-// index at function scope with the selection block after the first one 273 (984 bytes).
-// Round 72 (lane 9, fast): the forward product computed before the marker difference 29; the up axis
-// global read into a pointer local used for all three terms 58; the marker difference through the
-// existing vector3d_from_points3d 29; best index/value declared before the query and assigned after it 29,
-// the index declared at entry 29. Diagnostic: actor_get as offset-first sum or array element 29/29
-// (header restored), so the EBP/EDI swap is not the accessor's spelling.
-// Round 80: entry actor reused for cleanup 79 (955 bytes); direct actor lookups 248 (968); squared-length
-// helper 137; marker-matrix pointer 29; direct marker indexing 100 (969); distance declaration before
-// the query 29; candidate/marker postincrement 29/29. Restored.
-// Round 30 (lane 18, fast): separate cleanup actor local re-measured 29; long candidate counter 243
-// (951 bytes); actor_get's index as an unsigned mask (shared header, diagnostic) 29, the entry offset still
-// takes EDI; best value declared before best index 29; marker record pointer declared before the handle 31;
-// the forward product's i term with its operands swapped (diagnostic) 29, the load order is canonicalised.
-// Restored. 0x15adb0 shows the same index-scaled-after-base order in an inlined lookup.
-// Round 68 (m3 lane 11, fast): `inline` on 0x26def0's definition with the cleanup as a real call 29, but 0x1e17d0 141 and
-// 0x1e4570 126 then inline it; `inline` on 0x26f8f0's definition with the forward test as a real call (diagnostic, not
-// this machine's) 155; the scalars, scan and selection nested in a positive-count block 255 (968 bytes, NONE takes EDI at
-// entry); the marker index declared before its `for` 29; the scan as a `while` 29; the cleanup copied into a no-owner arm
-// 348 (1039 bytes) or an early no-owner exit 337 (1029). Deletion diagnostics: no cleanup 326 (895), no owner compare 266,
-// no 0x26df40 call 261 (actor EDI, offset EBX), selection off 751, cleanup without 0x26dc20 67. Body unchanged.
 // @retail 0x1ac610
 bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	s_object_marker *arg_2, short *arg_3)
@@ -898,7 +836,7 @@ bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	bool local_1 = false;
 	if (local_0->unknown018 != NONE)
 	{
-		s_ai_object *local_2 = ai_object_get(local_0->unknown018);
+		s_ai_object *local_2 = (s_ai_object *)OBJECT_DATUM_GET(local_0->unknown018);
 		dword local_3[2];
 		local_3[0] = *(dword *)((byte *)local_2 + 0x28);
 		local_3[1] = *(dword *)((byte *)local_2 + 0x2c);
@@ -906,73 +844,77 @@ bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 		function_b9dd0(local_0->unknown018, &local_4);
 		long local_5[20];
 		short local_6 = function_bb050(1, 0x8c3, local_3, &local_4, 4.0f, local_5, 20);
-		long local_7 = NONE;
-		real local_8 = 3.402823466e38f;
-		for (short local_9 = 0; local_9 < local_6; ++local_9)
+		if (local_6 > 0)
 		{
-			long local_10 = local_5[local_9];
-			if (local_10 != local_0->unknown018)
+			long local_7 = NONE;
+			real local_8 = 3.402823466e38f;
+			for (short local_9 = 0; local_9 < local_6; ++local_9)
 			{
-				s_ai_object *local_11 = ai_object_get(local_10);
-				s_1ac610 *local_12 = (s_1ac610 *)g_4e3b44[local_11->definition_index & 0xffff].bytes;
-				if (local_12->field_5c > 0 && (*local_12->field_60 & 4) && function_26df40(arg_0, local_10, false))
+				long local_10 = local_5[local_9];
+				if (local_10 != local_0->unknown018)
 				{
-					vector3f local_13;
-					local_13.i = local_11->position.x - local_2->position.x;
-					local_13.j = local_11->position.y - local_2->position.y;
-					local_13.k = local_11->position.z - local_2->position.z;
-					real local_14 = local_13.k * local_13.k;
-					local_14 += local_13.j * local_13.j;
-					local_14 += local_13.i * local_13.i;
-					if (local_8 > local_14)
+					s_ai_object *local_11 = ai_object_get(local_10);
+					s_1ac610 *local_12 = (s_1ac610 *)g_4e3b44[local_11->definition_index & 0xffff].bytes;
+					if (local_12->field_5c > 0 && (*local_12->field_60 & 4) && function_26df40(arg_0, local_10, false))
 					{
-						local_8 = local_14;
-						local_7 = local_10;
+						vector3f local_13;
+						local_13.i = local_11->position.x - local_2->position.x;
+						local_13.j = local_11->position.y - local_2->position.y;
+						local_13.k = local_11->position.z - local_2->position.z;
+						real local_14 = local_13.k * local_13.k;
+						local_14 += local_13.j * local_13.j;
+						local_14 += local_13.i * local_13.i;
+						if (local_8 > local_14)
+						{
+							local_8 = local_14;
+							local_7 = local_10;
+						}
 					}
 				}
 			}
-		}
-		if (local_7 != NONE)
-		{
-			short local_15 = function_26e090(local_7, arg_2, arg_3, 32);
-			if (local_15 > 0 && ((s_1ac611 *)g_4e0348)->field_c4 > 0 && ((s_1ac611 *)g_4e0348)->field_c8)
+			if (local_7 != NONE)
 			{
-				long local_16 = NONE;
-				s_1ac612 *local_17 = NULL;
-				for (short local_18 = 0; local_18 < local_15; ++local_18)
+				short local_15 = function_26e090(local_7, arg_2, arg_3, 32);
+				if (local_15 > 0 && ((s_1ac611 *)g_4e0348)->field_c4 > 0 && ((s_1ac611 *)g_4e0348)->field_c8)
 				{
-					s_object_marker *local_19 = &arg_2[local_18];
-					vector3f local_20;
-					local_20.i = arg_1->x - local_19->matrix.position.x;
-					local_20.j = arg_1->y - local_19->matrix.position.y;
-					local_20.k = arg_1->z - local_19->matrix.position.z;
-					real local_21 = local_19->matrix.forward.k * g_4687b0->k;
-					local_21 += local_19->matrix.forward.j * g_4687b0->j;
-					local_21 += local_19->matrix.forward.i * g_4687b0->i;
-					real local_22 = local_19->matrix.up.k * local_20.k;
-					local_22 += local_19->matrix.up.j * local_20.j;
-					local_22 += local_19->matrix.up.i * local_20.i;
-					if (local_21 > 0.95f && 0.0f > local_22)
+					long local_16 = NONE;
+					s_1ac612 *local_17 = NULL;
+					for (short local_18 = 0; local_18 < local_15; ++local_18)
 					{
-						if (local_16 == NONE)
+						s_object_marker *local_19 = &arg_2[local_18];
+						vector3f local_20;
+						local_20.i = arg_1->x - local_19->matrix.position.x;
+						local_20.j = arg_1->y - local_19->matrix.position.y;
+						local_20.k = arg_1->z - local_19->matrix.position.z;
+						if (dot3f(g_4687b0, &local_19->matrix.forward) > 0.95f)
 						{
-							local_16 = function_26db50(local_7, 1);
-							if (local_16 == NONE)
-								local_16 = function_26d500(local_7);
-							if (local_16 == NONE)
-								break;
-							function_26def0(arg_0, local_7);
-							function_26dbd0(local_16, arg_0);
-							local_17 = (s_1ac612 *)g_51eca4->data + (local_16 & 0xffff);
-							local_1 = true;
-						}
-						if (local_16 != NONE && !(local_17->field_40[local_18 >> 5] & (1UL << (local_18 & 31))))
-						{
-							s_type_c3b527 local_23;
-							long local_24;
-							if (function_26e180(local_16, (s_record_motion_view const *)local_19,
-								arg_3[local_18], NULL, &local_23, &local_24) && local_24 != NONE && local_24 != 0xffff)
-								function_26d9c0(local_16, &local_23, local_18, arg_3[local_18], local_24, &local_19->matrix.up);
+							vector3f const *local_21 = &local_19->matrix.up;
+							real local_22 = local_21->k * local_20.k;
+							local_22 += local_21->j * local_20.j;
+							local_22 += local_21->i * local_20.i;
+							if (0.0f > local_22)
+							{
+								if (local_16 == NONE)
+								{
+									local_16 = function_26db50(local_7, 1);
+									if (local_16 == NONE)
+										local_16 = function_26d500(local_7);
+									if (local_16 == NONE)
+										break;
+									function_26def0(arg_0, local_7);
+									function_26dbd0(local_16, arg_0);
+									local_17 = (s_1ac612 *)g_51eca4->data + (local_16 & 0xffff);
+									local_1 = true;
+								}
+								if (local_16 != NONE && !(local_17->field_40[local_18 >> 5] & (1UL << (local_18 & 31))))
+								{
+									s_type_c3b527 local_23;
+									long local_24;
+									if (function_26e180(local_16, (s_record_motion_view const *)local_19,
+										arg_3[local_18], NULL, &local_23, &local_24) && local_24 != NONE && local_24 != 0xffff)
+										function_26d9c0(local_16, &local_23, local_18, arg_3[local_18], local_24, local_21);
+								}
+							}
 						}
 					}
 				}

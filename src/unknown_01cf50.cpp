@@ -2526,6 +2526,10 @@ struct s_render_transform_record
 	transform4x3f const *transform;
 };
 
+// MiniMax D (11-06): no new form, no lower score; retail calls the transform table's lookup out of line
+// (0x1d6b0) where we inline it, and the helper's inline-ness is set in src/unknown_023540.cpp, so the call
+// cannot be made from this file; this round the lookup through a handle local and through a byte pointer
+// local both give 51, and the first lookup is inlined on both sides.
 // MiniMax H (11-05): no new form, no lower score; the second table_entry_data lookup is inlined
 // here and called out of line in retail, and that helper's inline-ness is set in
 // src/unknown_023540.cpp, so the transform table's rows cannot be reached the way retail does;
@@ -5482,6 +5486,11 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
 // compiler rebuilds the body (117), computing the block before the tag gives 111 and the two-element tag
 // table gives 115, so the body is unchanged.
 // @retail 0x4ebd0
+// MiniMax D (11-06): no new form, no lower score; the tag lookup still differs: retail reads the pair
+// with a lea into a register and never spills the tag, ours reads it through the volatile local with a
+// spill and a reload; this round the pair read as a long array of pairs, through a byte pointer local and
+// through a long pointer local all fold to the same scaled load, the block read before the tag gives 101
+// to 111, and the volatile moved onto the part gives 110 to 117.
 // MiniMax H (11-05): no new form, no lower score; retail reads the block base out of the table
 // before the tag lookup and keeps the tag in a register, ours spills and reloads the tag through
 // the volatile local, and reading the block base first rebuilds the body (111); retail spills the
@@ -5726,6 +5735,13 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
     rectangle->bottom += dy;
 }
 
+// MiniMax D (11-06): no new form, no lower score; the two rectangles sit four bytes higher in the frame than
+// retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14])
+// and the bitmap pointer shares the clip's slot instead of being spilled at [esp+0x1c], because our clamp
+// arithmetic keeps the bitmap in edx where retail's clobbers edx and reloads the pointer from the stack;
+// this round a long left gives 177, the clamps written as if statements give 189, the offset added in 32 bits
+// gives 166 and both together give 169, and the left edge is still clamped with a conditional set instead of
+// retail's branch.
 // MiniMax H (11-05): no new form, no lower score; the bounds rectangle's horizontal offset added
 // in 32 bits and stored back as a word (retail's form) rebuilds the body (162), so the 16-bit add
 // stays and the two rectangles keep sitting four bytes higher in the frame than retail's; the four
@@ -5833,6 +5849,11 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
+// MiniMax D (11-06): no new form, no lower score; our ebx save in the prologue against retail's inside the
+// loop keeps the frame at 0xb0 instead of 0xac, so every stack reference sits four bytes off; this round the
+// outer loop as a while loop gives 199 and the same loop with the counter bumped on every path gives 199,
+// and neither moves the frame off 0xb0, the count in a local gives 237 and the handle tested twice against
+// NONE gives 240.
 // MiniMax G (11-05): no new form, no lower score; dropping the table local scores 200 and dropping the availability flag 240, and the frame stays 0xb0 against retail's 0xac.
 // MiniMax G (11-04): score 199 (was 223): the material pointer is loaded before the part type is
 // tested and the cull-mode global is no longer zeroed; the handle's sign test as (handle & 0x80000000)
@@ -6961,6 +6982,8 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // (cond) positions = ...` is closer to retail (one jmp and one mov fewer) but scores 513 here because of
 // the shifted slots. Also unaddressed: the point iterator tracks points[i].field_c (retail [edi-0xc], ours [edi-0x10]).
 // The call to 0x4f7e0 matches retail's register setup (tag in ecx, eight stack words).
+// Permuter, 30 minutes (11-06, on the source before the facing-sum change): 291 only with call arguments swapped (pow's
+// two, function_13bb90's last two, function_4ff50's last two), which changes behaviour. Not kept.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {
@@ -8213,6 +8236,9 @@ bool function_016ac0();
 bool function_022710();
 void __stdcall function_2bcd0(long, bool, bool, bool, long, long, real);
 void __stdcall function_21a80(real, real, real);
+// MiniMax I (11-05): matches (score 0) with a #pragma inline_depth(0) ... #pragma inline_depth() pair around
+// the function (keeps the 0x16ac0 call out of line) plus the single expression for world_effects; held, since
+// new #pragma lines are not taken. The lead stays a source form that keeps 0x16ac0 out of line without a pragma.
 // MiniMax D (run 37): retail calls 0x16ac0 out of line, our build inlines it; the inlining is
 // decided by the /Ob flag of the defining file src/unknown_0167a0.cpp (not mine). A single
 // expression for world_effects gives 65; the original 16 is kept.

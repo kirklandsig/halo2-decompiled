@@ -856,6 +856,8 @@ void function_1c54b0(char const *variants, long object_index)
 // the ebx/ebp choice. With the flag ahead of the call it crosses the call and retail's ebx/ebp follow; after the call, cursor takes ebx. An inline
 // helper for the discard taking the world and island, or the island: flag first 4/4, flag after 18/18, forced inline after 18; one returning true 18;
 // the whole per-island body as a plain inline helper is not inlined here 286/288 (45-47 bytes), four call forms with either flag order.
+// Round 219 (lane 3, fast): the flag as char before/after the call 4/18; as long, int or dword 79 in either order; a long `kept` step (1,
+// cleared on discard, added to the index) 36 in either order.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {

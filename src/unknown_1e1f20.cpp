@@ -592,6 +592,9 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax I (11-06): the actor view inlined at every use (310) and a local copy of the actor
+// index (same code) were tried; the memory loop as a countdown, with the slot read twice and with
+// the fields read through the indexed form gave 268, 286 and 363; no lower score.
 // score 281 (was 281): frame 0x1c versus 0x20, entry actor displacement and cleanup stack homes remain.
 // Earlier: Frame 0x20 agrees; early actor-pool allocation, cleanup and slot homes remain.
 // frame 0x1c versus 0x20, early actor/pool allocation,
