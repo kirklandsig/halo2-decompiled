@@ -2388,6 +2388,9 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax E (11-06): score 140 (was 140): no new form lowered it. The inlined corner rotation still
+// expands with the opposite operand order and stores its results in different homes than retail, and
+// the byte local at esp+0x6c is read in AL where ours reads CL.
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax G (11-04, not kept, m3 review: the destination default moved inside the source-null block, so a null
 // destination with a non-null source read an unset rectangle; a behaviour change): 132 (was 140) with the two default rectangles built in retail's
@@ -2855,6 +2858,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax E (11-06): score 211 (was 211): no new form lowered it. The inlined corner rotation still
+// multiplies the two vectors in the opposite order and folds the constant as a memory operand where
+// ours keeps it in a register, so the result homes and the x87 rows differ.
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax G (11-04): no new form, no lower score.
 // score 211 (was 211): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
