@@ -1482,6 +1482,9 @@ struct s_looping_detail_request
 // 110; the mode through a named long 110 (same code). The query stays inlined in all six; `return` shapes do not cool it.
 // B448: Complete fallback selection/placement/publication provider, detail and source pointer/reference, forced/ordinary inline:
 // 159/159/159/159/434/434/434/434. NOT kept: no byte match; complete original body restored.
+// AC559: Whole signed player-count admission/rejection, bool/byte/short/long:
+// eight at 110, 508/508. NOT kept: no equality or query-call recovery; original
+// result, live count, request transport, queries and complete body restored.
 // MiniMax C (11-05): no new form, no lower score: the first-player query is still expanded here, and
 // the audible arm still stores the offset in the request instead of retail's temporary and copy.
 // Round 152 (m3 lane 6, fast with 0x21b0e0): `while (skip--)` 110; the offset declared at the top of the player block 110;
@@ -1940,6 +1943,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // constant inits 305/192/80; count in both loops 365/179/71, first only 427 (1907)/179/78, one local for both 460
 // (1939)/187/77, both with bounds 460/184/74; second only 375/145/73; on the lead, gains declared first 373/143/69, mask
 // first 373/143/68, iterator first or mask between 372/142/70. `--fast` is off here (reduced 479), use the plain check.
+// AC559: Shared update-input positive/complementary bool/byte/short/long residence:
+// 479/479/492/495/473/473/461/552 reduced (control 479; full 305). NOT kept:
+// native stack ingress/frame not recovered; original parameter observations and body restored.
 // Round 152 (m3 lane 6, plain): the pitch sum grouped `((upper - lower) * gain + pitch) + lower` (retail adds the playing
 // pitch first) 418; the existing 0x2198f0 for the controller lookup 456 (1907 bytes: it stays a call, but the previous range
 // takes BP and the track EBX as in retail, while NONE moves to EDI and playback stays spilled); `dword sounds[9]` 305 (same

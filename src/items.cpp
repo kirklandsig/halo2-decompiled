@@ -757,6 +757,9 @@ struct s_item_collision_bsp
 // planes, axis/spin homes, arithmetic, random draws, pending-k join, calls and include set restored.
 // Paired range sums also raise matched 0xd9640 from 0 to 3 in the reduced image; restored.
 // Protected plane-index width, plane joins and native spin/speed homes remain.
+// AC560: Actual optional-effect admission at its original guard, positive/complementary
+// bool/byte/short/long: 204/204/204/204/204/204/204/204. NOT kept: one-use outcomes do not match; original
+// complete body restored. Protected plane width, plane joins and spin/speed homes remain.
 // F395: Complete transformed-normal publication ikj/jik/jki/kij/kji on the retained distance
 // accumulator 203/206/205/206/204; dependency-preserving normal/distance publication
 // 206/205/200. NOT kept: two-point best below the keep threshold; original body restored.

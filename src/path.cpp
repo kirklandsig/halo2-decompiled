@@ -624,6 +624,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // N376: Paired conversion success/fallback outcomes, independent/shared carriers and
 // expression/branch producers: 282/282/282/305/282/282/282/305. NOT kept: four-point leads
 // fall below the margin and no form matches; original conversion graph/body restored.
+// AC558: Complete two-step admission/rejection truth in bool/byte/short/long:
+// eight at 333, 1388 bytes (control 286/1389). NOT kept: all regress; original
+// type-2 fallback, metadata stores, long link total and complete body restored.
 // M3 lane 11 r71 (fast, plain where marked; masked = aligned with registers and stack offsets ignored). Rebuilt the
 // flag
 // form (short link count; `special` false at the arm's start and set by an if; `usable` by if / else if with a `data`
