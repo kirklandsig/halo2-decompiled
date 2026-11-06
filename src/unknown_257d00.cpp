@@ -1849,6 +1849,15 @@ void function_b7360(long object_index);
 // then conditional producers: 301 each, all 1824/1848 bytes. NOT kept: no
 // byte match; original full callback restored. Entry actor/output roles,
 // reference retention and 24-byte deficit remain; all calibrated peers unchanged.
+// Round 66 (m3 lane 14, fast): actor local first 487 (1836 bytes: our prologue then pushes three registers and inlines the
+// first failure return); output local first, success first, both 301 each (same code); in the 1/19 point arm the 0x40 flag
+// stored before the point copy 297 (not kept: four points and retail stores the flag after the copy), but the store makes
+// ours reload the reference after the 0x25ab50 call as retail does and that arm then takes retail's output ESI: retail's
+// reload there comes from a cause before the copy (retail reloads right after the call at case 5 too, before 0xcccd0).
+// Diagnostic: inline depth one 301. On 301: 0x25ab50 splitting the reference through an inline out-parameter helper
+// 301 (and 0x25ab50 itself 25, 82 bytes); case 5's two tests split 301; the 1/19 reference in a local used for the test
+// and the point 303; the 1/19 point through a pointer local after the actor test 303; the empty-success cases as one
+// label list 301.
 // Round 91 (m3 lane 9, fast; plain for the 289): case 5's two failures as separate ifs 301 (same code); the first test as
 // `perception != NONE && type != 1 && type != 4` 332 (1828 bytes); the empty cases listed before case 0 301 (same code);
 // at the 1/19 site the flag store before the point copy 297 (roles as retail, see the lead above); the wait test inverted
@@ -2463,6 +2472,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // with original/early facing capture: 502/502/517/517/500/500/517/517. NOT kept: all regress
 // and grow to 2420 bytes; early facing grows frame 0x1c to 0x28.
 // Original anchor observations/facing/full body restored; actor/state and first-point homes remain.
+// Round 66 (m3 lane 14, fast with 0x110ab0 listed, which removes the reduced build's caveat and gives the full 469; alone
+// the reduced image gives 485): case 1's point read through the state local 469 and the state read through the parameter at
+// every use 469 (same code: retail reloads the parameter there, `mov eax, [esp+0x38]`, where ours forms `lea eax, [ebx+8]`);
+// case 1 as `!(d > 1.f)` (retail's NaN-true `jbe`) 610; plain returns in place of the result/goto exits 493; the command
+// script looked up before the actor 617. A register-masked aligned diff of the baseline gives 152 (case 4's facing copy, the
+// countdown tail and retail's duplicated `if (result) return 1` epilogue).
 // M3 lane 11 r71 (fast, control 485 at 2396 bytes; plain 469 at 2400). No state local, every use through the
 // parameter 485 (same code); the result as bool 485 (same code); actor and datum written directly from the pools 485
 // (same code); the two remaining parameter uses through the local 485 (same code); the case 7/8 bool written at its
