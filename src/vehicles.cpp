@@ -643,6 +643,11 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // velocity as a vector2f through magnitude2d 225; the input rotation before the forward copy 122; both 120 (under the
 // gain bar); a local_velocity pointer for its four reads 126, with the rotation moved 122; on 120: the entry magnitude
 // after the velocity copy 122, the local_velocity pointer 122.
+// Round 68 (lane 13), at 126: the velocity copied x first with the speed's squares written y then x 130 (VC
+// still loads y first, into ECX); the y-first copy with y then x squares 126; dot3f(controls, controls) at both
+// magnitude sites 287 (1131 bytes: the two sites CSE); the blend rows as heading + forward * k 126; the blend
+// weight's dot written forward x first 126 (identical). The 1.0 constant is held for the whole function (retail
+// XMM3, ours XMM2); its register follows the entry schedule (retail adds i*i + j*j before squaring k).
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1193,7 +1198,7 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 565 (was 565): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
+// score 562 (was 565): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
 // and scalar/SSE homes remain.
 // Earlier at 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
@@ -1327,6 +1332,12 @@ long function_10f5f0(long object_index);
 // P345: Real point-array endpoints, less-than/equality and native/double totals,
 // with original/six-real API output: 668/648/600/609/668/648/600/609. NOT kept: all regress;
 // native frame, predicate bytes and rolled reduction remain; original complete body restored.
+// Round 68 (lane 13), at 562: retail's bottom home (0x18 bytes) holds the 0x205510 buffer, all three velocities
+// and the name array; ours keeps them apart. `real buffer[6]` 562 at frame 0x1990 (the names then share the
+// buffer); with the velocity declared in the state branch and in the falling-damage block 562 (0x1990); with the
+// names in their own block 562 (0x1990: the names then share the velocity and the buffer stays apart; a home's
+// size seems fixed by its first member, and the velocity is placed first); the velocity/names blocks with the
+// 0x28 buffer 562 (0x19ac); the state-branch velocity declared just before its 0xba1d0 call 562 (0x1990).
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -1777,6 +1788,11 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // overlay arms go; a test block before, inside or after the kind loop never gives retail's reload order; extra
 // float/int statements in the arms or the kind loop break the length. channel_play as `&&`, two returns or a
 // ternary unmatches 0x1cb490 itself (16/20/20); channel_start without its graph-index local unmatches 0x1cb410 (7).
+// Round 68 (lane 13), at 9: the permuter (600 s, 66 tries) found nothing better; the callbacks given a local copy
+// of the vehicle index 13 (the cross products flip, the reloads stay); the forward-speed local renamed 9;
+// VEHICLE_GET as pointer arithmetic (base + index) 9; the second / first lookup through
+// VEHICLE_HEADER_GET(...)->vehicle 9/9 (all identical code). Retail reloads state, graph, then the vehicle index
+// after the kind loop (the reverse of the order the update block clobbers EDI, EBX, ESI); ours the index first.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -3883,6 +3899,11 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // producer, then real/double declarations before fraction/basis: 159/159/217/217/159/217/159/217. NOT
 // kept: no byte match; original whole body restored. Projection/cross ranks and angle/trig homes
 // remain.
+// Round 68 (lane 13), re-measured at 136: `double angle` 174 at 778 bytes (it also moves caller 0xf4800's frame
+// to 0xfc: an 8-byte alignment need); double angle with the up rotation and left cross written in both paths
+// (default returns) 232 at 881 bytes; the same with real angle 290 at 934 bytes. New: the fallback as
+// `*up = *g_4687a8` (retail's integer aggregate copy) 145; the up pointer declared before the projection with
+// dot3f(up, forward) and that aggregate fallback 155.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4531,6 +4552,13 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // 228; the override search as a NULL found pointer (a flag set in the loop) 161 at 1354; writer + clamp + found
 // pointer 164 at 1368, aligned 21: only the component block (world loaded into EAX then moved to ESI, the flag read
 // after the pointer add) and the fallback select are left; all four 199.
+// Round 68 (lane 13), at 176 (aligned 59): the component test in 0x206090's matched shape (index test, then a
+// component local and the flag/world/hit chain) with the fallback written in both paths 257 (1383 bytes, frame
+// 0xf0: VC does not tail-merge the two fallbacks); that with the fallback as `call ? 1.0f : 0.0f` 282; with the
+// clamp as a store then if/else-if 264. Re-measured at 176: a component local read before the && chain (index
+// test kept first) 175 (aligned 63, under the bar); that with the store-then-if/else-if clamp 182 (aligned 44;
+// left: the found-index retest, the component block's registers, the fallback select and the split bit writer).
+// 0x168f40's whole callee tree matches and none of it uses XMM7: the ternary's XMM7 zero is no callee blocker.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -5492,6 +5520,22 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // frame 0xd8, handle/offset and matrix/vector ownership remain.
 // Permuter, 30 minutes (11-06): 1036 from 1087, only with function_f1380's two vector arguments swapped (a behaviour
 // change), a cast on function_f44a0's state argument and a temporary for g_51e9c4->unknown0. Not kept.
+// Round 68 (lane 13), fast checks, at 1087. Frame map (push-balanced slot tracking): retail packs its matrices
+// into three homes, desired+inertia at 0x2c, facing+current+the state rotation copy at 0x60, flipped+the first
+// 0x142eb0 product at 0xb4 (retail passes that call a third matrix rather than desired), and lays every home out
+// by reference density (references per byte, densest nearest ESP; names and declaration order move nothing).
+// Tried: current in its own block 1087, declared at the top 1087, facing/current renamed 1087 (identical code);
+// memset of current (diagnostic) 1153; the first product into a separate `difference` matrix 1124 (frame 0xf8),
+// into `flipped` (reuse, diagnostic) 1124 at frame 0xd4; `difference` renamed / declared first 1124/1124;
+// `difference` in a block around the 0x141f60(0x142eb0) call 1124 at frame 0xd4, 5059 bytes (retail's three
+// matrix homes; the shorter length is only disp8 encodings); on it, acceleration/velocity renamed 1124, the
+// reversal sum and the strafe target as their own block locals 1124 (identical). LEAD (not kept, positional
+// rise): that block plus `bool boosting` (retail's byte at [esp+0x63]) 1125: frame 0xd8 exactly, the three
+// matrices at retail's offsets, first difference +0x2 -> +0x19; with the quaternion axis as an aggregate copy of
+// its first three reals (retail's integer copy) 1128 (velocity then gets retail's home and reference count).
+// Left on the lead: the vector order (retail velocity, acceleration, target+drift, facing, angular velocity +
+// strafe acceleration + rotation, strafe velocity; ours groups drift with the strafe velocity) and the vehicle
+// index in EDI (retail ESI).
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
