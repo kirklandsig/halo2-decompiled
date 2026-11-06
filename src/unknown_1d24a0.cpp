@@ -105,11 +105,6 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// MiniMax D (11-06): no new form, no lower score; the frame is still 0x1f0 against retail's 0x1d4, retail
-// keeps the entry receiver in ecx and reads its flag field into eax where ours puts the receiver in eax and the
-// flag in ecx, and retail's in-loop byte homes are the record bit 2 at +9 and the second activity flag at
-// +0xa where ours has them the other way round; this round the receiver held in a named local gives 902, the
-// same code as the baseline.
 // score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Earlier score 902 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
 // Round 105: retail has 23 more mulss, 22 more movss and 15 more movaps, ours ~10 extra counted loops

@@ -2079,11 +2079,6 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
-// MiniMax D (11-06): no new form, no lower score; the frame stays eight bytes short (0xcc against retail's
-// 0xd4), retail expands the first 0x11df30 where ours calls it, and retail calls channel_play (0x1cb490) out
-// of line where ours expands the overlay loop's call; both inline decisions are set outside this file (0x11df30
-// is defined in src/unknown_11cb00.cpp, the channel methods in include/unknown_1cafc0.h); this round the
-// channel workspace declared at its first use gives 831 and leaves the frame at 0xcc.
 // score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // (0x1cb490) out of line at five sites and expands only the final animation_10c start, ours expands the
 // overlay loop's call. At entry retail also loads an otherwise unused render-model tag into a stack slot.
@@ -2300,9 +2295,6 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // pitch-first and two interleaved producer orders: 829/828/828/829/829/828/828/829.
 // NOT kept: every form regresses; 3403-byte length agrees but frame stays 0xcc/0xd4.
 // Original private helper and full body restored; first-angle/overlay expansion remains.
-// Round 93 (m3 lane 9, fast with all six queue functions): the overlay identifier read at each use 837 at 3403
-// B (still four channel_play calls and two 0x11df30 calls, so the length is a coincidence), as a `for` loop 884
-// (3346 B); the ratio test and the play call nested 776; the overlay-default play nested 776; both 776.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
