@@ -361,6 +361,9 @@ bool function_a9820(long *block, long index)
 // the dead world register, so the active byte is still read through the materialised record address; the active byte
 // read from the database array with the record pointer taken in the branch 14, the same with a state local 11 and
 // with a world local 21 all leave the record address folded into the index instead of materialised.
+// MiniMax H (11-05): no new form, no lower score; a database local with the byte read from the array, the byte
+// read through a computed offset and the record taken inside the branch all give 14, and retail's EDX database
+// with its folded byte load cannot be reproduced from the source.
 // MiniMax B (11-04): no new form, no lower score: the database pointer is still loaded into ECX where retail
 // loads it into EDX, and the active byte is still read through the materialised record address; an active
 // byte in a local read before the record pointer 14, a database local with the byte read from the array 14,

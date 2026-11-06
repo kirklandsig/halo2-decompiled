@@ -73,8 +73,6 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 	return local_1;
 }
 
-// MiniMax R (11-05): no new form, no lower score; the result local declared last or without its initializer
-// changes nothing, every slot sits at the same address as retail's and only the frame size differs (0x11c/0x118).
 // score 173 (was 173): Frame 0x11c versus retail 0x118 (ours spills a rotation cross term to +0x2c
 // where retail uses +0x28); the rotation computes the cosine with fcos before fsin (retail sine
 // first, stored after the dot) and colours the cross terms differently.
@@ -324,6 +322,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // eight at 173/1209. NOT kept: no native frame/cross/trig-home recovery.
 // Original value-angle/vector-pointer producer, consumed-axis phases, ordinary
 // pooled reads, draws, request and complete body restored.
+// F403: Existing stored forward as read-only rotation/outer-cross input, original
+// consumed-axis or distinct projected-axis output, eight protocols: 231/235/241/256/232/231/238/198.
+// NOT kept: no exact ownership form; original helper, input/output contracts and full body
+// restored. Frame 0x11c/0x118, retained heading zero and cross/trig homes remain.
 // Round 66 (m3 lane 14, fast): the rotation helper in 0x146320's statement shape (sine, cosine, projection, scalar cross j/k,
 // cross i inline in row i), dot k/j/i, i/j/k and j/k/i, 231/231/231 (1192 bytes; register-masked aligned 46 against the
 // baseline's 63, but the colouring regresses); that body with the axis passed as three scalars and the sine/cosine from the
@@ -340,6 +342,13 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DL271: Typed standard coordinate transfers at transform forward/up and both heading
 // publications, subsets 1..7: 283/283/292/264/295/280/279; complete backward ranges 279.
 // NOT kept: no equality or gain; original native copies, frame, helper and body restored.
+// MiniMax R (11-05): no new form, no lower score; the result local declared last or without its initializer
+// changes nothing, every slot sits at the same address as retail's and only the frame size differs (0x11c/0x118).
+// M3 lane 15 r60 (fast with 0x28dab0): a one-file compile without LTCG (`/FAs`) also gives frame 0x11c and lists the helper's
+// cross vector with its own 12-byte home, so the frame is fixed before link time. Projection as `(1.0f - local_1) * dot3f(...)`
+// 173 (same code); rows as `arg_2->i += arg_1->i + local_3.i` 173; scales axis, vector, cross 233 (1222 bytes); rows axis term
+// first 173 (as round 120); the forward copy after the outer cross 190; velocity products speed first 173 (same code); rows
+// `arg_2->i + local_3.i + arg_1->i` 173.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

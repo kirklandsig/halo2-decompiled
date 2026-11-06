@@ -518,6 +518,10 @@ void __stdcall function_1160c0(real dt)
 // the segment then takes EDX and every later scratch register is retail's, but the load sits ahead of the ternary. With
 // the index computed first (long, block helper, byte offset, reference, const, bound element) 171 (same code), short
 // index 290 (1356); stiffness read first 270; stiffness through the element 279; segment before node 279.
+// J261: Existing double-factor axis/target/velocity scale subsets 236/287/199/336/282/315/331; independent
+// double angle 258. All regress or move frame/extent away.
+// NOT kept: no eligible native repair; opening executable source restored. Segment EDX, mirrored
+// scalar/axis/previous/rest-offset homes and rotation scheduling remain.
 // Round 91 (m3 lane 9, fast): the segment chosen as a ternary of two element addresses 297 (1379 bytes), as an
 // if/else 297; inverse_dt declared once before the loop 181; the node pointer taken after the segment 279;
 // inverse_dt after the node and segment 171 (same code); `++node->ticks` before the stiffness 175. Retail builds the

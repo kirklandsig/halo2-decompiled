@@ -989,6 +989,8 @@ struct s_bitmap_texture_view
 // MiniMax S (11-05): no new form, no lower score: the frame, the reduction branch, the format bits and the two
 // stores all agree with retail; only the last three instructions differ, where the masked level address is loaded
 // into EDX and retail reuses the base register that dies with that load.
+// MiniMax H (11-05): no new form, no lower score; the three header stores reordered (lock before data) change
+// the code (5) and the masked level address is still loaded into EDX where retail reuses the dead base register.
 // MiniMax R (11-01, third round): no new form, no lower score. The masked level address is still
 // loaded into EDX where retail reuses the base register, which is dead after that load. This
 // round: a permuter run over the function (17 tries, annealed, full image and reduced image)
