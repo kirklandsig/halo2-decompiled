@@ -841,7 +841,7 @@ extern vector3f *g_4687b0;
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
 // MiniMax lane A (11-04): no new form, no lower score.
-// score 298 (was 309): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
+// score 288 (was 298): the throw velocity through vector3f_scale (this round); earlier, flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
 // slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
@@ -974,6 +974,13 @@ extern vector3f *g_4687b0;
 // the offset sum as three vector3f_add_scaled phases 312 (frame 0xc0); source pointer + a player-block direction
 // copy + the phases in place in the copy 308 (1662, frame 0xcc, aligned 137; copy and one-use pointer: diagnostic);
 // velocity declared inside the not-attached block 298 (same code); up declared before the throw globals 298 (same code).
+// Lane 15 round 61 (kept, plain): the throw velocity through the existing vector3f_scale(&direction, speed, &velocity)
+// 298 -> 288 (1682 bytes): velocity is then not written field by field before the blend, whose velocity products
+// load first as in retail. Also tried (fast): the release point (the final 0xcafc0 point for 0xbc1d0) as its own
+// local apart from the throw origin (retail homes them at [esp+0x24], shared with normal, and [esp+0x54]) 309 (frame
+// 0xd8: at the else-if scope it cannot share); on 288: the blend through vector3f_scale + vector3f_add_scaled 316
+// (1655), `real inverse` in the blend 293 (1678), the normal through cross3f 288 (same code), up read through
+// g_4687b0 at each use 288 (same code), left through cross3f 292.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1079,11 +1086,7 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 					spread = false;
 				}
 
-				real speed = *(real *)(local_98b918 + 0x1b0);
-
-				velocity.i = speed * direction.i;
-				velocity.j = direction.j * speed;
-				velocity.k = direction.k * speed;
+				vector3f_scale(&direction, *(real *)(local_98b918 + 0x1b0), &velocity);
 			}
 
 			if (spread && actions->grenade_throw_maximum > 0)
@@ -1805,7 +1808,7 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // MiniMax G (11-04): no new form, no lower score; retail reloads the pool data and the unit after the
 // stored flag and reads the hand's slot byte from the reloaded unit, ours keeps the first unit, so
 // the pool reload, the second slot read and the weapon/mode homes differ.
-// score 138 (was 138): frame and entry homes agree through +0x34; pool reload, weapon/result
+// score 136 (was 138): frame and entry homes agree through +0x34; pool reload, weapon/result
 // and mode/flag homes remain. Numeric-hand lookup selected/other/both 142/141/142;
 // both with success admission 138, persistent result 154, common primary mode 171,
 // full player value 145, persistent result/full player value 157.
@@ -1900,6 +1903,13 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // not kept: register-masked aligned count 75 as the baseline, the result moves to a stack byte retail lacks, direct form 165;
 // `result = false` first with `result = true` at the end of the drop block 154. Retail hoists `xor al, al` before the NONE test
 // and ends `mov al, 1` (no result home).
+// Lane 15 round 61: value fix (kept, 138 -> 136): retail passes the other hand's weapon in EAX and the dropped weapon
+// in ECX to 0x101740, whose own bytes take the weapon that gains the rounds first (EAX), so the call is
+// (other_index, weapon_index). Also tried (fast): a unit pointer for the hand getter with the slot read through the
+// lookup in place 138 (loads still merge), the reverse 137 (retail's [edi+edx+8], no reload); on 136: a long player
+// value 141, the other hand as `primary != false` 134, either getter's unit through UNIT_ACTION_HEADER_GET 136 (same
+// code), both hands through unit_action_weapon_get 161 (543 bytes). Retail also keeps the pool data from the second
+// getter for the definition compare (`mov ebp, ecx`) where ours reloads it.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1933,7 +1943,7 @@ bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 		if (other_index != NONE &&
 			UNIT_ACTION_UNIT_GET(weapon_index)->definition_index == UNIT_ACTION_UNIT_GET(other_index)->definition_index)
 		{
-			function_101740(weapon_index, other_index);
+			function_101740(other_index, weapon_index);
 		}
 		function_e69c0(unit_index, 8);
 		function_e69c0(unit_index, 0x12);
@@ -2125,6 +2135,9 @@ done:
 // unit macro with the unit pointer declared after it 124 (340 B), with the admission nested 122 (340 B); the own weapon
 // through the unit pointer 97. Retail holds false in AL from the top (`xor al, al` before the 13c test) through both
 // lookups and exits to one epilogue without ebx.
+// Lane 15 round 61 (fast): the own or the other weapon's unit through UNIT_ACTION_HEADER_GET 97 each, either weapon
+// through the header's unit_get_current_weapon (unknown_1e1f20.h included) 97 each (same code: the loads still
+// merge), `bool taken = false;` declared at the top beside given 118 (336 bytes).
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -2591,6 +2604,10 @@ __forceinline char unit_action_round(real value)
 // frame_count * 0.033333335f;` times the field 107 (retail's product order); on 107 the lunge target read at each
 // use 161, read inside the `>= 1.0f` test with the NONE/0xbae20 test nested and target_index in both failure
 // arms 105 (retail's jb before the field load; regblind 10). On the 235 body: seconds + nested lunge read 233.
+// Lane 15 round 61 (fast; plain listing identical): first_person_name = NONE declared first, before the unit, 312
+// (1191 bytes; aligned 142 -> 117, the NONE register and the weapon's NONE default become retail's); is_biped
+// computed after the declarations 235, result declared before the weapon getter 235, the switch on
+// actions->melee_name with no local 235 (same code each); the channel declared with the top locals 301.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
