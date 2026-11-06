@@ -1882,9 +1882,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax R (11-04): no new form, no lower score; retail's early colour read still needs a form that
 // spills only color A and keeps color B in EDI, which every snapshot point tried so far fails.
-// score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax R (10-31): no kept form, no lower score: colour locals reach the frame 0x44 but spill both colours
 // (195/188); the permuter's 124 promotes the unknown to xmm0 and breaks retail's argument layout.
 // Earlier forms: frame 0x44 agrees; settings/color/query registers, cursor home and zone-base scheduling remain.
@@ -2035,6 +2035,14 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // DH372: Partial clipped-zone halfspace acceptance/rejection, bool/byte/short/long,
 // 131 each at 556 bytes. NOT kept: regressions; original helper and body restored.
 // Missing early color home and frame 0x40/0x44 remain; all checked controls survive.
+// Round 92 (m3 lane 16, fast with 0x177040 and 0x176f60): colour locals after the spawn stores with `multiplied()` as the
+// argument 178 (572 B; frame 0x44 and the colour loads at retail's spot, but in the one block before 0x175a80 the
+// system keeps EDI, colour A takes EBX and colour B and the tint spill, where retail keeps colour B in EDI, the tint
+// in BL and reloads the system); the same locals inside the type-query block 178; colours at the call with
+// `multiplied()` as the argument 135 (aligned 76 -> 74); `dword const` colour locals with both queries named 184;
+// colour B declared first 178; both colour locals at the function top 195; only colour B read early (colour A at
+// the call) 146 (556 B, aligned 76 -> 66: colour B takes EBX, the system keeps EDI, the tint spills). The loop already
+// matches retail apart from frame offsets and the definition reload.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3039,8 +3047,6 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
-// MiniMax R (11-04): the location mode read late from the definition reaches retail's 0x54 frame but
-// scores 108, the pool declaration swap 114 (345 bytes); no new form, no lower score.
 // score 93 (was 93): frame 0x4c versus 0x54 (retail spills the definition and keeps two more
 // dwords), the particle system in EDI (retail ESI), color B spilled (retail EDI) and the cached
 // mode differ. Tried: transform name 109; query results, particle cursor and colors at entry 109;
@@ -3053,6 +3059,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // cursor home 112; early mode traversal transform/node observation/transform home/query scope 96
 // each; native mode 96; entry word/native mode 108/109; unsigned particle cursor alone/with native
 // mode 96/96; node predicate at use 109, with native mode 110; late native mode 106.
+// MiniMax R (11-04): the location mode read late from the definition reaches retail's 0x54 frame but
+// scores 108, the pool declaration swap 114 (345 bytes); no new form, no lower score.
 // Round 88: the next index without `volatile` 122 (the effect index moves to ECX and caller
 // 0x176f60 stops matching: the volatile is what keeps it on the stack); mode read per call 108;
 // the effect index read once through its address with a plain next index 105; multiplied() in
@@ -3233,6 +3241,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // DH372: Particle availability/exhaustion across the original transform call,
 // bool/byte/short/long 119/119/126/132/119/119/126/132. NOT kept: regressions; original body
 // restored, frame 0x4c/0x54 and system/successor/color homes remain.
+// Round 92 (m3 lane 16, fast with 0x176f60, which matches unless given): the cached mode as `long` on this body (no
+// spawn cursor) 92 at retail's 337 bytes (gain 1, not kept); the cached word mode declared at function scope 93; the
+// system pointer declared before the effect pointer 93 (same code); the definition declared first with the mode read
+// per call 108 (0x176f60 25: effect index in EAX, system index in ECX, definition in EBX until the loop); `word const`
+// mode 93. On the cached form the prologue is retail's except the system/next ESI/EDI swap.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

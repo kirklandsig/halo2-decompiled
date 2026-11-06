@@ -1351,11 +1351,11 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
-// MiniMax G (11-05): the element index, the flags and the same-object result read as wider or narrower types give 134/134/244/248/253, and the mask as a bool 241; retail's EBX entry and spilled mask byte against our BL mask and memory entry, and the frame 0x10 against 0x14, stay unmatched; retail loads the object-table global at +0x06 where ours loads it at +0x0f, and its decline block falls through into the loop latch where ours jumps to a latch at the end of the body, but the header lookup written out is the same code, a nested actor_get gives 230 and an explicit continue in the decline path is the same code; no new form, no lower score.
 // score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
 // object-header data in the prologue and reads the flags once above the slot-flag test.
+// MiniMax G (11-05): the element index, the flags and the same-object result read as wider or narrower types give 134/134/244/248/253, and the mask as a bool 241; retail's EBX entry and spilled mask byte against our BL mask and memory entry, and the frame 0x10 against 0x14, stay unmatched; retail loads the object-table global at +0x06 where ours loads it at +0x0f, and its decline block falls through into the loop latch where ours jumps to a latch at the end of the body, but the header lookup written out is the same code, a nested actor_get gives 230 and an explicit continue in the decline path is the same code; no new form, no lower score.
 // Before round 62: the frame 0x14 agrees; retail takes the object-header data before scaling
 // the actor (actor index in EDX, ours ECX), keeps the loop entry in EBX (spilled at F+4), spills the
 // 0x20 mask byte to F+3 and re-reads the flags for the 0x40 test; ours keeps the entry in memory
@@ -1600,6 +1600,11 @@ void function_1f86a0(long actor_index);
 // Mask spill, EBX entry and actor/root homes remain.
 // N398: Actual slot/state/header/byte callback reference formals, each with indexed member/full-slot payload 134/134/134/134/134/134/134/134.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Round 92 (m3 lane 16, fast): `same` as a ternary with a false arm 223; the entry as a pointer to const 134; the mask
+// as a byte cast of the masked flags 134; the decline ternary negated with its arms swapped 231 (862 B); `specified != 0`
+// in `same` 134. Register-blind aligned difference 49 of 247: the prologue object-table load, the loop (decline path with
+// its own next-entry call, mask spill, EBX entry) and the default arm (flags re-read after the object-index store and the
+// 0x20 load hoisted above the slot-bool test) are three separate blocks.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

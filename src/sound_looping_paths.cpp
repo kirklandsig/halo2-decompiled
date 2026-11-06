@@ -355,6 +355,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // local 866, tag local 866, both 866, hoisted sounds 924 (3327 B), choice pointer 962 (3284 B), long query count 919 (aligned
 // 584), long choice count 956 (3281 B), both 942 (3297 B, masked 288), with the pointer 960. With hoisted sounds: long query 881
 // (3327 B), long choice 976, both 963, with flags and tag 949/881.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 866 [703]): the choice cap as `if (choice_count == 2) break;`
+// at the loop top 866 (same code); the first loop's three `continue`s as nested ifs 924 (3327 B, retail's entry: ESI zero
+// register, first difference moves to the target-count home +0x17); the sound fields read through `bsp->sounds[index]` at
+// each use 1005 (3381 B); nested ifs with long choice count and the query bound read from `count` 942 (3297 B) [577]; that
+// with `&choices[choice_count++]` stored in retail's order (tag, source, decibels, cluster) 960 (3308 B) [801].
 // Round 66 (m3 lane 14, fast): retail reloads the address-taken count at every use (`mov eax, [esp+0x10]` at each loop test and
 // for `> 1`, no copy): count used directly with no query copy 919 (same as the long copy); with a long choice count 942 (3297 B);
 // with the choice taken as `&choices[choice_count++]` 960 (3308 B; the cursor is strength-reduced into a hoisted pointer), with a
