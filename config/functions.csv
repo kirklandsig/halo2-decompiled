@@ -8642,7 +8642,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0023cea0,389,game,speed,a16 pad,,,,src/unknown_23d970.cpp,matched
 0023d030,90,game,speed,a16 pad,,,00142700 0016c6f0,src/unknown_23d030.cpp,matched
 0023d090,452,game,speed,a16 pad,,,0016c840 0023d030,src/unknown_23d970.cpp,matched
-0023d260,1326,game,speed,a16 pad,,,0016c6f0 00172520,src/unknown_23d030.cpp,todo
+0023d260,1326,game,speed,a16 pad,,,0016c6f0 00172520,src/unknown_23d030.cpp,matched
 0023d790,324,game,speed,a16 pad,,,000ba1d0 0011d090 00172520 001871e0,src/unknown_23d030.cpp,matched
 0023d8e0,131,game,speed,a16 pad,,,0023d030,src/unknown_23d970.cpp,matched
 0023d970,139,game,speed,a16 pad,,,,src/unknown_23d970.cpp,matched

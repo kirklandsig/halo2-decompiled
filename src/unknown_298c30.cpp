@@ -94,6 +94,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
+// MiniMax S (11-06): The first arg_7 plus arg_8 sum lands in xmm3 where retail keeps it in xmm0, so the
+// two byte streams part company at the third instruction and the rest of the function is compared out of
+// step; retail also keeps the normalized XY in xmm1 and xmm3 where ours uses xmm2 and xmm4. Splitting the
+// sum into two statements or two scalar locals did not move the register choice.
 // score 395 (was 395): Frame 0x64 and 0x1c cleanup agree; entry schedule and normalized XY/magnitude homes differ; the call passes the ratio where retail passes the distance (see Round 57).
 // Earlier: Frame 0x64 agrees; entry loads, normalization homes and 0x18 versus 0x1c cleanup differ.
 // The pointer-to-parameter trick for arg_3 is gone and the score is unchanged; the parameter's own use
@@ -479,6 +483,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 }
 
 // score 733 (was 633, 719 before that; the rise is the unrounded sine/cosine below): frame 0x114 as retail, 81 bytes short; radius and trace/pivot homes differ.
+// MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
+// off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,
+// and the four scale locals and the two trace results still sit at other offsets.
+// Earlier score 633 (was 719): frame 0x120 versus retail 0x114; radius and trace/pivot homes differ, 15 bytes long.
 // Frame 0x11c versus 0x114, early radius retention and trace/pivot/result homes remain.
 // Earlier: frame 0x11c versus 0x114; radius caching and trace/point homes differ.
 // Shared endpoint setters 767; center CRT copy 767; step CRT copies 767;

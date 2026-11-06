@@ -2098,6 +2098,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax C (11-06): no new form, no lower score.
 // score 542 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
 // no logic difference (offsets, constants, condition directions, call arguments, result values and the

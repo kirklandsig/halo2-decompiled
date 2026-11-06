@@ -601,6 +601,8 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax I (11-06): retail's prologue interleaves the compare with the pushes and keeps the
+// pathfinding read after the radius block; no new form, no lower score.
 // MiniMax A (11-04): pathfinding read after the radius block 674, final_complete below the height 697,
 // radius as one ternary (retail's load order) 704, pathfinding after the radius with a short frame
 // identifier 703, long step counter 764, bool result 736 and 756 with that order, the type guard split

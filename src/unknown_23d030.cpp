@@ -127,6 +127,21 @@ byte g_51ec12;
 real g_470a24 = 1.f;
 extern byte g_51ec11;
 
+// MiniMax B (11-06) round 2: 0x23d260 matches retail byte for byte. The yaw cosine and sine read into
+// two float locals and the movement.k component assigned last take the score from 7 to 5, the else arm's
+// speed read into a local of its own takes it to 2, and the projection's k product taken from a local
+// holding axis.k takes it to 0. The k product now loads axis.k into the register and multiplies by the up
+// component, the movement.k load lands after the fcos, and the position rows multiply the speed into the
+// component, all as retail has them. Not kept: the projection's three terms in any other order (199 to
+// 207), the k product's operands swapped (the same code), the k term through a local of its own (168),
+// the projection as one expression (197), the yaw cosine and sine as double locals, the speed read as a
+// plain global (the same code), and the axis.k local used by cross i or cross j as well (74 and 83).
+// MiniMax B (11-06): no new form, no lower score (7); the three differences the earlier round
+// lists remain (the projection's k term loads the other operand first, the rotated i multiply
+// comes before the subss that ends cross k, and the movement.k load lands ahead of the first
+// fld), moving the movement.k assignment between or after the other two components scores 162,
+// the six orders of the projection's three terms score 199 to 207 (15 for j-i-k), and the two
+// operand orders inside the roll block give the same code; the body is unchanged.
 // score 7 (was 89): frame 0x4c, length and all but the roll block's three spots agree. Left: axis.k * v.k loads v.k first (retail
 // axis.k); `mulss` of rotated i ahead of the `subss` that ends cross k; movement.k's load ahead of the first `fld` (retail after `fcos`).
 // Earlier: frame 0x4c agrees; zero XMM3 (retail XMM1), normalize_inline's i-first squared length and
@@ -539,9 +554,10 @@ void __stdcall function_23d260(void *state, void *input, void *output)
 		vector3f *v = &command->up;
 		real sine = (real)sin(camera->roll);
 		real cosine = (real)cos(camera->roll);
+		real axis_k = axis->k;
 		real projection = axis->i * v->i;
 		projection += axis->j * v->j;
-		projection += axis->k * v->k;
+		projection += axis_k * v->k;
 		projection *= 1.f - cosine;
 		real cross_i = axis->k * v->j - v->k * axis->j;
 		real cross_j = axis->i * v->k - axis->k * v->i;
@@ -560,9 +576,11 @@ void __stdcall function_23d260(void *state, void *input, void *output)
 		v->k = rotated_k;
 	}
 	vector3f movement;
+	real yaw_cosine = (real)cos(camera->yaw);
+	real yaw_sine = (real)sin(camera->yaw);
+	movement.i = (real)(yaw_cosine * *(real *)((byte *)input + 0x18) - yaw_sine * *(real *)((byte *)input + 0x1c));
+	movement.j = (real)(yaw_sine * *(real *)((byte *)input + 0x18) + yaw_cosine * *(real *)((byte *)input + 0x1c));
 	movement.k = *(real *)((byte *)input + 0x20);
-	movement.i = (real)(cos(camera->yaw) * *(real *)((byte *)input + 0x18) - sin(camera->yaw) * *(real *)((byte *)input + 0x1c));
-	movement.j = (real)(sin(camera->yaw) * *(real *)((byte *)input + 0x18) + cos(camera->yaw) * *(real *)((byte *)input + 0x1c));
 	point3f position;
 	if (g_470a28 != NONE)
 	{
@@ -601,9 +619,10 @@ void __stdcall function_23d260(void *state, void *input, void *output)
 	}
 	else
 	{
-		position.x = g_470a24 * movement.i + camera->position.x;
-		position.y = g_470a24 * movement.j + camera->position.y;
-		position.z = g_470a24 * movement.k + camera->position.z;
+		real speed = g_470a24;
+		position.x = speed * movement.i + camera->position.x;
+		position.y = speed * movement.j + camera->position.y;
+		position.z = speed * movement.k + camera->position.z;
 	}
 	camera->position = position;
 	command->position = position;

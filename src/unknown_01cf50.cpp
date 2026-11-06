@@ -8215,6 +8215,9 @@ bool function_016ac0();
 bool function_022710();
 void __stdcall function_2bcd0(long, bool, bool, bool, long, long, real);
 void __stdcall function_21a80(real, real, real);
+// MiniMax I (11-05): matches (score 0) with a #pragma inline_depth(0) ... #pragma inline_depth() pair around
+// the function (keeps the 0x16ac0 call out of line) plus the single expression for world_effects; held, since
+// new #pragma lines are not taken. The lead stays a source form that keeps 0x16ac0 out of line without a pragma.
 // MiniMax D (run 37): retail calls 0x16ac0 out of line, our build inlines it; the inlining is
 // decided by the /Ob flag of the defining file src/unknown_0167a0.cpp (not mine). A single
 // expression for world_effects gives 65; the original 16 is kept.

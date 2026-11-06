@@ -103,6 +103,7 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// MiniMax I (11-06): no new form, no lower score; the entry still loads the index before the radius constant and the loop still forms the vertex address before its x store; this round the x store through the array element with the other components through the pointer (112), all four components through the array (144) and the x store beside the point helper (119) are all worse, and the permuter (480 s) found no candidate.
 // MiniMax G (11-05): no new form, no lower score. The entry still loads the index before the radius
 // constant and the loop still materialises the vertex address before its x store. This round: the
 // x store as a standalone array element (before or after the helper) folds the address into the

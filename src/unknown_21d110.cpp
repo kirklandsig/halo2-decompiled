@@ -1007,6 +1007,9 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // of the matched functions' esp frames finds a lone byte in a dword-aligned home among dwords only as a dead parameter
 // slot, a struct member or a pushed bool. The record also lands where its two members' weights add up (below the
 // listener), where two separate locals land elsewhere, so retail's pair looks like one symbol.
+// Round 93 (m3 lane 16, plain): the looping record's flags as a word (bit 4 of a word field) 30; a short loop index 167
+// (807 bytes); the flag as `!!(flags & 0x10)` 30; the flag without the bool cast 30; a const entry pointer 30. No
+// existing {long, bool} record type in the sound code to hold the pair.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
