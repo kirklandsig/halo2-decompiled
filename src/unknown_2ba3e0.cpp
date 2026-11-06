@@ -467,6 +467,11 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // a definition copy for the properties and masks 34 (1521 bytes); both copies 129 (1518); a named index before the nearest
 // call 2; a per-particle mask 51 (1517), assigned to requested 2; a definition copy for the later mask only 2. The reload
 // order never moves; matched functions (0x1384a0, 0x168e20, 0x2c05f0) reload in reverse prologue order as retail does here.
+// Round 94 (fast): both cache updates through the existing s_particle_value_cache::function_173c10 member (it inlines) 128
+// (1518 bytes); system declared second at the definition and its one call 10; the velocity normalizer in the maximum branch
+// too 34 (1521); the cache type renamed 10 (same code); `if (next != NONE) do ... while` 10 (same code). As in 0x2bdc70 and
+// 0x281b60, ours reloads the parameters in descending declaration order and retail ascending. The blend's first add as
+// change + velocity 10 (same code).
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {

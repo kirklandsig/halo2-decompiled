@@ -49,6 +49,7 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
+// MiniMax I (11-05, run 37): no new form, no lower score (10); the first word's OR order, the kind shift and the pool register set still differ.
 // score 10 (was 15): left: the first word's OR order (retail ORs flags and category before the
 // kept top bits), the kind shift (retail `shl eax, 0x1d; mov esi, eax`, ours `mov esi, eax; shl esi, 0x1d`)
 // and the pool register set before the bit-count test. Round 149 below. Earlier rounds' notes follow.

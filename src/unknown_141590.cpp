@@ -370,6 +370,9 @@ static inline void quaternion_transform_vector(
 // no change (canonicalised). The matched 0x11cb00 helper's exact operand and row forms on plain halves 198/1324 (99), on the struct 258/1303 (155); s computed before the identity copy as a
 // helper parameter, plain halves 308/1262 (170) and 302/1270 (163), on the struct 309/1262 (139) and 305/1270 (107). Three annealed searches over statement order, operand
 // forms and row orders, about 700 forms, none under 198 or below masked 84. None plain-confirmed, none kept. The two-member half struct stays until a form beats it.
+// N399: Destructive scalar/cross-scale/cross-result ownership, families 1..7 then
+// independent cross scalars: fast 256/306/253/313/333/333/312/306. Original ordered output trees and all three
+// in-place users preserved. NOT kept: unmatched storage/result forms; original helper/body restored.
 // Round 90 (m3 lane 16, fast): the doubled sine product written 2.f first 200 (same code); the clamp testing the
 // cosine copy 200 (same code); the construction scale computed before the axis cross 252 (1317 bytes); the cosine
 // arms swapped (`cosine >= 0.f` takes the identity) 210; rotation.w stored between the cross and the scale 200.
@@ -1151,6 +1154,10 @@ void function_143250(
 // N376: Same-type copy contraction by actual input/product/root-or-literal/sum
 // producers within bands, eight forms 1947/1766/1766/1771/1761/1766/1925/1948. All typed outputs/call
 // phases agree. NOT kept: no exact native storage recovery; full scalar graph restored.
+// N399: Native-located disjoint scalar reuse, second-band spills/third-band spills/SIMD
+// families 1..7 then all at first declarations: fast 1766/2001/2001/2612/2528/2341/2278/2278. All 84 ordered typed outputs
+// and application tuples agree. SIMD forms recover EAX/ret 4 and improve both callers, but grow
+// the frame/extent (all-SIMD 0x334, 11540 bytes). NOT kept: unmatched physical-storage forms; original body restored.
 // Round 90 (m3 lane 16): the workspace declared after the terms 1766 (fast, same code); every same-type plain copy
 // propagated (404 copies, 937 declarations) 1986 plain (10988 bytes, rotation EAX and ret 4, frame 0x30c; 0x22850 235,
 // 0x23690 467); the workspace matrix ahead of the rotation terms 1766 (fast); that with the 648 single-use terms in

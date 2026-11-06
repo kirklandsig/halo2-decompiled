@@ -567,11 +567,19 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // references give the copied tick product). Prediction through a pointer helper with rows j,i,k or i,j,k, then scaled_difference3f with `(real)ticks`, deltas i,j,k or j,i,k: 61 81 79 32 (366, in-place tick products);
 // j,i,k helper + i,j,k deltas swaps XMM0/XMM1 (loads follow the helper's rows). Length as dot3f, k-j-i, j-k-i, accumulated k first, accumulated j first: 79 79 79 79 55 on i,j,k, 61 61 61 61 82 on j,i,k.
 // Retail loads i, j, k into XMM0-2 but prints the j chain first with stores and deltas i, j, k; nothing here separates the chain order from the delta order.
+// B452: Existing add-scaled/in-place scaled-difference prediction, with delta/correction/
+// displacement-storage masks 0-7: 32/90/60/80/88/101/64/84. NOT kept: tick reuse and
+// correction scheduling remain; original parameter storage, helpers and entire body restored.
 // Round 137 (m3 lane 8, fast): rate chains and tick products j, i, k with deltas i, j, k and the squared length written
 // `k*k + j*j + i*i`, conversion at the top 77, after the chains 72 (369 bytes); the round 46 prediction (vector3f_add_scaled,
 // then scaled_difference3f with `(real)ticks`) with deltas i, j, k and that written-out length 79 (first +0x2f), with deltas
 // k, i, j 30 and j, i, k 32 (both the same code as length_sq3f): MSVC orders the summed squares by the deltas' definition
 // order whatever the expression's order, so retail's (k + j) + i sum implies deltas defined i, j, k.
+// Round 76 (m3 lane 10, fast with 0x1fc660): on the round 46 prediction form (vector3f_add_scaled into a predicted
+// point, scaled_difference3f with the ticks; XMM3 in place, first +0x65; re-measured 32): the length as dot3f 32, a
+// `long ticks` local converted at the call 32, `delta` declared before `velocity` 32 (all the same code: the sum is
+// reassociated to (k + i) + j for deltas j, i, k). On this body: the tick products written `tick_scale * v` 32 (same
+// code); the else arm's copy per component 89 (352 bytes).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

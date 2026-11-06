@@ -860,6 +860,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // n.k, n.i, ours has n.i before n.j; the far plane already loads its first camera term early. e4.i named before the normal copy 141 (masked 46),
 // as a const reference 119 (38); the i product named after the copy 159 (57); an e4 pointer 251 (35, 1867 bytes); a normal pointer for d 150 (41);
 // `(real)(j + k) + i` 176 (54), `i + (real)(j + k)` 176 (54), `(real)(k + j) + i` 145 (51), all products cast 146 (36), a double subtotal 413 (158, 1835 bytes).
+// Round 75 (m3 lane 10, fast with 0x320b0/0x1648d0; control 115, difflib-aligned 64): the head's only cause is the i term
+// of plane 0's d: retail loads e4.i with the other two coefficients ahead of the normal copy and reads n.i at the
+// product, ours reads n.i early and e4.i at the product; the zero then takes XMM3 for XMM4 (about 35 lines). Both
+// planes' d written j, k, i 152 (emitted i, k, j: VC emits these sums last term first), normal-first products 115 (same
+// code), `i + (k + j)` without casts 247 (1867 bytes); dot3f for both re-measured 155 either order. Classification
+// with the j term point-first 115, all terms point-first 115 (same code: retail's first-row j term loads n.j first).
 // M3 lane 4 r168 (one-file harness, exact at 115). New: all 120 declaration orders of the five top-level locals (points,
 // outside flags, segment flags, planes, culled) 115 each; both planes' normals copied before plane 0's d 133; the near clamp
 // as `near_sum < k ? k : near_sum` 115 (same code), as `near_sum > k ? near_sum : k` 117. Re-measured listed forms: plane

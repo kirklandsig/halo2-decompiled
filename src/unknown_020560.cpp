@@ -1069,6 +1069,14 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // all with the existing copier sample reference: eight at 547/2122. NOT kept:
 // native query register, vector/ordinal homes and frame 0x2c are not recovered.
 // Original interfaces, both caller sites, copier and complete body restored.
+// Round 75 (m3 lane 10, fast with 0x24550/0x22750/0x22c30/0x146020/0x23690; [difflib-aligned]): index scans reading
+// `source->entries[i]` at each use with scalar offsets 639 [406] (2057 B), the scan-2 offset as a vector3f 639; round
+// 130's mix (scan 1 through distance_sq3f, a samples local after it) 457 [225] (2070 B; scan 1 byte for byte retail's,
+// nearest in EDI), its consistent direct form 577 [207] (2094 B): VC reuses the remainder loop's `source->entries` load
+// for `first` and the second scan, so that register costs `nearest` its EDI in scan 1 (hence the shared zero and the
+// memory nearest); retail reloads the field after scan 1. On the mix: scan 2 as y, z, x scalars with the kji
+// projection and distance 551 [280] (119 bytes short), the vector offset with a kji distance 549 [267], with length_sq3f 549,
+// with delta assigned k, i, j as well 549 [271] (all 2005 B: the distance no longer shares the subtractions).
 // Y602: Coordinate/reduction/minimum scalar lexical identities, then immutable original-site scratch:
 // 547/547/547/547/547/547/547/547.
 // NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
