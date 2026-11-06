@@ -2549,7 +2549,7 @@ real magnitude3d(vector3f const *v);
 // product as a float from [esp+0xc]; we keep a double-precision copy of the dot at [esp+0xc] and call the
 // double arccosine (0x48a538) instead. The magnitude homes also differ: retail keeps the raw length in its
 // own slot and the pinned value in another, where we reuse one slot for both.
-//// score 170 (was 170): plain fallback component loop recovers retail frame 0x38;
+// score 170 (was 170): plain fallback component loop recovers retail frame 0x38;
 // first +0x30 stores the raw length at +4 rather than +0xc; rotation allocation still differs.
 // MiniMax R (11-01): 132 with the shared or staged axis cross and the rotated components as named locals, but it costs 0xc2d00 its match in the full build like the held cross3f form, so it is not kept; the named components alone (182) and the axis written out in the helper's operand order (182) change nothing.
 // Earlier baseline 182 (193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
