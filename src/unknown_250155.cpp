@@ -2734,6 +2734,13 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // text_b, shown count, player/no_team, bitmap_a, bitmap_b and retail bitmap_b, text_a, text_b, shown count, player/no_team, bitmap_a, so retail has
 // bitmap_b one step ahead of all five. Tried on the plain body: the helper taking bitmap_b first 95; the second loop declaring bitmap_b first 95; that with
 // bitmap_a and text in reverse 95; bitmap_b stored first in every arm of the helper 177 (932 bytes); players[i] named once in the voice block 95 (same code).
+// Round 74 (m3 lane 11, fast): every callee down the 0x53b40 chain (0x53be0, 0x53de0, 0x53c30, 0x59670, 0x596a0) now
+// matches, so retail's players[i] reload after the voice query means LTCG treated that chain as able to write memory
+// (as an opaque, non-LTCG callee would be: a build-flag question, not tried); the last loop is a spill choice (retail
+// reloads the screen into EDI after the second call and keeps bitmap_a in EBX; ours keeps the screen in EBX and
+// spills both bitmaps). Tried: the last call's `(short)i` cast dropped 95; the voice state as one conditional
+// expression 95; no_team from the team byte 97; team_index from the field 95; the lookup pointer declared at
+// function scope 95.
 // F399: Existing four-output producer with whole-screen pointer/reference, output
 // pointer/reference and direct/captured mode contracts: eight forms 95 each.
 // NOT kept: no gain or equality; original helper, both uses and complete body restored.

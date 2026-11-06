@@ -15,6 +15,7 @@ void function_1fa50(short_rectangle2d const *bounds, word const *text, void cons
 #include "slot_handler.h"
 #include "input_record.h"
 #include "unknown_157450.h"
+#include "player_queries.h"
 
 real function_1e96a0(short column, short row);
 
@@ -74,7 +75,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 }
 
 // MiniMax H (11-04): no new form, no lower score; the enable reloads and the maximum homes still differ.
-// score 107 (was 107): no frame; enable observations and maximum/register homes differ.
+// score 106 (was 107): no frame; enable observations and maximum/register homes differ.
 // Lane 12 r78: MATCH (fast, plain and full check, lost []) with two changes together, not kept by the coordinator:
 // (1) the enable byte and the input counters declared as one struct symbol in globals.h (retail's record at 0x510cb0
 // reaches 0x51e8d4, so the region is one object); the padding of that trial struct overlaps the separately defined
@@ -140,13 +141,21 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // NOT kept: the one-use record copy spills through the code slot, absent in retail; original body restored.
 // MiniMax C (11-05): no new form, no lower score: the enable reload, the maximum homes and the word
 // schedule still differ here.
+// Round 74 (m3 lane 11, fast and plain): the team test through the existing function_x340af0() in the condition 106
+// (kept: it replaces a hand-copied copy of that helper and the reuse of `code`; the helper's result takes code's
+// slot, retail's store), and the player record as the header's s_player_datum (same code; replaces a local struct).
+// Retail's two maxima are 0x196960's inlined body (its `mov eax, -1` preset, the `xor eax, eax; mov ax` read and
+// the team's `or ecx, ecx`), and the player clamp is 0x1968b0's: both sit in /Ob1 src/unknown_1967d0.cpp (held),
+// where `inline` on their definitions is the lead. On 107: the increment before the row pointer is formed 111
+// (retail's `inc word ptr [eax+edx+0x16]; lea edi` shape, but the player/kind homes swap); that with the index taken
+// before the classification call 115; row declared first and assigned after the increment 111. On 106: the
+// increment form 110; the team field read at each use 108; the team read once before the test 113.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
 	long kind = function_196ef0(code);
 	long index = player_index & 0xffff;
-	struct s_team_player { byte before[0xc0]; char team; byte after[0x21c - 0xc1]; };
-	s_team_player *player = ((s_team_player *)g_4e8c24->data) + index;
+	s_player_datum *player = ((s_player_datum *)g_4e8c24->data) + index;
 	function_1e9ce0(player_index, 7, statistics, 2, 1, true);
 	function_196e60(index, 0, kind, 1);
 	if ((code & 0xc0) == 0x40) function_196e60(index, 6, kind, 1);
@@ -163,12 +172,7 @@ void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, 
 		else if (value > maximum) value = maximum;
 		g_511bf4.groups[index][12].value = (word)value;
 	}
-	if (g_55e4d0[g_4e9ae8->engine_index])
-	{
-		code = (byte)g_4e6948->flags184.bit0;
-	}
-	else code = 0;
-	if (code && player->team != NONE)
+	if (function_x340af0() && player->team != NONE)
 	{
 		long team = player->team;
 		long team_maximum = NONE;
