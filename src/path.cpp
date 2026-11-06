@@ -627,6 +627,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // AC558: Complete two-step admission/rejection truth in bool/byte/short/long:
 // eight at 333, 1388 bytes (control 286/1389). NOT kept: all regress; original
 // type-2 fallback, metadata stores, long link total and complete body restored.
+// Y605: Complete transition-step pointer/reference, branch-owned/shared admitted metadata,
+// original long then bounded short link total: 375/375/385/385/392/392/391/391.
+// NOT kept: all regress and shorten away from retail; original indexed fields and body restored.
 // M3 lane 11 r71 (fast, plain where marked; masked = aligned with registers and stack offsets ignored). Rebuilt the
 // flag
 // form (short link count; `special` false at the arm's start and set by an if; `usable` by if / else if with a `data`
@@ -1176,6 +1179,9 @@ bool function_2715a0(byte *buffer)
 // DH368: Direct named link/root/child array elements, seven subsets then collision candidate:
 // 624/528/486/659/624/528/659/684. NOT kept: child-only ties, others regress or grow;
 // original array receivers, inherited fallback qualifier and complete body restored.
+// Y606: Actual short link discriminator with paired metadata halves/direct depth/shared
+// point producers, masks 0..7: 486/492/481/498/486/492/481/498. NOT kept:
+// five-point leads below eight; half transfers grow extent. Original type/body restored.
 // M3 lane 11 r71 (fast, control 486 at 2076 bytes). Retail loads the child's entry point into four registers ahead of
 // the closest test's `jbe`: the entry point copied to a local inside `if (destination_valid)` and used by the closest
 // update 488 (masked lower, retail's four loads), declared before the whole test 488; NONE type test ahead of the
