@@ -8,7 +8,6 @@
 #include "effects.h"
 #include "object_markers.h"
 #include "object_queries.h"
-#include "player_queries.h"
 #include "unknown_1dee50.h"
 #include <math.h>
 #include <string.h>
@@ -322,7 +321,6 @@ struct s_object_child_iterator
 
 struct s_object;
 s_object *function_badc0(long object_index, dword type_mask);
-s_object *object_get_175d70(long object_index, dword type_mask);
 bool function_1df560(short team_a, short team_b);
 
 /* the object header data's elements (g_4e0300, 12 bytes) */
@@ -969,23 +967,13 @@ PRIVATE inline long damage_object_root(long object_index)
 	return root;
 }
 
-/* the squared distance between a root object's centre and a point */
-PRIVATE inline real damage_root_squared_distance(point3f const *root_center, point3f const *point)
-{
-	real dx = root_center->x - point->x;
-	real dy = root_center->y - point->y;
-	real dz = root_center->z - point->z;
-
-	return dz * dz + dy * dy + dx * dx;
-}
-
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
-// MiniMax G (11-06): score 0 (was 206): matches (plain check confirmed): the player scan runs through the
-// s_player_iterator with data_iterator_next_inlined, the squared distance comes from a helper called at both
-// tests with the x difference taken first, the mask sits in a named local before 0xbb050 and the last object
-// index is declared before the first one; the three object lookups call the noinline object_get_175d70, whose
-// body the linker folds with 0xbadc0, so all three stay out of line as retail has them.
+// MiniMax G (11-06): matches only when the three object lookups call 0x175d70's file-local noinline copy of
+// 0xbadc0 (object_get_175d70) from here, which keeps them out of line as retail has them; held under the
+// noinline ruling (an existing noinline copy called from another file is the same steer), patch kept. The rest
+// of that body (the s_player_iterator scan, a squared-distance helper called at both tests, the mask in a local
+// before 0xbb050, the last object index declared first) with the lookups through 0xbadc0 is 246.
 // MiniMax G (11-04): no new form, no lower score; the first 0xbadc0 call only leaves the line behind a second
 // count test (248), and the squared distance at both tests (284) or with the mask in a local (275) is worse.
 // MiniMax E (11-06): no new form, no lower score; the first 0xbadc0 use is still expanded here while
@@ -1050,24 +1038,23 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 	real radius = MAX(definition->radius04, MAX(definition->radius58, definition->radius68));
 	point3f const *position = &data->position;
 	long objects[k_maximum_area_of_effect_objects];
-	dword mask = (definition->flags0c & 2) ? 3 : 0;
-	long object_count = function_bb050(0, mask, &data->unknown1c, position, radius,
+	long object_count = function_bb050(0, (definition->flags0c & 2) ? 3 : 0, &data->unknown1c, position, radius,
 		objects, k_maximum_area_of_effect_objects);
-	long last_object_index = NONE;
 	long first_object_index = NONE;
-	s_player_iterator iterator;
+	long last_object_index = NONE;
 
 	*(dword *)data->unknown04 |= 1;
 
 	if (definition->player_radius > radius)
 	{
-		s_player_datum *player;
+		long player_index = NONE;
 
-		iterator.data = g_4e8c24;
-		iterator.index = NONE;
-
-		while ((player = (s_player_datum *)data_iterator_next_inlined((s_record_pool_iterator *)&iterator.data)) != NULL)
+		while ((player_index = data_next_absolute_index_inlined(g_4e8c24, player_index + 1)) != NONE)
 		{
+			s_damage_player *player = (s_damage_player *)(g_4e8c24->data + g_4e8c24->size * player_index);
+
+			if (!player)
+				break;
 			if (player->unit_index == NONE)
 				continue;
 
@@ -1076,12 +1063,15 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 			if (object_count >= k_maximum_area_of_effect_objects)
 				continue;
 
+			real dx = root->field_x221477.x - position->x;
+			real dy = root->field_x221477.y - position->y;
+			real dz = root->field_x221477.z - position->z;
 			real inner = root->field_xae9109 + radius;
-			if (damage_root_squared_distance(&root->field_x221477, position) <= inner * inner)
+			if (inner * inner >= dz * dz + dy * dy + dx * dx)
 				continue;
 
 			real outer = definition->player_radius + root->field_xae9109;
-			if (damage_root_squared_distance(&root->field_x221477, position) <= outer * outer)
+			if (outer * outer >= dz * dz + dy * dy + dx * dx)
 				objects[object_count++] = player->unit_index;
 		}
 	}
@@ -1092,14 +1082,14 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 
 		if (definition->flags0c & 2)
 		{
-			s_damage_object *unit = (s_damage_object *)object_get_175d70(object_index, 3);
+			s_damage_object *unit = (s_damage_object *)function_badc0(object_index, 3);
 			if (!unit || unit->player_index == NONE)
 				continue;
 		}
 		if (object_index == ignore_object_index)
 			continue;
 
-		s_damage_object *unit = (s_damage_object *)object_get_175d70(object_index, 3);
+		s_damage_object *unit = (s_damage_object *)function_badc0(object_index, 3);
 		s_type_1e6529 copy = *data;
 
 		function_d74e0(&copy, object_index, false);
@@ -1112,7 +1102,7 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 			}
 			else
 			{
-				s_damage_object *other = (s_damage_object *)object_get_175d70(object_index, 3);
+				s_damage_object *other = (s_damage_object *)function_badc0(object_index, 3);
 				if (other && other->player_index != NONE)
 					first_object_index = object_index;
 			}
