@@ -74,7 +74,13 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 }
 
 // MiniMax E (11-05): no new form, no lower score: the named gain difference 537 fast (542 plain, already recorded), the double-cast differences 539 fast and 551 plain, the gain declarations moved ahead of changed 573 and no /Op 723; retail's frame 0x224 and its stream in EBX with the gain in EBP stay unmatched; the permuter was stopped before it printed a result.
-// score 545 (was 545): frame 0x22c versus 0x224; stream/gain homes and mixed math remain (masked aligned 233 of 565 lines, the most of this queue).
+// score 544 (was 545, full build): b2D 11-06 statement walk against retail found no logic difference
+// (every branch, field offset, callee and argument agrees). Precision fix kept: log10 taken of a double (fyl2x then fmul 20 unrounded, 0x21fe2f-0x21fe37).
+// Found, not kept: retail also sums the level energy unrounded on the x87 stack (faddp at 0x21fde3, fsqrt at 0x21fde9). A double `energy`
+// scores 530 here, but in the full build it loses the matched 0x21f8a0, 0x120d50, 0x120d80, 0x121350, 0x121a40, 0x121fc0, 0x125b40 and
+// 0x1293f0 (and 0x128ca0 222 -> 293, 0x21c400 339 -> 526), so the energy stays a float.
+// Not kept: retail also never rounds the exp result or `scaled` (0x21fdb9-0x21fddd): a double amplitude 574; with a double `scaled` too 528 but 21f8a0 0 -> 67 and callers 293/526;
+// `fabs((double)a - b)` on the three field differences puts a CRT fabs call in, 539. Root cause is the file's /Op (retail rounds nothing). Frame 0x22c versus 0x224; stream/gain homes and mixed math remain (masked aligned 233 of 565 lines, the most of this queue).
 // Round 64 (fast control 532, full 545; masked aligned in brackets, control [240]): send bits through a helper with a named bool result 532 [243] (no dead byte: the store
 // needs the flags in memory); mode sends as a fall-through two-case switch 545 at 1901 bytes [244], with the helper [247], with the gain difference named [240]; gain
 // difference named alone 537 [244], cast to real 532 (same code); direct as a bool cast 532 (same code); `changed` default-true 544 [246], default-false 543 [244], default-true with the
@@ -352,7 +358,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 			}
 			real amplitude=(real)sqrt(energy);
 			real bounded=amplitude<0.0f?0.0f:amplitude>1.0f?1.0f:amplitude;
-			real level=amplitude>0.0f?channel_pin_gain((real)(log10(bounded)*20.0f)):-64.0f;
+			// retail multiplies the log10 (fyl2x, 0x21fe2f) by 20 straight from the x87 stack (0x21fe31), so
+			// the logarithm is taken as a double: the float overload would round it first
+			real level=amplitude>0.0f?channel_pin_gain((real)(log10((double)bounded)*20.0f)):-64.0f;
 			sends.level=level;
 			sends.level_offset=input->field_14;
 			sends.flags|=0x20;
