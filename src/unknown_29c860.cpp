@@ -130,6 +130,7 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// MiniMax I (11-05, run 37): no new form, no lower score (277); the 0.9 steering block is still one instruction short and the left and avoidance vectors still swap their slots.
 // score 277 (was 277): the 0.9 steering block is one instruction short (145 of the count); the left and avoidance vectors swap their
 // 12-byte slots; the second normalize's j product, the 0x5d0 flag store, the early 0x44 load and the local_16 dot's x87 order differ.
 // MiniMax B (11-04): no lower score; the new forms tried and dropped are the avoidance vector's
