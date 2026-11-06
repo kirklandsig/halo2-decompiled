@@ -1047,6 +1047,16 @@ extern long *g_51e9cc;
 // every +0x348 write 10 (the crouch store and the 0x10 or become retail's); that with case 5's surface array named
 // with the case's other pointers 9, a typed surface element 9, the crouch operands swapped 9. Left at 9: the crouch
 // operand pair, case 5's 0x35c store ahead of the test, case 4's store order.
+// Round 70 (m3 lane 14, fast): 0xb77d0's file is now plain /O2, but the velocity block as a call to it stays out of line,
+// with a plain or a force-inline declaration 498/498. The lookup receiver re-measured 17; with word_flags_set for every
+// +0x348 write 10; plus case 4's 0x354 store ahead of 0x364 5 (diagnostic, the receiver is not keepable). Without the
+// receiver: case 4's swap 37, with word_flags_set 30 (not kept: the P267 order ruling; lead: retail loads entry+0xc
+// between the 0x360 and 0x364 stores, 0xdddc3). Case 5 with a one-use flag ahead of the 0x35c store 210, with 0x35c
+// stored after the if 192 (1489 bytes; compile-only gives the test before the store but sinks it to the join).
+// Compile-only (it reproduces the crouch pair): the add loads crouch_change first only when the outer
+// `if (function_dd8e0(...))` is removed (not just the inner velocity `if`); a bool or goto for that test, a scoped
+// height_change, the block as an inline helper (with an early return), a copy or helper parameter for crouch_change,
+// a named sum, `+=`, an if/else clamp, the compare reversed and the speed as one expression all keep ours.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -3717,9 +3727,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
-// MiniMax D (11-05): no new form, no lower score; our origin, distance and matrix homes are 0x44, 0x34
+// score 354 (was 354): MiniMax D (11-05): no new form, no lower score; our origin, distance and matrix homes are 0x44, 0x34
 // and 0x60 against retail's 0x40, 0x4c and 0x50, while every home from 0x94 up agrees.
-// score 368 (was 368): NOT kept (lane 1 r62): the pivot pair as two ternaries on the same property test gave 351
+// Earlier at 368: NOT kept (lane 1 r62): the pivot pair as two ternaries on the same property test gave 351
 // frame 0x12c agrees, 1940 bytes against 1937, first +0x71. Earlier NOT kept (lane 1 r62): the pivot pair as two ternaries on the same property test gave 351
 // (frame 0x12c and 1937 bytes agree, first +0x71 the body-matrix home, +0x60 versus +0x50), but retail compares once:
 // a repeated test picked by score, match only; the if/else restored. Earlier: 368 (was 494; 488 before the logic walk of 2026-10-31, which adds 6 points but fixes behaviour): retail's final
@@ -3853,6 +3863,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // them below it. Left on the 309 form: that slot order, the second transform's point loads, t's register in the arms and the else arm.
 // On the kept 354: length_sq3f in both squared sums 354, `real limit;` with the other locals 354, the first arm through vector3f_add_scaled 354, the arms inverted 354 [99],
 // the two pivot pointers declared the other way 354: five without a gain.
+// Round 70 (m3 lane 14, fast with 0xe1b60/0xe23e0): renames to move same-size stack slots, the matrix as body_matrix
+// 354, the origin as body_origin 354, the two properties as first/second_property 354, the distance as pivot_distance
+// 354, all four 354 (identical code: names do not order this frame). Only 17 of the 351 differing lines are offset-only;
+// the masked diff starts at the pivot select and retail's materialized `limit > distance` (AL) before the target copy.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4655,6 +4669,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // result or into the up copy 242 [50]; side through scalars 143 [28]. Diagnostics, not kept: identity pointer chains in the body and helper:
 // one dead up pointer plus one helper alias has all after the first call exact (57 at 887) with the first rotation 13 off; two dead pointers
 // have the first rotation 3 off and the rest 12 off; chains saturate at four. The operand state of the two blocks has to change separately.
+// Round 70 (m3 lane 14, fast with 0x1ecf50/0x1e5bb0/0x30bf0; 0x1ecf50 must be listed, alone the reduced image gives 621):
+// in the shared rotate helper, the v.i products of cross j and k written axis-first, one or both, 79/79/79 (same code:
+// product operands are canonical; 0x1ecf50 unchanged); the trig values inline in both rotate calls, no sine/cosine
+// locals 250 (929 bytes); cosine declared before sine 79; side through cross3f_staged and up through cross3f 100; up
+// and side declared at their first use 79.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

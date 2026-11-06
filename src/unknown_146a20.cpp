@@ -58,9 +58,9 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
-// MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
+// score 34 (was 34): MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax b (11-04): no new form, no lower score; the abstract allocator's base vtable store is still dropped (it comes from the header's inline constructor) and the pool placement still reloads g_479888 at the join.
-// score 34 (was 34): unchanged this round: retail still stores the abstract allocator's vtable at
+// Earlier at 34: unchanged that round: retail still stores the abstract allocator's vtable at
 // the object before the two following stores (our build drops that store, which comes from the
 // header's inline constructor and so is out of reach from this file) and still reloads g_479888 on
 // the constructed arm where ours reloads it at the join.
@@ -322,6 +322,11 @@ bool g_47f05b;
 // constructor pass, long/int/short/signed-char ordinals: 34/34/43/43/34/34/43/54. NOT kept:
 // no exact, nonregressing shared form. Entire constructor/header and target restored;
 // intermediate vtable store and successful-arm reload remain.
+// Round 70 (m3 lane 14, fast with 0x146b80/0x146e30/0x22c3e0, on `g_479894 = g_479888 ? new (block) ... : NULL;` 35):
+// the abstract's zeros as one chained assignment and a NONE store 33 (0x146b80 6, 0x22c3e0 6); a novtable fixed base 35;
+// the refcount 1 as a member initializer 35. Diagnostic only: the abstract constructor storing the refcount again 15
+// (143 bytes: the duplicate +4 store survives where retail stores the vtable, so plain dead-store removal keeps it and
+// the vtable store goes in a separate pass; 0x146b80 24, 0x22c3e0 202).
 // @retail 0x146a20
 void function_146a20(void)
 {

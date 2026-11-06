@@ -715,6 +715,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // 130, word to the field 130, dword 100, word to a deref 130; volatile present 114/114/130/130; on old playing 63/77. Second reads
 // that CSE removes (getter at the store 63, playing through the getter 63, unused mask/playing reads 63/63, index24 twice 112): none
 // moves present out of EDI. In-place dword 128 (375 B).
+// Round 70 (m3 lane 14, fast with 0x1584c0): retail's dword reload of the word mask before the first jne is a spill
+// reload of a word register variable (it fills ECX, the compare zero-extends CX, the update ORs ECX); ours keeps the word
+// in memory and fuses the zero-extension into the compare's load. On the word mask (77): the playing bit from the team
+// local 83 (383 bytes), one function-scope team local 77, the flag test ahead of the present update 83 (392 bytes), the
+// iterator declared first 77, a word playing accumulator 100 (391 bytes).
 // @retail 0x158140
 void function_158140(void)
 {
