@@ -685,6 +685,13 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // 311/311/311/264; raw word with the first three 311/311/311; byte owning
 // declaration plus direct bit-zero admission 311. NOT kept: no equality or
 // gain; original datum layout and body restored, native one-spill/failure byte remain.
+// Round 154 (m3 lane 6, fast with 0x188790 exact): `inline` on 0x188790's definition gives retail's 0x80 frame, xmm0
+// re-zeroed after the calls and the object in EBX but scores 301; on it case 3's failure as `bool failed = true` set
+// from the call only when flag1 is clear 162, audible declared right before 0x18d4f0 134, the object index named
+// before it 125, the top field as `sound->type == 0 ? sound->owner : g_444ae0` 91, cases in order 0, 2, 3 40, the
+// flags cleared by memset 22, a long listener named ahead of the 0x1000 flag 20 (aligned 15). Without the `inline`
+// and the match-only forms (ternary, case order, memset, audible placement kept) 287. NOT kept: the 20 rests on a
+// compiler hint on another function and on match-only forms; the chain is held as build/held/l6-1106-18cbc0-inline-chain.patch.
 // AC555: Effect-provider char/byte/signed-char returns with original Boolean
 // and native failure receivers, eight forms 264 each; provider stays exact. NOT
 // kept: no gain; original declarations/body restored; one-spill/failure byte remain.
