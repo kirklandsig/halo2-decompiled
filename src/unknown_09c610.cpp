@@ -122,6 +122,9 @@ struct s_9cca0
 // Round 109: global guard before the tag and marker stores 11, with their order reversed 11; marker before the guard 11;
 // tag before the guard 12; guard between the vectors 16; guard before both vectors 26; guard before event initialization 55
 // (204 bytes); combined early global/tag guard 60 (208). Original body restored; still BLOCKED-BY 0x184440.
+// Round 88 (m3 lane 16, fast): the recursive location setter taking a const reference (header, definition, every call) 9;
+// the tag lookup's result named 9; a bool result 9; the first vector copied as a point 9; the tag tested before the flag 17;
+// the flag pointer saved at entry 70 (as listed). Still BLOCKED-BY 0x184440.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

@@ -301,6 +301,11 @@ bool g_47f05b;
 // F377: Direct exhaustive constructor stores, terminal/zero-first arms and long/int/short/
 // signed-char ordinals: 34/34/34/34/43/54/43/54. NOT kept: narrow forms worsen other
 // constructor users; shared header and full body restored; base-vtable/arm reload remain.
+// Round 86 (m3 lane 16): retail keeps the store only here; 0x146b80, 0x146e30 and 0x22c3e0 inline the same constructors and
+// drop it. The fixed constructor defined in src/unknown_22c0a0.cpp 34 (plain, same code, siblings unchanged), the abstract one in
+// src/unknown_1470f0.cpp 34 (fast, same code); a raw block struct with fixed/buffer/pool members 34, all through the global 38
+// (144 bytes); placement from the global with the buffer from `block` 36 (146 bytes, still no store); the global tested
+// with placement through `block` 35 (140 bytes).
 // N384: Actual fixed/pool placement admission in bool/byte/short/long: eight 34.
 // NOT kept: unmatched admission carriers; original complete body restored. Shared
 // constructors untouched; intermediate vtable store and successful-arm reload remain.
@@ -309,6 +314,10 @@ bool g_47f05b;
 // on the base: a same-behaviour constructor twin for this one caller carrying a barrier steer, not kept (twin ruling, as
 // 0x45560 in lane 4 r165). Retail keeps the base's abstract vtable store only in this construction (not 0x146b80 or 0x146e30).
 // build/held/lane4-r166-146a20-ctor-twin.patch is the whole change, a lead toward the match.
+// B451: Per-element default then terminal override in the existing four-word
+// constructor pass, long/int/short/signed-char ordinals: 34/34/43/43/34/34/43/54. NOT kept:
+// no exact, nonregressing shared form. Entire constructor/header and target restored;
+// intermediate vtable store and successful-arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {

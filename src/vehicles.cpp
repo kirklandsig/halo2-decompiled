@@ -2884,6 +2884,8 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // original executable source restored; other constructor users regress; native frame 0xfc and scalar/transform homes remain.
 // P347: Complete branch-owned turn/speed-fraction/slip-scale results, seven subsets then all with independent relative output:
 // 676/676/676/676/676/676/676/682. NOT kept: Seven ties and one regression; frames remain 0xd0/0x104 versus native 0xfc. Original complete body restored.
+// J259: Separate force multiplier with time-factor ownership, independent relative output and uniform mass reads: 711/811/708/803/705/784/711/774; three precomputed friction results with mass snapshots/reads and existing final-vector scaling: 683/711/690/711.
+// NOT kept: no eligible native repair; opening executable source restored. Native frame 0xfc and first difference +0x66 recovered at 774; scalar homes and force scheduling still differ. Association, initialization and early one-use results require exact equality; all restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4833,6 +4835,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // inline 3616/3616/3597/3597. NOT kept: entry/later lookups still merge; forced
 // forms shorten to 2700 bytes and ordinary providers stay called. Original full
 // body restored; native zero/result/one and definition ownership remain.
+// M395: Complete result/blend/reverse-turning double receiver families 1/2/4/3/5/6/7, then immutable case receivers:
+// 1489/852/771/1538/1510/832/1537/1537. NOT kept: no exact native-shape candidate; native entry definition and zero/result/unit-constant residence remain.
+// Original complete body restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

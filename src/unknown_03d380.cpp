@@ -465,6 +465,9 @@ void function_125a90(long value);
 // still falls through), that without the direct keep store 47 [23]; `remove = type == 0x26 && !a` under `||` 75 [15]; `type != 0x26 || a` 75;
 // inverted `&&` 75, inverted `!(||)` 29; each type test a named bool 29. Named special or ordinary, with two ifs or nested tests, and no
 // implied test: 151/142/162 (466-471 bytes, 0x221810 inlined). Not kept: 29 and 25 need the direct keep store, which is match-only.
+// Round 398: Original single type observation with complete removal-result byte/signed-byte/short/word/
+// int/unsigned-int/long/dword storage: 36/36/95/95/94/94/94/94. NOT kept: no gain; original
+// Boolean removal result, policy captures, comparison widths and complete body restored.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
