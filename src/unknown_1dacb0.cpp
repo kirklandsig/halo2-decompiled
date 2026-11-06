@@ -1223,6 +1223,14 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // seven subsets 1011/902/1007/828/1011/902/1007; complete graph with plain inheritance while 1007.
 // Several shared users regress; every helper and original body restored. Return/output/candidate
 // homes, class/NONE roles and persistent zero carrier remain.
+// w14A (r718 base, fast 828/828): statement walk of both twins against retail, block by block. Their retail bodies are identical
+// but for the named-animation array at entry+4 (0x1db170) versus the overlay array at entry+0xc (0x1dbc80). Iterator setup and
+// zero stores, per-pass candidate reset to NONE, the 8-byte lookup keyed by `set`, the NULL-entry break, found-id loop exit, the three
+// optional output stores, the NONE test, 0x1dd9d0, both resource requests (first keyed by the arguments, second by the iterator's
+// outputs) with five kinds each in retail's order, and the inheritance loops all agree: no behaviour difference. All remaining
+// instruction differences are register homes/scheduling, the EBP zero (about 736 shifted lines) and epilogue layout: retail returns
+// through four epilogues (early NONE class 0x1dbc6b, no result 0x1dbc47, empty second inheritance loop 0x1dbc57, loop end), ours
+// through one (part of the 2807 against 2825 byte gap). No source change kept.
 // Round 520: actual named-table pointer/reference before/after candidate construction,
 // original/native iterator: 828/828/828/828/826/826/826/826.
 // Field receivers do not match; two-count initialization gains rejected. Body restored.
@@ -1526,6 +1534,14 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // `bool other = false` as a local 825 (2809). Diagnostics: only the second request kept, or the output stores removed, and the zero
 // appears in that request (`xor ebp, ebp` plus five `cmp reg, ebp`); only the first request kept, no zero; requests swapped 964 (2873);
 // no 0x1dd9d0 call 978, no loop 1019. Also on the old body: a while with a break 998 (2839 bytes); early `return result` for a NONE id 828.
+// w14A (r718 base, fast 828/828): statement walk of both twins against retail, block by block. Their retail bodies are identical
+// but for the named-animation array at entry+4 (0x1db170) versus the overlay array at entry+0xc (0x1dbc80). Iterator setup and
+// zero stores, per-pass candidate reset to NONE, the 8-byte lookup keyed by `set`, the NULL-entry break, found-id loop exit, the three
+// optional output stores, the NONE test, 0x1dd9d0, both resource requests (first keyed by the arguments, second by the iterator's
+// outputs) with five kinds each in retail's order, and the inheritance loops all agree: no behaviour difference. All remaining
+// instruction differences are register homes/scheduling, the EBP zero (about 736 shifted lines) and epilogue layout: retail returns
+// through four epilogues (early NONE class 0x1dbc6b, no result 0x1dbc47, empty second inheritance loop 0x1dbc57, loop end), ours
+// through one (part of the 2807 against 2825 byte gap). No source change kept.
 // DL261: Actual iterator/sorted-search/registration definitions and every declaration inline, seven subsets then explicit iterator expansion: 828/828/828/828/828/828/828/1265.
 // NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
 // DL263: Const complete value-return interface with original producer, explicit return copy,
