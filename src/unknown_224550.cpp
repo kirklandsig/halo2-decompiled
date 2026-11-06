@@ -94,6 +94,17 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax B (11-06) round 2: no new form, no lower score (211); the uv set declared before the
+// tint, the two uv sets declared one on each side of the tint and the tint declared at the top
+// of the function all give the same code (211), so the tint's home cannot be moved that way: ours
+// keeps the tint at +0x60 and the second uv set's bounds at +0x50 where retail has the tint at
+// +0x50 and those bounds at +0x60; the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (211); the tint's home stays exchanged with the
+// second UV set (ours +0x60/+0x50, retail +0x50/+0x60), and the blend's XMM5 residence, the
+// extents, the reciprocals and the aspect homes all follow from that swap; hoisting the two UV
+// declarations above the tint, swapping them, computing the packed colour after them, taking
+// the clamp pointer from the whole tint and putting the tint in an inner block all give the
+// same code or a worse score (236).
 // MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
 // score 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
