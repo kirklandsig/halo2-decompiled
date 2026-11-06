@@ -92,6 +92,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax G (11-06): no new form, no lower score; still blocked by 0xbadc0, whose body is in a file
+// outside this lane: retail re-fetches the unit after the two calls (the index times twelve kept in esi)
+// where ours reuses the entry fetch, because our link knows the callee writes no memory, so every later
+// register home shifts. The frameless entry and the carriers stand as they are.
 // MiniMax H (11-04): no new form, no lower score; retail re-fetches the unit after the two 0xbadc0 calls (the index times twelve kept in esi) where ours reuses the entry fetch, and 0xbadc0's memory effects are unknown, so the frameless entry and the carriers stand as they are.
 // score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
 // Earlier 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail re-fetches the unit after

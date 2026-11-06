@@ -1853,6 +1853,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax H (11-06): retail keeps the actor in ESI and the object pool global in EDI across the callees and
+// re-reads the pool's data at every lookup, ours keeps the actor in EDI and re-reads the pool global itself;
+// the difference rides on the callee being opaque to LTCG, and that callee (0x1e53e0) is in another file.
+// MiniMax H (11-06): the pool pointer as a local, declared before or after the actor, gives retail's shape of
+// a held pool pointer, but the pool lands in ESI, the actor stays on the stack and the frame grows to 0x18, 283;
+// the score stays 251.
 // score 251 (was 251): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
 // rotate (ours actor EDI, options ESI, pool never held; retail actor ESI, options EBP, pool global in EDI) and scalar homes remain.
 // Earlier: Frame 0x14 and actor ESI agree; the probability and delay clamps now match
