@@ -1107,6 +1107,9 @@ bool function_14ed80(void)
 // third = NONE` 9; `long third = first = NONE` 8; chained outputs declared after the globals 9; pointer to the two
 // representation fields 17 (170 bytes); third output assigned first in the block 9. Retail's colour order reads
 // first, globals, third; a named local ranks above both outputs and a read at each use below both.
+// Round 94 (fast): the representation index read once into a `char` local 48; the clamp's count read from the global
+// 53; NONE defaults in an else arm of the bound test 61 (152 bytes); the upper clamp as a ternary 19 (166 bytes); an
+// appearance pointer for both reads 13 (167 bytes); index initialised from the byte before the sign test 52.
 // Round 85 (fast): NONE assigned in an else arm instead of at the declarations 61 (152 bytes), the same without
 // the representation local 60 (153 bytes); the fields read through the globals without the representation local
 // 10 (the dead `add` stays); the representation index read into a char local 51, with the player getter folded
@@ -1741,6 +1744,10 @@ struct s_unit_player_assignment
 // Round 53: the remap as a direct ternary argument with the representation local 17, with the field at each
 // use 148 (466 bytes, parameters move); old unit local for 0xcbf60 17; one function-scope target local 17; named
 // lookup pointers for both +0xd4 reads 17; early return on the same unit 17; named engine index 17.
+// Round 94 (fast): the representation as a `char` local 129 (450 bytes); the new unit pointer re-derived for its second
+// lookup 28; the old unit pointer re-derived for its second lookup 17; the control-set and 0x1682bf unit arguments read back
+// from the player 16 (449 bytes, registers unchanged); the representation declared before the control call 17. A dummy load
+// before 0xcbf60, or the notification made unconditional, moves only its own block's temporary: separate ties per block.
 // Round 85 (fast; all callees match): retail avoids ECX for the first load after the 0xb58c0, 0x1872d0 and engine
 // reads where ours takes it. Callee parameter orders (definition, declarations, every call): 0x1872d0 swapped 17
 // (0x14cdd0, 0x185b00 worse); 0x1682bf's five other orders 17/17/18/18/18 (its matched callers lose); this

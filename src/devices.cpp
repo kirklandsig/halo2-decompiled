@@ -1433,6 +1433,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Round 70 (lane 10, fast): the time declared first in the block 2; the channel read as `channels->` 2; the sampled
 // matrix declared after the time 2; the 1/30 factor in a const local 2; `time *= 1.0f / 30.0f` 2. Compile-only (which
 // reproduces the order): 0-16 probe locals, `(void)&time`, a `(real)` cast and a named frame position move nothing.
+// Round 94 (fast): the animation default-constructed then assigned 2; `time - step` named in a nested test 2; speed
+// declared before had_animation 4; the state declared after both flags 2; the time renamed 2. With the time read only
+// by the second call (diagnostic) the fstp still precedes the animation push.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

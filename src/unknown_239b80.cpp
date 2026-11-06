@@ -107,6 +107,10 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // for both intersections and the copy 28; a current-point pointer for the first intersection only 5; a side local
 // only 7; a current-point pointer for the second intersection only 7. Numerator spellings and probes in the helper
 // or the first arm never change the first intersection's term order.
+// Round 94 (one-file LTCG harness): the helper indexing the point array (`points, a, b` parameters) 9; with the
+// element addresses at each use 5 (same code); deltas as a vector2f local 7; helper parameter renames 5 (no change);
+// `distance < -epsilon` 5 (same code). Removing the classification's x or y product or the denominator's x term
+// reorders the first intersection's numerator, so its x product is a numbering tie with the whole function.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
