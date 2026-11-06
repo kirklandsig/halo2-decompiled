@@ -59,15 +59,15 @@ PRIVATE inline long swizzle_log2(dword value)
 	return result;
 }
 
+// score 57 (was 82): both logarithms now have retail's loop and the common count is
+// taken by retail's branch, so the height count sits in ebx as in retail; left: the row
+// coordinate (retail keeps it 16-bit in si and widens it late), the column (retail
+// widens dx only after the mask) and the two bit registers (retail x in edi, ours in edx).
 // MiniMax B (11-04b): no new form, no lower score; a 16-bit row copy with the widening deferred scores 66/84 but pushes the row argument onto the stack, so the matched caller 0x136140 no longer matches.
 // MiniMax B (11-04): the 57 form is the local optimum; the y parameter used directly, a
 // short y or x copy, both copies short, the minimum compared the other way round, the
 // minimum seeded from the height count, a long or unsigned common count and the y lookup
 // first all score 58/59/120/136/150 with 0x136140 still matched.
-// score 57 (was 82): both logarithms now have retail's loop and the common count is
-// taken by retail's branch, so the height count sits in ebx as in retail; left: the row
-// coordinate (retail keeps it 16-bit in si and widens it late), the column (retail
-// widens dx only after the mask) and the two bit registers (retail x in edi, ours in edx).
 // Earlier at 82 (was 82): the coordinates now take retail's registers (the second in
 // Earlier score 82 (was 82): the coordinates now take retail's registers (the second in
 // cx, the third in dx) with the column local declared first; retail still keeps
@@ -278,6 +278,11 @@ PRIVATE inline long swizzle_log2(dword value)
 // DH378: Whole-register x/y/both formals with original signed-word captures 96/97/97;
 // native short x/y/both working values 120/136/150; both whole formals with mixed short/long captures 134/138.
 // NOT kept: all regress and alter native entry/caller allocation; original body, sole declaration and contract restored.
+// Round 77 (m3 lane 1, fast, 0x136140 kept): the minimum through a forceinline single-exit helper 57 (identical);
+// `common = height; if (width <= height) common = width;` 57; `if (height < width)` 58; an if/else into the
+// minimum 80; `if (common > height)` on the copy 57 (identical); the function, table and logarithm in a new `/O2
+// /Gr` file without /arch:SSE (the exception) 57 (identical); x and y used directly 150 again. Retail's minimum
+// shares ECX with the width count and is stored once after the join; ours takes EBP with a store at each definition.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
