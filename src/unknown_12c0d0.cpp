@@ -879,6 +879,9 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // the same union stored through its volatile member 2; `type` as the second, third, fourth or last parameter at the definition, the
 // declarations and the calls 2 each (last also 0x1dc40 2); a forwarding helper for the reader, inline or forced inline, or storing through a pointer
 // 2 each. Retail keeps every reader's two stores against the rdtsc at all 18 sites.
+// Round 219 (lane 3, fast over all 183 functions of the reader header's includers): the barrier intrinsic inside the shared reader after
+// its zero store 2 (nothing anywhere moves), before it 2 (0x80e10 13, 0x862e0 19, but 0x6a8a0 3 and 0x199740 4); the pump loop as
+// `while (result == 0)` 2; an explicit `default: break;` 2; the pump counter initialised at its declaration 28.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
