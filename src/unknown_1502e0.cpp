@@ -1207,7 +1207,7 @@ void function_1509e0(long player_index, long weapon_index, bool *modes)
 	long held[2];
 	long pending[2];
 	long count = 0;
-	s_tag_instance *tags = g_4e3b44;
+	s_tag_instance *tags;
 	for (long hand = 0; hand < 2; hand++)
 	{
 		s_player_pickup_unit *current = (s_player_pickup_unit *)tail_object_get(pool, player->unit_index);
