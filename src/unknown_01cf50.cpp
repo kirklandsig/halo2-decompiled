@@ -393,6 +393,9 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
 
+// MiniMax D (11-05): no new form, no lower score - retail keeps the width in bx and the texture slot in
+// edi, ours keeps the width in di and spills the texture pointer; dropping the texture local and
+// naming the mipmap limit scores 70, under the keep bar.
 // score 72 (was 72): this round adds the mipmap limit read into a named local ahead of the texture
 // pointer (70) and the texture cleared after the count call (71); both are under the keep bar, so
 // the original body stands - the width still lives in di where retail keeps it in bx.
@@ -3172,6 +3175,10 @@ bool function_128c0(s_128c0_settings const *settings)
 }
 
 
+// MiniMax D (11-05): no new form, no lower score - retail ORs the flag into the locked rectangle in
+// memory and rebuilds each row from a running pointer; seven new source shapes all score worse (the
+// pointer's row offset 61, the rectangle used directly 63, the components in retail's order 82), and
+// the pointer's slot stays above the pitch slot in every one of them.
 // score 62 (was 62): this round's fields read straight off the locked rectangle (63) and the row
 // kept as an offset instead of a pointer (67) both score worse; the rectangle still sits four
 // bytes lower than retail's and the pitch slot stays below the pointer slot.
@@ -3336,6 +3343,7 @@ void __stdcall function_1e930(long opaque)
 
 bool g_55e6bc;
 
+// MiniMax D (11-05): no new form, no lower score - retail sums the three products in source order and pops esi after the matrix loop, ours sums them rotated and pops esi early; rotating the terms, an accumulator and the near-plane spelling all score 87.
 // MiniMax H (11-04): no new form, no lower score; the output stores written through an index give
 // 143, 144, 143 and 145, and the near-plane block in six orders gives 119, 109, 93, 87, 131 and 117
 // against 87, so retail's split of the output into a row base and a cursor still stands.
@@ -3511,6 +3519,9 @@ void function_1eb00()
     g_4b6294 = true;
 }
 
+// MiniMax D (11-05): no new form, no lower score - retail copies the first five constants into a
+// different global than the SDK helper writes and builds the pixel shader program through a device
+// field, so the difference sits in the D3D helper, not in this body.
 // MiniMax H (11-03): no new form, no lower score; SDK SetPixelShaderProgram inline: 763 bytes but merges the flag's 1 with the render-state argument into ebx (155), cross-module helper 155, helper call 167.
 // MiniMax E (11-01): no new form, no lower score; retail's body builds four shader programs from
 // tables and caches that this project does not have.
@@ -5236,6 +5247,9 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
     g_485a78[0] = g_485a78[1] = NONE;
 }
 
+// MiniMax D (11-05): no new form, no lower score - retail reads the second argument in ecx and keeps the
+// tag table in ebx, ours takes the fifth argument in eax and reloads the table into esi; the record
+// multiplier written as the selected tag or as the fifth argument scores 90.
 // score 62 (was 62): this round found no gain - the second argument arrives in eax where retail takes it in
 // ecx, and the arguments behind it sit one stack slot lower; the callers are in other files, so the
 // calling convention cannot be changed from here.
@@ -5988,6 +6002,7 @@ void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
 
+// MiniMax D (11-05): no new form, no lower score - retail copies the timestamp into the global as two dwords, ours goes through x87 because the global is a double in include/timed_effect.h, and retail uploads the gamma ramp into the device's own ramp buffer where ours calls D3DDevice_SetGammaRamp.
 // MiniMax H (11-04): no new form, no lower score; the frame time copied through one union, through a
 // union of two halves or through a local read gives 158, 159 and 153, and retail writes that time
 // into the global as two dwords, which the double the global has in include/timed_effect.h cannot
@@ -6818,6 +6833,7 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
 
+// MiniMax D (11-05): no new form, no lower score - retail's frame is 0x58 bytes with the grid filling it and the frame pointer pushed inside the loop, ours is 0x5c with the pointer pushed in the prologue, so every stack slot sits four bytes off.
 // MiniMax H (11-04): no new form, no lower score; the counter in the loop head gives 205, the entry
 // pointer as the induction variable 172 and both together 183 against 139, so retail's pushed frame
 // pointer and its 0x58 frame still stand.
@@ -8437,6 +8453,7 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// MiniMax D (11-05): no new form, no lower score - retail passes the two offsets to 0x16a30 in its own order and reaches the palette through a different call sequence, so the difference is in the call order rather than in a local form.
 // MiniMax H (11-04): no new form, no lower score; the two offsets passed to 0x16a30 in retail's order
 // (its third argument 0x18/0x24 in ecx and its second 0x20/0x30 in edx) match retail's behaviour but
 // leave the score at 171, so the body stands as it is.

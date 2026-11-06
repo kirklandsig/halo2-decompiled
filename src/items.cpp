@@ -1592,6 +1592,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	function_10cf80(&velocity, object_index, false);
 }
 
+// MiniMax D (11-05): no new form, no lower score.
 // score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,

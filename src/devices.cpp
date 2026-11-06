@@ -634,6 +634,15 @@ struct s_device_machine_view
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
 
+// MiniMax D (11-05): score 2 (was 34); the group flags are read before the machine test and masked into a
+// byte, which gives retail's 16-bit flags load, and case 0x1200055f now clears the result; reading the
+// flags word after the machine test sinks the load where retail has it but moves the group address into a
+// pushed ESI (121), and the byte cast without the mask keeps the load ahead of the test (121), so the
+// address and the load position travel together.
+// score 2 (was 34): the group flags are read before the machine test and masked into a byte, so the flags
+// load is 16-bit like retail's; ours still folds the group address into the load (`mov ax, word ptr
+// [eax + edx*4 + 2]`) and adds one `and al, 3` where retail computes the group address with a lea
+// (`lea eax, [eax + edx*4]`) and loads the word without a mask (`mov ax, word ptr [eax + 2]`).
 // MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
 // with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
 // score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
@@ -897,13 +906,12 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 		if (device->type == 7 && device->power_group_index != NONE)
 		{
 			s_device_group *group = DEVICE_GROUP_GET(device->power_group_index);
+			word group_flags = group->flags;
 			dword machine_flags = ((s_device_machine_view *)device)->flags;
-			word group_flags;
 
 			if (machine_flags & 0xd)
 				function_value = 1.0f;
-			group_flags = group->flags;
-			dword group_flag_bits = group_flags & 3;
+			byte group_flag_bits = (byte)(group_flags & 3);
 			if ((group_flag_bits & 1) && (group_flag_bits & 2))
 				function_value = 1.0f;
 			if (device->power == 1.0f || (machine_flags & 0x10))
@@ -927,6 +935,7 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 	case 0x1200055f:
 		if (device->power_velocity != 0.0f)
 		{
+			function_value = 0.0f;
 			if (device->flags & 8)
 			{
 				if (!(device->flags & 0x20) && !(0.0001f > fabs(device->motion_14c.cruise_velocity)))
@@ -1090,6 +1099,8 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax D (11-05): no new form, no lower score (121); the permuter run was killed at its time limit
+// before it produced any result.
 // MiniMax A (11-04, run 41): no new form, no lower score (121); the initial velocity is still stack-passed
 // where retail keeps it in xmm6, and the ramp-down time still takes a register through the clamps.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.

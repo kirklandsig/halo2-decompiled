@@ -1449,6 +1449,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
+// MiniMax D (11-05): no new form, no lower score; retail loads the pool global after the prologue
+// pushes and keeps the hand in cl, ours loads the pool first and keeps the hand in al.
 // MiniMax G (11-04): no new form, no lower score; retail loads the pool data and the unit twice with
 // a stack spill between the two loads, ours keeps one load, so the index form, the reload of the pool
 // data and the register allocation differ.
@@ -1792,6 +1794,8 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 }
 
 /* drops the weapon in a hand (types 9 and 19) */
+// MiniMax D (11-05): no new form, no lower score; retail reloads the pool data and the unit before
+// the hand's slot read, ours keeps the first unit pointer for that read.
 // MiniMax G (11-04): no new form, no lower score; retail reloads the pool data and the unit after the
 // stored flag and reads the hand's slot byte from the reloaded unit, ours keeps the first unit, so
 // the pool reload, the second slot read and the weapon/mode homes differ.
