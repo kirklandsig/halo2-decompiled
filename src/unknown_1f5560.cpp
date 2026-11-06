@@ -1605,6 +1605,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax G (11-06): no new form, no lower score; retail keeps the normalizer length in the dead target
+// argument slot at [esp+0x54] and the radius at [esp+0x14], this build uses fresh local slots, and retail's
+// zero register is XMM1 where this build uses XMM2.
 // MiniMax R (11-05): no new form, no lower score; the plain origin copy 278 and the flipped side test 239;
 // retail keeps its length in the dead origin argument slot at [esp+0x54] and its radius at [esp+0x14].
 // MiniMax H (11-04): the left flag declared just before its comparison 287; not kept, the
