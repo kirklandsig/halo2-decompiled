@@ -184,6 +184,17 @@ extern long g_55c154;
 // result direct/named 178/178, short-circuit result direct/named 110/110; complete
 // exit with conditional/short-circuit load 178/110. NOT kept: no gain; load-result
 // graphs lose the biased frame. Classification spill and copy expansion remain.
+// Round 153 (m3 lane 5, fast with 0x13fac0/0x212bc0/0x238c69): the game type read once into a local at the function top on
+// the one-load body 178 (575 B), the controller index read once at the top 188 (559 B); on the two load arms: game type at
+// the top 177 (589 B), controller index at the top 172 (580 B), both 174 (575 B). Compile-only screen (32 two-arm forms:
+// store order, assignment or memcpy copy, named count, arm order, entry field or local selection): every two-arm form takes
+// the unbiased frame with `this` in ESI or EDI; none gives retail's `lea ebp, [esp - 0x70]` with `this` in EBX.
+// DH384: byte-array record publication, first/creation/both: memmove 139/143/157,
+// memcpy 61/61/61; bounded loaded-name memcpy/memmove input 99/104. NOT kept:
+// no gain; name snapshots lose the biased frame, even at retail length.
+// Round 394: actual selected/saved/source-index eight-byte homes 177/74/61;
+// selected+saved/selected+source/saved+source/all 182/187/104/193; all unsigned 193.
+// Original narrow values and complete body restored; classification spill/copy expansion remain.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
@@ -379,7 +390,7 @@ void c_class_2c9e69::select_last_variant()
 }
 
 /* shows the item's variant name */
-// score 23 (was 23): nonempty receiver is reloaded after the name call instead of retained in EBX;
+// score 13 (was 13): nonempty receiver is reloaded after the name call instead of retained in EBX;
 // branch name workspace before receiver, immutable receiver, receiver names 36/36/36; common completion 36;
 // completion with immutable receiver or receiver before name 36/36; ordinary pointer with scoped/common completion 36/36.
 // nonempty text receiver tested in stack home then reloaded; retail holds EBX;
@@ -423,6 +434,10 @@ void c_class_2c9e69::select_last_variant()
 // Round 61 (fast): the name arm through an inline helper taking the text 96 (120 bytes, stays out of line), through a forceinline
 // helper 36 (154 bytes), both arms through forceinline helpers 36; the variant named once with a nested `else { if (text) }` 43 (150 bytes);
 // the interface result named 36; a name pointer local 36; name-arm copy only re-measured 13 (159 bytes). Existing 0x253af2 adds a compare retail lacks here.
+// Round 89 (fast): plain text with an early return for the absent datum 36 (154 bytes); the parameter slot holding the text, with a copy of the old value for the lookups, 49 (154), with the
+// datum and first lookup through the parameter 49; plain text with the name buffer at function scope 36; plain text with the variant read once through the masked subscript 43 (150); a const
+// reference to a cast rvalue for the name arm 36, in both arms 36, the text itself a const reference with a plain name copy 36 (all hoisted into EDI). The name lookup before the text test
+// (not retail's order) moves the name arm to ECX 28 (155), the text test around the variant test 48 (146). Round 41's name-arm copy stays the best: the empty arm tests the stack home and the name arm takes EDI for EBX.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {

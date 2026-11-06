@@ -183,6 +183,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax h (11-05): the argument order is right (d in the third stack slot, q in the fourth, position in the fifth); retail copies the q slot into EBX and reads d from its own slot at each use, ours copies the d slot, and assigning the fallback pointer with a ternary instead of an if gives 642 with the same code, so no new form is kept.
 // MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
 // constant there, ours multiplies first (642, same code).
 // score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
@@ -409,6 +410,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // direction pointer locals and dot3f at the 0.866 test no gain. Without the pointer write a descent on the positional score gets
 // only delta before v 641 (same shape), `q = counter == 0 ? g_4687a4 : q` 641, w as one expression 641. Diagnostic: 8 extra q
 // reads flip EBX from d to q, so that home is a matter of weight; retail's reference counts for it are not yet explained.
+// Round 74 (m3 lane 10, fast, caller 0x1eb6f0 MATCH in each): second step count as a ternary 640 (2881 bytes, a gain of 2, not kept); both as ternaries 681 (2880). A one-file harness screen of 127 plain spellings (ternary and if both ways, nested tests,
+// compare forms, commutative operands, constant declarations swapped) found none lower; commutative operand swaps change nothing, the sums and products are canonicalised.
+// Same round, fast: `s->distance` as if/else 671 (2884); duration with its 7/1 as if/else 680 (2891); limit test as nested ifs 642 (2878); `rem = rem < 0.f ? 0.f : rem` 642 (2878); `s->limited = false; if (limit != 0.f) s->limited = len2 > limit;` 687 (2883).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

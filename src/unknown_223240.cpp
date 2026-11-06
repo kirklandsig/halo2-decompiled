@@ -75,6 +75,8 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// MiniMax H (11-05): no new form, no lower score; the tail still needs 0x2b5d0's own body (a stub in
+// src/stubs/lane_k.cpp, another file), and the count clamp and the slot test still differ.
 // MiniMax H (11-04): no new form, no lower score; the tail still needs 0x2b5d0's own body.
 // score 90 (was 109): one shared view count now feeds terminal indexing and the tail; the outer
 // pretest, loop-entry source zero and terminal registers still differ. The tail call still needs 0x2b5d0's
@@ -257,6 +259,23 @@ void function_2232a0(void)
 // loop counter 110, with the tail call's count from it too 128; timer decrements swapped 109 (same code).
 // Round 106: shared view count after layout 90 kept; entry declaration and pre-layout assignment 90 each;
 // view-count loop bound do/while 177/196; original-bound while after layout 150 each and before layout 164.
+// Round 55 (m3 lane 2, plain): why every activation of 0x2b5d0 lost its neighbours, and what is left. 0x2b5d0 itself MATCHES when written
+// in a new file with: no alignment attribute on its parameters (retail's `and esp, -8; sub esp, 0x1c` comes by itself from the double member;
+// `__declspec(align(8))` gives no realignment and was what lost 0x13b90, 0x1dc40 and 0x1de50), formals (mode, count, players, layout,
+// source), a plain `for` with `view = (views)source + i`, and memset(&parameters) after the g_4ba030 and g_4aeb4c stores, then mode, then
+// time (with the attribute 104; without it 68; memset before those stores 70/69/8/3; other statement orders 3/3/3/4/2/3/2). 0x223240 then still
+// reads 19 (EBX saved at entry): any named `double` local reachable through 0x2b5d0 makes LTCG save at entry up that chain. Probes from a host
+// (a one-line function: named double 19; the same expression inline or in a `real` 0): 0x36b50, 0x37260, 0x28580, 0x2d140, 0x3c650, 0x3ca90,
+// 0x131030 and 0x143600 flip it, all unmatched; matched double users 0x320b0, 0x132a30, 0x12d2f0, 0x223bb0, 0x1d6d0, 0x2b460, 0x2b480 and
+// unmatched 0x27aa0 do not. BLOCKED-BY 0x36b50 0x37260 0x28580 0x2d140 0x3c650 0x3ca90 0x131030 0x143600 (mostly in files held this round),
+// then 0x2b5d0 can go in as a real body. Its call is `(3, view_count, ...)`: retail's body takes the mode in ECX and the count in EAX and
+// `ret 0xc` pops three stack formals; retail's setup here runs `mov eax, edx` then `mov ecx, 3`.
+// On the real callee (keepable form): this body 60 at retail's length. The rest are match-only forms: while loop with the do-while's bound 168 (the slot arms unchanged), `for` 169;
+// source zeroed at the loop top and the found arm as `source = 0; if (...)` 28 (575 bytes, masked 15; a redundant statement), the found arm
+// as a new one-caller inline default-first getter 28; without the second zero 109; do-while with those 124/124. All 15 left are the terminal record: retail stores
+// its first fields as [index + displacement] and then forms `lea eax, [eax + g]` for the rest. The reset helper taking an index 57 (576,
+// masked 4: every line right but those three, the pointer folds); a separate finishing helper, `g + index`, the first stores in the caller
+// and `__assume(pointer != NULL)` at three places 57 each; a const reference to the pointer 57 (masked 15).
 // @retail 0x2234e0
 void function_2234e0(void)
 {

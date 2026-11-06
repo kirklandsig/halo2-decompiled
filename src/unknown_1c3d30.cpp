@@ -73,6 +73,12 @@ extern byte *g_51eca8;
 extern short g_51ecb0;
 c_2d8ab0 *g_47f044;
 
+// MiniMax S (11-05): no new form, no lower score: an if/else element select, a split entity list, a hoisted index
+// and the reversed release comparison all leave 7; the group loop still loads the entity list into EAX and the index into
+// ECX where retail uses ECX and EDX, and the release loop's bottom test still compares the limit first.
+// MiniMax H (11-05): no new form, no lower score; the group loop still loads the entity list into EAX and the
+// index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where
+// retail uses EAX and ECX; the frame and the csr block agree, so the allocation is not steerable.
 // MiniMax B (11-04): no new form, no lower score: the group loop still loads the entity list into EAX and the
 // index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where
 // retail uses EAX and ECX; the permuter was stopped by its time limit without a candidate.

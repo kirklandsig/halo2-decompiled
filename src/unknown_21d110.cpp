@@ -313,6 +313,9 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
+// MiniMax G (11-05): no new form, no lower score; the forms that reach retail's argument registers
+// move 0x189fe0's request parameter from EAX to EDX and lose that function's eight matched callers,
+// so they are not kept: BLOCKED-BY 0x189fe0 (src/unknown_189010.cpp).
 // MiniMax b (11-04): no new form, no lower score; retail still takes the state pointer in EAX and the tag on the stack where ours takes the tag in EAX and the state on the stack, and the only form that fixes that changes src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0.
 // MiniMax E (11-04): no new form, no lower score; the tag's copy stays at the entry and the class lookup still reloads the state from the stack, so the stream is one instruction short of retail's.
 // MiniMax R (11-01): no new form, no lower score; retail still takes the state pointer in EAX and
@@ -458,6 +461,17 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // unsigned allocator result alone 161 (445 bytes, frame four). NOT kept: both 161 forms
 // lose all eight sensitive callers and raise 0x189fe0 110->135; unsigned domain lacks equality.
 // Original helper interfaces, result domain, expansion and complete body restored.
+// AC555: Allocator status/handle outputs, bool/long and pointer/reference,
+// immediate/completed publication: 147/174/147/174/176/176/176/176. NOT kept:
+// first four lose eight callers; five-point lead is below gate. Original body restored.
+// Y604: Existing allocator returns its record with pointer/reference handle output,
+// either role order and initial/complete handle publication: 177/158/177/158/177/158/177/158.
+// NOT kept: frame grows to twelve; 177 is below the gain floor, while 158 moves the
+// request convention and loses eight matched callers. Original helper/body restored.
+// Y608: Genuine starter input parameter reused as rate-stage output, retained tag
+// mutable/immutable: original/nested admission 160 each; sequential failure 164 each;
+// combined admission 160 each. NOT kept: starter remains outlined; its new input
+// stack home is absent from the retail call graph despite frame four and no caller losses.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

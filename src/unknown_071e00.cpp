@@ -198,6 +198,10 @@ bool __stdcall function_71d70(c_session_state_matchmaking *arg_0)
 // in both inner levels 85/85; named players_match `if (m)`, `if (!m && timeout)` or nested 37/37; after the first copy 37; the false
 // edge out of the block by `return local_0`/`return false`/goto to one exit 56/56/43, without the do-while 56/-/37; first-copy
 // form with a false return for the timeout 56, positive-guard form 54.
+// Round 67 (m3 lane 13; compile-only harness, then fast): retail's arm order with the players-match test `!= false`,
+// the timeout test as `!(... <= ...)` or with its sides swapped, or the result declared after the session locals,
+// 37 each (copies merged, search block last); players match as an early `return true` guard inside the nonzero-state
+// arm 41 (182 bytes, merged); the `!match` arm returning `local_0` early on no timeout, match arm last, T before M again.
 // @retail 0x712d0
 bool function_712d0(c_session_state_matchmaking *arg_0)
 {

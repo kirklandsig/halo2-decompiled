@@ -107,6 +107,10 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // for both intersections and the copy 28; a current-point pointer for the first intersection only 5; a side local
 // only 7; a current-point pointer for the second intersection only 7. Numerator spellings and probes in the helper
 // or the first arm never change the first intersection's term order.
+// Round 94 (one-file LTCG harness): the helper indexing the point array (`points, a, b` parameters) 9; with the
+// element addresses at each use 5 (same code); deltas as a vector2f local 7; helper parameter renames 5 (no change);
+// `distance < -epsilon` 5 (same code). Removing the classification's x or y product or the denominator's x term
+// reorders the first intersection's numerator, so its x product is a numbering tie with the whole function.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -489,9 +493,23 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P345: Actual advancing output cursor retaining the independent pass bound/eager length,
 // long/short pass, long/bool departure and memcpy/memmove: 251/267/251/276/299/258/253/266.
 // NOT kept: no byte match; original complete body restored; extra frame word remains.
+// B451: Actual output cursor supplies produced length from its difference to
+// indices, plain for/while, long/bool departure and memcpy/memmove: 266/271/250/275/266/271/250/275.
+// NOT kept: no eligible exact count/storage graph. Original full body restored;
+// extra frame word and count/departure/compaction homes remain.
 // T58: Whole-scan current-point pointer/reference, indexed/advancing candidate, original/overlap CRT:
 // 228/228/259/259/222/222/249/249. NOT kept: no eligible match or gain; complete original source restored.
 // Extra frame word, produced-length/departure homes and compaction remain.
+// MiniMax A (11-05): retail's compaction copies the first (i - j) entries from `indices` to `indices + j` (`lea ecx, [ebp + eax*2]` is the destination) where this body copies them the other way round, a behaviour difference; changing the direction alone leaves the score at 170 because the copy is still expanded inline; one 16-bit hull counter driving the outer loop with the increment at the top of the body, a bool departure and that copy 243 (frame 0x14 and the first loop as retail, but the count argument takes EBP, the points argument drops out of a register and the code shortens to 753 bytes); the same counter with a long hull count 227 and with a long departure 255; the short hull count alone 242 and a bool departure alone 248; no lower score.
+// MiniMax A (11-05): one 16-bit hull counter with `while (hull_count < count)` and a bool departure 245 (frame 0x14 and the first loop's `mov edx, ebx` as retail, but the points argument drops out of a register, the indices argument takes EBP and the code shortens); the same counters both 16-bit with the two-counter body 259 (the same rotation); a 16-bit pass counter with the long hull count 261 (the frame stays 0x18); no lower score.
+// M3 lane 15 r60 (fast with 0x239d50): retail's compaction pushes the size, `&indices[j]`, then `indices` (EBP), so the copy's
+// destination is `indices` as here (the direction claim in the MiniMax line above is backwards). Retail-shaped body (short hull
+// count, `while (hull_count < count)` with `indices[hull_count++] = current`, bool departure and heading before the lowest scan,
+// `return hull_count` exits, memmove) 271 (750 bytes: points take EBP, the hull count ESI, indices reload into EBX each pass, the
+// loop test is duplicated at the bottom); that with points2d_equal `__forceinline` 271 (same code); points2d_equal
+// `__forceinline` on this body 170 (same code); the retail-shaped body with `goto finished` exits 265 (759, as lane 13 r58), with
+// a long departure 242 (as lane 9 r27); this body with a short hull count 242 (795, 0x239d50 then 80); `hull_count = pass + 1`
+// stored before the index 210.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -876,6 +894,8 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B424: Standard min/max interpolation clamp, nested lower/upper, sequential lower/upper,
 // named lower/upper and single standard lower/upper boundary: 357/357/371/372/371/372/376/383.
 // NOT kept: no exact match; original fraction clamp, include set and complete body restored.
+// B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
+// 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
 // Round 62 (m3 lane 14, fast; each with the `if (count > 0)` guard, match-only, restored): if/else fraction and the
 // previous side folded into its initializer 93 (889 bytes, aligned 36); if/else with the fraction declared at function
 // scope `= 0.f` 151 (887; zero set first but in XMM3); if/else, folded side, dx at its uses 154 (887, aligned 33, zero
@@ -891,6 +911,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // 95 (890), around a for with an outer index 98 (890); guarded do-while 102 (891), and 131 (887) where the guard folds.
 // B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
 // 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
+// F396: Complete scalar coordinate-pair equality input, real/double epsilon, bool/byte result, forced/ordinary inline: 129/129/244/244/129/129/244/244.
+// NOT kept: no byte equality; count ECX, prior-side byte and SIMD homes remain. Original complete body and helpers restored.
+// M3 lane 15 r60 (fast): the side carried in one variable, the previous side copied from it at the loop top 288 (922 bytes);
+// the side-change test as `previous_inside ? !inside : inside` 279 (915); the epsilon side tests moved to the loop end 264 (877);
+// one `short point_count = count` copy at all six uses 129 (same code); the current side declared before the loop 129 (same
+// code, as round 294); the `*clipped = false` reset moved just before the loop 221.
+// MiniMax A (11-05): retail reads the count argument as a dword and narrows it (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word (`movsx edi, word ptr [ebp + 8]`), so the parameter type, not the body, keeps the rest of the function out of step; no lower score.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

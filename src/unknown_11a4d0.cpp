@@ -147,7 +147,7 @@ void function_11a220(long list_index, real maximum_body_vitality, real maximum_s
 struct s_damage_owner;
 extern s_damage_owner const *g_467420;
 void function_d6a70(long object_index);
-void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown);
+void __stdcall function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown);
 
 /* sets the vitality of an object as fractions of its maximum vitality,
    depleting what drops to zero */

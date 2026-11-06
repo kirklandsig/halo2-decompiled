@@ -281,6 +281,22 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // M381: Actual voice/buffer/submix API-output zero initialization, seven subsets, then
 // all with initialized status: 566/615/591/615/591/621/607/608 (fast control 532, full 545).
 // NOT kept: unsupported extra stores and regressions; original outputs, helpers and full body restored.
+// Round 217 (m3 lane 3, fast control 532, full 545; the fast image carries the builds-differently caveat): `changed` as a flag preset true and cleared by an if 544; the gain test as `fabs(...) >= 0.1f` 545; `changed` with `== 0` tests 532 (same code);
+// mode and direct read ahead of `changed` 555 (1902 B), with the fall-through two-case send switch (round 212's form, 545 alone) 558 (1913 B); the gain source pointer chosen by an if ahead of the bits read 536. Body unchanged.
+// M3 lane 11 r72 (fast screens only: fast control 532 at 1905 bytes, masked 235, CAVEAT builds differently; plain 545): `(bool)` on the first
+// send bit 550 (1907; still folded to a shift, retail selects with `and al, 1; neg al; sbb; and 4`); gain as a value copy 532 (same code); gain bits
+// read before the stream pointer 577 (1920, first difference +0x0); send state declared at function scope 532 (same code); energy loop over
+// `input->levels[i]` with no levels pointer 563 (1923, masked 223). Lead unchanged: retail subtracts in SSE and keeps x87 temporaries on the stack
+// (`fsub st(1)`) with no rounding stores, which ours has after every step under the file's /Op; the extra temporary is likely the frame's 8 bytes.
+// AC553: Existing integer-bit pin input-first/lower-default/upper-default/early-return
+// results, ordinary then forced expansion: 534/534/534/537/534/534/534/537 (fast control 532).
+// NOT kept: no native frame/register/math recovery; original helper and body restored.
+// DL269: Existing decibel value types at real-pin output, bit-pin output and linear input,
+// subsets 1..7: 532 each; all with native selected gain 546 (fast control 532, full 545).
+// NOT kept: no gain or exact match; original producer interfaces, frame and body restored.
+// DL271: Existing integer-clamp pointer/in-place/returned-pointer/reference outputs
+// 548/548/548/548; real-clamp output protocols 549/549/545/549 (control 545).
+// NOT kept: no equality or gain; original producer ownership, frame and body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

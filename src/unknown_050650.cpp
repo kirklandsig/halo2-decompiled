@@ -694,6 +694,23 @@ struct s_collision_result_buffer_1697c0
 // Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
 // results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
 // contract or gain; original magnitude return, all consumers and complete sampler restored.
+// DL270: Complete normalized-vector returns with pointer/value inputs, optional
+// real length/Boolean success outputs, ordinary/forced expansion:
+// 634/551/642/573/458/458/475/475. NOT kept: all regress and move length away;
+// four forms lose the matched caller (39/39/4/4). Original helper and sampler restored.
+// F395: Collision-ray component loops, long/short/word/dword direct products 338/337/337/338;
+// native candidate copy then in-place loops 376/362/362/376. NOT kept: all regress and
+// enlarge the frame to 0xb0; copy forms also demote matched caller 0x297660 to 1.
+// Original full body restored; native frame-bottom scratch and candidate transport remain.
+// M398: Immutable rounded magnitude/reciprocal/paired angular results, subsets
+// 1/2/3/4/5/6/7, then complete immutable rotation products: 303/303/303/303/303/303/303/303.
+// NOT kept: no native scratch/home recovery; original producers and entire body restored.
+// M402: Existing inline header normalization at axis/candidate/fallback, seven subsets,
+// then complete graph with observed axis length: 307/303/299/307/305/299/305/410. NOT kept:
+// four-point best is below eight; axis forms recover early homes but grow. Original body restored.
+// N390: Explicit absolute-magnitude real/immutable-real producers, success/early-failure exits,
+// 307/303/307/303; double/immutable-double producers 360/360/360/360. NOT kept:
+// no exact lifetime recovery; original normalizer and sampler restored, native scratch/axis homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -989,6 +1006,20 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 1/2/4/3/5/6/7 then separate false defaults: 378/335/335/369/369/323/358/356
 // (reduced control 341; full 257). NOT kept: extra SETG/SETNE result stores absent from
 // retail; original body restored; byte homes and direction-tail predecessor remain.
+// AC553: Existing actor/object getters forced/private-inline/external-inline, eight
+// expansion/linkage pairs: 258 each (fast control 258; full 257). NOT kept: no
+// native allocation change; original getter contracts and complete body restored.
+// DL269: Shared post-dispatch origin selection and normalization, phase/entry/mutable
+// origin pointer or native origin workspace, success-owned then guarded publication:
+// 311/311/311/286/311/311/311/286 (fast control 258; full 257).
+// NOT kept: every form regresses and shortens the body; original decoder restored.
+// DH377: Successful dispatch breaks in cases 3/5/6/all three/1/2/both reference cases/all five:
+// eight at 258 (fast control 258; full 257). NOT kept: identical code, no match or gain.
+// Original success transfers and complete decoder restored; result/presence homes and shared-tail predecessor remain.
+// DH383: Whole-decoder success default with false produced by every rejected dispatch,
+// bool/byte/short/long, original comparison results 389/380/375/372; failure-only normalization
+// 267/280/300/301. NOT kept: every full-graph lifetime regresses against calibrated 258 (full 257);
+// original result/presence, all calls, cases and entire decoder restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1669,6 +1700,17 @@ struct s_actor_looking_turn_request
 // looking_valid declared with valid at the block top 442; the marker workspace at the block top 442; case 0's
 // movement request at the block top 442; the turn request at the turn block's top 442 (all same code). Retail
 // never inlines 0x1fdd90 anywhere (its byte pattern occurs only at 0x1fdd90), so BLOCKED-BY 0x1fdd90 stands.
+// Y606: Real vector arrays, initial plain long/int/short/dword loops 564/564/568/564;
+// CRT copy/move 564/527, components 541, both initial/final 564, final alone 548
+// (fast control 548; full 442). NOT kept: CRT move rolls calls absent from retail
+// and loses the input register; other forms regress or tie. Original type/body restored.
+// Y608: Whole-lifecycle forward/aiming/looking member references, seven subsets,
+// 548/548/540/548/540/540/540 fast; complete set with reference-vector member 526
+// (control 548, full 442). NOT kept: no exact out-of-line predicate/forward-address
+// residence; member-address lifetimes are unproven. Original complete body restored.
+// DH379: Terminal attention presence/absence bool/byte/short/long, after the output getter:
+// 548/548/548/548/548/548/548/548 fast, against its unchanged reduced control. NOT kept: no exact
+// attention result or frame/pool recovery; original field test and complete body restored.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

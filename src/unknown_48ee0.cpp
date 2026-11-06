@@ -20,17 +20,19 @@ extern real g_4c9798[36];
 
 // MiniMax B (11-04): no lower score; the new forms tried and dropped are the flags and mode
 // placements, the width and height limit types and the mode's own block, all worse or identical.
-// score 174 (was 178): the far plane's near distance goes into a named local so the three
+// score 174 (was 174; 178 before): the far plane's near distance goes into a named local so the three
 // point components share one load; the mode bit still loads the flags into edx where retail
 // uses eax, and the size stays in a register across the rounding calls where retail reloads it.
 // Round 112: direct far-plane output 343; scaled-add far point 174, near point 169 (five-point
 // form not kept), both 222; long height limit 250; sequential border multiply/divide 180 (the
 // border order is fixed but the body regresses); early size declaration and dimension rename
 // 174 each. Original executable body restored; mode/size homes and rounding reloads remain.
-// score 178 (was 197): the width is rounded before the height, the overflow fix-up compares
+// Earlier 178 (was 197): the width is rounded before the height, the overflow fix-up compares
 // the width against the height the other way round and the near-plane distance is read from
 // the tag; the mode bit still loads the flags into edx where retail uses eax.
-// score 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
+// Earlier 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
+// Earlier form (178 from 197): the width is rounded before the height, the overflow fix-up compares
+// Earlier form (197 from 197): the mode bit loads the flags into edx where retail uses eax, so
 // MiniMax lane E (11-01): no new form, no lower score.
 // Earlier: the mode bit loads the flags into edx where retail uses eax, so
 // the mode bit loads the flags into edx where retail uses eax, so
@@ -198,6 +200,28 @@ extern real g_4c9798[36];
 // each use [9], reference or tag struct [9], y, z, x statement order [6], origin first, swapped products, casts, const, earlier declaration [11], shared forced-inline point helper [36]. For the last 9: `__assume` on extent, distance, aspect, offset, inverse, the global, the half cone [0] (no change);
 // six renamings of distance and extent [0] (no change); square helper, `extent = extent + ...`, `... + extent`, other product orders [0] (no change); named half cone or area, mode test without `~`, `== 1` or a switch for the tag test, swapped or moved declarations all [2]-[19], higher.
 // Real `--fast` without the scratch `inline`, all 32 subsets of long height, border, raw clamp, direct normal, near at each use: base 174, raw clamp alone 174 (same code), near 178 (1489 bytes), border 180 (1491), long height 250, height with border 243, direct normal 255-337 (under 1465); none under 174, so nothing is kept. The known 0x1ddd0 match form leaves this at 174.
+// Round 59 (m3 lane 15, fast, base 174; BLOCKED-BY 0x48e70 for the size/aspect reloads around the rounding calls, machine 1's file): sqrtf/tanf
+// for the aspect, size root and tangent 180 (1491 B); `g_485a47 = (byte)mode` right after the mode is chosen 339 (1488 B); the three
+// small-target tests as one inline predicate 380 (1514 B); `mode` declared first 174 (same code); the first plane's dot as dot3f(point,
+// normal) 174. Retail's max_height is a full dword (`mov eax, [h]; imul eax, [w]`, `cvtsi2ss xmm0, [h]`), ours sign-extends a short.
+// AC551: Complete immediate projection/near-point/far-point multiplication nodes in subsets
+// 1/2/4/3/5/6/7, then the complete homogeneous projection on all three families:
+// 174/180/174/180/174/180/180/180. NOT kept: no qualifying supported improvement; complete
+// executable source restored. Mode-flag register and protected rounding-call reloads remain.
+// DL268: Native sqrtf aspect/size, tanf cone, all root/tangent pairs and all three,
+// then a double half-angle at its producer: 180/180/180/180/180/180/180/180. NOT kept:
+// no supported improvement; original math and body restored, stacked score headings merged.
+// Mode/size homes and the protected rounding-call reload boundary remain.
+// DL270: Published far-normal dot control 343; native near/far scale-helper
+// subsets, published dot pairs, complete graph, dead snapshot removal and complete
+// projection/plane scale graph 174/343/174/343/174/343/343/343. NOT kept:
+// ties or nonnative frame/short extent; original copies, normal consumers and body restored.
+// M396: Actual mode/width-limit/height-limit enum domains, subsets 1/2/4/3/5/6/7,
+// 174/174/250/174/250/250/250; complete immutable limit graph 250. NOT kept:
+// ties/regressions; original body restored. Mode/size homes and rounding reloads remain.
+// M402: Complete reciprocal/depth-scale/offset result arms, seven subsets, then
+// complete fallback-first reciprocal: 174/174/323/174/323/323/323/323. NOT kept:
+// offset default moves after its branch; original scalar results and whole body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

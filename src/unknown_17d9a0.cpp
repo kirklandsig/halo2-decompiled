@@ -129,6 +129,8 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // (46), a short axis result scores 162, the short axis passed to the corners 186, and a plane pointer for
 // the copy, the dot and the store 65 (the store base then matches retail but the dot's sides flip); the
 // store-only and copy-only pointer forms give 51 and 61; no new form, no lower score.
+// MiniMax E (11-05): no new form, no lower score; the products' load and memory sides are as the earlier
+// rounds left them, and the fast image cannot measure this body (four unresolved calls).
 // score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
 // ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
 // and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
@@ -807,6 +809,8 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// MiniMax E (11-05): no new form, no lower score; the first +0x41 tag spill, the plane base, the first
+// selectors and the product memory sides are as the earlier rounds left them.
 // score 539 (was 539): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
@@ -1075,6 +1079,23 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // capture and separate/matrix-position pivot: 536/661/585/600/536/661/585/600.
 // NOT kept: three-point lead is below eight and matrix grouping is unmatched; other forms
 // lose native frame/extent. Original basis vectors, alias-safe helper and whole body restored.
+// P351: Angle first/final clamp bound-comparison truths in bool/byte/short/long:
+// 566/566/566/566/611/611/611/611. NOT kept: no byte match; tag/count/plane homes and rotation spills remain.
+// Original complete body and existing helpers restored.
+// Y606: Outstanding total before signed phase admission, short/int/long/dword,
+// flags rejection then nested flags admission: 538/763/763/763/538/763/763/763.
+// NOT kept: one-point native gain; wider totals lose native frame/extent. Original body restored.
+// F396: Complete normal-identity reduction, Boolean AND and full-word XOR/OR, long/int/short/word ordinals: 780/780/803/803/715/715/742/742.
+// NOT kept: no byte equality; native short-circuit identity, tag/count/plane homes and rotation spills remain. Original complete body and helpers restored.
+// DH379: Two-consumer distance limit after angle/after plane/before candidate/at group,
+// mutable and immutable: 539/539/726/726/792/792/791/791. NOT kept: native production ties,
+// earlier lifetimes regress; original observations, helpers and complete body restored.
+// DH383: Complete parallel near/far conditional/default/branch producers retain four original distances:
+// 614/614/646/645/540/614/634/634. NOT kept: no equality or gain; several lose native frame or extent.
+// Original four-value sort, tag/count/plane homes, all helpers and entire body restored.
+// DH385: Entry output-counter native memset/first-face memcpy producers, seven subsets,
+// then first-face memmove: 562/562/539/566/562/562/566/789. NOT kept: no gain or tag-home
+// recovery; original scalar counters, face publication, all helpers and complete body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

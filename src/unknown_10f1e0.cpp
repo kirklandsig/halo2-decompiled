@@ -1543,6 +1543,11 @@ long function_cbd50(long unit_index, short weapon_index);
 // P345: Joint false-default chain, success/depletion/interruptibility-owned defaults,
 // byte then bool success: 164/165/165/164/194/193/195/194. NOT kept: no byte match;
 // original complete body restored; pool/displacement, SETLE/default homes and normalization remain.
+// P350: Shared negative depletion/base expressions, bool/byte/short/long, direct/branch producers:
+// 397/397/424/424/404/404/434/434. NOT kept: all regress and lengthen; original status graph and body restored.
+// N389: Paired held-presence bool/byte/short/long with conjunction/guarded count stores:
+// 164/330/164/330/164/330/164/330. NOT kept: pool/SETLE/default/result homes remain;
+// original predicates, queries and complete body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1815,6 +1820,12 @@ bool __stdcall function_110ab0(long unit_index)
 // DH372: First/second held-query presence bool/byte/short/long: 450 each.
 // NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
 // Original body and queries restored; state/request/result homes remain.
+// P350: Allow parameter byte/signed-byte/short/word/long/dword, then unsigned request
+// with bool/byte allow: 441/441/441/441/441/441/451/444. NOT kept: 430/433 code
+// differences versus 424; apparent gain is table/extent only. Original Boolean contract restored.
+// N389: Actual base query owns the result or the true-default producer, bool/byte/short/long:
+// 450/495/574/554/490/477/540/514. NOT kept: missing frame word and state/request/result
+// homes remain; original query, permission graph and full body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2241,6 +2252,15 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // Y597: Complete common primary sampling weights, both-first/single-first producers,
 // sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
 // NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
+// P350: Complete unit/state/graph/control/definition lexical home orders, eight forms
+// 776 each. NOT kept: no native frame or first-angle/overlay expansion repair; original body restored.
+// AC552: Existing shared real clamp at the overlay-ratio producer, long/short/dword/word
+// ordinals with ordinary/inline declaration: eight at 776. NOT kept: no gain; original
+// direct clamp, ordinal, declarations and complete body restored; frame/expansion gaps remain.
+// F395: All four native bound results before publication, mutable/immutable with yaw-first,
+// pitch-first and two interleaved producer orders: 829/828/828/829/829/828/828/829.
+// NOT kept: every form regresses; 3403-byte length agrees but frame stays 0xcc/0xd4.
+// Original private helper and full body restored; first-angle/overlay expansion remains.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -2515,6 +2535,9 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // both arms 22; 72 combinations of an extra local, `!= NULL`, declaration order, memset spelling and priority casts keep our roles, with a
 // one-exit result 91 (224 bytes; index ESI, priority EBP, NONE EAX).
 // A 600 s permuter run (52 tries) none below 16.
+// Round 69 (m3 lane 14, fast): the fallback lookup assigned inside the NONE test's condition 16 (same code); the sound
+// index stored before the delay 23, first after the memset 24; the definition index stored after the delay 44; the
+// output written through a `long &` reference to the priority parameter 16 (same code).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -2872,10 +2895,12 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
-// score 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
+// score 670 (was 713): frame 0x7c versus native 0x80; request/control/tag homes,
+// request-byte normalization and selected validity expansion remain. Both arguments stay on the stack; ret 8 agrees.
+// Earlier 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // costs both callers in other lanes' files.
-// score 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
+// Earlier 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // (663) costs both callers in other lanes' files.
 // MiniMax R (10-31): no new form, no lower score.
@@ -3023,6 +3048,9 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
 // local_5 == 0x400000c)` 665 (callers 223/562; the request is still loaded into ESI at entry); all three
 // 692; bool flags with the threaded test 698; the definition pointer computed second with the threaded
 // test 685. BLOCKED-BY 0xe6a20 (contributor) and 0xe6b00 (held file) as before.
+// P349: Complete transition producers on the all-stack graph, bool/byte/signed-char/short, positive/complementary:
+// 670/670/670/670/670/670/708/682. Kept the original-polarity Boolean transition, plain 670 at 2579/2577.
+// Its zero/one/comparison stores use native byte home +0x11; the other forms are restored.
 // @retail 0x111650
 bool __stdcall function_111650(long arg_0, long *arg_1)
 {
@@ -3032,7 +3060,7 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
     s_unit_animation_definition *local_3 = (s_unit_animation_definition *)TAG_BYTES(local_0->definition_index);
     long local_4 = 0x7000101;
     long local_5 = 0x7000101;
-    long local_6 = false;
+    bool local_6 = false;
     bool local_7 = false;
     bool local_8 = false;
     long local_9 = 0;

@@ -275,6 +275,10 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
+// MiniMax G (11-05): no new form, no lower score; declaring the plane table after the point
+// difference scores 203 in the reduced and in the full build (a gain of six, below the keep
+// threshold, so the body is restored); the source receiver, the frame and the stack homes still
+// differ: BLOCKED-BY the caller 0x245aa0 (src/unknown_245850.cpp).
 // MiniMax B (11-04b): no new form, no lower score; retail still copies the source into esi at the entry and frames 0x2c against our 0x24, and its declaration and call live in src/unknown_245850.cpp, which this lane may not edit.
 // score 209 (was 209): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
@@ -631,6 +635,31 @@ void function_245400(s_source_245400 const *source, long index,
 // second material's record (forceinline, inline, reference; with a named record) 208 or 204 late, no dead lea, no arrival change.
 // Plane table and pointers inside the plane test 222 (766 bytes): the source does arrive in ECX and copies to a callee-saved
 // register at entry as retail's, but the matrix then becomes a register argument too (no push, caller 43).
+// M3 lane 4 r170 (one-file harness with 0x245aa0's file, exact at 209, caller 0 unless noted; masked aligned in brackets, base [77]):
+// the matrix named inside its block with a true `__assume(matrix != NULL)` 205 (also --fast; aligned 162 -> 134 [73]: the matrix
+// leaves EBP, the source stays ECX, caller matched; a renaming pointer, so not kept); the three transforms in a plain `inline`
+// helper 592 (401 B, out of line), force-inlined 209, with the plane table late 203 (caller 3); a volatile matrix read (diagnostic,
+// removed) 209, with the late table 214 (caller 3). On the named matrix: second material read first 205 [70], through `short const &`
+// 237 (752 B) [67], through a word reference, a record reference or a record pointer 223 (766 B) [64] (the lea comes ahead of the
+// load, retail's after), the second index named with the reference 220 (764 B); a vertex-table local 235 (750 B), with a surface
+// local 220 (764 B); `__assume(arg_1 != NULL)` 235 (750 B); the source copied to a named local with an assume 209-214, without
+// 208-223 (never retail's `mov esi, ecx`); dword codes with named plane indices 221 (765 B), sides as `!= 0` 207 (aligned 128).
+// Round 132 (m3 lane 7, fast; 0x245aa0 and 0x245400 checked): the second material through a record
+// pointer (retail's dead `lea edx, [ecx + edx*8]`), the first through one also at the final call, both:
+// 209 each (no dead lea, callers keep their matches); the plane table read after the edge vector
+// 203 with 0x245aa0 at 3 (the source then arrives in EDX); the scaled edge transform as a scaled copy
+// rotated back through a forceinline helper taking the matrix 234 (811 bytes; plain inline stays out
+// of line, 387). Retail pushes EBP only around the plane code (`push ebp ... pop ebp` mid-body) and
+// reads the matrix at its test; ours keeps the matrix in EBP from entry, so EBP is a prologue save.
+// M397: Complete edge/cross/transformed-point defaults, masks 1/2/4/3/5/6/7,
+// then all at entry: 213/209/223/213/230/223/230/230. NOT kept: no equality or eligible native-
+// frame gain; original workspaces and complete body restored. Four exact controls survive.
+// DH381: Existing array edge producer at unit scale, late-plane/independent-side/staged-cross
+// subsets 0..7: 208/204/226/227/208/204/226/227. NOT kept: best gains five and loses caller 0x245aa0; original body restored.
+// N396: Signed eight-byte primary ordinal/first decoded code/second decoded code,
+// seven subsets then complete encoded/decoded residence: 208/281/270/278/279/263/294/298.
+// NOT kept: native narrow domains, no qualifying gain and longer decoded forms; original body restored.
+// Frame 0x24/0x2c, independent side homes and delayed matrix acquisition remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

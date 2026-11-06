@@ -572,6 +572,9 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// MiniMax E (11-05): no new form, no lower score; the four-term plane-distance accumulator written as one
+// expression gives 211, the same sum without the redundant parentheses 205 and the contact point written as
+// three products followed by three adds 207 - all worse. Reverted.
 // MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
@@ -756,6 +759,13 @@ struct s_item_collision_bsp
 // NOT kept: all regress; normal/range graphs also displace the native frame or extent. Original
 // planes, axis/spin homes, arithmetic, random draws, pending-k join, calls and include set restored.
 // Paired range sums also raise matched 0xd9640 from 0 to 3 in the reduced image; restored.
+// Protected plane-index width, plane joins and native spin/speed homes remain.
+// AC560: Actual optional-effect admission at its original guard, positive/complementary
+// bool/byte/short/long: 204/204/204/204/204/204/204/204. NOT kept: one-use outcomes do not match; original
+// complete body restored. Protected plane width, plane joins and spin/speed homes remain.
+// F395: Complete transformed-normal publication ikj/jik/jki/kij/kji on the retained distance
+// accumulator 203/206/205/206/204; dependency-preserving normal/distance publication
+// 206/205/200. NOT kept: two-point best below the keep threshold; original body restored.
 // Protected plane-index width, plane joins and native spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
@@ -1588,6 +1598,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	function_10cf80(&velocity, object_index, false);
 }
 
+// MiniMax D (11-05): no new form, no lower score.
 // score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,

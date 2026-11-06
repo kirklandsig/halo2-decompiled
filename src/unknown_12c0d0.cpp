@@ -873,6 +873,12 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // struct 2; the local's address passed to an inner forceinline holding the store and the rdtsc 2, a two-long array passed that
 // way through a volatile long pointer 2. Harness, prologue only: non-volatile through that inner forceinline by pointer or by
 // reference 144 (the stores vanish).
+// Round 131 (lane 7, fast unless noted): the reader as a plain local in its own file, inlined at link time 93 (plain check; the stores
+// vanish); file-local readers with one volatile half of a struct, low or high, 76/76; two separate volatile longs, either order 12/12; a
+// volatile __int64 declared then assigned 2; a union stored through a plain member with a volatile member beside it, three shapes 93;
+// the same union stored through its volatile member 2; `type` as the second, third, fourth or last parameter at the definition, the
+// declarations and the calls 2 each (last also 0x1dc40 2); a forwarding helper for the reader, inline or forced inline, or storing through a pointer
+// 2 each. Retail keeps every reader's two stores against the rdtsc at all 18 sites.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
@@ -980,6 +986,11 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax S (11-05): no new form, no lower score: the frame, the reduction branch, the format bits and the two
+// stores all agree with retail; only the last three instructions differ, where the masked level address is loaded
+// into EDX and retail reuses the base register that dies with that load.
+// MiniMax H (11-05): no new form, no lower score; the three header stores reordered (lock before data) change
+// the code (5) and the masked level address is still loaded into EDX where retail reuses the dead base register.
 // MiniMax R (11-01, third round): no new form, no lower score. The masked level address is still
 // loaded into EDX where retail reuses the base register, which is dead after that load. This
 // round: a permuter run over the function (17 tries, annealed, full image and reduced image)

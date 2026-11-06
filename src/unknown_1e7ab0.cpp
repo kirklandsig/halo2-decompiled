@@ -163,6 +163,8 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// MiniMax H (11-05): no new form, no lower score; the 0x1e8d50 getter form still gives 165 and the case 4
+// rotation is still allocator-bound (retail keeps the parent in ESI, ours in ECX), and 0xd0590's order is its own file.
 // Round 30 (lane D): the permuter's best variant scores 601 against its own 608 baseline (seven points,
 // below the retention margin) and it adds volatile qualifiers and swapped call arguments, so it is not
 // kept. Manual trials this round: a named table base 620 (a tie), the player index set to NONE and then
@@ -376,6 +378,13 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // before the player index 585; `result` declared first 118 (same code); `result` declared after the player index 124;
 // the player index as a ternary initialiser 618 (2312 bytes); the getter as `table != NULL ... table->entries + index`
 // 118 (same code). The getter's table/result rotation stays; BLOCKED-BY 0xd0590 (contributor) as round 197 found.
+// Round 55 (m3 lane 2, plain; register-masked aligned count in brackets, 118 is [6]): the seat read after the parent test 117 [4], without
+// the definition local 118 [6], both 117 [4] (too small to keep). Most of the count is a one-byte offset: retail's `test al, 1` is
+// shorter than our `test cl, 1` in case 4's child loop and our `mov eax, [abs]` is shorter than retail's `mov ecx, [abs]` at the getter.
+// Diagnostics with 0xd0590 in retail's (object, iterator) order everywhere, restored: 111 [4], with the seat and definition forms 110
+// [2]; plus the 0x1e8d50 entry (2312 bytes: that `test cl, 1` byte pushes the table padding) 156 [16], with the child's seat in a short
+// 156, a long 459 (2304), a seat pointer 156, `!= 0` on the flag 457 (2304). Left under that order: scratch rotations in the child
+// loop, the weapon lookups' product and unit registers (ours EDX then ECX in some cases, retail the reverse in those same cases).
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

@@ -70,7 +70,7 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
-// score 393 (was 408): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
+// score 371 (was 393): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
 // and counter homes remain.
 // MiniMax I (11-01): 374 with the has-host and packet flags as words (score-picked, see below), the record as
 // observer + index*0x528 with the 0xa8 folded into the field offsets, the search through the channel array and
@@ -169,6 +169,19 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // `found == NONE && i < n` 395/88. NONE locals after the search or split round it 414/80; a dead init of the index or another local 417/80 (no entry register). On 312: second threshold through local_2 390/89; the tail's false arm
 // into local_2 416/81; the label inside the tail block 347/75; local_14 set in an arm 311/86. Lead: retail computes the channel base right after the connection (lea esi, [eax + edi]), so the index stays live in EBP, NONE shares ESI and
 // `this` takes EDI; ours computes it at the first field read and coalesces it with the index. One field through a pointer local with the rest direct gives that early base (419/86, one-use pointer: match-only); the byte-pointer base on the 367 form 379/88.
+// Round 74 (m3 lane 10, one-file harness then fast and plain): kept 393 -> 371 (1381 bytes): the owner-active scale as if/else, the window size as `= 0; if`, the tail as `if (local_34 >= 0) { ...; return local_2; } return false;`.
+// They only pay together (fast): scale 395, tail 399, window size 405, scale + tail 381, scale + window size 412, tail + window size 408, all three 371.
+// On those, fast: window test as `!(a > 0 && b > a)` alone 389 (retail's comiss order), no gain on top; capacity test as if/else if/else 368 (a flag set in arms, direct form 371, not kept); all with NONE locals before the search and the
+// channel pointer before the connection 367; NONE locals first 408; channel pointer first 422; threshold tests without the store 396, both 407; `local_33` as if/else 378. Harness: named header fields through channels[index], union
+// snapshot and reset 375 (aligned 176, masked 65, against 200/103 here: lower aligned, higher score); with a counter pointer and the rest 414 (masked 60); union copies on this file's struct 380 (masked 76). Match-only lead from the r72
+// draft (harness, r72 masked metric): a multi-use counter pointer declared first after the found test (`lea esi, [eax + edi]` right after the connection as retail, because the pointer shares `this + index * size`) 263 + 8 bytes, masked 46;
+// with the window test 42; a threshold flag set in both arms and tested after (`setge; test; je` as retail, the zero test moves toward the exit) masked 42. Left there: `this` isn't in EDI at entry and the connection takes EBP where retail
+// keeps it in memory and gives EBP to the budget; 8 extra budget reads don't flip that, so it isn't plain reference weight; `xor al, al` for the result's first store. Retail's three epilogues: done, success, false.
+// Round 95 (m3 lane 12, fast; register-masked aligned count in brackets, base 371 [244]): the rounding helper's names as value/result
+// 371, the search helper's as observer/connection_index/result/channel_index/channel 371, both 371 (identical code); the reliable-bytes
+// payload `local_29 - 45` as a named local for its test and store 427 [203] (1385 bytes; retail forms it early, `lea ebp, [ecx - 0x2d]`);
+// the snapshot and reset as `*(__int64 *)&g_4e6398` (unknown_12b070.cpp's view) 426 [229] (1340 bytes). Retail keeps the result byte in
+// arg_1's dead slot and the rounding temp in arg_3's ([esp+0x48], [esp+0x50]), fistp straight into local_13's home.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
@@ -227,7 +240,9 @@ bool s_network_observer::connection_v05(long arg_1,
 	}
 	if (local_3->state == 5 && !local_8)
 	{
-		long local_19 = (local_3->flags & 8) ? 128 : 0;
+		long local_19 = 0;
+		if (local_3->flags & 8)
+			local_19 = 128;
 		long local_20 = link_connection_get_reliable_window(local_3);
 		real local_21 = (real)local_20 /
 			((real)local_19 * *(real *)((byte *)arg_0->configuration + 0x90));
@@ -306,8 +321,12 @@ bool s_network_observer::connection_v05(long arg_1,
 		if (arg_2)
 		{
 			if (local_3->callback)
-				local_31 = *(real *)((byte *)arg_0->configuration +
-					(link_connection_owner_active(local_3) ? 0xe4 : 0xe8));
+			{
+				if (link_connection_owner_active(local_3))
+					local_31 = *(real *)((byte *)arg_0->configuration + 0xe4);
+				else
+					local_31 = *(real *)((byte *)arg_0->configuration + 0xe8);
+			}
 			else
 				local_31 = *(real *)((byte *)arg_0->configuration + 0xec);
 		}
@@ -325,16 +344,19 @@ bool s_network_observer::connection_v05(long arg_1,
 		local_33 = 48;
 	long local_34 = 0x516 - local_30;
 	local_34 -= local_34 % 8;
-	if (local_34 < 0)
-		return false;
-	if (local_33 > 8)
-		local_33 -= local_33 % 8;
-	if (local_33 > local_34)
-		local_33 = local_34;
-	*arg_7 = local_33;
-	*arg_8 = local_30;
-	*arg_5 = arg_4;
-	*arg_6 = local_7;
+	if (local_34 >= 0)
+	{
+		if (local_33 > 8)
+			local_33 -= local_33 % 8;
+		if (local_33 > local_34)
+			local_33 = local_34;
+		*arg_7 = local_33;
+		*arg_8 = local_30;
+		*arg_5 = arg_4;
+		*arg_6 = local_7;
+		return local_2;
+	}
+	return false;
 done:
 	return local_2;
 }

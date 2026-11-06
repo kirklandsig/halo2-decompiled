@@ -1154,6 +1154,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// MiniMax h (11-05): the query-size and write-count stack homes are exchanged against retail (retail size@0x24, write count@0x28, ours the other way round); moving either between scopes, changing its type and reordering the two declarations all leave the homes unchanged (33), zero-initialising the write count at its declaration gives 85, and the permuter's best over 300 s is 33.
 // MiniMax H (11-04): no new form, no lower score; our expected-size and query-size locals sit four bytes above retail's in the frame, which moves every later access.
 // score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
@@ -1542,6 +1543,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // B446: Complete resize/write/conditional-close inline workflow, handle pointer/reference,
 // cleanup in caller/boundary, original count/test-produced success: 33/33/33/33/83/83/83/83. NOT kept:
 // no exact result; original whole body, qualifier and helpers restored. Count homes, write setup and header/checksum joins remain.
+// Round 90 (m3 lane 16, fast): the close written in both arms of `if (resized)` with the count declared in the write
+// block and no zero store 179 (994 bytes; size and count take retail's homes, but the second close copies the handle
+// through EDX where the first uses ECX, so the two closes are not tail-merged); the failed-resize close arm first 215
+// (994 bytes); `(!resized || ...)` with `resized` declared at the top of the size-mismatch block 157, renamed
+// size_changed/extended 157/157, declared beside `done` 157 (frame 0x1140 each: resized packs beside done).
 // @retail 0x213970
 void function_213970(void)
 {

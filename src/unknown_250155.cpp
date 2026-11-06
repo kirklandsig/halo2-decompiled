@@ -1511,6 +1511,16 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // Scores 83/83/83/83/83/83/83/172. NOT kept: no lower count; declarations restored; original complete body restored.
 // Round 106: fixed-bound do scans first/second/both and a shared maximum 83 each;
 // guarded do fills first/second/both 110/103/127; guarded output do 83. Original body restored.
+// Round 400: existing sort-callback inline boundaries, all seven nonempty
+// subsets 83 each; all three with native three-call sort join 119. NOT kept:
+// no gain; original callback definitions and complete target body restored.
+// F402: Chained player/selected zero initialization in both target orders, before
+// array/row-count/query declarations or after the three queries,
+// 84/84/84/94/83/83/83/94. NOT kept: no exact or qualifying result;
+// original complete body restored.
+// Full-array defaults before first/second/both collections 166/131/177; common
+// after queries/at declaration 193/188; slot defaults in first/second/both scans
+// 168/137/186. NOT kept: native post-scan tail shape not recovered; original restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2592,6 +2602,7 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax A (11-05): the four widget indices at function scope with the last loop's inline switch score 89 (was 95), but the gain is under eight, so the original body stands.
 // MiniMax A (11-04): the four widget-index shorts' declaration order (seven orders) 95 each; the players[i] address kept in a local (function scope and loop scope) 95 each; no lower score.
 // MiniMax I (11-01): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score: the locals' homes and the players[i] reload after the voice-state query stay as they are.
@@ -2723,6 +2734,19 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // text_b, shown count, player/no_team, bitmap_a, bitmap_b and retail bitmap_b, text_a, text_b, shown count, player/no_team, bitmap_a, so retail has
 // bitmap_b one step ahead of all five. Tried on the plain body: the helper taking bitmap_b first 95; the second loop declaring bitmap_b first 95; that with
 // bitmap_a and text in reverse 95; bitmap_b stored first in every arm of the helper 177 (932 bytes); players[i] named once in the voice block 95 (same code).
+// Round 74 (m3 lane 11, fast): every callee down the 0x53b40 chain (0x53be0, 0x53de0, 0x53c30, 0x59670, 0x596a0) now
+// matches, so retail's players[i] reload after the voice query means LTCG treated that chain as able to write memory
+// (as an opaque, non-LTCG callee would be: a build-flag question, not tried); the last loop is a spill choice (retail
+// reloads the screen into EDI after the second call and keeps bitmap_a in EBX; ours keeps the screen in EBX and
+// spills both bitmaps). Tried: the last call's `(short)i` cast dropped 95; the voice state as one conditional
+// expression 95; no_team from the team byte 97; team_index from the field 95; the lookup pointer declared at
+// function scope 95.
+// Round 609: existing item/team/name validity bitfields, seven complete family subsets and
+// chained paired team flags, 95 each (926 bytes). Scalar homes, voice reload and final receiver stay different; restored.
+// F399: Existing four-output producer with whole-screen pointer/reference, output
+// pointer/reference and direct/captured mode contracts: eight forms 95 each.
+// NOT kept: no gain or equality; original helper, both uses and complete body restored.
+// Frame 0x788 agrees; scalar homes, voice-query reload and final screen receiver remain.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

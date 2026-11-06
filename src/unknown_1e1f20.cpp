@@ -757,6 +757,10 @@ void swarm_leader_detach(long actor_index);
 // Original body restored; frame 0x1c/0x20, actor/displacement and cleanup homes remain.
 // M305: Native terminal parallel-table bound walk, for/while, less/not-equal and pointer declaration orders
 // 270/269/270/269/270/269/270/269 fast versus unchanged fast 266 (ordinary 281).
+// M3 lane 10 r73 (fast control 266 at 980 bytes, plain 281; aligned/masked in brackets, control [182/112]): the slot pointer named after the stop read 283
+// (981) [192/110], before it 283 [192/110], with a type local and a selected pointer 286 [193/114]; the memory test through the entry actor alone 293 (997)
+// [155/90], the best shape here; the actor refreshed after 0x258600 296 (997) [200/112]. Retail reads `.type` folded and computes the slot address with a
+// separate `lea` before the branch, with the stop pointer in ECX and the index in EDI; ours keeps the index in ECX, so stop takes EDI. Still BLOCKED-BY 0x26ed40.
 // T61: Actual memory-entry/callback-field/terminal-actor record references, seven subsets
 // 266/282/282/266/266/282/282; all with bounded short memory ordinal 282
 // (unchanged reduced control 266, full 281). NOT kept: no exact receiver graph;
@@ -764,6 +768,16 @@ void swarm_leader_detach(long actor_index);
 // MiniMax E (11-04): no new form, no lower score; the memory walk's pointer walk, its index
 // body, the twice-read slot and the for-loop forms score 285, 370, 286, 288 and 555 against the
 // unchanged 266 (fast; 281 ordinary).
+// Y606: Actual participant element pointer/reference, promoted/native slot: four
+// at 288 fast; member-array mutable/immutable bases, captured/live slots:
+// 259/259/285/285 versus fast 266 (full 281). NOT kept: seven-point lead;
+// native frame remains 0x1c/0x20. Original type/body restored.
+// Y608: One twice-used low-byte input truth carrier, bool/byte/signed-char/word/short/
+// dword/long/64-bit, 307/266/266/282/282/282/282/343 fast against control 266 (full 281).
+// NOT kept: no exact graph; frame/displacement/countdown homes remain. Original body restored.
+// DH379: Condition-owned stop/prop-next/actor-next results, seven subsets and immutable
+// bindings: 266/266/266/266/266/266/266/266 fast, against its unchanged reduced control. NOT kept:
+// no byte match or native frame/receiver recovery; original complete body restored.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
