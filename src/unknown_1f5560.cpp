@@ -848,6 +848,9 @@ real normalize2d(point2f *v);
 // MiniMax D (11-01): the fast flag's test moved into the valid arm 301, a separate trajectory
 // variable 278, `force = force || fast` 253: the result stays memory-homed in every form; no
 // lower score.
+// MiniMax E (11-06): no new form, no lower score; retail keeps the trajectory result in DL and returns
+// the validity flag in BL on the short exits, where ours keeps the result on the stack and folds that
+// exit to a cleared AL (12 bytes short on every path).
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
@@ -1602,6 +1605,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax G (11-06): no new form, no lower score; retail keeps the normalizer length in the dead target
+// argument slot at [esp+0x54] and the radius at [esp+0x14], this build uses fresh local slots, and retail's
+// zero register is XMM1 where this build uses XMM2.
 // MiniMax R (11-05): no new form, no lower score; the plain origin copy 278 and the flipped side test 239;
 // retail keeps its length in the dead origin argument slot at [esp+0x54] and its radius at [esp+0x14].
 // MiniMax H (11-04): the left flag declared just before its comparison 287; not kept, the

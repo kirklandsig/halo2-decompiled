@@ -377,6 +377,12 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax E (11-06): no new form, no lower score.
+// Exclusive bound with the index declared before the seat pointer 11, the same
+// with the count in a local 11, a widened int copy of the index 11, an
+// exclusive while loop 11 and a neq bound 12: every exclusive bound moves the
+// count to EBP and the index to ESI, so retail's ESI count and EBP index stay
+// out of reach while the inclusive bound keeps them and loses the cmp/jl.
 // score 8 (was 11): native 0x2c frame and 541-byte length; first +0x79.
 // Count and index now occupy ESI/EBP as retail; the inclusive last-index bound
 // decrements the count and uses js/jle instead of native cmp/jle and cmp/jl.
@@ -1351,6 +1357,11 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax C (11-06): no new form, no lower score; the frame is still 0x10 against retail's 0x14,
+// retail still spills the 0x20 mask byte to F+3 and keeps the loop entry in EBX (home F+4, reloaded
+// after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still
+// takes the object-header data in the prologue and reads the flags once above the slot-flag test;
+// the mask read once before the loop scores 136, so the mask is read per iteration as it was.
 // score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the

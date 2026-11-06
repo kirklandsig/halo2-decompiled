@@ -1882,6 +1882,8 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax E (11-06): no new form, no lower score; the colour query and zone-base scheduling still keep
+// the frame at 0x40 and both colours spilled.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax R (11-04): no new form, no lower score; retail's early colour read still needs a form that
 // spills only color A and keeps color B in EDI, which every snapshot point tried so far fails.
@@ -2043,6 +2045,12 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // colour B declared first 178; both colour locals at the function top 195; only colour B read early (colour A at
 // the call) 146 (556 B, aligned 76 -> 66: colour B takes EBX, the system keeps EDI, the tint spills). The loop already
 // matches retail apart from frame offsets and the definition reload.
+// Round 155 (m3 lane 5, fast with 0x178eb0/0x179020): the pointer parameters `*const` 128 (identical); colour A alone read
+// after the spawn stores 187 (572 B); colour B alone early with `multiplied()` as the argument 146; colour A alone early with
+// `multiplied()` as the argument 146 (the system keeps EDI in all three); the zone test through the existing
+// location_point_in_zone_inline 165 (556 B; the zone block is then retail's: base in EDI, add unfolded; left are the entry's
+// colour/system registers, frame 0x40/0x44 and the definition not held in EDI across the back edge); that with both colours
+// early and `multiplied()` as the argument 181 (572 B, frame 0x44, the loop laid out with a jump to its test).
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2315,6 +2323,9 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax E (11-06): no new form, no lower score: the only difference left is the object's index,
+// which retail reloads after the 0xbadc0 validity call; that call's body lives in
+// src/unknown_0bad50.cpp, which this lane may not edit.
 // MiniMax A (11-03): no new form, no lower score: retail still reloads the object's index after the
 // 0xbadc0 validity call and keeps the definition pointer on the stack; calling the file-local copy
 // object_get_175d70 instead of 0xbadc0 compiles to the same code (63).
@@ -2325,7 +2336,7 @@ event_done:
 // score 63 (was 63): this round found no gain - retail adds the record base into the scaled index before
 // its first load and keeps the object index in eax across 0xbadc0, whose argument convention is set in
 // src/unknown_0bad50.cpp.
-// score 63 (was 63): only the object index differs: ours keeps it in ESI from entry across 0xbadc0
+// Earlier note: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
 // Four-byte frame agrees; initial object handle remains retained across read-only queries.
 // Earlier: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
 // and 0xbaf80 (NONE in EBX), retail reloads it after each call with NONE in ESI. Retail's callers
@@ -2436,6 +2447,9 @@ event_done:
 // (585); the object test split off as an empty first arm 198 (571); root index with the definition in the live arm
 // 206 (584). Retail reloads the object index from the effect after 0xbadc0 and 0xbaf80 (both in
 // src/unknown_0bad50.cpp, avoid-listed again): BLOCKED-BY 0xbadc0.
+// Round 155 (m3 lane 5, fast): root index as 0x1794a0's first argument re-measured 197 (585 B); empty first arm 198
+// (571 B); `!(index == NONE || valid)` 63; `NONE != effect->object_index` 63; deletion arm `return true;` with a plain
+// second if 198 (572 B). Retail's reload at the join after 0xbadc0 still needs 0xbadc0 seen as writing memory.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -3047,6 +3061,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax E (11-06): the location mode read live from the definition reaches retail's 0x54 frame but
+// scores 108, the same form with the particle system declared before the effect 119 and with color B
+// read at the call 110; no new form, no lower score.
 // score 93 (was 93): frame 0x4c versus 0x54 (retail spills the definition and keeps two more
 // dwords), the particle system in EDI (retail ESI), color B spilled (retail EDI) and the cached
 // mode differ. Tried: transform name 109; query results, particle cursor and colors at entry 109;
@@ -3246,6 +3263,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // system pointer declared before the effect pointer 93 (same code); the definition declared first with the mode read
 // per call 108 (0x176f60 25: effect index in EAX, system index in ECX, definition in EBX until the loop); `word const`
 // mode 93. On the cached form the prologue is retail's except the system/next ESI/EDI swap.
+// Round 155 (m3 lane 5, fast with 0x176f60, which matches unless given): mode read per call re-measured 108 (0x176f60 25);
+// spawn cursor + long mode re-measured 89 (337 B, the loop then retail's); on it: system/next/definition locals const 89,
+// colours read before the cursor 90, type object declared at the top of the block 89, mode as dword 89, the cursor copied
+// to a named index 89, the matrix declared before the loop 89. The system EDI / next index ESI entry swap remains.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3540,6 +3561,11 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // on the default-before-color scale, a shared point pointer 280, output-only 272, input-only 278, and the same
 // pointer at both render calls 280; direct copy construction 272; an explicit temporary copy 272. None preserves
 // position.y; both matched helper users and both callers stay matched. Opening body restored.
+// Round 155 (m3 lane 5, fast with callers, callees, 0x179fb0 and 0x17a380): copies through a `transform4x3f const &` to
+// the location matrix 74, with the house scale 270 (1519 B); position/forward/up declared apart and copied in position, up,
+// forward order 74, with the house scale 278; the lens flare limit as `continue` 74. Compile-only: the reference, the
+// separate copies and a cast copy of position keep y in place; only a by-name position.y (the listed read, or a
+// self-assignment) gives retail's copy: retail keeps the loaded x and y and scales into fresh registers, z in place.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

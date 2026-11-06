@@ -721,6 +721,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // the offset declared before the emitter index 42; the particle copies motion first 50; the next index read right after the
 // particle lookup 272 (1113 B); scale first with the colour declared before the frame locals 40; scale first with the
 // particle mask formed beside the emitter mask 261 (1117 B).
+// M3 lane 11 r76 (fast; aligned count in brackets): the motion rotated through the existing vector3f_rotate_into_axes,
+// the position through the shared helper 127 (1138 bytes) [105]; indexed definitions with scale first re-measured
+// 113 (1136) [89]; on that, the motion through vector3f_rotate_into_axes 119 (1140) [96], the emitter-definition
+// block base named once before the loop 284 (1118) [176], the motion rotated from the particle's velocity into its
+// copy 141 (1140) [135], plus the position rotated from the particle's position into its copy 199 (1143) [221].
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1272,6 +1277,14 @@ public:
 // expression), and those are dead or redundant statements, so not kept; without one 279 (1332). Real forms of the read: `__assume` on the field (four spellings) 284
 // (1369, flips the whole function); component copy in a case arm 266; `if (0)` store 261; written-out cross in the fallback, default or both 285 (1376); scale result into the
 // normalizer, perpendicular result into the cross, named direction from the scale 279; the same in the default arm 272. Needs a ruling on that one read, or a real statement that names it.
+// M3 lane 11 r76: round 212's form rebuilt (helpers in the fallback, the matrix at the child-loop top, the position
+// before the 1.0 scale, the colour local after the position copy, the named child definition) 279 fast (1332 bytes)
+// [59]; with the no-code read `(void)matrix.forward.k;` it is a MATCH in the plain check (0x175270, 0x248750 and
+// 0x174990 stay matched), not kept: a redundant statement, waiting on a ruling. On the helper form (fast): the
+// perpendicular's returned pointer passed to cross3f in both arms 272 (1340) [68]; the scale's returned pointer
+// passed to the normalizer in both arms 279 (same code); the fallback cross through cross3f_staged 279; the
+// fallback's normalize and perpendicular given the member path through `rotation` 279 (same code); the chained
+// perpendicular in the fallback only 279; the matrix declared at function scope 279.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1425,6 +1438,7 @@ static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, 
     result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax S (11-06): the permuter's 41 rewrites all score 135 or worse on the reduced image; no new form, no lower score.
 // score 135 (was 135): frame and length agree, and so do the entry saves. Left: the tag index lands
 // in EAX (retail EDX, 0x137bd0's register) and the extra `mov edx, eax` shifts the camera block;
 // retail tests definition bit 5 as `mov dl; shr dl, 5; test dl, 1`; it reloads the location
@@ -1861,6 +1875,18 @@ bool function_17afd0(long effect_index, long value);
 // != NONE && !query(view)` reassigned 125 (492); `query(view) ? false : true` 47 (same code); retail's shape with
 // the view global at each use and same_view declared at function scope 138 (510); same_view defaulted false at
 // the arm's top and reassigned whole 138. The branchy availability always hands BL to same_view.
+// MiniMax E (11-06): no new form, no lower score.
+// The availability result moved after the view load 125, after the definition
+// call 138 and before the effect index 138: each move flips the NONE constant
+// from EBP to EBX. The branchy availability (test/jne/mov bl,1) 135 spills the
+// result to a stack byte. The base's 47 stands.
+// M3 lane 11 r76 (fast; aligned count in brackets): the view global at each use with the availability as one
+// if/else on `g != NONE && !query(g)` 113 (498 bytes); the view local for the availability, same view and
+// attachment with the global read only at the camera test 110 (500 bytes) [6: only the availability's xor placement
+// and neg/sbb/inc left; a mix, match-only]; the view at each use with availability false at the arm's top and set on
+// success 142 (510); that reload mix with availability false right after the view read and set on success 138 (510)
+// [70]; the reload mix with one-expression availability 113 (498) [51]. Every branchy availability keeps NONE in
+// EBX past the view and owner tests, where retail coalesces the owner with NONE in EBP.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

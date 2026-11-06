@@ -55,6 +55,7 @@ struct c_aggregate : c_child
 // MiniMax B (11-04b): no new form, no lower score; the frame stays 0x8024 against retail's 0x8020 because the produced count keeps a slot of its own, and the two loop temps stay swapped; moving the produced count out of the loop scores 42/90.
 // MiniMax E (11-05): no new form, no lower score; the body is still byte-exact only with the file's /GL-
 // flag, which costs 0x97f60, 0x97fe0 and 0x980d0 their matches, and the LTCG frame keeps its extra slot.
+// MiniMax S (11-06): no new form, no lower score: the frame is still 0x8024 against retail's 0x8020, because the produced count keeps a slot of its own where retail packs the loop-2 cursor and the loop-3 count into it and the two temporary slots stay swapped; the body is byte-exact only without the file's whole-program flag, which costs three siblings their matches.
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its

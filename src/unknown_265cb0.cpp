@@ -588,6 +588,20 @@ real function_30bf0(vector3f *vector);
 // M404: indexed-seat byte/signed-char/word/int ordinals, mutable count:
 // 186/185/193/173; immutable count: 186/185/193/173.
 // NOT kept: no exact native allocation; original signed-short traversal and body restored.
+// MiniMax B (11-06) round 2: no new form, no lower score (84); the amount read into a local at
+// the function's scope, declared before the result or after it, gives the same code (84), so the
+// low frame slots cannot be moved that way: ours keeps the result at +0x0c and the amount at
+// +0x08 where retail has the result at +0x08 and the amount at +0x14; the two cross products go
+// through the shared `cross3f` and `cross3f_staged` (both of them, either one alone: 84, the
+// same code) and the second one's arguments exchanged score 96; in the first cross product retail
+// loads the up component into the register and the forward component as the memory operand for
+// the `up.i * forward.k` term while ours does the opposite, the values agree, and only the
+// shared helper's product order can produce retail's split, so the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (84); the frame slots are still permuted (ours
+// keeps the result at +0x0c, the range at +0x18, the delta at +0x38..0x40 and the seat cursor
+// at +0x34, retail the result at +0x08, the range at +0x30, the delta at +0x3c..0x44 and the
+// cursor at +0x48), the range still loads into XMM2 where retail uses XMM0, and the two
+// cross-product products still take their operands in the exchanged order; the body is unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2142,6 +2156,17 @@ real function_2683f0(long actor_index, long node_index, short type)
 // F404: Complete normalized-direction value at distance/query/absolute-speed/relative-speed
 // boundaries, mutable then const: 429/429/429/439/429/429/429/439. NOT kept: no exact value-ownership form.
 // Original normalizers, vectors, predicates and complete body restored; iterator/byte homes and SIMD residence remain.
+// MiniMax B (11-06) round 2: no new form, no lower score (168); the first difference is still the
+// table load at +0x5c, ours [eax + ecx + 0x58] against retail [ecx + eax + 0x58], and that load
+// is the inlined 0x26be00, whose source sits in a file this lane may not edit, so the register
+// roles cannot be swapped from here; the frame is retail's 0x80 and the normalized direction is
+// still folded instead of being kept in XMM1..XMM3; the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (168); the first difference is still the
+// table-pointer load at +0x5c, where ours addresses it as [eax+ecx+0x58] and retail as
+// [ecx+eax+0x58], the frame is still 0x7c against retail's 0x80, the iterator's table pointer
+// still loads into ECX where retail uses EAX (which makes our loop head one byte longer and
+// puts every later line one off), and the normalized direction is still folded instead of
+// being kept in XMM1..XMM3 across the three dots; the body is unchanged.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

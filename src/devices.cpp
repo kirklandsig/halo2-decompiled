@@ -1667,6 +1667,23 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax R (11-06): no new form, no lower score (248); the frame agrees and the registers are pushed in the order EBP, ESI, EDI here and EBX, EBP, ESI in retail.
+// Walk 11-06 (b5P, statement by statement against retail 0x106790..0x106d64, no behaviour difference found): entry
+// (datum, definition = table[def & 0xffff] + 8, state from the +0x12a offset, flags &= ~0x100); the manual power arm
+// (0x106810-0x10689f: 0x107cc0 with previous in xmm0 and &position, velocity = (position - previous) / rate, 0x20 set
+// or cleared, 0x107520, result); the power-group arm (0x1068a4-0x106b70: idle test value/power/velocity/0x80 -> delay 0;
+// channel guard + 0x1c6620; acceleration = 0xcc*pos + 0xd4*(1-pos), speed = 0xc8*pos + 0xd0*(1-pos); 0x100 from
+// acceleration > 0 && speed > 0; delay test with delay_ticks (movsx) * rate >= +0x10c, power == 0, power > value; fabs clamp;
+// 0x11eed0 with wrap = def[0xbc] & 1; event ids 0xf0/0xf8 reached, 0xe0/0xe8 reversal; refresh + advance on change or
+// 0x80); the manual position arm (0x106b7f-0x106bc9); the position-group arm (0x106bd3-0x106cd9, speed +0xc0, acceleration
+// +0xc4, wrap false); the 0x80 tail (type bit 7 -> 0xbd020 + 0x115b10, byte +0xb3 == 0 or index NONE clears 0x80, returns true).
+// Every field, condition direction, constant, callee and argument agrees; all float products and sums are in retail's
+// order (the 0xcc/0xd4 pair and the 0xc8/0xd0 pair are added in retail's order, the 0.0f - speed negation is retail's
+// xorps + subss) and there is no fst/fstp dword rounding point in retail to keep (fabs is the one x87 use, on the
+// velocity copy in memory). What is left (248) is the callee-saved permutation (retail pushes EBX, EBP, ESI, with index * 12
+// in EBX), the result as a stack byte at [esp+0xf] (ours DL), and one dead store retail makes before the power 0x11eed0
+// call (rate into the speed's slot, 0x106aa3). Tried: the rate read once into a local `time_step` for the delay product
+// and the call 334 (frame 0x24).
 // score 248 (was 285): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
 // Earlier (285, was 285): our frame is 0x1c and retail's 0x20, and the index, header, state and result

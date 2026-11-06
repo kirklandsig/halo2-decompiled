@@ -1747,6 +1747,9 @@ struct s_collision_result_25f7b0
 // alongside an unrelated edit in src/unknown_16bd10.cpp, not kept).
 // MiniMax D (10-31): the same named hit-fraction local again 22 (a one-use local, not kept without a match).
 // MiniMax G (11-04): no new form, no lower score: the collision flag's byte home stays at +0x13 and the product keeps the hit fraction in the register.
+// MiniMax B (11-06): the hit fraction read into a named local before the distance is computed scores 2,
+// but that local holds a value used once and the same form was recorded as not kept on 10-31, so the
+// original body is restored (4); only the collision bool's byte home is left.
 // score 4 (was 7): the collision bool's byte home is +0x13 where retail keeps it at +0x10,
 // and the product loads the hit fraction where retail loads the distance.
 // Earlier rounds (7 or worse): byte collision flag, byte allow flag, long initial mode, short
