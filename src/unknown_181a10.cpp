@@ -421,6 +421,10 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // first's flag through the indexed expression 47 both give retail's j, first, i, but also move second to the top and swap the scaled indices (retail second, scaled i,
 // scaled j); with both 47; second's flag indexed 230, both flags 233; first's count in a local 36, with the extra read 42, with the flag 174; contact count local 865;
 // entry pointer for one body 8/8. So one reference fewer on first or one more on j is the right direction; the second group is what is left.
+// Round 78 (m3 lane 1, fast; control 8): the j-loop test as `second->count > j` 10; the i-loop test as
+// `first->count > i` 10; pre-increments 8; const component pointers 8; the contact-loop test as
+// `collector.entries.count > k` 8. Re-measured: first's flag through the indexed expression 47 (669 bytes) with
+// the slots unchanged in this build (first 0x24, i 0x28, j 0x2c; retail j 0x24, first 0x28, i 0x2c).
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
