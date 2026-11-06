@@ -1225,6 +1225,10 @@ done:
 	return result;
 }
 
+// MiniMax D (11-06): no new form, no lower score (9); five more spellings of the shared lookup (a data
+// base and a masked slot local in either order, a byte offset local, the slot first, the current one)
+// compile to the same code, so retail's offset in EAX and its `lea esi, [eax + edx]` are not
+// steerable from the source; the reduced image also leaves our body one byte short.
 // MiniMax E (11-06): score 9 (was 9): no new form tried this round; the prologue still builds the
 // actor offset in ESI and adds the base where retail builds it in EAX and forms the actor with a lea,
 // and ours ends a byte short with a trailing int3; two of the nine are reduced-image artifacts.
