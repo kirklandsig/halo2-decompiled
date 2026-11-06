@@ -1571,6 +1571,21 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // such an accessor exists in this file: header and file-local, inline/__forceinline/const-reference (the last leaves
 // this function at 589), two placements and three names all lose it; the 104 form alone keeps 0xc2d00 but raises
 // this function to 589.
+// Lane 15 round 61, NOT kept: the round 58 recipe again (0xc2d00 is unmatched on main now): the gravity argument
+// through an inline accessor in include/unknown_1eb550.h (also used by 0xe3380, codegen-neutral there) plus
+// biped_eye_point's mode 3 arm in the origin copy's else, 585 -> 439 (plain, frame 0xfc); then 0x1cd510 returning its
+// animation id by value (retail evidence: retail's case 4/5 passes a slot in EAX, makes none of the constructor's two
+// NONE stores and reads the result through the returned pointer, `mov eax, [eax]`; 0x1cd510's own bytes unchanged)
+// 439 -> 397 at 2828 bytes (plain). Reverted because the accessor costs matched 0x54590 (src/network_voice.cpp, two
+// loads swap) in the full build: with the accessor and the mode 3 arm alone, with real_point3d_set too, and with
+// everything, 0x54590 is 2; without the accessor it matches. Without the accessor (fast): by-value alone 605
+// (2804 bytes), the mode 3 arm 589, mode 3 + 0xdef60's real_point3d_set 589, all three 609. With the accessor (fast):
+// alone 461, + real_point3d_set 461, + mode 3 439, + both 439, + by-value 397. On 397 (fast): case 6's distance as
+// `length = sqrt(...); distance = length > 0.0f ? length : 0.0f;` 603 (retail's select, its temp in airborne's slot
+// and the whole lower frame become retail's, but position moves 0x74 -> 0x90 and material stays low; aligned 60 ->
+// 61), that through magnitude2d 603; the planar distance through magnitude2d alone 397 (same code: ours squares dy
+// first and keeps dx, retail squares dx first in place); the walking speed_scale product's factors swapped 397 (same
+// code); case 1's rate named ahead of its call 397 (same code).
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2144,6 +2159,21 @@ void function_dfd70(long arg_159e6d)
 // costs matched 0xc2d00 (see 0xdc5c0), and alone the form raises 0xdc5c0 585 -> 589. On it (fast):
 // forward/up renamed 104, start declared before back 104, up before forward 104, to_head before to_hit 117 (0xde9d0
 // stops matching). The homes follow neither names nor declaration order.
+// Lane 15 round 61, NOT kept: the 104 form plus, in biped_eye_raise, the first-ray start written through the existing
+// real_point3d_set (the same component expressions) gives 55 (plain, 1047 bytes; 0xde9d0 still matches): with
+// start's fields no longer written directly, the forward/back and up/start homes and the to_head dot order become
+// retail's and the second epilogue merges; only the to_hit dot sums (k + i) + j where retail (and 0xde9d0) sum
+// (k + j) + i. Not kept because without 0xdc5c0's gravity accessor (reverted: it costs matched 0x54590) it raises
+// 0xdc5c0 585 -> 589; real_point3d_set alone 240 (1032 bytes). Coordinator lead: this pair (0xdef60 233 -> 55
+// against 0xdc5c0 +4 positional) needs a ruling. Also tried (fast, on the accessor state): the two `*eye = head`
+// arms as one after the block (adjust arm returns) 111 (0xde9d0 34); the raise's first test as an early return 129
+// (0xde9d0 119); start renamed 104 (same code); start through vector3f_add_scaled(eye, &back, collision.t * 0.9f)
+// 95 (homes and dots retail's, y/z interleave; 0xde9d0 87), with the named t 95 (0xde9d0 matches); on 55:
+// dot3f(&direction, &to_hit) 55, both dots direction-first 55, dot3f(&direction, &to_head) 55, side assigned j first
+// 61, the test written head-first 52 (0xde9d0 20), to_head computed first 92 (0xde9d0 9), the adjust arm through
+// real_point3d_set 70 (0xde9d0 28), to_hit/to_head declarations swapped 55. The to_hit order follows field ranks
+// (first direct mentions), not spelling; the adjust arm's direct collision.point/direction mentions rank it, and that
+// arm is shared with 0xde9d0.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
