@@ -220,6 +220,10 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // cause is that `first` and `second` are address-taken locals that cross3f takes by reference, so
 // they need a home. The caller 0x23a220 passes its arguments in retail's order, but its definition
 // lives in another lane's file, so nothing here was changed.
+// MiniMax S (11-06): no new form, no lower score. Retail still sets up the polygon query with the point in
+// EBX and the polygon array in EDX and the count and epsilon on the stack, so the call to 0x23a220 needs
+// that argument order; its definition (src/unknown_239b80.cpp) is another lane's file, so the order cannot
+// be changed here, and every call site of it keeps the four arguments on the stack.
 // MiniMax S (10-31): no new form, no lower score. Retail keeps the shape's edges and the ray direction
 // in xmm1-xmm7 and computes the three edge vectors in registers, storing only four floats; ours spills
 // every component of every difference to the stack and re-reads them, so the frame is 0x84 against 0x90.

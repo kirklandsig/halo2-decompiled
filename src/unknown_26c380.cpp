@@ -126,8 +126,12 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 	return success;
 }
 
+// MiniMax S (11-06, later): no new form, no lower score; the first-edge flag declared at function scope
+// before the success flag (and set at the top of the sector iteration) leaves the score at 106, so the two
+// flag bytes keep the slots they have.
 // MiniMax C (11-05): no new form, no lower score; retail's cross product multiplies the direction's component first (direction.k*up.j where ours does up.j*direction.k) and adds the magnitude's squares in the other order, both from the shared cross3f and magnitude helpers; retail also keeps the first-edge flag at [esp+0xf] and the success flag at [esp+0xe] where ours keeps them the other way round, and hoisting or reordering those two declarations does not move them.
-// score 244 (was 410): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
+// MiniMax S (11-06): the two sector-loop exits now jump to a finish label placed before the closing stores (retail's common tail) instead of breaking out of the edge loop; what still differs is the success and first-edge flag slots, the cross product's operand order, the line aggregate's slots and the XMM roles.
+// score 106 (was 244): the held 34 form's control flow is in the body now; 1605 bytes as retail, frame 0x64.
 // Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // pathfinding pointer in EBP and the -1 edge seed in EDX where ours keeps them in EBX
@@ -525,7 +529,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 							if (result->distance - last_distance < -0.1 && count > 0)
 							{
 								next_sector_index = NONE;
-								break;
+								goto finish;
 							}
 							last_distance = result->distance;
 							if (result->distance - distance > 0.0001)
@@ -576,7 +580,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 							if (count > 200)
 							{
 								next_sector_index = NONE;
-								break;
+								goto finish;
 							}
 							++count;
 							break;
@@ -598,6 +602,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 			}
 		}
 	}
+finish:
 	result->blocked = false;
 	result->edge_index = (word)NONE;
 	result->sector_index = current_sector_index;
