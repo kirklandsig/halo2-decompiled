@@ -2009,6 +2009,12 @@ void function_269250(long clump_index, long actor_index);
 // width pairs 115/115/170/160/160/170/160/160. NOT kept: no native memory-only selection
 // match; original handles/body restored. Pool EBX and x87 score/best transport remain.
 // MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
+// Round 135 (m3 lane 7, plain checks with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30, all matched; aligned
+// difference 54 lines on this body, 56 on the in-arm form): the in-arm compare with the selection stored first re-measured 126
+// (homes selection 0x14 / score 0x18 / best 0x1c and the x87 compare are retail's; left: the pool not hoisted into EBX, the
+// selection in EDI with a reload at the loop top, and the found block placed after the loop body); on it a `byte` activity
+// snapshot 126, the group declared in the while condition 126, a `dword` selection 126, the score declared at the top of the
+// walk body 126, the candidate index named before the score call 126 (all the same code).
 // @retail 0x2689d0
 void function_2689d0(void)
 {
