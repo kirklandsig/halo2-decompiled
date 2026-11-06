@@ -897,6 +897,12 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
+// MiniMax C (11-06): the direct arm's magnitude and the history arm's maximum now add their three squares in
+// retail's term order and grouping (344, 3052 bytes against retail's 3047). Left: the magnitude's x87 stack still
+// shuffles differently (ours fmulp/faddp/fxch/fstp against retail's fmul/faddp/fstp), the direct arm's four
+// products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
+// sides and the low-normal arm's homes remain as noted below.
+
 // score 416 (was 433): 3038 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
 // direct arm's rows, the low-normal arm and the history row. Closest form so far: `input->i` for `state->input.i` in the direct
 // arm's rows and the low arm's projected rows, one settings local for the ground compares: 433 at 3047 bytes, aligned 138 and the ground
@@ -1179,7 +1185,7 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
     }
     else
     {
-        real magnitude = (real)sqrt(input->i * input->i + input->j * input->j + input->k * input->k);
+        real magnitude = (real)sqrt(input->j * input->j + (input->i * input->i + input->k * input->k));
         vector3f desired;
         if (flying)
         {
@@ -1292,7 +1298,7 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
             difference.k = input->k - *(real *)(history + 0x18);
             vector3f change;
             vector3f_add((vector3f *)(out + 0x64), &difference, &change);
-            real maximum = (real)sqrt(change.k * change.k + change.j * change.j + change.i * change.i) + g_47ffb0;
+            real maximum = (real)sqrt(change.j * change.j + change.k * change.k + change.i * change.i) + g_47ffb0;
             vector3f offset;
             offset.i = state->velocity.i - *(real *)(out + 0x64);
             offset.j = state->velocity.j - *(real *)(out + 0x68);

@@ -1162,6 +1162,11 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // as plain inline 284. Diagnostics: a char store through modes between the held and pending lookups gives retail's
 // first loop (g_4e0300 hoisted, both lookups redone, no loop pad, lazy g_4e3b44) at 308; held/pending stores
 // through element pointers do not (292).
+// Round 96 (m3 lane 12, fast): held/pending as a NONE store then a guarded store 286; both through the matched slot-to-weapon
+// function 0xcbd50 295 (retail's exact per-slot `or r, -1; cmp si, -1; je; movsx; mov` code, but the held and pending lookups stay
+// shared and the frame grows to 0x1c), with the mode clears chained 295, with the held value in a named local for the store and
+// the flag test 295. Diagnostics: that form with the arrays' addresses taken 288
+// (1009 bytes), the original with them taken 301 (1020 bytes), held stored through an element pointer 287: none redoes the lookups.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1400,6 +1405,9 @@ void function_150820(dword *bits, bool local_only)
 // (219 bytes); modes declared before the slot 43; weapon index declared with the hand 43; result set before the
 // a8f80 call 71 (215 bytes). A dword load/store probe at entry, after the result, before or after the hand and
 // before the unit lookup (87/84/81/79) never moves the player/unit-index homes: the swap is not a scratch rotation.
+// Round 96 (m3 lane 12, fast): hand as short 81 (217 bytes), as char 89 (197 bytes); hand computed at entry before the player
+// lookup 86 (200 bytes); modes declared ahead of the slot test 43 (same code). Diagnostics: `!primary` in place of the hand at the
+// modes test 43 (CSE'd, same code), at the a8f80 call 89.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -2098,7 +2106,7 @@ void function_15e8e0(long object_index, long player_index);
 void __stdcall function_191ec4(long definition_index, long player_index, short count);
 void __stdcall function_191e51(long definition_index, long player_index);
 
-// score 130 (was 130): the object index is masked once into a local (object_slot) used by both the object
+// score 120 (was 130): the object index is masked once into a local (object_slot) used by both the object
 // lookup and its type, so the scaled header offset stays in a register across the calls as retail's EBP does;
 // the parent index is read in place instead of through a local, which leaves the object pointer in ESI and the
 // parent index in EAX as retail has them. The player lookup and the object header setup now match retail.
@@ -2164,6 +2172,14 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // entry 248, slot before the unit test 244; the shared `object_index & 0xffff` form 209 (714 bytes; retail's EBP
 // offset, but the unit load sinks below the object's, data stays in ECX and parent_ok takes DL where retail keeps
 // g_4e0300 in EDX and parent_ok in CL); parent_ok declared at entry 239; byte parent_type 135.
+// Round 96 (m3 lane 12): the distance through vector3d_from_points3d with the sum written j, i, k as matched 0x151780 and 0x152df0
+// have it 120 kept (the distance block is now retail's); the old named y, x, z declared x,y,z/x,z,y/z,y,x/y,z,x 130/132/132/132, its
+// sum in the five other orders 130 each; the helper with length_sq3f/dot3f 130/130; x,y through vector2d_from_points2d plus z 131/132;
+// radius before the helper 138. On the kept form: parent_ok declared first 121 (aligned 47 against 53: the unit load moves ahead of
+// the object's as retail), object_slot first 136, dword object_slot 120, byte parent_type 125, the flag set in an if 159, the lookup
+// through object_index with object_slot kept for the type read only, after or before it 209/205; the shared `object_index & 0xffff`
+// form 209, with parent_ok first 197: entry code then retail's but for g_4e0300 in ECX (EBP holds retail's index*12); the parent block
+// keeps data in ECX instead of reloading it through g_4e0300 in EDX, so it is one instruction short and everything after it shifts.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
@@ -2180,11 +2196,10 @@ void __stdcall function_150e30(long player_index, long object_index)
     }
     if (*(long *)(object + 0x14) != NONE && !parent_ok) return;
     if (*(long *)(object + 0x14c) == player->unit_index) return;
-    real y = *(real *)(object + 0x34) - *(real *)(unit + 0x34);
-    real x = *(real *)(object + 0x30) - *(real *)(unit + 0x30);
-    real z = *(real *)(object + 0x38) - *(real *)(unit + 0x38);
+    vector3f delta;
+    vector3d_from_points3d((point3f const *)(unit + 0x30), (point3f const *)(object + 0x30), &delta);
     real radius = *(real *)(unit + 0x3c) + 0.3f;
-    if (!(z * z + x * x + y * y < radius * radius)) return;
+    if (!(delta.j * delta.j + delta.i * delta.i + delta.k * delta.k < radius * radius)) return;
     long weapon_index = NONE;
     short rounds;
     short i = 0;

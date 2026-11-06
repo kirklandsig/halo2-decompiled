@@ -610,6 +610,13 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax E (11-06): no new form, no lower score.
+// The head's total needs a fresh register (retail EDX): dropping the named total fixes it
+// (the sum then lands in EDX) but reorders the header case's loads and scores 88; two size
+// locals with the total from them score 91, the position declared first scores 34 with the
+// scratch getter's stores in retail's order, the position computed first scores 158, and a
+// function-scope position scores 34. Left: the hoisted body_size in ESI (retail ECX), the
+// body pointer in ECX (retail EDX) and the size/position pair swapped between ESI and EDI.
 // MiniMax b (11-04): no new form, no lower score; the entry total still lands in EAX (retail EDX) and the body's size/position still in ESI/EDI (retail EDI/ESI); an unnamed total fixes the head but reorders the header case's loads and scores 88, and the state store moved ahead of the total scores 232; the permuter's 188 annealed tries found nothing below 34, and the scratch clamp reading g_4fa0c8.size directly scores 159.
 // score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer

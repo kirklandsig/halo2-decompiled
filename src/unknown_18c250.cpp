@@ -551,6 +551,12 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// MiniMax E (11-06): score 246 (was 264): the type cases now run 0, 2, 3 as retail does, with the type test
+// falling through to case 3; case 3 keeps its own failure byte and calls the position routine only when
+// flag1 is clear; the audibility byte is declared at the audibility call. Not kept (coordinator): case 0's listener
+// as a one-use local read before the 0x1000 flag store (244; 246 without it). Still different: our frame is 0x84 against retail's 0x80, so every stack home is
+// off by four; retail merges the audibility byte into the 4-bit field where ours assigns it; retail's clear
+// path sets the flag byte with `or byte ptr [edi], 2` where ours folds it into a word store.
 // MiniMax C (11-04): no new form, no lower score: the flag-0 mask is the same literal 1 as the type tests and the shift, so the compiler hoists it into EBX and the frame stays 0x84 (a unique mask value folds to `test byte ptr [esi+4], imm`); a byte flags field with byte or word bitfield views, the mask spelled byte, unsigned, long, short, true or character, `== 0`, `!= 0` and `% 2`, the type test as a switch, and the audibility form that reproduces retail's neg/sbb/inc store all score 265 or worse.
 // score 264 (was 264): frame 0x84 versus 0x80: our build keeps the constant 1 in EBX from the datum flag test
 // (`test bl, al`, the type tests, the shift, b8d30's `push ebx`) and leaves a dead store of it in a stack slot,
@@ -712,27 +718,6 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 	location->unknown02 = 0;
 	switch (sound->type)
 	{
-	case 3:
-		{
-			location->audible = 1;
-			vector3f forward;
-			bool failed = TEST_FIELD_BIT(sound->flag1) || !function_17b2d0(sound->owner, &location->spatial.position, &forward, &location->scale);
-			if (!failed)
-			{
-				location->spatial.compressed_forward = vector3d_compress(&forward);
-				location->spatial.velocity = *(vector3f *)((byte *)g_4ea93c->data + (sound->owner & 0xffff) * 0x190 + 0x30);
-				function_11bed0(&location->spatial.location, &location->spatial.position);
-			}
-			else loop_location_clear(location);
-			return;
-		}
-	case 2:
-		location->audible = 1;
-		if (!TEST_FIELD_BIT(sound->flag1))
-			impact_sound_location_get((s_impact *)((byte *)g_51ebfc->data + (sound->owner & 0xffff) * 0xa0),
-				(s_impact_sound_location *)&location->spatial, &location->scale);
-		else loop_location_clear(location);
-		return;
 	case 0:
 	{
 		long cluster = sound->type == 0 ? sound->cluster : NONE;
@@ -745,6 +730,29 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 		}
 		break;
 	}
+	case 2:
+		location->audible = 1;
+		if (!TEST_FIELD_BIT(sound->flag1))
+			impact_sound_location_get((s_impact *)((byte *)g_51ebfc->data + (sound->owner & 0xffff) * 0xa0),
+				(s_impact_sound_location *)&location->spatial, &location->scale);
+		else loop_location_clear(location);
+		return;
+	case 3:
+		{
+			location->audible = 1;
+			vector3f forward;
+			bool failed = true;
+			if (!TEST_FIELD_BIT(sound->flag1))
+				failed = !function_17b2d0(sound->owner, &location->spatial.position, &forward, &location->scale);
+			if (!failed)
+			{
+				location->spatial.compressed_forward = vector3d_compress(&forward);
+				location->spatial.velocity = *(vector3f *)((byte *)g_4ea93c->data + (sound->owner & 0xffff) * 0x190 + 0x30);
+				function_11bed0(&location->spatial.location, &location->spatial.position);
+			}
+			else loop_location_clear(location);
+			return;
+		}
 	}
 	if (!(sound->flags & 1))
 	{
@@ -765,7 +773,6 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 	else location->scale = sound->scale;
 	if (sound->type == 1)
 	{
-		char audible = 1;
 		long marker_name = 0;
 		if (sound->marker != NONE) marker_name = function_b8c40(sound->owner, sound->marker);
 		s_object_marker marker;
@@ -774,6 +781,7 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 		location->spatial.compressed_forward = vector3d_compress(&marker.matrix.forward);
 		function_ba1d0(loop_location_object_index(sound), &location->spatial.velocity, NULL);
 		object_get_root_location(loop_location_object_index(sound), &location->spatial.location);
+		char audible = 1;
 		function_18d4f0(loop_location_object_index(sound), &audible, NULL);
 		location->audible = audible;
 		if ((*definition & 8) && !location->audible)

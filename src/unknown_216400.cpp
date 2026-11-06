@@ -431,6 +431,9 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // family every scratch pair is rotated, the format call's lea pair before the append included); a count local with an
 // index copy and `count + 1` stored first 51; a count local copied into `entries[count]`, then `count + 1` 33; a struct
 // assignment 51; through a count pointer with `index = (*count)++` 51.
+// Round 77 (lane 10, fast): the copy as `if (slot) memcpy else break` 20; a bool helper over the pointer
+// helper returning `slot != NULL` 20 (the bool threads into the NULL test); `&entries[count]; count++;` 20;
+// `list->entries + list->count++` 20; a count local with `count + 1` stored before the address 49.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {
