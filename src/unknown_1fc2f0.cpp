@@ -200,6 +200,16 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax H (11-06): no new form, no lower score; the first difference is at +0x59, retail converting the ticks
+// into xmm3 (the register the rate arrived in) where ours converts them into xmm4, and retail's tick products
+// run j, i, k while its deltas run i, j, k; here the chain order follows the first delta's component and the
+// delta order follows the tick products' order, so that combination has no source form: the deltas i, j, k 79,
+// the chain statements j, i, k with the deltas i, j, k 73, the same with the tick products j, i, k 77, a
+// separate scaled vector 83 and 77 with the chains j, i, k, the tick products j, i, k alone 32 (same code), the
+// tick conversion after the chains 73, the tick conversion and the deltas interleaved 79, and the conversion
+// written at each product 73. Putting the conversion after the chains does put the ticks in xmm3 as retail has
+// them, but the products then copy that register instead of scaling in place, and the conversion at the top of
+// the body scales in place but takes xmm4.
 // MiniMax D (run 46): the rate chains j, i, k with the tick products and the deltas interleaved
 // i, j, k 73 (chains, stores, deltas and the k, j, i sum are then retail's, but the tick products
 // run i, j and the tick stays in XMM4); the products grouped 77; the conversion after the chains 73
