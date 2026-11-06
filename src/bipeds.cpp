@@ -1557,6 +1557,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // NOT kept: best gains one and every frame stays 0xf8 versus native 0xfc. Original material
 // initialization, all memory observations, animation refresh, packed output, shared eye helpers and
 // complete body restored; material/airborne/animation homes and missing frame word remain.
+// N399: Native initial-motion/contact-query/eye-body vector and point lexical homes,
+// families 1..7 then alternate complete prefix: fast 585/585/585/585/585/585/585/585. Every original executable
+// statement and lifetime preserved. NOT kept: unmatched home allocation; original body restored.
 // Lane 15 round 58, NOT kept (585 -> 439, plain): the missing frame word is the 0x1e5bb0 gravity argument. Retail
 // loads g_51e9c4->unknown0 early and keeps it in its own dword ([esp+0xac]), as it does for the field_bit_test()
 // arguments, which are inline calls; a direct read is loaded at its push (retail 0x118700 does that). Through an inline
@@ -2131,6 +2134,11 @@ void function_dfd70(long arg_159e6d)
 // P344: Actual first-ray fraction and hit/head projection declarations at the collision workspace,
 // seven subsets then reversed declarations: 233/233/233/233/233/233/233/233. NOT kept: no byte match;
 // both original helpers and complete target restored. Mode-three placement and basis/ray homes remain.
+// J261: Complete forward/side displacement and double-factor backward-ray phases 246/248/246/245/238/236/238;
+// both offset vectors through the double-factor provider 305. Backward or double-offset forms lose de9d0,
+// several also c2d00; dc5c0 rises, and reduced-only 41640 also worsens.
+// NOT kept: no eligible native repair; opening executable source restored. Mode-three placement and native
+// basis/ray homes remain; both original helpers and wrapper restored.
 // Lane 15 round 58, NOT kept (233 -> 104, plain): lane 1 r62's form, the mode 3 arm inside the origin copy's else
 // with a return; with 0xdc5c0's gravity accessor 0xdc5c0 goes 461 -> 439 with it instead of rising, but that accessor
 // costs matched 0xc2d00 (see 0xdc5c0), and alone the form raises 0xdc5c0 585 -> 589. On it (fast):
@@ -3082,6 +3090,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // seven subsets then existing state bitfields: 520/545/535/530/520/545/535/534.
 // Set-only 530; clear-only 520 plain, 1844/1908 bytes. Kept the clear-only writer:
 // native direct byte AND in both completion paths; frame/result/state homes remain.
+// Y610: Actual state-byte/flag-word/body-array lvalue identities, subsets 1/2/4/3/5/6/7,
+// then all with component-record identity: 520/520/520/520/520/520/520/520 (fast control 520).
+// NOT kept: no byte equality;
+// original memory observations, complete body and names restored; frame/result homes remain.
 // Lane 15 round 58 (fast): case 0 as positive nested ifs with else arms for the three flag exits (retail's tail
 // order: 0xe16b0 failure, 0x138fa0 failure, g_5107ed arm, all after the main body) and one result: 502; with case 1
 // and default returning directly 445 (aligned 168 against 198), but the argument then moves to EAX and 0xdd360 goes

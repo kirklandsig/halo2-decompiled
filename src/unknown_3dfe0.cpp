@@ -17,13 +17,11 @@ s_object *function_badc0(long object_index, dword mask);
 void function_3e5a0(vector3f *current, vector3f const *target, real step);
 void function_3e4e0(dword *current, dword const *target, real step);
 
-// score 21 (was 23): the tail's flag local is declared before the type local, so the zero
+// score 21 (was 21): the object pointer and force flag still swap stack homes (retail object 0x14 in ebx,
+// force 0x10), the object is loaded into eax instead of ebx, and update's false store follows the object's home store.
+// Earlier, 21 from 23: the tail's flag local is declared before the type local, so the zero
+// store comes before the NONE store as in retail.
 // MiniMax G (11-04): no new form, no lower score: the object pointer and force flag keep their stack homes, and the object stays in eax.
-// 0x3dfe0 score 21 (was 23): the tail's flag local is declared before the type local, so the zero
-// store comes before the NONE store as in retail; the object pointer and force flag still swap
-// stack homes (retail object 0x14 in ebx, force 0x10) and the object is loaded into eax instead of
-// ebx.
-// earlier, at 23 (was 23): the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
 // Earlier at 23: the object pointer and force flag swap stack homes (retail object 0x14 in ebx,
 // force 0x10), update's false store sits after the force test, and special takes esi for edi.
 // update = false before force 218 (homes as retail, sample/update timestamps swap esi/edi);
@@ -76,6 +74,10 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // chain 166 (26).
 // Y596: Complementary interpolation result, force-arm/direct producers in bool/byte/short/long:
 // 24/24/158/66/229/229/141/139. NOT kept: no equality; object/force spill homes and early update store remain; original whole body restored.
+// Round 67 (m3 lane 13, fast): the body nested under `if (elapsed)` 21, under `if (cache->valid)` 21, both 21 (same code);
+// one `now` read of the game time shared by both elapsed values 21; force renamed stale 21. Diagnostic rerun of update
+// before force 218: object in ebx with retail's homes, but sample/update timestamps take edi/esi, the false store follows
+// the home store and the force arm has no reload.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

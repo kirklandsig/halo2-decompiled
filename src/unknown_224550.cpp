@@ -434,6 +434,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 211/211/211/211/211/211/211/211 (fast control 211; full 211).
 // NOT kept: no byte match or eligible gain. Original direct aspect decisions, all interpolation trees, alias-
 // safe UV captures and complete callback restored; tint/secondary-UV homes and persistent blend remain.
+// AC560: Selected-sequence availability at its original guard, positive/complementary
+// bool/byte/short/long: 211/211/211/211/211/211/211/211. NOT kept: one-use outcomes do not match; original
+// callback and alias-safe UV captures restored. Tint/secondary-UV and blend homes remain.
 // Round 91 (m3 lane 9, fast): the tint renamed to sort first or last 211/211, the second UV set renamed 211 and
 // the tint declared after the UV sets at the top 211 (same code: the tint/second-UV homes ignore names and
 // declaration order; diagnostics adding tint or second-UV reads do not move them either); the first set's
