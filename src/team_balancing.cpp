@@ -387,6 +387,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 }
 #pragma function(_ReadWriteBarrier)
 
+// MiniMax A (11-05): the reference on the left of the first comparison 65 (only the compare operands
+// match retail; the branch polarity flips and the call order stays reference-first), a named spread for
+// each side 67, both sides as const references 67; nothing gained 8, so the body is unchanged.
 // score 67 (was 67): the count delta now matches retail (the delta named, then the two new team
 // counts); what remains is the order of the spread queries: retail calls the candidate's
 // count_spread first in both comparisons (and the reference's cost first), ours calls the
