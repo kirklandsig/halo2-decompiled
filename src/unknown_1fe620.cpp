@@ -177,6 +177,19 @@ static __forceinline long real_to_long(real value);
 // [eax+8]) 376 at 1854 bytes; the sign test as `random_next(...) & 0x8000` 417, as `(short)random_next(...) < 0` 429.
 // 0x210850 sits in the /Ob1 src/unknown_20fe20.cpp, but 38 of its 52 retail callers are matched /O2 code that calls it
 // out of line, so its flags alone do not explain retail inlining it only here.
+// Walk b3D (11-06, base r721, fast 373 unchanged): every statement and block compared with retail 0x1fe620-0x1fed62
+// (disasm + align.py), no behaviour or precision difference found. Checked: actor index/0x888 stride, the 0x70e/0x70d/0x70c
+// flag flow and the 0x1fdce0 word argument (xor ecx/mov cx, same as ours); the timer draw (upper loaded first, product
+// rounded by fstp dword, fistp to a word); +0x7bc/+0x7c0 stores and both > 0 tests; local_0 = (+0x24 < 1 || +0x27 == 0)
+// (retail's mov [esp+0xf],0 before jne is the same value, nothing overridden); output_index == NONE (cmp ax,0xffff) and the
+// failed-0x2104b0 point copy; 0x1fe410 arguments (esi = point, stack = +0x1c); displacement subtract order, the {0,0,1} cross
+// terms (j - k*0, k*0 - i, i*0 - j*0), the k,j,i / i,k,j square-sum orders and the float rounding of both roots; the whole-seed
+// sign test and 0 - x negations (fchs only for the second output's k); the three draws, with draw 2 added to draw 1 unrounded
+// and stored once; both atan2/tan caps (the second limit doubled on the x87 stack); the timer adjustment (fst keeps the
+// tan product unrounded for the compare, as ours does); sin/cos stores, the shared sin*0 terms, 1/count scaling, the 16-byte
+// state copy and the final sums (stored vector + point; retail adds in the opposite operand order, same value).
+// Remaining differences are only register/frame allocation (0x4c vs 0x48, arg_2 reloaded from the stack instead of kept
+// in ESI, random-state pointer in ESI instead of ECX) and the per-draw seed reloads listed above.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

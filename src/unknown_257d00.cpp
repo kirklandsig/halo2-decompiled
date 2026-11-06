@@ -2298,10 +2298,23 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 469 (was 469): the frame agrees at 0x1c; retail computes the actor base in EBX
+// score 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
+// (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
+// `comiss 1.0, d; jae`, false for NaN. The body is now 2396 bytes like retail, but the positional
+// score rises because retail reloads the state there (`mov eax, [esp+0x38]; add eax, 8`, 0x2594a7)
+// where ours forms `lea eax, [ebx+8]`, which moves every later line by one; revert this line if
+// the score matters more than the NaN edge.
+// Walk b2I (11-06), every block against retail 0x259430-0x259d33 (types 0-21 through the jump table
+// 0x259d34, countdown tail 0x2594c6-0x259d2f): conditions, fields and widths, callees and their
+// registers/stack arguments, constants (1.0, 0.0, 0.984, 0.7, 0.5, 1000.0 read from the XBE), the
+// copy sizes and the exits all agree with the draft. Only the case-1 compare above differed in
+// behaviour. Layout-only differences left: retail places case 14 after 21 (0x259a5d), the retail
+// case 6 flag byte gets two stores (`or 0x29` at 0x259989, then `or 0x48` at 0x2599a1) where ours
+// folds them to `or 0x69`, and the sums in cases 4 and 20 are written in retail's order
+// (k+j)+i / (z2+y2)+x2, which dot3f and length_sq3f (i first) would change for floats.
+// The frame agrees at 0x1c; retail computes the actor base in EBX
 // and spills it at [esp+0x10] before the type dispatch, ours computes it in EDI just
-// before its use and reuses EBX for the state pointer. The body is 2400 bytes against
-// retail's 2396.
+// before its use and reuses EBX for the state pointer.
 // Earlier: retail keeps the object index in EBX and pushes EBP and ESI before EDI, ours keeps the index in EDI and pushes EBP, ESI and EDI in the other order, so the prologue, the jump table and every case body differ; the actor/output acquisition and the length deficit remain.
 // Earlier 478 (was 478): Frame 0x1c agrees; actor/state registers and first point home still differ; eight scope trials restored.
 // Earlier: frame 28 agrees; actor/state registers and first point home still differ.
@@ -2536,7 +2549,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 		{
 			point3f local_4;
 			function_b9dd0(arg_1, &local_4);
-			local_3 = function_210b60((s_type_c3b527 *)((byte *)arg_2 + 8), &local_4) <= 1.f;
+			local_3 = !(function_210b60((s_type_c3b527 *)((byte *)arg_2 + 8), &local_4) > 1.f);
 			break;
 		}
 	case 2: case 3: case 15: case 16: case 17: case 19:
