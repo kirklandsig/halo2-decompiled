@@ -507,6 +507,9 @@ static inline word font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax S (11-05): no new form, no lower score: a long helper result 105, an unmasked parity with a word run pixel
+// 208, an int or a long cast on the parity 85, a byte parity local 85 and the OR operands swapped 85 all leave the
+// alpha parity masked in 16 bits where retail widens it to 32 bits.
 // MiniMax B (11-04): no new form, no lower score: the alpha parity is still masked in 16 bits where retail
 // widens it to 32 bits; a `(long)(byte)` cast 85, a byte alpha parameter 201, a named long parity 176, a long
 // helper return 212 and a long alpha 105 keep the structure but not the parity bytes, and the best form found
@@ -720,6 +723,20 @@ static inline word font_character_pixel(long alpha, long color)
 // boundaries, eight nonoriginal indexed/counted/endpoint pairs: 165/184/173/242/198/183/203/214.
 // NOT kept: all regress; original indexed fills, helper, includes and entire decoder restored.
 // Frame 0xc and alpha extension/literal assembly/two-run differences remain.
+// M401: Complete whole-expression pixel result before the original word return, word/short/long/dword/int/unsigned-int/signed-64/unsigned-64:
+// 85/85/226/226/226/226/210/210. NOT kept: ties or regressions; original helper and complete decoder restored.
+// Frame 0xc agrees; alpha parity widening, literal assembly and run-two reuse remain.
+// N389: Pixel alpha word/uint, color short/uint, result short/uint: 92/91/92/80/85/106/85/105.
+// NOT kept: word alpha with uint color/result 80 gains only five; other type forms tie or regress.
+// Original helper and decoder restored; alpha widening, literal assembly and run-two reuse remain.
+// N391: Case orders 04651237/04615237/04165237/01465237/06415237/06451237/
+// 06145237/01645237: 115/116/113/113/117/116/115/114. NOT kept: all regress;
+// original cases/body restored. Alpha extension, literal assembly and run-two reuse remain.
+// N393: Packed/ordinary indexed, descending-copy forward cursor and reverse real cursor
+// fill pairs 01/02/10/11/12/20/21/22: 172/174/172/164/166/175/174/199. NOT kept: unmatched traversal forms;
+// original loops/helper/body restored. Alpha widening, literal assembly and run-two reuse remain.
+// N398: Scoped existing pixel macro with word/numeric result, byte/numeric parity, byte/long ordinary alpha 165/218/224/236/132/136/226/234.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

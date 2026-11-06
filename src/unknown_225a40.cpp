@@ -97,6 +97,7 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
+// MiniMax I (11-05): no new form, no lower score: retail materialises the case-0 entry address (`add eax, [edx + 0x70]`, `mov eax, [eax + 0x3c]`) and scales the entry index before the tag mask, ours folds the base into the member load and copies the impulse parameter address through EDX where retail copies it through EAX.
 // MiniMax H (11-04): no new form, no lower score: the entry address as an integer sum, that sum with
 // the index term first, the shared helper with the index term first, and the label read through a
 // helper that takes the entry pointer all still fold the base into the member load, so retail's

@@ -314,10 +314,41 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH367: Standard coordinate transforms at axis/cross/direction scales, seven subsets,
 // then native two-stage sum transforms: 407/395/395/427/459/417/442/464. NOT kept: no byte match;
 // original scales, sums, draws and complete helper/body restored; frame/cross/trig homes remain.
+// Round 151 (fast): the rotation through a same-file copy of the existing rotate_direction with direct `(real)sin(a), (real)cos(a)` arguments 236 (1190 bytes, frame 0x114),
+// of rotate_vector_170d70 direct 236 (1190), axis term first with (cosine, sine) parameters 238 (1190), named sine and cosine with each 241/241/241 (1193). Original helper restored.
+// Retail's rotation read from its listing: `v * cosine + axis * projection - cross(v, axis) * sine`, v.k a constant zero; sine named before the copy or the cross with cosine named before the rotation 241/241, both named before
+// the copy or the cross 241/241, sine named early with cosine direct 236/236 (all frame 0x114). Frame slots: +0xc scale, +0x10 cosine, +0x14-0x1c v, +0x20 cross k, +0x24 sine, +0x28 cross j.
 // T60: Existing tilt-angle pointer/reference crossed with axis/output references:
 // eight at 173/1209. NOT kept: no native frame/cross/trig-home recovery.
 // Original value-angle/vector-pointer producer, consumed-axis phases, ordinary
 // pooled reads, draws, request and complete body restored.
+// F403: Existing stored forward as read-only rotation/outer-cross input, original
+// consumed-axis or distinct projected-axis output, eight protocols: 231/235/241/256/232/231/238/198.
+// NOT kept: no exact ownership form; original helper, input/output contracts and full body
+// restored. Frame 0x11c/0x118, retained heading zero and cross/trig homes remain.
+// Round 66 (m3 lane 14, fast): the rotation helper in 0x146320's statement shape (sine, cosine, projection, scalar cross j/k,
+// cross i inline in row i), dot k/j/i, i/j/k and j/k/i, 231/231/231 (1192 bytes; register-masked aligned 46 against the
+// baseline's 63, but the colouring regresses); that body with the axis passed as three scalars and the sine/cosine from the
+// caller, named or as arguments, 240/240 (1193). Retail's outer cross reads each up-vector field into a register per product
+// (`movss xmm5, [u.k]; mulss xmm5, h.j`) where ours folds one operand from memory. The axis as up x heading with the helper's
+// cross taken vector x axis (the same values) 190 (1209 bytes: ours then loads each up field per product too, but in another
+// order), with the outer cross staged 233 (1199).
+// AC553: Complete source-record initializer/readonly/assignment/memcpy before
+// or after request initialization: 330/330/330/330/335/335/335/335. NOT kept: copied
+// input grows the frame and loses caller 0x28dab0; complete original body restored.
+// DL269: Native double C trig inputs at heading/tilt cosine/sine producers,
+// singly, paired, all and mixed: 186/186/185/185/173/173/173/185 (control 173).
+// NOT kept: no gain or equality; original real API inputs, frame and full body restored.
+// DL271: Typed standard coordinate transfers at transform forward/up and both heading
+// publications, subsets 1..7: 283/283/292/264/295/280/279; complete backward ranges 279.
+// NOT kept: no equality or gain; original native copies, frame, helper and body restored.
+// MiniMax R (11-05): no new form, no lower score; the result local declared last or without its initializer
+// changes nothing, every slot sits at the same address as retail's and only the frame size differs (0x11c/0x118).
+// M3 lane 15 r60 (fast with 0x28dab0): a one-file compile without LTCG (`/FAs`) also gives frame 0x11c and lists the helper's
+// cross vector with its own 12-byte home, so the frame is fixed before link time. Projection as `(1.0f - local_1) * dot3f(...)`
+// 173 (same code); rows as `arg_2->i += arg_1->i + local_3.i` 173; scales axis, vector, cross 233 (1222 bytes); rows axis term
+// first 173 (as round 120); the forward copy after the outer cross 190; velocity products speed first 173 (same code); rows
+// `arg_2->i + local_3.i + arg_1->i` 173.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

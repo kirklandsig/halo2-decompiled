@@ -365,6 +365,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax D (11-05): no new form, no lower score.
 // score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // Earlier (round 28 reached 104, not kept: its gain needs the rotation's cross product as scalar terms, which is
 // cross3f's body written inline and is kept only with a match; with cross3f the round's other changes give 163).
@@ -603,6 +604,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // mixed-row/split-wave graph, subsets 1/2/4/3/5/6/7 and all with staged cross:
 // 172/181/164/182/180/187/174/174. NOT kept: frames and extents miss retail; original
 // complete captures, shared products, row trees, observations and body restored.
+// Round 59 (m3 lane 15, fast, base 117; the build already returns with a plain ret and takes wind in EBX): one seed pointer local for the
+// three draws 136; the gust value and direction globals (0x55ecd0/0x55ecd4, only used here) as one struct 117 (same code); sinf/cosf for the
+// angle 117; no `old` copy, cross/dot/rows on the global into a `rotated` local stored back 161 (885 B); the axis draw before sine/cosine 117;
+// the frame-count and initialized-flag globals (0x55e710/0x55e714) as one struct 117 (same code).
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

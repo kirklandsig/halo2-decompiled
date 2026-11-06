@@ -226,6 +226,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
+// MiniMax D (run 46): no new form, no lower score.
 // score 195 (was 195): Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
 // defaults at [esp+4]/[esp+8], keeps that transform's x/y in xmm7/xmm6 (ours swaps x and z) and spills
@@ -493,6 +494,22 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // scalars read in the else arm, if/else, else/if, ternary: 301/297/301 each (folded, 890-894 B). Scale read through a pointer
 // to the camera parameter 234, with the order 232, with yxz 232 (971 B); separate result scalars 195/193; displaced point
 // through a pointer local 216.
+// Round 217 (m3 lane 3, fast; m = masked aligned count, base 195 m82): the parameters (d, a, camera, scale, ...) with every declaration and call 193 (m82, under the bar); fa/fb dropped, the inverses used directly with `inv_a = inv_b = 1.f` in the orthographic arm 207 (974 B, m53),
+// the two stores in either order or chained the other way 207; that with the parameters 205 (m53); on it displaced rows zyx 199 (968 B, m50), yzx 201, zxy 204, yxz 204, xzy 205; helper coordinates declared z, x, y 213 (963 B, m113), z, y, x 216, y, x, z 216 (971 B). Frame stays 0x30.
+// Round 66 (m3 lane 14, fast): the inverses used directly (no fa/fb) re-measured 207 (974 bytes); the scale default applied
+// inside the negate block 222 (972); the displaced and reversed points through the existing vector3f_add_scaled with 1.f and
+// -1.f, both/forward only/reverse only, 195/195/195 (same code: the unit factors fold); the reversed retransform under its own
+// `perspective && fabs(tb.z) < epsilon` guard ahead of the factor block 195 (same code).
+// AC555: Existing scale-comparison truth, bool/byte/word/long, unequal-scale
+// and unit-equality polarity, 270 each (1001/955 bytes). NOT kept: all regress;
+// original alias-safe helper/body restored; frame and inverse/X/Z homes remain.
+// Y604: Complete rotation followed by actual component translation, output/native
+// rotated storage with indexed for/while, pointer and standard traversal:
+// 237/237/338/347/236/236/690/306. NOT kept: no equality; indexed output reaches
+// native length but loses native allocation. Original alias-safe helper/body restored.
+// N396: Complete ordered epsilon outcomes, direct/exhaustive/default-false/default-true
+// bool and byte producers: eight at 195. NOT kept: no equality or gain; original complete body
+// restored, native inverse homes and the second-transform X/Z spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

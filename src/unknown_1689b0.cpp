@@ -1408,26 +1408,38 @@ struct s_shape_counts
 #include <xmmintrin.h>
 #include <string.h>
 
-PRIVATE __forceinline long shape_cluster_next(long *next)
+PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 {
-    long result = NONE;
+    long result;
     if (*next != NONE)
     {
-        s_record_pool *pool = (s_record_pool *)g_4de2e4;
-        byte *entry = pool->data + pool->size * (*next & 0xffff);
-        *next = *(long *)(entry + 8);
-        if (*next != NONE)
-            _mm_prefetch((char const *)(pool->data + pool->size * (*next & 0xffff)), _MM_HINT_T0);
+        long size = pool->size;
+        byte *data = pool->data;
+        byte *entry = data + (*next & 0xffff) * size;
+        long following = *(long *)(entry + 8);
+        if (following != NONE)
+            _mm_prefetch((char const *)(data + (following & 0xffff) * size), _MM_HINT_T0);
+        *next = following;
         result = *(long *)(entry + 4);
     }
+    else
+        result = NONE;
     return result;
 }
 
-// score 170 (was 170): world-mask width, leaf induction and pool/cluster homes differ;
+// score 23 (was 170): retail keeps the world mask as a dword (`mov eax, dword; mov ebx, eax; and ebx, 1`, later
+// `test ebx, ebx`) where ours loads a byte into bl, and retail loads the instance tick global into edx before the
+// instance loop (reloading it after the call) where ours loads it at the loop top.
+// Round 67 (m3 lane 13, plain): the leaf loop as a plain for over the hit count field 186 (873 bytes, frame 0x1014);
+// with the cluster-reference step taking the pool and reading its size and data once 165 (890); with the instance loop
+// as a plain for over a long instance indexed `(short)instance` 115; with the object mark index named 23 (885). On 23:
+// the world mask as a dword or long 217/217. On 115: the mask as a dword 221, `flags & 1` at both uses 221, the
+// instance test as a `!=` block 115 (same code).
+// Earlier at 170: world-mask width, leaf induction and pool/cluster homes differ;
 // integer query result 251f; paired world mask 205 plain; leaf step at read 222 plain;
 // unsigned leaf/handle/count views and normal iterator inline 251f; direct count returns 249f
 // (unchanged fast control 251; full 170).
-// score 170 (was 170): world-mask width and pool/cluster allocation still differ.
+// Earlier at 170: world-mask width and pool/cluster allocation still differ.
 // saved instance predicate 297f; saved object predicate 298f.
 // both predicates 318f; saved collection mask 293f.
 // word hit ordinal 172f; full-width instance mask 291f.
@@ -1454,8 +1466,7 @@ bool __stdcall function_16a440(dword flags, point3f const *position, real extent
         if (found && test_world)
             function_245aa0((s_245aa0 const *)&hits, (s_source_245400 const *)g_4e0340,
                 0, height, radius, NONE, NONE, (s_collection_245270 *)shapes);
-        long leaf_count = hits.field_c0c.field_0;
-        if ((leaf_count > 0 && (flags & 4)) || (flags & 8))
+        if ((hits.field_c0c.field_0 > 0 && (flags & 4)) || (flags & 8))
         {
             ++g_4e7414;
             g_4e7411 = true;
@@ -1467,7 +1478,7 @@ bool __stdcall function_16a440(dword flags, point3f const *position, real extent
                 if (!(flags & 0x1fff0)) flags |= 0x1fff0;
             }
             s_1697c0_bsp *bsp = (s_1697c0_bsp *)g_4e0348;
-            for (long leaf = 0, remaining_leaves = leaf_count; remaining_leaves > 0; --remaining_leaves, ++leaf)
+            for (long leaf = 0; leaf < hits.field_c0c.field_0; ++leaf)
             {
                 long cluster = collision_leaf_cluster(hits.field_c0c.field_4[leaf]);
                 if (g_4e7418[(short)cluster] == g_4e7414) continue;
@@ -1475,12 +1486,11 @@ bool __stdcall function_16a440(dword flags, point3f const *position, real extent
                 if (flags & 4)
                 {
                     s_1697c0_cluster *entry = &bsp->clusters[cluster];
-                    long i = 0;
-                    while (i < entry->instance_count)
+                    for (long i = 0; i < entry->instance_count; i++)
                     {
-                        short instance = entry->instances[i++];
-                        if (g_4e7c20[instance] == g_4e7c1c) continue;
-                        g_4e7c20[instance] = g_4e7c1c;
+                        long instance = entry->instances[i];
+                        if (g_4e7c20[(short)instance] == g_4e7c1c) continue;
+                        g_4e7c20[(short)instance] = g_4e7c1c;
                         function_16a0a0(instance, flags, position, extent, height, radius,
                             (s_collection_245270 *)shapes);
                     }
@@ -1488,11 +1498,12 @@ bool __stdcall function_16a440(dword flags, point3f const *position, real extent
                 if (flags & 8)
                 {
                     long next = ((long *)g_4de2e0)[(short)cluster];
-                    for (long object = shape_cluster_next(&next); object != NONE;
-                        object = shape_cluster_next(&next))
+                    for (long object = shape_cluster_next((s_record_pool *)g_4de2e4, &next); object != NONE;
+                        object = shape_cluster_next((s_record_pool *)g_4de2e4, &next))
                     {
-                        if (g_4de300[object & 0xffff] == g_4de2fc) continue;
-                        g_4de300[object & 0xffff] = g_4de2fc;
+                        long index = object & 0xffff;
+                        if (g_4de300[index] == g_4de2fc) continue;
+                        g_4de300[index] = g_4de2fc;
                         function_16a280(object, flags, position, extent, height, radius,
                             ignore_object, ignore_parent, (s_collection_245270 *)shapes);
                     }
@@ -1556,6 +1567,7 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 			prism->plane.n.n[indices[1]] * point->y) / prism->plane.n.n[axis];
 }
 
+// MiniMax C (11-05): no new form, no lower score; retail's prism loop walks &prism->plane.j (plane.i at [esi-4], the point count at [esi+0x14]) where ours walks &prism->point_count (plane.i at [esi-0x18]), and our accumulator homes sit sixteen bytes above retail's.
 // score 552 (was 552): frame 0xb964 agrees; sum/zero homes and point-count-biased prism cursor remain.
 // frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
@@ -1744,6 +1756,30 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // radius * radius inside the loop (hoisted to the preheader): plain `for` with the product inside 554 (2901, entry shape as retail), the product inside alone 555. The next index named before the first point with
 // 0x120790 for both points 686 (2955, masked+stack 280: retail's axis re-reads, table reads and early idiv appear), with the file's helper 602 (293), plain for + next + 0x120790 669 (2942, 282), + the file's helper
 // 606 (294), plain for + 0x120790 without next 654 (342); 0x120790 alone 651 (339). Lead: those three together fix most of the inner edge loop; what remains first is the zero in ESI (retail) against EBX and the cursor at plane.j.
+// Round 75 (m3 lane 10, fast with 0xc2d00/0x17a380/0x16a440/0x2469b0/0x120790; control 552): retail's prism reads at the
+// loop head are plane.i, plane.j (the cursor base), plane.j again, point_count, plane.k, plane.d; ours plane.i, plane.k,
+// point_count (our base), plane.j, plane.d. The count clamp before the distance 553, after it 553; the projected
+// point through a named negated distance 618 (2911 bytes); `inside` set before the nearest default 552; a const prism
+// pointer 552 (same code). No read order tried moves the cursor base.
+// M3 lane 11 r72 (fast, control 552; "masked" = register/immediate-masked aligned count, control 309): both points through the existing
+// 0x120790 re-measured 651 (2925, masked 334: retail's word table reads appear, but ours reads the axis once into BX where retail re-reads it per
+// point); long counts renamed so the names sort as retail's dword homes 572 (same code as plain long counts: ours edge radius +0x5c, edge count
+// +0x7c, face count +0x80, face radius +0x84; retail face count +0x80, edge radius +0x84, edge count +0x88, face radius +0x8c); no anonymous struct,
+// `point3f face_sum; real nearest_squared_local; point3f edge_sum;` 594 (2896: edge sum at retail's +0x5c, face sum +0x50 against +0x4c, nearest
+// stays +0x6c against +0x58); long counts + 0x120790 for both points + no outer guard + `radius * radius` in the test 640 (2918, masked 335);
+// projected declared ahead of distance 552 (same code); `return true`/`return false` with no result local 593 (2901, first difference +0x13).
+// AC552: Existing reconstruction output as real pointer/array reference, point/real pointer
+// return and point/array reference return: six at 552; native value result ordinary/forced 769/709.
+// NOT kept: no gain; value results 2740/2975 bytes, frame 0xb97c versus 0xb964. Original helper/body restored.
+// AC554: Paired reconstruction plane-axis degeneracy truth in bool/byte/char/signed-char/
+// short/word/int/long 553/553/553/553/553/553/553/553. NOT kept: no exact test-producer repair;
+// original helper and body restored.
+// AC556: Complete output-path-produced returned status in bool/byte/char/signed-char/
+// short/word/int/long: 589/635/635/635/652/652/647/647. NOT kept: all regress and
+// lengthen; original entry result, fallback writes, geometry, word counts and full body restored.
+// AC558: Complete post-query prism-presence/rejection results in bool/byte/short/long:
+// eight at 553, 2898 bytes (control 552). NOT kept: unmatched one-consumer outcomes;
+// original signed count guard, all live count reads, sums and full body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

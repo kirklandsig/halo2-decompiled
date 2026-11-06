@@ -1983,6 +1983,32 @@ void function_269250(long clump_index, long actor_index);
 // the improve test 126 (39). The walk written out in this body (diagnostic): the found arm assigning the group directly 128 (64: pool promoted into EDI and the
 // selection memory-only as retail, but the not-found path threads); the helper's exact shape, one level or both levels, 126/126 (39, same code). So the pool wins
 // only once the not-found path threads; retail has both.
+// Y607: Complete common merge/removal/transfer continuation, selected/separate destination,
+// existing/creation-first admission and aggregate/CRT center copy: 164/164/168/168/176/176/179/179.
+// NOT kept: no exact native continuation/storage recovery; original full body restored.
+// MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
+// M403: Native selected/created 32-bit long/int/dword declaration pairs on the common
+// score graph, eight nonoriginal pairs: eight at 87/482. NOT kept: pool/selection
+// residency and x87 score homes unchanged; original domains and complete body restored.
+// MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
+// Round 75 (m3 lane 10, fast with 0x268840 and the six callees; this body 87 fast): retail sets the clump NULL before the
+// active test (`xor eax, eax`) and tests it once at the found/not-found join, so the not-found path is not threaded;
+// its pool sits in EBX but is clobbered by the scan's mask and reloaded. Re-measured: in-arm compare with the selection
+// stored first 126 (480 B), with the datum index 128 (pool in EDI, homes selection 0x1c / best 0x18 / score 0x14 against
+// retail's 0x14 / 0x1c / 0x18), datum index with best stored first 128. The shared walk helper respelled, checked on all
+// five users: datum-index copy before the clump store 144 (0x268510 119, 0x268840 81, 0x268c90 75, 0x26ae30 238), the
+// step folded into the active test with an else-NULL 146 (users lost too): the helper's shape is right for the others.
+// M3 lane 4 r168 (fast, this body 89). New: a 600 s permuter run (55 tries, none below 87); the selection as a dword 89
+// (same code). Re-measured listed forms: in-arm compare 126 (480 bytes); the walk as a for loop with the step in its init
+// and increment 339 (624 bytes), with the in-arm compare 343 (625; round 127 listed the pair as 343/339). Retail hoists the walk's pool field into EBX (reloaded after the bit scan uses EBX
+// as the mask) and keeps the selection memory-only; matched 0x26ae30's retail walk reads the pool each step. All restored.
+// N391: Actual retained best bool/byte/short/word/int/long/dword/unsigned-char:
+// 177/160/145/155/141/141/155/160. NOT kept: all regress against reduced control 89/full 87;
+// original real best and full body restored. Memory-only selection, pool and x87 homes remain.
+// N393: Selected/created signed or unsigned eight-byte handle storage, eight nonoriginal
+// width pairs 115/115/170/160/160/170/160/160. NOT kept: no native memory-only selection
+// match; original handles/body restored. Pool EBX and x87 score/best transport remain.
+// MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

@@ -87,6 +87,9 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// MiniMax G (11-05): no new form, no lower score; the rigid-body lookup's address operands still
+// read `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`, and the success tail still
+// pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
 // MiniMax B (11-04): no new form, no lower score.
 // score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
 // and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).
@@ -239,6 +242,19 @@ void function_1d56f0(s_havok_component *component)
 // return 153; persistent body/query receivers 77/77; placement/registration and body/
 // registration 153/153. NOT kept: no gain; registration moves the frame, and cdecl
 // raises both setter users. Original contracts restored; lookup and setter transport remain.
+// Round 153 (m3 lane 5, fast with 0x1d0cf0/0x1d0c20/0x1d1b60; 0x1d0cf0 body varied, restored each time): set copy with a
+// body pointer, m_fixed first, refetch by direct indexing 73 (0x1d0cf0 88); set copy with a slot pointer fetched before the
+// transformed block 73 (85); set copy, slot pointer, direct refetch 73 (90); constructor copy with a body pointer, getter or
+// direct refetch 77/77 (85/85). 0x1d1b60 stays matched in all. A /Gd compile-only first pass puts the component in EBX for
+// every m_fixed-first form (retail's final EBX/ESI/EDI roles) and in EDI for flag5-first ones; LTCG converts only the EDI
+// case, and an EDI component passes through 0x1d0c20 from 0x1d1b60's EDI (retail 0x1d1b60 holds the component in EDI), which
+// is why those forms lose 0x1d1b60. Still BLOCKED-BY 0x1d0cf0 (component in EBX).
+// DH384: shared xyz rotation/translation/all 77/77/77; all-row scalar inputs 77;
+// accepted-pose snapshot 180; shared point setter 77; output/moving-pose zero
+// construction 116/244. NOT kept: no gain; record/zero forms grow the native body.
+// Round 394: complementary blocked result bool/signed-byte/short/long
+// 82/82/147/146; each with nonpositive direction 88/88/153/152. All grow the
+// body; original result, direction, frame homes and complete executable source restored.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

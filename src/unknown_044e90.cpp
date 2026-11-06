@@ -10,8 +10,6 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
-// MiniMax E (11-04): entry flags read per branch 442, the same with a shifted instance flag 444, the tag table read once at the top 455, an int index local 406, the entry address as an explicit stride and with named offset and index locals 406, the permuter's best 403 (that variant swaps call arguments); no lower score.
-// MiniMax S (11-01): the entry address and the flags load keep the first difference at +0x10; no lower score.
 // score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
 // Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
@@ -307,9 +305,26 @@ struct s_visibility_bound_record
 // (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
 // chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
 // movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
+// M3 lane 10 r73 (fast; aligned/masked in brackets, control 406 [357/254]): retail's `lea ebx, [eax + table]` reads as a repeated sum, so the tag read
+// through the array expression 467 (1768) [351/251], the flags through it 448 (1742) [346/242], both 467 [351/251] (the read folds instead); the entry as
+// `table + index`, through a long index and through a const reference to the index 406 each (same code); the plane copy as two statements 406 (same code).
 // T61: Ordered parts-mode result, preset-false and exhaustive outcomes in bool/byte/short/long:
 // 411/411/450/450 and 408/408/413/446. NOT kept: test-produced flags miss equality;
 // original conjunction and full body restored. Entry/table and plane/query homes remain.
+// MiniMax E (11-04): entry flags read per branch 442, the same with a shifted instance flag 444, the tag table read once at the top 455, an int index local 406, the entry address as an explicit stride and with named offset and index locals 406, the permuter's best 403 (that variant swaps call arguments); no lower score.
+// MiniMax S (11-01): the entry address and the flags load keep the first difference at +0x10; no lower score.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 406 [286]): retail builds the four lists in the order
+// second, first, third, fourth (the reverse of its releases) and releases them on a sign-bit test (`js`) after reading all
+// four capacities. Counts and capacities as two chained assignments 407 [284]; the four list starts in retail's order 405
+// [284] (one point, not kept); the same through a four-caller inline list-start helper 405 (same code); with the plane
+// query declared ahead of the lists 407; the starts in retail's order with the tag table read once at the top 454 (1728 B)
+// [263]; with `!(capacity & 0x80000000)` release tests 482 (1776 B: the release block and the init's `mov esi, ecx`
+// copies become retail's, but the plane loop's registers turn over) [264]; that plus the table local 462 (1792 B) [277].
+// M3 lane 12 r93 (fast, 0x44720/0x458d0/0x45a80 match, 0x45560 182): the entry as `g_4ba138 + entry_index` 406
+// (same code); the tag test's arms swapped (NONE arm first) 450 (1748 bytes); the geometry query count named and
+// used for both tests 406; the tag in a named local for the test and the definition 406; the bottom arm's object
+// index read before its tag 406. Retail's bottom arm reads the tag again, then the visibility word pointer, with
+// the table still in ESI from entry.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

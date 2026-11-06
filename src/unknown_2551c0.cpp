@@ -499,6 +499,7 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 	return local_0;
 }
 
+// MiniMax G (11-05): a split guard with the unit index in a one-use local reaches 19 (the object lookup first and the short request store first), but a one-use local is match-only, so it and the forms without it (guard split 89, guard reorder 296, nested heading length 1263) are reverted; moving the object lookup ahead of the two vector copies reproduces retail's prologue (the global load at +0x15 and the lookup before the copies) but gives 94, because the register rotation (retail EAX/ECX/EDX against ours ECX/EDX/EAX) and the tail homes still differ; no new form, no lower score.
 // score 89 (was 89): the object-plus-radius sum is written at both of its uses, the timing
 // default is a ternary, and the heading vector is declared ahead of the object index; the frame is
 // 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
@@ -703,6 +704,18 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // T58: Complete readiness partitions 1/2/4/3/5/6/7 and sole-exit entry rejection without a unit snapshot:
 // 89/89/89/89/89/89/89/89. NOT kept: no eligible match or gain; complete original source restored.
 // Unit-call scratch register and first-length/projection/query homes remain.
+// DL273: Default side completion at entry/admission/heading/probe phases, short then long:
+// 214/208/205/169/245/239/235/202. NOT kept: nonexact result storage and lifetimes;
+// original default arms and full body restored; unit-call/scalar/query homes remain.
+// Round 133 (m3 lane 7, fast, on lane 17's match-only 17 form rebuilt): adjusted projection in the length variable 17
+// (groups retail's, {length} at 0x14 and {sum, second side, timing} at 0x18 swapped); on it the plain `length > 0 &&
+// 0x30bf0(heading) > 0` guard 17, the length named aa_/zz_ 17/17, the lateral declared at function top 17, the size
+// declared at function top 17 (all the same code). Body unchanged at 89.
+// Round 218 (m3 lane 3, fast, on lane 17's match-only 17 form rebuilt): with the adjusted projection in the length variable
+// (17; groups retail's, {length, adjusted} at 0x14 and {sum, side1, timing3} at 0x18, retail the reverse) the last
+// subtraction written into it 17 (same code), the length variable declared at the function's top 17, the sides zeroed by
+// one chained assignment 18, the lateral first in the final side comparison 17; the permuter on that form (anneal, 600 s,
+// 53 tries) best 17. Body unchanged at 89.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

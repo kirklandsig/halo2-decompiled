@@ -370,6 +370,15 @@ real normalize2d(point2f *arg_0);
 // center difference unnamed at both dots 229 (1022 B); block-top declaration orders 174-197; early masked index 25; copy helper
 // 15, memcpy 15, pointer local 21, scalar copies 245/256, statement orders 51-85. No written-out rows (existing helpers only)
 // 177 at best (1031 B). Identity pointer chains of 1..7 locals 25/187 each. The rows and helpers stay match-only: body restored.
+// DL273: Shared planar cross products at both side tests and dot projection, seven
+// boundary subsets then squared dot: 248/184/249/248/231/249/231/231. NOT kept:
+// no byte match; native object-mask/copy/SSE and query-success schedules remain.
+// Round 133 (m3 lane 7, fast): `result = true` before the output store gives retail's whole tail (`mov ecx, eax`, `mov al, 1`
+// ahead of the output test, `xor al, al` before the pops; aligned 163 -> 154) but 1031 bytes, 241 (one jump grows: the
+// opening is longer than retail's); on it the far path's branches swapped 224 (1029), the far path's output index stored
+// once after its if/else 238 (aligned 160); direct returns in place of the result 251 (1016). The far path's copy still
+// takes EAX for data where retail copies EBP into EAX. Body restored at 180; the opening stays BLOCKED-BY 0x26d100 (its
+// files are held this round).
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
@@ -442,7 +451,7 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
             local_15 = *(long *)(local_14 + 0xc8);
         s_1badc0 local_16;
         local_16.field_24 = NONE;
-        long local_17 = function_26d100(g_4687b0, (long *)arg_3, (s_collision_result_1697c0 *)&local_16, &local_1);
+        long local_17 = function_26d100(g_4687b0, &local_1, (long *)arg_3, (s_collision_result_1697c0 *)&local_16);
         if (local_17 != NONE)
         {
             if (arg_4)

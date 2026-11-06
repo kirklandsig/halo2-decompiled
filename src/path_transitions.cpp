@@ -416,7 +416,7 @@ bool function_2702a0(long actor_index, long mode, long set, long target_mode, lo
             if (block->count > 0) data = block->data;
             s_transition_collision collision;
             collision.prefix.unknown24 = NONE;
-            long node = function_26d100(g_4687b0, location, &collision.prefix, &matrices.local.position);
+            long node = function_26d100(g_4687b0, &matrices.local.position, location, &collision.prefix);
             if (node_index) *node_index = node;
         }
         result = true;
@@ -446,7 +446,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
                 if (block->count > 0) data = block->data;
                 s_transition_collision collision;
                 collision.prefix.unknown24 = NONE;
-                long node = function_26d100(g_4687b0, location, &collision.prefix, &matrix.position);
+                long node = function_26d100(g_4687b0, &matrix.position, location, &collision.prefix);
                 if (node_index) *node_index = node;
             }
             result = true;
@@ -463,7 +463,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
             if (block->count > 0) data = block->data;
             s_transition_collision collision;
             collision.prefix.unknown24 = NONE;
-            long node = function_26d100(g_4687b0, location, &collision.prefix, *position_reference);
+            long node = function_26d100(g_4687b0, *position_reference, location, &collision.prefix);
             if (node_index) *node_index = node;
         }
         result = true;
@@ -471,7 +471,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 219 (was 270): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// MiniMax H (11-05): no new form, no lower score; the projection sum's order ((j + k) + i in retail,
+// (k + j) + i here) comes from the shared dot3f in include/unknown_0259d0.h, and the entry still loads
+// the actor in case 5 where retail loads it at entry and moves pathfinding into EBX.
+// score 219 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
 // colours and the projection sum's order differ.
 // Earlier (270, was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
 // Round 132 (m3 lane 5, fast): case 5's success stores with the output index first 341; case 5's direction
@@ -726,6 +729,50 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // declared 219; `second` declared in its block 219; both reciprocal forms 219; both products turned 219; the radius
 // product turned 219. Left: the entry (actor loaded at entry, pathfinding moved to EBX), which colours case 5, and
 // the projection sum (retail (j + k) + i with j in XMM3, ours (k + j) + i).
+// Y603: Complete root-vertex table values/field references at dispatch/case scope,
+// original/shared negation: 230/219/219/219/230/219/219/219. NOT kept: no equality or gain;
+// original body restored, early root/actor ingress and projection schedule remain.
+// DH377: Read-only root/state and actual mutable-entry contracts, seven coordinated subsets
+// 219/219/220/219/220/220/220; complete contracts with a const surface receiver 220.
+// NOT kept: no equality or gain; both original declarations, entry alias and body restored.
+// Native early root/actor ownership and paired projection/limit scheduling remain.
+// DH380: Original five-test corner admission partitioned at four boundaries, positive nested then
+// rejecting-prefix returns: 219/219/219/219/219/219/219/219. NOT kept: no native ingress recovery;
+// original complete geometry, tests, result, helpers and body restored.
+// N395: Actual actor/surface/parent index eight-byte homes, signed/unsigned individually
+// 371/371/219/219/370/370; complete signed/unsigned 398/398. NOT kept: native values are narrow,
+// ingress is not recovered, and wider actor/parent homes grow the frame/extent. Original body restored.
+// N397: Current retained-graph corner orders acbd/acdb/adbc/adcb/bcad/bcda/bdac/bdca 357/355/357/353/356/354/356/353.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Round 151 (harness 232 for the real 219, aligned 89, masked 47): a plain read of actor_index through its address after the surface, after the result or first,
+// used at the test and the call or at the test only, 233 each (the read folds to the use, no entry load); dot sums through a `(j + k) + i` helper, both, either,
+// arguments swapped, 232 each (same code); written out grouped, both or either, 371 (1288 bytes); one final `return result` with breaks 242 (aligned 107), without
+// volatile 322 (1256 bytes, result in CL), declared later 322, first 321; multiple returns without volatile 335.
+// Random grid of 160 natural forms: lead, corners a, b, c, d load actor_index into EAX at entry with no volatile and move pathfinding to EBX, masked 28 (base 47), aligned 64 (base 89), but 289 at 1284 bytes:
+// the load comes first, so pathfinding arrives in EDX where retail has EAX (retail's load follows `mov ebx, eax`). Without case 5's position first 287 (masked 33), with `*= -1.f` or the old negation 290 (35);
+// corners d, c, b, a 354, c, d, a, b 355, a, b, d, c 304. On the lead: a copy of actor_index after the surface or result 297, the surface after the result 289, origin after projected 289, the
+// first three parameters declared in five other orders, with the call changed, 289 each (no effect on the arrival registers), on the old corners 278. Left on the lead: pathfinding's arrival, first.j/first.k, 1.0/radius*2 colours.
+// Round 153 (m3 lane 5, fast; 0x270d90 286 throughout), re-measured on the 219 base: case 5's position declared before its
+// direction 266; case 5's call under an outer actor test 219 (same code); result, surface, start_out declared in that order
+// 219; the radius read once into a named local for the test and the margin 214 (1284 bytes, gain under the gate), with the
+// margin product turned 214, with the test written `radius * 2.f < first_length` 214; second_distance computed first 219.
+// Case 2 and everything after case 5's actor test agree; the entry (actor_index loaded at entry, pathfinding moved to EBX)
+// shifts every line of cases 1/6 and 5.
+// Y603: Complete root-vertex table values/field references at dispatch/case scope,
+// original/shared negation: 230/219/219/219/230/219/219/219. NOT kept: no equality or gain;
+// original body restored, early root/actor ingress and projection schedule remain.
+// DH377: Read-only root/state and actual mutable-entry contracts, seven coordinated subsets
+// 219/219/220/219/220/220/220; complete contracts with a const surface receiver 220.
+// NOT kept: no equality or gain; both original declarations, entry alias and body restored.
+// Native early root/actor ownership and paired projection/limit scheduling remain.
+// DH380: Original five-test corner admission partitioned at four boundaries, positive nested then
+// rejecting-prefix returns: 219/219/219/219/219/219/219/219. NOT kept: no native ingress recovery;
+// original complete geometry, tests, result, helpers and body restored.
+// N395: Actual actor/surface/parent index eight-byte homes, signed/unsigned individually
+// 371/371/219/219/370/370; complete signed/unsigned 398/398. NOT kept: native values are narrow,
+// ingress is not recovered, and wider actor/parent homes grow the frame/extent. Original body restored.
+// N397: Current retained-graph corner orders acbd/acdb/adbc/adcb/bcad/bcda/bdac/bdca 357/355/357/353/356/354/356/353.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

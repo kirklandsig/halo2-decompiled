@@ -100,6 +100,9 @@ static inline void *function_xc5914d(long thread_index, short size)
 // 71/71 (277: the allocation takes EAX, the frame ESI), in one declaration 71; the result copy after the second allocation 71, no volatile 95; the volatile home after
 // the second allocation 71; the frame reference after the first allocation 25 (281); a done flag with a ternary return 102 (291, the pointer does spill unforced), an
 // if on the flag 90; `else return arguments` 90.
+// Round 89 (fast): no volatile with `long *const &arguments` bound to the allocation 95 (266: the temporary folds), from a void local 95, declared before the frame 95; an unused const pointer to
+// the local and a reference local to it (diagnostics) 95/95, still promoted; the allocation as dword 95, as byte * 95; result from the allocation with a const reference for the element 95, a const-reference
+// base beside plain arguments 95; no volatile with the result cleared right after the call 93 (268).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

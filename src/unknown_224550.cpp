@@ -434,6 +434,16 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // 211/211/211/211/211/211/211/211 (fast control 211; full 211).
 // NOT kept: no byte match or eligible gain. Original direct aspect decisions, all interpolation trees, alias-
 // safe UV captures and complete callback restored; tint/secondary-UV homes and persistent blend remain.
+// AC560: Selected-sequence availability at its original guard, positive/complementary
+// bool/byte/short/long: 211/211/211/211/211/211/211/211. NOT kept: one-use outcomes do not match; original
+// callback and alias-safe UV captures restored. Tint/secondary-UV and blend homes remain.
+// Round 91 (m3 lane 9, fast): the tint renamed to sort first or last 211/211, the second UV set renamed 211 and
+// the tint declared after the UV sets at the top 211 (same code: the tint/second-UV homes ignore names and
+// declaration order; diagnostics adding tint or second-UV reads do not move them either); the first set's
+// extents and reciprocals before the second's 211, the second set's y extent first 211 (same code);
+// remaining_blend named before the first aspect test 258 (1972 bytes); the inverse sums as one expression each
+// 319 (1957 bytes, the frame moves). Retail keeps the blend in XMM5 from the frame block through a join that
+// reloads it on the other paths (+0x46f..+0x47c), so its aspect block holds ax/ay/bx/by/1/bx/1/by in registers.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

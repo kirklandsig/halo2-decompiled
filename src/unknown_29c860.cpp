@@ -40,153 +40,9 @@ __forceinline void function_29c9ee(vector3f const *arg_0, vector3f const *arg_1,
 	arg_3->k = arg_1->k * local_2 + local_1 * arg_0->k - local_3.k * local_0;
 }
 
-// score 2 (was 2): only the inlined 0x11cc90's second cross product differs: retail loads a->j and
-// folds b->i, ours (like the standalone 0x11cc90) loads b->i. Round 125 (one-link LTCG harness, exact
-// here; real --fast for each): the gain added in the call statement 40, the facing lookup before the
-// actor 177, the output copied before the angle store 13, a named local for the clamped turn instead
-// of reusing arg_4 2 (same code), a separate local for the second limit 62; a later read of arg_2->y
-// or arg_2->x never moves the load (diagnostics). Round 121: the rotation helper with the j
-// folds b->i, ours (like the standalone 0x11cc90) loads b->i. Round 121: the rotation helper with the j
-// and k cross terms in a vector first and the i cross term written in the i row took 67 -> 2 (k before j
-// 29; the two terms as scalars 91; without the axis pointer copy 76). Then: the point parameters swapped
-// at the definition and both calls 6 (the dot and first cross product flip); named facing/target/both
-// pointers for the call 40/42/46; `&p->x` arguments, source vector declared first, result vector at the
-// top, split source init 2 each; source vector at the top 187; through vector3f_assign 75; the 0x65c
-// store before the rotation 113; 0x11cc90's dot commuted or j first, its cross through `n[]` 2 each,
-// its cross reversed with `> 0` 5 (0x11cc90 then differs); a permuter run (its reduced image scores
-// this function 204) found nothing. Earlier, before the rotation change: inline depths one/two 67;
-// global optimization off 331; frame pointer 174; rotation source/axis/both by value 163/144/222;
-// planar source contract 83; cross assignment order j/k/i 66; dot with the k term first 66; split
-// source-vector init 66; crosses as three scalars 91; crosses before the dot 70; axis reads without
-// the pointer copy 88; field store before the rotation 125; signed-angle call with swapped arguments
-// and negation 136; fused gain add 66; dot as accumulate statements 77; the field subtract after the
-// second limit 77; the two point parameters swapped 71; the rotation helper's parameters as (axis,
-// vector, ...), (out, vector, axis, angle) or (angle, vector, axis, out) 67; named facing/target
-// pointer locals 71; shared dot/cross with cosine/projection/turn scale phases: single 81/100/84,
-// pairs 105/84/80, all 91, native output loop 122; basic product controls 82/80/84; native vector
-// return with component output, original/dot/cross/both 78/74/82/89, aggregate output 78/74/82/89;
-// rotation in place on the source vector 67; the helper in 0x11d3b0's clean form 101; sine/cosine as
-// helper arguments 67; source vector initialised at the top 194; the source vector read through the
-// 2-D vector type 67; the cross vector declared before the dot 67; a separate result vector copied out
-// 78; the rotation straight into the output 97; one named 2-D view of the source point 78; two-use
-// previous-angle snapshot with gain/both-bound/native-delta subsets 104-114.
-// the first difference is the inlined 0x11cc90's cross product (retail loads
-// b.j and then a.j, folding b.i; ours, like the out-of-line 0x11cc90, loads b.j and b.i); then the
-// SSE registers differ (the zero, which is also the source vector's k, in xmm4 in retail and xmm6
-// here; cos in xmm3 in retail and xmm4 here): retail preloads one axis component across fsin and
-// reloads the rest from [eax] at each use, ours keeps one more component live.
-// Tried: inline depths one/two 67; global optimization off 331; frame pointer 174; rotation
-// source/axis/both by value 163/144/222; planar source contract 83; cross assignment order j/k/i
-// 66; dot with the k term first 66; split source-vector init 66 (alone and with j/k/i); crosses as
-// three scalars 91; crosses before the dot 70; axis reads without the pointer copy 88; field store
-// before the rotation 125; signed-angle call with swapped arguments and negation 136; fused gain
-// add 66; dot as accumulate statements 77; the field subtract after the second limit 77; the two
-// point parameters swapped at the definition and both calls 71 (0x29cb10 still matches; flips the
-// other product and the dot); the rotation helper's parameters as (axis, vector, ...), (out,
-// vector, axis, angle) or (angle, vector, axis, out) 67 each; named facing/target pointer locals
-// for the call and the source vector 71; rotation in place on the source vector 67; the helper in
-// 0x11d3b0's clean form 101; sine/cosine as helper arguments 67; source vector initialised at the
-// top 194; the source vector read through the 2-D vector type 67; the cross vector declared
-// before the dot 67; a separate result vector copied out 78; the rotation straight into the output
-// 97; one named 2-D view of the source point for both uses 78; shared dot/cross with
-// cosine/projection/turn scale phases: single 81/100/84, pairs 105/84/80, all 91, native output
-// loop 122; basic product controls 82/80/84; native vector return with component output,
-// original/dot/cross/both 78/74/82/89, aggregate output counterparts 78/74/82/89; two-use
-// previous-angle snapshot with gain/both-bound/native-delta subsets 104/112/114/112/104/111/114/108.
-// In 0x11cc90 (its own match and its matched callers 0x297660/0x297a50 kept in every form): the
-// cross in a named local 78; its products commuted, or mixed, or the test as `0 > cross` 67 each
-// (identical: VC picks the operand order); the test as `a.i * b.j < a.j * b.i` 127 (0x11cc90
-// 15). A compile-only harness reproduces the 0x11cc90 part but not the rotation (the points arrive
-// in registers only under LTCG).
-// the SSE registers differ (retail xmm1/xmm4/xmm6, ours
-// xmm0/xmm4/xmm1). Inline depths one/two 67; global optimization off 331;
-// frame pointer 174; rotation source/axis/both by value 163/144/222;
-// planar source contract 83. Cross assignment order j/k/i 66; dot with the
-// k term first 66; split source-vector init 66 (alone and with j/k/i);
-// crosses as three scalars 91; crosses before the dot 70; axis reads
-// without the pointer copy 88; field store before the rotation 125;
-// signed-angle call with swapped arguments and negation 136; fused gain
-// add 66; dot as accumulate statements 77; the field subtract after the
-// second limit 77. Retail preloads one axis component across fsin and
-// reloads the rest from [eax] each use; ours keeps one more component
-// live, so the zero lands in xmm6 and cos in xmm4 (retail xmm4/xmm3).
-// Round 76: the first difference is the inlined 0x11cc90's cross product (retail loads b.j and
-// then a.j first; ours, like the out-of-line 0x11cc90, b.j and b.i). The two point parameters
-// swapped at the definition and both calls 71 (0x29cb10 still matches; flips the other product
-// and the dot); the rotation helper's parameters as (axis, vector, ...), (out, vector, axis,
-// angle) or (angle, vector, axis, out) 67 each; named facing/target pointer locals for the
-// call and the source vector 71. A compile-only harness reproduces the 0x11cc90 part but not
-// the rotation (the points arrive in registers only under LTCG).
-// Shared dot/cross with cosine/projection/turn scale phases: single 81/100/84, pairs 105/84/80,
-// all 91, native output loop 122; basic product controls 82/80/84. Zero/axis/trig homes remain.
-// Native vector return with component output, original/dot/cross/both 78/74/82/89;
-// aggregate output counterparts 78/74/82/89. Original helper and all game-call inputs restored.
-// Round 80: 0x11cc90's cross term with either product's operands swapped 67 (canonicalised);
-// that term in a named local 78; the rotation's cross product as three named scalars in any
-// order, with this output form or `v * cos + projection * axis - cross * sin`, 91; a 600 s
-// permuter run found nothing (reduced-image scores do not follow the full image).
-// The first difference is in the inlined 0x11cc90: retail loads a->j and
-// folds b->i in the cross term (the standalone 0x11cc90 and ours do the
-// reverse). Rotation in place on the source vector 67; the helper in
-// 0x11d3b0's clean form 101; sine/cosine as helper arguments 67; source
-// vector initialised at the top 194; the two 2-D vector parameters swapped
-// at the definition and both calls 71. Round 29: the source vector read through the
-// 2-D vector type 67; the cross vector declared before the dot 67; a separate result
-// vector copied out 78; the rotation straight into the output 97; one named 2-D view of
-// the source point for both uses 78.
-// at the definition and both calls 71.
-// Round 255: two-use previous-angle snapshot with gain/both-bound/native-delta subsets 104/112/114/112/104/111/114/108. All restored; original observations, signed-angle call, rotation helper and callers retained.
-// Round 12 (lane 13): the rotation helper's dot and cross through the existing dot3f and
-// cross3f_staged / cross3f (either dot argument order) 84 each; the source vector built with
-// vector3f_assign 88; the source vector declared before the result vector 67.
-// Round 205: existing rotation helper source/axis/output reference subsets 2 each (seven forms);
-// output pointer return 2; helper inline/ordinary availability 2/2; queued inline/forced-inline
-// availability 2/2 (forced inlining loses 0x29cb10). All restored; the second cross-product
-// load/fold pair remains the only difference, with frame and complete rotation exact.
-// Round 208: queued output pointer/reference returns 21/21 (689 bytes); native output memcpy 2;
-// complete float trig pair 40 (692); immutable lookup pointers/helper values 2/2;
-// vector-local names/helper-value names 2/2. All restored; the second cross load/fold remains.
-// Round 49 (lane 12): every 0x11cc90 spelling (named cross before/after the acos, `0 >` test,
-// `-angle`, ternary, early return, if/else clamp, clamp inside the acos call, result local) leaves the
-// inlined loads as they are; only removing the 0x1e5450 call before them, or taking the angle before
-// that call (42), gives retail's pair. Point parameters as 2-D vectors 2; `object_get(arg_1)->tag_index`
-// 2; a named turn-angle local instead of reusing arg_4 2; the two limits in separate locals 39;
-// one-expression angle sum 34 (with separate limits 2); a named object pointer after/before the
-// actor lookup or first 2/2/13; 0x11cc90's parameters declared (b, a) 2; all three first forms 2.
-// Round 91: internal forceinline/plain helper linkage, the helper after its caller, point-reference subsets,
-// an output reference and an actor reference 2 each; all restored.
-// Round 35 (lane 14; exact one-link LTCG harness, then --fast): 1-8 unused initialised locals at the top,
-// before the call or inside 0x11cc90 never move the pair (3/5/6 only move later stack slots), so it is not
-// a numbering tie; the 0x1e5450 call given arg_1 directly, or a global in place of the call (diagnostics),
-// gives retail's pair; the tag through ai/moving/header/handler object getters or `->tag_index` 2 each;
-// PIN-macro clamps 63; the first limit as an if-form 113; the second limit as a ternary 97; the actor
-// lookup at its first use 83, after the first limit 70; the gain as a ternary or `field * angle` 2; the
-// clamps tested `x < -limit` 2.
-// Round 153 (lane 4; harness, then --fast): unused-local counts 1-20 at the top or before the call never move
-// the pair; paren pairs in 0x11cc90's products move later code only (1 pair 61/65, 2 pairs 116/120, 3 pairs
-// 34/38, 4 pairs 2); all 32 dot/cross operand orders 2. The pair follows which point lives longer after the
-// call (b read later, diagnostic, flips both products to a's fields; nothing later also a's), never mixed as
-// retail. 0x11cc90 through the existing 0x50650 40 (fast, CAVEAT; harness 34; 692 bytes); through
-// dot_product2d/cross_product2d 2;
-// result/limit/angle locals declared at the top 2; the second-limit subtract as its own statement 63; the
-// gain as `x = x * field` 2. Split cross in 0x11cc90 (harness): both products named 116, named in the
-// other order 116, accumulated `cross -= ...` 116, only one product named 60/60, negated accumulate 133;
-// none splits the pair.
-// Round 32 (lane 17, fast): `local_3 = arg_4; local_3 += angle` 40 (692 bytes); arg_3 typed as a 2-D vector at the
-// definition and both calls 2; the source vector built right after the angle call 111; the actor lookup after the
-// 0x1e5450 call 177 (689 bytes); one-expression angle sum with the first limit as default-then-override 115 (690).
-// Round 99: one-use tag value, split settings/actor/angle declarations, separate angle result,
-// angle declared before the lookup, combined tag/angle lifetimes and a const object-field read: eight 2s.
-// NOT kept: no exact match or eligible gain; original lookup, angle result and declarations restored.
-// Round 127 (lane 7, fast): `inline` on 0x1e5450's definition 2; a named byte settings pointer 2; named from/to
-// pointers for the angle call 46; a pointer to the 0x654 field at the top 42 (692 bytes), after the lookup 42, after the
-// angle 40, before its use 40; a pointer to the 0x65c field at the top 42, after the lookup 42, after the angle 40; both
-// after the lookup 123; 0x654 at the top with 0x65c after the angle 121; 0x65c at the top with 0x654 late 42. Diagnostics:
-// the tag `& 0xfffff` 155, `+ arg_0` 154 give retail's pair. It follows the function's integer tuples, not point
-// lifetime (a float tuple does nothing), but a tuple ahead of the call flips the dot and the rotation too.
 // @retail 0x29c860
-void function_29c860(long arg_0, long arg_1, point2f const *arg_2,
-	point2f const *arg_3, real arg_4, vector3f *arg_5)
+void function_29c860(long arg_0, long arg_1, real arg_4, point2f const *arg_2,
+	point2f const *arg_3, vector3f *arg_5)
 {
 	s_actor_view *local_0 = actor_get(arg_0);
 	s_29c860 const *local_1 = (s_29c860 const *)function_1e5450(arg_0, *(long *)object_get(arg_1));
@@ -229,7 +85,7 @@ void function_29cb10(long arg_0, long arg_1, point2f const *arg_2, vector3f *arg
 	}
 	local_1 = *(vector3f *)((byte *)local_0 + 0x290);
 local_2:
-	function_29c860(arg_0, arg_1, arg_2, (point2f *)&local_1, 0.0f, arg_3);
+	function_29c860(arg_0, arg_1, 0.0f, arg_2, (point2f *)&local_1, arg_3);
 }
 
 struct s_298c30;
@@ -274,6 +130,7 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// MiniMax I (11-05, run 37): no new form, no lower score (277); the 0.9 steering block is still one instruction short and the left and avoidance vectors still swap their slots.
 // score 277 (was 277): the 0.9 steering block is one instruction short (145 of the count); the left and avoidance vectors swap their
 // 12-byte slots; the second normalize's j product, the 0x5d0 flag store, the early 0x44 load and the local_16 dot's x87 order differ.
 // MiniMax B (11-04): no lower score; the new forms tried and dropped are the avoidance vector's
@@ -344,6 +201,11 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // declared ahead of local_9, local_8, local_7, at the top, beside local_10, or with local_8 and local_9 declared together 277 each (same code); left_i written out at each use
 // 583 (three spellings); left_i from the left vector 543 (2814 bytes); the left vector built from left_i 343 (2829), built first 277; a separate early velocity vector with
 // direction declared in five places 422 (2815); dead pointer locals and identity pointer chains of 1-8 (diagnostic) 277 each (no period here).
+// Round 67 (m3 lane 13, fast): the 0.9 block's `left_i * local_9.i` 277 (same code, canonicalised); its direction.j statements
+// first 278; the left/avoidance vectors renamed so either name sorts first (zz_left/aa_avoid, aa_left/zz_avoid) 277/277 (slots
+// unchanged); the local_16 test's 2-D dot through the existing dot_product2d 279 (lead: retail's x87 order exactly, j product
+// first, aligned 81 -> 77; the count rises because the early 0x44 load still shifts that stretch), on it the 0x44 setting read
+// before the local_16 test (diagnostic, a one-use local) 264 (aligned 73).
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -512,7 +374,7 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 			local_26 = function_1f99d0(arg_0, arg_1, (short)!local_5,
 				(point2f const *)(local_0 + 0x548 + *(char *)(local_0 + 0x53a) * 0x1c),
 				(point2f const *)&local_7, (point2f const *)&local_14, local_22);
-		function_29c860(arg_0, arg_1, (point2f *)&local_8, (point2f *)&local_11, local_26, &local_11);
+		function_29c860(arg_0, arg_1, local_26, (point2f *)&local_8, (point2f *)&local_11, &local_11);
 		real local_27 = 1.0f;
 		if (local_17 == 0)
 			local_12 = direction;

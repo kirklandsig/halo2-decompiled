@@ -327,6 +327,8 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // (7), and passing the scale itself gives retail's lea ecx and its late object index but loads the scale
 // last (8). A named local for the curve set's address gives the same bytes (7). The permuter ran past its
 // 900-second budget on a loaded machine and was stopped by the harness's background limit; it wrote nothing.
+// MiniMax E (11-05): no new form, no lower score; the seven differences stay the sample base against the
+// entry's data offset, the object index load and the curve pointer setup; passing the scale directly gives 8.
 // score 7 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
@@ -683,6 +685,16 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // 311/311/311/264; raw word with the first three 311/311/311; byte owning
 // declaration plus direct bit-zero admission 311. NOT kept: no equality or
 // gain; original datum layout and body restored, native one-spill/failure byte remain.
+// AC555: Effect-provider char/byte/signed-char returns with original Boolean
+// and native failure receivers, eight forms 264 each; provider stays exact. NOT
+// kept: no gain; original declarations/body restored; one-spill/failure byte remain.
+// Y604: Existing clear pointer/reference input and complete location result,
+// ignored/rebound at both actual calls: 264/264/264/264/264/264/264/264.
+// NOT kept: no equality; complete clear ownership leaves the early constant-one
+// spill, frame and failure-byte differences. Original helper/body restored.
+// N396: Selected owner-word memcpy/memmove through conditional/branch/selected-source/negative
+// sources: 264/307/280/324/264/307/267/310. NOT kept: no equality or gain; original owner transfer
+// and body restored, constant-one spill and native failure-byte store remain.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

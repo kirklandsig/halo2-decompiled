@@ -1154,7 +1154,7 @@ long function_1039a0(long object_index, long tag_index, long effect_index, real 
 		case 'effe':
 			result = effect_index;
 			if (!function_17b160(effect_index, tag_index))
-				result = function_176780((s_effect_owner const *)NULL, owner_index, scale_a, tag_index, scale_b, NULL, NULL);
+				result = function_176780(tag_index, (s_effect_owner const *)NULL, owner_index, scale_a, scale_b, NULL, NULL);
 			break;
 		case 'snd!':
 			function_189060(unit_index, NONE, scale_a, g_468788, g_4687a8, tag_index);
@@ -1873,10 +1873,21 @@ static inline bool unit_dual_wielding(long unit_index)
    put-away animation (state 10) */
 // score 17 (was 17): three early lookup operand orders; tail keeps header data in EBP and
 // uses ECX for the holder offset with a late default and AL result, retail ECX data and EDX/DL selection.
+// Round 2 (w2A): retail's lookups 1-3 and the tail are offset-first (`[esi+eax+8]`) and lookup 4 (the animation/inventory
+// test) is data-first; ours is data-first at 1-3 and offset-first at the tail. All of 1-4 share one class: a
+// `long weapon_offset = (weapon_index & 0xffff) * 12; ... *(s_weapon **)(weapon_offset + (byte *)g_4e0300->data + 8)`
+// at lookup 1 flips 1-3 and the tail to retail's order but also lookup 4 (15); writing lookup 4 data-first flips
+// 1-3 back (59, 43 with every lookup spelled out); lookup 4 through an own offset local, a separate getter or
+// `& 0xffff` twice did not split it (all 15). The tail's slot read written retail's way (`long w = NONE; if (slot
+// != NONE) w = unit->weapon_indices[slot];`, also via the weapon_inventory_unit_get helper) gives retail's
+// branchless `or edx,-1` shape but shows 41, because retail also keeps data in ECX (ours reuses EBP, pool) and
+// copies it (`mov eax,ecx`) before the unit lookup. Without the `volatile` the whole compare block is dropped (176,
+// 489 bytes): retail keeps a dead byte store into the `immediate` slot (esp+0x1c). Assigning `immediate` itself 175.
 // Shared data with result-first selection 43; typed holder headers 43; pool local 43;
 // existing weapon getter at every lookup with result-first selection 41; result first 41;
 // split comparison declaration 41; nested holder index 41; mixed pool/data locals 41;
 // function-scope holder pointer 41; existing object-header getter 41.
+// Permuter, 25 minutes (11-05): nothing below 17.
 // @retail 0x100130
 bool __stdcall function_100130(long weapon_index, bool immediate)
 {
@@ -1935,6 +1946,10 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 }
 /* takes rounds from a weapon's reserve for a magazine: first its own, then
    the reserves of the holder's other weapons of the same kind */
+// score 83 (was 107, fast): the slot test reads `weapon->definition_index == other->definition_index`, the slot take
+// reads `magazine->rounds_unloaded` at each use (no short local), and the first block's `unloaded` is a long. Found
+// from a permuter run (11-05) whose best form (81) also needed a volatile read, and kept without it; the operand order
+// alone gives 110, the inline reads alone 163, the two together 85, with the long 83. 0x102b90 still matches.
 // MiniMax A (11-04): no new form, no lower score; the result flag declared before the availability query
 // scores 110 and after it 193.
 // MiniMax H (11-03): no new form, no lower score; retail keeps the magazine index in esi and the available count in edi where ours has them the other way round, and retail holds the pool in ebp where ours reloads the pool global for each slot.
@@ -2067,7 +2082,7 @@ bool function_100b80(long magazine_index, long weapon_index, long count)
 		if (magazine_index >= 0 && magazine_index < definition->magazine_count)
 		{
 			s_weapon_magazine *magazine = &weapon->magazines[magazine_index];
-			short unloaded = magazine->rounds_unloaded;
+			long unloaded = magazine->rounds_unloaded;
 
 			taken = count <= unloaded ? count : unloaded;
 			magazine->rounds_unloaded = unloaded - (short)taken;
@@ -2086,15 +2101,14 @@ bool function_100b80(long magazine_index, long weapon_index, long count)
 				if (other_index != NONE && other_index != weapon_index)
 				{
 					s_weapon *other = ((s_weapon_header *)pool->data)[other_index & 0xffff].weapon;
-					if (other->definition_index == weapon->definition_index)
+					if (weapon->definition_index == other->definition_index)
 					{
 						s_weapon_magazine *magazine = &other->magazines[magazine_index];
-						short unloaded = magazine->rounds_unloaded;
-						long take = count - taken > unloaded ? unloaded : count - taken;
+						long take = count - taken > magazine->rounds_unloaded ? magazine->rounds_unloaded : count - taken;
 
 						if (take > 0)
 						{
-							magazine->rounds_unloaded = unloaded - (short)take;
+							magazine->rounds_unloaded = magazine->rounds_unloaded - (short)take;
 							taken += take;
 						}
 					}
@@ -2532,6 +2546,7 @@ bool function_106280(long object_index, long *out_index, byte *out_entry);
 // w1D (11-05): walked against retail (field offsets, magazine entries at 10-byte stride, trigger and target
 // paths, charging test, marker copy): no logic difference. One byte shared by the loop's active flag and the
 // target query's entry 178; magazine pointer declared before the state read 171.
+// Permuter, 25 minutes (11-05): 79 (full image 78) only with function_b8d30's first and last arguments swapped; not kept.
 // @retail 0x100520
 void function_100520(long weapon_index, s_weapon_status *status)
 {
@@ -2667,6 +2682,9 @@ long __stdcall function_fda00(long weapon_index, s_scenario_weapon_view *placeme
 // two words as one chained assignment 3; a __forceinline redeclaration of 0x105be0 above this function 3
 // (0x105e80 then inlines it); the barrel loop indexing weapon->barrels[i] directly 100; the reset storing
 // value250 first 4 (stores follow source order, `pop esi` stays second).
+// Round 3 (w2A): retail's `pop esi` follows the +0x254/+0x256 stores; no source spelling of the inlined reset moved it
+// (nothing new tried beyond the above; the two word stores and the epilogue pops are scheduled together).
+// Permuter, 25 minutes (11-05): nothing below 3.
 // @retail 0xfdad0
 bool __stdcall function_fdad0(long weapon_index, void *placement, bool *flag)
 {
@@ -2968,6 +2986,7 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 // default, separate activity cases and the default first all keep the `jg` root.
 // w1D (11-05): fallthrough `case 0x1d0007ba:` into `case 0x0c000569:` with the definition recomputed 408; progress
 // tests in retail's order without the trailing else 420; `long` instead of `short` case index 424.
+// Permuter, 25 minutes (11-05): 386 only with a word index and casts that change no value; not kept.
 // @retail 0xff5f0
 bool __stdcall function_ff5f0(long weapon_index, long name, real *value, bool *active)
 {
@@ -3305,6 +3324,7 @@ struct s_ammo_conversion_entry
 // from the match straight to the shared `available > 0` tail, with no test after the loop. Tried: entry pointer at the
 // top of the pass with `if (j >= count) continue;` after the loop 207 (713 bytes); a goto from the match to the tail 214
 // (712 bytes) (both fast, control 190).
+// Permuter, 25 minutes (11-05): 182 only with a volatile other_has_rounds and the same-definition test inverted; not kept.
 // @retail 0xffc60
 bool __stdcall function_ffc60(long weapon_index, long other_index, long player_index, long event_index, short *rounds)
 {
@@ -3494,6 +3514,9 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
 // Dropping the `volatile` on unit_index gives fast 657 / 2501 bytes (retail keeps it in [esp+0x24], stored at entry and
 // reloaded into EDI after each call). What remains differs only in homes: retail EBX = weapon_index, EDI = barrel offset
 // (index*0x34, the barrel is never a pointer), definition spilled to [esp+0x14]; ours EDI = definition, EBX = offset.
+// Permuter, 40 minutes (11-05): full image 590 only with temporaries for call arguments and indices and casts that change
+// no value. Its plain parts (barrel before barrel_definition, function_b7360 before the rounds read, the clamp as nested ifs,
+// the fired test written positively, burst declared after the unit) give 639 fast, from 643. Not kept.
 // @retail 0x102fb0
 void __stdcall function_102fb0(long weapon_index, short barrel_index)
 {
@@ -3853,6 +3876,7 @@ PRIVATE __forceinline long weapon_visible_model_owner(long weapon_index)
 // Round 455: Actual persistent header element as pointer/reference, with entry activity declaration
 // and readonly tag subsets: 1545 each, 5780/5684 bytes, frame 0x3c. Original complete body,
 // lookup graph, activity declaration and metadata restored.
+// Permuter, 40 minutes (11-05): 1369 only with volatile locals and casts that change no value. Not kept.
 // @retail 0xfdfb0
 bool __stdcall function_fdfb0(long weapon_index)
 {
@@ -4332,11 +4356,24 @@ struct s_weapon_projectile_creation
 // (0x104260, the value g_468788 points at); up/forward/velocity live in the creation block; the projectile is re-fetched
 // for the target store and `&= ~2` (0x10526f, 0x105292).
 // Left: retail lays the player-controlled/actor `else if` straight after the player branch (0x104890-0x104935) but ours
-// outlines it after the pre-loop code; the mark-code expression (retail 0x104437: `xor/and/xor` merge of the network flag
-// with the low six bits, then `and 0xffffff3f`) is not reproduced (plain `& 0x3f` here); the average loop is not rotated
-// as retail's (0x104360); frame is 0x1ea4 against retail 0x1e98 and the locals' slots differ (flags 0x15/0x17/0x29).
+// outlines it after the spread block. Round 3 (w3A, fast check): the cause is the `if (!aimed) continue;` edge to the
+// loop latch; with the continue replaced by a store (a diagnostic only, as it changes behaviour) the actor block stays inline
+// as in retail. Not kept: `aimed` as a loop-scope bool preset true and tested after the whole unit block 1118 (retail tests
+// it only inside the actor branch, 0x10492d, and the other paths jump past it to 0x10493b; a preset then overridden value);
+// `if (player_index != NONE) player_controlled = true;` as at retail 0x1045df 1136, alone, at retail's 5212 bytes (a flag set
+// inside a test). On top of both: the rest of the body wrapped in `if (aimed)` (identical code), the actor tested first with
+// the player branch as the `else` 1123, the marker-select `continue` as a bool in three spellings (identical code;
+// retail 0x1044e5-0x1044ef materialises it with sete/test/je, ours emits jne). The mark-code expression (retail 0x104437:
+// `xor/and/xor` merge of the byte at [esp+0x13], the network flag's slot, with the low six bits, then `and 0xffffff3f`) has
+// no natural C spelling: plain `& 0x3f` here. The average loop is retail's (0x104360): retail's `jmp`/`lea ebx,[ebx]`
+// before it is the loop-head alignment pad (also at 0x104480); only its pointer anchor differs ([eax-8..eax] against ours
+// [eax-4..eax+4]). Frame 0x1ea4 against retail 0x1e98: the locals below the creation block are 12 bytes bigger (retail:
+// synchronized point 0xf8, creation 0x104, clipped above it at 0x1c8; ours: clipped between them); moving
+// `repeated_direction` into the projectile block changed nothing.
 // Steps (fast check): behaviour fixes 1221, creation block 1314, normalize_inline instead of the function_30bf0 call 1274,
 // short target + loop-top initialisers 1252, shift-style flag tests + projectile refetches 1143.
+// Permuter, 40 minutes (11-05): 1082 only with the `unit_index != NONE` test dropped (a behaviour change), temporaries and
+// casts. Not kept.
 // @retail 0x104150
 void __stdcall function_104150(long weapon_index, short barrel_index)
 {

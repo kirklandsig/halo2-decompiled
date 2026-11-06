@@ -258,6 +258,14 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
+// MiniMax A (11-05, second round): no new form, no lower score; the switch subject written as an inline
+// `get_game_variant()->field_xcb8724` puts the selector in EAX as retail has it but moves the tag into EBX
+// before the call (44), the tag read after the switch gives 45, and a field pointer for the tag or a named
+// selector leaves the code unchanged (32).
+// MiniMax A (11-05): no new form, no lower score; the permuter's best was 37 (swapping the translator's
+// first two arguments, which changes the call), the one-copy form still hoists the buffer address into
+// EBX at 54, and reading the tag before the variant call puts the tag and the selector in retail's
+// registers but still hoists the buffer at 57.
 // MiniMax b (11-04): no new form, no lower score; the one-copy form still matches retail's length, tag and late EDI save but hoists the buffer address 0x55c6e4 into EBX and scores 54, and the kept form still saves EDI early and keeps the tag in EDX with the selector in ECX; casting the one-copy form's copy source to const or to a non-const pointer keeps the hoist at 54, and reading the tag before the variant call puts the tag in EBX and scores 44.
 // score 32 (was 32): earlier, at 49: our size-optimized build hoists the buffer address 0x55c6e4 into EBX
 // Round 102 (lane 7, fast): the output parameter in a named local used by both copies 32; the selector
@@ -708,6 +716,27 @@ done:
 // join, before the call, after the call 44/44/44; name preset NONE with an else arm 44; two copies with an else arm 48; the copy calling 0x8cc20 directly 44;
 // the translator through an inline wrapper 44; a block-local buffer pointer 44; late-folded addresses: `g + k` at the copy 44, an inline scratch getter at the
 // copy 44, at both 44, a const reference at the copy 44 (the hoist stays in all of them).
+// Round 138 (m3 lane 8, fast; parse_variant stays matched), control 32 at 178 bytes: one copy 54 (173); one copy with the tag read before the getter 57 (171; tag then in ESI, selector in EAX
+// and the mid-function `push edi` as retail, but globals in EAX, the load ahead of the call and the EBX hoist); that with the getter in the switch 57; two copies, tag first 44 (178); the getter written out
+// with the tag read before its fallback (diagnostic) two copies 33 (178), one copy 54 (173): that one-copy listing is retail's instruction for instruction but for the EBX hoist (`mov ebx`, `push ebx`,
+// `mov eax, ebx`, the save and restore), so the hoist is the only cause left once the tag load sits after the getter's call. Micro probes (compile-only, /O1): the hoist fires whenever the second use is partly
+// redundant with the first, in nested arms, through a member of a union, a one-member aggregate, a reference getter, a const local, a phi of the same address, a defined, static or extern buffer, and with two `mov reg, imm`
+// uses (so it is no byte-cost tie); only disjoint arms or `#pragma optimize("s", off)` (diagnostic, not kept) leave two immediates. A scan of the 2015 size-style retail functions finds no other global buffer in this shape.
+// M3 lane 4 r168 (fast; 0x22d503 and 0x22d52e matched): no untried natural form found. Re-measured listed forms (scores
+// agree): per-case translator calls with one copy at the join, retail's block order 42 (171 bytes), ascending 37 (171), the
+// tag read in each call 45 (171), with an explicit `default: break;` 42; `name_id = NONE` with a guard, one copy 54.
+// 0x2c9ddb's note records the same re-materialized address constant (&g_54e4a0), and retail's 0x22d503 reuses one only
+// when it is already in a register (the first copy's ESI destination).
+// AC555: One genuine selector case split from the complementary switch, cases
+// 0/1/9/2/3/4/7/8, 73/70/70/70/70/70/70/70. NOT kept: no equality; early EDI,
+// tag/selector and scratch ownership remain. Original complete parser restored.
+// Y604: Actual copy-object pointer/reference receiver, entry/post-getter binding
+// and repeated/shared completion: 32/32/32/32/54/54/54/54. NOT kept: no equality;
+// direct native receiver ownership retains the early save or scratch-address cache.
+// Original getter, calls and complete body restored.
+// F402: Complementary selector partitions at 1/2/3/4/5/7/8/9, retaining original
+// translation/copy completion, 70/65/63/63/69/69/63/69. NOT kept: all regress;
+// original complete dispatch restored; early EDI save and scratch/tag ownership remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

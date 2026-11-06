@@ -888,6 +888,7 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax D (run 46): no new form, no lower score.
 // score 90 (was 90): the difference is purely the register colouring of the two
 // values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
 // eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
@@ -1118,6 +1119,21 @@ bool __stdcall function_2399da(long controller_index)
 // at three places (a rotation test, diagnostic) keep the identity in ECX: no missing rotation step. 130 combinations (own rank local or field, identity
 // test spelling, permission spelling, task index preset, chain/over-rank first/nested dispatch, store order, nested or guard returns) 89-96 with no
 // identity in EAX.
+// Round 217 (m3 lane 3, fast with 0xac050/0xac360/0x2399da, base 90 at 434 B, masked aligned 5): a `team_xuid` pointer used by both the removal and the set-rank call 90; `have_member` as one direct comparison 90 (same code);
+// the copy arm nested as `if (!have_member) { if (!may_change) deny; copy }` 114 (433 B); the rank-3 test inverted with the set-rank call in its then arm 92; `if (task_index == NONE) return;` ahead of the progress call 90. Identity ECX/rank EAX and the removal move remain.
+// Round 152 (m3 lane 6, fast with 0xac050/0xac360/0x2399da): the rank stored before the rank-3 test (the test reading the
+// stored field) combined with `own_rank >= rank` 89, with the permission test as a named bool 89, with the task index preset
+// to NONE 89, with a removal-arm identity local 89, with own rank read ahead of the identity test 89: the identity stays in
+// ECX and the rank in EAX in every combination (a gain of 1, under the keep bar).
+// M397: Complete selection/member/membership output-buffer defaults, masks 1/2/4/3/5/6/7,
+// then all aggregate-initialized at entry: 174/158/123/193/196/181/212/234. NOT kept: added
+// stores and no exact or eligible gain; original buffers and full body restored.
+// DH381: Validated selected-pointer producers on original/dedicated results, eight forms
+// 159/163/163/159/97/98/98/97; native-register completion follow-ups 97/97/90/90.
+// NOT kept: extra null-result/re-test or original rank conflict; original complete body restored.
+// N396: Signed eight-byte requested/own/task residency, seven subsets then late requested producer:
+// 198/195/243/126/208/207/253/198. NOT kept: native narrow domains and extent regress;
+// original body restored, selected identity/rank registers and extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

@@ -69,6 +69,9 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax H (11-05): no new form, no lower score; the busy test still becomes a numeric select
+// where retail branches to a last `return priority` and falls into the shared `xor eax, eax` exit,
+// and the fallback still tests the prop index where retail tests the node.
 // MiniMax B (11-04): no new form, no lower score.
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
@@ -254,6 +257,16 @@ bool function_25d9b0(long prop_index);
 // AC545: Native ordered admission in nested predicate groups, eight boundary
 // partitions, 49 each. Original busy call, zero/priority exits, iterator
 // exhaustion and fallback node test restored; the select and epilogues remain.
+// AC557: Busy provider char/signed-char/byte/short/word/int/long/dword returns,
+// coherent definition and all prototypes: 49/49/49/51/51/49/49/49. NOT kept:
+// no target gain; wider transports also demote provider and five other users.
+// Round 398: Native velocity square/length producers, their paired/range-observation forms,
+// immutable complete graph and shared squared-length producer: eight at 49 (556/557 bytes).
+// An isolated range-copy control also scores 49 and is excluded from new-trial credit. NOT kept:
+// no score gain; original velocity/range observations, busy select and complete body restored.
+// M400: Original velocity/iterator defaults via aggregates or CRT, at original phases/entry,
+// separately/together: 95/90/163/211/231/187/187/230. NOT kept: all regress;
+// original twelve-byte workspace producers, busy test and all exits restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -318,6 +331,9 @@ evaluate:
 	return 0;
 }
 
+// MiniMax H (11-05): no new form, no lower score; retail calls function_25d740 out of line and sinks
+// the ESI/EDI saves, while our build inlines it at this site only, and the inline-ness of that
+// helper is set in src/unknown_25d690.cpp.
 // MiniMax B (11-04): no new form, no lower score.
 // MiniMax R (11-01): no lower score; reading the slot's expected index into a local before the actor lookup
 // and the file's /Ob1 setting both leave it at 73 (0x25d740 is still inlined here); calling the view getter
@@ -480,6 +496,12 @@ evaluate:
 // flag retested 84; guard returns with the slot field read first 74; nested with it 73; an actor local with it 73. Diagnostic (reverted): 0x25d740
 // pinned out of line 102 (231 bytes): ESI/EDI are still pushed at entry and the exits merge, where retail pushes ESI after the first test, EDI
 // at the call, and has five separate exits, so the inlining is not the only cause.
+// Round 609: actual count/expected-prop lvalues on payload/whole-slot graphs, then native node identity,
+// 73/73/73/73/73/73/73/73. NOT kept: alias forms require a match; delayed saves and getter expansion remain.
+// Round 394: sole-return goto, short/word/long/dword status, payload/whole-slot
+// 88/88/92/92 in both (earlier single-result lowering, confirmations only).
+// Actual status/prop-index eight-byte homes: status signed/unsigned 83/83, index
+// signed/unsigned 92/92, four joint domains 106 each. Original body restored.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

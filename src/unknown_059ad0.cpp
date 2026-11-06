@@ -350,9 +350,9 @@ void network_session_member_state_initialize(c_class_58d20 *session, long member
 {
 	s_network_session_member_state *state = &session->member_states[member_index];
 	memset(state, 0, sizeof(*state));
-	state->unknown04 = channel_index;
 	state->unknown00 = true;
 	state->flag1 = connected;
+	state->unknown04 = channel_index;
 	state->unknown08 = NONE;
 	state->unknown0c = NONE;
 	state->flag3 = false;
@@ -3654,6 +3654,17 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // original/reversed 101/103; chained defaults original/reversed 101/103; neutral defaults with the reply member
 // state before the id 94 (reply exact, seven under the bar), with a const member pointer 94 and a member reference
 // 94. Original executable body restored; held timeout owner spill and announcement/return layout remain.
+// Round 65 (m3 lane 13, plain; masked = my aligned count with registers and stack homes masked): BLOCKED-BY 0x769a0 (held file): that one
+// line is all this function still needs. A named `long owner = session->value10;` passed to an unread by-value `long owner` parameter of
+// 0x769a0 gives retail's dead store exactly; the same argument unnamed gives no store (101), so does `const dword &owner` (101). With that
+// parameter (0x769a0 stays matched, ret 4) this body is byte exact: one `bool take = false;` set by `if (state == 9) ... else if (state > 2 &&
+// state <= 8)` nested tests, `member == value44` and the timed-out test, with `s_network_session_member_state *host_state =
+// &session->member_states[host]; __assume(host_state != NULL); long owner = session->value10;` then
+// `if (!timed_out(session->observer, owner, host_state->unknown04)) take = true;`, `if (session->state == 7 && flag) leave = true;`, and
+// `if (is_peer) { ...; return true; } return false;`. Steps: take flag + exits masked 7 (430 bytes, score 115); reference or `+ host` state pointer 114;
+// `do { } while (false)` after the pointer 114; assume with owner/observer first 7 (433 bytes), with the pointer first 4 (registers rotated), owner
+// before a named observer 27, observer read in the call MATCH. Forceinline owner wrapper stays a call in this inline_depth(0) region. Body restored:
+// the flag is only worth keeping with the match.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3711,87 +3722,10 @@ bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *addr
 
 struct s_network_session_list;
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, const s_session_id *id);
-bool function_07ab10(long key_index, s_type_99af70 *address, long local, word port, const XNADDR *xnaddr);
+bool function_07ab10(long key_index, long local, word port, const XNADDR *xnaddr, s_type_99af70 *address);
 
-// MiniMax H (11-04): no new form, no lower score: at the 0x7ab10 call retail copies the host through ESI
-// into EBX and reloads the session into EAX, ours loads the host straight into EBX and reaches the session
-// through ESI; with the callee matched, that staging follows from the argument order and not from here.
-// MiniMax G (11-04): no new form, no lower score; the host/session staging at the 0x7ab10 call
-// (retail reloads the session and keeps the host in ESI) and the cleanup placement still differ.
-// score 136 (was 136): host/session staging, clock boundary and cleanup placement differ;
-// size preference 233; gated identity 142; long result 160; failure-path result 192; address name 136.
-// host/session homes, cleanup placement and clock expansion differ;
-// isolated failure-first 159, identifier assignment 136, delayed ready flag 136,
-// redundant false removed from one-exit flow 165, inline depth zero 136.
-// Join-key helper call 163; single-exit loopback bool helper 136 (retail's sete/test);
-// with it the clock helper forceinline 147; then channel failure first 138 at 573 bytes with
-// only the host register left (retail esi copied to ebx for the address call, session
-// reloaded; ours keeps host in ebx across it); inline address callee 138; inline key
-// setter 138; session parameter re-read at the address call 137 (host still ebx).
-// Separate resolver/key/both noinline declarations 136/136/136; each with
-// the shared clock forceinline declaration 145/145/145. Native full-record
-// copies with resolver alone/all boundaries 136/145. Host/session staging,
-// cleanup placement and clock expansion remain; all declarations and bodies restored.
-// Round 299: entry address/address-and-remote workspaces 136/136; false result
-// after lookup/close/transport 139/143/153, each with entry address 139/143/153.
-// Original workspaces, result lifetime and body restored; host/session and cleanup remain.
-// Round 44: actual returned outcome from availability/registration/resolution, alone/paired/all,
-// then all with channel outcome 187/187/187/187/187/187/187/187.
-// Original result, cleanup and body restored; host/session staging and clock remain.
-// Round 25 (fast, aligned counts in brackets): loopback helper 136 [54]; with forceinline clock 147
-// [38]; with channel failure first too 138 [18: only host/session staging at 0x7ab10 and the mode
-// store's scratch left]. On that composite: key index local 168 (559 bytes); host pointer local
-// before the call/at entry 138/138 (same code); key index and host locals 168; the join-key helper
-// 0x5fac0 called (inlined) 157; 0x7ab10 parameters reordered consistently (local, port, key,
-// address, xnaddr)/(address, local, port, key, xnaddr) 138/138 (same code: allocation, not order).
-// Retail acts as if it lacked register summaries for 0x5fb00 (session reloaded) and 0x7ab10 (host
-// copied ESI->EBX); no call cycle links them. Opening body restored.
-// MiniMax H (10-31): every failure through one `release:` block reached by gotos 49 (576 bytes), but it
-// needs a one-use key_index local read before the key release (138 without it), a test-set loopback flag
-// (164 without it) and network_session_time_now as __forceinline (145 with plain inline); not kept
-// (match-only forms, no match), body restored. Remaining with it: session kept in ESI, host staged in EBX.
-// Round 30: typed single-exit loopback helper 136; with the clock forceinline 147; with channel failure
-// first too 138 (573 bytes, only the 0x7ab10 host/session staging left once aligned). On that composite:
-// 0x5fb00's definition moved below this function 138 (same staging: definition order does not hide its
-// register summary); host pointer local at both calls 138; key index local 168; success `return true`
-// 173. Typed address fields in place with clock and channel failure first 142; success `return true` on
-// the opening body 194. Opening body restored.
-// Round 32: retail's 0x5fb00 preserves ESI (0x75a90 saves it; XNetQosListen is a library call) and 0x7ab10
-// never writes EBX, so the staging is still the missing-summary behaviour. Session read once through its
-// address 136 (same code); one exit with `if (!result)` release 165; named `loopback` bool 136 (same code);
-// key index named before the set-key call 154; clock `__forceinline` declaration alone 145.
-// Round 114 (lane 8, fast with 0x5c720/0x630f0/0x63080): the address tested through its typed fields
-// (`address.address_length`, `address.ipv4_address`) in place of a byte pointer to the whole local 136 (same
-// code, kept); the clock read into a named `now` 136 (same code); the identity copied with memcpy 136 (same
-// code); the address test joined to the 0x7ab10 call's test with `&&` 136; the clock `__forceinline`
-// declaration with the typed fields 145 (581 bytes); the remote record zeroed by `= { 0 }` 136 (the clear then
-// starts at +4, `mov ecx, 0x6a`, where retail's memset clears the whole record).
-// Round 34: on the loopback-helper/forceinline-clock/channel-failure-first composite (138): address declared at
-// function top 138; identity copy after the key release 167; resolved bool for 0x7ab10's result 138; result
-// declared just before the g_4cf792 test 156; identity copy at function top 191 (559 bytes).
-// Round 18 (m3 lane 18, fast with 0x5c720/0x630f0; aligned difflib counts in brackets, this body [61]): the loopback
-// test as an in-place flag (`bool loopback = false; if (length == 4) loopback = ip == 0x7f000001;`, retail's sete/test)
-// 136 [54]; with the channel failure first 152 [28] (554 bytes, the clock still called); with a `__forceinline`
-// declaration of network_session_time_now too 138 [18] (573 bytes; left: the host/session staging at 0x7ab10 and the
-// mode store's scratch); that composite with the flag as one `&&` expression 142 [25] (no sete), with the flag declared
-// before the address lookup 138 [18]. Retail treats 0x5fb00's ESI and 0x7ab10's EBX argument registers as clobbered
-// (it reloads the session and keeps the host in ESI); both callees preserve them and are matched, so this looks like
-// LTCG generating this caller before them: BLOCKED-BY 0x5fb00 and 0x7ab10 (code generation order), not this body.
-// Round 482: Five nonoriginal complete payload-copy orders 136/138/137/138/137;
-// three with metadata before payload 138/138/137. Original request construction
-// restored; host/session staging, clock expansion and cleanup placement remain.
-// Round 139 (m3 lane 5, fast): loopback flag/forceinline clock/channel failure first composite re-measured 138; on it
-// `channel` at function scope 138, a two-use XNADDR host local 138, `address` before the key release 138, the
-// forceinline as a separate declaration above this function 138 (same code each); clock and channel failure first
-// without the flag 142.
-// Round 58 (lane 14, fast; aligned counts in brackets, this body [34]): one transport local for both value38 reads 144 [34]; in-place loopback flag 136 [31];
-// with channel failure first 152 [19] (554 bytes), with the transport local too 163 [19]; a local copy of session for the part after the loopback test 136 [34]
-// (coalesced, no second register), on the flag/channel form with a host copy too 152 [19]; that part as a forceinline bool helper taking session and host 145 [25]
-// (581 bytes, session still in ESI). No retail call path leads from 0x5fb00, 0x5fb60 or 0x7ab10 back here. BLOCKED-BY the same host/session staging.
-// Round 142: on the loopback-helper/forceinline-clock/channel-failure-first composite (138): host read through
-// its parameter home 138; long resolver result 138; session read through its parameter home 138; inline resolver
-// wrappers with host before local/host first 168/168 (559 bytes); entry remote 138; loopback helper by reference/
-// scalar fields 138/138. Original body restored; host/session staging remains.
+__forceinline long network_session_time_now(void);
+
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -3813,12 +3747,19 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
   {
    network_session_set_key(session, local, kid, key);
    s_type_99af70 address;
-   if (function_07ab10(session->value38, &address, local, 0x3e9, (const XNADDR *)host))
+   if (function_07ab10(session->value38, local, 0x3e9, (const XNADDR *)host, &address))
    {
-    if (address.address_length != 4 || address.ipv4_address != 0x7f000001)
+    bool loopback = false;
+    if (address.address_length == 4)
+     loopback = address.ipv4_address == 0x7f000001;
+    if (!loopback)
     {
-     long channel = network_observer_attach_channel(session->observer, session->value10, (const XNADDR *)host);
-     if (channel != NONE)
+     long owner = session->value10;
+     s_network_observer *observer = session->observer;
+     long channel = network_observer_attach_channel(observer, owner, (const XNADDR *)host);
+     if (channel == NONE)
+      result = false;
+     else
      {
       session->value18 = mode;
       memset(&session->update_count, 0, 0x14b0);
@@ -3846,15 +3787,13 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
        memcpy((byte *)&remote + 0x154, extra, 0x2c);
       function_61050(session, channel, host, &remote, &address);
       result = true;
-      goto done;
      }
-     result = false;
     }
    }
   }
  }
- network_session_release_key(session);
-done:
+ if (!result)
+  network_session_release_key(session);
  return result;
 }
 
@@ -4401,6 +4340,7 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
+// MiniMax h (11-05): the result byte home is +0xa in ours and +0xb in retail, where the better flag shares +0xa with the identity-equal flag; exchanging the better and same declarations gives 305, spelling out the better decision gives 314 and the same decision 306, and the shared acknowledgement block sits after the reason-5 exit in ours but at the end of retail's.
 // MiniMax h (11-04): no new form, no lower score; the result byte stays at +0xa where retail keeps it at +0xb.
 // score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
 // frame 0xd8 and length agree; result/identity/selection byte homes and
@@ -4538,6 +4478,13 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // directly); reason 9 as the fall-through after the received block, retail's order 305 [244] (1265 bytes), with an else goto at the host site 305 [244], with the
 // acknowledgement falling out of its block 313 [245] (1272 bytes); `done:` ahead of the acknowledgement 305 [245], with reason 9 last 305 [244]; a flag set at both sites
 // and tested at the end 305 [245]. The block stays right after the reason-5 exit in all but the first: source position and label order do not move it.
+// Round 65 (m3 lane 13, plain; 0x769a0 with the unread owner parameter from 0x5e3f0's note, scratch): the owner store appears with a named owner local,
+// so this needs that same line (BLOCKED-BY 0x769a0). Layout, not registers, is what's left. Opening body with the owner local 365, masked 481 (reason 2
+// sinks: `jg` where retail falls into it; it stays in place only with the unnamed argument, 305); nested single return 362 (masked 513), exits read
+// `result` from its home as retail because the shared return is tail-duplicated late; all exits through one `done:` and `state <= 2 || state > 8` 358
+// (masked 181), reason 2 sinks; acknowledgement written at both sites 604 (1472 bytes, no cross-jump); `__assume(!result)` 365; returns with that assume and
+// one `||` 386 (1231 bytes). Pointer to `result` for its stores 305 (same code, it folds away). Retail's later blocks come in source order once a trace ends
+// (reason 1 right after the first version arm's `jmp`), and the acknowledgement's two entries differ by `mov edi, [esp+0x10]`.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
@@ -4947,76 +4894,57 @@ struct s_membership_update_snapshot
 	s_network_session_player players[16];
 };
 
-// score 569 (was 569): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
-// Round 296: Reduced control 804; result after map clear 805; native snapshot copy 804; version/count/both snapshots 801/802/782; map names 804; result/copy and map combination 805/805.
-// First/second/both pass index field reads 824/731/733; both with late result 730; first/second destination-only reads 823/783; accepted scope 803, with field reads 732; branch results with late initialization 730; version-test result with field reads 696, plain 697 (kept).
-// Round 453: First/second/both pass result validation 787/736/782; player-index fields 748;
-// with first/second/both result passes 798/662/809; all with member-mask role names 809.
-// Second pass without the implied result-loop test 748; complete admission predicates with
-// player fields/original player snapshot 767/750. The 662 form required the implied test and was dropped.
-// Round 467: Native first/second/player record graphs, seven subsets, 696 each fast;
-// all with signed-short member ordinals 669 fast, 680 plain. Original records with
-// first/second/both signed-short ordinals 523/672/669 fast; first alone 569 plain (kept).
-// Necessary result-controlled error-continue loops first/second/both 696/704/732;
-// with signed-short ordinals 718/715/724. Original records and validation exits retained.
-// Round 482: Persistent member-record cursors first/second/both 697/769/761;
-// first/both with long validation ordinal 697/695, unsigned-word ordinal 697/734;
-// both with unsigned-word application ordinal 743 (fast; unchanged control 523).
-// Every form regresses; original signed-short validation ordinal and full body restored.
-// M302: Mask zero initialization after validation, added/moved/removed and pair/all subsets,
-// then all four masks: 704/703/704/687/686/686/780/779 (unchanged fast 523).
-// Original initializations restored; mask homes, validation scheduling and stale completion remain.
-// Round 80 (m3 lane 9, fast; positional/aligned, base 523/315 on fast, 569 plain): a whole rewrite as a result chain, no
-// gotos, failures as `result = false` in else arms, loops headed `result && i < count`, phases under `if (result)`, 772/349
-// (2606 bytes): the first loop's head, cursor and bound are retail's, but update takes EBX and session EDX (retail session
-// EBX, update reloaded from the stack) and the host-lost arm moves first. On it: `else` around the host-lost arm 772/349;
-// one exit with a late `result = true` 790/350; a named version and update count for the first loop 772/349 (same code);
-// the opening `bool result = ...` test with no later store 813/359, with the late store 809/353.
-// Round 47 (lane 15; plain unless marked, exact aligned line counts in brackets): the lead. Retail's first two member loops, the
-// last player loop and every failure come from a result chain with no goto: typed update records (member change 0x104: old/new
-// index, words, has_properties, properties_valid, properties; player change 0x140), `bool result = base == NONE || base == value4c;`,
-// `for (i = 0; result && i < count; i++)` with `{ result = false; break; }` on each failure in the first two loops (the entry jump
-// and head test appear, aligned lines 151 -> 73, fast 744), each phase under `if (result)`, memset on player_indices at both sites,
-// direct change fields per player case with a player pointer in case 2: 2589 bytes, 745/745 instructions, fast 462. One shared `i` for
-// the first two loops fast 453; `if (added == mask) {...} else result = false;` merges its failure as retail, fast 363, plain 457;
-// `long old_index = new_to_old[i]` in the state loop [114]; 0x5f900 storing unknown00, flag1, unknown04 gives retail's 0x72e0 cursor
-// base and stays matched [104]. NOT kept: the `result &&` head is implied by the breaks (without it m1 609 at 2618 bytes), so it needs a
-// match. Left at 457: slot groups (retail i+player cursor 0x14, change cursor 0x18, moved 0x1c, count 0x20, base copy 0x24, added 0x28,
-// removed 0x2c; ours removed+cursor 0x14, i 0x28) and a register rotation from the second member-state memset on (zero ECX, pointer
-// EDX). No gain on it: renames of the masks 461 fast (at the 453 stage), declaration places of the masks and i 363 fast each; other loops sharing i 363 fast, states+players
-// sharing 473 fast; direct indexed fields for the first/second/both loops 721/646/754 fast; named index locals and player locals 457;
-// bit-first mask tests 457/457; nested player validation with shorts 457 [110]; other 0x5f900 store orders lose 0x5f900.
-// M3 lane 7 r126 (fast unless marked): lane 15's typed-record result chain (457 plain) with the implied `result &&` loop
-// heads made necessary by dropping the breaks 790 (2616 bytes; the host-lost arm moves first and session/update swap
-// EBX/EDX, as round 80 saw), with case 1 breaking out and the closing `if (!result)` tests split 775; the split alone 363
-// (lane 15's own fast count, same code); loop 1 headed `i < count` and loop 2 out of `if (result)` (its head then needed)
-// 763. On the 569 body: the base update number as a named local at all twelve uses 714; a member-state pointer in the
-// rebuild loop 523 (same code); a `player_record` pointer for case 2's four writes 519 fast, 564 plain (2589 bytes, first
-// +0x6c; five points, below the keep floor); on that: 0x5f900 storing unknown00, flag1, unknown04 564 plain (0x5f900 kept),
-// the state pointer 519, per-case `long player_index` reads 525, memset for both player_indices fills 669, a long loop-1
-// index 693.
-// Round 149 (m3 lane 5, fast, base 523; 2591 bytes): named update count with a long/short first-loop index 697/664; named new index in the
-// first loop 548; masks on one line, chained, typed long 523 each. All 11 calls' setups compared with retail: only register rotation (0x600f0's
-// convention agrees), so no parameter order to change. An aligned diff (registers and slots ignored) puts the rest in the unrotated first loops:
-// lane 15's result chain remains the lead, it needs a match for its implied `result &&` heads.
-// M3 lane 9 r88 (fast; aligned+stack = aligned count with registers and stack homes masked): lane 15's result chain with 0x5f900 storing unknown00, flag1, unknown04 is 457 at 2589 bytes but aligned+stack 10: only stack homes
-// and case 1 differ. Retail's homes +0x14 i and the player cursor, +0x18 change cursor, +0x1c moved and the player index, +0x20 count, +0x24 base copy, +0x28 added, +0x2c removed; ours +0x14 removed and the player cursor,
-// +0x1c added, +0x20 moved, +0x24 count, +0x28 i, +0x2c base. Case 1: retail holds the cursor in ESI, then member in EDI and slot in ESI, and rebuilds the id pointer from the stack twice; ours holds the cursor in EDX, spills
-// member, slot EDI, and keeps the id pointer in ESI across the find call. Tried on it: named short member/slot 671 (2614, session leaves EBX); nested tests with long locals, the id through the index, embedded assignments 457 each
-// (same code); block scopes around the member phase (masks, all, masks + i) 457 each; ten renames of removed/added/moved/i 457 each (names do not move these slots); change fields through the index, no change pointer, loop 1 726,
-// both 728 (slots move, structure regresses). Not kept: the loop heads' `result &&` is implied by the breaks, so that form needs a match.
+struct s_membership_member_change
+{
+	short old_index;
+	short new_index;
+	dword words[9];
+	bool has_properties;
+	bool properties_valid;
+	byte unknown2a[2];
+	s_session_parameters_update properties;
+};
+
+struct s_membership_player_change
+{
+	short player_index;
+	short type;
+	dword xuid[3];
+	short member_index;
+	short slot;
+	byte unknown14[4];
+	long unknown18;
+	byte properties18[0x90];
+	byte propertiesa8[0x90];
+	long unknown13c;
+};
+
+struct s_membership_update
+{
+	byte unknown00[8];
+	long version;
+	long base;
+	short member_change_count;
+	short player_change_count;
+	s_membership_member_change member_changes[32];
+	s_membership_player_change player_changes[32];
+	bool has_host;
+	byte unknown4895[3];
+	long host;
+};
+
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {
-	const byte *update = (const byte *)message;
-	bool result = *(const long *)(update + 0xc) == NONE || *(const long *)(update + 0xc) == session->value4c;
+	const s_membership_update *update = (const s_membership_update *)message;
+	bool result = update->base == NONE || update->base == session->value4c;
 	if (result)
 	{
 		s_membership_update_snapshot previous;
 		memcpy(&previous, &session->value4c, sizeof(previous));
 		s_network_session_member_state previous_states[16];
 		memcpy(previous_states, session->member_states, sizeof(previous_states));
-		session->value4c = *(const long *)(update + 8);
+		session->value4c = update->version;
 		session->update7618++;
 		dword added = 0;
 		dword moved = 0;
@@ -5024,209 +4952,306 @@ bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 		dword retained = 0;
 		long old_to_new[16];
 		memset(old_to_new, NONE, sizeof(old_to_new));
-		if (*(const long *)(update + 0xc) != NONE)
-			for (long i = 0; i < session->member_count; i++)
-				old_to_new[i] = i;
-		for (short i = 0; i < *(const short *)(update + 0x10); i++)
+		if (update->base != NONE)
+			for (long member_index = 0; member_index < session->member_count; member_index++)
+				old_to_new[member_index] = member_index;
+		long i;
+		long count = update->member_change_count;
+		for (i = 0; result && i < count; i++)
 		{
-			const byte *entry = update + 0x14 + i * 0x104;
-			if (*(const short *)entry == NONE)
+			const s_membership_member_change *change = &update->member_changes[i];
+			if (change->old_index == NONE)
 			{
-				if (*(const short *)(entry + 2) < 0 || *(const short *)(entry + 2) >= 16 || !entry[0x28]) goto failed;
+				if (change->new_index < 0 || change->new_index >= 16 || !change->has_properties)
+				{
+					result = false;
+					break;
+				}
 			}
-			else if (*(const short *)(entry + 2) == NONE)
+			else if (change->new_index == NONE)
 			{
-				if (*(const long *)(update + 0xc) == NONE || *(const short *)entry < 0 || *(const short *)entry >= previous.member_count ||
-					entry[0x28] || memcmp(previous.members[*(const short *)entry].words, entry + 4, 0x24) || old_to_new[*(const short *)entry] != *(const short *)entry)
-					goto failed;
-				old_to_new[*(const short *)entry] = NONE;
+				if (update->base == NONE || change->old_index < 0 || change->old_index >= previous.member_count ||
+					change->has_properties || memcmp(previous.members[change->old_index].words, change->words, 0x24) ||
+					old_to_new[change->old_index] != change->old_index)
+				{
+					result = false;
+					break;
+				}
+				old_to_new[change->old_index] = NONE;
 			}
 			else
 			{
-				if (*(const long *)(update + 0xc) == NONE || *(const short *)entry < 0 || *(const short *)entry >= previous.member_count ||
-					*(const short *)(entry + 2) < 0 || *(const short *)(entry + 2) >= 16 || memcmp(previous.members[*(const short *)entry].words, entry + 4, 0x24) || old_to_new[*(const short *)entry] != *(const short *)entry)
-					goto failed;
-				old_to_new[*(const short *)entry] = *(const short *)(entry + 2);
+				if (update->base == NONE || change->old_index < 0 || change->old_index >= previous.member_count ||
+					change->new_index < 0 || change->new_index >= 16 ||
+					memcmp(previous.members[change->old_index].words, change->words, 0x24) ||
+					old_to_new[change->old_index] != change->old_index)
+				{
+					result = false;
+					break;
+				}
+				old_to_new[change->old_index] = change->new_index;
 			}
 		}
-		if (*(const long *)(update + 0xc) != NONE)
-			retained = (1 << previous.member_count) - 1;
-		for (long i = 0; i < *(const short *)(update + 0x10); i++)
+		if (result)
 		{
-			const byte *entry = update + 0x14 + i * 0x104;
-			if (*(const short *)entry == NONE)
+			if (update->base != NONE)
+				retained = (1 << previous.member_count) - 1;
+			for (i = 0; result && i < update->member_change_count; i++)
 			{
-				if (*(const short *)(entry + 2) < 0 || *(const short *)(entry + 2) >= 16 || !entry[0x28]) goto failed;
-				s_session_member *member = &session->members[*(const short *)(entry + 2)];
-				bool occupied = false;
-				if (*(const long *)(update + 0xc) != NONE)
-					for (long j = 0; j < previous.member_count; j++)
-						if (old_to_new[j] == *(const short *)(entry + 2)) occupied = true;
-				if (occupied) goto failed;
-				memset(member, 0, sizeof(*member));
-				member->properties_valid = *(const bool *)(entry + 0x29);
-				memcpy(member->words, entry + 4, 0x24);
-				for (long j = 0; j < 4; j++) member->player_indices[j] = NONE;
-				session_parameters_apply_update(&member->properties, (const s_session_parameters_update *)(entry + 0x2c));
-				added |= 1 << *(const short *)(entry + 2);
+				const s_membership_member_change *change = &update->member_changes[i];
+				bool valid = false;
+				if (change->old_index == NONE)
+				{
+					if (change->new_index >= 0 && change->new_index < 16 && change->has_properties)
+					{
+						s_session_member *member = &session->members[change->new_index];
+						bool occupied = false;
+						if (update->base != NONE)
+							for (long j = 0; j < previous.member_count; j++)
+								if (old_to_new[j] == change->new_index)
+									occupied = true;
+						if (!occupied)
+						{
+							memset(member, 0, sizeof(*member));
+							member->properties_valid = change->properties_valid;
+							memcpy(member->words, change->words, 0x24);
+							memset(member->player_indices, NONE, sizeof(member->player_indices));
+							session_parameters_apply_update(&member->properties, &change->properties);
+							added |= 1 << change->new_index;
+							valid = true;
+						}
+					}
+				}
+				else if (change->new_index == NONE)
+				{
+					if (update->base != NONE && change->old_index >= 0 && change->old_index < previous.member_count &&
+						!change->has_properties && !memcmp(previous.members[change->old_index].words, change->words, 0x24))
+					{
+						removed |= 1 << change->old_index;
+						retained &= ~(1 << change->old_index);
+						valid = true;
+					}
+				}
+				else
+				{
+					if (update->base != NONE && change->old_index >= 0 && change->old_index < previous.member_count &&
+						change->new_index >= 0 && change->new_index < 16)
+					{
+						const s_session_member *previous_member = &previous.members[change->old_index];
+						if (!memcmp(previous_member->words, change->words, 0x24))
+						{
+							s_session_member *member = &session->members[change->new_index];
+							if (change->old_index != change->new_index)
+								*member = *previous_member;
+							if (change->has_properties)
+							{
+								member->properties_valid = change->properties_valid;
+								session_parameters_apply_update(&member->properties, &change->properties);
+							}
+							if (change->old_index != change->new_index)
+							{
+								old_to_new[change->old_index] = change->new_index;
+								moved |= 1 << change->new_index;
+								retained &= ~(1 << change->old_index);
+							}
+							valid = change->has_properties || change->old_index != change->new_index;
+						}
+					}
+				}
+				if (!valid)
+				{
+					result = false;
+					break;
+				}
 			}
-			else if (*(const short *)(entry + 2) == NONE)
+		}
+		if (result)
+		{
+			if (update->base == NONE)
 			{
-				if (*(const long *)(update + 0xc) == NONE || *(const short *)entry < 0 || *(const short *)entry >= previous.member_count ||
-					entry[0x28] || memcmp(previous.members[*(const short *)entry].words, entry + 4, 0x24)) goto failed;
-				removed |= 1 << *(const short *)entry;
-				retained &= ~(1 << *(const short *)entry);
+				count = update->member_change_count;
+				if (added == (dword)((1 << count) - 1))
+				{
+					session->member_count = count;
+					for (long previous_index = 0; previous_index < previous.member_count; previous_index++)
+					{
+						for (long j = 0; j < session->member_count; j++)
+							if (!memcmp(previous.members[previous_index].words, session->members[j].words, 0x24))
+								old_to_new[previous_index] = j;
+						if (old_to_new[previous_index] == NONE)
+							removed |= 1 << previous_index;
+					}
+				}
+				else
+					result = false;
 			}
 			else
 			{
-				if (*(const long *)(update + 0xc) == NONE || *(const short *)entry < 0 || *(const short *)entry >= previous.member_count ||
-					*(const short *)(entry + 2) < 0 || *(const short *)(entry + 2) >= 16 || memcmp(previous.members[*(const short *)entry].words, entry + 4, 0x24)) goto failed;
-				s_session_member *member = &session->members[*(const short *)(entry + 2)];
-				if (*(const short *)entry != *(const short *)(entry + 2)) *member = previous.members[*(const short *)entry];
-				if (entry[0x28])
+				dword mask = retained | moved | added;
+				long first_free = NONE;
+				for (long member_index = 0; member_index < 16; member_index++)
 				{
-					member->properties_valid = *(const bool *)(entry + 0x29);
-					session_parameters_apply_update(&member->properties, (const s_session_parameters_update *)(entry + 0x2c));
+					if (mask & (1 << member_index))
+					{
+						if (first_free != NONE)
+						{
+							result = false;
+							break;
+						}
+					}
+					else if (first_free == NONE)
+						first_free = member_index;
 				}
-				if (*(const short *)entry != *(const short *)(entry + 2))
-				{
-					old_to_new[*(const short *)entry] = *(const short *)(entry + 2);
-					moved |= 1 << *(const short *)(entry + 2);
-					retained &= ~(1 << *(const short *)entry);
-				}
-				if (!entry[0x28] && *(const short *)entry == *(const short *)(entry + 2)) goto failed;
+				if (first_free == NONE)
+					first_free = 16;
+				session->member_count = first_free;
 			}
 		}
-		if (*(const long *)(update + 0xc) == NONE)
-		{
-			long count = *(const short *)(update + 0x10);
-			if (added != (dword)((1 << count) - 1)) goto failed;
-			session->member_count = count;
-			for (long i = 0; i < previous.member_count; i++)
-			{
-				for (long j = 0; j < session->member_count; j++)
-					if (!memcmp(previous.members[i].words, session->members[j].words, 0x24)) old_to_new[i] = j;
-				if (old_to_new[i] == NONE) removed |= 1 << i;
-			}
-		}
-		else
-		{
-			dword mask = retained | moved | added;
-			long count = NONE;
-			for (long i = 0; i < 16; i++)
-			{
-				if (mask & (1 << i))
-				{
-					if (count != NONE) { result = false; break; }
-				}
-				else if (count == NONE) count = i;
-			}
-			if (count == NONE) count = 16;
-			session->member_count = count;
-			if (!result) goto finish;
-		}
+		if (result)
 		{
 			long new_to_old[16];
 			memset(new_to_old, NONE, sizeof(new_to_old));
-			for (long i = 0; i < previous.member_count; i++)
-				if (!(removed & (1 << i))) new_to_old[old_to_new[i]] = i;
-			for (long i = 0; i < previous.member_count; i++)
-				if (removed & (1 << i)) network_session_member_state_dispose(session, i);
+			for (long previous_index = 0; previous_index < previous.member_count; previous_index++)
+				if (!(removed & (1 << previous_index)))
+					new_to_old[old_to_new[previous_index]] = previous_index;
+			for (long previous_index = 0; previous_index < previous.member_count; previous_index++)
+				if (removed & (1 << previous_index))
+					network_session_member_state_dispose(session, previous_index);
 			memset(session->member_states, 0, sizeof(session->member_states));
-			for (long i = 0; i < session->member_count; i++)
+			for (long member_index = 0; member_index < session->member_count; member_index++)
 			{
-				if (new_to_old[i] != NONE) session->member_states[i] = previous_states[new_to_old[i]];
+				long old_index = new_to_old[member_index];
+				if (old_index != NONE)
+					session->member_states[member_index] = previous_states[old_index];
 				else
 				{
-					memset(&session->member_states[i], 0, sizeof(session->member_states[i]));
-					long channel = network_observer_attach_channel(session->observer, session->value10, (const XNADDR *)session->members[i].words);
-					if (channel != NONE) network_session_member_state_initialize(session, i, true, channel);
-					else result = false;
+					memset(&session->member_states[member_index], 0, sizeof(session->member_states[member_index]));
+					long owner = session->value10;
+					s_network_observer *observer = session->observer;
+					long channel = network_observer_attach_channel(observer, owner, (const XNADDR *)session->members[member_index].words);
+					if (channel != NONE)
+						network_session_member_state_initialize(session, member_index, true, channel);
+					else
+						result = false;
 				}
 			}
 		}
-		if (!result) goto finish;
-		if (old_to_new[session->member_index] == NONE) result = false;
-		else session->member_index = old_to_new[session->member_index];
-		if (old_to_new[session->current_member] == NONE) result = false;
-		else session->current_member = old_to_new[session->current_member];
-		if (*(const long *)(update + 0xc) != NONE)
+		if (result)
 		{
-			for (long i = 0; i < 16; i++)
+			if (old_to_new[session->member_index] == NONE)
+				result = false;
+			else
+				session->member_index = old_to_new[session->member_index];
+			if (old_to_new[session->current_member] == NONE)
+				result = false;
+			else
+				session->current_member = old_to_new[session->current_member];
+			if (update->base != NONE)
 			{
-				if (session->player_mask & (1 << i))
+				for (long player_index = 0; player_index < 16; player_index++)
 				{
-					long member = old_to_new[session->players[i].member_index];
-					if (member == NONE)
+					if (session->player_mask & (1 << player_index))
 					{
-						session->player_mask &= ~(1 << i);
-						session->player_count--;
+						long member = old_to_new[session->players[player_index].member_index];
+						if (member == NONE)
+						{
+							session->player_mask &= ~(1 << player_index);
+							session->player_count--;
+						}
+						else
+							session->players[player_index].member_index = member;
 					}
-					else session->players[i].member_index = member;
 				}
 			}
 		}
-		if (!result) goto finish;
-		if (*(const long *)(update + 0xc) == NONE && !update[0x4894]) goto failed;
-		if (update[0x4894])
+		if (result)
 		{
-			long host = *(const long *)(update + 0x4898);
-			if (host < 0 || host >= session->member_count) goto failed;
-			session->value50 = host;
-		}
-		if (*(const long *)(update + 0xc) == NONE)
-		{
-			session->player_count = 0;
-			session->player_mask = 0;
-			for (long i = 0; i < session->member_count; i++)
+			if (update->base == NONE && !update->has_host)
+				result = false;
+			else if (update->has_host)
 			{
-				for (long j = 0; j < 4; j++) session->members[i].player_indices[j] = NONE;
-				session->members[i].player_count = 0;
+				long host = update->host;
+				if (host < 0 || host >= session->member_count)
+					result = false;
+				else
+					session->value50 = host;
 			}
 		}
-		for (long i = 0; result && i < *(const short *)(update + 0x12); i++)
+		if (result)
 		{
-			const byte *entry = update + 0x2094 + i * 0x140;
-			short player = *(const short *)entry;
-			if (player < 0 || player >= 16) { result = false; continue; }
-			switch (*(const short *)(entry + 2))
+			if (update->base == NONE)
 			{
-			case 0:
-				if (!(session->player_mask & (1 << player))) { result = false; break; }
-				network_session_remove_player(session, player);
-				break;
-			case 1:
+				session->player_count = 0;
+				session->player_mask = 0;
+				for (long member_index = 0; member_index < session->member_count; member_index++)
 				{
-					short member = *(const short *)(entry + 0x10);
-					short slot = *(const short *)(entry + 0x12);
-					if ((session->player_mask & (1 << player)) || member < 0 || member >= session->member_count ||
-						slot < 0 || slot >= 4 || session->members[member].player_indices[slot] != NONE ||
-						network_session_find_player(session, (const dword *)(entry + 4)) != NONE)
-					{ result = false; break; }
-					network_session_add_player(session, member, (const XUID *)(entry + 4), player, slot);
+					memset(session->members[member_index].player_indices, NONE, sizeof(session->members[member_index].player_indices));
+					session->members[member_index].player_count = 0;
 				}
-			case 2:
-				if (!(session->player_mask & (1 << player))) { result = false; break; }
-				session->players[player].unknown14 = *(const long *)(entry + 0x18);
-				memcpy(session->players[player].properties18, entry + 0x1c, 0x90);
-				memcpy(session->players[player].propertiesa8, entry + 0xac, 0x90);
-				session->players[player].unknown138 = *(const long *)(entry + 0x13c);
-				break;
-			default: result = false; break;
+			}
+			for (long change_index = 0; result && change_index < update->player_change_count; change_index++)
+			{
+				const s_membership_player_change *change = &update->player_changes[change_index];
+				if (change->player_index < 0 || change->player_index >= 16)
+					result = false;
+				else
+				{
+					switch (change->type)
+					{
+					case 0:
+					{
+						long player_index = change->player_index;
+						if (session->player_mask & (1 << player_index))
+							network_session_remove_player(session, player_index);
+						else
+							result = false;
+						break;
+					}
+					case 1:
+					{
+						long player_index = change->player_index;
+						const XUID *id = (const XUID *)&change->xuid;
+						if ((session->player_mask & (1 << player_index)) || change->member_index < 0 ||
+							change->member_index >= session->member_count || change->slot < 0 || change->slot >= 4 ||
+							session->members[change->member_index].player_indices[change->slot] != NONE ||
+							network_session_find_player(session, (const dword *)id) != NONE)
+							result = false;
+						else
+							network_session_add_player(session, change->member_index, id, player_index, change->slot);
+						if (!result)
+							break;
+					}
+					case 2:
+					{
+						long player_index = change->player_index;
+						if (session->player_mask & (1 << player_index))
+						{
+							s_network_session_player *player = &session->players[player_index];
+							player->unknown14 = change->unknown18;
+							memcpy(player->properties18, change->properties18, 0x90);
+							memcpy(player->propertiesa8, change->propertiesa8, 0x90);
+							player->unknown138 = change->unknown13c;
+						}
+						else
+							result = false;
+						break;
+					}
+					default:
+						result = false;
+						break;
+					}
+				}
 			}
 		}
-		if (result) goto local_0;
-		finish:
-		session->flag48 = true;
-		if (!result) network_session_close(session);
-		goto local_0;
-		failed:
-		result = false;
-		goto finish;
+		if (!result)
+		{
+			session->flag48 = true;
+			if (!result)
+				network_session_close(session);
+		}
 	}
 	else
 		network_session_host_lost(session);
-	local_0:
 	return result;
 }
 

@@ -182,7 +182,7 @@ struct s_component
 };
 
 // @retail 0x1f1df0
-void function_1f1df0(long component_index, long material_index, s_shape_state *state, vector3f const *normal)
+void function_1f1df0(s_shape_state *state, long component_index, long material_index, vector3f const *normal)
 {
 	union { short field_0; word field_2; } local_0;
 	local_0.field_0 = 0;
@@ -557,6 +557,12 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // Compile-only, those two unchanged: cross in six parameter orders, arrays, references, `(real)` products, existing cross3f (same
 // code), named terms 33-68, a and b declared at function top, in either order, per arm 103, at each use 137, 13 declaration moves
 // in pairs; tuple shifts before and after the cross 24-62; b computed first 217 (every product then takes b first).
+// Lane 9 r89 (fast; masked counts in brackets, base 122 [59]; body unchanged, all pieces below are match-only): velocity first in the
+// parameters (retail sets it last at the call) 120, on the 21 lead 15. On the lead: identity locals at the top 1-7 21/19/23/34/17/13/51; dot_average
+// as three statements and dot_a through dot3f(a, desired) 15, with six identity locals 5 [3]: only the tail's j product is left, load-first where retail is copy-first.
+// That product follows only a tuple step in the loop or case 3 (`(real)(x * 1.f)`), which breaks the arms: 53 at 977 bytes with 0x1f087b arms [34], arm
+// compute/store orders 53-197. Tail written out, compound, staged, scaled, no inv local, in-tail steps 5 each; early return 27; normalize3d 273; 0x30bf0 262.
+// Up getter at every read 177; typed component and element fields 181; normal, height, stepping getters 178; identities around a and b 197-224.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -636,7 +642,12 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
-// score 182 (was 182): Frame 0x28 and retained EDI/EBX convention agree; initial dot displacement bytes and rotation SIMD scheduling remain.
+// score 163 (was 182): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
+// Lane 9 r89: named old-up pointer with the parameters as retail's call sets them (forward at entry, up pushed, ground last) and state last 163 with 0x1e5af0 still matched;
+// that pointer with state first in six orders 196 (0x1e5af0 20-22), other orders 163 (g,f,s,u; g,f,u,s; f,s,g,u; f,g,s,u; f,g,u,s) with 0x1e5af0 2 for u,g,f,s; u,f,s,g; u,f,g,s; f,s,u,g; f,u,s,g; f,u,g,s.
+// On it: state dot written i + j + k 162 (retail's instruction order; one point, not kept), other term orders 163-165, through dot3f 253 (1242); rotation rows and dot orders, 18 forms, 228-248 [73-103];
+// rotation cross components and rows, 36 orders, 162-250 [76-]; identity locals 1-7 163/302/173/162/162/162/162; no angle local 175; settings alias removed 162, old-forward alias removed 163, both 162;
+// old-forward pointer beside old-up 310, in the other arm 217 (0x1e5af0 20); named axis length 176.
 // Earlier: retail keeps the state in EDI and the two result pointers in EBP and EBX and never saves EBX, ours keeps the state in EBX and the results in EDI and EBP, so the prologue and every stack-relative access differ; a named pointer to the state+0x100 vector reproduces the length (1229) and the retail addressing but moves the state to EBX (196) and was dropped.
 // frame 0x28 and state/output registers agree; the initial state-dot
 // displacement bytes (retail reads the old up through the ESI address it keeps, ours folds
@@ -785,28 +796,29 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // phases 264-268 [188-203]) colours the state EBX and the forward result EDI (retail EDI/EBX) and drops 0x1e5af0 to 20. On
 // dot3f: settings or old-forward alias removed, result stores swapped in either arm, all 16 subsets 260-267, caller still 20.
 // @retail 0x1f1460
-void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
+void function_1f1460(s_shape_state const *ground, vector3f *up_result, vector3f *forward_result, byte const *state)
 {
     byte *settings = *(byte **)(state + 8);
     if (function_1f1462(*(dword *)settings))
     {
+        vector3f const *old_up = (vector3f const *)(state + 0x100);
         vector3f up = ground->normal;
         vector3f axis;
-        contact_cross((vector3f const *)(state + 0x100), &up, &axis);
+        contact_cross(old_up, &up, &axis);
         bool rotate = true;
         if (function_30bf0(&axis) == 0.0f)
         {
-            real dot = ((vector3f const *)(state + 0x100))->j * up.j +
-                ((vector3f const *)(state + 0x100))->k * up.k +
-                ((vector3f const *)(state + 0x100))->i * up.i;
+            real dot = old_up->j * up.j +
+                old_up->k * up.k +
+                old_up->i * up.i;
             if (dot > 0.0f)
                 rotate = false;
             else
-                axis = *(vector3f const *)(state + 0x100);
+                axis = *old_up;
         }
         if (rotate)
         {
-            vector3f limited = *(vector3f const *)(state + 0x100);
+            vector3f limited = *old_up;
             real angle = g_510c54->rate * 5.235987663269043f;
             real sine = (real)sin(angle);
             real cosine = (real)cos(angle);
@@ -827,7 +839,7 @@ void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *u
         contact_cross(&up, &cross, &forward);
         if (function_30bf0(&forward) == 0.0f)
         {
-            contact_cross(&up, (vector3f const *)(state + 0x100), &cross);
+            contact_cross(&up, old_up, &cross);
             contact_cross(&up, &cross, &forward);
             if (function_30bf0(&forward) == 0.0f)
             {
@@ -1101,6 +1113,15 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // unsigned ordinals: 601/556/556/469/469/563/546/546. All preserve matches but grow to 3090-3103
 // versus 3047. Original complete body restored; damping ECX/EDX, raw/bounded homes and
 // cross/history scheduling remain.
+// Lane 9 r89 (fast): the layout already follows retail's calls and arms line for line. Flags in all 24 orders: flying, direct, damping, gravity 412 (entry block retail's but
+// one store; a gain of 4, not kept), flying, direct, gravity, damping 415, others to 500. On it: input pointer after the flags 417 (entry exact, 3037 bytes), first arm's cross through
+// 0x1f087b 577, staged 573, up pointer 419, facing pointer 417; identity locals 1-7 415/490/584/574/493/493/491 (register-masked aligned 182/174/182/151/128/129/171 from 173); scaled before left 430;
+// step after limited 412 in the direct arm, 422 in the general arm; desired before magnitude 412; scale expression as the helper's argument 493. Base identity locals 416/496/593/583/502/499/492.
+// Round 91 (m3 lane 9, fast): the shared cross helper's products written with every operand pair swapped, only the
+// second of each pair swapped, only the first swapped 416/416/416 (same code everywhere: VC orders the product
+// operands itself; retail puts up.k ahead of facing.i/j where ours puts it after); the flags declared in retail's
+// computation order (damping, direct, gravity, flying) 427; the input pointer declared after the flags 421 (3037
+// bytes). The call sequence (eight 0x30bf0 calls, 0xa75d0, both `ret 8`) and the block layout agree with retail.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1482,6 +1503,13 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // Original normalizer, comparisons and full body restored; zero/count homes remain.
 // Round 481: Independent preferred/candidate/final scan-ordinal identities, all seven subsets
 // 418 each; all three with response-pass identity 418. Original full body and qualified count restored.
+// Lane 9 r89 (fast; register-masked in brackets, base 163): count without volatile, a switch on it (retail's `dec eax; je; dec eax; jne`) and the bit helper at both flying tests give retail's homes,
+// count in the bottom slot and the component in the dead request slot, 433 [157]; each alone 531 [203] no volatile, 445 [173] switch, 464 [155] helper; switch and helper 425; switch without volatile 436 [160].
+// On that form: negation through vector3f_scale 423, count store between the NONE stores 421 [159], list and count read in the loop heads 421 [156], stepping flag named before the final loop 424-426 (2096 bytes, [132]).
+// What is left starts at one cause: the -1 constant is shared by both negation arms and held in XMM5 from the first loop, which recolours desired and pushes zero out of XMM6; distinct constants (diagnostic) 411 at
+// 2080 bytes [113], with direction copied by fields 392, written-out scale 399. Natural spellings keep it: fallback through minimum set first 423, written out 423, a negate local 424, negation after the first loop with a
+// found flag or match pointer 424-428; zero through a local 426; candidate from the list each iteration 519 (frame 0x60); shared velocity subtraction arm 455. None under 418, so the volatile stays.
+// Input parameter at all 7 positions 418, on the rewrite 421; 0x1f2e60's register parameters in 24 orders 421 and 0x1f2a80 144 (base before stepping decides). Identity locals 1-7 418-419.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)
@@ -1638,232 +1666,10 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
 real function_1201a0(vector3f *vector, vector3f const *fallback);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 
-// score 96 (was 213): Frame 0x28 and the 1066-byte length agree; the supported byte's definition (retail stores 1/0 straight to
-// its stack byte, ours builds it in BL), the k products' sides and the material store's slot in the reset block remain.
-// Lane 9 r87 (fast, plain confirmed): the impulse test after the arms, re-testing `supported`, lets VC sink the not-supported arms
-// past the first post-loop block as retail (an arm sinks once threading stops it falling through to the block after it; 0x14d2a0
-// shows the rule); no other form gets there: about 1100 compile-only spellings of the arms (flag set per arm, if/else on constants,
-// inline helpers with early returns, empty `do {} while (false)` joins, sequential `!supported` tests) stay inline.
-// 213 -> 234 (1109 bytes); flag arm as `best_flag ? ... : true` 232; the loop as `while` with `++i` last keeps the second 0x1f1df0
-// call out of line with no noinline 239 (1046); velocity first in the reset 188 (1048); airborne as `(flags & 8) || (flags & 0x10)`
-// 105 (1066); 0x1f1df0's last two parameters swapped (retail sets ECX before ESI at both calls) 103, the other 22 orders 97-165 (97
-// loses retail's `mov ecx, eax`); supported as `... ? approach >= -0.001f : false` 96 (retail's three stack bytes). On it: a per-arm
-// `better` flag 96 (one condition kept instead); 0x1f1df0 through havok_component_get or a contact-array operator 213 before the
-// re-test, more locals in it 1109 unless they break its match (a `contacts` pointer 1044 but 0x1f1df0 16); `inline` on 0x1f1df0 or
-// 0x1f2250 96, on 0x1201a0 79 but it loses `mov ecx, eax`; contact local names 103 (names don't move the bytes), the two floats and
-// bools in other orders 96-101; helper arguments or dot3f in either dot, 15 pairs, 96; supported as if/else, `&&`, two locals or
-// byte/char 86-211, BL stays. Not kept (exact-only, a one-use field pointer, written-out dots and an identity local): `short *material
-// = &history->material` gives retail's reset store order, both dots accumulated k/j/i with the k operand read into the accumulator and
-// one identity pointer before the approach dot make both dots exact but for one k product, 86. A selected-contact pointer gives
-// retail's `add eax, 0x28` 225 (+2 bytes until BL is gone). A diagnostic volatile on supported 238, removed at once. 600 s permuter: none below 96.
-// Next: supported's direct stores appear in the build where the second call is inlined and in a compile-only listing, not here.
-// The real movement carrier fixes the x87 prefix through +0x8b (233 overall); retail
-// forms the contact dot k/j before i while our products schedule differently.
-// Frame 0x28 agrees; zero-load width, reset/selection homes and material-call
-// expansion remain. Our build inlines 0x1f1df0 at the second call (after 0x1f2250) where retail
-// calls it at both sites; retail also lays the not-supported arms of the contact loop out after the
-// first post-loop call block, keeps the supported flag in its stack byte and compares the movement
-// length with a float constant.
-// Tried: float consistency 392; native normal 368; current supported long 261; current flag long 361;
-// unsupported-first with original magnitude 258; native movement input 284; combined eligibility
-// 240; per-contact body-velocity snapshot 346; highest reduction after selection 258; approach at
-// use 351; surface output at entry 230; preservation arm first 288; entry score storage 230; shared
-// squared length with double comparison 230; byte current flag 240; byte current supported 239;
-// library history resets 238; contact-base field reference 235; unsigned selected ordinal 230;
-// native saved predicates at original magnitude 298; preservation predicate at dispatch 382; native
-// component 230; flag after supported 355; long moving 300; long saved supported 293; long saved
-// flag 296; separate inline declaration 230; entry normal workspace 230; unsigned highest 234;
-// native-long flying 306; final cleanup exit 230; normal/ordinal combination 232; signed-word
-// moving/saved-supported/saved-flag/current-supported/current-flag 298/283/295/272/351;
-// component/component+contact/velocity/contact+velocity/component+velocity/all fields at use, all
-// with real magnitude, component root plus shared squared length 460/404/334/336/501/540/540/460;
-// the movement length as `real` 233 (float constant as retail, first difference moves to +0x8b);
-// with the two NONE locals declared before the unknown70 store 283; with the contact list read
-// from the component field in the loop 234 (loaded after the count guard as retail), with dot3f
-// for the two contact dots 234 (same code: VC swaps the first two terms either way); with a
-// separate `__declspec(noinline)` declaration of 0x1f1df0 297 (1005 bytes: both calls out of line
-// as retail, 0x1f1df0 still matches; the arm layout and the supported flag's home are what remain).
-// Round 179: common normal/material-call join 254; native movement 253; combined preservation
-// mask/both 320/320; the same four joins with continue 254/253/320/320; original calls with the
-// combined preservation mask 324. Original body, magnitude, call sites and normal scopes restored.
-// Complete native contact record alone/real magnitude/noinline/both 230/233/301/300;
-// the same four forms with operation-specific normal names 230/233/301/300. All restored.
-// Round 235: Named squared sum with double/real movement 241/229; all three named squared
-// products 243/229; products plus sum 243/233; complete graph with long/short moving 307/305.
-// One-point forms restored; original magnitude, selection and material calls retained.
-// Round 411: stationary/unsupported/both/unflagged predicate ownership
-// 257/266/285/293; stationary+unflagged/unsupported+unflagged/all/all with
-// native magnitude 286/293/286/287. Complete original magnitude, positive
-// current/saved predicates, observations, selection and calls restored.
-// Round 188: Existing reset/selected-normal/final-vector setters in subsets 1-7 score 292/247/304/241/297/256/309; all with real magnitude 308. Original copies, magnitude, input timing and calls restored.
-// N226: Shared contact-byte observation; native movement, highest-first and
-// eligibility-owned support masks 0..7 give 240/237/278/277/356/356/304/304.
-// Existing complete length directly at the movement test, original/shared-byte
-// graphs 320/320; all original observations, magnitude, body and declarations restored.
-// Round 174: the contact list read at each use (its load then follows the count test as in retail)
-// 235, with the selected/highest NONE locals declared at the top of the block 233 (on the original
-// body 235); 0x1f1df0 written without its union local, `== NONE` or `!= NONE` first, 238/244 (0x1f1df0
-// itself 8/4, not kept); the movement length as `real` 233, with the contact list at each use 234;
-// the five `goto local_10` skips as `continue` 230 (same code; kept, the label removed).
-// Round 48 (lane 9): the twice-written surface clear as one inline / `__forceinline` helper 230/230 (same code);
-// the flag/no-flag skip tests as one ternary, nested in one `else`, or the no-flag arm as two tests 230/230/230
-// (same code); the no-flag arm first 252; 0x1f2250's input parameter declared last 230 (same code: ours already
-// passes it in ECX); shape_dot as a macro 230; the five accept assignments written in each of the three arms 361.
-// Round 248: complete native request/result/tuning-field identities, four double-magnitude
-// forms 230 each; four real-magnitude counterparts 233 each. Original body and types restored.
-// Round 62 (lane 12, fast): the velocity pointer declared after the four reset stores 221 (kept, plain
-// 221, retail's length; the second 0x1f1df0 call is still inlined). Airborne as `(flags & 8) || (flags & 0x10)`
-// (a compile-only screen gives retail's `xor al, al / mov al, 1` for it) 312 on the old body, 311 with the
-// `real` length, 308 on the real-length velocity form (the component pointer moves from EBX to ESI); the
-// selected contact's normal through `byte *contact = contacts + (short)selected * 0x48` 241 on the real-length
-// body (retail's separate `add eax, 0x28` appears); on the kept form: the `real` length 224 (the loop's k/j
-// products then match, the i term flips), `selected`/`highest` declared first in the block 220, the same with
-// the `real` length 223, the contact list read at each use 222, the not-supported arms written first 250,
-// the velocity after `flying` 221, and (with the `real` length) the motion pointer read before the reset 294.
-// Round 120 (m3 lane 5): a per-arm `better` result tested once after the arms 240 (same layout: the
-// flag/no-flag arms stay inline and still share one height test); unknown58/selected/highest as one
-// chained NONE store 284; the airborne test as `(flags & 8) || (flags & 0x10)` 312 (that block is then
-// retail's branchy sequence exactly, but the component moves from EBX to ESI), with the movement as
-// `real` 311, with the contact list read at each use 232 (1072 bytes, component back in EBX; the NONE
-// locals still store after the count test); the flying test's planar dot i-first or with each
-// product's operands swapped 230/230 (same code: the speed dot still computes j before k).
-// Diagnostic, not kept: 0x1f1df0 out of line at both calls 301 (1005 bytes). Original body restored.
-// Round 191 (lane 3, fast): retail's float 0.0 constant (0x45dbd8) confirms the `real` magnitude. On
-// it, the velocity pointer declared first, selected/highest declared right after the unknown58 store
-// and the contact list read at each use 273 (1076 bytes): the reset block is then retail's exactly
-// (velocity load first, NONE in EAX stored to unknown58, selected and highest, the list loaded after
-// the count test) but the arms' shared height test and the inlined second 0x1f1df0 call stay; that
-// with the airborne test as `(flags & 8) || (flags & 0x10)` 270 (1072); with the double magnitude 274.
-// The existing havok_component_get for the component (plain inline, to spend inline budget) 221
-// (same code, on either base); 0x1f1df0 defined after this function 221 (same code: the second call
-// stays inlined). Retail tests the height in both not-supported arms (two `comiss; ja` copies, laid
-// out after the first post-loop block); ours merges them into one.
-// Round 111 (lane 8, fast; one-file LTCG harness with the ballast object, unknown_11fc80.cpp and
-// unknown_1cec30.cpp exact at 221): `selected`/`highest` declared right after the unknown58 store 221
-// (their NONE stores join it as retail, aligned 99 -> 96); that with the contact list read from the
-// component at each use 219 (its load follows the count test as retail); that with the `real` length 218
-// (first difference +0x8b: retail loads the motion pointer first and copies the reset normal through
-// EAX/EDX where ours uses ECX/EAX); the flag arm's two tests nested 221; the supported arm's three skips
-// as one `||` test 221; harness: the no-flag arm's height test first 239; shape_dot's arguments swapped
-// in either dot 218-221; velocity (or the motion pointer) read before the reset 274-295 (1076-1080
-// bytes: NONE becomes `mov eax, -1` and the loop entry loses its jmp); flying read first 280; the reset
-// NONE as `unknown58 = selected = highest = NONE` 274 (1076); contact count/element through inline
-// accessors 222; extra trivial inline calls to grow the caller 221 (0x1f1df0 stays inlined at the
-// second call).
-// Round 448: Separate selected/fallback entry lifetimes 221/221/221; supported-first
-// final admission 222, with either/both lifetimes 222/222/222; all with real movement
-// 225. Original distinct block workspaces, movement and selected-first test restored.
-// Round 236: Complete request-flag reads at each use, crossed with saved/current predicate role names,
-// native magnitude and constant sentinel phase: 229/229/228/228/229/229/228/228. Original complete
-// executable source restored; zero width, reset/selection homes and material-call expansion remain.
-// Round 289: Three named movement-coordinate inputs, with real magnitude/sentinel phase/contact-base
-// at-use masks 0..7, 229/224/229/224/222/221/219/218 (1066 bytes). Best gains three,
-// rejected; original magnitude, inputs, selected/highest homes, observations and calls restored.
-// Round 296: Accepted-state support-first, flag-first, scalar-first and interleaved stores, on original
-// and real movement graphs. Scores 221/224/221/221/224/227/224/224. Original complete body restored.
-// Round 329: Complete reset orders MNSZ/SNMZ/ZNMS/NSMZ/NZMS/MSNZ/SZNM/ZMSN
-// 223/221/222/221/222/222/222/223; N=normal, M=material, S=sentinel, Z=scalar zero. Both
-// reset phases use the same order; original stores and complete body restored.
-// Round 236: Complete request-flag reads at each use, crossed with saved/current predicate role names,
-// native magnitude and constant sentinel phase: 229/229/228/228/229/229/228/228. Original complete
-// executable source restored; zero width, reset/selection homes and material-call expansion remain.
-// DH round 266: indexed coordinate reduction, long/short/word/byte axis crossed with
-// double/real root carriers: 611/609/630/630/630/630/630/630, all 1332 bytes.
-// New reduction storage fails the movement/reset/material-call graph; original arithmetic restored.
-// Round 256: all three named dot products in the existing shared helper, six producer
-// orders 227 each; first/last orders with real movement 228/228. Original helper,
-// magnitude and complete body restored.
-// Round 518: one complete velocity sample for scan/fallback, with native
-// movement, earlier sentinel phase and count capture masks 0-7,
-// 334/332/335/333/334/332/335/333. Original observations and body restored;
-// zero-load width, reset/selection homes and selective material calls remain.
-// P258: Two-/three-step left-associated dot sums, original/early eligibility
-// and double/real movement: 229/223/229/223/224/226/224/226. Other dot users stay
-// 590/418; original helper, eligibility, magnitude and complete body restored.
-// P263: complete selected-normal/final-vector native/memcpy/memmove pairs
-// 221/221/221/231/355/239/355/231; memcpy ties, memmove changes expansion and regresses.
-// Original transfers, magnitude, call sites and complete body restored.
-// DL247: Flat native material/speed admission with original dot, native movement,
-// contact fields at use and ordinary fallback inline: 221/224/222/221/221/224/222/221.
-// All restored; zero width, reset/selection homes and selective material-call expansion remain.
-// Round 482: Fallback-owned movement truth, block comparison/call comparison/implicit
-// call/block truth, original double root 307/313/313/307; real root 313/306/306/313.
-// Original motion sample precedes every reset in all forms; root/predicate lifetimes
-// and complete body restored. Zero width, reset homes and material expansion remain.
-// AC498: Native sqrtf with direct/shared-square/squared-value/all-product inputs,
-// double/real root carriers: 225/228/225/228/225/228/221/226. Original arithmetic
-// and full body restored; zero width, reset/selection homes and second material expansion remain.
-// N336: Selected ordinal at signed-short/word width, with entry/before-reset/after-reset/
-// before-flight declarations and the original NONE producer: 227/227/227/227, 380/380/380/380.
-// Word forms grow to 1148 bytes and move the frame difference to +2. NOT kept: no exact
-// projected-storage form; original long selection, movement and complete body restored.
-// N342: Existing shared dot input components staged for left/right/both/paired axes,
-// original then real movement result: 280/280/280/280/279/279/279/279. Both other users checked.
-// NOT kept: one-use input carriers do not match and length grows to 1071/1066;
-// original helper, magnitude, observations, field values and complete body restored.
-// DH315: Shared score/predicate/ordinal initialization masks 1/2/4/3/5/6/7,
-// then all with real movement: 227/225/225/229/229/227/221/224. Original
-// independent initializers, magnitude, observations and complete body restored.
-// DH321: Test-produced preservation result in bool/byte/signed-byte/short/word/int/unsigned/
-// dword domains: 304/304/304/319/319/333/333/333. NOT kept: flag-in-test/domain forms lack equality;
-// original predicate, magnitude, reset/selection graph and material calls restored.
-// N344: Coherent state-first material interface, then real movement/sentinel phase/airborne
-// bit-production masks 0/1/2/4/3/5/6/7: 223/226/223/311/226/310/312/311.
-// NOT kept: all grow to 1068/1088 versus 1066; original definition, both calls, magnitude,
-// initializers, predicates and complete body restored.
-// Lane 18 r41: kept 213 (plain): the `real` movement (retail compares it with the float 0.0 at 0x45dbd8), selected/highest
-// declared right after the unknown58 store, the contact list read from the component at each use and the two Boolean
-// bests declared before the real bests (the four together; each alone 221-233, the first three 218). On it: the
-// velocity pointer first in the block 268 (1076 bytes); selected/highest first in the block 213; either dot's arguments
-// swapped or through dot3f 213 each (VC reorders the products itself); airborne as `(flags & 8) || (flags & 0x10)` on
-// the 218 form 228 (1073). On the old body: the else arm's flags tested at each use (no airborne local) 225; the flag
-// arm's height test as `!(best_height < normal->k)` 231 (still one shared test); the speed dot's arguments swapped 221.
-// Diagnostic: 0x1f1df0 out of line at both calls 311 (1003 bytes; retail's body is 63 bytes longer).
-// B400: Saved two-bit selection state with candidate-state/native movement/shared-contact-byte
-// masks 0..7: 359/294/360/293/359/294/360/293, at 1129/1045 bytes against 1066.
-// NOT kept: no exact match or gain; original separate predicates, magnitude, observations,
-// complete body and material calls restored; zero width and reset/selection homes remain.
-// B411: Existing magnitude producer with double/native/direct/test-produced movement
-// 221/224/226/226; squared-length/dot producers with double/real roots 221/224/221/224.
-// Native zero width fixes only the prefix; original root, declaration and body restored.
-// P309: Complete category admission as direct positive/negative or named positive/negative
-// predicates, original/real movement: 231/231/231/231/228/228/228/228. Original
-// selection graph and complete body restored; zero/reset homes and material expansion remain.
-// M345: Default-moving result cleared by the original zero test, bool/char/signed-char/byte/
-// short/word/int/long: 221/247/247/247/283/283/285/285.
-// NOT kept: test-produced result domains do not match; original root, motion predicate and full body restored.
-// M347: Highest-contact reduction outcome, direct bool/byte/short/long then
-// test-produced bool/byte/short/long: 225/225/225/225/225/225/225/225.
-// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
-// M355: Test-produced current support, support-first/approach-first, each in bool/byte/short/long:
-// 264/267/270/283/304/298/302/300. NOT kept: test-produced states remain unmatched;
-// original support predicate, movement, selections and both material call sites restored.
-// M357: Fallback-call admission produced at the query, positive then complementary bool/byte/short/long:
-// 225/225/225/225/225/225/225/225. NOT kept: no exact producer/contract form; original complete body restored.
-// DH329: Separate highest-contact scan before/after selection or fallback-only, direct/named
-// height and before/after native cursors 776/788/872/888/580/572/894/929. NOT kept: all regress and
-// grow frame/extent; original shared scan and complete body restored.
-// F372: Flight-state char/signed-char/byte/short/word/int/unsigned/dword carriers
-// 213/213/213/305/305/303/303/303; native byte forms tie, wider forms grow.
-// Original bool, native movement, observations and complete body restored.
-// F374: Contact velocity-dot/request-dot/scaled-projection nodes, seven subsets,
-// then the full graph with guarded planar projection: 213/209/209/211/211/211/209/213.
-// NOT kept: gains below eight; original scalar expressions and complete body restored.
-// F378: Cold unsupported-contact eligibility isolated after supported admission, accept then reject
-// bool/byte/short/long: 207/207/207/207/207/207/207/207. NOT kept: one-use decisions remain unmatched;
-// original observations, magnitude, reset/selection graph and both material call sites restored.
-// DH354: Immutable component/velocity/contact-normal receiver bindings, seven
-// subsets and complete receiver identities: eight at 213. Original observations,
-// body and material-call graph restored; early motion/reset and cold arms remain.
-// DH356: Complete three-arm candidate-quality conditional, direct/named acceptance/rejection,
-// original/early material-speed skip: eight at 211. NOT kept: gain two; original full body
-// restored. Native motion/reset order, separate cold height tests and material expansion remain.
-// AC533: Test-produced post-scan selected-support/fallback handoff, bool/byte/short/long:
-// 279/279/282/280/288/288/292/291. NOT kept: frame moves from native 0x28 to 0x24 and
-// code grows; motion/reset, cold height arms and second material expansion remain. Body restored.
-// N373: Supported-contact thickness rejection/acceptance in bool/byte/short/long
-// 209/209/209/209/213/213/213/213. NOT kept: unmatched one-use decisions; original full body restored.
-// Reset/velocity ownership, cold height joins and second material expansion remain.
+/* one step of the shape against its contacts: picks the supporting contact or asks 0x1f2250 for a
+   surface, and sets the shape's normal and material from it. The accumulated dots, the named velocity
+   pointers, `material` and the selected `contact` give retail's operand sides, store order and `add
+   eax, 0x28` (byte match); 0x1f1df0 takes state first because both calls here set ESI last. */
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
@@ -1875,9 +1681,14 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
     *(dword *)(out + 4) &= ~1;
     if (!preserve)
     {
-        vector3f const *velocity = (vector3f const *)(*(byte **)(component + 0x70) + 0xc);
+        /* the velocity of the component's first rigid body */
+        s_havok_component *typed_component = (s_havok_component *)component;
+        s_havok_array60 const *rigid_bodies = &typed_component->rigid_bodies;
+        s_havok_component_rigid_body const *rigid_body = rigid_bodies->data;
+        vector3f const *velocity = &rigid_body->linear_velocity;
         history->normal = *g_4687b0;
-        history->material = g_47d8e0;
+        short *material = &history->material;
+        *material = g_47d8e0;
         history->unknown58 = NONE;
         long selected = NONE;
         long highest = NONE;
@@ -1893,8 +1704,16 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
         {
             byte *contact = *(byte **)(component + 0x88) + i * 0x48;
             vector3f *normal = (vector3f *)(contact + 0x28);
-            real speed = 0.0f - shape_dot(*normal, *velocity);
-            real approach = 0.0f - shape_dot(*normal, *(vector3f *)(request + 0x28)) * *(real *)(request + 0x34);
+            real speed = normal->k;
+            speed *= velocity->k;
+            real speed_j = normal->j * velocity->j;
+            speed += speed_j;
+            speed += velocity->i * normal->i;
+            speed = 0.0f - speed;
+            real approach = normal->k * ((vector3f *)(request + 0x28))->k;
+            approach += normal->j * ((vector3f *)(request + 0x28))->j;
+            approach += ((vector3f *)(request + 0x28))->i * normal->i;
+            approach = 0.0f - approach * *(real *)(request + 0x34);
             bool flag = ((*(byte *)(contact + 0x44) >> 1) & 1) != 0;
             bool supported = (flying || (*(byte *)(contact + 0x44) & 4)) ? approach >= -0.001f : false;
             if (normal->k > highest_z)
@@ -1923,9 +1742,10 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
         }
         if ((short)selected != NONE && best_supported)
         {
-            vector3f normal = *(vector3f *)(*(byte **)(component + 0x88) + (short)selected * 0x48 + 0x28);
+            byte *contact = *(byte **)(component + 0x88) + (short)selected * 0x48;
+            vector3f normal = *(vector3f *)(contact + 0x28);
             function_1201a0(&normal, g_4687b0);
-            function_1f1df0(*(long *)(request + 0x40), (short)selected, history, &normal);
+            function_1f1df0(history, *(long *)(request + 0x40), (short)selected, &normal);
         }
         else
         {
@@ -1934,7 +1754,7 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
             if (function_1f2250((vector3f *)history, request, velocity, moving, &normal, &surface,
                 &history->unknown70, (long *)(out + 0xc)))
             {
-                function_1f1df0(*(long *)(request + 0x40), highest, history, &normal);
+                function_1f1df0(history, *(long *)(request + 0x40), highest, &normal);
                 if ((short)selected != NONE)
                 {
                     if (history->unknown70 > 0.0f)

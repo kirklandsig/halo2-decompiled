@@ -103,6 +103,13 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// MiniMax G (11-05): no new form, no lower score. The entry still loads the index before the radius
+// constant and the loop still materialises the vertex address before its x store. This round: the
+// x store as a standalone array element (before or after the helper) folds the address into the
+// store but leaves a second x store or a reloaded count (110, 124, 125); the helper on the array
+// element materialises the address (38); the helper's destination shifted by one element keeps the
+// folded address but makes the y store a dword copy (120); the surface lookup through the stored
+// index and the index store at the end of the body change the prologue without lowering (6, 123).
 // MiniMax H (11-04): no new form, no lower score; the x store through the array element, the helper on the array element, the w store through the pointer, the x store as a long copy, through the m128 accessor and through the point3f view give 112, 25, 58, 106, 112 and 106, the members in the initialiser list give 6 and the member stores moved after the loop give 119 to 123, and the permuter tried 95 forms without a lower score, so the entry's load of the radius constant before the index and the vertex address folded into the x store still stand.
 // MiniMax B (11-03): no new form, no lower score. The entry still loads the index before the radius
 // constant and the loop still materialises the vertex address before its x store. This round: the x
@@ -202,6 +209,11 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax I (11-05): no new form, no lower score. The header normalize_inline for the normal gives 193
+// and the header cross3f_staged for the cross gives the same code; retail's normal length sums k, j, i
+// (with the components scaled inv*i, j*inv, k*inv) and neither header helper has that order. The rest
+// is blocked by 0x23a220: retail's callers pass the points before the point, and its definition is in
+// src/unknown_239b80.cpp, another lane's file.
 // MiniMax B (11-03): no new form, no lower score. Retail still keeps the ray's components and the two
 // edge vectors in xmm registers while ours spills the edge vectors to the stack and reloads them; the
 // cause is that `first` and `second` are address-taken locals that cross3f takes by reference, so
@@ -404,6 +416,8 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // named side row `axis * 2 + (n[axis] > 0)` for all four table reads 251; the projected point as an aggregate
 // initializer 192 (same code); the polygon array declared before the hit point 192 (same code); the hit-point sums
 // written start-first in all three rows 192 (same code). All restored; still BLOCKED-BY 0x23a220.
+// J260: Direction dot/fraction/bounded comparison double storage singles 268/293/278; pairs 300/307/293; all 280; immutable all 280; frames 0x84/0x88 versus 0x90. No exact match; original SSE scalar widths restored.
+// NOT kept: no eligible native repair; opening executable source restored. Retained origin x/y, edge i spills and plane/ray/polygon homes remain.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

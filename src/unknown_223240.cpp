@@ -75,6 +75,8 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
+// MiniMax H (11-05): no new form, no lower score; the tail still needs 0x2b5d0's own body (a stub in
+// src/stubs/lane_k.cpp, another file), and the count clamp and the slot test still differ.
 // MiniMax H (11-04): no new form, no lower score; the tail still needs 0x2b5d0's own body.
 // score 90 (was 109): one shared view count now feeds terminal indexing and the tail; the outer
 // pretest, loop-entry source zero and terminal registers still differ. The tail call still needs 0x2b5d0's

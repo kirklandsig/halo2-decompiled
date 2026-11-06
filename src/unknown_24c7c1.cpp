@@ -556,10 +556,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax R (11-05): no new form, no lower score; the timer flag as a bool puts retail's byte stores at
+// -0xe/-0xd with the scripted flag still at -2 beside split_screen, 191, so the body stays (file now 114).
 // MiniMax G (11-04): no new form, no lower score; retail keeps `left` in a word-sized local at -0x3c
 // beside `top` and homes the colour and text bounds at -0x34/-0x24, ours spills `left` as a dword at
 // -0x50 with the colour at -0x2c.
-// score 115 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// score 114 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // frame 0x264 agrees; predicate packing, left-word and color/rectangle/scalar homes differ; both text helpers match.
 // frame 0x264 agrees; predicate packing and color/rectangle/scalar homes still differ.
 // frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
@@ -691,6 +693,8 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // code); the tutorial flag as long 227 (1890 bytes); `left` declared before `top` with the bool timer 191 (1888 bytes).
 // Retail keeps `left` as a word memory local at -0x3c beside `top`'s dword spill at -0x38; ours spills `left` as a dword
 // at -0x50 and shifts font (-0x4c against -0x50), line height (-0x18 against -0x14) and player (-0x3c against -0x40).
+// J260: Timed ratio/row power/status power double storage singles 486/322/222; pairs 486/483/316; all 492; immutable all 492; frames 0x270 versus 0x264. No exact match; real producer widths restored.
+// NOT kept: no eligible native repair; opening executable source restored. View, packed predicates, left word, color and rectangle homes remain.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

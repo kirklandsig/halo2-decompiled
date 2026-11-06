@@ -1034,6 +1034,12 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
     }
 }
 
+// score 2 (was 0): cases 12 and 13 share one tail; ours stores out[3] before out[2], retail stores
+// out[2] before out[3]. A `real *zero = out + 1` copy in cases 14/18 makes this match exactly, but
+// it hides 0x1b2c0's write summary from LTCG and costs 0x19ca0 its byte-for-byte match.
+// M404: direct-output zero propagation in pair/width/height/pair-width/
+// pair-height/width-height/all/all-plus-zero families: 6/2/2/6/6/2/6/6.
+// Original stores and complete body restored; shared pair-zero scheduling remains.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {
@@ -1084,23 +1090,19 @@ bool function_1b2c0(byte const *state, real *out, long index, long component, lo
         case 9: out[0] = width; out[1] = height; break;
         case 10: out[2] = width; out[3] = height; break;
         case 11: out[0] = out[1] = 0.0f; break;
-        case 12: out[3] = out[2] = 0.0f; break;
-        case 13: out[0] = width; out[1] = height; out[3] = out[2] = 0.0f; break;
+        case 12: out[2] = out[3] = 0.0f; break;
+        case 13: out[0] = width; out[1] = height; out[2] = out[3] = 0.0f; break;
         case 14: {
-            real *zero = out + 1;
             out[0] = width;
-            zero[0] = 0.0f;
-            zero[2] = zero[1] = 0.0f;
+            out[3] = out[2] = out[1] = 0.0f;
             break;
         }
         case 15: out[1] = height; out[0] = out[3] = out[2] = 0.0f; break;
         case 16: out[0] = width; out[1] = height; out[2] = 1.0f; break;
         case 17: out[0] = out[1] = out[2] = 0.0f; break;
         case 18: {
-            real *zero = out + 1;
             out[0] = width;
-            zero[0] = 0.0f;
-            zero[2] = zero[1] = 0.0f;
+            out[3] = out[2] = out[1] = 0.0f;
             break;
         }
         case 19: out[1] = height; out[0] = out[3] = out[2] = 0.0f; break;
@@ -1571,6 +1573,10 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // packed declarations 130 each; a full post-sampler word used only for rescaling 130; that word also selecting
 // the output category 291; a twice-used post-sampler descriptor pointer or reference 130 each. None gives the
 // mapped rescale test retail's `mov ax,[ebx]; test ah,8`; the original 130 body and matched sampler/writers remain.
+// MiniMax D (11-05): matches retail byte for byte (score 0, was 130). Cases 14/18 now store
+// straight through out instead of through a `real *zero = out + 1` copy: with the copy LTCG cannot
+// summarise 0x1b2c0's writes, and this call site stops matching. The price is paid by 0x1b2c0,
+// which drops from 0 to 2 because its shared case 12/13 tail then stores out[3] before out[2].
 // Round 144 (m3 lane 5, fast; scores 0x1b2c0/0x19ca0; any pointer copy in 0x1b2c0 hides its write summary, so
 // 0x19ca0 matches only with direct stores): cases 14/18 as `memset(out + 1, 0, 3 * sizeof(real))` 103 (724 bytes)/MATCH;
 // a `real zero` local stored to out[1..3] 6/MATCH; that chained `out[3] = out[2] = out[1] = zero` 6/MATCH; direct case 18
