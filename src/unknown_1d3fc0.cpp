@@ -30,6 +30,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// MiniMax A (11-05, held at m3 review): 110 -> 2 with the normalizer's squared length through the existing
+// dot3f and the caller's dot3f(forward, up) written out by hand with its k term read as
+// local_1[0].forward.k (the same field forward points to); only the i term then differs (ours copies up.i,
+// retail forward.i). Not kept without a match: an existing helper's body written by hand and a second
+// access path to one field are score-picked forms; the normalizer change alone 172. Addends reordered or
+// pointers declared apart 2; the up side or forward.i from the matrix 145/148; the normalizations swapped
+// 71; calls through the pointer variables 94. build/held/mma-1106-1d3fc0-handwritten-dot.patch
 // MiniMax B (11-04): a second forceinline normalize twin (k, j, i summed in turn, used for up and left while forward keeps 0x1d3fc1) with the dot product written out 2; NOT kept: a score-picked helper twin (no new inline twins).
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
