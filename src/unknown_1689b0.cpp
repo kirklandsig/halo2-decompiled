@@ -1408,26 +1408,38 @@ struct s_shape_counts
 #include <xmmintrin.h>
 #include <string.h>
 
-PRIVATE __forceinline long shape_cluster_next(long *next)
+PRIVATE __forceinline long shape_cluster_next(s_record_pool *pool, long *next)
 {
-    long result = NONE;
+    long result;
     if (*next != NONE)
     {
-        s_record_pool *pool = (s_record_pool *)g_4de2e4;
-        byte *entry = pool->data + pool->size * (*next & 0xffff);
-        *next = *(long *)(entry + 8);
-        if (*next != NONE)
-            _mm_prefetch((char const *)(pool->data + pool->size * (*next & 0xffff)), _MM_HINT_T0);
+        long size = pool->size;
+        byte *data = pool->data;
+        byte *entry = data + (*next & 0xffff) * size;
+        long following = *(long *)(entry + 8);
+        if (following != NONE)
+            _mm_prefetch((char const *)(data + (following & 0xffff) * size), _MM_HINT_T0);
+        *next = following;
         result = *(long *)(entry + 4);
     }
+    else
+        result = NONE;
     return result;
 }
 
-// score 170 (was 170): world-mask width, leaf induction and pool/cluster homes differ;
+// score 23 (was 170): retail keeps the world mask as a dword (`mov eax, dword; mov ebx, eax; and ebx, 1`, later
+// `test ebx, ebx`) where ours loads a byte into bl, and retail loads the instance tick global into edx before the
+// instance loop (reloading it after the call) where ours loads it at the loop top.
+// Round 67 (m3 lane 13, plain): the leaf loop as a plain for over the hit count field 186 (873 bytes, frame 0x1014);
+// with the cluster-reference step taking the pool and reading its size and data once 165 (890); with the instance loop
+// as a plain for over a long instance indexed `(short)instance` 115; with the object mark index named 23 (885). On 23:
+// the world mask as a dword or long 217/217. On 115: the mask as a dword 221, `flags & 1` at both uses 221, the
+// instance test as a `!=` block 115 (same code).
+// Earlier at 170: world-mask width, leaf induction and pool/cluster homes differ;
 // integer query result 251f; paired world mask 205 plain; leaf step at read 222 plain;
 // unsigned leaf/handle/count views and normal iterator inline 251f; direct count returns 249f
 // (unchanged fast control 251; full 170).
-// score 170 (was 170): world-mask width and pool/cluster allocation still differ.
+// Earlier at 170: world-mask width and pool/cluster allocation still differ.
 // saved instance predicate 297f; saved object predicate 298f.
 // both predicates 318f; saved collection mask 293f.
 // word hit ordinal 172f; full-width instance mask 291f.
@@ -1454,8 +1466,7 @@ bool __stdcall function_16a440(dword flags, point3f const *position, real extent
         if (found && test_world)
             function_245aa0((s_245aa0 const *)&hits, (s_source_245400 const *)g_4e0340,
                 0, height, radius, NONE, NONE, (s_collection_245270 *)shapes);
-        long leaf_count = hits.field_c0c.field_0;
-        if ((leaf_count > 0 && (flags & 4)) || (flags & 8))
+        if ((hits.field_c0c.field_0 > 0 && (flags & 4)) || (flags & 8))
         {
             ++g_4e7414;
             g_4e7411 = true;
@@ -1467,7 +1478,7 @@ bool __stdcall function_16a440(dword flags, point3f const *position, real extent
                 if (!(flags & 0x1fff0)) flags |= 0x1fff0;
             }
             s_1697c0_bsp *bsp = (s_1697c0_bsp *)g_4e0348;
-            for (long leaf = 0, remaining_leaves = leaf_count; remaining_leaves > 0; --remaining_leaves, ++leaf)
+            for (long leaf = 0; leaf < hits.field_c0c.field_0; ++leaf)
             {
                 long cluster = collision_leaf_cluster(hits.field_c0c.field_4[leaf]);
                 if (g_4e7418[(short)cluster] == g_4e7414) continue;
@@ -1475,12 +1486,11 @@ bool __stdcall function_16a440(dword flags, point3f const *position, real extent
                 if (flags & 4)
                 {
                     s_1697c0_cluster *entry = &bsp->clusters[cluster];
-                    long i = 0;
-                    while (i < entry->instance_count)
+                    for (long i = 0; i < entry->instance_count; i++)
                     {
-                        short instance = entry->instances[i++];
-                        if (g_4e7c20[instance] == g_4e7c1c) continue;
-                        g_4e7c20[instance] = g_4e7c1c;
+                        long instance = entry->instances[i];
+                        if (g_4e7c20[(short)instance] == g_4e7c1c) continue;
+                        g_4e7c20[(short)instance] = g_4e7c1c;
                         function_16a0a0(instance, flags, position, extent, height, radius,
                             (s_collection_245270 *)shapes);
                     }
@@ -1488,11 +1498,12 @@ bool __stdcall function_16a440(dword flags, point3f const *position, real extent
                 if (flags & 8)
                 {
                     long next = ((long *)g_4de2e0)[(short)cluster];
-                    for (long object = shape_cluster_next(&next); object != NONE;
-                        object = shape_cluster_next(&next))
+                    for (long object = shape_cluster_next((s_record_pool *)g_4de2e4, &next); object != NONE;
+                        object = shape_cluster_next((s_record_pool *)g_4de2e4, &next))
                     {
-                        if (g_4de300[object & 0xffff] == g_4de2fc) continue;
-                        g_4de300[object & 0xffff] = g_4de2fc;
+                        long index = object & 0xffff;
+                        if (g_4de300[index] == g_4de2fc) continue;
+                        g_4de300[index] = g_4de2fc;
                         function_16a280(object, flags, position, extent, height, radius,
                             ignore_object, ignore_parent, (s_collection_245270 *)shapes);
                     }
