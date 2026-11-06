@@ -875,6 +875,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // MiniMax D (11-05): no new form, no lower score; the argument slots agree with retail's (the source
 // pointer in the first stack slot, the order byte in the fifth), so the whole difference is the frame,
 // 0x18 against retail's 0x2c.
+// MiniMax E (11-06): no lower score; retail takes the position pointer as its third parameter (EDX)
+// and pops six stack arguments, so retail's declaration has nine parameters against our seven; the
+// call sites are in another file and the parameter order may not change, so this cannot be reached here.
 // score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // Earlier: Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
