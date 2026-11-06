@@ -93,6 +93,19 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // stored first 13; state first 12; succeeded first 11.
 // Round 138: if on the path helper's bool 10; `&&` of helper and read 23 (290 bytes); cache pointer before the bit
 // test 17; inverted first test 10; separate result assignment 10.
+// Round 53 (m3 lane 15, fast): the read's path as `&local_0.field_44[0]` 10; the index and size tests nested
+// 10; the size test first 75 (291 bytes, re-measured); the profile copied from `&...profile` 10; the location
+// record declared at function scope 10; the read's result returned directly from the else arm 102 (271 bytes;
+// 0x2161d0 33). Retail's other callers of 0x122810 (0x2164c0, 0x216f80, 0x2ad020) do not reuse the string
+// register after it either, but none passes the path again before other code.
+// Round 115: explicit cached exit 10; branch-local cache pointer 10; helper result in result/named bool 10/10;
+// separate read result 10; named cached predicate 10; result before the copy 46; result from done 10.
+// NOT kept: no gain; the one-use result forms were exact-only and the original body is restored.
+// Round 65 (m3 lane 14, fast): a built flag read after a join 10 (same code, threaded early); an inline path helper with its own bool
+// result 68 (257 bytes, not inlined); `if (!helper) {}` around the build 10; empty tests between the build and the read 10/10; the read's
+// path as `(const char *)&local + 0x44` 10; `succeeded` as byte 10 (0x2161d0 18, lost); `state` as dword 10; `progress` through a long
+// field 10. `done` as byte or char does not compile (the async call takes bool *). Retail evidence: 0x121570's third append reloads with
+// `lea esi` only after a real join, while its second keeps ESI, so retail's `lea edx` needs a join these forms fold away.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

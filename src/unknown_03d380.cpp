@@ -314,6 +314,12 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax lane G (11-04): no new form, no lower score; two separate type cases give retail's chain
+// (je to the special arm, jne to the kind arm) with 0x221810 out of line, but the pool pointer moves
+// to edi and the score is 83; the named `||` gives the same chain and the a/b slots but inlines 0x221810.
+// MiniMax H (11-04): no new form, no lower score; retail multiplies the element index in eax and lea's the address, ours multiplies in esi, and 0x221810 stays out of line.
+// MiniMax A (11-03): no new form, no lower score: the element address is still formed after the policy
+// byte is read, and the special, remove, ordinary and keep blocks stay in our order.
 // MiniMax lane E (11-01): no new form, no lower score; the named-condition form that gives retail's
 // block order still needs 0x221810 kept out of line.
 // score 36 (was 36): the address of the record is built here with an imul
@@ -448,6 +454,29 @@ void function_125a90(long value);
 // removal); the predicate in keep sense 87; its class test negated, kind case first 47 (same code); the caller's
 // keep branch first 47 (same code); the named class condition inside the forceinline predicate 153 (467 bytes,
 // 0x221810 inlined again). Original body restored; still BLOCKED-BY 0x221810 (its file held this round).
+// Round 104: named special with the callee declared inline 159 (472 bytes; declarations restored);
+// named element byte offset 36; keep result 36; keep arm first 86; type declared at loop top 36;
+// index declared only at the iterator 51; const element pointer 36; const type 36. All restored;
+// the element multiply/LEA, early policy load and decision-block placement remain.
+// Round 69 (lane 11, fast; pool global at each use, no index local, direct keep store unless noted; [aligned]): no implied test, the call
+// stays out of line: `type == 0x20` keep, else `type == 0x26` `remove = !a`, else the kind test, 74 (positional only) [5]: retail's block
+// order and every register, only retail's `cmp eax, 0x26; jne` re-test is missing; 0x26 first 77 [7]. Under one `||`: `if (type == 0x26) remove
+// = !a; else remove = false;` 29 [12], as `remove = false; if ...` or a ternary 29 [12], the removal arm after the keep arm 25 [12] (kind arm
+// still falls through), that without the direct keep store 47 [23]; `remove = type == 0x26 && !a` under `||` 75 [15]; `type != 0x26 || a` 75;
+// inverted `&&` 75, inverted `!(||)` 29; each type test a named bool 29. Named special or ordinary, with two ifs or nested tests, and no
+// implied test: 151/142/162 (466-471 bytes, 0x221810 inlined). Not kept: 29 and 25 need the direct keep store, which is match-only.
+// Round 153 (m3 lane 5, fast; all 415 bytes): with the inner test on the long type and the kind arm as one
+// `remove = !(mask) || f(type) != 1` value: `remove = type == 0x26 && !a` 88; `if (type == 0x26) remove = !a; else remove =
+// false;` 46, with keep written first 51; `remove = false; if (type == 0x26) remove = !a;` 46; the if/else special arm with
+// the kind arm as `if (mask && f(type) == 1) remove = false;` 51. Compile-only screen with /d2inlT0 (reproduces LTCG's
+// choice: 0x221810 stays out of line for an inline `||` class-type test, inlined for a named class-type bool) over 80 forms: every
+// inline `||` form lays the kind arm out as the class-type test's fall-through; a named bool, an inline class-test helper or the
+// kind test as `kind == 1 || ... == 4` (no bit test then) all inline 0x221810.
+// J260: Immutable b/a/both policies 36/36/36; receiver initialized from the pool base then advanced by index, with no/b/a/both immutable policies, 36/36/36/36; receiver initialized from base then indexed 36. All eight complete target listings equal the unchanged preview.
+// NOT kept: no eligible native repair; opening executable source restored. EAX multiply/ESI LEA before policy loading and native type/removal block placement remain; original flags, loop, pool refresh, fields, calls and body restored.
+// Round 398: Original single type observation with complete removal-result byte/signed-byte/short/word/
+// int/unsigned-int/long/dword storage: 36/36/95/95/94/94/94/94. NOT kept: no gain; original
+// Boolean removal result, policy captures, comparison widths and complete body restored.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

@@ -1,5 +1,6 @@
 #include "unknown_11c920.h"
 #include "normalize3d.h"
+#include "vector2f_products.h"
 #include "globals.h"
 #include "slot_handler.h"
 #include "unknown_26c380.h"
@@ -93,7 +94,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
-// score 395 (was 395): Frame 0x64 and 0x1c cleanup agree; entry schedule and normalized XY/magnitude homes differ.
+// MiniMax S (11-06): The first arg_7 plus arg_8 sum lands in xmm3 where retail keeps it in xmm0, so the
+// two byte streams part company at the third instruction and the rest of the function is compared out of
+// step; retail also keeps the normalized XY in xmm1 and xmm3 where ours uses xmm2 and xmm4. Splitting the
+// sum into two statements or two scalar locals did not move the register choice.
+// score 395 (was 395): Frame 0x64 and 0x1c cleanup agree; entry schedule and normalized XY/magnitude homes differ; the call passes the ratio where retail passes the distance (see Round 57).
 // Earlier: Frame 0x64 agrees; entry loads, normalization homes and 0x18 versus 0x1c cleanup differ.
 // The pointer-to-parameter trick for arg_3 is gone and the score is unchanged; the parameter's own use
 // still differs from retail's stack home.
@@ -260,6 +265,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // first arm 431 (1695 bytes); each emission's y written before x 421 (1743 bytes); diagnostic: the arg_0 address
 // read removed 401 (1728 bytes, cleanup 0x18, caller 0x29a190 697). Retail spills the first arm's cosine to
 // [esp+0x28] and takes the y product in SSE before the sine; ours keeps both on x87. Original body restored.
+// Lane 14 r60 (fast with caller 0x29a190, base 395/389; "no-home" = aligned count ignoring stack offsets, base 277): the first
+// arm's y product named before the sine in both emissions 412 (1743 bytes, no-home 265); double difference locals in the
+// root, y-first or x-first, 437 (1712 bytes, no-home 284, frame moved); both counters short 471 (1680 bytes, no-home 262;
+// caller 699); short candidate count alone 464 (no-home 273; caller 699); short outer counter alone 402 (no-home 305);
+// double differences with both short 488 (no-home 312; caller 698); all three 464 (no-home 292; caller 698); short counters
+// with the named y product 449 (1695 bytes, no-home 243, the closest structure; caller 699).
 // AC507: Existing point setter at sum/endpoint/fixed-rotation producers, subsets
 // 1/2/4/3/5/6/7 then general rotation too: 457/458/489/485/524/541/561/593.
 // NOT kept: all regress and grow; original producers, setter declaration and full body restored.
@@ -282,6 +293,38 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // pointer/reference output formals and void/ignored-pointer result contracts:
 // 420/420/420/420/434/434/434/434. Original emitter and complete body restored;
 // entry sum and normalized XY/magnitude homes remain.
+// M374: Existing emitter returns next ordinal, byte/short/word/long result with
+// byte/short candidate count: 428/428/428/428/419/464/464/464. NOT kept: all regress;
+// short/word/long results on short count regress caller 389 to 699. Original emitter,
+// counters and whole body restored; entry and native XY/magnitude homes remain.
+// Round 134 (m3 lane 8, fast with caller 0x29a190): the first arm's rows through a pointer-output rotate inline, field_4 stored first 418 (1743
+// bytes), stored after 421; with the loop's rows through it too, named or inline 416/418; double sine/cosine parameters 439 (caller 405); rows
+// written operand-first 418; y row first 416. Retail stores the centre's x before computing y (x and y share XMM0), ours keeps x in XMM3 with 1.0
+// and the temporaries rotated one register against retail's.
+// DH361: Existing normalizer epsilon decision as rejection/normalization bool/byte/short/long,
+// eight at 395; the other normalizer user stays 719 and scoring stays exact. NOT kept: no match
+// or native XY/magnitude-home recovery; original comparison, shared helper and full body restored.
+// DH363: Actual candidate-record flags bool/bool, byte/byte, bool/byte, signed-char/bool, byte/signed-char,
+// bool/signed-char, signed-char/byte, signed-char/signed-char: 395/401/401/395/401/401/401/401. NOT kept: no match;
+// original byte/Boolean declarations, record layout, publications and complete body restored.
+// DH365: Original-site complete endpoint-distance admission, bool/byte/char/signed-char/
+// short/word/int/long: 395/395/395/395/395/395/395/395. NOT kept: nonexact one-use predicate forms; original
+// body restored. Frame 0x64 and cleanup agree; entry and normalized XY/magnitude homes remain.
+// DH368: Forward/backward standard copies at original input/positive-evaluation boundaries,
+// eight non-original pairs: 410/494/517/410/494/517/517/517. NOT kept: all regress;
+// five additional candidate-publication copy graphs excluded for added shared-global addresses.
+// Original input/evaluation copies, global assignment, emitter and complete body restored.
+// Round 57 (m3 lane 15, fast; brackets are aligned counts with stack homes and registers masked, base [180]; 0x29a190 now matches and must stay
+// matched): SOURCE ERROR left in place because the score rises: retail passes the distance local_9 to 0x298c30 (`mov edx, [esp+0x20]; push edx` reads
+// the slot of `fst [esp+0x1c]`), ours passes the clamped ratio local_13. Corrected alone 414 [174] (1727 bytes). On it: short outer counter, `(double)`
+// differences in the root, y product named before the sine 374 [129] (1711), alone 408/424/414 [169/160/159]; short candidate count 509 [134] (1652), but
+// the facing pointer then comes in EBX and 0x29a190 falls to 684; `&arg_3` read to stop that 436 [135] (0x29a190 127). Named `double dx, dy` locals give retail's
+// loop head (`fsub [esi + 4]`, `fld st(0); fmul st(1); fld st(2); fmul st(3)`) 375 [129], but their alignment grows 0x29a190's frame to 0x588 (45). Emission
+// helper in retail's store order (angle, side, facing test, direction, call, ordinal) on the 374 form 367 [98] (1711), the best here, with 0x29a190 still
+// matched; without the y product and casts 416 and 0x29a190 362. Near arm on 367: (real) casts on both rows 366; dir fields in locals first 430, after the cosine
+// 394, no product named 416; y row stored first 458; rotation in a point2f 367; sine as if/else 443. Retail stores the near arm's cosine and sine as floats and
+// takes the y row in SSE; ours keeps both on x87. Inline distance through point pointers 395 (same code); dx/dy locals in it 451, delta point 450; 2-D normalizer
+// with `fabs < eps`, else-zero and return 395 (same code), `local_1 * x` 395.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -394,9 +437,10 @@ short function_2108a0(long arg_0);
 
 __forceinline s_pathfinding_data *function_29962f()
 {
+	s_pathfinding_data *local_0 = NULL;
 	if (*(long *)((byte *)g_4e0348 + 0xc4) > 0)
-		return *(s_pathfinding_data **)((byte *)g_4e0348 + 0xc8);
-	return NULL;
+		local_0 = *(s_pathfinding_data **)((byte *)g_4e0348 + 0xc8);
+	return local_0;
 }
 
 __forceinline real function_299a36(point3f const *arg_0, point3f const *arg_1, vector3f *arg_2)
@@ -438,7 +482,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 	arg_3->y = arg_1 * arg_2->y + arg_0->y;
 }
 
-// score 719 (was 719): frame 0x124 versus retail 0x114; radius and trace/pivot homes differ.
+// MiniMax S (11-06): Our frame is 0x120 against retail's 0x114, so every esp-relative home is four bytes
+// off; retail loads the scale factor into xmm1 after the first branch where ours loads xmm5 before it,
+// and the four scale locals and the two trace results still sit at other offsets.
+// score 633 (was 719): frame 0x120 versus retail 0x114; radius and trace/pivot homes differ, 15 bytes long.
 // Frame 0x11c versus 0x114, early radius retention and trace/pivot/result homes remain.
 // Earlier: frame 0x11c versus 0x114; radius caching and trace/point homes differ.
 // Shared endpoint setters 767; center CRT copy 767; step CRT copies 767;
@@ -638,6 +685,45 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DH332: Standard real sine/cosine overloads across the sweep and obstacle phases,
 // seven subsets then native absolute/count overloads: 719/719/719/719/719/719/719/719.
 // All canonicalize; original APIs and body restored. Frame/radius/trace homes remain.
+// M374: Existing late annular endpoint producer in rotated/direction/forward-offset/
+// reverse-offset workspaces, original/shared planar differences: 719/749/719/749/719/749/719/749.
+// NOT kept: no native-frame or score gain; original workspaces, all math and body restored.
+// DH357: Actual advancing obstacle-entry cursor, short/long/int/word ordinal,
+// consumed/explicit head steps: 785/779/779/781/785/779/779/781.
+// NOT kept: all regress and lengthen; original traversal and whole body restored.
+// Round 134 (m3 lane 8, fast; al = aligned raw/masked/masked+stack, base 666/572/276). The NONE exit moved to the end (retail's far `mov al, 1`
+// block) 778 (al -/560/264); the three sweep scales through a pointer-output scale inline, each followed by its products 797 (3355, al -/534/251),
+// with the exit moved 800 (3354, al -/520/237); products with each scale written out 813 (3419), with the exit moved 791 (3418). `inline` on the
+// definitions of 0x2108a0 and 0x210770 (retail reloads arg_6 after those calls, ours keeps XMM5 across them) 759 (3387, either or both, al 661/571/
+// 272), with the exit moved 764, with the scale inline 756 at retail's 3372 bytes (al 674/532/246), with both 756 (3372, al 663/521/235). On that:
+// the cosine scoped to each use 759 (frame 0x120); a block around the sweep 759 (same frame: scopes share no homes); a point local for the obstacle
+// distance 756; inner return false 756; the sweep endpoints as scalars 778/769 (frame 0x11c, al masked+stack 214/201), without the scoped cosine
+// 761, without inline 787, without the moved exit 766. Retail's points and traces take the same space; ours has four more scalar homes, and retail
+// reuses the homes of the sweep endpoints for later temporaries.
+// DH359: Conditional owner query excluded bool/byte/short/long 719/719/752/750;
+// admitted counterparts 738/738/737/735. NOT kept: no gain or byte match;
+// original query guards, outcome, geometry, helpers and complete body restored.
+// DH361: Sweep/obstacle ordinals and selected-obstacle/maximum-ratio declarations at function
+// scope, seven subsets, then the sweep bound too: eight at 719. Original declaration scopes,
+// initializers, geometry and body restored; frame 0x124/0x114 and radius/trace/pivot homes remain.
+// DH363: Actual count/table record fields, direct/const/mutable receivers with original guard,
+// const/mutable conditional, const/mutable/direct default-result getters: 719/719/719/719/719/775/775/775.
+// NOT kept: no native-frame or score gain; original getter, helpers and complete body restored.
+// DH366: Original annular admission, inside/outside bool/byte/short/long outcomes:
+// 719/719/719/719/720/720/720/720. NOT kept: no byte match or qualifying native repair; original complete
+// body restored.
+// DH368: Standard center/forward/reverse sweep-history transfers, seven subsets then
+// the initial center copy too: 768/768/771/767/767/790/789/744. NOT kept: all regress;
+// original point transfers, helpers and complete body restored; frame/radius/trace homes remain.
+// Round 57 (m3 lane 15, fast; brackets are aligned counts with stack homes and registers masked, base 719 [276]): kept the result-first getter, the sign chosen
+// with the product in each arm (retail's two `cvtsi2ss` arms) and one return (`break` plus `if (local_0 && arg_7)`; retail's store-and-reload result byte
+// is a tail copy of that return): 633 [240] (3387 bytes, frame 0x120). Steps: getter 775 [255]; NONE exit at the end 778 [264], both 782 [244]; radius through a
+// reference to the parameter 719 (same code); sign arms 770 [266], with getter and end exit 788 [232]; `goto` to one return with getter 786 [242], with sign arms 634
+// [235] (the NONE return stays, so not kept), NONE through the goto 781 [239]; `break` form alone 723 [266], with getter 786 [242], getter and sign arms with `return` 690
+// [245], kept form with the NONE exit at the
+// end 793 [227]. On the kept form: normalize3d in the direction helper 636 [237]; dot_product2d at the facing and angle dots 633, 2-D normalizer's length form
+// 633 (same code); `inline` on the declarations of 0x2108a0 and 0x210770 in this file 633 (same code). The radius cached in XMM5 across those two calls is the first
+// difference; the lead is `inline` on their definitions (earlier 759), and src/unknown_20fe20.cpp was on this round's avoid list.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
@@ -714,7 +800,7 @@ bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f local_24, local_25, local_26;
 	for (short local_27 = 1; local_27 <= local_23; local_27++)
 	{
-		real local_28 = (arg_1->field_4 < 0.0f ? -local_27 : local_27) * 0.7853981852531433f;
+		real local_28 = arg_1->field_4 < 0.0f ? -local_27 * 0.7853981852531433f : local_27 * 0.7853981852531433f;
 		if (local_27 == local_23)
 			local_28 = arg_1->field_4;
 		if (!arg_1->field_0)
@@ -753,13 +839,13 @@ bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 			arg_1->field_4 = arg_1->field_0 ? local_28 : -local_28;
 			arg_1->field_8 *= (real)(local_27 - 1) / local_23;
 			local_0 = false;
-			return local_0;
+			break;
 		}
 		local_20 = local_25;
 		local_21 = local_24;
 		local_22 = local_26;
 	}
-	if (arg_7)
+	if (local_0 && arg_7)
 	{
 		short local_35 = NONE;
 		real local_36 = 0.0f;
@@ -850,8 +936,8 @@ real function_1f9e70(long arg_0, long arg_1, point2f const *arg_2, vector2f cons
 
 __forceinline void function_29a20e(vector3f *arg_0)
 {
-	real local_0 = (real)sqrt(arg_0->i * arg_0->i + arg_0->j * arg_0->j);
 	arg_0->k = 0.0f;
+	real local_0 = (real)sqrt(arg_0->i * arg_0->i + arg_0->j * arg_0->j);
 	if (!(0.0001f > fabs(local_0)))
 	{
 		real local_1 = 1.0f / local_0;
@@ -861,39 +947,6 @@ __forceinline void function_29a20e(vector3f *arg_0)
 	}
 }
 
-// score 445 (was 445): Frame 0x580 agrees; scalar/vector homes, planar root scheduling and tail placement differ.
-// Earlier score 445 (was 493): the callee's pointer-to-parameter trick is gone, so the call site and the entry
-// the callee's pointer-to-parameter trick is gone, so the call site and the entry
-// schedule agree with retail; the frame homes still differ (our s_298c30 pointer at esp+0x14 and our
-// float at esp+0x10 against retail's esp+0x10 and esp+0x18), and retail keeps the flattened forward
-// vector's length on the x87 stack with fst/fabs/fcompi where ours stores and reloads it.
-// frame 0x580 agrees; retail duplicates the epilogue into both arms of the final
-// clamp and places the failure exit last (ours 82 bytes shorter), keeps the flattened forward vector's
-// length on the x87 stack and loads the reference vector's fields before multiplying. Tried: the
-// flattened length summed j first 551; the flag cleared before the forward copy 550; the flatten helper
-// returning the length 551; the existing normalize3d after clearing k 676 (retail's fst/fabs, but the
-// angle dot is one instruction short and every later line shifts); angle dot products local-first 676;
-// the failure test after the loop 550; the final clamp as if/else 547; one exit for the final heading
-// store 550; the velocity dot with the k term first 550. Round 67: also retail lays the 12-byte
-// locals out in declaration order (position 0x3c, the 0x1f9760 output 0x48, the object pointer 0x54,
-// the perpendicular 0x58; ours puts the perpendicular first at 0x3c), and keeps each angle-update arm's
-// store and the clamp's reloads (ours hoists the angle load above the branch and sinks both stores into
-// the clamp). Descriptive names for the four vectors 550 (no slot moved); the perpendicular assigned
-// field by field 550; the angle arms as explicit `a = a - d` / `a = d + a` 550; the dead success test
-// as break-first 550; the failure statements written at each of the three gotos 583 (2622 bytes, not
-// merged).
-// Round 448: Planar normalizer complete XY capture / early epsilon rejection / scalar home roles,
-// all seven nonempty combinations, then native whole-vector capture 449/445/449/445/449/445/449/670.
-// Original body and helpers restored; Frame 0x580 agrees; scalar/vector homes and planar root scheduling remain.
-// Round 31 (lane 11): the baseline's two early errors cancel (the fstp/fld normalizer is one
-// instruction long, the inlined 0x11cc90 dot one short), so fixing one shifts every later line.
-// Flatten then the existing normalize3d, as sibling 0x29cbb0 does, 577 (normalizer exact, dot
-// still commuted and folded); the inline normalize copy instead 615; plus a pointer local to the
-// global axis 575 (first dot product takes retail's order, the second still folds); that pointer
-// declared first 617; settings lookup after the angle 640 (diagnostic); settings/angle names
-// swapped 445; angle declared first 445 or beside the flags 445; the two flags declared the other
-// way 446; final clamp as if/else 504 (no tail duplication, 2467 bytes); the flatten through a
-// two-statement inline helper 577; the axis global declared as the 2-D vector it is defined as 577.
 // @retail 0x29a190
 void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, real *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -904,220 +957,218 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 	bool local_3 = false;
 	bool local_4 = false;
 	if (arg_8 == 0)
-		*(real *)(local_0 + 0x674) = *(real *)(local_0 + 0x670);
-	vector3f local_5 = *(vector3f *)(local_0 + 0x290);
-	*(bool *)(local_0 + 0x6d1) = false;
+	{
+		real const *local_rate = (real const *)(local_0 + 0x670);
+		*(real *)(local_0 + 0x674) = *local_rate;
+	}
+	vector3f const *facing_axis = (vector3f const *)(local_0 + 0x290);
+	vector3f local_5 = *facing_axis;
+	bool *local_turning = (bool *)(local_0 + 0x6d1);
+	*local_turning = false;
 	function_29a20e(&local_5);
-	real local_6 = function_11cc90((vector2f const *)g_468778, (vector2f const *)&local_5);
+	point2f const *axis = g_468778;
+	real local_6 = function_11cc90((vector2f const *)axis, (vector2f const *)&local_5);
 	if (!*(bool *)(local_0 + 0x5d0) || *(bool *)(local_0 + 0x5d2) || !local_2)
 	{
 		*(real *)(local_0 + 0x670) = 0.0f;
 		*(bool *)(local_0 + 0x678) = false;
-		*(real *)(local_0 + 0x668) = local_6;
-		return;
 	}
-	point3f local_7;
-	function_b9dd0(arg_1, &local_7);
-	real local_8 = local_2->field_20;
-	real local_9 = (real)sqrt(arg_2->i * arg_2->i + arg_2->j * arg_2->j + arg_2->k * arg_2->k);
-	function_26c180(arg_0);
-	vector3f local_10;
-	if (function_1f9760(arg_0, arg_1, &local_7, local_9, &local_4, &local_3, &local_10))
-	{
-		*arg_7 = true;
-		*(real *)(local_0 + 0x668) = local_6;
-		return;
-	}
-	if (local_3)
-	{
-		local_10.k = 0.0f;
-		if (function_30bf0(&local_10) == 0.0f)
-			local_3 = false;
-	}
-	vector3f local_11 = {-local_5.j, local_5.i, 0.0f};
-	s_obstacle_list local_12;
-	s_obstacle_list *local_13 = &local_12;
-	s_path_settings local_14;
-	if (*(bool *)(local_0 + 0x478))
-		local_13 = NULL;
 	else
 	{
-		function_1f9240(arg_0, &local_14);
-		local_12.group_count = 0;
-		local_12.count = 0;
-		local_12.flag0_count = 0;
-		local_12.flag3_count = 0;
-		*(short *)local_12.unknown08 = 0;
-		function_2c0d60(0, arg_0, true, &local_14, &local_12, 0, &local_7, local_8 * 3.0f, arg_2, arg_1, NONE);
-		obstacle_list_group(&local_12, *(real *)((byte const *)local_2 + 0x14));
-	}
-	s_298c46 *local_15 = (s_298c46 *)(local_0 + 0x654);
-	bool local_16 = true;
-	if (!*(bool *)(local_0 + 0x40) && *(bool *)(local_0 + 0x678))
-	{
-		real local_17 = local_15->field_c.y * local_5.j + local_15->field_c.x * local_5.i;
-		if (!(local_17 > 0.0f))
-			local_16 = false;
-		else if (!(local_17 > 0.93f))
+		point3f local_7;
+		function_b9dd0(arg_1, &local_7);
+		real local_8 = local_2->field_20;
+		real local_9 = (real)sqrt(arg_2->i * arg_2->i + arg_2->j * arg_2->j + arg_2->k * arg_2->k);
+		function_26c180(arg_0);
+		vector3f local_10;
+		if (function_1f9760(arg_0, arg_1, &local_7, local_9, &local_4, &local_3, &local_10))
 		{
-			bool local_18 = local_15->field_c.y * local_11.j + local_15->field_c.x * local_11.i > 0.0f;
-			if (local_15->field_0)
-				local_16 = (local_15->field_4 > 0.0f && !local_18) || (local_15->field_4 < 0.0f && local_18);
-			else
-				local_16 = (local_15->field_4 > 0.0f && local_18) || (local_15->field_4 < 0.0f && !local_18);
+			*arg_7 = true;
 		}
-	}
-	if (local_16)
-	{
-		function_298d90(arg_0, arg_1, local_2, (point2f *)&local_5, (point2f *)&local_11,
-			local_3 ? (point2f *)&local_10 : NULL, local_8, (point2f *)&local_7, (point2f const *)arg_2);
-		short local_19 = *(short *)(local_0 + 0x66c);
-		if (local_19 >= 0 && local_19 < g_504938)
-			g_5047f8[local_19].field_8 *= 1.25f;
-		short local_20 = 0;
-		bool local_21 = false;
-		for (;;)
+		else
 		{
-			short local_22 = NONE;
-			real local_23 = 0.0f;
-			for (short local_24 = 0; local_24 < g_504938; local_24++)
+			if (local_3)
 			{
-				if (g_5047f8[local_24].field_8 > local_23)
+				local_10.k = 0.0f;
+				if (function_30bf0(&local_10) == 0.0f)
+					local_3 = false;
+			}
+			vector3f local_11 = {-local_5.j, local_5.i, 0.0f};
+			s_obstacle_list local_12;
+			s_obstacle_list *local_13 = &local_12;
+			s_path_settings local_14;
+			if (*(bool *)(local_0 + 0x478))
+				local_13 = NULL;
+			else
+			{
+				function_1f9240(arg_0, &local_14);
+				local_12.group_count = 0;
+				local_12.count = 0;
+				local_12.flag0_count = 0;
+				local_12.flag3_count = 0;
+				*(short *)local_12.unknown08 = 0;
+				function_2c0d60(0, arg_0, true, &local_14, &local_12, 0, &local_7, local_8 * 3.0f, arg_2, arg_1, NONE);
+				obstacle_list_group(&local_12, *(real *)((byte const *)local_2 + 0x14));
+			}
+			s_298c46 *local_15 = (s_298c46 *)(local_0 + 0x654);
+			bool local_16 = true;
+			bool local_21 = true;
+			if (!*(bool *)(local_0 + 0x40) && *(bool *)(local_0 + 0x678))
+			{
+				real local_17 = dot_product2d((vector2f const *)&local_15->field_c, (vector2f const *)&local_5);
+				if (!(local_17 > 0.0f))
+					local_16 = false;
+				else if (!(local_17 > 0.93f))
 				{
-					local_23 = g_5047f8[local_24].field_8;
-					local_22 = local_24;
+					bool local_18 = dot_product2d((vector2f const *)&local_15->field_c, (vector2f const *)&local_11) > 0.0f;
+					if (local_15->field_0)
+						local_16 = (local_15->field_4 > 0.0f && !local_18) || (local_15->field_4 < 0.0f && local_18);
+					else
+						local_16 = (local_15->field_4 > 0.0f && local_18) || (local_15->field_4 < 0.0f && !local_18);
 				}
 			}
-			if (local_22 == NONE)
-				goto local_25;
-			if (local_20 & (1 << local_22))
+			if (local_16)
 			{
-				if (!(g_5047f8[local_22].field_8 > 0.0f))
-					goto local_25;
-				local_21 = true;
+				function_298d90(arg_0, arg_1, local_2, (point2f *)&local_5, (point2f *)&local_11,
+					local_3 ? (point2f *)&local_10 : NULL, local_8, (point2f *)&local_7, (point2f const *)arg_2);
+				short local_19 = *(short *)(local_0 + 0x66c);
+				if (local_19 >= 0 && local_19 < g_504938)
+					g_5047f8[local_19].field_8 *= 1.25f;
+				short local_20 = 0;
+				local_21 = false;
+				for (;;)
+				{
+					short local_22 = NONE;
+					real local_23 = 0.0f;
+					for (short local_24 = 0; local_24 < g_504938; local_24++)
+					{
+						if (g_5047f8[local_24].field_8 > local_23)
+						{
+							local_23 = g_5047f8[local_24].field_8;
+							local_22 = local_24;
+						}
+					}
+					if (local_22 == NONE)
+						break;
+					if (local_20 & (1 << local_22))
+					{
+						if (!(g_5047f8[local_22].field_8 > 0.0f))
+							break;
+						local_21 = true;
+					}
+					if (function_299460(arg_0, &g_5047f8[local_22], local_2, &local_7,
+						&local_5, &local_11, local_8, (s_29946c const *)local_13))
+						local_21 = true;
+					else
+					{
+						local_20 |= 1 << local_22;
+						if (!local_21)
+							continue;
+					}
+					local_15->field_0 = g_5047f8[local_22].field_0;
+					local_15->field_1 = g_5047f8[local_22].field_1;
+					local_15->field_4 = g_5047f8[local_22].field_4;
+					local_15->field_8 = g_5047f8[local_22].field_8;
+					local_15->field_c = g_5047f8[local_22].field_c;
+					local_15->field_18 = g_5047f8[local_22].field_18;
+					*(bool *)(local_0 + 0x678) = true;
+					break;
+				}
 			}
-			if (function_299460(arg_0, &g_5047f8[local_22], local_2, &local_7,
-				&local_5, &local_11, local_8, (s_29946c const *)local_13))
-				local_21 = true;
 			else
 			{
-				local_20 |= 1 << local_22;
-				if (!local_21)
-					continue;
+				if (local_15->field_0)
+					local_15->field_4 -= local_6 - *(real *)(local_0 + 0x668);
+				else
+					local_15->field_4 += local_6 - *(real *)(local_0 + 0x668);
+				local_15->field_4 = -3.1415927410125732f > local_15->field_4 ? -3.1415927410125732f :
+					(local_15->field_4 > 3.1415927410125732f ? 3.1415927410125732f : local_15->field_4);
 			}
-			local_15->field_0 = g_5047f8[local_22].field_0;
-			local_15->field_1 = g_5047f8[local_22].field_1;
-			local_15->field_4 = g_5047f8[local_22].field_4;
-			local_15->field_8 = g_5047f8[local_22].field_8;
-			local_15->field_c = g_5047f8[local_22].field_c;
-			local_15->field_18 = g_5047f8[local_22].field_18;
-			*(bool *)(local_0 + 0x678) = true;
-			if (!local_21)
-				goto local_25;
-			break;
-		}
-	}
-	else
-	{
-		real local_26 = local_6 - *(real *)(local_0 + 0x668);
-		if (local_15->field_0)
-			local_15->field_4 -= local_26;
-		else
-			local_15->field_4 += local_26;
-		local_15->field_4 = -3.1415927410125732f > local_15->field_4 ? -3.1415927410125732f :
-			(local_15->field_4 > 3.1415927410125732f ? 3.1415927410125732f : local_15->field_4);
-	}
-	{
-		real local_27 = 0.0f;
-		if (local_3 && local_15->field_4 > 0.0f && !local_15->field_1)
-			local_27 = function_1f99d0(arg_0, arg_1, (short)!local_4,
-				(point2f const *)(local_0 + 0x548 + *(char *)(local_0 + 0x53a) * 0x1c),
-				(point2f const *)&local_7, (point2f const *)&local_10, local_13);
-		real local_28 = *(real *)((byte const *)local_2 + 0x30) * 0.01745329238474369f;
-		real local_29 = *(real *)((byte const *)local_2 + 0x38);
-		real local_30;
-		if (local_15->field_0)
-		{
-			local_30 = (local_27 + local_15->field_4) * local_29;
-			if (local_15->field_4 < 0.0f && local_15->field_1)
-				local_30 = -local_28;
-		}
-		else
-		{
-			local_30 = (local_27 - local_15->field_4) * local_29;
-			if (local_15->field_4 < 0.0f && local_15->field_1)
-				local_30 = local_28;
-		}
-		if (-local_28 > local_30)
-			local_30 = -local_28;
-		else if (local_30 > local_28)
-			local_30 = local_28;
-		real local_31 = (real)sin(local_30);
-		real local_32 = (real)cos(local_30);
-		arg_3->k = 0.0f;
-		arg_3->i = local_5.i * local_32 - local_31 * local_5.j;
-		arg_3->j = local_31 * local_5.i + local_32 * local_5.j;
-		if (function_30bf0(arg_3) == 0.0f)
-			*arg_3 = *(vector3f *)(local_0 + 0x290);
-		real local_33;
-		if (local_15->field_4 >= 0.0f)
-		{
-			point2f local_34 = {arg_2->i, arg_2->j};
-			normalize2d(&local_34);
-			local_33 = function_1f9e70(arg_0, arg_1, (point2f *)&local_7, (vector2f *)&local_34,
-				(vector2f *)arg_3, (vector2f *)&local_5, local_3 ? (vector2f *)&local_10 : NULL, local_9, false);
-		}
-		else
-			local_33 = -1.0f;
-		real local_35 = *(real *)((byte *)local_1 + 0x8c) * local_5.j + *(real *)((byte *)local_1 + 0x90) * local_5.k + *(real *)((byte *)local_1 + 0x88) * local_5.i;
-		real local_36 = *(real *)((byte const *)local_2 + 0x68);
-		real local_37;
-		if (local_36 > 0.0f)
-			local_37 = *(real *)((byte const *)local_2 + 0x6c);
-		else
-		{
-			local_37 = 4.019999980926514f;
-			local_36 = 6.0f;
-		}
-		real local_38 = (local_33 - local_35 / local_36) * local_37 + local_33;
-		real local_39 = *(real *)((byte const *)local_2 + 0x60);
-		if (local_38 > 0.0f && local_39 > 0.0f)
-		{
-			real local_40 = local_38 - *(real *)(local_0 + 0x674);
-			local_38 = *(real *)(local_0 + 0x674) + (local_40 > local_39 ? local_39 : local_40);
-		}
-		*(real *)(local_0 + 0x670) = 0.0f > local_38 ? 0.0f : local_38;
-		*arg_5 = local_38;
-		*arg_5 = *arg_5 > *(real *)((byte const *)local_2 + 0x50) ?
-			*(real *)((byte const *)local_2 + 0x50) :
-			(-*(real *)((byte const *)local_2 + 0x50) > *arg_5 ?
-				-*(real *)((byte const *)local_2 + 0x50) : *arg_5);
-		if (*arg_5 > 1.0f)
-		{
-			*arg_5 = 1.0f;
-			*arg_6 = false;
+			if (local_21)
+			{
+				real local_27 = 0.0f;
+				if (local_3 && local_15->field_4 > 0.0f && !local_15->field_1)
+				{
+					long path_offset = *(char *)(local_0 + 0x53a) * 0x1c;
+					local_27 = function_1f99d0(arg_0, arg_1, (short)!local_4,
+						(point2f const *)(local_0 + 0x548 + path_offset),
+						(point2f const *)&local_7, (point2f const *)&local_10, local_13);
+				}
+				real local_28 = *(real *)((byte const *)local_2 + 0x30) * 0.01745329238474369f;
+				real local_29 = *(real *)((byte const *)local_2 + 0x38);
+				real local_30;
+				if (local_15->field_0)
+				{
+					local_30 = (local_27 + local_15->field_4) * local_29;
+					if (local_15->field_4 < 0.0f && local_15->field_1)
+						local_30 = -local_28;
+				}
+				else
+				{
+					local_30 = (local_27 - local_15->field_4) * local_29;
+					if (local_15->field_4 < 0.0f && local_15->field_1)
+						local_30 = local_28;
+				}
+				if (-local_28 > local_30)
+					local_30 = -local_28;
+				else if (local_30 > local_28)
+					local_30 = local_28;
+				real local_31 = (real)sin(local_30);
+				real local_32 = (real)cos(local_30);
+				arg_3->k = 0.0f;
+				arg_3->i = local_5.i * local_32 - local_31 * local_5.j;
+				arg_3->j = local_31 * local_5.i + local_32 * local_5.j;
+				if (function_30bf0(arg_3) == 0.0f)
+					*arg_3 = *facing_axis;
+				real local_33;
+				if (local_15->field_4 >= 0.0f)
+				{
+					point2f local_34 = *(point2f const *)arg_2;
+					normalize2d(&local_34);
+					local_33 = function_1f9e70(arg_0, arg_1, (point2f *)&local_7, (vector2f *)&local_34,
+						(vector2f *)arg_3, (vector2f *)&local_5, local_3 ? (vector2f *)&local_10 : NULL, local_9, false);
+				}
+				else
+					local_33 = -1.0f;
+				vector3f const *velocity = (vector3f const *)((byte *)local_1 + 0x88);
+				real local_35 = velocity->j * local_5.j;
+				local_35 += velocity->k * local_5.k;
+				local_35 += velocity->i * local_5.i;
+				real local_36 = *(real *)((byte const *)local_2 + 0x68);
+				real local_37;
+				if (local_36 > 0.0f)
+					local_37 = *(real *)((byte const *)local_2 + 0x6c);
+				else
+				{
+					local_37 = 4.019999980926514f;
+					local_36 = 6.0f;
+				}
+				real local_38 = (local_33 - local_35 / local_36) * local_37 + local_33;
+				if (local_38 > 0.0f && *(real *)((byte const *)local_2 + 0x60) > 0.0f)
+				{
+					real local_40 = local_38 - *(real *)(local_0 + 0x674);
+					if (local_40 > *(real *)((byte const *)local_2 + 0x60))
+						local_40 = *(real *)((byte const *)local_2 + 0x60);
+					local_38 = *(real *)(local_0 + 0x674) + local_40;
+				}
+				*(real *)(local_0 + 0x670) = 0.0f > local_38 ? 0.0f : local_38;
+				*arg_5 = local_38;
+				*arg_5 = *arg_5 > *(real *)((byte const *)local_2 + 0x50) ?
+					*(real *)((byte const *)local_2 + 0x50) :
+					(-*(real *)((byte const *)local_2 + 0x50) > *arg_5 ?
+						-*(real *)((byte const *)local_2 + 0x50) : *arg_5);
+				*arg_5 = *arg_5 > 1.0f ? 1.0f : (-1.0f > *arg_5 ? -1.0f : *arg_5);
+				*arg_6 = false;
+			}
+			else
+			{
+				*(bool *)(local_0 + 0x5d0) = false;
+				*(short *)(local_0 + 0x5d6) = 0;
+				*local_turning = false;
+				*arg_6 = true;
+			}
 			*arg_4 = 0;
-			*(real *)(local_0 + 0x668) = local_6;
-			return;
 		}
-		if (-1.0f > *arg_5)
-		{
-			*arg_5 = -1.0f;
-			*arg_6 = false;
-			*arg_4 = 0;
-			*(real *)(local_0 + 0x668) = local_6;
-			return;
-		}
-		*arg_6 = false;
-		*arg_4 = 0;
-		*(real *)(local_0 + 0x668) = local_6;
-		return;
 	}
-local_25:
-	*(bool *)(local_0 + 0x5d0) = false;
-	*(short *)(local_0 + 0x5d6) = 0;
-	*(bool *)(local_0 + 0x6d1) = false;
-	*arg_6 = true;
-	*arg_4 = 0;
 	*(real *)(local_0 + 0x668) = local_6;
 }

@@ -1522,6 +1522,58 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH337: Read-only returned-actor for ownership and displacement-output lifetimes:
 // 276/276/276/276/276/276/276/276, frame 0x6b0 and 975 bytes. NOT kept: regressions;
 // original iterator/body restored, iterator/leave-request/publication homes remain.
+// DH341: Actual returned seat-count long/int/dword/unsigned-int/word/byte/char
+// storage 171/171/171/171/187/207/180; immutable short at the producer 32.
+// NOT kept: no iterator/request recovery; wider or narrower domains lengthen. Original body restored.
+// DH344: Complete native scalar displacement mutable/immutable, with mutable/immutable
+// squared components, then original vector with mutable/immutable squares:
+// 32/32/32/32/32/32/32/32. NOT kept: no exact scalarization; iterator/leave-selector/request homes remain.
+// Original complete executable source restored.
+// DH346: Immutable native sorted-candidate/actor/seat pointer bindings, seven subsets,
+// then all with immutable unit receiver: 32/32/32/32/32/32/32/32. Original body restored;
+// iterator scaling, leave-selector transport and request/publication homes remain.
+// DH352: Complete parent/seat departure predicate in bool/byte/char/short/word/int/long/dword
+// storage: eight at 32. NOT kept: no exact predicate-owner form. Original guard,
+// leave/load/walk requests and body restored; iterator and publication homes remain.
+// N386: Actual best-score storage before sort/iterator/seat discovery/entry, original-site zeros;
+// zero before candidate/actor, row-entry declaration and double score: 32/32/32/32/32/32/32/285.
+// NOT kept: no equality or gain; original score storage, strict selection and full body restored.
+// DH360: Busy-query presence/absence truth at its original publication, bool/byte/short/long,
+// eight at 32; constrained 600s search, 53 proposals, best 32. NOT kept: no exact result;
+// original direct busy store, iterator, geometry, requests, slot publication and full body restored.
+// DH364: Actual candidate actor-handle/truth metadata int with bool/byte/signed-char,
+// dword with bool/byte/signed-char, unsigned-int with bool/byte: eight at 32.
+// NOT kept: no native handle-before-scaling or request-home recovery; original
+// 12-byte record, exact comparator and complete body restored.
+// DH368: Standard scalar transfers at iterator-handle/load-request/enter-slot fields,
+// seven subsets then backward transfers: 227/105/96/243/241/124/263/305. NOT kept: all regress
+// and lengthen; original stores, existing helper, memset and complete body restored.
+// DH370: Actual inner seat-validity, suitability-call and strict-score improvement
+// producers, subsets 1/2/4/3/5/6/7 then all complementary: eight at 32.
+// NOT kept: no exact selection-result form; original full body and helper restored.
+// Iterator scaling, leave-selector and request/publication schedules remain.
+// T58: Candidate-count zero after unit/position/seat/positive admission, local then entry declarations:
+// 36/45/46/53/36/45/46/53. NOT kept: no eligible match or gain; complete original source restored.
+// Iterator/candidate scheduling, leave-selector and request/slot publication homes remain.
+// T60: Actual actor pointer/reference and request pointer/reference at the existing
+// producer, forced/ordinary expansion on the retained slot graph: eight at 81/846.
+// NOT kept: regressions; original unit-value producer, slot publication and entire
+// body restored. Iterator/leave-selector/request homes remain.
+// Y606: Two-consumer unit handle ends at the first leave call, preserving the later
+// load-request field reload; long/dword/int/const-long before/after selected-seat
+// receiver: eight at 32. NOT kept: no exact mixed observation graph. Body restored.
+// F396: Winning unit/object/seat field storage borrowed at all marked-body uses, seven subsets then immutable bindings: 32/32/32/32/32/32/32/32.
+// NOT kept: no byte equality; iterator scaling, leave-selector and request/slot publication homes remain. Original complete body and helpers restored.
+// DH379: Actual iterator/request/slot declarations before entry admission, seven
+// subsets then both native arrays too: eight at 32. NOT kept: no exact storage
+// boundary or iterator/request recovery; original complete body restored.
+// DH383: Existing load-request scalar seat inputs, object/seat/both/reversed, immutable complete pairs
+// and after-type pairs: eight at 32. NOT kept: no exact one-use acquisition form; all 66 calibrated
+// matches survive. Original helper, inputs, request publication and complete body restored; iterator and
+// leave/request schedules remain.
+// DH385: Entry-owned actual candidate/seat/winner ordinal declarations, seven subsets
+// and all with the best-score declaration: 32/32/32/32/32/32/32/32. NOT kept: no exact
+// storage shape; original initialization sites, loop scopes, helper and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2796,6 +2848,45 @@ struct s_scenario_scripting_view
 // DH338: Full-word long/dword winners with short traversal after actor/data,
 // admitted-set/for ownership: 92/92/92/93 each. No equality; original winner,
 // traversal and body restored, actor/counter/selector and data homes remain.
+// DH341: Per-branch metric outputs with direct/resolved displacement and function-owned
+// distance lifetimes, seven subsets then all with the counter after actor lookup:
+// 100/100/100/80/100/100/100/100. NOT kept: branch-local vectors lengthen to 389 bytes.
+// Original vector/metric lifetimes and complete search restored; register/data homes remain.
+// DH344: Existing complete displacement setters at direct/resolved/both branches, then
+// mutable/immutable actor scalars, their loop counters and complete self-dot:
+// 80/80/80/93/93/80/80/80. NOT kept: no exact geometry/observation form; actor/counter/set and guarded-data homes remain.
+// Original complete executable source restored.
+// DH346: Immutable native scenario/data/set pointer bindings, seven subsets, then all
+// with immutable actor receiver: 80/80/80/80/80/80/80/80. Original complete search restored;
+// actor/counter/set homes and early scripting-data observation remain.
+// B432: Existing difference/squared-length/both native for loops 80/82/82;
+// while loops 80/82/82; difference/squared-length do loops 136/112. Original shared
+// helpers and complete search restored; actor/counter/set and guarded-data homes remain.
+// P341: Actual point-payload/complete candidate-record lvalue references, mutable/read-only and
+// original/traversal-owned short counter: 80/87/80/87/91/87/91/87. NOT kept: native
+// actor/counter/selector and delayed data homes remain; original complete search restored. Exact wrapper
+// and both callees survive.
+// DH370: Actual dynamic loop-bound result declared in the condition, bool/byte/
+// signed-char/short/word/int/long/dword: eight at 80, exact 367-byte extent.
+// NOT kept: no exact loop-result form; original dynamic reads, short wrapping,
+// separate point branches and full body restored; actor/set/counter homes remain.
+// DH374: Final short-NONE commit presence/absence in bool/byte/short/long: 80/80/80/80/80/80/80/80 (fast
+// control 80; full 80).
+// NOT kept: no byte match or eligible gain. Original direct final test, signed-short traversal/wrap, strict
+// selection, geometry branches and complete search restored; actor/counter/set and guarded-data homes remain.
+// F401: Actual actor-position field reference at post-actor/admitted-set/iteration/branch phases,
+// original then loop-owned short traversal: 95/99/80/80/102/103/87/87. NOT kept: no exact or eligible gain;
+// original search restored. Actor/counter/selector and guarded scripting-data homes remain.
+// F403: Independent signed lower-bound or short-circuited upper-bound admissions,
+// bool/byte/short/long at the original observations: 80/80/80/80/80/80/80/80.
+// NOT kept: no exact individual-bound result; original direct guards and complete
+// search restored. Actor/counter/selector and guarded scripting-data homes remain.
+// DH380: Actual decoded selector/candidate-pointer/metric bindings immutable, seven subsets,
+// then complete bindings with the actual packed input: 80/80/80/80/80/80/80/80. NOT kept:
+// actor/counter/set and guarded-data homes remain; original bindings and complete search restored.
+// N390: Whole packed-input value at entry/actor/scenario/decode, long 80/80/80/80;
+// dword 81/81/81/81. NOT kept: no exact single-use input residency;
+// original decode, signed search and body restored; actor/counter/selector and early data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

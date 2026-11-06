@@ -10,6 +10,7 @@
 #include "unknown_13927e.h"
 #include "unknown_1523c0.h"
 #include "game_engine_events.h"
+#include "engine_object_definition.h"
 
 // @flags /O2 /arch:SSE /Gr
 #include "view_context_storage.h"
@@ -114,6 +115,7 @@ static inline s_player_view *ctf_player_get(long player_index)
 }
 
 void function_b58c0(long index, dword mask);
+long function_146650(void);
 
 /* the engine's globals changed: tell the clients */
 static inline void ctf_globals_changed(dword mask)
@@ -626,6 +628,11 @@ PRIVATE __forceinline void function_2417a1(s_marker_entry const *arg_0, long arg
 // declared first in its block 2; dx and dy declared before the copy 2; `continue` on a failed marker test 2 (all
 // three identical). The compile-only harness schedules this block differently (fld before the z load), so it is no
 // guide here. Original body restored.
+// Round 108: both squares named before accumulation 8; only the x square named 2; only the y square named,
+// or assigned in the accumulation expression, 8; a two-use other-z local 23; the inner copy through memcpy 2;
+// the inner getter/structure copy 2; the existing three-component setter 176 (716 bytes); reversed second-sum
+// operands 2; getter/structure copies for both points 2; both z differences named after the distance 108 (694 bytes).
+// The named y square moves the z store to retail's position but changes the x87 operations. All forms restored.
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -904,45 +911,6 @@ void function_244ca0(real height, real radius, s_line_list *list, long a, long b
 }
 
 /* ---- the engine's handlers (lane O) ---- */
-
-/* the multiplayer globals tag (the definitions of the flag and the bomb, and
-   the engine's constants) */
-struct s_ctf_constants
-{
-	byte unknown00[0xc4];
-	long lc4;
-	byte unknownc8[0xd8 - 0xc8];
-	real pickup_radius;
-};
-
-struct s_mp_globals_block
-{
-	byte unknown00[4];
-	long flag_definition_index;
-	byte unknown08[0x3c - 0x08];
-	long bomb_definition_index;
-	byte unknown40[0x534 - 0x40];
-	s_ctf_constants *constants;
-};
-
-struct s_mp_globals_tag
-{
-	byte unknown00[0xc];
-	s_mp_globals_block *block;
-};
-
-struct s_ctf_tag_globals
-{
-	byte unknown00[0x16c];
-	long mp_globals_index;
-};
-
-static inline s_mp_globals_block *mp_globals_block()
-{
-	long index = ((s_ctf_tag_globals *)g_4e034c)->mp_globals_index;
-
-	return ((s_mp_globals_tag *)g_4e3b44[index & 0xffff].bytes)->block;
-}
 
 /* the team table of the multiplayer globals */
 struct s_ctf_team_view
@@ -1508,45 +1476,6 @@ long function_2421d0(long team)
 	return result;
 }
 
-// score 17 (was 17): the enabled peer is loaded before the compare on the engine type and into
-// EDX, retail loads it after the compare and into ECX.
-// Tried: the peer read inside each arm 74 (212 bytes: the two arms colour the peer loads
-// differently, so they never merge above the branch); that with the else-if's type test kept 64
-// (one arm right, the other rotated by a register); a bool for the type test used twice 59; nested
-// arms with the peer local 17; a named block, tag or index local in each arm 17/64 (the block
-// pointer keeps the next scratch register, retail reuses eax); a 600 s permuter run, none below 17.
-// Round 24: the type test nested under one peer test 57 (also with a bool for the type); one
-// ternary 55; nested arms with the peer read after the type 30 (before NONE 35); a plain
-// `else if (enabled)` 35 (193 bytes); NONE in a final else 56; the peer tested first in each && 55;
-// the existing game_engine_get() in each arm 74.
-// Round 139: a peer ternary in each type arm 75 (213 bytes; the arms' scratch registers rotate
-// by one, ecx/edx/eax then edx/eax/ecx); the peer tested first with the type if/else inside 57;
-// the peer local declared before the type 33; the type read at each test, no local 59; the peer
-// as a bool 61.
-// Lane 15 round 42 (fast): the type test first with the peer read inside each nested arm, no type local 74 (212
-// bytes), with a type local 74, with a peer local per arm 74; arms swapped 75; a type local used in two tests
-// (`else if (type != 9)` or two && tests) 64 (211 bytes; retail's entry and first-arm peer, second arm rotated by
-// one); that with the helper as one expression, a tag local, `&...->block[0]`, tag and block locals, a tag
-// instance pointer, a block local per arm, a {count, address} block struct with a reference helper or field 64
-// each; the chain written out in each arm 74/74/64; a helper per field with its own NONE result (`or eax, -1`
-// lands before the compare as retail, and the source stays natural) 64 (211 bytes) with a ternary or if/else;
-// a pragma for size (diagnostic) 109.
-// Lead: retail's arms colour alike only when the block pointer is a register variable (two uses) in each arm,
-// and the only such form found has a test always true where it stands: a block local with `definition_index =
-// type == 9 ? block->bomb : block->flag` in both arms of `if (type == 9) ... else ...` MATCHES byte for byte (first
-// arm only 10). Not kept: identical arms and an always-true test are reverted even with a match. Single-use forms
-// (reference local, by-value or reference helper, member helper, typed casts, dead second reads) stay cycling in a
-// compile-only copy. 0x2c0980 has the same chain and a second `or eax, -1` before its peer test, so look for one
-// shared helper.
-// Round 89: one peer guard with a shared two-use block, if/else or ternary 92 (154 bytes); one block
-// variable assigned in the flat arms 17; shared peer and block variables in nested arms 74 (212 bytes);
-// force-inline tag helper 17; result initialized at its declaration 17; existing peer accessor 17;
-// const peer receiver 17. Original body restored.
-// Round 31 (lane 18, fast): an inline helper(bool bomb) with its own NONE result, the peer test and a two-use
-// block local (ternary, if/else, or two `mp_globals_block()` calls), the caller branching on the type with
-// true/false, 64/64/64 (211 bytes); that helper called once with `engine_type == 9` 153 (93 bytes); a
-// helper(bool) holding only the block local and the ternary (or if/else) in the existing arms 17/17 (the
-// constant folds before allocation). Original body restored.
 // @retail 0x242210
 long function_242210(point3f const *point)
 {
@@ -1554,13 +1483,10 @@ long function_242210(point3f const *point)
 	long object_index;
 	long definition_index;
 
-	long engine_type = ctf_options()->engine_type;
-	definition_index = NONE;
-	c_engine_peer *enabled = g_55e4d0[g_4e9ae8->engine_index];
-	if (engine_type == 9 && enabled)
-		definition_index = mp_globals_block()->bomb_definition_index;
-	else if (engine_type != 9 && enabled)
-		definition_index = mp_globals_block()->flag_definition_index;
+	if (ctf_options()->engine_type == 9)
+		definition_index = engine_object_definition(_engine_object_bomb);
+	else
+		definition_index = engine_object_definition(_engine_object_flag);
 
 	function_b7930(&data, definition_index, NONE, 0);
 	data.position = *point;
@@ -1621,6 +1547,21 @@ void function_2422d0(long slot)
 // accepted store through the slot local 31; the call on `object->slot` with the table test on the slot
 // local 31; the second loop's element in a named local 7; the rejected count copied to a loop bound 7.
 // Original body restored.
+// Round 61: diagnostics (reverted): one more real read of the object flips both registers to retail's (80, 300 bytes),
+// one read fewer of the index does too (50/54), so retail ranks the object at or above the index with the same final
+// reads. `__assume` on the object 7, on the index 7, on the slot 7, on a team-entry pointer 7, on a table-entry pointer in
+// the accepted arm 7, on one before the test 79 (268 bytes); on a header pointer 64. A dead object read 7; the slot read
+// twice 7; a late-folding ternary or switch around the slot read 7/7/7; separate reads of the team entry for the index and
+// the getter, either order, 7/7, through an entry pointer 7; inline list-append, table-set or claim helpers 7/7/7; the
+// object declared at function scope 7; an inline slot accessor at every read 79, with the slot local 7.
+// A copy of the index for both stores 7, across a pointer `__assume` 7; a second read of the team entry for the stores
+// across one 7; a pointer `__assume` between the getter and the slot read 7.
+// Round 75 (lane 1, fast): a compiled-out `do { } while (false);` at the loop top, after the index, object or slot, at
+// either end of each arm, at the loop end, or before or after the first loop 7 each (11 places); the index through an
+// inline getter 7; the index declared at function top 7; object then index declared bare at the loop top 7; the getter
+// taking the index by const reference 7, or filling an out parameter 7; a NULL object seed before the getter, in the
+// loop or at function top, 7/7; an accepted flag then a reject test 7; a named element pointer with `continue` in the
+// accepted arm 7.
 // @retail 0x2423f0
 bool function_2423f0()
 {
@@ -1956,83 +1897,6 @@ long function_242ef0(s_242ef1 arg_0, long team)
 	return function_242ef4(g_51ec80, arg_0, team);
 }
 
-// score 53 (was 53): ours keeps the engine type in ebp (one more callee-save), retail reuses ebx, so every
-// event slot is four bytes off and the type is computed and stored first. Compiled without LTCG the same
-// source reuses ebx, and with the event sent through an opaque function ours still takes ebp.
-// Earlier: the fields of the event are written in the opposite order and the argument is passed in the
-// other register. Options pointer local: the player index moves to edi (44-58); subtype/type locals in
-// either order 51; game time read into a local before the sum: retail's tail, 53 (67/65); a file-level
-// inline event-type helper for the type argument 53 (identical); the sum as game time plus the rounded
-// value 53; the subtype in a local at entry 53; the time test reversed 55; the team through the file's
-// player getter 53; the cause team stored first 56; the team in a local before the initializer 66 (and
-// the matched caller 0x241620 stops matching).
-// Round 77: one combined test, three nested tests and the event declared at the top 53 each (same
-// code); the out-of-line initializer 103, with the out-of-line cause-player setter 129 (both stay
-// calls), the inline initializer with that setter 75. EBP is used for the engine type alone; ruled out
-// as a cause: the final table store merged with the first table read across the event call.
-// Round 117: the type ternary inverted 53 (aligned 42); the time test with its operands swapped 55; the
-// subtype ternary inverted 53; the final sum as game time plus the rounded product 53; a subtype local
-// for the initializer 53; an options pointer local for the mode and type 60 (aligned 38: retail's
-// event slots, but the options pointer in ecx and the player index in edi, still ebp for the type).
-// Diagnostic only (reverted): the table read through a volatile pointer at the final store or at the
-// time test keeps ebp, so the table web is not what takes ebx.
-// Round 119: retail makes the subtype before the type; with the header inline every spelling makes the
-// type first and keeps the engine type in ebp. One-file harness: the time test's table read is what takes
-// ebx from the engine type (without it ours reuses ebx); ternaries inverted, cause/team order, final sum
-// order, subtype/type locals: identical code (53 each with --fast); team before cause with the subtype
-// ternary inverted 56. Round 121: 0x19ebb0 as an inline candidate (`inline` on its definition) is
-// inlined here by the linker with identical code, 53 (so not blocked by 0x19ebb0's file), and into its
-// five matched callers, which all break; the header inline storing the subtype first 64 (0x19ebb0 then
-// differs); the parameters as (flag, player index) 53 (0x241620 then differs); the team read by the
-// absolute index through either player getter 57.
-// Round 119: BLOCKED-BY 0x19ebb0. Retail makes the subtype before the type (a call's argument order),
-// so the initializer is the out-of-line 0x19ebb0 inlined by the linker, which its /Ob1 file prevents
-// here; with the header inline every spelling makes the type first and keeps the engine type in ebp.
-// One-file harness: the time test's table read is what takes ebx from the engine type (without it ours
-// reuses ebx); ternaries inverted, cause/team order, final sum order, subtype/type locals: identical
-// code (53 each with --fast); team before cause with the subtype ternary inverted 56.
-// Round 36: subtype and type locals before the initializer 53 (identical); an options pointer local
-// for the mode and engine type 60 (and caller 0x241620 stops matching); the type ternary inverted 53;
-// a guard return on the time test 53; the index declared after the mode test with the time test
-// joined 67. Diagnostic: without the final table store EBP is still used.
-// Round 176 (fast): a table pointer local for the time test and the final store 59 (the engine type
-// then takes EBX, but the options pointer moves to EBP and the table stays in EDI across the call); a
-// pointer to the player's time slot 66 (0x241620 lost); a game-time globals local 62; the game time
-// through the existing getter function_146650() at both reads, `function_146650() + rounded` in the
-// final sum, 55: retail's exact tail, only EBP left (its push shifts every later slot), so keep it in
-// any later fix; on it the cause team through ctf_player_get 55, subtype and type locals in either
-// order 55. Diagnostics: a time test with one register operand puts it in EBX and the engine type
-// shares EBX; with the game time and the table both in registers ours moves the engine type to EBP.
-// Round 115 (one-file harness, equal to the full count here; the first and the last confirmed with --fast): the
-// getter at both game-time reads with `function_146650() + rounded` 55 again (LCS-aligned 27 against 33); the
-// subtype as `subtype = 7; if (flag) subtype = 13;` 57 (258 bytes; matched caller 0x241620 then differs);
-// both 64; guard return on the mode and range tests 53 (same code); one table local for the time test and the
-// final store 59, with the getter tail 60. Diagnostics: without the cause-player store the engine type takes
-// EBX (options in ECX, table in EDI); with a constant subtype the table and the engine type share EDI.
-// Round 55 (lane 11, fast): an engine-type local before a subtype local 53, the engine-type local alone 53, with
-// a type local too 53 (same code); the initializer through a local inline with its parameters in any of four
-// orders 53 (same code: parameter order does not move the ternaries); the mode test through 0x138880 or 0x138860
-// 53; inline helpers for the cause-player setter, the time test or the final store 53 each; the whole event block
-// forced inline with (player, flag), (player, type, subtype) or (type, subtype, player) 53 each; the type ternary
-// in a forced-inline getter 53. Diagnostics, reverted: a local initializer storing the subtype first 64 (256 B),
-// the type last 63 (256 B), both 63 (retail's fill order, but the options move to EDX and EBP stays); an options
-// local 60 again (the player index then arrives in EDI, 0x241620 at 23).
-// Round 118 (one-file harness equal to the full count; five forms re-run with fast): options local, nested guards,
-// game-time local, subtype local and getter tail 44 (254 B, retail's frame slots and tail, but the player index arrives
-// in EDI, 0x241620 23: not kept), the same reached with guard returns and the cause team through ctf_player_get 44;
-// getter tail alone 55 (256 B), with a game-time local 55, the time test written table-first 57; a player pointer or
-// engine-type local before the initializer 53 (same code), with the getter tail 55; a team local before it 66, with the
-// getter tail 65; the existing initializer and cause setter as calls 123-129 (190-196 B); local initializer storing the
-// subtype first 64, type last 63, in retail's fill order 63, the last two with the getter tail 67. Lead: flags dependencies keep the
-// IL order, so retail's `neg al` before `cmp ebx, 9` means the subtype chain really precedes the type chain.
-// Round 65 (m3 lane 10, fast): both ternaries inverted together 53; the time test joined into the outer test 53; the
-// index as `(word)player_index` 64; the hold product named 53. Diagnostic, reverted: the asm rounding as a C cast 63
-// (EBP still taken, so the asm block is not what keeps the engine type out of EBX).
-// Round 140 (m3 lane 5, fast; each on the getter tail `function_146650() + rounded` with the getter at the time test
-// too): the cause team stored before the cause player 60 (260 B); the type as `long type = 3; if (engine_type == 9)
-// type = 10;` 57 (first difference moves up to +0xc, and matched 0x241620 then differs by 1), the inverted
-// `type = 10; if (!= 9) type = 3;` 57 (0x241620 1), both type and subtype in that if form 64 (259 B), the type if form
-// with the team first 58.
 // @retail 0x2430a0
 void function_2430a0(long player_index, bool flag)
 {
@@ -2040,15 +1904,17 @@ void function_2430a0(long player_index, bool flag)
 
 	if (ctf_options()->mode != 4 && absolute_index >= 0 && absolute_index < 16)
 	{
-		if (g_510c54->game_time > g_51ec80->player_times[absolute_index])
+		if (function_146650() > g_51ec80->player_times[absolute_index])
 		{
 			s_event event;
+			long subtype = flag ? 13 : 7;
 
-			game_engine_event_initialize_inline(&event, ctf_options()->engine_type == 9 ? 10 : 3, flag ? 13 : 7);
+			__assume(ctf_options() != NULL);
+			game_engine_event_initialize_inline(&event, ctf_options()->engine_type == 9 ? 10 : 3, subtype);
 			event.cause_player_index = player_index;
 			event.cause_team = event_player_get(player_index)->team;
 			function_19eb90(&event);
-			g_51ec80->player_times[absolute_index] = ctf_real_to_long((real)g_510c54->field_2_3 * 4.0f) + g_510c54->game_time;
+			g_51ec80->player_times[absolute_index] = function_146650() + ctf_real_to_long((real)g_510c54->field_2_3 * 4.0f);
 		}
 	}
 }

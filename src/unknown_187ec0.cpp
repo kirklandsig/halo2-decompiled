@@ -673,11 +673,15 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// MiniMax H (11-05): no new form, no lower score; still BLOCKED-BY 0x1883e0's fourth and fifth
+// parameter types, so retail's point and forward register split, its twelve stack arguments and the
+// two scans stand as they are.
 // score 77 (was 77): still BLOCKED-BY 0x1883e0's 4th/5th parameter types (their declarations in
 // src/impacts.cpp and src/projectiles.cpp). Round 71 (lane 9, fast): the compressed forward in a named local
 // 77; the velocity source through a named pointer 77; `(short)entry_element_index` at the 0x1883e0 call 95
 // (346 bytes); g_47d8e0 in a short local before that call 77; the sound position declared in the block that
 // fills it 77; the effect point declared before the two arrays 77.
+// MiniMax H (11-04): no new form, no lower score; still BLOCKED-BY 0x1883e0's fourth and fifth parameter types, whose declarations are in other files, so retail's point and forward register split, the frame and the two scans stand as they are.
 // MiniMax R (11-01): no new form, no lower score; retail's point/forward register split still comes
 // from the call sites in other files, so the frame and the two scans stay as they are.
 // Earlier, 77: retail's own clone takes the point in EAX and the forward vector in ECX and

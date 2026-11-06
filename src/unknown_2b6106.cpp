@@ -652,13 +652,33 @@ s_entry_c *function_19c5f0(long key);
 wchar_t *localized_name_get(s_localized_name *definition);
 wchar_t *localized_short_name_get(s_localized_short_name *definition);
 
-PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word *text)
+/* a text buffer of 0x100 characters, empty when constructed, filled from a screen's string */
+struct s_friend_text
 {
-    widget->value6e = true;
-    widget->function_22f52e()->set_text(text);
+    s_friend_text()
+    {
+        text[0] = 0;
+    }
+
+    void load(c_widget *screen, long handle)
+    {
+        screen->function_230134(handle, text);
+    }
+
+    word text[0x100];
+};
+
+PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 **widgets, unsigned &row, word *text)
+{
+    widgets[row]->value6e = true;
+    widgets[row++]->function_22f52e()->set_text(text);
 }
 
-// score 512 (lane r83 form 489, not kept): EBP bias 0x70 and frame 0x85c agree (the text buffers as s_text_256, bit 7 taken before
+/* fills the screen's eight detail rows for a friend in another session, or hands over to the status text */
+// score 512 (was 512): EBP is unbiased; allocation 0x860 versus retail 0x85c; flags/clock and score homes remain.
+// Earlier text-buffer/early-bit form 489 (not kept): EBP bias 0x70 and frame 0x85c agree (the text buffers as s_text_256, bit 7 taken before
+// Frame 0x860 versus 0x85c; EBP bias 0x70, early flag/clock and late score homes remain.
+// Earlier lane r83 form 489, not kept: EBP bias 0x70 and frame 0x85c agree (the text buffers as s_text_256, bit 7 taken before
 // the clock read: the flags stay in ESI); the clock in ESI (retail EDI), the small slots' order (row +0x6c,
 // active +0x6a, bit 7 +0x6b, clock +0x64; retail +0x64/+0x6f/+0x6e/+0x68), the long campaign word and the
 // campaign/state-5/7-8 arm tail merges remain.
@@ -858,12 +878,25 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // 506 (retail's `lea ebp, [esp - 0x70]`); with bit 7 taken before the clock read 489 (kept: the flags then stay in
 // ESI and the frame is 0x85c); on 489: short count 514, bool campaign 504, both 526, `s_text_256 teams, game` 489
 // (same code), `in_session == true` 487 (-2, not kept), `long row` 489 (same code).
+// J251: Primary-caption default/conditional/complete/priority producers 546/535/535/550;
+// own stdcall/cdecl/inline/inline-stdcall 512/514/512/512; incoming formal roles
+// independently/together/selected 512/512/512/512. NOT kept: caption forms regress;
+// cdecl loses matched caller 0x2b6e55 (29); other contracts and names tie. Original
+// body/declarations restored; frame 0x860 versus 0x85c, EBP bias and flags/clock homes remain.
+// Status receiver and stack-input setup already agree with retail.
+// B412: Eight-team membership mask advanced with the score cursor: dword/long/word/byte
+// presence 508/508/512/508; absence 509/509/494/509. NOT kept: four-point leads below gate;
+// word absence shifts a narrow complement instead of an indexed dword mask. Full body restored.
+// Round 586: Actual output-slot cursor at entry/data/after-primary/before-name/before-game/
+// before-timer/final-list phases and explicit completed-publication advancement: 619/614/558/554/554/548/566/619.
+// NOT kept: retail retains the output ordinal; original frame, observations and body restored.
+// P336: First-character library clears at message/format/auxiliary producers,
+// seven subsets then complete typed fills: 577/575/571/581/638/636/626/612.
+// NOT kept: all regress; original arrays, clears, full body and includes restored. Frame/bias/flags remain.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {
-    word message[256], format[256];
-    message[0] = 0;
-    format[0] = 0;
+    s_friend_text message, format;
     unsigned row = 0;
     dword flags = online_friend_get_flags(friend_);
     bool local = network_session_interface_has_user(&friend_->xuid);
@@ -880,15 +913,15 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
         player = NONE;
     }
     bool joinable = player != NONE && active && function_19abe4(player);
-    dword now = g_54d5b8;
     bool flag7 = (bool)((flags >> 7) & 1);
+    dword now = g_54d5b8;
     c_text_widget_45a5e0 *text[8];
     for (unsigned i = 0; i < 8; i++)
     {
         text[i] = (c_text_widget_45a5e0 *)find_text(i + 2);
         if (!text[i]) goto done;
     }
-    if (task_index == NONE && qos_handle == NONE && now - value10e0 > 60000 && in_session)
+    if (task_index == NONE && qos_handle == NONE && g_54d5b8 - value10e0 > 60000 && in_session == true)
         task_index = online_match_session_find((XNKID const *)((byte const *)friend_ + 0x28));
     if (joinable)
     {
@@ -908,15 +941,15 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
     else
     {
         byte *details = (byte *)this;
-        short state = *(short *)(details + 0xa62);
-        if (!value10e4 || !state)
+        if (!value10e4 || !*(short *)(details + 0xa62))
             update_friend_status(friend_, session);
         else
         {
-            long campaign = *(long *)(details + 0xa68) != NONE && *(long *)(details + 0xa70) != NONE;
+            short state = *(short *)(details + 0xa62);
+            bool campaign = *(long *)(details + 0xa68) != NONE && *(long *)(details + 0xa70) != NONE;
             long game_names[11] = {0x7000180, 0x3000439, 0x600010f, 0x7000110, 0x4000237,
                 0x4000112, 0xa000114, 0xa000113, 0xb000115, 0x700010e, 0x7000180};
-            long count = *(short *)(details + 0xa80);
+            short count = *(short *)(details + 0xa80);
             if (count > 0 && now - value10dc > 1000)
             {
                 value10dc = now;
@@ -929,23 +962,20 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                 if (kind == 0 || (kind == 1 && flag7))
                 {
                     total = *(short *)(details + 0xa58) + *(short *)(details + 0xa5a);
-                    ((c_widget *)this)->function_230134(0x1500026b, format);
+                    format.load((c_widget *)this, 0x1500026b);
                 }
                 else
                 {
                     total = *(short *)(details + 0xa5c) + *(short *)(details + 0xa5e);
-                    ((c_widget *)this)->function_230134(0x1700026c, format);
+                    format.load((c_widget *)this, 0x1700026c);
                 }
-                function_1630e0(message, format, (long)total);
-                show_friend_detail(text[row++], message);
+                function_1630e0(message.text, format.text, (long)total);
+                show_friend_detail(text, row, message.text);
             }
             else if (state == 2 || state == 3)
             {
                 if (campaign)
-                {
-                    ((c_widget *)this)->function_230134(0x17000259, message);
-                    show_friend_detail(text[row++], message);
-                }
+                    message.load((c_widget *)this, 0x17000259);
                 else
                 {
                     short total;
@@ -953,16 +983,16 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                     if (kind == 0 || (kind == 1 && flag7))
                     {
                         total = *(short *)(details + 0xa58) + *(short *)(details + 0xa5a);
-                        ((c_widget *)this)->function_230134(0x1500026f, format);
+                        format.load((c_widget *)this, 0x1500026f);
                     }
                     else
                     {
                         total = *(short *)(details + 0xa5c) + *(short *)(details + 0xa5e);
-                        ((c_widget *)this)->function_230134(0x17000270, format);
+                        format.load((c_widget *)this, 0x17000270);
                     }
-                    function_1630e0(message, format, (long)total);
-                    show_friend_detail(text[row++], message);
+                    function_1630e0(message.text, format.text, (long)total);
                 }
+                show_friend_detail(text, row, message.text);
             }
             else if (state == 4 || state == 9)
             {
@@ -971,105 +1001,104 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                 if (kind == 0 || (kind == 1 && flag7))
                 {
                     total = *(short *)(details + 0xa58) + *(short *)(details + 0xa5a);
-                    ((c_widget *)this)->function_230134(0x1600026d, format);
+                    format.load((c_widget *)this, 0x1600026d);
                 }
                 else
                 {
                     total = *(short *)(details + 0xa5c) + *(short *)(details + 0xa5e);
-                    ((c_widget *)this)->function_230134(0x1800026e, format);
+                    format.load((c_widget *)this, 0x1800026e);
                 }
-                function_1630e0(message, format, (long)total);
-                show_friend_detail(text[row++], message);
+                function_1630e0(message.text, format.text, (long)total);
+                show_friend_detail(text, row, message.text);
             }
             else if (state == 5)
             {
-                ((c_widget *)this)->function_230134(0xe000271, message);
-                show_friend_detail(text[row++], message);
+                message.load((c_widget *)this, 0xe000271);
+                show_friend_detail(text, row, message.text);
             }
             else if (state == 6)
             {
                 short total = *(short *)(details + 0xa5c) + *(short *)(details + 0xa5e);
-                ((c_widget *)this)->function_230134(0x1300043d, format);
-                function_1630e0(message, format, (long)total);
-                show_friend_detail(text[row++], message);
+                format.load((c_widget *)this, 0x1300043d);
+                function_1630e0(message.text, format.text, (long)total);
+                show_friend_detail(text, row, message.text);
             }
             else if (state == 7 || state == 8)
             {
                 short total = *(short *)(details + 0xa5c) + *(short *)(details + 0xa5e);
-                ((c_widget *)this)->function_230134(0x16000272, format);
-                function_1630e0(message, format, (long)total);
-                show_friend_detail(text[row++], message);
+                format.load((c_widget *)this, 0x16000272);
+                function_1630e0(message.text, format.text, (long)total);
+                show_friend_detail(text, row, message.text);
             }
             state = *(short *)(details + 0xa62);
             if (state != 8 && state != 3 && *(short *)(details + 0xa60))
             {
-                ((c_widget *)this)->function_230134(campaign ? 0xe000276 : *(short *)(details + 0xa60) == 1 ? 0x12000273 :
-                               *(short *)(details + 0xa60) == 3 ? 0xe000274 : 0xf000275, message);
-                show_friend_detail(text[row++], message);
+                if (campaign)
+                    message.load((c_widget *)this, 0xe000276);
+                else if (*(short *)(details + 0xa60) == 1)
+                    message.load((c_widget *)this, 0x12000273);
+                else if (*(short *)(details + 0xa60) == 3)
+                    message.load((c_widget *)this, 0xe000274);
+                else
+                    message.load((c_widget *)this, 0xf000275);
+                show_friend_detail(text, row, message.text);
             }
             if (*(short *)(details + 0xa62) == 8 || *(short *)(details + 0xa62) == 3 || *(short *)(details + 0xa60) == 1)
             {
-                wchar_t *name = NULL;
-                long key = *(long *)(details + 0xa70);
-                if (*(long *)(details + 0xa68) != NONE && key != NONE)
+                if (*(long *)(details + 0xa68) != NONE && *(long *)(details + 0xa70) != NONE)
                 {
-                    s_entry_b *entry = function_19c1f0(key);
+                    s_entry_b *entry = function_19c1f0(*(long *)(details + 0xa70));
                     if (entry)
                     {
-                        ((c_widget *)this)->function_230134(0x30005f4, format);
-                        name = localized_name_get((s_localized_name *)entry);
+                        format.load((c_widget *)this, 0x30005f4);
+                        function_1630e0(message.text, format.text, localized_name_get((s_localized_name *)entry));
+                        show_friend_detail(text, row, message.text);
                     }
                 }
-                else if (key != NONE)
+                else if (*(long *)(details + 0xa70) != NONE)
                 {
-                    s_entry_c *entry = function_19c5f0(key);
+                    s_entry_c *entry = function_19c5f0(*(long *)(details + 0xa70));
                     if (entry)
                     {
-                        ((c_widget *)this)->function_230134(0x30005f4, format);
-                        name = localized_short_name_get((s_localized_short_name *)entry);
+                        format.load((c_widget *)this, 0x30005f4);
+                        function_1630e0(message.text, format.text, localized_short_name_get((s_localized_short_name *)entry));
+                        show_friend_detail(text, row, message.text);
                     }
-                }
-                if (name)
-                {
-                    function_1630e0(message, format, name);
-                    show_friend_detail(text[row++], message);
                 }
             }
             if (*(long *)(details + 0xa64))
             {
-                word game[256], teams[256];
-                game[0] = 0;
-                teams[0] = 0;
-                ((c_widget *)this)->function_230134(0x9000277, format);
-                ((c_widget *)this)->function_230134(game_names[*(long *)(details + 0xa64)], game);
-                ((c_widget *)this)->function_230134(details[0xa74] ? 0x4000278 : 0x3000279, teams);
-                function_1630e0(message, format, teams, game);
-                show_friend_detail(text[row++], message);
+                s_friend_text game, teams;
+                format.load((c_widget *)this, 0x9000277);
+                game.load((c_widget *)this, game_names[*(long *)(details + 0xa64)]);
+                if (details[0xa74])
+                    teams.load((c_widget *)this, 0x4000278);
+                else
+                    teams.load((c_widget *)this, 0x3000279);
+                function_1630e0(message.text, format.text, teams.text, game.text);
+                show_friend_detail(text, row, message.text);
             }
-            state = *(short *)(details + 0xa62);
-            if (!campaign && (state == 3 || state == 8))
+            if (!campaign && (*(short *)(details + 0xa62) == 3 || *(short *)(details + 0xa62) == 8))
             {
                 long timer = *(long *)(details + 0xa78);
                 if (timer == 2)
                 {
-                    long seconds = *(long *)(details + 0xa7c);
-                    long minutes = seconds / 60;
-                    seconds %= 60;
-                    ((c_widget *)this)->function_230134(0x1400027c, format);
-                    function_1630e0(message, format, minutes, seconds);
-                    show_friend_detail(text[row++], message);
+                    long minutes = *(long *)(details + 0xa7c) / 60;
+                    long seconds = *(long *)(details + 0xa7c) % 60;
+                    format.load((c_widget *)this, 0x1400027c);
+                    function_1630e0(message.text, format.text, minutes, seconds);
+                    show_friend_detail(text, row, message.text);
                 }
                 else if (timer == 1)
                 {
-                    long seconds = *(long *)(details + 0xa7c);
-                    long minutes = seconds / 60;
-                    seconds %= 60;
-                    ((c_widget *)this)->function_230134(0x1200027d, format);
-                    function_1630e0(message, format, minutes, seconds);
-                    show_friend_detail(text[row++], message);
+                    long minutes = *(long *)(details + 0xa7c) / 60;
+                    long seconds = *(long *)(details + 0xa7c) % 60;
+                    format.load((c_widget *)this, 0x1200027d);
+                    function_1630e0(message.text, format.text, minutes, seconds);
+                    show_friend_detail(text, row, message.text);
                 }
-                short selected = NONE;
-                for (short i = 0; i < *(short *)(details + 0xa80); i++)
+                long selected = NONE;
+                for (long i = 0; i < *(short *)(details + 0xa80); i++)
                 {
                     if (xuid_equal((XUID const *)(details + 0xa82), &friend_->xuid, true))
                     {
@@ -1079,48 +1108,41 @@ void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const
                 }
                 if (selected != NONE)
                 {
-                    long best = 0;
-                    long score;
                     if (!details[0xa74])
                     {
-                        long const *player_scores = (long const *)(details + 0xf44);
-                        for (long const *player_cursor = player_scores;
-                            player_cursor - player_scores < *(short *)(details + 0xa80); ++player_cursor)
-                            if (player_cursor != player_scores + selected)
-                            {
-                                long candidate = *player_cursor;
-                                if (candidate > best) best = candidate;
-                            }
-                        ((c_widget *)this)->function_230134(0xc00027a, format);
-                        score = *(long *)(details + 0xf44 + selected * 4);
+                        long best = 0;
+                        long const *player_score = (long const *)(details + 0xf44);
+                        for (long i = 0; i < *(short *)(details + 0xa80); i++, player_score++)
+                        {
+                            if (i != selected && *player_score > best)
+                                best = *player_score;
+                        }
+                        format.load((c_widget *)this, 0xc00027a);
+                        function_1630e0(message.text, format.text, *(long *)(details + 0xf44 + selected * 4), best);
                     }
                     else
                     {
                         long team = *(short *)(details + 0xf84 + selected * 2);
-                        long const *team_scores = (long const *)(details + 0x10a8);
-                        for (long const *team_cursor = team_scores; team_cursor < team_scores + 8; ++team_cursor)
+                        long best = 0;
+                        long const *team_score = (long const *)(details + 0x10a8);
+                        for (long i = 0; i < 8; i++, team_score++)
                         {
-                            long team_index = team_cursor - team_scores;
-                            if ((*(long *)(details + 0x10a4) & (1 << team_index)) && team_index != team)
-                            {
-                                long candidate = *team_cursor;
-                                if (candidate > best) best = candidate;
-                            }
+                            if ((*(long *)(details + 0x10a4) & (1 << i)) && i != team && *team_score > best)
+                                best = *team_score;
                         }
-                        ((c_widget *)this)->function_230134(0xa00027b, format);
-                        score = *(long *)(details + 0x10a8 + team * 4);
+                        format.load((c_widget *)this, 0xa00027b);
+                        function_1630e0(message.text, format.text, *(long *)(details + 0x10a8 + team * 4), best);
                     }
-                    function_1630e0(message, format, score, best);
-                    show_friend_detail(text[row++], message);
+                    show_friend_detail(text, row, message.text);
                 }
             }
             if (8 - row >= (unsigned)*(short *)(details + 0xa80)) value10d8 = 0;
-            for (short i = 0; row < 8 && i < *(short *)(details + 0xa80); i++)
+            for (long i = 0; row < 8 && i < *(short *)(details + 0xa80); i++)
             {
                 long index = (value10d8 + i) % *(short *)(details + 0xa80);
-                ((c_widget *)this)->function_230134(0x1200027e, format);
-                function_1630e0(message, format, index + 1, details + 0xb42 + index * 64);
-                show_friend_detail(text[row++], message);
+                format.load((c_widget *)this, 0x1200027e);
+                function_1630e0(message.text, format.text, index + 1, details + 0xb42 + index * 64);
+                show_friend_detail(text, row, message.text);
             }
         }
     }

@@ -299,6 +299,16 @@ struct s_heading_unit_header
 	s_heading_unit *object;
 };
 
+/* the actor's unit heading: the animation state it is in, the two values the
+   animation state machine reports for it, and the point it is heading for */
+struct heading_motion
+{
+	short animation_state;
+	long first;
+	long second;
+	point3f target;
+};
+
 extern vector3f *g_4687bc;
 real function_30bf0(vector3f *v);
 bool function_10f630(long object_index, long *first, long *second);
@@ -311,6 +321,9 @@ static inline short heading_unit_get_state(s_heading_unit *unit)
 
 /* where the actor's unit (a biped) is heading: backwards out of its current
    animation, or toward the actor's target point */
+// MiniMax H (11-03): the animation state, the two values the state machine reports for it and the
+// point it is heading for in one heading_motion record, all four members used; the state stays in a
+// word on the stack and the record's frame is retail's. The plain check matches (0).
 // MiniMax D (11-01): the state in a plain short local 90 and the same read written out in the
 // initialiser 90: the load is zero-extended and the spill stays a dword; no lower score.
 // Not kept (MiniMax R, 11-01): the state in a one-element unsigned short array (animation_state[1]) also
@@ -338,9 +351,11 @@ bool function_1f55e0(long actor_index, point3f *point, vector3f *direction)
 
 	if (unit->type == 0)
 	{
-		long state = heading_unit_get_state(unit);
+		heading_motion motion;
 
-		if ((short)state == 6 || (short)state == 7)
+		motion.animation_state = heading_unit_get_state(unit);
+
+		if (motion.animation_state == 6 || motion.animation_state == 7)
 		{
 			if (unit->movement_type == 4)
 			{
@@ -355,11 +370,8 @@ bool function_1f55e0(long actor_index, point3f *point, vector3f *direction)
 		}
 		else
 		{
-			long first;
-			long second;
-
-			function_10f630(actor->unit_index, &first, &second);
-			if (unit->movement_type == 5 || (short)state == 5 || first == 0x50000cb)
+			function_10f630(actor->unit_index, &motion.first, &motion.second);
+			if (unit->movement_type == 5 || motion.animation_state == 5 || motion.first == 0x50000cb)
 			{
 				direction->i = unit->forward.i * -1.0f;
 				direction->j = unit->forward.j * -1.0f;
@@ -368,12 +380,10 @@ bool function_1f55e0(long actor_index, point3f *point, vector3f *direction)
 			}
 			else if (actor->unknown264 && g_510c54->game_time < actor->unknown634)
 			{
-				point3f target;
-
-				function_210850(&actor->unknown638, &target);
-				direction->i = target.x - actor->position.x;
-				direction->j = target.y - actor->position.y;
-				direction->k = target.z - actor->position.z;
+				function_210850(&actor->unknown638, &motion.target);
+				direction->i = motion.target.x - actor->position.x;
+				direction->j = motion.target.y - actor->position.y;
+				direction->k = motion.target.z - actor->position.z;
 				if (function_30bf0(direction) > 0.0f)
 				{
 					result = true;
@@ -820,12 +830,27 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax G (11-04), not kept (coordinator): 59 with the trajectory result compared against zero
+// (`fa1a0(...) != 0` on a bool call; retail has no setne, it only moves the result to DL, so the
+// compare steers registers: 165 without it), the request point copied component by component and the
+// threshold as !(base * 1.2 >= chosen); a redundant compare is kept only with a byte match.
+// G's notes on what still differed at 59:
+// Still different: retail caches the trajectory result in DL (`mov dl, al`), loads the force flag
+// into AL and stores DL to the stack slot afterwards, while ours tests the result, loads the force
+// flag and stores the comparison - one byte longer, which shifts every later constant and jump;
+// retail copies the request point through integer registers and returns the request call's result
+// directly, and the unit-state table goes to ESI rather than EDX.
+// MiniMax H (11-04): the trajectory result hoisted to function scope 135, the invalid tail
+// returning the valid flag 135 and the comparison written as !(a >= b) 135; no lower score.
 // MiniMax R (11-01): no new form, no lower score; retail's trajectory call still passes eleven
 // stack operands where ours passes ten plus EDX, and retail keeps the trajectory result in DL
 // (`mov dl, al`, then `mov byte ptr [esp + 0x5c], dl`) where ours stores AL directly.
 // MiniMax D (11-01): the fast flag's test moved into the valid arm 301, a separate trajectory
 // variable 278, `force = force || fast` 253: the result stays memory-homed in every form; no
 // lower score.
+// MiniMax E (11-06): no new form, no lower score; retail keeps the trajectory result in DL and returns
+// the validity flag in BL on the short exits, where ours keeps the result on the stack and folds that
+// exit to a cleared AL (12 bytes short on every path).
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
@@ -994,6 +1019,10 @@ real normalize2d(point2f *v);
 // J247: Native request-point/direction/facing memcpy subsets on the retained 3D graph:
 // 135/135/135/135/135/135/135; all three memmove 234 (873 bytes, frame 0x54).
 // NOT kept: no gain; original complete body restored. AL/DL force-result and return homes remain.
+// J249: Coordinated long/dword force formals, original/complete OR producers with
+// assigned/terminal request results 141/256/186/255 and 141/256/186/255.
+// NOT kept: all regress; OR forms lose a matched caller, and full-width input differs
+// from native byte admission. Original Boolean formal/body and both declarations restored.
 // F360: Initial trajectory true-default/exhaustive result producers in bool/byte/short/long:
 // 182/195/169/175/120/156/168/176. NOT kept: no exact initial-result/DL repair; retail does not materialize a query predicate.
 // Original complete body and helpers restored.
@@ -1010,6 +1039,32 @@ real normalize2d(point2f *v);
 // DH334: Standard typed request-point/normalized-planar/facing-planar record ranges,
 // seven subsets then complete backward ranges: 144/180/194/185/197/198/202/205. NOT kept: all regress;
 // original publications and complete body restored; retained DL and return transport remain.
+// DL260: Complete persistent/candidate outputs, directions and speed identities; matched initial-speed provider ordinary inline: 135/135/135/135/135/135/135/135/141.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// DH373: Original-site facing-height zero/nonzero outcomes in bool/byte/short/long:
+// eight at 135. NOT kept: no native DL/return recovery or equality; original fallback
+// admission, result, outputs and complete body restored. Frame 0x48 still agrees.
+// DL262: Successful movement-producer identity long/dword/short/byte, zero then invalid-index absence:
+// 189/189/182/192/184/184/185/176. NOT kept: no byte equality; original independent result/validity
+// producers and complete body restored; DL retention and movement/request returns remain.
+// M389: Double queried/chosen/retry speed receivers, seven subsets, then all
+// with double base speed: 257/188/279/135/257/191/277/266. NOT kept: ties/regressions;
+// queried/chosen domains disturb native frame setup. Original real speed producers,
+// numerical predicates, address-passed outputs, calls and complete body restored.
+// AC554: Uninitialized independent completed result, actual invalid-branch production and
+// sole return, bool/byte/char/signed-char/short/word/int/long 208/189/189/189/179/179/186/186.
+// NOT kept: no exact DL/return-join repair; original independent validity and full body restored.
+// DL267: Existing request point setter; direction/facing zero setters; actor/default facing vector setters; actor/direction/default point setters: 166/135/175/135/229/175/135/229.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Default persistent vertical/horizontal, their pair, retry vertical/horizontal, retry pair, all four and all with direction; native DL and separate return transport remain. Scores 118/117/157/138/137/158/190/221.
+// NOT kept: output default stores are absent in native code and the unmatched defaults are not retained; original executable source restored.
+// DL274: Own force/initial-target/retry-target home reads, seven subsets then request-target home: 135/134/134/134/134/134/134/134.
+// NOT kept: native DL retention and separate request/invalid return transport remain; no eligible byte match or native repair.
+// Original complete executable source restored.
+// DH382: Completed invalid type admission at absent definition/rejected forced mask/
+// exhausted short search, seven subsets 136/244/253/238/253/267/267; all typed-first 249.
+// NOT kept: all regress and disturb the native entry/type prefix; original entire body,
+// trajectory inputs, movement/request stores and independent result producers restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
@@ -1550,6 +1605,10 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax R (11-05): no new form, no lower score; the plain origin copy 278 and the flipped side test 239;
+// retail keeps its length in the dead origin argument slot at [esp+0x54] and its radius at [esp+0x14].
+// MiniMax H (11-04): the left flag declared just before its comparison 287; not kept, the
+// original body is restored.
 // MiniMax R (10-31): origin read directly 255, plain origin copy 278, inlined direction normalization 272; permuter found no better variant; no lower score.
 // score 238 (was 238): Frame 0x3c, result/flag homes and exits agree (1182 bytes against 1173). Retail's zero, radius and
 // direction sit in other SSE registers (xmm1/xmm5/xmm2-3; it keeps the result in xmm0 up to the type exit),

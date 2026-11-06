@@ -572,10 +572,13 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// MiniMax E (11-05): no new form, no lower score; the four-term plane-distance accumulator written as one
+// expression gives 211, the same sum without the redundant parentheses 205 and the contact point written as
+// three products followed by three adds 207 - all worse. Reverted.
 // MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
 // 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
 // of x87 st(1) and the plane joins keep their own xmm order.
-// score 211 (was 211): Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes differ.
+// score 202 (was 211): Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes differ.
 // Earlier 211 (was 249): one shared spin scale for both spin branches, with the third spin
 // component scaled after the branch so the pending value and the scale stay on the x87 stack.
 // Plane-index width, plane-join registers and the transform product rows still differ.
@@ -698,6 +701,72 @@ struct s_item_collision_bsp
 // publications 211/317/211/317/211/317/211; copied point then scaled additions 282.
 // Original complete body restored; protected plane width, plane joins and spin/speed homes remain.
 // NOT kept: unmatched displacement/copy forms and frame/extent regressions.
+// N356: Bare contact distance/offset storage at plane/marker/entry boundaries, with fallback-speed storage:
+// 211/211/211/211/211/211/211/211. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Protected plane width, plane joins and speed/factor/spin homes remain.
+// N358: Complete common spin scaling with separate/direct axial source, private/shared float/shared double/plain component producers:
+// 306/306/331/306/282/282/305/282. NOT kept: unmatched source/representation forms; original executable body restored.
+// Protected plane width, plane joins and speed/factor/spin homes remain.
+// N360: Complete linear production before pending spin-k, fields/initializer/setter/shared-add, then angular initializer:
+// 211/211/211/211/211/211/211/211. NOT kept: unmatched source/result-storage forms; original executable source restored.
+// Protected plane width, plane joins and spin/speed homes remain.
+// N362: Existing marker/normalizer/random-vector/random-scalar inline call visibility,
+// four individuals, three random-scalar pairs and all four: 211/211/211/211/211/211/211/211. Original
+// declarations and complete body restored; protected plane width, plane joins and pending spin homes remain.
+// N366: Actual plane-distance output owns its original four-term accumulator, 202 plain, retained;
+// complete normal compound fields/scalars/setter 209 each, with distance 202 each;
+// isolated distance also 202. Frame 0xa0 and 1366/1361 bytes unchanged. Normal forms restored;
+// protected plane-index width, plane joins and pending spin/speed homes remain.
+// N369: Final untransformed query destination, original/branch-owned input plane 206/206;
+// complete normal scalar inputs mutable/const 207/207, all four inputs 209/209;
+// safe in-place result with captured normals mutable/const 216/216.
+// NOT kept: no equality or gain; in-place extent grows. Original body restored.
+// F391: Standard backward axial-input/normal transports and complete paired final range sums,
+// individual/pair/complete graphs, then backward final traversal: 267/343/370/313/397/334/343/411.
+// NOT kept: all regress; normal/range graphs also displace the native frame or extent. Original
+// planes, axis/spin homes, arithmetic, random draws, pending-k join, calls and include set restored.
+// Paired range sums also raise matched 0xd9640 from 0 to 3 in the reduced image; restored.
+// Protected plane-index width, plane joins and native spin/speed homes remain.
+// AC534: Actual contact-distance accumulator at whole/pair/individual product boundaries,
+// with direct/compound offset subtraction, then all three named products:
+// 202/204/204/202/204/204/202/206. NOT kept: expression-boundary nonmatches; original
+// complete body restored. Protected plane interface, plane joins and spin/speed homes remain.
+// AC536: Contact-query count bool/short/long/dword, then both query counts independent/shared
+// short/long: 202/202/202/202/202/202/202/202. NOT kept: no equality or qualifying supported gain.
+// Original query consumers, plane interface, random draws and full body restored.
+// AC538: Complete axial-spin decision, positive/complementary bool/byte/short/long:
+// 204/204/204/204/204/204/204/204. NOT kept: unmatched decision/storage forms; original complete body
+// restored.
+// Protected plane-index width, plane joins and spin/speed homes remain.
+// Y592: Independent branch query-input planes/scalar plane outputs/contact-consumer declarations, masks 1/2/3/4/5/6/7; all with role names:
+// 204/207/206/202/204/207/206/206. NOT kept: no exact storage form; protected plane width, plane joins and spin/speed homes remain.
+// Y595: Final angular output owns spin, scalar/existing setter at original/entry/effect/contact boundaries:
+// 210/210/210/210/210/210/210/210. NOT kept: no byte equality; original complete body restored.
+// B443: Independent complete axial scalar inputs, six capture/declaration orders,
+// then spin-phase/entry reservations: 272/272/272/272/272/272/272/272. NOT kept: all regress,
+// frame grows to 0xa8 and extent to 1383; original axis/body restored.
+// DH365: Existing plane-normal/matrix-rotation/marker-coordinate views, seven subsets,
+// then all with native spin/output coordinates: 202/202/202/202/202/202/202/202. NOT kept: no equality
+// or gain; original complete body restored. Protected width and plane/spin homes remain.
+// N371: Single-marker spin lifetime after contact, factor-first/enclosed-phase/scalar-role-name
+// subsets 0..7: 202/202/202/202/202/202/202/202. NOT kept: unmatched storage-only forms;
+// original complete body restored; protected plane width, plane joins and spin/speed homes remain.
+// N386: Complete CRT plane/marker-axis/fallback-axis transports, subsets 1..7:
+// 337/251/324/202/333/268/307; native copy construction at all three boundaries 307.
+// NOT kept: no byte equality; original planes, axis copies, arithmetic and full body restored.
+// F391: Standard backward axial-input/normal transports and complete paired final range sums,
+// individual/pair/complete graphs, then backward final traversal: 267/343/370/313/397/334/343/411.
+// NOT kept: all regress; normal/range graphs also displace the native frame or extent. Original
+// planes, axis/spin homes, arithmetic, random draws, pending-k join, calls and include set restored.
+// Paired range sums also raise matched 0xd9640 from 0 to 3 in the reduced image; restored.
+// Protected plane-index width, plane joins and native spin/speed homes remain.
+// AC560: Actual optional-effect admission at its original guard, positive/complementary
+// bool/byte/short/long: 204/204/204/204/204/204/204/204. NOT kept: one-use outcomes do not match; original
+// complete body restored. Protected plane width, plane joins and spin/speed homes remain.
+// F395: Complete transformed-normal publication ikj/jik/jki/kij/kji on the retained distance
+// accumulator 203/206/205/206/204; dependency-preserving normal/distance publication
+// 206/205/200. NOT kept: two-point best below the keep threshold; original body restored.
+// Protected plane-index width, plane joins and native spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -742,8 +811,10 @@ void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effe
 					surface_plane.i = matrix->up.i * plane.k + matrix->left.i * plane.j + matrix->forward.i * plane.i;
 					surface_plane.j = matrix->up.j * plane.k + matrix->left.j * plane.j + matrix->forward.j * plane.i;
 					surface_plane.k = matrix->up.k * plane.k + matrix->left.k * plane.j + matrix->forward.k * plane.i;
-					surface_plane.d = matrix->position.z * surface_plane.k + matrix->position.y * surface_plane.j +
-						matrix->position.x * surface_plane.i + matrix->scale * plane.d;
+					surface_plane.d = matrix->position.z * surface_plane.k;
+					surface_plane.d += matrix->position.y * surface_plane.j;
+					surface_plane.d += matrix->position.x * surface_plane.i;
+					surface_plane.d += matrix->scale * plane.d;
 				}
 				real distance = (marker.matrix.position.z * surface_plane.k + marker.matrix.position.y * surface_plane.j) +
 					surface_plane.i * marker.matrix.position.x - surface_plane.d;
@@ -1100,7 +1171,24 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
-// score 813 (was 813): Frame 0x154 versus 0x12c; entry Boolean publications and collision/carrier/rotation homes remain.
+// score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
+// the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
+// before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
+// `update_position = fixed` skipped the position update after a bounce when the bit was clear (retail 0x10c136
+// tests the flag, bounce never touches it); (2) the 0.05 nudge before function_10c880 is added to the predicted
+// `position`, not to the hit point (0x10bac7 adds [position], only the later bounce nudges at 0x10c0ca use the
+// point); (3) the flow side vector is normal x flow (0x10beb0..0x10bef8), not flow x normal. Not kept: along_side and
+// along_flow are i,j,k dots in retail (0x10bf06..0x10bf22, 0x10bf96..0x10bfc2; the other three are j,i,k, as item_dot); dot3f
+// from vector_products.h gives that order and the same 824, but in the full build it costs matched 0x54590
+// (src/network_voice.cpp, 0 -> 2) through LTCG, so both stay item_dot (a rounding-order difference only).
+// Open behaviour differences: retail passes the node as a raw dword at hit+0x46 (push [esp+0x9e], 0x10bd2b) and
+// stores its low byte, ours zero-extends one byte (callee 0xb8bd0 only reads the word, `long` forms 887/902);
+// the type chain at 0x10bd1c compares 4 and falls into the same code either way (switch with case 4/default merges
+// it away, 837). Frame 0x154 versus 0x12c; entry Boolean publications ([esp+8], [esp+0x10]) and slot homes remain.
+// Frame forms (all behaviour-neutral): ray in an inner block 846 (frame 0x148); inner ray + scalar side vector 949
+// (0x130); + `x < 0 ? -x : x` instead of fabs 940 (frame 0x12c, 4013 bytes, slots all differ); scalar side alone
+// 925; cross3f into a vector 931; ternary abs alone 860; merged value_13a store 866; declaration reorders of
+// carrier_delta/collision with the 0x12c form 940 each.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
 // Earlier: Frame 0x154 versus 0x12c, entry Boolean bytes and collision/carrier/rotation homes still differ.
@@ -1272,6 +1360,40 @@ struct s_item_flags_view_10b850
 // N352: Actual item/typed-tag/external-hit-header bindings, families 1..7 and
 // complete read-only views: 813 each. NOT kept: one-use/combined record forms
 // remain unmatched; original body/helpers restored, frame stays 0x154/0x12c.
+// N356: Isolated late spin admission, bool/byte/short/long with positive/complementary truth:
+// 880/880/880/880/863/863/863/863. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Frame 0x154/0x12c, entry Boolean and carrier/collision/rotation homes remain.
+// N358: One actual gate-test result reused across active/anchored/attached admissions, eight native scalar domains:
+// 887/887/887/887/887/887/887/887. NOT kept: unmatched source/representation forms; original executable body restored.
+// Frame 0x154/0x12c and entry Boolean/carrier/collision/rotation homes remain.
+// N360: Planar subtotal dot producers, initialized/accumulating, with unchanged/initialized/accumulating/immutable axial subtotals:
+// 875/893/861/884/858/880/861/884. NOT kept: unmatched source/result-storage forms; original executable source restored.
+// Frame 0x154/0x12c, entry Boolean and carrier/collision/rotation homes remain.
+// N362: Existing carrier/collision/material-flow/motion-publication inline call visibility,
+// four individuals, three carrier pairs and all four: 813/813/813/813/813/813/813/813. Original
+// declarations, helpers and complete body restored; frame and Boolean/carrier/collision/rotation homes remain.
+// N366: Actual integration/query-ray/paired-contact adjacent destination producers and complete settled
+// angular projection regress. Individual output producers reach retail length at 820; frame and entry
+// Boolean/collision/carrier/rotation homes remain. Original body and helpers restored. Scores
+// 820/820/858/820/858/858/855/906. NOT kept: unmatched result-ownership forms.
+// P346: Actual flow-query available/missing bool/byte/short/long results:
+// 887/887/887/887/887/887/887/887, 4068 bytes and frame 0x148. NOT kept:
+// comparison regresses and length moves away from retail; original body and all helpers restored.
+// N375: Actual collision impact-prefix member with direct/pointer/reference ownership
+// and consistent point/normal fields: 911/887/887/887/887/904/858/858. NOT kept:
+// all regress; original record, field observations, helpers and complete body restored.
+// N377: Complete scaled-additive aggregate/shared-scaler/standard-range/copied-range
+// producers, each with existing or standard vector sum: 864/924/865/924/1124/997/1214/1087.
+// NOT kept: all regress/lengthen; every frame stays 0x154 versus native 0x12c.
+// Original accumulator, helpers, observations and complete executable body restored.
+// N380: Shared scaled-difference ray/angular scale/paired contact scaled-add masks
+// 1..7, then all with predicted-position scaled-add: 856/813/856/813/856/813/856/871.
+// NOT kept: no native-shape gain; original helpers, observations and body restored.
+// Frame 0x154/0x12c and entry Boolean/carrier/collision/rotation homes remain.
+// N382: Complete collision-kind switch with six geometry/object/default group priorities,
+// then two reversed geometry-label priorities: 863/863/863/863/863/863/863/863. NOT kept: all regress and lengthen;
+// original classification, observations, helpers and full body restored. Frame 0x154/0x12c
+// and entry Boolean/carrier/collision/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1289,9 +1411,9 @@ void __stdcall function_10b850(long object_index)
         bool carrier = function_109a00(object_index, &local_c01284_3, true, &carrier_delta);
         vector3f velocity = item->linear_velocity;
         vector3f angular = item->angular_velocity;
-        bool fixed = ((*(dword *)(definition + 0xbc) >> 2) & 1) != 0;
+        bool update_position = ((*(dword *)(definition + 0xbc) >> 2) & 1) != 0;
         bool settled = false;
-        if (!fixed)
+        if (!update_position)
         {
             velocity.k -= g_51e9c4->unknown0 * dt;
             local_c01284_3.k -= g_51e9c4->unknown0 * dt;
@@ -1300,7 +1422,7 @@ void __stdcall function_10b850(long object_index)
         vector3f ray = {position.x-item->position.x, position.y-item->position.y, position.z-item->position.z};
         s_collision_result_1697c0 collision;
         collision.unknown24 = NONE;
-        bool update_position = true;
+        update_position = true;
         if (function_1697c0(0x24909c0d, &item->position, &ray, item->ignore_object_index, NONE, &collision))
         {
             byte *hit = (byte *)&collision;
@@ -1308,9 +1430,9 @@ void __stdcall function_10b850(long object_index)
             point3f const &point = *(point3f *)(hit + 8);
             bool floor = normal.k > 0.707099974155426f;
             bool slow = 1.5f > -item_dot(local_c01284_3, normal);
-            position.x = point.x + normal.i*0.05f;
-            position.y = point.y + normal.j*0.05f;
-            position.z = point.z + normal.k*0.05f;
+            position.x += normal.i*0.05f;
+            position.y += normal.j*0.05f;
+            position.z += normal.k*0.05f;
             function_10c880(object_index, (s_item_impact const *)&collision, &velocity, &position);
             bool surface = collision.type == 1 || collision.type == 3;
             if (collision.type == 4)
@@ -1329,7 +1451,7 @@ void __stdcall function_10b850(long object_index)
                 real dot = item_dot(angular, normal);
                 angular.i = normal.i*dot; angular.j = normal.j*dot; angular.k = normal.k*dot;
                 item->spin_axis = normal;
-                fixed = false;
+                update_position = false;
                 settled = true;
                 function_b9b90(object_index, true);
                 if (collision.type == 1 || collision.type == 3)
@@ -1374,7 +1496,7 @@ void __stdcall function_10b850(long object_index)
                         if (length != 0.0f)
                         {
                             real amount = g_510c54->rate * 12.0f;
-                            vector3f side = item_cross(flow, normal);
+                            vector3f side = item_cross(normal, flow);
                             real along_side = item_dot(side, local_c01284_3);
                             if (fabs(along_side) < 3.25f) item_add_scaled(&velocity, side, along_side < 0.0f ? -amount : amount);
                             real along_flow = item_dot(flow, velocity);
@@ -1396,7 +1518,6 @@ void __stdcall function_10b850(long object_index)
                 if (function_168f40(0x24909c0d, (s_vehicle_ray const *)&position, object_index, NONE)) position = item->position;
             }
             item->ignore_object_index = NONE;
-            update_position = fixed;
         }
         if (update_position) function_b75a0(object_index, &position, NULL, NULL, (s_location *)((byte *)&collision + 0x1c), false);
         if (carrier) item_add_scaled(&velocity, carrier_delta, 1.0f);
@@ -1493,6 +1614,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	function_10cf80(&velocity, object_index, false);
 }
 
+// MiniMax D (11-05): no new form, no lower score.
 // score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,
 // event/point homes and location-call setup remain. Paired existing point setters kept.
 // Earlier: the frame 0xac agrees; the release byte's read-modify-write,
@@ -1727,6 +1849,40 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N352: Eight return/spin lexical home pairs on the paired-setter graph: 140 each.
 // NOT kept: return byte stays +0xe/+0xf and release/event homes remain; original
 // names, declaration sites, helper, paired setters and complete body restored.
+// N356: Pre-admission countdown truth, bool/byte/short/long with post/pre-processing accumulation:
+// 184/191/298/293/177/180/186/181. NOT kept: unmatched storage/result-lifetime forms.
+// Original executable source restored; Return byte, release RMW/tail and event/location homes remain.
+// N358: Complementary two-consumer damping admission, bool/byte/char/signed-char/short/word/long/dword, original positive return:
+// 177/177/177/177/176/176/176/176. NOT kept: unmatched source/representation forms; original executable body restored.
+// Return byte, release RMW/tail and contact/event homes remain.
+// N360: Native conditional spin-result selection, result-first/spin-first, bool/byte/short/long:
+// 172/181/179/138/176/194/179/195. NOT kept: unmatched selection/representation forms;
+// 138 gains only two and moves the frame. Original complete body restored; return-byte and release/event homes remain.
+// N362: Existing impulse/contact/damage-dispatch/damping inline call visibility, four
+// individuals, three impulse pairs and all four: 140/140/140/140/140/140/140/140. Original
+// declarations and complete body restored; return-byte, release-tail and event homes remain.
+// N364: Complete native 16-bit motion flags captured once, word/short/dword/long,
+// mask then shift decoding at both consumers: 172/172/172/172/272/272/171/171.
+// NOT kept: no equality; temporary external word view and original full body restored.
+// Return-byte +0xe/+0xf and release/event homes remain.
+// N366: Complete damping result copy/compound, interleaved/staged scalar, setter and native vector
+// publication regress; return byte, release RMW/tail and event homes remain. Original damping and body
+// restored. Scores 141/141/141/141/143/143/196/141. NOT kept: unmatched result-ownership forms.
+// N375: Complete post-decrement mode/count expiry admission in positive/complementary
+// native truth domains, eight valid forms 140 each; original full body restored.
+// NOT kept: no byte match or frame/home gain; return byte and release/event homes remain.
+// N377: Existing release producer time/gain root pointers, both and native references,
+// then release-completion success at first/second/both sites and accumulated completion:
+// 140/140/171/171/140/140/140/140. NOT kept: no equality or gain; full helper and body restored.
+// Return byte +0xe/+0xf, release RMW/tail and event/contact homes remain.
+// N382: Actual function return channel byte/signed-char/char/word/short/int/unsigned-int/long,
+// with original Boolean accumulator and twice-used spin: 140/140/140/138/138/139/139/139. NOT kept: unmatched ABI
+// forms; one/two-point gains fail the bar. Original signature and full body restored.
+// Return byte +0xe/+0xf and release/contact/event homes remain.
+// N384: Caller-owned release output at branch/physics/function/entry scopes, with
+// submission in the existing producer or its returned output: 169/140/140/140/140/171/171/171.
+// NOT kept: ties/regressions; original private producer and full body restored. Return byte,
+// release-byte RMW/tail and contact/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

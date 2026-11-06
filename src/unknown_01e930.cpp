@@ -344,6 +344,15 @@ PRIVATE inline __int64 bink_read_tsc(void)
 	volatile __int64 t = 0;
 	__asm rdtsc
 }
+// MiniMax I (11-05): no new form, no lower score. Our frame is 0x3c against retail's 0x40 because we
+// save esi at the entry, and retail's `movss` stores and `fcompi` timeout compare need /arch:SSE, which
+// this file's flags do not carry (its thirteen other functions match with them). Also tried: /arch:SSE on
+// this file's flags (256, the other fifteen unchanged), the size read back from permanent_memory_size
+// (276, 278), the block pointer declared after the early calls so that esi is shrink-wrapped as in
+// retail (264) with a dword mask (290) and with retail's branchless size (292).
+// MiniMax B (11-03): no new form, no lower score. Retail's frame is 0x40 against our 0x3c and its
+// timeout compare (`fld`/`fcompi`) and its `movss` stores need /arch:SSE, which this file's flags line
+// does not carry; the build flags are the user's decision, so this file was not changed.
 // score 246 (was 246): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // MiniMax S (10-31): no new form, no lower score. Retail zeroes its homes with ebx after an early
 // `xor ebx, ebx` and builds the allocation size as ((flags & 0x100) | 0x40) << 16; ours derives the same
@@ -538,6 +547,31 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // DH335: Native surround-bin stores, paired surround-gain chains and complete
 // stereo publications, subsets 1..7 and complete interleaved form, 246 each.
 // Original arrays and whole body restored; frame/status/clock and SSE gaps remain.
+// F366: Actual decoder flags own both consumers, conditional/complete/default/paired producers
+// at the original phase then parameter-only entry: 263/263/275/275/293/293/302/295.
+// Original mode, status, clocks, retry, arrays, outputs and whole body restored; frame 0x3c/0x40 remains.
+// N359: Original elapsed-time timeout comparison result in bool/byte/char/signed-char/short/word/int/long:
+// 246/246/246/246/246/246/246/246. NOT kept: no byte match; complete original body restored.
+// Frame 0x3c/0x40, status/clock/output homes and instruction policy remain.
+// DH365: Complete allocation admission at its original phase, bool/byte/char/signed-char/
+// short/word/int/long: 246/246/246/246/246/246/246/246. NOT kept: nonexact one-use predicate forms; original
+// body restored. Frame 0x3c/0x40, status/clock/output homes and SSE scheduling remain.
+// N379: Immutable original start clock, with immutable mode/byte-count/decoder-input subsets
+// 0..7: 246/246/246/246/246/246/246/246. NOT kept: no byte-match gain; original native contracts and body restored.
+// Frame 0x3c/0x40, mode residency, status/clock/output homes and instruction policy remain.
+// F401: Original-site decoder-open success/failure outcome in bool/byte/short/long:
+// 246/246/246/246/246/246/246/246. NOT kept: no exact one-use outcome; original direct test and full body
+// restored. Frame 0x3c/0x40, status/clock/output homes and instruction policy remain.
+// F403: Actual initial/post-protection texture-admission results at their original
+// tests, bool/byte/short/long: 246/246/246/246/246/246/246/246. NOT kept: nonexact one-use outcomes;
+// original direct tests, producer calls and full body restored. Frame 0x3c/0x40,
+// status/clock/output homes and floating instruction policy remain.
+// M399: Original mode/byte-count/start-clock scalar zero defaults, subsets 1..7:
+// 246/246/246/296/296/296/296; complete defaults with elapsed zero 296. NOT kept: ties or regressions.
+// Original producers and entire body restored; frame 0x3c/0x40, native mode spill and clock/SSE gaps remain.
+// DH378: Direct combined rejection and readiness/loading/both positive pipeline ownership 246/246/246/246;
+// complete skip expression 277, direct mode-arm publication/both local outcomes/direct query-arm stores 272/272/272.
+// NOT kept: native 1098-byte skip forms regress and keep frame 0x3c; original complete body restored.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

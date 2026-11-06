@@ -20,7 +20,7 @@ struct s_session_machine_address
 };
 
 /* the security keys (0x7a9a0) and the transport */
-bool function_07ab10(long key_index, s_type_99af70 *address, long local, word port, const XNADDR *xnaddr);
+bool function_07ab10(long key_index, long local, word port, const XNADDR *xnaddr, s_type_99af70 *address);
 bool function_07acc0(const s_type_99af70 *address);
 
 // @retail 0x75870
@@ -182,7 +182,7 @@ bool network_observer_get_owner_address(s_network_observer *observer, long owner
 	if (observer->owners[owner].active && observer->owners[owner].key_index != NONE)
 	{
 		s_type_99af70 secure_address;
-		if (function_07ab10(observer->owners[owner].key_index, &secure_address, observer->owners[owner].local, 1000, xnaddr) && function_07acc0(&secure_address))
+		if (function_07ab10(observer->owners[owner].key_index, observer->owners[owner].local, 1000, xnaddr, &secure_address) && function_07acc0(&secure_address))
 		{
 			*address = secure_address;
 			*key_index = observer->owners[owner].key_index;

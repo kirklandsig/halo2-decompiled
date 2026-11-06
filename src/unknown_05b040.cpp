@@ -81,13 +81,10 @@ bool c_class_58d20::get_values_4d08(long *a, long *b, byte **c)
 // @retail 0x5b120
 __int64 c_class_58d20::get_values_4da0()
 {
-	long values[2] = { NONE, NONE };
+	__int64 values = NONE;
 
 	if (state > 2 && state <= 8)
-	{
-		values[0] = value4da0;
-		values[1] = value4da4;
-	}
+		values = value4da0_pair;
 
-	return *(__int64 *)values;
+	return values;
 }

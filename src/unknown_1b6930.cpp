@@ -102,41 +102,9 @@ bool function_1b60d0(long index, short type, short level);
 void function_25d420(long prop_index, short type, long actor_index);
 short __stdcall function_272af0(s_match_globals *structure, point3f const *point);
 
-// score 2 (was 2): retail reloads the spilled view before it loads the
-// choice from the entry; ours loads the choice first. Retail passes the
-// reference's own slot for function_2605d0's other index (0x18 for both;
-// a separate other_index local makes the frame 8 bytes bigger, 38); the high bit test of
-// unknown2 is retail's load and test ah; type is NONE before the call.
-// Tried: choice read after the first view store 140; result set first 118;
-// result cleared before the test 131; branches swapped, a view alias, const
-// or outer choice, the copy through a cast 2/2/2/2/2; choice read at each
-// use 33; the request's +4 store before +8 5; a pointer to the destination
-// point 2; choice or view renamed to sort after/before the other 2/2; choice or
-// view declared first 2/2; point copy before the state store 140; point copied
-// with memcpy 2; const choice through a const pointer 2; +0x74 stored before
-// +0x72 6; result set first in the success block 118; type NONE first in the
-// success block 92.
-// Round 101 (lane 7): the entry as the evaluated-position type the callee
-// copies out, its definition pointer read into a local before the view store
-// (kept, 2; replaces the made-up choice struct read through the entry's
-// address); a destination point pointer taken before that read 2; the read
-// after the view store 140; the local declared at the top of the view block 2;
-// the scratch buffer released in each arm 2.
-// Round 63: member-wise position copy 135; direct entry source for only the copy 15;
-// typed source pointer 2; +0x72 before the copy 14; both scalar stores before the copy 66;
-// scalar stores before the state 140; +0x72 first with state before the copy 140 (both
-// +0x74 positions).
-// Round 53 (lane 11, fast): a non-const definition pointer 2; the cluster chosen in an if/else 2; the
-// sign-bit test as `== 0` 2; a const direction pointer 2; the target type as a ternary 44 (687 bytes);
-// re-measured: +0x74 before +0x72 6, the copy as memcpy 2.
-// Round 79 (fast): the success stores in a forceinline taking the view and entry 2 (not keepable, one caller); a second view
-// pointer 2; the state value in a named short 2; a named found test 2; the test as a conditional expression 111 (699 bytes);
-// the definition read through an entry pointer 2.
 // @retail 0x1b69e0
 bool __stdcall function_1b69e0(long actor_index, long prop_index)
 {
-    bool unknown;
-    s_type_b36ac5 entry;
     s_2605d0_request request;
     bool result = false;
     s_actor_view *actor = actor_get(actor_index);
@@ -169,7 +137,9 @@ bool __stdcall function_1b69e0(long actor_index, long prop_index)
                 *(short *)((byte *)&request + 0x44) = cluster;
             }
         }
+        s_type_b36ac5 entry;
         *(real *)((byte *)&request + 0x1c) = 20.0f;
+        bool unknown;
         byte *scratch = ai_scratch_buffer_get();
         /* the other index the callee writes lands in the reference's own slot,
            which its result then overwrites, as in retail */

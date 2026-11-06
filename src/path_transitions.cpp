@@ -416,7 +416,7 @@ bool function_2702a0(long actor_index, long mode, long set, long target_mode, lo
             if (block->count > 0) data = block->data;
             s_transition_collision collision;
             collision.prefix.unknown24 = NONE;
-            long node = function_26d100(g_4687b0, location, &collision.prefix, &matrices.local.position);
+            long node = function_26d100(g_4687b0, &matrices.local.position, location, &collision.prefix);
             if (node_index) *node_index = node;
         }
         result = true;
@@ -446,7 +446,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
                 if (block->count > 0) data = block->data;
                 s_transition_collision collision;
                 collision.prefix.unknown24 = NONE;
-                long node = function_26d100(g_4687b0, location, &collision.prefix, &matrix.position);
+                long node = function_26d100(g_4687b0, &matrix.position, location, &collision.prefix);
                 if (node_index) *node_index = node;
             }
             result = true;
@@ -463,7 +463,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
             if (block->count > 0) data = block->data;
             s_transition_collision collision;
             collision.prefix.unknown24 = NONE;
-            long node = function_26d100(g_4687b0, location, &collision.prefix, *position_reference);
+            long node = function_26d100(g_4687b0, *position_reference, location, &collision.prefix);
             if (node_index) *node_index = node;
         }
         result = true;
@@ -471,7 +471,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 278 (was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
+// MiniMax H (11-05): no new form, no lower score; the projection sum's order ((j + k) + i in retail,
+// (k + j) + i here) comes from the shared dot3f in include/unknown_0259d0.h, and the entry still loads
+// the actor in case 5 where retail loads it at entry and moves pathfinding into EBX.
+// score 219 (was 219): Frame 0x40 and case 2 agree; the entry (actor loaded there, pathfinding moved to EBX), case 5's
+// colours and the projection sum's order differ.
+// Earlier (270, was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
 // Round 132 (m3 lane 5, fast): case 5's success stores with the output index first 341; case 5's direction
 // negated field by field from a vertex pointer 382 (1252 B); case 2's node-index store before the point copies
 // 299; case 5 fallback's node-index store before the point copy 307; result declared before the surface 278.
@@ -668,11 +673,106 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // m3 lane 14 r56 (fast; 0x270d90 295 throughout): case 2's trace through the `data` local 319; the parent-point
 // test as an early `break` 278 (same code); the radius test as `radius * 2.f < first_length` 278 (same code);
 // the origin sum before the projection 278 (same code); corners declared d, c, b, a 280. All restored.
+// DH339: Direct result returns at native paired/actor/trace case ends, seven subsets then
+// complete success exits, eight at 270 fast; full form 270 plain, 1280 bytes.
+// Kept complete per-case returns; early root/actor ingress and paired vector scheduling remain.
 // Round 145 (m3 lane 5, fast; 0x270d90 286): a shared forceinline wrapper over 0x270400 for cases 5 and 2 278;
 // an inline vertex accessor for all eight vertex lookups 278; case 5's test as a named `found` bool 278 (all same
 // code); the register parameters declared pathfinding, entry, surface_index everywhere 278 (same code); the
 // surface read through the table at each use 429 (1336 B). A cdecl compile-only first pass loads actor_index
 // only at its uses even with uses added to every case, so no body form here gives retail's entry load.
+// DH342: On the retained direct-case-return graph, five alternate whole-case orders
+// 342/293/381/345/381; explicit default result returns first/middle/last 270/270/270.
+// Original case order and complete body restored; early root/actor ingress remains.
+// DH345: Reference producer interfaces, seven subsets/full forced expansion, eight at 270;
+// excluded from the trial count because caller adaptation left the queue; all restored.
+// Immutable origin/direction/output pointer bindings, seven subsets and full immutable
+// distance, eight at 270 with all callers unchanged. Original helper/body restored;
+// native root/actor ingress and paired-vector scheduling remain.
+// DH347: Last-consumer first/second receiver and projection scopes, seven subsets then
+// all with a descriptive trace name: 271/346/270/346/271/346/346/346. All restored;
+// frame 0x40 and extent agree, but early root/actor ingress and vector scheduling remain.
+// N370: Persistent root/actor, parent and actual-output lexical families, seven
+// subsets then complete native local identities: 270 each. NOT kept: no equality
+// or gain; early root/actor retention and paired-vector scheduling remain.
+// F372: Paired-case normalized-length/projection/distance declaration lifetimes,
+// seven complete subsets and all with margin: 270/270/270/270/270/270/270/270.
+// Producers never moved; original declarations and complete body restored.
+// F374: Paired normalization-continuation results, positive/complementary
+// bool/byte/short/long: 270/270/270/270/270/270/270/270. NOT kept: no exact
+// ingress/home recovery; original direct tests and complete body restored.
+// DH354: Native direct-return workspace identities, edge/actor/trace subsets
+// 1/2/4/3/5/6/7 and complete endpoint identities: eight at 270. All restored;
+// early root/actor ingress and paired SIMD scheduling remain.
+// DH356: Plain coordinate-copy induction at paired/actor/trace publications, seven
+// subsets then all with ordinary result: 356/344/357/351/353/345/347/363. All restored;
+// native root/actor ingress remains; original record fallback and all helpers retained.
+// Y589: Complete sole-exit success bool/byte/short/long 278/358/356/347;
+// complementary failure 402/359/356/354. NOT kept: ingress/frame/length
+// not recovered; original native case returns and complete body restored.
+// F383: Literal outcomes after paired/actor/trace publications, seven case subsets,
+// then complete literal returns without the result: 365/361/373/390/370/406/371/384.
+// NOT kept: root/actor ingress persists and extents regress; original result, all
+// publications, native helpers and complete body restored.
+// B433: Called normalizer/trace contracts, each ordinary/inline/forced, excluding
+// the ordinary pair: eight at 270. Original declarations and full body restored;
+// early root/actor retention and paired-vector scheduling remain.
+// P333: Native direction/point-publication/parent-record/all transfers through memcpy/memmove:
+// 270/354/270/433/270/414/270/396. NOT kept: no match or gain; original copies, helper and full body restored.
+// Round 62 (m3 lane 14, fast): 219 (was 270): corners b, a, c, d, vector3d_from_points3d for both edges and dot3f for
+// the projection and origin 266 (aligned 181 -> 143); case 5's direction first 264 (110); case 2 through a `vertices`
+// local (no `data`) 219 (70; case 2 is retail's byte for byte, kept). Tried on the way: the reciprocal multiplied in
+// place by the radius 270/266 (same code); `first_length * fraction` 266; dot3f taking &first first 266; a named
+// parent position 266; origin before projected 266; a named difference 266; case 2's position first 266; case 2's
+// state pathfinding read at each use 219 (same code); the trace through `data` 272; a case-5 `vertices` local 264.
+// On 219: projection and origin written out, staged with `+=`, or one of each 366 (1288 bytes); `second, first`
+// declared 219; `second` declared in its block 219; both reciprocal forms 219; both products turned 219; the radius
+// product turned 219. Left: the entry (actor loaded at entry, pathfinding moved to EBX), which colours case 5, and
+// the projection sum (retail (j + k) + i with j in XMM3, ours (k + j) + i).
+// Y603: Complete root-vertex table values/field references at dispatch/case scope,
+// original/shared negation: 230/219/219/219/230/219/219/219. NOT kept: no equality or gain;
+// original body restored, early root/actor ingress and projection schedule remain.
+// DH377: Read-only root/state and actual mutable-entry contracts, seven coordinated subsets
+// 219/219/220/219/220/220/220; complete contracts with a const surface receiver 220.
+// NOT kept: no equality or gain; both original declarations, entry alias and body restored.
+// Native early root/actor ownership and paired projection/limit scheduling remain.
+// DH380: Original five-test corner admission partitioned at four boundaries, positive nested then
+// rejecting-prefix returns: 219/219/219/219/219/219/219/219. NOT kept: no native ingress recovery;
+// original complete geometry, tests, result, helpers and body restored.
+// N395: Actual actor/surface/parent index eight-byte homes, signed/unsigned individually
+// 371/371/219/219/370/370; complete signed/unsigned 398/398. NOT kept: native values are narrow,
+// ingress is not recovered, and wider actor/parent homes grow the frame/extent. Original body restored.
+// N397: Current retained-graph corner orders acbd/acdb/adbc/adcb/bcad/bcda/bdac/bdca 357/355/357/353/356/354/356/353.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Round 151 (harness 232 for the real 219, aligned 89, masked 47): a plain read of actor_index through its address after the surface, after the result or first,
+// used at the test and the call or at the test only, 233 each (the read folds to the use, no entry load); dot sums through a `(j + k) + i` helper, both, either,
+// arguments swapped, 232 each (same code); written out grouped, both or either, 371 (1288 bytes); one final `return result` with breaks 242 (aligned 107), without
+// volatile 322 (1256 bytes, result in CL), declared later 322, first 321; multiple returns without volatile 335.
+// Random grid of 160 natural forms: lead, corners a, b, c, d load actor_index into EAX at entry with no volatile and move pathfinding to EBX, masked 28 (base 47), aligned 64 (base 89), but 289 at 1284 bytes:
+// the load comes first, so pathfinding arrives in EDX where retail has EAX (retail's load follows `mov ebx, eax`). Without case 5's position first 287 (masked 33), with `*= -1.f` or the old negation 290 (35);
+// corners d, c, b, a 354, c, d, a, b 355, a, b, d, c 304. On the lead: a copy of actor_index after the surface or result 297, the surface after the result 289, origin after projected 289, the
+// first three parameters declared in five other orders, with the call changed, 289 each (no effect on the arrival registers), on the old corners 278. Left on the lead: pathfinding's arrival, first.j/first.k, 1.0/radius*2 colours.
+// Round 153 (m3 lane 5, fast; 0x270d90 286 throughout), re-measured on the 219 base: case 5's position declared before its
+// direction 266; case 5's call under an outer actor test 219 (same code); result, surface, start_out declared in that order
+// 219; the radius read once into a named local for the test and the margin 214 (1284 bytes, gain under the gate), with the
+// margin product turned 214, with the test written `radius * 2.f < first_length` 214; second_distance computed first 219.
+// Case 2 and everything after case 5's actor test agree; the entry (actor_index loaded at entry, pathfinding moved to EBX)
+// shifts every line of cases 1/6 and 5.
+// Y603: Complete root-vertex table values/field references at dispatch/case scope,
+// original/shared negation: 230/219/219/219/230/219/219/219. NOT kept: no equality or gain;
+// original body restored, early root/actor ingress and projection schedule remain.
+// DH377: Read-only root/state and actual mutable-entry contracts, seven coordinated subsets
+// 219/219/220/219/220/220/220; complete contracts with a const surface receiver 220.
+// NOT kept: no equality or gain; both original declarations, entry alias and body restored.
+// Native early root/actor ownership and paired projection/limit scheduling remain.
+// DH380: Original five-test corner admission partitioned at four boundaries, positive nested then
+// rejecting-prefix returns: 219/219/219/219/219/219/219/219. NOT kept: no native ingress recovery;
+// original complete geometry, tests, result, helpers and body restored.
+// N395: Actual actor/surface/parent index eight-byte homes, signed/unsigned individually
+// 371/371/219/219/370/370; complete signed/unsigned 398/398. NOT kept: native values are narrow,
+// ingress is not recovered, and wider actor/parent homes grow the frame/extent. Original body restored.
+// N397: Current retained-graph corner orders acbd/acdb/adbc/adcb/bcad/bcda/bdac/bdca 357/355/357/353/356/354/356/353.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
@@ -691,26 +791,21 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
         if (parent_point && (long)surface->vertices[0] != NONE && (long)surface->vertices[1] != NONE &&
             (long)surface->vertices[2] != NONE && (long)surface->vertices[3] != NONE)
         {
-            point3f const *c = &pathfinding->vertices[surface->vertices[2]];
             point3f const *b = &pathfinding->vertices[surface->vertices[1]];
             point3f const *a = &pathfinding->vertices[surface->vertices[0]];
+            point3f const *c = &pathfinding->vertices[surface->vertices[2]];
             point3f const *d = &pathfinding->vertices[surface->vertices[3]];
             vector3f first, second;
-            first.i = b->x - a->x;
-            first.j = b->y - a->y;
-            first.k = b->z - a->z;
+            vector3d_from_points3d(a, b, &first);
             real first_length = function_30bf0(&first);
             if (first_length > 0.f)
             {
-                second.i = d->x - c->x;
-                second.j = d->y - c->y;
-                second.k = d->z - c->z;
+                vector3d_from_points3d(c, d, &second);
                 real second_length = function_30bf0(&second);
                 if (second_length > 0.f)
                 {
-                    real projected = parent_point->point.y * first.j + parent_point->point.z * first.k +
-                        parent_point->point.x * first.i;
-                    real origin = first.j * a->y + a->z * first.k + a->x * first.i;
+                    real projected = dot3f((vector3f const *)&parent_point->point, &first);
+                    real origin = dot3f((vector3f const *)a, &first);
                     real inverse = 1.f / first_length;
                     real fraction = (projected - origin) * inverse;
                     if (first_length > state->source.radius * 2.f)
@@ -729,7 +824,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
                     *parent_node_index_out = parent_node_index;
                     *out_node_index = surface->destination_node;
                     result = true;
-                    break;
+                    return result;
                 }
             }
             start_out->point = *a;
@@ -740,11 +835,11 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
             *out_node_index = surface->destination_node;
             result = true;
         }
-        break;
+        return result;
     case 5:
         {
-            point3f const *position = &pathfinding->vertices[surface->vertices[2]];
             vector3f direction = *(vector3f const *)&pathfinding->vertices[surface->vertices[3]];
+            point3f const *position = &pathfinding->vertices[surface->vertices[2]];
             direction.i = direction.i * -1.f;
             direction.j = direction.j * -1.f;
             direction.k = direction.k * -1.f;
@@ -755,7 +850,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
                 out->output_index = parent_point->output_index;
                 *out_node_index = surface->vertices[0];
                 result = true;
-                break;
+                return result;
             }
             *start_out = *parent_point;
             *parent_node_index_out = parent_node_index;
@@ -764,12 +859,12 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
             *out_node_index = surface->vertices[0];
             result = true;
         }
-        break;
+        return result;
     case 2:
         {
-            s_pathfinding_data *data = (s_pathfinding_data *)state->pathfinding;
-            point3f const *direction_point = &data->vertices[surface->vertices[2]];
-            point3f const *position = &data->vertices[surface->vertices[1]];
+            point3f const *vertices = ((s_pathfinding_data *)state->pathfinding)->vertices;
+            point3f const *direction_point = &vertices[surface->vertices[2]];
+            point3f const *position = &vertices[surface->vertices[1]];
             out->point = *position;
             out->output_index = parent_point->output_index;
             *out_node_index = parent_node_index;
@@ -785,7 +880,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
             }
             result = true;
         }
-        break;
+        return result;
     }
     return result;
 }

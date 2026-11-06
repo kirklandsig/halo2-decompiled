@@ -407,6 +407,13 @@ static __forceinline bool structure_bsp_collision_available()
 // on it, a bool result 56, the excluded arm also `goto done` 67 (272 bytes), the && flag guarding 0xbf9a0 with
 // `if (excluded) return result;` 57 (287 bytes), a byte `found` 45 (same code), the 0xbf9a0 test positive with the
 // requery after its block 56; before it, a byte flag `excluded |= 1` with the model query as its else-if 62 (threaded).
+// Round 149 (m3 lane 5, fast with 0xd2bb0): 0x14af40's matching shape here (named `found`, requery in its then-arm, `!(excluded | found)`), the found arm
+// storing the result 81 (291 bytes), `& 1` test 81, returning it 80 (286), store and return 79 (287): retail pushes EBX and EBP late here.
+// Round 70 (m3 lane 14, fast with 0x14a8e0/0x14af40/0xd2bb0/0x14ac60/0x10a0b0/0xbf9a0): retail keeps source.collision in
+// its stack slot (the requery's dead store to it stays, and only the model-query arm reloads it, before the un-threaded
+// test), so forms that keep the parameter in memory: `(void)&source;` 53 (same code); the flag set in if/else arms with
+// the collision re-read in the else arm and `if (excluded) return result;` 62, with `(void)&source;` 62, with the re-read
+// at the join 62, the join re-read through `&source.collision` 62 (all threaded, 286 bytes).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -478,6 +485,14 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	return false;
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (172); the promoted clone of function_11e800 still hands the four pointers to different registers (retail ecx, edx, eax, esi; ours ecx, edx, esi, eax); that callee lives in src/unknown_11cb00.cpp, not this lane's file.
+// MiniMax A (11-04): no new form, no lower score (172). What still differs: the promoted clone of
+// function_11e800 hands the four pointers to different registers. Retail calls it with
+// ECX=arg1, EDX=arg2, EAX=arg3, ESI=arg4; our build calls it with ECX=arg1, EDX=arg2, ESI=arg3,
+// EAX=arg4 (checked at our 0x407628 against retail's 0x14aebb). The assignment comes from the
+// callee's own body in src/unknown_11cb00.cpp (126 off retail), which is not this machine's file,
+// so the call site cannot be fixed from here: BLOCKED-BY 0x11e800.
+// Also still different: the BSP/section carriers and the plane/instance stack homes.
 // MiniMax E (11-01): no new form, no lower score; the byte result set before the type branch gives
 // 197 and the range declared before the section 172 with identical code. Left: the BSP in EBX with the
 // section in its stack home, the rotated range/plane/instance homes and the 0x16e1b0 output homes.
@@ -621,6 +636,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // positions 220-221; field locals moved after the group 216-224; `!count` 208; section NULL as a statement
 // 208; permuter 198 (a volatile only). Left: VC keeps constant 0 in EBP (retail gives EBP to the range at the
 // join and tests with `test`), which shifts the positional score, and BLOCKED-BY 0x11e800's registers.
+// Round 216 (m3 lane 3, fast): a bool result declared first with definition and section NULL at their declarations
+// (no branch NULL stores) 197 (713 bytes); the section declared first, before the point copy 172 (same code); the byte
+// result cleared before the type branches 197 (742 bytes); the surface test written as one plane comparison (no
+// surface local) 201; the 0x16e1b0 call moved after the vertex fetches 282 (774 bytes). Body restored.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -856,6 +875,13 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // R75: point address at call/before extraction 4/4; vertex base at call/through extraction 4/4; direct array
 // arithmetic 4; both input pointers through extraction 4; vertices before the reference loop 4; output-address locals 4.
 // Round 123 (m3 lane 7): listing re-read, still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
+// Round 116 (fast): failed-test continue 4; late success result 58 (879 bytes); early success result 4;
+// vertex-node declaration before the array 4; index declaration after the vertex ordinal 6; counter
+// preincrement in that context 6; exact-count exit 7; direct success return 335 (822). Original body restored;
+// the four triangle-test argument registers remain BLOCKED-BY 0x11e800.
+// Round 210 (fast, diagnostic, reverted): 0x11e800 declared (p, a, b, c, u, v) still gives 0 (0x11e800 126, 0x14ac60
+// 172); all four differences are its argument registers. BLOCKED-BY 0x11e800 (contributor).
+// Round 216 (m3 lane 3): baseline listing still differs only in 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
@@ -974,6 +1000,11 @@ done:
 
 #undef COLLISION_OBJECT_14A8E0
 
+/* excluded holds whether the hit object is left out of the model query. Nothing reads its incoming
+   value (the only caller passes true); retail keeps the flag in BL and leaves the argument's slot alone. */
+// MiniMax G (11-04): the result as a local with the parameter kept alive by an unused pointer 125 and 127;
+// the entry order none/probe/flags/result 127; the exclusion flag assigned in the type-6 arm with the
+// requery after the join 149; the join test as !(excluded & 1) 138. Body restored to the original.
 // score 125 (was 125): frame 0x64 agrees; exclusion BL, NONE/EBX and spilled result allocation still differ.
 // Lane 15 r17: the pointers to the direction, ignored object and surface parameters removed (each
 // identical code; only the triangle pointer holds the convention: without it 158 and matched caller
@@ -1085,14 +1116,6 @@ done:
 // and native collision fields 157/156/156/160; with the existing initial point setter
 // 144/145/145/157. All regress; original record layout, grouped state, triangle access and
 // body restored; result/NONE/exclusion allocation and direction reloads remain.
-// Round 110 (m3 lane 7, fast): the flag through a function-scope `excluded` copied from a `scenery_excluded` &&
-// local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
-// first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the
-// existing `vector3f_add_scaled(probe, direction, 0.02f, probe)` 125 (same code).
-// DH round 264: Result-owned pretested retries with independent flags/long-short-word-byte attempts
-// and native collision fields 157/156/156/160; with the existing initial point setter
-// 144/145/145/157. All regress; original record layout, grouped state, triangle access and
-// body restored; result/NONE/exclusion allocation and direction reloads remain.
 // Round 294: Initial probe memmove/three-long triangle memset/two-byte material memset
 // subsets 1/2/4/3/5/6/7 give 140/144/125/138/140/144/138; all with the availability
 // producer 158. Original body restored; exclusion/result/NONE and direction homes remain.
@@ -1152,50 +1175,98 @@ done:
 // N351: Native output long fields +08/+0c/+10, subsets 1/2/4/3/5/6/7, then model-output pointer:
 // 125/125/125/125/125/125/125/124. NOT kept: no exact match or qualifying gain; complete original body restored.
 // Remaining: exclusion/result/NONE homes and direction reload.
+// Round 162 (lane 4, fast with 0xd2a50). LEAD, not kept (diagnostic forms): one lightmap call reached through a
+// `hit` flag (true, cleared in the object arm, set from the requery, `if (hit) result = lightmap`) gives retail's shared
+// `test al, al; mov [slot], al` tail and the result in memory, 164 at 448 bytes while the flag threads (0xd2a50 lost,
+// probe in ESI). With the join test as `!(excluded & 1)` (or `excluded ^ 1`) 139 at 471 bytes and retail's allocation;
+// plus the existing structure_bsp_collision_available() 150 at 461, entry order result, NONE short, probe copy, flags 112
+// (n,p,f,r 112; p,n,r,f 113; p,f,r,n 130; f,p,r,n 150); plus result a local and the unread parameter kept by an unused
+// `bool const *flag_reference = &parameter` 59 at 470 bytes, aligned 28, 0xd2a50 matching (a plain address cast, or an
+// empty inline taking it, drops the parameter: ret 0xc, 114). Only three things then differ: the NONE short's store
+// before the result's, `test bl, 1` for `test bl, bl`, and the found arm, inline in ours and after the step in retail.
+// So what is left is the join test staying unthreaded with a plain `test bl, bl`, and the found arm's place.
+// Threaded on that 59 form (167, 432 bytes; aligned 155): join test as `&` or `|` of itself, `&& itself`, `(long)` == 0, > 0,
+// a reference, a pointer or a copy of the flag at the join, `while`, `do/while(false)`, `for` or `switch` around
+// the requery, an empty inline before it, a known-false `hit` or `retry` as the compound's first element or second;
+// `-(long)excluded == 0` stays unthreaded 65 [24]. On the kept body: a statement in the else before the test 125; result
+// local 126 (parameter dropped, 0xd2a50 lost); the flag in the unread parameter 126 (dropped); `found` set in arms or
+// from the && test, then if/else-if, 125 each; the requery and found call in an inline taking the flag 155 at 486 bytes
+// (first test stays, second threads); negative dispatch with the found arm in the else 125, with `hit` 164; 16-128
+// unused locals 164 (no tracking limit); the found arm at a label after the step (goto, diagnostic) 59 (ours moves it
+// back inline); `found` tested after the lightmap call with `!found && !excluded` 182 at 428 (found arm after the
+// lightmap, jumped over; the flag still threads), that with found before lightmap 174, as else-if 182, the flag set by if 183;
+// for(;;) with breaks on the 112 form 144 (505 bytes).
+// N369: Pass-owned false-result initialization with independent availability,
+// generation and retry scopes, masks 0..7: 146/146/146/171/146/146/146/171.
+// NOT kept: all lose the matched caller (14), regress and miss native extent;
+// original entry-result lifetime, guards and complete body restored.
+// Lane 5 r149 (held, coordinator): MATCH with the parameter renamed `unused`, a fresh `bool result`, a dead
+// `bool const *unused_reference = &unused;` (retail never reads it, but its slot is address-taken), surface read once
+// through its address, the BSP test through structure_bsp_collision_available, and the object path as a `hit` flag
+// with the requery under `!(excluded | found)`. Without the dead address line 109 (fast). Not kept: a parameter-address
+// line that is never read is reverted even with a match (10-19 ruling). Patch build/held/lane5-r149-14af40-unused-address.patch.
+// N378: Complete object completion chain with eligibility/model/fallback results in the actual return result:
+// 181/133/181/133/200/147/200/147. NOT kept: no byte equality or qualifying native-shape gain;
+// original executable source restored; exclusion/result/NONE and direction homes remain.
+// Lane 12 r92: matches (0) with `bool const *unused_reference = &unused; __assume(*unused_reference);` plus
+// `__assume(!found)` in the !found arm, hit/found flags and plain locals; held, not kept: the assume on the
+// unread parameter states a value nobody checks (patch build/held/lane12-r92-14af40-assume-unused.patch).
+// T60: Overwritten result-parameter char/short/word/int/long/dword/unsigned-int domains
+// 119/115/115/118/118/118/118; independent long result 120 (caller lost). NOT kept:
+// wider result operations lack native byte storage/equality; other gains below margin.
+// Original Boolean contract/body restored; exclusion/result/NONE and direction homes remain.
+// Round 216 (m3 lane 3, fast with 0xd2a50): the existing availability helper with the entry order NONE short, probe
+// copy, flags, result 151 (440 bytes); that entry order alone 127; the flag in two steps (type test, then `excluded =
+// policy != 2` under it) 155 (480 bytes, sete/setne); the first query as the `while` condition with one `break` retry
+// test 155 (480 bytes, 0xd2a50 lost); the flag as a byte member of the state aggregate 152 (483 bytes). Body restored.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
-    long ignore_object_index, bool result, void *surface, point3f *probe)
+    long ignore_object_index, bool excluded, void *surface, point3f *probe)
 {
     s_structure_lightmap_triangle *triangle = (s_structure_lightmap_triangle *)surface;
-    s_structure_lightmap_triangle *const *triangle_reference = &triangle;
-    struct { long flags; long attempts; byte collision[0x5c]; } state;
-    state.flags = include_objects ? 0x4480000d : 0x4800c0d;
-    result = false;
-    *(short *)(state.collision + 0x24) = NONE;
+    long flags;
+    long attempts;
+    byte collision[0x5c];
+    *(short *)(collision + 0x24) = NONE;
+    bool result = false;
     *probe = *point;
-    if (!g_4e0344 || g_4e0344->count <= 0 || !g_4e0348) return false;
-    byte *bsp = (byte *)g_4e0344->bsp;
-    if (*(long *)(bsp + 0x1c) == NONE || *(long *)(bsp + 4) != *(long *)((byte *)g_4e0348 + 8)) return false;
-    (*triangle_reference)->cluster_index = NONE;
-    (*triangle_reference)->instance_index = NONE;
-    *(long *)((byte *)*triangle_reference + 8) = NONE;
-    state.attempts = 0;
+    flags = include_objects ? 0x4480000d : 0x4800c0d;
+    if (!structure_bsp_collision_available()) return false;
+    triangle->cluster_index = NONE;
+    triangle->instance_index = NONE;
+    *(long *)((byte *)triangle + 8) = NONE;
+    attempts = 0;
     bool retry;
     do
     {
         retry = false;
-        if (!function_1697c0(state.flags, probe, direction, ignore_object_index, NONE,
-            (s_collision_result_1697c0 *)state.collision)) break;
-        long object_index = *(long *)(state.collision + 0x40);
-        if (object_index == NONE)
-            result = structure_get_lightmap_triangle((s_structure_collision_result *)state.collision, *triangle_reference);
-        else
+        if (!function_1697c0(flags, probe, direction, ignore_object_index, NONE,
+            (s_collision_result_1697c0 *)collision)) break;
+        long object_index = *(long *)(collision + 0x40);
+        bool hit = true;
+        if (object_index != NONE)
         {
             byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-            bool excluded = object[0xaa] == 6 && *(short *)(g_4e3b44[*(long *)object & 0xffff].bytes + 0xc0) != 2;
-            if (!excluded && function_bf9a0(object_index, (long *)((byte *)*triangle_reference + 0xc),
-                (long *)((byte *)*triangle_reference + 0x10)))
-                result = function_14a8e0((s_structure_collision_result *)state.collision,
-                    *(long *)((byte *)*triangle_reference + 0xc), *triangle_reference);
-            else if (!excluded)
+            excluded = object[0xaa] == 6 && *(short *)(g_4e3b44[*(long *)object & 0xffff].bytes + 0xc0) != 2;
+            hit = false;
+            bool found = !excluded && function_bf9a0(object_index, (long *)((byte *)triangle + 0xc),
+                (long *)((byte *)triangle + 0x10));
+            if (!found)
             {
-                state.flags = 0x4800005;
-                if (function_1697c0(state.flags, probe, direction, NONE, NONE,
-                    (s_collision_result_1697c0 *)state.collision))
-                    result = structure_get_lightmap_triangle((s_structure_collision_result *)state.collision, *triangle_reference);
+                if (!(excluded | found))
+                {
+                    flags = 0x4800005;
+                    hit = function_1697c0(flags, probe, direction, NONE, NONE,
+                        (s_collision_result_1697c0 *)collision);
+                }
             }
+            else
+                result = function_14a8e0((s_structure_collision_result *)collision,
+                    *(long *)((byte *)triangle + 0xc), triangle);
         }
-        if (!result && (state.collision[0x58] & 1) && ++state.attempts < 3)
+        if (hit)
+            result = structure_get_lightmap_triangle((s_structure_collision_result *)collision, triangle);
+        if (!result && (collision[0x58] & 1) && ++attempts < 3)
         {
             probe->x += direction->i * 0.02f;
             probe->y += direction->j * 0.02f;

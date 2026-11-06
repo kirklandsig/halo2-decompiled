@@ -97,7 +97,7 @@ long function_1e4a50(long character_index);
 long function_1e4990(long character_index);
 void *function_1e4ef0(long actor_index);
 bool __stdcall function_110ab0(long unit_index);
-short *function_e70b0(long unit_index, short *value);
+short *function_e70b0(short *value, long unit_index);
 bool function_114b60(short entry_index, short fallback_index, long unit_index, long priority, void const *extra);
 point3f *function_b9dd0(long object_index, point3f *result);
 void function_b9fc0(long object_index, vector3f *forward, vector3f *up);
@@ -130,7 +130,7 @@ bool function_2702a0(long actor_index, long mode, long set, long target_mode, lo
 	point3f const *position, vector3f const *forward, point3f *out_position,
 	long *location, vector3f *out_forward, long *node_index);
 void function_1fa600(vector3f *vector, word flags);
-long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point);
+long function_26d100(vector3f const *up, point3f const *point, long *unknown, s_collision_result_1697c0 *collision);
 bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, vector3f *direction_out,
 	short *type_out, vector3f *movement_out);
 bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point);
@@ -218,7 +218,7 @@ void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f
 	{
 		long unit_index = actor->unknown018;
 		short action;
-		function_e70b0(unit_index, &action);
+		function_e70b0(&action, unit_index);
 		if (action == 0)
 		{
 			if (function_e68c0(0x33, unit_index))
@@ -673,7 +673,7 @@ void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f
 			else
 			{
 				short action;
-				function_e70b0(actor->unknown018, &action);
+				function_e70b0(&action, actor->unknown018);
 				lined_up = action == 5;
 			}
 			if (!lined_up || (surface && surface->type == 1 && (surface->flags & 1)))
@@ -724,7 +724,7 @@ void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f
 				collision.unknown24 = NONE;
 				function_210850(&entry->point, &entry_point);
 				function_1fa600((vector3f *)&point, node->flags);
-				if (function_26d100((vector3f const *)&point, NULL, &collision, &entry_point) != NONE)
+				if (function_26d100((vector3f const *)&point, &entry_point, NULL, &collision) != NONE)
 				{
 					vector3f const *normal = (vector3f const *)((byte const *)&collision + 0x28);
 					vector3f vector;

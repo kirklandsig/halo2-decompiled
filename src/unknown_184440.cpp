@@ -182,7 +182,21 @@ __forceinline bool function_184448(long arg_0)
 }
 
 #pragma inline_depth(1)
-// score 965 (was 965): Frame 0x11d4 versus 0x11cc and scene/surface geometry homes remain.
+// MiniMax B (11-04): no new form, no lower score.
+// score 965 (s1A walk 11-06): the statement walk against retail found no behaviour difference; every condition, field,
+// callee and argument order agrees. Not kept, since together they score 976: two type changes retail's bytes show (1) no cached axis locals - retail
+// reloads g_440b94[idx][0/1] in the cell loop (0x185171/0x185178) and keeps the pre-scaled offsets only as loop-invariants in
+// the vertex loop (0x1847e2); (2) full-width vertex counters (retail's count at [esp+0xb8] is a dword, pushed whole at
+// 0x185241, with pointer-stepped vertex stores at 0x18497a). Together they give frame 0x11cc and 4590 bytes as retail (the
+// 0x11d4 excess of the older rounds below came from the cached short axes), but score 976 because the first
+// difference moves from +0x7 to +0x10 and every later stack home still differs. The code here keeps the short axes. Still open: retail keeps the record/surface
+// pointers at [esp+0x98]/[esp+0xe0]/[esp+0xe4] from the start; retail tests the plane flag as movsx + `test dh,dh` (ours
+// zero-extends); retail's point/plane transforms read scalars (no vector copy); retail stores the four cell bounds as words
+// at +0x3c..+0x42. On the 976 form (opcode-normalized similarity vs retail, base 0.724 -> 0.741): bool local_29 (retail's
+// sete/test al at 0x184834) 1001; face bounds at the top of the iteration 997; both 993; plus plane transform on scalars
+// 967 (4567 bytes, frame 0x11c4); plus point scalars too 1007 (frame 0x11bc); point scalars alone 1028; test as `< 0` 1003;
+// long loop counters for the cells 993; cell bounds as a short rectangle 984/994; surface lookup as one && test 976;
+// record/list declarations swapped 976.
 // Earlier (965, was 977): the same frame and homes.
 // Round 419: scene field observations 983; effect record reference 977; scene field observations/effect
 // record reference 983; surface record reference 977; scene field observations/surface record reference

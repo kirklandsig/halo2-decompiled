@@ -1209,6 +1209,7 @@ void function_7e100(long current, const s_member_quality_collection *collection,
 long function_1931a0(long count, s_surface_description *variant);
 
 #pragma inline_depth(0)
+// MiniMax B (11-05): no new form, no lower score (6); the elapsed-store forms (a named local for the difference, the start read inlined, a named local for the clock read) match on the reduced image and stay at 6 in the full build; all six differences follow from 0x7e210's full-image convention (ours reads the session from the stack, retail passes it in EAX), which also orders the elapsed store after the stack cleanup and shifts the later calls; 0x7e210 has three call sites and sits in src/unknown_07a9a0.cpp, which is not this lane's file.
 // score 6 (was 6): BLOCKED-BY 0x7e210: everything else matches. Still differ: the
 // elapsed store is ordered after the stack cleanup and the 0x7e210 call pushes the
 // session (retail passes it in EAX); the one-byte-shorter push shifts the 0x7e100 call
@@ -1575,6 +1576,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax E (11-05): no new form, no lower score.
+// MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
+// `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
 // score 709 (was 709): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
 // Earlier: Frame 0xc0 agrees; initial cursor base/home, slot and request/completion homes remain.
 // frame 0xc0 agrees; native completion-group cursor retained;
@@ -1757,6 +1761,57 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // or the later copy read directly 709/709 (same code); online_logon_connected() 729 (2862 bytes, aligned 343). Retail's
 // `mov ecx, 0; cmovne ecx, eax` is one line shorter than ours, so every later line shifts: the slot test needs
 // /arch:SSE (a file-flag decision), and the positional count cannot fall far before that.
+// M366: Shared initial-pass clear/availability/fallback ordinals, pairwise/all lifetimes:
+// signed 709/709/709/709, unsigned 729/709/729/729. NOT kept: no exact cursor-home repair;
+// original independent ordinals and full body restored; initial cursor/slot and later homes remain.
+// M369: Existing availability boundary receives the actual descriptor by pointer/reference,
+// ordinary/forced inline and long/bool truth: 709/719/709/719/709/719/709/719.
+// NOT kept: all tie or regress; original ordinal helper, all three calls and whole body restored.
+// Round 129 (m3 lane 7, fast; aligned/masked control 344/215; a match still needs /arch:SSE for the slot's cmovne, a flag decision): `failed` set in the incomplete arm, without the
+// `failed || received != 6` line, as one store after the inner test 703 (2862 B), in each inner arm 728 (2894 B), first in each arm 728, with `received != 6` tested first and the store
+// in each arm 702 (2862 B, aligned 344: a gain of 7, under the keep threshold, not kept). On 702: retail's poll order (state store before the restore) 702, the failure counter's test
+// swapped 702, poll field order 702, delay ternary reversed 702, the last read time in a named local read ahead of the clock 703, `added < 4` first in the loop test 714 and with that local 715,
+// count and properties pointer swapped 730 (2846 B), the write poll as `state < 0 || state > 1` first 703, that with `added < 4` first 715.
+// M377: Complete availability/provider truth, direct initialization then test-produced
+// true, bool/byte/short/long results: 719/719/719/719/719/719/719/719.
+// NOT kept: all regress; original producer, three callers and full body restored.
+// M379: Complete identity member production identifier/flags first at producer/group/function
+// scope, mutable/readonly native-member aggregate initialization: 744 each. NOT kept: all regress;
+// original packed-object snapshot and body restored; cursor/slot and later homes remain.
+// M382: Complementary initial admission then team decisions, bool/byte/short/long:
+// 709/709/709/709/710/710/779/759. NOT kept: no native cursor/slot repair or byte match; original
+// positive decisions, snapshots, helpers, task/builder roles and complete body restored.
+// M384: Complete identity/property cache-refresh changed/current result, bool/byte/short/long:
+// 709/709/709/709/709/709/709/709. NOT kept: no equality for one-use result residence;
+// original full body restored; initial cursor/slot and request/completion homes remain.
+// Round 148 (m3 lane 6, fast; aligned counts in brackets, control 709 [515]): retail's shape needs the fields at 0x50c460..
+// as one struct (they are contiguous, with a 4-byte member at +0x2598 before the buffers; the array fields escape, and
+// retail reloads the record count where plain globals hoist it). Match-only recipe, 685 [427], 2862 bytes: that struct,
+// `failed = true` in the incomplete arm, the getter 0x192e60 at all three sites, `long last` for the timestamp, remaining
+// record and property space locals, a `values` pointer in the request loop, the identity local only in the type-5 arm with
+// the other arm copying directly, a `properties` local with `j < 6` (rolls the loop as retail), `added < 4 && i < 16`,
+// one `task` local at every use, and two flags (`due`, `duplicate`), which is why it is not kept. The value form of `due`
+// 715; `||` for it 749; plain globals 720. Forms measured on the way: failed arm alone 703 (a gain of 6), struct on that 710,
+// request and completion rewrite 705 (2894) [459], one identity in both arms 757 [719], selector helper 745, identity by value
+// 698, walking group pointer 742/730, direct record fields 746, store orders 747/747, field-wise identity 717/699/735/750,
+// retail's poll order 701 [425], named type 701, else-arm named source 715, break 701, continue 701, uniform direct task 693,
+// write-side struct 703. Keepable-only climb from the body below: failed arm 703, then none lower; with retail's poll order 702
+// [523], online_logon_connected() 793, delay ternary 703, reversed state test 703, swapped failure counter 703.
+// Diagnostic, reverted at once: `word volatile count` 731/733/718 (retail's reload appears, `team` then takes EBX).
+// M377: Complete availability/provider truth, direct initialization then test-produced
+// true, bool/byte/short/long results: 719/719/719/719/719/719/719/719.
+// NOT kept: all regress; original producer, three callers and full body restored.
+// M379: Complete identity member production identifier/flags first at producer/group/function
+// scope, mutable/readonly native-member aggregate initialization: 744 each. NOT kept: all regress;
+// original packed-object snapshot and body restored; cursor/slot and later homes remain.
+// M382: Complementary initial admission then team decisions, bool/byte/short/long:
+// 709/709/709/709/710/710/779/759. NOT kept: no native cursor/slot repair or byte match; original
+// positive decisions, snapshots, helpers, task/builder roles and complete body restored.
+// M384: Complete identity/property cache-refresh changed/current result, bool/byte/short/long:
+// 709/709/709/709/709/709/709/709. NOT kept: no equality for one-use result residence;
+// original full body restored; initial cursor/slot and request/completion homes remain.
+// Round 74 (m3 lane 10, fast, callers 0x641a0 and 0x8df50 checked): on the note's 702 form rebuilt (`received != 6` first, `failed = true` in each state arm, 2862 bytes, a gain of 7, not kept): bound limits through a
+// `long const *` local 702; `value` as `= 0; if (type)` 703; write poll `state == 0 || state == 1` 718 (2878); `long failed` 719 (2878); properties_used declared first 702; `now` read first 702.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -5,6 +5,7 @@
 #include "unknown_11c920.h"
 #include "camera_storage.h"
 #include <math.h>
+#include "unknown_11cc90.h"
 #include "unknown_0494b0.h"
 #include "globals.h"
 
@@ -19,6 +20,12 @@
 // and the inverse at [esp+0x10], ours holds the secondary shape at [esp+0x10] and the inverse at
 // [esp+0x14], and our frame is eight bytes short of retail's.
 // MiniMax R (10-31): shape0 hoisted above the inverse 712, shape0 first in the switch 581; permuter 22 tries, best 571 (baseline 571); no lower score.
+// score 537 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
+// fourteen bytes longer (earlier thirteen); retail keeps the primary shape in the stack slot at [esp+0x14]
+// MiniMax D (11-05): retail's single test on source->type_low, with the shape0 pointer in the home at
+// [esp+0x14] and the inverse scalar below it at [esp+0x10], was tried as an if/else over both shape
+// pointers in three declaration orders: 621/621/626; the frame stays 0x58 against retail's 0x60, so no
+// lower score.
 // score 581 (was 581): the frame is 0x58 against retail's 0x60 (ret 0x20 and the EAX result agree) and the body is
 // thirteen bytes longer; retail keeps the primary shape in the stack slot at [esp+0x14]
 // and the secondary shape in EDI, ours keeps the inverse at [esp+0x14] and the
@@ -241,6 +248,42 @@
 // sines through a named pointer to the global point 578; s1 from the local copy with s0 from the global 652 (2587 bytes);
 // staged first/second cross 575/575; a separate vector for the second wave 575; the first-wave vector declared after its
 // add 575; the vector locals renamed so retail's low-to-high slot order sorts by name, ascending and descending, 575/575.
+// Y572: Coherent existing cross/sum forced/ordinary/plain declaration pairs,
+// all eight nonoriginal policies: 581 each. NOT kept: frame remains 0x58/0x60;
+// complete target and both helper bodies unchanged, original declarations restored.
+// Y582: Standard array transfers for existing v2/v3/v4, seven nonempty subsets,
+// then all with ordinary w transfer: 676/736/661/739/719/749/765/803. Full basis
+// recovers frame 0x60 but grows to 2712 bytes. NOT kept: all regress; original
+// native copies, helpers, integer conversion and complete body restored.
+// AC547: Special-cross W receiver 581; first/both perspective input receivers
+// across all reuse subsets 676/682/697/697/682/682; all with second projection
+// first 662. NOT kept: no native frame/residence match; original body restored.
+// Y585: Complete first/second/combined branch-owned maximum result subsets
+// 1/2/4/3/5/6/7: 581 each; all with fallback-first arms 662. NOT kept:
+// no frame recovery or eligible gain; original maxima and complete body restored.
+// Y587: Actual two-axis cross table for traversal long/dword/short/word/byte/
+// signed-char, then long/short while: 728/728/803/803/803/803/728/803.
+// NOT kept: table/output residence regresses and grows; original direct calls and full body restored.
+// M3 lane 4 r167 (fast, one-file link with ballast exact at 581, 3 s a form; masked aligned 204): entry shapes and global sine reads and
+// a plain sixth product 600 (2636 bytes, aligned 392 against 460); entry shapes alone 622 (listed, 2622 bytes, aligned 396); the four trig
+// factors as named doubles there 601 (2630 bytes), the 8.2 argument as a named double with the three other factors named 629 (2632 bytes,
+// aligned 391, shape 203), as a real 600, the same with the 8.2 product written (x * b) * c order 600, the factors as reals with a double argument 628
+// (2632 bytes). Retail's s0 leaves sin(x), cos(7.8y) and cos(7.75y) on the x87 stack and pops all three dead after
+// the product (fstp st(2), st(1), st(0)), with fsin of the 8.2 argument done last; no form here forward-substitutes them that way yet.
+// M3 lane 4 r170 (one-file harness with the ballast object, exact at 581; masked aligned in brackets, base [209]). Kept 537 (plain 536
+// with a named `type` local, not kept: it mixes a local copy with direct field reads): both shape pointers NULL then one if/else at
+// entry, the type switch as `if (source->type == 0) ... else if (source->type != 1)`, the special-flag arm first in the
+// `0x20 & flags` test, the second wave through the existing vector3f_add_scaled. Each part removed alone: 706/631/602/629.
+// `sin(v1.y + v1.x * 5.6f)` 537 (identical, dropped). Grid on the kept form: first/second wave as scale+copy, add_scaled, direct
+// `+=` either operand order, scale+vector3f_add; amp/k named or inline; cross/sine statement orders; default-arm declaration and
+// row orders: best 536 (s0 first, amp and k written inline). Type `if` with a local read everywhere 699. Older forms on this base:
+// type if 580 [175], flag arm first 673 [198], both 670 [164], plain sixth product (behaviour fix) 648 [192], both with it 617.
+// x87 lead (diagnostic, not kept): retail's non-popping `fmul st(1); fmul st(2); fadd st(3)` and the three late `fstp st(k)` pops
+// appear only when sin x, cos 7.8y and cos 7.75y have a second use that is removed late: a dead write through a pointer to a local
+// gives retail's x87 sequence exactly with the 8.2 argument named first (frame 0x60, [111], 656 at 2587 B); `if (false)`, an empty
+// inline taking them, unread aggregate members 620; `if (!special)` same pops, frame 0x64. An inline helper filling a local wave
+// vector from the global point (first sine, then the named factors, the unused third component written through a copy of the
+// result pointer) gives the same sequence (659 at 2584 B): retail's direct global reads may come from such a helper.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -255,7 +298,12 @@ void function_0497a0(
 	vector4f *old30)
 {
 	real inv = -1.0f;
-	s_view_shape_1 *shape1 = source->type_low == 0 ? 0 : &source->shape1;
+	s_view_shape_0 *shape0 = NULL;
+	s_view_shape_1 *shape1 = NULL;
+	if (source->type_low == 0)
+		shape0 = &source->shape0;
+	else
+		shape1 = &source->shape1;
 
 	bool special = ((0x20 & flags->flags)) && (0x40000 & flags->flags);
 	point3f v1 = special ? g_4b9da0 : source->v2c;
@@ -277,8 +325,7 @@ void function_0497a0(
 		v1.y += wave_shift.j;
 		v1.z = v1.z + (wave_shift.k);
 		real k = s1 * 0.025f;
-		vector3f_scale(&c, k, &wave_shift);
-		vector3f_add((vector3f const *)&v1, &wave_shift, (vector3f *)&v1);
+		vector3f_add_scaled((vector3f const *)&v1, &c, k, (vector3f *)&v1);
 		cross3f(&v2, &v4, &w);
 	}
 	else
@@ -297,7 +344,6 @@ void function_0497a0(
 
 		default:
 		{
-			s_view_shape_0 *shape0 = source->type_low == 0 ? &source->shape0 : 0;
 			inv = -1.0f / (shape0 ? shape0->f0c : shape1->f2c);
 			break;
 		}
@@ -310,9 +356,7 @@ void function_0497a0(
 		result->p10 = v1;
 	}
 
-	switch (source->type)
-	{
-	case 0:
+	if (source->type == 0)
 	{
 		result->v20.i = source->v1c.i * inv;
 		result->v20.j = (inv * source->v1c.j);
@@ -322,13 +366,8 @@ void function_0497a0(
 		result->v30.k = inv * camera->v34.k;
 		result->f2c = 0.0f;
 		result->f3c = 0.0f;
-		break;
 	}
-
-	case 1:
-		break;
-
-	default:
+	else if (source->type != 1)
 	{
 		vector3f r;
 		vector3f s;
@@ -345,8 +384,6 @@ void function_0497a0(
 		result->v30.k = k * (s.k * sy + v2.k);
 		result->f2c = 0.0f;
 		result->f3c = 0.0f;
-		break;
-	}
 	}
 
 	switch (flags->w8e)
@@ -371,18 +408,18 @@ void function_0497a0(
 			result->v40.j = inv * up->j;
 			result->v40.k = inv * up->k;
 			result->f4c = inv * (shape1->f28 + source->f28);
-			if (!(0x20 & flags->flags))
+			if (0x20 & flags->flags)
+			{
+				result->v50 = *g_4687a4;
+				result->f5c = 1.0f;
+			}
+			else
 			{
 				real h = (shape1->f2c - shape1->f28) * 0.025f * 0.5f;
 				result->v50.i = h * result->v40.i;
 				result->v50.j = h * result->v40.j;
 				result->v50.k = result->v40.k * h;
 				result->f5c = (source->f28 + 0.0078125f) * h * inv + 0.5f;
-			}
-			else
-			{
-				result->v50 = *g_4687a4;
-				result->f5c = 1.0f;
 			}
 		}
 		break;
@@ -569,6 +606,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
+// score 250 (was 250): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// MiniMax D (11-05): four declaration orders for the u and v scalars and their step and width partners
+// give 274/287/285 against 265; the frame stays 0xa8 against retail's 0xac, so no lower score.
 // score 265 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Earlier: Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
 // dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing
@@ -842,6 +883,46 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // addss xmm6, xmm5), so everything after case 4 shifts. Side only 374, both 374; with case 1/2's first.x before
 // second.x 374 (VC copies the product instead); with normalize2d_fast on a case 1/2 side vector and normalize3d
 // on case 0's normal 368; that with the x pair before the y pair 372. All restored.
+// Y574: Current paired-point callback completion false/true at entry/chain boundary and default-
+// case first/last: 609/609/609/609/609/609/634/634. NOT kept: all regress; false entry completion
+// recovers frame 0xac but grows to 2608 bytes and changes homes; original 265 body restored.
+// Original complete body and helpers restored.
+// DH346: On retained paired geometry, staged side/normal/both crosses, shared chain difference,
+// immutable source/definition/outer/all pointer bindings: 265/265/265/266/265/265/265/265.
+// NOT kept: no native frame/spill recovery; original complete body and helpers restored.
+// Y576: One shared current/next/transition channel ordinal, long/short/word/byte
+// 265/754/754/754; also owning RGB tint 265/756/756/756. NOT kept: long forms
+// canonicalize; narrow forms disrupt unrolling. Original frame 0xa8 and scalar/spill homes remain.
+// Y578: Actual V interval in existing bounds, field/aggregate/native/library publication
+// at producer/entry storage: 267/267/573/573/267/651/573/573. NOT kept: interval
+// residence misses equality; native-frame copy forms grow. Original separate scalars and body restored.
+// Y582: On current paired-point geometry, original/shared normalizer pairs for camera side
+// and surface normal, all eight nonoriginal pairs: 270/270/377/377/377/377/377/377.
+// NOT kept: no byte match; original roots/scales, shared crosses and full body restored.
+// AC547: Next-color difference/scaled-difference stages 304/526; upper/lower library
+// seeds 563/626; seeded complete stages 579/627; transition difference/scaled-difference
+// receiver stages 535/571. NOT kept: all regress; original complete body restored.
+// Y585: Current paired geometry, initial/next/blend output-stream cursor subsets
+// 1/2/4/3/5/6/7: 265/265/265/268/268/352/350; all with tint cursor 265.
+// NOT kept: no native frame recovery or eligible gain; original counters and complete body restored.
+// Y587: Float root API at vertical/planar/camera-side/camera-normal/vertical-planar/
+// camera-pair/all/all with float epsilon consumers: eight 265s. NOT kept:
+// API boundaries canonicalize; native frame/spill homes remain; original body restored.
+// M3 lane 4 r167 (kept 250 fast, one-file link with the ballast object 251, ranked by aligned count and shape): both arms of case 0's
+// normal setting i before j 255, plus case 1/2's dx/dy as a vector2f through the existing normalize2d_fast 250 (both kept). Not kept:
+// side length i, j, k alone 374 (2588 B: retail's k, j, i x87 order and fst, shape better); that on round 155's scale vector and case 0
+// order 349 (2588 B, everything up to the switch exact; aligned 108, shape 30); those without the side length 218 (2592 B); named
+// offsets i and j in case 1/2 476-495 (2584 B), named offsets in case 4 428, offset vector in case 4 459 (2580 B); first.z, first.y,
+// first.x weight probes (extra reads after the switch, up to 3/2/1): aligned 104-118, no colouring flip. Left: retail colours first.z
+// XMM3 and the half width XMM4, first.y XMM5 and first.x XMM6 (ours half width XMM3, first.z XMM4, first.x XMM5, first.y XMM6).
+// M3 lane 4 r170 (fast in the tree; one-file harness with the ballast object for the searches, 251 for the real 250): the colour
+// stored to the outer vertex first 248; case 0's points set second x, z, y then first x, y, z 246; both 244 (order picked by score,
+// under the bar); case 4's side scaled in place by the existing vector3f_scale then added and subtracted 423 (frame 0xa4), with case
+// 1/2's side scaled in place too 435 (2608 B). Harness lead: retail's colouring of case 0's tail (half width XMM4, first.z XMM3,
+// first.y XMM5, first.x XMM6) appears as soon as case 4 stops writing `side.i * half_width` twice per axis (named offsets, in-place
+// scaling, an offset vector); then case 0 differs only by retail's first.y spill and two movaps, but the frame drops to 0xa4 and the
+// positional score rises to 410-435 (masked aligned 30 -> 47). About 1,500 harness forms over case 0/1-2/4 statement orders, offset
+// forms, length orders and case 0's normal block: best positional 245, best aligned 90; no frame 0xac without the rejected u/v vector.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -941,14 +1022,14 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
             {
                 if (previous)
                 {
-                    normal.j = point->position.x - previous->position.x;
                     normal.i = previous->position.y - point->position.y;
+                    normal.j = point->position.x - previous->position.x;
                 }
                 else
                 {
                     s_ribbon_point *neighbor = (s_ribbon_point *)(g_4ea940->data + (point->next & 0xffff) * 0x38);
-                    normal.j = neighbor->position.x - point->position.x;
                     normal.i = point->position.y - neighbor->position.y;
+                    normal.j = neighbor->position.x - point->position.x;
                 }
                 normal.k = 0.0f;
                 real length = (real)sqrt(normal.j * normal.j + normal.i * normal.i);
@@ -962,26 +1043,21 @@ bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_
         case 1:
         case 2:
             {
-                real dx, dy;
+                vector2f side;
                 if (previous)
                 {
-                    dy = previous->position.y - point->position.y;
-                    dx = point->position.x - previous->position.x;
+                    side.i = previous->position.y - point->position.y;
+                    side.j = point->position.x - previous->position.x;
                 }
                 else
                 {
                     s_ribbon_point *neighbor = (s_ribbon_point *)(g_4ea940->data + (point->next & 0xffff) * 0x38);
-                    dy = point->position.y - neighbor->position.y;
-                    dx = neighbor->position.x - point->position.x;
+                    side.i = point->position.y - neighbor->position.y;
+                    side.j = neighbor->position.x - point->position.x;
                 }
-                real length = (real)sqrt(dx * dx + dy * dy);
-                if (!(fabs(length) < 0.0001f))
-                {
-                    real inverse = 1.0f / length;
-                    dx *= inverse; dy *= inverse;
-                }
-                second.y = point->position.y - dx * half_width; first.y = point->position.y + dx * half_width;
-                second.x = point->position.x - dy * half_width; first.x = point->position.x + dy * half_width;
+                normalize2d_fast(&side);
+                second.y = point->position.y - side.j * half_width; first.y = point->position.y + side.j * half_width;
+                second.x = point->position.x - side.i * half_width; first.x = point->position.x + side.i * half_width;
                 second.z = point->position.z; first.z = point->position.z;
                 if (input->normal) normal = *g_4687b0;
             }
@@ -1064,8 +1140,8 @@ struct D3DTexture;
 struct s_bitmap_view;
 D3DTexture *function_12360(s_bitmap_view *bitmap, real priority);
 void function_52d40(long bitmap_index, byte *shader, long tag, dword flags);
-bool function_1e5e0(long size, point3f const *position, long a, long b, long c,
-    long d, long e, long f, long g, void const *data);
+bool function_1e5e0(long size, long a, long b, long c,
+    long d, long e, long f, long g, void const *data, point3f const *position);
 
 struct s_43740_input
 {
@@ -1080,6 +1156,7 @@ void __stdcall function_43720(s_43740_input *input)
     function_52d40(input->bitmap, input->vertices.shader, input->tag, false);
 }
 
+/* queues one slot of a ribbon for sorted drawing, once its bitmap's texture is available */
 // score 62 (was 62): retail reads the object's field before the frame is set up
 // and compares it with -1, ours loads it into ebp and compares ebp. Retail
 // rereads the tag for input.tag (now matched), keeps the slot index in ebp after
@@ -1198,14 +1275,6 @@ void __stdcall function_43720(s_43740_input *input)
 // at +0x68 and the count/position schedule; a mix of field and local reads, kept only with a match); that
 // with the record's tag read through the stored definition pointer 68 (the definition takes ESI, the source
 // goes to the stack: ret 8, 0x42b20 60).
-// Round 36 (lane 15, fast; 0x42b20 checked each time): the field test with a block-local tag used for
-// the lookup (placed before the index call), the call and the record 63 (206 bytes, no split); the
-// function-scope tag with the lookup first and the record's tag from it 63; the field read at each use
-// with the lookup first (listed 68: the head splits like retail's, but the tag takes EBX, the source
-// becomes a stack argument in EBP, ret 8, 0x42b20 60) with the record filled in retail's store order 68,
-// with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
-// 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
-// split tag below both parameters in retail's colouring is open.
 // Round 135 (m3 lane 5): retail's 0x1e5e0 copies the record with an inline rep movs and calls nothing. Diagnostics
 // only: the record passed to a scratch callee that stores the pointer 119 (152 bytes: VC drops the record stores),
 // to one that only reads it 66. Renames (slot/register ties): tag 62, bitmap 62, group 62, image 62, the definition
@@ -1262,30 +1331,42 @@ void __stdcall function_43720(s_43740_input *input)
 // that, eight fill orders with the shader, normal, tag and position in retail's sequence 62-64 (0x42b20 4 each);
 // with the normal through the stored shader 66 (213 bytes, 0x42b20 62); the fill in a force-inline helper reading the
 // normal through the stored shader 67 (213 bytes, 0x42b20 62).
+// Y572: Joint original source/definition/slot formal-name priorities, seven
+// subsets then complete tag/bitmap role names: eight 62s. NOT kept: native
+// tag EAX/EBP split and signed-slot/shader homes stay wrong; body restored.
+// Y583: Actual texture-return pointer/bool/byte/long ownership, original image local
+// then direct image expression: 62/62/62/62/62/62/62/62. NOT kept: one-use return
+// carriers miss equality; complete body restored; early tag/EBP and slot/shader homes remain.
+// Y585: External tag/frame-pair/point-index field bindings, seven subsets and
+// all read-only, eight 62s. NOT kept: exact-only identities do not match;
+// original captured tag, field observations, complete body and matched caller preserved.
+// Y587: Tag producer ending at group/image, positive/NONE admission and positive/failure
+// texture admission: eight 62s. NOT kept: scoped lookup outputs do not recover
+// early EAX/EBP split or signed-slot/shader homes; original full body restored.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
     byte *bytes = (byte *)definition;
-    long tag = *(long *)(bytes + 0x34);
-    if (tag != NONE)
+    if (*(long *)(bytes + 0x34) != NONE)
     {
-        long bitmap = function_137590(tag, *(short *)((byte *)source + 0x1a), *(short *)((byte *)source + 0x18));
+        long tag = *(long *)(bytes + 0x34);
+        long bitmap = function_137590(*(long *)(bytes + 0x34), *(short *)((byte *)source + 0x1a), *(short *)((byte *)source + 0x18));
         byte *group = g_4e3b44[tag & 0xffff].bytes;
         s_bitmap_view *image = (s_bitmap_view *)(*(byte **)(group + 0x48) + bitmap * 0x74);
         if (function_12360(image, 0.0f))
         {
             s_43740_input input;
+            short count = source->point_count[slot] * 2;
             input.vertices.source = source;
             input.vertices.definition = definition;
-            input.vertices.slot = slot;
             input.vertices.shader = bytes + 0x3c;
-            input.vertices.normal = *(short *)(bytes + 0x68) != 0;
-            input.vertices.vertex_count = (short)(source->point_count[slot] * 2);
+            input.vertices.normal = *(short *)(input.vertices.shader + 0x2c) != 0;
+            input.vertices.slot = slot;
             input.tag = *(long *)(bytes + 0x34);
+            input.vertices.vertex_count = count;
             input.bitmap = bitmap;
-            point3f const *position = (point3f *)(g_4ea940->data + (source->point_index[slot] & 0xffff) * 0x38 + 0x1c);
-            function_1e5e0(0x20, position, (long)function_43720, (long)function_42cf0,
-                0, 4, 0x28, 0x18, input.vertices.vertex_count, &input);
+            function_1e5e0(0x20, (long)function_43720, (long)function_42cf0, 0, 4, 0x28, 0x18, count, &input,
+                (point3f *)(g_4ea940->data + (source->point_index[slot] & 0xffff) * 0x38 + 0x1c));
         }
     }
 }

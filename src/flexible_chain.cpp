@@ -233,6 +233,10 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// MiniMax A (11-05): no new form, no lower score; the segment selected before the node 279 (as before),
+// and our segment base takes EDI with the segment pointer in ECX where retail keeps both in EDX, the
+// node-position copy uses EDX where retail uses ECX, and the physics index is masked in EAX before the
+// pushes where retail masks ECX after them.
 // MiniMax S (11-01): the segments and segment-index locals leave the first difference at +0x37; no lower score.
 // score 171 (was 171): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
@@ -438,11 +442,94 @@ void __stdcall function_1160c0(real dt)
 // velocity through scaled_difference3f 193; blend as vector3f_scale then vector3f_add_scaled 240
 // (1369); blend complement named and used three times 275 (1347); `previous = node->position =
 // position` 179 (on 179, same code); segment indexed by i and stepped back for the last node 292.
+// B413: Complete constraint/normalization/rotation temporary end scopes, seven subsets,
+// then all with the two-use angle scoped to paired trig: 171/171/171/171/171/171/171/171.
+// Original complete body restored; segment/previous/axis homes and rotation scheduling remain.
 // Round 49 (m3 lane 2, fast): the physics tag through a private inline getter 171 (same code: retail's late
 // tag-address formation follows its EDX/ECX allocation, not the argument's position); the rotation in place
 // on the offset copy with named projection and cross scalars (0x11d180's form), then predicted = offset +
 // position, 235 (1370 bytes, frame 0xa8); node as `record->nodes + i` 171; sine-first cross products 171;
 // `(1.f - cosine) * dot` 171 (all same code); the inverse step computed just before the velocity rows 297.
+// AC518: Complete normalization admission bool/byte/short/long, direct predicate
+// and success-owned result, 292/292/292/292/292/292/292/292 (1355 bytes).
+// NOT kept: decision-result lifetime does not match; original body restored.
+// AC522: Plain axis scaling long/int/short/word/byte/signed-byte loops,
+// native component cursor and long loop with complete shared cross:
+// 187/187/212/212/212/212/212/198. NOT kept: regressions; original body and homes restored.
+// B421: Root-node classification across metadata/tick producers, bool/byte/short/long,
+// positive/complementary results 277/277/289/288/277/277/289/288. NOT kept: early
+// cmp/sete differs from retail; original direct word test and complete body restored.
+// P316: Complete normalization/trigonometric/constraint scalar declarations at loop
+// entry, seven phase subsets, then all at function entry: 171 each. Every initializer
+// stays at its original computation. No gain; complete body restored. Segment EDX
+// and scalar/axis/previous/rest-offset homes remain.
+// N355: Existing early-return normalizer with native square/projection/staged-cross and complete setters:
+// 174/186/174/174/174/186/187/187. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Segment EDX and axis/previous/rest-offset homes remain.
+// J253: Actual shared rotation providers on rest offset 196/236/234, on recurrent
+// prediction 246/295/295; direct paired trig arguments 196/236. Explicit provider
+// units resolve every call. All regress or move frame/length away; original body restored.
+// F374: Optional-physics presence/absence at the original post-position test,
+// bool/byte/short/long: 171/171/171/171/171/171/171/171. NOT kept: no native
+// segment/home recovery; original field test and complete body restored.
+// DH350: Output-owned velocity difference/scale, interpolation contribution
+// and prediction translation phases, seven subsets then compound axis:
+// 171/171/171/171/171/171/171/171. NOT kept: no native byte match; original complete body restored.
+// DH354: Complete outer fixed/timestep admission result in bool/char/signed-char/
+// byte/short/word/int/long: 171/171/171/171/171/171/171/171. NOT kept: no exact admission residence;
+// direct guard/body restored; segment EDX and scalar/axis/previous/rest-offset homes remain.
+// Round 63 (m3 lane 14, fast): axis rows as statements in the orders ikj/jik/jki/kij/kji 183/174/186/183/186 (ijk 171);
+// length_sq3f for the axis length 171, dot3f for the projection, either argument order, 171/171, both 171, length_sq3f
+// for the segment scale 171, all 171 (same code); the tail blocks (prediction P, velocity V, node position N, previous
+// R) ordered PVRN 171, PRVN 184, VPNR 208, VPRN 208, VNPR 207, VNRP 207, VRPN 205, VRNP 207, RPVN 183, RVPN 205, RVNP 207.
+// Slot use in the listing shows the homes follow the registers: retail reads the offset's k four times from memory where
+// ours keeps it in xmm1, so offset (8 uses) ranks below previous (7) in retail and above it in ours; retail's axis has 20
+// uses where ours has 23, which puts it above the length and segment slots. Retail also leaves the prediction's z store in
+// xmm5 to the end of the block in every order tried above.
+// AC540: Complete axial projection term staging, six producer orders, then direct/staged dot accumulators:
+// 171/171/171/171/171/171/171/171. NOT kept: unmatched product residence; segment/axis/previous/rest-offset
+// homes remain.
+// Y594: Persistent segment cursor with preceding-segment terminal selection,
+// for/while short/word/long/int node traversals: 252/252/317/317/252/252/317/317.
+// NOT kept: cursor/domain forms enlarge the frame to 0xa8 and body to
+// 1386/1380 bytes; native EDX/axis/previous homes remain. Original body restored.
+// F381: Existing complete setters at recurrent previous/rest offset/current and initial
+// position-direction boundaries, subsets 1/2/4/3/5/6/7, then node publication:
+// 345/277/367/336/352/354/339/345. NOT kept: regressions and nonnative
+// homes or extent; original complete copies/body restored, segment/axis homes remain.
+// F388: Existing axis/rest-offset/recurrent-previous component-array views,
+// subsets 1/2/4/3/5/6/7: 171 each; all with working direction/position/prediction 183.
+// NOT kept: no gain; original body restored, segment and mirrored homes remain.
+// P334: Native k-j-i distance/axis/projection reduction contracts, seven subsets
+// then plain component reductions: 380/384/306/507/471/469/589/614. NOT kept: regressions and larger
+// extents; original complete body restored; segment/axis/previous homes remain.
+// M389: Double blend/time/projection coefficient receivers, seven subsets, then
+// full graph with double axis root: 375/339/382/348/464/465/481/484.
+// NOT kept: all regress and lose native frame or extent. Original real coefficients,
+// axis root, arithmetic trees and complete body restored; segment and vector homes remain.
+// N376: Separate raw/normalized rotation axes with complete scalar setters and staged-cross
+// producers, eight forms 308/307/291/303/291/303/239/263. NOT kept: no exact match; original
+// axis storage, body and homes restored. Segment EDX and mirrored vector/scalar homes remain.
+// Round 130 (m3 lane 7, fast; 0x116750 and 0x73360 kept matching): the rotation through a local helper writing an
+// output, then `+= position`, 165, with the cross terms named in 0x170d70's order 163 (aligned 132 -> 123; one-caller
+// helper, match-only); position added inside the helper 171; the angle passed in 218/224; in place on the offset 235.
+// Named cross terms in the body, four statement orders, 171 (same code). Axis through cross3f or cross3f_staged, crossed
+// with normalize3d and the helper, 18 forms 163-196. `segment = definition->segments; segment += index` 281 (aligned 115):
+// the segment then takes EDX and every later scratch register is retail's, but the load sits ahead of the ternary. With
+// the index computed first (long, block helper, byte offset, reference, const, bound element) 171 (same code), short
+// index 290 (1356); stiffness read first 270; stiffness through the element 279; segment before node 279.
+// J261: Existing double-factor axis/target/velocity scale subsets 236/287/199/336/282/315/331; independent
+// double angle 258. All regress or move frame/extent away.
+// NOT kept: no eligible native repair; opening executable source restored. Segment EDX, mirrored
+// scalar/axis/previous/rest-offset homes and rotation scheduling remain.
+// Round 91 (m3 lane 9, fast): the segment chosen as a ternary of two element addresses 297 (1379 bytes), as an
+// if/else 297; inverse_dt declared once before the loop 181; the node pointer taken after the segment 279;
+// inverse_dt after the node and segment 171 (same code); `++node->ticks` before the stiffness 175. Retail builds the
+// segment address in EDX (the node offset's register) and keeps it at +0x14, ours borrows EDI and keeps it at +0x1c.
+// Round 66 (m3 lane 14, fast): the rotation in 0x146320's statement shape (dot k/j/i, named cross j and k, cross i inline in
+// row i, offset-first products) 171; with cross i named too 171; in 0x170d70's order (cross i, projection, cross j, k) 171;
+// the cosine complement named 171 (all same code); `segment = &segments[i]` then reassigned for the last node 284 (1358 bytes);
+// the fixed/time-step guard as two nested ifs 171; the node index declared ahead of its loop 171 (same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

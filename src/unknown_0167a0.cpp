@@ -74,6 +74,7 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
+// MiniMax A (11-03): the chain-local forms tried here all regress; no lower score.
 // score 5 (was 5): the 0x18a90 tail below is solved (round 126: 0x18a90's body rewritten with each binding
 // byte read at every use gives retail's EBX state convention and 972 bytes); left is the restore block's schedule.
 // Earlier: BLOCKED-BY 0x18a90 (src/unknown_01cf50.cpp, contributor file: retail passes the state
@@ -227,6 +228,22 @@ PRIVATE inline byte const *material_parameters(long tag)
 // complete cache/table/entry prefixes 5.
 // Original executable body restored;
 // no exact match from these ownership forms.
+// Round 137: direct publication with folded chain, named pass index, pointer table or third through its
+// parameter home 5 each (+0x1a7; `second` still hoists); the last NOT kept: address diagnostic. The retained
+// reference with named pass index, either distributed offset or the packed accessor 5 each (+0x19e). Original restored.
+// Round 68 (m3 lane 11, fast; reference form: only the tables reload is late; direct store: only `second` is early):
+// tables re-read into a local before the entry store for chain and pass 279; chain and pass bases named before it 181; the
+// word read ahead of the store through a fresh local 184 (976 bytes); a field pointer local for the reference 5; the pass
+// through a reference, with either entry form, 5; direct entry and range stores 178; a typed word pointer read 5; inline
+// entry/pass/range helpers, direct stores with `range` read back 178, keeping both references 5, direct entry and pass
+// with the range reference 5, also serving the first block 5; the pass helper with local copies of `second`, `third`,
+// tables, entry or all of them, eight forms, 5; the word read recomputed from the published tables: direct 294 (981),
+// read first 182 (974), store from `tables` 289 (978), reference store 295 (982). Original body restored.
+// Round 139 (m3 lane 8, fast, forms last measured on the blocked tail, now re-measured on the fixed one): direct entry
+// store with the word read back from the published field 5 (+0x1a7: the tables reload hoists as retail, `second`
+// loads right after the entry lea); that with `second + (packed & 0x1ff)` 5; that with the chain lookup folded into
+// the pass expression 5; the reference form with the swapped sum 5 (+0x19e); the tables field bound through a
+// reference with the direct entry store 6. Original body restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
@@ -1022,6 +1039,13 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
     }
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (2); cases 12 and 13 still share one tail that stores out[3] before out[2], retail stores out[2] before out[3].
+// score 2 (was 0): cases 12 and 13 share one tail; ours stores out[3] before out[2], retail stores
+// out[2] before out[3]. A `real *zero = out + 1` copy in cases 14/18 makes this match exactly, but
+// it hides 0x1b2c0's write summary from LTCG and costs 0x19ca0 its byte-for-byte match.
+// M404: direct-output zero propagation in pair/width/height/pair-width/
+// pair-height/width-height/all/all-plus-zero families: 6/2/2/6/6/2/6/6.
+// Original stores and complete body restored; shared pair-zero scheduling remains.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {
@@ -1072,23 +1096,19 @@ bool function_1b2c0(byte const *state, real *out, long index, long component, lo
         case 9: out[0] = width; out[1] = height; break;
         case 10: out[2] = width; out[3] = height; break;
         case 11: out[0] = out[1] = 0.0f; break;
-        case 12: out[3] = out[2] = 0.0f; break;
-        case 13: out[0] = width; out[1] = height; out[3] = out[2] = 0.0f; break;
+        case 12: out[2] = out[3] = 0.0f; break;
+        case 13: out[0] = width; out[1] = height; out[2] = out[3] = 0.0f; break;
         case 14: {
-            real *zero = out + 1;
             out[0] = width;
-            zero[0] = 0.0f;
-            zero[2] = zero[1] = 0.0f;
+            out[3] = out[2] = out[1] = 0.0f;
             break;
         }
         case 15: out[1] = height; out[0] = out[3] = out[2] = 0.0f; break;
         case 16: out[0] = width; out[1] = height; out[2] = 1.0f; break;
         case 17: out[0] = out[1] = out[2] = 0.0f; break;
         case 18: {
-            real *zero = out + 1;
             out[0] = width;
-            zero[0] = 0.0f;
-            zero[2] = zero[1] = 0.0f;
+            out[3] = out[2] = out[1] = 0.0f;
             break;
         }
         case 19: out[1] = height; out[0] = out[3] = out[2] = 0.0f; break;
@@ -1559,6 +1579,10 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // packed declarations 130 each; a full post-sampler word used only for rescaling 130; that word also selecting
 // the output category 291; a twice-used post-sampler descriptor pointer or reference 130 each. None gives the
 // mapped rescale test retail's `mov ax,[ebx]; test ah,8`; the original 130 body and matched sampler/writers remain.
+// MiniMax D (11-05): matches retail byte for byte (score 0, was 130). Cases 14/18 now store
+// straight through out instead of through a `real *zero = out + 1` copy: with the copy LTCG cannot
+// summarise 0x1b2c0's writes, and this call site stops matching. The price is paid by 0x1b2c0,
+// which drops from 0 to 2 because its shared case 12/13 tail then stores out[3] before out[2].
 // Round 144 (m3 lane 5, fast; scores 0x1b2c0/0x19ca0; any pointer copy in 0x1b2c0 hides its write summary, so
 // 0x19ca0 matches only with direct stores): cases 14/18 as `memset(out + 1, 0, 3 * sizeof(real))` 103 (724 bytes)/MATCH;
 // a `real zero` local stored to out[1..3] 6/MATCH; that chained `out[3] = out[2] = out[1] = zero` 6/MATCH; direct case 18

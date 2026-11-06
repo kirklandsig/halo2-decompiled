@@ -30,7 +30,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
-// score 206 (was 221): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products. Earlier 221: first transform
 // sum/product order and register numbering (retail: forward*depth +
@@ -310,6 +310,97 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // tree in both views; alone, without the fresh clamp, 211); the same as a struct copy 330 (1198), set through
 // vector3f_assign 252 (1146). On the kept body: offsets and views in their own block 206 (same code); shared scale
 // 255; indexed output rows 213; three row statements 304 (1084); depth limits written in the condition 214.
+// M369: Complete basis-axis values before/after the scaler on the aggregate-scaled graph:
+// forward/up/right 278/280/268 and 281/283/271; all axes 446/444.
+// NOT kept: all regress and grow; original helper/body restored; frame and coefficient homes remain.
+// AC516: Aggregate-scaled/native-row-sum graph, first/second/both in-place views, early first view,
+// early first/both overlap, second-first overlap and native segment reuse: 281/258/271/305/287/259/287/271.
+// NOT kept: overlap/lifetime diagnostics unmatched; original two-call helper and complete body restored.
+// AC520: Ordered lazy depth/first-cone/second-cone admission, nested-success/early-failure
+// stage masks 0-7: 279/279/279/279/279/279/279/279. NOT kept: all regress and lengthen;
+// original aggregate transform, gate, input observations and complete body restored.
+// F367: On the retained aggregate-scaled helper, complete caller vector/orthographic/weight/span/cone names, helper workspace/formal names and all caller names: 206 each. NOT kept: eight byte-neutral home trials; original complete helper and body restored.
+// B423: Existing aggregate helper scale-admission result, required/unit in bool/byte/short/long,
+// 213/213/213/213/213/213/213/213 at 1143/1136 bytes. NOT kept: no exact match;
+// original aggregate defaults, shared scale call, helper and complete body restored.
+// DH340: Complete raw-vector capture aggregate/native/setter/CRT with native scaled defaults
+// 345/391/342/391; shared-setter scaled defaults 252/336/252/336. NOT kept: all regress
+// and lengthen the body; original aggregate-scaled helper and complete body restored.
+// P331: Aggregate-scaled graph with branch-owned/unit-default/conditional/const-conditional
+// weights: 206/248/247/247; immediate clamp in each: 206/248/247/247. NOT kept: native eager
+// producer shape/equality absent; original helper and body restored.
+// Y580: Current aggregate-scaled/native-sum graph, actual endpoint traversal with long/dword
+// ordinals: separate/fused/iteration-owned/in-place displacement workspaces
+// 384/373/375/378/441/441/382/382. NOT kept: storage graphs miss equality and native extent;
+// original helper and complete body restored; frame 0x20 versus 0x14 remains.
+// Y582: On the aggregate-scaled helper, live forward/up/right coefficient streams, seven
+// nonempty subsets and all streams with indexed output: 252/253/253/252/252/252/254/252.
+// NOT kept: all regress; original helper/body restored; frame and coefficient/input homes remain.
+// M371: Scaler-return parameter/mutable-source/conditional-source/complete-value producers,
+// cursor rows 295/292/297/379; indexed rows 298/294/299/377. NOT kept: all regress
+// and lengthen; original aggregate defaults, helper and complete body restored.
+// M373: Complete scale/copy branch-owned scaled workspace, native/setter/memcpy/memmove,
+// nonunit-first 327/288/327/374; unit-first 331/288/331/370. NOT kept: all regress;
+// original aggregate-default helper and full body restored; frame/coefficient homes remain.
+// Round 52 (m3 lane 2, fast; aligned difflib count in brackets, base 206 [241]): LEAD, not kept (scores rise). Retail's scale
+// and rows are separate steps with the rows in the caller: scaled vectors `vector3f s1, s2` in the caller filled by a small
+// forceinline scale step (default copies, then the scale arm, through vector3f_scale or by hand: same code), rows in the caller
+// naming the fields x first, depth limits written in the condition, separate second offset and segment locals. That gives retail's
+// frame 0x14, 1136 bytes, load-first first-view products, copy-first z/y and load-first x second-view products and the retail
+// tail from the blend down: 218 [163] with offsets 0i 0j 0k 1k 1i 1j, 217 [172/173] with 0k 0i 0j 1k 1i 1j / 0k 0j 0i 1k 1j 1i
+// (all 72 block orders 217-252). Scalar x/y/z locals inside any inline helper rank above the camera global (both views copy-first,
+// 230-306); written directly in the caller both views are load-first 270 (1146 bytes). Same form with the second offset reused for
+// the segment 218-253 (frame 0x20); rows through a pointer helper 231; by-value rows helper 293-299; rows as accumulated statements
+// 257-264; (real) product casts same code; offsets through vector3d_from_points3d 294-316; offset loops 293-318; arm reading the
+// scaled copy same code. What is left: with rows x first the first-stored second-offset component keeps a register through the first
+// view (xmm0), so x/y/z take xmm2/4/5 and the scale xmm7, where retail has xmm0/2/4, raw xmm1/3/5, scale xmm6, the camera's right.i in
+// xmm7 and all three second-offset components in the frame. Rows named z first give those registers (1i 1j 1k 0i 0j 0k: 261 [129], 1146
+// bytes, frame 0x20, the second offset's i in xmm7) but the sum tree y,x,z; retail's tree z,y,x needs x named first.
+// AC537: Actual projected-radius square-root admission/rejection truth in
+// bool/byte/short/long: 207/207/207/207/207/207/207/207. NOT kept: no match; original transform helper,
+// ordered test, alias-sensitive outputs, memset and complete body restored.
+// DL263: Native origin value with existing shared scaled-displacement producer on retained
+// aggregate-scaled transform, first/second/segment subsets then native segment point producer:
+// 206/209/209/213/206/206/213/213. NOT kept: unmatched complete-value contracts; original
+// observations, helper and complete body restored. Frame 0x20 versus 0x14 and
+// coefficient/input/result homes remain.
+// P333: Standard binary differences with one captured origin, seven producer subsets
+// then complete raw copy: 324/328/260/304/300/297/277/386. NOT kept: no match or gain; original helper/body restored.
+// Excluded standard-transform global-array arguments; uncredited and restored.
+// Round 56 (m3 lane 15, fast; one-link harness exact; masked = aligned diff with stack offsets and registers masked, 192 here): 0x142640's shape with staged rows 230 (1113 B,
+// masked 161); plain rows and the depth limits in the condition 260 (1113 B, masked 155); `vector3f scaled` copied by field and overwritten from the input under the test, loop rows,
+// offsets as three-statement rows 274 (1156 B, masked 121: retail's opening 32 instructions); scaled reals, loop rows, limits in the condition 292 (1176 B, masked 149); scaled by field,
+// plain rows, limits in the condition 260 (1113 B, masked 155). 214 harness forms of copy x scale arm x rows x depth x offsets: none below 206.
+// T59: On the retained aggregate-scaled graph, complete coefficient-row dot with reversed
+// input before/after scale, aggregate/shared-setter rows and both dot input roles: 254 each.
+// NOT kept: all regress at 1136 bytes; original helper and whole body restored.
+// M3 lane 11 r72 (fast, control 206, masked 170): the matched 0x30290 inlines src/unknown_030290.cpp's transform_vector in place after a
+// vector3d_from_points3d offset, and its retail code is this function's first view exactly (unscaled copies before the scale test, then
+// `movaps xmm, scale; mulss xmm, x`, (forward*z + up*y) + right*x). A local copy of that helper out of place 306 (1081, masked 156); in place after
+// vector3d_from_points3d offsets 231 (1113, masked 155); the file's own helper in place after vector3d_from_points3d offsets 273 (1155, masked 110:
+// second offset spilled to retail's +8..+0x10, first in registers, copy-then-scale as retail; left: 1.0 held in XMM7, first-view coefficients as
+// memory operands where retail loads them and keeps right.i in XMM7, both depth limits hoisted ahead of the k tests, frame 0x20); on it the depth
+// limits in the condition 289 (1170, masked 150); its products written variable-first 273 (same code); the helper in place on the original offset
+// loops 276 (1111, masked 109), so the in-place transform is what gives the copy-then-scale.
+// Y603: Captured-vector existing in-place vector/particle scale producers with
+// uninitialized weight/segment lifetime subsets: 206/206/206/206/206/206/206/206. NOT kept:
+// all tie; original helper/body restored, frame 0x20 and coefficient/raw-input homes remain.
+// Y605: Caller-owned complete scaled vectors with aggregate/native/shared-setter/CRT defaults,
+// rotation-only existing helper with input pointer then reference: 272/330/274/330/272/330/274/330.
+// NOT kept: all regress and lengthen; original aggregate-scaled helper and full body restored.
+// N395: Aggregate-scaled complete view returns with pointer/reference/value input,
+// cursor/indexed output 278/281/278/281/401/404; actual returned-output consumers
+// 276/273. NOT kept: no equality/native frame recovery; original helper and full body restored.
+// MiniMax A (11-05): no new form, no lower score; nothing I tried moved the frame off 0x20 or the sum tree onto
+// retail's forward*depth + up*height + right*width order.
+// M3 lane 15 r60 (fast with 0x30290, which stays matched): the existing transform_vector of src/unknown_030290.cpp called across
+// files (declared here; LTCG inlines it): out of place 306 (1081 bytes), in place on the offset loops 231 (1113); in place
+// through an `s_camera const *camera = &g_4b9e14` local 266 (1146: retail's opening, the second offset at +8..+0x10 and the first
+// in registers with copy-then-scale, but the 1.0 constant takes XMM7 and the coefficients fold into the products as memory
+// operands, where 0x30290's camera in a register keeps them loaded, coefficient first); that with the camera local declared at
+// the top 266 (same code); out of place through it 253 (1141).
+// N398: Current aggregate helper static-inline/static/external-inline/external-forceinline, void then output-pointer result 206/206/206/206/206/206/206/206.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

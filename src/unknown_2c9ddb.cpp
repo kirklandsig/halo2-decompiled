@@ -55,8 +55,12 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// MiniMax A (11-05): no new form, no lower score; the second half's redundant selected re-read dropped 150, and retail's two 0x212bc0 call sites and its out-of-line 0x13fac0 copy still need another lane's file.
+// MiniMax H (11-04): no new form, no lower score; the two 0x212bc0 arms with a copy in each (174) and the selection read as a long after the call (77) are worse than the one call site with the classification spill, and retail's out-of-line 0x13fac0 copy is inlined into our build, which lives in another lane's file.
 // MiniMax R (11-01): no new form, no lower score; the permuter (900 s) found only 60, so the creation
 // classification spill and the expanded string copy remain.
+// MiniMax G (11-04): no new form, no lower score; the creation classification spill and the
+// expanded string copy remain.
 // score 61 (was 61): Round 32: retail splits the block into two 0x212bc0 call sites (the default arm inline with
 // `saved` in EDX, the selected arm out of line at 0x2ca467), each with its own g_54e49c store, its own copy into
 // g_54e4a0 and its own 0x238c69 call (mode 5 / mode 7); ours keeps one call site and materialises the choice in a
@@ -164,6 +168,34 @@ extern long g_55c154;
 // scoped variant 174. Compile-only (/O1 /Oi /Gr): every two-arm shape (either order, nested, no else, a mode
 // variable with one 0x238c69 call, one copy, fewer constant-1 uses) hoists the constant 1 into EBX and moves
 // `this` out of EBX; the one-load body with a second load call or per-branch copies does not.
+// Round 55 (m3 lane 15, fast): cause of the two-arm flip found. `this` and the hoisted constants (1, then &g_54e4a0) must survive `rep movs`, so
+// they fight for EBX; retail hoists neither. One extra `this` read in the block after the NONE test (diagnostic only, `flag_c = true;` or a
+// user_flags read) gives `this` EBX, entry ESI, saved EDI, the 0x250 frame and retail's whole two-arm layout (173 with the probe, frame still
+// unbiased and &g_54e4a0 hoisted in EAX); the same read deeper, at the first half's top or the second half's, does nothing. Retail evidence
+// for `function_238c69(long controller, long mode, long type, word *name, long maximum_count)`: 0x2ba9f4 and this function load ECX after the
+// 0x216a50 call, as the sibling 0x238c21 declares it. That order keeps 0x238c69 and 0x2ba9f4 matched and gives retail's `push eax; push 7; mov eax,
+// [controller]` tail: one load 76 (574 bytes), two arms 167 (590), with a named destination and/or a named count (0x13fac0 out of line as retail) 183
+// (575) each, with the copy written through variant_bytes 183. Not kept (each rises above 61). Two arms: if/else instead of the first half's return 174;
+// `if (*item != NONE)` around the body 174, both 174; a failure call in each failing arm or in two (tail-merged) 174/174/174;
+// top test nested or as `!flag_a || !bit` or `selected == NONE || ...` with an empty arm 174 each; `memcpy` for the copies (the sibling 0x2c4e9c's form)
+// 174, one load 61; the bit test through a one-bit field with TEST_FIELD_BIT 174 (one load 61), bare in the `&&` 184. Diagnostics, not kept: dropping
+// either `saved` store 164-166, all shifts 160, all &g_54e4a0 uses 256 (`this` ESI, no spill). Next: why retail does not hoist &g_54e4a0.
+// Round 55, second pass: the id and variant stores through a same-file forceinline helper at all three sites, two arms 174; that with the 0x238c69 order and both named locals 183.
+// T62: complete sole exit and target inline metadata 61/61; conditional load-call
+// result direct/named 178/178, short-circuit result direct/named 110/110; complete
+// exit with conditional/short-circuit load 178/110. NOT kept: no gain; load-result
+// graphs lose the biased frame. Classification spill and copy expansion remain.
+// Round 153 (m3 lane 5, fast with 0x13fac0/0x212bc0/0x238c69): the game type read once into a local at the function top on
+// the one-load body 178 (575 B), the controller index read once at the top 188 (559 B); on the two load arms: game type at
+// the top 177 (589 B), controller index at the top 172 (580 B), both 174 (575 B). Compile-only screen (32 two-arm forms:
+// store order, assignment or memcpy copy, named count, arm order, entry field or local selection): every two-arm form takes
+// the unbiased frame with `this` in ESI or EDI; none gives retail's `lea ebp, [esp - 0x70]` with `this` in EBX.
+// DH384: byte-array record publication, first/creation/both: memmove 139/143/157,
+// memcpy 61/61/61; bounded loaded-name memcpy/memmove input 99/104. NOT kept:
+// no gain; name snapshots lose the biased frame, even at retail length.
+// Round 394: actual selected/saved/source-index eight-byte homes 177/74/61;
+// selected+saved/selected+source/saved+source/all 182/187/104/193; all unsigned 193.
+// Original narrow values and complete body restored; classification spill/copy expansion remain.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
@@ -359,7 +391,7 @@ void c_class_2c9e69::select_last_variant()
 }
 
 /* shows the item's variant name */
-// score 23 (was 23): nonempty receiver is reloaded after the name call instead of retained in EBX;
+// score 13 (was 13): nonempty receiver is reloaded after the name call instead of retained in EBX;
 // branch name workspace before receiver, immutable receiver, receiver names 36/36/36; common completion 36;
 // completion with immutable receiver or receiver before name 36/36; ordinary pointer with scoped/common completion 36/36.
 // nonempty text receiver tested in stack home then reloaded; retail holds EBX;
@@ -395,6 +427,18 @@ void c_class_2c9e69::select_last_variant()
 // qualifier, cast at the empty call 36 (154 bytes); name-arm copy only re-measured 13 (159 bytes: the empty
 // arm tests the stack home, the name arm takes EDI for EBX), with the copy named label/caption/variant_text/
 // a_text 13 each; the name-arm copy without the qualifier 36 (154 bytes). Restored.
+// Round 149: const entry 23; icon declared before text with split assignment 23; top-level const text 23;
+// base text with the inherited qualifier 23; name-arm base/const receiver with direct empty text 13/13 (159);
+// name buffer before that receiver 13; with returned-name local 17; plain renamed original receiver 36 (154). Restored by
+// the round; the coordinator kept the name-arm base receiver with direct empty text (13 at 159 bytes; any gain at 30 or
+// below is kept, whatever the length).
+// Round 61 (fast): the name arm through an inline helper taking the text 96 (120 bytes, stays out of line), through a forceinline
+// helper 36 (154 bytes), both arms through forceinline helpers 36; the variant named once with a nested `else { if (text) }` 43 (150 bytes);
+// the interface result named 36; a name pointer local 36; name-arm copy only re-measured 13 (159 bytes). Existing 0x253af2 adds a compare retail lacks here.
+// Round 89 (fast): plain text with an early return for the absent datum 36 (154 bytes); the parameter slot holding the text, with a copy of the old value for the lookups, 49 (154), with the
+// datum and first lookup through the parameter 49; plain text with the name buffer at function scope 36; plain text with the variant read once through the masked subscript 43 (150); a const
+// reference to a cast rvalue for the name arm 36, in both arms 36, the text itself a const reference with a plain name copy 36 (all hoisted into EDI). The name lookup before the text test
+// (not retail's order) moves the name arm to ECX 28 (155), the text test around the variant test 48 (146). Round 41's name-arm copy stays the best: the empty arm tests the stack home and the name arm takes EDI for EBX.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {
@@ -408,18 +452,21 @@ void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 
 		if (entry->variant == NONE)
 		{
-			c_text_widget_45a5e0 *empty_text = text;
-			if (empty_text)
+			if (text)
 			{
-				empty_text->function_253b1a(0x120001db);
+				text->function_253b1a(0x120001db);
 			}
 		}
-		else if (text)
+		else
 		{
-			word name[0x80];
+			c_class_1a2c81 *name_text = text;
+			if (name_text)
+			{
+				word name[0x80];
 
-			function_215b50(entry->variant, name);
-			text->function_22f52e()->set_text(name);
+				function_215b50(entry->variant, name);
+				name_text->function_22f52e()->set_text(name);
+			}
 		}
 		if (icon)
 		{

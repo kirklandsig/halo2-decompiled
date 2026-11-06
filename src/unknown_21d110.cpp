@@ -313,12 +313,21 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
+// MiniMax G (11-05): no new form, no lower score; the forms that reach retail's argument registers
+// move 0x189fe0's request parameter from EAX to EDX and lose that function's eight matched callers,
+// so they are not kept: BLOCKED-BY 0x189fe0 (src/unknown_189010.cpp).
+// MiniMax b (11-04): no new form, no lower score; retail still takes the state pointer in EAX and the tag on the stack where ours takes the tag in EAX and the state on the stack, and the only form that fixes that changes src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0.
+// MiniMax E (11-04): no new form, no lower score; the tag's copy stays at the entry and the class lookup still reloads the state from the stack, so the stream is one instruction short of retail's.
 // MiniMax R (11-01): no new form, no lower score; retail still takes the state pointer in EAX and
 // the tag on the stack where ours takes the tag in EAX and the state on the stack, and the only
 // form that fixes that moves 0x189fe0's request into EDX and loses its eight matched callers in
 // src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0. Codex F (11-01): no new in-file form either.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
+// Round 112: definition/effect declarations swapped, branch-defined effect index, sound result
+// before attachment and at function scope, private output declarations reversed, result after
+// outputs, initialized outputs, and negated rate admission without the redundant NONE assignment
+// all 181; all eight sensitive callers remain matched. Original executable source restored.
 // Earlier (204): no new in-file form moves it; the request has to reach 0x189fe0 in EAX or eight
 // matched callers lose their match, and that body is in src/unknown_189010.cpp: BLOCKED-BY 0x189fe0.
 // Round 102: the Round 72 form again 52 (429 B), 0x189fe0 110 -> 135 and its eight callers lost
@@ -447,6 +456,22 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // first 191/190; with a twice-used allocation-success value 183/185; entry result plus
 // settings/created_sound_index local names 191/190/183/185. The allocation value moves state to
 // ECX, but frame eight/four and state/tag homes remain. Original body restored.
+// T61: Actual private starter-state/allocator-definition reference interfaces and forced
+// allocator expansion, seven subsets 181 each; all with unsigned allocator result 161,
+// unsigned allocator result alone 161 (445 bytes, frame four). NOT kept: both 161 forms
+// lose all eight sensitive callers and raise 0x189fe0 110->135; unsigned domain lacks equality.
+// Original helper interfaces, result domain, expansion and complete body restored.
+// AC555: Allocator status/handle outputs, bool/long and pointer/reference,
+// immediate/completed publication: 147/174/147/174/176/176/176/176. NOT kept:
+// first four lose eight callers; five-point lead is below gate. Original body restored.
+// Y604: Existing allocator returns its record with pointer/reference handle output,
+// either role order and initial/complete handle publication: 177/158/177/158/177/158/177/158.
+// NOT kept: frame grows to twelve; 177 is below the gain floor, while 158 moves the
+// request convention and loses eight matched callers. Original helper/body restored.
+// Y608: Genuine starter input parameter reused as rate-stage output, retained tag
+// mutable/immutable: original/nested admission 160 each; sequential failure 164 each;
+// combined admission 160 each. NOT kept: starter remains outlined; its new input
+// stack home is absent from the retail call graph despite frame four and no caller losses.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
@@ -975,6 +1000,16 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // first use 175; the bool declared first with the state captured first 191; `(looping->flags & 0x10) != 0` 30.
 // Compile-only frame probe (our frame): none of these moves the bool out of the bottom byte unit; a short or long
 // flag lands just above repeat_state (retail's place) but reorders tag_index and widens the code.
+// Round 73 (m3 lane 1, plain): the flag returned by an inline getter over the looping record 30; inline getters for
+// both values 30; the 'lsnd' arm in a forced-inline helper taking the pair by value 30, with a long flag parameter 162
+// (836 bytes); a long flag with its bool conversion at the use 166 (832 bytes). One-file frame screen: an arm helper
+// left out of line pushes the flag and the bool then gets a dword slot (frame 0x10c; retail has no such push). A scan
+// of the matched functions' esp frames finds a lone byte in a dword-aligned home among dwords only as a dead parameter
+// slot, a struct member or a pushed bool. The record also lands where its two members' weights add up (below the
+// listener), where two separate locals land elsewhere, so retail's pair looks like one symbol.
+// Round 93 (m3 lane 16, plain): the looping record's flags as a word (bit 4 of a word field) 30; a short loop index 167
+// (807 bytes); the flag as `!!(flags & 0x10)` 30; the flag without the bool cast 30; a const entry pointer 30. No
+// existing {long, bool} record type in the sound code to hold the pair.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

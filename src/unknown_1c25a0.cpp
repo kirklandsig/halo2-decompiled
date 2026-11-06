@@ -844,6 +844,18 @@ void function_1c54b0(char const *variants, long object_index)
 // that world-local form 18; a guarded do inner loop 79; component_index declared at island scope 18; an
 // explicit walking entity pointer 20, with the flag before the call 8; a const island pointer 18; a per-element
 // entity local 18; the post-call flag assigned from `count == entity_count` 18. Original body restored.
+// Round 127 (lane 7, fast): the flag as the existing hkBool, after the call 25, before it 12; an inline island
+// getter with the flag after the call 321 (12 bytes); an inverted kept flag before the call 24, after it 36; the
+// flag declared at the count test 69, stored after the call 82; a world local reassigned on the back edge 37 (253
+// bytes). Compile-only, 31 forms (world getter, for-scoped index, while, guarded do, ternary and `== false` steps):
+// the reload pair never flips. Original body restored.
+// Round 131 (lane 7, fast, all with the flag after the call): 1-3 unused locals at the top or inside the loop 18 each; the flag stored both before
+// and after the call 18 (the first store dies before allocation); the flag declared then assigned 18; i declared before the flag 18; the flag
+// declared before the count 20; the flag assigned from `count == entity_count` 18, from `!removed` 18; a two-use local for the index step 18.
+// Diagnostics: an index offset in the island read 12, a count offset 64 (253 bytes), an entity index offset 69 (254 bytes): none moves the pair or
+// the ebx/ebp choice. With the flag ahead of the call it crosses the call and retail's ebx/ebp follow; after the call, cursor takes ebx. An inline
+// helper for the discard taking the world and island, or the island: flag first 4/4, flag after 18/18, forced inline after 18; one returning true 18;
+// the whole per-island body as a plain inline helper is not inlined here 286/288 (45-47 bytes), four call forms with either flag order.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -947,6 +959,24 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // src/unknown_1c2b10.cpp 1, in src/unknown_1c3d30.cpp 1; function_1c3770 declared before function_e18d0 in
 // src/unknown_1c38a0.cpp 1. Under the default /Gr convention the second argument is always DL, so only a
 // custom convention for function_1c4040 can give AL.
+// Round 102: function_1d1540 before function_1d1260 1; between function_1d1260 and function_1d01c0 1;
+// function_146bf0 before function_278f00 1; that swap with function_1d1540 first of the three 1;
+// function_1d1540 before 0x278f00/0x146bf0 1; between them 1; before the reversed 0x1d01c0/0x1d1260
+// pair 1; the swapped pair with function_1d1540 between function_1d1260 and function_1d01c0 1.
+// Every control stayed unchanged; original declarations restored.
+// Round 89 (m3 lane 12, plain and full checks; every trial restored): `inline` on 0x146bf0's definition 1, on 0x146da0's 1; 0x1c4040 declared
+// first or between its neighbours in src/unknown_146a20.cpp 1, 1. 0x1c4040 and 0x146bf0 call each other and 0x146bf0 takes no arguments, so
+// retail reached 0x146bf0 first. Retail's graph has that path through a stub here: 0x1d1260 -> 0x2266a0 -> ... -> 0x17a8a0 -> 0xb7b40 -> 0x146bf0.
+// 0xb7b40's draft enabled, nothing else: 2 (the custom regime, attempt EAX, active CL), 0x1c4040 13, 0x146bf0 3, 6 matched lost, all callers
+// of 0x1d1540 going custom (215): 0xb8890, 0xe16b0, 0xf0fd0, 0x1c35f0, 0x1c3770, 0x1c39c0. With 0xb7430 too: the same plus 0x275380, 0xb7430
+// matches. 0xb7b40 and 0xb8540: 1, 0x1d1540 back at 97, 0xb8540 matches, 28 lost (0x1c3770 goes custom, 41). All four drafts: 1, 29 lost.
+// 0xb7b40, 0xb7430 and 0x2902b0: 1, 229 lost. Lead: with 0xb7b40 enabled 0x1d1540 needs a caller built before it, which takes 0x146bf0
+// being reached before 0x278f00 is on the walk's stack (then 0x1c4040 -> 0x278f00 -> 0xb8890 builds that caller first).
+// Round 94 (fast, all restored): 0xb7b40's draft enabled with 0x1c4040's array store without its cast and the fixed island
+// read through g_51e9a4: this function, 0x1c4040 and 0x146bf0 match, 0x1d1540 custom (215), six lost (0xe16b0 114, 0xb8890
+// 15, 0x1c35f0 40, 0x1c3770 21, 0x1c39c0 41, 0xf0fd0 27). Added to that: 0xb8890 declared before 0x1c3770 in
+// src/unknown_278f00.cpp 1 (nothing lost, 0x1c4040 plain again, 17); 0x146bf0 first in src/unknown_0b7b40.cpp 1 (0x278f00
+// lost 185); both 1; 0x1c2a10 declared first in src/unknown_1c2690.cpp no change. BLOCKED-BY 0x1c4040 (its convention).
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1149,6 +1179,27 @@ struct s_1c4040
 // m3 lane 9 r76 (fast): the world read through g_51e9a4 at each use 8; one physics_object_get shared by the detach
 // steps 116 (521 B); the mode case and the detach path as if/else with one success store after 8 (kept: drops the
 // goto and its label); object and unknown declared in the detach block 8; the three initial stores reversed 103.
+// Round 127 (lane 7): `inline` on this definition 8, on 0x1c51c0's 8, on both 8 (fast); 0x1c3590 moved to src/unknown_1c2690.cpp
+// (the same flags, ahead of nothing on the walk) 8. In the custom regime (0x146bf0 first in src/unknown_278f00.cpp, fast): the array
+// store without its cast 27, as if/else 27, through a named array 55, `!active` 28; that store with the fixed island read through
+// g_51e9a4 17 (one real difference, 538 bytes): this gives retail's AL/ECX and both callers match. With that body, plain, by walk:
+// 0x1c3770 declared before havok_component_node_states_get in src/damage.cpp: this function, 0x1c51c0 and 0x146bf0 match, but 0xb8890,
+// 0x1c35f0, 0x1c3770, 0x1c39c0 are lost (0x1d1540 goes custom, 215). Adding 0x1d1540 before 0x1d1260 here and 0x278f00 before
+// 0x1c51c0 in src/unknown_1c39c0.cpp: 14, 0x1d1540 back at 97, 0x1d1260's callers lost. 0x1d1540 before 0x1d1260 here, 0x278f00 before
+// 0x1c51c0 in src/unknown_1c39c0.cpp, function_ba6f0 before function_d9d60 in src/damage.cpp and 0x1d1260 declared ahead of the
+// include in src/unknown_278f00.cpp: all three match with only 0xba6f0 and 0xba7f0 lost, because that entry passes through 0x1c54b0
+// and 0xba7f0 is then built before it, so 0x1c54b0 goes default (81) where retail has it custom: BLOCKED-BY 0x1c54b0's place on the
+// walk. Not kept (a matched function may not be lost); body and declarations restored. 0xba7f0 reached first through 0xd6800 and
+// 0xd6a70 keeps 0x1c54b0 custom but this function default 17 (0xd6bc0, 0xd9640, 0x1039a0 lost).
+// Round 103: forward declaration before/after the cycle callees 8 each; fixed-island direct global read 8;
+// shared island/entity/priority locals 8 each; block-scoped world with the direct fixed read 8;
+// effect pointer at function scope 8. Original body and declaration order restored.
+// Round 137 (m3 lane 8, plain over the 149 cycle members): round 127's walk set without its src/damage.cpp step (array store
+// without its cast, fixed island through g_51e9a4, 0x1d1540 before 0x1d1260 here, 0x278f00 before 0x1c51c0 in
+// src/unknown_1c39c0.cpp, 0x1d1260 ahead of the include in src/unknown_278f00.cpp) 17 (still DL), none lost; plus 0x146bf0
+// first in src/unknown_278f00.cpp 34 (still DL, 0x1d1540 custom 215, 15 lost); plus 0x2266a0 before 0x278f00 in
+// src/unknown_1d1260.cpp 17; plus 0x146bf0 before 0x278f00 here 17; plus 0x1c51c0 defined after this function 17. Every
+// path from 0x1d1260 or 0x1d1540 to 0x146bf0 passes 0xb7b40 or 0x2902b0 (both disabled): BLOCKED-BY 0xb7b40.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
@@ -1583,6 +1634,16 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // m3 lane 9 r76 (fast): the fill loop bounded by count itself 139 (872 B); count declared before the indices 3;
 // `local_0 = ++i;` 3; the mirror declared at the top of the component block and zeroed at the label 3; the node
 // guard as nested ifs 3. Restored.
+// Round 127 (lane 7, fast): no mirror 125 (858 bytes), the same with `inline` on 0x1d1160's definition 125, with
+// 0x1d1160's aligned locals in a force-inline helper 232 (0x1d1160 35); mirror declared at the function's top and
+// zeroed at the label 3; `i = 0` then `if (i < count)` around a mirror set from i 5; a named count before the mirror
+// 3; a named count with i declared before the mirror 3. Restored.
+// Round 137 (m3 lane 8; plain unless fast): 0x1d10b0 as a member of s_havok_component (index, velocity), retail's ecx-then-edx
+// setup, 1 plain with 0x1d10b0 still matched (not kept: 2 points without a match); on it: no mirror 126 (858 bytes, fast);
+// `inline` on 0x1d1010's definition 249 (0x1d1010, 0x1d1160 and 0xe5300 lost); the goto as a default-NONE selected index 1
+// (same code, fast); `local_0 = ++i` as the for increment 1; `local_0 = i = 0` with i declared before the for 1; a volatile
+// copy of i saved just around the impulse call 100 (fast). Retail's +0x30 slot is a register spill of i (the entry test
+// uses the constant, the store follows it), as if LTCG believed 0x1d1160 clobbers EBX; no source store reproduces that.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

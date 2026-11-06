@@ -230,6 +230,19 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // and add on it) 181 at retail's 821 bytes (the power takes xmm7 and the strength spills), read just before
 // `if (i == 0)` 181; `byte const *entry` 30 (same code), with colour first 121; colour first with the
 // strength declared inside the lights branch 139.
+// Round 85 (m3 lane 9, fast; compile-only screen of the add on the colour-first body): colour first re-measured 121 (828 bytes); strength
+// first with the entry used after the copy (diagnostic) 187: the movss stays first, so the scheduler does not sink it and retail's source
+// order is colour first. Strength read into a local before the copy 30 (same code); pinned_real by value 30 and colour first 121; a typed
+// collision result 30 and colour first 121; colour first with both arm stores in a forceinline pointer helper 121; colour first with a power
+// local for the test and divide 121. Screen, colour first: the add turns strength-first with one added pointer read at offset 0 (point, sky,
+// record, the zero vector) or one store through record before the first-light arm, and a second added read turns it back; a dead read, global
+// reads and stores and +4 reads alone do nothing. No natural form moves it: memcpy for the seeds and the copy (all 8 subsets), count and lights
+// locals, tag-block views of the sky, light and scenario blocks (all 8 subsets), the blend as a repeated-expression PIN, inline helpers with
+// value, pointer or reference strength, a const entry, nested else and `<=` tests.
+// Round 95 (m3 lane 12, fast; colour first alone 121, only the post-call add and the ECX/EDI pair differ): on it, strength
+// declared bare and set before the count test 121; the collision sentinel stored after `result = 2` 123; the direction
+// seed declared bare then assigned 121; the blend computed in the 0x131c20 call 121; loop index and entry renamed 121.
+// Diagnostic: `strength +=` in the first-light block as well 141, the post-call add stays load-first.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1159,46 +1172,14 @@ long function_d2bb0(void *source, s_effect_color_query *query)
     return result;
 }
 
+/* a query's flags without the option that samples several directions */
+#define SURFACE_QUERY_FLAGS_ONE_DIRECTION(flags) ((flags) & 1 ? (flags) & ~1 : (flags))
+
 PRIVATE __forceinline bool surface_status_failed(long status)
 {
     return status == 1 || status == 2 || status == 3;
 }
 
-// score 2 (was 2): the retry call computes `flags & ~1` after pushing the object index; retail
-// computes it before (`flags ^ 1` keeps the same order, so the operator is not the cause).
-// Earlier, with volatile tag pointer and flags locals (44): zero then OR 148; const tag 44;
-// byte tag bitfield 135; dword object bitfield 44; named query failure 44;
-// explicit final exits 181; inverse failure result 44; retry flag update 44.
-// Status predicate as byte 65, short 69, long 68; arm-assigned result 129;
-// signed status bounds 130; selected predicate 161; staged result 58;
-// ordinary predicate inline 139.
-// Now (no volatiles, object bit 13 and the tag's word bit 1 as bitfields, flags = 0 then
-// |= 1 twice) 2: retry flags snapshot 2; `flags &= ~1` before the retry 2; retry flags in
-// a local 2; dword flags 2; flags declared before the tag pointer 4; point declared first 24;
-// failed set after the retry 104.
-// Current bitfield forms (fast): nonzero retry 85; exact retry flag 131; word flags 117;
-// short flags 117; bool option 115; first failure workspace 120; combined bits 147;
-// initial object option 140. XOR 2; subtract 18; clear extracted bit 2; subtract extracted
-// bit 133; retry status scope 2; one failure store 98; long failure 83; entry status 2;
-// mask assignment in the call 2; nested retry status predicate 2; direct status
-// initialization 2; two-call index local 2; read-only point 2; byte failure 2; negated
-// return 2; guarded mask assignment 87. Round 44: in-place clear with `failed = failed(status)
-// || failed` 93; forceinline query wrapper for both calls 2; failure assigned from the
-// predicate then tested 120; sky decision as a per-type bool 62; dword flags parameter in
-// the query and its callers 2. Round 55: the query's point parameter second, third, fourth
-// or fifth in its list (definition, declarations and calls) 2 each, first 2 (0x17b5d0 2); byte
-// flags parameter 2 (0xd2a50 12); its fifth parameter as a direction pointer passed NULL 2; the
-// retry test as a bool conversion 2, as `(flags & 1) == 1` 2. Round 27 (lane 17, fast): `flags &= ~1`
-// first in the retry block 2 (same code); `failed = true` in both arms of the flag test 2 (same code);
-// status declared at function scope 2 (same code); the point defined before the flag tests 66 (464
-// bytes); permuter 46 tries, best 2. Compile-only, every spelling of the retry value (xor, subtract,
-// hex mask, a local in or before the block, a force-inline call wrapper) is computed right at its push.
-// Round 128: sequenced AND/XOR/subtract before the call 2/2/18; standalone XOR/subtract 2/18;
-// extracted-bit XOR/subtract sequences 2/133. NOT kept: one-use const retry mask 2; original body restored.
-// Round 31 (lane 18, fast): flags initialised from the object bit with a ternary 140 (454 bytes); flags
-// declared at function scope 2; a force-inline helper returning the flags without bit 0 at the retry 2; a
-// force-inline query wrapper (flags, object, value, query, point) with a status local for both calls 2;
-// permuter 600 s (46 tries) 2. Original body restored.
 // @retail 0xd1850
 long function_d1850(long object_index, bool value, s_effect_color_query *query)
 {
@@ -1220,7 +1201,7 @@ long function_d1850(long object_index, bool value, s_effect_color_query *query)
                 failed = true;
                 if (flags & 1)
                 {
-                    status = function_d2a50(flags & ~1, object_index, value, query, 0, point);
+                    status = function_d2a50(SURFACE_QUERY_FLAGS_ONE_DIRECTION(flags), object_index, value, query, 0, point);
                     if (surface_status_failed(status)) failed = true;
                 }
                 if (status != 3)
@@ -1518,6 +1499,32 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // M356: One-past-entry forward !=/< and reverse !=/> scans, direct/reused flags:
 // 559/562/564/564/535/536/535/536. NOT kept: all regress; original selection,
 // complete body and helpers restored. Frame, result spill and block/query homes remain.
+// M374: Native forward cursor/consumed positive count on the current scale graph,
+// tested-pointer/bool-completion/early-failure/branch-success results, original/combined
+// admission: 581/578/585/587/570/587/568/566. NOT kept: all regress; bool-completion also
+// loses the matched caller. Original scan, full body and helper contracts restored.
+// M377: Existing shared setter for initial/secondary/ambient vector copies,
+// seven subsets, then complete graph with existing same-tree dot: 529/578/562/582/562/559/563/563.
+// NOT kept: no gain; secondary/ambient forms grow frame to 0x30 and lose the
+// matched caller. Original native copies, all helpers and complete body restored.
+// M390: Double square/three color scales/two luminances, subsets 1/2/4/3/5/6/7,
+// then all with immutable real length: 566/570/573/605/595/615/624/624. NOT kept: nonexact precision
+// forms; original body restored, frame/result and block/query homes remain.
+// M392: Existing normalization magnitude/paired rotation trig/projection double receivers, subsets 1/2/4/3/5/6/7 then immutable all: 628/618/617/676/673/622/678/678.
+// NOT kept: nonexact precision/lifetime forms; no supported native-frame repair. Original complete body restored.
+// AC556: Per-entry admission result confined to the original OR producer,
+// bool/byte/char/signed-char/short/word/int/long: eight at 569, 2174 bytes.
+// NOT kept: all regress and shorten away from retail; original scan, result,
+// helpers, all nonqueued bodies and full target body restored.
+// M398: Original primary/bounded-base/bounded-lightmap output defaults, masks
+// 1/2/3/4/5/6/7, then all at entry: 529/529/529/553/553/529/529/580.
+// NOT kept: no frame/result/carrier gain; original workspaces, helpers and body restored.
+// M403: Actual serialized curve header, local/tag-field producer, native float/bounds
+// members and mutable/readonly input: eight at 529/2189. NOT kept: no native
+// frame/result/carrier recovery; original helper, records and entire body restored.
+// N390: Explicit absolute-magnitude real/immutable-real, success/early exits,
+// 574/574/574/574; double/immutable-double 573/573/573/573. NOT kept:
+// no exact scratch/result form, shared-user regressions; original normalizer and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1691,6 +1698,11 @@ real function_30bf0(vector3f *vector);
 // in both functions); (k, i, j) alone 357; with the colour2 positive checks as stored selects 433 (1878 B).
 // Round 402: Complete applied/fallback query outcomes, bool/byte/short/long, at the real query boundary.
 // Scores 450/450/450/450/450/450/450/450. NOT kept: unmatched outcome forms; original complete body restored.
+// J260: Native root/square/both/reciprocal storage 447/461/385/449; complete scale-input captures inside/before the root, ordinary/immutable, 436/436/436/436. The first four lose the matched caller; the final four recover frame 0x40 but regress to 1874 bytes.
+// NOT kept: no eligible native repair; opening executable source restored. Recover normal I/K copy scheduling and native color/rotation homes; original helper and every body restored.
+// Round 398: Original-boundary normal scalar observations, six component read orders, immutable
+// channels and the existing vector setter: 458/458/458/458/458/458/458/457. NOT kept: all regress
+// and grow away from retail; original independent length observation, normal copy and full body restored.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -1845,6 +1857,19 @@ dword function_015cd0(long index, dword entry);
 // kept); a permuter run on that body, 54 tries, best 4; texture-field test arms swapped 68 (312 B); the
 // conversion as `bitmap = convert ? temporary : NULL; if (bitmap) result = 3;` 39 (314 B); bitmap stored
 // before result = 3 in the success arm 6.
+// Round 89 (m3 lane 12, fast): the two leas follow one scratch rotation (retail is one temp behind or two ahead): a volatile probe
+// local (diagnostic, reverted) anywhere ahead of the first lea moves ECX/EDX to EDX/EAX, a test of the global ahead of the prelude
+// to EAX/ECX, and a probe in the sample block moves only the second. 0xd1630 returning void 4 (0xd1630 27). Removing (diagnostic)
+// the texture-field test, the flag block, the count test, the 0xd1680 test, the 0xd1630 call or the palette call: leas unchanged;
+// removing both prelude tests: EDX/EAX. A locations pointer defaulting to NULL and tested, by helper or ternary: EAX/ECX but 90
+// (312 B; the extra test stays). No shift (4 each): nested prelude tests; tag defaulting to NONE, by if, ternary or helper; a count
+// defaulting to 0, by local, helper or in the test; a named bool or bool helper for the prelude; a locations local, with or without
+// `do {} while (false)` or declared outside the block; a globals getter at each use or in a local; a location getter; `0 < count`.
+// Round 95 (m3 lane 12, fast): the tag field read at its test and again at the 0x137550 call 4; the sample test as
+// `bitmap && result != 1` 4; the texture test positive (conversion arm first) 57 (316 B); the redundant `else bitmap = NULL`
+// dropped 4 (same code); `result` renamed `status` 4. Callee register sets (0x12ce00, 0x358d0 under 0x1362b0) write the
+// same general registers as retail. A volatile probe (diagnostic, reverted) in callee 0xd1630 or in 0xd30d0 leaves both leas:
+// the rotation comes from this body.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
@@ -2066,6 +2091,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax C (11-06): no new form, no lower score.
 // score 542 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
 // Round 52 (lane 13, fast): the format byte as a named byte local before/after the data pointer 555/555;
 // the result as `dynamic_valid ? 0 : 1` 687 (3040 bytes); the result test inverted 555; diagnostic, a flag
@@ -2280,6 +2306,37 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // DH338: Complete RGB pin index loops in long/short/word/byte 542/1111/1111/1111;
 // advancing-channel loops 542/1111/1111/1111. Narrow loops remain rolled and shorten
 // away from retail; original helper/body restored, status/mesh/sample homes remain.
+// J253: Coordinated ordinary inline contracts for mesh lookup, both UV outputs, normal,
+// vertex color, bitmap/base samplers and dynamic interpolation: 542 each. Original
+// declarations/definitions restored; status/mesh homes and selective expansion remain.
+// P326: Model luminance weights/normal magnitudes/final rescale declaration lifetimes,
+// subsets 1..7 at model entry, then all at function entry: 542 each. Every initializer
+// stayed at its producer. NOT kept: no gain; original body, status/mesh homes and helpers remain.
+// B448: Complete structure/model shading-path providers, query pointer/reference and forced/ordinary inline:
+// 880/880/1676/1676/805/805/3015/3015. NOT kept: no byte match; complete original body restored.
+// M379: Complete default normal/base/lightmap memmove transfers, subsets 1/2/4/3/5/6/7,
+// then all normal publications: 589/599/561/744/736/732/757/773. NOT kept: all regress;
+// original copies and body restored; status/mesh/sample homes and selective expansion remain.
+// P347: Actual twice-consumed dynamic-brightness result, bool/byte/short/long, positive/complementary truth:
+// 542/542/542/542/542/542/542/542. NOT kept: All eight tie 542 at native extent and frame; status/mesh homes and selective helper expansion remain. Original complete body restored.
+// M390: Double paired luminances/magnitudes/reciprocal scales, subsets 1/2/4/3/5/6/7,
+// then all with double final length: 726/658/640/708/663/648/676/697. NOT kept: nonexact precision
+// forms; original body restored, native status/mesh and output homes remain.
+// AC558: Persistent positive dynamic/base validity bool/byte/char pairs except
+// original bool/bool: eight at 542, native frame/extent. NOT kept: no exact match;
+// original domains, providers, shared offsets, separate samples and body restored.
+// Y605: Actual query direction member with native/shared-setter/CRT-copy/CRT-move
+// publications, existing then direct weighted receiver: 542/611/542/613/542/611/542/613.
+// NOT kept: no byte match; original query declaration, helpers, publications and body restored.
+// F397: Existing color pin owns packed return/output, color pointer/reference and forced/ordinary
+// expansion: 667/667/1456/1456/667/667/1457/1457. NOT kept: all regress; original helper/body
+// restored, native status/mesh homes and selective expansion remain.
+// M395: Component aggregate default normal/base/lightmap families 1/2/4/3/5/6/7, then complete member assignment construction:
+// 623/621/618/621/621/621/666/666. NOT kept: no exact native-shape candidate; native status/part/mesh homes and selective helper expansion remain.
+// Original complete body restored.
+// N395: Actual dynamic-failure bool/byte/short/long outcomes 589/589/609/610;
+// actual base-failure outcomes 542/542/550/548. NOT kept: no native status/mesh
+// home recovery or equality; original positive validity and complete body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

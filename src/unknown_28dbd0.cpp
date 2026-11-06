@@ -279,6 +279,76 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // AC503: Shared moving/fixed offset and velocity producers on the added-cross graph, seven
 // subsets then the complete native point receiver 216/180/173/180/173/180/180/173. Original full file/helper restored;
 // frame 0x11c/0x118 and cross/trig homes remain. NOT kept: unmatched producer/field-pointer forms.
+// DH339: Native accumulation through three advancing component cursors, long/dword/short/byte
+// bounds 229/229/315/315; output-end for/while/do walks 316/316/314; split adds 316.
+// NOT kept: frame/length move away from retail; original scales, helper and complete body restored.
+// DH341: Immutable heading-angle/launch-speed/tilt-angle draw storage, seven subsets
+// then all five draws, 173 each. Original draw storage and complete body restored;
+// frame 0x11c/0x118 and cross/trig homes remain.
+// DH344: Real trig APIs at heading cosine/sine and rotation cosine/sine,
+// individually, paired, all, then all with sine after axis scale: 180/180/180/180/186/185/173/173.
+// NOT kept: no native frame/cross/trig-home recovery; original complete helper/body restored.
+// DH346: Immutable existing rotation-axis/output and position-input pointer bindings,
+// seven subsets, then all with immutable position-output binding: 173/173/173/173/173/173/173/173.
+// Original helpers and complete body restored; frame 0x11c/0x118 and cross/trig homes remain.
+// DH352: Existing double-factor axis/cross/direction publishers, subsets 1/2/4/3/5/6/7,
+// then all with the double-factor launch publisher: 233/217/236/278/238/230/298/300. NOT kept:
+// no exact precision/API form; original helper, real products and full body restored.
+// Round 52 (m3 lane 2, fast; aligned count ignoring stack offsets in brackets, base 173 [154]; lead, not kept, scores rise): the rotation written in the
+// caller as matched 0x117dd0 writes it, not in a helper: sine and cosine, cross3f(vector, axis), projection, rows `axis * projection + vector * cosine
+// - cross * sine` 228 (1196 bytes, frame 0x11c) [125]; sine, cosine, projection, cross 222 (1209 bytes, frame 0x120) [123], with a named dot or
+// cross3f_staged same code; axis x vector added 222 (1209) [128]; a copy of the vector 210 (1220) [148]; scalar X.j/X.k with X.i in row i 231 (1209, frame
+// 0x114) [139], X.k/X.j 231 (1210) [121], all three scalars 231, cross before projection 228 twice [141]. Each view of the rotation or the whole arm in a
+// compiled-out `do { } while (false)` same code. Retail's frame 0x118 sits between the aggregate cross (0x11c, 0x120) and the scalar cross (0x114); retail
+// drops the zero k's register after the dot, then uses memory 0.0 and an `xorps`, ours keeps one register for it.
+// DH360: Existing native axis/direction/point-output coordinate-array contracts, seven subsets
+// and complete interfaces with immutable angle: eight at 173. NOT kept: unmatched interface casts;
+// original vector contracts, consumed-axis stages, ordinary pooled reads and full body restored.
+// DH362: Existing coordinate-union access at heading/rotation/request boundaries,
+// seven subsets 173 each; all with native fallback-point copy loop 209. NOT kept: no
+// native frame/cross-home gain; original helpers, draws, ordinary pooled reads and body restored.
+// DH364: Existing placement-source/output native references and point-pointer
+// return, subsets 1/2/4/3/5/6/7, then point-reference return: eight at 173.
+// Original query address, fallback copy, helper contracts and complete body restored;
+// frame 0x11c versus 0x118 and rotation cross/trig homes remain.
+// DH367: Standard coordinate transforms at axis/cross/direction scales, seven subsets,
+// then native two-stage sum transforms: 407/395/395/427/459/417/442/464. NOT kept: no byte match;
+// original scales, sums, draws and complete helper/body restored; frame/cross/trig homes remain.
+// Round 151 (fast): the rotation through a same-file copy of the existing rotate_direction with direct `(real)sin(a), (real)cos(a)` arguments 236 (1190 bytes, frame 0x114),
+// of rotate_vector_170d70 direct 236 (1190), axis term first with (cosine, sine) parameters 238 (1190), named sine and cosine with each 241/241/241 (1193). Original helper restored.
+// Retail's rotation read from its listing: `v * cosine + axis * projection - cross(v, axis) * sine`, v.k a constant zero; sine named before the copy or the cross with cosine named before the rotation 241/241, both named before
+// the copy or the cross 241/241, sine named early with cosine direct 236/236 (all frame 0x114). Frame slots: +0xc scale, +0x10 cosine, +0x14-0x1c v, +0x20 cross k, +0x24 sine, +0x28 cross j.
+// T60: Existing tilt-angle pointer/reference crossed with axis/output references:
+// eight at 173/1209. NOT kept: no native frame/cross/trig-home recovery.
+// Original value-angle/vector-pointer producer, consumed-axis phases, ordinary
+// pooled reads, draws, request and complete body restored.
+// F403: Existing stored forward as read-only rotation/outer-cross input, original
+// consumed-axis or distinct projected-axis output, eight protocols: 231/235/241/256/232/231/238/198.
+// NOT kept: no exact ownership form; original helper, input/output contracts and full body
+// restored. Frame 0x11c/0x118, retained heading zero and cross/trig homes remain.
+// Round 66 (m3 lane 14, fast): the rotation helper in 0x146320's statement shape (sine, cosine, projection, scalar cross j/k,
+// cross i inline in row i), dot k/j/i, i/j/k and j/k/i, 231/231/231 (1192 bytes; register-masked aligned 46 against the
+// baseline's 63, but the colouring regresses); that body with the axis passed as three scalars and the sine/cosine from the
+// caller, named or as arguments, 240/240 (1193). Retail's outer cross reads each up-vector field into a register per product
+// (`movss xmm5, [u.k]; mulss xmm5, h.j`) where ours folds one operand from memory. The axis as up x heading with the helper's
+// cross taken vector x axis (the same values) 190 (1209 bytes: ours then loads each up field per product too, but in another
+// order), with the outer cross staged 233 (1199).
+// AC553: Complete source-record initializer/readonly/assignment/memcpy before
+// or after request initialization: 330/330/330/330/335/335/335/335. NOT kept: copied
+// input grows the frame and loses caller 0x28dab0; complete original body restored.
+// DL269: Native double C trig inputs at heading/tilt cosine/sine producers,
+// singly, paired, all and mixed: 186/186/185/185/173/173/173/185 (control 173).
+// NOT kept: no gain or equality; original real API inputs, frame and full body restored.
+// DL271: Typed standard coordinate transfers at transform forward/up and both heading
+// publications, subsets 1..7: 283/283/292/264/295/280/279; complete backward ranges 279.
+// NOT kept: no equality or gain; original native copies, frame, helper and body restored.
+// MiniMax R (11-05): no new form, no lower score; the result local declared last or without its initializer
+// changes nothing, every slot sits at the same address as retail's and only the frame size differs (0x11c/0x118).
+// M3 lane 15 r60 (fast with 0x28dab0): a one-file compile without LTCG (`/FAs`) also gives frame 0x11c and lists the helper's
+// cross vector with its own 12-byte home, so the frame is fixed before link time. Projection as `(1.0f - local_1) * dot3f(...)`
+// 173 (same code); rows as `arg_2->i += arg_1->i + local_3.i` 173; scales axis, vector, cross 233 (1222 bytes); rows axis term
+// first 173 (as round 120); the forward copy after the outer cross 190; velocity products speed first 173 (same code); rows
+// `arg_2->i + local_3.i + arg_1->i` 173.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

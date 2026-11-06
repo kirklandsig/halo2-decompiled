@@ -100,6 +100,17 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // Round 124 (m3 lane 7, fast): the copy as `output[result] = ...; result++;` 5; the arms swapped (`!= 0` arm
 // first) 93; the helper's points as references 5; plane, points and output all references 5; a point pointer in
 // the classification loop 9. Original body restored.
+// Round 70 (lane 10; a one-file LTCG harness that reproduces the real build's hunks, 64 loop-top pointer placements
+// with 0-15 probe locals): retail's setup store order appears only with a side local plus a current-point pointer
+// used by the second intersection and the copy (6: the first intersection then sums x first; with 4 probe locals 4);
+// probe locals rotate only the second intersection's products. Tried (--fast): current- and previous-point pointers
+// for both intersections and the copy 28; a current-point pointer for the first intersection only 5; a side local
+// only 7; a current-point pointer for the second intersection only 7. Numerator spellings and probes in the helper
+// or the first arm never change the first intersection's term order.
+// Round 94 (one-file LTCG harness): the helper indexing the point array (`points, a, b` parameters) 9; with the
+// element addresses at each use 5 (same code); deltas as a vector2f local 7; helper parameter renames 5 (no change);
+// `distance < -epsilon` 5 (same code). Removing the classification's x or y product or the denominator's x term
+// reorders the first intersection's numerator, so its x product is a numbering tie with the whole function.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -446,6 +457,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // compaction) 265 (759 B; frame 0x14 as retail, but points in EBP and indices in EBX where retail has ESI/EBP, and
 // the zeroed count via a zero register); on it departure declared first 265, `current` declared first 264, a
 // separate `hull_count++` 265, memcpy 275 (751 B), the `||` departure update 273 (748 B).
+// N354: Existing epsilon equality at departure/completion/both 171/170/171;
+// both with bool/byte/short/word departure 248/248/175/175, overlap CRT 259.
+// NOT kept: tie/regression; original helper bindings, state and complete body restored.
 // F363: Native point-owned predicate, instance/static with bool/byte/short/long
 // results: 170/164/171/170/170/164/171/170. NOT kept: six-point byte gain below
 // threshold; extra frame word remains. Original helper, point type and body restored.
@@ -456,6 +470,46 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // P303: Native-width lowest/candidate/compaction ordinals on the retained output-ordinal graph,
 // subsets 1/2/4/3/5/6/7: 654/262/180/642/651/259/635; unsigned native candidate 262.
 // NOT kept: every form regresses, some lose caller 0x239d50; original scans, output ordinal and body restored.
+// F365: Lowest/distance/ranking rejection on the retained native output ordinal, masks 1/2/4/3/5/6/7, then classifier early return:
+// 170/170/170/170/170/170/170/256 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// B418: Native lowest-point state, aggregate/component initialization and both
+// current-declaration priorities: 170 each; all four with prior heading before scan
+// 207/207/206/206. NOT kept: grouped state needs a match; original body restored.
+// B420: One spatial equality result serves departure and geometric completion,
+// bool/byte/short/long with long then Boolean departure: 301/301/298/301/313/313/297/297.
+// NOT kept: no exact match; original complete body restored.
+// B424: Exact endpoint termination of admitted lowest/pass/candidate scans,
+// subsets 1/2/4/3/5/6/7 then all with duplicate outer scan: 170/170/170/170/170/170/170/170.
+// NOT kept: no exact match; original signed bounds and complete body restored.
+// B427: First-hit duplicate search completed before copying, short/native outer and
+// inner ordinals with memcpy/memmove: 251/251/248/255/252/264/252/262. NOT kept: no match or gain;
+// complete original body restored. Extra frame word and count/departure homes remain.
+// B430: Complete coordinate-bound producers on the retained native output ordinal,
+// four producer orders, without/with paired angle bounds: 179 each. NOT kept: no
+// match or gain; original body restored. Frame remains 0x18 versus native 0x14.
+// F393: Actual classifier result short/long/int/dword, then complementary admission bool/byte/short/long:
+// 170/170/170/170/170/170/170/170. NOT kept: no byte match; original complete body/helpers restored;
+// extra frame word and produced-length/departure/count/compaction homes remain.
+// P345: Actual advancing output cursor retaining the independent pass bound/eager length,
+// long/short pass, long/bool departure and memcpy/memmove: 251/267/251/276/299/258/253/266.
+// NOT kept: no byte match; original complete body restored; extra frame word remains.
+// B451: Actual output cursor supplies produced length from its difference to
+// indices, plain for/while, long/bool departure and memcpy/memmove: 266/271/250/275/266/271/250/275.
+// NOT kept: no eligible exact count/storage graph. Original full body restored;
+// extra frame word and count/departure/compaction homes remain.
+// T58: Whole-scan current-point pointer/reference, indexed/advancing candidate, original/overlap CRT:
+// 228/228/259/259/222/222/249/249. NOT kept: no eligible match or gain; complete original source restored.
+// Extra frame word, produced-length/departure homes and compaction remain.
+// MiniMax A (11-05): retail's compaction copies the first (i - j) entries from `indices` to `indices + j` (`lea ecx, [ebp + eax*2]` is the destination) where this body copies them the other way round, a behaviour difference; changing the direction alone leaves the score at 170 because the copy is still expanded inline; one 16-bit hull counter driving the outer loop with the increment at the top of the body, a bool departure and that copy 243 (frame 0x14 and the first loop as retail, but the count argument takes EBP, the points argument drops out of a register and the code shortens to 753 bytes); the same counter with a long hull count 227 and with a long departure 255; the short hull count alone 242 and a bool departure alone 248; no lower score.
+// MiniMax A (11-05): one 16-bit hull counter with `while (hull_count < count)` and a bool departure 245 (frame 0x14 and the first loop's `mov edx, ebx` as retail, but the points argument drops out of a register, the indices argument takes EBP and the code shortens); the same counters both 16-bit with the two-counter body 259 (the same rotation); a 16-bit pass counter with the long hull count 261 (the frame stays 0x18); no lower score.
+// M3 lane 15 r60 (fast with 0x239d50): retail's compaction pushes the size, `&indices[j]`, then `indices` (EBP), so the copy's
+// destination is `indices` as here (the direction claim in the MiniMax line above is backwards). Retail-shaped body (short hull
+// count, `while (hull_count < count)` with `indices[hull_count++] = current`, bool departure and heading before the lowest scan,
+// `return hull_count` exits, memmove) 271 (750 bytes: points take EBP, the hull count ESI, indices reload into EBX each pass, the
+// loop test is duplicated at the bottom); that with points2d_equal `__forceinline` 271 (same code); points2d_equal
+// `__forceinline` on this body 170 (same code); the retail-shaped body with `goto finished` exits 265 (759, as lane 13 r58), with
+// a long departure 242 (as lane 9 r27); this body with a short hull count 242 (795, 0x239d50 then 80); `hull_count = pass + 1`
+// stored before the index 210.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -815,6 +869,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B395: Actual NONE result terminates the input walk, short/long ordinal, failure/success
 // capacity arms and tail/post-crossing prior-state publication: 282/282/284/284/250/309/257/311.
 // NOT kept: all regress; original capacity breaks, indexed walk and complete body restored.
+// F364: Native point-owned equality, instance/static and ordinary/forced boundaries,
+// original/recovered count-fraction graphs: 129/129/129/129/281/92/281/92. NOT kept: repeated loop
+// guard requires a match. Original helper and body restored; count/prior-side and SIMD homes remain.
 // B399: Pre-collector crossing with immediate prior-side publication plus four complete
 // denominator/fraction/clamp decisions, bool then byte: 239/241/239/241/239/241/239/241. NOT kept:
 // every exact-only combination regresses; original state, fraction and complete body restored.
@@ -825,6 +882,42 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B403: Indexed-output prospective accepted-count decisions, reject/accept/conditional/negated
 // rejection, native short then signed-short-normalized long: 217/255/255/255/238/260/236/260.
 // NOT kept: all regress; original incremental count, indexed outputs and complete body restored.
+// B416: Entry-distance/crossing-math/current-distance last-consumer regions, seven
+// subsets then all with complete geometric role names: 129 each. Original body restored;
+// count ECX, prior-side byte and SIMD homes remain.
+// B418: Normal pointer/reference, complete coefficient references and plane
+// reference before/after alias copying: 131/131/200/130/131/131/200/130. NOT kept:
+// no match or gain; original field observations and complete body restored.
+// B420: Wrapped predecessor from the real input ordinal, four natural address
+// producers with tail then completed-crossing prior-side publication: 326/326/386/333/318/318/381/324.
+// NOT kept: no exact match; original complete body restored.
+// B424: Standard min/max interpolation clamp, nested lower/upper, sequential lower/upper,
+// named lower/upper and single standard lower/upper boundary: 357/357/371/372/371/372/376/383.
+// NOT kept: no exact match; original fraction clamp, include set and complete body restored.
+// B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
+// 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
+// Round 62 (m3 lane 14, fast; each with the `if (count > 0)` guard, match-only, restored): if/else fraction and the
+// previous side folded into its initializer 93 (889 bytes, aligned 36); if/else with the fraction declared at function
+// scope `= 0.f` 151 (887; zero set first but in XMM3); if/else, folded side, dx at its uses 154 (887, aligned 33, zero
+// XMM2 as retail, first difference +0x9e); the same with dy at its uses instead 300 (926). Without the guard: `short i
+// = 0; if (count > 0) do ... while (i < count);` 235. Compile-only screen (900 forms, base aligned 81): declaration
+// orders of dx/dy/fraction/denominator, statement orders with a fraction default and every product operand order:
+// none below aligned 25; retail's x output copies the fraction and its y output multiplies dy in place, and no spelling
+// gives that split; `i = 0` before a guard folds the guard away, so the store stays after the `jle`.
+// Round 166 (m3 lane 4, one-file LTCG harness exact at 129; no source change): random search, 1500 forms over the loop
+// guard, fraction (default, if/else, zero arm first, ternary), clamp (ternary, if/else-if, in the nonzero arm), delta order,
+// dx or dy at their uses, x/y output operand orders, output order, denominator terms, fraction declaration, previous and
+// current side spellings, tail order and declaration order: no guard best 131 (887); `if (count > 0)` around the for
+// 95 (890), around a for with an outer index 98 (890); guarded do-while 102 (891), and 131 (887) where the guard folds.
+// B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
+// 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
+// F396: Complete scalar coordinate-pair equality input, real/double epsilon, bool/byte result, forced/ordinary inline: 129/129/244/244/129/129/244/244.
+// NOT kept: no byte equality; count ECX, prior-side byte and SIMD homes remain. Original complete body and helpers restored.
+// M3 lane 15 r60 (fast): the side carried in one variable, the previous side copied from it at the loop top 288 (922 bytes);
+// the side-change test as `previous_inside ? !inside : inside` 279 (915); the epsilon side tests moved to the loop end 264 (877);
+// one `short point_count = count` copy at all six uses 129 (same code); the current side declared before the loop 129 (same
+// code, as round 294); the `*clipped = false` reset moved just before the loop 221.
+// MiniMax A (11-05): retail reads the count argument as a dword and narrows it (`mov ecx, [ebp + 8]; movsx edi, cx`) where this declaration's short count is read as a word (`movsx edi, word ptr [ebp + 8]`), so the parameter type, not the body, keeps the rest of the function out of step; no lower score.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

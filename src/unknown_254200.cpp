@@ -135,6 +135,10 @@ void function_254200(void)
 
 #undef program_words_254200
 
+// MiniMax C (11-05): no new form, no lower score; the only difference left is the order of the two loads after the buffer reservation in the second and third vertex records, where retail loads the 16777215 constant before it reloads the spilled y+h and we reload first; the permuter tried 173 forms in 1803 s and none beat 4.
+// MiniMax G (11-04): the point's x and y taken through parallel pointers 341 (the point copy is
+// retail's shape); the permuter did not reach a variant on this loaded machine, so it was stopped:
+// no lower score.
 // MiniMax I (11-01): the member 4f form and the swapped y operands keep 4, the constant as a helper parameter 8, the point and size swapped 15, the y sum as a named local 151, the point and size below the colour call 214 and the free 2s form 392; no new form, no lower score.
 // score 4 (was 4): in the two records that follow the second reservation retail loads the
 // 16777215 constant before it reloads the spilled y+h from the stack, ours reloads y+h
@@ -198,11 +202,11 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 	}
 }
 
-// score 18 (was 18): the texture-coordinate sums are computed at the first vertex and reused for
+// score 2 (was 2): the texture-coordinate sums are computed at the first vertex and reused for
 // the other three, and the colour is read through a pointer with the alpha as a byte; what is left
-// is that in the last quad's third and fourth vertices retail loads y into a register before it
-// adds the offset, where ours copies the offset and folds the load into the addition, and that
-// after the second reservation retail reloads the lower coordinate before the 16777215 constant.
+// is that after the second reservation retail reloads the lower coordinate before the 16777215
+// constant (0x254490 has the same swap, in the same evaluation-order direction). The last quad's
+// y sums now load y first, as retail does, through pointers to the point's two coordinates.
 // The pool address of the constant is masked by the check; only the order of the two loads differs.
 // Round 34 (lane A, machine 3): the y sums of the third and fourth vertices are folded by the
 // commutative-operand canonicalisation of the whole-program build: swapping their operand order
@@ -390,6 +394,40 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // move nothing: 18 each. The size as an if/else 18 (same code); computed before the third pass's
 // memset 525 (2270 bytes) or at the top 563 (2282 bytes); a point pointer local for the last quad 18;
 // a non-const point parameter (definition and the caller's declaration) 18.
+// Round 162 (lane 4, fast; the plain check agrees on the kept form): pointers to the point's x and y for the last
+// quad's four vertices 2 (kept; y alone 2, y and x in either declaration order 2, one pointer to both coordinates 18,
+// a const reference to y 2, y's pointer at the size or at the block head 2). Before it: 10-64 unused locals 18, the size
+// declared at the function or block top 18, y or x of the first vertex named 18, a const size 18. On the 2 form: named
+// upper and lower 380, named half 408, half, upper and lower 380, lower alone 390, upper alone 423, constant-first sum
+// or half 2, plain 2f calls 467, either or both 4f calls through the class 2, the scale through a pointer or reference
+// 408, the scale in a local 2, the half as `arg_1 / 2.f` 2, the lower as `-arg_1 * 0.5f + 0.5f` 2, a named depth
+// constant at the top or before Begin 2; a 600 s permuter run (53 tries), best 2.
+// AC532: Actual parameter-home lower/upper endpoints with mutable/const scale 394/401/394/401;
+// after first submission 335/391; complete half-span producers 363/368 (fast control 2).
+// NOT kept: none matches; original parameter, observations and body restored.
+// N369: Complete endpoint compound upper/lower/shared-half producer subsets 346 each;
+// native two-coordinate compound output 343. NOT kept: no equality and extent grows;
+// original two-reload body restored.
+// K148: second-texture lower product commuted/division 2/2; second texture C entry 375;
+// both coordinate references 2; point value copy 161; whole-object pointer 18; third-lower/
+// fourth-upper products commuted 2/2. NOT kept: no equality; original two-reload body restored.
+// Round 150 (m3 lane 6, fast): the reload order follows how many real values the body has, not their source order.
+// Diagnostic extra code flips it to retail's: 3 pairs of float products or integer products ahead of Begin, 5 stores of
+// different float constants, 8 of one constant, 12 integer copies (later in the body 12 stores); never integer immediates,
+// dead locals, no-op inline helper calls or empty `do {} while (false)` blocks (16 of them). One or three extra reads of the
+// lower coordinate or the constant do not flip it, so it is no reference weight. Every natural form 2, none flips: the state
+// setter calls (kept, they were 0x222d0's body by hand), the existing color helper, member position entries, C Begin, a
+// getter body with an index, all combinations; `inline` on the 0x137550 definition with direct calls 2 (retail inlines it
+// here; its file is /Ob1) with its prologue unchanged. The direct call without that 577, and 0x254490 324 through the helper.
+// Lead, the inline budget: with no inline-depth pragmas and the nine setter calls 440 (2388 bytes): ours keeps the 4f calls of
+// vertices 3 and 4 and one later setter inline. One more setter ahead of Begin 441 (2287 bytes) then gives retail's whole call
+// sequence but for 0x1392a9, which inlines: aligned 16, namely that setter, this reload pair and 0x1392a9. Two more 760 (1941 bytes)
+// move every vertex out. Local helpers don't spend the budget (`inline` instead of forceinline on the two lookup helpers, the
+// full getter body, the color helper, the inline 0x137550 getter: 440 each), so a consumer that emits no code is still missing.
+// A 600 s permuter run on this form, 45 tries, best 2.
+// Round 171 (lane 4, fast): the blend-state and texture-stage arguments by enum name 2 (same code, kept); the alpha
+// constant through D3DCOLOR_ARGB 2 (same code, kept); the reference casts dropped from the first texture-stage calls 465
+// (2236 bytes; 0x254200 loses its match); the bitmap getter as if/else 524; the render-target getter as a ternary 2.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
@@ -399,20 +437,13 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 	{
 		if (function_12360(local_0, 0.f) && function_12360(local_1, 0.f))
 		{
-			g_4b8448 = 0x901;
-			D3DDevice_SetRenderState(D3DRS_CULLMODE, 0x901);
-			g_4b8308 = 0x10101;
-			D3DDevice_SetRenderState(D3DRS_COLORWRITEENABLE, 0x10101);
-			g_4b82e8 = 1;
-			D3DDevice_SetRenderState(D3DRS_ALPHABLENDENABLE, 1);
-			g_4b8324 = 0x8006;
-			D3DDevice_SetRenderState(D3DRS_BLENDOP, 0x8006);
-			g_4b82ec = 0;
-			D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
-			g_4b82e0 = 0x207;
-			D3DDevice_SetRenderState(D3DRS_ZFUNC, 0x207);
-			g_4b8450 = 0;
-			D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
+			function_0222d0(D3DRS_CULLMODE, 0x901);
+			function_0222d0(D3DRS_COLORWRITEENABLE, 0x10101);
+			function_0222d0(D3DRS_ALPHABLENDENABLE, 1);
+			function_0222d0(D3DRS_BLENDOP, 0x8006);
+			function_0222d0(D3DRS_ALPHATESTENABLE, 0);
+			function_0222d0(D3DRS_ZFUNC, 0x207);
+			function_0222d0(D3DRS_ZBIAS, 0);
 			function_14390(0, (s_type_7ba8e9 *)local_0, 0.f);
 			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ADDRESSU, 4);
 			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ADDRESSV, 4);
@@ -425,10 +456,8 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MAXMIPLEVEL, 0);
 			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_COLORSIGN, 0);
 			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ALPHAKILL, 0);
-			g_4b82f4 = 1;
-			D3DDevice_SetRenderState(D3DRS_SRCBLEND, 1);
-			g_4b82f8 = 0x302;
-			D3DDevice_SetRenderState(D3DRS_DESTBLEND, 0x302);
+			function_0222d0(D3DRS_SRCBLEND, 1);
+			function_0222d0(D3DRS_DESTBLEND, 0x302);
 			function_1cc30(0xc);
 			function_1c710(g_51f0f0);
 			memset(&g_484f68, 0, sizeof(g_484f68));
@@ -458,8 +487,8 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			#pragma inline_depth()
 			function_14390(0, (s_type_7ba8e9 *)local_1, 0.f);
 #pragma inline_depth(0)
-			function_0222d0((D3DRENDERSTATETYPE)0x3e, 0);
-			function_0222d0((D3DRENDERSTATETYPE)0x3f, 0x302);
+			function_0222d0(D3DRS_SRCBLEND, 0);
+			function_0222d0(D3DRS_DESTBLEND, 0x302);
 #pragma inline_depth()
 			memset(&g_484f68, 0, sizeof(g_484f68));
 			g_484f68.PSCombinerCount = 1;
@@ -482,11 +511,11 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			D3DDevice_End();
 			function_14bc0((short)g_4858b8, 0, true);
 			function_14f60(0, 0x1d);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)0, 3);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)1, 3);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)3, 2);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)4, 2);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)5, 1);
+			function_0224f0(0, D3DTSS_ADDRESSU, 3);
+			function_0224f0(0, D3DTSS_ADDRESSV, 3);
+			function_0224f0(0, D3DTSS_MAGFILTER, 2);
+			function_0224f0(0, D3DTSS_MINFILTER, 2);
+			function_0224f0(0, D3DTSS_MIPFILTER, 1);
 			#pragma inline_depth()
 			D3DDevice_SetTextureStageState(0, D3DTSS_BORDERCOLOR, 0);
 			#pragma inline_depth(0)
@@ -495,11 +524,11 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			function_0224f0(0, D3DTSS_MAXMIPLEVEL, 0);
 			function_0224f0(0, D3DTSS_COLORSIGN, 0);
 			function_0224f0(0, D3DTSS_ALPHAKILL, 0);
-			function_0222d0((D3DRENDERSTATETYPE)0x3e, 1);
-			function_0222d0((D3DRENDERSTATETYPE)0x3f, 0x303);
+			function_0222d0(D3DRS_SRCBLEND, 1);
+			function_0222d0(D3DRS_DESTBLEND, 0x303);
 			byte local_6 = (byte)(long)(function_1392a9(g_4b9ed8) * 255.f);
 			memset(&g_484f68, 0, sizeof(g_484f68));
-			g_484f68.PSConstant0[0] = (((((dword)local_6 << 8) | local_6) << 8 | local_6) << 8) | local_6;
+			g_484f68.PSConstant0[0] = D3DCOLOR_ARGB(local_6, local_6, local_6, local_6);
 			g_484f68.PSCombinerCount = 1;
 			g_484f68.PSTextureModes = 1;
 			g_484f68.PSRGBInputs[0] = 0x8010000;
@@ -511,16 +540,18 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			g_484f68.PSFinalCombinerInputsEFG = 0x1800;
 			function_15180(&g_484f68);
 			real local_7 = g_4ba04c > 1 ? 32.f : 42.f;
+			real const *point_x = &arg_0->x;
+			real const *point_y = &arg_0->y;
 			function_1cf50();
 			D3DDevice_Begin(D3DPT_TRIANGLEFAN);
 			D3DDevice_SetVertexData2s(1, 0, 0);
-			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, arg_0->x - local_7, arg_0->y - local_7, 16777215.f, 16777215.f);
+			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, *point_x - local_7, *point_y - local_7, 16777215.f, 16777215.f);
 			D3DDevice_SetVertexData2s(1, 1, 0);
-			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, arg_0->x + local_7, arg_0->y - local_7, 16777215.f, 16777215.f);
+			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, *point_x + local_7, *point_y - local_7, 16777215.f, 16777215.f);
 			D3DDevice_SetVertexData2s(1, 1, 1);
-			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, arg_0->x + local_7, arg_0->y + local_7, 16777215.f, 16777215.f);
+			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, *point_x + local_7, *point_y + local_7, 16777215.f, 16777215.f);
 			D3DDevice_SetVertexData2s(1, 0, 1);
-			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, arg_0->x - local_7, arg_0->y + local_7, 16777215.f, 16777215.f);
+			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, *point_x - local_7, *point_y + local_7, 16777215.f, 16777215.f);
 			D3DDevice_End();
 			#pragma inline_depth(255)
 		}

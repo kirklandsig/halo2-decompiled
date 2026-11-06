@@ -15,6 +15,7 @@ void function_1fa50(short_rectangle2d const *bounds, word const *text, void cons
 #include "slot_handler.h"
 #include "input_record.h"
 #include "unknown_157450.h"
+#include "player_queries.h"
 
 real function_1e96a0(short column, short row);
 
@@ -73,7 +74,8 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
-// score 107 (was 107): no frame; enable observations and maximum/register homes differ.
+// MiniMax H (11-04): no new form, no lower score; the enable reloads and the maximum homes still differ.
+// score 106 (was 107): no frame; enable observations and maximum/register homes differ.
 // Lane 12 r78: MATCH (fast, plain and full check, lost []) with two changes together, not kept by the coordinator:
 // (1) the enable byte and the input counters declared as one struct symbol in globals.h (retail's record at 0x510cb0
 // reaches 0x51e8d4, so the region is one object); the padding of that trial struct overlaps the separately defined
@@ -133,13 +135,27 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // J247: Actual shared counter-word reader/store view subsets 107/107/107/107/107/107/107;
 // complete view with the team-mode helper 106 (425 bytes). NOT kept: one-point gain below threshold.
 // Original shared type and body restored; enable reload, maximum homes and word schedule remain.
+// Round 138: setter counter pointer before/after the clamp 106/111; independent per-use counter 107;
+// value between the enable gates 110; separate player/team inner results 109/109; two-call by-value
+// accessor 107; player record copy 71 (434 bytes), read-only copy 71, with the team-mode helper 78.
+// NOT kept: the one-use record copy spills through the code slot, absent in retail; original body restored.
+// MiniMax C (11-05): no new form, no lower score: the enable reload, the maximum homes and the word
+// schedule still differ here.
+// Round 74 (m3 lane 11, fast and plain): the team test through the existing function_x340af0() in the condition 106
+// (kept: it replaces a hand-copied copy of that helper and the reuse of `code`; the helper's result takes code's
+// slot, retail's store), and the player record as the header's s_player_datum (same code; replaces a local struct).
+// Retail's two maxima are 0x196960's inlined body (its `mov eax, -1` preset, the `xor eax, eax; mov ax` read and
+// the team's `or ecx, ecx`), and the player clamp is 0x1968b0's: both sit in /Ob1 src/unknown_1967d0.cpp (held),
+// where `inline` on their definitions is the lead. On 107: the increment before the row pointer is formed 111
+// (retail's `inc word ptr [eax+edx+0x16]; lea edi` shape, but the player/kind homes swap); that with the index taken
+// before the classification call 115; row declared first and assigned after the increment 111. On 106: the
+// increment form 110; the team field read at each use 108; the team read once before the test 113.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
 	long kind = function_196ef0(code);
 	long index = player_index & 0xffff;
-	struct s_team_player { byte before[0xc0]; char team; byte after[0x21c - 0xc1]; };
-	s_team_player *player = ((s_team_player *)g_4e8c24->data) + index;
+	s_player_datum *player = ((s_player_datum *)g_4e8c24->data) + index;
 	function_1e9ce0(player_index, 7, statistics, 2, 1, true);
 	function_196e60(index, 0, kind, 1);
 	if ((code & 0xc0) == 0x40) function_196e60(index, 6, kind, 1);
@@ -156,12 +172,7 @@ void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, 
 		else if (value > maximum) value = maximum;
 		g_511bf4.groups[index][12].value = (word)value;
 	}
-	if (g_55e4d0[g_4e9ae8->engine_index])
-	{
-		code = (byte)g_4e6948->flags184.bit0;
-	}
-	else code = 0;
-	if (code && player->team != NONE)
+	if (function_x340af0() && player->team != NONE)
 	{
 		long team = player->team;
 		long team_maximum = NONE;
@@ -205,6 +216,8 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
+// kept, the original body is restored.
 // score 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
 // rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
@@ -358,6 +371,12 @@ struct s_object_damage_view
 // Round 390: External amount-field identity after timestamp acceptance, original/whole
 // record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
 // Original body restored; scalar homes, amount-biased cursor and attribution remain.
+// J249: Existing recorded-event byte/streak long/final-event long/paired first two contracts
+// 354/354/355/353. Final-event long loses matched 0x1ea770 (19). NOT kept: paired contracts
+// lower the streak provider 107 -> 76 but replace its native byte flag-home store with a
+// full-width flag test. Coherent long/word caller event carriers with the streak contract,
+// without/with the recorded-event byte formal: 423/423/453/453; all lose matched 0xd9640 (61).
+// Original body, code domains and every provider restored; scalar homes and biased cursor remain.
 // DL253: existing streak/final/secondary provider ordinary-inline singles 353/353/353;
 // ordinary-inline pairs 353/353/353 and all three 353 on the native-frame graph;
 // forced streak expansion 962 (1949 bytes), loses a matched caller; NOT kept: shared regression.
@@ -383,6 +402,29 @@ struct s_object_damage_view
 // DH336: Two real award buffers/counts in array and record ownership forms:
 // 353/353/353/385/385/385/385/385; pointer-difference controls repeat the earlier form.
 // NOT kept: grouped storage needs equality; original complete body restored.
+// DH350: Both award-prefix searches own duplicate/unique outcomes,
+// bool/byte/short/long: 366/366/366/366/366/366/366/366. NOT kept: test-set outcomes need equality;
+// original ordinal searches, scalar homes and complete body restored.
+// J257: Completed selected/reported validation outcomes, bool subsets and byte/short/long pairs, pointers and direct credit results:
+// 353/353/353/353/353/353/353/425. NOT kept: seven validation forms tie 353; direct credit production grows to 1580 bytes at 425 and leaves scalar/history homes unresolved.
+// Original executable source restored; allocation gaps remain.
+// DH371: Actual engine/reported-source/selected-validation/fallback-validation/credit-hostility/
+// assist-admission/credit-pair/related-owner Boolean test results: 353 each.
+// NOT kept: no gain or equality; original validation, record observations and full body restored.
+// Native scalar homes and amount-biased history cursor remain.
+// Round 53 (m3 lane 2, fast; positional/aligned/masked aligned, baseline 353/160/56): consider_team as a true default
+// cleared by an if 344/156/52 (retail's store, but a flag form: match-only, not kept); the killer test as `if (killer !=
+// NONE) { if (killer == reported) code; } else if (reported is valid) { ... }` (retail's layout) 363 (1532)/157/52, with the
+// default 354 (1532)/153/48; a walked record pointer from a history local in the selection loop 374/169/68, with the default
+// 368/165/64; a `&history[selected]` pointer 454 (1583)/264/106, with the new test 438 (1567)/264/102; a named selected
+// player 403 (1596)/174/105, with the new test 354/160/58; pointer and player together 491 (1617)/275/192, with the test
+// 433 (1569)/272/142; those with the walked pointer and default 438 (1585)/259/89, with history reads in the assists 417
+// (1569)/247/81. Slots follow memory references, heaviest lowest: ours victim_team 8, damage_code 7, killer 6 references
+// (+0x14/+0x18/+0x1c); retail killer 8, victim_team 8, damage_code 6 (+0x14/+0x18/+0x1c). So retail's killer is read from
+// its home two more times and its damage code once less; the record pointer forms lose `selected`'s EDI and grow the frame.
+// N398: Native post-root shared object-header raw/typed/readonly tables, then related-player observations at every use 353/353/353/353/357/357/357/357.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// MiniMax R (11-05): the team-consideration result is a true default cleared by the query, 344 (was 353); not kept: a test-set flag, match only.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -566,6 +608,15 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // `value = *entry; value += delta` 25, delta through a short local 84; a table pointer local 13; the index
 // before the field read 83; a `(word)` index 13; the clamp as one ternary in the store 13; statistics through
 // a volatile reference with a plain field 85; a short field local 81 (263 bytes).
+// Round 89 (m3 lane 12, fast), plain field read: the element indexed twice, with the entry pointer first or the value first, or the entry pointer
+// after the clamp, delta on either side of the sum: 85 each (the field stays folded; two reads do not unfold it). The engine pointer named at the top 24 (the
+// note's form, re-measured: the entry block is then exact but for that load's place, plus the engine test swap); named after the entry 69; named at the top and
+// assigned again at the join 85, declared without a value and assigned at the join 85, NULL then assigned at the join 85 (a dead definition does not unfold it).
+// Round 169 (lane 4, fast): a plain delta parameter (field read kept) 18, re-measured: delta's movsx then takes EDX at
+// the top, where retail has the field. Both volatiles removed (and the field named `column` as in 0x1e9c90) 85, but
+// that body is retail's but for two places: the folded `add eax, [esp+0x18]` (one instruction short, which shifts the
+// rest) and the first engine test's EAX/ECX swap. On that plain body: the first test through game_engine_get() 85; the
+// notify through a force-inline helper taking the bit (diagnostic, this caller only) 85; a `long const` field 85.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)
@@ -974,6 +1025,13 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // the horizontal offsets 39; four scalar short edges copied into the piece 238 (1129 bytes, frame
 // 0x64); each edge inset then offset as two statements 207 (1162 bytes); insets left, right, top,
 // bottom 20 (top/right registers swap as well).
+// Round 53 (m3 lane 15, fast): the four offset statements in all 23 other orders 2 to 49 (left, right,
+// top, bottom 2); the four insets in all 23 other orders 20 to 170; the window shorts of the camera
+// storage as one rectangle member 2; inner and piece declared together with piece assigned 2; the
+// coordinates or the points declared at the top of the block 2/2. Unused-local probes (1 to 16) at
+// the top leave it at 2, so the load order is no numbering tie.
+// Lane 9 r89 (fast): window x offset as a named short before each inset statement 41, after the insets 38; window y before the bottom inset 44; both 44; address-cast reads
+// 2; pointer to the window pair at the top or before the bottom inset 2/2; `-8 + field` for bottom and right 2/2; whole-record copy first 218; a data pointer to the field or storage (diagnostic) 2/2.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {

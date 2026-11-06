@@ -601,6 +601,13 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax I (11-06): retail's prologue interleaves the compare with the pushes and keeps the
+// pathfinding read after the radius block; no new form, no lower score.
+// MiniMax A (11-04): pathfinding read after the radius block 674, final_complete below the height 697,
+// radius as one ternary (retail's load order) 704, pathfinding after the radius with a short frame
+// identifier 703, long step counter 764, bool result 736 and 756 with that order, the type guard split
+// into three sibling tests as retail does (setup, search-or-copy, object-index pass) 770; the permuter
+// (113 tries, annealed) found no variant below 675; no keepable gain.
 // score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
 // callees and the relocated globals); the frame 0x1f88 and the length agree, but retail keeps the
 // success result in a stack byte where ours keeps a dword, loads the source radius before the 0.2f
@@ -718,6 +725,38 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // matched 0x1b5aa0 writes it, `(bool)((g_557c40[9 >> 5] >> (9 & 31)) & 1)`, 702 [602] (retail's `shr eax, 9; test al,
 // 1` shape, ours in EDX); that without the outer parentheses 702 [602]; with the mask test as `(g_4ee4ec & mask)` 702
 // [602]; with a bool result 749 [610]; plus the radius ternary ahead of the pathfinding read 777 [607].
+// P314: Cache-versus-stack workspace producers, independent conditional/branch/default
+// obstacle/search assignments: 743/730/730/730/743/730/730/730. All regress; original
+// pointer initialization, once-read cache selection and complete body restored.
+// P314 further: Existing normalizer with ordered-positive trace admission, original/shared
+// 2D difference: 712/714, frames 0x1f8c against 0x1f88, lengths 2986/2988 against 2986.
+// NOT kept: both regress; unordered working-value changes require equality. All restored.
+// DH352: Entry radius/height/outgoing-mask lexical identities, seven subsets 675 each;
+// complete graph with Boolean success 754. Original entry scalars and full body restored;
+// byte success, radius/pathfinding schedule and scalar/geometry homes remain.
+// Round 129 (m3 lane 7, fast; aligned/masked control 415/270): entry grid of radius ternary, radius before pathfinding, (bool) enabled bit, final_complete after the actor block, first_output at the top,
+// 31 combinations: 674 twice (radius before pathfinding with the ternary and complete moved; gain 1), the rest 675-703. Retail's failure block: retry assigns `found`, one `if (!found)` block, short flag
+// loop testing `flag` per obstacle, `goto done` 741 (2968 B, masked 246), with `bool result` 746 (2969, masked 228), with `return false;` 793 (masked 234); on 746: radius ternary first 789 (2953), (bool) bit
+// 775 (masked 224); without bool 764. Types seen in retail: `short ignored` 706 (2976), retry-loop index short 744 (2965), ignored-loop index short 675 (same code), `short frame` 704, ignored+frame 701,
+// all three index/ignored 724; on `bool result` + failure block: all three 739 at retail's 2986 B (masked 223, the closest yet, but positional), with frame 749 (masked 221). Left there: copy loop and `truncated` in BL.
+// B437: Stored passthrough-point producers with four count/receiver contracts
+// 738/760/741/744; with bool success 766/783/773/755. NOT kept: all regress;
+// byte success, radius/path acquisition and scalar/geometry homes remain.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 675 [601]): short index and entry pointer in both transform loops
+// (retail's movsx/lea/cmp si form) 697 [569]; bool result 754; radius ternary 708; first_output zeroed at entry 700;
+// inserted count and truncation flag before the value28 test 710 (2976); start and start node if/else 750 (2960); retail's
+// retry flow, two calls 779 (3012); all together 789 (2974) [623], without bool result 721 (2965) [596]. Greedy on aligned:
+// transform loops plus early count and flag 681 [567]; with short node index 734 (2963) [543]; with the frame re-read 732 [632];
+// positive obstacle-count arm first 715 [527]; all four 734 (2964) [631]. `inline` on 0x210690, 0x2104b0, both, or 0x2c4030 675.
+// B437: Stored passthrough-point producers with four count/receiver contracts
+// 738/760/741/744; with bool success 766/783/773/755. NOT kept: all regress;
+// byte success, radius/path acquisition and scalar/geometry homes remain.
+// P351: Complementary complete-step truth in bool/byte/short/long with long/Boolean result:
+// 675/675/719/705/754/754/713/719. NOT kept: no byte match; radius/path acquisition, success byte and scalar/geometry homes remain.
+// Original complete body and existing helpers restored.
+// Round 74 (m3 lane 10, fast, caller 0x270930 MATCH in each): count read once into a named short 675; last step index in a long local 732; input pointer after start and start node 675; start node before the start
+// point 707 (2976); `bool last` 736 (2959); `ignored` declared at the loop top 675; first_output declared in the for 675.
+// Then 20 mechanical spellings through the same check (ternary and if, compare forms, operand order, constant declarations swapped): 675 eighteen times, 676, and `!(a <= b)` for a compare 698.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

@@ -53,6 +53,19 @@ bool function_1946f0(s_bitstream *stream)
 // index: 2 each (diagnostic: not a numbering tie); `byte_index[stream->data]` 2; `saved & 7` 42 (not the same
 // value for negative positions); clear start and count from a parenthesised `byte_index + 1` 2; the index
 // computed before the discard counter stores 17; `count >= 0 && count > 0` 2.
+// Round 139: data loaded then the index reassigned in the mask block 23 (141 bytes), in the clear block 2;
+// a distinct clear index after the data load 2; count formed by subtract then decrement, or size minus one
+// then subtract 2/2; clear start derived from size minus count 45 (142); index reread from the checkpoint 60;
+// saved declaration split from its assignment 2. Original body restored.
+// Round 72 (m3 lane 10, fast): the index copied in the subscript by an embedded assignment 2; block-local data, copied index and a pointer to
+// the byte 9; block-local data, own division, direct subscript 35 (its memory operand is [index + data], not a LEA); inline mask helper 35;
+// inline address helper with the index first 2. One-file harness (exact here; diagnostics): identity pointer chains of 1 to 8 locals, at the top
+// or used for both reads 2 each; one or two new stored fields 3/4; extra arithmetic at the top, in the block or after it 33/16/6, always data first.
+// Round 77 (m3 lane 1, fast): the count tests and memset as a forceinline clear helper 2; a data local assigned
+// before the index, used for the masked byte only 39 (that access becomes index-first `[edx + edi]`); single-use
+// `saved / 8` index expressions and a single-use start index 2 (identical); the early data local used for the clear
+// only 40 (the clear LEA becomes retail's `[edx + edi + 1]`); the data local read at the function's top for both 52.
+// The newer value goes first, so retail orders its in-block field loads as values older than the index.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

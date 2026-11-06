@@ -1154,6 +1154,8 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// MiniMax h (11-05): the query-size and write-count stack homes are exchanged against retail (retail size@0x24, write count@0x28, ours the other way round); moving either between scopes, changing its type and reordering the two declarations all leave the homes unchanged (33), zero-initialising the write count at its declaration gives 85, and the permuter's best over 300 s is 33.
+// MiniMax H (11-04): no new form, no lower score; our expected-size and query-size locals sit four bytes above retail's in the frame, which moves every later access.
 // score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
 // the read-call value transport differed. The retained API and handle prefix now agree.
@@ -1508,6 +1510,48 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P303: Existing shared completion provider on the failure-only count graph, open/query/resize
 // masks 1/2/4/3/5/6/7, then all five asynchronous boundaries: 33/33/33/33/33/33/33/33.
 // Original local completion expansion and complete body restored; query/count and write/header joins remain.
+// DL260: Native header checksum/dependency/persistent layouts and native handle fields: ten executions, eight distinct source/header bundles, all 33; mask-only t03/t06 and t05/t07 repeated.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// F365: File-owned completion wait, instance/static, pointer/reference and ordinary/forced inline:
+// 33/33/33/33/33/33/33/33 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// N358: Complete invalidity result on failure-only resize-count graph, eight native scalar domains:
+// 159/159/159/141/141/140/140/140. NOT kept: unmatched source/representation forms; original executable body restored.
+// Query/write count homes, write setup and checksum/validation joins remain.
+// Round 149 (m3 lane 6, fast): round 53's 7 form rebuilt on the current body, 7 (aligned 6). Probes (dead volatile loads, diagnostic only, reverted at once): on the write-local form
+// one load between the write's wait and the byte-count test restores the close copy `mov ecx, eax` at 930 bytes, and a second ahead of the 0x213800 call gives the
+// checksum EAX, leaving only the two probes and one padding byte. So retail has two more scratch-rotation steps than our source: one between the write's header
+// address and the close copy, one between that copy and the checksum. Header, handle and copy rotate together; the flags zero stays in EAX whatever the probes do.
+// On the 7 form: flags as a local before the header init, a local at the call, a copy-initialised local, a default constructor, an init-list constructor, the field
+// reassigned 7 each (same code). On the write-local form: named count, `written = true` first, named HANDLE test, nested test, named flags, local before the header
+// init 114 each; written_size count local 114 (nested 114; on the 7 form 7); `bool complete` 107; if/else on the count 114; inverted `failed` flag 114. Value-returning
+// blocking helpers (query/resize/write/close, D direct, H helper): DDHD 114, DDHH 114 (aligned 4: only the close copy), DHHD 6, HDHD 6, HHHD 6, HHHH 118, DHHH 118; helper
+// taking flags by value 118, all parameters 118; bool result 114; size from sizeof 114; status returned 114; by-value copy in the helper 114. By-value open-handle
+// predicate at the close test 114, also at the open test 114; HANDLE predicate 114; by-value getter at the test 114, test and argument 114 (aligned 6); close-if-open
+// helper by value 114. Count spellings: `(long)` 114; `(word)` 117 (916 bytes); `!(bytes - 0x800)` 108 (930 bytes, aligned 5: the temporary fixes the copy but leaves
+// `mov eax, count; add eax, -0x800`); `written = written || ...` 114. Pointer-out helpers: bool local 114, `return *bytes == size` 107, `size - bytes` 107 (aligned 5).
+// DL262: Actual resize-output repair success, assigned/cleared/short-circuit/conditional,
+// original then native successful-header producer: 112/165/188/190/165/172/188/195.
+// NOT kept: result-flow forms require byte equality; original outputs, count producer and body restored.
+// J255: Coherent ordinary-inline cleanup, close, pair and cleanup/checker boundaries;
+// forced cleanup, forced checker and their mixed ordinary forms: 33/33/33/33/474/388/474/388.
+// NOT kept: ties/regressions. All provider contracts and complete bodies restored;
+// query/write homes and validation joins remain; forced expansion moves away from native extent.
+// B444: Equal-size validation first on failure-only count flow, resize-arm/
+// successful-read/checksum producer variants: 175/169/175/169/175/169/175/169. NOT kept: exact-only
+// block/result forms regress; original complete body, waits and API values restored.
+// Query/count homes and write/checksum/header joins remain.
+// B446: Complete resize/write/conditional-close inline workflow, handle pointer/reference,
+// cleanup in caller/boundary, original count/test-produced success: 33/33/33/33/83/83/83/83. NOT kept:
+// no exact result; original whole body, qualifier and helpers restored. Count homes, write setup and header/checksum joins remain.
+// Round 90 (m3 lane 16, fast): the close written in both arms of `if (resized)` with the count declared in the write
+// block and no zero store 179 (994 bytes; size and count take retail's homes, but the second close copies the handle
+// through EDX where the first uses ECX, so the two closes are not tail-merged); the failed-resize close arm first 215
+// (994 bytes); `(!resized || ...)` with `resized` declared at the top of the size-mismatch block 157, renamed
+// size_changed/extended 157/157, declared beside `done` 157 (frame 0x1140 each: resized packs beside done).
+// Round 75 (m3 lane 11, fast): the size local renamed to a name sorting before `bytes_written` 33, homes
+// unchanged; that with both out-parameters declared together in the handle-valid block 33 (so neither names nor
+// scopes set these two homes); `resized` declared beside the size local 33; the write length and its check spelled
+// with sizeof of the header 33 (same code); the count zeroed before `if (resized)` in place of the else arm 85.
 // @retail 0x213970
 void function_213970(void)
 {

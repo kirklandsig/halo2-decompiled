@@ -668,11 +668,18 @@ struct s_component_property_view
 	bool function_1d3550(long key, bool *positive, real *value) const;
 };
 
+// MiniMax G (11-05): no new form, no lower score; the value's load order is the callee's parameter home, so nothing here moves it ahead of the component lookup.
+// MiniMax H (11-04): no new form, no lower score; retail loads g_51e9b8 into eax after the index
+// scaling (the short A1 encoding) and reads value into edx before the component lookup and key
+// into ecx last, ours loads the global through ecx and sets the key up first, so the body is one
+// byte longer (13; a real* local for the value: 13).
 // MiniMax lane E (11-01): argument locals for the value, the positive flag and the key, the index
 // named in a local, the index term first in the address and a 240 s permuter run all score 13; no
 // lower score.
 // MiniMax D (11-01): the arguments pre-read into named locals compile identically (13); no new
 // form, no lower score.
+// MiniMax A (11-03): no new form, no lower score.
+// MiniMax G (11-04): no new form, no lower score.
 // score 13 (was 13): retail reads value into edx before it looks up the
 // component and reads key into ecx last, just before the call; ours reads key
 // first, value last, and loads g_51e9b8 through ecx (93 bytes against 92).

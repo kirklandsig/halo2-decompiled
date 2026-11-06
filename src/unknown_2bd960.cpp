@@ -7,6 +7,7 @@
 #include "engine_peer.h"
 #include "unknown_1523c0.h"
 #include "game_engine_events.h"
+#include "engine_object_definition.h"
 #include "unknown_13927e.h"
 #include "data_array.h"
 #include "unknown_07f720.h"
@@ -663,6 +664,18 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // 2; step products as `32 * (i + 1)` and `32 * i` 2; the count stored as one expression and halved from the field 2;
 // the parity test as `== 0` 2; half declared at its assignment 2. Diagnostic: a float literal for the call's last
 // argument keeps the pair (it flips 0x281b60's pair).
+// Round 84 (plain): the steps loop as `while` with the index step last 2; the first term negated and written second 2; a nested polygon
+// test 2; half and i declared at the top of the found block 2; the even count as its own local 2. A compile-only copy with `__stdcall`
+// parameters reproduces the swapped pair. There a division by 3, 5, 7 or 100 anywhere in the function flips it (a division by 4 or 8, or
+// a `% 3`, does not), and 12 extra reads of either parameter do not, so reference counts do not decide it. 102 no-extra-code forms keep the pair.
+// Round 143 (plain): explicit start/end numerators with end = start + 32 2; prefix increment 2; reversed bound 2;
+// a short query-group local 2; &ids[0] 2; return after the build 2; != loop bound 3; compound increment 2.
+// All restored; the post-loop hill/index reload order remains.
+// Lane 11 round 70 (plain): half as `count >> 1` 50; the first guard alone as `count > 3` 4; `count -= count % 2 != 0` 75 (180 bytes); a named remainder 2;
+// the outer guard as `index >= 0` 6. Compile-only: distinct constant divisions added to the else arm flip the pair at counts 1-4 and 8, not at 5-7; `%`,
+// adds, mul, float forms, a call and a memset do not, nor dead or folded divisions, nor up to 32 named copies; 400 random no-extra-code forms gave no same-code flip.
+// Round 154 (plain): `(short)(11 + index)` 2; `if (NONE != index)` 2; `if (4 <= count)` 2; the final count read once into a
+// named local for both tests 2 (same code); loop bound `half > i` 2. The hill/index reload pair is unchanged in each.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {
@@ -1097,7 +1110,7 @@ struct s_point_list_2bf
 };
 
 /* the values the points get (unknown_157450.cpp) */
-extern dword g_502258[0x27];
+extern dword g_502250[0x29];
 
 /* adds a point to the list, unless it is full */
 static __forceinline void point_list_add_2bf(s_point_list_2bf *list, point3f position, real a, real b, real c, real d, real e)
@@ -1133,7 +1146,7 @@ void c_game_engine_45c948::v32(long player_index, long list_pointer)
 			{
 				point3f const *source = &g_4e0350->marker_entries[(short)state->w60[i]].position;
 				point_list_add_2bf(list, *source,
-					*(real *)&g_502258[35], *(real *)&g_502258[36], *(real *)&g_502258[0], *(real *)&g_502258[1], *(real *)&g_502258[37]);
+					*(real *)&g_502250[37], *(real *)&g_502250[38], *(real *)&g_502250[2], *(real *)&g_502250[3], *(real *)&g_502250[39]);
 			}
 		}
 	}
@@ -1500,50 +1513,6 @@ struct s_territory_item
 	short territory;
 };
 
-struct s_territory_tag_data
-{
-	long unknown00;
-	long item_tag;
-};
-
-struct s_territory_tag
-{
-	byte unknown00[0xc];
-	s_territory_tag_data *data;
-};
-
-// score 24 (was 24): the tag's data pointer is loaded into ecx where retail
-// keeps it in eax, the marker index is kept in edx where retail uses eax, and
-// the colour mask is read at the top of the function instead of just before
-// it is changed.
-// Tried: the player lookup before the position copy 29; the mask update first
-// 50, or between the copy and the player lookup 32; the tag chain as byte
-// offsets 24; a const player pointer 24; a 600 s permuter run, none below 24.
-// Round 16: the existing position-copy helper 43; game_engine_get() 24; the tag index as
-// a ternary 41; placement declared first 24; tag index at function scope 48; placement at
-// function scope 24; the test without the short cast 51; player declared at the block top
-// 24; the created object in its own local 24; an early NONE return 62.
-// Round 56: inline definition 24; copy helper with masked player index 43, with
-// marker-globals/tag-table/tag-header locals 43/43/43; direct copy with masked player
-// index 24; helper with tag reference 43; helper/else/tag reference 65 (271 bytes).
-// Round 11 (lane 18), fast: the copy helper with the tag index set per arm 65 (271 bytes; every line
-// after the 0xb7930 call is retail's, the NONE lands after the test); the helper with the initialised
-// index 43 (the chain's middle pointer takes ECX and every later scratch register rotates by one); the
-// chain in a small inline getter 43; the condition as a conditional 0xb7930 argument 65; the chain
-// walked through one reassigned byte pointer 43; the chain's last step as data[0].item_tag 43; the
-// marker index read once into a short local for the test and the copy 84 (281 bytes).
-// Round 71, fast: the whole test in a getter with its own result, as the argument or into a local 24/24; named
-// tag, data, or both 24/24/24, with the copy helper 43/43/43; the peer in a local before or after the NONE
-// 24/24, with the helper 43/43; the helper alone 43; the index set in an else arm 41, with the helper 65 (271
-// bytes), inverted test with the helper 65 (271); the chain through one reassigned pointer 24, with the helper
-// 43; through tag_index itself with the helper 43; a named globals index with the helper 43; a getter for the
-// tag 24, with the helper 43; a getter for the data 24, with the helper 43; nested getters with the helper 43,
-// forceinline 24. Registers rotate from the chain on: fixing the middle pointer fixes all of the second half.
-// Round 156 (fast): the tag index through an inline out parameter 24; the test in a named bool 24; a named engine
-// index 24; a named masked definition index 24; named data and item locals 24; a two-use data pointer (a second
-// read of its first field multiplied away) 24. All keep the middle pointer in ECX.
-// Round 100: outer data, tag, or both declarations 24/24/24; data or tag references 24/24;
-// outer or branch item addresses 24/24; a condition-scoped peer 24. The middle pointer stays ECX.
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {
@@ -1551,15 +1520,10 @@ long territory_create_item(long player_index, long territory)
 
 	if ((short)g_51eccc->w60[territory] != NONE)
 	{
-		long tag_index = NONE;
 		s_territory_placement placement;
 
-		if (g_55e4d0[g_4e9ae8->engine_index])
-		{
-			tag_index = ((s_territory_tag *)g_4e3b44[g_4e034c->index & 0xffff].bytes)->data->item_tag;
-		}
-		function_b7930(&placement, tag_index, NONE, 0);
-		placement.position = g_4e0350->marker_entries[(short)g_51eccc->w60[territory]].position;
+		function_b7930(&placement, engine_object_definition(_engine_object_flag), NONE, 0);
+		territory_marker_position_copy(&placement.position, &g_4e0350->marker_entries[(short)g_51eccc->w60[territory]].position);
 		s_player_2be *player = player_get_2be(player_index);
 		placement.color_mask |= 15;
 		function_15f330((s_player_appearance const *)((byte *)player + 0x84), player->team, placement.colors);

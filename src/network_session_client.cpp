@@ -776,6 +776,18 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // read after it 22 (same code); the summary getter written in the call 147 (493 bytes, both callers lost); a
 // `dword` copy index 22; the player buffer as an s_unknown_3648 block indexed through a cast 22; the player mask
 // read into a local before the player loop 130 (493 bytes).
+// Round 68 (m3 lane 11, fast with both callers; control 22): preset pair with the summary read under its flag 46; with a
+// plain `for` copy 108 (477 bytes); both addresses through a small pair struct 46; first address by ternary, second plain
+// 49; both by ternary 156 (499 bytes, the second flag test stays, callers keep matching); a named present bool 218 (361);
+// a presence helper with local copies of both addresses 218 (361); a pair helper with local copies behind the flag test 22
+// (same code). Both callers are lost in every 46, 49, 108 and 218 form.
+// Round 75 (m3 lane 10, fast with both callers; control 22): the address pointer named before the clears 22, the
+// copy index declared with the buffers 22, the mask stored after the address pointer 22 (all same code); the member
+// count read before the clears 124; the variant and summary fetched before the opening test 32 (the summary lea then
+// takes retail's EAX, the mask and copy-loop rotation stay). Plain `for` copy loop 100 (477 bytes: its copy loop and
+// prologue are byte for byte retail's; the player loop then folds the mask read and rotates its argument registers);
+// on it the bit-first mask test 100, the mask in a loop local 100, the bit in a loop local 100, nested mask and slot
+// tests 100, the slot test first 99, the copy bounded by `session->member_count` 138 (both callers lost).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1075,6 +1087,21 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // close call 201, just before the branch 198, assigned zero inside the branch 201.
 // Round 138: all_players compared to false 9; loop index declared before the clear 9; else arm's count assigned after
 // the copy 197; destination step before the count 17; source element named in the arm 9.
+// Round 53 (m3 lane 15, fast): with the destination inside the branch: the loop index declared before the clear
+// 195; the destination indexed by the zero count 195. With `memcpy(identities[count], ...); count++;` (no pointer):
+// the branches inverted 204; count declared just before the branch 198; the loop index declared before the clear
+// 195; count zeroed inside the branch 201; the else arm's count assigned after its copy 195; the id cleared before
+// the NONE fill 195; `first[j] = second[j] = NONE` 195; two fill loops 195; second filled first 195;
+// `identities[count++]` re-measured 40 (colouring and head as retail, the copy's source and destination swap).
+// Diagnostics (global probes, reverted): the indexed form plus one store after the if/else (`= count`) matches
+// retail except the probe itself (first difference at the probe); a constant store at the end of the else arm
+// also gives retail's colouring; the same store after the loop in the true arm, or a store of `joining` after
+// the if/else, does not. `(void)count`, an unused copy or an empty `if (count > 16)` change nothing.
+// Round 65 (m3 lane 13, plain; recipes that take the destination's lea into the branch): `identities[count++]` re-measured 40, only the copy's registers
+// (the side effect evaluates the destination before the source); with a named player or source and destination locals 40; `identities[count]; count++` 195;
+// on it `__assume(count <= 16)` or `>= 0` 195, `long identity_count = count` at the call 195, `s_session_owner *owner` 195, a mask local 357 (559 bytes, no
+// unrolling), else-arm named source, named size, field read twice 195 each; destination assigned in each arm 195, with a dead advance at the else arm's end
+// 195 (three spellings); a parameter read through its address 195, with the post-increment 40.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

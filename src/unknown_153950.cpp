@@ -406,6 +406,13 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax E (11-06): score 13 (was 13): no new form lowered it. The only difference left is in the
+// j and k rows of the inlined rotation: retail adds vector * cosine to projection * axis while ours
+// adds the projection term first, and the fix belongs to the shared rotate_vector_170d70 helper in
+// src/unknown_170d70.cpp, not to this file.
+// Lane 8 r134 (held, coordinator): MATCH with a one-caller copy of rotate_vector_170d70 whose j and k rows add
+// projection * axis before vector * cosine (rotate_slot_vector); a same-behaviour twin picked for this caller, not kept
+// (twin ruling); build/held/lane8-r134-154df0-twin.patch. Kept only through the shared helper (one text for every caller).
 // score 13 (was 13): only the j and k rows of the inlined rotation differ: retail adds
 // projection * axis + vector * cosine (u.j loaded before the u.i store), ours the other way round
 // (the i row agrees).
@@ -524,6 +531,17 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // the rotate call 81 (1109 bytes); sine/cosine before the normalize call 106. Unused-local probes (1-16,
 // diagnostic) repeat with period 8 (13/19/15/25/21/21/17/23) and move only the dot/cross operand orders;
 // the j/k rows stay in every residue, so they are no numbering tie.
+// AC551: Immutable angle/timer, flattened input through the existing setter/aggregate, angle/cross
+// declarations at their producers, ordinary-inline range declaration, and post-copy duration from
+// the input: 13/13/259/259/13/13/13/161. NOT kept: no qualifying supported improvement; complete
+// executable source restored. Rotation j/k sum and input-load ranks remain.
+// M396: Complete memmove direction/angle/bounds transfer subsets 1/2/4/3/5/6/7
+// 210/284/293/279/300/296/296; signed-angle conditional result 13. NOT kept:
+// no exact rotation/load repair; original complete body restored.
+// Round 93 (m3 lane 16, fast with 0x170d70): `angle = -angle` 13; `fabs(1.0f - length)` in both unit tests 15;
+// the unit tests as `0.0001f > fabs(...)` 13; the clamp as `dot < -1.0f` / `1.0f < dot` 60 (1105 bytes); the priority
+// store after the duration and timer stores 35. Re-measured listed forms: forward j before i 25, cosine before sine 33.
+// BLOCKED-BY 0x170d70: the rows follow the shared rotate_vector_170d70 text in its file, src/unknown_170d70.cpp (held).
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -669,6 +687,15 @@ struct s_player_axes_153d10
 // Round 41 (lane 2, plain; --fast builds this function differently, 345 at 1335 bytes): delta through the point difference
 // helper 119 (1303 bytes); dots through the dot helper 2; both 119; relative declared before delta 2; cross declared before the
 // axes 2; slot vector through a real pointer 18.
+// Round 132 (plain): `vector3f basis[2]` in the axes struct 2; a sub-struct holding both axes 2; `(real)` casts on products 2-5 2;
+// the j row's first product up-first 2; all six products up-first 2. One-file harness, float window only (base 5, three of those
+// the slot register): all 63 sets of `(real)` casts on the six products 5 or above; dots before the cross 47; only the forward or
+// up dot before it 46/36; delta after the cross 47; rows jik/jki/kij/kji 48; six named products 48; three scalar cross locals 48;
+// negated j row 48; `real basis[2][3]` 48; a basis pointer 10; a pointer to the axes sub-struct 48, with the dots through it 10.
+// Round 56 (m3 lane 2; one-file harness over the whole file, control 5: this product plus 3 harness-only lines; plain not run because none beat the control): an inline cross helper with
+// pointer parameters in four parameter orders, all row orders, direct or staged, all product text orders, 4 phases: 240 samples, best 31 (helper forms flip far more products); per-read spelling of the 12 cross reads through axes
+// or forward/up, dot spellings, both pointer orders, 0-3 unused locals: 1,100 samples and three hill climbs, floor 5, several at 7/9 with this product right but the up.k-against-forward.j product or the up.i one wrong, none with all right;
+// origin and target swapped or split 5/5; state dropped, axes from the call 11; axes at the top of the block 5; the pointers after delta 5; relative before cross 5; owner index named 9; slot fields by array 5.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

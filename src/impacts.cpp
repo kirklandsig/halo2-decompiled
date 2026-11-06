@@ -253,7 +253,7 @@ long havok_component_impact_find(s_havok_component *component, s_havok_impact_co
 bool havok_component_impact_make_room(long rigid_body_index, s_havok_component *component, real strength);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 real havok_component_rigid_body_mass_get(long rigid_body_index, s_havok_component *component);
-void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity);
+void havok_component_rigid_body_point_velocity_get(vector3f *velocity, long rigid_body_index, s_havok_component *component, point3f const *point);
 void havok_component_rigid_body_linear_velocity_get(s_havok_component *component, long rigid_body_index, vector3f *velocity);
 void havok_component_impact_add(s_havok_component *component, long impact_index);
 
@@ -818,6 +818,14 @@ struct s_227af0
 	real field_1c;
 };
 
+// score 4 (was 4): no logic difference found. The only differing instructions are the operand order of two
+// `movss`/`mulss` pairs in the inlined cross product of the second call (g_4687a8) and two in the third call
+// (forward x normal): retail's second call has the same order as its first, ours swaps one pair; retail's third call
+// has `a.i * b.j` first and `b.i * a.j` second, ours swaps both. The order follows the pointer variables' identity, not
+// the source order of the products. Tried: using `up` instead of `normal` in the cross products, every combination of
+// the three calls (6-8); a fresh alias for the second or third call's operand (6-16); swapping each product's operands
+// inside function_227814 (no change); `normal` as a non-const pointer or declared at the top (4).
+// Permuter, 35 minutes (11-05): nothing below 4.
 // @retail 0x227af0
 void impact_orientation_get(
 	s_impact const *impact,
@@ -961,6 +969,21 @@ void impact_orientation_get(
 }
 
 
+// score 241: walked against retail statement by statement (11-05): no logic difference (both switches, every branch,
+// constant and field; the pool constants at 0x45e294 and 0x45e298 are 1/3.95 and 2.4674013, as in the source). Not kept,
+// though closer to retail's structure (opcode alignment 0.84 -> 0.95): the angular velocity read and subtracted through a
+// `vector3f const *` (retail's dead lea/add after the b-subtract), one shared velocity local, the 8.0f speed ratio as an
+// initializer and the material compare as `other->material_a == impact->material_a` together score 261 (fast). With them
+// what differs is registers: retail keeps 1.0f in xmm4 (it is also rotation_threshold) and minimum_impulse in xmm6, ours
+// uses xmm0/xmm4/xmm5 and keeps 0.5f live into the third branch; retail scales rigid_body_index_a in place in ebp; the
+// material compare is `cmp [esi+0x2c], cx` in retail; unknown8c is loaded before the velocity copy; frame 0x1c vs 0x18.
+// Also tried on that form: unknown91 as one store (183, but rigid_body_index_b then travels in eax and the function
+// returns with ret 8 where retail has ret 0xc, which would change what 0x228770 sees); `rotation_threshold = 1.0f; if
+// (physics_type) ...` before or after the switches (327-352); rotation_threshold set inside the min switch (352);
+// declaration order (no change).
+// Permuter, 35 minutes (11-05): full image 180 only with volatile locals and casts that change no value. Its plain
+// parts (rotation_threshold declared after physics_type, component->unknown20 read at each use, the sliding/rolling
+// else-if chain inverted, speed_ratio declared first, velocity k stored before j) give 239 fast at best (k before j).
 // @retail 0x228f30
 void impact_type_update(
 	long impact_index,
@@ -1510,6 +1533,16 @@ PRIVATE __forceinline void function_2294a1(s_effect_new_data *data, long definit
 	data->scale_b = scale;
 }
 
+// score 555 (was 688): statement-by-statement walk against retail found no logic differences. What still differs is
+// register and stack allocation. Retail keeps the impulse block's scale in xmm5 (spilled at [esp+8], reloaded right after
+// each call) where ours reloads xmm0 before each use. It also passes the impact to 0x2284c0 in ECX where ours uses EAX,
+// and passes both materials through stack temporaries ([esp+0x24] and [esp+0x94]) where ours reads material_a directly.
+// The previous_type load is a separate fresh load in retail's two blocks and is spilled to [esp+0xe]; ours shares one load
+// from the top. Tried: previous_type declared at the top of the else block (634), inside the condition (688), a copy of
+// material_a as a local (656), explicit if/else for scale instead of PIN (686), scale declared in each block (688),
+// level folded into the condition (640).
+// Permuter, 35 minutes (11-05): its best form needs a flag set inside a test, the impact object lookup written out,
+// temporaries and casts. Its one plain part, impact->type read at each use instead of the `type` local, gives 553.
 // @retail 0x2294a0
 void function_2294a0(
 	long impact_index,
@@ -1529,10 +1562,10 @@ void function_2294a0(
 	effect_location.normal = impact->normal;
 	effect_location.unknown18 = 0x600022b;
 
+	char previous_type = impact->unknown1d;
+
 	if (impact->unknown11 && g_47f07a && impact->unknown1c > 2)
 	{
-		char previous_type = impact->unknown1d;
-
 		impulse = true;
 		if (impact_type_is_continuous(previous_type))
 		{
@@ -1620,7 +1653,6 @@ void function_2294a0(
 	else
 	{
 		char type = impact->type;
-
 		if (type == 1 && impact->unknown1e * g_510c54->rate > 0.5f && impact_has_sounds_or_effects(impact))
 		{
 			impact_sounds_stop(impact, true, true);
@@ -1628,8 +1660,6 @@ void function_2294a0(
 		}
 		else if (impact_type_is_continuous(type) && impact->unknown91 > 2)
 		{
-			char previous_type = impact->unknown1d;
-
 			if (type != previous_type && impact->unknown1e * g_510c54->rate > 0.5f)
 			{
 				bool continuing = false;
@@ -1773,6 +1803,21 @@ void function_2294a0(
 	impact->unknown11 = false;
 }
 
+// score 485 (was 485): walked statement by statement against retail 0x228770-0x228f2a (2026-11-05): fields, offsets,
+// condition directions, callee arguments and loop shape all agree; the remaining difference is register allocation
+// and block layout. Retail keeps &impact->position in ebx for the whole function (lea ebx,[edi+0x68] at 0x228803,
+// [ebx] in the constraint loop) and spills component to [esp+0x18] (frame 0x70); ours folds the address into
+// [edi+0x68], keeps component in ebx and impact_index in ebp (frame 0x6c), and lays out the constraint if/else with
+// the impact_release block first. Retail's two point-velocity calls before the shape test both write velocity_b, so
+// they are dead and kept as is. Tried: a point3f* local for impact->position (485), function_227811 for the dots
+// (485), !()/De Morgan/swapped forms of the constraint test (485), component computed after the early return (487),
+// matrix at function scope (485), relative_velocity = velocity_a per component (508, 28 bytes short).
+// Permuter, 35 minutes (11-05): 274 only with `constraint->impact_index` cleared as a volatile byte (a behaviour
+// change), temporaries and casts. Lead: the constraint count read once into a local before the loop (`long
+// constraint_count = component->unknown88.size;`) gives 327 fast, both callers still matching, since the stack slots
+// and homes then line up; not kept, as retail rereads the size on every pass (latch 0x228bfa: `mov edx, [ecx+0x8c]`
+// with the component reloaded from [esp+0x18] at 0x228bf2). The take block's sums in another order give 480; the
+// constraint test inverted or the mass-ratio test as nested ifs change nothing.
 // @retail 0x228770
 void function_228770(
 	long impact_index,
@@ -1879,20 +1924,20 @@ void function_228770(
 
 		impact->normal = normal;
 		function_1201a0(&impact->normal, g_4687b0);
-		havok_component_rigid_body_point_velocity_get(rigid_body_index_a, component, &impact->position, &velocity_b);
+		havok_component_rigid_body_point_velocity_get(&velocity_b, rigid_body_index_a, component, &impact->position);
 		if (impact->component_b != NONE)
 		{
-			havok_component_rigid_body_point_velocity_get(rigid_body_index_b, havok_component_get(impact->component_b), &impact->position, &velocity_b);
+			havok_component_rigid_body_point_velocity_get(&velocity_b, rigid_body_index_b, havok_component_get(impact->component_b), &impact->position);
 		}
 		if (impact->shape.type == NONE)
 		{
 			vector3f relative_velocity;
 			real dot;
 
-			havok_component_rigid_body_point_velocity_get(rigid_body_index_a, component, &impact->position, &velocity_a);
+			havok_component_rigid_body_point_velocity_get(&velocity_a, rigid_body_index_a, component, &impact->position);
 			if (impact->component_b != NONE)
 			{
-				havok_component_rigid_body_point_velocity_get(rigid_body_index_b, havok_component_get(impact->component_b), &impact->position, &velocity_b);
+				havok_component_rigid_body_point_velocity_get(&velocity_b, rigid_body_index_b, havok_component_get(impact->component_b), &impact->position);
 				relative_velocity.i = velocity_a.i - velocity_b.i;
 				relative_velocity.j = velocity_a.j - velocity_b.j;
 				relative_velocity.k = velocity_a.k - velocity_b.k;

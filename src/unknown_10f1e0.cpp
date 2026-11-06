@@ -405,6 +405,11 @@ bool function_1d9320(s_1d9240 *slot);
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
 
+// MiniMax A (11-04, run 45): no new form, no lower score (37); a mask test in either signedness still splits the
+// visited update (42) and the 0x1d90e0 arguments through locals are the same code (37).
+// MiniMax A (11-04, run 41): no new form, no lower score (37); the mask form for the visited-bit test (the
+// existing bit_vector_test, and the same set written out inline) matches retail's test but turns the following
+// update into load/OR/store and shifts two call setups (42).
 // score 37 (was 37): frame 0x104 agrees. Retail tests the visited bit with a mask and still ORs
 // it into memory after computing the word address; with the shift-form test ours gets that update
 // but not the test, and with a mask test (the existing bit_vector_test) the update becomes
@@ -554,6 +559,25 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // still called out of line), with `inline` on its definition instead (diagnostic, plain check too) 216,
 // 0x1253d0 unchanged at 3; each arm's iterator stores before its graph lookup 110 (523 bytes); `found`
 // declared before the loop 37 (same code); the mask test written out with bit_vector_set 42 (545 bytes).
+// Round 209 (m3 lane 3, fast; masked = difflib count with branch targets masked, baseline 25): with the
+// mask test (bit_vector_test, 42, masked 19) everything matches retail except the back-edge reload order
+// and the second lookup, where ours loads target_index into ECX ahead of the pushes (retail: EAX after
+// them); that one register choice also shifts the 0x1d90e0 setup's scratch registers and gives the
+// mask-first load/OR/store set. Lead: the mask test with the pair's target name as a two-use local
+// (`long target_name = iterator->b;` for the pair test and the second lookup) 49 at 539 bytes, masked 12:
+// the set is then retail's fused `or [eax], edx` and the 0x1d90e0 setup is retail's exactly; left are
+// the name held in ESI across the first lookup (retail reads it into EAX for the test and re-reads
+// [ebp + 4] before the second lookup, one instruction more) and the back-edge reload order. Tried: the
+// existing bit_vector_fill with a prototype identical to its definition 213 (still out of line, 466 B); a
+// forceinline copy of it (diagnostic) 42, so an inlined fill does not give the fused set (the 0x12afc0
+// lead is closed); with the mask test a byte `found` 42, each arm breaking on its own call 42, the source
+// name as a two-use local 48 (both names 51); unused initialised locals at four positions (probes) 42.
+// MiniMax C (11-05, held at m3 review): the mask test (the existing bit_vector_test) with the pair's target
+// name as a two-use local gives 49 at 539 bytes, retail's length, with retail's fused `or [eax], edx` set and
+// its 0x1d90e0 setup; with the second lookup in its own nested if that first re-reads the target name into
+// that local (target_name = iterator->b, the same value) 2 at 539 bytes, only the back edge differing
+// (retail reloads the state before the tag table); iterator->b passed directly there 46. The same-value
+// re-read is a form picked by score, kept only with a byte match: build/held/mmc-1106-113980-reread-local.patch.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1375,6 +1399,10 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax R (11-04): the case list with 0xb000061 (170), the split depletion queries (330) and a bool
+// result (194) all lose against 164; splitting only the first query (328) and the retail-shaped second
+// query that clears the flag on a positive value (330) lose too, though the latter reaches setle; no
+// new form, no lower score.
 // MiniMax R (10-31): no new form, no lower score.
 // score 164 (was 164): this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
 // the unit through that offset for both depletion queries, and it writes the first depletion with setle;
@@ -1498,6 +1526,15 @@ long function_cbd50(long unit_index, short weapon_index);
 // query on the global, 349 (1302 B); with both weapon-object lookups through it 349; plus the if-form
 // depletion 325 (frame four, the three flags at retail's +0x11..+0x13, unit not re-derived, data in EDI);
 // with the controlling field tested directly 325; with the overlay read at its switch 346 (1264 B).
+// Round 209 (m3 lane 3, fast; masked = difflib count over the listing with branch targets masked, baseline
+// 85): the pool's data as a headers local at entry used for both weapon-object counts, if-form depletion and
+// a bool result 349 [65] (round 77's form: the first query then re-derives the unit through the headers
+// copy as retail does); the headers local scoped to the controlled block 341 [72]; the depletion written
+// through a pointer to it 349 (identical code: the address is resolved before allocation, so it is not
+// what reloads the data in retail's second query); interruptible declared before depleted 351 [57]
+// (depleted then in BL and interruptible in memory, as in retail; left: no memory home for depleted's
+// initial false, retail's controlling field in EBX, the second query's fresh data load, result slot);
+// the controlling field tested directly 351 (same code); with a byte result 322 [65].
 // AC508: Joint false-default ownership in first conditional/valid-handle assignment and
 // second conditional/depleted-valid assignment, bool then byte status: 357/327/349/322 twice.
 // NOT kept: no exact default/SETLE producer match. Original complete body restored; pool/state
@@ -1505,6 +1542,18 @@ long function_cbd50(long unit_index, short weapon_index);
 // N352: Actual unit/control/state record-reference families 1..7 and complete
 // read-only bindings: 164 each. NOT kept: pool/state/SETLE/result homes and
 // byte normalization remain; original receivers, scalar argument read and body restored.
+// Y580: Actual unit-header element in mutable/readonly pointer/reference forms,
+// at entry/controlled scope: 347/347/347/347/344/344/344/344. NOT kept: all regress
+// and lengthen to 1300/1299 versus 1286; original lookup observations and body restored.
+// Native pool/displacement ownership, SETLE/default homes and byte normalization remain.
+// P345: Joint false-default chain, success/depletion/interruptibility-owned defaults,
+// byte then bool success: 164/165/165/164/194/193/195/194. NOT kept: no byte match;
+// original complete body restored; pool/displacement, SETLE/default homes and normalization remain.
+// P350: Shared negative depletion/base expressions, bool/byte/short/long, direct/branch producers:
+// 397/397/424/424/404/404/434/434. NOT kept: all regress and lengthen; original status graph and body restored.
+// N389: Paired held-presence bool/byte/short/long with conjunction/guarded count stores:
+// 164/330/164/330/164/330/164/330. NOT kept: pool/SETLE/default/result homes remain;
+// original predicates, queries and complete body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1626,6 +1675,7 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax R (11-04): no new form, no lower score.
 // MiniMax R (10-31): no new form, no lower score.
 // score 450 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
@@ -1749,12 +1799,39 @@ bool __stdcall function_110ab0(long unit_index)
 // 0x600008c as `result = interruptible;` then an inner switch with no default 451; the state name read
 // into a local at entry 530 (1865 B); the overlay read into a local at entry 464 (1793 B, but the unit
 // index then arrives in EDI); a headers local for the unit, first slot and both weapon lookups 476.
+// Round 209 (m3 lane 3, fast; masked = difflib count with branch targets masked, baseline 217): retail
+// also keeps the result in DL (`mov al, dl` at the exits) and re-reads `requested` from its stack slot at
+// every use, where ours holds `requested` in EDI and builds the result in AL. Tried: the pool's data as a
+// headers local for both weapon counts with the parameter kept on the stack as in 0x110ab0 (address local
+// plus the volatile read at the 0xc7070 call; a volatile diagnostic, not keepable) 454 (1793 B, masked 212;
+// the first query then re-derives the unit; callers unchanged); that with `bool result = true;` and no
+// state-switch default 480 (1801 B); that
+// with interruptible declared before depleted 456; the headers local with `controlling` read before the
+// control/state pointers 482 (unit index in ECX, ret 8; 0x10ff40 157, 0x111650 673); `result` declared
+// first 450 (same code). A local record holding the three flags (diagnostic on 0x110ab0) is scalar-replaced
+// with no memory home, so retail's flag homes are not an aggregate's.
 // Y561: Complete uninitialized result short/word/long/dword at original
 // declaration 574/574/554/554; before lookups 574/574/554/554. NOT kept:
 // all regress and grow away from retail; original Boolean result/body restored.
 // N352: Actual unit/control/state record-reference families 1..7 and complete
 // read-only bindings: 450 each. NOT kept: frame stays eight versus twelve,
 // with 424 code differences; original pointer receivers and full body restored.
+// P327: Complete base/depletion/overlay true-false result producers, masks 1/2/4/3/5/6/7,
+// then all with result at entry: 465/430/450/465/465/430/465/465. NOT kept: 430
+// still has 424 code differences; only table/extent improves. Original full body restored.
+// Y599: Terminal first/second/both overlay decisions return directly, original/Boolean
+// overlay, then both with Boolean depletion: 450/560/560/466/567/567/575/581. NOT kept:
+// no verified native frame/result-join gain; original full body restored.
+// Best code prefix stays 424 differences; all frames remain eight versus twelve.
+// DH372: First/second held-query presence bool/byte/short/long: 450 each.
+// NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
+// Original body and queries restored; state/request/result homes remain.
+// P350: Allow parameter byte/signed-byte/short/word/long/dword, then unsigned request
+// with bool/byte allow: 441/441/441/441/441/441/451/444. NOT kept: 430/433 code
+// differences versus 424; apparent gain is table/extent only. Original Boolean contract restored.
+// N389: Actual base query owns the result or the true-default producer, bool/byte/short/long:
+// 450/495/574/554/490/477/540/514. NOT kept: missing frame word and state/request/result
+// homes remain; original query, permission graph and full body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -1974,7 +2051,7 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
-// score 776 (was 790): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
+// score 776 (was 776): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
 // (0x1cb490) out of line at five sites and expands only the final animation_10c start, ours expands the
 // overlay loop's call. At entry retail also loads an otherwise unused render-model tag into a stack slot.
 // Earlier at 790: frame 0xcc versus 0xd4 and first angle expansion remain. At entry retail also
@@ -2138,6 +2215,15 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // g_4687c4 856; definition looked up right after the unit 795. On 776: id copied inside the index test
 // 842; final slot test inverted with arms swapped 776 (same code); overlay loop as `for` 869 (first
 // 0x11df30 inlined as retail, frame 0xc8); `for` with the id inside the test 873; ratio `0.5f + 0.5f * x` 776.
+// Round 209 (m3 lane 3, fast; masked = difflib count with branch targets masked, baseline 423): retail's
+// call list differs from ours only in the first 0x11df30 (inlined in retail) and the overlay loop's
+// channel_play (inlined two levels deep in ours, a call in retail); retail's dead entry store of the render
+// model's tag shares its frame slot with the overlay loop's `id`, whose own store is dead too. Tried: `id`
+// declared before the loop 776 (same code); named unit fields for +0x168/+0x18c/+0x208/+0x212/+0x288 776
+// (same code); `for` loop with the id copied inside the index test and the projection reading its input in
+// place 928 (3312 B, frame 0xb8, masked 420: the first 0x11df30 inlines but the loop's channel_play stays
+// inlined); the aiming channels renamed to sort after `channel` 776 (same code); both vector2f values
+// declared together after the basis vectors 776 (same code).
 // Y565: Existing channel_start at each direct set site, early/late pairs/all, then all with
 // the original graph guard: 775/775/775/776/776/775/775/776. NOT kept: at most one
 // point; frame stays 0xcc and first-angle/overlay expansion remains. Original body restored.
@@ -2148,6 +2234,39 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // clamps 776/841/841; complete overlay center-admission bool/byte/short/long/dword
 // storage 776 each. NOT kept: no gain or exact predicate/branch-layout form.
 // Original body restored; frame 0xcc/0xd4 and first-angle/overlay expansion remain.
+// F378: Secondary relative-sample eligibility after positive-weight admission, sample then skip
+// bool/byte/short/long: 807/807/807/807/776/776/776/776. NOT kept: one-use decisions remain unmatched;
+// original projection captures, angle tests, helpers and complete body restored.
+// P326: Existing primary blend scalars/secondary weight/overlay ratio declarations at their
+// owning phase, subsets 1..7, then all at entry: 776 each. Assignments stayed at their
+// producers. NOT kept: no gain; original body restored, frame and first-angle expansion remain.
+// N368: Nested persistent-valid/direct-set/default-and-overlay admissions, seven family
+// subsets, then all with split outer definition/graph guard: 776 each. NOT kept: no gain;
+// original admission graph restored, frame 0xcc/0xd4 and opposite selective expansion remain.
+// Y597: Complete common primary sampling weights, both-first/single-first producers,
+// sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
+// NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
+// AC533: Test-produced whole terminal paired-slot gate, missing/present bool/byte/short/long:
+// 724 each (3413/3403; frame 0xcc). NOT kept: one-use/test-produced state needs equality;
+// first-angle/overlay calls stay 2/4 versus native 1/5. Original complete body restored.
+// N373: Ordered primary/secondary null-or-found screen producers, conditional/default/total-if forms
+// 830/775/835/830/775/835/835/835. NOT kept: at most one point; original full body restored.
+// Frame 0xcc/0xd4, entry computation and first-angle/overlay expansion remain.
+// DL265: Existing set/sample/play inline policy subsets, then aiming-sample inline:
+// 776/776/776/776/776/776/776/776. NOT kept: no qualifying provider contract; every provider/header restored.
+// Frame 0xcc/0xd4 and first-angle/overlay expansion remain.
+// Y597: Complete common primary sampling weights, both-first/single-first producers,
+// sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
+// NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
+// P350: Complete unit/state/graph/control/definition lexical home orders, eight forms
+// 776 each. NOT kept: no native frame or first-angle/overlay expansion repair; original body restored.
+// AC552: Existing shared real clamp at the overlay-ratio producer, long/short/dword/word
+// ordinals with ordinary/inline declaration: eight at 776. NOT kept: no gain; original
+// direct clamp, ordinal, declarations and complete body restored; frame/expansion gaps remain.
+// F395: All four native bound results before publication, mutable/immutable with yaw-first,
+// pitch-first and two interleaved producer orders: 829/828/828/829/829/828/828/829.
+// NOT kept: every form regresses; 3403-byte length agrees but frame stays 0xcc/0xd4.
+// Original private helper and full body restored; first-angle/overlay expansion remains.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -2407,6 +2526,24 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // `if (!0x114520) return false;` with the request block flat 98 (215 bytes); request priority captured after the
 // fallback block 85 (252 bytes); the request record zero-initialised with `= {0}` 65 (248 bytes); the index
 // declared then assigned after the priority 16; the index from an if/else on entry_index 16.
+// Round 54 (m3 lane 15; one-link harness with src/unknown_1130a0.cpp and src/unknown_20ba00.cpp, same roles, 22 for the check's
+// 16): the colouring order is the cause: the heaviest value takes EBX, the next ESI, the last EBP, and retail colours NONE first,
+// ours index, priority, NONE. Diagnostics with extra volatile NONE stores in the request block: 2 no change, 4 NONE ESI and
+// priority EBP, 8 retail's exact roles (index ESI, NONE EBX, priority EBP). Two more priority stores swap index and priority.
+// Overwritten NONE stores do not count; removing the copy, the memset or the test of extra moves the roles but not to retail's.
+// Real (fast): request setup through a forceinline helper 16; extra fill through one 16; both 16; entry_index tested and reassigned
+// then index declared 16; index from a ternary 16; index set in both arms of a test of entry_index 16; entry store first 16;
+// comparisons against `(short)NONE` 16; output cleared ahead of the fallback test 23; extra copied by struct assignment 16, through
+// a typed pointer 16; memmove 51; memcpy with a literal size 16. Harness (22 base): the call and return in both arms 41, the call in
+// both arms 41, the else as a fall-through 41, inverted arms 32; implied NONE tests in five places 22 to 28 (threaded, roles
+// unchanged); `!= false` 22, `== true` 24, a named bool 22; an empty `do {} while (false);` at all 16 statement boundaries 22;
+// every spelling of each NONE use (-1, typed casts, 0xffffffff) 22, word forms 83 to 88, a long index 31; index defaulting to NONE then set in
+// both arms 22; 72 combinations of an extra local, `!= NULL`, declaration order, memset spelling and priority casts keep our roles, with a
+// one-exit result 91 (224 bytes; index ESI, priority EBP, NONE EAX).
+// A 600 s permuter run (52 tries) none below 16.
+// Round 69 (m3 lane 14, fast): the fallback lookup assigned inside the NONE test's condition 16 (same code); the sound
+// index stored before the delay 23, first after the memset 24; the definition index stored after the delay 44; the
+// output written through a `long &` reference to the priority parameter 16 (same code).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -2764,7 +2901,12 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
-// score 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
+// score 670 (was 713): frame 0x7c versus native 0x80; request/control/tag homes,
+// request-byte normalization and selected validity expansion remain. Both arguments stay on the stack; ret 8 agrees.
+// Earlier 666 (was 666): this round found no gain - the request pointer's three stack re-reads still need a
+// pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
+// costs both callers in other lanes' files.
+// Earlier 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // (663) costs both callers in other lanes' files.
 // MiniMax R (10-31): no new form, no lower score.
@@ -2902,6 +3044,19 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
 // the existing vector3d_from_points3d for the node offset 699. Retail also re-tests the state's frozen bit
 // before each channel update (ours drops it as already tested) and threads each block's frozen exit to the
 // end; the four-block pattern is the same knowledge difference as in 0x113980.
+// Round 209 (m3 lane 3, fast with the six queue functions and both callers; masked = difflib count with
+// branch targets masked, baseline 333): no pointer to 0x111650 exists in the retail image, so its
+// all-stack convention is LTCG's own choice. Retail holds the control pointer in ESI through the opening
+// block and re-reads both parameters from their stack homes at each use; ours receives the request
+// pointer in EAX and keeps it in ESI. Tried: the request through a const reference to the parameter
+// (ret 8; a parameter-address form, keepable only with a match) with the +8/+9 flags read as bools 684 (callers 0xdd360 224 -> 223, 0xefde0 565 -> 562); the
+// reference with the threaded channel-clear test `((local_5 == 0x7000101 && unknown7c == 0x400000c) ||
+// local_5 == 0x400000c)` 665 (callers 223/562; the request is still loaded into ESI at entry); all three
+// 692; bool flags with the threaded test 698; the definition pointer computed second with the threaded
+// test 685. BLOCKED-BY 0xe6a20 (contributor) and 0xe6b00 (held file) as before.
+// P349: Complete transition producers on the all-stack graph, bool/byte/signed-char/short, positive/complementary:
+// 670/670/670/670/670/670/708/682. Kept the original-polarity Boolean transition, plain 670 at 2579/2577.
+// Its zero/one/comparison stores use native byte home +0x11; the other forms are restored.
 // @retail 0x111650
 bool __stdcall function_111650(long arg_0, long *arg_1)
 {
@@ -2911,7 +3066,7 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
     s_unit_animation_definition *local_3 = (s_unit_animation_definition *)TAG_BYTES(local_0->definition_index);
     long local_4 = 0x7000101;
     long local_5 = 0x7000101;
-    long local_6 = false;
+    bool local_6 = false;
     bool local_7 = false;
     bool local_8 = false;
     long local_9 = 0;
@@ -3178,7 +3333,7 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
     return active;
 }
 
-short *function_e70b0(long unit_index, short *value);
+short *function_e70b0(short *value, long unit_index);
 bool function_e4050(long object_index);
 const long g_4408f8[8] = { NONE, 0, 1, 2, 2, NONE, NONE, 3 };
 const long g_440918[8] = { NONE, NONE, 0x600008c, 0xc000043, 0xc000043, 0xd000042, 0xc000043, 0xc000043 };
@@ -3195,6 +3350,8 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (44); the frame is still 0x3c against retail's 0x38,
+// which waits on 0xe70b0's return type.
 // MiniMax D (11-01): no new form, no lower score.
 // score 44 (was 44): BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38. Measured from
 // the frame top every slot agrees except the action short (ours 4-aligned below the 4-byte slots,
@@ -3314,6 +3471,12 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // Round 65 (m3 lane 1, plain): overlay initialised to NULL at its declaration 46; `*flag = false` after the
 // three table reads 65; the action short in the innermost else block 44 (same code); the force flag in the
 // set block 46, with the action short there too 46. The 0xe70b0 two-byte return still waits on held files.
+// Round 209 (m3 lane 3, fast with all six queue functions; a fast check of this address alone builds it
+// differently, 204-218 for any edit): still BLOCKED-BY 0xe70b0 (its file was held again). Tried: the
+// e4050 test's header byte read through the object-header struct 44 (same code); the overlay-busy test
+// on the bit field without TEST_FIELD_BIT 204 (681 B); `mode != NONE` tested before the parent/seat test
+// 97; the definition as the typed definition struct with fields at +0x108/+0x110 44 (same code); the
+// overlay pointer declared with the entry pointers 44 (same code).
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)
@@ -3342,7 +3505,7 @@ bool function_10ff40(long unit_index, long type, short side, short value,
                 force_overlay = true;
             else
             {
-                if (*function_e70b0(unit_index, &action) != 0 ||
+                if (*function_e70b0(&action, unit_index) != 0 ||
                     (*((byte *)g_4e0300->data + (unit_index & 0xffff) * 12 + 3) == 0 && function_e4050(unit_index)))
                     force_overlay = true;
             }
