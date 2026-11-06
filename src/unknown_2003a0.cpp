@@ -2173,6 +2173,12 @@ bool function_1e11b0(long actor_index, bool active);
 // test 83 (217 B, not merged); the existing next_actor_204390 step 13 (same code); the second lookup as
 // squad_get((word)squad_index) 69 (205 B, not combined); the squad re-fetched after the loop through the
 // address read 75 (212 B). Our 0x201ea0 also passes the index from EDI, so no caller preference differs.
+// Round 43 (m3 lane 18, fast; on the 13 form rebuilt: no function-level pragma, squad_get plus a second squad_get
+// in the +0x7e test, one parameter read through its address, the file's step loop with the statement pair, stamp
+// before the word flag store, short-view return; index EBX/next EBP against retail's EBP/EBX): a `bool result`
+// assigned from the return expression 18 (the return becomes `shr eax, 7; and al, 1`); a `long const &` to the
+// index at every use 13; const squad pointer and const actor index 13; the first lookup as `squad_get((word)...)`
+// 69 (205 B); the +0x7e comparison with its operands swapped 23. None kept; the current body restored.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
