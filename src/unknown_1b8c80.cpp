@@ -266,6 +266,12 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // the unit load then moves ahead of the object load), (object, seat, unit) 3 (0x11b0c0 lost), (seat, unit, object) 4,
 // (seat, object, unit) 4; last_object_index as the 0xc8200 object argument 69, as all three calls' 128
 // (358 bytes); the definition read at the test without its local 84; object or occupant at function scope 3/3.
+// Round 172 (m3 lane 4, fast): (object, seat, unit) again (definition, declaration, five calls): the
+// seat-pointer reload then takes EAX as retail but the unit load moves from last to second, 3 (0x11b0c0
+// lost, its unit/object moves swapped); `long i` 127 (361 bytes); a fresh actor lookup at the 0xc8200 call
+// 135 (399 bytes); `last_object_index != seats[i].object_index` 4; the seat's object index named at the
+// loop top for the object test, the store, 0xc8f60 and 0x1b8d80 3 (same code); `dword last_object_index` 3;
+// `object->unknown3b4 != 0` 3. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {

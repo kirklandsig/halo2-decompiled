@@ -1567,6 +1567,11 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax A (11-06, run 52), not kept (87, same score): the clip plane's three products summed in
+// retail's order, the i term first and the j term last, give retail's multiply and add sequence
+// instruction for instruction (its only other effect was 0x13d80 61 -> 60, under the keep bar); what is left is the register form of the clip block, where
+// retail keeps the cluster reference in al and materialises the cluster address, while ours keeps it
+// in cl and folds the address into the load.
 
 // MiniMax G (11-05): no new form, no lower score. The clip block still loads the cluster
 // reference with a folded address where retail materialises it (mov edi,[esi+0xa0]; add

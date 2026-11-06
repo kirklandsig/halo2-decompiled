@@ -1552,6 +1552,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // unchanged; that with both out-parameters declared together in the handle-valid block 33 (so neither names nor
 // scopes set these two homes); `resized` declared beside the size local 33; the write length and its check spelled
 // with sizeof of the header 33 (same code); the count zeroed before `if (resized)` in place of the else arm 85.
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x213970
 void function_213970(void)
 {
