@@ -1883,6 +1883,10 @@ void function_b7360(long object_index);
 // 601, 609, 504, 513, 591, 605, 620, 628 (1696-1708). Per-arm `if (!success) return 2; return 0;`, empty cases last
 // or falling through after case 15/16: 491 clean, 632 with the store. One shared result test with the empty cases
 // falling through and other arms using `goto`: 485, 503, 494, 496 (1812-1824). The store lead still needs a ruling.
+// B453: Complete motion pair before orientation, reversed motion pair, full orientation/motion group
+// after cases 10/5/9/13/20, then motion pair after case 20: 410/380/450/451/449/449/448/419. NOT kept:
+// no byte match; original complete body restored. Pool/input/output carriers and retained point
+// reference ownership remain.
 // Round 66 (m3 lane 14, fast): actor local first 487 (1836 bytes: our prologue then pushes three registers and inlines the
 // first failure return); output local first, success first, both 301 each (same code); in the 1/19 point arm the 0x40 flag
 // stored before the point copy 297 (not kept: four points and retail stores the flag after the copy), but the store makes
@@ -2484,6 +2488,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // condition 515 (2372); case 1 as an if setting the result false 622 (2384). Diagnostics, not kept: extra actor or
 // state references before the post-switch test 630-710, any such `if` moves the result into BL and leaves the actor
 // and state registers swapped. Left: actor EBX and state EDI for ours EDI and EBX, and the post-switch test's layout.
+// Y610: Paired countdown/state-byte/motion-direction lvalue identities,
+// subsets 1/2/4/3/5/6/7, then all with actual classification-byte identities:
+// 590/500/577/590/588/500/588/604 (fast control 469).
+// NOT kept: no exact identity-form match; original complete body restored.
 // Round 66 (m3 lane 14, fast with 0x110ab0 listed, which removes the reduced build's caveat and gives the full 469; alone
 // the reduced image gives 485): case 1's point read through the state local 469 and the state read through the parameter at
 // every use 469 (same code: retail reloads the parameter there, `mov eax, [esp+0x38]`, where ours forms `lea eax, [ebx+8]`);

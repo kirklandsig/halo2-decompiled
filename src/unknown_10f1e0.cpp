@@ -572,6 +572,12 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // forceinline copy of it (diagnostic) 42, so an inlined fill does not give the fused set (the 0x12afc0
 // lead is closed); with the mask test a byte `found` 42, each arm breaking on its own call 42, the source
 // name as a two-use local 48 (both names 51); unused initialised locals at four positions (probes) 42.
+// MiniMax C (11-05, held at m3 review): the mask test (the existing bit_vector_test) with the pair's target
+// name as a two-use local gives 49 at 539 bytes, retail's length, with retail's fused `or [eax], edx` set and
+// its 0x1d90e0 setup; with the second lookup in its own nested if that first re-reads the target name into
+// that local (target_name = iterator->b, the same value) 2 at 539 bytes, only the back edge differing
+// (retail reloads the state before the tag table); iterator->b passed directly there 46. The same-value
+// re-read is a form picked by score, kept only with a byte match: build/held/mmc-1106-113980-reread-local.patch.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1543,6 +1549,8 @@ long function_cbd50(long unit_index, short weapon_index);
 // P345: Joint false-default chain, success/depletion/interruptibility-owned defaults,
 // byte then bool success: 164/165/165/164/194/193/195/194. NOT kept: no byte match;
 // original complete body restored; pool/displacement, SETLE/default homes and normalization remain.
+// P350: Shared negative depletion/base expressions, bool/byte/short/long, direct/branch producers:
+// 397/397/424/424/404/404/434/434. NOT kept: all regress and lengthen; original status graph and body restored.
 // N389: Paired held-presence bool/byte/short/long with conjunction/guarded count stores:
 // 164/330/164/330/164/330/164/330. NOT kept: pool/SETLE/default/result homes remain;
 // original predicates, queries and complete body restored.
@@ -1818,6 +1826,9 @@ bool __stdcall function_110ab0(long unit_index)
 // DH372: First/second held-query presence bool/byte/short/long: 450 each.
 // NOT kept: ties, 424 code/22 tail differences and frame eight versus twelve.
 // Original body and queries restored; state/request/result homes remain.
+// P350: Allow parameter byte/signed-byte/short/word/long/dword, then unsigned request
+// with bool/byte allow: 441/441/441/441/441/441/451/444. NOT kept: 430/433 code
+// differences versus 424; apparent gain is table/extent only. Original Boolean contract restored.
 // N389: Actual base query owns the result or the true-default producer, bool/byte/short/long:
 // 450/495/574/554/490/477/540/514. NOT kept: missing frame word and state/request/result
 // homes remain; original query, permission graph and full body restored.
@@ -2247,6 +2258,8 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // Y597: Complete common primary sampling weights, both-first/single-first producers,
 // sample-admission bool/byte/short/long: 860/860/834/837/869/869/842/851.
 // NOT kept: no exact common-sample graph; original weights, decisions and complete body restored.
+// P350: Complete unit/state/graph/control/definition lexical home orders, eight forms
+// 776 each. NOT kept: no native frame or first-angle/overlay expansion repair; original body restored.
 // AC552: Existing shared real clamp at the overlay-ratio producer, long/short/dword/word
 // ordinals with ordinary/inline declaration: eight at 776. NOT kept: no gain; original
 // direct clamp, ordinal, declarations and complete body restored; frame/expansion gaps remain.

@@ -220,6 +220,12 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
+// MiniMax D (11-06, not kept at m3 review): 241 -> 208 with the temporary velocity copied only in the else
+// arm (then unset on the max_angle == 0 && acceleration == 0 path, which can still reach 0x11f0d0: a
+// behaviour change), the position copied into that same local, the first 0x11d180 call's left output
+// written into the later basis-forward local and the 0x11ce20/dot3f arguments swapped; copying the velocity
+// after the if/else, as retail, gives retail's slot packing (--fast 99) but 264 in the full build. The
+// frame stays 0x70 against retail's 0x6c. build/held/mmd-1106-1197b0-slot-steering.patch
 // MiniMax H (11-04): the temporary velocity scoped so the position copy reuses its slot 256 at
 // retail's 1030 bytes; not kept, the frame stays 0x78 and the score rises.
 // MiniMax E (11-01): no new form, no lower score; left: frame 0x78 against retail's 0x6c, the

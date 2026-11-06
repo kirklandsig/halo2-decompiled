@@ -1055,6 +1055,9 @@ real normalize2d(point2f *v);
 // NOT kept: no byte match or eligible native repair; original executable source restored.
 // DL272: Default persistent vertical/horizontal, their pair, retry vertical/horizontal, retry pair, all four and all with direction; native DL and separate return transport remain. Scores 118/117/157/138/137/158/190/221.
 // NOT kept: output default stores are absent in native code and the unmatched defaults are not retained; original executable source restored.
+// DL274: Own force/initial-target/retry-target home reads, seven subsets then request-target home: 135/134/134/134/134/134/134/134.
+// NOT kept: native DL retention and separate request/invalid return transport remain; no eligible byte match or native repair.
+// Original complete executable source restored.
 // DH382: Completed invalid type admission at absent definition/rejected forced mask/
 // exhausted short search, seven subsets 136/244/253/238/253/267/267; all typed-first 249.
 // NOT kept: all regress and disturb the native entry/type prefix; original entire body,

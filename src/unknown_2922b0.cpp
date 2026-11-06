@@ -379,6 +379,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // AC557: Native root quotient producer, optional remaining/clamped scalar stages,
 // mutable/immutable complete families: eight at 607 (2817/2886). NOT kept:
 // all regress and shorten farther from retail; original helper and body restored.
+// AC559: Whole active-range admission/rejection, bool/byte/short/long: eight at 687
+// (2830/2886). NOT kept: all regress; original live guard, complete helpers and
+// in-place snapshots restored. Success/input/minimum/hit homes and inactive exit remain.
 // J259: Full root/sine/cosine return storage, separate/paired/all and immutable all: 689/706/698/690/682/701/683/683.
 // NOT kept: no eligible native repair; opening executable source restored. Native frame 0x108 is lost; original real helpers and every in-place capture restored; success/input/minimum/hit homes and inactive exit remain.
 // M400: Complete original input/basis/origin/distance/ray/root/rotation-cross/projection defaults

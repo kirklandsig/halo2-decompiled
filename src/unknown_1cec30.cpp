@@ -1084,6 +1084,10 @@ void function_1d1540(s_havok_component *component);
 // EBX, ESI and EDI, so their save sets do not explain it. Original body restored.
 // Permuter (25 min on #1044 round 3, about 470 variants): only a volatile short copy of m_fixed with a char
 // cast in the test and the arms swapped gave 60 (frame 0x94); not kept (volatile without a match).
+// Round 153 (m3 lane 5, fast with 0x1d5120/0x1d0c20/0x1d1b60): set copy, body pointer, m_fixed first, direct-index refetch
+// 88 (230 B); set copy, slot pointer fetched before the transformed block 85 (228 B); set copy, slot, direct refetch 90
+// (231 B); constructor copy, body pointer, getter/direct refetch 85/85 (220 B). /Gd first pass: component EBX in every
+// m_fixed-first form, EDI in flag5-first forms; only EDI ever becomes a register argument here.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

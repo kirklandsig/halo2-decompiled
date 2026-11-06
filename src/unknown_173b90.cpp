@@ -716,6 +716,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // better. Index spellings (typed sum, dword, ++, += 1) identical; declaration moves and the particle mask inline identical.
 // Named input components x, y, z in every subset, order and phase (336 forms) no better than 13 block differences.
 // Left for a match: all products load-first in the retail phase. A new one-caller helper is match-only: body unchanged.
+// Round 95 (m3 lane 12, fast): the emitter loop as a for with the offset as its init and step 42 (the zero store stays ahead
+// of the guard; retail stores it after the guard, beside the shrink-wrapped push ebp); scale first re-measured 40 (gain 2);
+// the offset declared before the emitter index 42; the particle copies motion first 50; the next index read right after the
+// particle lookup 272 (1113 B); scale first with the colour declared before the frame locals 40; scale first with the
+// particle mask formed beside the emitter mask 261 (1117 B).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

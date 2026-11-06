@@ -1269,6 +1269,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // 253/253/253/253/253/253/253/253 (fast control 253; full 253).
 // NOT kept: no byte match or eligible gain. Original dynamic successor test, replacement result, query
 // defaults, refreshes, cleanup and full body restored; sentinel ESI and squad/query homes remain.
+// B452: Actual tag/squad/placement input layouts, seven subsets then all with immutable
+// squad/placement bindings: eight at 253. NOT kept: sentinel and query homes unchanged;
+// original input observations, outputs and complete body restored at the native frame/extent.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -2018,6 +2021,8 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // B449: Repeated unit-handle/fraction-bound/round-bound field addresses, seven subsets
 // then complete readonly actor receiver: 361/251/361/251/361/251/361/361.
 // NOT kept: no exact field-receiver repair; all original per-use observations, queries and body restored.
+// P350: Shared real clamp at probability/delay/both, ordinary/inline, then forced single sites:
+// 256/284/286/256/284/286/256/284. NOT kept: regressions; original per-use clamps and body restored.
 // Y602: Readonly equipment/grenade settings and fixed unit receivers, then fixed settings pointers:
 // 251/251/251/251/251/251/251/251.
 // NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.

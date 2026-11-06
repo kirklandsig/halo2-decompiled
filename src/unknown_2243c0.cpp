@@ -217,6 +217,7 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax A (11-05): no new form, no lower score; the fallback lookup's tag index and the element loads still sit in different registers than retail's.
 // MiniMax H (11-03): no new form, no lower score; the fallback lookup masks the tag into a fresh register where retail masks it in place in edx, and the in-place form scores 152 against 117, so it was dropped.
 // score 117 (was 117): retail keeps the masked index in EDX where ours reuses EAX for the table
 // entry, and the fallback path's call order and the element loads still differ; the file handle
@@ -515,6 +516,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // reference, reference tag, its copy, staged tables 92 each; bound tables 86 (0x224d90 lost), on the chain 36. Cache zeros before the
 // material lookup 13 (`xor` as retail, but the stores stay ahead of the loads; retail stores them after), before the pass lookup 60,
 // with the bound definition 97; the same 13 with the cache copied for 0x175610 (scratch; its stores did not move).
+// Round 59 (m3 lane 15, fast): lane 1 r59's score-8 form reproduced on the current body (8 at +0x9e: the pass definition loads into EDX
+// where retail reuses EAX, the dead element address, and the material definition into EDX where retail overwrites EDI, the table, with
+// the zero `xor` before the shift). On 8: all four tag lookups through the by-value accessor 8; the head/stage/pass bindings in their own
+// block 8; the pass definition named 8; the material accessor also inside the material lookup 8; the material index bound once and used for
+// the lookup and 0x1c590 76; main's split zeros (field_44 after the pass element) 59; the four zeros at entry 165; the element helper
+// returning a named result with no caller bindings 153 (only a reference bound to the pointer temporary gives the unfused loads).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

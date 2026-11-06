@@ -181,6 +181,12 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax G (11-05, r3): no new form, no lower score; the flags still load into eax where retail
+// loads them into the dying pointer register ecx.
+// MiniMax G (11-05, r2): no new form, no lower score; the flags in a named local, the flags read
+// through a pointer to the field and the precomputed user pointer still load the flags into eax.
+// MiniMax G (11-05): no new form, no lower score; the user flags are still loaded into eax where
+// retail loads them into the dying user-pointer register ecx.
 // MiniMax B (11-05): no new form, no lower score.
 // MiniMax I (11-01): the user flags are still loaded into eax where retail loads them into the dying user pointer register ecx; a conditional-expression user pointer (both polarities, with and without a record cursor), the flags and the pointer in function-scope locals and the mask test first all leave the code as it was.
 // MiniMax A (11-03): no new form, no lower score.
