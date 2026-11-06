@@ -1363,6 +1363,9 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 
 /* fills the list with the session's players, then the empty slots */
 // MiniMax C (11-04): no new form, no lower score: an item_count declaration initialiser moves its home to ebp-0xc but grows the frame to 0x58 and spills the mode (121), dropping the branch-one zeroing gives 137, seven declaration orders give 123.
+// MiniMax G (11-06): no new form, no lower score; the two count homes are still exchanged (ebp-8 against
+// retail's ebp-0xc) and the tail fill is still a manual pointer loop where retail uses a guarded rep
+// stosd, both following from the same allocation difference the earlier rounds describe.
 // MiniMax H (11-03): no new form, no lower score; ours puts item_count at ebp-8 and index_count at ebp-0xc where retail puts index_count at ebp-8 and item_count at ebp-0xc, and the permuter's best candidate (the mode-one call to 0x199dc9 with its two arguments the other way round) gives 79 in both images, under the keep bar.
 // MiniMax I (11-01): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score: the index_count/item_count homes stay swapped and the tail fill stays a pointer loop.
@@ -2602,6 +2605,9 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax G (11-06): no new form, no lower score; the count, the element address and the player keep the
+// same three homes, permuted against retail's (ebp-0xc, ebp-8 and ebp-0x14 against our ebp-8, ebp-0x18
+// and ebp-0xc), and the last loop still keeps the screen in ebx where retail gives ebx to a bitmap.
 // MiniMax A (11-05): the four widget indices at function scope with the last loop's inline switch score 89 (was 95), but the gain is under eight, so the original body stands.
 // MiniMax A (11-04): the four widget-index shorts' declaration order (seven orders) 95 each; the players[i] address kept in a local (function scope and loop scope) 95 each; no lower score.
 // MiniMax I (11-01): no new form, no lower score.

@@ -404,6 +404,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (aligned 20, masked 12); clamp written `count + 1 > 0x200` 53 (90 bytes) [104]. Plain string: early source 49 (92 bytes) [6]; source at
 // clamp 41 (104) [35]; early text 41 (104) [35]; string kept through its own address: at clamp 40 (104) [6], text read 40 [6], reversed
 // 40 [6], early 49 (92) [6], `start +=` 40 [6]. Left: count and walk swapped on the match-keeping form, or start's entry register on the other.
+// Round 96 (m3 lane 12, fast with 0xb5f10/0xb61d0; [0xb5f10]): nested tests with the source before the named length 37 [84] (250-byte
+// caller); the length named first, then the source, re-measured 21 [match] (walk ECX/count EDX, retail EDX/ECX), with its compare
+// reversed 21 [match]; the copy's end named before the scan 40 [83] (96 bytes); the original compare reversed 40 [match]; the
+// `start +=` ahead of the clamp 36 [6].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
