@@ -1701,7 +1701,17 @@ bool __stdcall function_110ab0(long unit_index)
 // uninitialised one; a second 900 s permuter search (seed 7) found no better form either.
 // MiniMax H (11-06): the permuter's 300 s search found no better form (reduced 467, full 447, both the
 // baseline); the frame word and the requested-in-EDI lifetime still differ.
-// score 450 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
+// b4D walk (11-06, statement by statement against retail 0x1103a0-0x110aa0, with an emulation of retail's
+// state-switch compare tree over every case constant of both files): no logic difference. The state switch
+// (all 12 groups: interruptible, `requested == 0x600008c ? true : interruptible`, depleted, 0x600008c's
+// requested set, the 0x600008d/e + 0xc000043 + 0xd000042 group, allow, false, default true), the
+// 0xa000010 jump table, the depletion pair (first `<= 0` sets, second `> 0` clears, via the inlined
+// function_cbd50 slot test) and both 11-value requested sets of the overlay switch (overlay 0xb0 bit 4 /
+// depleted) all agree. Changes: `result = interruptible; if (requested == 0x600008c) result = true;`
+// (value set then overridden) is now the ternary, 453 (1793 B, was 450 at 1789 B); the raw +0x14/+0xb0
+// flag tests use the named `channels[0].unknown14` / `channel_9c.unknown14`, same code. Tried:
+// `bool result = true;` with the default arm dropped 483 (1785 B).
+// score 453 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
 // index*12 in EDX so the unit is re-derived for the query; ours keeps the unit in a register.
 // Earlier: this round found no gain - retail keeps the pool pointer live in ECX and the data in
@@ -1878,7 +1888,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		long second = function_cbd50(unit_index, *(char *)((byte *)UNIT_ANIMATION_OBJECT(unit_index) + 0x213));
 		if (second != NONE && *(short *)((byte *)UNIT_ANIMATION_OBJECT(second) + 0x17c) > 0)
 			depleted = false;
-		if (*(byte *)((byte *)state + 0x14) & 0x10)
+		if (state->channels[0].unknown14 & 0x10)
 			interruptible = true;
 	}
 	if (function_0c7070(unit_index))
@@ -1912,9 +1922,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		case 0xe00002a:
 		case 0xe0000c3:
 		case 0x1000006c:
-			result = interruptible;
-			if (requested == 0x600008c)
-				result = true;
+			result = requested == 0x600008c ? true : interruptible;
 			break;
 		case 0x500000a:
 		case 0x5000024:
@@ -1988,7 +1996,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		}
 	}
 	byte overlay_interruptible = false;
-	if (controlling != NONE && (*(byte *)((byte *)control + 0xb0) & 0x10))
+	if (controlling != NONE && (control->channel_9c.unknown14 & 0x10))
 		overlay_interruptible = true;
 	switch (control->channel_9c.unknown08)
 	{

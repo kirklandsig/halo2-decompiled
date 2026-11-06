@@ -2357,6 +2357,17 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // on the right, 485 [234] (1945, retail's gain copy appears); that stored back into the gain parameter 485 [234].
 // Diagnostics (one-use captures): the track value and scale read into locals before the clear, with the first sum 498
 // [206] (1960, frame 0x4bc), with the 0x1251e0-style sum 503 [201] (1965). Restored.
+// b4G (11-06) statement-by-statement walk against retail 0x21c400-0x21cb86: no logic/behaviour difference found (fields,
+// offsets, condition directions, callees, argument order, branch shape, float order all agree: unknown08 + (track_value +
+// gain) 0x21c590-0x21c5a4, pitch = (upper - lower) * gain + pitch + lower 0x21c53c-0x21c565, doppler (scale * ...) 0x21c687-0x21c69e,
+// gain + permutation->gain at 0x21c6f3 and 0x21cb3d; the only fstp dword is the 0x12a9d0 result at 0x21c67d, as ours).
+// Width evidence, NOT kept (aligned diff lines 153 at 339): the controller snapshot is byte-wide in retail (mov cl, al /
+// and cl, 0x7f at 0x21c752-0x21c757 and the 0xff in cl, as 0x128ca0's `byte local_14`): `char synch_count` makes that
+// block exact but scores 405 (1932 bytes; later code drifts, aligned lines 152); a byte + else-arm form 428; the permutation
+// index as `short` (retail's word store 0x21c82f, cmp ax, 0xffff at 0x21ca1c) 432 (aligned 189); stop_requested as a byte
+// or at the state-else site (retail 0x21c77f `or byte [esi+4], 0x40`, ours caches the flags word) with the char count
+// 374 at 1929 bytes. Still open: frame 0x4bc (the two early snapshots, [esp+0x48] scale at 0x21c50e and [esp+0x28] track
+// value at 0x21c526), 0x221810 and 0x12a420 inlined by ours (retail calls both at 0x21c62b and 0x21c783/0x21ca5d).
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {

@@ -6075,7 +6075,7 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
    (4 also changing weapons), 5 to 7 into the second hand beside a
    matching first (6 lowering it first, 7 readying it); tells the player
    code */
-// score 280 (was 333): the single exit with `default: __assume(0)` gives retail's stack convention
+// score 300 (was 333; 280 only with the unkept `hand = 0; if (...) hand = 1;` form below): the single exit with `default: __assume(0)` gives retail's stack convention
 // (all three arguments pushed), which matches 0xc4820, 0xccab0, 0xcce00 and 0x19ef40; frame 0x54
 // versus 0x50 (the main hands array keeps its own slot), weapon/mode in EBX/EDI versus EDI/EBX,
 // and the two weapon flag tests are not stored in the ready byte as in retail.
@@ -6103,6 +6103,18 @@ bool __stdcall function_c4410(long unit_index, void const *creation, bool *out_o
 // the shared ready/hands slot (ready as a scalar drops them; `hands[0]` as ready keeps them but takes the param
 // home for `result`, 274, 1056 bytes: not kept). Tried: ternary `hand` after the branches (300, as the plain form); `second_hands`
 // or `ready_request` declared at the top (no change); hand chain inside the else (318).
+// Walk against retail (b4M, 2026-11-06, statement by statement, 0xcd0c0-0xcd4b8): no logic difference found. Checked: the
+// object lookups (0xcd0d3-0xcd0f2), the flag-7 and +0x12c tests (0xcd0f6-0xcd123), cd6a0 args (0xcd129-0xcd12e), mode 2
+// (0xcd14b), the 3/4 and 5-7 chains (0xcd158-0xcd17c), mode 6's request type 0x13 (0xcd1d1-0xcd206), the 3/4 second hand
+// block (0xcd210-0xcd27b), mode 4's three paths (0xcd280-0xcd2f6), the hand index (0xcd300-0xcd316), cd7b0/hands[hand]
+// (0xcd327-0xcd344), the slot test and parent_index (+0x14) detach (0xcd34c-0xcd374), cea70 (0xcd37c-0xcd382), the
+// no-range-check jump table (0xcd38f, 0xcd4bc) with its cases (0xcd396-0xcd47b: types 8/0x12, +0x216/+0x217 stores, the
+// mode 1 slot compare at 0xcd3bd), the +0x13c test (0xcd47f-0xcd48a) and a8a30 for modes other than 1 and 7 (0xcd48f-0xcd4a3).
+// Every field, callee, argument, test direction and mode set equals retail's; only frame order, the weapon/mode registers and
+// the duplicated epilogue differ. The `(char)` casts on the two +0x216/+0x217 stores were dropped (same bytes). `weapon` is an
+// item, not a unit: s_unit's +0x12c is actor_index, so the flag read at +0x12c is cast (items.cpp calls it flags_12c).
+// Also tried: hand as a `switch (mode)` 283 (1052 bytes, but compiles the 5-7 test as a range compare, not retail's cmp
+// chain: not kept), `if/else` and `?:` for hand 300.
 // @retail 0xcd0c0
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 {
@@ -6210,7 +6222,7 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 	{
 	case 0:
 	case 1:
-		unit->unknown216 = (char)function_cdeb0(unit_index, NONE, unit->current_weapon_index, 0);
+		unit->unknown216 = function_cdeb0(unit_index, NONE, unit->current_weapon_index, 0);
 		if (mode == 1 && unit->unknown216 == slot_index)
 		{
 			s_unit_request request;
@@ -6225,19 +6237,19 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode)
 	case 2:
 	case 3:
 	case 4:
-		unit->unknown216 = (char)slot_index;
+		unit->unknown216 = slot_index;
 		function_e68c0(8, unit_index);
 		break;
 	case 5:
 	case 6:
-		unit->unknown217 = (char)slot_index;
+		unit->unknown217 = slot_index;
 		function_e68c0(0x12, unit_index);
 		break;
 	case 7:
 		s_unit_request request;
 
 		memset(&request, 0, sizeof(request));
-		unit->unknown217 = (char)slot_index;
+		unit->unknown217 = slot_index;
 		request.type = 0x12;
 		request.type17.unknown4 = true;
 		request.type17.unknown5 = true;

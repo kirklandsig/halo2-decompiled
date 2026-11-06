@@ -504,6 +504,13 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// Walk b4H (11-06, fast 303): statement-by-statement against retail 0x296e60-0x2973ec found no behaviour difference. Checked: pitch axis
+// (-j, i, 0) and the 1e-4 magnitude test (0x296ec2) with the g_4687ac fallback (0x296f0c); hoisted yaw/pitch ranges (0x296f32-0x296f66); yaw drawn first, pitch
+// second, kept unrounded on the x87 stack into fsin (0x297006); sine/cosine rounded (fstp dword 0x297047/0x29704d); pitch rotation about the axis, then yaw
+// about g_4687b0 (0x2970f5-0x2971d0); ray = candidate * 3.0 (0x45dbd4), flags 0x10800001, ids NONE (0x2971e3-0x297206), word NONE at +0x24 (0x29720b); hit test
+// `fraction > best` at result+4 (0x29723a); success normalizes the candidate (0x2972a2-0x297334); exit tail `!clear && best > 0.0` (0x297336-0x29734c).
+// Plain-form tries: drop `clear`, tail `!result && best_fraction > 0.f` 361 (1446 B, demotes matched 0x297660 to 10); `else clear = true;` 372 (1455 B). Kept `clear = true`
+// at the loop top: retail's `mov al, 1` (0x296f8f) sets it there on every attempt, and only this form matches 0x297660.
 // MiniMax E (11-06): score 303 (was 303): no new form lowered it. Retail puts the first 4-byte
 // temporary (the length, the integer and the sine) at the frame bottom where ours puts it above the
 // result byte, so the axis and result homes sit four lower, and ours is twelve bytes longer than
