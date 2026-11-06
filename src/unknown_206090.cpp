@@ -142,6 +142,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 #pragma inline_depth(1)
 #include "vector_products.h"
 // score 1355 (was 1355): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
+// fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
+// 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
+// search does not stop the outer list loop, 0x207862 -> 0x20786b), the three final counters and all 19 float literals
+// (read from retail's .rdata at 0x44ae90, 0x44541c, 0x45dbbc-0x45e5d0) agree. Only code shape differs.
 // Frame 0x5d0 versus 0x58c; component/velocity homes, contact induction and scheduling remain.
 // Earlier 1585 (was 1596): Frame 0x590 versus 0x58c; component/velocity homes and contact induction remain.
 // Earlier 1600 from 1600: frame 0x580 versus 0x58c; velocity homes and contact induction differ;

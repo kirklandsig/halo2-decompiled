@@ -825,6 +825,7 @@ struct s_227af0
 // the source order of the products. Tried: using `up` instead of `normal` in the cross products, every combination of
 // the three calls (6-8); a fresh alias for the second or third call's operand (6-16); swapping each product's operands
 // inside function_227814 (no change); `normal` as a non-const pointer or declared at the top (4).
+// Permuter, 35 minutes (11-05): nothing below 4.
 // @retail 0x227af0
 void impact_orientation_get(
 	s_impact const *impact,
@@ -980,6 +981,9 @@ void impact_orientation_get(
 // returns with ret 8 where retail has ret 0xc, which would change what 0x228770 sees); `rotation_threshold = 1.0f; if
 // (physics_type) ...` before or after the switches (327-352); rotation_threshold set inside the min switch (352);
 // declaration order (no change).
+// Permuter, 35 minutes (11-05): full image 180 only with volatile locals and casts that change no value. Its plain
+// parts (rotation_threshold declared after physics_type, component->unknown20 read at each use, the sliding/rolling
+// else-if chain inverted, speed_ratio declared first, velocity k stored before j) give 239 fast at best (k before j).
 // @retail 0x228f30
 void impact_type_update(
 	long impact_index,
@@ -1537,6 +1541,8 @@ PRIVATE __forceinline void function_2294a1(s_effect_new_data *data, long definit
 // from the top. Tried: previous_type declared at the top of the else block (634), inside the condition (688), a copy of
 // material_a as a local (656), explicit if/else for scale instead of PIN (686), scale declared in each block (688),
 // level folded into the condition (640).
+// Permuter, 35 minutes (11-05): its best form needs a flag set inside a test, the impact object lookup written out,
+// temporaries and casts. Its one plain part, impact->type read at each use instead of the `type` local, gives 553.
 // @retail 0x2294a0
 void function_2294a0(
 	long impact_index,
@@ -1806,6 +1812,12 @@ void function_2294a0(
 // they are dead and kept as is. Tried: a point3f* local for impact->position (485), function_227811 for the dots
 // (485), !()/De Morgan/swapped forms of the constraint test (485), component computed after the early return (487),
 // matrix at function scope (485), relative_velocity = velocity_a per component (508, 28 bytes short).
+// Permuter, 35 minutes (11-05): 274 only with `constraint->impact_index` cleared as a volatile byte (a behaviour
+// change), temporaries and casts. Lead: the constraint count read once into a local before the loop (`long
+// constraint_count = component->unknown88.size;`) gives 327 fast, both callers still matching, since the stack slots
+// and homes then line up; not kept, as retail rereads the size on every pass (latch 0x228bfa: `mov edx, [ecx+0x8c]`
+// with the component reloaded from [esp+0x18] at 0x228bf2). The take block's sums in another order give 480; the
+// constraint test inverted or the mass-ratio test as nested ifs change nothing.
 // @retail 0x228770
 void function_228770(
 	long impact_index,
