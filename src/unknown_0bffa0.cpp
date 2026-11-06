@@ -1177,6 +1177,7 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // retail sums the length as (i*i + k*k) + j*j (ours (j*j + i*i) + k*k), and the projection rows as forward (j, i, k),
 // left (i, k, j), up (k, i, j) (ours forward (k, i, j), left (j, k, i), up (j, i, k)); everything else left is
 // operand folding and register colours. Callers 0x31c80 (184) and 0x32350 (448) and callees unchanged by this note.
+// Permuter, 30 minutes (11-06): 277 only with the sphere radius read through a volatile pointer and word casts. Not kept.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
