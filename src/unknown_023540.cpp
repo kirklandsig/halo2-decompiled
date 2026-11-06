@@ -3344,7 +3344,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 }
 #pragma inline_depth(255)
 
-// score 9 (was 19): retail length; the blend sites now call 0x222d0 as retail. Left: the two small
+// MiniMax G (11-06): no new form, no lower score; tried the input word as a multiply, the span
+// scaled first, the input named after the clear and the shift written at both stores.
+// score 9 (was 19): retail length; the blend sites now call 0x222d0 as retail. Left: the input
+// word's shift, folded into EBX before the clear where retail copies EBX to EAX and shifts it
+// after the clear, and the two gain sites, where ours loads the 1.0f constant before the reload.
 // selectors (retail loads small into CL first and computes input before the alpha selector) and the
 // constant/inverse-span reloads after mode zero and one's depth-bias write (retail reloads the span
 // first). Modes one to three's quantizer inputs now take clip's home as retail (round 132 below).
