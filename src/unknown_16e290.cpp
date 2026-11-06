@@ -1734,8 +1734,6 @@ struct s_camera_clip_reference_16ebf0
 // after the forward copy and up.z into xmm0 late, ours loads up.z into xmm1 right after the up copy and
 // forward.y into xmm0 late, so the first product's operands are the other way round; the callee 0x171d00's
 // narrow/fraction convention (in another lane's file) still decides the extra spill.
-// score 87 (was 87): the frame is 0x9c against retail's 0x98, and the first cross carriers and the
-// clipping-result production remain as they were.
 // N271: signed-byte reference with byte/bool/signed-byte/long truth 112/87/112/115;
 // short/word/long/dword references 95 each. On the 87 graph, staged cross 90, retained basis
 // inputs 87, both 90, both without the inner position alias 90. Keep signed reference and bool
