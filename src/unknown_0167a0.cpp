@@ -1039,6 +1039,7 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
     }
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (2); cases 12 and 13 still share one tail that stores out[3] before out[2], retail stores out[2] before out[3].
 // score 2 (was 0): cases 12 and 13 share one tail; ours stores out[3] before out[2], retail stores
 // out[2] before out[3]. A `real *zero = out + 1` copy in cases 14/18 makes this match exactly, but
 // it hides 0x1b2c0's write summary from LTCG and costs 0x19ca0 its byte-for-byte match.
