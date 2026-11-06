@@ -901,6 +901,8 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax R (11-05): no new form, no lower score; writing the two turn-block crosses out with retail's
+// differing third terms gives 140 at retail length (the rotation block is re-generated), so the body stays.
 // score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
 // pointer in ECX and the output pointer in EDI, then the object index, the definition, the value

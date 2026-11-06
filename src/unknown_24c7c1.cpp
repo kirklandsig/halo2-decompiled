@@ -556,6 +556,8 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
+// MiniMax R (11-05): no new form, no lower score; the timer flag as a bool puts retail's byte stores at
+// -0xe/-0xd with the scripted flag still at -2 beside split_screen, 191, so the body stays (file now 114).
 // MiniMax G (11-04): no new form, no lower score; retail keeps `left` in a word-sized local at -0x3c
 // beside `top` and homes the colour and text bounds at -0x34/-0x24, ours spills `left` as a dword at
 // -0x50 with the colour at -0x2c.
