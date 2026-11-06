@@ -1759,6 +1759,8 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
+// MiniMax G (11-06): no new form, no lower score; the first difference is at +0x2, where retail stores the
+// outer datum index at +0x14 and this build stores it at +0x1c, and the frame is 0x11c against retail's 0x128.
 // MiniMax E (11-05): no new form, no lower score.
 // score 305 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
