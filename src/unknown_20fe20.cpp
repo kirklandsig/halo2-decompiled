@@ -1160,6 +1160,11 @@ void function_2118c0(void)
 // exactly 777 bytes and 0x212100 stays matched, but 150 (all rows reduce); plain declaration 437 (495), forceinline 150. On the
 // inlined call: all rows from `long row = b << 3` 162 (767), wrapped rows only 123 (790); `long row = b * 8` 150 either way;
 // wrapped rows from `short row = b * 8` 157; sums cast to short or word 179/179 (808).
+// Round 93 (m3 lane 16, fast): `b * 8` rows with the wrapped rows read inside the component loop 150; the wrapped
+// indices declared in the band loop with `b * 8` rows 180 (755 bytes, hoisted and fully reduced); `b * 8` for the
+// wrapped rows with `(b << 3) + k` for p1 and out 150; every row through a `vector3f (*band)[8]` pointer 248 (847
+// bytes); `word` per-row indices from `long row = b * 8` 161 (787 bytes: retail's `add esi, 8` row and unreduced rows,
+// plus three movzx). Diagnostics: `b * 8` alone 150 (five pointer IVs), a short row stepped by 8 beside b 130.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

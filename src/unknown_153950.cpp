@@ -534,6 +534,10 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // M396: Complete memmove direction/angle/bounds transfer subsets 1/2/4/3/5/6/7
 // 210/284/293/279/300/296/296; signed-angle conditional result 13. NOT kept:
 // no exact rotation/load repair; original complete body restored.
+// Round 93 (m3 lane 16, fast with 0x170d70): `angle = -angle` 13; `fabs(1.0f - length)` in both unit tests 15;
+// the unit tests as `0.0001f > fabs(...)` 13; the clamp as `dot < -1.0f` / `1.0f < dot` 60 (1105 bytes); the priority
+// store after the duration and timer stores 35. Re-measured listed forms: forward j before i 25, cosine before sine 33.
+// BLOCKED-BY 0x170d70: the rows follow the shared rotate_vector_170d70 text in its file, src/unknown_170d70.cpp (held).
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
