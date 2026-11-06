@@ -509,14 +509,9 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
     return true;
 }
 
-PRIVATE __forceinline void motion_cross(vector3f const &a, vector3f const &b, vector3f *result)
-{
-    result->i = a.j * b.k - a.k * b.j;
-    result->j = a.k * b.i - a.i * b.k;
-    result->k = a.i * b.j - a.j * b.i;
-}
-
-// score 214 (was 251): frame 0x28 agrees; trig homes and projection registers differ;
+// score 214 (was 214): frame 0x28 agrees; angle/trig homes, the x87 angle copy (ours `fld st(0)`, retail reloads
+// the angle from its home for fsin in both arms) and projection/product scheduling remain. Earlier, 214 from 251:
+// trig homes and projection registers differ;
 // shared trig scope 254; sine declared first 251; forward projection loop 235;
 // rotation loop 246; idle base loop 235; projection plus base loops 235; all loops 246.
 // pointer scale loop 239; fixed do scale 237; idle reconstruction loop 235;
@@ -525,9 +520,16 @@ PRIVATE __forceinline void motion_cross(vector3f const &a, vector3f const &b, ve
 // active rotation scope 235; idle sine after scaling 235.
 // active/idle/both real trig 233/235/233; shared weighted axis 214 plain kept;
 // weighted cross 218; both weights 258; output cosine scale 235; real trig plus axis 226.
-// score 214 (was 214): Frame 0x28 agrees; angle/trig homes and projection scheduling remain. Active angle
+// Earlier at 214: frame 0x28 agrees; angle/trig homes and projection scheduling remain. Active angle
 // name 214; external up reference 212; forward reference 216; both output references
 // 178 (held: reference aliases of the two parameters); external velocity reference 214.
+// Round 67 (m3 lane 13, plain; fast is unreliable here): the existing rotate_direction (forced inline in
+// src/unknown_1eb8a0.cpp) for the hand rotation with `(real)sin(angle), (real)cos(angle)` 249 (1182 bytes, aligned
+// 178 -> 154), with named cosine and sine 250 (1182, aligned 137); the existing rotate_vector_170d70 250 (same code);
+// sine after the dot 214 (same code); the idle angle field read at each trig call 214 (loads merged). Kept: the
+// shared cross3f in place of a file-local copy of it, 214 (same code). The active arm is 4 bytes and the idle arm
+// 11 bytes longer than retail's; the idle crosses differ in product operand order (`movss mem; mulss reg` against
+// retail's `movaps reg; mulss mem`).
 // @retail 0x1faa20
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks)
 {
@@ -546,7 +548,7 @@ void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *t
         real sine = (real)sin(angle);
         real dot = (up->j * axis.j + up->k * axis.k + up->i * axis.i) * (1.0f - cosine);
         vector3f cross;
-        motion_cross(*up, axis, &cross);
+        cross3f(up, &axis, &cross);
         vector3f_scale(&axis, dot, &axis);
         up->i = up->i * cosine + axis.i - cross.i * sine;
         up->j = up->j * cosine + axis.j - cross.j * sine;
@@ -566,9 +568,9 @@ void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *t
     else
     {
         vector3f axis;
-        motion_cross(*forward, *g_4687b0, &axis);
+        cross3f(forward, g_4687b0, &axis);
         vector3f base;
-        motion_cross(axis, *forward, &base);
+        cross3f(&axis, forward, &base);
         if (function_30bf0(&base) == 0.0f)
         {
             base = *g_4687a8;

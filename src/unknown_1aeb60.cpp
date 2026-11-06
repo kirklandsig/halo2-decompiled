@@ -319,6 +319,11 @@ bool function_1af530(long actor_index, long *b, long *a)
 static __forceinline long real_to_long(real value);
 short *function_e70b0(short *value, long unit_index);
 
+// MiniMax G (11-05): no new form, no lower score; the actor index still takes ECX and the actor
+// data EDX where retail keeps the index in EDX and the actor data in ECX, and the swap still runs
+// through the timer, the prop lookup, the random scale and the final argument setup; an index
+// local, the actor lookup written out, the actor reused in the last test and the data base read
+// into a local all give the same code, and the permuter (nine tries) found nothing below 49.
 // MiniMax E (11-04): no new form, no lower score; an index local, a masked index, the state
 // before the actor and a masked second lookup score 49, a short index 112; the call to 0x1f4f40
 // already sets retail's arguments up (EAX, ECX and three stack arguments), so the swap is in
@@ -448,6 +453,11 @@ short *function_e70b0(short *value, long unit_index);
 // Round 145 (m3 lane 6, fast): ticks decremented through a short local stored back 111 (446 bytes); the timer
 // expiry as a named bool 49; `short action = NONE;` 49; elapsed ticks as a named long 49; the node's object
 // index named before the prop lookup 49. BLOCKED-BY 0xe70b0 (avoid-listed file this round).
+// M3 lane 4 r170 (fast, each restored): dead volatile reads at the top of the index, the actor or the game globals and in the final
+// block 74-136 (diagnostics; the index never leaves ECX); deleting a part of the body (the final block, the prop block, the ticks
+// reset, 0x1f86a0's call, the timer block, the mode test) moves the first difference but never gives retail's EDX; true assumes on
+// the actor, the slot state, the index, both, and the final block's actor 49 each, a named facing-rate byte 49 (identical code); the
+// query's result pointer named with an assume 114. Permuter (600 s, 34 tries): best 49; its reduced image scores 133, not the full 49.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

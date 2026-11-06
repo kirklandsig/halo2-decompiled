@@ -4767,6 +4767,10 @@ bool function_158eb0()
 // a long mode cleared then set under `if (flag)` 62 (130 bytes). Original body restored.
 // Round 147 (m3 lane 6, fast): the index through a `long const &` 5; the flag declared at function scope 5;
 // `flag == true` 6; a long flag local 12 (147 bytes); `!flag ? 0 : 1` 5. Original body restored.
+// Round 74 (m3 lane 11, fast): the mode from a forceinline helper in the argument 5; the index from a
+// forceinline accessor 5; the flag, call and halving in a forceinline rank helper taking the index 5
+// (the register choice survives inlining in every form); the iterator declared first 5; an options
+// pointer local at function scope 27 (147 bytes). Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {

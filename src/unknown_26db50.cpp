@@ -736,6 +736,16 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // N382: Native record/origin/entry object references, seven ownership subsets, then all
 // with outer ring phase: 90/90/90/90/90/90/90/143. NOT kept: no equality or gain;
 // original complete body restored. Radius schedule, ring conversion and rotation spill remain.
+// Round 138 (m3 lane 8, fast unless marked; control 90): `(real)(x * 1.f)` phase steps (diagnostic) 90/215/215 at depth 1/2/3, so no
+// phase lead here; extra parameters on inline no-ops at seven sites compile the same (compile-only). Ring value and phase named, the
+// angle adding the phase 143 (1088); sector read first 235, with the radius reference 109; the rotation with j/k cross terms named 90
+// (same code), as a cross vector read without component copies 100 (1081), that with the named ring 96 (1090, the known 96 form, plain
+// 96); a full cross vector 100, with the ring 149; dot written out 90, with the ring 142; components copied before an inline dot 145;
+// the planar dot2d plus k term 96 (canonicalised like dot3f); a point-along helper at the trace point 96, at both point rows 113 (1086);
+// the structure pointer read before the rotation 72 only together with the staged dot below, alone 166 (1096). On the 96 form the
+// dot staged as `j*j + i*i; += k*k; *= 1 - cos` 72, plain 72 (1090, masked 20: retail's (j + i) + k and its rotation rows; left are the
+// sector read before `add ebp, ecx`, the radius copied through EDX, the spoke counter's store and the 0x2104b0 argument setup). That
+// writes out dot3f and splits a sum, so it is not kept; a natural source for retail's dot order is still open.
 // M3 lane 11 r71 (fast, control 90 at 1085 bytes). Retail's rows subtract axis cross vector, with j and k ahead of
 // the rows and i in its row: three named cross terms 100 (1087), with the ring phase 149 (1090), dot after the cross
 // 231/251; j and k only 100 (1081), with the phase 96 (1090). On that 96, whose ring block and rotation are retail's

@@ -179,6 +179,11 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // the sine is defined 2; a cosine local after velocity.j with both position products from the locals 24. With
 // either zero store removed (diagnostic) the xorps still fills the fld -> fsin slot.
 // Case 1's azimuth as one product of a direct function_x82e52f draw 510.
+// Lane 13 round 66 (fast): retail leaves the slot after the first fld empty in cases 1 and 4 (both after the radius
+// call, its result live in XMM0) and fills it in cases 6 and 9. `velocity.i = position.x = 0.f` between velocity.j and
+// velocity.k 4; retail's store order (velocity.i, position.x, velocity.j, position.y from the sine, velocity.k,
+// position.z) 2; `azimuth = azimuth * 6.2831855f` 2; `azimuth = 6.2831855f * azimuth` 2; the sine and velocity stores
+// in an inner block 2 (all four the same code).
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {
