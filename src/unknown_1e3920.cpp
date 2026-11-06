@@ -2021,6 +2021,8 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // B449: Repeated unit-handle/fraction-bound/round-bound field addresses, seven subsets
 // then complete readonly actor receiver: 361/251/361/251/361/251/361/361.
 // NOT kept: no exact field-receiver repair; all original per-use observations, queries and body restored.
+// P350: Shared real clamp at probability/delay/both, ordinary/inline, then forced single sites:
+// 256/284/286/256/284/286/256/284. NOT kept: regressions; original per-use clamps and body restored.
 // Y602: Readonly equipment/grenade settings and fixed unit receivers, then fixed settings pointers:
 // 251/251/251/251/251/251/251/251.
 // NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.

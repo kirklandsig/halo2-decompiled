@@ -1075,6 +1075,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // capture and separate/matrix-position pivot: 536/661/585/600/536/661/585/600.
 // NOT kept: three-point lead is below eight and matrix grouping is unmatched; other forms
 // lose native frame/extent. Original basis vectors, alias-safe helper and whole body restored.
+// P351: Angle first/final clamp bound-comparison truths in bool/byte/short/long:
+// 566/566/566/566/611/611/611/611. NOT kept: no byte match; tag/count/plane homes and rotation spills remain.
+// Original complete body and existing helpers restored.
 // Y606: Outstanding total before signed phase admission, short/int/long/dword,
 // flags rejection then nested flags admission: 538/763/763/763/538/763/763/763.
 // NOT kept: one-point native gain; wider totals lose native frame/extent. Original body restored.

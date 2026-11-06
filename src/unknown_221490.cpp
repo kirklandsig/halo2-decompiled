@@ -789,6 +789,9 @@ bool sound_driver_voice_create_buffer(
 // 3D flag first with a constant result 197 (587: the input mix bin then takes EBP and the 3D flag still spills); 3D flag first
 // with a volatile voice index 157 (618: the voice index gets retail's spilled home, but the input mix bin takes EBP and the zero
 // EBX, so every dword candidate outranks the byte flag, where retail's 3D flag beats the input mix bin and the voice index).
+// P351: Raw playback-bit byte/word/long/dword with playback-first/spatial-first production:
+// 79/152/166/166/179/165/168/168. NOT kept: no byte match; spatial/play and descriptor zero/input homes remain.
+// Original complete body and existing helpers restored.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
