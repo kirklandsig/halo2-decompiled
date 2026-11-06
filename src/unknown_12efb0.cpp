@@ -137,6 +137,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 }
 
 // score 607 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
+// Behaviour walk (w14J, 11-06): every block compared with retail 0x12efb0-0x12fe96 (accumulator and output offsets, the
+// four weight tests, tag/palette dispatch, fallback double weight, f0 store, tag-arm best-weight rule, final publication
+// clamps): no logic, field, condition or callee difference; the 607 is scheduling and register homes only.
 // MiniMax E (11-05): no new form, no lower score; the palette and accumulator carriers are as the earlier
 // rounds left them, and retail's `mulss scalar, t` product form has no legal spelling here.
 // score 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.

@@ -1760,6 +1760,8 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // the cluster test (365), __fastcall or reordered parameters on function_171830, 24 spellings of the three
 // position updates (all the same), the updates in z,y,x order (411 with vector2f), `s_location` declared first,
 // real direction_x/y locals (346), the direction array (320, above).
+// Permuter, 30 minutes (11-06, on the direction_x/y source before the vector2f form): 323 from 341, only with casts and
+// stores moved (view.aspect before the position sums, view_up declared earlier). Not kept.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {

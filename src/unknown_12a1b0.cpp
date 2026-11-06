@@ -336,6 +336,7 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// MiniMax S (11-06): no new form, no lower score: retail still packs the iterator handle as an index and a datum in one word and scans its bit vector in 32-bit words; ours keeps the two in separate values, and the location query's call boundary still differs (its owner is outside this lane).
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // Round 28 (lane G): what still differs is the location call itself: retail calls 0x11bed0 out of
 // line here and our build inlines it, and the datum and element register homes follow from that;
@@ -1296,6 +1297,7 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
+// MiniMax S (11-06): no new form, no lower score: the source copy is still scheduled differently from retail's and the first-player query is still expanded instead of called; the frame and the entry copy agree.
 // score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
 // instead of retail's temporary/copy, and the first-player query still expands.
 // Lane 14 r57 (plain): the audible arm through a local offset copied into the request after the 0x21bfb0 call
@@ -2355,6 +2357,17 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // on the right, 485 [234] (1945, retail's gain copy appears); that stored back into the gain parameter 485 [234].
 // Diagnostics (one-use captures): the track value and scale read into locals before the clear, with the first sum 498
 // [206] (1960, frame 0x4bc), with the 0x1251e0-style sum 503 [201] (1965). Restored.
+// b4G (11-06) statement-by-statement walk against retail 0x21c400-0x21cb86: no logic/behaviour difference found (fields,
+// offsets, condition directions, callees, argument order, branch shape, float order all agree: unknown08 + (track_value +
+// gain) 0x21c590-0x21c5a4, pitch = (upper - lower) * gain + pitch + lower 0x21c53c-0x21c565, doppler (scale * ...) 0x21c687-0x21c69e,
+// gain + permutation->gain at 0x21c6f3 and 0x21cb3d; the only fstp dword is the 0x12a9d0 result at 0x21c67d, as ours).
+// Width evidence, NOT kept (aligned diff lines 153 at 339): the controller snapshot is byte-wide in retail (mov cl, al /
+// and cl, 0x7f at 0x21c752-0x21c757 and the 0xff in cl, as 0x128ca0's `byte local_14`): `char synch_count` makes that
+// block exact but scores 405 (1932 bytes; later code drifts, aligned lines 152); a byte + else-arm form 428; the permutation
+// index as `short` (retail's word store 0x21c82f, cmp ax, 0xffff at 0x21ca1c) 432 (aligned 189); stop_requested as a byte
+// or at the state-else site (retail 0x21c77f `or byte [esi+4], 0x40`, ours caches the flags word) with the char count
+// 374 at 1929 bytes. Still open: frame 0x4bc (the two early snapshots, [esp+0x48] scale at 0x21c50e and [esp+0x28] track
+// value at 0x21c526), 0x221810 and 0x12a420 inlined by ours (retail calls both at 0x21c62b and 0x21c783/0x21ca5d).
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
@@ -2712,6 +2725,18 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // `state` in EBX at the loop top (reloaded at the latch, stored to sound->state from BL), NONE in ESI, track in EBP and the
 // constant 1 in EBX across the start arm (`test bl, cl`, `push ebx`, `mov [edi + 0xae], bx`); ours holds NONE in EBX and
 // track_definition in EBP and spills track and state, and the start arm's field_c_4 = 0 is stored and reloaded in retail.
+// w14K (11-06) statement walk against retail (fast with callers and callees: 597, the full score): every field offset,
+// condition direction, callee and argument, loop and switch shape agrees; no logic error found. One behaviour difference
+// stays: on the availability-fail path (0x21a289/0x21a294/0x21a29f -> 0x21ac18) retail returns the stack byte [esp+0x11],
+// which that path never writes (0x21a2f6 and 0x21ac13 write it later), while `state == 2` is stored to [esp+0xd] at 0x21a261
+// and never read. So retail has a separate `bool stopping = state == 2` and an unset `result` there; ours returns state == 2.
+// Written that way (`bool stopping = state == 2; bool result;` with the two later `state == 2` tests via `stopping`) it
+// reproduces the dead store and the 0x11 read: 645 (reduced 679), with `alternate` declared inside the definition guard
+// (retail computes it after 0x21a26a) 637 / reduced 671 at 2500 bytes. Not kept: it returns an uninitialised bool and the
+// length moves off retail's 2518. Tried (full-like list): the track-transition test as `!looping_sound_track_has_next_sound(
+// track, track_definition)` 673 (not inlined, `call 0x21a050`; retail has none), the old-end fade as function_126df0(1,
+// NONE, old_end, duration) 739 (a call; retail inlines its fade-out half), looping_track_get(index, i) 704, the source flag
+// bits through s_type_99c531's own flag1..flag3 instead of the s_looping_source_flags view 597 (same).
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

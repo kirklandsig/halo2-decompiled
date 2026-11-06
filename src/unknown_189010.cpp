@@ -149,6 +149,13 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax E (11-06): score 110 (was 110): no new form lowered it. The location copy after the flags
+// (retail's header order) with the priority before or after the flags gives 140/150 and the flags as
+// ternaries 160; the priority read from the request alone is 109 at 472 bytes, a gain of one, dropped
+// by the review rule, so the original body stays. Still different: retail builds the flag word in EAX
+// with the source loaded before the tag lookup and ours in EDX, retail's object and platform bits use
+// the or/and complement form and ours only or, retail homes the sound pointer at [esp+4] where ours
+// keeps it in EBP, and retail copies the location after the flags where ours copies it first.
 // MiniMax D (11-04): no lower score. With the source in a local declared before the sound lookup our
 // load order is retail's (the tag table's base, the source, then the lookup) and the priority comes from
 // the request byte, but the link still gives EAX to the source and EDX to the tag table's base where retail

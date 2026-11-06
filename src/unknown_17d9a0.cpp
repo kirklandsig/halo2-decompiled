@@ -788,6 +788,8 @@ PRIVATE __forceinline void decal_face_plane_17fd20(s_decal_mesh_view const *mesh
 		*plane = *source;
 }
 
+real function_50650(real cosine);
+
 PRIVATE __forceinline real decal_normal_angle_17fd20(vector3f const *a, vector3f const *b)
 {
 	if (*(dword const *)&a->i == *(dword const *)&b->i &&
@@ -796,7 +798,7 @@ PRIVATE __forceinline real decal_normal_angle_17fd20(vector3f const *a, vector3f
 		return 0.0f;
 	real cosine = a->i * b->i + a->k * b->k + a->j * b->j;
 	cosine = cosine < -1.0f ? -1.0f : cosine > 1.0f ? 1.0f : cosine;
-	return (real)acos(cosine < -1.0f ? -1.0f : cosine > 1.0f ? 1.0f : cosine);
+	return function_50650(cosine);
 }
 
 PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, vector3f const *left,
@@ -809,6 +811,11 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// w14H (11-06, fast, plain): statement-by-statement walk against retail found no logic difference (fields, offsets,
+// condition directions, callee arguments, loop shapes, rotation coefficients and bounds all agree). The angle helper's second
+// clamp is now the existing function_50650 (retail's inlined clamped arccosine) instead of its body written out: fast 795 -> 793,
+// 3672 bytes both, callers/callees unchanged; the full build is unconfirmed. normalize3d for the axis 812 (its dot3f sums i, j, k;
+// retail sums i, k, j) NOT kept. flags is read as a byte (retail 0x17fdd2, +0xc of the 16-byte entry) through the cast.
 // MiniMax E (11-05): no new form, no lower score; the first +0x41 tag spill, the plane base, the first
 // selectors and the product memory sides are as the earlier rounds left them.
 // score 539 (was 539): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag

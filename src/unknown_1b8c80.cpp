@@ -377,6 +377,12 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax E (11-06): no new form, no lower score.
+// Exclusive bound with the index declared before the seat pointer 11, the same
+// with the count in a local 11, a widened int copy of the index 11, an
+// exclusive while loop 11 and a neq bound 12: every exclusive bound moves the
+// count to EBP and the index to ESI, so retail's ESI count and EBP index stay
+// out of reach while the inclusive bound keeps them and loses the cmp/jl.
 // score 8 (was 11): native 0x2c frame and 541-byte length; first +0x79.
 // Count and index now occupy ESI/EBP as retail; the inclusive last-index bound
 // decrements the count and uses js/jle instead of native cmp/jle and cmp/jl.

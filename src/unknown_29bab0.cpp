@@ -3,7 +3,10 @@
 #include "globals.h"
 #include "slot_handler.h"
 #include "unknown_11cc90.h"
+#include "normalize3d.h"
 #include <math.h>
+
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
 
 real g_47ffd0 = 0.5f;
 
@@ -44,24 +47,14 @@ bool __stdcall function_110ab0(long arg_0);
 void function_ba1d0(long arg_0, vector3f *arg_1, vector3f *arg_2);
 void function_1e4290(long arg_0, bool arg_1);
 
-PRIVATE __forceinline real function_29bab1(vector3f *arg_0)
-{
-	real local_0 = (real)sqrt((double)arg_0->i * arg_0->i + (double)arg_0->k * arg_0->k + (double)arg_0->j * arg_0->j);
-	if (0.0001f > fabs((double)local_0)) return 0.0f;
-	real local_1 = 1.0f / local_0;
-	arg_0->i *= local_1;
-	arg_0->j *= local_1;
-	arg_0->k *= local_1;
-	return local_0;
-}
 PRIVATE __forceinline real function_29bab2(real arg_0, real arg_1, real arg_2)
 {
 	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
 }
-PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, real arg_2)
+PRIVATE __forceinline real function_29bab3(real arg_0, real arg_1, s_29bab0 const *arg_2)
 {
 	long local_0 = arg_1 < 0.0f ? -1 : 1;
-	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2 + arg_0);
+	return (real)(sqrt(fabs((double)arg_1)) * local_0 * arg_2->field_6c + arg_0);
 }
 PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const *arg_1)
 {
@@ -71,7 +64,13 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // MiniMax H (11-05): no new form, no lower score; retail saves EBX around the middle for the +0x290
 // pointer and re-reads its arguments from their stack homes per region, where ours holds the input in
 // EBX from the prologue, and the 748 form is a held lead under the keep bar.
-// score 750 (was 750): Frame 0x88 agrees; early input/heading and normalizer memory-product homes remain.
+// score 715 (was 750): s1E walk against retail (3482 bytes, retail 3499; frame 0x88 agrees). Behaviour fixes: 0x29b2e0's
+// third argument is the +0x290 pointer in EBX (0x29c2a4-0x29c2bb; was &local_5), and 0x1f9760's arg_4 (last_out) is the
+// stack byte tested at 0x29c7e5 (was arg_5). Forms kept: direct input (no reference local), shared normalize3d for the
+// private copy, MIN at both ratio clamps (retail divides twice, 0x29bfdf-0x29c015 and 0x29c3a3-0x29c3d0), float root
+// (0x29c068 fsubr dword), the signed-root helper reading the scale from the definition at the product (0x29c595).
+// Tried: complement local for 1 - field_64 (771, no change), vector2f struct copies for local_15 / local_17 (717 / 723),
+// double root (775). Left: early input/heading and normalizer memory-product homes, stack slot order, per-region re-reads.
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading homes and normalizer storage remain. Alias-free normalizer loop 822; early-return clamp 829; output scale loop 824; output clamp loop 812; smoothing loop 825 (fast).
 // Earlier 750 (was 750): Frame 0x88 agrees; early input/heading and normalization homes remain. Alias-free
 // planar response snapshot 853; shared default vector 807; native input copy 804; shared radial predicate
@@ -360,7 +359,6 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
 {
-	vector3f const *const * input_reference = &arg_2;
 	byte *local_0 = (byte *)actor_get(arg_0);
 	s_slot_object_view *local_1 = object_get(arg_1);
 	s_29bab0 const *local_2 = (s_29bab0 const *)function_1e5450(arg_0, local_1->tag_index);
@@ -380,8 +378,8 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f local_7 = *g_4687a4;
 	point3f local_8;
 	function_b9dd0(arg_1, &local_8);
-	vector3f local_9 = *(*input_reference);
-	real local_10 = function_29bab1(&local_9);
+	vector3f local_9 = *arg_2;
+	real local_10 = normalize3d(&local_9);
 	if (!local_2)
 		*(bool *)(local_0 + 0x654) = false;
 	else if (!*(bool *)(local_0 + 0x5d0) || *arg_7)
@@ -394,7 +392,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	{
 		bool local_11;
 		vector3f local_13;
-		if (function_1f9760(arg_0, arg_1, &local_8, local_10, &local_11, &local_3, &local_13))
+		if (function_1f9760(arg_0, arg_1, &local_8, local_10, &local_3, &local_11, &local_13))
 		{
 			*(bool *)(local_0 + 0x655) = true;
 			*(bool *)(local_0 + 0x654) = false;
@@ -404,8 +402,8 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 		else
 		{
 			function_26c180(arg_0);
-			point2f local_14 = { local_8.x + (*input_reference)->i, local_8.y + (*input_reference)->j };
-			vector2f local_15 = { (*input_reference)->i, (*input_reference)->j };
+			point2f local_14 = { local_8.x + arg_2->i, local_8.y + arg_2->j };
+			vector2f local_15 = { arg_2->i, arg_2->j };
 			real local_16 = normalize2d((point2f *)&local_15);
 			vector2f local_17 = { local_4->i, local_4->j };
 			normalize2d((point2f *)&local_17);
@@ -422,7 +420,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			}
 			else
 			{
-				bool local_22 = (*input_reference)->i * -local_17.j + (*input_reference)->j * local_17.i > 0.0f;
+				bool local_22 = arg_2->i * -local_17.j + arg_2->j * local_17.i > 0.0f;
 				real local_23 = local_2->field_20;
 				real local_24 = local_22 ? local_23 : -local_23;
 				point2f local_25 = { local_8.x + -local_17.j * local_24, local_8.y + local_17.i * local_24 };
@@ -432,7 +430,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					local_21 = false;
 				else if (!(local_23 > local_27) && !*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
 					local_21 = false;
-				else if ((*input_reference)->j * local_17.j + (*input_reference)->i * local_17.i > 0.0f)
+				else if (arg_2->j * local_17.j + arg_2->i * local_17.i > 0.0f)
 					local_21 = true;
 				else
 				{
@@ -440,7 +438,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					if (!local_22) local_21 = !local_21;
 				}
 			}
-			local_5 = *(*input_reference);
+			local_5 = *arg_2;
 			short local_22;
 			real local_23;
 			if (!(local_2->field_44 > local_16) && local_21 && !*(bool *)(local_0 + 0x4d5) && !*(bool *)(local_0 + 0x5d1))
@@ -457,13 +455,12 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					local_22 = 2;
 					if (!*(bool *)(local_0 + 0x4ae) && local_2->field_1c > local_16)
 					{
-						real local_25 = (local_2->field_1c - local_16) / (local_2->field_1c - local_18);
-						local_25 = local_25 < 1.0f ? local_25 : 1.0f;
-						local_5.k *= 1.0f - local_25;
+						real local_25 = 1.0f - MIN((local_2->field_1c - local_16) / (local_2->field_1c - local_18), 1.0f);
+						local_5.k *= local_25;
 					}
 					if (function_30bf0(&local_5) > 0.0f && fabs((double)local_5.k) > g_47ffd0)
 					{
-						real local_25 = (real)sqrt(1.0 - (double)g_47ffd0 * g_47ffd0);
+						real local_25 = (real)sqrt(1.0f - g_47ffd0 * g_47ffd0);
 						if (normalize2d((point2f *)&local_5) > 0.0f)
 						{
 							local_5.i *= local_25;
@@ -505,7 +502,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			if (local_22 == 3)
 				function_29b990(arg_0, arg_1, local_4, &local_5, &local_5);
 			else
-				function_29b2e0(arg_0, arg_1, &local_5, &local_5, local_24, &local_5);
+				function_29b2e0(arg_0, arg_1, local_4, &local_5, local_24, &local_5);
 			*(real *)(local_0 + 0x668) = local_24;
 			if (local_22 == 1)
 			{
@@ -524,9 +521,7 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					*(bool *)(local_0 + 0x654) = false;
 					if (local_2->field_1c > local_16)
 					{
-						real local_28 = (local_2->field_1c - local_16) / (local_2->field_1c - local_18);
-						local_28 = local_28 < 1.0f ? local_28 : 1.0f;
-						local_6.k *= local_28;
+						local_6.k *= MIN((local_2->field_1c - local_16) / (local_2->field_1c - local_18), 1.0f);
 					}
 					else local_6.k = 0.0f;
 					local_6.i = 1.0f;
@@ -548,9 +543,9 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 					real local_31 = local_6.i - local_30 * function_29bab4(&local_1->velocity, local_4);
 					real local_32 = local_6.j - local_30 * function_29bab4(&local_1->velocity, &local_29);
 					real local_33 = local_6.k - local_30 * function_29bab4(&local_1->velocity, local_28);
-					local_6.i = function_29bab3(local_6.i, local_31, local_2->field_6c);
-					local_6.j = function_29bab3(local_6.j, local_32, local_2->field_6c);
-					local_6.k = function_29bab3(local_6.k, local_33, local_2->field_6c);
+					local_6.i = function_29bab3(local_6.i, local_31, local_2);
+					local_6.j = function_29bab3(local_6.j, local_32, local_2);
+					local_6.k = function_29bab3(local_6.k, local_33, local_2);
 				}
 				local_6.i += local_7.i;
 				local_6.j += local_7.j;
