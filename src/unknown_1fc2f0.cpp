@@ -580,6 +580,12 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // `long ticks` local converted at the call 32, `delta` declared before `velocity` 32 (all the same code: the sum is
 // reassociated to (k + i) + j for deltas j, i, k). On this body: the tick products written `tick_scale * v` 32 (same
 // code); the else arm's copy per component 89 (352 bytes).
+// Round 57 (m3 lane 2, fast with 0x1fc660): the fallback copy as memcpy 32 (same code); on round 46's helper prediction
+// (vector3f_add_scaled into a predicted point, scaled_difference3f with the ticks, deltas k, i, j; re-measured 30): the
+// prediction computed in place in velocity (no predicted point) 58 (369 bytes); the correction sums written correction
+// first 30 (same code); rate and tick scale named before the helpers 61 (the ticks leave XMM3 again); the predicted point
+// copied from +0x38 and scale-added in place 126 (395 bytes). Diagnostic, reverted at once: the limit's rate read through a
+// volatile field cast 32 (ticks still XMM4: the rate local's live range is not what holds XMM3; the conversion's place is).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

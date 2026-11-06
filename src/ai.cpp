@@ -235,6 +235,8 @@ bool function_1c9500(long unit_index, long actor_index, bool notify)
 	return result;
 }
 
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 // @retail 0x1c9580
 long function_1c9580(long object_index, bool a)
 {
@@ -244,6 +246,8 @@ long function_1c9580(long object_index, bool a)
 	{
 		s_ai_unit *unit = (s_ai_unit *)function_badc0(object_index, 3);
 
+		/* retail's callers read object fields again after this call */
+		_ReadWriteBarrier();
 		if (unit)
 		{
 			if (a && unit->unknown24c != NONE)
@@ -262,6 +266,7 @@ long function_1c9580(long object_index, bool a)
 	}
 	return result;
 }
+#pragma function(_ReadWriteBarrier)
 
 /* the ai globals tag, a block at +0xc8 of the tag header globals */
 struct s_ai_globals_definition
