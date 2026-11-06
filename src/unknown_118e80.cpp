@@ -206,12 +206,13 @@ struct s_facing_definition_1197b0
 
 PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 {
-	s_forward_object *object = ((s_forward_object_header *)g_4e0300->data)[object_index & 0xffff].object;
+	s_forward_object_header *headers = (s_forward_object_header *)g_4e0300->data;
+	s_forward_object *object = headers[object_index & 0xffff].object;
 	if (object->parent_index == NONE)
 		*up = object->up;
 	else
 	{
-		s_forward_object *parent = ((s_forward_object_header *)g_4e0300->data)[object->parent_index & 0xffff].object;
+		s_forward_object *parent = headers[object->parent_index & 0xffff].object;
 		transform4x3f *matrix = (transform4x3f *)((byte *)parent + parent->nodes_offset + object->parent_node * 0x34);
 		real i = object->up.i, j = object->up.j, k = object->up.k;
 		up->i = matrix->up.i * k + matrix->left.i * j + matrix->forward.i * i;
@@ -219,11 +220,12 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 		up->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 	}
 }
-// score 197 (was 220): the frame is still 0x70 against retail's 0x6c with ESI saved in the prologue,
-// because 0x11f0d0's named double locals in src/unknown_11eed0.cpp force 8-byte stack parity on this
-// caller; the eight vector homes still differ from retail's. The temporary-velocity copy after the
-// if/else instead gives retail's slot packing (--fast 99) but 264 in the full build, so it stays in
-// the else arm here.
+// MiniMax D (11-06, not kept at m3 review): 241 -> 208 with the temporary velocity copied only in the else
+// arm (then unset on the max_angle == 0 && acceleration == 0 path, which can still reach 0x11f0d0: a
+// behaviour change), the position copied into that same local, the first 0x11d180 call's left output
+// written into the later basis-forward local and the 0x11ce20/dot3f arguments swapped; copying the velocity
+// after the if/else, as retail, gives retail's slot packing (--fast 99) but 264 in the full build. The
+// frame stays 0x70 against retail's 0x6c. build/held/mmd-1106-1197b0-slot-steering.patch
 // MiniMax H (11-04): the temporary velocity scoped so the position copy reuses its slot 256 at
 // retail's 1030 bytes; not kept, the frame stays 0x78 and the score rises.
 // MiniMax E (11-01): no new form, no lower score; left: frame 0x78 against retail's 0x6c, the
@@ -377,10 +379,11 @@ void function_1197b0(long object_index)
 	real acceleration = definition->acceleration;
 	if (object->speed_mode == 1)
 	{
-		max_angle = definition->speed_scale * max_angle;
-		acceleration = definition->speed_scale * acceleration;
+		real speed_scale = definition->speed_scale;
+		max_angle *= speed_scale;
+		acceleration *= speed_scale;
 	}
-	vector3f up, turn_velocity, forward, new_forward, target_up, temporary_velocity, basis_left, basis_forward;
+	vector3f forward, turn_velocity;
 	if (max_angle == 0.0f && acceleration == 0.0f)
 	{
 		forward = object->requested_forward;
@@ -391,21 +394,23 @@ void function_1197b0(long object_index)
 		function_118e80(object_index, &forward);
 		turn_velocity = object->turn_velocity;
 		function_11f0d0(&turn_velocity, &forward, &object->requested_forward, g_510c54->rate, max_angle, acceleration);
-		temporary_velocity = *g_4687a4;
 	}
+	vector3f up;
 	world_up_1197b0(object_index, &up);
-	function_11d180(&forward, &object->requested_up, &new_forward, &basis_forward, &target_up);
-	function_11d180(&forward, &up, &basis_forward, &basis_left, &up);
-	if (function_11ce20(&target_up, &up) > max_angle * g_510c54->rate)
+	vector3f temporary_velocity = *g_4687a4;
+	vector3f new_forward, target_up, left, forward2;
+	function_11d180(&forward, &object->requested_up, &new_forward, &left, &target_up);
+	function_11d180(&forward, &up, &forward2, &left, &up);
+	if (function_11ce20(&up, &target_up) > max_angle * g_510c54->rate)
 	{
 		function_11f0d0(&temporary_velocity, &up, &target_up, g_510c54->rate, max_angle, acceleration * 2.0f);
-		function_11d180(&forward, &up, &basis_forward, &basis_left, &up);
+		function_11d180(&forward, &up, &forward2, &left, &up);
 	}
 	else
 		up = target_up;
-	memcpy(&temporary_velocity, &object->position, sizeof(vector3f));
-	object_dispatch_moved(object_index, (long)&temporary_velocity, (long)&new_forward, (long)&up);
-	if (dot3f(&up, &object->up) < 0.9999f || dot3f(&new_forward, &object->forward) < 0.9999f)
+	point3f position = object->position;
+	object_dispatch_moved(object_index, (long)&position, (long)&new_forward, (long)&up);
+	if (dot3f(&object->up, &up) < 0.9999f || dot3f(&object->forward, &new_forward) < 0.9999f)
 	{
 		object->up = up;
 		object->forward = new_forward;
