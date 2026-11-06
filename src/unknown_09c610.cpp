@@ -125,6 +125,15 @@ struct s_9cca0
 // Round 88 (m3 lane 16, fast): the recursive location setter taking a const reference (header, definition, every call) 9;
 // the tag lookup's result named 9; a bool result 9; the first vector copied as a point 9; the tag tested before the flag 17;
 // the flag pointer saved at entry 70 (as listed). Still BLOCKED-BY 0x184440.
+// Round 75 (m3 lane 11, fast): the event declared inside the `if` block, not at function scope, 12: the flag
+// test then moves above the late stores as in retail (the escape no longer orders it; the setter's escape need
+// not be the cause), and what is left is the vector copies' store schedule. On that scoped form: the marker
+// stored before the tag 10 (the tail then matches: tag load, marker, tag); the vector copies swapped 12; memcpy
+// copies 10 (same code); the location as one s_location member copied whole (object_queries.h) 10 (same code);
+// the location copied after the vectors 24; its two dwords reversed 13. Left on the 10 form: ours stores the
+// first vector's x before the location's second dword and sinks the second vector's y below the test, retail
+// stores the location dword first and sinks the first vector's z. Another lead: the build's stand-in callers pass
+// 0x184440 and the location setter pointers read from a volatile buffer, which retail's image has no equivalent of.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

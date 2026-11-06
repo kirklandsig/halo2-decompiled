@@ -204,6 +204,10 @@ c_button_widget_45d5d0::c_button_widget_45d5d0(short valuef8, word user_flags) :
 // Lane 11 round 70 (fast, both twins): `for (;;)` with a head return 2; an entry return, then a do-while 2; a named self for the walk and focus 2; an
 // early-return free helper with the walk in place at both ends 12; that helper into a `first` local copied to the widget 37 (98 bytes); the eligibility operands swapped 7. Compile-only: of the
 // optimization options only /Ob0 gives the copy-then-test tail (real calls). Retail keeps no out-of-line copy of the walk.
+// Round 77 (m3 lane 1, fast, both twins): the wrapped helpers defined out of the header as forceinline members in
+// unknown_19b516.cpp, inlined here across files 2; helper entry, an in-place if/else step and a `for (;;)` head
+// return 37 (98 bytes); `(c_class_1a2c81 *)(dword)` round trips at entry and step 2; a `register` walk variable 2;
+// the entry as `next ? next : next_wrapped()` 44 (96). Retail has no `test eax, eax; mov esi, eax` anywhere.
 // @retail 0x2c8f56
 void c_button_widget_45d5d0::v8()
 {
@@ -270,6 +274,10 @@ void c_button_widget_45d5d0::v8()
 // Lane 11 round 70 (fast, both twins): `for (;;)` with a head return 2; an entry return, then a do-while 2; a named self for the walk and focus 2; an
 // early-return free helper with the walk in place at both ends 12; that helper into a `first` local copied to the widget 37 (98 bytes); the eligibility operands swapped 7. Compile-only: of the
 // optimization options only /Ob0 gives the copy-then-test tail (real calls). Retail keeps no out-of-line copy of the walk.
+// Round 77 (m3 lane 1, fast, both twins): the wrapped helpers defined out of the header as forceinline members in
+// unknown_19b516.cpp, inlined here across files 2; helper entry, an in-place if/else step and a `for (;;)` head
+// return 37 (98 bytes); `(c_class_1a2c81 *)(dword)` round trips at entry and step 2; a `register` walk variable 2;
+// the entry as `previous ? previous : previous_wrapped()` 44 (96). Retail has no `test eax, eax; mov esi, eax` anywhere.
 // @retail 0x2c8fb4
 void c_button_widget_45d5d0::v9()
 {

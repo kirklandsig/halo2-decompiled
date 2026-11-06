@@ -585,6 +585,9 @@ real function_30bf0(vector3f *vector);
 // P331: Geometry admission results at endpoint/length/query, masks 1/2/4/3/5/6/7 then complementary
 // all: 188/189/189/197/197/197/190/230. NOT kept: no equality or gain; original complete body
 // restored.
+// M404: indexed-seat byte/signed-char/word/int ordinals, mutable count:
+// 186/185/193/173; immutable count: 186/185/193/173.
+// NOT kept: no exact native allocation; original signed-short traversal and body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2128,6 +2131,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 6-byte pad becomes `jmp` + 3 bytes and later lines sit one off; direction held in XMM1-3 across the dots. Same code on it: iterator set
 // through an inline helper 383, stores reordered or chained 385, vehicle definition named 383, eligibility bool, inline eligibility
 // helper, inline type getter, type read at each test, loop nested in the test 305 each. Next: that one scratch step, then this recipe.
+// F404: Complete normalized-direction value at distance/query/absolute-speed/relative-speed
+// boundaries, mutable then const: 429/429/429/439/429/429/429/439. NOT kept: no exact value-ownership form.
+// Original normalizers, vectors, predicates and complete body restored; iterator/byte homes and SIMD residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

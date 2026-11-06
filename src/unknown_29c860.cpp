@@ -130,6 +130,7 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// MiniMax I (11-05, run 37): no new form, no lower score (277); the 0.9 steering block is still one instruction short and the left and avoidance vectors still swap their slots.
 // score 277 (was 277): the 0.9 steering block is one instruction short (145 of the count); the left and avoidance vectors swap their
 // 12-byte slots; the second normalize's j product, the 0x5d0 flag store, the early 0x44 load and the local_16 dot's x87 order differ.
 // MiniMax B (11-04): no lower score; the new forms tried and dropped are the avoidance vector's
@@ -200,6 +201,11 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 // declared ahead of local_9, local_8, local_7, at the top, beside local_10, or with local_8 and local_9 declared together 277 each (same code); left_i written out at each use
 // 583 (three spellings); left_i from the left vector 543 (2814 bytes); the left vector built from left_i 343 (2829), built first 277; a separate early velocity vector with
 // direction declared in five places 422 (2815); dead pointer locals and identity pointer chains of 1-8 (diagnostic) 277 each (no period here).
+// Round 67 (m3 lane 13, fast): the 0.9 block's `left_i * local_9.i` 277 (same code, canonicalised); its direction.j statements
+// first 278; the left/avoidance vectors renamed so either name sorts first (zz_left/aa_avoid, aa_left/zz_avoid) 277/277 (slots
+// unchanged); the local_16 test's 2-D dot through the existing dot_product2d 279 (lead: retail's x87 order exactly, j product
+// first, aligned 81 -> 77; the count rises because the early 0x44 load still shifts that stretch), on it the 0x44 setting read
+// before the local_16 test (diagnostic, a one-use local) 264 (aligned 73).
 // @retail 0x29cbb0
 void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *arg_3,
 	short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

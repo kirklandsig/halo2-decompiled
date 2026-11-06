@@ -227,6 +227,12 @@ struct s_item_object_2bc1
 /* updates a team's item each tick: how long it has been away from home, its
    return home once it has waited too long, and the points of the player
    holding it */
+// MiniMax S (11-05): score 54 (was 62): the countdown is kept as an int holding the same signed
+// byte value, so the expiry test drops the unsigned byte cast, and the tally is counted before the
+// timer is reset. Still different: retail builds the ceiling in esi and keeps the state pointer in
+// ebx, ours builds the ceiling in ebx and keeps the state in esi; retail copies the timer into cl,
+// decrements it there and tests a copy in al with a single branch, ours decrements it in al and
+// tests it with two.
 // MiniMax B (11-04, not kept, m3 review): 34 with `unsigned char timer` (the field is a signed char) tested
 // `!= 0xff` and the countdown computed before the test; the unsigned local is the same steering as MiniMax G's
 // `(unsigned char)` cast (a type picked by score), and without it the form is 55, under the keep bar. Left at 34:
@@ -332,15 +338,15 @@ void __stdcall function_2bc990(long team)
 
 			if (timer != NONE)
 			{
-				char countdown = (char)(timer - 1);
-				state->point_timers[team] = countdown;
-				if ((unsigned char)countdown == 0 || countdown < 0)
+				int countdown = (char)(timer - 1);
+				state->point_timers[team] = (char)countdown;
+				if (countdown == 0 || countdown < 0)
 				{
 					function_1972a0(entry->player_index, 3, entry->value04);
 					function_2bce70(entry->player_index);
 					state = (s_state_2bc1 *)g_51ecc4;
-					state->point_timers[team] = (char)g_510c54->field_2_3;
 					state->point_tallies[team]++;
+					state->point_timers[team] = (char)g_510c54->field_2_3;
 					function_15b930(entry->player_index, function_15eaf0(), 0x17, 1);
 					if (state->point_tallies[team] % 5 == 0)
 					{

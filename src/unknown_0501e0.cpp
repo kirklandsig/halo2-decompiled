@@ -30,8 +30,6 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
-// MiniMax A (11-05): no new form, no lower score; nothing I tried moved the frame off 0x20 or the sum tree onto
-// retail's forward*depth + up*height + right*width order.
 // score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
 // the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
 // raw offsets before the test) and the coefficients folded into the products. Earlier 221: first transform
@@ -393,6 +391,16 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // N395: Aggregate-scaled complete view returns with pointer/reference/value input,
 // cursor/indexed output 278/281/278/281/401/404; actual returned-output consumers
 // 276/273. NOT kept: no equality/native frame recovery; original helper and full body restored.
+// MiniMax A (11-05): no new form, no lower score; nothing I tried moved the frame off 0x20 or the sum tree onto
+// retail's forward*depth + up*height + right*width order.
+// M3 lane 15 r60 (fast with 0x30290, which stays matched): the existing transform_vector of src/unknown_030290.cpp called across
+// files (declared here; LTCG inlines it): out of place 306 (1081 bytes), in place on the offset loops 231 (1113); in place
+// through an `s_camera const *camera = &g_4b9e14` local 266 (1146: retail's opening, the second offset at +8..+0x10 and the first
+// in registers with copy-then-scale, but the 1.0 constant takes XMM7 and the coefficients fold into the products as memory
+// operands, where 0x30290's camera in a register keeps them loaded, coefficient first); that with the camera local declared at
+// the top 266 (same code); out of place through it 253 (1141).
+// N398: Current aggregate helper static-inline/static/external-inline/external-forceinline, void then output-pointer result 206/206/206/206/206/206/206/206.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

@@ -674,6 +674,8 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // Lane 11 round 70 (plain): half as `count >> 1` 50; the first guard alone as `count > 3` 4; `count -= count % 2 != 0` 75 (180 bytes); a named remainder 2;
 // the outer guard as `index >= 0` 6. Compile-only: distinct constant divisions added to the else arm flip the pair at counts 1-4 and 8, not at 5-7; `%`,
 // adds, mul, float forms, a call and a memset do not, nor dead or folded divisions, nor up to 32 named copies; 400 random no-extra-code forms gave no same-code flip.
+// Round 154 (plain): `(short)(11 + index)` 2; `if (NONE != index)` 2; `if (4 <= count)` 2; the final count read once into a
+// named local for both tests 2 (same code); loop bound `half > i` 2. The hill/index reload pair is unchanged in each.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {

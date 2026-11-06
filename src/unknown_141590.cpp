@@ -370,6 +370,9 @@ static inline void quaternion_transform_vector(
 // no change (canonicalised). The matched 0x11cb00 helper's exact operand and row forms on plain halves 198/1324 (99), on the struct 258/1303 (155); s computed before the identity copy as a
 // helper parameter, plain halves 308/1262 (170) and 302/1270 (163), on the struct 309/1262 (139) and 305/1270 (107). Three annealed searches over statement order, operand
 // forms and row orders, about 700 forms, none under 198 or below masked 84. None plain-confirmed, none kept. The two-member half struct stays until a form beats it.
+// N399: Destructive scalar/cross-scale/cross-result ownership, families 1..7 then
+// independent cross scalars: fast 256/306/253/313/333/333/312/306. Original ordered output trees and all three
+// in-place users preserved. NOT kept: unmatched storage/result forms; original helper/body restored.
 // Round 90 (m3 lane 16, fast): the doubled sine product written 2.f first 200 (same code); the clamp testing the
 // cosine copy 200 (same code); the construction scale computed before the axis cross 252 (1317 bytes); the cosine
 // arms swapped (`cosine >= 0.f` takes the identity) 210; rotation.w stored between the cross and the scale 200.
@@ -924,6 +927,19 @@ void function_143250(
 }
 
 // score 1766 (was 1766): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
+// g1A walk (symbolic): retail 0x143600-0x146012 executed as an expression DAG (SSE/x87, f32/f64 and (real) points, association and
+// constants from the XBE kept) against this body: all 83 values handed to the three function_143250 calls (3x3, 5x5, 7x7) are identical,
+// the order <= 2 / <= 3 returns, call arguments (result+1/+4/+9, n 3/5/7) and result[0] agree; no behaviour difference. Retail's op order
+// equals this source's order (0 inversions of 891); ours is reordered (43k). Fast-check trials, no change at 1766: term_64 from term_60; term_41 operands swapped.
+// Convention (g2A, 11-05): retail takes rotation in EAX, coefficients in ECX and result in ESI with only `order` on the stack
+// (ret 4; callers' setup `push 3; lea ecx; lea eax; lea esi`, 0x23a39); this body takes rotation from the stack (ret 8).
+// Not kept: writing the 388 earliest single-use terms into their next statement gives retail's convention with the body
+// otherwise identical (0x22850 237 -> 235, 0x23690 481 -> 467, both setups then equal retail's) but 1775 here; 387 terms or
+// the last 388 keep ret 8, as does any other 388th term but #420, so it is a count of locals outranking the parameter, not a
+// source shape. All 1002 single-use terms inlined: ret 4 at 1789, frame 0x330; the 370 pure copies only: ret 8, 1927.
+// Parameters as (result, order, rotation, coefficients) with every call updated: no change on that form, 236/464 on this one
+// (rotation still on the stack); retail's ECX/EAX/ESI setup fits both orders, so no evidence for it. The x87 multiply at
+// retail 0x1438ba is register allocation (rotation[7] lives in xmm6 in retail, a memory operand here), not the double's spelling.
 // Earlier: frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes differ.
 // Earlier: full frame 0x300 agrees; rotation input and basis/matrix homes remain.
 // Frame pointer 3182; separate adjacent basis pairs [0,1] 2278, [2,3] 2320,
@@ -1138,6 +1154,10 @@ void function_143250(
 // N376: Same-type copy contraction by actual input/product/root-or-literal/sum
 // producers within bands, eight forms 1947/1766/1766/1771/1761/1766/1925/1948. All typed outputs/call
 // phases agree. NOT kept: no exact native storage recovery; full scalar graph restored.
+// N399: Native-located disjoint scalar reuse, second-band spills/third-band spills/SIMD
+// families 1..7 then all at first declarations: fast 1766/2001/2001/2612/2528/2341/2278/2278. All 84 ordered typed outputs
+// and application tuples agree. SIMD forms recover EAX/ret 4 and improve both callers, but grow
+// the frame/extent (all-SIMD 0x334, 11540 bytes). NOT kept: unmatched physical-storage forms; original body restored.
 // Round 90 (m3 lane 16): the workspace declared after the terms 1766 (fast, same code); every same-type plain copy
 // propagated (404 copies, 937 declarations) 1986 plain (10988 bytes, rotation EAX and ret 4, frame 0x30c; 0x22850 235,
 // 0x23690 467); the workspace matrix ahead of the rotation terms 1766 (fast); that with the 648 single-use terms in
