@@ -311,6 +311,15 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// MiniMax C (11-06): no new form, no lower score; copying the samples' address into a dword with memcpy
+// and passing the scale straight to the callee scores 2, and copying the entry's data offset instead scores 3,
+// but both read a field's bits through its address and are not kept; passing the scale straight to the callee
+// gives retail's lea ecx and its late object index but loads the scale last (8), and the sum still loads the
+// entry offset into EDX as the add's destination in every spelling (the source order, the offset cast to
+// unsigned, int or size_t, the samples as an integer, the offset as a pointer and both as dwords all give the
+// same bytes); keeping the scale's volatile read and passing the scale as well loads the scale twice; a union
+// overlay of the samples' pointer and its address, the index form (&samples[data_offset]) and the sum with
+// both operands cast to size_t all score 8, so the original body is restored.
 // MiniMax H (11-04): no new form, no lower score; the tail still loads the entry offset into EDX and the samples into ESI where retail loads the samples into EDX and the offset into the dying EDI, and the object index still loads into ECX before the pushes; every spelling of the sum gives the same bytes (7).
 // MiniMax D (11-01): no new form, no lower score; the sample sum still puts the entry offset in EDX and the
 // samples in ESI where retail has the samples in EDX and the offset in the dying EDI, the object index still
