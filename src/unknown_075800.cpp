@@ -961,6 +961,12 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 
 /* the out-of-band messages: those that arrive from an address rather than on
    an established channel */
+// MiniMax H (11-05): no new form, no lower score; forcing 0x94420 inline gives 106 with retail's
+// convention and the delayed ESI save, but 0x93aa0 then inlines it too and loses its match, and
+// retail's final code has no use that crosses a call to home the address in EDI.
+// MiniMax A (11-04, run 41): no new form, no lower score (196 in the 16-address set, 153 in the wider one);
+// the switch's cases still take their arguments in registers other than retail's (it pushes edi where ours
+// pushes esi), so the callee conventions decide this one.
 // score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
@@ -1254,6 +1260,16 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M335: Rejection-owned connection exits on the native-input graph, subsets
 // 1/2/4/3/5/6/7, then all with case-local results: 196/196/196/196/196/196/196/196 reduced.
 // Original complete body restored; delayed ESI save and late expansion remain.
+// Lane 14 r60 (all plain, base 153): an explicit object parameter (type, address, object, message) on the one retail-order switch
+// 217 (420 bytes, same convention as the method form: type ECX, address EAX, message on the stack), on the kept two switches 153
+// (same code); a method with an unused size parameter, one switch 217 (same code). One switch with `inline` on 0x94420, on 0x94270,
+// on both 217 (not inlined, same code); with __forceinline on 0x94420 106 (452 bytes): retail's exact convention, prologue,
+// delayed ESI save and every case but 18, whose body is inlined where retail calls it, and caller 0x7afd0 matches, but 0x93aa0
+// inlines it too (349, match lost; a forwarding helper for this one call is not allowed). The address read once through its
+// own address on one switch, with an explicit object parameter in the orders (type, address, object, message), (address, type,
+// object, message), method 219 (424 bytes), (type, object, message, address), (object, type, message, address) 221; type
+// still ECX and message EAX because the address sits in EAX at the dispatch, and 0x7afd0 stops matching. So the address must
+// be homed in EDI by a use that crosses a call; no such use is left in retail's final code.
 // Y561: Current native-input direct priorities 0324/0423/0432/2034/2043/
 // 2304/2340/2430: 196/194/192/196/196/196/196/196 fast (control 196,
 // full 153). NOT kept: four-point best; original classifiers and caller restored.
@@ -1271,6 +1287,35 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // DH329: Primary priorities DQCPS/DSQCP/DSPCQ/DSCQP/DPQCS/DPSCQ/DCQPS/QSDPC
 // 207/198/198/208/202/198/206/197 reduced, control 196 (full 153). Original classifiers restored;
 // NOT kept: all regress; delayed ESI save and late-handler expansion remain.
+// M374: Partial late-handler ownership, only 18/11 at entry, early-return/else
+// remainder and terminal/default remaining handler: 195/195/195/195/189/189/189/189 fast (control 196, full 153).
+// NOT kept: seven-point best is below the gate and entry/save shape still differs;
+// original classifiers, all handler tuples and matched caller restored.
+// M377: Individual connection cases 5/6/7 inserted after direct 0/2/3 on
+// native-input primary root (last 7-after-3 excluded): 199/197/198/199/197/198/199/199 fast, control 196.
+// NOT kept: all regress and grow to 448/444; original dispatch/caller restored.
+// M379: Intact native-input family priorities QSPDC/QSPCD/QPSDC/QPSCD/SQPCD/SQPDC/SPQDC/SPQCD
+// 195/202/195/202/202/195/195/201 reduced (control 196, full 153). NOT kept: no qualifying gain;
+// original classifiers, all handler tuples and body restored; delayed ESI/late expansion remain.
+// M383: Native-input peer-first primary priorities PDQCS/PDSCQ/PDCQS/PDCSQ/PQDSC/
+// PQDCS/PQSDC/PQSCD: 198/194/204/201/197/204/195/202 (reduced control 196; full 153).
+// NOT kept: at most two points; original classifiers, all handler tuples and body restored.
+// m3 lane 1 r71 (all plain, on the one retail-order switch, base 217/420): CAUSE of the convention: the three direct address arguments to
+// 0x92ef0 (EAX) outweigh the one EDI argument to 0x94220, so address takes EAX and type ECX. Diagnostics, wrong values, never kept: the three
+// lookups given message instead 3/444 (0x7afd0 MATCH; only those three `mov eax, edi` differ), two of them 213/424, one 213/424; five EDI calls
+// against three lookups 185/380 (retail's convention), three against three 213/404; two or six other address uses removed 217/420. So a use
+// crossing a call is one way to lose EAX, not the only one. Correct-value forms, no gain: lookup through a forced-inline helper taking the link
+// or the handler 218/468 (retail's convention, because 0x92ef0 then inlines; this ECX, message EDX->ESI), one such helper per connection case
+// 247/508, with 0x92ef0's `inline` removed 217/420 (copies propagated; 0x92d10 97); `&address[0]`, the first field's address, a read through its own
+// address, a function-scope copy or `long` copy, a forced-inline function returning it, an inline link getter, `address ? address : NULL` 217/420
+// each (all folded); a pointer-to-pointer local read at the lookups 219/424; cases in numeric source order 210/432. Needed: a correct form of the
+// lookup argument that is not a direct EAX use at allocation.
+// Round 150 (m3 lane 5, plain, on the one retail-order switch, control 217/420, 0x7afd0 3): lookup argument through a const ref bound to a cast temporary in each connection case
+// 219/424 (address still EAX); connection cases as plain file-local handlers or `inline` ones 270/372 each (stay out of line, 0x7afd0 6); a forced-inline lookup helper taking the
+// address by const ref 218/468 (0x92ef0 inlines, 0x7afd0 5).
+// Round 74 (m3 lane 10, all plain; caller 0x7afd0 and 0x93aa0, 0x92ef0, 0x92d10 checked): on the one retail-order switch (control 217, 420 bytes, 0x7afd0 3): 0x92ef0 declared in the order its callers set its registers up, (kind, address, link), with definition,
+// declarations and every call 236 (404, 0x7afd0 6); (address, kind, link) 236 (404, 0x7afd0 6); `default: return;` as the switch's first label 217; case 10 first 217; case 10 last 220. A harness without the ballast object: `__assume` on the address, the message,
+// the type or `this` at entry or around the lookups, and nesting the lookups under extra tests, left the address's EAX home alone; not representative, so listed only as a lead that block depth alone doesn't look like the cause.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

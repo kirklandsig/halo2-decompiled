@@ -112,6 +112,14 @@ static inline void point_along_vector_1c19b0(point3f const *point, vector3f cons
 // 0x26d100's file is on another lane's list this round, so its reorder was not retried.
 // Round 138: node_index/location/ahead-and-end at function scope 23/23/23; the collision buffer before origin 23;
 // the final distance from `scale` 217 (923 bytes). 0x26d100's file was again on another lane's list.
+// Round 103: all three point productions through the existing scaled-add helper 23; scale at function
+// scope 23; trace at function scope 23; result first 23; height/distance declarations swapped 23;
+// pathfinding declared after the points 23; counter declared before the points 23; direct final-call
+// return 234. Original body restored.
+// Round 70 (m3 lane 1, fast; 0x26d100's body, its signature kept): point read directly with result and start first 4,
+// with the output and hit views first 4, a named local at every read 4 (each loses 0x2702a0, 0x270400, 0x26bfa0, 0x26c2d0
+// and 0x26d0e0); its address read once into that local 23; its address taken only for the else arm's copy 23. Still
+// BLOCKED-BY 0x270400.
 // @retail 0x1c19b0
 bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_type_f17a25 *path)
 {
@@ -163,7 +171,7 @@ bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_ty
 		{
 			break;
 		}
-		node_index = function_26d100(g_4687b0, (long *)&location, &collision.result, &end);
+		node_index = function_26d100(g_4687b0, &end, (long *)&location, &collision.result);
 		if (!(height + 0.1f > collision.result.point.z) || !(2.0f > origin.z - collision.result.point.z))
 		{
 			break;

@@ -3,6 +3,7 @@
 #include "unknown_1523c0.h"
 #include "data_array.h"
 #include "game_engine_events.h"
+#include "engine_object_definition.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -136,65 +137,29 @@ struct s_placement_2bc1
 	byte field_28[0xc4 - 0x28];
 };
 
-// score 5 (was 5): the placement pointer copied for the creation call uses ECX where retail uses
-// EAX, and the game options pointer read for the mode test uses EDX where retail uses ECX.
-// Existing initializer 89; initializer result 89; initializer before mode 88; paired helpers 88;
-// event before team 63; early event plus sender 63; event before creation 63; returning initializer before creation 90.
-// Unconditional event with options pointer 32; byte mode before event 31; mode against event type 31;
-// mode declaration before team 31; object result before query 16; creation condition assignment 16;
-// function-scope object result 16; combined result/mode lifetimes 31; event before mode declaration 31.
-// event filled before the mode test 32 (stores now precede the test but the mode load folds into the
-// compare after them, 223 bytes); test result as a bool before the fill 76; fill then send helper 32;
-// mode read into a local before the fill 31 (load order right, constant 4 not shared in eax);
-// function-scope event filled before the test 32. The placement copy is ecx here, eax in retail.
-// Round 70: byte-array placement 5; creation assignment in the marker test 5 (on the current
-// body); placement at function scope 5; event without its block scope 32 (fill moves before the
-// test); named marker-test bool 5.
-// Marker-query inline declarations 5; native tag hierarchy 5; creation/announcement/both names 5/5/5;
-// missing-tag return 5; tag field at both uses 50; direct tag receiver 5; native tag with both names 5.
-// Round 123: const object result 5; early return without an engine 5; team passed without
-// its short cast 5; position pointer local for the marker query 5; creation pointer local 5. Diagnostics:
-// without the team call 38 (the copy then uses EDX), without the event 142, without the final
-// call 39: the copy's register follows the allocation of the whole tail.
-// Round 55: early return when no object is created 5; the existing game_engine_get() for the engine
-// test 5; the out-of-line event sender 61 (not inlined); tag index read without the definition
-// local 5; event declared at the top of the marker block, filled in place 32.
-// Round 67: short team at both calls 44 (228 bytes; mode tail exact, marker prefix regresses); short team only
-// at the update or at entry with the original marker argument 5 each; event pointer 61 (198 bytes, send not
-// inlined); shared creation pointer 5; full-width team copy 5; shared creation pointer plus earlier object
-// result 5; NONE-initialized object result 5. A 2400 s permuter run timed out during its initial full build.
-// Round 49: tag read without the definition local 5; a local for the definition's +0xc pointer 5; engine
-// test `!= NULL` 5; NULL owner argument 5; event declared before the team call, unscoped 32 (223 bytes).
-// The stub callee is not the cause: matched 0x152a50 and 0x1e04a0 copy the placement with EAX before the
-// same stub call, and 0x1e04a0's second site uses ECX.
-// Round 138: marker test with the not-found arm first 5; first-element address at creation 5, at both calls 5;
-// object local declared before the placement 5; marker test `!= false` 5. Probe (not kept): a load and a global store
-// before the creation call give retail's registers in the copy and the whole tail, so one rotation step is the cause.
+/* creates the team's item at its marker and sends the event for it */
 // @retail 0x2bc1f0
 void function_2bc1f0(long team)
 {
-	if (g_55e4d0[g_4e9ae8->engine_index])
-	{
-		byte *definition = g_4e3b44[g_4e034c->index & 0xffff].bytes;
-		long tag_index = *(long *)(*(byte **)(definition + 0xc) + 0xc);
-		if (tag_index != NONE)
-		{
-			s_placement_2bc1 placement;
-			function_b7930(&placement, tag_index, NONE, 0);
-			if (function_2bc1b0(&placement.position, team))
-			{
-				long object_index = function_b7b40(&placement);
-				if (object_index != NONE)
-				{
-					function_15e050(object_index, (short)team);
-					{
-						s_event event;
+	long tag_index = engine_object_definition(_engine_object_held_item);
 
-						game_engine_event_initialize_inline(&event, 4, 1);
-						game_engine_event_send_inline(&event);
-					}
-					function_a7870(object_index);
+	if (tag_index != NONE)
+	{
+		s_placement_2bc1 placement;
+		function_b7930(&placement, tag_index, NONE, 0);
+		if (function_2bc1b0(&placement.position, team))
+		{
+			long object_index = function_b7b40(&placement);
+			if (object_index != NONE)
+			{
+				function_15e050(object_index, (short)team);
+				{
+					s_event event;
+
+					game_engine_event_initialize_inline(&event, 4, 1);
+					game_engine_event_send_inline(&event);
 				}
+				function_a7870(object_index);
 			}
 		}
 	}
@@ -262,6 +227,17 @@ struct s_item_object_2bc1
 /* updates a team's item each tick: how long it has been away from home, its
    return home once it has waited too long, and the points of the player
    holding it */
+// MiniMax S (11-05): score 54 (was 62): the countdown is kept as an int holding the same signed
+// byte value, so the expiry test drops the unsigned byte cast, and the tally is counted before the
+// timer is reset. Still different: retail builds the ceiling in esi and keeps the state pointer in
+// ebx, ours builds the ceiling in ebx and keeps the state in esi; retail copies the timer into cl,
+// decrements it there and tests a copy in al with a single branch, ours decrements it in al and
+// tests it with two.
+// MiniMax B (11-04, not kept, m3 review): 34 with `unsigned char timer` (the field is a signed char) tested
+// `!= 0xff` and the countdown computed before the test; the unsigned local is the same steering as MiniMax G's
+// `(unsigned char)` cast (a type picked by score), and without it the form is 55, under the keep bar. Left at 34:
+// the ceiling is built in esi instead of ecx after the item pointer is spilled, and the countdown is decremented
+// in al where retail copies the timer into cl, decrements it there and tests one copy in al with a single branch.
 // MiniMax G run (not kept, m3 review): 33 with the countdown computed before the timer's test, the tally
 // counted before the timer reset, and the test written `(unsigned char)timer != 0xff` (a byte compare, as
 // retail's cmp al,0xff); the cast is the steering part: without it the same form is 55, under the keep bar.
@@ -362,15 +338,15 @@ void __stdcall function_2bc990(long team)
 
 			if (timer != NONE)
 			{
-				char countdown = (char)(timer - 1);
-				state->point_timers[team] = countdown;
-				if ((unsigned char)countdown == 0 || countdown < 0)
+				int countdown = (char)(timer - 1);
+				state->point_timers[team] = (char)countdown;
+				if (countdown == 0 || countdown < 0)
 				{
 					function_1972a0(entry->player_index, 3, entry->value04);
 					function_2bce70(entry->player_index);
 					state = (s_state_2bc1 *)g_51ecc4;
-					state->point_timers[team] = (char)g_510c54->field_2_3;
 					state->point_tallies[team]++;
+					state->point_timers[team] = (char)g_510c54->field_2_3;
 					function_15b930(entry->player_index, function_15eaf0(), 0x17, 1);
 					if (state->point_tallies[team] % 5 == 0)
 					{

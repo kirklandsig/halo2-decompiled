@@ -120,7 +120,7 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 s_reference function_261280(s_prop_search *search, long actor_index, s_261d20_entry *entry, long *b, byte *buffer, bool *c);
 void function_265cb0(long actor_index);
 
-long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point);
+long function_26d100(vector3f const *up, point3f const *point, long *unknown, s_collision_result_1697c0 *collision);
 short function_272700(s_type_f17a25 *state, long node_index);
 
 #endif

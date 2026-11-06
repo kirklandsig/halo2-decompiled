@@ -181,6 +181,17 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // 4/4/4; magnitude declared before the loop or at entry 4/4; read-modify-write flag 201;
 // reversed half-scale/addition operands 4/4; `+= 1` and plain `while` component loops 4/4.
 // NOT kept: no exact or eligible gain; original flag store, arithmetic and loop restored.
+// Round 146 (fast): the flag through a byte or char cast 4/4; half-step row accumulated in a local 4, in local_3 198 (1004 bytes);
+// half product named per row 4.
+// Round 151 (fast 182, the rest a harness whose head block is the real build's): flag and rows after a named `i*i + k*k` partial, then
+// `sqrt(j*j + partial)`, 182 (1002 bytes): the whole x87/SSE schedule is retail's with the flag early, but a named partial stays on the x87 stack
+// (`fadd st(1)` for `faddp`, then `fstp; fstp st(0); fld`). Same stack with the flag first, as double, `+=`, `= j*j + partial`, `= partial + j*j`, on the
+// length local itself, const, register, in a block, through a second named total. Partial with rows then flag 200 (harness), rows, partial, flag 102;
+// `k*k` named alone 188, `k*k` then `+= i*i` 193; an unused partial 88 (same code); the flag as memset of one byte, or a one-byte struct copy, 88 (same code);
+// 107 cast shapes of the square sum: best 88 (same code as the base). The open question is a temporary, not a named local, split around the flag.
+// Round 93 (m3 lane 16, fast): the scaled-direction pointer declared beside `facing` 4; a short component counter
+// 243 (960 bytes, not unrolled); local_3 and unit declared after the flag store 4; the degenerate arm first 4;
+// the scaled output written through the field without the pointer 21.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

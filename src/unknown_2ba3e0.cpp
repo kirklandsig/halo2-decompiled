@@ -6,6 +6,7 @@
 #include "unknown_1eb550.h"
 #include "normalize3d.h"
 #include "vector_products.h"
+#include "reciprocal_normalize.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -23,13 +24,21 @@ extern vector3f *g_4687bc;
 
 real function_1201a0(vector3f *v, vector3f const *fallback);
 
+/* the placement's word-sized value: callers build it in the stack argument slot */
+class c_placement_value
+{
+public:
+	c_placement_value(short value) : m_value(value) {}
+	short m_value;
+};
+
 // @retail 0x2ba3e0
-void placement_set(s_placement *placement, vector3f const *direction, point3f const *position, vector3f const *up, short value)
+void placement_set(s_placement *placement, vector3f const *direction, point3f const *position, vector3f const *up, c_placement_value value)
 {
 	vector3f normal = *direction;
 
 	function_1201a0(&normal, g_4687bc);
-	placement->value24 = value;
+	placement->value24 = value.m_value;
 	placement->position = *position;
 	placement->direction = normal;
 	placement->up = *up;
@@ -47,17 +56,6 @@ struct s_particle_2b96
     vector3f velocity;
     byte unknown34[12];
 };
-
-PRIVATE __forceinline real inverse_sqrt_2b96(real squared)
-{
-    real inverse;
-    __asm
-    {
-        rsqrtss xmm0, squared
-        movss inverse, xmm0
-    }
-    return inverse;
-}
 
 // @retail 0x2b9670
 s_particle_2b96 *function_2b9670(s_particle_2b96 *particle, long index)
@@ -92,49 +90,6 @@ s_particle_2b96 *function_2b9670(s_particle_2b96 *particle, long index)
         }
     }
     return result;
-}
-
-PRIVATE __forceinline real particle_vector_squared_2b(vector3f const *v)
-{
-    real squared = v->k * v->k;
-    squared += v->i * v->i;
-    squared += v->j * v->j;
-    return squared;
-}
-
-PRIVATE __forceinline void scale_particle_vector_2b(real scale, vector3f *v)
-{
-    v->i = scale * v->i;
-    v->j = v->j * scale;
-    v->k = v->k * scale;
-}
-
-PRIVATE __forceinline void normalize_particle_vector_2b(vector3f *v)
-{
-    real squared = particle_vector_squared_2b(v);
-    if (squared != 0.0f)
-    {
-        real inverse = inverse_sqrt_2b96(squared);
-        scale_particle_vector_2b(inverse, v);
-    }
-}
-
-PRIVATE __forceinline real particle_direction_squared_2b(vector3f const *v)
-{
-    real squared = v->k * v->k;
-    squared += v->j * v->j;
-    squared += v->i * v->i;
-    return squared;
-}
-
-PRIVATE __forceinline void normalize_particle_direction_2b(vector3f *v)
-{
-    real squared = particle_direction_squared_2b(v);
-    if (squared != 0.0f)
-    {
-        real inverse = inverse_sqrt_2b96(squared);
-        scale_particle_vector_2b(inverse, v);
-    }
 }
 
 // @retail 0x2b98b0
@@ -508,6 +463,15 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // properties/cache/next declarations 10; next/cache/properties 10; cache/next/properties 10;
 // the same three declaration orders with original properties/next assignments 10 each.
 // All restored; back-edge reloads and the maximum squared producer are unchanged.
+// Round 127 (lane 7, fast), on the one-caller k-first normalizer form 2: a head copy of first at the top 2, after next 2;
+// a definition copy for the properties and masks 34 (1521 bytes); both copies 129 (1518); a named index before the nearest
+// call 2; a per-particle mask 51 (1517), assigned to requested 2; a definition copy for the later mask only 2. The reload
+// order never moves; matched functions (0x1384a0, 0x168e20, 0x2c05f0) reload in reverse prologue order as retail does here.
+// Round 94 (fast): both cache updates through the existing s_particle_value_cache::function_173c10 member (it inlines) 128
+// (1518 bytes); system declared second at the definition and its one call 10; the velocity normalizer in the maximum branch
+// too 34 (1521); the cache type renamed 10 (same code); `if (next != NONE) do ... while` 10 (same code). As in 0x2bdc70 and
+// 0x281b60, ours reloads the parameters in descending declaration order and retail ascending. The blend's first add as
+// change + velocity 10 (same code).
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
@@ -704,6 +668,7 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax G (11-05): retail's sweep at F+0x44 against our F+0x38 leaves twelve bytes of frame that ours does not have (the cache at seventeen values is confirmed by the matched 0x2b8e10); the declaration orders give 102, the scope-hoisted forms 110 and the grown cache 125; reading the velocity in place gives 199, the dot product as three statements gives 103 and the displacement as a whole-struct copy gives 310, and retail's union at F+0xb0 against our F+0xa4 stays unmatched; no new form, no lower score.
 // score 102 (was 102): frame 0x124 agrees; sweep/collision homes and projection spills differ.
 // Velocity snapshot argument 676; reflection loop 102; reflected value 241; sweep scale 129;
 // both scales 129; coefficient local 102; displacement scale 129; snapshot plus loop 676;
@@ -914,6 +879,46 @@ real g_55e618;
 // NOT kept: only three points gained; all ten other same-file users unchanged.
 // Original full type layout, raw flag observations, projection and complete body restored;
 // sweep/collision homes and cross-placement tangent/perpendicular spills remain.
+// Lane 17 r42 (fast; all match-only, body restored): round 75's form rebuilt (dot written at each product, normal
+// locals, velocity pointer, typed flags/+8/+0x34, collision word before the start stores, position setter) with the
+// j/k final rows through the pointer 60 (aligned 24), all three final rows through the particle 44 (aligned 18); named
+// sums nested in the call 44 (aligned 14); a named `short` last argument read before the sums, named `surface_index` or
+// `a_value` 61 each (1535 bytes: the load moves to the block's top but in EAX whatever the name, so same-size name order
+// does not pick its register); that read with plain position stores after the impact index 234 (frame 0x12c).
+// Round 149 (m3 lane 6, fast; all match-only, body restored; aligned, masked = registers and stack offsets ignored): round 75's form rebuilt (dot written at each product, normal locals,
+// velocity pointer, typed flags/+8/+0x34, the three final rows through the particle). Named sums nested in the setter, with the collision word before the sweep: 84 (1537 bytes, aligned 18, masked 17), plain stores 84
+// (20, 15); the word left before the call 47 (16, 15), unnamed sums 47 (20, 15), normal locals k/i/j 47 (24, 17), unnamed sums with the early word 84 (22, 17); the word right before the start
+// stores (retail's slot, among the pushes) 44 (14, 13). A `short` last argument read after the sums and nested 61 (1535, 42, 11); plain stores 59 (1535, 42, masked 9), read before the sums 59, at the impact
+// index 59: load above the stores but in EAX, later blocks rotate. Direct position stores (`position.x = ...` in place of named sums) 236 (1554, frame 0x12c), with the read before them 234 (1552), after them 236;
+// read first with each sum stored after its statement 234. At 44 only one block is left: v.i load first, retail's `mov edx, [esp + 0xd4]` above the position stores (ours after them), the x sum first, `lea ebx` among the
+// sums. Lead, BLOCKED-BY 0x1697c0 (its file is another lane's this round): ours keeps that load behind the stores through the particle, so check what the record pointer does in 0x1697c0's source for the caller's alias
+// summary; 0x1697c0 itself is at 25, first +0x314. The 44 form leans on the dot written out three times, so it is match-only.
+// M380: Displacement/sweep scalar, aggregate and immutable aggregate producers,
+// all eight non-original pairs: 129 each at 1549 bytes. NOT kept: all regress;
+// original interleaved travel products, reflection, collision extent and full body restored.
+// M3 lane 4 r164: LEAD for 0x247950: retail builds placement_set's last argument in its stack slot there (`push ecx; mov eax, esp;
+// mov word ptr [eax], 0`), so it is a by-value word-sized class with a constructor. The class (2 or 4 bytes) leaves this body at 102
+// (same code) and takes 0x247950 from 356 to 351, 1643 to 1653 B against retail's 1652 (not kept: five points without a match).
+// The position or the value declared last 102, but 0x2ba3e0 0 -> 6. Round 75's form rebuilt: normal locals in six orders 44 (aligned
+// 8 for i,j,k; j,i,k; j,k,i; 15 for the others). On it: the class read into a local at the top, keep, velocity or perpendicular 208
+// (1545 B, the class gets a stack home); a named short 59 (aligned 27: load and stores land as retail, EAX for EDX, later blocks
+// rotate); the position set nested as the argument with named sums 44 (aligned 7), written out 44 (aligned 9), assignments in a
+// comma argument 44 (aligned 8): the stores still precede the load; a plain collision record for the union with the class member or a
+// short member 44 (aligned 8); the normal as direct record fields 44 (aligned 15), with no normal pointer 647 (1745 B).
+// M380: Displacement/sweep scalar, aggregate and immutable aggregate producers,
+// all eight non-original pairs: 129 each at 1549 bytes. NOT kept: all regress;
+// original interleaved travel products, reflection, collision extent and full body restored.
+// M3 lane 12 r91 (fast; masked with registers and stack offsets): retail's particle stores do not block reads of the collision record. With 0x1697c0's capture
+// of the record cut (diagnostic, wrong values: no record to 0x244980 and none through 0x169510's recursion; either alone changes nothing) our build pushes the
+// last argument first and stores the position last at retail's frame offsets, but entry registers swap: 380 (1540), velocity pointer 363 (1519, frame 0x118), round
+// 75's form 384 (1527). Round 75's form rebuilt 44, masked 13 of 401, every register as retail. A nested setter or comma stores still run before a plain last
+// argument; an inline getter as the last argument with the setter nested evaluates right to left, so the load lands first and the push precedes the stores as
+// retail: 59 (1535, masked 11), with a setter taking the particle, so y and z store through it as retail, 59 (masked 9). Left there: EAX for retail's EDX, each
+// later block rotating one step and a tail cross-jump that rotation undoes (the two missing bytes), the v.i load's place and the x sum first. Getter with a named
+// value, by reference, through one or two pointer locals 59/59/59/59; a placement or record pointer local 59/59; sums in six orders with normal locals i,j,k or j,k,i
+// 59 each, k,i,j 66; an inline reset of the impact 59, inside the first argument 63 (masked 11); comma stores with named sums and the getter 44 (masked 11, stores
+// first), without named sums 236 (1554). By-value class for the last parameter: direct read with the setter 44 (masked 11, stores first, EDX), a getter returning it
+// 212 (1549). LEAD for 0x247950: that class with a converting constructor takes it 356 -> 337 at retail's 1652 bytes (its file was held; not kept).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
@@ -1033,7 +1038,8 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
                     particle->position.z = normal->k * 0.005f + collision.value.point.z;
                     s_particle_impact impact;
                     impact.index = NONE;
-                    placement_set((s_placement *)&impact, &particle->velocity, &particle->position, normal, collision.value.unknown24);
+                    /* retail copies the collision's value whole (`mov edx, [esp + x]; push edx`), so it is this class there */
+                    placement_set((s_placement *)&impact, &particle->velocity, &particle->position, normal, *(c_placement_value const *)&collision.value.unknown24);
                     particle->velocity.i = tangent.i * keep - perpendicular.i * coefficients[1];
                     particle->velocity.j = tangent.j * keep - perpendicular.j * coefficients[1];
                     particle->velocity.k = tangent.k * keep - perpendicular.k * coefficients[1];

@@ -12,6 +12,7 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax E (11-05): no new form, no lower score: the projection's multiply order swapped, the point-minus-actor vector written as two scalars, and both together 180; the centre-minus-actor scalar pair 238 (1031 bytes); the permuter's 83 tries all 180.
 // score 180 (was 180): retail's length (1025), output in EBP and the input copy at +0x28 now agree; SSE scheduling of the
 // opening point copies and differences remains (retail reads the second copy back from memory for the actor difference).
 // Earlier: frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
@@ -273,9 +274,112 @@ real normalize2d(point2f *arg_0);
 // early-success, query-test and complete query arms 232/241/255/253;
 // uniform scalar terms 238/245/253/249. All restored; four query-result forms
 // change entry convention and lose callers; point/SSE and success ordering remain.
+// M360: Existing unit-scale component-array differences, seven direction subsets
+// and all with complete input copy publication: 180/180/180/180/180/180/180/180. Original body and
+// includes restored; early object masking, input-copy/SSE and query-success schedules remain.
 // P311: Existing planar difference over full vector/point storage with native/library captures,
 // P311: each with full/planar actor-direction production: eight forms 180 at exact 1025 bytes.
 // P311: Original full helper and body restored; object-mask/copy/SSE scheduling and query-success ordering remain.
+// Y574: Actual second in-place input supplies both differences, vector/point backing and
+// direct/in-place actor output, each with original/late clearance:
+// 233/257/233/257/182/245/182/245. NOT kept: all regress or miss byte equality; native early
+// object-mask and copy/SSE/query-success schedules remain. Original complete body and helpers
+// restored.
+// AC517: Scalar lifetime role names for radius, planar length/projection and adjusted distance/clearance,
+// phase subsets 1..7 then complete far-separation/state names: eight forms 180 at exact 1025 bytes.
+// Original names and full body restored; early object masking and copied-input/SSE schedules remain.
+// F368: Actual first/second/both normalizer completion as real, then bool, and entry-owned real/bool pairs: 180 each at 1025 bytes. NOT kept: one-use completion captures do not match or recover early mask/copy/SSE scheduling. Original body and inherited local qualifier restored.
+// P315: Full 3D in-place graph, third-input memcpy/memmove/vector-setter/point-setter producers, without/with center memcpy: 180/272/248/248/180/272/248/248.
+// P315: NOT kept: no byte match or supported gain; original full body restored.
+// P320: Existing object-header producer, raw/const/native/const-native views 180 each;
+// P320: header-derived object before input copy, raw/native 185/185; native object/header
+// P320: receivers at both radius/center uses 180/180. Original complete body restored;
+// P320: early object mask, second-copy SIMD schedule and query success transport remain.
+// P330: Optional collision-index output presence/complement at the successful-query
+// boundary, bool/byte/short/long: 180/180/180/180/180/180/180/180.
+// NOT kept: one-use admission does not match; original query/result and full body restored.
+// AC529: Second in-place copy from the adjusted snapshot, vector/point backing, original/captured actor input,
+// before/after actor production: 180/182/180/182/226/182/226/182. NOT kept: no equality or gain; native mask/copy/SSE schedules remain.
+// F373: Explicit object ordinal at branch/entry/after actor, parameter then long
+// ownership, and branch/entry dword: 180/193/193/180/193/193/180/193.
+// NOT kept: no match; early forms grow to 1029 bytes. Original body restored;
+// early mask, copied-input/SSE and query-success schedules remain.
+// F375: Actual direct/adjusted mode selector at its byte observation, bool/byte/short/long:
+// 180/180/180/180/180/180/180/180. NOT kept: no byte match; original body restored.
+// Early object mask, copied-input/SSE and query-success schedules remain.
+// Round 63 (m3 lane 14, fast, plain confirms 47 with 0x1ba5c0/0x1bdad0/0x1bff80 matching). Match-only recipe at 47 (1025 B, aligned 13), not
+// kept because it writes the difference helpers out: an actor-to-center vector through vector3d_from_points3d right after the
+// center copy, used through dot_product2d at both projections; the second input copy, then the actor difference from it as direct
+// i and j rows only (no k); center minus copy in place through the helper; one inline 2-D perpendicular helper and one negate
+// helper for both perpendiculars, so their i and j have no direct reference before the scale; `local_12.k = 0` direct, which
+// is what gives retail's load-first i and j rows with `mulss t, [k]` last; `local_4 *= 1.1f` for the radius; `2.0f - local_11`
+// inside the normalize-success block; local_10 as direct i, j, k rows; dot_product2d(&local_10, &local_12) for the second
+// dot; `result = true` before the output store. Left: the opening's copy registers (retail: `and edx` second, center pointer
+// `lea edx`, copy x read early in EAX, center temps in EBX, copy z before y, ECX never reused), the first dot's operands, the
+// second dot's term order, ECX for the block address with the up global read ahead of the first push, and EAX/EDX in the else
+// arm's point copy. Steps: named vector first 223 (1036 B, aligned 50); with clearance in the block 212, result first 231, both
+// 217; radius named 217, `local_4 *=` 219 (aligned 28); local_10 rows ijk 214 (1029 B, aligned 21), kji 218, jki 218, kij 219;
+// dot_product2d at both projections 193 (1026 B), with the squared length too 189; actor difference rows 69 (1023 B, aligned
+// 17); dot for local_12 65; perpendicular and negate helpers 47 (only local_12's are needed; local_9's alone 65).
+// From 47: helpers for both differences 206, actor rows with a local_10 helper 194, actor helper with local_10 rows 195,
+// vector2d_from_points2d for the actor difference 195; one variable for both perpendiculars 194 (1020 B), for both differences
+// 51, both 69; projections direct 208, center vector as rows 213, as j then i 209-213; interleaved rows 204-242; opening
+// orders 69-258 (on 69); a named center pointer 51-65 (aligned 12 at best), center by fields 243; first dot arguments
+// swapped 47; second dot arguments swapped 47; one variable for block count and value 51; `void *volatile` 47; the block
+// global re-read 51; dead `&local_15` instead of volatile 49, one-element array or one-member struct 151 (store removed);
+// up global in a local 68 (1021 B; reads it ahead of the push); point copy by `*(point3f *)arg_3` 47, by a pointer local 51;
+// output index before the copy 102 (callers lose 5, 6, 11). Permuter (600 s on 47): 63 tries, none below 47. Without
+// written-out helpers no subset gains: clearance, result, radius, local_12 helpers, local_9 helpers in all 31 combinations 180-245.
+// AC543: Genuine point-pair/direction-trio/perpendicular-pair role-name groups on the
+// recovered in-place input graph, subsets 1..7 and complete collision/receiver names:
+// eight at 180, 1025 bytes. NOT kept: no equality; early mask/copy/SSE and query-success
+// schedules remain. Original identifiers, inherited local qualifier and full body restored.
+// F382: Direct-mode point2f/vector2f separation, existing/explicit difference
+// and existing/direct magnitude: 180/188/180/180/180/188/180/180. Frame 0x90 and extent 1025 agree.
+// NOT kept: ties/regressions; original scalar separation, includes and whole body restored.
+// F384: Independent actor-direction in-place point/vector backing, native/memcpy
+// capture at its producer or before object acquisition: 259/259/259/259/263/263/263/263.
+// NOT kept: all regress and grow to 1050/1025; original full body restored. Native
+// early object mask, independent copy/SSE and query-success schedules remain.
+// B439: First/second perpendicular sign outcomes in bool/byte/short/long:
+// 180/180/180/180/180/180/180/180. NOT kept: one-use predicates do not match;
+// original body restored, early mask and copied-input/SSE/query homes remain.
+// P332: Initial adjusted-point CRT capture on the full in-place graph,
+// with second-input/center library-copy subsets: memcpy four 180s; memmove
+// four 245s (1029 bytes, all three caller conventions lost). NOT kept:
+// no gain; original captures, helper inputs and complete body restored.
+// DH370: Coordinated object-index formal int/dword/unsigned-int/short/word/
+// const-long/const-short/const-word: 180/180/180/203/203/180/203/203.
+// NOT kept: full-width contracts tie; 16-bit contracts grow and lose three callers.
+// Original long contract and every declaration restored; mask/copy/SSE schedules remain.
+// Round 130 (m3 lane 7, fast; 0x1ba5c0/0x1bdad0/0x1bff80/0x30c60/0x24d8d3/0x24da7d matching each time). New causes, match-only:
+// retail's center and radius are the existing 0x30c60 inlined (`lea edx` center pointer, radius as a movss): `inline` on its
+// definition, its radius read as a real and lane 14 r63's recipe (see its report) 47 -> 19 (1025 B, aligned 10; through its `long *` 80, 1021 B).
+// A helper accumulating the third dot (`real result = a->j * b->j; result += a->i * b->i;`) 15; written j first, swapped,
+// direct, named 19/19/44/25. BLOCKED-BY 0x26d100: its `&point` read makes this function's point copy escape, so the copy's
+// stores are ordered against later pointer loads, which is the whole opening schedule (`and edx`, y store, x read). With
+// 0x26d100 as (up, point, output, collision), reading `point` directly, start before direction and result first (round 61's
+// form in src/unknown_1c20f0.cpp's note): this function 4 (fast). That reorder alone, plain: 0x26d100 and 0x1c19b0 match, no listed caller moves. Left
+// at 4: the first dot's operands. Direct rows interleaved (c.i, 5.i, c.j, 5.j, which is the order the operand ranks imply)
+// fix them but the second dot's i product takes the perpendicular's temporary first, 177 (1028 B); with a dead `(void)local_9.x`
+// after the getter that too is retail's: MATCH in a plain check (0x3d7f0 177 -> 224 from the `inline`: retail calls 0x30c60 there; a
+// redundant statement, not keepable, so scratch only; the statement must precede the c.i
+// row: after it or after all rows 177, `.y` 177; through a scalar declared early 177). Without the callee's reorder the same
+// form 11, opening only. On the way: interleaved orders 187-191, in-place rows 68-70; both differences through helpers 174-197;
+// through one interleaving helper, 24 row orders, 172-208, with a directly stored perpendicular 161-197; 2-D helpers for the
+// center and in-place differences 19 (same code); center rows before the copy 198 (1031 B); named center scalars 190-198;
+// center difference unnamed at both dots 229 (1022 B); block-top declaration orders 174-197; early masked index 25; copy helper
+// 15, memcpy 15, pointer local 21, scalar copies 245/256, statement orders 51-85. No written-out rows (existing helpers only)
+// 177 at best (1031 B). Identity pointer chains of 1..7 locals 25/187 each. The rows and helpers stay match-only: body restored.
+// DL273: Shared planar cross products at both side tests and dot projection, seven
+// boundary subsets then squared dot: 248/184/249/248/231/249/231/231. NOT kept:
+// no byte match; native object-mask/copy/SSE and query-success schedules remain.
+// Round 133 (m3 lane 7, fast): `result = true` before the output store gives retail's whole tail (`mov ecx, eax`, `mov al, 1`
+// ahead of the output test, `xor al, al` before the pops; aligned 163 -> 154) but 1031 bytes, 241 (one jump grows: the
+// opening is longer than retail's); on it the far path's branches swapped 224 (1029), the far path's output index stored
+// once after its if/else 238 (aligned 160); direct returns in place of the result 251 (1016). The far path's copy still
+// takes EAX for data where retail copies EBP into EAX. Body restored at 180; the opening stays BLOCKED-BY 0x26d100 (its
+// files are held this round).
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
@@ -348,7 +452,7 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
             local_15 = *(long *)(local_14 + 0xc8);
         s_1badc0 local_16;
         local_16.field_24 = NONE;
-        long local_17 = function_26d100(g_4687b0, (long *)arg_3, (s_collision_result_1697c0 *)&local_16, &local_1);
+        long local_17 = function_26d100(g_4687b0, &local_1, (long *)arg_3, (s_collision_result_1697c0 *)&local_16);
         if (local_17 != NONE)
         {
             if (arg_4)

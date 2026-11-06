@@ -365,6 +365,43 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // DH332: Standard coordinate differences, seven subsets then reverse sphere traversal; reduced control 931:
 // 935/935/917/896/904/959/920/1022. NOT kept: lower previews grow frames away from 0x2cac; one joint gain has regressing parts. Full 882 retained.
 // Original complete body and contracts restored.
+// M371: Paired object/sphere ordered-radius overlap/exclusion truth in
+// bool/byte/short/long: eight 931 (reduced control 931; full 882). NOT kept:
+// byte-neutral decisions; original tests, qualifiers and complete body restored.
+// Round 212 (m3 lane 3, fast control 931, plain 882; aligned 460 at control): marker arrays at the top of the function 931; object matrix at
+// the loop-body top 931; object offset at the loop-body top 931; sphere centre and difference at the loop-body top 931 (identical code each);
+// unit volatile dropped 918; actor volatile dropped 991 (3648); both 1014 (3632, frame 0x2cb4); both plus location and raised as separate
+// locals 1005 (3643, frame 0x2cb0, aligned 419); the query struct alone dropped 904 fast (3702, frame 0x2cb4).
+// Y591: Positive complete classification in bool/byte/short/long, entry/admitted defaults:
+// 939/939/919/933/936/936/919/933 reduced (control 931, full 882). NOT kept:
+// no byte match or native frame repair; original decisions, qualifiers and body restored.
+// F383: Paired normalized enemy results byte/short/word 931/902/902 fast;
+// complementary bool/byte/short/word/long 937/914/920/920/915 (control 931; full 882).
+// NOT kept: result domains/polarity do not recover native frame or byte-result transport;
+// original complete body, query storage, qualifiers and all consumers restored.
+// F385: Persistent actor-mode presence byte/char/word/short/long, reduced
+// 931/931/954/954/955; absence bool/byte/long 931/931/942 (control 931, full 882).
+// NOT kept: frames 0x2cb8/0x2cbc miss 0x2cac; original complete body/qualifiers restored.
+// P343: Actual first/second marker and sphere element lvalues, seven subsets then mutable records:
+// 931/931/931/931/931/931/931/931 reduced (unchanged control 931; full 882). NOT kept: no equality;
+// original buffers, observations, query, qualifiers, helpers and full body restored; native
+// frame/actor/unit and priority/query/marker homes remain.
+// Round 74 (m3 lane 11, plain): the raised point through the existing real_point3d_set 882 (same code); diagnostic,
+// the type classification (type 0/1/7/11 arms) in a file-local forceinline helper returning false for each skip
+// 1014 (3634 bytes, masked 409; the layout stays in source order, so the depth-first placement is not an inlined
+// helper's); settings read once through its address in the actor block 882 (masked 420); the previous-direction
+// dot through dot3f alone 893 (3694 bytes); the computed actor pointer used inside the actor block, stored once
+// into the volatile actor 884 (masked 412).
+// Round 152 (m3 lane 5; plain unless marked, fast misleads here: fast base 931 against plain 882; [m, x] masked and exact aligned counts, body [185, 475]):
+// the unit no-obstacle bit as a word bitfield 917 [183, 464] (retail's `shr dl, 2; test dl, 1`); the unit looked up through a second
+// actor_get 918 [183, 475]; both 936 [181, 464]; self_unit declared first 931f; the actor flag after self_unit 933f; the continues
+// in the type arms as a flag tested after them, in a do-while 939f (3743 B) [206, 477], the arms do not sink. Retail's type 1/7/11 arms
+// and the unit arm's other branches sit past the function's `ret`, each jumping back to the distance test; ours keeps them in place.
+// Walk r715 (s1D), statement by statement against retail 0x2c0d60-0x2c1bf0: no logic, field, offset, constant or condition-direction
+// difference found (all constants read from the XBE; team_is_enemy matches retail's inlined 0x1df560 body at 0x2c12c4-0x2c1318). What differs is
+// layout only: retail places the second type-0 branch and the type 1/7/11 arms after the join (0x2c12a3-0x2c1441, jumping back into it) and keeps
+// the skip flag at [esp+0x12], a profile-style block order that source order has not reproduced. The unit_index and actor volatiles carry no
+// retail meaning beyond forcing the reloads retail shows at the loop back edge (0x2c0f68 edi from [esp+0x2ce0], 0x2c0f6f ebp from [esp+0x44]).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1229,7 +1266,7 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
 // scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
 // lowered the 444.
-// score 418 (was 418): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
+// score 400 (was 418): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // Earlier 444: frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
@@ -1517,6 +1554,64 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // DH338: Existing normalizer early-zero/positive-first/zero-result/magnitude-result
 // 418/418/441/418; each with the planar setter 434. Setter forms raise the other
 // normalizer user 68 to 98/91; all restored, frame/radius/zero/metadata homes remain.
+// F370: Actual outer input/output/both cursors 448/516/487; input span advance 439;
+// output publication advance without/with input cursor 558/558; input for-latch
+// without/with output cursor 448/487. NOT kept: all regress; output cursors also
+// regress the checked caller. Original ordinal addressing and full body restored.
+// P315: Retained two-radius/pointer graph, existing complete data getter with all entry ordinal/emitted-count/fallback-result zero-lifetime subsets: 418/401/401/401/430/401/401/438.
+// P315: NOT kept: no byte match or supported gain; original full body restored.
+// P315: NOT kept: 401 places loop-zero stores above native availability/count guards; frame 0x114 and count BX remain.
+// P317: Joint unconditional corner success/rejection accumulators bool/byte/short/long
+// 426/426/406/435/473/473/452/452. NOT kept: no match; short success 406 grows to 1754 bytes and
+// uses a wider result than native tests. Original two results and complete body restored.
+// DH345: Native component-array displacement loops in direct/converted/both phases,
+// long then dword, complete short/word: 428/418/429/428/418/429/451/451. No gain;
+// original scalar producers, both radii, signed traversal and complete body restored.
+// F372: Existing two-use location address at entry/data/multi-step/traversal/step/
+// selected-step/corner-pair/pre-endpoint phases: 470/431/463/470/465/416/414/418.
+// NOT kept: two-/four-point leads below gate; original address phase and full body restored.
+// F379: Actual emission/continuation departure-limit outcomes, bool/byte/short/long,
+// positive/complementary 456/456/456/456/456/456/456/456. NOT kept: regressions; original
+// whole body restored, frame 0x114 versus 0x10c and zero/radius/metadata homes remain.
+// P325: Existing normalizer mutable/readonly squared-length results crossed with
+// magnitude/inverse entry declaration lifetimes all tie 418 (eight forms); every user stays calibrated.
+// NOT kept: no byte match for the one-use call-result intermediate. Original complete helper
+// and body restored; frame 0x114/0x10c and zero/count/metadata homes remain.
+// P328: Complete final squared-distance expression/compound/separate/partial reductions,
+// point then vector displacement: 418/418/418/418/418/418/418/418. Original body restored;
+// frame 0x114/0x10c, radius/zero/count and metadata/trace homes remain.
+// Round 586: Two-corner side-table traversal, short/word/long/dword ordinal with
+// indexed/body-advanced corner output: 491/491/484/484/491/491/484/484. NOT kept: nonexact
+// loop/result-array residence; original direct calls, radii and complete body restored.
+// J255: Scan-result scope ending before corner results, second-trace admission scope,
+// and complete Boolean role names, subsets 1/2/4/3/5/6/7 then alternate complete names:
+// 439/418/418/439/439/418/439/439. NOT kept: ties/regressions; scan scope also grows
+// to 1754 bytes. Original full body restored; frame 0x114/0x10c and radius/zero/count homes remain.
+// P335: Actual corner/tangent/trace eight-byte alignment, seven subsets and complete
+// graph with direction alignment: 652/652/655/652/652/652/652/652. NOT kept: prologue/extent
+// diverge and three exact providers regress. Original objects, alignment and complete body restored.
+// P342: Standard record copies at fallback/singleton, forward/backward/lifetime single sites then paired
+// forward/backward: 403/423/429/429/427/425/428/440. NOT kept: fallback forward reaches 403 and native
+// length but outlines its copy, keeps frame 0x114 and loses exact caller; all algorithms lose that
+// caller. Native copy-then-count commit 418. Original full body restored; frame 0x114/0x10c and
+// radius/zero/count/metadata homes remain.
+// P344: Actual current/selected/output array-element lvalues on the corrected two-radius graph, seven
+// subsets then actual source subobject: 418/418/418/418/418/418/418/418. NOT kept: no byte match;
+// original complete body restored. Native frame, radius/zero/count and metadata/trace homes remain.
+// M3 lane 8 r135 (fast; raw/register-masked/stack-masked aligned, base 352/265/105 at 418): tuple phases through a no-op chain 418
+// x3 (no effect here; the difference is integer homes). Diagnostics, removed: count read volatile at the outer test 399
+// (355/267/106), scan 489, both 456; with the second edge store (380, 352/262/103) 453/458; one real extra use, at the loop
+// top, of next/type/link 419, step/points 421, edge 464 (2 and 4 uses 464: edge never leaves its stack slot), found/copied
+// 477, index/result 484, count 483 (336/236/114: the only one that moves roles toward retail), source 436, sector/data 492,
+// query 493, used 519. No form tried recovers the 0x10c frame.
+// Round 74 (m3 lane 11, fast and plain): the emitted point through the existing real_point3d_set 400 (kept: retail
+// stores x, y and z as floats through one point pointer). The 8 extra frame bytes are two homes: ours keeps edge and
+// other_side in stack slots where retail keeps them in EBX and BL (retail shares distance's slot with endpoint). On
+// 400: the distance block reading the output point through a `s_type_c3b527 const *` 478 (1765 bytes, masked 90: gives
+// retail's zero-extended index test, the reads through ESI and the untailmerged link stores, but swaps ESI/EDI
+// throughout); `!side` passed and flipped in place 434 (1715); the second edge store at the scan hit 433 (diagnostic);
+// endpoint declared after next_step 463; the start fallback written in both arms of an if/else (retail has two
+// copies) 452.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
@@ -1652,9 +1747,7 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
             emit:
                 s_path_step_view *out = &result[used];
                 out->node_index = sector;
-                out->point.point.x = origin.x;
-                out->point.point.y = origin.y;
-                out->point.point.z = step->point.point.z;
+                real_point3d_set(&out->point.point, origin.x, origin.y, step->point.point.z);
                 out->point.output_index = output_index;
                 out->unknown02 = step->unknown02;
                 ++used;

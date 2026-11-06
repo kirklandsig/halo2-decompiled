@@ -46,13 +46,30 @@ PRIVATE inline long swizzle_log2(dword value)
 	long result = 0;
 	if (value > 0)
 	{
-		while ((value >>= 1) != 0)
-			++result;
+		result = 0;
+		if (value != 1)
+		{
+			do
+			{
+				value >>= 1;
+				++result;
+			} while (value != 1);
+		}
 	}
 	return result;
 }
 
-// score 82 (was 82): the coordinates now take retail's registers (the second in
+// score 57 (was 82): both logarithms now have retail's loop and the common count is
+// taken by retail's branch, so the height count sits in ebx as in retail; left: the row
+// coordinate (retail keeps it 16-bit in si and widens it late), the column (retail
+// widens dx only after the mask) and the two bit registers (retail x in edi, ours in edx).
+// MiniMax B (11-04b): no new form, no lower score; a 16-bit row copy with the widening deferred scores 66/84 but pushes the row argument onto the stack, so the matched caller 0x136140 no longer matches.
+// MiniMax B (11-04): the 57 form is the local optimum; the y parameter used directly, a
+// short y or x copy, both copies short, the minimum compared the other way round, the
+// minimum seeded from the height count, a long or unsigned common count and the y lookup
+// first all score 58/59/120/136/150 with 0x136140 still matched.
+// Earlier at 82 (was 82): the coordinates now take retail's registers (the second in
+// Earlier score 82 (was 82): the coordinates now take retail's registers (the second in
 // cx, the third in dx) with the column local declared first; retail still keeps
 // the row coordinate 16-bit in si, promotes the column one after the mask, uses
 // log2_floor's loop shape and picks the common count with a branch (ours cmov).
@@ -236,6 +253,36 @@ PRIVATE inline long swizzle_log2(dword value)
 // w/h/o/x/y, w/h/x/o/y, w/x/h/o/y, w/x/h/y/o: 82 each. Sole declaration
 // and call changed consistently; original contract/caller/body restored.
 // Frame four agrees; delayed coordinate promotion and height/common homes remain.
+// Y567: Existing logarithm short/word/long/dword output pointers, then
+// output references: 82/99/105/105/82/99/105/105. NOT kept: no byte match; original helper,
+// counts and body restored. Narrow-coordinate/count homes and minimum remain.
+// Y570: Coordinate suffix bands before one shift, complement x/y/both 99/99/103,
+// XOR x/y/both 99/99/103, shared high mask 97, shared low bands 94.
+// NOT kept: all regress and lose the matched caller; original full body restored.
+// Narrow-coordinate/count homes and the minimum branch remain.
+// Y577: Direct axis-count suffix comparisons, width/height/both with private/shared
+// logarithms, then both with branch-owned stores: 95/96/116/77/93/104/111/99. NOT kept:
+// five-point best below gate. Original body restored; narrow-coordinate/count homes and minimum branch remain.
+// P347: Coupled independent axis scans, terminate at one or zero then convert bit length, short/word/long/dword counts:
+// 113/125/132/132/102/95/106/106. NOT kept: All regress; terminate-at-one forms lose both exact caller controls. Native independent scans and complete body restored.
+// T61: Actual two-word output array references, original formal order and seven other
+// interleavings preserving the native register/stack banks: eight at 57; both callers exact.
+// NOT kept: output identity does not delay coordinate promotion; original contract, caller
+// declaration/call, helper and full body restored.
+// Y605: On the retained branched-minimum graph, width/other then three-way
+// output completions with long/long, short/long, long/short, short/short x/y: 58/109/128/134/85/143/161/177.
+// NOT kept: all regress; narrow forms lose the caller. Original body and contract restored.
+// Y607: Destructive width/height/both dimension-to-bit-count parameters, private/shared
+// logarithms, then complete early-common/height-first lifetimes: 57/57/57/87/87/87/91/79.
+// NOT kept: no exact native coordinate/count lifetime recovery; original body and interface restored.
+// DH378: Whole-register x/y/both formals with original signed-word captures 96/97/97;
+// native short x/y/both working values 120/136/150; both whole formals with mixed short/long captures 134/138.
+// NOT kept: all regress and alter native entry/caller allocation; original body, sole declaration and contract restored.
+// Round 77 (m3 lane 1, fast, 0x136140 kept): the minimum through a forceinline single-exit helper 57 (identical);
+// `common = height; if (width <= height) common = width;` 57; `if (height < width)` 58; an if/else into the
+// minimum 80; `if (common > height)` on the copy 57 (identical); the function, table and logarithm in a new `/O2
+// /Gr` file without /arch:SSE (the exception) 57 (identical); x and y used directly 150 again. Retail's minimum
+// shares ECX with the width count and is stored once after the join; ours takes EBP with a store at each definition.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
@@ -243,7 +290,9 @@ void function_358d0(short width, short x, short y, short height, dword *out)
 	long x_value = x;
 	short width_bits = (short)swizzle_log2(width);
 	short height_bits = (short)swizzle_log2(height);
-	short common_bits = width_bits > height_bits ? height_bits : width_bits;
+	short common_bits = width_bits;
+	if (width_bits > height_bits)
+		common_bits = height_bits;
 	short mask = (short)((1 << common_bits) - 1);
 	dword x_bits;
 	dword y_bits;

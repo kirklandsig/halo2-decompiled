@@ -1737,9 +1737,16 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
+// MiniMax H (11-04): no new form, no lower score: the collision flag's byte home stays at +0x13 even when its
+// declaration moves to the function top (it keeps the top byte of the first four byte pack, so retail must
+// create three boolean objects before it), and the product keeps the hit fraction in the register: swapping
+// the two product operands and writing the test as `1.f > a * b` both compile to the same bytes.
+// MiniMax B (11-03): the entry short inlined, the allow flag inlined and the collision flag declared
+// first each promote that flag to a register (261); its byte home and the product order still differ.
 // Tried: the hit fraction read into a named local before the distance is computed: 22 on its own (2 only
 // alongside an unrelated edit in src/unknown_16bd10.cpp, not kept).
 // MiniMax D (10-31): the same named hit-fraction local again 22 (a one-use local, not kept without a match).
+// MiniMax G (11-04): no new form, no lower score: the collision flag's byte home stays at +0x13 and the product keeps the hit fraction in the register.
 // score 4 (was 7): the collision bool's byte home is +0x13 where retail keeps it at +0x10,
 // and the product loads the hit fraction where retail loads the distance.
 // Earlier rounds (7 or worse): byte collision flag, byte allow flag, long initial mode, short

@@ -142,6 +142,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 #pragma inline_depth(1)
 #include "vector_products.h"
 // score 1355 (was 1355): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
+// fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
+// 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
+// search does not stop the outer list loop, 0x207862 -> 0x20786b), the three final counters and all 19 float literals
+// (read from retail's .rdata at 0x44ae90, 0x44541c, 0x45dbbc-0x45e5d0) agree. Only code shape differs.
 // Frame 0x5d0 versus 0x58c; component/velocity homes, contact induction and scheduling remain.
 // Earlier 1585 (was 1596): Frame 0x590 versus 0x58c; component/velocity homes and contact induction remain.
 // Earlier 1600 from 1600: frame 0x580 versus 0x58c; velocity homes and contact induction differ;
@@ -369,6 +374,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // the final loop's member count read through the element pointer local 1359 (6238); that with the magnitude form
 // 1390 (6211). Retail places the duplicate-contact search out of line after the impact loop (rotated, entered by a
 // forward jump when the list is non-empty); ours keeps it inline.
+// P312: Native value-input magnitude/first-normalizer/second-normalizer masks 1/2/4/3/5/6/7,
+// then immutable complete inputs: 1355/1357/1390/1357/1390/1410/1410/1410. NOT kept: no match;
+// original pointer kernels/captures restored. Second-normalizer values enlarge frame to 0x5dc.
 // Round 84 (m3 lane 9, fast control 1355): retail ends with `return a && b && c && d;` (two exits, `mov eax, 1` and
 // `xor eax, eax`, registers popped before the tests); that return alone gives retail's exact tail but 1366 (6252
 // bytes). Retail tests the impact list's count in the final loop's head, as impacts.cpp's sibling loop does (`for (i
@@ -377,6 +385,62 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // without the snapshot, products in double 1548 (frame 0x590, but the double loads are shared: `fld` once and `fmul
 // st(i)`, where retail reloads with `fld m; fmul m`); the component index read after the 0x81 flag test (retail's
 // order) 1474 (6195 bytes). All restored.
+// DL260: Current-float complete dot/magnitude/second-normalizer product parts, seven subsets, then complete squared length: 1381/1415/1415/1394/1394/1387/1424/1395.
+// NOT kept: no exact native form; original complete executable source and every temporary contract restored.
+// F365: Vector-owned captured magnitude and paired normalizers, masks 1/2/4/3/5/6/7, then ordinary inline:
+// 1354/1354/1355/1354/1354/1354/1354/1354 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// F367: Complete pointer-boundary aggregate magnitude/first-normalizer/second-normalizer input captures, masks 1/2/4/3/5/6/7, then all via existing setter: 1608/1413/1395/1618/1569/1453/1641/1666. NOT kept: all regress and miss native storage/extent; original captures, private helpers, APIs and full body restored.
+// M3 lane 4 r165 (fast; count/aligned/bytes, control 1355/a969/6243, register-masked aligned 584 for g_contact below): LEAD: retail's first normalizer
+// has no input snapshot: with the magnitude as `(real)sqrt(dot3f(v, v))` and normalize3d() ours gives retail's `movss [home], xmm; fld [home]; fmul
+// [home]` at retail's offsets, `fst`, `fabs`, the epsilon `ja`, frame 0x590, but it threads the zero exit past the compare; a `do {} while (false);`
+// between `real length = ...` and the compare (or an out parameter) stops that and gives retail's exact scale block and `xorps; ucomiss; lahf`:
+// 1584/a946/6038 (masked 568), out parameter 1580/a947/6038. Length falls because of forms still to find. Steps: magnitude alone 1608/a967/6022; normalize3d
+// for the first normalizer 1492/a1033/6112, for the double one 1384/a970/6259, both 1486/a1034/6112; magnitude with the first 1639/a977/5974, all three
+// 1643/a977/5974. A const reference for the result does not stop the threading: 1395/a983/6195 on this body, on the magnitude form 1568/a963/6022,
+// with normalize3d 1639/a977/5974, plus the double one's result 1608/a967/6022, all 1643/a977/5974. One result local in the normalizer 1639/a978/5974;
+// `0.0f != x` 1642/a976/5974; `!(x == 0.0f)` 1639/a977/5974. Contact pointer local (retail's `imul; lea edi, [eax + ebp + 0xb10]` head) 1401/a962/6211;
+// k/j/i cross in the first loop 1426/a984/6238, contact cross in place 1388/a983/6238, both 1451/a967/6185; with the join form 1610/a944/6022,
+// 1631/a964/5980, 1675/a966/5964.
+// Round 586: Magnitude input last-consumer scope at real/double squared-length or
+// real/double magnitude producer, direct/complete named products: 1395/1383/1395/1433/1355/1386/1355/1383.
+// NOT kept: nonexact lifetime/precision/staging; original helper and whole body restored.
+// F385: Existing vector-union component-array observations in dot/cross/magnitude,
+// seven producer subsets and the complete normalizer/add graph: eight at 1355.
+// NOT kept: byte-neutral frame/home diagnostics; original complete kernels/body restored.
+// P331: Point activity/query/compression admission results, masks 1/2/4/3/5/6/7 then complementary
+// all: 1355/1355/1354/1351/1350/1350/1350/1380. NOT kept: at most five points, below margin; no
+// exact predicate-storage match. Original helpers and body restored.
+// Round 211 (m3 lane 3, fast; aligned with registers/register-blind, control 969/590): retail's contact loop keeps
+// its three `imul` per iteration and no induction pointers. On Round 201's pair (re-measured 1689, 969 -> 933/575) a
+// `short` contact index gives them from a dword load 1498 (6102 bytes, 918/484), but adds `movsx eax, ax` to the latch;
+// the short alone 1631 (6496 bytes, 973/571). Compile-only on the pair, still reduced: while, do-while, two increments,
+// a next-index local, a pointer or reference to the index, by-value and by-reference inline helpers, the whole body as
+// a by-value inline helper, a dword index, one index shared with the first loop, 800 extra calls in the loop. Only the
+// short or an address that survives (a real call taking it, `&index &&`) stop the reduction, so the real cause is open.
+// x87 tree `(... * 0.1f + 0.9f) * (double)game_time * rate * 0.3f + index * 42.0f` 1383 (6211 bytes, 982/579): dword
+// constants as retail's except the one after the double; retail's are all dword, as under a `sin` root (0x1a2197).
+// Found arm first with `continue` in the impact loop 1408 (6253 bytes, 975/593). Original body restored.
+// T60: Actual escaped-query schema, material initialization by long index/pointer/short/unsigned,
+// private/native ray type: 1355/1421/1382/1355 in both sets. NOT kept: no native
+// frame/home recovery; pointer/short traversal changes miss extent. Original raw query
+// storage, private ray, captures, scaled translation and entire body restored.
+// Round 136 (fast): the magnitude helper's input copy and result in an inner block 1395 (6195 bytes, frame 0x5cc);
+// the copy const 1355; `sqrtf` 1415 (6259 bytes); the copy declared, then assigned 1355; the first normalizer with
+// one exit (zero in the if arm, the scaling in the else) 1355.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 1355 [969]): the first loop's offset and point-velocity
+// vectors written as element expressions at each use (no pointer locals) 1403 (6211 B) [997]; the duplicate-impact search
+// with the compare in the loop condition 1355 (same code); the k/j/i cross with the +0x88 factor named once for both
+// steering products 1425 (6211 B) [983]; the add helper written `a = b + a` (retail loads the added vector first) 1355
+// (same code), with the k/j/i cross 1426 (6238 B, round 79's code) [984]. Retail keeps the first loop's cross stores and
+// re-reads j and k for the add (only i is forwarded); ours drops the cross stores and sums in registers.
+// M3 lane 12 r93 (fast; 0x2056e0 matches): the first loop's element position through a named point pointer (also
+// for the ray origin) 1385 (6195 bytes); its offset through the existing vector3d_from_points3d 1407 (6259 bytes); the
+// magnitude summed i, j, k 1355 (same code); the magnitude from three named component locals 1608 (6022 bytes, as the
+// pointer-read form); the snapshot declared const 1355 (same code). The frame excess is the snapshot copy (ours stores
+// each component, copies it to the snapshot and loads x87 from there; retail loads x87 from the first store).
+// Round 136 (fast): the magnitude helper's input copy and result in an inner block 1395 (6195 bytes, frame 0x5cc);
+// the copy const 1355; `sqrtf` 1415 (6259 bytes); the copy declared, then assigned 1355; the first normalizer with
+// one exit (zero in the if arm, the scaling in the else) 1355.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

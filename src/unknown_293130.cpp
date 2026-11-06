@@ -276,6 +276,35 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // vector operands first 30 (same code); `field_18 = NONE` then `field_10 = field_1a = 0` 31; the axis
 // pointer in a caller local before the vector copy 62. Retail's dot loads a.i, a.k and v.k first and
 // v.j last; ours loads v.j right after its copy store and the dot's a.i last.
+// Round 162 (lane 4, fast; aligned counts in brackets, the 30 form is [28]): a pointer to the +0x18/+0x1a pair stops
+// the +0x18 store hoisting past the flag stores (tail as retail) but flips every a.j product to load-first, 54 at
+// 1409 bytes [41]; with the second selection loop's counter shared with the first 24 [24]. LEAD, not kept: the pointer
+// and its two-short struct (same code) only steer the schedule. The shared counter alone 60 [45], local_17 shared 56 [49], with the pointer 113 [42],
+// all three loops sharing one 272 [70], with the pointer 276 [65]. On the old base: accumulated dot (i, k, j
+// statements) 65 [52], first pair grouped 55 [53]; unnamed vector reads 43 [48], with the accumulated dot 44 [25] at
+// 1409 bytes (retail's sum order and accumulator, a.j's products load-first), first pair grouped 42 [50], one grouped
+// expression 60 [45]; cross terms before the accumulated dot, unnamed 49 [55] or 71 [63], named 77 [61]; named
+// subsets i, j, k 60 [45], j,k 56 [49], k,j 53 [35]; tail orders by offset 30, last 18 33, flags first 30, e,c,d 29 [32],
+// 10 first 30 [30], 1a before 18 30, pair first 35, 14 before 12 32, 4 before 0 32, copy first 78, 18/1a after the copy
+// 80; a pointer to the three flags 57 [43]. With the pointer alone: one-expression rows 54, fraction inline 54, weight
+// inline 396, count inline 54, angle inline 65, unnamed rows 47 [31], grouped dot 52 [40], unnamed 118 [47].
+// On the 24 base: grouped dot 49 [49], unnamed 36 [46]; dot3f(vector, axis) 24; accumulated dot 59 [48], unnamed 38 [21]
+// at 1409 bytes, first pair grouped 49 [49]; unnamed reads 37 [44]; one-expression rows 24; named subsets j,k 50 [45],
+// k,j 47 [31], i,j 50 [45]; name orders j,i,k and j,k,i 24, k,i,j, k,j,i and i,k,j 111 [55]; cosine first 44 [29];
+// names after the sine or before it 24.
+// Round 144: the direction copy before the coordinate draws 112; read-only selected-entry, angle and vector snapshots
+// 30 each; vector-input, axis and output union array views 30 each; unsigned field_18 38 (1407 B). All original
+// declarations, input views, store order and complete helper/body restored.
+// Round 150 (m3 lane 6, fast): a scripted search of 90 combinations: dot3f either way, grouped j + (i + k), i, k, j in one
+// expression or accumulated, each with and without the vector names (i,j,k / j,i,k / j,k,i or none), cross terms first, one-
+// expression rows, cosine first, the angle read after the copy, the tail as written, a +0x18 pair pointer, a flags pointer,
+// the true flag first or the +0x18 pair first, loop counters shared. Best 29 (true flag first, one point, not kept), then 30;
+// the shared counters, the pair pointer and the accumulated dots range 40-120. A one-file harness with 0x259d0, 0xb7930,
+// 0x2936b0 and the ballast is not exact (508, 1268 bytes). Original body restored.
+// Round 139 (m3 lane 8, fast): sinf/cosf in the helper 60 (1409 bytes); the helper taking the axis and the
+// vector as references 30 (same code); the z flag read before the member pointer 315; the angle read right
+// after the member pointer 278 (1420 bytes); the random count passed straight instead of through its one-use
+// local 30 (same code, kept).
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {
@@ -372,8 +401,7 @@ long __stdcall function_293130(long arg_0)
 					function_2936b0(arg_0, local_0);
 					if (local_3->field_14 > 0)
 					{
-						short count = (short)local_3->field_14;
-						local_15->field_4 = random_index(&g_4e7408->unknown0, count);
+						local_15->field_4 = random_index(&g_4e7408->unknown0, (short)local_3->field_14);
 					}
 				}
 				else

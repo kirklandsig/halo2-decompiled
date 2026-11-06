@@ -81,7 +81,7 @@ struct s_read_entire_file_task
 	char const *path;
 	void *buffer;
 	dword buffer_size;
-	dword *size_out;
+	dword volatile *size_out;
 	bool *success;
 	s_file_handle file;
 	dword size;

@@ -5,6 +5,7 @@
 #include "pair_agents_2eab70.h"
 #include "side_swap_collectors_2eb1d0.h"
 #include "swapped_query_2ed2a0.h"
+#include "lane_b_flip_collectors.h"
 
 void __cdecl function_2ea640(void const *a, void const *b, void const *input, void *collector, void *second_collector);
 
@@ -34,7 +35,9 @@ public:
 // @retail 0x2eb290
 void __cdecl function_2eb290(body_2ea940 const *a, body_2ea940 const *b, input_2ea940 const *input, long value)
 {
-	nearest_value_2eb290 collector(value);
+	/* the caller's collector, wrapped in the one that turns what the
+	   swapped query finds back (retail table 0x412970) */
+	lane_b_flip_point_collector collector((lane_b_cd_point_collector *)value);
 	function_2ea940(b, a, input, &collector);
 }
 

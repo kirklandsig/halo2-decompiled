@@ -183,6 +183,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax h (11-05): the argument order is right (d in the third stack slot, q in the fourth, position in the fifth); retail copies the q slot into EBX and reads d from its own slot at each use, ours copies the d slot, and assigning the fallback pointer with a ternary instead of an if gives 642 with the same code, so no new form is kept.
+// MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
+// constant there, ours multiplies first (642, same code).
 // score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // activation copies) and reads d from its stack slot at each use; ours keeps d in EBX from entry. Frame 0x24
 // and clock EDI agree; direction/sample homes and coefficient schedules remain.
@@ -379,6 +382,37 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // local 667 (2889 bytes); the step factor as `n * v * rate` 642 and `n * rate * v` 642 (same code); the limited
 // flag computed first and the clamped length taken from it 722 (2858 bytes); the duration sum written count
 // first 642 (same code). Retail's EBX holds the next stack parameter at entry (ours the one before it).
+// DL258: Shared completed-activation admission in bool/byte/word/long form
+// 642/642/663/665; complementary admission 652/652/683/684; joint direction/sample
+// formal role names 642/642. Native sample EBX ownership at entry still differs;
+// all other calibrated scores unchanged. Original body restored.
+// DH353: Existing double-factor publishers at displacement/impulse/all tick scales,
+// subsets 1/2/4/3/5/6/7: 716/716/724/783/783/766/817; complete sample graph 830.
+// NOT kept: native SSE/frame/extent disagree; original products and caller restored.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 642 [757]): rate constant selected before the multiply at the first
+// site 718 (2861) [630]; both sites 744 (2855) [601]; cap computed ahead too, first site 710 (2858) [622], both sites 668
+// (2864) [597]. Each of these loses the matched caller 0x1eb6f0 (22). `t >= 0.001f` for `!(0.001f > t)` 642, same code.
+// AC538: Complete settling-alignment admission, positive/complementary bool/byte/short/long:
+// 642/642/642/642/642/642/642/642. NOT kept: unmatched decision/storage forms; original complete body
+// restored.
+// Native sample/direction homes and coefficient schedules remain.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 642 [757]): rate constant selected before the multiply at the first
+// site 718 (2861) [630]; both sites 744 (2855) [601]; cap computed ahead too, first site 710 (2858) [622], both sites 668
+// (2864) [597]. Each of these loses the matched caller 0x1eb6f0 (22). `t >= 0.001f` for `!(0.001f > t)` 642, same code.
+// Round 166 (m3 lane 4, one-file LTCG harness with 0x30bf0's and 0x109fd0's files, exact at 642 and caller 0; aligned/shape in
+// brackets, control [482/185]): the 12/8 factor selected first loses the caller only because that first-site flag read is CSEd
+// with the later reads and so takes ECX, pushing a/b out of ECX/EDX. The impulse written through a pointer (`vector3f *impulse =
+// &s->impulse`, or vector3f_scale) kills the CSE: retail's al/cl/al reads, caller 0. On that: all three sites as PIN 656 (2873)
+// [387/167]; site forms write/pin2/capfirst (best 1/2/3), `s->limit` read at each use, delta before v, target pointer 704
+// (2870) [371/135] (the current body 642 has the wrong shape; keep this as the lead for a whole rewrite); the factor first with no
+// pointer write: tern/if/if-else with write/PIN/capfirst, a bool local, `== true`, `!= 0`, `!`, factor at the block top, all
+// 671-757, caller 22. Up/down products named or with a shared half 699-737; a shared direction helper 646, with target 662;
+// direction pointer locals and dot3f at the 0.866 test no gain. Without the pointer write a descent on the positional score gets
+// only delta before v 641 (same shape), `q = counter == 0 ? g_4687a4 : q` 641, w as one expression 641. Diagnostic: 8 extra q
+// reads flip EBX from d to q, so that home is a matter of weight; retail's reference counts for it are not yet explained.
+// Round 74 (m3 lane 10, fast, caller 0x1eb6f0 MATCH in each): second step count as a ternary 640 (2881 bytes, a gain of 2, not kept); both as ternaries 681 (2880). A one-file harness screen of 127 plain spellings (ternary and if both ways, nested tests,
+// compare forms, commutative operands, constant declarations swapped) found none lower; commutative operand swaps change nothing, the sums and products are canonicalised.
+// Same round, fast: `s->distance` as if/else 671 (2884); duration with its 7/1 as if/else 680 (2891); limit test as nested ifs 642 (2878); `rem = rem < 0.f ? 0.f : rem` 642 (2878); `s->limited = false; if (limit != 0.f) s->limited = len2 > limit;` 687 (2883).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -1104,7 +1138,7 @@ counters_done:
 #include "unknown_1eb550.h"
 #include <xmmintrin.h>
 extern real g_47f05c;
-void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity);
+void havok_component_rigid_body_point_velocity_get(vector3f *velocity, long rigid_body_index, s_havok_component *component, point3f const *point);
 void __stdcall function_1c3770(long object_index, dword flags);
 bool function_1c5210(transform4x3f const *matrix, void *shape, long excluded_component, long filter);
 
@@ -1156,7 +1190,7 @@ void function_1ec690(byte const *input, s_state_c570 *state, byte *output)
   if (rigid_body_index != NONE)
   {
    vector3f &current = scratch.current;
-   havok_component_rigid_body_point_velocity_get(rigid_body_index, (s_havok_component *)other_component, (point3f *)(input + 0xe8), &current);
+   havok_component_rigid_body_point_velocity_get(&current, rigid_body_index, (s_havok_component *)other_component, (point3f *)(input + 0xe8));
    change.i = current.i - state->field_50.i;
    change.j = current.j - state->field_50.j;
    change.k = current.k - state->field_50.k;

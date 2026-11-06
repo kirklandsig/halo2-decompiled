@@ -816,6 +816,23 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // Round 156 (fast): the search in a forceinline helper with its own parameters 14; a long font copy for the search
 // and the store 14; the prediction's fields typed as the parameters' struct 14; the header call's flags in an inner
 // block with a found flag 14; a separate created pointer with a font copy 14.
+// Round 67 (fast): `__stdcall` with plain long parameters and the caller passing them directly 86 (still register
+// arguments, 170 bytes; 0x13eeb0 18); the character stored before the font 15; the allocation tested as an
+// assignment in the condition 14; const flags 14; const parameters 14. Diagnostic: one to eight unused locals at
+// entry leave the EBX/EBP swap (not a symbol-count tie).
+// Round 113 (fast): the header tested against NULL 14; `__stdcall` with the existing wrappers 14; wrapper parameters
+// swapped at the definition and call 17 (0x13eeb0 2); for and pre-tested loops 114/114; the iterator datum initialized
+// 14; allocation in iterator.datum_index 14; the allocation pointer through iterator.data 38; the allocation call
+// through iterator.data 14.
+// Round 136 (fast): both parameters as the file's two-long character key passed by value (0x13eeb0 building it) 14
+// (0x13eeb0 2); the match as a named bool 14; the character test nested under the font test 14; the iterator's datum
+// index initialized 14; the header compared with NULL 14. Diagnostics: without the font store 77, with a zero font
+// store 70, comparing only the character 76, without the character store 45: whichever parameter stays in a register
+// takes EBX and the mask EBP, whatever its use count.
+// Round 77 (lane 10, fast): the iterator step as a forced-inline copy over the shared scan 14, over the
+// existing data_find_index scan 14, over a scan with the bit test either way round 14/14 (diagnostics, the
+// scan's shape is not the tie); the flags set field by field 71; the iterator and prediction declared ahead
+// of the flags 14; one exit with `result = true` first, a break and allocation only when not found 73 (187).
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

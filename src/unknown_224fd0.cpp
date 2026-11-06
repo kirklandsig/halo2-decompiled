@@ -79,6 +79,7 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// MiniMax G (11-05): the rotation helper with retail's statement order gives 342, with forward.i moved ahead of the cross products and the products re-associated 228, and with scalar locals for the squares and the sine products 342/418/510; the case bodies' scheduling and the four-byte table placement stay unmatched; no new form, no lower score.
 // score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // MiniMax S (11-01): no new form, no lower score.
 // Earlier at 219 (was 380): frame 0x6c and length agree; the rotation case bodies are scheduled differently
@@ -227,6 +228,66 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // the output parameter first 219 (all three identical code: its interface does not reach the schedule); sine and cosine
 // in separate declarations 219 (same code); the cross terms as j*(1-c)*i, k*(1-c)*i, j*(k*(1-c)) (retail's operand
 // order) 403 (1788 bytes).
+// B412: Native square/ij/ik scopes ending at their actual final reads, seven subsets
+// and all with distinct two-use mixed-product identities: 219 each. Original helper/body
+// restored; axis-specific product/cosine spills, basis homes and table placement remain.
+// B415: Actual scale-property table traversal, long/dword/short/word indices, native factor vector
+// B415: then array: 440/440/520/520/440/440/520/520. NOT kept: grouped scale outputs require exact bytes. Original layout,
+// B415: scale calls and whole body restored; axis-specific spills and table placement remain.
+// B417: Completed caller cache-mask/angle/rotation-scale phases, seven subsets then complete
+// basis lifetime ending after composition: 219/219/219/219/219/219/219/219 at 1836/1836.
+// Original helper/body restored; axis-square/sine/cosine spills and table placement remain.
+// B419: Native unit-circle coefficient pair, direct/sine-first/cosine-first/complete-scalar
+// acquisition, mutable then readonly: 254/489/254/489/254/489/254/489. NOT kept: grouped coefficients
+// do not match and move frame/extent away from retail; original helper and whole body restored.
+// B424: Incremental square/sine/mixed-product workspaces, subsets 1/2/4/3/5/6/7,
+// then all with diagonal field accumulations: 403/491/219/495/403/491/495/491.
+// NOT kept: no qualifying match or gain; original producers and complete body restored.
+// B427: Both complete square/sine product families as scalars in original producer order,
+// real/real, double/real, real/double, double/double, then immutable counterparts:
+// 489/596/534/455/489/596/534/455. NOT kept: no exact precision/frame match or gain; original helper/body restored.
+// Axis-specific product/cosine spills, basis ranks and table placement remain.
+// B431: Existing union component-array observations for axis/square/sine subsets
+// 1/2/4/3/5/6/7, then all with native output-row arrays: 219 each. NOT kept: no exact
+// observation contract or gain. Original helper/body restored; axis-specific product/cosine
+// spills, basis homes and table placement remain.
+// B433: Complete row setters on the native square/sine graph, six row orders,
+// native matrix aggregate and mixed-products-before-original-stores:
+// 445/449/441/397/413/429/428/381. NOT kept: all regress and miss retail extent;
+// original helper/body restored; axis-specific spills and table placement remain.
+// B435: Actual matrix/point-coordinate graphics publication, plain for then while,
+// long/dword/short/word ordinals: 394/394/441/441/593/593/515/515.
+// NOT kept: all regress and lose native frame or extent; complete helper/body restored.
+// Two-axis square/sine/cosine spills, basis homes and four-byte table placement remain.
+// B438: Paired off-diagonal field accumulations, seven subsets 219; whole matrix 190;
+// diagonal-only 204. NOT kept: diagonal-only removes two executable differing rows;
+// the coupled 190 is allocation steering. Original helper and full body restored.
+// m3 lane 1 r71 (--fast): a 50-minute annealed search over the rotation helper's statement order and product operand forms, 204 forms, ranked by an aligned count of the
+// rotation block: base 219 (aligned 164), retail's flow 357/1820 (147), aligned best 366/1848 (85), positional best 213/1840 (168; six under the base at the wrong length, not kept). With registers and esp offsets masked,
+// everything outside the two rotation arms already agrees (168 of 168 masked differences are in the arms). One-link harness not faithful (control 715 at 1521 bytes).
+// Round 150 (m3 lane 5, fast; m = masked aligned, control m88): retail's flow with scalar products as const refs, complement plain or const ref, all plain scalars 469 (1736) m83,
+// 505 (1708) m79, 505 (1708) m79; kept helper with ij, ik, jk, all three as const refs 495, 495, 495, 491 (1716-1720); retail's statement order on the kept vector locals, plain 357
+// (1820) m68, const refs 409 (1780) m83.
+// F403: Actual mixed-axis products in a native vector, incremental/setter/aggregate/
+// readonly aggregate, original or complete square-vector producer: 219/323/410/410/455/389/509/509.
+// NOT kept: no byte match; original private producer and complete body restored.
+// Axis-specific square/sine/cosine spills, basis homes and table placement remain.
+// AC553: Complete native diagonal-result/cosine-product vectors, initialized,
+// readonly, shared-setter or field-produced: 373/373/411/373/398/398/406/398. NOT kept:
+// grouped outputs do not match; original helper and complete body restored.
+// DL269: Native real/double sine-cosine API pairs: 491/491/204/204/204/219/495/495.
+// The 204 forms have 196 executable differences versus 198; thirteen more points are
+// table/padding rows. NOT kept: cast-only and coupled API steering; original producers restored.
+// DL271: Existing vector scaler on native diagonal complements, direct/shared setter
+// and in-place/distinct product outputs: 455/455/436/436; shared complete sums
+// 441/441/385/385. NOT kept: no equality; native frame/product spills not recovered.
+// Original producer, all output stores and complete body restored.
+// Round 89 (fast; a = aligned, kept form 214): retail's first-arm statement order with k*complement as a const reference 392 (1792) a221, as a plain local 394 (1792) a165; the kept order with
+// k*complement as a const reference 366 (1824) a194, the complement as one 409 (1796) a342, the squares as const references 445 (1768) a278.
+// Round 76 (m3 lane 10, fast): the diagonal terms written cosine first 219, the square added first 219; the i sine
+// product written axis first 219; the three cross sums written product first 219; sine and cosine declared together
+// and assigned in two statements 219 (all the same code). The four-byte table shift is a one-byte shorter case-body
+// schedule here: retail's code ends one byte later and pads to the table with a three-byte `lea ecx, [ecx]`.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

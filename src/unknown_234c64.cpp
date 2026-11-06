@@ -314,6 +314,18 @@ void c_window_channel::v9()
 // Round 133: inline/forceinline builder declarations 3/3 (v9, set_next and 0x2358c3 stay matched);
 // base cast at builder/callback/callback and setter 3/3/3; base dereference at callback/builder 3/3;
 // direct construction from a temporary 3. All steering casts and declarations restored without a match.
+// Round 147 (lane 5, fast): the message through `(s_message *)(void *)&new_request` 3; another steering
+// form 3; the callback called as `(*request.load)(&new_request)` 3; the channel's request
+// through a reference for every read and the type clear 3; every member access through `this->` 3.
+// Every retail caller that uses the request right after the builder copies ECX; v10 alone forms it again.
+// Round 54 (lane 2, fast): an empty `do { } while (false)` after the builder 3, after the load 3; the builder
+// call or the load call inside its own `do { } while (false)` 3/3; the builder in its own block 3 (a block
+// boundary does not stop the ECX copy). An inline constructor taking the builder's arguments was not tried: it
+// is the same one-caller wrapper as round 26's method.
+// Round 77 (lane 10, fast): a two-use parameters pointer after the builder for the load and set_next 3; the
+// request constructor forced inline 3; the builder through a forced-inline helper taking the request by
+// reference 3 (diagnostic: a reference parameter folds back like a pointer one); a two-use load-procedure
+// local after the type clear 29 (79 bytes), at the top of the block 29.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

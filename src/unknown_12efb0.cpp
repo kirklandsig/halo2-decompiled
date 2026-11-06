@@ -124,15 +124,21 @@ static __forceinline void function_12efb4(s_fog_accumulator const *arg_0, real *
 
 static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, real arg_2)
 {
+	real alpha = arg_1[3];
 	arg_2 = function_12efb1(arg_2);
+	if (alpha == 0.0f)
+		alpha = 1.0f;
 	arg_0->field_0.red += arg_1[0] * arg_2;
 	arg_0->field_0.green += arg_1[1] * arg_2;
 	arg_0->field_0.blue += arg_1[2] * arg_2;
-	arg_0->field_c += (arg_1[3] == 0.0f ? 1.0f : arg_1[3]) * arg_2;
+	arg_0->field_c += alpha * arg_2;
 	arg_0->field_10 += arg_2;
 	arg_0->field_14 *= 1.0f - arg_2;
 }
 
+// score 607 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
+// MiniMax E (11-05): no new form, no lower score; the palette and accumulator carriers are as the earlier
+// rounds left them, and retail's `mulss scalar, t` product form has no legal spelling here.
 // score 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier: Frame 0x4820 and metadata cursor agree; native palette width and accumulator carriers differ.
 // Frame, clear prefix and metadata cursor agree; palette/cluster carriers and accumulator scheduling remain.
@@ -387,6 +393,60 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 616 (same code); the 131030 arm's fog range clamped straight from the definition field like the palette arm
 // (`def[0x44] > 0 ? (def[0x44] < 10 ? def[0x44] : 10) : g_547f80`) 619 (3842 bytes: that clamp block then has retail's
 // shape, re-reading the field at each test), with the char palette slot 708 (3838).
+// N355: Caller clamped-result residence, with best-weight/byte-palette/publication-reciprocal domains:
+// 968/877/1089/964/975/1088/1081/1044. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Palette/record and zero/contribution SIMD carriers remain.
+// N357: Complete paired source-identity/best-contribution winner selections, bool/byte/short/long positive/complementary decisions:
+// 616/616/616/616/720/720/720/720. NOT kept: no byte match from these source forms.
+// Original executable source restored; Palette/record and zero/contribution SIMD carriers remain.
+// N359: Complete kind/index/weight metadata results with common publication, subsets 1/2/4/3/5/6/7 then entry declarations:
+// 720/660/613/647/711/700/800/800. NOT kept: no byte match; complete original body restored.
+// Weight-only result 613: three-point gain rejected. Palette/selected-record and zero/contribution SIMD carriers remain.
+// N363: Complete native alternate-source tag fields, weighted-record/byte-palette/readonly
+// source masks 0..7: 616/616/705/705/616/616/705/705. Original raw source path and full body restored;
+// NOT kept: unmatched representation forms. Palette/record and SIMD accumulator homes remain.
+// N365: Existing color helper with separate twice-used scalar opacity, crossed with
+// shared RGB/clamped-weight/native per-use palette, 699/699/699/699/696/696/696/696.
+// Original helper and body restored; NOT kept: unmatched input/contract ownership.
+// Round 149 (m3 lane 6, fast; control 616, aligned 497, masked 249; masked ignores registers and stack offsets): accumulator statement orders (r g b, i d h, w weight, m remaining)
+// rgbidhwm 723 (masked 225); rgbidhmw 703 (3836 bytes, 214); rhgwbidm 723 (226); rgbwidhm 723 (213); rgwbidhm 723 (211); rhgwidmb 721 (247); hrgwbidm 723 (222). Products written `t * x` no
+// change on any order; helper parameters with the weight before the scalars no change on four orders; a fresh clamped local 704/724/722, kept order 617. `char` slot 705 (3835, 250), with orders
+// 718/676 (676 at 3832 bytes, 215); slot read at the test then `long` from a second read 756 (246), with orders 752/769 (211/210). Retail holds 0.0 in xmm7 across the palette arm's
+// accumulators, so its products run in place (`mulss xmm1, xmm0`); ours overwrites the zero and rematerialises it, leaving a spare temporary and `movaps t, x` products.
+// M383: Existing scalar destination/color/scalars/weight, merge and publication formal
+// lexical homes, then scalar-merge/all helpers: eight 616s. NOT kept: no palette/SIMD
+// allocation repair; original helper symbols, input-weight capture and complete body restored.
+// Round 211 (m3 lane 3, fast; aligned with registers and stack/both masked, control 353/130): retail's six-field
+// accumulation runs in parallel registers (red, height, green, weight, blue, intensity, distance, remaining, with arguments
+// loaded ahead and multiplied in place); ours finishes one field before the next in every form. The three six-field
+// accumulations written on the accumulators directly 697 (retail's 3817 bytes, first difference +0x6d, 506/147), with the
+// char slot 725 (3797, 508/140), with the body publications 697 (506/148), all three 726 (3796, 508/141); also the
+// other three accumulations direct, so no helper takes an accumulator's address, 711 (3804, 521/157), still one field at
+// a time. On the original helpers, char slot and body publications together 723 (3846, 403/102), the best register-blind
+// helper form; that with all six values computed before any store 738 (3852, 412/90). Original body restored.
+// Round 64 (m3 lane 14, fast listed with 0x131030; masked aligned 247 at 785 instructions on both sides): the key to the accumulator
+// blocks is retail's `mulss scalar, t` in place ([scalar, t]; ours copies t), which is what lets its schedule interleave the
+// preloaded scalars. Weight after the height, field order 723 (3845, aligned 223); retail's scheduled order red, height, green, weight, intensity,
+// distance, remaining, blue 721 (245); weight parameter first, after the accumulator, after the colour 616 each (same code);
+// the scalars `real const` 616 (same), `real const &` 699 (3828, 241), with field order 723 (223) and 694 (251); a named clamped
+// weight in field order 724 (223), in the old order 617 (247). Body unchanged.
+// B452: Complete scalar inputs in reused scalar/merge/color helpers, seven subsets then
+// all with scalar publication: fast 751/658/770/717/809/738/780/769. NOT kept: no gain;
+// palette/SIMD homes remain, some frames grow; all original helper contracts/body restored.
+// Round 137 (m3 lane 8, fast; aligned = difflib count, base 497): retail keeps NONE in EAX from the slot test to the weighted
+// tag test deep in the palette arm (`cmp edi, eax` there, ours `cmp edi, -1`) and on into the fallback store, so -1 outranks the
+// 0x130f60 result for EAX. The 0xd4 tag in a named two-use local 723 (3850 bytes, its read hoists above the 0xa4 test); the
+// result declared first in the loop body and assigned at the call 616 (same code); both weight tests through the 0x88
+// pointer 687 (3830, aligned 792); the clamp helper as a result with two independent tests 778 (3865); the short slot with
+// the source-index store re-reading the byte 689 (3837).
+// Round 218 (m3 lane 3; fast, the kept form plain): the four-channel helper's alpha default as a named if-form,
+// read before the weight clamp (retail loads the channel ahead of the clamp), 607 plain, kept; the same if-form after
+// the clamp 609; as a named ternary 720; alpha and weight ahead of the colour terms 609, on the kept form 609; the
+// channels as by-value parameters 757 (3855 bytes, frame grows); the clamp's upper test first 622; the missing-record
+// exit as an early goto 616; on the kept form: the merge helper's weight read ahead of the clamp 607 (same code), the
+// tag arm's range clamp read from the field at each use 610 (aligned 236 -> 230), the three-scalar helper in retail's
+// scheduled order (red, height, green, weight, blue, intensity, distance, remaining) 718 (two more instructions,
+// aligned 210), its red term ahead of weight and remaining 607 (aligned 224).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

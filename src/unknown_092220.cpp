@@ -181,7 +181,16 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax G (11-05, r3): no new form, no lower score; the flags still load into eax where retail
+// loads them into the dying pointer register ecx.
+// MiniMax G (11-05, r2): no new form, no lower score; the flags in a named local, the flags read
+// through a pointer to the field and the precomputed user pointer still load the flags into eax.
+// MiniMax G (11-05): no new form, no lower score; the user flags are still loaded into eax where
+// retail loads them into the dying user-pointer register ecx.
+// MiniMax B (11-05): no new form, no lower score.
 // MiniMax I (11-01): the user flags are still loaded into eax where retail loads them into the dying user pointer register ecx; a conditional-expression user pointer (both polarities, with and without a record cursor), the flags and the pointer in function-scope locals and the mask test first all leave the code as it was.
+// MiniMax A (11-03): no new form, no lower score.
+// MiniMax G (11-04): no new form, no lower score.
 // score 14 (was 14): this round: compiling the file without whole-program optimisation (/GL- in the
 // file's flags) drops the register calling convention retail's code uses, so every function in the
 // file stops matching; the flags in a named local and the two tests split into two ifs stay
@@ -191,6 +200,12 @@ static __forceinline long function_925c2()
 // one register choice, the user flags loaded into eax where retail loads them into the dying user
 // pointer register ecx; our two shorter encodings leave the function two bytes short, so every
 // later field (the globals and the calls) is reported as differing as well.
+// MiniMax H (11-04): no new form, no lower score; the flags still load into eax where retail
+// loads them into the dying pointer register ecx (14 variants: the pointer non-const, the flags in
+// dword/unsigned/short locals, the flags through a pointer or an index cast, a reference to the
+// user, a void pointer, the two tests in the other order, the two tests split, the user pointer
+// from a ternary, the kind in a switch, the mask test first: 14, 14, 14, 14, 14, 14, 14, 15,
+// 125, 116, 15).
 // This round: the flags in a const dword local 14, in an unsigned long local 14, a const kind 14,
 // the kind declared before the user pointer 14, the mask test before the equality test 15 (all
 // reverted).

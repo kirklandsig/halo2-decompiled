@@ -1994,6 +1994,16 @@ void function_27dd10(void)
 // Round 79 (fast; 0x281b60 has the same tie through function_288572): the count by const reference 2; the clamp operands reversed 53;
 // the flags byte read and pointer step split 2; the shift before the tail steps 2 (0x288570 12); a per-pass count copy 2 (0x281b60 62,
 // 0x288570 120); the shift in the for increment 12.
+// Round 86 (fast and compile-only over all six walk users): k identity locals at the walk's top, k = 1..8, 2 each (no period, the
+// reload pair does not follow symbol numbering); bit flags declared first in the wrapper, passed by reference 39 (0x281b60 87, 0x288570 152; compile-only shows no change, so not usable there); all 24 orders of the
+// index, flags pointer, count and inheritance parameters 2 each; natural rewrites of the arms of other blend methods (+=, *=, named
+// weight, interpolate_real, no scale local) 2 each, so arms folded away do not count; saved frame state as dword or long, fraction
+// first 2, next index first 6; apply index named in both arms 2; counters pre-incremented or += 1 2; the group end with the compare reversed 8;
+// a named table pointer for the outputs 2.
+// Round 67 (m3 lane 14, fast; 0x281b60 moves with it): in function_288572 the inner bound as an if-clamp
+// after `arg_5 + 8` 208 (0x281b60 241, 0x288570 401), as `local_3 = arg_7; if (arg_5 + 8 < local_3) ...` 5
+// (`jge` for retail's `jg`, the reload pair unchanged; 0x281b60 64); the outer for as a while 2; the
+// output selection as if/else 2; in function_288573 the blend-1 rotation weight named 2.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2093,6 +2103,26 @@ void function_2818e0(void)
 // arm) gives retail's order, while float global loads, an int constant, folded `* 1.0f` or an unused float local do not
 // (retail has no such literal). Fast: the blend-2 rotation multiply through a named rotation pointer 352 (1685 bytes);
 // named source vector 2; named scale 2; named destination vector 2; the existing vector3f_add for the translation 4.
+// Round 84 (lane 16): a compile-only copy scored against retail gives this function's 2 exactly (0x285750 0). The pair also flips
+// for unrelated statements in the scale arm: a float negate, a compare with 0.0f, a division by 3, a sum of two globals; not a float
+// divide, an int-to-float conversion or an int store. So the literal is one trigger of a wider tie. Fast: the counter through
+// `long *counter = &g_5044b4 + component` MATCH, but it offsets a global's address and costs 0x27dff0 387 (1752 bytes), 0x288570 120,
+// 0x28aaa0 4 (restored); the counter as a `long &` parameter 2; the group end assigned then clamped 241 (1659 bytes); the inner `for` as
+// `while` with the index step last 2; the frame state restored before the apply 65; the node lookup as a single-exit result 2. Compile-only: a real `long[3]` counter array 4
+// (0x285750 21, 0x27dff0 355); the counters as one struct 2 (0x285750 17); decoders or bit flags as array members 2 (0x285750 12); counter,
+// decoder or bit flags by const reference 2 (0x285750 6 with decoder or bit flags); the multiply's output parameter first 2 (0x285750 2);
+// 105 blend-2 arm combinations (`+=`, swapped operands, named source, destination, scale) 2 at best; the flag test without a local, sign as
+// long, int, const or struct 2.
+// Round 143: real sign lanes with negative zero 245 (1685 bytes, all controls regressed); the sign mask renamed 2;
+// prefix / += / assignment counter updates 2 each; register flags 2; register count 2; a const group bound 2.
+// All restored; the count/flags reload pair and frame 0x34 remain.
+// Lane 11 round 70 (fast): a ternary lvalue counter update 2; a counter pointer by ternary at the increment 2 or at the helper's top 2 (0x288570 120 in
+// all three); the bit flags shifted by an explicit assignment 2; the bit test as `(flags & 1) == 1` 2 (0x288570 3, 0x289580 78). Here and in 0x2bdc70
+// ours reloads the later-declared variable first, retail the earlier-declared one.
+// Round 154 (m3 lane 5, fast with 0x27dff0, which has the same pair): in function_288571 the counter resets before the
+// node-count read 6 (both); the resets in reverse order 2; in function_288572 the flags byte read and the cursor stepped
+// as separate statements 2; the outer group loop as `while` 2; the later passes' clamp tested count-first 2 (both
+// functions identical in each but the first).
 // @retail 0x281b60
 void function_281b60(void)
 {

@@ -161,6 +161,19 @@ static __forceinline long real_to_long(real value);
 // Round 97 (fast): existing vector3f_assign 2; void helper with output reference 2; vector temporary 2;
 // three-real array temporary 2; const aggregate temporary 2; named output result 6; state/slot declarations
 // swapped 2; const actor view 2. Original two-difference body restored.
+// Round 132 (fast): forward-text dot with direction first in every product 2; a two-pointer inline dot taking a point3f 6, in
+// k, j, i text with the i product swapped 6, its result named 6; direction and slot pointers formed before the actor lookup 112,
+// the direction pointer alone 112. Harness: plane_distance_to_point 79 (0x132fd0 and 0x181800 get retail's i-term load order through
+// it; here the facing's i stays first); an extra subtraction 70, a fourth term 80; a direction pointer read from a global 44; the i
+// product named before the sum 6 (it comes first and reuses xmm0); the direction's i, the facing's i or both named 2/2/2; the partial
+// k + j sum named 2, accumulated with `+=` 2, three `+=` statements 2, `sum < 0` 2, i + j then k 6; the sum tested twice 2.
+// Round 131 (lane 7, fast): integer tuples ahead of the actor lookup, one to four, as diagnostics 18/41/121/129 (sum order moves, the i term's
+// load never does); the existing dot3f at each of those phases 6/14/45/121, either argument order; 1-3 unused locals at the top or before
+// the prop, state, slot or direction locals 4/4/6 (sum order only), after the direction local 2; the i term's leaves as `*(real *)direction`,
+// `((real const *)direction)[0]`, `(*direction).i`, `direction[0].i`, `*direction->n`, `(direction + 0)->i`, a real cast on either leaf,
+// `*(real *)&actor->unknown290`, `*actor->unknown290.n`, `(&actor->unknown290)->i`, and the i term through slot_state 2 each; the i product cast
+// to real 6; a real pointer to the facing with indexed reads 6; the helper's body written in the function 2, its parameters in eight other orders
+// 2 each; inline helpers for the prop state or the direction pointer 2/2, for the dot taking two vectors 6, forced inline 6, taking the actor 2.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

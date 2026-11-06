@@ -1178,31 +1178,6 @@ void __cdecl function_24970(s_histogram_state *state)
     XRestoreFloatingPointStateForDpc();
 }
 
-// score 17 (was 17): the two float temporaries sit in the other registers,
-// ours keeps the zero in xmm2 and the scale in xmm1 while retail keeps the
-// zero in xmm1 and the scale in xmm2. The pair follows where the zero's last
-// use in case 3 sits: without the out[3] store, or with it before out[2],
-// the registers are retail's (37: store order). Tried: one subtraction
-// (globals on both sides) 66; begin declared first 17; a span local 17;
-// the scale read plainly in case 4 17 (kept); ~70 harness forms of the clamp,
-// declarations, scopes and the top test, all 17; the bounds through a range
-// pointer 17 (same code); out[2] from the begin local 65; a span local with
-// the globals 66; a shared bounds point helper for cases 1 and 4 17. In a
-// compile-only build every form that merges the two subtractions gets
-// retail's pair, and every two-subtraction form (~190: mixes, declaration
-// orders, compare sides, scopes) gets ours unless begin stays live to out[2].
-// Round 55: case 1's out[3] stored before out[2] 18; case 4's out[2] stored first 33; both
-// subtractions from the end/begin locals 66 (416 bytes); case 4's body copied into case 2 in
-// place of the label 47; out[2] as `-(g_4857dc * scale)` 17 (same code as `0.0f - ...`). One-file
-// LTCG screens: case 4 stores reordered, case 2 jumping to a case 3 label, out[2] negation forms:
-// none changes the pair. Round 100: reciprocal `/=` 17; a scaled-depth local 17; an output pointer
-// in case 3 or throughout 17; strength read after the top test 17; strength read before it 128;
-// subtraction readback plus final memset 35; a named post-store zero used twice 17.
-// Round 54 (m3 lane 11, fast): a named divisor local 17; the top test as `!(g_509400 > 0.0f)` 101 (424 bytes);
-// the clamp compare written `end - begin < 0.0001f` 17; scale declared then assigned 17; the globals in the
-// compare and the locals in the value 17.
-// Round 138: case 3 zeros chained (`out[3] = out[1] = 0.0f`, out[3] re-stored) 53 (428 bytes); `real const scale` 17;
-// `default` written first in the switch 17; `out[3] = out[1];` 17; the top test as `0.0f >= g_509400` 17.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -1220,7 +1195,24 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
         out[3] = 1.0f;
         return true;
     case 2:
-        if (!g_4b9d9c) goto scaled;
+        if (g_4b9d9c)
+        {
+            real end = g_4857e0;
+            real begin = g_4857dc;
+            real scale = 1.0f / (0.0001f > end - begin ? 0.0001f : g_4857e0 - g_4857dc);
+            out[0] = g_48565c * scale;
+            out[1] = 0.0f;
+            out[2] = 0.0f - g_4857dc * scale;
+            out[3] = 0.0f;
+            return true;
+        }
+        out[0] = (bounds[1] - bounds[0]) * t[0] + bounds[0];
+        out[1] = (bounds[3] - bounds[2]) * t[1] + bounds[2];
+        out[2] = 0.0f;
+        out[3] = 1.0f;
+        out[0] *= g_4b9d90;
+        out[1] *= g_4b9d90;
+        return true;
     case 3:
         {
             real end = g_4857e0;
@@ -1233,7 +1225,6 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
             return true;
         }
     case 4:
-scaled:
         out[0] = (bounds[1] - bounds[0]) * t[0] + bounds[0];
         out[1] = (bounds[3] - bounds[2]) * t[1] + bounds[2];
         out[2] = 0.0f;
@@ -1902,6 +1893,8 @@ byte g_5093fd, g_5093fe;
 bool function_143c0(long tag, short index, short stage, real priority);
 
 /* the filter rows: an index word, then a colour per row */
+dword function_1cbe0(long mode, dword index, long slot_index);
+
 struct s_filter_row
 {
     real index;
@@ -1915,40 +1908,6 @@ struct s_filter_rows
     s_filter_row header, first, second, third, fourth;
 };
 
-// score 17 (was 17): the second argument of the call near the end is read
-// with an add of the offset and then a load of the field, ours folds the
-// offset into the load's displacement. Tried: function_1cc30(12) 28 (stays
-// out of line); a slot pointer local 17; an index local 17; a slot row
-// pointer 17; with `inline` on 0x1cc30's definition it is inlined but its
-// constant index still folds, 17. BLOCKED-BY 0x1cc30: the unfolded add needs
-// a helper from another file, taking the slot pointer, inlined at link time.
-// Round 40: same-file forceinline/inline helper taking the slot pointer 17/17,
-// with only the 0x1c590 call 17; `__forceinline` declaration of 0x1cc30 at file
-// or block scope with function_1cc30(12) 28/28 (not inlined).
-// Round 35 (fast): a slot pointer read for 0x1c590 and again for an ignored 0x1cb70 call 25 (the call
-// stays; the first read still folds to +0x64 and the add is built apart); the same with 0x1cb70's result
-// in an unused local 17 (the call is dropped at link time, the read still folds); `function_1cc30(12)`
-// here and in 0x34a90/0x34d90 (retail has the same unfolded add in both) 28/34/41 (kept out of line);
-// an indexed `[12 * 2 + 1]` read 17; a const tag pointer 17. Retail's add survives only when 0x1cc30 is
-// inlined at link time; 0x34a90 and 0x34d90 are blocked the same way.
-// Round 74 (lane 9, fast): a second read of the tag compared with the first (`long tag = slot->tag; if (tag !=
-// slot->tag) tag = 0;`, a diagnostic: the test is always false, so not keepable) MATCHES: this read is the
-// only difference, and what keeps the add is a second read in the same block that folds away late. 0x1cb70's
-// result in a dead local before the bind 17; after the bind with `| 1` 17; `& 0` as the bind's last argument
-// 29 (1052 bytes); a tag local, then 0x1cb70 on a re-read 17; `inline` on 0x1cc30's definition (temporary)
-// with function_1cc30(12) 17, also on 0x1cb70's 28 (0x1cc30 itself then 66). Compile-only, all fold:
-// references to the slot or field, by-value slot and 8-byte union copies, one-read accessors (member or free),
-// nested inlines, the index through a local or short, a dead second argument, a switch or ternary on a
-// constant, a one-pass loop. Retail has both shapes for this same inlined read: folded in 0x246a0, 0x26520,
-// 0x29080, 0x29b00, 0x351a0; unfolded here and in 0x34a90, 0x34d90, 0x391f0, 0x3bf20; 0x52040 has both for one
-// index. So a state of the caller picks it, not the helper's source.
-// Round 97 (fast): direct index bits 17; bottom-tested stage loop 403; loop-local definition 233;
-// direct first-color row 121; own context address 17; const definition 17; function-scope stage 17;
-// result-first 17; reversed shader branch 64. Original 17-difference body restored.
-// Round 67 (lane 10, fast): the existing 0x1cbe0 called with mode 0 and slot 12 26 (stays out of line); the
-// 0x1c590 call's selection from the existing 0x1cb20 with mode 0 27 (out of line); the existing 0x1cbb0 with
-// mode 0 on the slot's tag 16 (1039 bytes, out of line, the tag read still folds); the slot table read at the
-// function's top (diagnostic) 224; the cache pointer in a local used by both calls 17.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {
@@ -2017,7 +1976,7 @@ bool __stdcall function_26880(void *context)
     g_484f68.PSRGBInputs[1] = 0xa010b02;
     g_484f68.PSRGBOutputs[1] = 0x30ab;
     D3DDevice_SetPixelShaderProgram(&g_484f68);
-    function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x64), 0);
+    function_1cbe0(0, 0, 12);
     function_1c710(g_51f0f0);
     return true;
 }
@@ -2168,8 +2127,7 @@ PRIVATE __forceinline void configure_34a90_state(long target, long blend,
         g_4b82fc = depth_write;
         D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, g_4b82fc);
     }
-    function_1c590((s_shader_cache *)g_51f0f0,
-        *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x64), 0);
+    function_1cbe0(0, 0, 12);
 }
 
 // @retail 0x34a90
@@ -2430,8 +2388,19 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax E (11-06): score 140 (was 140): no new form lowered it. The inlined corner rotation still
+// expands with the opposite operand order and stores its results in different homes than retail, and
+// the byte local at esp+0x6c is read in AL where ours reads CL.
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 140 (was 154): Frame and retail extent agree; caller flag residency and native
+// MiniMax G (11-04, not kept, m3 review: the destination default moved inside the source-null block, so a null
+// destination with a non-null source read an unset rectangle; a behaviour change): 132 (was 140) with the two default rectangles built in retail's
+// store order (source[3] first, then the 320-based pair, the 240-based pair and the last 320-based
+// one) inside the source-null block, which matches retail's fallback arithmetic instruction for
+// instruction. Still: retail builds both defaults unconditionally and writes each selected default
+// into the parameter's home, ours branches over the block and leaves the parameters alone, so the
+// vertex emission that follows is one instruction out of step; retail also reloads preserve_alpha
+// after the call in the short arm where ours keeps the value in a register.
+// score 140 (was 140): Frame and retail extent agree; caller flag residency and native
 // fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
 // Earlier 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
 // Earlier: 251 fast (was 252 fast): the pixel-shader RGB output mask is selected before the shift
@@ -2551,6 +2520,19 @@ dword __cdecl function_131fc0(real alpha);
 // NOT kept: no gain or byte match; original workspace scopes and complete body restored.
 // N353: Separate caller-side scalar/color/finalizer inline declarations, seven subsets,
 // and all force-inline declarations: 140 each. NOT kept: no gain; original declarations restored.
+// F380: Isolated short-arm final-alpha branch/default stores and expression-owned nibble/word
+// results 145/250/252/161/162/140/140/145. NOT kept: regressions or ties;
+// original flag reads, shader stores, fallbacks and complete body restored.
+// DH358: Nested test-set admission results, rejected/admitted defaults in bool/byte/word/dword,
+// 140/140/140/140/140/140/140/140. NOT kept: no byte match; original admission predicate,
+// flags, shader workspaces and complete body restored.
+// Round 132 (m3 lane 7, fast, base 140): both defaults built unconditionally, source first, then both
+// selected, with/without named half extents 156/156 (1717 bytes; no parameter-home writes); inverse
+// height computed before inverse width 146 (the reciprocal registers become retail's, xmm0 = 1/h, but
+// width and height then swap homes 0x10/0x14: the homes follow the reciprocal order, not names or the
+// declaration order: with height declared first 144, with width renamed 146); that with the
+// unconditional defaults 162; source coordinates divided by width/height in each call 158 (1721).
+// 0x3a5c0's macro fix has no counterpart here (no file-local helper in the body).
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2876,8 +2858,12 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax E (11-06): score 211 (was 211): no new form lowered it. The inlined corner rotation still
+// multiplies the two vectors in the opposite order and folds the constant as a memory operand where
+// ours keeps it in a register, so the result homes and the x87 rows differ.
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 211 (was 247): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
+// MiniMax G (11-04): no new form, no lower score.
+// score 211 (was 211): Frame 0x58; 2022/2022 bytes. Bounds/trig scheduling and
 // the second cosine home remain; paired half extents recover native maximum/reciprocal registers.
 // Earlier 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
 // trigonometric scheduling remain; both normalized scales now use their native parameter results.
@@ -3010,6 +2996,21 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // products and joint/axis-local production, original array/native box outputs: eight at 211,
 // 2022/2022 bytes. Keep direct paired half extents (plain 211); each has two original bounds
 // consumers and retail retains both products. Original grouping, calls, trig and arrays retained.
+// F380: Zero/nonzero comparison results spanning vertical bounds, bool/byte/short/long,
+// 240/240/244/243/240/240/244/243. NOT kept: regressions and longer extent;
+// original comparison/default points, half extents, trig and complete body restored.
+// DH358: Complete zero-result lifetimes before half extents/bounds and at horizontal/vertical
+// consumers 246/239/217/234; stream-boundary pairs 150/146/208/223. NOT kept:
+// 150/146 move extent from 2022 to 2026; 208 gains only three and shrinks to 1972.
+// Original tests, half extents, trig carriers and whole body restored.
+// Round 132 (m3 lane 7, fast, base 211): the corner helper taking the angle, cos/sin as expressions
+// or as helper locals 265 (2048 bytes)/283 (1987); as an expression macro (0x3a5c0's fix) 211 (same
+// code); the second angle's cosine and sine as their own locals 210 (second cosine in retail's 0x7c
+// home), with `half_width + 320.0f`/`half_height + 240.0f` 210, with bounds[1] first 223; bounds[1]
+// first alone 224; vertical bounds first 217. Lead: ours has one instruction more than retail (480):
+// ours keeps 240 in xmm1 for both vertical bounds (a copy), retail loads it into xmm7 after bounds[0]'s
+// store and adds the second 240 from memory, because its zero for the scale tests already holds xmm1
+// (the compare is hoisted into the bounds); that one instruction shifts the whole vertex tail (~100).
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3298,12 +3299,10 @@ PRIVATE __forceinline dword filter_output_first_shift(long exponent)
     return ((exponent > 0 ? 0x10 : 0) << 12) | 0xd00;
 }
 
-PRIVATE __forceinline long filter_quantized_byte(real value, bool direct)
-{
-    if ((long)(direct ? floor((double)value) : function_2b480(value)) < 0) return 0;
-    if ((long)function_2b480(value) > 255) return 255;
-    return (long)function_2b480(value);
-}
+/* the floored value clamped to a byte; mode zero floors its first test directly */
+#define FILTER_QUANTIZED_BYTE(value, direct) \
+    ((long)((direct) ? floor((double)(value)) : function_2b480(value)) < 0 ? 0 : \
+    (long)function_2b480(value) > 255 ? 255 : (long)function_2b480(value))
 
 /* blending and depth states of the filter passes; retail calls every one of these
    state writes out of line, and each caller writes the depth bias itself */
@@ -3321,15 +3320,15 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 }
 #pragma inline_depth(255)
 
-// score 31 (was 31): retail length; the blend sites now call 0x222d0 as retail. Left: the two small
-// selectors (retail loads small into CL first and computes input before the alpha selector), the
+// score 9 (was 19): retail length; the blend sites now call 0x222d0 as retail. Left: the two small
+// selectors (retail loads small into CL first and computes input before the alpha selector) and the
 // constant/inverse-span reloads after mode zero and one's depth-bias write (retail reloads the span
-// first), and modes one to three's quantizer inputs in shift's home where retail uses clip's.
+// first). Modes one to three's quantizer inputs now take clip's home as retail (round 132 below).
 // Round 137: one function-scope value for every quantizer, with the quantizer a macro, puts modes
 // one to three's inputs in clip's home as retail 19 (a block-scope value 31; the inline helper with a
 // by-value parameter keeps a separate symbol per expansion); whole/alpha/fraction/input 18 (aligned 20).
-// NOT kept: the macro and the shared function-scope value shape lifetimes, and the order was picked by
-// score from 24; body restored at 31. In that build 0x41640 (0350e0.cpp, score 4) matched with no edit to
+// NOT kept: the macro and the shared function-scope value shape lifetimes, and the order was picked by score
+// from 24; body restored at 31. In that build 0x41640 (0350e0.cpp, score 4) matched with no edit to
 // its file (a link-time side effect): a lead for 0x41640's own source.
 // On it, aligned counts in brackets: whole/fraction/input/alpha 939 [15] (one instruction short, no
 // `mov al, cl`), with small declared after the switch 31 [6]: only the false store (after the switch,
@@ -3495,6 +3494,16 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // seven subsets, then all with the skip-state role name: 31 each at 4828 bytes.
 // Original parameter symbols restored; selector scheduling, post-bias reload
 // order and six quantizer inputs in shift rather than clip home remain.
+// Round 50 (m3 lane 2, fast; not kept, body restored at 31): round 137's shared function-scope value repeated without its macro: assigned before each call of the
+// by-value or by-reference helper 19/19 (the helper's parameter does not keep modes one to three in shift's home once its argument is that value); per-expansion block-scope
+// values by reference 31. On that base: the four selector/split orders, all 24, wari 18, wria 939 (aligned 15), awri 19, iwar 23, iawr 23, others 231..976; input or alpha typed dword,
+// short, byte, char on wria 939/939, 934/477, 945/960, 945/960, on wrai alpha 19/958/957/957; small typed byte/char/long on wria 939/939/496, on wrai 19/19/1179; a named bool or byte selector
+// copy at three positions 939/939/939 (forward-substituted), alpha first 19/19; selector and split force-inline helpers, flag parameter first or second, or selectors alone, 939 with
+// input first, 19 with alpha first; declarations apart from assignments in whole, input, fraction, alpha order 976 in six declaration orders; gain as one expression, two statements over
+// the ratio, or one expression plus the span 95/19/95, a separate 1.0f start 19; the span named ahead of the gain in both/zero/one modes 837/51/53, the span term first 118; span or
+// shared value declared at the top, before the maximum or after the inverse distance 19; small set after the switch with wria 31 (aligned 6: only that store's place and the two reload
+// pairs differ, the selector block is exact); that store right before the switch, after low or after the inverse distance 998/997/996 (aligned 24), declared after high or the inverse
+// distance 998/996; a false-valued local before the switch copied after it 31 (constant-propagated). Any store before the switch loses retail's `mov cl, [small]`.
 // DH325: Existing quantizer inline/natural expansion, immutable value/direct
 // input subsets 0-3 in each: 1201 each, 4420/4828 bytes. All restored; native
 // expansion still needs force-inline. Selector/reload/sample homes remain.
@@ -3505,6 +3514,49 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // N350: Immutable shift/clip/center parameter subsets and all with immutable
 // state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
 // selector, reload-pair and six quantizer input-home differences remain.
+// F391: Existing quantizer policy as bool/int template argument, mutable/immutable real
+// input and conditional/separate lower admissions: 1218 each in eight forms, 4404/4828 bytes.
+// NOT kept: specialization outlines both quantizers and moves extent away from retail.
+// Original helper, runtime policy formal, eight calls, repeated conversions and whole body restored;
+// selector scheduling, post-bias reload pairs and six shift-versus-clip input homes remain.
+// N386: Existing quantizer explicit cdecl/stdcall inputs, bool/byte policy and mutable/immutable
+// real samples: eight 31s at 4828 bytes. NOT kept: no byte equality; original helper and body restored.
+// P332: Native quantizer lower/upper/both conversion producers 32/31/32;
+// split lower arms alone/with upper producer 31/31; both with single-exit,
+// positive-default and split/conditional results 30/790/646. NOT kept:
+// one-point lead or regression, no byte match; original helper and body restored.
+// DH358: Existing quantizer double transport with explicit real-rounded callers and a multi-use
+// real sample, long/int/short/word results with mutable/immutable input: 660/660/1001/1001 twice.
+// NOT kept: all regress and lengthen to 4836/4856; original helper and whole body restored.
+// F391: Existing quantizer policy as bool/int template argument, mutable/immutable real
+// input and conditional/separate lower admissions: 1218 each in eight forms, 4404/4828 bytes.
+// NOT kept: specialization outlines both quantizers and moves extent away from retail.
+// Original helper, runtime policy formal, eight calls, repeated conversions and whole body restored;
+// selector scheduling, post-bias reload pairs and six shift-versus-clip input homes remain.
+// Round 214 (m3 lane 3, fast; masked aligned in brackets, base 9), nothing kept: the span ratio named after the mode-zero texture block 357 [17] at 4832;
+// the texture block's skip test merged as `extra_texture && !skip_state` 31 [9]; an empty compiled-out else on the skip test, mode zero or both 31/31;
+// gain from a separate 1.0f start 31; the span ratio named ahead of the gain 63 [16]; a named span copy 31. Selector forms: input first 939 [6] (one
+// instruction short, no `mov al, cl`), with a named copy of small the same; whole, input, fraction, alpha 976 [8] at 4840; `4 + small` 952 [11];
+// input ahead of `fixed` 974 [10]. All 24 orders of whole, fraction, alpha and input on this body: wari 30 (one point, picked by score), wrai and awri 31,
+// iwar and iawr 35, the rest 243..976. `mov cl, [small]` first needs alpha or input first, and then the whole/fraction moves come after both selectors.
+// Round 132 (m3 lane 7): the quantizer helper's by-value parameter is a symbol per expansion and
+// takes shift's dead home in modes one to three; as an expression macro (PIN-style, the input a CSE
+// temp, no local) every input takes clip's home as retail: 31 -> 19 plain, kept. On it: span/byte pair
+// through one inline helper at all four modes 31 (before the macro, same code); inverse span declared
+// at the top 31; exponent guard `1.0f < inverse_span` 31; small declared first, after allow_negative,
+// after maximum 19/281/282, each with input before alpha 939/995/996; low and high divided by the
+// distance 19 (same code); the inverse span renamed 19 (same code).
+// Round 134 (m3 lane 7, fast; kept step plain over all 57 functions of the file): input before alpha alone 939 (aligned
+// 7); with the shifted input named after the first constant store and used by both stores 9 (selector block retail's;
+// left: the shl's place and two reload pairs); named before the clear 928; at each of the 7 positions after the clear 9;
+// copy then <<=, long type, closed scope 9; arms' names swapped 11; the name in one store only 939. Split as whole- or
+// fraction-first 226/225; (byte)fixed 937; % 256 960; fraction before whole 767; (small ? 1 : 0) + 4 939; if-assigned
+// input 934; fixed through 0x2b460 939/19. The reload pairs follow the end of the skip-state arm (a real if with a
+// body last in that arm flips that pair; empty else, do/while(false), inverted arm 9).
+// Round 93 (m3 lane 16, fast): the two input words through the SDK's PS_COMBINERINPUTS(input, ...) with no shifted
+// local 939 (first difference +0x5b), plus the alpha word the same way 939; the shifted local const 9; `input` as
+// dword 9; `alpha_input` as dword 9. Retail shifts a copy of input in EAX after the clear; ours shifts EBX in place
+// and the scheduler lifts that shift above the clear.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
@@ -3592,8 +3644,8 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     long fixed = (long)floor(low * 65536.0f);
     long whole = fixed >> 8;
     long fraction = fixed & 0xff;
-    long alpha_input = small ? 4 : 24;
     long input = small ? 5 : 4;
+    long alpha_input = small ? 4 : 24;
     if (whole > 255) fraction = whole = 255;
     memset(&g_484f68, 0, sizeof(g_484f68));
     g_484f68.PSTextureModes = 1;
@@ -3603,9 +3655,10 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     g_484f68.PSRGBInputs[0] = 0x8010802;
     g_484f68.PSRGBOutputs[0] = 0x3045;
     g_484f68.PSConstant0[1] = (dword)fraction << 24;
-    g_484f68.PSRGBInputs[1] = ((dword)input << 24) | 0x201140;
+    dword input_bits = (dword)input << 24;
+    g_484f68.PSRGBInputs[1] = input_bits | 0x201140;
     g_484f68.PSRGBOutputs[1] = 0xc00;
-    g_484f68.PSAlphaInputs[1] = ((dword)input << 24) | 0x209140;
+    g_484f68.PSAlphaInputs[1] = input_bits | 0x209140;
     g_484f68.PSAlphaOutputs[1] = 0xc00;
     g_484f68.PSConstant0[2] = (dword)whole << 24;
     g_484f68.PSRGBInputs[2] = 0x2020;
@@ -3652,8 +3705,8 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         g_484f68.PSRGBOutputs[6] = filter_output_shift(exponent, 7);
         g_484f68.PSAlphaInputs[6] = 0x18201120;
         g_484f68.PSAlphaOutputs[6] = 0xc00;
-        long upper = filter_quantized_byte(inverse_span * 256.0f / (real)(1 << exponent), true);
-        long lower = filter_quantized_byte(inverse_span * 0.5f, true);
+        long upper = FILTER_QUANTIZED_BYTE(inverse_span * 256.0f / (real)(1 << exponent), true);
+        long lower = FILTER_QUANTIZED_BYTE(inverse_span * 0.5f, true);
         g_484f68.PSConstant1[7] = ((dword)upper << 24) | lower;
         g_484f68.PSRGBInputs[7] = PS_COMBINERINPUTS(0, 0, small ? 0x20 : 0, 0x20);
         g_484f68.PSRGBOutputs[7] = 0x4500;
@@ -3690,8 +3743,8 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         g_484f68.PSAlphaInputs[5] = 0x1d201220;
         g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
         g_484f68.PSConstant0[6] = pack_color4f(&first);
-        long upper = filter_quantized_byte(inverse_span * 256.0f / (real)(1 << exponent), false);
-        long lower = filter_quantized_byte(inverse_span * 0.5f, false);
+        long upper = FILTER_QUANTIZED_BYTE(inverse_span * 256.0f / (real)(1 << exponent), false);
+        long lower = FILTER_QUANTIZED_BYTE(inverse_span * 0.5f, false);
         g_484f68.PSConstant1[6] = ((dword)upper << 24) | lower;
         g_484f68.PSRGBInputs[6] = 0x1341134;
         g_484f68.PSRGBOutputs[6] = 0x45;
@@ -3723,8 +3776,8 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         g_484f68.PSRGBOutputs[5] = 0xd00;
         g_484f68.PSAlphaInputs[5] = 0xd200d00 | (exponent > 6 ? 0x20 : 0);
         g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
-        long upper = filter_quantized_byte(inverse_span * 256.0f / (real)(1 << exponent), false);
-        long lower = filter_quantized_byte(inverse_span * 0.5f, false);
+        long upper = FILTER_QUANTIZED_BYTE(inverse_span * 256.0f / (real)(1 << exponent), false);
+        long lower = FILTER_QUANTIZED_BYTE(inverse_span * 0.5f, false);
         g_484f68.PSConstant1[6] = ((dword)upper << 24) | lower;
         g_484f68.PSAlphaInputs[6] = 0x1d120c02;
         g_484f68.PSAlphaOutputs[6] = filter_output_first_shift(exponent);
@@ -3767,8 +3820,8 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         g_484f68.PSRGBOutputs[5] = 0x1045;
         g_484f68.PSAlphaInputs[5] = 0x1d201d00 | (exponent > 6 ? 0x20 : 0);
         g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
-        long upper = filter_quantized_byte(inverse_span * 256.0f / (real)(1 << exponent), false);
-        long lower = filter_quantized_byte(inverse_span * 0.5f, false);
+        long upper = FILTER_QUANTIZED_BYTE(inverse_span * 256.0f / (real)(1 << exponent), false);
+        long lower = FILTER_QUANTIZED_BYTE(inverse_span * 0.5f, false);
         g_484f68.PSConstant1[6] = ((dword)upper << 24) | lower;
         g_484f68.PSRGBInputs[6] = 0x4250000;
         g_484f68.PSRGBOutputs[6] = 0xd0;

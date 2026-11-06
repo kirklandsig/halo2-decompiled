@@ -226,6 +226,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 	out->z = camera->right.k * x + camera->up.k * y + camera->forward.k * z + camera->position.z;
 }
 
+// MiniMax D (run 46): no new form, no lower score.
 // score 195 (was 195): Frame 0x30 versus 0x2c. Ours gives the dead scale slot to the second inverse
 // depth and spills the second transform's x and z (x into the frame); retail keeps both inverse
 // defaults at [esp+4]/[esp+8], keeps that transform's x/y in xmm7/xmm6 (ours swaps x and z) and spills
@@ -441,6 +442,74 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // independent branches/joint branch/perspective-default/orthographic-default/immutable
 // conditional: 195/195/197/295/293/195; deferred conditional/joint with late inverse
 // defaults 283/280. NOT kept: no gain; original helper, defaults and complete body restored.
+// Y573: Complete source direction/origin and immutable displaced-input ownership, masks
+// 1/2/3/4/5/6/7: 285/336/364/195/285/336/364; full graph with native direction 341.
+// NOT kept: no gain; input-record copies and changed observation timing miss equality.
+// Original alias-safe helper and full body restored; frame and inverse/point homes remain.
+// Y575: Shared final projected-point difference with native input construction, displaced
+// setter and unit-scale reverse difference, eight graphs: 197 each. NOT kept: all regress;
+// native frame/inverse homes and displaced-transform spill remain. Original full body restored.
+// Y577: Native final planar delta, field/aggregate producers, scalar/record/memcpy/memmove
+// publication: 195/251/251/272/195/251/251/272. NOT kept: no equality; grouped residence
+// and copies tie or regress. Original helper/body restored; inverse homes and displaced-transform spill remain.
+// Round 63 (m3 lane 14, fast): the parameters as (d, a, camera, scale, ...) with every declaration and call changed 193
+// (retail's calls set up EBX out, ECX camera, EDX a, ESI d, last to first in that order; retail's three displaced-sum load
+// orders become exact, caller 0x4ff50 aligned 12 -> 9, 0x4f7e0 108 -> 105; under the keep bar, restored): lead, keep it
+// for a form that fixes the second transform. Also (d, camera, a) 193; (camera, d, a) 193; (camera, a, d) 195; (a, d, camera)
+// 195. On (d, a, camera): displaced rows xzy 217, yxz 216 (b.x, b.y then in retail's XMM7, XMM6), yzx 213, zxy 216, zyx 211;
+// helper coordinate/scale orders, 36 forms 183-235, best zyx with zyx 183 (973 B) but aligned 49 -> 71: retail's first transform
+// runs x, y, z, so not kept; yxz rows with coordinate orders xzy 225, yxz 205, yzx 234, zxy 225, zyx 230. Old parameters: rows
+// xzy 217, yxz 218, yzx 213, zxy 216, zyx 213; identity pointer chains of 1..7 locals ahead of the sums 195 each (same
+// code). Retail's second and third transforms share a rule: the component computed first (z, then x) goes through XMM0 into
+// XMM4 while the other two stay in XMM7/XMM6. Ours gets this in the third but gives x XMM4 in the second.
+// AC545: Uniform final scale products, paired/row-local named parts and
+// paired/row-local delta ownership 195 each; on direct reciprocal ownership
+// 207 each. NOT kept: ties or regressions; native frame and second-transform
+// spill remain. Original helper, defaults and complete body restored.
+// Y583: Standard bounded transform input copy/backward-copy/uninitialized-copy
+// 282/282/282; output equivalents 295/295/295; paired copy/backward-copy 692/692.
+// NOT kept: nonexact record transfer and lost native frame/expansion; original
+// alias-safe helper/body restored; inverse homes and displaced X/Z spill remain.
+// Round 586: Two-transform source-table/destination-array traversal, long/dword/short/word
+// ordinals with indexed/body-advanced destination: 289/289/337/337/195/195/322/322. NOT kept: nonexact
+// traversal/grouped residence; original direct calls, helper and full body restored.
+// Round 588: Standard scaled-point multiplication, branch/copy input, factor/component
+// first and direct/native output: 693/691/693/691/693/691/693/691; forced expansion of
+// the four direct outputs 525/527/525/527. NOT kept: helper outlines or frame/length
+// regress. Original alias-safe helper/body restored; inverse homes and X/Z spill remain.
+// Y590: Standard binary displacement producers at initial/direction-first/reverse/both/
+// direction-first both and seeded initial/reverse/both: 270/270/280/314/293/294/318/360.
+// NOT kept: allocation or extent regresses; original complete helper/body restored.
+// Native inverse homes and second-transform X/Z spill remain.
+// Y592: Existing transform with separate scalar outputs, pointer/reference, native/scalar result storage, native/scalar input:
+// 195/195/259/259/228/228/242/242. NOT kept: no native frame/spill recovery; original alias-safe helper and body restored.
+// Y594: Plain paired transformed-point/inverse-depth reciprocal table traversal,
+// for/while with long/dword/short/word ordinals: 197/197/224/224/197/197/224/224.
+// NOT kept: native table residence is nonexact; narrow ordinals recover frame
+// 0x2c but shorten to 937/955. Original alias-safe helper and body restored.
+// Round 130 (m3 lane 7, fast): the first cause is the second transform: retail keeps its x in the displaced point's XMM7, ours
+// moves x to XMM4 and spills x and z; that then gives ours the 1.0 in XMM6 (retail XMM7), the second inverse stored in the
+// scale slot (retail a register phi) and fa/zero swapped. Parameters (d, a, camera, scale) 193 (re-measured, 2 points); on it rows
+// zxy 216, zyx 211, yxz 216 (x XMM7, y XMM6 as retail, the transform still moves x), xzy 217. Defaults in an array, point2f or
+// scalars read in the else arm, if/else, else/if, ternary: 301/297/301 each (folded, 890-894 B). Scale read through a pointer
+// to the camera parameter 234, with the order 232, with yxz 232 (971 B); separate result scalars 195/193; displaced point
+// through a pointer local 216.
+// Round 217 (m3 lane 3, fast; m = masked aligned count, base 195 m82): the parameters (d, a, camera, scale, ...) with every declaration and call 193 (m82, under the bar); fa/fb dropped, the inverses used directly with `inv_a = inv_b = 1.f` in the orthographic arm 207 (974 B, m53),
+// the two stores in either order or chained the other way 207; that with the parameters 205 (m53); on it displaced rows zyx 199 (968 B, m50), yzx 201, zxy 204, yxz 204, xzy 205; helper coordinates declared z, x, y 213 (963 B, m113), z, y, x 216, y, x, z 216 (971 B). Frame stays 0x30.
+// Round 66 (m3 lane 14, fast): the inverses used directly (no fa/fb) re-measured 207 (974 bytes); the scale default applied
+// inside the negate block 222 (972); the displaced and reversed points through the existing vector3f_add_scaled with 1.f and
+// -1.f, both/forward only/reverse only, 195/195/195 (same code: the unit factors fold); the reversed retransform under its own
+// `perspective && fabs(tb.z) < epsilon` guard ahead of the factor block 195 (same code).
+// AC555: Existing scale-comparison truth, bool/byte/word/long, unequal-scale
+// and unit-equality polarity, 270 each (1001/955 bytes). NOT kept: all regress;
+// original alias-safe helper/body restored; frame and inverse/X/Z homes remain.
+// Y604: Complete rotation followed by actual component translation, output/native
+// rotated storage with indexed for/while, pointer and standard traversal:
+// 237/237/338/347/236/236/690/306. NOT kept: no equality; indexed output reaches
+// native length but loses native allocation. Original alias-safe helper/body restored.
+// N396: Complete ordered epsilon outcomes, direct/exhaustive/default-false/default-true
+// bool and byte producers: eight at 195. NOT kept: no equality or gain; original complete body
+// restored, native inverse homes and the second-transform X/Z spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

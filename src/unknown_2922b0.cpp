@@ -47,7 +47,11 @@ PRIVATE __forceinline void function_2922b2(point3f const *arg_0, vector3f const 
 }
 PRIVATE __forceinline real function_2922b3(real arg_0, real arg_1, real arg_2)
 {
-	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
+	if (arg_1 > arg_0)
+		arg_0 = arg_1;
+	else if (arg_0 > arg_2)
+		arg_0 = arg_2;
+	return arg_0;
 }
 PRIVATE __forceinline real function_2922b4(real arg_0, real arg_1, real arg_2, real *arg_3)
 {
@@ -70,7 +74,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 618 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
+// MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
+// retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
+// frame+0x24 against frame+0x1c and the copied vector at frame+0x4c against frame+0x40, and the first
+// comparison branches the other way round.
+// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // Frame 0x108 agrees; success/input/minimum/hit homes differ from +0x31.
 // Earlier: the true initializer uses BL, saving EBX early.
 // Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
@@ -322,6 +330,67 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
 // then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
 // executable body and helpers restored; success/input/minimum/hit homes remain.
+// F365: Native vector cross/point translation/in-place rotation receivers, masks 1/2/4/3/5/6/7, then ordinary inline:
+// 628/628/628/630/630/630/633/633 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// B412: Four-query termination from the real origin/length/hit/distance array extent,
+// native long/short ordinal from the cursor: 697/690/700/709/639/719/707/703.
+// All regress and move the frame; original traversal, helpers and in-place captures restored.
+// DH342: Shared lower-first root/output clamps and real root API, seven subsets
+// 618/626/618/626/618/626/626; all with real rotation trig API 624.
+// Original scalar producers, observations and body restored; success/input/minimum/hit homes remain.
+// DH345: Complete final scalar projections before all three stores, six row orders,
+// then immutable ijk/kji results: eight at 613 (2830 bytes). NOT kept: five-point
+// gain is below the eight-point threshold; original body and in-place snapshots restored.
+// DH348: Complete cross/rotation native aggregate/member-result storage pairs
+// 847/847/561/561/944/944/944/944. NOT kept: 561 groups scalar results into a
+// vector and does not match. Original scalar producers and in-place snapshots restored;
+// success/input/minimum/hit homes and inactive-exit layout remain.
+// DH352: Complete lateral/forward/up product parts across all three basis-reconstruction
+// rows, subsets 1/2/4/3/5/6/7 then immutable full parts: 635/635/635/624/624/624/624/624.
+// Original sum trees, scalar producers, helpers and in-place snapshots restored.
+// Round 63 (m3 lane 14, fast): the clamp helper in place on its input (retail's `movaps xmm1, xmm0; jmp; comiss xmm1, xmm3;
+// jbe; movaps xmm1, xmm3`) 592 (kept, 2831 B, aligned 227 -> 216). Lead, aligned rather than positional: the body nested under
+// `if (field_48 > 0)` with `return true;` last 679 (2839 B); the range read before the test 666 (2828 B); read first inside
+// the body 657 (2828 B, retail's opening exact through the hit clear and the range store, aligned 215), with the clamp 656 (204);
+// the staged k, j, i cross (the cross3f_staged form, memory products nearly all retail's) on that 652 (2836 B, 206), with the
+// clamp 651 (2838 B, 195); direct cross stores 664 (2822 B); on the old body the staged cross 672, direct 689, staged with
+// the clamp 678. On 592: inverse range named for both products 604 (2818 B; retail multiplies (1/range) * minimum twice, the
+// second in place on the inverse); the root's input named and clamped by an if 607, named in the ternary 592; the angle limit
+// defaulted then overwritten 689; the ray rows k, j, i 684; `x = x - f()` for the third root 592. Still short: rows 3 and 4
+// negate the half-width separately (ours shares it), and the rotation and basis-return rows schedule differently.
+// DH360: Collision record plus material-reset lifetime at success/object/settings/input/minimum/clearance/guard/basis boundaries,
+// eight forms 647/647/646/632/632/632/631/628. NOT kept: all regress and shrink to 2815/2886;
+// original late reset, complete frame, helper inputs and in-place snapshots restored.
+// DH362: Twice-used basis mode captured at entry/acquisitions/input/active boundaries,
+// positive bool 626/626/626/626; complementary bool 723/717/702/699. NOT kept: all regress;
+// original repeated mode tests, helpers, in-place snapshots and complete body restored.
+// DH364: Float root/sine/cosine API subsets 1/2/4/3/5/6/7, then complete graph with
+// published float root 618/610/610/610/610/616/616/614. NOT kept: the eight-point
+// lead requires asymmetric trig API types without a retail precision distinction;
+// complete float trigonometry gains only two. Original helpers and in-place snapshots restored.
+// DH367: Chained actual length/hit/output initializer subsets 1/2/4/3/5/6/7,
+// then complete chains with ascending length publication: 623/619/623/623/623/624/623/624.
+// NOT kept: all regress; original initializers, helpers and in-place captures restored;
+// native success/input/minimum/hit homes and inactive-exit placement remain.
+// DH369: Standard axial/final-projection coordinate reductions, native/direct/named
+// nonoriginal pairs: 789/789/710/917/917/696/919/919. NOT kept: all regress and grow
+// beyond native 2886; original helpers, sum trees, in-place captures and body restored.
+// Success/input/minimum/hit homes and inactive-exit/basis/rotation scheduling remain.
+// DH369 revisit: Root-input lower-clamp positive/complementary comparison results,
+// bool/byte/short/long, eight at 630 (2813/2886). NOT kept: all regress and
+// shorten away from retail; original root helper and complete body restored. Frame
+// 0x108, success/input/minimum/hit homes and inactive-exit/rotation scheduling remain.
+// AC557: Native root quotient producer, optional remaining/clamped scalar stages,
+// mutable/immutable complete families: eight at 607 (2817/2886). NOT kept:
+// all regress and shorten farther from retail; original helper and body restored.
+// AC559: Whole active-range admission/rejection, bool/byte/short/long: eight at 687
+// (2830/2886). NOT kept: all regress; original live guard, complete helpers and
+// in-place snapshots restored. Success/input/minimum/hit homes and inactive exit remain.
+// J259: Full root/sine/cosine return storage, separate/paired/all and immutable all: 689/706/698/690/682/701/683/683.
+// NOT kept: no eligible native repair; opening executable source restored. Native frame 0x108 is lost; original real helpers and every in-place capture restored; success/input/minimum/hit homes and inactive exit remain.
+// M400: Complete original input/basis/origin/distance/ray/root/rotation-cross/projection defaults
+// 603/677/637/665/671/592/592/598. NOT kept: none improves; original
+// producers and all in-place snapshots restored; result/input/minimum/hit homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

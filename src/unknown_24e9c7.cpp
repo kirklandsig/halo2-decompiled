@@ -115,6 +115,8 @@ struct s_24e9c7_bounds
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax b (11-04): no new form, no lower score; the result/kind/bitmap homes stay eight bytes above retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the geometric SSE schedule stays ours.
+// MiniMax D (run 46): no new form, no lower score.
 // score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
 // left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
 // xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
@@ -329,6 +331,69 @@ struct s_24e9c7_bounds
 // substituted into their single uses, after the height conversions); result renamed to sort first/last 125/125
 // (diagnostic). Retail computes both across products right after size (across_j spilled to -8), so they are not
 // single-use temporaries there.
+// B413: Reverse/side/upper/full geometry scopes ending at final corner consumption,
+// with original/immutable complete scalar inputs: 125/125/125/125/125/125/125/125.
+// Original complete body restored; early across spill and shifted scalar homes remain.
+// B416: Plain two-coordinate corner traversal, long/int/short/unsigned-short indices
+// and successive/original-tree equations: 214/214/214/214/209/209/209/209. NOT kept: frame grows and
+// extent shrinks away from retail; original point type, equations and complete body restored.
+// B419: Native two-axis fraction/pixel/scaled-pixel/raster-extent values, height-first
+// fields then readonly aggregates: 125/125/125/125/125/126/126/131. NOT kept: grouped dimensional values
+// do not match. Original scalar owners, integer conversions, corner equations and body restored.
+// M376: Signed-int selected-bitmap/height/half-width producer domains, seven subsets,
+// then all with signed-int bitmap handle: 125/125/125/125/125/125/125/125. NOT kept: no match or qualifying gain;
+// original domains/body restored; early across spill and shifted scalar homes remain.
+// M3 lane 13 r63 (fast, restored; retail 9 `addss reg, [corner]` and 1 corner load, ours 7-9 loads whatever the spelling): retail's `mov eax, edx` before each
+// corner y is a post-allocation reuse of the first corner's y load, which appears when the first corner is copied before up while EAX still holds the width
+// (order height, result, width, first corner, up, side, later corners; early-across products unnamed forward_i) 147 (757 bytes, aligned 110). On it side and back
+// as scalars, `0.0f -`, side scaled in place 146 (757): first form with retail's frame 0x48, result -0x10, kind -0x14, bitmap -0x18 (masked aligned 94 -> 85), but the
+// across products sink into the side products, so -8/-0xc hold back and the half width. With forward_i named 145 (751, frame 0x4c, result -0xc); side as a point
+// 160 (761, frame 0x50: early across as retail, pair below bitmap). Same homes with up scalar, points/side/back declared first or reversed, sums written offset first
+// (same code). Corner orders on the `0.0f -` across form, plain/(real)height in up/forward_i unnamed: height width result first-corner 148/142/153; result before width
+// 142/142/147; first corner after up 148/133/153; first two corners before up 154/148/164; first corner before result 153/142/161; first corner before up, side
+// before the sums 152/146/146; first corner after side 149/148/144; second corner's sums after side 149/143/154; all four before up 151/145/161. Inline scale and add
+// helpers (diagnostic) 136-176 (best add helper with named forward_i 136, 749 bytes, frame 0x4c; 142, 738 bytes, without it); corner writes through a walking pointer,
+// named pointers or references 139-146. Result only assigned, (real)height for the up products, 142-156. Original body restored.
+// On that form the across pair given a second use (back written from the across products, so CSE merges it): side and back scalars 155 (758, frame 0x50), with forward_i named 159, a named real half width 162; no side or back locals 156 (728, frame 0x48, result -8);
+// back before side 150; `0.0f -` back 155. Original body restored.
+// B435: Existing vector2f component-array upper/side/reverse observations, seven
+// subsets, then all with the perpendicular pair: 125/125/125/125/125/125/125/144.
+// NOT kept: no exact vector-storage or early-spill recovery; original types/body restored.
+// Early across spill, eight-byte-high return/metadata homes and SSE scheduling remain.
+// B439: Output-origin transfers from the first real vertex, seven nonempty receiver
+// subsets then a successive output-copy chain: 129/129/129/129/129/129/129/129.
+// Original complete body restored; early across spill and scalar homes remain.
+// B441: Existing early perpendicular setter, separate/reused side ownership,
+// direct/pre-scaled complete inputs and unary/zero-minus negative direction:
+// 144/139/139/139/144/139/139/139. NOT kept: no equality; original scalar pair, full body and
+// declaration set restored. Early spill and eight-byte-shifted scalar homes remain.
+// B443: Exhaustive returned-height producers at three admission gates, all eight
+// rejection-first/success-first arm masks: 186/186/186/186/186/186/186/186. NOT kept: all grow
+// to 748 bytes at frame 0x48; original entry zero/full body restored.
+// Early across spill, eight-byte-high scalar homes and SSE scheduling remain.
+// B445: Complete opacity producer at global-copy/corner/reverse/side/upper/width/height/basis boundaries:
+// 139/173/172/185/166/171/171/172. NOT kept: moved one-use producers do not match; original whole body restored.
+// Early across spill and eight-byte-high scalar homes remain.
+// Round 130 (m3 lane 7, fast): retail computes the across terms ahead of the height conversion and reuses across j's home for side y:
+// a side vector scaled in place, with slots -0xc/-8 above the result. Direct fields scaled in place 144 (746 B), through `real half` 154
+// (756 B); named scalars in place 125/125, with `real half` 123, through a copy 123 (2 points, slots unmoved). Pointer helpers: set and
+// scale 134 (752 B; kind and bitmap homes become retail's, side at -0x10 below the result), scale only 154/134, unit perpendicular 144.
+// Result references lowered: temporary for up 141, named extent 125, with the side 142/143, on the helpers 134/134, assigned last 159;
+// up through a helper 134; `0.0f -` forms for up with the scalars 139 (738 B). Retail keeps the y coordinate in EDX and re-reads x: named y 194/186/207, both at each use 191 (684-705 B).
+// Round 217 (m3 lane 3, fast, base 125 at 743 B): across products as `size * (0.0f - forward_j)` scaled in place by a `real half` with back as `0.0f - across` 134 (739 B); side and back computed after the first corner's base copy 138 (740 B), and with points declared there too 138;
+// back from the across products (`half_width * (0.0f - across)`) 164 (764 B); half_width kept as a real from the division 125 (same positions, other masked code). Slot order unchanged in all: retail's across homes sit above the result.
+// M3 lane 11 r72 (fast, control 125, masked 92): side scalars set to `size * (0.0f - forward_j)` / `size * forward_i` and scaled in place by
+// the half width, side and back kept as points 138 (739; homes unchanged); the bitmap entry indexed at both uses 144 (746, masked 78); `up.x`
+// written `-(placement->forward_i * result)` 125 (same code); `across_i` written `-placement->forward_j * size` 125 (same code, still sunk); bitmap
+// at each use with `size * (0.0f - forward_j)` 138 (742, masked 79).
+// M397: Immutable actual upper/side/reverse records, masks 1/2/4/3/5/6/7,
+// then all with immutable scalar producers: 125/125/125/125/125/125/125/125. NOT kept: no exact or
+// eligible gain; original records, observations and complete body restored. Early spill/homes remain.
+// DH381: Native scalar-SSE dimension conversion/full-expression producers, height/width
+// modes 10/01/11/20/02/22/12/21: 241/241/241/230/229/251/233/242. NOT kept: all force frame alignment absent in retail and expand the body; original restored.
+// N396: Signed eight-byte selected ordinal/pixel-height/half-width storage, seven subsets
+// then full bitmap-handle graph: 220/125/220/148/235/148/235/238. NOT kept: no native narrow-domain
+// equality or gain; original body restored, early across spill and eight-byte-high scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

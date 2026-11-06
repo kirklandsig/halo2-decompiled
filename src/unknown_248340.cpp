@@ -7,8 +7,8 @@
 
 struct s_particle_impact;
 struct s_object_246eb0;
-void function_246e60(long tag_index, dword group, s_particle_impact const *impact,
-	s_object_246eb0 const *particle, long definition_index);
+void function_246e60(s_particle_impact const *impact, s_object_246eb0 const *particle,
+	long definition_index, dword group, long tag_index);
 
 class c_view_248340
 {
@@ -25,51 +25,6 @@ struct s_emitter_248340
 	short field_02;
 };
 
-// score 4 (was 4): virtual-table setup precedes the tag-result spill in retail;
-// Lane 16 round 74: retail's store is a register-allocator spill made just before the call (the
-// value stays in EAX, the vtable takes EDX); the volatile's store comes at once. The particle system
-// definition as one reused local (outer and block) 4, without the volatile 27 (caller 0x247140 lost);
-// a block-scoped definition local without the volatile 27; the group query inline in the call 8;
-// plain tag with the emitter decrement first 27.
-// tried group const query 4; tag const query 4; both const queries 4; group signed return 4;
-// tag unsigned return 4; tag const home 4; tag unsigned home 4; const query receiver 4. Restored.
-// second virtual-call vtable/spill order remains.
-// initial virtual-query result lifetime 4;
-// invalid-query common exit 4;
-// system index name after tag home 4;
-// query tag name before definition home 4;
-// group name before tag home 4;
-// descriptive group and system names 4;
-// descriptive query and group names 4;
-// all three descriptive stack candidate names 4;
-// Invalid-query cleanup return 38; complete cleanup in both branches 38; dispatch inner scope 4;
-// countdown field pointer 38; const system index 4; sequenced query expression 4;
-// unsigned-int group home 4; wide tag home 57.
-// Direct nested queries 27; split tag assignment 4; split tag with direct group 8;
-// split group assignment 4; both assignments split 4; outer callee inline/noinline/both 4/4/4.
-// Volatile tag at function scope 4; all three locals at function scope 4; group declared before the
-// volatile tag 4; without the volatile, (void)&tag 27 and tag at function scope 27 (particle moves to
-// the stack and caller 0x247140 138).
-// Round 39: nested queries as a diagnostic (27: no spill and particle stays in ebx, but the two stack
-// arguments are pushed before the queries, so retail used named locals); the tag local set by the
-// guard's query and re-queried in the block 27 (31 with the volatile); the emitter decrement before
-// the particle store 8; the definition as a reference 4.
-// Round 57: without the volatile the all-stack first pass gives the tag ebx and particle ebp
-// (so particle stays a stack argument); renaming tag, definition index, group, particle or
-// emitter leaves that pass unchanged. Without the volatile (one-file harness, aligned counts): plain
-// 11 (`ret 8`, tag in ebx); tag declared before the definition index, emitter decrement first, group
-// named: the same code as plain.
-// Round 97: plain tag with the emitter address at the end or entry 27/27 (caller 138); tag read through
-// its address 27; both addresses 27; const group home 4; const definition pointer 4;
-// const particle or emitter parameter 4/4 (caller 137).
-// Round 70 (--fast): parameters reordered to (particle, system, emitter) at the definition, declaration
-// and call (0x247140 sets eax before ebx) 4, caller 0x247140 194, so the declared order stays; the volatile
-// moved to the group 35 (caller 138); a `register` tag without the volatile 27 (caller 138); the volatile
-// moved to the definition index 27 (caller still matched: the tag then takes edi, the definition index the
-// emitter's home); the system definition named before its tag index 4.
-// Round 87 (m3 lane 12, fast, all without the volatile; caller 0x247140 138 in each): a compiler barrier between
-// the two queries 27; the group query inline in the call 27; tag, group and call in an inner block 27; a dword
-// tag 27; the emitter decrement as `field_02 = field_02 - 1` 27. `register` parameters do not compile here.
 // @retail 0x248340
 void function_248340(s_particle_system_datum *system, s_object_246eb0 *particle,
 	s_emitter_248340 *emitter)
@@ -78,9 +33,7 @@ void function_248340(s_particle_system_datum *system, s_object_246eb0 *particle,
 	if (definition->v3() != NONE)
 	{
 		long definition_index = system->function_1751d0()->tag_index;
-		long volatile tag_index = definition->v3();
-		dword local_0 = definition->v2();
-		function_246e60(tag_index, local_0, 0, particle, definition_index);
+		function_246e60(0, particle, definition_index, definition->v2(), definition->v3());
 	}
 	*(long *)((byte *)particle + 4) = NONE;
 	--emitter->field_02;

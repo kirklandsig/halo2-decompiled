@@ -10,7 +10,7 @@
 #include "object_iterator.h"
 #include "unknown_0d0690.h"
 
-/* the influences' weights (g_502258, cleared by unknown_157450.cpp): two
+/* the influences' weights (g_502250 + 2, cleared by unknown_157450.cpp): two
    shared values, three per influence type, then the influence table */
 struct s_spawn_influence_type
 {
@@ -29,7 +29,10 @@ struct s_spawn_influence_globals
 	byte const *table;
 };
 
-extern dword g_502258[0x27];
+/* retail's code holds no absolute address of the two words at 0x502250 and does not clear them; the weights follow
+   them. Retail addresses the type records 8 bytes below this symbol, which the compiler keeps as an integer offset
+   only within 8 bytes of it */
+extern dword g_502250[0x29];
 
 PRIVATE const byte g_4709f0[48] =
 {
@@ -61,6 +64,9 @@ struct s_spawn_scenario_23aea0
 	s_spawn_settings_23aea0 *settings;
 };
 
+/* sets the influence weights from the game's defaults and the scenario's overrides; the two-by-six copy runs on a
+   byte offset as retail does (0x18..0xa8 from the record 8 bytes below the symbol, which VC unrolls by six) */
+// MiniMax G (11-04): no new form, no lower score: the integer-offset destination still needs the g_502250 symbol, which lives in src/unknown_157450.cpp.
 // score 61 (was 61): prologue and 438-byte extent agree; the default-copy destination still
 // uses pointer induction instead of integer offset 0x18..0xa8; staged scalar loads differ.
 // Earlier at 97 (was 105): the prologue is retail's; what differs is the destination, still a pointer
@@ -84,7 +90,6 @@ struct s_spawn_scenario_23aea0
 // alignment still differ.
 // definition uses ECX and destination uses a pointer instead of retail integer offset; override alignment differs.
 // Earlier (105): retail's weights are addressed from a base 16 bytes below the array (its
-// Earlier (105): definition uses ECX and destination uses a pointer instead of retail integer offset; override alignment differs.
 // Earlier at 103: the definition now stays in EAX and the source pointer in ECX, but
 // the destination is still an absolute pointer induction instead of retail's integer table
 // offset 0x18..0xa8; the prologue publishes the default table after the first scalar store
@@ -287,22 +292,34 @@ struct s_spawn_scenario_23aea0
 // globals local, 61 (same code); vector3f_assign fed through a `vector3f const *` view of the record 61 (same code).
 // So the round 55 match needs the field assignments (or its dword reads) and the 0x502250 symbol together.
 // BLOCKED-BY 0x157450 (src/unknown_157450.cpp, held by F356 in r59).
+// Round 140: typed per-record setter/scalar copies 100/140; raw batch setter/scalar copies 82/140;
+// typed batch setter/scalar copies 89/140; typed record-reference setter/scalar copies 100/140.
+// The byte-offset setters grow to 486 bytes and every scalar form loses retail's unroll/addressing.
+// MiniMax B (11-03), not kept: a 0xac-byte struct declared at 0x502248 (four words, the two shared values, the twelve
+// records, the table), with a byte-offset loop 0x18..0xa8 by 0x48 and the source from definition + 0x184, matched in
+// the lane, but 0x502248 is the mission-objective pointer (`long *g_502248`, src/unknown_29f5b0.cpp), so the tree no
+// longer links (batch 216: LNK2001 g_502248) and the struct would fold unrelated globals into the weights.
 // @retail 0x23aea0
 void function_23aea0()
 {
 	byte *tag = g_4e3b44[g_4e034c->index & 0xffff].bytes;
 	byte *definition = *(byte **)(tag + 0xc);
 	s_spawn_scenario_23aea0 *scenario = (s_spawn_scenario_23aea0 *)g_4e0350;
-	s_spawn_influence_globals *globals = (s_spawn_influence_globals *)g_502258;
+	s_spawn_influence_globals *globals = (s_spawn_influence_globals *)(g_502250 + 2);
 	globals->table = g_4709f0;
 	globals->value4 = *(real *)(definition + 0x154);
 	globals->value0 = *(real *)(definition + 0x150);
-	for (long type = 2; type < 14; type++)
+	byte *source = definition + 0x184;
+	for (long offset = 0x18; offset < 0xa8; offset += 0x48)
 	{
-		vector3f_assign(&globals->types[type - 2].vector,
-			*(real const *)(definition + 0x148 + type * 0x1c),
-			*(real const *)(definition + 0x14c + type * 0x1c),
-			*(real const *)(definition + 0x150 + type * 0x1c));
+		s_spawn_influence_type *records = (s_spawn_influence_type *)((byte *)g_502250 + offset - 8);
+		for (long j = 0; j < 6; j++)
+		{
+			records[j].value0 = *(real const *)(source + j * 0x1c - 4);
+			records[j].value4 = *(real const *)(source + j * 0x1c);
+			records[j].value8 = *(real const *)(source + j * 0x1c + 4);
+		}
+		source += 0xa8;
 	}
 	if (scenario->count > 0)
 	{
@@ -359,7 +376,7 @@ __forceinline void spawn_influence_add(s_spawn_influence_list *list, point3f con
 // @retail 0x23ba10
 void function_23ba10(long type, point3f const *point, s_spawn_influence_list *list)
 {
-	s_spawn_influence_globals *globals = (s_spawn_influence_globals *)g_502258;
+	s_spawn_influence_globals *globals = (s_spawn_influence_globals *)(g_502250 + 2);
 	s_spawn_influence_type *definition = &globals->types[type];
 
 	spawn_influence_add(list, point, definition->value0, definition->value4, globals->value0,
@@ -848,8 +865,8 @@ void function_23b500(long player_index, s_spawn_influence_list *list)
 				point3f predicted;
 				point_along_vector_23b500(&object->position, &object->velocity, settings->vehicle_time, &predicted);
 				spawn_influence_add(list, &predicted, radius, radius * 1.2f,
-					((s_spawn_influence_globals *)g_502258)->value0,
-					((s_spawn_influence_globals *)g_502258)->value4, settings->vehicle_weight);
+					((s_spawn_influence_globals *)(g_502250 + 2))->value0,
+					((s_spawn_influence_globals *)(g_502250 + 2))->value4, settings->vehicle_weight);
 			}
 		}
 		else if (type_mask & 0x20)
@@ -860,8 +877,8 @@ void function_23b500(long player_index, s_spawn_influence_list *list)
 				point3f predicted;
 				point_along_vector_23b500(&object->position, &object->velocity, settings->projectile_time, &predicted);
 				spawn_influence_add(list, &predicted, settings->projectile_inner, settings->projectile_outer,
-					((s_spawn_influence_globals *)g_502258)->value0,
-					((s_spawn_influence_globals *)g_502258)->value4, settings->projectile_weight);
+					((s_spawn_influence_globals *)(g_502250 + 2))->value0,
+					((s_spawn_influence_globals *)(g_502250 + 2))->value4, settings->projectile_weight);
 			}
 		}
 	}

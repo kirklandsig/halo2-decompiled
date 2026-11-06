@@ -699,87 +699,6 @@ s_slot_handler_2 g_47dc88 =
 void function_b9fc0(long arg_0, vector3f *arg_1, vector3f *arg_2);
 bool function_f47d0(long arg_0, long arg_1);
 bool function_1f8660(long arg_0);
-// score 7 (was 7): Frame 0x80c, all exits and every instruction but seven agree: the actor and
-// scratch-buffer spill homes are exchanged (+0x24/+0x28; retail keeps the actor at +0x28).
-// Round 144: the homes follow use weight (heavier is lower): three extra buffer releases put the
-// buffer below the actor, one or two do not, nor one actor use fewer. Getter for the entry test with
-// the actor declared inside 63; object index read once for both uses 211; reference test reversed
-// 137; prop index named for its two uses 13; object index read before the prop tests 235.
-// Round 62: the second point difference in its own vector 7 (kept: retail's direction loads in the
-// second dot product); a release in each arm 66; one position pointer for both differences 7;
-// status output scoped into the request block 11; separate first-call reference 7; early test
-// folded into the outer condition (no label) 7.
-// Result first 203; request outer scope 187; role names 181; shared point differences 179;
-// failure result before release 207; shared cross product 174.
-// Count name with shared cross 174; request-output declarations first 174;
-// outer vector workspaces 174; separate direction vectors 171; request defaults with overrides 186.
-// unsigned-byte result 224; direct shared reference equality 174; direct slot observations 174; separate selected alignment 174; range selection arms 174.
-// Short/native-long success 232/228; unsigned selection count 174; native zero/kind request
-// initialization 172/173; status-output name 174; const tag input 174; request through validation 174;
-// success from availability 217; direct exits with failure retained through release 232.
-// Round 358: Entry selection outputs 174; complete vector role names with cross output 174; failure-default
-// success paths 215; combined work guard 174; positive tag work 174. Actor/result/count and direction homes
-// remain in frame 0x80c; opening body restored.
-// Round 195: complete k-j-i projections/status 174/174; both shared differences 172/172;
-// every component product/status 173/173; both shared differences 172/172. Gains of one/two restored.
-// Round 197: read-only actor/state/both views 174/174/174; distinct selection/validation
-// reference lifetimes alone/actor/state/both 174/174/174/174; actor lookup at every use 230.
-// Round 204: shared release 204; native reference-produced result 226; absent-tag return
-// alone/reference result 226/220; skip return alone/reference result 223/229; both early
-// exits alone/reference result 221/222. Actor/result/count and direction homes remain.
-// Round 323: vehicle field at each use 174; radius read once 191; shared projections
-// 194; vehicle/radius 191; vehicle/projections 194; radius/projections 213; all 213; radius
-// and projections with native vehicle index 213. Original actor/result/count and direction homes remain.
-// Round 168: Shared complete position with original/split directions and actor/count role names 170
-// each; with entry result 193 each; three scalar coordinates original/split 182/185. Four-point
-// best rejected; snapshot frame 0x81c; opening body restored.
-// Round 199: Count/status scope 175; complete selected-point copy 182; both 180;
-// reference before selected output 174; scope/reference 175; point/reference 182;
-// all three 180; scoped count/status role names 175. Original output lifetimes restored.
-// Round 60 (kept): count output scoped to the request block 173; failure result stored through the
-// flag with one shared release 203; the rest nested under the tag test 95; dot3f for the three dot
-// products 44; vector3d_from_points3d for both differences 34. Not kept: count and status both
-// scoped 175; names sorting the buffer first 173; buffer declared at entry/after the actor 95/95;
-// dot3f argument orders (each, pairs, all) 34-44 unchanged; direction declared first 44; dot3f
-// tested directly 44; actor getter at the object/vehicle/second-difference use 60/135/238;
-// result first 68; slot first 34.
-// Round 49: const actor/buffer/both pointers 7/7/7; request/validation/release buffer aliases
-// 7/7/7; first/second position pointers 7/7. Starting body restored.
-// Round 16: the two homes are frame-relative +0x1c (actor) and +0x18 (buffer) in retail, the other
-// way round here; the request sits at +0xb4 in both. The buffer declared at function scope before
-// or after the actor (with 0, with no initializer, with a dummy initializer) 7/7/7/7; the buffer
-// declared after the entry/status/reference outputs 7/7/7; the actor typed as a long address 7;
-// redundant extra buffer uses (self-assign, self-compare) 7/7/7; the release written in both arms
-// 66; the actor declared inside the flag test with the getter in the test 63; the actor in a nested
-// block with the buffer outside 52; the actor looked up at every use 243; the slot and entry-guard
-// conditions written as nested ifs 7/7. Only the actor and buffer homes remain exchanged; the
-// opening body is restored.
-// Round 206: complete position after/before orientation 143/150; position plus post-clear buffer 215;
-// buffer after request clear/constants 198/198; each with real reference-field equality 224/224;
-// renewed actor view for the complete direction phase 223. Actor/buffer homes remain exchanged.
-// Round 69: actor named to sort after the buffer 7 (names do not order these homes); failure flag
-// after the actor store 7; prop test as its own if 7; third vector declared before the call 7;
-// untyped buffer pointer 7.
-// Round 41: entry flag test through a fresh actor lookup 33; buffer cleared after its release 7;
-// request outputs declared before the buffer 7; request before the count 7; reference output first 7.
-// Round 53: copied later actor view 7; actor copy with slot data view 7; actor copy, slot data view
-// and flattened request scope 34; slot data view alone 7; state scoped to the outer test 7;
-// flattened request scope alone 34; actor declaration split from its lookup 52; buffer declaration
-// split from acquisition 7. Actor/buffer homes remain exchanged; the opening body is restored.
-// Round 11 (lane 17): REFERENCE_EQUAL test with the failure store first and a `selected` copy for the
-// second call 7; radius if/else 7, default-then-override 43, `<= 0.0f` ternary 37; slot data view from
-// arg_1->unknownc in place/declared first 7/7; that view plus one position pointer 7; inverted tag test 188;
-// renames 7. Extra buffer releases before the first call or three after it give retail's homes but other
-// code (156-206); fresh actor lookups at the 270/26c/position reads keep the homes (140-235).
-// Round 49 (lane 14, fast): the failure store writing `false` directly 7; the slot flag named before the
-// prop test 7; the unit index declared then assigned 7; the reference compared against the global without
-// the copy 7; the side dot product scaled in its own statement's expression 7. Re-measured: the reference
-// test reversed (`!=` first, failure in the else) 137 (970 bytes).
-// Round 32 (lane 17, fast): the early `goto done` folded into the entry test 7; the slot cast at each use (no slot
-// local) 7; the 0x26c object index read once at entry into the later local 211; result and slot declared before
-// the actor 52 (968 bytes); the failure store through the actor local 206 (939 bytes).
-// Round 134: fresh actor after/before buffer 227/33; const argument, native object index, const
-// slot/tag/reference/radius 7 each. Opening body restored.
 // @retail 0x1ad6a0
 bool __stdcall function_1ad6a0(long arg_0, s_slot *arg_1)
 {
@@ -848,10 +767,13 @@ bool __stdcall function_1ad6a0(long arg_0, s_slot *arg_1)
 								cross3f(&local_16, &local_15, &side);
 								real local_20 = dot3f(&side, &local_21);
 								local_20 *= local_19;
+								long trick = 0;
 								if (local_20 > 1.0f)
-									function_f47d0(local_14, 1);
+									trick = 1;
 								else if (-1.0f > local_20)
-									function_f47d0(local_14, 2);
+									trick = 2;
+								if (trick)
+									function_f47d0(local_14, trick);
 							}
 						}
 					}
@@ -868,6 +790,7 @@ done:
 }
 
 #include "object_markers.h"
+#include "object_dispatch.h"
 
 struct s_record_motion_view;
 point3f *function_b9dd0(long arg_0, point3f *arg_1);
@@ -905,63 +828,6 @@ struct s_1ac612
 	byte field_44[0x484 - 0x44];
 };
 
-// score 29 (was 29): frame 0x8c agrees; the actor pointer and actor offset swap EDI/EBP (so the
-// candidate takes EDI), their spill homes swap with the selected index (+0x1c/+0x20), the best
-// value/index initialisations sit before the zero-count branch, one product loads its operands the
-// other way and the up.j load runs before the up-vector address.
-// Round 49: result declared first 30; global factor first in the third product 29; best index and
-// value before the query 258 (983 bytes); one-expression distance 137; named unit index 29;
-// candidate comparison reversed, new actor local for the cleanup and one-expression up product
-// 29/29/128 (screened); 36 combinations of these, none below 29.
-// Earlier: separate cleanup receiver 29; success return 74; shared displacement 29; scan scope
-// 44; unsigned candidate counter 227; unsigned marker counter 153; const source/marker 29;
-// shared offset 29; lifetime names 29; actor parameter name 29; unsigned handles 29; location
-// memcpy 58; distance scope 29; continue guards 29; joint vector helpers 41; result declared
-// first 30; best index named before actor home 29; source actor named after index home 29;
-// best index and source actor named homes 29; candidate/marker difference shared helpers 29;
-// forward product shared helper 135; up product shared helper 41; native source location 58;
-// query outputs at loop/entry and source receiver at entry 29; marker reference, readonly
-// candidate tag, distance predicate and aligned up-product scope 29; positive-count scope 254;
-// up-vector private pointer 41; actor-input private reference 137.
-// actor offset/candidate registers and two spill homes differ;
-// separate cleanup receiver 29; success return 74; shared displacement 29; scan scope 44;
-// unsigned candidate counter 227; unsigned marker counter 153; const source/marker 29/29.
-// actor/candidate registers and two spill homes differ; shared offset 29, lifetime names 29, actor parameter name 29, unsigned handles 29, location memcpy 58, distance scope 29, continue guards 29, joint vector helpers 41 (round 115).
-// frame 0x8c agrees; EBP/EDI, two spill homes and product/address scheduling still differ;
-// tried result declared first 30; best index named before actor home 29;
-// source actor named after index home 29; best index and source actor named homes 29;
-// candidate difference shared helper 29; marker difference shared helper 29;
-// forward product shared helper 135; up product shared helper 41. Restored.
-// Earlier: frame 0x8c agrees; EBP/EDI and offset/selection spill homes remain exchanged.
-// Native source location 58; query outputs at loop/entry and source receiver at entry 29 each;
-// marker reference/readonly candidate tag/distance predicate/aligned up-product scope 29 each.
-// All executable forms and the experimental include restored.
-// Earlier: actor-offset/selection registers and spill homes still differ.
-// Candidate cursor 244; marker cursor 234; both cursors 249; distance first 29;
-// distance across queries 266; point declaration first 29; selection update first 30;
-// short ordinal entry scopes 29. Restored.
-// Round 41: candidate read from the query array at each use 58; forward test through the existing
-// 0x26f8f0 helper (retail inlines it here; its /Ob1 file keeps it out of line even with an inline or
-// __forceinline declaration) 206/206/206; best-index renames (best_index, winner, zz_index) 29;
-// forward product in the helper's operand order 137; up product after the forward test 29, both 137.
-// Round 41 (lane 10): the closing cleanup is the body of the existing 0x26def0 with a NONE owner
-// (retail calls 0x26def0 out of line at 0x1ac270/0x1ad400 but has this body in line here); the call
-// itself stays out of line 301 (918 bytes); the body as a file-local forceinline helper 29, as a
-// plain inline helper 29; through actor_datum_get with the location-record field names 29; best
-// index at function scope with the selection block after the first one 273 (984 bytes).
-// Round 72 (lane 9, fast): the forward product computed before the marker difference 29; the up axis
-// global read into a pointer local used for all three terms 58; the marker difference through the
-// existing vector3d_from_points3d 29; best index/value declared before the query and assigned after it 29,
-// the index declared at entry 29. Diagnostic: actor_get as offset-first sum or array element 29/29
-// (header restored), so the EBP/EDI swap is not the accessor's spelling.
-// Round 80: entry actor reused for cleanup 79 (955 bytes); direct actor lookups 248 (968); squared-length
-// helper 137; marker-matrix pointer 29; direct marker indexing 100 (969); distance declaration before
-// the query 29; candidate/marker postincrement 29/29. Restored.
-// Round 30 (lane 18, fast): separate cleanup actor local re-measured 29; long candidate counter 243
-// (951 bytes); actor_get's index as an unsigned mask (shared header, diagnostic) 29, the entry offset still
-// takes EDI; best value declared before best index 29; marker record pointer declared before the handle 31;
-// the forward product's i term with its operands swapped (diagnostic) 29, the load order is canonicalised.
-// Restored. 0x15adb0 shows the same index-scaled-after-base order in an inlined lookup.
 // @retail 0x1ac610
 bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	s_object_marker *arg_2, short *arg_3)
@@ -970,7 +836,7 @@ bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	bool local_1 = false;
 	if (local_0->unknown018 != NONE)
 	{
-		s_ai_object *local_2 = ai_object_get(local_0->unknown018);
+		s_ai_object *local_2 = (s_ai_object *)OBJECT_DATUM_GET(local_0->unknown018);
 		dword local_3[2];
 		local_3[0] = *(dword *)((byte *)local_2 + 0x28);
 		local_3[1] = *(dword *)((byte *)local_2 + 0x2c);
@@ -978,73 +844,77 @@ bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 		function_b9dd0(local_0->unknown018, &local_4);
 		long local_5[20];
 		short local_6 = function_bb050(1, 0x8c3, local_3, &local_4, 4.0f, local_5, 20);
-		long local_7 = NONE;
-		real local_8 = 3.402823466e38f;
-		for (short local_9 = 0; local_9 < local_6; ++local_9)
+		if (local_6 > 0)
 		{
-			long local_10 = local_5[local_9];
-			if (local_10 != local_0->unknown018)
+			long local_7 = NONE;
+			real local_8 = 3.402823466e38f;
+			for (short local_9 = 0; local_9 < local_6; ++local_9)
 			{
-				s_ai_object *local_11 = ai_object_get(local_10);
-				s_1ac610 *local_12 = (s_1ac610 *)g_4e3b44[local_11->definition_index & 0xffff].bytes;
-				if (local_12->field_5c > 0 && (*local_12->field_60 & 4) && function_26df40(arg_0, local_10, false))
+				long local_10 = local_5[local_9];
+				if (local_10 != local_0->unknown018)
 				{
-					vector3f local_13;
-					local_13.i = local_11->position.x - local_2->position.x;
-					local_13.j = local_11->position.y - local_2->position.y;
-					local_13.k = local_11->position.z - local_2->position.z;
-					real local_14 = local_13.k * local_13.k;
-					local_14 += local_13.j * local_13.j;
-					local_14 += local_13.i * local_13.i;
-					if (local_8 > local_14)
+					s_ai_object *local_11 = ai_object_get(local_10);
+					s_1ac610 *local_12 = (s_1ac610 *)g_4e3b44[local_11->definition_index & 0xffff].bytes;
+					if (local_12->field_5c > 0 && (*local_12->field_60 & 4) && function_26df40(arg_0, local_10, false))
 					{
-						local_8 = local_14;
-						local_7 = local_10;
+						vector3f local_13;
+						local_13.i = local_11->position.x - local_2->position.x;
+						local_13.j = local_11->position.y - local_2->position.y;
+						local_13.k = local_11->position.z - local_2->position.z;
+						real local_14 = local_13.k * local_13.k;
+						local_14 += local_13.j * local_13.j;
+						local_14 += local_13.i * local_13.i;
+						if (local_8 > local_14)
+						{
+							local_8 = local_14;
+							local_7 = local_10;
+						}
 					}
 				}
 			}
-		}
-		if (local_7 != NONE)
-		{
-			short local_15 = function_26e090(local_7, arg_2, arg_3, 32);
-			if (local_15 > 0 && ((s_1ac611 *)g_4e0348)->field_c4 > 0 && ((s_1ac611 *)g_4e0348)->field_c8)
+			if (local_7 != NONE)
 			{
-				long local_16 = NONE;
-				s_1ac612 *local_17 = NULL;
-				for (short local_18 = 0; local_18 < local_15; ++local_18)
+				short local_15 = function_26e090(local_7, arg_2, arg_3, 32);
+				if (local_15 > 0 && ((s_1ac611 *)g_4e0348)->field_c4 > 0 && ((s_1ac611 *)g_4e0348)->field_c8)
 				{
-					s_object_marker *local_19 = &arg_2[local_18];
-					vector3f local_20;
-					local_20.i = arg_1->x - local_19->matrix.position.x;
-					local_20.j = arg_1->y - local_19->matrix.position.y;
-					local_20.k = arg_1->z - local_19->matrix.position.z;
-					real local_21 = local_19->matrix.forward.k * g_4687b0->k;
-					local_21 += local_19->matrix.forward.j * g_4687b0->j;
-					local_21 += local_19->matrix.forward.i * g_4687b0->i;
-					real local_22 = local_19->matrix.up.k * local_20.k;
-					local_22 += local_19->matrix.up.j * local_20.j;
-					local_22 += local_19->matrix.up.i * local_20.i;
-					if (local_21 > 0.95f && 0.0f > local_22)
+					long local_16 = NONE;
+					s_1ac612 *local_17 = NULL;
+					for (short local_18 = 0; local_18 < local_15; ++local_18)
 					{
-						if (local_16 == NONE)
+						s_object_marker *local_19 = &arg_2[local_18];
+						vector3f local_20;
+						local_20.i = arg_1->x - local_19->matrix.position.x;
+						local_20.j = arg_1->y - local_19->matrix.position.y;
+						local_20.k = arg_1->z - local_19->matrix.position.z;
+						if (dot3f(g_4687b0, &local_19->matrix.forward) > 0.95f)
 						{
-							local_16 = function_26db50(local_7, 1);
-							if (local_16 == NONE)
-								local_16 = function_26d500(local_7);
-							if (local_16 == NONE)
-								break;
-							function_26def0(arg_0, local_7);
-							function_26dbd0(local_16, arg_0);
-							local_17 = (s_1ac612 *)g_51eca4->data + (local_16 & 0xffff);
-							local_1 = true;
-						}
-						if (local_16 != NONE && !(local_17->field_40[local_18 >> 5] & (1UL << (local_18 & 31))))
-						{
-							s_type_c3b527 local_23;
-							long local_24;
-							if (function_26e180(local_16, (s_record_motion_view const *)local_19,
-								arg_3[local_18], NULL, &local_23, &local_24) && local_24 != NONE && local_24 != 0xffff)
-								function_26d9c0(local_16, &local_23, local_18, arg_3[local_18], local_24, &local_19->matrix.up);
+							vector3f const *local_21 = &local_19->matrix.up;
+							real local_22 = local_21->k * local_20.k;
+							local_22 += local_21->j * local_20.j;
+							local_22 += local_21->i * local_20.i;
+							if (0.0f > local_22)
+							{
+								if (local_16 == NONE)
+								{
+									local_16 = function_26db50(local_7, 1);
+									if (local_16 == NONE)
+										local_16 = function_26d500(local_7);
+									if (local_16 == NONE)
+										break;
+									function_26def0(arg_0, local_7);
+									function_26dbd0(local_16, arg_0);
+									local_17 = (s_1ac612 *)g_51eca4->data + (local_16 & 0xffff);
+									local_1 = true;
+								}
+								if (local_16 != NONE && !(local_17->field_40[local_18 >> 5] & (1UL << (local_18 & 31))))
+								{
+									s_type_c3b527 local_23;
+									long local_24;
+									if (function_26e180(local_16, (s_record_motion_view const *)local_19,
+										arg_3[local_18], NULL, &local_23, &local_24) && local_24 != NONE && local_24 != 0xffff)
+										function_26d9c0(local_16, &local_23, local_18, arg_3[local_18], local_24, local_21);
+								}
+							}
 						}
 					}
 				}

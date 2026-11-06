@@ -664,6 +664,63 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // with scale first formed inside the list block 130 (1136 bytes); the first particle read from the emitter at the
 // guard and again for the loop 293 (1145 bytes); the position rotated through the existing
 // vector3f_rotate_into_axes, the motion through the shared helper 129 (1140 bytes).
+// AC515: Cache invalidation mask-before-identity stores at system/location/particle, subsets 1..7,
+// then all native mask computations before the original identity/mask stores: 283/279/286/169/285/282/289/53.
+// NOT kept: no exact result from store/result diagnostics; original invalidations and body restored.
+// AC517: Both shared unit-default assignment chains with both scalar declaration priorities:
+// original offset 120/122/120/122; native row index 115/117/115/117. NOT kept: all regress and lengthen.
+// Original defaults, offset walk, shared rotations and body restored; offset/default/reload and row-i order remain.
+// AC519: Complete nonempty/empty emitter outcomes, bool/byte/short/long,
+// 109/109/109/109/109/109/109/109. NOT kept: regressions from native admission
+// storage; original gate, offset, defaults, shared rotations and body restored.
+// AC524: Actual particle-loop continuation bool/byte/short/long, then complementary
+// completion results, 42 each at 1130 bytes. NOT kept: offset/default/reload and
+// row-i schedules remain; original guards, shared rotations and complete body restored.
+// AC527: Shared actual alpha/color/scale property receivers, subsets 1/2/4/3/5/6/7,
+// then complete receivers after the frame query: 247/117/117/258/258/135/257/240. NOT kept:
+// pointer residence unmatched and extent grows; original observations, rotations and body restored.
+// AC531: Complete six-use cache-value array reference/pointer, entry/post-invalidation/
+// emitter/post-frame acquisition: 113/113/113/122/113/113/113/122. NOT kept:
+// property-input residence grows length; original observations, helpers and body restored.
+// AC535: Actual outer-emitter continuation bool/byte/short/long, guard-owned then
+// entry/latch-owned: eight at 109, 1130 bytes/frame 0x98. NOT kept: premature row-offset
+// zero store and row-i/default/reload gaps remain; original complete body restored.
+// AC537: Actual cache-mask/property-flags/emitter-mask signed 32-bit field domains,
+// seven subsets then all int: 42/44/44/42/42/44/44/44. NOT kept: no gain; original fields,
+// shared alias-safe rotations and entire body restored.
+// AC539: Independent frame/rotation mode observations at both original gates, raw
+// short/word/long/dword 117/117/117/117, bool/byte/short/long truth 109/109/109/109.
+// NOT kept: one-use field captures unmatched; original reads, helpers and full body restored.
+// AC541: Paired entry invalidation as clear-bit/keep-bit/mask-value/conditional-bit
+// results, dword then long: 288/288/260/260/283/283/288/288. NOT kept:
+// shared mask publication does not match native separate stores and length grows;
+// original identity invalidations, shared alias-safe rotations and whole body restored.
+// AC543: Callback-position vector backing with native/memcpy/memmove/shared-setter
+// captures, original byte offset then native row index: 42/42/193/281/115/115/192/263.
+// NOT kept: no equality/gain; setter and indexed forms change extent or early allocation.
+// Original point backing, alias-safe rotations, observations and full body restored.
+// B446: Shared complete emitter/particle property evaluator, free/member provider,
+// color/scale pointer/reference outputs: 77/77/77/77/77/77/77/77. NOT kept: no exact result;
+// original complete body, types and helpers restored. Offset/default/reload and row-i schedules remain.
+// M3 lane 8 r135 (fast and a compile-only screen of about 3300 forms; aligned in brackets, base 42 [38]): row order follows
+// one global tuple phase (period 4; extra products in any row or at the callback only shift it) and the rotate helper's
+// symbol numbering, which earlier forms never moved: a scratch copy taking (vector, matrix, out) or (out, vector, matrix)
+// gives odd row i states 45 [45]; with a `result` local for out in the helper 40 [36], scale first 38 [34]. On indexed
+// definitions with scale first (113, every integer difference fixed): helper (vector, matrix, out) with `result` and a
+// `matrix` local 39 [33] at 1130 bytes, no chain, only product forms left; with `result` alone and a diagnostic 4-deep
+// no-op chain 31 [26], the sums retail's and only row i F*x and row j L*y copy-first in both rotations (`movaps t, x; mulss
+// t, [m]` for `movss t, [m]; mulss t, x`); that helper with the mask read at each use has `yxz xzy zxy`, retail's rows, in
+// both rotations but the homes turn over 229-231 (retail keeps the mask's slot). In the 31 state: row term orders (216)
+// identical, 256 named-term subsets 13-26 block differences against 13, operand swaps identical, helper shapes
+// (unconditional copy, block-scoped copy, source pointer, in/matrix locals, dummy parameters) and six parameter orders no
+// better. Index spellings (typed sum, dword, ++, += 1) identical; declaration moves and the particle mask inline identical.
+// Named input components x, y, z in every subset, order and phase (336 forms) no better than 13 block differences.
+// Left for a match: all products load-first in the retail phase. A new one-caller helper is match-only: body unchanged.
+// Round 95 (m3 lane 12, fast): the emitter loop as a for with the offset as its init and step 42 (the zero store stays ahead
+// of the guard; retail stores it after the guard, beside the shrink-wrapped push ebp); scale first re-measured 40 (gain 2);
+// the offset declared before the emitter index 42; the particle copies motion first 50; the next index read right after the
+// particle lookup 272 (1113 B); scale first with the colour declared before the frame locals 40; scale first with the
+// particle mask formed beside the emitter mask 261 (1117 B).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -992,6 +1049,7 @@ public:
 	virtual long count() = 0;
 	virtual long const *names() = 0;
 };
+// MiniMax h (11-04): no new form, no lower score; the default case still scales the constant first where retail multiplies the vector first.
 // score 184 (was 184): frame 0x60 agrees; 1359/1355 bytes. Default cross/tail merge,
 // normalized-j residence and color/tag homes remain. Earlier 248: 1355 bytes and frame
 // 0x60 as retail (round 27 form, below). Before it (292,
@@ -1194,6 +1252,26 @@ public:
 // 178, with normalize_inline 184, with the spawn location stored first 177, plus the position copy before the 1.0
 // scale 177; the matrix before the child loop with the location first 177; parent colour local on that 253 (1367);
 // on the 177 form: spawn dt stored before the scale 179, the fallback cross through cross3f_staged 177.
+// Round 212 (m3 lane 3; aligned in brackets, base 184 [59]): the fallback through existing helpers only (vector3f_scale,
+// normalize3d, 0x11d000, which LTCG does inline there, cross3f) 286 (1327) [68]: retail's x, y, z magnitudes and xmm
+// registers appear, but j and k both hoist and the sum runs k, j, i. Retail hoists j alone and sums j, i, k, which needs
+// matrix.forward.k named directly by a read anywhere in the body (position does not matter; i, j, up.k, left.k, scale or
+// position.z instead do not do it; __noop and sizeof do not). On the helpers, with such a read: 110 (1355) [22]; parent
+// colour in a local after the position copy 43 (1358) [19]; the tag read through a named child definition 18 (1355) [12];
+// the matrix declared at the loop-body top 9 [2]; the position copy ahead of the 1.0 scale store: MATCH in the plain
+// check (0x175270, 0x248750 stay matched). Not kept: the read is `(void)matrix.forward.k;`, a redundant statement, and
+// no real statement reads that field alone; hand-written perpendicular with z direct and the rest through a pointer 179
+// (1357) [50], with only j through the pointer 260 (1359) [17]; the same forms without the read 279 (1332) [49]. On the
+// current body: matrix at the loop-body top with the position copy first 178, plus location first 177, plus the named
+// child definition 166 (one-use local, not kept), the colour local on these 253 (1367). Also tried: orientation in a static
+// inline helper 1026 (not inlined), forceinline 357 (1259); 0x30bf0 in the fallback stays a call whatever the nesting 326
+// (1253); `inline` on 0x11d000 326; capture of the matrix parameter in 0x175270 no change (175270 2); an empty join at
+// five places around the spawn statements, helpers for the matrix finish or the spawn fill, spawn scale spellings 18 each.
+// Round 57 (m3 lane 15, fast; 0x175270 and 0x248750 stay matched): round 212's form rebuilt (helpers in the fallback, colour local after the position, named child
+// definition, matrix at the loop top, position before the scale): any no-code read of matrix.forward.k gives MATCH (`(void)` read, unused real, empty if, bare
+// expression), and those are dead or redundant statements, so not kept; without one 279 (1332). Real forms of the read: `__assume` on the field (four spellings) 284
+// (1369, flips the whole function); component copy in a case arm 266; `if (0)` store 261; written-out cross in the fallback, default or both 285 (1376); scale result into the
+// normalizer, perpendicular result into the cross, named direction from the scale 279; the same in the default arm 272. Needs a ruling on that one read, or a real statement that names it.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1426,6 +1504,11 @@ static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, 
 // Round 500: native camera/request/position lexical-home subsets, all seven,
 // then all with displacement identity, 135 each on the recovered child-tail graph.
 // Original names/body restored; tag/group ownership, flag extraction and callback reloads remain.
+// Round 141 (KIMI1, fast): tag assigned in the group expression 135; split group/tag/both assignments
+// 135/135/135; request-location reread after the callback 116 (retail's reload, NOT kept: a one-use
+// field reread after a call); that with the existing tag reused at the final getter 152; request-owned
+// loop advance 143; shifted-word bit five on the reread graph 320. Original executable body restored;
+// tag/group ownership and final getter scheduling remain.
 // @retail 0x174420
 void __stdcall function_174420(long system_index, bool view_pass, bool camera_relative, bool force_visible)
 {
@@ -1545,7 +1628,10 @@ long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
 // score 47 (was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
-// flag width, availability and view carriers remain.
+// availability clear/result and the post-attachment view refresh remain.
+// availability clear/production and the post-attachment view observation remain.
+// frame 0x14, eligibility width, NONE/owner and Boolean homes agree;
+// availability production and the post-attachment view observation remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
 // bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
@@ -1707,6 +1793,79 @@ bool function_17afd0(long effect_index, long value);
 // in EBP, NONE in EBX, availability in AL); the view local with availability false right after the view read and
 // set on success 131 (504; availability spilled, NONE in EBX, owner in EDI); the view local with one-expression
 // availability 125 (492). Every branchy availability form moves NONE out of EBP and the flag out of BL.
+// AC515: Actual two-use view classification on the shifted-word/effect-index/owner-arm graph,
+// long/dword/short/byte with default-query then conditional producers: 139/139/141/129/139/139/141/125.
+// NOT kept: unmatched classification storage; original Boolean result and complete body restored.
+// AC522: Coupled availability/same-view outputs, complete and success-owned
+// producers with bool/byte/short/long same-view domains 142/135/132/135/125/133/138/141.
+// NOT kept: unmatched result residence; original observations and body restored.
+// F366: Phase-specific post-attachment view observation with original/complete/refined/logical/
+// success-only/complete-query/invalidation/complementary availability producers: 111/119/118/119/129/119/79/112.
+// Exact-only observation diagnostics restored; original snapshots, query gates and full body retained.
+// B419: Complete draw-arm/rejection/final-admission results on the recovered owner/Boolean graph,
+// conditional/direct camera result: 107/96/110/136/106/96/110/136. All regress; original
+// availability, input snapshots, query gates, draw tuple and complete body restored.
+// B421: Owner/view identity before the status query, bool/byte/short/long,
+// positive/complementary results 133/133/159/158/133/133/159/158. NOT kept:
+// all regress and exceed retail length; original snapshot/query graph restored.
+// DL261: Actual optional available-view index, valid-invalidating/default-success/conditional/complete arms, long then dword: 122/121/82/82/122/121/82/82.
+// NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
+// DH350: Independent visibility/drawing getter lifetimes, availability default
+// after getter/owner/view, joined/nested success, view-default and conditional:
+// 47/138/125/125/131/131/124/125. NOT kept: no match or gain; original snapshots and body restored.
+// DH371: Partial owner-equality/attachment/camera-admission/camera-test/rejection/view-guard/
+// owner-validity/location-admission Boolean results: 47 each on the recovered owner-arm graph.
+// NOT kept: no match or gain; original snapshots, query gates and complete body restored.
+// Native availability clearing/branch production and later current-view observation remain.
+// AC541: Both downstream same-view/attachment outcomes with availability-owned or complete
+// rejection-owned results, bool/byte/short/long: 120/115/126/133/120/99/127/133.
+// NOT kept: all regress; original availability, snapshots, query gates and complete body restored.
+// AC544: Availability/owner/view lexical identities on the recovered owner-arm graph,
+// seven subsets then complete predicate/result identities: 47/47/47/47/47/47/47/47.
+// NOT kept: allocation-only ties; original names, snapshots, queries and whole body restored.
+// Round 588: Separate eligibility/drawing getters, complete eligibility producer scope
+// and immutable drawing data, seven graphs then early drawing declaration:
+// 47/219/47/219/47/219/219/219. NOT kept: no equality; original snapshots and body
+// restored. Availability clear/result and post-attachment view observation remain.
+// Y593: Independent raw-slot cursor and iteration-local salted handle, long/dword/int/short
+// with while/for traversal: 166/166/166/117/166/166/166/117. NOT kept: no equality; original complete
+// traversal and body restored; availability production and later view observation remain.
+// F380: Complete visibility/rejection results on the shifted-word/owner-arm graph,
+// bool/byte/short/long: eight 47. NOT kept: ties; original admission,
+// availability, view snapshot, query gates and complete body restored.
+// P337: Whole-iteration same-view/attachment/camera output declarations, masks
+// 1/2/4/3/5/6/7 then all with draw, each 47. NOT kept: no match; original
+// producer sites, snapshots and complete body restored. Early clear/conversion remain.
+// M381: View-validity-produced availability then unavailability, bool/byte/short/long
+// on the recovered owner-arm graph: 124/124/146/143/121/121/152/149. NOT kept: all regress;
+// original query gates, view snapshot, Boolean homes and complete body restored.
+// DH371: Partial owner-equality/attachment/camera-admission/camera-test/rejection/view-guard/
+// owner-validity/location-admission Boolean results: 47 each on the recovered owner-arm graph.
+// NOT kept: no match or gain; original snapshots, query gates and complete body restored.
+// Native availability clearing/branch production and later current-view observation remain.
+// M3 lane 8 r135 (fast; the view read from the global at each use, availability false late and set on success, aligned
+// count in brackets; plain form 138 [70]): one real use of effect_index right before the availability or right before
+// attached (diagnostic, removed) gives retail's whole allocation, 104 [1], the store itself the only difference; it counts
+// only there (after attached, in an arm or before the view read 134-142). Empty tests, `(void)`, `__assume`, an unused
+// bool, inline helpers or copies for availability/attached, `x * 1` no-ops, separate definition lookups, a named absolute
+// index, declaration orders: 138 [70], removed before allocation. Same view true at the arm's top and cleared on the
+// failed test 25 [2], placed just before the availability 12 [2] (only the true store's place differs), after the
+// availability 141; false at the arm's top with a nested set 28 [4]. Attached written in both same-view arms (true: effect
+// test and call; false: available test, effect test and call) 17 [8] at 498 bytes: retail's allocation with no early
+// store, only the arm layout left (retail's first arm jumps into the second's copy), the condition inverted 17; with direct
+// availability 120, with a view local 27 [5] (494 bytes); `attached = same_view ? short : full` or an if/else on same_view
+// 91 [2] (500 bytes: `je; mov; jmp` for retail's `mov; jne`). All need the flag form, so match-only: body kept at 47.
+// M3 lane 14 r68 (fast; the 47 body differs from retail in 7 aligned instructions: the availability's `xor bl, bl`
+// before the 0x1751d0 call, `neg/sbb/inc` for retail's `test; jne; mov bl, 1`, and the view reload after 0x17afd0):
+// `if (view != NONE && !query(view)) available = true;` 135 (availability spilled, NONE in EBX); `available = view
+// != NONE && !query(view)` reassigned 125 (492); `query(view) ? false : true` 47 (same code); retail's shape with
+// the view global at each use and same_view declared at function scope 138 (510); same_view defaulted false at
+// the arm's top and reassigned whole 138. The branchy availability always hands BL to same_view.
+// MiniMax E (11-06): no new form, no lower score.
+// The availability result moved after the view load 125, after the definition
+// call 138 and before the effect index 138: each move flips the NONE constant
+// from EBP to EBX. The branchy availability (test/jne/mov bl,1) 135 spills the
+// result to a stack byte. The base's 47 stands.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

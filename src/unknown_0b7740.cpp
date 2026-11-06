@@ -893,51 +893,49 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
     function_b7360(object_index);
 }
 
-// Activating this body changes shared helper register conventions and loses
-// seven existing exact matches. Preserve the closest draft until those
-// helper conventions can be reconciled with their owners.
-#if 0
 
-__declspec(noinline) bool function_0bfe60(dword const *mask, long node);
+bool function_0bfe60(dword const *mask, long node);
 bool unit_animation_periodic_layer_active(long object_index);
 bool function_10edd0(long object_index);
-__declspec(noinline) void function_10ec00(long object_index, s_animation_state *state, long unused,
+void function_10ec00(long object_index, s_animation_state *state, long unused,
 	dword const *node_mask, long count, real_quaternion_transform *orientations, byte *mask);
-__declspec(noinline) void function_10e530(long object_index, s_animation_state *state, long unused,
+void function_10e530(long object_index, s_animation_state *state, long unused,
 	dword const *node_mask, long count, real_quaternion_transform *orientations, byte *mask);
 void function_1132f0(long object_index, dword const *node_mask, long count, transform4x3f *matrices);
 void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const *orientation);
 
 
-__declspec(noinline) transform4x3f const *__stdcall function_bd610(long object_index,
-	byte const *nodes, transform4x3f const *input_matrices);
-
-// Retail 0xbd610
+/* samples and overlays an object's node orientations and rebuilds its matrices, when it has any */
+// score 309 (was 342): enabled from the draft, 810 bytes against 856, first difference +0x4. Retail reads the object through the header at each early test, keeps
+// the matrices result and the matrices passed on as two values, and holds the sample flag in a stack byte. Forms: the draft with one result and a volatile sample flag
+// 303 (not kept: no new volatile), with a plain flag 342; two results and the object read after the early tests 309, with the loop's increment before the flag test
+// and no for-increment (not kept: a hand-placed increment) 295.
+// @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
 {
-	transform4x3f *result = (transform4x3f *)input_matrices;
-	word header_index = (word)object_index;
-	s_object_transform_header *header = &((s_object_transform_header *)g_4e0300->data)[header_index];
+	s_object_transform_header *header = &((s_object_transform_header *)g_4e0300->data)[object_index & 0xffff];
+	transform4x3f const *result = input_matrices;
+	if (*(short *)((byte *)header->object + 0x112) == NONE)
+		return result;
+	if (object_index != NONE && ((byte *)header->object)[0xb3] > 0)
+		return result;
 	byte *object = (byte *)header->object;
-	transform4x3f *matrices = 0;
-	rigid_transform_scaled *orientations = 0;
-	if (*(short *)(object + 0x112) == NONE)
-		return input_matrices;
-	if (object_index != NONE && object[0xb3] > 0)
-		return input_matrices;
 	byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
 	long model_index = *(long *)(definition + 0x38);
 	if (model_index == NONE)
-		return input_matrices;
+		return result;
 	s_animation_state *state = (s_animation_state *)(object + *(short *)(object + 0x12a));
 	long node_count = *(short *)(object + 0x110) / sizeof(rigid_transform_scaled);
 	byte *model = g_4e3b44[model_index & 0xffff].bytes;
 	byte *render_model = g_4e3b44[*(long *)(model + 4) & 0xffff].bytes;
 	rigid_transform_scaled *object_orientations = (rigid_transform_scaled *)(object + *(short *)(object + 0x112));
+	transform4x3f const *final_matrices = input_matrices;
 	dword mask[8];
 	memcpy(mask, model + 0xa4, sizeof(mask));
-	volatile bool sample = false;
+	bool sample = false;
+	transform4x3f *matrices = 0;
+	rigid_transform_scaled *orientations = 0;
 	if ((bool)((*(dword *)(object + 4) >> 30) & 1) &&
 		!((bool)((*(dword *)((byte *)header->object + 4) >> 29) & 1)) &&
 		(!((1 << definition[0]) & 1) || !((byte *)header->object)[0x34b]))
@@ -958,7 +956,7 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 				(long)(model + 0xa4), node_count, (byte *)object_orientations);
 			orientations = object_orientations;
 			matrices = (transform4x3f *)input_matrices;
-			result = matrices;
+			final_matrices = input_matrices;
 		}
 	}
 	if (((1 << ((byte *)header)[3]) & 3) &&
@@ -971,7 +969,7 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 		function_10e530(object_index, state, (long)render_model, 0,
 			node_count, (real_quaternion_transform *)g_4dc2f0, (byte *)mask);
 		matrices = g_4d8f20;
-		result = g_4d8f20;
+		final_matrices = g_4d8f20;
 		orientations = g_4dc2f0;
 	}
 	if (matrices && orientations)
@@ -987,12 +985,10 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 		}
 		result = matrices;
 	}
-	if (result && ((1 << ((byte *)header)[3]) & 3))
-		function_1132f0(object_index, (dword const *)(model + 0xa4), node_count, result);
+	if (final_matrices && ((1 << ((byte *)header)[3]) & 3))
+		function_1132f0(object_index, (dword const *)(model + 0xa4), node_count, (transform4x3f *)final_matrices);
 	return result;
 }
-
-#endif
 
 #include <math.h>
 /* the point and direction 0xbc070 sets in the list at g_4de2f4 */
@@ -1281,6 +1277,40 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // The data field through a `byte *const *` pointer to it 44; the parent header by pointer addition 44; the parent
 // object by byte offset 44 (all same code); parent object, matrix and mirrored flag as conditional initialisations
 // 44 (1396); a parent header pointer with its object read at each use, mirrored first, 42 (1392: `lea` of the header).
+// Round 87 (m3 lane 16, fast, on the count > 0 guard diagnostic, 44 at 1390): `__assume` in the no-model arm (index != NONE at the
+// top or the end, parent object != NULL, pool != NULL before or in the arm, data != NULL) 389 each (1399 bytes: any `__assume` unfolds
+// the entry's flag store, the no-model block stays the same); three parent lookups 20 (1399), two 20 (1399); a forceinline lookup taking
+// the index as `long const &`, one/two lookups 44/44, a plain inline one, two lookups 44. Original body restored.
+// Round 110: split parent base, a one-use parent-node local, pool[0]/dereferenced-pool member spellings,
+// parent object/index role names, a function-scope parent object and a parent-node array pointer 97 each
+// (same code). NOT kept: no gain; the one-use forms require a byte match. Opening body restored.
+// Lane 13 r62 (fast, on the count > 0 guard diagnostic unless noted; 44 at 1390): two lookups of the parent in the no-model
+// block's own statements 20 at 1399 (one lookup always folds the data field into EDI, two make the block reload g_4e0300 too,
+// whatever the spelling), and the guard itself 44. With one lookup: a lookup helper taking the pool 44; plain 44; index computed
+// first in the helper with a pool param / with statements / plain 44/44/44; the index masked in place in the helper, plain /
+// with a pool param, 44/44; an unused index param on a mirrored helper, inline / forceinline 44/44; `parent_index` at function
+// scope assigned in each arm 44; the test repeated in a second `if` 44; ternaries with one lookup / lookups in each 45 (1391) / 50
+// (1402); a header pointer read at both uses 41 (1392). With two: node-matrix helper 20; taking the pool 20, a short node 20,
+// a named matrices local 20; pool local inside the arm 20; function-scope index 20; helpers with the index first 20/20; the
+// field read at each use 20, at the test 20; `do {} while (false)` between the lookups 20; a named masked index first/second/both
+// 20/20/20; `(word)` index on the second/first lookup 377 (1398) / 373 (1397); an empty `if`, an unused local and a dead store
+// of the index after the flag read 20/20/20. Parent helpers for matrix and flag, inline / forceinline 62/62 (1410); one helper with
+// two out-parameters, inline / forceinline 116 (1359) / 44. Pool local at the current lookup, spelled for current/render/two
+// no-model lookups: pool,g,pool,pool 292 (1402); pool everywhere 20; pool,g,g,g 20; pool,pool,g,g 20; pool,pool,copy,copy 20;
+// pool,g,copy,copy 292; pool,pool,pool,g 357 (1394); pool,pool,g,pool 358 (1394); g,g,arm-local,g 44; a pool local used only by
+// the no-model lookups, two/one 20/20.
+// Diagnostics, restored at once: on the two-lookup form a later use of the index (`if (parent_index == 5) *(long *)(object +
+// 0x14) = 6;`) after the flag read 40 at 1406: the block up to the flag read is then byte-identical to retail, with the index in
+// ESI, `mov eax, esi`, `[ecx + 0x44]`, and g_4e0300 still in ECX. After the call instead 402 (1408). So retail's index stays live past
+// the lookup and ECX is never overwritten; what keeps it live with no code is the lead. Sibling 0xb7740 holds its pool
+// in EBX and re-reads data after real stores through the object, which this path doesn't have.
+// M3 lane 9 r88 (fast, on the count > 0 guard diagnostic, 44 at 1390, aligned+stack 5, unless noted): `stored` cleared through an inline out-parameter helper 97 without the guard and 44 with it (promoted after inlining: no kill of the
+// data field); a repeated `if (parent_index != NONE)` with a lookup in each 44; ternaries 50 (1402); two/three lookups in one test 20 (1399: the index takes ECX, so the pool reloads into EDX); the no-model arm first in source
+// 315 (1372), with the guard 314, with the guard and two lookups 297. Retail's copy of the index means it stays live past the lookup; every spelling here lets it die in place.
+// M3 lane 14 r68 (fast, on the count > 0 guard diagnostic, 44 at 1390): parent node index named before the lookup 44;
+// parent/mirrored defaults in an else arm 45 (1391); the masked parent index named 44; declarations index, mirrored,
+// parent 46; without the guard, the no-model parent through slot_handler.h's object_get/object_node_matrix 97 (same
+// code). The guard byte pattern (`test; jle; mov reg, 1; cmp; jle`) occurs nowhere else in retail.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

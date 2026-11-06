@@ -94,8 +94,19 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax B (11-06) round 2: no new form, no lower score (211); the uv set declared before the
+// tint, the two uv sets declared one on each side of the tint and the tint declared at the top
+// of the function all give the same code (211), so the tint's home cannot be moved that way: ours
+// keeps the tint at +0x60 and the second uv set's bounds at +0x50 where retail has the tint at
+// +0x50 and those bounds at +0x60; the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (211); the tint's home stays exchanged with the
+// second UV set (ours +0x60/+0x50, retail +0x50/+0x60), and the blend's XMM5 residence, the
+// extents, the reciprocals and the aspect homes all follow from that swap; hoisting the two UV
+// declarations above the tint, swapping them, computing the packed colour after them, taking
+// the clamp pointer from the whole tint and putting the tint in an inner block all give the
+// same code or a worse score (236).
 // MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
-// score 223 (was 232): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
+// score 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
 // through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // Earlier at 381: Frame 0x50 versus 0x60 (the tint lived in a one-caller helper's scope, so uv_b reused its
@@ -356,6 +367,21 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // entry 223 (same code); uv_b's default bounds copied from uv_a 347 (1956 bytes); the tint and its clamps in their own
 // block ending at the pack 249 (1906 bytes); `uv_b,uv_a` declaration order 223 (same code); the flip read before the
 // extents 250 (1949 bytes). Original body restored.
+// Lane 14 r60 (fast; "no-home" = aligned count ignoring stack offsets, kept form 123, 223 form 125): kept 211: aspect defaults
+// before the flip. Not kept, an order of independent values 6 under the bar: retail's extent order (ax, ay, by, inv_ax, inv_ay,
+// bx, inv_bx, inv_by) 208, the width before the inverse products 208, both 205 (plain, 1950 bytes, no-home 117); on 205 the final
+// geometry with y before x, x1/y1 before x0/y0, both, y before x in each pair, subtractions then scaling, grouped products
+// 205 each. Retail keeps the blend in XMM5 from the join on and stores ax, ay, bx and by once each at their definitions; ours
+// keeps both a-extents in registers and stores by twice (the named local and the UV helper's shared expression are two values).
+// A named copy of the blend at the join 223 (same code). On 211: complement before the flip 291, before the extents 329;
+// inverse sums next-term first in one expression 319 (frame 0x64, no-home 90), first-term first 321 (0x64, 96). Sweep with
+// defaults first: ay ax by bx 210; by bx ay ax 211; b pair first 211; ax iax ay iay bx ibx by iby 289 (0x5c); ax ay iay iax by
+// bx iby ibx 213; by ax ay 208; ax by ay 208; iay before iax 211; iby before ibx 211; all extents first 211; ay ax iax iay by bx
+// 211. With the one-expression sums: nine orders 296-365 (frame 0x64 or 0x68, no-home 85-107). All four extents written at
+// each use (a match-only form): named products 304 (0x58), one-expression sums 302 (0x5c, 1917 bytes, no-home 76: the closest
+// structure), with iay first 302 (no-home 80, a homes and order as retail, only ay's slot and the blend register missing);
+// other reciprocal orders 302 (83-94). Named subsets on that: ay 296, ax+ay 297, ax 302, bx+by 311 (0x64), ay+by 298 (0x64),
+// ax+ay with iax first 291; none reaches frame 0x60.
 // DL256: Existing one-object in-place UV encoder, encoder/selector expansion pairs inline/inline,
 // forced/inline, inline/forced, forced/forced, ordinary/inline, inline/ordinary, ordinary/forced,
 // forced/ordinary: 223 each. Complete alpha/RGB record and whole-color/RGB union views: 223/223.
@@ -385,6 +411,50 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // N350: Common geometry-arm flip result after packing, long/dword/word/byte carriers,
 // original/reference producer inputs: 458/458/437/445/458/458/437/445.
 // NOT kept: frame/extent and exchanged tint/UV homes regress; original body restored.
+// F378: Interpolation-admission outcome at frame-fraction production, positive then complementary
+// bool/byte/short/long: 284/284/284/284/285/285/285/211. NOT kept: one-use decisions remain unmatched,
+// exchanged tint/secondary-UV homes persist and other forms grow; original complete body restored.
+// B429: Native lower-clamp comparison results in bool/byte/short/long 211/211/211/211;
+// paired lower/upper outcomes 579/579/636/628. NOT kept: one-use result forms
+// do not match; original tint/UV homes, complete loop and alias-safe captures restored.
+// M375: Native secondary encoded-UV library transfers, object/array/bounds/encoder-result,
+// memcpy then memmove: 211/211/211/211/366/366/366/366. NOT kept: no byte match or native home repair;
+// original whole callback, encoder result contract and all alias-safe input captures restored.
+// DL264: Matched scalar/RGB property producer inline/forced contracts,
+// independent and complete pairs: 211/211/211/1257/742/1257/742/1541.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
+// AC533: Requested-sequence clamp result, conditional/complete/lower-default/upper-default,
+// original/positive-produced count: 218/218/288/218/223/223/288/223. NOT kept: all regress;
+// tint/secondary-UV homes and blend join remain. Original whole body restored.
+// F383: Complete immutable spans/inverses/geometry, seven subsets, then immutable
+// alias-safe UV input captures: eight at 211. Original scalars and encoder restored;
+// tint/secondary-UV homes and persistent blend residence remain.
+// B438: Reverse body-stepped channel cursor, lower/upper/independent/continue clamps,
+// direct then two-test scalar inputs: 229/232/229/229/229/232/451/229. NOT kept: no exact
+// traversal/lifetime gain; original full body and alias-safe UV captures restored.
+// M385: Complete pivot/aspect/inverse destination accumulators, seven subsets then
+// early uninitialized inverse storage: 211/211/319/211/319/319/319/319. NOT kept: inverse
+// accumulation grows frame to 0x64; original body and every alias-safe UV capture restored.
+// M387: Actual forward end cursors !=/< with lower/upper/conditional/sequential clamps:
+// 515/520/512/515/515/520/644/515. NOT kept: frame remains 0x60 but entry and extents regress;
+// original callback and alias-safe encoder restored, tint/secondary-UV and blend homes remain.
+// N373: Actual tint/input RGB subobject pointer/reference ownership, eight ordered forms
+// 211/211/211/211/211/211/211/211. NOT kept: no equality; original complete color object, callback,
+// clamp, input observations and alias-safe UV captures restored. Tint/secondary-UV homes remain.
+// DH374: Paired primary/secondary aspect outcomes, positive/complementary bool/byte/short/long:
+// 211/211/211/211/211/211/211/211 (fast control 211; full 211).
+// NOT kept: no byte match or eligible gain. Original direct aspect decisions, all interpolation trees, alias-
+// safe UV captures and complete callback restored; tint/secondary-UV homes and persistent blend remain.
+// AC560: Selected-sequence availability at its original guard, positive/complementary
+// bool/byte/short/long: 211/211/211/211/211/211/211/211. NOT kept: one-use outcomes do not match; original
+// callback and alias-safe UV captures restored. Tint/secondary-UV and blend homes remain.
+// Round 91 (m3 lane 9, fast): the tint renamed to sort first or last 211/211, the second UV set renamed 211 and
+// the tint declared after the UV sets at the top 211 (same code: the tint/second-UV homes ignore names and
+// declaration order; diagnostics adding tint or second-UV reads do not move them either); the first set's
+// extents and reciprocals before the second's 211, the second set's y extent first 211 (same code);
+// remaining_blend named before the first aspect test 258 (1972 bytes); the inverse sums as one expression each
+// 319 (1957 bytes, the frame moves). Retail keeps the blend in XMM5 from the frame block through a join that
+// reloads it on the other paths (+0x46f..+0x47c), so its aspect block holds ax/ay/bx/by/1/bx/1/by in registers.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
@@ -459,8 +529,8 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_c
 		real ax=uv_a.bounds.x1-uv_a.bounds.x0,ay=uv_a.bounds.y1-uv_a.bounds.y0;
 		real bx=uv_b.bounds.x1-uv_b.bounds.x0,by=uv_b.bounds.y1-uv_b.bounds.y0;
 		real inv_ax=1.0f/ax,inv_ay=1.0f/ay,inv_bx=1.0f/bx,inv_by=1.0f/by;
-		long flip=sprite_flip(definition,seed);
 		real aspect_x=1.0f,aspect_y=1.0f;
+		long flip=sprite_flip(definition,seed);
 		if(ax>ay) aspect_y=ay*inv_ax; else aspect_x=ax*inv_ay;
 		real remaining_blend=1.0f-blend;
 		if(bx>by)

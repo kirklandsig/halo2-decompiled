@@ -437,6 +437,20 @@ bool function_1b1970(long actor_index, short mode, vector2f const *forward,
 // Round 100: origin or output first-component addresses 12/12, both 12; no slot local 28; slot local
 // at entry 12; forward basis pointer at the declarations or after initialization 12/12; direct slot
 // reads with the forward pointer 12. Opening body restored.
+// Round 210 (fast; the two sites are independent: the 0x1b0e40 setup, and the list kept in EBX for the >= 7 block): a
+// target-list copy local in the >= 7 block 78; the mode local at the top of the list branch with a short index 80 (757
+// bytes). 0x1b0e40's parameters with the stack pair last, definition and all four calls: (origin, forward, point, index)
+// 36 (0x1b13b0 3); (index, point, forward, origin) 12 (0x1b0e40 8, 0x1b1100 27, 0x1b13b0 5); (point, forward, origin,
+// index) 36 (0x1b0e40 8, 0x1b1100 27, 0x1b13b0 7); (index, forward, origin, point) 12 (0x1b0e40 8, 0x1b1100 27, 0x1b13b0
+// 4); (index, origin, point, forward) 11 (0x1b13b0 2): matched 0x1b13b0 fixes the declared order.
+// Round 210, field read at each use (the form that matched 0x18c3b0), mode at the call, no index local: `(word)` argument
+// 66; plain argument 66; a named slot pointer inside the block 66; a `(word)` test 66 (retail's `xor eax, eax; mov ax` read
+// and call setup, but the list is still read from the stack after the join).
+// Round 152 (m3 lane 6, fast): on the current body (movzx index; mode local read before the test into BX) a `short index`
+// local 79 (757 bytes: xor/mov index and the list kept in EBX, but the inlined dot product swaps its mulss operands);
+// short index with the mode at the call 66 (no EBX reload at the join; the two flag stores share `mov al, 1`); the field
+// read at the test and the call with the mode local 70 (758 bytes); `long index` sign-extended 12 (movsx, same shape); the
+// store as a ternary 75 (748 bytes); index declared before the mode 12.
 // @retail 0x1b1a90
 void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

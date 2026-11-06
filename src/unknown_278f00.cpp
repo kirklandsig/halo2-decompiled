@@ -47,6 +47,7 @@ void __stdcall function_b8890(long arg_0);
 
 bool function_a7670(long object_index);
 
+/* processes the Havok islands flagged as pending in the world's two island lists */
 // score 153 (was 153): frame 0x424 and retail's 954-byte length agree; entry scratch-register
 // phase, selector/island homes, admission register and membership block layout still differ.
 // Consumed next-island indexing, native body bound and indexed cleanup retain the 28-point gain.
@@ -206,9 +207,6 @@ bool function_a7670(long object_index);
 // DH round 264: Force-inline contracts for the existing property/component/object inline producers,
 // all seven subsets and all three with readonly body input, 181 each. Original declarations,
 // body and call cycle restored; scratch EDX/EAX, list/count homes, admission BL and cleanup remain.
-// Round 283: fixed-body continue, membership-miss continue and release-arm-first, seven subsets then
-// all with nested insertion tests: 181/181/229/181/229/229/229/229. Original body restored;
-// selector/list/count homes, BL admission and indexed cleanup remain.
 // DH round 266: consumed island index with native-bound/indexed-cleanup/shared-result subsets
 // 260/257/179/153/253/244/122/96; kept native bound plus indexed cleanup 153 (plain).
 // Two-point 179 and match-only shared-result 122/96 restored. Completed shared/named membership,
@@ -276,11 +274,6 @@ bool function_a7670(long object_index);
 // (60), admission as if/else 259 (61), the island flag named 259 (61); with the for-loop 232 (71) and 230 (70).
 // Left: admission in BL and found in CL where ours keeps a stack byte and the bound in ECX; retail reloads
 // the bound into ESI inside the second scan.
-// Lane 18 r37 (fast): second scan sets the first scan's found flag, `if (!found)` 96 (match-only, restored);
-// on it: plain `for` island index 233 (957 B); index stepped back at the flagged block's end 261 (958 B);
-// renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
-// continue;` 96. Retail keeps the index in ECX and the list in EDX on the unflagged path, storing the
-// index only after `dec` on the flagged one; ours stores it after the `inc` and keeps the list in EAX.
 // AC507: Retry-conditional positive/deferred category result in bool/byte/short/long,
 // 278/278/280/279/277/277/280/279. NOT kept: all regress and lengthen beyond retail;
 // original eager scans, live bounds, consumed index, releases and body restored.
@@ -293,10 +286,13 @@ bool function_a7670(long object_index);
 // index in ECX on the unflagged path and writes its home only after `dec`; ours homes it at the init and the
 // increment), with the flagged path as a nested block 233; admission assigned in if/else arms 96 (same code).
 // Retail also forms the type-record pointer before the `local_9 > 0` branch, where ours folds it into the load.
-// M343: Native input-body cursor, retry/island declaration and mutable/read-only slots:
-// consumed at retrieval 266/266/266/266; advanced at body end 274/274/274/274, all 966 bytes.
-// Original consumed island index, signed live bound, indexed cleanup and complete body restored.
-// NOT kept: frame grows to 0x428 and every form regresses.
+// Lane 14 r60 (fast, base 153 aligned 65): a separate second-scan found flag tested first 96 at 954 bytes, aligned 39 (match-only;
+// the same code as sharing the first flag), left: selector EDX/list EAX for retail's EAX/EDX, the index stored at each step, the
+// record address folded after the retry test, one reload order. On it: plain `for` index 233 (957 bytes, aligned 60), the flagged
+// body in a forced-inline helper 96 (same code), the helper with the `for` index 233 (same code). Alone: `for` index 240 (958
+// bytes, aligned 77); admission preset true with the type in a local 155, with the flag 264, with the flag and `for` 140 (958
+// bytes, aligned 75). At the guard selector, list and index take EAX, ECX and EDX: whichever of selector and list picks EAX
+// first decides the rest, and retail's list staying in EDX is what lets the unflagged path skip both reloads.
 // DL256: Existing cleanup provider, coherent definition/all declarations: inline/default 153,
 // forced/default 1456; ordinary/inline/forced cdecl 153/153/1456; stdcall 153/153/1456.
 // Ordinary/inline forms leave all controls unchanged. Forced forms grow to 1889/954 bytes,
@@ -321,6 +317,22 @@ bool function_a7670(long object_index);
 // DH337: Complete first/second private-prefix absence in bool/byte/short/long:
 // 270/270/270/270/278/278/298/278. NOT kept: unmatched result flags and longer
 // scans; original stopping searches/body restored, selector/count/admission homes remain.
+// DH355: Retry success/count continuation in the existing do-while, long/int/dword/
+// short/word/signed-char/byte/char: 153/153/153/259/259/262/262/262. NOT kept: ties or regressions;
+// byte-width frame shrinks to 0x420; original body and 0x424 frame restored.
+// DH360: Complete first/deferred initialized-prefix membership reductions in bool/byte/short/long,
+// 235/235/265/264/278/278/320/317. NOT kept: regressions; retail stops at the first match.
+// Original eager stopping searches, live bounds, retries, releases and complete body restored.
+// DH362: Root activation result bool/byte/short/long, positive then complementary,
+// eight at 153. NOT kept: native selector/island/count and admission homes do not move;
+// original short-circuit guard, eager searches, retry/release graph and full body restored.
+// DH364: Forward first-prefix cursor with remaining long/short/word/dword counts
+// 276/295/296/276; deferred-prefix counterparts 276/275/268/261. NOT kept:
+// all regress; original eager stopping searches, live bounds, consumed island
+// index, retry/release graph and complete body restored.
+// DH367: Eager stopping first/deferred searches via standard search_n and find_if,
+// eight boundary pairs 297/317/314/305/325/380/366/387. NOT kept: all regress and lengthen;
+// original eager membership, native bounds, consumed island index and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {
@@ -336,110 +348,115 @@ void function_278f00()
 				local_3 = (s_278f01 *)((byte *)g_51e9a4 + 8);
 			else
 				local_3 = (s_278f01 *)((byte *)g_51e9a4 + 0x14);
-			long next_island = 0;
-			while (next_island < local_3->field_4)
+			for (long island_index = 0; island_index < local_3->field_4; island_index++)
 			{
-				s_278f00 *local_5 = local_3->field_0[next_island++];
+				s_278f00 *local_5 = local_3->field_0[island_index];
 				if (!local_5->field_ae)
 					continue;
-				next_island--;
-				local_5->field_ae = false;
-				long local_7 = 0;
-				long local_8 = 0;
-				long local_9 = 0;
+				island_index--;
 				do
 				{
-					local_7 = 0;
-					local_8 = 0;
-					for (long local_10 = 0; local_10 < local_5->field_40; local_10++)
+					local_5->field_ae = false;
+					long local_7 = 0;
+					long local_8 = 0;
+					long local_9 = 0;
+					do
 					{
-						hkRigidBody *local_11 = local_5->field_3c[local_10];
-						if (!local_11->m_fixed)
+						local_7 = 0;
+						local_8 = 0;
+						for (long local_10 = 0; local_10 < local_5->field_40; local_10++)
 						{
-							long local_12 = havok_component_get(havok_entity_property_get((hkEntity *)local_11, 0x2001))->object_index;
-							s_278f02 *local_13 = &((s_278f02 *)g_4e0300->data)[local_12 & 0xffff];
-							bool local_14 = local_9 > 0 || !((1 << local_13->field_3) & 0x81);
-							bool local_15 = false;
-							long local_16;
-							for (local_16 = 0; local_16 < local_7; local_16++)
+							hkRigidBody *local_11 = local_5->field_3c[local_10];
+							if (!local_11->m_fixed)
 							{
-								if (local_0[local_16] == local_12)
+								long local_12 = havok_component_get(havok_entity_property_get((hkEntity *)local_11, 0x2001))->object_index;
+								s_278f02 *local_13 = &((s_278f02 *)g_4e0300->data)[local_12 & 0xffff];
+								bool local_14 = local_9 > 0 || !(((1 << local_13->field_3) & 1) || ((1 << local_13->field_3) & 0x80));
+								bool local_15 = false;
+								long local_16;
+								for (local_16 = 0; local_16 < local_7; local_16++)
 								{
-									local_15 = true;
-									break;
+									if (local_0[local_16] == local_12)
+									{
+										local_15 = true;
+										break;
+									}
+								}
+								for (local_16 = 0; local_16 < local_8; local_16++)
+								{
+									if (local_1[local_16] == local_12)
+									{
+										local_15 = true;
+										break;
+									}
+								}
+								if (!local_15)
+								{
+									if (local_14)
+										local_0[local_7++] = local_12;
+									else
+										local_1[local_8++] = local_12;
 								}
 							}
-							for (local_16 = 0; local_16 < local_8; local_16++)
-							{
-								if (local_1[local_16] == local_12)
-									break;
-							}
-							if (!local_15 && local_16 == local_8)
-							{
-								if (local_14)
-									local_0[local_7++] = local_12;
-								else
-									local_1[local_8++] = local_12;
-							}
 						}
-					}
-					if (local_7 > 0)
-						break;
-					local_9++;
-				} while (local_9 < 2);
-				for (long local_10 = 0; local_10 < local_7; local_10++)
-				{
-					long local_11 = local_0[local_10];
-					s_havok_object *local_12 = havok_object_get(local_11);
-					if (function_a7670(local_11))
+						if (local_7 > 0)
+							break;
+						local_9++;
+					} while (local_9 < 2);
+					for (long local_10 = 0; local_10 < local_7; local_10++)
 					{
-						((s_278f03 *)local_12)->field_c0_5 = true;
-						function_1c3770(local_11, 0);
-					}
-					else
-					{
-						bool local_13 = TEST_FIELD_BIT(((s_278f03 *)local_12)->field_c0);
-						if (local_13)
-							function_146bf0();
-						local_12 = havok_object_get(local_11);
-						long local_14 = local_12->havok_component_index;
-						if (local_14 != NONE)
+						long local_11 = local_0[local_10];
+						s_havok_object *local_12 = havok_object_get(local_11);
+						if (function_a7670(local_11))
 						{
-							s_havok_component *local_15 = havok_component_get(local_14);
-							long local_16 = local_15->object_index;
-							local_15->~s_havok_component();
-							record_pool_release(g_51e9b8, local_14);
-							s_havok_object *local_17 = havok_object_get(local_16);
-							if (*((byte *)local_17 + 0xc0) & 1)
+							((s_278f03 *)local_12)->field_c0_5 = true;
+							function_1c3770(local_11, 0);
+						}
+						else
+						{
+							bool local_13 = TEST_FIELD_BIT(((s_278f03 *)local_12)->field_c0);
+							if (local_13)
+								function_146bf0();
+							local_12 = havok_object_get(local_11);
+							long local_14 = local_12->havok_component_index;
+							if (local_14 != NONE)
 							{
-								local_17->havok_flag = false;
+								s_havok_component *local_15 = havok_component_get(local_14);
+								long local_16 = local_15->object_index;
+								local_15->~s_havok_component();
+								record_pool_release(g_51e9b8, local_14);
+								s_havok_object *local_17 = havok_object_get(local_16);
+								if (*((byte *)local_17 + 0xc0) & 1)
+								{
+									local_17->havok_flag = false;
+									(*g_51e9a0)--;
+								}
+								local_12->havok_component_index = NONE;
+							}
+							local_12 = havok_object_get(local_11);
+							if (*((byte *)local_12 + 0xc0) & 1)
+							{
+								local_12->havok_flag = false;
 								(*g_51e9a0)--;
 							}
-							local_12->havok_component_index = NONE;
+							if (local_13)
+							{
+								function_278f00();
+								function_146bf0();
+							}
+							function_b8540(local_11);
 						}
-						local_12 = havok_object_get(local_11);
-						if (*((byte *)local_12 + 0xc0) & 1)
-						{
-							local_12->havok_flag = false;
-							(*g_51e9a0)--;
-						}
-						if (local_13)
-						{
-							function_278f00();
-							function_146bf0();
-						}
-						function_b8540(local_11);
 					}
-				}
-				for (long local_10 = 0; local_10 < local_8; local_10++)
-				{
-					long local_11 = local_1[local_10];
-					s_havok_object *local_12 = havok_object_get(local_11);
-					if (local_12->havok_component_index != NONE)
-						function_1d1260(havok_component_get(local_12->havok_component_index));
-					((s_278f03 *)local_12)->field_c0 = false;
-					function_b8890(local_11);
-				}
+					for (long local_10 = 0; local_10 < local_8; local_10++)
+					{
+						long local_11 = local_1[local_10];
+						s_havok_object *local_12 = havok_object_get(local_11);
+						if (local_12->havok_component_index != NONE)
+							function_1d1260(havok_component_get(local_12->havok_component_index));
+						((s_278f03 *)local_12)->field_c0 = false;
+						function_b8890(local_11);
+					}
+				} while (false);
 			}
 		}
 		g_47f05b = false;

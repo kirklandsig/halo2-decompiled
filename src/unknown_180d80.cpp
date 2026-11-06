@@ -108,6 +108,13 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
+// MiniMax E (11-05): no new form, no lower score; a named local for the guard's struct pointer
+// scores 287 (the load moves ahead of the callee-saved pushes and the frame shrinks to 2663 bytes),
+// so it is reverted.
+// MiniMax B (11-03): no new form, no lower score. The entry still loads the sixth parameter into ECX
+// and the fourth into EAX against retail's EAX for the sixth and ECX for the fourth (the two stack
+// homes agree, so this is the allocator's choice, not the parameter order); the guard split into three
+// separate returns gives 650 and the negated guard compiles identically, so both were reverted.
 // score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
 // creation-call setup and transform scratch ranks differ.
 // Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
@@ -168,6 +175,24 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // array declared inside the block after the guard 94 (same code); the maximum as one `first || greater` test 115;
 // the clamp helper without its volatile pointers (one named value) 687 (2551 bytes: the volatile reads are
 // load-bearing); the strip-count loop counter renamed 94 (same code). Still BLOCKED-BY 0x17cfa0 (contributor).
+// Round 141 (KIMI1, fast): split vertex/count declarations 94/94; descending short countdown on the new count
+// graph 165; outer maximum, early allocation handle and post-guard array on that graph 165 each; existing
+// scale/rotation/addition helpers in a plain corner loop 944 (2945 bytes), with the other matrix provider 784
+// (2821 bytes). Original executable body and helpers restored; entry/count homes and creation-call setup remain.
+// Round 55 (m3 lane 15, fast; aligned counts from an instruction diff): x row's first two products in one expression 299 (2658 bytes), with `(real)` casts on
+// each 294 (2663), with the left product spelled `left.i * y` 294 (2663); x and y rows one cast expression each 289 (2663); y row's first two in one expression 292
+// (2666); a named local for the x row's y product 298 (2661). Rows: retail has one copy-first product (`y * left.i`, x row); ours two (`z * up.i`, x row, and
+// `y * left.j`, y row), and these spellings change neither, while their length change moves the whole listing. The short strip index re-measured 547 (aligned 85
+// against 67 now: retail's prologue, but the field sums flip to `field_8c + field_90` and the loop head gains a jmp). A compile-only build gives xmm4/xmm5 for the
+// rows, retail and the link xmm3/xmm4, so screen rows only in a real build. BLOCKED-BY 0x17cfa0 (contributor, still 70).
+// AC557: Complete transform scale observed once, mutable/immutable at late/early
+// input boundaries, then each with a named scale test: 227/227/379/379/317/317/392/392.
+// NOT kept: all regress and shorten away from retail; original transform inputs,
+// field reads, interpolation qualifiers and complete body restored.
+// F399: Existing interpolation endpoint/sample/output reference contracts, seven
+// subsets and complete output-reference return: eight forms 94 each.
+// NOT kept: no gain or equality; original helper, both calls and whole body restored.
+// Frame 0x4040 agrees; early mesh, count homes, creation setup and transform ranks remain.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

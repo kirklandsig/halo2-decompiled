@@ -513,6 +513,8 @@ bool function_1cb920(void *data, long mode)
 void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type, bool urgent,
 	bool other);
 
+// MiniMax C (11-06): no new form, no lower score.
+// MiniMax H (11-04): no new form, no lower score; the two animation lookups' graph stays in ebx in retail and in ebp in ours, and its final mov al is not normalised there, both of which come from the inlined graph helpers rather than from the form of this body.
 // MiniMax D (run 37): no new form, no lower score; the permuter (15 minutes, --fast) spent all of
 // its time on the first build and never reached a search, and the forms of the earlier rounds leave
 // the body at 348, the graph reload and the request expansion's register use still differ from
@@ -683,6 +685,40 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // DH336: Name/primary/alternate library publication on the twelve-byte shared
 // request graph, original output-index tests: 587/385/386/590/590/492/597/617.
 // Original complete body restored; graph-base/reload homes and byte normalization remain.
+// DL259: Primary success enters the sole request/return completion,
+// byte/bool/char/signed-char/short/word/int/long: 348/478/348/348/545/545/496/496.
+// NOT kept: no native graph/base or return-byte repair; original complete body restored.
+// J257: Two-use permission payload at entry/after primary and in native cold failure, with canonical Boolean return controls:
+// 642/640/640/640/545/544/632/632/587/642/478. NOT kept: all eleven regress; cold flag payload and canonical Boolean result fail to recover native graph/base ownership; Boolean graphs increase extent. Matched callers regress in 5 trials, up to 8 losses.
+// Original executable source restored; allocation gaps remain.
+// Y591: Status after found publication/primary query on the twelve-byte expansion,
+// each byte/bool/short/long: 392/520/570/523/397/525/574/527. NOT kept: no native graph/base
+// repair; original status lifetime, queries, request expansion and body restored.
+// DL261: Actual shared-request full-word identifier formal domains, seven subsets then Boolean success result: 348/348/348/348/348/348/348/478.
+// NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
+// F385: Paired alternate/fallback policy extraction in bool/byte/short/long at entry
+// 592/592/600/536; after primary query 575/575/588/583. NOT kept: policy residence
+// misses native query/request homes; original parameters, byte status and complete body restored.
+// B444: Resolved request inputs in existing mode/class/type formals, seven subsets
+// then all in class/mode/type load order: 396/358/396/354/396/359/396/362. NOT kept: one-consumer field
+// captures miss byte equality and disturb query homes; original entire body restored.
+// B446: Late completed lookup truth, request guard and sole return, bool/byte/char/
+// signed-char/short/word/int/long: 645/640/640/640/629/629/615/615. NOT kept: changed result lifetimes
+// disturb the agreeing lookup prefix and native request homes; original complete body restored.
+// AC554: Complete fallback INPUT-name record via native/readonly initialization, assignment,
+// library copy, field/readonly-field initialization and entry declaration with assignment/copy:
+// 498/498/498/498/560/560/498/498. NOT kept: no exact record-ownership repair; original body restored.
+// DL267: Complete sorted-block declaration, then actual graph/mode/class block receivers, subsets 1/2/4/3/5/6/7, then all with Boolean success: 348/348/348/348/348/348/348/348/478.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Repeated fallback input names in original same-role formals, seven subsets then all with Boolean success; native graph-base/reload homes and byte normalization remain. Scores 348/357/355/357/355/357/357/482.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL274: Two-use permission mask after resolution/after found publication, dword/byte/word/long: 639/639/515/515/509/509/639/639.
+// NOT kept: native graph/base reload and byte normalization remain; no eligible byte match or native repair.
+// Original complete executable source restored.
+// DH382: Saved graph receivers for paired animation queries/fallback queries/separate
+// query phases/complete lookup phase, byte then Boolean status: 348/348/348/348/478/478/478/478.
+// NOT kept: aliases give no native graph-base/reload repair, Boolean status lengthens;
+// original entire body and byte return producer restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
@@ -929,6 +965,7 @@ PRIVATE inline void channel_loop_clear(c_animation_channel *channel)
 	}
 }
 
+// MiniMax h (11-04): no lower score; a block around the lookup leaves the id homes swapped (retail animation id 0x18, transition id 0x14).
 // score 210 (was 210): Frame 0x38 and result/prior-loop bytes agree; the two id slots are swapped: retail keeps the
 // transition id at frame+0x04/0x06 with its -1 stores at the block entry and the animation id at frame+0x08/0x0a
 // with its -1 stores at the function entry, ours is the reverse. Moving the transition id to function scope gives

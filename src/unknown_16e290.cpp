@@ -1568,8 +1568,24 @@ struct s_camera_clip_reference_16ebf0
 	byte field_14[4];
 };
 
+// MiniMax G (11-05): no new form, no lower score. The clip block still loads the cluster
+// reference with a folded address where retail materialises it (mov edi,[esi+0xa0]; add
+// eax,edi; mov al,[eax+0x70]), so the block is one instruction short and the code after the
+// clipping call stays shifted. Tried: the false-first narrow default with the else chain
+// removed 105; that plus a plane-value accumulator in retail's order 105 (the plane block and
+// the reference index then match retail exactly, only the address and the base register
+// differ); the cluster through the existing prediction_cluster_get helper 115 (the address
+// materialises, but the index compare becomes 32-bit and the clusters base folds into the
+// add); the same helper with the short index 124 (its NULL check returns); the cluster
+// through a pointer local, a pointer-arithmetic local and an explicit 0xb0 multiply 105 each
+// (all fold the address).
 // MiniMax R (11-01): the first cross-product carriers still differ; a permuter run over this
 // function was killed before it printed, so no new form was found.
+// MiniMax E (11-04): no new form, no lower score; the clip test still adds the plane terms
+// i*x, k*z, j*y where retail adds j*y, k*z, i*x (an accumulator in retail's order gives 87 too).
+// score 87 (was 87): this round found no gain - the frame is 0x9c against retail's 0x98, retail copies both
+// vectors whole while we copy them scalar by scalar, and the 0x171d00 narrow convention is set in
+// another file.
 // score 87 (was 87): frame 0x98, vector homes and forward/position EBX/EBP now agree;
 // Left: cross-product carriers, clipping-result production and interpolation scheduling.
 // Earlier: frame 0x98 and the state/forward/up/point homes agree. Left: the forward and

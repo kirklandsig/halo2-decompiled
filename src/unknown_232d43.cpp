@@ -1012,6 +1012,18 @@ struct s_string_buffer
 // Round 100 (plain): membership assigned in the condition 50 (481 bytes); split low/final assignments 87 (486);
 // a two-use value pointer in the final or low arm 68 each (500), in both 63 (478); staged final values 50;
 // an inline two-output loader in the final or both arms 50 each (481). All leave 9 in line; range body restored.
+// Round 163 (plain): cross-jumping folds the first arm into the last (compile-only), so retail's `jmp <loads>` after RET suggests the
+// `== 9` arm sat past the return before the merge. Chain, `== 8` and `== 9` arms with differing loads 97 (525 bytes);
+// the negated chain holding the `== 9` arm, a row pointer in that arm, 81 (505); an explicit zeroing else arm 114 (504);
+// a `!= 9` empty arm with the loads in the else 50 (481); the negated chain with a goto past the loads 50 (481).
+// Compile-only, all 9 in line: multi-return, flag and switch inline predicates, gotos in and out of the arm.
+// Round 55 (m3 lane 2): only 0x1a391f and 0x257320 share the shape (`cmp; jcc back; jmp back` after RET), both from a test threaded
+// around by an earlier test of the same value, which suggests a second, correlated `mode` test. Plain: three-arm flag 50 (481 bytes,
+// aligned 5 against the range's 6), default-false flag 50, default-true with the chain negated 50, empty chain arm 50, long flag 50,
+// `!flag && == 9` 50, a separate `if (== 9)` 99 (491). Fast (unchanged source 34): value1 zeroed in an else arm 65, with value2 too 93
+// (482), the arms negated or swapped 65/65/65/93; each arm with its own score1 format call, or the else arm formatting 0, 99 (483),
+// one combined test with its own format calls 100 (483), the `== 9` arm and else sharing a call 84 (502). All leave 9 in line.
+// `__assume` (fast) at the head or tail of either arm, on the mode or the row, or in a flag form, nine placements 65 each; on the flag itself 100 (485).
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

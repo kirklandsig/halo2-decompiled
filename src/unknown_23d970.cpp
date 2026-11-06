@@ -563,6 +563,8 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
+// MiniMax C (11-06): no new form, no lower score.
+// MiniMax R (11-04): no new form, no lower score.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
 // loads (j, i, then k into xmm0 after the distance store) and folds forward's loads in the second
@@ -791,6 +793,62 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // Round 82 (m3 lane 16, fast with 0x1f0870): the distance named before its store 45 (same code); one function-scope
 // forward pointer for both arms 322 (1266 bytes, prologue changes); named yaw/pitch locals in the else arm 157 (1264);
 // right declared at function scope 45 (same code); the cosine computed before the distance store 49.
+// DL258: Actual output-basis pair, saved-point overlay and input-step fields,
+// all seven nonempty families, 45 each; direct native saved-point member alone 45.
+// NOT kept: no gain. Right I/J colors, repeated forward K and ordinary-angle store
+// bases remain. Original record layouts, snapshots, products and complete body restored.
+// B417: Prior-up/normalized-direction/right last-consumer regions, seven subsets then complete
+// geometric workspace names: 45/45/45/45/45/45/45/45 at 1262/1261. Original body restored;
+// right i/j carriers, second-product forward.k reuse and ordinary-angle store bases remain.
+// B419: Native geometric-basis ownership of prior-up/normalized-forward/perpendicular-left,
+// seven role subsets then complete forward-setter graph: 70/77/45/70/70/77/70/249. NOT kept: grouped
+// workspace does not match. Original scalar/vector owners, helpers and complete body restored.
+// B423: Native reset-completion decision at the geometric branch, ready/waiting
+// bool/byte/short/long, 45 each at 1262/1261. NOT kept: no exact match;
+// original direct comparison, staged helper and complete body restored.
+// B426: Existing reference direct/staged and pointer direct/staged cross producers,
+// each at the first/second product: 45/57/49/45/45/57/49/217. Original shared producers and
+// complete body restored; right i/j colors, forward.k reuse and angle stores remain.
+// B428: Complementary input-result lifetime, bool/byte/short/long with conditional/total
+// predicate producers: 74/75/74/75/95/96/89/103. NOT kept: no exact match; stack initialization
+// and lengths regress. Original complete body restored; right i/j colors, forward.k reuse
+// and ordinary-angle store bases remain.
+// B430: Counted component-array prior-up/forward/default-vector transfers, masks
+// 1/2/3/4/5/6/7: 106/233/272/259/275/254/286; all with chained equal defaults 300.
+// NOT kept: no byte match; original aggregate transfers, products and body restored.
+// M391: Normalized-distance/delay-subtraction/transition-clamp double receivers, seven subsets, then complete real receivers: 227/114/240/135/245/150/256/103.
+// NOT kept: No exact product-color, forward-K reuse or angle-store-base repair; nonmatching result lifetimes are discarded. Original complete body restored.
+// B432: Caller-visible inline declarations for the existing staged cross, normalizer
+// and perpendicular producers, seven subsets, then staged-cross forceinline: eight 45s.
+// Original declarations and callback restored; right i/j, forward.k and angle bases remain.
+// B434: Missing-object/missing-target/ordinary-orientation arms first, seven
+// subsets 361/219/222/250/367/333/337; nullable acquisition with common fallback 358.
+// NOT kept: all regress; original branches, products and full body restored.
+// F393: Masked target ordinal long/dword/int/word, then actual reset-capability decision bool/byte/short/long:
+// 45/45/45/185/55/55/55/45. NOT kept: no byte match; original complete body/helpers restored;
+// right i/j carriers, forward.k reuse and ordinary-angle store bases remain.
+// Round 54 (m3 lane 15; a one-link harness with 0x30bf0, 0x11d090, 0x16f3a0, 0xbadc0, 0x172520, 0x1f0870's files and an address-taken
+// entry is exact, 45/43/53/217 as listed, 4.6 s a form): first product written out 219 (1261 bytes), with `(real)` on row i's second, first
+// or both products 219/216/224, on the whole row 219, with parentheses on all rows 224, row i as a negated sum or difference 219/232;
+// first product through a local helper by row order ikj 57, jik 59 (1261), jki 63 (1261), kij 56, kji 56; no command local, no observer local,
+// neither, crossed with function_1f087b, staged and plain second products and the else pointer: 43 to 222, none below 45 without that
+// pointer. Diagnostic: 0-7 identity locals before the first product by 0-7 before the second, with function_1f087b or staged: best 45,
+// best at 1261 bytes 64.
+// B432: Caller-visible inline declarations for the existing staged cross, normalizer
+// and perpendicular producers, seven subsets, then staged-cross forceinline: eight 45s.
+// Original declarations and callback restored; right i/j, forward.k and angle bases remain.
+// B434: Missing-object/missing-target/ordinary-orientation arms first, seven
+// subsets 361/219/222/250/367/333/337; nullable acquisition with common fallback 358.
+// NOT kept: all regress; original branches, products and full body restored.
+// M391: Normalized-distance/delay-subtraction/transition-clamp double receivers, seven subsets, then complete real receivers: 227/114/240/135/245/150/256/103.
+// NOT kept: No exact product-color, forward-K reuse or angle-store-base repair; nonmatching result lifetimes are discarded. Original complete body restored.
+// Round 151 (harness, exact at 45): grid of 200 forms, second product (function_1f087b, cross3f_staged, staged through a view of the output, k accumulated, k accumulated through a view) by
+// first product (cross3f, function_1f087b, written jik, kji, ikj) by the else-arm forward pointer by 0-3 dead temps ahead of the first product: best 43 at 1262 bytes (the else pointer alone), none lower.
+// Random grid of 143 natural forms (those products, the else pointer, a named up or forward pointer, declaration orders, a named distance, advance and command placement): none below 45.
+// Y610: Paired angle/forward/up field lvalue identities,
+// subsets 1/2/4/3/5/6/7, then all with command-record identity:
+// 230/354/349/354/348/354/377/377 (fast control 45).
+// NOT kept: no exact identity-form match; original complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

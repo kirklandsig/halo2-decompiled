@@ -1481,7 +1481,7 @@ long function_1766b0(long object_index, long tag_index, long unknown34, long unk
 }
 
 // @retail 0x176780
-long function_176780(s_effect_owner const *owner, long object_index, real scale_a, long tag_index, real scale_b, point3f const *origin, vector3f const *direction)
+long function_176780(long tag_index, s_effect_owner const *owner, long object_index, real scale_a, real scale_b, point3f const *origin, vector3f const *direction)
 {
 	s_effect_parameters parameters;
 	point3f point;
@@ -1747,131 +1747,19 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 	return index;
 }
 
-// score 9 (was 9): only the node/matrix entry order remains (round 67, round 70).
-// MiniMax D (11-01): no new form and no lower score; the bounded permute search was stopped before
-// it measured a variant.
-// Earlier: node/matrix entry order and
-// the forward/up xmm homes remained (retail forward
-// in xmm4/2/3 and up in xmm5/1/0; the marker forward values take xmm2 first here); frame 0x1c agrees.
-// The point computed into position, normalize3d and cross3f give retail's early up.j/up.k loads.
-// Node index first 107 (marker index sign extension hoisted); forward without locals 132;
-// locals k,j,i 80, j,k,i 81; dot3f for forward 132, for position 82; written cross 119;
-// marker pointer in the else branch 198. Shared difference 187; shared scale 94; both helpers 186;
-// separate point workspace 125; normalized workspace 164; scale snapshot 185; marker vector
-// snapshot 184; point setters 227. Cartesian scalar names, ordered direction/point accumulation,
-// displacement scalars, output-matrix receiver, early direction inputs and immutable accumulation
-// 77 each; existing inverse-point call 417. Native node copy 77; copy first 107;
-// complete/immutable/shared marker inputs 212/212/208; node-first marker value 211 (marker values
-// lose the matched caller); direction results 77; results with node first 107. Direction inputs
-// i,k,j / j,i,k / k,i,j 79/80/81; with node copied first 109/110/111. Read-only node-matrix input
-// and marker-array input 77/77.
-// Node copy first (retail entry and length 758, index sign extension hoisted into the entry) 107;
-// with the matrix local inside the branch 107; marker forward value copy 166; marker forward
-// fields read directly 139; forward locals named x/y/z or forward_i/j/k 107/107; declarations
-// forward/position/up or up/forward/position 107/107.
-// Round 95: node copy before the matrix load 107 (758 bytes; the marker index sign extension is
-// hoisted above the matrix test, retail extends it in each arm); with a marker pointer in the else
-// arm 198 (762 bytes), the same pointer without node-first 198; node-first with pointer-sum marker
-// address 107; node-first with the else arm copying forward first 121. Original body restored.
-// Product order inside each forward row (any of six per row) 77 (identical code); the
-// tail as matched 0x1420f0's body (scale, forward, two-step cross, up, zeroed position,
-// position) through a forceinline copy 137 (its extra tuples flip the magnitude's sum
-// order and move 1.0 out of xmm7), with the node copied first 149, with a direction
-// pointer for the forward rows 158, the zero position or the inverse scale through the
-// existing setters 137/137; `up` declared just before the 0x11d000 call 77; branches
-// swapped (`if (!matrix)`) 163. Round 7 (lane 14): the staged cross product 77 (same code); node copy
-// first 107 (758 bytes; aligned 66, the markers base then stays in EBX); the cross product before
-// the forward copy 85; scale stored last 101 (766 bytes); forward locals read before the scale test
-// 236 (795 bytes).
-// Round 165: the five other position/forward/up declaration orders 77 (identical); forward rows before the
-// position block 198; cross product from the stored output forward 169 (758 bytes); forward rows with `+=`
-// 77 (identical); node matrix read through the source at each use 202 (caller 0x178360 86).
-// 236 (795 bytes). Round 99: the xmm rotation is one joint choice: retail's normalize puts up.i/up.j
-// in xmm5/xmm1, leaving xmm2-4 for forward across 0x11d000; ours puts them in xmm1/xmm2, forward in
-// xmm3-5. Cross product reading the stored forward field 169 (758 bytes, forward reloaded); up
-// declared first 77 (same code); normalize3d on 0x11d000's returned pointer 187; forward stored
-// before the 0x11d000 call 111; node copied first with the matrix read from the source at each use
-// 202 (768 bytes).
-// Round 170: node copy first 107 (the marker index extension hoists into the entry); with a per-arm
-// long index 107; with the branches inverted 173; forward components at function scope 77; read
-// before the position block 236 (795 bytes).
-// Round 172: the forward rows' accumulators follow row statement order (XMM5, XMM4, XMM3); statement
-// orders i,k,j / j,i,k / j,k,i / k,i,j / k,j,i 82/77/82/81/81.
-// Round 450: complete live marker fields alone/node-first/matrix-live/both
-// 215/218/223/223; with staged cross 215/218/223/223. All lose the matched caller;
-// original point, marker, normalizer and cross producers restored.
-// Round 51 (lane 16, fast with 0x178360): the inverse scaling through the existing vector3f_scale and
-// the null-scale zero position through real_point3d_set 77 (identical code, kept); the offset through
-// vector3d_from_points3d 190 (752 bytes), with vector3f_scale too 189; the output position zeroed
-// through real_point3d_set and then assigned 109 (766 bytes: the position pointer local gives retail's
-// `lea eax, [esi + 0x2c]` stores). A compile-only build does not model this function (retail keeps
-// forward in xmm2-4 across the LTCG 0x11d000 call).
-// Round 118 (lane 5, fast with 0x178360): node copy first with one function-scope marker pointer assigned
-// in each arm 198 (762 bytes); node copy first with the direction inputs read j, k, i 111 (758 bytes);
-// the direction inputs read j, k, i 81, read k, j, i 80; the cross product into a `left` local then
-// assigned 143 (792 bytes). 0x11d000 is a leaf using only xmm0/xmm1, so any of xmm2-xmm5 can carry
-// forward across it; retail picks xmm4/2/3 (the marker's k lands in xmm5 where ours takes xmm2).
-// Round 42 (lane 1, fast with 0x178360): node copy first re-viewed (107: the hoisted extension also
-// moves the markers base to EBX in the matrix arm; the xmm rotation is unchanged); with one marker
-// pointer taken before the matrix test 202 (747 bytes); up stored before the cross product 86; the
-// else arm copying forward before position 115 (762 bytes); `(long)marker_index` at the three
-// indexings 77 (identical); the zero position as a chained assignment 79.
-// Round 67 (lane 12, fast with 0x178360; plain 9): the forward rows through the existing vector3f_assign
-// (forward's fields then written only through the setter) give retail's forward block, xmm homes and
-// cross product: 77 -> 9 (758 bytes, kept). Left: retail copies the node index first (CX, before the
-// matrix load) where ours loads the matrix first and copies the index through DI, and keeps the markers
-// base in EAX (ours EBX). Node copy first on this body 101 (entry exact, but the marker index sign
-// extension hoists above the matrix test and is shared by both arms); with the matrix read in the arm
-// 101; declarations first 101; with an else-arm marker pointer 198; with the arms inverted 189. Earlier
-// on the old body: the position rows in each of the other five product orders (all rows or row 2 only)
-// 77 (identical); one or two unused locals 77; an extra named store to forward.i/j/k or position.x/y/z
-// in the else arm (diagnostic) 128/94/92/211/212/212.
-// Round 105 (lane 7, fast with 0x178360): node copy first 107 (758 bytes, entry as retail up to the hoisted marker
-// index extension; aligned 66), with the position/forward/up declarations above it 107, with up declared first
-// 107, with the forward inputs declared at function scope 107; node first with the marker fields read at each
-// use (no marker pointer) 218 (779 bytes, caller 0x178360 86).
-// Round 59 (lane 16, fast with 0x178360): node-first loses because VC merges the two arms' identical
-// leading `movsx edx, dx` into the entry, where retail's else arm extends into ECX (base in EDX, `lea eax,
-// [ecx + edx]`), so its arms differ. On node-first: the else arm copying a whole marker local 141 (774
-// bytes, 0x178360 56); the matrix arm reading the marker directly 218 (779 bytes, 0x178360 86); the arms
-// swapped 173; one markers base local for both arms 124; the scale test inverted (zero arm first) 156.
-// Round 70 (lane 12, fast with 0x178360): node-first re-measured 101 (the arms' identical `movsx edx, dx`
-// moves above the test); on it the matrix-arm marker as `source->markers + marker_index` 101, `matrix != NULL`
-// 101, one `markers` local for both arms 102 (0x178360 1); the parameters as (source, out, marker_index) or
-// (source, marker_index, out), the order retail's esi-before-eax setup suggests, 9/9 (callee unchanged, 0x178360
-// 2 each; with node-first 101/101), so the current order is retail's.
-// Round 260: null-arm point/vector setters, singly/both and node-first/reversed publication,
-// 210/215/193/208/212/191/193/191; native block-copy equivalents 9/9/9/101/101/101/9/101.
-// Setters lose the matched caller; native copies retain it but do not fix entry or index hoisting.
-// Round 260: a 600 s bounded search, 55 attempts (7 failed), none below 9.
-// Round 116: else-arm array base 40; with node-first 101; both arms' array bases with node-first 101;
-// reversed matrix-arm pointer addition 9, with node-first 101; reversed else-arm pointer addition 9,
-// with node-first 101; comma-sequenced node store and matrix initialization 101. Original body restored.
-// Round 123 (lane 8, fast with 0x178360): node-first merges `movsx edx, dx` upward because its else arm's index
-// takes EDX and its base EAX, where this order (and retail) has index ECX, base EDX. On node-first: the scale in a
-// local read before the marker 101; the node index through a local 101 (alone 9); the marker address by byte offset
-// 101; a reference to the else arm's position 101; a forceinline marker getter in the matrix arm, the else arm or both
-// 101/101/101 (alone 9/9/9); a matrix-arm base local 101 (alone 9). Diagnostic only: `> 0.0f` for the scale test (no
-// lahf) 193, alone 192: the matrix-arm base still avoids EAX, so the flags read does not explain it.
-// Diagnostics: with the else arm's marker reads removed the base folds (`add edx, [eax + 0xc]`, 234 with node first), so
-// the else arm's read of the same field is what makes it a temporary; with no node copy, node-first aligned 7 and the
-// base is still EBX. Retail's base takes EAX as the source dies; none of these forms gets that.
-// Round 42 (m3 lane 18, fast with 0x178360): the marker index parameter `long`, narrowed `(short)` at its uses with the
-// callers passing the long index, node copy first 101, in this order 9 (same code); node copy first with `matrix`
-// declared uninitialized and assigned after the copy 101; node copy first with `up` declared just before the 0x11d000
-// call 101; the scale read once into a local before the marker pointer 192.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
-	transform4x3f const *matrix = source->node_matrix;
 	point3f position;
 	vector3f forward;
 	vector3f up;
 
 	out->node_index = source->node_index;
+	transform4x3f const *matrix = source->node_matrix;
 	if (matrix)
 	{
-		s_effect_marker const *marker = &source->markers[marker_index];
+		s_effect_marker const *markers = source->markers;
+		s_effect_marker const *marker = &markers[marker_index];
 
 		if (matrix->scale != 0.0f)
 		{
@@ -1890,9 +1778,9 @@ void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *
 		{
 			real_point3d_set(&position, 0.0f, 0.0f, 0.0f);
 		}
-		real i = marker->forward.i;
-		real j = marker->forward.j;
-		real k = marker->forward.k;
+		real i = markers[marker_index].forward.i;
+		real j = markers[marker_index].forward.j;
+		real k = markers[marker_index].forward.k;
 
 		vector3f_assign(&forward,
 			matrix->forward.k * k + matrix->forward.j * j + matrix->forward.i * i,
@@ -1994,7 +1882,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax E (11-06): no new form, no lower score; the colour query and zone-base scheduling still keep
+// the frame at 0x40 and both colours spilled.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
+// MiniMax R (11-04): no new form, no lower score; retail's early colour read still needs a form that
+// spills only color A and keeps color B in EDI, which every snapshot point tried so far fails.
 // MiniMax R (10-31): no kept form, no lower score: colour locals reach the frame 0x44 but spill both colours
 // (195/188); the permuter's 124 promotes the unknown to xmm0 and breaks retail's argument layout.
 // Earlier forms: frame 0x44 agrees; settings/color/query registers, cursor home and zone-base scheduling remain.
@@ -2122,6 +2014,37 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // 194/194/188/188/194/194/188/188 (572/552 bytes), all matched controls preserved.
 // NOT kept: one-use admission results regress and retain frame 0x40 versus 0x44;
 // original initial guard, color/query observations and complete body restored.
+// N354: Both external color-field identities, readonly/mutable references/pointers,
+// at the spawn/query boundary and before location propagation: 128 each (eight forms).
+// NOT kept: one-use field identities require equality; original complete body restored.
+// Missing early color slot and frame 0x40 versus 0x44 remain.
+// AC528: First-traversal cursor acquisition with late spawn-field masks 0..7
+// 167/166/166/160/163/164/164/165. NOT kept: no exact match or eligible gain; original complete body restored.
+// Early color/query/cursor homes and frame remain. These changed observation/residence forms require equality; no retained candidate.
+// DH372: Partial clipped-zone halfspace acceptance/rejection, bool/byte/short/long,
+// 131 each at 556 bytes. NOT kept: regressions; original helper and body restored.
+// Missing early color home and frame 0x40/0x44 remain; all checked controls survive.
+// AC531: Actual plane-field pointer/reference at entry lookup or after index admission,
+// ordinary/forced existing zone expansion: eight at 129/556 bytes. NOT kept: no frame
+// or color-home recovery; original producer, all live reads and complete body restored.
+// AC535: Positive tint/multiplication query results with false/true-default publication,
+// single queries then four pairs: 190/190/189/189/189/189/189/189 at 572 bytes. NOT kept:
+// all regress/lengthen; original complete body restored, early color/query/cursor homes remain.
+// Y599: Complete early color/direct-final-query graph with actual cursor, matrix and
+// spawn lexical-home priorities: 178/178/178/178/178/178/178/178. NOT kept: no exact
+// color/query home recovery; original complete body and observations restored.
+// Frame 0x44 recovers but all eight grow to 572/552 bytes; input-home reuse remains.
+// DH372: Partial clipped-zone halfspace acceptance/rejection, bool/byte/short/long,
+// 131 each at 556 bytes. NOT kept: regressions; original helper and body restored.
+// Missing early color home and frame 0x40/0x44 remain; all checked controls survive.
+// Round 92 (m3 lane 16, fast with 0x177040 and 0x176f60): colour locals after the spawn stores with `multiplied()` as the
+// argument 178 (572 B; frame 0x44 and the colour loads at retail's spot, but in the one block before 0x175a80 the
+// system keeps EDI, colour A takes EBX and colour B and the tint spill, where retail keeps colour B in EDI, the tint
+// in BL and reloads the system); the same locals inside the type-query block 178; colours at the call with
+// `multiplied()` as the argument 135 (aligned 76 -> 74); `dword const` colour locals with both queries named 184;
+// colour B declared first 178; both colour locals at the function top 195; only colour B read early (colour A at
+// the call) 146 (556 B, aligned 76 -> 66: colour B takes EBX, the system keeps EDI, the tint spills). The loop already
+// matches retail apart from frame offsets and the definition reload.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2394,10 +2317,19 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax E (11-06): no new form, no lower score: the only difference left is the object's index,
+// which retail reloads after the 0xbadc0 validity call; that call's body lives in
+// src/unknown_0bad50.cpp, which this lane may not edit.
+// MiniMax A (11-03): no new form, no lower score: retail still reloads the object's index after the
+// 0xbadc0 validity call and keeps the definition pointer on the stack; calling the file-local copy
+// object_get_175d70 instead of 0xbadc0 compiles to the same code (63).
 // MiniMax R (11-01): no new form, no lower score: retail still reloads the object's index after
 // the 0xbadc0 validity call, and 0xbadc0's body is in another file.
 // MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
 // and 0xbaf80's bodies (src/unknown_0bad50.cpp) that decide it.
+// score 63 (was 63): this round found no gain - retail adds the record base into the scaled index before
+// its first load and keeps the object index in eax across 0xbadc0, whose argument convention is set in
+// src/unknown_0bad50.cpp.
 // score 63 (was 63): only the object index differs: ours keeps it in ESI from entry across 0xbadc0
 // Four-byte frame agrees; initial object handle remains retained across read-only queries.
 // Earlier: only the object index differs: ours keeps it in ESI from entry across 0xbadc0
@@ -2905,6 +2837,10 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // before 'ligh' 23; light test inverted with the detached call first 23. Every other 0x1895f0 caller fills the
 // record as position, compressed forward, velocity, location (retail's order here too); that order needs
 // 0x189060's register order (round 117 lead), BLOCKED-BY 0xbf600's call (contributor).
+// Round 54 (m3 lane 15, fast): every order of the detached record's position, compression, location and velocity: 23 for the current
+// one, then 26 (location, position, velocity, compression), 27 (three forms), 28 (nine), 29 (six), 40 (retail's order), 42, 43, 43.
+// The attached call loads scale into EDI because position and direction already hold EAX and ECX in our evaluation order; that and
+// the detached arm's rotation still need 0x189060's order. BLOCKED-BY 0xbf600, 0xceee0 (their calls) and 0x17e670.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3116,6 +3052,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax E (11-06): the location mode read live from the definition reaches retail's 0x54 frame but
+// scores 108, the same form with the particle system declared before the effect 119 and with color B
+// read at the call 110; no new form, no lower score.
 // score 93 (was 93): frame 0x4c versus 0x54 (retail spills the definition and keeps two more
 // dwords), the particle system in EDI (retail ESI), color B spilled (retail EDI) and the cached
 // mode differ. Tried: transform name 109; query results, particle cursor and colors at entry 109;
@@ -3128,6 +3067,8 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // cursor home 112; early mode traversal transform/node observation/transform home/query scope 96
 // each; native mode 96; entry word/native mode 108/109; unsigned particle cursor alone/with native
 // mode 96/96; node predicate at use 109, with native mode 110; late native mode 106.
+// MiniMax R (11-04): the location mode read late from the definition reaches retail's 0x54 frame but
+// scores 108, the pool declaration swap 114 (345 bytes); no new form, no lower score.
 // Round 88: the next index without `volatile` 122 (the effect index moves to ECX and caller
 // 0x176f60 stops matching: the volatile is what keeps it on the stack); mode read per call 108;
 // the effect index read once through its address with a plain next index 105; multiplied() in
@@ -3285,6 +3226,34 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // 93/93/93/93; before cursor acquisition 112/112/112/113. Earlier reads change the
 // argument convention and lose the matched caller. NOT kept: no gain or exact match;
 // original activity field read, definition/cursor lifetimes and complete body restored.
+// N354: Exhausted-particle continuation with original/for-owned effect traversal,
+// cached/live mode and original/native node word: 93/93/108/108/93/93/108/108.
+// NOT kept: ties/regressions; every live-mode form loses caller 0x176f60 (25).
+// Original complete body restored; native frame and system/successor/color homes remain.
+// AC528: Complete positive node classification, exhaustive then false-default in bool/byte/short/long
+// 96/110/106/107/94/96/95/96. NOT kept: no exact match or eligible gain; original complete body restored.
+// Native frame and system/successor/color homes remain. Several exhaustive non-Boolean forms also lose the exact caller; no qualifying gain or equality.
+// DH372: Particle availability/exhaustion across the original transform call,
+// bool/byte/short/long 119/119/126/132/119/119/126/132. NOT kept: regressions; original body
+// restored, frame 0x4c/0x54 and system/successor/color homes remain.
+// AC531: Complete immutable color pair, dword/long/unsigned-int/int, active/query-owned
+// scopes: eight at 93/338 bytes. NOT kept: color residence canonicalizes; native
+// frame, definition spill and system/successor roles remain. Original whole body restored.
+// AC535: Positive tint result with false/true default publication, bool/byte/short/long:
+// 113/112/117/116/113/112/117/116. NOT kept: all regress and lose matched caller
+// 0x176f60 (25); original full body restored, native frame and system/successor homes remain.
+// Y599: Incoming system handle advanced to saved successor, effect/system lookup order,
+// cached/live mode and direct/native node word: 120/120/128/128/117/117/124/124.
+// NOT kept: no exact residence/frame recovery; original full body restored.
+// Frames 0x48/0x50 versus 0x54; every form loses the exact update caller.
+// DH372: Particle availability/exhaustion across the original transform call,
+// bool/byte/short/long 119/119/126/132/119/119/126/132. NOT kept: regressions; original body
+// restored, frame 0x4c/0x54 and system/successor/color homes remain.
+// Round 92 (m3 lane 16, fast with 0x176f60, which matches unless given): the cached mode as `long` on this body (no
+// spawn cursor) 92 at retail's 337 bytes (gain 1, not kept); the cached word mode declared at function scope 93; the
+// system pointer declared before the effect pointer 93 (same code); the definition declared first with the mode read
+// per call 108 (0x176f60 25: effect index in EAX, system index in ECX, definition in EBX until the loop); `word const`
+// mode 93. On the cached form the prologue is retail's except the system/next ESI/EDI swap.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3428,6 +3397,8 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 	return result;
 }
 
+// MiniMax R (11-04): the round 117 form again (default-first scale, `scale = scale_b * scale`, `(void)position.y;`
+// before the transform) matches byte for byte; not kept: the dead read is a steering statement (coordinator).
 // score 74 (was 74): the scale block and the point transform's y copy remain; the lens call now agrees (round 67).
 // Earlier: frame 0x94 agrees; the scale default/conditional branch, the point transform's
 // y copy (retail keeps y in xmm5 and copies it to xmm4; ours scales it in place) and the lens call
@@ -3573,6 +3544,10 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // at the loop top 270 (same code); forward and up transformed before the point 312 (1500); forward and up copied
 // before the position 282. The y copy (retail keeps raw y and scales into a fresh register) still appears only
 // with a by-name reference to position.y.
+// Round 111: direct copy construction with the scale after the position 312; a shared point pointer there 320;
+// on the default-before-color scale, a shared point pointer 280, output-only 272, input-only 278, and the same
+// pointer at both render calls 280; direct copy construction 272; an explicit temporary copy 272. None preserves
+// position.y; both matched helper users and both callers stay matched. Opening body restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

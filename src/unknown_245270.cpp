@@ -275,6 +275,11 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
+// MiniMax G (11-05): no new form, no lower score; declaring the plane table after the point
+// difference scores 203 in the reduced and in the full build (a gain of six, below the keep
+// threshold, so the body is restored); the source receiver, the frame and the stack homes still
+// differ: BLOCKED-BY the caller 0x245aa0 (src/unknown_245850.cpp).
+// MiniMax B (11-04b): no new form, no lower score; retail still copies the source into esi at the entry and frames 0x2c against our 0x24, and its declaration and call live in src/unknown_245850.cpp, which this lane may not edit.
 // score 209 (was 209): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
 // source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
@@ -584,6 +589,77 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 50 (m3 lane 15, fast; 0x245aa0 checked): the side flags as `(code & 0x8000) != 0` 209 (same code); the
 // facing arms inverted on `!=` 209 (same code); the facing test as one ternary condition 211; the equal-material
 // case as an early return 209 (same code); short codes with `< 0` sides 224 (762 bytes, 0x245aa0 lost to 6).
+// B412: Complete ordered-facing rejection to the sole void exit, bool/byte/short/long
+// sides with original/staged cross: 211 each. Original body restored; frame 0x24/0x2c,
+// material/side homes and delayed matrix acquisition remain.
+// B415: Decoded-plane phase ending before transform, with cross-ending/native-code/side storage
+// B415: masks 0..7: 209/209/240/240/209/209/240/240. Native short codes lose caller 0x245aa0 at 6; all original
+// B415: code/side homes and full body restored; frame 0x24/0x2c, material/table spills and late matrix remain.
+// B417: Plane-table acquisition ends after native plane pointers, with completed endpoint/cross
+// regions and earlier bare point workspace, eight forms: 209/209/209/209/209/209/209/209.
+// Original body restored; frame 0x24/0x2c, side homes and delayed matrix acquisition remain.
+// B425: External first/second material and surface bindings on source-ECX graph,
+// seven subsets, then all with first-material pointer: 209/209/209/209/209/209/209/209. NOT kept: no
+// exact match; original receivers/body restored, frame and independent side homes remain.
+// Round 52 (m3 lane 2, fast; aligned count ignoring stack offsets in brackets, base 209 [267]; lead, 1 point, not kept): the first transform as a scaled copy
+// `vector3f scaled = { edge.i, edge.j, edge.k }; if (scale != 1.f) vector3f_scale(&edge, scale, &scaled);` rotated into the edge 208 [218]: retail's copies
+// before the test and scale-first products, only the matrix register (EBP from entry, retail EDX at its test) and the first block's homes left. Rows written
+// out instead of matrix_transform_vector 208 (same code); whole body in a compiled-out loop 208 (same); dword codes with named plane indices 208 (same);
+// second material read first 209 [220]; with dword codes 209.
+// F381: Independent complete side producers, exhaustive bool/byte/short/long
+// 230/230/231/236; default-false results 202/202/212/223. NOT kept: no
+// exact classification residence; seven-point best fails the retention margin.
+// Original side tests and body restored; frame/table/matrix and side homes remain.
+// B436: Existing point-transform native input/coefficient/output array observations, seven subsets,
+// then one reused matrix scale: 209/209/209/209/209/209/209/213. NOT kept: no exact form or eligible gain;
+// original complete body and helpers restored. Native frame/register differences remain.
+// B439: Existing alias-safe rotation with bool/byte/short/long side carriers,
+// branch/entry cross storage: 253/253/253/253/253/253/253/253 (830/783 bytes).
+// NOT kept: longer extent; native frame and material/side homes remain. Body restored.
+// B441: Actual secondary material-index producer in short/long, at original/early
+// acquisition and producer/entry declaration boundaries: 209/209/209/209/209/209/209/209.
+// NOT kept: one-use index transport has no equality; original complete body restored.
+// Frame 0x24/0x2c, material/table/side homes and delayed matrix acquisition remain.
+// MiniMax B (11-04): no new form, no lower score; a named copy of the index and a named
+// copy of the source pointer each give 209 at retail's 783 bytes, and retail still copies
+// the source into esi and frames 0x2c against our 0x24; the declaration and the call live
+// in src/unknown_245850.cpp.
+// Round 150 (m3 lane 6, one-file harness with 0x245aa0's file, exact at 209; masked aligned counts in brackets, base [132]): the first
+// pass with the plane table read after the edge vector has retail's shape (source in ESI, matrix read at its test); only the second
+// pass differs, where the source arrives in EDX with no copy and the matrix goes to EBP from entry. 300 random forms (second material
+// first or through a record, code copies long/dword and in either order, named plane indices, side forms, plane table, edge and
+// pointer orders, table read at each use): best 202 at 783 bytes [100] (named indices, sides before the pointers, edge last), masked
+// best [98] at 787 bytes, and every one of them costs caller 0x245aa0 its match (3), only the original keeps it. All six orders of
+// source, index and matrix, each with the table at the block top or late: arrival unchanged (ECX top, EDX late; 209/203, caller
+// 0/3 or 16; matrix first 231/227). Named surface, vertex or material locals with the late table 203-204; an inline accessor for the
+// second material's record (forceinline, inline, reference; with a named record) 208 or 204 late, no dead lea, no arrival change.
+// Plane table and pointers inside the plane test 222 (766 bytes): the source does arrive in ECX and copies to a callee-saved
+// register at entry as retail's, but the matrix then becomes a register argument too (no push, caller 43).
+// M3 lane 4 r170 (one-file harness with 0x245aa0's file, exact at 209, caller 0 unless noted; masked aligned in brackets, base [77]):
+// the matrix named inside its block with a true `__assume(matrix != NULL)` 205 (also --fast; aligned 162 -> 134 [73]: the matrix
+// leaves EBP, the source stays ECX, caller matched; a renaming pointer, so not kept); the three transforms in a plain `inline`
+// helper 592 (401 B, out of line), force-inlined 209, with the plane table late 203 (caller 3); a volatile matrix read (diagnostic,
+// removed) 209, with the late table 214 (caller 3). On the named matrix: second material read first 205 [70], through `short const &`
+// 237 (752 B) [67], through a word reference, a record reference or a record pointer 223 (766 B) [64] (the lea comes ahead of the
+// load, retail's after), the second index named with the reference 220 (764 B); a vertex-table local 235 (750 B), with a surface
+// local 220 (764 B); `__assume(arg_1 != NULL)` 235 (750 B); the source copied to a named local with an assume 209-214, without
+// 208-223 (never retail's `mov esi, ecx`); dword codes with named plane indices 221 (765 B), sides as `!= 0` 207 (aligned 128).
+// Round 132 (m3 lane 7, fast; 0x245aa0 and 0x245400 checked): the second material through a record
+// pointer (retail's dead `lea edx, [ecx + edx*8]`), the first through one also at the final call, both:
+// 209 each (no dead lea, callers keep their matches); the plane table read after the edge vector
+// 203 with 0x245aa0 at 3 (the source then arrives in EDX); the scaled edge transform as a scaled copy
+// rotated back through a forceinline helper taking the matrix 234 (811 bytes; plain inline stays out
+// of line, 387). Retail pushes EBP only around the plane code (`push ebp ... pop ebp` mid-body) and
+// reads the matrix at its test; ours keeps the matrix in EBP from entry, so EBP is a prologue save.
+// M397: Complete edge/cross/transformed-point defaults, masks 1/2/4/3/5/6/7,
+// then all at entry: 213/209/223/213/230/223/230/230. NOT kept: no equality or eligible native-
+// frame gain; original workspaces and complete body restored. Four exact controls survive.
+// DH381: Existing array edge producer at unit scale, late-plane/independent-side/staged-cross
+// subsets 0..7: 208/204/226/227/208/204/226/227. NOT kept: best gains five and loses caller 0x245aa0; original body restored.
+// N396: Signed eight-byte primary ordinal/first decoded code/second decoded code,
+// seven subsets then complete encoded/decoded residence: 208/281/270/278/279/263/294/298.
+// NOT kept: native narrow domains, no qualifying gain and longer decoded forms; original body restored.
+// Frame 0x24/0x2c, independent side homes and delayed matrix acquisition remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

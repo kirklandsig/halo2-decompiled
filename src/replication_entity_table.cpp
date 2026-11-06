@@ -346,7 +346,7 @@ struct s_handle_creation
 /* takes a chain of handles another machine created: the peers record them
    and the owner is told of each */
 // @retail 0x89950
-void replication_table_add_chain(const long *values, s_handle_peers *peers, long count, const long *handles, const long *others, s_handle_creation *blocks)
+void replication_table_add_chain(s_handle_peers *peers, long count, const long *handles, const long *values, const long *others, s_handle_creation *blocks)
 {
 	long i;
 	for (i = 0; i < count; i++)

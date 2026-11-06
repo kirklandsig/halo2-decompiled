@@ -137,27 +137,6 @@ struct s_follow_search_fields
 
 void function_26c180(long actor_index);
 
-// score 29 (was 29): retail loads `unknown` once into ebx, pushes it to
-// function_2626b0 and tests bl afterwards; ours reloads it from the stack
-// after the call. Tried: a copy `bool not_found = unknown` used in the call
-// and the test (109: the tail then matches but for `mov bl, cl`, and the
-// top keeps actor_index in edi), the copy only in the test or as `found =
-// !unknown` (109, 113), plain locals instead of the struct (31), flag8 set
-// by if/else (49), the first reference through a local (29); flag8 as a ternary 27
-// (sete), as a result local set by an if 27, with the bool tested first 31, flag3
-// cleared before flag8 51, scratch acquired after the output declarations 29.
-// Round 44 (lane 10, fast): flag8 as `!(equal || unknown)` 29; the 0x2605d0 result in a reference
-// local passed on to 0x2626b0 29; plain `long other_index; bool flag;` locals 31; the entry declared
-// before the request 29; flag8 as `equal ? false : !unknown` 27 (sete, still reloaded).
-// Round 49 (lane 14, fast): the reference test named 29; the output struct's members used directly without
-// the references 29; the entry declared after the outputs 29; the bool output as the struct's first member
-// 31; the reference test's operands swapped 30; the scratch release before the flag stores 47 (444 bytes).
-// Re-measured: flag8 as an if/else 49 (442 bytes); scratch acquired after the output declarations 29.
-// BLOCKED-BY 0x260670 (its stub keeps the bool's address escaped).
-// Round 120 (lane 7, fast): the bool output cleared before the request call 41 (436 bytes); the second
-// call's reference named and used for the store and the test 29; the bool passed as `unknown != 0` 40
-// (436 bytes); the output struct declared first in the function 29; the request zero-initialized instead
-// of memset 113 (433 bytes).
 // @retail 0x1b0540
 void function_1b0540(long actor_index, s_follow_search_state *state)
 {
@@ -194,9 +173,8 @@ void function_1b0540(long actor_index, s_follow_search_state *state)
 	}
 	byte *scratch = ai_scratch_buffer_get();
 	s_261d20_entry entry;
-	struct { long field_0; bool field_4; } local_0;
-	long &other_index = local_0.field_0;
-	bool &unknown = local_0.field_4;
+	long other_index;
+	bool unknown;
 	state->reference = function_2605d0(actor_index, &request, (long)&entry, (long)&other_index, scratch, &unknown);
 	state->reference = function_2626b0(actor_index, state->reference, other_index, scratch, unknown, false);
 	state->flag8 = !REFERENCE_EQUAL(state->reference, g_470fa0) && !unknown;
