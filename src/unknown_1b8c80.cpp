@@ -1357,6 +1357,11 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax C (11-06): no new form, no lower score; the frame is still 0x10 against retail's 0x14,
+// retail still spills the 0x20 mask byte to F+3 and keeps the loop entry in EBX (home F+4, reloaded
+// after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still
+// takes the object-header data in the prologue and reads the flags once above the slot-flag test;
+// the mask read once before the loop scores 136, so the mask is read per iteration as it was.
 // score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the

@@ -319,6 +319,10 @@ bool function_1af530(long actor_index, long *b, long *a)
 static __forceinline long real_to_long(real value);
 short *function_e70b0(short *value, long unit_index);
 
+// MiniMax C (11-06): no new form, no lower score; the actor index still takes ECX and the actor
+// data EDX where retail keeps the index in EDX and the actor data in ECX, and the exchange still
+// runs through the timer, the prop lookup, the random scale and the final argument setup; the
+// swap is in this body, not in the convention of the callees.
 // MiniMax G (11-05): no new form, no lower score; the actor index still takes ECX and the actor
 // data EDX where retail keeps the index in EDX and the actor data in ECX, and the swap still runs
 // through the timer, the prop lookup, the random scale and the final argument setup; an index
