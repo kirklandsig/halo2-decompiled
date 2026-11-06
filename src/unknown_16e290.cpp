@@ -1567,9 +1567,9 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
-// MiniMax A (11-06, run 52): score 87 (was 87) - the clip plane's three products are now summed in
-// retail's order, the i term first and the j term last, so the multiply and add sequence matches
-// retail's instruction for instruction; what is left is the register form of the clip block, where
+// MiniMax A (11-06, run 52), not kept (87, same score): the clip plane's three products summed in
+// retail's order, the i term first and the j term last, give retail's multiply and add sequence
+// instruction for instruction (its only other effect was 0x13d80 61 -> 60, under the keep bar); what is left is the register form of the clip block, where
 // retail keeps the cluster reference in al and materialises the cluster address, while ours keeps it
 // in cl and folds the address into the load.
 
@@ -1806,7 +1806,7 @@ void function_16ebf0(long user_index)
 				if (entry->index != NONE)
 				{
 					narrow = reference >= 0 ||
-						entry->plane.i * point.x + entry->plane.k * point.z + entry->plane.j * point.y - entry->plane.d < 0.0f;
+						entry->plane.j * point.y + entry->plane.k * point.z + entry->plane.i * point.x - entry->plane.d < 0.0f;
 				}
 				else narrow = false;
 			}

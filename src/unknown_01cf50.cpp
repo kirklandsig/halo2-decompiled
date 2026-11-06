@@ -392,7 +392,7 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 	D3DCubeTexture **out);
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
-// MiniMax A (11-06, run 52): score 70 (was 71) - the texture slot is cleared and handed over through
+// MiniMax A (11-06, run 52), not kept (72 -> 70, under the keep bar) - the texture slot is cleared and handed over through
 // the bitmap itself and the mipmap limit is named; the mipmap call now hands the callee the height
 // and the depth in the order the callee reads them, so the depth byte reaches the call in eax and
 // the height word in the first stack slot as retail does; the width still lives in di where retail
@@ -419,10 +419,10 @@ bool function_1d000(byte *bitmap)
 	char depth = *(char *)(bitmap + 8);
 	short width = *(short *)(bitmap + 4);
 	short format = *(short *)(bitmap + 0xc);
-	short maximum_levels = *(short *)(bitmap + 0x14);
-	*(void **)(bitmap + 0x50) = NULL;
+	void **texture = (void **)(bitmap + 0x50);
+	*texture = NULL;
 	short levels = bitmap_get_mipmap_count(width, height, depth, format, linear,
-		maximum_levels);
+		*(short *)(bitmap + 0x14));
 	*(short *)(bitmap + 0x14) = levels;
 	if (g_5093b0)
 	{
@@ -430,13 +430,13 @@ bool function_1d000(byte *bitmap)
 		{
 		case 0:
 			return function_0158f0(format, linear, width, height, levels, 0,
-				(D3DTexture **)(bitmap + 0x50));
+				(D3DTexture **)texture);
 		case 1:
 			return function_015a60(format, width, height, depth, levels, 0,
-				(D3DVolumeTexture **)(bitmap + 0x50));
+				(D3DVolumeTexture **)texture);
 		default:
 			return function_0159b0(width, format, levels, 0,
-				(D3DCubeTexture **)(bitmap + 0x50));
+				(D3DCubeTexture **)texture);
 		}
 	}
 	return true;
@@ -3184,7 +3184,7 @@ bool function_128c0(s_128c0_settings const *settings)
     }
     return result;
 }
-// MiniMax A (11-06, run 52): score 60 (was 62) - the destination column is now recomputed for each
+// MiniMax A (11-06, run 52), not kept (62 -> 60, under the keep bar) - the destination column is now recomputed for each
 // column from the screen address as retail does and the rectangle's fields are read off the
 // rectangle itself; what is left is the frame slots of the locked rectangle, retail's in-memory OR
 // of the flag into the rectangle and the order of the two inner-loop increments. A running row
@@ -3219,22 +3219,25 @@ void function_13d80()
         if (description.Size == description.Width * description.Height * 4)
         {
             D3DLOCKED_RECT locked;
-            D3DSurface_LockRect(surface, &locked, NULL, 0);
-            locked.pBits = (void *)((dword)locked.pBits | 0xf0000000);
-            if (locked.pBits)
+            D3DLOCKED_RECT *locked_result = &locked;
+            D3DSurface_LockRect(surface, locked_result, NULL, 0);
+            locked_result->pBits = (void *)((dword)locked_result->pBits | 0xf0000000);
+            if (locked_result->pBits)
             {
                 long width = (short)(g_5093c0.second >> 16) - (short)(g_5093c0.first >> 16);
                 long height = (short)g_5093c0.second - (short)g_5093c0.first;
                 byte const *source = (byte const *)g_5093c8;
+                byte *row = (byte *)locked_result->pBits + (short)g_5093c0.first * locked_result->Pitch;
                 for (long y = 0; y < height; ++y)
                 {
-                    dword *column = (dword *)((byte *)locked.pBits + (short)(g_5093c0.first >> 16) * 4 + ((short)g_5093c0.first + y) * locked.Pitch);
+                    dword *pixel = (dword *)row + (short)(g_5093c0.first >> 16);
                     for (long x = 0; x < width; ++x)
                     {
                         long value = source[x] * g_5093cc;
                         byte level = (byte)(value < 0 ? 0 : value > 255 ? 255 : value);
-                        *column++ = (((((dword)level << 8) | level) << 8 | level) << 8) | level;
+                        *pixel++ = (((((dword)level << 8) | level) << 8 | level) << 8) | level;
                     }
+                    row += locked_result->Pitch;
                     source += width;
                 }
             }
@@ -6056,8 +6059,9 @@ void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
 // MiniMax A (11-06, run 52): no new form, no lower score (153) - retail copies the timestamp into the
-// global as two dwords and uploads the gamma ramp into the device's own ramp buffer; the ramp's channel
-// stores now run red/green/blue as retail does, and a depth test as < 2 scores 176.
+// global as two dwords and uploads the gamma ramp into the device's own ramp buffer; three separate
+// channel stores in retail's red/green/blue order (and 255.0f) score the same 153, not kept, and a
+// depth test as < 2 scores 176.
 
 // MiniMax D (11-05): no new form, no lower score - retail copies the timestamp into the global as two dwords, ours goes through x87 because the global is a double in include/timed_effect.h, and retail uploads the gamma ramp into the device's own ramp buffer where ours calls D3DDevice_SetGammaRamp.
 // MiniMax H (11-04): no new form, no lower score; the frame time copied through one union, through a
@@ -6130,10 +6134,8 @@ void function_12a50(s_frame_parameters_12a50 const *parameters)
         D3DGAMMARAMP ramp;
         for (long i = 0; i < 256; ++i)
         {
-            byte value = (byte)(long)(pow(i * (1.0f / 255.0f), gamma) * 255.0f);
-            ramp.red[i] = value;
-            ramp.green[i] = value;
-            ramp.blue[i] = value;
+            byte value = (byte)(long)(pow(i * (1.0f / 255.0f), gamma) * 255.0);
+            ramp.red[i] = ramp.green[i] = ramp.blue[i] = value;
         }
         D3DDevice_SetGammaRamp(0, &ramp);
         g_47fd10 = gamma;

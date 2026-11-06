@@ -633,14 +633,16 @@ struct s_device_machine_view
 };
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
-// MiniMax A (11-06, run 52): score 2 (was 34) - the group flags are read straight through the
-// device-group macro into a word before the machine test and masked into a byte after it, which
-// gives retail's word load, and the result is zeroed in case 0x1200055f as retail does; what is
-// left is retail's address fold (a lea before the load) where ours loads the word through the
-// combined address, plus the mask instruction retail does not have. A named group pointer gives
+// MiniMax A (11-06, run 52), not kept: 2 (from 34) with MiniMax D's form below, the group flags read
+// through the device-group macro into a word before the machine test and masked into a byte after
+// it, plus `function_value = 0.0f;` first in case 0x1200055f's velocity block (a dead store there,
+// match-only). What is left at 2 is retail's address fold (a lea before the load) where ours loads
+// the word through the combined address, plus the mask instruction retail does not have. A named group pointer gives
 // retail's delayed word load but lands in ESI, not EAX; a dword local for the element address does
 // put the address in EAX but the load then narrows to a byte (115) or the address falls back to
-// ESI (122), and two separate reads of the flags do not merge either (122).
+// ESI (122), and two separate reads of the flags do not merge either (122). Lead: case 0xf00055e
+// also starts its velocity block with `function_value = 0.0f;`, so retail's result may not be
+// zero-initialised at entry; dropping the initialiser needs a store on every other path.
 
 // MiniMax D (11-05), not kept: 2 fast (from 34) with the group flags read into a word before the machine test, masked
 // into a byte (`byte group_flag_bits = (byte)(group_flags & 3)`), and `function_value = 0.0f;` added at the top of case
@@ -649,9 +651,7 @@ struct s_device_machine_view
 // zero store in that case suggests the result is not zero-initialized at entry the way ours is.
 // MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
 // with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
-// score 2 (was 34): the group flags are loaded as a word through the combined address where retail
-// materialises the element address with a lea before the machine test and loads the word after it,
-// and the flags are masked with `and al, 3` where retail tests the two bits with al and no mask.
+// score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
 // retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
@@ -922,12 +922,14 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 			function_value = 1.0f;
 		if (device->type == 7 && device->power_group_index != NONE)
 		{
-			word group_flags = DEVICE_GROUP_GET(device->power_group_index)->flags;
+			s_device_group *group = DEVICE_GROUP_GET(device->power_group_index);
 			dword machine_flags = ((s_device_machine_view *)device)->flags;
+			word group_flags;
 
 			if (machine_flags & 0xd)
 				function_value = 1.0f;
-			byte group_flag_bits = (byte)(group_flags & 3);
+			group_flags = group->flags;
+			dword group_flag_bits = group_flags & 3;
 			if ((group_flag_bits & 1) && (group_flag_bits & 2))
 				function_value = 1.0f;
 			if (device->power == 1.0f || (machine_flags & 0x10))
@@ -951,7 +953,6 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 	case 0x1200055f:
 		if (device->power_velocity != 0.0f)
 		{
-			function_value = 0.0f;
 			if (device->flags & 8)
 			{
 				if (!(device->flags & 0x20) && !(0.0001f > fabs(device->motion_14c.cruise_velocity)))
