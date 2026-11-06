@@ -891,7 +891,23 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
 // sides and the low-normal arm's homes remain as noted below.
 
-// score 416 (was 433): 3038 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
+// score 358 (was 344): 3049 bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
+// arm, compare direction, field offset (flags 0x14, settings 0x8, speed 0x20, normal 0x8c, damping 0x98, facing 0x9c, flag 0xa8,
+// up 0x100, basis 0x118, velocity 0x124, gravity 0x130, input 0x138, accelerations 0x144/0x148), constant (0.001, 0.234, 5.0, 1.0,
+// 0.5 read from the XBE), callee and argument agrees with retail; what is left is operand/register/stack-slot scheduling (delta and
+// limited homes swapped in both arms, arm 1's z store not tail-shared with the general arm). The one class of behaviour difference
+// found was float summation order: VC re-associates an unparenthesised a + b + c, parentheses are kept, and retail's order is
+// (i2 + j2) + k2 for the input length (0x1f0b07-0x1f0b22), (j2 + k2) + i2 for the history change length (0x1f0fe1-0x1f1047),
+// (in.j*side.k + projected.k) + in.k for the low arm's desired.k (0x1f1327-0x1f1337); those three are now parenthesised
+// (343 / 345 / 364 alone, 358 together; the history length costs the 14 points, ours came out (i2 + k2) + j2 before).
+// Not done (outside this function): the low arm's two plane dots go through shape_dot, whose a.k*b.k + a.j*b.j + a.i*b.i also
+// compiles as (i + k) + j where retail (0x1f1202-0x1f12be) sums (k + j) + i; `(a.k * b.k + a.j * b.j) + a.i * b.i` in shape_dot
+// gives retail's order, 347 here with these edits, 0x1f2250 unchanged at 418, 0x1f0450 MATCH. Tried and dropped for the input
+// length: magnitude3d(input) (0x24590 is exactly retail's block, inlines with the (j2 + k2) + i2 order, 403, 3038 bytes), dot3f 403,
+// length_sq3f 403, six unparenthesised spellings 403, three scalar locals loaded k, j, i reproduce retail's x87 block exactly
+// (3047 bytes) but are steering locals, 568. The (real) on the history sqrt rounds nothing in ours either: both keep the
+// sqrt unrounded into the fadd, and the first sqrt and the maximum are stored once (fstp dword) as in retail.
+// Earlier 416 (was 433): 3038 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
 // direct arm's rows, the low-normal arm and the history row. Closest form so far: `input->i` for `state->input.i` in the direct
 // arm's rows and the low arm's projected rows, one settings local for the ground compares: 433 at 3047 bytes, aligned 138 and the ground
 // chain exact (mixed reads, not kept).
@@ -1173,7 +1189,8 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
     }
     else
     {
-        real magnitude = (real)sqrt(input->j * input->j + (input->i * input->i + input->k * input->k));
+        // parentheses kept: retail sums (i2 + j2) + k2 here (0x1f0b07-0x1f0b22); VC re-associates a bare chain
+        real magnitude = (real)sqrt((input->i * input->i + input->j * input->j) + input->k * input->k);
         vector3f desired;
         if (flying)
         {
@@ -1224,7 +1241,8 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
                 side.k = normal->k * d2 + left.k;
                 desired.i = state->input.j * side.i + projected.i;
                 desired.j = state->input.j * side.j + projected.j;
-                desired.k = (state->input.j * side.k + projected.k + state->input.k) * 5.0f;
+                // retail adds projected.k before input.k (0x1f1333-0x1f1337); VC re-associates a bare chain
+                desired.k = ((state->input.j * side.k + projected.k) + state->input.k) * 5.0f;
             }
             function_30bf0(&desired);
             if (*(real *)(state->settings + 0x58) >= desired.k)
@@ -1286,7 +1304,8 @@ void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_con
             difference.k = input->k - *(real *)(history + 0x18);
             vector3f change;
             vector3f_add((vector3f *)(out + 0x64), &difference, &change);
-            real maximum = (real)sqrt(change.j * change.j + change.k * change.k + change.i * change.i) + g_47ffb0;
+            // retail sums (j2 + k2) + i2 (0x1f0fe1-0x1f1047); VC re-associates a bare chain
+            real maximum = (real)sqrt((change.j * change.j + change.k * change.k) + change.i * change.i) + g_47ffb0;
             vector3f offset;
             offset.i = state->velocity.i - *(real *)(out + 0x64);
             offset.j = state->velocity.j - *(real *)(out + 0x68);

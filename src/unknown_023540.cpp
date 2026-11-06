@@ -2688,7 +2688,22 @@ bool spherical_harmonics_evaluate_directional_light(vector3f const *direction, d
     real red, real green, real blue, real *red_result, real *green_result, real *blue_result);
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green,
     real *blue, byte order, vector3f *direction, point3f const *position);
-// score 506 (was 530): frame 0x21c versus 0x200; order, coefficient and separate sample homes differ.
+// score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
+// the result is a bool slot (0x13);
+// `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
+// made 0x4b5d0 175, long makes it 93); the structure global is read
+// at the use (0x23941, 0x23b75) before the position lookup; the coefficient address is formed once before the cache
+// fill (0x237c4). Unchanged and equal to retail: both determinant trees, every callee argument and the loop shapes.
+// Still differs: retail inlines the first 0x235a0 copy (0x238a4-0x23935) but calls 0x235a0 for the second (0x23acc,
+// its only retail call), ours inlines both; ours keeps a short-compare of the sample count (jbe) against retail's
+// dword spill and jle (a long count scored 515 on the old body); esi/edi swap in the prologue. Tried: entry pointer
+// local 494; `level < limit ? level : limit` 449 (no change); return false in the failure arm 534; long result 530;
+// use_samples stored false and then set by the test (retail stores false at 0x23716) 463, not kept (a value set
+// before a test and then overridden).
+// Not kept: retail inlines render_memory_allocate and table_entry_data here (dword rounding at 0x237fd-0x23810, the
+// NONE test at 0x23830, the sign test at 0x23843); calling them (render_memory.h) scores 467 but loses the matched
+// 0xc2d00 in the full build, so the allocation stays written out. The byte count is count << 2, so the rounding never applies.
+// Earlier score 506 (was 530): frame 0x21c versus 0x200; order, coefficient and separate sample homes differ.
 // Earlier: Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
 
 // Earlier score 530 (was 530): Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
@@ -2741,10 +2756,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // Direct cache-hit completion and found-byte break, each with long/bool success and original/positive
 // eligibility results, 554/549/554/549 each. Original exhaustive scan and body restored.
 // @retail 0x23690
-bool __stdcall function_23690(s_coefficient_layout const *layout, short order, long object_index,
+bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
 {
-    long result = true;
+    bool result = true;
     {
         bool found = false;
         for (short i = 0; i < g_5093e8; ++i)
@@ -2765,9 +2780,10 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
         }
         long level = 5 - order;
         if (level > layout->level_count - 1) level = layout->level_count - 1;
+        real const *coefficients = layout->data + layout->levels[level].offset;
         long stride = layout->groups * (layout->columns * 3 + 4);
         s_bucket_source const *buckets = (s_bucket_source const *)vertices;
-        long total = function_023540((short)count, buckets, &g_4b89b0[g_5093e8], stride);
+        long total = function_023540(count, buckets, &g_4b89b0[g_5093e8], stride);
         long bytes = total * stride * sizeof(real);
         if (!bytes) goto done;
         long next = g_487b18.size + bytes;
@@ -2790,12 +2806,12 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
                 function_0235a0(source, &matrix);
                 if (use_samples)
                 {
+                    byte *bsp = *(byte **)((byte *)g_4e0344 + 0x84);
                     point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, 0);
                     if (position)
                     {
-                        byte *bsp = *(byte **)(structure + 0x84);
                         function_22cf0((s_light_sample_source const *)(bsp + 0x38), red, green, blue,
-                            (byte)layout->order, &g_4b89b0[g_5093e8].scale, position);
+                            layout->order, &g_4b89b0[g_5093e8].scale, position);
                     }
                 }
                 determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
@@ -2808,7 +2824,7 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
                 function_143600((real const *)&rotation, 3, red, rotated_red);
                 function_143600((real const *)&rotation, 3, green, rotated_green);
                 function_143600((real const *)&rotation, 3, blue, rotated_blue);
-                function_023ca0((s_block_layout const *)layout, layout->data + layout->levels[level].offset, rotated_red, rotated_green, rotated_blue, output);
+                function_023ca0((s_block_layout const *)layout, coefficients, rotated_red, rotated_green, rotated_blue, output);
                 output += stride;
                 if (available_samples > 1)
                 {
@@ -2822,18 +2838,18 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
                     function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
                     if (use_samples)
                     {
+                        byte *bsp = *(byte **)((byte *)g_4e0344 + 0x84);
                         point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, 1);
                         if (position)
                         {
-                            byte *bsp = *(byte **)(structure + 0x84);
                             function_22cf0((s_light_sample_source const *)(bsp + 0x38), red, green, blue,
-                                (byte)layout->order, &g_4b89b0[g_5093e8].scale, position);
+                                layout->order, &g_4b89b0[g_5093e8].scale, position);
                         }
                     }
                     function_143600((real const *)&rotation, 3, red, rotated_red);
                     function_143600((real const *)&rotation, 3, green, rotated_green);
                     function_143600((real const *)&rotation, 3, blue, rotated_blue);
-                    function_023ca0((s_block_layout const *)layout, layout->data + layout->levels[level].offset, rotated_red, rotated_green, rotated_blue, output);
+                    function_023ca0((s_block_layout const *)layout, coefficients, rotated_red, rotated_green, rotated_blue, output);
                     output += stride;
                 }
             }
