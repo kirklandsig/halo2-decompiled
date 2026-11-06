@@ -3534,6 +3534,13 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // at the top 31; exponent guard `1.0f < inverse_span` 31; small declared first, after allow_negative,
 // after maximum 19/281/282, each with input before alpha 939/995/996; low and high divided by the
 // distance 19 (same code); the inverse span renamed 19 (same code).
+// Round 134 (m3 lane 7, fast; kept step plain over all 57 functions of the file): input before alpha alone 939 (aligned
+// 7); with the shifted input named after the first constant store and used by both stores 9 (selector block retail's;
+// left: the shl's place and two reload pairs); named before the clear 928; at each of the 7 positions after the clear 9;
+// copy then <<=, long type, closed scope 9; arms' names swapped 11; the name in one store only 939. Split as whole- or
+// fraction-first 226/225; (byte)fixed 937; % 256 960; fraction before whole 767; (small ? 1 : 0) + 4 939; if-assigned
+// input 934; fixed through 0x2b460 939/19. The reload pairs follow the end of the skip-state arm (a real if with a
+// body last in that arm flips that pair; empty else, do/while(false), inverted arm 9).
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
@@ -3621,8 +3628,8 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     long fixed = (long)floor(low * 65536.0f);
     long whole = fixed >> 8;
     long fraction = fixed & 0xff;
-    long alpha_input = small ? 4 : 24;
     long input = small ? 5 : 4;
+    long alpha_input = small ? 4 : 24;
     if (whole > 255) fraction = whole = 255;
     memset(&g_484f68, 0, sizeof(g_484f68));
     g_484f68.PSTextureModes = 1;
@@ -3632,9 +3639,10 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     g_484f68.PSRGBInputs[0] = 0x8010802;
     g_484f68.PSRGBOutputs[0] = 0x3045;
     g_484f68.PSConstant0[1] = (dword)fraction << 24;
-    g_484f68.PSRGBInputs[1] = ((dword)input << 24) | 0x201140;
+    dword input_bits = (dword)input << 24;
+    g_484f68.PSRGBInputs[1] = input_bits | 0x201140;
     g_484f68.PSRGBOutputs[1] = 0xc00;
-    g_484f68.PSAlphaInputs[1] = ((dword)input << 24) | 0x209140;
+    g_484f68.PSAlphaInputs[1] = input_bits | 0x209140;
     g_484f68.PSAlphaOutputs[1] = 0xc00;
     g_484f68.PSConstant0[2] = (dword)whole << 24;
     g_484f68.PSRGBInputs[2] = 0x2020;
