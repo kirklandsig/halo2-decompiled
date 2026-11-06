@@ -878,9 +878,11 @@ real g_47ffb0 = 0.5f;
 real normalize2d(point2f *v);
 bool __stdcall function_a75d0(vector3f *vector, real maximum);
 
+/* retail sums these dots (k + j) + i (0x1f1202-0x1f12be in 0x1f0870, 0x1f2981-0x1f29af in 0x1f2250); the
+   parentheses keep that grouping, an unparenthesized k, j, i chain is regrouped (i + k) + j by the compiler */
 PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b)
 {
-    return a.k * b.k + a.j * b.j + a.i * b.i;
+    return (a.k * b.k + a.j * b.j) + a.i * b.i;
 }
 
 
@@ -1429,7 +1431,8 @@ bool function_109fd0(long object_index, vector3f *velocity);
 
 PRIVATE inline real contact_normalize(vector3f *vector)
 {
-    real length = (real)sqrt(vector->i * vector->i + vector->j * vector->j + vector->k * vector->k);
+    /* grouped (j + i) + k as retail's 0x1f2250 sum at 0x1f251b-0x1f2535 (the unparenthesized chain compiles (k + j) + i) */
+    real length = (real)sqrt((vector->j * vector->j + vector->i * vector->i) + vector->k * vector->k);
     if (fabs(length) < 0.0001f)
         return 0.0f;
     real inverse = 1.0f / length;
@@ -1439,7 +1442,16 @@ PRIVATE inline real contact_normalize(vector3f *vector)
     return length;
 }
 
-// score 418 (was 418): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
+// score 413 (was 418): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
+// Statement walk against retail (r721, b3B): every statement, offset, condition direction, callee, argument, loop and
+// switch shape agrees; the only behaviour differences were float sum groupings, which compile differently for an
+// unparenthesized chain (the compiler regroups it) than for a parenthesized one. Retail's groupings and ours now:
+// desired length 0x1f251b-0x1f2535 (j² + i²) + k², now explicit 418 -> 413; candidate dot 0x1f2651-0x1f2671 (j + i) + k,
+// now explicit (dot3f gave (k + j) + i) 413 -> 413; tangent length 0x1f2813-0x1f2823 (k² + j²) + i², by the existing
+// normalize3d (same as the file's helper) 413; final-loop dot 0x1f2981-0x1f29af (k + j) + i, shape_dot (now
+// parenthesized, same bytes here). NOT fixed: the tangent dot 0x1f2859-0x1f2879 is (j + i) + k in retail, dot3f gives
+// (k + j) + i; the written-out sum scores 434 (named `along`), 478 inline, k-first grouping 510. The other candidates
+// for a source-order fix, six term orders of the unparenthesized sums, change nothing (the compiler regroups them).
 // Round 219 (lane 3, fast, 0x1f2a80 and 0x1f19c0 listed): both negations through vector3f_scale(normal, -1.0f, &desired) 425, the first
 // loop's only 425, the fallback's only 418; the fallback's minimum/selected stores before the negation 418, its direction copy after
 // them 418; one inline helper for the 0x1f2e60 request call (base point, stepping bit, height) at the three calls here and 0x1f2a80's
@@ -1561,6 +1573,7 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
     *out = *g_4687b0;
     *surface = NONE;
     *object_index = NONE;
+    /* retail keeps count in the bottom stack slot (0x1f22ce, 0x1f2791); a plain long scores 531 */
     volatile long count = 0;
     long indices[3];
     if (!moving)
@@ -1643,7 +1656,10 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
                     (((*(dword *)(request + 0x18) >> 1) & 1) != 0), *(real *)((*(byte **)request) + 0xc)) &&
                     (!((*(dword *)(request + 0x18) & 2) != 0) || *(long *)(request + 0x44) == NONE || *(long *)(request + 0x44) == *(long *)(candidate + 0x14)))
                 {
-                    real dot = dot3f(&direction, (vector3f *)(candidate + 0x28));
+                    /* retail sums this dot (j + i) + k (0x1f2651-0x1f2671); dot3f compiles (k + j) + i */
+                    vector3f const *candidate_normal = (vector3f *)(candidate + 0x28);
+                    real dot = (candidate_normal->j * direction.j + candidate_normal->i * direction.i) +
+                        candidate_normal->k * direction.k;
                     if (dot < -0.025f && dot < minimum)
                     {
                         minimum = dot;
@@ -1673,7 +1689,7 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
                 vector3f tangent;
                 contact_cross((vector3f *)(contacts + indices[0] * 0x48 + 0x28),
                     (vector3f *)(contacts + indices[1] * 0x48 + 0x28), &tangent);
-                contact_normalize(&tangent);
+                normalize3d(&tangent);
                 vector3f_scale(&tangent, dot3f(&tangent, &desired), &direction);
             }
             else if (count == 1)
