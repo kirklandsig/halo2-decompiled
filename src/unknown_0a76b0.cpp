@@ -2503,6 +2503,7 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// MiniMax R (11-06): no new form, no lower score (235); the frame agrees and the pool, index, type, name and completion-byte homes of the note below are unchanged.
 // score 235 (was 235): Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
@@ -4277,6 +4278,7 @@ extern vector3f *g_4687bc;
 // MiniMax H (11-04): no new form, no lower score (45); the first difference is the two-byte branch
 // offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
 // that callee's parameter order in another file.
+// MiniMax R (11-06): no new form, no lower score (45); the g_54e898 copy is a dword load here and a word load in retail, which also moves the exit block two bytes; retail's 0x1eb020 writes a dword into the material slot and it is read back as a dword, ours takes a short * and reads it back sign-extended, and that width is set in another file.
 // score 45 (was 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
 // data and offset registers swap in its address add, and the 0x188180 call setup differs
 // (BLOCKED-BY 0x188180: ours takes the effect value in ecx and forward in edx; retail passes the point

@@ -1111,6 +1111,7 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 }
 
 /* damages one object of the radius (and its children and siblings): the geometry to it, then the damage */
+// MiniMax R (11-06): forms tried, none lower (38 grouped negations, 40 with the node stores first, 41 one negation per row, 286-288 negated in place, 304 inlined, 38 with the near block's and the else arm's sums the operands the other way round); the near block still folds the normal into the k row where retail folds the destination, and the else arm still folds the destination in its i and k rows.
 // score 38 (was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // (`movss xmm0, [ebx + 8]; addss xmm0, [edi + 8]`, retail the other way).
 // Earlier 92 (was 286): frame 0x54 agrees, 1537 bytes against 1535, 82 instructions from the top agree. Left: zero in xmm0
@@ -2542,6 +2543,7 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
+// MiniMax R (11-06): no new form, no lower score (472); the frame agrees, and the entry takes the argument first here and the global first in retail.
 // score 472 (was 472): frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // with register homes/call setup and 1884/1868-byte length still differing.
 // Earlier 533 from 624: the body is statement for statement retail's (same size, same block order). What is left is

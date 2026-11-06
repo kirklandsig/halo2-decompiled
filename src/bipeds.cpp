@@ -932,6 +932,7 @@ extern long *g_51e9cc;
 /* the biped's physics callback: its crouch, kill volumes, its character
    physics move, and the ground (structure, instanced geometry or object)
    its contact rests on */
+// MiniMax R (11-06): no new form, no lower score (42); the flag store still sits after the three loads and the crouch add still folds the field instead of the spilled operand; the crouch sum's two operands the other way round changes no code at all, and the flag clear ahead of the crouch store gives 49.
 // score 42 (was 42): Frame 0xb8 agrees; lookup-address rematerialization adds two bytes;
 // crouch operands and contact/flag publication schedules remain.
 // Earlier: walked against retail block by block (calls, argument order, offsets, constants, conditions,
@@ -1368,23 +1369,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 	{
 		*point = *origin;
 	}
-	if (mode != 3)
-	{
-		switch (mode)
-		{
-		case 1:
-			crouch = 0.0f;
-			break;
-		case 2:
-			crouch = 1.0f;
-			break;
-		default:
-			crouch = function_e0dc0(arg_159e6d) ? 0.0f : self->crouch;
-			break;
-		}
-		biped_eye_raise(arg_159e6d, self, self_definition, crouch, point);
-	}
-	else
+	if (mode == 3)
 	{
 		vector3f side;
 
@@ -1394,12 +1379,27 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 		vector3f_add_scaled((vector3f const *)point, forward, offsets[0], (vector3f *)point);
 		vector3f_add_scaled((vector3f const *)point, &side, offsets[1], (vector3f *)point);
 		point->z = offsets[2] + point->z;
+		return;
 	}
+	switch (mode)
+	{
+	case 1:
+		crouch = 0.0f;
+		break;
+	case 2:
+		crouch = 1.0f;
+		break;
+	default:
+		crouch = function_e0dc0(arg_159e6d) ? 0.0f : self->crouch;
+		break;
+	}
+	biped_eye_raise(arg_159e6d, self, self_definition, crouch, point);
 }
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
-// score 585 (was 596): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
+// MiniMax R (11-06): no new form, no lower score; 589 (was 585) as a side effect of the mode 3 arm in biped_eye_point becoming the `mode == 3` then branch, which fixes 0xdef60's layout (233 -> 104): the eye arm's start/back homes move by eight bytes here.
+// score 589 (was 585): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
 // Earlier: (was 612; 635; 1497 before biped_eye_raise was forced inline, 636 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): biped_eye_raise is forced inline (below); the frame, flag homes and argument scheduling still differ.
 // Outer-only inline control 1566; native case order 1562; full vector setter 1555;
 // use-site animation flags 1578; consistent ground observations 1502; default boost 1563;
@@ -2024,7 +2024,12 @@ void function_dfd70(long arg_159e6d)
 }
 
 /* a point on a biped (biped_eye_point) */
-// score 233 (was 233): Frame 0x8c and 1041 bytes agree; retail's mode 3 arm sits out of line after the mode test, then forward/up homes and the second ray test colours. Earlier: first global-load scheduling, the offsets in ECX rather than on
+// MiniMax R (11-06): the mode 3 arm as the then branch of `mode == 3` puts retail's block layout in place (233 -> 104):
+// the mode != 0 copy now sits after the shared arm, as in retail, and the first 110 instructions agree byte for byte; the
+// forward/up homes stay the other way round (ours 0x1c/0x28, retail 0x28/0x1c) and swapping their declarations does not move them.
+// score 104 (was 233): Frame 0x8c agrees; the mode arms are laid out as in retail, but the forward/up homes are swapped
+// against retail (ours 0x1c/0x28, retail 0x28/0x1c) and the second ray's dot products take their colours from that.
+// Earlier: first global-load scheduling, the offsets in ECX rather than on
 // the stack (ret 0x10 versus 0x14), and the forward/up workspace homes remain.
 // Earlier: 248 (was 273; 995 before the helper was forced inline; 279 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): the helper is forced inline; 0xdef60 still compiles with another convention than retail, whose
 // own bytes take only `point` in EAX and the other five arguments on the stack (0xcb500's call at 0xcb56c-0xcb571,
@@ -3015,6 +3020,7 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
+// MiniMax R (11-06): no new form, no lower score (520); the frame is 0x44 here and 0x4c in retail, so the local area is two words short.
 // score 520 (was 530): Frame 0x44 versus 0x4c; result byte, scalar homes and native point loading remain.
 // Earlier: 540 (was 568; the old 774 was stale): the logic was walked against retail block by block and agrees
 // (conditions, field offsets and widths, constants 1.0/0.001/0.7/0.65/2.0/0.3, call order and arguments, three
@@ -3368,6 +3374,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
+// MiniMax R (11-06): no new form, no lower score (605 in the reduced build); the frame is 0x7c here and 0x78 in retail, and the definition pointer is held in EBP here and in memory in retail.
 // score 561 (was 561): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // Earlier: 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
 // `special` flag (retail stores 0 before the 0x6000084 test and 1 under the 0x7000039 test; the plain compare gives
@@ -5566,6 +5573,7 @@ void __stdcall function_b8600(long object_index, long unknown);
 /* applies the biped's character physics move: its facing and up, its
    animation names, its movement animation's rate, crouching and grabbing,
    and its new velocity (or, asleep, its new position) */
+// MiniMax R (11-06): no new form, no lower score (594 in the reduced build); the frame agrees and the tag, state and animation homes of the note below are unchanged.
 // score 588 (was 648): frame 0xd0 agrees; tag/state/animation homes, byte/result residency
 // and completion-call expansion remain.
 // Earlier: the logic was walked against retail block by block and agrees (callees, argument order,

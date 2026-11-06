@@ -1667,6 +1667,7 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax R (11-06): no new form, no lower score (248); the frame agrees and the registers are pushed in the order EBP, ESI, EDI here and EBX, EBP, ESI in retail.
 // score 248 (was 285): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
 // Earlier (285, was 285): our frame is 0x1c and retail's 0x20, and the index, header, state and result

@@ -532,6 +532,7 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax R (11-06): no new form, no lower score (126); the frame agrees and only the SSE colouring and x87 operand orders of the note below are left.
 // score 126 (was 126): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
 // xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
 // x87 operand orders in the atan2 sums and the reversing compare's operand order (`fxch`, jb).
@@ -1199,6 +1200,8 @@ long function_10f5f0(long object_index);
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
 // score 562 (was 565): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
+// MiniMax R (11-06): forms tried, none lower (562; buffer 0x30/0x28/0x18 gives frames 0x19b4/0x19ac/0x1990, a function-scope buffer and split velocity blocks change nothing); retail's 0x18-byte buffer and the velocity share one home at esp+0x20, ours sits apart at esp+0x48.
+// score 565 (was 565): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
 // and scalar/SSE homes remain.
 // Earlier at 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
@@ -3755,6 +3758,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
+// MiniMax R (11-06): no new form, no lower score (136); the entry and the frame agree, and the body differences of the note below are unchanged.
 // score 136 (was 136): Fallback up setter with staged cross, native up receiver and rotation setters kept;
 // projection/cross operand ranks and trig homes remain.
 // Shared cross 204; external cross 326; native forward/up/both 263/269/298;
@@ -4148,6 +4152,7 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
    hits, fading with the distance */
 // MiniMax R (11-01): no new form, no lower score; a long local for the second count and the sum's
 // operands swapped both leave the second count's sign extension in EAX.
+// MiniMax R (11-06): forms tried, none lower (48; a named short count compiles the same); the marker count sum lands in EAX here and in EDI in retail, and the scratch zero store follows the sum here and precedes it in retail.
 // score 48 (was 48): from the marker count sum on, retail's scratch registers run one step
 // ahead of ours (retail `movsx ecx, ax; add edi, ecx`, ours `movsx eax, ax; add eax, edi`; in the
 // loop retail dx/eax/ecx where ours use cx/edx/eax; ours loads the definition first in the effect
@@ -4240,6 +4245,8 @@ extern byte g_5107ee;
    marker's downward pitch, the distance and the vehicle's speed; the
    effect's last marker sits between the marker and the hit, aimed along
    the reflected ray */
+// MiniMax R (11-06): no new form, no lower score (41); a named seed pointer for the cone call compiles
+// the same, and what is left is the cone call's EDI-before-ECX pair and the middle-point, dot and memset order.
 // score 41 (was 160): left: the cone call sets up EDI before ECX (retail ECX first; the same in
 // 0xf6060, BLOCKED-BY 0x146320, whose file is held) and the middle-point copy is scheduled ahead of
 // the reflection's loads (retail stores its z and y words after the first products).
@@ -4367,6 +4374,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
+// MiniMax R (11-06): no new form, no lower score (176); the frame agrees and the permutation and flag-store order of the note below are unchanged.
 // score 176 (was 176): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
 // scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
 // still +0x5a.
@@ -4778,6 +4786,7 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
+// MiniMax R (11-06): no new form, no lower score (749); the frame and the length agree, and the SSE zero register is xmm4 here and xmm2 in retail.
 // score 749 (was 765): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain.
 // Earlier at 817 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
 // v1C statement walk (retail 0xf6d10-0xf78ab, 2026-11-06): every case label, field offset, condition direction, constant,
