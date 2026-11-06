@@ -2008,6 +2008,7 @@ void function_269250(long clump_index, long actor_index);
 // N393: Selected/created signed or unsigned eight-byte handle storage, eight nonoriginal
 // width pairs 115/115/170/160/160/170/160/160. NOT kept: no native memory-only selection
 // match; original handles/body restored. Pool EBX and x87 score/best transport remain.
+// MiniMax A (11-05): the selection read from the iterator's datum index 146 (458 bytes, the pool hoisted into EDI); the two locals declared the other way round 89 (the same code); no lower score.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

@@ -1598,6 +1598,8 @@ void function_1f86a0(long actor_index);
 // T58: Actual iterator aggregate/reference-tuple/value/library construction, native member/full-slot payload pairs:
 // 134/134/259/259/256/256/256/256. NOT kept: no eligible match or gain; complete original source restored.
 // Mask spill, EBX entry and actor/root homes remain.
+// N398: Actual slot/state/header/byte callback reference formals, each with indexed member/full-slot payload 134/134/134/134/134/134/134/134.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

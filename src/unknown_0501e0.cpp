@@ -399,6 +399,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // in registers with copy-then-scale, but the 1.0 constant takes XMM7 and the coefficients fold into the products as memory
 // operands, where 0x30290's camera in a register keeps them loaded, coefficient first); that with the camera local declared at
 // the top 266 (same code); out of place through it 253 (1141).
+// N398: Current aggregate helper static-inline/static/external-inline/external-forceinline, void then output-pointer result 206/206/206/206/206/206/206/206.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
