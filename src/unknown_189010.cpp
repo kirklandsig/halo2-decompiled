@@ -305,6 +305,11 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // Round 106 (plain): nested class condition, bool/long end-update results, previous value20/value24/both and
 // disjoint source mask 110 each; word +0xa 132 (478), marker-size local 131 (470), location-flags local 111 (474).
 // Original body restored.
+// Round 154 (m3 lane 6, fast with its 8 matched callers): the class lookup as a shared header helper (if/else,
+// named locals, both) 110 (same code); header = NULL then if 131; tag test as == NONE 152; class test through a
+// named bool / inverted / nested 110; flag as a ternary OR 136; retail's header order alone 163. The lookup's inline
+// cost is not lexical (named locals change nothing) and the file already has /Ob1; retail inlines 0x221810 at hot
+// sites (0x20b660's loop), so here it needs a colder site than one `if`. Body unchanged.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
