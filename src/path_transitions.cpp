@@ -732,6 +732,13 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Y603: Complete root-vertex table values/field references at dispatch/case scope,
 // original/shared negation: 230/219/219/219/230/219/219/219. NOT kept: no equality or gain;
 // original body restored, early root/actor ingress and projection schedule remain.
+// DH377: Read-only root/state and actual mutable-entry contracts, seven coordinated subsets
+// 219/219/220/219/220/220/220; complete contracts with a const surface receiver 220.
+// NOT kept: no equality or gain; both original declarations, entry alias and body restored.
+// Native early root/actor ownership and paired projection/limit scheduling remain.
+// DH380: Original five-test corner admission partitioned at four boundaries, positive nested then
+// rejecting-prefix returns: 219/219/219/219/219/219/219/219. NOT kept: no native ingress recovery;
+// original complete geometry, tests, result, helpers and body restored.
 // Round 151 (harness 232 for the real 219, aligned 89, masked 47): a plain read of actor_index through its address after the surface, after the result or first,
 // used at the test and the call or at the test only, 233 each (the read folds to the use, no entry load); dot sums through a `(j + k) + i` helper, both, either,
 // arguments swapped, 232 each (same code); written out grouped, both or either, 371 (1288 bytes); one final `return result` with breaks 242 (aligned 107), without

@@ -352,6 +352,10 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // root is a float expression (`fsubr dword [1.0f]`), `1 - field_64` is computed once, and the first steering arm falls
 // through to `mov al, 1` with its false paths in one shared `xor al, al` block. Left: EBX saved in the prologue (retail
 // pushes it after the 0x26c test and pops it before the closing arg_7 test) and frame homes 4 bytes off.
+// DH385: Direct-input complete initial heading/default/normalizer memmove producers,
+// seven subsets then native history transfer: 849/840/822/834/835/835/836/799. NOT kept:
+// no gain or native frame/entry recovery; original input storage, helper arithmetic,
+// vector transfers and complete body restored. Early object/input/heading homes remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

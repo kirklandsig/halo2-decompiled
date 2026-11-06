@@ -3412,6 +3412,8 @@ struct s_voice_route_choice
 // M397: Actual ordinal/player/source-table lexical identities, masks 1/2/4/3/5/6/7,
 // then all with conditional radio: 363/363/363/363/363/363/363/411. NOT kept: no exact or eligible
 // gain; original complete body restored. Entry saves and cursor bias remain.
+// DH381: Excluded-route iteration completion with seven nearest-guard graphs, then split
+// guards and native radio branch: 363/363/363/363/363/363/363/411. NOT kept: no exact loop/frame graph; original body restored.
 // Round 92 (m3 lane 12, fast): `__assume` ahead of the loop on talker, count, choices or settings 363 each, with branch radio 411, with its named bit
 // 422; on the player inside the loop 1091 (any assume there stops the unrolling, callers 22/18), with branch radio 1103, with the bit 1104. The player
 // read inside each headset arm 363 (branch 411, with the bit 422). On branch radio and the bit: a mode local, `mode << player`, pre-increment, the counter
@@ -3790,6 +3792,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y607: Current-member char/signed-char/64-bit signed/unsigned result carriers,
 // indexed then independent packet traversal: 168/168/156/156/164/164/156/156. NOT kept:
 // no byte match from non-native result carriers; original whole body and observations restored.
+// DH385: Packed recipient-word memcpy/memmove on original/cursor and scalar/bulk-route
+// graphs: 139/188/164/187/152/183/172/179. NOT kept: no gain or native channel-home recovery;
+// original word read, live counts, packet induction, route stores and whole body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -636,6 +636,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // F401: Complete three-state transition publication/call result, expression byte/short/long/dword
 // and complete-arm producers: 350/346/344/344/378/368/368/368. NOT kept: all regress and no equality; original
 // metadata stores, calls and full body restored. Extra frame word and predecessor/flag homes remain.
+// DH377: Integer-index for traversal, parent update through the retained node/embedded array,
+// long link total 286/374; bounded word total 359/344; readonly node/predecessor counterparts
+// 286/374/359/344. NOT kept: no gain; original while, both histories, metadata memcpy and body restored.
+// Extra link cursor, frame 0xe8 versus 0xe4 and zero/flag/geometry homes remain.
 // M3 lane 11 r71 (fast, plain where marked; masked = aligned with registers and stack offsets ignored). Rebuilt the
 // flag
 // form (short link count; `special` false at the arm's start and set by an if; `usable` by if / else if with a `data`
@@ -1210,6 +1214,14 @@ bool function_2715a0(byte *buffer)
 // paired acquisition 510/510. NOT kept: no exact record-copy form; frame or length moves away from
 // retail. Original live geometry inputs, fresh denominator, inherited result qualifier and entire body
 // restored.
+// DH385: Whole native heap-root/child-metadata transfers, copy/move singly and paired,
+// 486/542/486/498/486/560/498/542. NOT kept: ties or frame/length regressions; original
+// aggregate heap transfer, metadata store and complete body restored. State/node/link/scalar homes remain.
+// M3 lane 11 r71 (fast, control 486 at 2076 bytes). Retail loads the child's entry point into four registers ahead of
+// the closest test's `jbe`: the entry point copied to a local inside `if (destination_valid)` and used by the closest
+// update 488 (masked lower, retail's four loads), declared before the whole test 488; NONE type test ahead of the
+// penalty 578 (2128), after it 579 (2128); location count and flags read once before the walk 486, count only 486
+// (both same code).
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

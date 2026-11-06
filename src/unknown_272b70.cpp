@@ -1571,6 +1571,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // and after-type pairs: eight at 32. NOT kept: no exact one-use acquisition form; all 66 calibrated
 // matches survive. Original helper, inputs, request publication and complete body restored; iterator and
 // leave/request schedules remain.
+// DH385: Entry-owned actual candidate/seat/winner ordinal declarations, seven subsets
+// and all with the best-score declaration: 32/32/32/32/32/32/32/32. NOT kept: no exact
+// storage shape; original initialization sites, loop scopes, helper and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

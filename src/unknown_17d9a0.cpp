@@ -1089,6 +1089,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // DH383: Complete parallel near/far conditional/default/branch producers retain four original distances:
 // 614/614/646/645/540/614/634/634. NOT kept: no equality or gain; several lose native frame or extent.
 // Original four-value sort, tag/count/plane homes, all helpers and entire body restored.
+// DH385: Entry output-counter native memset/first-face memcpy producers, seven subsets,
+// then first-face memmove: 562/562/539/566/562/562/566/789. NOT kept: no gain or tag-home
+// recovery; original scalar counters, face publication, all helpers and complete body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
