@@ -923,6 +923,11 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
+// MiniMax G (11-06): no new form, no lower score; the first 0x11c bytes agree with retail and the rest is
+// allocation: retail keeps the unit index in ebp and NONE in edi and spills the selected traits to the
+// stack, this build keeps the traits in ebp and the unit index in eax, with the four homes shifted.
+// Reading the game time once before the selection loop, the way retail keeps it in ebx, scores 164 and is
+// not kept; retail's unrolled four slots are not reachable from the loop form.
 // MiniMax D (11-04): no new form, no lower score; the unit index masked once into a local 153 (same code),
 // the seat-index branch still splits the object table and the unit index over different registers.
 // score 153 (was 153): logic walked against retail, no behaviour difference found (loops, offsets, order of the three
@@ -1324,6 +1329,10 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax G (11-06): no new form, no lower score; four ways of deriving the hand (the negation, a
+// conditional, an int and a bool) and two declaration orders (the result before the player) all leave
+// this body exactly as it was (43, and 89 for the bool hand): the player pointer and the hand still
+// swap esi and edi, and the hand's comparison result still lands in dl where retail's lands in al.
 // MiniMax D (11-04): no new form, no lower score; retail keeps the player in ESI and the hand in EDI and this
 // build swaps them (the unit index takes ECX instead of EDX), and the permuter was killed before it reported.
 // score 43 (was 43): the walk found no difference in logic (same stores, calls, argument order, held_slots/weapons
@@ -2106,6 +2115,15 @@ void function_15e8e0(long object_index, long player_index);
 void __stdcall function_191ec4(long definition_index, long player_index, short count);
 void __stdcall function_191e51(long definition_index, long player_index);
 
+// MiniMax G (11-06), not kept at review (main's vector3d_from_points3d form, lane 12 r96, also scores 120): score 120
+// (was 130) with the three differences declared x, y, z and the squared
+// distance written with the grouping (z*z + x*x) + y*y, which stops the compiler from reassociating the
+// sum. The whole float block now matches retail instruction for instruction: xmm0 takes x, xmm1 y, xmm2 z,
+// the squares are formed as z*z in xmm4, x*x in xmm2 and y*y in xmm0, and they are added z*z + x*x first and
+// y*y last. Earlier in this round the three declaration orders without the grouping all scored 130, and the
+// byte-offset forms of the two object lookups (retail's lea and shl) widened the difference: 214 for the
+// object, 153 for the unit, 203 for both. The lookup order with the object first scores 164 and the flag
+// types bool, char and byte all score 120, so none of them is kept.
 // score 120 (was 130): the object index is masked once into a local (object_slot) used by both the object
 // lookup and its type, so the scaled header offset stays in a register across the calls as retail's EBP does;
 // the parent index is read in place instead of through a local, which leaves the object pointer in ESI and the
