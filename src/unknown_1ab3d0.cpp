@@ -174,6 +174,9 @@ static __forceinline long real_to_long(real value);
 // `*(real *)&actor->unknown290`, `*actor->unknown290.n`, `(&actor->unknown290)->i`, and the i term through slot_state 2 each; the i product cast
 // to real 6; a real pointer to the facing with indexed reads 6; the helper's body written in the function 2, its parameters in eight other orders
 // 2 each; inline helpers for the prop state or the direction pointer 2/2, for the dot taking two vectors 6, forced inline 6, taking the actor 2.
+// Round 219 (lane 3, fast): the helper's last step through vector3d_from_points3d 39 (round 100's state/direction EAX/ECX tie returns, the
+// facing's i still loads first), with dot3f either argument order 39/39; the helper's sums written position + velocity * scale 2. Permuter
+// (`--fast --anneal`, 600 s): 63 tries, best 2.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

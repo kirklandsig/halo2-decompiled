@@ -397,6 +397,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // actor_get 918 [183, 475]; both 936 [181, 464]; self_unit declared first 931f; the actor flag after self_unit 933f; the continues
 // in the type arms as a flag tested after them, in a do-while 939f (3743 B) [206, 477], the arms do not sink. Retail's type 1/7/11 arms
 // and the unit arm's other branches sit past the function's `ret`, each jumping back to the distance test; ours keeps them in place.
+// Walk r715 (s1D), statement by statement against retail 0x2c0d60-0x2c1bf0: no logic, field, offset, constant or condition-direction
+// difference found (all constants read from the XBE; team_is_enemy matches retail's inlined 0x1df560 body at 0x2c12c4-0x2c1318). What differs is
+// layout only: retail places the second type-0 branch and the type 1/7/11 arms after the join (0x2c12a3-0x2c1441, jumping back into it) and keeps
+// the skip flag at [esp+0x12], a profile-style block order that source order has not reproduced. The unit_index and actor volatiles carry no
+// retail meaning beyond forcing the reloads retail shows at the loop back edge (0x2c0f68 edi from [esp+0x2ce0], 0x2c0f6f ebp from [esp+0x44]).
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

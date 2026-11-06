@@ -1548,6 +1548,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // through EDX where the first uses ECX, so the two closes are not tail-merged); the failed-resize close arm first 215
 // (994 bytes); `(!resized || ...)` with `resized` declared at the top of the size-mismatch block 157, renamed
 // size_changed/extended 157/157, declared beside `done` 157 (frame 0x1140 each: resized packs beside done).
+// Round 75 (m3 lane 11, fast): the size local renamed to a name sorting before `bytes_written` 33, homes
+// unchanged; that with both out-parameters declared together in the handle-valid block 33 (so neither names nor
+// scopes set these two homes); `resized` declared beside the size local 33; the write length and its check spelled
+// with sizeof of the header 33 (same code); the count zeroed before `if (resized)` in place of the else arm 85.
 // @retail 0x213970
 void function_213970(void)
 {

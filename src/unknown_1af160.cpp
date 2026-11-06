@@ -120,6 +120,12 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // test on a fresh actor lookup 61, the prop index named for its two uses 256. A one-file harness with the callee files and the
 // ballast is not exact (275, 959 bytes). Open lead: pointer-typed outputs on 0x2605d0/0x260670 need a prototype edit in held
 // src/unknown_261280.cpp.
+// Round 139 (m3 lane 8): `--fast 0x1af160 0x1e1f20` reads the true 12 (without 0x1e1f20 it reads 210). In both swapped
+// pairs ours gives the lower home to the one referenced first in code (the offset temp before the actor, the node before
+// the bool output) and retail to the other. Names do not move them (descriptive or one-letter, four locals renamed: 12).
+// The 0x262b40 result declared at the function's top 12; the equal-arm test inverted 29; the result flag declared first
+// 187; the 0x261280 outputs declared before the entry 12; 0x1af530's real output declared at the top 12; the two
+// 0x1f4a20 flags declared the other way round 12. Original body restored.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

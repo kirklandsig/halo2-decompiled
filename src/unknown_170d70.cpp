@@ -1554,10 +1554,10 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 266 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
+// score 284 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
 // the final blend and *distance *= fraction all agree; no behaviour difference found. The remaining diff is the
-// calling convention: retail takes forward in eax and up in ecx with point, distance and offset on the stack
+// calling convention: retail takes up in eax and forward in ecx with point, distance and offset on the stack
 // (ret 0xc; the prologue copies [esp+0xc4] into ebp); ours passes up in eax and point in ebx and leaves forward
 // on the stack. The declared order of the five parameters changes nothing (6 orders tried, same score), and the
 // old `(void)&point` lines were dead code (removed, same bytes). The 0x171d00 call is also set up differently
@@ -1760,6 +1760,8 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 // the cluster test (365), __fastcall or reordered parameters on function_171830, 24 spellings of the three
 // position updates (all the same), the updates in z,y,x order (411 with vector2f), `s_location` declared first,
 // real direction_x/y locals (346), the direction array (320, above).
+// Permuter, 30 minutes (11-06, on the direction_x/y source before the vector2f form): 323 from 341, only with casts and
+// stores moved (view.aspect before the position sums, view_up declared earlier). Not kept.
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
