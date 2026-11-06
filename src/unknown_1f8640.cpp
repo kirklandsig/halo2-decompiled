@@ -648,6 +648,9 @@ struct s_1f8a70_actor
 // M381: Independent outer byte/short/long/dword completion after terminal stores/cleanup,
 // route-result copies then branch facts: 435/429/432/432/435/429/432/432. NOT kept: result-home
 // diagnostics regress; original outer/inner results, native-word selector and full body restored.
+// DL273: Outer completion at directed/reference/path call producers, seven subsets and
+// all with existing false producers: eight 188s. NOT kept: no byte match; original
+// two-result body restored. Unit/result homes, dispatch and late memory result remain.
 // M3 lane 11 r71 (fast, control 188 at 1632 bytes). Retail: cases through 5, the route dispatch, cases 6 and 7, then
 // the zero test and a failure block with its own 0x1f8750 call and return. Route test nonzero side first: `route != 0
 // ? ... : ...` 188 (retail's `je` to the zero test), `route ? ... : ...` 188, assigned bool 188, `(route != 0 && ...)

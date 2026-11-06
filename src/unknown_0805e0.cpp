@@ -883,6 +883,9 @@ void function_1537f0(s_profile_record *record);
 // stores 45/49h (no change); the record's NONE stores removed or spelled 0xff in a hand copy 45/49h (no change: dead stores do not count
 // toward the hoist); heads through 4-byte memset 45/49h, through two 8-byte memsets 86-93h (272-274 bytes). On the current pointer walk,
 // links through 2-byte memset 53 (fast, same code).
+// DL273: Whole-array complete default entry, range/count fill then native/library copies,
+// constructed after/before head resets: 76/76/92/92/75/75/90/90. NOT kept: nonexact
+// hoisted record storage; original per-visit initialization and pointer walk restored.
 // Round 133 (m3 lane 7, fast): index loop with every field through `g_4cf98c[i]` and the 8-byte tail kept 77 (238 bytes:
 // retail's `cmp edx, end; jl` exit, identity still folded); on it identity `= { 0 }` 77, the record initialized before the
 // identity 77, an entry pointer after the record initializer 78 (238); a short index 53 (the countdown returns).
@@ -1459,6 +1462,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // null or table first value 56-71h; inline entry getter in four spellings across nine shapes 5-349h; forward copy through an inline helper 5-56h, a
 // pointer-param copy helper 5-361h; `do {} while (false)` around, before or after the loop 5 or 56h (no change); memcpy/memmove with a count 351-367h;
 // paired indices 349-365h; per-pass `from`, `from[-1]`, `&g[i] - 1`, memcpy, reference 53h; per-pass `to = from - 1` 361h (rep stays per element).
+// DL273: Standard min/max endpoint contracts, independent then paired operand roles:
+// 388/271/388/388/271/388/388/388. NOT kept: reference-producing selections grow
+// the native extent; original prefix, endpoints, copy loops and full tail restored.
 // Round 133 (m3 lane 7, fast with 0x80490/0x80330): plain `long removed = NONE; if (g_4cf978 == 350)` admission with
 // ternary bounds and the `>`-arm/count-path flag stores 57; with the flag first in the `<` arm and round 141's stepped
 // cursor 8 (round 141's form; the stores stay match-only); per-pass `from = &g[i]` on it 55; the flag left uninitialized

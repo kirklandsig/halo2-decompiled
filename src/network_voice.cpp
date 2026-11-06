@@ -3400,6 +3400,9 @@ struct s_voice_route_choice
 // forced inline 363/363/363/363; ordinary inline 1347/1344/1343/1339. NOT kept:
 // no exact match; ordinary providers suppress native expansion and stay called.
 // Original complete body restored; talker/zero, cursor and priority merge remain.
+// DL271: Typed native pair-array zero fills, forward range/count then reverse
+// range/count, bitwise radio 383/384/421/403; conditional radio 412/411/409/405.
+// NOT kept: no equality or gain; original routing, mixer initialization and full body restored.
 // Round 90 (m3 lane 9, fast with 0x57960/0x56df0): both SetPlaybackPriority calls, then all three engine calls, through
 // the XDK's C-style IXHVEngine_ wrappers (engine evaluated last) 363/363 (same code); `*const` settings and choices 363;
 // `long const` player 363; one XUID local after the 0x583c0 call for all three engine calls 452 (1228 bytes). Retail
