@@ -8215,16 +8215,12 @@ bool function_016ac0();
 bool function_022710();
 void __stdcall function_2bcd0(long, bool, bool, bool, long, long, real);
 void __stdcall function_21a80(real, real, real);
-// score 0 (was 16): matches (MiniMax I, 11-05): a file-scope #pragma inline_depth(0) around the
-// function keeps the 0x16ac0 call out of line as retail has it, and with that call out of line the
-// single expression for world_effects gives retail's draw_ui and world_effects block exactly.
 // MiniMax D (run 37): retail calls 0x16ac0 out of line, our build inlines it; the inlining is
 // decided by the /Ob flag of the defining file src/unknown_0167a0.cpp (not mine). A single
 // expression for world_effects gives 65; the original 16 is kept.
 // Coordinator ruling 2026-11-02 (the user deferred): /Ob1 on src/unknown_0167a0.cpp matches 0x13680 (MiniMax R) but
 // loses 0x13c20, so that file's flags stay; the lead is a source form that keeps 0x16ac0 out of line here.
 
-#pragma inline_depth(0)
 // @retail 0x13680
 void function_13680(bool skip_effects)
 {
@@ -8236,7 +8232,8 @@ void function_13680(bool skip_effects)
         return;
     }
     bool draw_ui = !skip_effects && g_485898 != 6;
-    bool world_effects = !skip_effects && g_485898 != 7 && function_022710();
+    bool world_effects = false;
+    if (!skip_effects && g_485898 != 7 && function_022710()) world_effects = true;
     if (!function_016ac0() && !skip_effects && effect && effect->unknown3c &&
         effect->unknown40 > 0.0f && function_022710() && function_01de20(18))
     {
@@ -8247,7 +8244,6 @@ void function_13680(bool skip_effects)
     }
     else function_2bcd0(1, 1, draw_ui, world_effects, 0, 0, 0.0f);
 }
-#pragma inline_depth()
 
 
 s_reset_storage g_reset_storage;
