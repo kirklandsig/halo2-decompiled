@@ -275,6 +275,10 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
+// MiniMax G (11-05): no new form, no lower score; declaring the plane table after the point
+// difference scores 203 in the reduced and in the full build (a gain of six, below the keep
+// threshold, so the body is restored); the source receiver, the frame and the stack homes still
+// differ: BLOCKED-BY the caller 0x245aa0 (src/unknown_245850.cpp).
 // MiniMax B (11-04b): no new form, no lower score; retail still copies the source into esi at the entry and frames 0x2c against our 0x24, and its declaration and call live in src/unknown_245850.cpp, which this lane may not edit.
 // score 209 (was 209): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's

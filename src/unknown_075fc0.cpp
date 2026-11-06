@@ -177,6 +177,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // draft (harness, r72 masked metric): a multi-use counter pointer declared first after the found test (`lea esi, [eax + edi]` right after the connection as retail, because the pointer shares `this + index * size`) 263 + 8 bytes, masked 46;
 // with the window test 42; a threshold flag set in both arms and tested after (`setge; test; je` as retail, the zero test moves toward the exit) masked 42. Left there: `this` isn't in EDI at entry and the connection takes EBP where retail
 // keeps it in memory and gives EBP to the budget; 8 extra budget reads don't flip that, so it isn't plain reference weight; `xor al, al` for the result's first store. Retail's three epilogues: done, success, false.
+// Round 95 (m3 lane 12, fast; register-masked aligned count in brackets, base 371 [244]): the rounding helper's names as value/result
+// 371, the search helper's as observer/connection_index/result/channel_index/channel 371, both 371 (identical code); the reliable-bytes
+// payload `local_29 - 45` as a named local for its test and store 427 [203] (1385 bytes; retail forms it early, `lea ebp, [ecx - 0x2d]`);
+// the snapshot and reset as `*(__int64 *)&g_4e6398` (unknown_12b070.cpp's view) 426 [229] (1340 bytes). Retail keeps the result byte in
+// arg_1's dead slot and the rounding temp in arg_3's ([esp+0x48], [esp+0x50]), fistp straight into local_13's home.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

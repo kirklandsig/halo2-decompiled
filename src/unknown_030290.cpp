@@ -494,6 +494,8 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // scalars read in the else arm, if/else, else/if, ternary: 301/297/301 each (folded, 890-894 B). Scale read through a pointer
 // to the camera parameter 234, with the order 232, with yxz 232 (971 B); separate result scalars 195/193; displaced point
 // through a pointer local 216.
+// Round 217 (m3 lane 3, fast; m = masked aligned count, base 195 m82): the parameters (d, a, camera, scale, ...) with every declaration and call 193 (m82, under the bar); fa/fb dropped, the inverses used directly with `inv_a = inv_b = 1.f` in the orthographic arm 207 (974 B, m53),
+// the two stores in either order or chained the other way 207; that with the parameters 205 (m53); on it displaced rows zyx 199 (968 B, m50), yzx 201, zxy 204, yxz 204, xzy 205; helper coordinates declared z, x, y 213 (963 B, m113), z, y, x 216, y, x, z 216 (971 B). Frame stays 0x30.
 // Round 66 (m3 lane 14, fast): the inverses used directly (no fa/fb) re-measured 207 (974 bytes); the scale default applied
 // inside the negate block 222 (972); the displaced and reversed points through the existing vector3f_add_scaled with 1.f and
 // -1.f, both/forward only/reverse only, 195/195/195 (same code: the unit factors fold); the reversed retransform under its own
