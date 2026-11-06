@@ -439,6 +439,9 @@ void c_class_2c9e69::select_last_variant()
 // datum and first lookup through the parameter 49; plain text with the name buffer at function scope 36; plain text with the variant read once through the masked subscript 43 (150); a const
 // reference to a cast rvalue for the name arm 36, in both arms 36, the text itself a const reference with a plain name copy 36 (all hoisted into EDI). The name lookup before the text test
 // (not retail's order) moves the name arm to ECX 28 (155), the text test around the variant test 48 (146). Round 41's name-arm copy stays the best: the empty arm tests the stack home and the name arm takes EDI for EBX.
+// M3 lane 11 r76 (fast): the name-arm copy declared after the icon lookup and assigned in the arm 13; assigned in
+// its test 13; the icon declared before the text and assigned after it 13; the copy declared first in the function
+// 13, with the name buffer there too 13 (all the same code: symbol order does not move the name arm's EDI).
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {
