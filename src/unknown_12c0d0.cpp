@@ -989,6 +989,7 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax D (11-06): no new form, no lower score: the masked level address is still loaded into EDX where retail reuses the dead base register; this round the element type (long, int, unsigned int, void pointer, dword pointer), a copy of the bitmap in a local used for the load, a function-scope local for the address, a store through a dword pointer to the field, the mask as a complement, an unsigned literal or the operands reversed, and reorderings of the local declarations in the two branches all leave the same three instructions (3) or make the code worse (110, 44, 158, 100).
 // MiniMax S (11-05): no new form, no lower score: the frame, the reduction branch, the format bits and the two
 // stores all agree with retail; only the last three instructions differ, where the masked level address is loaded
 // into EDX and retail reuses the base register that dies with that load.

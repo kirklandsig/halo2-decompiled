@@ -1256,6 +1256,12 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
+// MiniMax D (11-06): no new form, no lower score (17): the unit index still lands in esi where retail keeps it in
+// edi and the object table pointer lands in edi where retail keeps esi; this round a read-only player, a read-only
+// pickup unit, a byte, bool or short hand, the hand before the unit index test, the unit index in a local, the two
+// slot tests nested, the else branch as an else-if, the mode comparison reversed, the mode in a local and the
+// globals in a local all give 17, and the hand as a byte, bool or short and the unit index local give 44, 44, 38
+// and 46.
 // MiniMax A (11-04, run 45): no new form, no lower score (17); the unit index still swaps registers with the object table.
 // MiniMax H (11-04): no new form, no lower score; the unit index and the object table still swap registers.
 // MiniMax E (11-05): no new form, no lower score; the unit index still lands in esi where retail keeps it in
