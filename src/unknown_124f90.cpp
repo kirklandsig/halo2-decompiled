@@ -16,6 +16,7 @@
 #include "unknown_221810.h"
 #include "sound_driver.h"
 #include "crc.h"
+#include "location_zones.h"
 #include <xtl.h>
 #include <string.h>
 #include <float.h>
@@ -4119,7 +4120,14 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 
 // MiniMax R (11-01): retail's 0x11d6a0 call still sets edx, ecx, eax where ours sets edx, eax, ecx;
 // the callee's own file is not mine, so the order cannot be produced from here.
-// score 535 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
+// score 554 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
+// b2F (11-06) walk against retail, no logic difference found (statements, fields, offsets, conditions and callees agree). Calls the
+// existing location_point_in_zone_inline (location_zones.h; it was written out here) 555 (535 + 20); player state as
+// &g_4e9bd4[i].state 554. The listener query stays short, since retail tests it as 16 bits (below); as a long 553. The zone call assigned straight to unknown07 560.
+// Retail differences that remain (not behaviour): the fallback reverb is the const g_44a2a0 at 0x127b70/0x127bd9, not a stack copy
+// (extern in 21e330.cpp + use here 734, frame gone, 2091 bytes); loop head is 0x14ddc0/0x14de70 inlined (calling them 651);
+// 0x16f3a0 inlined for the cmovne at 0x1274d7-0x1274e3 (calling it 576, stays a call); retail re-reads [ebx+0x40] per use and tests
+// the 0x155760 result as 16 bits (test bx, bx at 0x127502; the result is 0..3).
 // Const reverb 551; outer records 551; shared cross product 635; direct blend reads 555; entry counter 552.
 // Output-before-inputs callee order 551 (callee 15 to 11); all call argument roles preserved.
 // Static const fallback 727 (frame 0xec); spatial role names 551; long success workspace 551;
@@ -4200,8 +4208,7 @@ void function_127400(bool arg_0)
 		{
 			long local_3 = *(long *)(g_4e8c24->data + (local_2 & 0xffff) * 0x21c + 0x2c);
 			short local_4 = (short)function_155760(local_0);
-			s_player_4e9bd4 const *local_5 = g_4e9bd4;
-			s_127401 const *local_6 = g_4686c4 != NONE ? (s_127401 const *)((byte const *)(local_5 + local_0) + 0xb8) : NULL;
+			s_127401 const *local_6 = g_4686c4 != NONE ? (s_127401 const *)&g_4e9bd4[local_0].state : NULL;
 			vector3f local_7;
 			vector3f local_8;
 			point3f local_9;
@@ -4245,24 +4252,7 @@ void function_127400(bool arg_0)
 				local_11 = local_6->field_c;
 			}
 			local_1->active = true;
-			bool local_22 = false;
-			if (local_11.cluster_index != NONE)
-			{
-				byte *local_23 = (byte *)g_4e0348;
-				byte *local_24 = *(byte **)(local_23 + 0xa0) + local_11.cluster_index * 0xb0;
-				byte local_25 = local_24[0x70];
-				if (local_25 != 0xff)
-				{
-					byte *local_26 = *(byte **)(local_23 + 0x68) + (local_25 & 0x7f) * 0x18;
-					if (*(short *)(local_26 + 2) != NONE)
-					{
-						if (!(local_25 & 0x80))
-							local_22 = true;
-						else
-							local_22 = *(real *)(local_26 + 0xc) * local_9.z + *(real *)(local_26 + 8) * local_9.y + *(real *)(local_26 + 4) * local_9.x - *(real *)(local_26 + 0x10) < 0.0f;
-					}
-				}
-			}
+			bool local_22 = location_point_in_zone_inline(&local_11, &local_9, NULL);
 			local_1->unknown07 = local_22;
 			local_1->velocity_scale = 1.0f;
 			local_1->forward = local_7;
