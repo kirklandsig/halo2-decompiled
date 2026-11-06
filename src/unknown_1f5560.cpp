@@ -399,8 +399,11 @@ bool __stdcall function_110ab0(long unit_index);
 /* asks the actor's unit to move to the point facing the given way (request
    0x25), once it is within half a world unit of it; when asked, only while
    it faces within 45 degrees of its prop */
+// The facing is the last parameter: retail's body takes the actor in EAX and the facing in ECX with the
+// other three on the stack, and both callers' argument setup (0x1afb30, 0x1b89d0) matches retail only
+// with the facing declared last.
 // @retail 0x1f4f40
-bool function_1f4f40(long actor_index, vector3f const *facing, short unknown, s_type_c3b527 const *point, bool face_prop)
+bool function_1f4f40(long actor_index, short unknown, s_type_c3b527 const *point, bool face_prop, vector3f const *facing)
 {
 	s_actor_moving *actor = actor_moving_get(actor_index);
 	bool result = false;
