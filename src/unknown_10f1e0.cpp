@@ -410,7 +410,10 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // MiniMax A (11-04, run 41): no new form, no lower score (37); the mask form for the visited-bit test (the
 // existing bit_vector_test, and the same set written out inline) matches retail's test but turns the following
 // update into load/OR/store and shifts two call setups (42).
-// score 37 (was 37): frame 0x104 agrees. Retail tests the visited bit with a mask and still ORs
+// score 2 (was 49): the second lookup re-reads the pair's target name from the iterator and the
+// visited bit is tested with a mask, so the second lookup, the 0x1d90e0 setup and the bit update
+// are retail's exactly; the frame is 0x104 and the length 539 bytes as retail. Left: the back edge
+// reloads the tag table before the state where retail reloads the state first.
 // it into memory after computing the word address; with the shift-form test ours gets that update
 // but not the test, and with a mask test (the existing bit_vector_test) the update becomes
 // load/OR/store and two call setups change registers (42, 545 bytes). The back-edge reloads of
@@ -572,6 +575,15 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // forceinline copy of it (diagnostic) 42, so an inlined fill does not give the fused set (the 0x12afc0
 // lead is closed); with the mask test a byte `found` 42, each arm breaking on its own call 42, the source
 // name as a two-use local 48 (both names 51); unused initialised locals at four positions (probes) 42.
+// Round 210 (m3 lane 3, fast): the round-209 lead is applied - the mask test with the pair's
+// target name as a two-use local gives 49 at 539 bytes, retail's length; the set is retail's fused
+// `or [eax], edx` and the 0x1d90e0 setup is retail's exactly. Left are the name held in ESI
+// across the first lookup (retail re-reads [ebp + 4] before the second lookup, one instruction
+// more) and the back-edge reload order.
+// Round 211 (m3 lane 3, fast): the second lookup is written as its own statement that re-reads the
+// pair's target name from the iterator, with the two conditions nested instead of chained; 2 at
+// 539 bytes, retail's length - every instruction of retail matches but the back edge, which
+// reloads the tag table before the state where retail reloads the state first.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -608,15 +620,19 @@ void __stdcall function_113980(long object_index, long target_index, bool altern
 				}
 				if (!found)
 					break;
-				if (iterator->b != NONE && iterator->b && iterator->a != NONE && iterator->a)
+				long target_name = iterator->b;
+				if (target_name != NONE && target_name && iterator->a != NONE && iterator->a)
 				{
 					if (function_b8d30(object_index, iterator->a, &marker, 1, false) &&
-						!((visited[marker.node_index >> 5] >> (marker.node_index & 31)) & 1) &&
-						function_b8d30(target_index, iterator->b, &target, 1, false))
+						!bit_vector_test(visited, marker.node_index))
 					{
-						function_1d90e0(*(long *)(model + 4), marker.node_index, nodes, &marker.node_matrix,
-							&target.matrix, weight, node_count);
-						bit_vector_set(visited, marker.node_index, true);
+						target_name = iterator->b;
+						if (function_b8d30(target_index, target_name, &target, 1, false))
+						{
+							function_1d90e0(*(long *)(model + 4), marker.node_index, nodes, &marker.node_matrix,
+								&target.matrix, weight, node_count);
+							bit_vector_set(visited, marker.node_index, true);
+						}
 					}
 				}
 			}
