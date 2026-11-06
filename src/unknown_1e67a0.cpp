@@ -573,8 +573,6 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
-// MiniMax G (11-04): no new form; the fast check cannot score this function (its callees fall outside
-// the reduced image, so the diff misaligns from the first instruction), so it stands at 132.
 // score 118 (was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
 // y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
@@ -773,6 +771,14 @@ bool g_51e9bc;
 // N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
 // forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
 // body restored; unity/limit/direction ownership and jitter spill homes remain.
+// MiniMax G (11-04): no new form; the fast check cannot score this function (its callees fall outside
+// the reduced image, so the diff misaligns from the first instruction), so it stands at 132.
+// Lane 13 round 66 (fast, 0x24590 listed; aligned in brackets, control 118 [110]): velocity.i as `limits.i *
+// control.i` 118 (same code); the projection dot written out as i, k, j 122 [107] (1081 bytes), as k, j, i 122 (the
+// same code: without /Op the sum is reordered); `dot3f(&direction, &state->velocity)` 118 (same code); the jitter
+// offsets as `(x * 0.2f) * limits.i` 113 [107] (retail's 0.2-first products, but limits.j/k then reassociate as
+// definition * factor * scale, new first difference at +0x123; five points, restored); on it each offset added
+// straight into the velocity 196 (1046 bytes).
 // Y603: Complete indexed velocity product/copy producers, original/direct projection argument:
 // 114/227/237/218/51/226/238/222. NOT kept: 114 gains only four; 51 grows from native 1077 to 1078 bytes.
 // Original body restored; projection ownership and native jitter factor spills remain.
