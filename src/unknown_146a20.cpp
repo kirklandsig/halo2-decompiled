@@ -59,7 +59,7 @@ bool g_47f05a;
 bool g_47f05b;
 
 // MiniMax D (11-06): no new form, no lower score (34); retail's base vtable store (0x453760) and its
-// derived vtable (0x4576a4) come from the shared constructors in include/unknown_146a20.h, which I may
+// derived vtable (0x4576a4) come from the shared constructors in include/unknown_146a20.h, which this lane may
 // not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
 // score 34 (was 34): MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax b (11-04): no new form, no lower score; the abstract allocator's base vtable store is still dropped (it comes from the header's inline constructor) and the pool placement still reloads g_479888 at the join.

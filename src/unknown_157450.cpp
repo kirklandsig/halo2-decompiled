@@ -724,21 +724,18 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // in memory and fuses the zero-extension into the compare's load. On the word mask (77): the playing bit from the team
 // local 83 (383 bytes), one function-scope team local 77, the flag test ahead of the present update 83 (392 bytes), the
 // iterator declared first 77, a word playing accumulator 100 (391 bytes).
-// MiniMax D (11-06): the present update now names the team bit, so the whole loop matches retail
-// byte for byte and the score falls to 21; what is left is the post-loop block, where retail keeps
-// the playing teams in EDX and the old mask in ECX and compares the present teams as a dword
-// against the zero-extended mask. The compare without the width cast (77), the store through
-// globals (128/129) and the added-team order (77) all regress, and an 831 s permuter run made no try.
-// score 21 (was 24): the loop matches retail exactly; the post-loop block still differs in the
-// register order, in the width of the present compare and in the order of the added-team mask and
-// the two stores.
+// MiniMax D (11-06): 21 (main 32), not kept: the present compare cast to a word (`(word)present_teams !=
+// old_team_mask`, the old mask a word local) and the team bit in a one-use local before the present update. Retail
+// compares the present teams as a dword against the zero-extended mask (`movzx eax, cx; cmp esi, eax`), so the
+// word compare is not retail's; without the local 24, without the cast 77, and the flag test as an early
+// `continue` alone stays at 32.
 // @retail 0x158140
 void function_158140(void)
 {
 	s_game_engine_globals *globals = function_xaee93d();
 	dword old_playing_teams = globals->playing_teams;
 	word *team_mask = &globals->team_mask;
-	word old_team_mask = *team_mask;
+	dword old_team_mask = *team_mask;
 	dword playing_teams = 0;
 	volatile dword present_teams = 0;
 	s_record_pool_iterator iterator;
@@ -752,23 +749,20 @@ void function_158140(void)
 
 		if (team != NONE)
 		{
-			dword team_bit = 1 << team;
-
-			present_teams |= team_bit;
-			if (player->flags & 2)
+			present_teams |= 1 << team;
+			if (!(player->flags & 2))
 			{
-				continue;
+				playing_teams |= 1 << player->team;
 			}
-			playing_teams |= 1 << player->team;
 		}
 	}
-	if (playing_teams != old_playing_teams || (word)present_teams != old_team_mask)
+	if (playing_teams != old_playing_teams || present_teams != old_team_mask)
 	{
 		dword added_teams = ~old_playing_teams & playing_teams;
 		long team;
 
 		globals->playing_teams = (word)playing_teams;
-		*team_mask = old_team_mask | present_teams;
+		*team_mask = old_team_mask | (word)present_teams;
 		if (game_engine_get() && globals->index24 != NONE)
 		{
 			function_b58c0(globals->index24, 1);
