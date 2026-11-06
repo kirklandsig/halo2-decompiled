@@ -8,6 +8,7 @@
 #include "effects.h"
 #include "object_markers.h"
 #include "object_queries.h"
+#include "player_queries.h"
 #include "unknown_1dee50.h"
 #include <math.h>
 #include <string.h>
@@ -321,6 +322,7 @@ struct s_object_child_iterator
 
 struct s_object;
 s_object *function_badc0(long object_index, dword type_mask);
+s_object *object_get_175d70(long object_index, dword type_mask);
 bool function_1df560(short team_a, short team_b);
 
 /* the object header data's elements (g_4e0300, 12 bytes) */
@@ -967,8 +969,23 @@ PRIVATE inline long damage_object_root(long object_index)
 	return root;
 }
 
+/* the squared distance between a root object's centre and a point */
+PRIVATE inline real damage_root_squared_distance(point3f const *root_center, point3f const *point)
+{
+	real dx = root_center->x - point->x;
+	real dy = root_center->y - point->y;
+	real dz = root_center->z - point->z;
+
+	return dz * dz + dy * dy + dx * dx;
+}
+
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// MiniMax G (11-06): score 0 (was 206): matches (plain check confirmed): the player scan runs through the
+// s_player_iterator with data_iterator_next_inlined, the squared distance comes from a helper called at both
+// tests with the x difference taken first, the mask sits in a named local before 0xbb050 and the last object
+// index is declared before the first one; the three object lookups call the noinline object_get_175d70, whose
+// body the linker folds with 0xbadc0, so all three stay out of line as retail has them.
 // MiniMax G (11-04): no new form, no lower score; the first 0xbadc0 call only leaves the line behind a second
 // count test (248), and the squared distance at both tests (284) or with the mask in a local (275) is worse.
 // MiniMax E (11-06): no new form, no lower score; the first 0xbadc0 use is still expanded here while
@@ -1033,23 +1050,24 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 	real radius = MAX(definition->radius04, MAX(definition->radius58, definition->radius68));
 	point3f const *position = &data->position;
 	long objects[k_maximum_area_of_effect_objects];
-	long object_count = function_bb050(0, (definition->flags0c & 2) ? 3 : 0, &data->unknown1c, position, radius,
+	dword mask = (definition->flags0c & 2) ? 3 : 0;
+	long object_count = function_bb050(0, mask, &data->unknown1c, position, radius,
 		objects, k_maximum_area_of_effect_objects);
-	long first_object_index = NONE;
 	long last_object_index = NONE;
+	long first_object_index = NONE;
+	s_player_iterator iterator;
 
 	*(dword *)data->unknown04 |= 1;
 
 	if (definition->player_radius > radius)
 	{
-		long player_index = NONE;
+		s_player_datum *player;
 
-		while ((player_index = data_next_absolute_index_inlined(g_4e8c24, player_index + 1)) != NONE)
+		iterator.data = g_4e8c24;
+		iterator.index = NONE;
+
+		while ((player = (s_player_datum *)data_iterator_next_inlined((s_record_pool_iterator *)&iterator.data)) != NULL)
 		{
-			s_damage_player *player = (s_damage_player *)(g_4e8c24->data + g_4e8c24->size * player_index);
-
-			if (!player)
-				break;
 			if (player->unit_index == NONE)
 				continue;
 
@@ -1058,15 +1076,12 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 			if (object_count >= k_maximum_area_of_effect_objects)
 				continue;
 
-			real dx = root->field_x221477.x - position->x;
-			real dy = root->field_x221477.y - position->y;
-			real dz = root->field_x221477.z - position->z;
 			real inner = root->field_xae9109 + radius;
-			if (inner * inner >= dz * dz + dy * dy + dx * dx)
+			if (damage_root_squared_distance(&root->field_x221477, position) <= inner * inner)
 				continue;
 
 			real outer = definition->player_radius + root->field_xae9109;
-			if (outer * outer >= dz * dz + dy * dy + dx * dx)
+			if (damage_root_squared_distance(&root->field_x221477, position) <= outer * outer)
 				objects[object_count++] = player->unit_index;
 		}
 	}
@@ -1077,14 +1092,14 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 
 		if (definition->flags0c & 2)
 		{
-			s_damage_object *unit = (s_damage_object *)function_badc0(object_index, 3);
+			s_damage_object *unit = (s_damage_object *)object_get_175d70(object_index, 3);
 			if (!unit || unit->player_index == NONE)
 				continue;
 		}
 		if (object_index == ignore_object_index)
 			continue;
 
-		s_damage_object *unit = (s_damage_object *)function_badc0(object_index, 3);
+		s_damage_object *unit = (s_damage_object *)object_get_175d70(object_index, 3);
 		s_type_1e6529 copy = *data;
 
 		function_d74e0(&copy, object_index, false);
@@ -1097,7 +1112,7 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 			}
 			else
 			{
-				s_damage_object *other = (s_damage_object *)function_badc0(object_index, 3);
+				s_damage_object *other = (s_damage_object *)object_get_175d70(object_index, 3);
 				if (other && other->player_index != NONE)
 					first_object_index = object_index;
 			}
@@ -1744,6 +1759,9 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 // MiniMax G (11-04): no new form, no lower score; the two call setups still follow 0xd9d60's convention.
 // MiniMax E (11-06): no new form, no lower score; the two call setups still follow the conventions their
 // own unmatched bodies decide, so this stays behind 0xd9d60 and 0xda110.
+// MiniMax G (11-06): no new form, no lower score; the instruction stream agrees with retail except for one
+// extra `push eax` before the call to 0xda110, whose index retail passes in EAX; that transport is the
+// callee's own convention. BLOCKED-BY 0xda110.
 // score 82 (was 96): the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
 // its index in EAX, 0xd9d60 its flag in AL); both are back-edge targets of the link-time walk. BLOCKED-BY 0xd9d60.
 // Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
@@ -2377,6 +2395,9 @@ void function_176330(point3f const *point, s_effect_marker *markers);
 // MiniMax E (11-06): no new form, no lower score; the flag stays on the stack because the call cycle
 // through 0xdae60, 0xda110 and 0xdaaa0 gives this body the plain convention, and retail's AL form
 // needs the four stub bodies enabled, which cost two matched callers.
+// MiniMax G (11-06): no new form, no lower score; the flag is read from the stack (`mov al, [esp + 4]`)
+// where retail takes it in AL, and that register is this function's own convention, which the call cycle
+// through the stubbed bodies outside this file settles. BLOCKED-BY 0xb8540.
 // score 69 (was 69): retail takes the flag in al, the marker name in ecx and the object index in edx, with two stack
 // arguments (`ret 8`); the parameter order marker, object, flag, effect, owner is the one that gives that assignment
 // (the other orders put the flag in cl or dl, 81), but only while fewer callers pass it. With the calls of 0xdaaa0
@@ -4169,6 +4190,9 @@ void function_db670(long object_index, long vehicle_index)
 // MiniMax E (11-06): no new form, no lower score; the mode-1 call needs 0xd9d60's retail convention
 // (the flag in AL and two stack arguments), and with the flag on the stack ours pushes three, so the
 // permutation base stays in EDX, EDI is saved only in the other arm and the frame offsets differ.
+// MiniMax G (11-06): no new form, no lower score; the effect flag is computed in EDX and passed on the
+// stack, retail computes it in AL and passes it in a register, and the permutation base stays in EDX
+// where retail keeps it in EDI. BLOCKED-BY 0xd9d60.
 // score 28 (was 38): frame 0x40 and ingress agree; late EDI save and callee transport remain.
 // The effect flag stays on the stack rather than AL; the destruction permutation stays on the stack
 // rather than EAX. The info argument is now on the stack as retail.
@@ -4811,6 +4835,9 @@ struct s_damage_object_creation
 // MiniMax E (11-06): no new form, no lower score; the mask's zero store, the piece loop's guard order
 // and the last two lookups' scratch registers remain, and the shared loop counter and the permuter's
 // variant only reach 217.
+// MiniMax G (11-06): no new form, no lower score kept; the mask's zero is stored before the mask block,
+// where retail stores it in the node loop's preheader; storing it inside the block gives retail's store and
+// nop but a different frame layout (170). Retail's guard order and its do-while search each cost four bytes.
 // score 156 (was 174): frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
