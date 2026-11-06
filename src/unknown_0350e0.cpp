@@ -832,6 +832,10 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
 // mod-set size limit; retail never takes 0x4858c4's address. Tried: the tag in a local for the tests 26; NULL and 1/0
 // spellings 26; a const shader pointer for the tests 26; the call's tag named after 0x1bd50 26; an early return 26.
 // The storage merge also needs src/unknown_03f2b0.cpp's declaration changed with the other declaring files.
+// Round 171 (lane 4, fast): a typed shader-header view with the 'shad' constant 26; the character constant alone 26;
+// the zero test first 26 (same code); the flag set after the call 31; the non-fast constant upload 61 (129 bytes).
+// A storage aggregate from 0x4858c4 to 0x485a5c takes in about 25 globals over seven files, among them
+// src/unknown_03fdf0.cpp (g_485950).
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -2475,6 +2479,10 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // M387: Shared scale array traversal on the recovered final-sample graph: forward long/int/dword/uint
 // 0/0/0/0; reverse predecrement 273/273/348/348. Forward plain 0 at 965/965, NOT kept:
 // shared users worsen and 25 matches are lost. Original shared scaler restored; middle product fold remains.
+// Round 171 (lane 4, fast; header restored): normalize3d scaling in place with a component loop, `*=` or `= s *`,
+// 27/27 (only the scaler's separate input and output pointers give the fold); three compound statements 27; the
+// reciprocal named before the scale call 27; the length test inverted 27. Diagnostic: 9/16/30 dead locals ahead of
+// the sampling 27 each (symbol count does not move it).
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -4550,6 +4558,11 @@ long __stdcall function_3ddd0(long object_index);
 // 8 do not; probes after it, globals, temporaries, field accesses, parameters and an inlined helper's locals do not
 // count. Tried: named offset/range parts of the fraction 1; the definition test in a bool local 1; a distances
 // pointer for the copy 1; all three 1; a distances pointer for the test and the copy with the named parts 1.
+// Round 171 (lane 4, fast; a compile-only screen reproduces ours): the count is of distinct locals by first reference
+// (declared at the top but first used after the read: no flip; one local assigned 9 times: no flip); through an inline
+// getter its result needs 5 more symbols ahead of it. The global declared at the file top 1; the definition test as a
+// forceinline predicate 1; the clamp through PIN 1; a for loop 1; the previous level through two forceinline getters
+// (levels pointer, guarded read) 1; a 192-form screen of these with named parts and declaration orders: none flips.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {

@@ -642,6 +642,9 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // helper taking the voice pointer 3, taking the voice index 3, or with the index advanced in its own statement 3; a
 // const pointer to the per-type counts for the sum and the bound 3; the counts table without const 3. Harness: probe
 // locals (1-15 at the top, 1-8 in the loop) and the counts read through a pointer local move nothing.
+// Round 171 (lane 4, fast): channel and secondary indices as one chained NONE store 5 (the word stores swap); both
+// permutation pointers as one chained NULL store 5; the voice index declared after the bit-vector fills 9; the inner
+// bound on the left of the compare 5 (`cmp [ebp], si`); the type counter declared ahead of its for 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -3442,6 +3445,9 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // range declared at function top 78; sound_index declared before the pool 78; the class flag read into a bool
 // before the definition 78; a permuter run (45 tries) best 62 (a word voice index, which changes the NONE test).
 // On the 24 form: the range index named before the mode with the pointer in case 0 102; the flag bool 24.
+// Round 171 (lane 4, fast): with the range in case 0 (78): the class-flag result named before the range 103; the voice
+// read through the array at each use 163 (572 bytes); a const range pointer 78; the callback table in a local 82
+// (on the 24 form 28); 3-20 dead locals at the top, in case 0 or after the switch (diagnostic) 78 each.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
