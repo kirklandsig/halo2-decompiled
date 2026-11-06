@@ -132,6 +132,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 	return destination;
 }
 
+// MiniMax D (run 46): the start copied into a local before or after the guard gives retail's body
+// (28) but LTCG then passes the start in EDX and the matched caller 0xb5f10 differs at 6; not kept.
+// A second local for the count gives 51, the guard still testing the parameter gives 28 with the same
+// caller loss, and the scanner helper without __forceinline gives 56 here and 49 for 0xb61d0.
 // score 40 (was 40): the string pointer and the character counter are kept in different registers
 // here, and an extra register is pushed and restored around the copy loop. Tried: count before
 // start in the parameter list 40; the length in a named local after the sign tests 40;
@@ -360,6 +364,14 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // M366: Canonical success signed-byte/short/word/int64 storage, false default then true-default rejection:
 // 41/47/47/48/62/64/64/48. NOT kept: all regress; false defaults and true int64 also lose
 // the matched caller. Original Boolean body restored; saved-start/scan register split remains.
+// Round 86 (m3 lane 16, fast with 0xb5f10/0xb61d0): a plain `string` with `string + start`, all 12 parameter orders that keep
+// string before destination: STCD STDC SCTD SCDT SDTC SDCT 41 (104 bytes), TSCD TSDC TCSD CTSD 48 (93 bytes), CSTD CSDT 42 (104),
+// 0xb5f10 21-82 in all; the read `char const *text = string;` after the clamp in the same 12 orders 27 (0xb5f10 5-38; start
+// EDX, walk EDI where retail has start EDI, walk EDX). Nested tests, named length, early `source` 21 with 0xb5f10 matched
+// (entry and start EDI as retail, walk ECX, count EDX; one-use locals ahead of the compare, so not kept), with `unsigned long`
+// length 21, with an `end` local too 21; `long end` before the scan 49 (94 bytes); source after the compare 32; `start +=`
+// before the clamp 36; nested tests with the text read 27, named length with it 27, `length >= start + count` with it 28;
+// named length with `string + start` 28, with `start +=` 40.
 // Round 55 (m3 lane 15, fast with 0xb5f10/0xb61d0; one-file LTCG harness exact at 40 / 0xb5f10 0): count tested first with a text
 // local and `start += (long)text` 39 (start arrives unsaved in EDI, 0xb5f10 35); `long source = start; source += (long)string;` 28
 // (0xb5f10 6); `start = (long)&text[start]` from a text local 27 (0xb5f10 6); (start, count, string, destination) in every
@@ -376,6 +388,22 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // M380: Shared copier short/word/int64/uint64 size contracts with native/void return:
 // 39/39/56/56/39/39/56/56. NOT kept: narrow forms gain one and grow to 103 bytes;
 // wide forms regress at 112 bytes. Original helper, scanner and complete body restored.
+// AC559: Original signed-start admission/rejection, bool/byte/short/long: eight
+// at 40, 100/100; caller and all file companions unchanged. NOT kept: no match
+// or saved-start/scan repair; original sign guard, helpers and whole body restored.
+// Round 153 (fast with 0xb5f10/0xb61d0): the add as pointer arithmetic, `start = (long)(string + start)` 40 (same code). On round 48's 21
+// form (re-measured 21: start arrives in ECX and lives in EDI as retail, but the scan walks in ECX and counts in EDX, retail EDX/ECX, and
+// the one-use source sum precedes the compare): the length helper as `while (length < 0x1ff && *string++) length++` 21 (same code); the
+// helper walking a local declared after the counter 21 (0xb61d0 2); `count <= length - start` 35 (0xb5f10 35); a const length local 21.
+// Round 88 (m3 lane 16, fast with 0xb5f10/0xb61d0; [0xb5f10]): nested tests + named length + early `source` 21 [match] at 100 bytes,
+// aligned 13, masked 5, is the nearest shape (one-use locals, kept only on a match). On it: scan as `while` 21; scan with a named walk
+// 21; length declared at the top 21; named end after the scan 21; `start + string` 21; orders TCSD 21 [38], TSCD 21 [2], CTSD 25 [41],
+// CSTD 25 [41]. Source at the clamp 28 [6], reversed 28 [6], through a text read 27 [6], reversed 27 [6]; after the compare, reversed 32
+// [6]; in the call, reversed 28 [6]. Early text read used at the copy 40 [35] (aligned 10, masked 6: count ECX and walk EDX as retail, but
+// start arrives directly in EDI), with `start +=` 40 [35]; text read before the scan 48 (93 bytes) [84]; named end with `start +=` 40 [match]
+// (aligned 20, masked 12); clamp written `count + 1 > 0x200` 53 (90 bytes) [104]. Plain string: early source 49 (92 bytes) [6]; source at
+// clamp 41 (104) [35]; early text 41 (104) [35]; string kept through its own address: at clamp 40 (104) [6], text read 40 [6], reversed
+// 40 [6], early 49 (92) [6], `start +=` 40 [6]. Left: count and walk swapped on the match-keeping form, or start's entry register on the other.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -695,6 +723,14 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // Round 102: const position 10; the send count declared at the iteration top 10; position/written declarations
 // swapped 10; a direct completion return 67; direct builder and ordinary-failure returns 64; direct builder and
 // would-block returns 28; all three failure paths direct 64; an inline method declaration 10. Original body restored.
+// Round 215 (lane 3, fast): the would-block arm as a goto to a block after the shared return, `return true` 44 (208 bytes), ending
+// `result = true; return result` 44 (208), with `if (sent != -2) goto` first 44 (208), and falling into a single shared return 10; a
+// one-case switch on sent 10; `if (sent != -2)` with the restore in the else arm and an empty do-while 10, plus a goto 10, a dead
+// `written = 0` 10, a dead `sent = 0` 10, `__assume(!result)` 10, `result = result != false` 74 (226), `result = sent == -2` 74 (226);
+// the shared return as a label inside `if (sent != -2)` with the restore's goto to it 67, with an else 67, with the restore ahead of the
+// label 67 (the false result in a stack byte); that label with `return true` 72, plus `result = false` ahead of the test 72 (false folds,
+// EBP dropped). Every form that puts the false exit between the sentinel test and the restore adds a third false copy or folds or
+// spills the false result. Original body restored.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

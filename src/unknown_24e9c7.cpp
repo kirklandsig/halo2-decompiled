@@ -116,6 +116,7 @@ struct s_24e9c7_bounds
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
 // MiniMax b (11-04): no new form, no lower score; the result/kind/bitmap homes stay eight bytes above retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the geometric SSE schedule stays ours.
+// MiniMax D (run 46): no new form, no lower score.
 // score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
 // left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
 // xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
@@ -379,6 +380,20 @@ struct s_24e9c7_bounds
 // scale 134 (752 B; kind and bitmap homes become retail's, side at -0x10 below the result), scale only 154/134, unit perpendicular 144.
 // Result references lowered: temporary for up 141, named extent 125, with the side 142/143, on the helpers 134/134, assigned last 159;
 // up through a helper 134; `0.0f -` forms for up with the scalars 139 (738 B). Retail keeps the y coordinate in EDX and re-reads x: named y 194/186/207, both at each use 191 (684-705 B).
+// Round 217 (m3 lane 3, fast, base 125 at 743 B): across products as `size * (0.0f - forward_j)` scaled in place by a `real half` with back as `0.0f - across` 134 (739 B); side and back computed after the first corner's base copy 138 (740 B), and with points declared there too 138;
+// back from the across products (`half_width * (0.0f - across)`) 164 (764 B); half_width kept as a real from the division 125 (same positions, other masked code). Slot order unchanged in all: retail's across homes sit above the result.
+// M3 lane 11 r72 (fast, control 125, masked 92): side scalars set to `size * (0.0f - forward_j)` / `size * forward_i` and scaled in place by
+// the half width, side and back kept as points 138 (739; homes unchanged); the bitmap entry indexed at both uses 144 (746, masked 78); `up.x`
+// written `-(placement->forward_i * result)` 125 (same code); `across_i` written `-placement->forward_j * size` 125 (same code, still sunk); bitmap
+// at each use with `size * (0.0f - forward_j)` 138 (742, masked 79).
+// M397: Immutable actual upper/side/reverse records, masks 1/2/4/3/5/6/7,
+// then all with immutable scalar producers: 125/125/125/125/125/125/125/125. NOT kept: no exact or
+// eligible gain; original records, observations and complete body restored. Early spill/homes remain.
+// DH381: Native scalar-SSE dimension conversion/full-expression producers, height/width
+// modes 10/01/11/20/02/22/12/21: 241/241/241/230/229/251/233/242. NOT kept: all force frame alignment absent in retail and expand the body; original restored.
+// N396: Signed eight-byte selected ordinal/pixel-height/half-width storage, seven subsets
+// then full bitmap-handle graph: 220/125/220/148/235/148/235/238. NOT kept: no native narrow-domain
+// equality or gain; original body restored, early across spill and eight-byte-high scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

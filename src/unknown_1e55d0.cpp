@@ -67,6 +67,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// MiniMax I (11-05): no new form, no lower score. Retail takes its first argument in eax and keeps the
+// output in ebx and the physics pointer in edi, ours takes all three on the stack; retail's case-3
+// callee 0x1ec690 also takes the input in edi and the state in eax (src/stubs/bipeds.cpp, another lane).
 // MiniMax B (11-04): no new form, no lower score.
 // score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // Earlier: Aligned frame 0x94 agrees; move/input ownership, physics reloads and native velocity guard remain.
@@ -191,6 +194,21 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // 0x1ed340 where retail calls it; 0x2901e0 29, 0x1ed340 45, 0xb77d0 49, 0x1c4b00 133 stop matching, 0xfa100 holds); fast: state through a pointer to its parameter 319
 // at each use and read once 319, state written as the parameter at each use 319 (all same code); a named base pointer for the three position reads 319; with a named
 // component index too 319.
+// Round 138 (m3 lane 8; plain unless marked): the 0x1ec690 draft activated with its stub removed 349 again (0x2901e0 29, 0xb77d0 49,
+// 0x1c4b00 133, 0x1ed340 45 stop matching; restored), so the move/input roles (retail EBX/EDI, state kept on the stack) stay
+// BLOCKED-BY 0x1ec690. Fast: the shape test as an if/else on the compound result, each arm re-reading the current shape, 388 (1212);
+// `same = compound ? current == shape || inner == shape : current == shape` 335 (1204 bytes, masked 235 -> 110: retail's
+// `cmp eax, 0x17; jne` with the non-compound path out of line); the same ternary in the `if` 335; the `||` written in the `if` 319
+// (same code); the input flag as `(bool)((flags >> 5) & 1)` 325 (1180: retail's `shr ecx, 5; test cl, 1`), with the ternary 351.
+// Round 398: Existing aligned capsule shape/component/flag-word object-reference contracts,
+// seven subsets then ordinary inline: 319/319/319/319/319/319/319/530. NOT kept: forced forms tie;
+// ordinary expansion loses the native frame and regresses. Original helper, caller and full body restored.
+// F402: Four-byte movement/input/state pointer-home lexical identities, seven
+// subsets then the complete graph with the velocity identity, 319 each. NOT kept:
+// all canonicalize; original names, aligned helper and complete body restored.
+// M400: Complete original matrix/position/conversion output defaults, seven subsets and CRT,
+// 312/330/323/319/312/330/323/317. NOT kept: matrix default gives native move/input registers
+// and first +0x8f at 312, but grows to 1200/1164 bytes and gains only seven; all original producers restored.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

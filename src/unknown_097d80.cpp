@@ -53,6 +53,8 @@ struct c_aggregate : c_child
 
 
 // MiniMax B (11-04b): no new form, no lower score; the frame stays 0x8024 against retail's 0x8020 because the produced count keeps a slot of its own, and the two loop temps stay swapped; moving the produced count out of the loop scores 42/90.
+// MiniMax E (11-05): no new form, no lower score; the body is still byte-exact only with the file's /GL-
+// flag, which costs 0x97f60, 0x97fe0 and 0x980d0 their matches, and the LTCG frame keeps its extra slot.
 // score 31 (was 31): the release reads the allocator global again (allocator_globals_release, retail's
 // reload into eax then edi) at retail's length; the dispatch loop reads its child by index as the collection
 // loop does, which gives retail's request/child cursor registers (EBX/EBP), and declares both bounds in its
@@ -322,6 +324,9 @@ struct c_aggregate : c_child
 // M376: Fixed collection/dispatch/both equal-end and inclusive-last latches, then
 // actual child-array collection/dispatch bounds: 32/32/33/33/33/35/32/32. NOT kept: no match or qualifying gain;
 // original signed latches/body restored; escaped output and lowest loop homes remain.
+// Round 87 (m3 lane 16, fast): `produced` as a local of an inline collection helper returning the count or adding to a total by
+// reference, forceinline and plain, 146/146/146/146 (389 bytes, frame still 0x8024: an inlined local packs no better); the `get_info`
+// output as a local of a forceinline helper 31; both 146. Still BLOCKED by the build flag.
 // M379: Existing count-table outputs with deferred prefix conversion, next/current cells,
 // producer/aggregate zeros and before/inside dispatch admission: 184/167/209/227/155/152/183/186. NOT kept:
 // all regress and add a nonnative conversion pass; original independent outputs/body restored.
@@ -333,6 +338,19 @@ struct c_aggregate : c_child
 // bytes), plus the dispatch too 146. Still BLOCKED by the build flag: frame 0x8020 needs `produced` to share a slot.
 // M3 lane 9 r88 (fast): one output local shared by both calls, 4 names by first/middle/last declaration, 31 each (frame 0x8020 but the shared slot and the two spills exchange; retail keeps `result` apart at +0x1c and packs
 // produced with a spill at +0x10); produced declared then assigned 31, a one-element array 31, through an output pointer local 31, at the loop body top 141 (389). Still BLOCKED by the build flag.
+// B452: Shared escaped callback/information output with cleanup zero/NONE seeds,
+// before/after-array storage and completed query scopes: 78/74/78/74/78/74/78/74.
+// NOT kept: native 0x8020 frame recovers but extent grows; original outputs/body restored.
+// Round 137 (m3 lane 8): `int produced` with v5's output `int *` 31 (fast). Retail packs the address-taken produced
+// (lexical scope: its if block) with the later loop spills but keeps the cleanup's get_info output (whose scope overlaps
+// loop 3's spill) apart, which is scope-based packing; our LTCG build drops that scope for a pointer passed to a virtual
+// call. Diagnostic, reverted at once (flags are the user's decision): this body with 0x97f00 and 0x97f30 (both vtable
+// methods, standard convention) in a /GL- file of their own matches, and 0x97f60, 0x97fe0, 0x980d0 and 0x98120 stay matched
+// in this LTCG file (plain check of the seven; no full check run on it). Lead for the coordinator: that split.
+// Round 218 (m3 lane 3, fast): the query output declared at the cleanup block's scope 31; `dword const *source` in the
+// declaration and definition 31; the query output as a dword 31; produced at function scope, zeroed in the call's block
+// 42; a named destination block pointer for the collection call 31 (frame 0x8024 in each). Diagnostic, removed at once:
+// global optimization off around the body 441 (666 bytes, frame 0x804c). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

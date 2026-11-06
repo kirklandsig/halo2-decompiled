@@ -124,15 +124,21 @@ static __forceinline void function_12efb4(s_fog_accumulator const *arg_0, real *
 
 static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, real arg_2)
 {
+	real alpha = arg_1[3];
 	arg_2 = function_12efb1(arg_2);
+	if (alpha == 0.0f)
+		alpha = 1.0f;
 	arg_0->field_0.red += arg_1[0] * arg_2;
 	arg_0->field_0.green += arg_1[1] * arg_2;
 	arg_0->field_0.blue += arg_1[2] * arg_2;
-	arg_0->field_c += (arg_1[3] == 0.0f ? 1.0f : arg_1[3]) * arg_2;
+	arg_0->field_c += alpha * arg_2;
 	arg_0->field_10 += arg_2;
 	arg_0->field_14 *= 1.0f - arg_2;
 }
 
+// score 607 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
+// MiniMax E (11-05): no new form, no lower score; the palette and accumulator carriers are as the earlier
+// rounds left them, and retail's `mulss scalar, t` product form has no legal spelling here.
 // score 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier: Frame 0x4820 and metadata cursor agree; native palette width and accumulator carriers differ.
 // Frame, clear prefix and metadata cursor agree; palette/cluster carriers and accumulator scheduling remain.
@@ -424,6 +430,23 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // distance, remaining, blue 721 (245); weight parameter first, after the accumulator, after the colour 616 each (same code);
 // the scalars `real const` 616 (same), `real const &` 699 (3828, 241), with field order 723 (223) and 694 (251); a named clamped
 // weight in field order 724 (223), in the old order 617 (247). Body unchanged.
+// B452: Complete scalar inputs in reused scalar/merge/color helpers, seven subsets then
+// all with scalar publication: fast 751/658/770/717/809/738/780/769. NOT kept: no gain;
+// palette/SIMD homes remain, some frames grow; all original helper contracts/body restored.
+// Round 137 (m3 lane 8, fast; aligned = difflib count, base 497): retail keeps NONE in EAX from the slot test to the weighted
+// tag test deep in the palette arm (`cmp edi, eax` there, ours `cmp edi, -1`) and on into the fallback store, so -1 outranks the
+// 0x130f60 result for EAX. The 0xd4 tag in a named two-use local 723 (3850 bytes, its read hoists above the 0xa4 test); the
+// result declared first in the loop body and assigned at the call 616 (same code); both weight tests through the 0x88
+// pointer 687 (3830, aligned 792); the clamp helper as a result with two independent tests 778 (3865); the short slot with
+// the source-index store re-reading the byte 689 (3837).
+// Round 218 (m3 lane 3; fast, the kept form plain): the four-channel helper's alpha default as a named if-form,
+// read before the weight clamp (retail loads the channel ahead of the clamp), 607 plain, kept; the same if-form after
+// the clamp 609; as a named ternary 720; alpha and weight ahead of the colour terms 609, on the kept form 609; the
+// channels as by-value parameters 757 (3855 bytes, frame grows); the clamp's upper test first 622; the missing-record
+// exit as an early goto 616; on the kept form: the merge helper's weight read ahead of the clamp 607 (same code), the
+// tag arm's range clamp read from the field at each use 610 (aligned 236 -> 230), the three-scalar helper in retail's
+// scheduled order (red, height, green, weight, blue, intensity, distance, remaining) 718 (two more instructions,
+// aligned 210), its red term ahead of weight and remaining 607 (aligned 224).
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

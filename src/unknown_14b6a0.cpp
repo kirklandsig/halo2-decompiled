@@ -118,8 +118,6 @@ void function_14bac0()
 	s_record_pool_iterator *iterator_reference = &iterator;
 	players_pending_creation_process(iterator_reference);
 }
-// MiniMax B (11-04): no new form, no lower score.
-// MiniMax S (11-01): no new form, no lower score.
 // score 222 (was 222): Frame 0x50 versus 0x3c, exchanged player/scenario spills, point/recipient overlap and readiness homes remain.
 // Round 64 (fast; masked aligned count in brackets, base 222 [87]; ranks by structure where the positional score hides it): stamp through
 // `index`/`stamp` locals and the relocation point used directly 244 [78]; on that: second loop on a block-local datum iterator through
@@ -484,6 +482,35 @@ void function_14bac0()
 // N383: Existing typed player iterator at the first traversal, selected-player type, native
 // result-tested recipients and early uninitialized iterator declaration: 222/222/228/228/222/222/228/228.
 // NOT kept: ties/regressions; original fields, points, iterators, includes and full body restored.
+// M3 lane 11 r72 (fast, control 222, masked 85; retail frame 0x3c: flag byte +0x13, player +0x14, scenario/radius +0x18, height +0x1c, relocation
+// point/destination +0x20, offset/probe points/centre/second iterator +0x2c, first iterator/alternate +0x3c): second loop on a block-local
+// s_data_datum_iterator through the existing data_datum_iterator_next 228 (frame 0x50, masked 68, readiness bytes in retail's homes); with the unit
+// read from the player at both calls 264 (frame 0x54); its iterator declared at the alternate block's top 228 (same code); the 0x6b380 form with
+// the relocation point used directly (retail ignores 0xb9dd0's return) 237 (1052 bytes, frame 0x44, masked 61: relocation point shares the
+// destination's home, every home 4 bytes under retail's, the centre shares the first iterator's slot where retail gives it the offset's); that with
+// the unit read at both calls 259 (1048, frame 0x48, height at retail's +0x1c); with the centre declared first 259 (same code).
+// Y607: Actual marker-pointer field mutable/readonly pointers and references, original/native
+// result-tested recipients: 222/222/222/222/228/228/228/228. NOT kept: extra field aliases
+// do not match; original observations, native records, both traversals and full body restored.
+// M399: Complete original accepted-point/bounds/relocation-output zero defaults, subsets 1..7:
+// 279/267/313/258/312/293/332; complete CRT point defaults 319. NOT kept: every form grows and regresses.
+// Original entire body restored; frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
+// M403: Immutable request/paired probe points/paired marker ordinals, seven subsets
+// then immutable selected unit: eight at 222/1036. NOT kept: native frame and
+// point/recipient/readiness homes unchanged; original complete body restored.
+// N390: Actual second-phase state-count admission, positive/complementary bool/byte/short/long,
+// 222/222/222/222/222/222/222/222. NOT kept: no exact phase-result/lifetime form;
+// original body restored; native frame, point/recipient overlap and readiness homes remain.
+// MiniMax B (11-04): no new form, no lower score.
+// MiniMax S (11-01): no new form, no lower score.
+// M3 lane 15 r60 (fast): the first loop on the 12-byte iterator through data_iterator_next_calling with the second on a
+// block-local datum iterator through data_datum_iterator_next 228 (frame 0x50; with the dead outer iterator removed 228, frame
+// 0x4c); with the relocation point used directly 237 (1052 bytes, frame 0x40: have_destination at +0x13 and have_alternate in BL
+// as retail, but the first iterator's data cached in EDI where retail keeps the scenario, and the centre in its own slot); the
+// first iterator declared at the request block's top 237 (same code); the centre, height and radius in their own block with the
+// unit read from the player at both calls 262 (1048, frame 0x44). Retail's first iterator is the 16-byte datum one (lane 10
+// r13), so the first-loop change is not retail's. On the original body: the relocation point used directly alone 245 (1048);
+// `point3f alternate, destination;` 222 (same code).
 // @retail 0x14b6a0
 void function_14b6a0()
 {

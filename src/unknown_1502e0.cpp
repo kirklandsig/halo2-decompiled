@@ -112,7 +112,7 @@ void function_152340(void);
 bool __stdcall function_e5470(long player_index, long object_index);
 long __stdcall function_e5bc0(long unit_index, long object_index, long previous_index);
 bool function_1df560(short team_a, short team_b);
-bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index);
+bool function_151320(long player_index, s_target_candidate *candidate, s_target_candidate *best);
 
 /* the object fields 0x1515e0 reads */
 struct s_1515e0_object
@@ -149,7 +149,7 @@ void function_1515e0(long object_index, long player_index, s_target_candidate *b
 			memset(&candidate, 0, sizeof(candidate));
 			candidate.priority = 2;
 			candidate.object_index = object_index;
-			function_151320(&candidate, *best_reference, *player_reference);
+			function_151320(*player_reference, &candidate, *best_reference);
 		}
 	}
 }
@@ -179,167 +179,62 @@ static inline long game_seconds_to_ticks_round(real seconds)
 	return result;
 }
 
-/* a flag field read as word bits: retail reads these flags with a load, a
-   shift and a test of the low bit */
-struct s_flag_word_bits
-{
-	word bit0 : 1;
-	word bit1 : 1;
-	word bit2 : 1;
-	word bit3 : 1;
-	word bit4 : 1;
-	word bit5 : 1;
-	word bit6 : 1;
-	word bit7 : 1;
-	word bit8 : 1;
-	word bit9 : 1;
-	word bit10 : 1;
-	word bit11 : 1;
-	word bit12 : 1;
-	word bit13 : 1;
-	word bit14 : 1;
-	word bit15 : 1;
-};
-
-// score 114 (was 114): the walk found no behaviour difference. Retail tests flag 4 as `test dl, 0x10` on the
-// header's flag byte; that faithful `header->flags & 0x10` (with the parameters read directly) gives 124 here,
-// because with the early returns our link inlines 0x191fab (src/unknown_1916dc.cpp) at the straight-line tail
-// call (364 bytes), where retail calls it. Nesting the body under a `proceed` flag instead of the early returns
-// keeps the call out of line (105) but is a flag set inside a test, so it isn't kept; `/Ob1` on unknown_1916dc.cpp
-// (106) is another file's flags. The word-bitfield view stays.
-// Still differing: retail forms the player before it loads g_4e0300 (ours hoists that load above the pushes, so
-// ecx/edx and the first lines are off by one register), loads the 0x130 float into xmm0 before the cvtsi2ss (ours
-// folds it into the mulss), holds the ticks in edx (ours eax), and tests kind == 3 as `movsx eax, si; sub eax, 3; je`
-// with the 0 and 1 stores on branches (ours branches on `cmp ax, 3`; the ternary and every if/else spelling give
-// `setne` instead, 106). Tried: object/player through pointer locals (same), header first (128), header by
-// tail_object_get (100), flag test before the ticks (108), the float in a local first (same), `seconds * field` or
-// `(real)field * seconds` in the helper (same), an outer switch with `goto` into the shared 0x152000 call (jump
-// table, 96 at 340 bytes), switch over 2/5/3 under `kind != 1` (binary tree, 109), `kind - 3 == 0` (102).
-// Permuter (25 min on r654): best 86, only with a volatile header pointer; not kept.
-// F352: Native header-byte mask producer with both existing stack aliases retained,
-// bool/byte/short/long default-false arms 124/124/129/128; complete true/false
-// arms 123/123/126/125. All restored; player-base/root scheduling, ticks/effect
-// homes and the expanded tail remain. Original word-bitfield view retained.
-// N341: direct unavailable producer 122; call-result admission flat/nontrivial-kind scopes 98/87;
-// short ticks 114, full-width kind/effect 112/113, nested tick admission and sole exit 114 each.
-// NOT kept: conditional success flags remain unmatched; width-only gains are at most two.
-// Player/object load scheduling, native flag mask, effect dispatch and tail inlining remain.
-// Round 51 (m3 lane 15): the two parameter-address locals dropped, parameters read directly 114 (same code, kept);
-// on that: object through tail_object_get 120; `ticks <= 0 || unavailable` early return 114; player looked up after
-// the ticks 120; the flag tested in the ticks condition (no `unavailable`) 122.
-// DH319: Existing rounding producer duration/rate accumulators and named-rate
-// products 114/114/114/114; the same with a short return 135/135/135/135.
-// Original helper restored; player/root scheduling, duration XMM ownership,
-// effect dispatch and expanded tail remain.
-// Native definition/object/both field records 114/114/114; complete-definition
-// pointer/reference rounding inputs 114/114; tick-result output pointer/reference
-// 114/114; result-first named scalar homes 114. All restored; player/root,
-// duration, tick/effect homes and expanded tail remain.
-// AC512: Readonly player/header/object-tag input contracts, seven subsets
-// 114 each; complete readonly graph with native flag-byte admission 124.
-// All restored; player/root allocation, tick/effect homes and expanded tail remain.
-// B397: Duration-field pointer/reference inputs to the existing rounding producer,
-// direct/duration/rate/named-rate graphs 114/114/114/114/114/114/114/114. All restored;
-// scalar frame agrees, player/root ownership, separate SSE input and expanded tail remain.
-// P321: Dispatch 2/5/other and 5/2/other, early-return/sole-exit/Boolean-result/short-result:
-// 98/98/98/98/98/98/98/98. NOT kept: native dispatch tests 1/2/5; reordered
-// arms and retained success carriers do not match. Original body restored.
-// Y567: Complementary available bool/byte/short/long with default-true
-// then exhaustive arms: 116/116/126/122/125/125/131/130. NOT kept: no byte match; original flag
-// producer and body restored, player/root ownership and tail expansion remain.
-// N370: Actual player/header/object-tag reference ownership, seven subsets and native byte admission:
-// 114/114/114/114/114/114/114/124. NOT kept: no equality; original complete body restored.
-// Player/root ownership, tick/effect carriers and expanded notification tail remain.
-// F377: Complete byte/word/long/dword success results, original/native-byte flag pairs:
-// 87/106/96/81/90/78/90/78. NOT kept: unmatched result flags; native-byte long/dword
-// reach 340 bytes. Original body restored; player/root/tick homes remain.
-// B426: Actual masked player/object slot and byte-offset components, separate/paired,
-// then word slot and unsigned paired offsets: 114/114/114/114/114/114/123/114. Seven tie at 366/340; word slot regresses;
-// original lookups and complete body restored. Player/root and tail expansion remain.
-// P325: Caller tick/kind/effect entry declaration subsets 1..7 all tie 114;
-// the complete graph with the later definition-index declaration also ties 114.
-// Every initializer stays at its original producer; original complete body and rounding
-// helper restored. Player/root, tick/effect homes and expanded notification tail remain.
-// F382: Actual byte-owned header flag, test-produced bool/byte/short/long
-// 124/124/129/128; direct producers 113/113/113/113 at 354 bytes.
-// NOT kept: at most one point, and the expanded notification tail remains. Original word view and body restored.
-// N372: Existing rounding forced/unhinted; complete admission/notification scopes with
-// ordinary/forced/unhinted producer, then the one-use object receiver removed: 114 each.
-// Original producer/body restored; player/root, scalar homes and expanded tail remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
 	s_tail_player *player = tail_player_get(player_index);
 	s_tail_object_header *header = (s_tail_object_header *)g_4e0300->data + (object_index & 0xffff);
-	byte *object = (byte *)header->object;
+	byte *object = (byte *)tail_object_get(object_index);
 	byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
 	long ticks = game_seconds_to_ticks_round(*(real *)(definition + 0x130));
 	bool unavailable = false;
-	if (TEST_FIELD_BIT(((s_flag_word_bits *)&header->flags)->bit4))
+	if (header->flags & 0x10)
 		unavailable = true;
 	if ((short)ticks > 0 && !unavailable)
 	{
+		bool proceed = true;
 		short kind = *(short *)(definition + 0x12c);
 		if (kind != 1)
 		{
 			if (kind == 2)
 			{
-				if (!function_d6af0(player->unit_index)) return;
-				player_speed_request_14ea20(player_index);
+				proceed = function_d6af0(player->unit_index);
+				if (proceed) player_speed_request_14ea20(player_index);
 			}
 			else if (kind == 5)
 			{
-				if (!function_d6790(player->unit_index)) return;
-				player_speed_request_14ec00(player_index);
+				proceed = function_d6790(player->unit_index);
+				if (proceed) player_speed_request_14ec00(player_index);
 			}
 			else
 			{
-				short effect = kind == 3 ? 0 : 1;
-				if (!function_152000(player_index, effect, (short)ticks)) return;
-				if (effect == 0) player_speed_request_14eb10(player_index);
+				/* only kinds 3 and 4 remain here */
+				short effect;
+				switch (kind)
+				{
+				case 3: effect = 0; break;
+				case 4: effect = 1; break;
+				default: __assume(0);
+				}
+				proceed = function_152000(player_index, effect, (short)ticks);
+				if (proceed && effect == 0) player_speed_request_14eb10(player_index);
 			}
 		}
-		long definition_index = *(long *)tail_object_get(object_index);
-		function_191fab(definition_index, player->local_index);
-		function_a89c0(player->unit_index, definition_index);
-		if (player->local_index != NONE) function_f8110(object_index);
-		function_b8540(object_index);
+		if (proceed)
+		{
+			long definition_index = *(long *)tail_object_get(object_index);
+			function_191fab(definition_index, player->local_index);
+			function_a89c0(player->unit_index, definition_index);
+			if (player->local_index != NONE) function_f8110(object_index);
+			function_b8540(object_index);
+		}
 	}
 }
 
-// MiniMax H (11-04): no new form, no lower score; the equal-priority branch still picks the other epilogue.
-// score 1 (was 1): only the jne of the equal-priority test differs: retail jumps to the epilogue after the copy
-// block (al still holds the initial false) and keeps a separate `xor al, al` + epilogue for the not-closer
-// arm; ours jumps to the epilogue after that `xor`. Tried (fast, base 1): `return false;` in the else arm
-// (67, the register assignment changes from the prologue on), `return result;` there (67), `!(a < b)` test first
-// (12), `a >= b` test first (13), copy arm's stores swapped (4), `return false` as an early exit before the
-// copy label (67), copy label in the same arm with `return result` (69).
-// Permuter (25 min on r654, about 1030 variants): nothing below 1.
-// M337: Initial winner predicate with guarded/direct equality, equality-first result, and
-// priority-range result, bool/byte carriers: 74/104, 112/102, 81/79, 82/91.
-// All restored; the equal-priority jne still chooses the other existing epilogue.
-// P294: whole-record memcpy 1;
-// whole-record memmove 81;
-// all named fields 37;
-// readonly candidate 1;
-// readonly memcpy 1;
-// readonly memmove 81;
-// readonly named fields 37;
-// memcpy then success 4.
-// Original executable body restored;
-// no exact match from these ownership forms.
-// Round 103: equality as an else-if 1; nested <=/== priority tests 12; an explicit not-equal
-// else-if to done 1; separate distance-failure/copy/done labels 75; split result declaration 1;
-// result declared last 1; byte result 32; a named closer flag 1. Original body restored.
-// P323: equality-owned point/vector/point+vector/distance/point+distance/
-// vector+distance/all declarations 1/1/1/1/1/1/1; all declarations at their
-// computation phase 1. Native 0x24 frame, 259 bytes and the wrong
-// lower-priority jump to the other epilogue remain. Original body restored.
 // @retail 0x151320
-bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
+bool function_151320(long player_index, s_target_candidate *candidate, s_target_candidate *best)
 {
 	bool result = false;
-	long const *player_reference = &player_index;
 	point3f player_position;
 	point3f best_position;
 	point3f candidate_position;
@@ -349,27 +244,22 @@ bool function_151320(s_target_candidate *candidate, s_target_candidate *best, lo
 	real best_distance;
 
 	if (candidate->priority > best->priority)
-		goto copy;
-	if (candidate->priority == best->priority)
 	{
-		function_b9dd0(tail_player_get(*player_reference)->unit_index, &player_position);
+		result = true;
+	}
+	else if (candidate->priority == best->priority)
+	{
+		function_b9dd0(tail_player_get(player_index)->unit_index, &player_position);
 		function_b9dd0(best->object_index, &best_position);
 		function_b9dd0(candidate->object_index, &candidate_position);
 		vector3d_from_points3d(&player_position, &candidate_position, &to_candidate);
 		vector3d_from_points3d(&player_position, &best_position, &to_best);
 		candidate_distance = to_candidate.j * to_candidate.j + to_candidate.i * to_candidate.i + to_candidate.k * to_candidate.k;
 		best_distance = length_sq3f(&to_best);
-		if (candidate_distance < best_distance)
-		{
-copy:
-			result = true;
-			*best = *candidate;
-		}
-		else
-		{
-			result = false;
-		}
+		result = candidate_distance < best_distance;
 	}
+	if (result)
+		*best = *candidate;
 	return result;
 }
 
@@ -479,80 +369,21 @@ struct s_tail_player_identifier
 	byte identifier[12];
 };
 
-// score 17 (was 66): delayed options acquisition restores the native late register saves;
-// player/scenario carriers and selector/entry scheduling remain at 168 bytes.
-// Earlier at 22: the complete comparison loop and both return epilogues agreed.
-// Earlier at 31: logic walk against retail found no behaviour difference (same player identifier
-// at +4, scenario entry 0 value 0x2c == 1 selects the second traits set, 16 options players of 0xe4
-// bytes at +0x2dc, 12-byte identifier compare at +0xe, traits at +0xac + 0x1c * set). Still differs:
-// retail keeps the options pointer in ebx, the identifier in eax and the compare result in edx; ours
-// puts the identifier in ebx, the options pointer in edx and the result in eax, and loads
-// g_4e0350/g_4e6948 at different points. Tried: identifier hoisted/late (67), index form
-// players[i] (66-67), do-while (31), memcmp() == 0 without the result variable (80), != 0 (80),
-// scenario read without a local (67), flag as index vs ?: (43), find-then-test form (31).
-// Permuter (25 min on r654): nothing below 31 (its renderer drops the `i++, entry++` increment, so it started
-// from the indexed form).
-// Round 45 (m3 lane 2, fast, base 31): retail loads the player first, the scenario next and g_4e6948 only after the
-// scenario test (beside `push ebx`); the entry pointer assigned after the alternate test 68 (158 bytes, the loop's
-// entry jump over the padding goes), that with the entry declared first 68; `difference` declared at function scope
-// 31 (same code); the player declared before the entry 32; `alternate` declared first 67 (158 bytes).
-// M337: Native range-end scan with early/delayed options and direct/common result
-// [53, 45, 55, 46]; plain countdown scan with pointer step in the body [38, 30, 58, 26].
-// NOT kept: 30 gains one; 26 uses a countdown unlike retail and depends on combined forms.
-// Original ordinal scan restored; pointer/comparison roles and delayed saves remain.
-// N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
-// and the CRT int comparison result: all eight 31. Original body restored; options
-// acquisition, delayed saves and comparison register ownership still differ.
-// F357: Native scenario count/list/selector operand lifetimes, seven subsets
-// 31/31/31/31/31/31/31; complete operands with direct truth producer 68.
-// Existing player/object lookup inline, forced and unhinted policies: eight 31.
-// NOT kept: no gain; original observations, ordinal scan and full comparison restored.
-// F353: Complete player record with native entry/options-root/traits-result/alternate-truth lifetimes
-// 32/68/56/56/32/67/67/56.
-// NOT kept: no gain; original full body/helpers restored.
-// Y559: Complementary first-set storage bool/byte/short/long, branch-cleared then
-// test-produced: 32/32/68/67/67/67/68/67. NOT kept: no byte match; native
-// delayed saves and identifier/options/comparison allocation remain.
-// N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
-// and the CRT int comparison result: all eight 31. Original body restored; options
-// acquisition, delayed saves and comparison register ownership still differ.
-// M348: Comparison transport unsigned-long/short/word/signed-byte/byte 31/67/67/67/67;
-// equality carrier 31; negative continuation/explicit mismatch arms 32/32.
-// NOT kept: no byte match; native options/identifier/comparison homes remain.
-// M350: Immutable player/scenario/full-comparison storage, seven subsets, then
-// fixed read-only player identity: 31 each. Original lookup phases and upward
-// scan restored; options acquisition and identifier/comparison homes remain.
-// DH340: Sole-result break/goto with four zero lifetimes 32/32/24/24 each;
-// body pointer step alone 32; original comma step with sole result 22 (NOT kept).
-// Plain counted while with sole result 22 (plain confirmed); while alone 31. Native
-// identifier/options/comparison homes and both epilogues; scratch word and 168-byte extent agree.
-// DH349: On retained sole-result graph, player-first 22; late entry 17 (plain confirmed);
-// result/alternate first 30/34; direct truth 28; full player 22; comparison scope 22;
-// indexed root 27. Retain only the single retail-shaped delayed entry acquisition.
-// DH353: Positive selector byte/char/int 17/17/30; complete pointer conditional
-// and result arms 23/23; count-owned comparison and count arms 67/67; signed-byte
-// direct index 26. NOT kept: no gain or match; original selector and sole result restored.
-// DH355: Scenario last-use scope 17; count-owned assignment, complete count arms,
-// failure-first arms and conditional producer, unscoped/scoped: 17/67/67/67/67/67/67/67.
-// NOT kept: no match; selector forms shrink the native extent; original body restored.
-// DH357: Actual matched-entry result before traits publication, scan/entry-owned
-// defaults, break/sole-exit transfers and ordinary/conditional results: 60/62/60/62
-// in each lifetime. NOT kept: no byte match; original complete body restored.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
 	s_tail_player_identifier *player = (s_tail_player_identifier *)tail_player_get(player_index);
-	s_tail_scenario *scenario = (s_tail_scenario *)g_4e0350;
 	bool alternate = false;
 
-	if (scenario->entry_count > 0 && scenario->entries[0].value2c == 1)
+	if (((s_tail_scenario *)g_4e0350)->entry_count > 0 && ((s_tail_scenario *)g_4e0350)->entries[0].value2c == 1)
 		alternate = true;
+	long i = 0;
+	byte const *identifier = player->identifier;
 	s_tail_options_player *entry = ((s_tail_options *)g_4e6948)->players;
 	s_tail_traits *result = 0;
-	long i = 0;
 	while (i < 16)
 	{
-		long difference = memcmp(entry->identifier, player->identifier, sizeof(entry->identifier));
+		long difference = memcmp(entry->identifier, identifier, sizeof(entry->identifier));
 
 		if (difference == 0)
 		{
@@ -807,7 +638,7 @@ void function_1516c0(long object_index, long player_index, s_target_candidate *b
 		memset(&candidate, 0, sizeof(candidate));
 		candidate.priority = 3;
 		candidate.object_index = object_index;
-		function_151320(&candidate, *best_reference, *player_reference);
+		function_151320(*player_reference, &candidate, *best_reference);
 	}
 }
 
@@ -872,7 +703,7 @@ void function_151780(long object_index, long player_index, s_target_candidate *b
 			candidate.object_index = object_index;
 			candidate.flags = (byte)flags;
 			candidate.priority = special ? 7 : 1;
-			function_151320(&candidate, *best_reference, *player_reference);
+			function_151320(*player_reference, &candidate, *best_reference);
 		}
 	}
 }
@@ -1032,7 +863,7 @@ static __forceinline void player_object_target_candidate_evaluate(long object_in
 					}
 					candidate.object_index = target_index;
 					*(short *)&candidate.flags = (short)seat_index;
-					function_151320(&candidate, *best_reference, *player_reference);
+					function_151320(*player_reference, &candidate, *best_reference);
 				}
 			}
 		}
@@ -1051,7 +882,7 @@ static __forceinline void player_object_target_candidate_evaluate(long object_in
 					memset(&candidate, 0, sizeof(candidate));
 					candidate.priority = 8;
 					candidate.object_index = object_index;
-					function_151320(&candidate, *best_reference, *player_reference);
+					function_151320(*player_reference, &candidate, *best_reference);
 				}
 			}
 		}
@@ -1159,6 +990,9 @@ struct s_tail_transfer_traits
 // weapon/grouped-rejection and age/grouped-rejection: 153/169/151/153/180/153/153/180.
 // NOT kept: two-point best gain below the gate; other forms tie or regress. Original
 // scan, observations and whole body restored; traits/unit/NONE homes and reloads remain.
+// Round 73 (m3 lane 11, fast): unit_index read before the identifier scan 193; `!memcmp(...)` without the
+// difference local 240 (804 bytes); `traits[alternate]` 196 (809 bytes); primary/secondary/other declared before
+// the unit_index read 159; selection arms swapped 153.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1270,7 +1104,7 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 	return ((s_player_weapon_definition *)g_4e3b44[weapon->definition_index & 0xffff].bytes)->flags;
 }
 
-// score 284 (was 322):
+// score 284 (was 284):
 // The logic matches retail block by block (reads, flag bits 3/4/22/23, stores, count >= 2 pass); only the
 // register allocation differs. Retail keeps g_4e0300 in edi for the whole function and loads g_4e3b44 lazily
 // into ecx, with the player in ebp; this build reloads g_4e0300 every iteration of the first loop and hoists
@@ -1323,6 +1157,11 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // N384: Existing whole-metadata pointer/reference result, mutable/read-only and
 // captured/direct object input: eight 284. No field-address result is introduced, but
 // native pool/player/tag homes remain. Original getter and entire body restored.
+// Round 73 (m3 lane 11, fast): held/pending as a NONE default then a slot test 286; positive ternaries 282; one
+// unit_index local for the three lookups 300 (992 bytes); a short hand counter 345 (1053 bytes); the flags helper
+// as plain inline 284. Diagnostics: a char store through modes between the held and pending lookups gives retail's
+// first loop (g_4e0300 hoisted, both lookups redone, no loop pad, lazy g_4e3b44) at 308; held/pending stores
+// through element pointers do not (292).
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1414,6 +1253,8 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 
 // MiniMax A (11-04, run 45): no new form, no lower score (17); the unit index still swaps registers with the object table.
 // MiniMax H (11-04): no new form, no lower score; the unit index and the object table still swap registers.
+// MiniMax E (11-05): no new form, no lower score; the unit index still lands in esi where retail keeps it in
+// edi, and the object table pointer lands in edi where retail keeps esi.
 // score 17 (was 17):
 // Logic and structure match; only the callee-saved registers differ: retail keeps player->unit_index in
 // edi and the object data pointer in esi, this build uses esi and edi. Tried (scores): unit_index in a local
@@ -1555,6 +1396,10 @@ void function_150820(dword *bits, bool local_only)
 // DH372: Isolated mode-success/command-success/actual-command exits, then both success-exit
 // pairs 90/86/110/112/110; sole-return common success in bool/byte/long 63/73/91.
 // NOT kept: no byte match or gain; original body restored, saved player/hand roles remain.
+// Round 73 (m3 lane 11, fast): weapon test folded into the slot test as 0x151b80 has it 43; mode arms swapped 72
+// (219 bytes); modes declared before the slot 43; weapon index declared with the hand 43; result set before the
+// a8f80 call 71 (215 bytes). A dword load/store probe at entry, after the result, before or after the hand and
+// before the unit lookup (87/84/81/79) never moves the player/unit-index homes: the swap is not a scratch rotation.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1731,7 +1576,12 @@ void __stdcall function_167e86(long user_index, long hand);
 void __stdcall player_set_local_user(long player_index, long user_index);
 void __stdcall function_14f270(long player_index, long controller_index);
 
-// score 285 (was 587): frame 0xe4, 78 bytes short; mask/index homes, release expansion and late binding homes remain.
+// score 12 (was 12): retail's length (1992 bytes). The unbind arm calls player_set_local_user(index, NONE) and
+// function_14f270(index, NONE), which LTCG expands as retail does, and 0x1682bf (inline on its definition) now
+// expands inside it. Left: in the binding pass retail tests local_index (`cmp word ptr [esi+0x28], -1`) before
+// the address copy and pushes both player_set_local_user arguments before the machine_user store; ours tests
+// after the copy and stores between the pushes.
+// Earlier 285 (was 587): frame 0xe4, 78 bytes short; mask/index homes, release expansion and late binding homes remain.
 // The existing controller iterator restores the native memory cursor and pool reload (plain 285).
 // Earlier 587 (was 628): the unbind in the second-to-last loop follows retail's expansion of 0x14f190/0x14f270's
 // NONE arms (through freshly fetched player pointers), the machine fields come from s_player_census_counts, the
@@ -1806,6 +1656,15 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // N384: Actual controller/user/option array role names, seven subsets and alternate complete
 // names: 285 each. Original names and full body restored; mask/index homes and missing
 // release expansion remain. NOT kept: no byte match or gain.
+// Round 73 (m3 lane 11, fast): unbind through the two existing calls 285 (same code as the hand-written arms, kept);
+// inline on 0x1682bf 12 (kept). On 12: the bind call passing the stored machine_user field, with/without the user
+// local 37/37; the local_index test taken into a bool before the copy 57; the machine_index store in both arms of
+// that test 56; machine_controller stored before machine_user 13; the user local read before the copy 27; a 600 s
+// permuter run (44 tries) none below 12. Renaming the per-player index local never moved its frame slot.
+// Round 69 (m3 lane 14, fast): copy and machine_index in both arms of the local_index test 82 (2036 bytes, no head
+// hoisting), bound arm first 105 (2035 bytes); no user local 12 (same code); the bind body under `users[index] != NONE`
+// instead of `continue` 13. Diagnostics: the copy as a byte-array aggregate assignment 12 (same code), as dword+word 55;
+// the test in a bool before the copy 57 (the cmp moves ahead of the copy as in retail, but `sete`/`test` remain).
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
@@ -1930,22 +1789,8 @@ void __stdcall function_152f80(void *address, void *option_data)
         long index = (short)state.iterator.datum_index;
         if (state.player->local_index != NONE && (state.player->local_index != users[index] || state.player->controller_index != controllers[index]))
         {
-            s_tail_player *unbound = tail_player_get(state.iterator.datum_index);
-            if (unbound->local_index != NONE)
-            {
-                player_control_set_unit(unbound->local_index, NONE);
-                function_1682bf(NONE, unbound->local_index, NONE);
-                ((s_player_census_counts *)g_4e8c20)->users[unbound->local_index] = NONE;
-                ((s_player_census_counts *)g_4e8c20)->user_count--;
-                unbound->local_index = NONE;
-            }
-            unbound = tail_player_get(state.iterator.datum_index);
-            if (unbound->controller_index != NONE)
-            {
-                ((s_player_census_counts *)g_4e8c20)->controllers[unbound->controller_index] = NONE;
-                ((s_player_census_counts *)g_4e8c20)->controller_count--;
-                unbound->controller_index = NONE;
-            }
+            player_set_local_user(state.iterator.datum_index, NONE);
+            function_14f270(state.iterator.datum_index, NONE);
             state.player->machine_user = NONE;
             state.player->machine_controller = NONE;
         }
@@ -2253,11 +2098,11 @@ void function_15e8e0(long object_index, long player_index);
 void __stdcall function_191ec4(long definition_index, long player_index, short count);
 void __stdcall function_191e51(long definition_index, long player_index);
 
-// score 130 (was 202): the object index is masked once into a local (object_slot) used by both the object
+// score 130 (was 130): the object index is masked once into a local (object_slot) used by both the object
 // lookup and its type, so the scaled header offset stays in a register across the calls as retail's EBP does;
 // the parent index is read in place instead of through a local, which leaves the object pointer in ESI and the
 // parent index in EAX as retail has them. The player lookup and the object header setup now match retail.
-// score 202 (was 202): Frame 0x28 agrees; player data uses ECX versus EDX,
+// Earlier 202: Frame 0x28 agrees; player data uses ECX versus EDX,
 // the object uses EBP versus ESI and the scaled header offset spills instead of staying in EBP.
 // Earlier: the prologue's registers differ: retail keeps the player base in ebx
 // and the object index*12 in ebp, ours gives ebp to the player and spills the index; the
@@ -2314,6 +2159,11 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // Y597: Complete single void exit, parent-admission bool/byte/short/long,
 // direct/complete named squared-distance and radius nodes: 202/202/211/210/202/202/211/210.
 // NOT kept: no gain; all original exits, observations and complete body restored.
+// Round 73 (m3 lane 11, fast): object_slot as word, cast or masked 145/145 (714 bytes; EBP then holds retail's
+// scaled offset but movzx replaces mov/and); declaration orders slot-unit-object 144, slot-object-unit 163, slot at
+// entry 248, slot before the unit test 244; the shared `object_index & 0xffff` form 209 (714 bytes; retail's EBP
+// offset, but the unit load sinks below the object's, data stays in ECX and parent_ok takes DL where retail keeps
+// g_4e0300 in EDX and parent_ok in CL); parent_ok declared at entry 239; byte parent_type 135.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

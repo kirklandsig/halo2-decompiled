@@ -749,6 +749,12 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // B437: Stored passthrough-point producers with four count/receiver contracts
 // 738/760/741/744; with bool success 766/783/773/755. NOT kept: all regress;
 // byte success, radius/path acquisition and scalar/geometry homes remain.
+// P351: Complementary complete-step truth in bool/byte/short/long with long/Boolean result:
+// 675/675/719/705/754/754/713/719. NOT kept: no byte match; radius/path acquisition, success byte and scalar/geometry homes remain.
+// Original complete body and existing helpers restored.
+// Round 74 (m3 lane 10, fast, caller 0x270930 MATCH in each): count read once into a named short 675; last step index in a long local 732; input pointer after start and start node 675; start node before the start
+// point 707 (2976); `bool last` 736 (2959); `ignored` declared at the loop top 675; first_output declared in the for 675.
+// Then 20 mechanical spellings through the same check (ternary and if, compare forms, operand order, constant declarations swapped): 675 eighteen times, 676, and `!(a <= b)` for a compare 698.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

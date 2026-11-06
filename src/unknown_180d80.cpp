@@ -108,6 +108,9 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
+// MiniMax E (11-05): no new form, no lower score; a named local for the guard's struct pointer
+// scores 287 (the load moves ahead of the callee-saved pushes and the frame shrinks to 2663 bytes),
+// so it is reverted.
 // MiniMax B (11-03): no new form, no lower score. The entry still loads the sixth parameter into ECX
 // and the fourth into EAX against retail's EAX for the sixth and ECX for the fourth (the two stack
 // homes agree, so this is the allocator's choice, not the parameter order); the guard split into three
@@ -182,6 +185,14 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // `y * left.j`, y row), and these spellings change neither, while their length change moves the whole listing. The short strip index re-measured 547 (aligned 85
 // against 67 now: retail's prologue, but the field sums flip to `field_8c + field_90` and the loop head gains a jmp). A compile-only build gives xmm4/xmm5 for the
 // rows, retail and the link xmm3/xmm4, so screen rows only in a real build. BLOCKED-BY 0x17cfa0 (contributor, still 70).
+// AC557: Complete transform scale observed once, mutable/immutable at late/early
+// input boundaries, then each with a named scale test: 227/227/379/379/317/317/392/392.
+// NOT kept: all regress and shorten away from retail; original transform inputs,
+// field reads, interpolation qualifiers and complete body restored.
+// F399: Existing interpolation endpoint/sample/output reference contracts, seven
+// subsets and complete output-reference return: eight forms 94 each.
+// NOT kept: no gain or equality; original helper, both calls and whole body restored.
+// Frame 0x4040 agrees; early mesh, count homes, creation setup and transform ranks remain.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

@@ -24,13 +24,21 @@ extern vector3f *g_4687bc;
 
 real function_1201a0(vector3f *v, vector3f const *fallback);
 
+/* the placement's word-sized value: callers build it in the stack argument slot */
+class c_placement_value
+{
+public:
+	c_placement_value(short value) : m_value(value) {}
+	short m_value;
+};
+
 // @retail 0x2ba3e0
-void placement_set(s_placement *placement, vector3f const *direction, point3f const *position, vector3f const *up, short value)
+void placement_set(s_placement *placement, vector3f const *direction, point3f const *position, vector3f const *up, c_placement_value value)
 {
 	vector3f normal = *direction;
 
 	function_1201a0(&normal, g_4687bc);
-	placement->value24 = value;
+	placement->value24 = value.m_value;
 	placement->position = *position;
 	placement->direction = normal;
 	placement->up = *up;
@@ -459,6 +467,11 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // a definition copy for the properties and masks 34 (1521 bytes); both copies 129 (1518); a named index before the nearest
 // call 2; a per-particle mask 51 (1517), assigned to requested 2; a definition copy for the later mask only 2. The reload
 // order never moves; matched functions (0x1384a0, 0x168e20, 0x2c05f0) reload in reverse prologue order as retail does here.
+// Round 94 (fast): both cache updates through the existing s_particle_value_cache::function_173c10 member (it inlines) 128
+// (1518 bytes); system declared second at the definition and its one call 10; the velocity normalizer in the maximum branch
+// too 34 (1521); the cache type renamed 10 (same code); `if (next != NONE) do ... while` 10 (same code). As in 0x2bdc70 and
+// 0x281b60, ours reloads the parameters in descending declaration order and retail ascending. The blend's first add as
+// change + velocity 10 (same code).
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
@@ -655,6 +668,7 @@ void function_247070(s_object_246eb0 const *particle, s_particle_impact const *i
 
 real g_55e618;
 
+// MiniMax G (11-05): retail's sweep at F+0x44 against our F+0x38 leaves twelve bytes of frame that ours does not have (the cache at seventeen values is confirmed by the matched 0x2b8e10); the declaration orders give 102, the scope-hoisted forms 110 and the grown cache 125; reading the velocity in place gives 199, the dot product as three statements gives 103 and the displacement as a whole-struct copy gives 310, and retail's union at F+0xb0 against our F+0xa4 stays unmatched; no new form, no lower score.
 // score 102 (was 102): frame 0x124 agrees; sweep/collision homes and projection spills differ.
 // Velocity snapshot argument 676; reflection loop 102; reflected value 241; sweep scale 129;
 // both scales 129; coefficient local 102; displacement scale 129; snapshot plus loop 676;
@@ -1024,7 +1038,8 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
                     particle->position.z = normal->k * 0.005f + collision.value.point.z;
                     s_particle_impact impact;
                     impact.index = NONE;
-                    placement_set((s_placement *)&impact, &particle->velocity, &particle->position, normal, collision.value.unknown24);
+                    /* retail copies the collision's value whole (`mov edx, [esp + x]; push edx`), so it is this class there */
+                    placement_set((s_placement *)&impact, &particle->velocity, &particle->position, normal, *(c_placement_value const *)&collision.value.unknown24);
                     particle->velocity.i = tangent.i * keep - perpendicular.i * coefficients[1];
                     particle->velocity.j = tangent.j * keep - perpendicular.j * coefficients[1];
                     particle->velocity.k = tangent.k * keep - perpendicular.k * coefficients[1];

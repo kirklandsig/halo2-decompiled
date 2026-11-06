@@ -105,7 +105,6 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// MiniMax E (11-04): the residual subtract in both limit arms 1065, the subtract helper taking a scale in both arms 1017 and with a scale variable 1009, the contact array hoisted out of the loop 1004, the fused scaled subtract in both limit arms 1016 and in the radial arm only 996 or the planar arm only 1017; no lower score.
 // score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Earlier score 902 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
 // Round 105: retail has 23 more mulss, 22 more movss and 15 more movaps, ours ~10 extra counted loops
@@ -366,6 +365,11 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // [546]; file-local inline or forceinline declaration 1069; each form alone on the body below 964/955/947/906/968/977/926, so
 // none is keepable. Plain check of the callers with `inline`, nothing lost, 0x1d24a0 861, but 0xf8eb0 946->1030, 0xd1e10 542->596,
 // 0x185be0 622->958, 0x1aa0d0 375->402, 0x2c0d60 882->952, 0xf6d10 749->759 (aligned mixed: three fall, three rise).
+// M3 lane 10 r73 (fast; aligned/masked in brackets, control 902 [681/535]): an empty else arm on the body block 1002 (4283) [690/542]; three-statement
+// scale helper re-measured 1181 (4026) [546/436], with that else arm 1185 [555/440], as plain `inline` 1181; one flags local for both entry tests 926
+// (4283) [686/546]; the element read through its array expression at the attached-object test 902 (same code); response fraction as a struct member
+// through a reference 926 (4283) [686/546]; const record flags 902 (same code). Two untried leads from matched 0x247fd0: `lea dst, [idx + base]` where ours
+// has `add idx, base; mov dst, idx` is the sum written twice; and an x87 store followed by a split memory compare wants the existing cross-file helper.
 // M383: Absolute-value APIs at entry/radial/planar bound families, subsets 1/2/4/3/5/6/7,
 // then all double APIs with real results: 900/927/944/931/945/974/975/974. NOT kept:
 // two-point entry lead fails the gate; native conditional bounds, helpers and full body restored.
@@ -373,6 +377,23 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // both complete dot interfaces, then both with planar input references: eight at 902.
 // NOT kept: native input identities do not recover the entry pair or frame; original kernels
 // and complete body restored.
+// MiniMax E (11-04): the residual subtract in both limit arms 1065, the subtract helper taking a scale in both arms 1017 and with a scale variable 1009, the contact array hoisted out of the loop 1004, the fused scaled subtract in both limit arms 1016 and in the radial arm only 996 or the planar arm only 1017; no lower score.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 902 [548]): retail's in-loop byte homes are record bit 2
+// at +9 and the second activity flag at +0xa (ours the other way round); record bit 2 renamed to sort before the activity
+// flag 902 (same code: names do not move these homes); the clamp tested in the condition after the null test (no clamped
+// local) 917 (4283 B) [552]; the removal as one `data[i] = data[--size]` statement 902 (same code); the body position
+// copied without its pointer local 965 (4284 B) [612]; the record flags read from the field at each use (retail reads
+// the word twice) 964 (4248 B) [547]. Retail also keeps the record element as a pointer (`shl eax, 3; add esi, eax`) and
+// the attached object index in EDI across the lookup, where ours re-reads `[ebx + edi*8 + 4]` three times.
+// M3 lane 12 r93 (fast): LEAD, the unroll blocker found: under LTCG the scale helper's loop unrolls only with a
+// `long` counter (a `short` one stays rolled even alone in a three-line body) and only when the function calls no
+// destructor (`delete` of the contact array, its explicit destructor call, plain or inside a helper all keep every
+// loop rolled; a non-destructor member doing the same frees unrolls them). Long counter with the frees written out
+// (the destructor body by hand, diagnostic) 1174 at 4033 bytes but retail's frame 0x1d4, entry pair and scale shape
+// (difflib-matched lines 518 against 444 here); with a release member in the header 1168. Forms on this body: explicit
+// destructor call plus operator delete 925, with the long counter 930; long counter alone 933 (listed); a byte local
+// renamed on the unrolled body 1174 (same code). Next: retail frees the list with no destructor call, so the contact
+// array type wants a plain free path (all three users, 0x1cf9f0 and 0x1d2070 matched); the asm conversion is no blocker.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

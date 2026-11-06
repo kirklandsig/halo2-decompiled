@@ -297,6 +297,20 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // 2 each; cross3f_staged 120; a left pointer for the cross and its normalization 4. The dot's i term stays up-first.
 // Declaration placement on the 2-form: the dot's local first in the block or between the pointers, `up` declared ahead of forward and assigned
 // after, all three declared first, the dot in its own scope, the pointers or the dot's local at function or loop scope: 2 each.
+// Round 59 (m3 lane 15, fast, base 110): a named `transform4x3f *matrix = &local_1[0]` for the combine output, the block and the set call 149 (first
+// difference moves to the +0x44 exit), the same through a reference 149; the flag9 branch on its own block-scoped transform 195 (938 B, frame
+// grows); dot3f(up, forward) with the rows in retail's k, j, i store order 110 (same code); the axis addresses spelled `&local_1->forward` 110;
+// the cross into a local `left` normalized then stored 202 (946 B); up normalized inside the dot's argument 151.
+// AC554: Existing pointer-return normalizer short-vector guard truth in bool/byte/char/
+// signed-char/short/word/int/long 110/110/110/110/110/110/110/110. NOT kept: no exact
+// guard-producer repair; original four-use helper and entire body restored.
+// DL267: Four-use normalizer double magnitude, reciprocal, both, complete squared-length, squared plus magnitude/reciprocal/both, then double j-square: 266/266/281/239/266/266/281/239.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Shared planar dot at projection/magnitude boundaries, native/late-k/squared-length views, then zero/first-product standard numeric reductions with symmetric input roles; late-k mixed views reach 2 but remain unmatched. Scores 110/110/110/64/2/2/111/111/195/195/203/203.
+// DH382: Existing four-use numeric magnitude return, successful/failure-first/common-
+// magnitude/result-first completions with post-normalization receivers 110/110/110/110;
+// early actual receivers 150/150/150/150. NOT kept: no late forward-k/reciprocal repair;
+// original pointer-return helper, all calls and complete body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

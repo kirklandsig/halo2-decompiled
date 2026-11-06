@@ -71,331 +71,7 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 	arg_1 = function_x82e52f(arg_0, 0, 0);
 }
 
-// score 55 (was 55): frame 0x10 and 870-byte length agree; first +0x1d is the exit span.
-// Timestamp order agrees; the cache comparison still splits a memory load, and evaluator/spawn
-// and child scratch registers differ.
-// Earlier at 70: frame 0x10 and length agree. Retail stores field_10 before the field_38
-// sample; written in that order (133) everything from the 0x173ba0 arguments to the end matches,
-// but the cached-record compare splits into `mov eax,[ebx+0x50]; cmp ebp,eax` after the sample's
-// x87 store (+2 bytes, adds the child-loop pad) where retail folds `cmp ebp, [ebx+0x50]`. With
-// field_10 last (kept) the compare folds but the 0x173ba0/0x249aa0 argument registers and the
-// child loop rotate (its unknown04 temporary takes ECX once the seed pointer is dead; retail's takes
-// EDX while it is live). Retail also loads the parent twice for the 0x175070 list addresses where
-// ours reuses one register. This compiler never folds a load into an ALU operand right after an x87
-// fstp inside one block (compile-only: cmp reg/imm, test byte and add all split, also with an
-// integer store between; /G7, /Os or /arch:SSE2 fold it compile-only, the file's flags don't; /G7 on
-// this file in the real build still splits); retail folds at three sites (here, 0x39a80, 0x186ab0)
-// and the one matched fold (0x2c7410) is at a jump target. A plain fild store or an SSE product folds.
-// Kept: in-loop lookup through the inline particle_object_for_tag with the child getter nested in
-// 0x173fd0's call 133; record-first reset without the split temporary 133; field_38 sample before
-// the field_10 store 70.
-// Tried: nested getter alone 160; inline/forceinline redeclarations of 0x137bd0 142; sample through
-// the existing helper 70; the 0x173c10 method called 70; sample into the shared local before
-// field_10 146; sample local declared first 70; sample local at function scope 70, with field_10
-// first 133; field_10 first with the sample stored after the compare 137, or drawn into a local and
-// stored after field_10 146; field_10 and the fifth draw in a forced-inline helper 133; fifth sample
-// through a field pointer 133; DATUM child 70; size optimization 525; inline depth one/two 142/142;
-// global optimization off 433; frame pointer 314; current-record update argument 142; field_10
-// first 133, with a compiled-out statement before the compare 133, with the cache-update stores
-// swapped 129, with the sample through the existing reference helper into field_38 or into local_9
-// 133/133, with the compare as a bool local 133, with the compare operands swapped 133; compile-only,
-// all split: compare in an inline/forceinline helper or bool local, reversed or == compare,
-// typed/int compare, cache pointer copy or member, loop/switch/goto wrappers, sample through an
-// inline initialiser, a named-global or divided scale, helper or direct word samples,
-// field_08/local_3/link/flag statement orders, record-typed cache field, 0x175610's cache store
-// order, an inline cache-update helper, the scale through the shared word wrapper or a named
-// temporary; inline type lookup at the loop re-fetch 134, with the child-settings query in its
-// argument list 133 (a copy of 0x137bd0's body); comparison operands swapped 133; child/record datum
-// through DATUM 133/133; 0x175610's cache-update body 133; complete reconciliation before final
-// draw 133; final sample store after reconciliation 140, with early predicate/flags/both
-// 138/149/160; early cache predicate/masked flags/both across final draw 157/153/177; sample output
-// 142; age/time after sample 239/153; sample late age/time/both 239/153/236; sample value 142;
-// child-input scope 142; metadata read order 142; direct child getter 160; early result declaration
-// 142; word flag update 244; reciprocal default first 142; cache slot/early flags/both/cache
-// reference 142; reciprocal input 143; read-only settings view 142; spawn type at use 254; shared
-// parent/child/both datum accessors 246/146/298; native child ordinal 142; immutable creation inputs
-// 142; reciprocal before child link 143; native cache pointer 142; changed-record predicate 142;
-// actual head field 142; unsigned child handle 142; shared bounded selector 142; word flags 142,
-// with bounded selector 142; child zero-age before enable 142; cache mask field/compare 142/142;
-// existing cache evaluator/native receiver 142/142; refreshed interface lifetime 142; child-result
-// declaration home 142; live lifetime field 142; mask/lifetime fields 142; common pointer/flags/both
-// stores 159/140/158; conditional mask 282; immutable allocated handle/settings 142; common
-// current-record stores and combined immutable bindings 158; common flags with current receiver 158;
-// external parent/allocated record/settings/child references, singly and in pairs, 142 each;
-// parent/settings/both metadata fields, first/last/both list fields, metadata with list fields,
-// metadata with cache slot 161/160/167/142/142/142/167/167; declared sample array/loop 142/435;
-// immutable record/spawn/both 142; child identity order 142; earlier enable 142; earlier age 143;
-// child effect/tag/settings home names, pairs, all three, allocation/spawn names 142 each; inline
-// link-child helper (parent pointer argument), with the parent store inside 70/70; cache-update
-// inline helper with early return in retail store order 133; sample through the existing helper in
-// retail store order 133; child result / loop index declared before the loop 70/70; tag index local
-// 245; child definition local 76; first lookup through the inline particle_object_for_tag 69;
-// list-address pointer locals 70; retail order through the shared sample local 133; declared
-// cache-record type, direct four random returns, both, combined initial flags, flags/type and
-// flags/direct draws 70 each; declared type with retail timestamp order 133, with all three forms
-// 133; named seed pointer for the five draws 88 (863 bytes), with field_10 first 166; field_10 first
-// with the compare as a bool local 133; compare operands swapped 71; count increment before the
-// timestamp store 71; field_10 after the field_14/16/18 sample 184/168/152; field_50 read into a
-// named pointer for the compare 70; retail order with the compare operands swapped 133; field_10
-// stored right after the record link/record pointer/field_08/flag bits/seed-type bitfield
-// 227/178/200/217/204.
-// With field_10 last its unknown04 temporary takes ECX (the seed pointer is dead by then; retail's
-// takes EDX while the seed pointer is live), which starts the scratch rotation after the compare.
-// Retail's fold after an fstp occurs at only one other site (0x39a80); no matched function has
-// either form. Count incremented before the field_3c store 71; short child index 76; with
-// field_10 first 137; sample drawn into a local before the field_10 store 146; field_10 stored
-// after field_08 200.
-// Round 96: a minimal one-file LTCG test (build/r96/hfold) reproduces the split: `fstp [r+0x38]` directly
-// followed by `if (rec != cache->last)` always gives `mov eax, [m]; cmp r, eax` (operands swapped, a named
-// cache local, double or signed draws, an if-else, callee-saved receivers: all split), and any instruction
-// between them (another field store) gives the folded `cmp r, [m]`. Child test as `continue` 70; owner fields
-// stored in the other order 70; count increment before the field_3c store 71; parent store before the link
-// call 99 (864 bytes); field_10 stored before the four draws 200.
-// Round 83: field_10 first 133 (aligned 21: the split compare and the child-loop registers);
-// loop test written count-first 71; child ordinal passed as word 70; record/parent stores swapped
-// 70; child definition read into a named local 76; -1 literal for the last 0x173fd0 argument 70.
-// Round 18: compile-only, the split is this compiler's default tuning after an x87 store that
-// follows x87 arithmetic in one block; it folds after a call's fstp, when the compare starts a
-// block (a jump target), or with /G7 or /Os. Screens of inline sample/compare/update helpers,
-// do/while, a one-pass loop, an empty if and identical store arms all split. Full builds with
-// field_10 first: 133 (aligned 21, 876 bytes); with a label before the compare 140; the sample
-// through the reference helper 133; the cache update as an early-return inline helper 133;
-// typed compare 133.
-// 133; named seed pointer for the five draws 88 (863 bytes), with field_10 first 166; compare
-// operands swapped 71; count increment before the timestamp store (or the field_3c store) 71; short
-// child index 76, with field_10 first 137; field_10 after the field_14/16/18 sample 184/168/152;
-// field_50 read into a named pointer for the compare 70; field_10 stored right after the record
-// link/record pointer/field_08/flag bits/seed-type bitfield 227/178/200/217/204.
-// Round 41 (fast): parent's unknown04 read into a local before the draws and stored last 243 (876
-// bytes), stored in retail's place 234; a parent pointer local for the first child-list address
-// 70 (copy propagated), with field_10 first 133; the four word samples' local in its own block 70,
-// with field_10 first 133.
-// Round 314: Independent sample outputs with direct/named scales and computation/entry declarations:
-// 70/70/70/70; in retail timestamp order 133/133/133/133. Original sample workspace restored; folded
-// compare and downstream register rotation remain.
-// Round 31 (lane 10): retail's field_10 copy sits ahead of the fifth draw's seed load and store,
-// which no scheduler could cross (both are stores through unrelated pointers), so retail's source
-// order is field_10 first, and the fold after the fstp is the build's, not the source's. On field_10
-// first: the seed through a named pointer 133 (876 bytes); the cache update storing the flags before
-// the record 129 (863); the sample as `(real)_random(...) / 65535.f` 133; the field_10 copy cast to
-// real 133; the cached record read into a typed local for the compare 133.
-// Lane 15 r19: field_10's value read into a real local before the fifth draw and stored after it 144
-// (876 bytes, through XMM0); the cache update's two stores swapped 141 (864 bytes), with field_10 first
-// 129 (863 bytes); the child datum or the pool record address by byte arithmetic 70/70 (same code).
-// Round 112 (fast): field_10 copied after the cache update 147 (878 bytes: the fstp then meets the compare
-// and splits it), with the compare operands swapped 147; the fifth sample as `(real)(dword)_random(...) *
-// (1.0f / 65535.0f)` 70 (same code as 0x82e52f's), with field_10 after the cache update 147, with field_10
-// first 133. Everything after the compare is a scratch-register rotation that starts at field_10's temp
-// (ECX here once the seed pointer is dead, EDX in retail's order while it is live).
-// Round 30 (lane 13, fast): field_10 copied between the fourth draw and its field_1a store 141 (876
-// bytes); the 0x173ba0 mask as `0xf80f & ~field_44` 70; the child's unknown08 as one ternary store 98;
-// `field_02 += 1` 70; `NONE != child` 70. Compile-only with field_10 first, all split: a label before
-// the compare, a flags read between, the sample through a named local, operands swapped, a cache local.
-// Round 51 (lane 16, fast with 0x248cc0): field_10 first with the fifth draw in its own brace scope 133
-// (876 bytes), with the cache compare block in its own brace scope 133 (both still split the compare).
-// Round 102 (m3 lane 8; one-link LTCG harness, exact): in the kept form field_10's temporary takes ECX where retail's
-// takes EDX (ECX then holds the live seed pointer) and every later scratch register follows; the child loop also
-// reuses EAX for the second list address where retail reloads the parent. Fast: field_10 first 133; field_10 first with
-// `arg_0->field_50 != local_1` and the cache stores swapped 129 (863 bytes); with a named record copy for the compare
-// 133; child unknown4c stored before parent 70 (same code); count increment before the field_3c store 71. Harness:
-// field_38 through 0x248076's reference, through local_9 or a named sample local, a named cache pointer: all as T1.
-// Round 9 (m3 lane 18, fast): retail's compare is not a jump target (nothing branches to it), so its fold right after
-// the fstp is the build's. field_10 first with another store moved between the field_38 sample and the compare:
-// the field_08 clear 230 (876 bytes), the count increment 200 (860 bytes; 0x248cc0 then 15 in the reduced image),
-// the list-head link 243 (878 bytes); field_10 last with the fifth sample through 0x248076's reference straight
-// into field_38 70 (same code); the count increment moved before the 0x173ba0 call 159 (860 bytes; 0x248cc0 15).
-// Round 186 (fast): aligned against retail, field_10 first differs only in the split compare (+2 bytes, which
-// adds the child-loop pad) and the child loop's registers (the parent loaded once for both list addresses,
-// the effect/tag/vtable loads rotated), the kept form in the field_10 order and the same child-loop rotation
-// (aligned 51). The fifth draw split into its seed step and its scaling with field_10 between 143 (876
-// bytes); field_10 first with the compare as `== ... ; else` 133; re-measured: field_10 first 133, with the
-// cache flags stored first 129 (863 bytes), with the sample in a named local 133. On field_10 first, the child
-// loop: the effect index read into a local before the loop 131 (875 bytes), the parent stored before the link
-// and both list addresses taken through the child's parent 128 (872 bytes), the child test as `continue` 133.
-// Round 57 (m3 lane 9, fast): field_10 first with the fifth sample in a local stored in both arms of the cache
-// test 156 (879 bytes, not hoisted); field_10 first with the compare against the record re-derived from the pool
-// 190 (878). Retail reloads arg_2 from its stack slot at every child-loop use (twice for the two list addresses);
-// the second list address, or every child-loop use, read through `&arg_2` 70/70 (copy-propagated, same code);
-// with field_10 first 133.
-// Round 108 (m3 lane 7, fast): compile-only, `fstp [m]` then `cmp reg, [m2]` folds under /G7 (flags lead, not
-// acted on) or with a code-less compiler barrier between them; with field_10 first and such a barrier (a
-// diagnostic, reverted at once) 32: everything to the child loop is then retail's, and what is left is the
-// child loop (retail loads the effect index into ECX and the vtable into EDX before the pushes, and loads
-// arg_2 again for the second list address). The ordinal passed as `local_5` without the short cast (as
-// 0x247950 writes it) 70 (same code); with the child's unknown08 as one ternary 98; with the child through
-// DATUM 70 (same code); with the first lookup through the inline particle_object_for_tag 69. A 600 s
-// permuter run (62 tries) found nothing below 70; its own baseline full build took 1162 s.
-// Round 142 (lane 4, fast with 0x248cc0): field_10 first with the cache test as an empty `if (==) {} else`
-// 133 (876 bytes), through a `bool record_changed` 133, as `field_50 != local_1` with the mask cleared first
-// 129 (863 bytes), through a `parent` pointer for arg_2 133; the count increment next to the list link 208
-// (860 bytes); field_3c stored before the 0x249aa0 call 67 (a reorder past a call that takes the record).
-// Round 16 (m3 lane 17, fast): the permuter (anneal, 600 s, 71 variants) found nothing below 70. Child
-// reciprocal from a named field_0c local 78; the 0x173ba0 mask as a named local 70 (same code); record
-// pointer through DATUM with field_10 last 70 (same code); reciprocal computed after the link call 80; child
-// rate computed into a local before the three child stores 102. Retail's link-call setup is 3 bytes longer
-// than ours (it reloads arg_2 for the second list address where ours reuses EAX); ours ends in two int3 pad
-// bytes, so the early exit's target (the first difference) is off.
-// Round 27 (m3 lane 2, fast): field_10 first 133 again (aligned count 21 against the kept form's 55: only the
-// split compare, the child-loop pad and the child-loop rotation are left); with the child's reciprocal before the
-// link call 138; the reciprocal before the link alone 102 (872 bytes); the child pointer as `data + (word)index`
-// 130 (863 bytes); a short child counter 76 (871 bytes); the reciprocal as an if/else 70 (same code). Compile-only
-// with field_10 first, all split: compare operands swapped, an empty or `;` then-arm, a named sample, a named
-// `changed` bool, dword-cast pointers, the cache stores swapped.
-// Round 32 (m3 lane 2, fast): field_10's value read into a dword local between the fourth and fifth draws and
-// stored after the fifth 144 (876 bytes: the scheduler lifts the integer store above the fstp, so the compare
-// still follows the fstp and splits); the child's flag0 set before the link call 81; the field_08 clear moved
-// to just before the fifth draw 153; the record-list link stores after the flag-bit setup 109; the child
-// reciprocal computed between the parent and owner stores 80. Retail 0x247950 also loads arg_2 twice for the two
-// list addresses at its link call, so that reload is systematic (allocation), not this body's source.
-// Round 39 (m3 lane 15, fast): field_10 first re-measured 133 (876 bytes: the split compare, then a loop-top pad and
-// the child loop's effect-index/vtable registers: retail reuses ECX for the effect index and loads the vtable into
-// EDX before the pushes); the fifth sample as `field_38 = local_9 = ...` 70 (same code), with field_10 first 133;
-// the effect index named in the child loop 73, with field_10 first 134 (878 bytes); `if (local_0 == NONE) return;`
-// for the wrapping if 70 (same code).
-// Round 110 (m3 lane 7, fast): compile-only, nothing code-less between the fstp and the compare folds it (empty
-// forceinline or inline calls, a label with a goto, `__assume`, `__noop`, a brace scope); only a compiler barrier
-// does. field_10 first 133 (re-measured as the control); field_10 first with the fifth draw through a plain
-// non-inline random function (diagnostic: LTCG inlines it and the compare still splits) 133; the 0x137bd0 lookup
-// before the field_3c store 73, between the field_3c store and the count increment 73; field_10 first with the
-// lookup first 133; the child pointer declared bare at the top of the loop body 70 (same code).
-// Round 133 (m3 lane 6, fast with 0x248cc0/0x173ba0/0x249aa0/0x137bd0/0x173fd0/0x175070/0x1751d0 listed): every
-// child-loop difference in the kept form is the scratch rotation from field_10's temporary; retail (and the sibling
-// 0x247950) loads arg_2 twice for the two list addresses. A `parent` local for the link and the parent store 70
-// (same code); field_3c stored right after field_10 72; with the count increment too 208 (860 bytes, 0x248cc0 15);
-// field_10 first with field_3c stored between the fifth sample and the compare 134 (876 bytes: the scheduler lifts
-// the integer store above the fstp, so the compare still splits); field_3c stored right after the record link 184.
-// Round 63 (m3 lane 16, fast): compile-only, field_10 first still splits the compare with the sample in a
-// named local, the compare operands swapped, a `cached` record local read just before it, `!(==)`, the
-// sample as `/ 65535.f`, an empty-then if, a flags-word pointer for the update. Real: field_10 first with
-// the `cached` local 133; the owner's flags read once into a `flags` local for the 0x173ba0 mask and the
-// update 61 (870 bytes: the post-call update lines up, but the flags are then read before the call where
-// retail re-reads them after it, so not kept), the same with field_10 first 126; field_10 first with the
-// update through the existing 0x173c10 method 133, with the compare swapped 133, with a named sample 133;
-// field_10 first with `arg_1->field_02++` and `field_44 = field_44 | 0xf80f` 133.
-// Round 110 (m3 lane 7, fast): compile-only, nothing code-less between the fstp and the compare folds it (empty
-// forceinline or inline calls, a label with a goto, `__assume`, `__noop`, a brace scope); only a compiler barrier
-// does. field_10 first 133 (re-measured as the control); field_10 first with the fifth draw through a plain
-// non-inline random function (diagnostic: LTCG inlines it and the compare still splits) 133; the 0x137bd0 lookup
-// before the field_3c store 73, between the field_3c store and the count increment 73; field_10 first with the
-// lookup first 133; the child pointer declared bare at the top of the loop body 70 (same code).
-// Round 232: Two-consumer cache-array address at use/before reconciliation 70/70; with a twice-
-// used child-lifetime value 78/78; reconciled current-record evaluator input 138/138; both
-// changes 139/139. Frame 0x10 agrees; timestamp/fifth-draw scheduling and child register
-// allocation remain.
-// Round 462: actual child-duration branch/default result after/before publications
-// 98/98/118/102; each with the allocation pool held for both real uses 98/98/118/102.
-// Original output arms and pool observations restored; timestamp/compare and child homes remain.
-// Round 136 (m3 lane 5, fast with 0x248cc0/0x173ba0/0x249aa0/0x137bd0/0x173fd0/0x175070/0x1751d0): a retail-wide scan finds
-// 5 of 1862 `fstp` stores followed by a folded memory operand: 0x2481bf and 0x39e24 `cmp ebp, [m]` (not jump targets, both
-// after an unsigned random draw, ours splits both), 0x18700b `and byte [m], imm`, and two jump targets. On field_10 first
-// (133, aligned 21: only the split compare and the child loop's rotation): the four samples' local in its own block 133; a
-// seed pointer for the fifth draw 133; `==` with an empty then-arm 133; the fifth sample through the reference helper into
-// field_38 133; the cached record read into a local before the fifth draw 144. Kept order: creation time through a real
-// local 70 (same code); reciprocal as a default plus if 96; rate through a local with a default 98.
-// Round 363: Plain four-sample traversal into native output word array, helper/direct draws with long/short
-// ordinal 405/405/419/419; retail timestamp order 406/406/420/420. Original fields, draws and body restored;
-// timestamp/compare and child register allocation remain.
-// Round 365: Missing-bit mask reused for evaluation/publication, current-record and
-// two-consumer value-array inputs, masks 0-3: 77/89/77/89; retail timestamp order
-// 126/68/126/68. Two-point gains rejected. Original mask, receivers, timestamp and
-// complete body restored; folded comparison and child scratch rotation remain.
-// Round 367: Allocation-pool identity with pointer/reference cache arrays and current/cached
-// evaluator inputs, original/retail timestamp orders: 70/70/138/138/133/133/55/55. Minimal
-// timestamp-first plus reconciled particle evaluator input 55 kept plain at 870/870; pool and
-// array locals removed. Original duration results, helpers and all argument positions remain.
-// Round 487: Carried cache result, old-default/branch-owned and void/record pointer
-// storage 132/132/132/132; each with the twice-consumed child duration 131/131/131/131.
-// Original reconciliation, live duration, current-record evaluator and full body restored.
-// DL246: coherent evaluator/spawn/list-link inline subsets 1-7 give 55 each;
-// all with the reconciled current-particle field gives 133. List-link inline loses 178eb0 (41).
-// Every declaration and body restored; folded comparison and evaluator/child scratch homes remain.
-// DH303: Native cached-record field with common pointer/flags/both/tested-result
-// completions 131/127/128/124/131/127/128/124. All regress; original
-// body and field declaration restored; folded compare and child scratch homes remain.
-// Round 542: Empty-request evaluator admission, direct/computed mask and unconditional/admitted
-// validity publication 137/124/132/129/137/124/132/129; paired two-consumer value-array receivers repeat those counts.
-// All regress; original body restored. Post-sample compare and evaluator/child homes remain.
-// NOT kept: extra evaluator admission and field receiver remain unmatched; all regress.
-// DH307: Cache-request full-default/hit refinement, branch result, pending-default override,
-// and hit-first result, producer/entry declarations: 135/123/132/135/135/123/132/135.
-// All 878/870 bytes; original complete body restored. Split post-sample cache comparison
-// and evaluator/child scratch homes remain. Branch-owned request would require an exact match.
-// J243: Fifth sample shared helper/return, distinct helper/return and actual-field output, first-four
-// direct returns with shared/field fifth outputs, and entry-owned shared output: 55 each. NOT kept: no
-// gain. Original output contracts restored; split post-sample comparison and evaluator/child scratch
-// homes remain.
-// DL250: Existing sample helper inline/unannotated contracts with shared, distinct, sample-scoped
-// and entry-owned output lifetimes: 55/55/55/55/55/55/55/55.
-// Original complete source restored; no eligible gain.
-// Round 48 (fast with 0x248cc0): a compiled-out `do {} while (false);` between the field_38 sample and the
-// compare 55 (same code, still split); 0x173ba0's record argument read back from field_50 (as 0x247950 does)
-// 133 (876 bytes); the seed bits by an explicit 0x1fff mask and shift 232 (876 bytes); `s_248000 *const` record
-// pointer 55 (same code); child result declared before the loop, on the 55 graph, 55 (same code).
-// Round 61 (m3 lane 11, fast): no matched function has the post-fstp fold yet (0x39a80, 0x186ab0 still differ). The cached-record compare as
-// `while` with the same body 140 (880 bytes); the compare in a bool ahead of the fifth sample's store 140 (878 bytes; its `test` schedules above the x87
-// ops, no folded cmp); the child counter dword 55 (same code); the tag index in a local for both child-loop uses 221 (872 bytes); the reciprocal declared
-// ahead of the loop 55 (same code). Compile-only: the compare inside a ternary or a short-circuit test still splits.
-// M342: Explicit refreshed virtual child count at the native latch, provider carry and
-// count/index declaration scopes: 55/55/55/55/55/55/55/55. NOT kept: no exact count/provider
-// handoff shape; original complete body restored. Split post-sample compare and child scratch homes remain.
-// B396: Post-sample equality hit/miss results in bool/byte/short/long domains, 55 each.
-// NOT kept: no exact one-use result form or gain; original complete body restored.
-// Split memory comparison and evaluator/spawn/child scratch registers remain.
-// N347: Read-only virtual count/element/both/both-interface, metadata/metadata-count/metadata-element/
-// complete contracts: 55/55/55/55/55/55/55/55. NOT kept: unmatched alias/contract combinations. Original
-// complete body and declarations restored; split post-sample comparison and child scratch homes remain.
-// Lane 14 r60 (fast; on the field_50 read-back form, 133, aligned 21): the six orders of 0x175070's parameters, every
-// call changed: (first,child,last) and (first,last,child) 133 aligned 21; the three with last or child in other places
-// 141 aligned 69 and 0x178eb0 2. Named first/last list pointers around the child pointer 133 aligned 21 (copy
-// propagated; the parent stays one load). Compile-only: the split also holds with the store nested under three ifs,
-// inside a loop, right after a call, and with most registers carrying values across the compare.
-// B398: Cache formal in positions 1..5 with the sole call updated, then explicit
-// stdcall in positions 6/1/4: 55 each at 870 bytes. NOT kept: no exact entry-contract
-// form or gain. Original signature/caller/body restored; post-sample split cache
-// comparison and evaluator/spawn/child scratch allocation remain.
-// M355: Native cache validity ranges, clear/publish/request masks 1/2/4/3/5/6/7,
-// then complete high-to-low publications: 55/55/135/55/135/135/135/135.
-// NOT kept: unmatched field representation; original validity and full body restored.
-// M357: Child admission produced after interface refresh, positive then complementary bool/byte/short/long:
-// 55/55/55/55/55/55/55/55. NOT kept: no exact producer/contract form; original complete body restored.
-// M359: Actual allocated-handle/spawn-input/child-ordinal home-name subsets 1-7,
-// then all with the child handle, on the retained reconciliation graph:
-// 55/55/55/55/55/55/55/55. NOT kept: no home or folded-compare gain; original body restored.
-// DH327: Child-creation admission retained across interface refresh, positive/
-// complementary bool/byte/short/long: 133/133/116/117 twice, 880/870 bytes.
-// Original child result/refresh order and complete body restored. NOT kept:
-// carried flags regress and lengthen; post-x87 fold and child scratch homes remain.
-// DH329: Six native own-input first-consumer reads 55 each; entry cache/parent input-slot
-// pointers 168/55. NOT kept: own-input forms lack equality; cache input also loses caller
-// (24). Original inputs, cache comparison and complete body restored.
-// Y584: Persistent validity/cached-record/value-array field references, seven subsets
-// and complete metadata-scope binding: 128/128/128/55/128/128/128/128. NOT kept:
-// post-sample compare stays split; other forms shorten to 863 bytes. Full original body restored.
-// AC528: Native parent-list slot identities on the current reconciliation graph
-// 55/55/55/55/55/55/136/136. NOT kept: no exact match or eligible gain; original complete body restored.
-// Split post-sample comparison and evaluator/child scratch homes remain. One-use field bindings require equality; no retained candidate.
-// B431: Actual cache/header/parent/point/direction reference formals, header-parent and
-// point-direction pairs, then all five: 55 each. NOT kept: no exact boundary-contract
-// form or gain. Original signature, sole caller and full body restored; split post-sample
-// cache comparison and evaluator/child scratch homes remain.
-// B434: Post-link positive/complementary duration-admission results in bool/byte/short/long:
-// eight 55. NOT kept: no exact result form or gain; original live field reads, reciprocals
-// and full body restored. Split post-sample compare and child scratch homes remain.
-// B436: Full-width signed int allocation/ordinal/child carriers, seven subsets, then
-// all with a native while pretest: eight 55 at 870/870. NOT kept: no exact type/control
-// form or gain; original complete body restored. Split cache compare and child homes remain.
-// B438: Allocator success/failure outcomes in bool/byte/short/long: eight 55 at 870/870.
-// NOT kept: no exact outcome-lifetime form or gain; original full body restored.
-// Post-sample split cache comparison and evaluator/child scratch homes remain.
-// M3 lane 10 r71 (fast; aligned in brackets, base 55 [54]): the child loop as a plain while 55 [54]; the cache block's cleared mask named and stored
-// after the record 55 [54]; the child pool in a named pointer 55 [54]; a parent local for both link arguments and the parent store 55 [54]; the
-// owner's flags read once for mask and update, on the current graph, 60 [50]. Re-measured: 0x173ba0's record read back from field_50 133 (876)
-// [19], which is the real closest form: only the split compare, its loop pad and the child loop's rotation are left. Harness (one file, entry in the
-// source; nothing folds): the compare or the store under an implied test, the store through a one-pass for/do, switches on the store or compare, a
-// bool result. A retail-wide scan of `fstp m` followed by an ALU operand finds 5 folds and no split of this shape: two folds are jump targets, and all
-// three non-target folds (0x39e24, 0x18700b, 0x2481bf) sit in unmatched functions, so no matched function shows this fold under the build's tuning.
-// Diagnostic only: in the one-file link /G7 on the entry object alone folds it (file-level /G7 does not), so tuning is link-wide, but it also turns
-// `inc` into `add r, 1`, which retail does not do; /G6 and /Ot on every object still split, /Os folds at 175 instructions. No flag change proposed.
+// allocates a particle for a particle system, seeds it from the random stream and spawns its child systems
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -422,13 +98,13 @@ void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 		function_248076(&g_4e7408->seed, local_9);
 		local_1->field_1a = (word)real_truncate(local_9 * 65535.f);
 		local_1->field_10 = arg_2->unknown04;
-		local_1->field_38 = function_x82e52f(&g_4e7408->seed, 0, 0);
+		local_1->field_38 = function_259d0(&g_4e7408->seed, 0, 0, 0.f, 1.f);
 		if (local_1 != arg_0->field_50)
 		{
 			arg_0->field_50 = local_1;
 			arg_0->field_44 &= ~0xf80f;
 		}
-		function_173ba0(~arg_0->field_44 & 0xf80f, arg_0->field_48, arg_0->field_4c, local_1, arg_0->field_00);
+		function_173ba0(~arg_0->field_44 & 0xf80f, arg_0->field_48, arg_0->field_4c, arg_0->field_50, arg_0->field_00);
 		arg_0->field_44 |= 0xf80f;
 		function_249aa0(local_3, (s_particle_spawn_state *)local_1, arg_3, arg_0->field_00, arg_4);
 		local_1->field_3c = arg_5;
@@ -436,13 +112,15 @@ void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 		c_248228 *local_4 = (c_248228 *)function_137bd0(local_2->tag_index);
 		for (long local_5 = 0; local_5 < local_4->function_24822e(); ++local_5)
 		{
-			long local_6 = function_173fd0(local_4->function_24822f((word)local_5), arg_2->effect_index,
-				local_2->tag_index, (short)local_5, NONE);
+			long tag_index = local_2->tag_index;
+			long effect_index = arg_2->effect_index;
+			long local_6 = function_173fd0(local_4->function_24822f((word)local_5), effect_index,
+				tag_index, (short)local_5, NONE);
 			local_4 = (c_248228 *)particle_object_for_tag(local_2->tag_index);
 			if (local_6 != NONE)
 			{
-				s_particle_system_datum *local_7 = &((s_particle_system_datum *)g_510c74->data)[local_6 & 0xffff];
-				particle_system_link(local_7, &arg_2->first_child_index, &arg_2->last_child_index);
+				s_particle_system_datum *local_7 = DATUM(g_510c74, s_particle_system_datum, local_6);
+				particle_system_link(DATUM(g_510c74, s_particle_system_datum, local_6), &arg_2->first_child_index, &arg_2->last_child_index);
 				local_7->parent = arg_2;
 				local_7->unknown4c = local_0;
 				real local_8 = local_1->field_0c > 0.f ? 1.f / local_1->field_0c : 0.f;
@@ -534,10 +212,19 @@ struct s_object_246eb0;
 struct s_particle_impact;
 void function_249170(real const *arg_0, s_particle_spawn_state *arg_1, s_particle_spawn_definition const *arg_2, s_particle_system_datum const *arg_3);
 vector3f *function_143070(matrix3x3 const *arg_1, vector3f const *arg_0, vector3f *arg_2);
-void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, short arg_4);
+/* the placement's word-sized value: callers build it in the stack argument slot */
+class c_placement_value
+{
+public:
+	c_placement_value(short value) : m_value(value) {}
+	short m_value;
+};
+
+void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
-// score 356 (was 356): frame 0xb0, 1643 bytes against 1652. Left: retail saves EBP at entry and
+// score 334 (was 356): frame 0xb0 and 1652 bytes agree; entry EBP is retail's now; effect/velocity/tag lookups keep retail's unfolded `add eax, edx`, blend and scaled position stay in memory, and the child loop rotates.
+// Earlier first line: score 356 (was 356): frame 0xb0, 1643 bytes against 1652. Left: retail saves EBP at entry and
 // shares one epilogue (ours saves it after the early exits); retail keeps the blend in XMM2-4
 // across the first 0x143070 call (here it goes through the grouped local's memory); retail's
 // frame holds probe point f0x14, probe direction f0x20, collision result f0x2c, 16 unreferenced
@@ -781,9 +468,31 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // B436: Native constant-index blend/contact/velocity observations, seven subsets,
 // then complete initial-scale coordinates: 356/356/356/356/356/356/356/356. NOT kept: no exact form or eligible gain;
 // original complete body and helpers restored. Native frame/register differences remain.
+// M3 lane 10 r73 (fast; aligned/masked in brackets, control 356 [256/142]). Kept: placement_set's last parameter as a by-value word class
+// (retail's `push ecx; mov eax, esp; mov word ptr [eax], 0`) 337 [250/140], which also gives retail's entry EBP; the contact position through the
+// existing vector3f_add_scaled 334 [246/135]. EXACT-MATCH RECIPE, reached [79/45] at retail's 1652 bytes and frame 0xb0, each part below kept only if
+// the function then matches: the sum repeated in the link call (as matched 0x247fd0) 350; tag and effect index in one-use locals 353 [242/140];
+// in-loop particle_object_for_tag 349 (1686) [211/119]; cache test as in 0x247fd0 367 [252/138], with the sum 358, with locals 358, with the lookup
+// 388 (1686) [207/115]; the class on that 320 (1692) [193/103]; workspace ordered {probe, direction, collision, 16 unreferenced bytes, placement}
+// 400 (1698) [176/83] (retail's offsets); blend and scaled position as locals stored by field with in-place blend sums 397 at 1652 [150/80]; aggregate
+// store of the scaled position 452 (frame 0xbc); effect flag read twice unnamed 336 at 1652 [85/50], named pointer 334 (1634) [128/56]; bit 4 as a
+// new one-bit field through TEST_FIELD_BIT gives retail's shr/test; blend and age in a 16-byte local struct {point, value} (struct-member scalars take
+// retail's `movss` copy, plain locals never do) 415 [79/45], the struct alone drops the frame to 0xa0 417 [93/61]. Keepable subsets stay above this:
+// best of 16 grid forms 355 (1654), effect hkBool with plain blend 426 (1638) [144/77], class plus each of bit field/cache test/lookup 352/345/374.
+// Left on the recipe: `add eax, edx; mov dl, [eax + 2]`, `mov ax, [edi + 0xc]; test ax, ax`, `add eax, edx; add eax, 0x30`, the x row's load order, the
+// probe copy's three loads, the normal's two early loads, the loop's table load with `add eax, edx; mov eax, [eax]`. Retail's body has no base+index
+// address at all. Tried on it: hkBool flag helper by index or pointer 388 [100/55] (retail's dead byte store with no volatile, lookup still folded);
+// flag3 through TEST_FIELD_BIT with volatile 407, plain or direct 382, named and tested twice 382/372, named with volatile 412 [100/64]; hkBool retiring
+// the volatile on the old base 376; age as named real/sample/getter/double cast/const reference/`* 1.f`/`+ 0.f`/`true ? :` 336 each (integer move);
+// stored twice 392; named remainder 334 no change; named short or velocity pointer no change; dead reads, duplicated pointers 415/410; 800 no-op inline
+// calls 415; class with destructor 415, with copy constructor 415 (0x2b9060 197); empty else on the effect block 356; global optimization off, once as a
+// diagnostic, 1853 (2916).
 // Round 72 (m3 lane 1, harness with the callees' 8 files: control 386 [112] at 1636 bytes against the plain 356 at 1643, so ranked only; masked aligned in brackets): EBP's entry save on the early exit: empty else 386 [112], `do { } while (false)` in that
 // else or after the block 386 [112], in the exit arm 386 [112] (same code each); `__assume(local_0 >= NONE)` after the block 418 [131] (1652 bytes, EBP still late); flag byte not volatile 440 [129]. Effect flag read: named datum pointer 402 [114], shifted byte local 425 [116],
 // pointer and one-bit bool 414 [127]. Retail's flag byte store at [esp+0x1b] is never read back; no form tried here gives it without the volatile. Not kept; body unchanged.
+// F404: Actual child-creation success/failure outcome in bool/byte/short/long,
+// after descriptor refresh: 334/334/334/334/334/334/334/334. NOT kept: no exact outcome-storage form.
+// Original handle admission, loop, random stream, geometry and whole body restored; lookup/blend/getter allocation remains.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
@@ -862,9 +571,7 @@ void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition
 				if (function_1697c0(0x800005, &local_23.field_c, &local_23.field_18, NONE, NONE, &collision))
 				{
 					vector3f const *local_10 = (vector3f const *)((byte const *)&collision + 0x28);
-					local_2->field_1c.x = local_10->i * 0.005f + collision.point.x;
-					local_2->field_1c.y = local_10->j * 0.005f + collision.point.y;
-					local_2->field_1c.z = local_10->k * 0.005f + collision.point.z;
+					vector3f_add_scaled((vector3f const *)&collision.point, local_10, 0.005f, (vector3f *)&local_2->field_1c);
 					local_2->field_02 |= 0xa;
 					local_2->field_28 = *local_10;
 				}

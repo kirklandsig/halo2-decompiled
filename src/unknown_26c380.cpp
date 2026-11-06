@@ -126,6 +126,7 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 	return success;
 }
 
+// MiniMax C (11-05): no new form, no lower score; retail's cross product multiplies the direction's component first (direction.k*up.j where ours does up.j*direction.k) and adds the magnitude's squares in the other order, both from the shared cross3f and magnitude helpers; retail also keeps the first-edge flag at [esp+0xf] and the success flag at [esp+0xe] where ours keeps them the other way round, and hoisting or reordering those two declarations does not move them.
 // score 244 (was 410): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
@@ -392,6 +393,30 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // and it still matches.
 // Held form at 34: 1605 bytes as retail, first difference +0x94, aligned count with registers and stack homes masked 4. Left: the cross's row j operands and the magnitude's j/i order, XMM1-3 rotated
 // (retail line offset, normal j, normal i; ours normal j, normal i, line offset), the line offset's and previous sector's stack slots, tail C's edge/distance store order.
+// B452: Boolean result/first-edge/hit lexical priorities, six role-name sets and
+// two joint sector-flag declarations: eight at 244. NOT kept: the native 0x64 frame
+// stays, but the two byte homes and projection/previous-sector homes remain exchanged.
+// Round 137 (m3 lane 8, fast, all on the held 34 form rebuilt from this body: the two exits as `success = false; goto finish;`,
+// which needs the `success = false;` as well, without it 106 at 1600 bytes): tail C stored blocked, edge, distance 245 (1500
+// bytes: it merges into tail A), with `success = false;` first in it 65 (1605, no merge, but the blocked store takes AL's
+// zero); the private magnitude sum in all six orders 34 (identical: the x87 sum follows the cross's component order);
+// cross3f_staged 34 (identical); a named result in the magnitude helper 361, in the dot helper 38, in both 349 (the cross
+// and magnitude are then retail's, but the line offset's dot copies the normal's j and one loop-entry jmp is lost); on that
+// the dot as y-first, vector-first or both 349 (identical), accumulated 360, two named products 357, named point coordinates
+// 357; the magnitude named at the call 350, with the named dot 338 (1612 bytes); the line as the code base's plane2f
+// (n, d), whose layout gives retail's normal/offset slots (0x34/0x38/0x3c, previous sector at 0x30) 304 (1612 bytes: the
+// point loads then stop folding into the products), with the named results 350/306/338; the offset declared before the
+// normal, at function scope, both at function scope 34 (identical). Retail's XMM1-3 = offset, normal j, normal i is a
+// register-priority tie between the offset and the normal components (four uses each in the edge loop).
+// Round 218 (m3 lane 3, fast; on the held 34 form rebuilt with its two `success = false; goto finish;` exits, 34 at 1605; masked =
+// register- and stack-masked aligned line pairs, 3 there): tail C stored blocked, edge, distance with `success = result->blocked;`
+// at its end 40 (no merge, store order right, but AL is re-read from the field and the cross's operand order moves); the same order
+// with `success = false;` ahead of the point call 36 (no merge, retail's tail C order, masked 2, but the direction pointer takes ECX
+// for EAX); the same order passing `result->distance` to the point call 243 (1500 bytes: forwarded, tail C merges into tail A); the
+// line as the code base's plane2f {n, d} (slots then retail's: aggregates above the scalars) 304 at 1612 bytes, masked 6 (the
+// point1.x product no longer folds into the normal's register), with a vector-first dot 304, declared at function scope 304. The
+// slot layout (normal 0x40, line 0x34-0x3f, previous sector 0x30) says retail's line is one 12-byte aggregate; what is left on it
+// is the fold and the XMM1-3 roles (retail offset, normal j, normal i). Body restored at 244.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
@@ -830,20 +855,19 @@ bool function_210690(short output_index, point3f const *point, point3f *out);
 // a named local at every read 30 (each loses five matched callers); its address read once into that local 37; its
 // address taken only for the else arm's copy 37.
 // @retail 0x26d100
-long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c0 *collision, point3f const *point)
+long function_26d100(vector3f const *up, point3f const *point, long *unknown, s_collision_result_1697c0 *collision)
 {
-    point3f const *const *point_reference = &point;
+    long result = NONE;
+    point3f start;
+    start.x = up->i * 0.5f + point->x;
+    start.y = up->j * 0.5f + point->y;
+    start.z = up->k * 0.5f + point->z;
     vector3f direction;
     direction.i = up->i * -4.0f;
     direction.j = up->j * -4.0f;
     direction.k = up->k * -4.0f;
-    point3f start;
-    start.x = up->i * 0.5f + (*point_reference)->x;
-    start.y = up->j * 0.5f + (*point_reference)->y;
-    start.z = up->k * 0.5f + (*point_reference)->z;
     s_path_collision *hit = (s_path_collision *)collision;
     s_path_node_point *output = (s_path_node_point *)unknown;
-    long result = NONE;
     if (function_1697c0(0x84000d, &start, &direction, NONE, NONE, collision))
     {
         result = function_1fa3a0(hit->structure_index, hit->surface_index, hit->object_index,
@@ -875,7 +899,7 @@ long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c
     }
     else if (output)
     {
-        output->point = **point_reference;
+        output->point = *point;
         output->output_index = NONE;
     }
     return result;
@@ -895,5 +919,5 @@ long __stdcall function_26d0e0(point3f const *point, s_type_c3b527 *output, long
     long const *unused_reference = &unused;
     (void)unused_reference;
     *(short *)((byte *)&collision + 0x24) = NONE;
-    return function_26d100(g_4687b0, (long *)output, (s_collision_result_1697c0 *)&collision, point);
+    return function_26d100(g_4687b0, point, (long *)output, (s_collision_result_1697c0 *)&collision);
 }

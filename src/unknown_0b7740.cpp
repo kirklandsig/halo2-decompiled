@@ -1277,6 +1277,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // The data field through a `byte *const *` pointer to it 44; the parent header by pointer addition 44; the parent
 // object by byte offset 44 (all same code); parent object, matrix and mirrored flag as conditional initialisations
 // 44 (1396); a parent header pointer with its object read at each use, mirrored first, 42 (1392: `lea` of the header).
+// Round 87 (m3 lane 16, fast, on the count > 0 guard diagnostic, 44 at 1390): `__assume` in the no-model arm (index != NONE at the
+// top or the end, parent object != NULL, pool != NULL before or in the arm, data != NULL) 389 each (1399 bytes: any `__assume` unfolds
+// the entry's flag store, the no-model block stays the same); three parent lookups 20 (1399), two 20 (1399); a forceinline lookup taking
+// the index as `long const &`, one/two lookups 44/44, a plain inline one, two lookups 44. Original body restored.
 // Round 110: split parent base, a one-use parent-node local, pool[0]/dereferenced-pool member spellings,
 // parent object/index role names, a function-scope parent object and a parent-node array pointer 97 each
 // (same code). NOT kept: no gain; the one-use forms require a byte match. Opening body restored.
@@ -1303,6 +1307,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // M3 lane 9 r88 (fast, on the count > 0 guard diagnostic, 44 at 1390, aligned+stack 5, unless noted): `stored` cleared through an inline out-parameter helper 97 without the guard and 44 with it (promoted after inlining: no kill of the
 // data field); a repeated `if (parent_index != NONE)` with a lookup in each 44; ternaries 50 (1402); two/three lookups in one test 20 (1399: the index takes ECX, so the pool reloads into EDX); the no-model arm first in source
 // 315 (1372), with the guard 314, with the guard and two lookups 297. Retail's copy of the index means it stays live past the lookup; every spelling here lets it die in place.
+// M3 lane 14 r68 (fast, on the count > 0 guard diagnostic, 44 at 1390): parent node index named before the lookup 44;
+// parent/mirrored defaults in an else arm 45 (1391); the masked parent index named 44; declarations index, mirrored,
+// parent 46; without the guard, the no-model parent through slot_handler.h's object_get/object_node_matrix 97 (same
+// code). The guard byte pattern (`test; jle; mov reg, 1; cmp; jle`) occurs nowhere else in retail.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

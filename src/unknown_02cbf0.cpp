@@ -49,6 +49,7 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
+// MiniMax I (11-05, run 37): no new form, no lower score (10); the first word's OR order, the kind shift and the pool register set still differ.
 // score 10 (was 15): left: the first word's OR order (retail ORs flags and category before the
 // kept top bits), the kind shift (retail `shl eax, 0x1d; mov esi, eax`, ours `mov esi, eax; shl esi, 0x1d`)
 // and the pool register set before the bit-count test. Round 149 below. Earlier rounds' notes follow.
@@ -254,6 +255,13 @@ static __forceinline long floor_to_long_inline(real value)
 // pointers 7/11 (flips only the second word, diagnostic); second word through one to four 7/279/279/279, with the array read 8/278/278/278.
 // On the 10 form: a local bitfield view for the first word (selection then category, or reversed) 14/14 (the second word's order flips too), for
 // the kind 79, both 83; low word built in two steps 10; kept bits named, the word's or as an assignment 79.
+// AC555: Owning combined low-29 payload/section-selector fields, subsets
+// 1/2/4/3/5/6/7, 10 each; all with final kind-field store 79. NOT kept: no
+// equality or gain; original header/body restored; OR/shift/pool schedules remain.
+// Y604: Actual declared record bitfields for initial/geometry/final packed words,
+// seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
+// NOT kept: no equality; the real declaration does not recover native OR/shift/pool
+// scheduling. Original record declaration, packed expressions and body restored.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, short instance, dword flags,
     long tag, dword key, long category, long material, byte *object, short mask, byte mode,

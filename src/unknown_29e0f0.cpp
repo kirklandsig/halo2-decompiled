@@ -77,6 +77,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
+// MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
 // score 390 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Round 64 (fast; masked aligned count in brackets, base 390 [182]): NOT kept, scratch recipe reaching 155 [11] at retail's 1596 bytes with every stack
 // slot right (aligned 428 -> 22): (1) group as `long`, tested on the field read and copied after: `if (bit_vector_test(visited_groups, entry.field_0))
@@ -341,6 +342,30 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH368: Standard coordinate-range squared/length delta and output-copy boundaries,
 // seven subsets then the complete graph with native float root: 437/507/435/555/443/501/537/537.
 // NOT kept: all regress and miss native homes/extent; original metrics, copies and whole body restored.
+// Round 75 (m3 lane 10, fast with 0x29e730 and the three callees; control 390, difflib-aligned 287): retail keeps the
+// group record in EBP and the loop bound in EDI for the whole group loop, ours puts the record in EDI (the mask
+// temporary clobbers it, hence the reload stub ahead of the loop head) and the bound in EBX. Outer index `long` 458
+// (1561 bytes, aligned 272); the link table read after the marker call 392; the group bitmap declared before the
+// marker position 405; the record pointer formed after the marker call 417; the outer bound in a short local 422.
+// M3 lane 11 r72 (fast, control 390, masked 181): the round-64 recipe rebuilt as a control, 155 at 1596 bytes (masked 11); left on it: arg_3 stays
+// in ESI from the range test to the 0x29de20 call in retail (`mov ecx, esi; mov esi, edx`, arg_0 in EDX for the third distance) where ours reloads
+// arg_3 into ECX and gives arg_0 ESI, the found flag stored from AL (retail loads local_29 into EDX, keeping the call's AX = 1), the step's EAX and
+// the output loop's record-base order. On this body: squared distance `x*x + (y*y + z*z)` 391 (masked 177); found flag declared first in the pass
+// 390 (same code); `short local_29` 446 (1563 bytes, frame changes at +0x2, masked 159); with `short local_2` too 431 (1577, masked 195); a group
+// entry pointer for both the group and start fields 390 (same code).
+// AC556: Selected-sentinel pair chains and six complete chains on the retained
+// long-terminal/output-cursor graph: eight at 390, 1596 bytes. Earlier chain trials
+// used the former short terminal. NOT kept: default homes and root roles unchanged;
+// original initializers, helpers, traversals and full body restored.
+// M403: Existing shared distance at pass-start/visited-anchor/paired-candidate,
+// seven subsets then shared squared metric: 401/390/404/401/415/404/415/415. NOT kept:
+// no gain; original helpers and full body restored, native selected/root/bitmap homes remain.
+// DH378: Single-exit failure ownership for complete root/reference, reference bound, provider and compatibility
+// guards, then root count/pointer/count-in-pointer/reference-in-root guards: 390 each in eight forms.
+// NOT kept: all canonicalize at 1596 bytes; original full body, guards, sole return and helpers restored.
+// DH380: Actual incoming origin/record/output pointer bindings made immutable, seven subsets,
+// then all with the packed-reference binding: 390/390/390/390/390/390/390/390. NOT kept: no native
+// selected/default/root-home recovery; original parameter bindings, helpers and full body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

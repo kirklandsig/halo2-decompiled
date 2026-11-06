@@ -253,6 +253,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // compile-only copy reproduces our order for every lookup spelling, and only a second use of the pool
 // data after the add (diagnostic store, 75 at 210 bytes) gives retail's exact data-first sequence, so
 // retail's register allocator saw the data live past the add.
+// Round 54 (lane 2, fast): `do { } while (false)` around the activation arm, around the call, ahead of the
+// test 4/4/4; a const reference to the component index for the test and the lookup 4; a component local inside
+// the arm 4; `disable == false` 4. Diagnostics, reverted at once: one to three volatile probes at the top, ahead
+// of the `disable` test or inside it leave the data load after the `lea` in EAX, so unlike 0x15adb0 this is no
+// missing rotation step: retail allocates the data load while the masked index still holds EAX.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -653,6 +658,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax G (11-05): no new form, no lower score; retail's result byte at 0x13 and the player index at 0x14 need retail's exact local set, which the reachable code cannot produce here.
 // MiniMax H (11-04): no new form, no lower score; retail's frame pointer and 8-byte self-alignment are not ours (frame 0xac against 0xb4).
 // MiniMax H (11-04): no new form, no lower score (230); the earlier rounds' forms still leave the
 // caller-dependent frame alignment and the dword result, so the body stands.
@@ -1608,6 +1614,17 @@ done:
 // every placement read at the call with only the definition local 67 (236 bytes, EBX pushed lazily); the
 // type at each use with the palette added at the call 37 (240 bytes), with a long size 27 (236 bytes);
 // the type local with the definition table read at each use, all at the call, 67 (236 bytes).
+// Round 54 (lane 2, fast; palette added at the call, long size; all 236 bytes): type local or read at each use x
+// definition local, read at each use or first read in place x offset long or inline: placements local 27 (long
+// index), 32 (short index), placements at the call 28 (long index), 28 or 34 (short index). With the type and
+// definition locals, a long index at seven points 30/31/26/26/27/27/32 (26: size EAX, palette EBX, index EDI as
+// retail; left: type ESI, definition ECX, no copy). Palette and block through local helpers of 0xd5260's shape
+// (out-parameter size), palette first or last, global or scenario local, inline or forced: short or late long
+// index 23 (scenario ESI, index BX, a dead block add), long index ahead of the helpers 25/26. The palette offset
+// through an inline read, then the definition local, long index at five points: placements local 31/26/26/27/27,
+// at the call 32/28/28/28/34; the palette pointer through it: local 33/32/32/33/33, at the call 33/32/32/33/27.
+// Lead: retail's `mov esi, eax` fits a definition local taking a value already read, with the size coalesced to
+// EAX for the product; every form above propagates the copy, so the type never reaches ECX.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1774,6 +1791,8 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax E (11-05): no new form, no lower score; no new form for the shared epilogue or for the inlined
+// 0xb8bd0 marker pointer (that file is /Ob1).
 // MiniMax H (11-04): no new form, no lower score; the body still differs from its first instruction.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the

@@ -714,6 +714,19 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // bytes, 0x91dd0 8); the spread query declared `__stdcall` or `__cdecl` so its `this` is pushed 67/67 (same code; 0x91860 still matches).
 // M391: Shared spread-query pair in plain two-pass long/short/word/byte loops, positive then complementary decision: 172/172/172/175/158/158/158/169.
 // NOT kept: No exact candidate-first query repair; frame grows from 0x2694 to 0x269c and extent moves away from native. Decision flags require equality. Original complete body restored.
+// M3 lane 16 r91 (fast with 0x91dd0/0x91b90, control 67; compile-only /FAs screens without /GL agree on the call order):
+// the selection written inside each comparison (`improved ? best.count_spread() : current.count_spread()`, which the
+// compiler folds back into one selected `this`) 150 (566 B); count_spread's definition moved below this function 67 (same
+// code); a `const` reference pointer with the reference on the left 65 (the listed reference-left code); the reference
+// from a two-entry pointer table indexed by `improved` 108 (523 B); the candidate through a pointer local 67. Screens:
+// between two stack solutions the right operand's query runs first (`a < b` queries b, `b > a` queries a), but a query
+// whose `this` is a register pointer (the reference, or `best` itself) runs before one on a stack address whatever the
+// side; count_spread's body left out of the unit, const-reference helper parameters and operand order do not change that.
+// Round 91 (m3 lane 9, fast): the reference spreads written `(improved ? best.count_spread() :
+// current.count_spread())` at both uses 128 (546 bytes; the arm calls are not merged), that with the costs too
+// 150 (566 bytes); the party pointers as `s_balance_party const &` 67 (same code); the reference defaulting to
+// `&best` with `if (!improved) reference = &current;` 117 (540 bytes); `improved` read into a `bool const`
+// after the swaps 67; cost() summing two named queries 67. The candidate's count_spread still runs second.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -890,6 +903,14 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 /* whether the players and the extra players joining them can be balanced
    into the teams within the given imbalance; each extra player is a party
    of its own */
+// MiniMax h (11-05): the count roles stay as they are in a local player count used by the sum and
+// the copy loop (34), in the sum as `extra + player` (34), as `total = extra; total += player` (34)
+// and through a local extra or players (34); only the value-changing `(short)` fill moves the player
+// count to EAX (7, and 5 with the clamp's subtraction written in place), which the note below keeps out.
+// Retail's sum reads the extra count first and the player count second, and the operand order of the
+// sum follows the order the two counts are declared in, so retail's declaration has the extra count
+// first: swapping the two declarations here gives 35 and would need the call site in
+// src/unknown_07a9a0.cpp to pass (count, groups, player count) instead of its current order.
 // score 34 (was 34): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
 // (retail player count in EAX, extra count in EDX) and flow through the copy, fill, call setup and
 // the final clamp's register: our loop temporaries take EDI/EAX (retail EDX/EDI), leaving EDX for the
@@ -1111,6 +1132,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // forced inline consuming total 34/34, returning computed total 71/71; ordinary
 // inline 144/144/143/143. NOT kept: no exact match; ordinary providers stay called.
 // Original complete body restored; frame/count/fill-value and clamp roles remain.
+// Round 91 (m3 lane 9, fast with 0x91e30): open slots from `team_count * maximum_team_size - (player_count +
+// extra_count)` with the total declared after 71; that with the fill bound and the call written `player_count +
+// extra_count` (no total local) 74; the copy through a `long const *` to the element 34 (same code); the tail as
+// `imbalance -= open_slots; if (imbalance < 0) imbalance = 0;` 46; the fill under `if (extra_count > 0)` 74 (198
+// bytes); a `long const` of the index plus one named for the maximum and the copy 87 (169 bytes).
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

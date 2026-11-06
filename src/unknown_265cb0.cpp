@@ -365,7 +365,15 @@ real function_30bf0(vector3f *vector);
 
 // MiniMax G (11-04): the motion declaration hoisted beside the delta gives identical code (152);
 // no new form, no lower score.
-// score 104 (was 152): retail's registers throughout (the SIMD groups are now right), 1310 bytes against 1308. Left: stack homes
+// score 84 (was 104): retail's block layout and registers but for the range's first load and two products, 1310 bytes against 1308, masked 20. Left: stack homes
+// (result +4 for retail's +0; amount shares with the count where retail shares it with the squared distance; range, scale, the cursor and the
+// two facing values one slot off), x-operand forms in the two seat-loop cross products, the range loaded into XMM2 for XMM0. Round 65 (m3
+// lane 14, fast): a named facing test read again after the arms, for retail's arm past the first exit (retail's jmp back to the join after a
+// barrier): alone 153 (1312); seats indexed alone 142; both 84 [20], kept, with primary copied first in the re-test; the same test written
+// out at both places 342 (1347); a per-iteration seat element pointer 90 at 1308; long index 173; range read after delta 87; delta through
+// vector3d_from_points3d 142 at 1308; amount or plane declared wider 84 each; forward cast at each use 147; side/up and a/b declaration
+// orders, ternary maxima, `continue` on no occupant 84 each; a world-up pointer local before the loop 149, in the body 90; non-const forward 84.
+// Earlier first line: score 104 (was 152): retail's registers throughout (the SIMD groups are now right), 1310 bytes against 1308. Left: stack homes
 // (result +4 for retail's +0; amount shares with the count where retail shares it with the squared distance; range, scale, the
 // cursor and the two facing values one slot off), the not-facing arm sits inline where retail places it after the first return, and
 // x-operand forms in the two seat-loop cross products. Round 64, fast, masked aligned in brackets: the projected delta through a clipped
@@ -577,6 +585,9 @@ real function_30bf0(vector3f *vector);
 // P331: Geometry admission results at endpoint/length/query, masks 1/2/4/3/5/6/7 then complementary
 // all: 188/189/189/197/197/197/190/230. NOT kept: no equality or gain; original complete body
 // restored.
+// M404: indexed-seat byte/signed-char/word/int ordinals, mutable count:
+// 186/185/193/173; immutable count: 186/185/193/173.
+// NOT kept: no exact native allocation; original signed-short traversal and body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -632,9 +643,10 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 				if (scaled_range * scaled_range > distance_squared)
 				{
 					real secondary, primary;
-					if (!actor->unknown007 && use_facing)
+					real facing_secondary, facing_primary;
+					bool facing = !actor->unknown007 && use_facing;
+					if (facing)
 					{
-						real facing_secondary, facing_primary;
 						function_263740(actor_index, &delta, (vector3f *)((byte *)actor + 0x2a8),
 							(vector3f *)((byte *)actor + 0x2b4), (vector3f *)((byte *)actor + 0x2c0),
 							range, scale, &facing_secondary, &facing_primary);
@@ -643,10 +655,9 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 						{
 							s_object_seat seats[64];
 							short count = function_c8b80(object_index, seats, 64);
-							s_object_seat *seat = seats;
 							for (short i = 0; i < count; ++i)
 							{
-								long occupant = function_c8f60(seat->object_index, seat->seat_index);
+								long occupant = function_c8f60(seats[i].object_index, seats[i].seat_index);
 								if (occupant != NONE)
 								{
 									s_slot_object_view *object = object_get(occupant);
@@ -663,16 +674,18 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 										if (b > facing_primary) facing_primary = b;
 									}
 								}
-								++seat;
 							}
 						}
-						secondary = facing_secondary;
-						primary = facing_primary;
 					}
 					else
 					{
 						primary = scaled_range;
 						secondary = scaled_range * 0.7f;
+					}
+					if (facing)
+					{
+						primary = facing_primary;
+						secondary = facing_secondary;
 					}
 					if (mode == 0 && secondary * secondary > distance_squared)
 					{
@@ -1276,6 +1289,10 @@ struct s_equipped_object_view
 // A volatile probe local (diagnostic, reverted) ahead of any entry statement does not move the widened index (59, 152 bytes; 51, 149).
 // The pool and its data compete for ESI by references, so the entry's second lookup is what hands ESI to the pool, but it also swaps
 // the entry's registers. That form stays unkept: a local for some reads and a lookup for others is a hand reload without a match.
+// Round 169 (lane 4, fast): the threshold count test nested inside the held test 6; the tag instance by pointer
+// arithmetic (`g_4e3b44 + index`, then `->bytes`) 6; one volatile pool view local for both lookups 6; early returns in
+// place of the result 39; the held object through a header pointer into the pool 20 (143 bytes); a 600 s fast annealing
+// permuter run (its reduced image scores the original 6): 56 tries, none below 6.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
@@ -2104,6 +2121,19 @@ real function_2683f0(long actor_index, long node_index, short type)
 // DH356: Complete facing/distance/speed score-contribution producers, seven subsets,
 // then all zero lifetimes at the score region: 687/283/261/744/736/281/738/731.
 // NOT kept: one-use result forms regress; original full body restored; query remains exact.
+// Round 65 (m3 lane 14, fast, masked in brackets; base 168 [61]): the two searches are retail's existing helpers (same bytes in 0x1c8180):
+// `ai_player_get` + `ai_player_index_get`, as matched 0x1bbf40 writes them: 849 (2642 bytes, both calls, the forward getter drops out of
+// line too); with `inline` on 0x1c8180's definition in src/ai.cpp 795 (2682; its callers all still match); plus a `__forceinline`
+// declaration of object_get_forward here 383 [52] at 2880, every search line retail's. Not kept (score rises). On that: scoring block with
+// a `rejected` flag (`if (visible) {...; if (!established && far && slow) rejected = true;} else if (!established) rejected = true; if
+// (!rejected) {...}`) 305 [27] at 2886, retail's block order; score test in both established arms 378 [54]; flag in the else only 383 [52];
+// second search alone as the helper 769 (2680). Left on 305: the iterator's table pointer in ECX for EAX, one byte longer, so the head's
+// 6-byte pad becomes `jmp` + 3 bytes and later lines sit one off; direction held in XMM1-3 across the dots. Same code on it: iterator set
+// through an inline helper 383, stores reordered or chained 385, vehicle definition named 383, eligibility bool, inline eligibility
+// helper, inline type getter, type read at each test, loop nested in the test 305 each. Next: that one scratch step, then this recipe.
+// F404: Complete normalized-direction value at distance/query/absolute-speed/relative-speed
+// boundaries, mutable then const: 429/429/429/439/429/429/429/439. NOT kept: no exact value-ownership form.
+// Original normalizers, vectors, predicates and complete body restored; iterator/byte homes and SIMD residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

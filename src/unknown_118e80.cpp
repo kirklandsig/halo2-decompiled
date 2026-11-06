@@ -349,6 +349,16 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // the existing vector3f_add_scaled with a real quotient 220 (0x11f0d0 89, its `double angle` still pads
 // this frame); here: turn velocity declared before forward 224; world-up computed before the forward
 // branch 285 (1010 bytes); the second turn's scale as `acceleration + acceleration` 224.
+// Round 400: complete ordinary zero-limit/admission results in bool, byte,
+// short and long domains 249 each, 1030/1030 bytes. NOT kept: no gain or
+// match; original scalar tests and body restored. Frame and early save remain.
+// DH384: shared xyz requested/default/turn/orientation/all native transfers
+// 256/262/289/260/361; complete point-helper transfers 361; all-output zero
+// construction 392, with shared transfers 491. NOT kept: all regress and grow;
+// the native 0x6c frame, late ESI and basis/position homes remain unresolved.
+// World-up row first sums/results at each publication 220/220; all first sums/results
+// before stores 224/225; sequential rows 220; early first products 225; all sequential
+// results 225; native output aggregate 299. NOT kept: ties or regressions; original restored.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {
@@ -1081,11 +1091,14 @@ void function_1e5bb0(s_biped_physics_output *arg_0, void *arg_1, void *arg_2, re
     vector3f const *arg_20, vector3f const *arg_21, vector3f const *arg_22,
     vector3f const *arg_23, vector3f const *arg_24, long arg_25);
 void function_1e6360(s_biped_physics_output *arg_0, real arg_1, long arg_2, real arg_3);
-void function_1e5af0(void *arg_1, s_biped_physics_output *arg_0, vector3f const *arg_2, vector3f const *arg_3);
+void function_1e5af0(void *arg_1, vector3f const *arg_3, vector3f const *arg_2, s_biped_physics_output *arg_0);
 void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, bool arg_3, bool arg_4,
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// score 92 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
+// publication differ; the force formal still requires a zero extension. Round 85 (m3 lane 16): 0x1e5af0's
+// parameters as (physics, forward, up, output) give the first 0x1e5af0 call retail's EAX/ECX/EDX setup (94 -> 92).
 // MiniMax H (11-04): the squared length written as i*i + j*j + k*k 94; the component order
 // does not move.
 // score 94 (was 94): frame 0x1f0 agrees; basis MOV/LEA, squared-component loads and force-result
@@ -1224,7 +1237,7 @@ bool __stdcall function_118700(long arg_0)
         if ((bool)((*(dword *)local_8 >> 4) & 1))
         {
             function_1e6360((s_biped_physics_output *)&local_3, local_0->turn, arg_0, 0.0f);
-            function_1e5af0(local_9, (s_biped_physics_output *)&local_3, &local_0->up, &local_0->forward);
+            function_1e5af0(local_9, &local_0->forward, &local_0->up, (s_biped_physics_output *)&local_3);
         }
         else
             function_1e6120((s_biped_physics_output *)&local_3, local_9, 0.0f, false, false,
@@ -1235,7 +1248,7 @@ bool __stdcall function_118700(long arg_0)
         {
             local_0->forward = local_11.field_18;
             local_0->up = local_11.field_24;
-            function_1e5af0(local_9, (s_biped_physics_output *)&local_3, &local_0->up, &local_0->forward);
+            function_1e5af0(local_9, &local_0->forward, &local_0->up, (s_biped_physics_output *)&local_3);
         }
         vector3f *local_12 = (vector3f *)((byte *)&local_3 + 0x138);
         bool local_13 = local_12->k * local_12->k + local_12->j * local_12->j + local_12->i * local_12->i > 0.0f;

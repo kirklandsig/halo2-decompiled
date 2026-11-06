@@ -142,6 +142,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 #pragma inline_depth(1)
 #include "vector_products.h"
 // score 1355 (was 1355): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// g1B walk (2026-11-05), every retail block 0x206090-0x2078eb read against this source, no behaviour difference found:
+// fields/offsets, test directions, callees and argument order (0xba1d0, 0x182800, 0x17c900, 0x1821d0, 0x207ab0, 0x1d1010,
+// 0x2078f0 twice with unknown38 0 then 1, 0x2079f0 on both its paths, 0x227990, 0x2294a0, 0x22a4b0), loop shapes (the found
+// search does not stop the outer list loop, 0x207862 -> 0x20786b), the three final counters and all 19 float literals
+// (read from retail's .rdata at 0x44ae90, 0x44541c, 0x45dbbc-0x45e5d0) agree. Only code shape differs.
 // Frame 0x5d0 versus 0x58c; component/velocity homes, contact induction and scheduling remain.
 // Earlier 1585 (was 1596): Frame 0x590 versus 0x58c; component/velocity homes and contact induction remain.
 // Earlier 1600 from 1600: frame 0x580 versus 0x58c; velocity homes and contact induction differ;
@@ -419,6 +424,23 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // private/native ray type: 1355/1421/1382/1355 in both sets. NOT kept: no native
 // frame/home recovery; pointer/short traversal changes miss extent. Original raw query
 // storage, private ray, captures, scaled translation and entire body restored.
+// Round 136 (fast): the magnitude helper's input copy and result in an inner block 1395 (6195 bytes, frame 0x5cc);
+// the copy const 1355; `sqrtf` 1415 (6259 bytes); the copy declared, then assigned 1355; the first normalizer with
+// one exit (zero in the if arm, the scaling in the else) 1355.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 1355 [969]): the first loop's offset and point-velocity
+// vectors written as element expressions at each use (no pointer locals) 1403 (6211 B) [997]; the duplicate-impact search
+// with the compare in the loop condition 1355 (same code); the k/j/i cross with the +0x88 factor named once for both
+// steering products 1425 (6211 B) [983]; the add helper written `a = b + a` (retail loads the added vector first) 1355
+// (same code), with the k/j/i cross 1426 (6238 B, round 79's code) [984]. Retail keeps the first loop's cross stores and
+// re-reads j and k for the add (only i is forwarded); ours drops the cross stores and sums in registers.
+// M3 lane 12 r93 (fast; 0x2056e0 matches): the first loop's element position through a named point pointer (also
+// for the ray origin) 1385 (6195 bytes); its offset through the existing vector3d_from_points3d 1407 (6259 bytes); the
+// magnitude summed i, j, k 1355 (same code); the magnitude from three named component locals 1608 (6022 bytes, as the
+// pointer-read form); the snapshot declared const 1355 (same code). The frame excess is the snapshot copy (ours stores
+// each component, copies it to the snapshot and loads x87 from there; retail loads x87 from the first store).
+// Round 136 (fast): the magnitude helper's input copy and result in an inner block 1395 (6195 bytes, frame 0x5cc);
+// the copy const 1355; `sqrtf` 1415 (6259 bytes); the copy declared, then assigned 1355; the first normalizer with
+// one exit (zero in the if arm, the scaling in the else) 1355.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

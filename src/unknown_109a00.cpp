@@ -4,6 +4,7 @@
 #include "object_list.h"
 #include "unknown_1428b0.h"
 #include "vector_products.h"
+#include "normalize3d.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -305,9 +306,13 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
+// MiniMax I (11-05, run 37): no new form, no lower score (56); the transform-base lea, the dot's product order and the failure stores' placement still differ.
 // MiniMax A (11-04, run 41): no new form, no lower score (112); the entry registers are still reversed (retail
 // object in eax, entry in ecx) and the physics pointer is still spilled early.
-// score 112 (was 112): Frame 0x48 agrees; object/entry registers, early physics-pointer spill and center/projection scheduling remain.
+// score 56 (was 112): frame 0x48 and the entry registers agree, 0xb7060 matches; what remains: the definition spilled at its load (retail EAX, ours ECX, then the
+// default body and index registers), the search's bodies/offset load order, transform kept in EBP where retail has `lea ecx` and left in EBP, the dot's first two
+// products (retail k then j, up first), one cross product side, and the failure stores (retail after the pops).
+// Earlier at 112: object/entry registers, early physics-pointer spill and center/projection scheduling.
 // Earlier at 112 (was 112): retail takes the object index in eax and the entry
 // index in ecx (ours the other way round, which is also 0xb7060's last
 // difference), and orders the dot product's terms k, j, i (ours k, i, j;
@@ -524,6 +529,20 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // acquisition and accessor/data, original center 112/112/112/112; converted
 // center 149/149/149/149 (frame 0x44, caller 2 -> 11). NOT kept: no gain or
 // native input/spill repair. Original views, helpers, center and full body restored.
+// Round 151 (one-link harness with 0xb7060's and five callee files, exact; fast and plain confirmed): 112 -> 89 `transform` pointer for the axis block with the center through the
+// existing converter, dot3f(forward, up), vector3f_scale, direct subtract; 76 with transform declared before the validity test and passed to the matrix call, and the search reading the component
+// directly (0xb7060 0); 65 with forward/left/up pointers from it; 58 with only `up` named; 56 with the dot passed straight to vector3f_scale. Forms, in harness counts: transform declared in the arm 237-272 (caller 2),
+// before `entry->active` 231, at the top of the function 272; the axis from entry fields 148 (940 bytes, caller 11), pointers from entry 122 (927, caller 11); valid cleared first 56 (positional only); dot3f(forward, up) 56 (same code);
+// `up` before the validity test 145 (caller 11), declared first 56; a const forward pointer 65; found as long 75; direct products 69-73, scalar scaled_i/j/k 66, cross3f 69; the definition through a const
+// reference to its pointer 97 (911 bytes), through a reference to the record 65 (same code); a second definition test threaded away 65 (same code), `if (definition)` 247; failure stores in early returns 288 (943 bytes,
+// retail's pops before stores, caller 0), threaded through `body_index = NONE` and else 112 (same code), `== NONE` first with a return 218 (911), a success flag 132; on the earlier axis form, no `valid = true` or `valid = 2` flips EBX/EBP (diagnostic).
+// Round 153 (fast with 0xb7060): six of the 56 are `call` rows flagged only by a 9-byte offset shift (ours forms the axes from the transform
+// in EBP, 3-byte leas; retail from the entry in EBX, 6-byte leas) and ten are padding after our shorter tail, where the not-valid exit shares
+// the failure block's epilogue (retail gives it its own, so the failure block pops before its stores). Tried: the validity test as an early
+// return 56; the definition fetched after the default body 81; the axes from the entry with the transform kept for the matrix call 115
+// (928 bytes, the head flips, 0xb7060 11; close to round 151's pointers from entry); an explicit return closing the validity block 56 (same
+// code); the definition as a pointer to const 56; the matrix call given `&entry->transform` 56 (same code). Re-measured: `forward` named
+// beside `up` 65.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
@@ -542,10 +561,9 @@ void function_109660(long object_index, long entry_index)
 			bool found = false;
 			for (long i = 0; i < component->count && !found; i++)
 			{
-				s_carrier_body_entry *body = &component->bodies[i];
-				for (long j = 0; j < body->count; j++)
+				for (long j = 0; j < component->bodies[i].count; j++)
 				{
-					if (definition->bodies[body->indices[j]].flags & 0x10)
+					if (definition->bodies[component->bodies[i].indices[j]].flags & 0x10)
 					{
 						body_index = i;
 						found = true;
@@ -566,29 +584,26 @@ void function_109660(long object_index, long entry_index)
 				((s_havok_component *)component)->rigid_body_matrix_get(body_index, &entry->current_transform);
 				carrier_body_velocity_get(component->bodies[body_index].body, &entry->velocity);
 				carrier_body_angular_velocity_get(component->bodies[body_index].body, &entry->angular_velocity);
-				*(vector3f *)&entry->center = *(vector3f *)&component->bodies[body_index].body->motion->center;
+				carrier_vector_from_havok((vector3f *)&entry->center, &component->bodies[body_index].body->motion->center);
 				entry->active = true;
+				transform4x3f *transform = &entry->transform;
 				if (entry->valid)
 				{
 					transform4x3f inverse;
 					function_141590(&entry->previous_transform, &inverse);
-					function_142a60(&entry->current_transform, &inverse, &entry->transform);
-					vector3f *forward = &entry->transform.forward;
-					function_30bf0(forward);
-					vector3f *left = &entry->transform.left;
-					function_30bf0(left);
-					vector3f *up = &entry->transform.up;
+					function_142a60(&entry->current_transform, &inverse, transform);
+					function_30bf0(&transform->forward);
+					function_30bf0(&transform->left);
+					vector3f *up = &transform->up;
 					function_30bf0(up);
-					real dot = dot3f(forward, up);
-					real scaled_i = forward->i * dot;
-					real scaled_j = forward->j * dot;
-					real scaled_k = forward->k * dot;
-					up->i -= scaled_i;
-					up->j -= scaled_j;
-					up->k -= scaled_k;
+					vector3f scaled;
+					vector3f_scale(&transform->forward, dot3f(up, &transform->forward), &scaled);
+					up->i -= scaled.i;
+					up->j -= scaled.j;
+					up->k -= scaled.k;
 					function_30bf0(up);
-					cross3f_staged(up, forward, left);
-					function_30bf0(left);
+					cross3f_staged(up, &transform->forward, &transform->left);
+					function_30bf0(&transform->left);
 				}
 				return;
 			}
