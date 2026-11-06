@@ -551,10 +551,10 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
-// MiniMax E (11-06): score 244 (was 264): the type cases now run 0, 2, 3 as retail does, with the type test
+// MiniMax E (11-06): score 246 (was 264): the type cases now run 0, 2, 3 as retail does, with the type test
 // falling through to case 3; case 3 keeps its own failure byte and calls the position routine only when
-// flag1 is clear; the audibility byte is declared at the audibility call; case 0 names the listener before
-// the 0x1000 flag store. Still different: our frame is 0x84 against retail's 0x80, so every stack home is
+// flag1 is clear; the audibility byte is declared at the audibility call. Not kept (coordinator): case 0's listener
+// as a one-use local read before the 0x1000 flag store (244; 246 without it). Still different: our frame is 0x84 against retail's 0x80, so every stack home is
 // off by four; retail merges the audibility byte into the 4-bit field where ours assigns it; retail's clear
 // path sets the flag byte with `or byte ptr [edi], 2` where ours folds it into a word store.
 // MiniMax C (11-04): no new form, no lower score: the flag-0 mask is the same literal 1 as the type tests and the shift, so the compiler hoists it into EBX and the frame stays 0x84 (a unique mask value folds to `test byte ptr [esi+4], imm`); a byte flags field with byte or word bitfield views, the mask spelled byte, unsigned, long, short, true or character, `== 0`, `!= 0` and `% 2`, the type test as a switch, and the audibility form that reproduces retail's neg/sbb/inc store all score 265 or worse.
@@ -725,9 +725,8 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 		{
 			*(short *)((byte *)&location->spatial.location + 4) = (short)cluster;
 			*(long *)&location->spatial.location = NONE;
-			long listener = sound->type == 0 ? sound->listener : NONE;
+			*(short *)((byte *)&location->spatial.location + 6) = sound->type == 0 ? sound->listener : NONE;
 			((byte *)&location->flags)[1] |= 0x10;
-			*(short *)((byte *)&location->spatial.location + 6) = (short)listener;
 		}
 		break;
 	}
