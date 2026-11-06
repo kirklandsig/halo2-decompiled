@@ -336,6 +336,7 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// MiniMax S (11-06): no new form, no lower score: retail still packs the iterator handle as an index and a datum in one word and scans its bit vector in 32-bit words; ours keeps the two in separate values, and the location query's call boundary still differs (its owner is outside this lane).
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // Round 28 (lane G): what still differs is the location call itself: retail calls 0x11bed0 out of
 // line here and our build inlines it, and the datum and element register homes follow from that;
@@ -1296,6 +1297,7 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
+// MiniMax S (11-06): no new form, no lower score: the source copy is still scheduled differently from retail's and the first-player query is still expanded instead of called; the frame and the entry copy agree.
 // score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
 // instead of retail's temporary/copy, and the first-player query still expands.
 // Lane 14 r57 (plain): the audible arm through a local offset copied into the request after the 0x21bfb0 call
