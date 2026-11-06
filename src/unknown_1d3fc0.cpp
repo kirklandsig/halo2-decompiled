@@ -18,8 +18,8 @@ int __fastcall function_142a60(transform4x3f const *arg_0, transform4x3f const *
 
 PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 {
- real squared_length = dot3f(arg_0, arg_0);
- real local_0 = (real)sqrt(squared_length);
+ real j_squared = arg_0->j * arg_0->j;
+ real local_0 = (real)sqrt(arg_0->i * arg_0->i + j_squared + arg_0->k * arg_0->k);
  if (!(fabs(local_0) < 0.0001f))
  {
   real local_1 = 1.0f / local_0;
@@ -30,16 +30,15 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
-// MiniMax A (11-05): the shared normalizer's squared length named through the existing dot3f and the
-// dot written out with its k term read from the matrix field: 2 at 922 bytes (the k field read gives
-// retail's whole forward block); the i term still copies up.i where retail copies forward.i. The dot's
-// addends reordered and the pointers declared apart from the calls: 2 each; the up side or forward.i
-// read from the matrix 145 and 148; the two normalizations swapped 71; the calls through the pointer
-// variables 94.
+// MiniMax A (11-05, held at m3 review): 110 -> 2 with the normalizer's squared length through the existing
+// dot3f and the caller's dot3f(forward, up) written out by hand with its k term read as
+// local_1[0].forward.k (the same field forward points to); only the i term then differs (ours copies up.i,
+// retail forward.i). Not kept without a match: an existing helper's body written by hand and a second
+// access path to one field are score-picked forms; the normalizer change alone 172. Addends reordered or
+// pointers declared apart 2; the up side or forward.i from the matrix 145/148; the normalizations swapped
+// 71; calls through the pointer variables 94. build/held/mma-1106-1d3fc0-handwritten-dot.patch
 // MiniMax B (11-04): a second forceinline normalize twin (k, j, i summed in turn, used for up and left while forward keeps 0x1d3fc1) with the dot product written out 2; NOT kept: a score-picked helper twin (no new inline twins).
-// score 2 (was 110): only the dot's i term differs: ours copies up.i and multiplies by forward.i,
-// retail copies forward.i and multiplies by up.i. Frame 0x13c, length 922 and every other
-// instruction agree.
+// score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // Round 34 (lane 17, fast): forward/up pointers taken first, then both normalized through them 150;
 // a const forward pointer 110; named i and j squares (real; retail's forward sum j, i, k but k still
@@ -358,7 +357,7 @@ void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
    {
     vector3f *forward = function_1d3fc1(&local_1[0].forward);
     vector3f *up = function_1d3fc1(&local_1[0].up);
-    real local_10 = forward->i * up->i + forward->j * up->j + local_1[0].forward.k * up->k;
+    real local_10 = dot3f(forward, up);
     up->i -= forward->i * local_10;
     up->j -= forward->j * local_10;
     up->k -= forward->k * local_10;
