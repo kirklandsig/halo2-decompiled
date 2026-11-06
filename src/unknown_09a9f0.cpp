@@ -226,6 +226,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// MiniMax A (11-06, run 52): no new form, no lower score (49) - a byte result set after the attach
+// reaches retail's shape but scores 77, and reading the header through the entity changes nothing;
+// retail keeps the result in bl and looks the header up twice.
 
 // MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
 // pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a

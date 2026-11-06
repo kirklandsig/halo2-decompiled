@@ -633,6 +633,16 @@ struct s_device_machine_view
 };
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+// MiniMax A (11-06, run 52), not kept: 2 (from 34) with MiniMax D's form below, the group flags read
+// through the device-group macro into a word before the machine test and masked into a byte after
+// it, plus `function_value = 0.0f;` first in case 0x1200055f's velocity block (a dead store there,
+// match-only). What is left at 2 is retail's address fold (a lea before the load) where ours loads
+// the word through the combined address, plus the mask instruction retail does not have. A named group pointer gives
+// retail's delayed word load but lands in ESI, not EAX; a dword local for the element address does
+// put the address in EAX but the load then narrows to a byte (115) or the address falls back to
+// ESI (122), and two separate reads of the flags do not merge either (122). Lead: case 0xf00055e
+// also starts its velocity block with `function_value = 0.0f;`, so retail's result may not be
+// zero-initialised at entry; dropping the initialiser needs a store on every other path.
 
 // MiniMax D (11-05), not kept: 2 fast (from 34) with the group flags read into a word before the machine test, masked
 // into a byte (`byte group_flag_bits = (byte)(group_flags & 3)`), and `function_value = 0.0f;` added at the top of case
@@ -1106,6 +1116,10 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax A (11-06, run 52): no new form, no lower score (121) - retail keeps the initial velocity in
+// xmm6 and leaves the ramp-down time in memory, ours caches the ramp-down time and pushes the initial
+// velocity; both ramp-down clamps written as if-statements (retail's conditional-store form) score 122,
+// and the permuter was stopped after half an hour without producing a try.
 // MiniMax D (11-05): no new form, no lower score (121); the permuter run was killed at its time limit
 // before it produced any result.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
