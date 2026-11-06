@@ -342,6 +342,10 @@ struct c_aggregate : c_child
 // call. Diagnostic, reverted at once (flags are the user's decision): this body with 0x97f00 and 0x97f30 (both vtable
 // methods, standard convention) in a /GL- file of their own matches, and 0x97f60, 0x97fe0, 0x980d0 and 0x98120 stay matched
 // in this LTCG file (plain check of the seven; no full check run on it). Lead for the coordinator: that split.
+// Round 218 (m3 lane 3, fast): the query output declared at the cleanup block's scope 31; `dword const *source` in the
+// declaration and definition 31; the query output as a dword 31; produced at function scope, zeroed in the call's block
+// 42; a named destination block pointer for the collection call 31 (frame 0x8024 in each). Diagnostic, removed at once:
+// global optimization off around the body 441 (666 bytes, frame 0x804c). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

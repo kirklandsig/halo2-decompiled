@@ -405,6 +405,15 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // point loads then stop folding into the products), with the named results 350/306/338; the offset declared before the
 // normal, at function scope, both at function scope 34 (identical). Retail's XMM1-3 = offset, normal j, normal i is a
 // register-priority tie between the offset and the normal components (four uses each in the edge loop).
+// Round 218 (m3 lane 3, fast; on the held 34 form rebuilt with its two `success = false; goto finish;` exits, 34 at 1605; masked =
+// register- and stack-masked aligned line pairs, 3 there): tail C stored blocked, edge, distance with `success = result->blocked;`
+// at its end 40 (no merge, store order right, but AL is re-read from the field and the cross's operand order moves); the same order
+// with `success = false;` ahead of the point call 36 (no merge, retail's tail C order, masked 2, but the direction pointer takes ECX
+// for EAX); the same order passing `result->distance` to the point call 243 (1500 bytes: forwarded, tail C merges into tail A); the
+// line as the code base's plane2f {n, d} (slots then retail's: aggregates above the scalars) 304 at 1612 bytes, masked 6 (the
+// point1.x product no longer folds into the normal's register), with a vector-first dot 304, declared at function scope 304. The
+// slot layout (normal 0x40, line 0x34-0x3f, previous sector 0x30) says retail's line is one 12-byte aggregate; what is left on it
+// is the fold and the XMM1-3 roles (retail offset, normal j, normal i). Body restored at 244.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

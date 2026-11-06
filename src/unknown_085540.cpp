@@ -988,7 +988,7 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
-// score 24 (was 24): lane 12 r78 reached 2 (not kept: the read helper's new offset parameter was found by measuring, with no
+// score 24 (was 24): only case 2's two 0x68670 argument loads and the first read's forwarded start differ on the match-only forms below; BLOCKED-BY 0x68670 for the loads. Lane 12 r78 reached 2 (not kept: the read helper's new offset parameter was found by measuring, with no
 // retail call to show it, 10-30 rule). That 2 form is retail's code but for case 2, which sets up 0x68670's source before its block (ours after). Only the
 // declared order of that contributor function moves it: (block, source, size) or (block, size, source) gives a byte match in
 // a diagnostic, so BLOCKED-BY 0x68670. This round (fast): the read taking its offset, one `ring` local before the first read and
@@ -1246,6 +1246,10 @@ bool function_68670(byte *source, long size, void *block);
 // at all five sites) 24 [9]; ring local with plain statements and no helper 153 (534) [52]; ring local + read call + advance helper taking the
 // view 121 (554) [25], taking the ring 154 (533) [51]. Control: the 2 form re-measured 2 [2]; it needs the ring local's `start` evaluated by the
 // caller while the callee's receiver comes from the helper's own derivation. Case 2's two loads stay BLOCKED-BY 0x68670.
+// Round 217 (lane 3; harness exact at 24, then fast and plain; NOT kept, match-only: the gain needs `next`, a one-use local computed ahead of the intervening used store): 24 -> 2 (plain 2, file otherwise unchanged) with no offset parameter: the read split into a position-read helper and an advance helper that each derive the ring from the view, both called at both
+// reads, and the advance taking the remainder first (`long next = start + count; next %= size; used -= count; start = next;`). Retail's own order there is idiv, used update, start store. The remainder in the local's initializer 2; returned from the helper and stored by it 2;
+// `buffer->start = consume(view, count)` with a returning helper 2. Same helpers, start stored before used 121 (554), with no named next 121; used first with no next 133 (559). The one read helper calling a view advance helper 2, without next 121 (554); advance on `this` or on the ring pointer, without next 24 (553), with next 133 (558);
+// next and used-first in one read helper with no advance 133 (558), start first 24; used first without next 29; a whole read member 24; forced-inline read or both helpers 121; the advance through a re-derived ring inside one helper 26 (559); direct read calls plus the advance helper 24 (556).
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

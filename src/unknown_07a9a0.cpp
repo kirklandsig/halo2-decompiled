@@ -1258,6 +1258,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // reverse of retail); that with the player value through 0x63220 1067 (2556 bytes, 0x63220 still out of line); the
 // team-count switch grouped alone 940 (2704 bytes); the capacity helper with external `inline` linkage 840 (2828
 // bytes). Our link inlines the first 0x192e60 call site in source order and keeps 0x63220 out of line.
+// Round 218 (m3 lane 3, fast; masked = register/stack-masked aligned line pairs x2, control 422): the top lookup
+// guarded by `variant_index != NONE ? ... : NULL` (a test retail does not have; diagnostic) 930 (2716 bytes, masked
+// 406): the call stays out of line, the session arrives in EAX with retail's head, and 0x73530 matches byte for byte,
+// but the capacity helper stays a call; with the capacity case labels grouped 940 (2732 bytes: the seven out-of-line
+// calls are retail's set, the capacity switch inlines but as compares, not retail's table, and the early exit jumps to
+// the shared tail where retail has its own `result = false` epilogue); that with a long histogram 928 (2700 bytes, masked
+// 376); grouped labels and a long histogram without the guard 850; the early exit as `result = false; return result;` 766
+// (same code). Lead: retail's call site is out of line with no guard, so its inline choice comes from elsewhere.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
