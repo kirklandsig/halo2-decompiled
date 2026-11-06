@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax E (11-06): no new form, no lower score; retail inlines the 0xbaf80 root walk with its entry
+// test, while our build keeps that walk out of line because another file pins it, so the player and
+// unit carriers stay the other way round.
 // MiniMax H (11-04, run 33): no new form, no lower score; the walk is still the out-of-line
 // 0xbaf80 pinned by another file, so the entry test and the root stay in the callee.
 // MiniMax H (11-04): no new form, no lower score; the player/unit carriers and the root-walk entry stay.
@@ -2855,6 +2858,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // reduced image (193 -> 180), but the full build measured that form at 180 against the 103
 // baseline, so it is reverted; no lower score.
 // MiniMax H (11-04): no new form, no lower score; the globals pointer and the iterator's index array still swap registers.
+// MiniMax E (11-06): no new form, no lower score; the globals pointer stays in EDI here and in ESI in
+// retail, and the iterator's index array takes the other register, because our load of g_4e8c20
+// survives the out-of-line 0x6b380 step (LTCG sees that step write only the iterator).
 // score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
 // `globals` local builds to the same bytes in the full build (611 = 611, first difference
 // +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the

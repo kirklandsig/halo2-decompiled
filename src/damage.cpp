@@ -971,6 +971,8 @@ PRIVATE inline long damage_object_root(long object_index)
    hit, else the last object hit */
 // MiniMax G (11-04): no new form, no lower score; the first 0xbadc0 call only leaves the line behind a second
 // count test (248), and the squared distance at both tests (284) or with the mask in a local (275) is worse.
+// MiniMax E (11-06): no new form, no lower score; the first 0xbadc0 use is still expanded here while
+// retail calls it, and that body lives in src/unknown_0bad50.cpp, which this lane may not edit.
 // score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
 // use (the flags & 2 unit test) but calls it at the other two; retail calls all three. Retail keeps data in edi,
 // the definition in esi and &data->position in ebx (the distances are [ebx], [ebx+4], [ebx+8]) and spills the
@@ -1739,6 +1741,8 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
    threshold allow it, and destroys each now or schedules it after its
    delay */
 // MiniMax G (11-04): no new form, no lower score; the two call setups still follow 0xd9d60's convention.
+// MiniMax E (11-06): no new form, no lower score; the two call setups still follow the conventions their
+// own unmatched bodies decide, so this stays behind 0xd9d60 and 0xda110.
 // score 82 (was 96): the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
 // its index in EAX, 0xd9d60 its flag in AL); both are back-edge targets of the link-time walk. BLOCKED-BY 0xd9d60.
 // Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
@@ -2369,6 +2373,9 @@ void function_176330(point3f const *point, s_effect_marker *markers);
    the marker with the object's velocity */
 // MiniMax G (11-04): no new form, no lower score; the flag's register is still fixed by the call cycle that
 // runs through the stubbed functions outside this file.
+// MiniMax E (11-06): no new form, no lower score; the flag stays on the stack because the call cycle
+// through 0xdae60, 0xda110 and 0xdaaa0 gives this body the plain convention, and retail's AL form
+// needs the four stub bodies enabled, which cost two matched callers.
 // score 69 (was 69): retail takes the flag in al, the marker name in ecx and the object index in edx, with two stack
 // arguments (`ret 8`); the parameter order marker, object, flag, effect, owner is the one that gives that assignment
 // (the other orders put the flag in cl or dl, 81), but only while fewer callers pass it. With the calls of 0xdaaa0
@@ -4146,6 +4153,9 @@ void function_db670(long object_index, long vehicle_index)
 // @coldspear's permuter (#104, 2026-10-30): 38 -> 29 only by swapping arguments at a call and adding volatiles (not kept).
 // MiniMax A (11-04, run 41): no new form, no lower score (28); the call to 0xd9d60 still takes the flag in a
 // register other than AL and the permutation other than EAX, and that callee's convention may not change.
+// MiniMax E (11-06): no new form, no lower score; the mode-1 call needs 0xd9d60's retail convention
+// (the flag in AL and two stack arguments), and with the flag on the stack ours pushes three, so the
+// permutation base stays in EDX, EDI is saved only in the other arm and the frame offsets differ.
 // score 28 (was 38): frame 0x40 and ingress agree; late EDI save and callee transport remain.
 // The effect flag stays on the stack rather than AL; the destruction permutation stays on the stack
 // rather than EAX. The info argument is now on the stack as retail.
@@ -4786,6 +4796,9 @@ struct s_damage_object_creation
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
 // MiniMax C (11-01): the shared loop counter and the permuter's variant reach 217, four points and under the keep bar, so nothing is kept.
+// MiniMax E (11-06): no new form, no lower score; the mask's zero store, the piece loop's guard order
+// and the last two lookups' scratch registers remain, and the shared loop counter and the permuter's
+// variant only reach 217.
 // score 156 (was 174): frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
