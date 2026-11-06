@@ -16,6 +16,7 @@
 #include "unknown_221810.h"
 #include "sound_driver.h"
 #include "crc.h"
+#include "location_zones.h"
 #include <xtl.h>
 #include <string.h>
 #include <float.h>
@@ -642,6 +643,9 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // helper taking the voice pointer 3, taking the voice index 3, or with the index advanced in its own statement 3; a
 // const pointer to the per-type counts for the sum and the bound 3; the counts table without const 3. Harness: probe
 // locals (1-15 at the top, 1-8 in the loop) and the counts read through a pointer local move nothing.
+// Round 171 (lane 4, fast): channel and secondary indices as one chained NONE store 5 (the word stores swap); both
+// permutation pointers as one chained NULL store 5; the voice index declared after the bit-vector fills 9; the inner
+// bound on the left of the compare 5 (`cmp [ebp], si`); the type counter declared ahead of its for 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1240,6 +1244,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax D (11-06, run 49): no new form, no lower score (94); the first arm's sum still differs (retail loads the gain into a register and adds the interpolation into it), the register rotation (inverse, elapsed, 1.0, fade-out) still differs and the gain is still carried differently into the last arm.
 // score 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
@@ -2809,6 +2814,7 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax D (11-06, run 49): no new form, no lower score (96); retail still keeps the result in al (set at the entry, cleared through bl on the failure path and set again after the commit) with an eight-byte frame, ours keeps it in a stack byte with a twelve-byte frame, and retail's failure block still follows the success path.
 // score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
 // keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
@@ -3442,6 +3448,9 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // range declared at function top 78; sound_index declared before the pool 78; the class flag read into a bool
 // before the definition 78; a permuter run (45 tries) best 62 (a word voice index, which changes the NONE test).
 // On the 24 form: the range index named before the mode with the pointer in case 0 102; the flag bool 24.
+// Round 171 (lane 4, fast): with the range in case 0 (78): the class-flag result named before the range 103; the voice
+// read through the array at each use 163 (572 bytes); a const range pointer 78; the callback table in a local 82
+// (on the 24 form 28); 3-20 dead locals at the top, in case 0 or after the switch (diagnostic) 78 each.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -3888,6 +3897,12 @@ struct s_128ca0
 // pin joins remain.
 // B440: Existing gain operators at raw nested/argument/inner/update producers
 // 262/262/262/269; parallel branches only 316, with raw nested/inner/update 332/332/321.
+// MiniMax H (11-06): score 167 (was 222): the caller's gain and the location's unknown08 are added
+// to the playback's gain through the decibels type (s_decibels' operator+, as 0x21e330's reverb sums do),
+// and the scale is read once into a real local. The frame is retail's 0x494 and the scale stays in xmm2.
+// Not kept: reading the pitch bounds as a pair through &pitch_lower (local_18[0]/[1]) gave 164, three
+// points, under the bar. Still differs: the pitch result and the argument hold swapped stack homes
+// ([0xc] against [0x10]) and the two clamp joins in the tail differ.
 // Raw/complete operators with native reused scale 167/252; adjacent pitch bounds too
 // 164/249. Four pitch/gain/raw-result role-name forms on that graph each 164. Native
 // 0x494 frame and early location load recover, but pitch/gain homes and pin joins differ.
@@ -3936,9 +3951,11 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 	local_3.field_30 = 0;
 	memset((byte *)&local_3 + 0x34, 0, 0x444);
 	s_sound_playback_parameters *local_4 = &SOUND_GLOBALS_DEFINITIONS->playback_parameters[local_2->playback_index];
-	real local_5 = ((real)local_4->pitch_upper - (real)local_4->pitch_lower) * local_1->location.scale + local_1->pitch + (real)local_4->pitch_lower;
-	long local_6 = decibels_add(local_1->location.unknown08, decibels_add(*(long *)&local_1->gain, arg_1));
-	local_6 = function_1251e0(local_2, local_6, local_1->location.scale);
+	real local_17 = local_1->location.scale;
+	real local_5 = ((real)local_4->pitch_upper - (real)local_4->pitch_lower) * local_17 + local_1->pitch + (real)local_4->pitch_lower;
+	s_decibels gain_sum = *(s_decibels *)&local_1->location.unknown08 + (*(s_decibels *)&local_1->gain + *(s_decibels *)&arg_1);
+	long local_6 = *(long *)&gain_sum;
+	local_6 = function_1251e0(local_2, local_6, local_17);
 	function_12a1b0(arg_0, (s_looping_track_sound *)local_1, arg_2, (s_looping_channel_properties *)&local_3);
 	s_sound_pitch_range *local_7 = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[local_2->pitch_range_base + local_1->pitch_range_index];
 	s_sound_permutation const *local_8 = &SOUND_GLOBALS_CHUNKS->permutations[local_7->first_permutation + local_1->permutation_index];
@@ -4111,7 +4128,14 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 
 // MiniMax R (11-01): retail's 0x11d6a0 call still sets edx, ecx, eax where ours sets edx, eax, ecx;
 // the callee's own file is not mine, so the order cannot be produced from here.
-// score 535 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
+// score 554 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
+// b2F (11-06) walk against retail, no logic difference found (statements, fields, offsets, conditions and callees agree). Calls the
+// existing location_point_in_zone_inline (location_zones.h; it was written out here) 555 (535 + 20); player state as
+// &g_4e9bd4[i].state 554. The listener query stays short, since retail tests it as 16 bits (below); as a long 553. The zone call assigned straight to unknown07 560.
+// Retail differences that remain (not behaviour): the fallback reverb is the const g_44a2a0 at 0x127b70/0x127bd9, not a stack copy
+// (extern in 21e330.cpp + use here 734, frame gone, 2091 bytes); loop head is 0x14ddc0/0x14de70 inlined (calling them 651);
+// 0x16f3a0 inlined for the cmovne at 0x1274d7-0x1274e3 (calling it 576, stays a call); retail re-reads [ebx+0x40] per use and tests
+// the 0x155760 result as 16 bits (test bx, bx at 0x127502; the result is 0..3).
 // Const reverb 551; outer records 551; shared cross product 635; direct blend reads 555; entry counter 552.
 // Output-before-inputs callee order 551 (callee 15 to 11); all call argument roles preserved.
 // Static const fallback 727 (frame 0xec); spatial role names 551; long success workspace 551;
@@ -4192,8 +4216,7 @@ void function_127400(bool arg_0)
 		{
 			long local_3 = *(long *)(g_4e8c24->data + (local_2 & 0xffff) * 0x21c + 0x2c);
 			short local_4 = (short)function_155760(local_0);
-			s_player_4e9bd4 const *local_5 = g_4e9bd4;
-			s_127401 const *local_6 = g_4686c4 != NONE ? (s_127401 const *)((byte const *)(local_5 + local_0) + 0xb8) : NULL;
+			s_127401 const *local_6 = g_4686c4 != NONE ? (s_127401 const *)&g_4e9bd4[local_0].state : NULL;
 			vector3f local_7;
 			vector3f local_8;
 			point3f local_9;
@@ -4237,24 +4260,7 @@ void function_127400(bool arg_0)
 				local_11 = local_6->field_c;
 			}
 			local_1->active = true;
-			bool local_22 = false;
-			if (local_11.cluster_index != NONE)
-			{
-				byte *local_23 = (byte *)g_4e0348;
-				byte *local_24 = *(byte **)(local_23 + 0xa0) + local_11.cluster_index * 0xb0;
-				byte local_25 = local_24[0x70];
-				if (local_25 != 0xff)
-				{
-					byte *local_26 = *(byte **)(local_23 + 0x68) + (local_25 & 0x7f) * 0x18;
-					if (*(short *)(local_26 + 2) != NONE)
-					{
-						if (!(local_25 & 0x80))
-							local_22 = true;
-						else
-							local_22 = *(real *)(local_26 + 0xc) * local_9.z + *(real *)(local_26 + 8) * local_9.y + *(real *)(local_26 + 4) * local_9.x - *(real *)(local_26 + 0x10) < 0.0f;
-					}
-				}
-			}
+			bool local_22 = location_point_in_zone_inline(&local_11, &local_9, NULL);
 			local_1->unknown07 = local_22;
 			local_1->velocity_scale = 1.0f;
 			local_1->forward = local_7;

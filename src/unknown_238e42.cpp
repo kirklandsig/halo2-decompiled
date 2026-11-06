@@ -888,6 +888,11 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax H (11-06): no new form, no lower score; the whole difference is still the register colouring of the
+// two values the matched callee 0xac050 takes: retail loads the selected identity pointer into eax and the
+// requested rank into ecx so the callee needs no copy, ours keeps the pointer in ecx and the rank in eax and
+// inserts a move before the call, which shifts every later jump; removing the rank's store and storing a
+// constant instead gain one point each, below the eight-point gate.
 // MiniMax D (run 46): no new form, no lower score.
 // score 90 (was 90): the difference is purely the register colouring of the two
 // values the matched callee 0xac050 takes (retail reloads the selected identity pointer into

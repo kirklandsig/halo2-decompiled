@@ -520,6 +520,22 @@ void function_146de0(void)
 	}
 }
 
+// MiniMax B (11-06) round 3: no new form, no lower score (120); the padding as the round-up of
+// the block (the block plus 0xf masked with 0xfffffff0, minus the block) measured as a long
+// adjustment inside the loop scores 143 and the same padding computed after the loop scores 149
+// (149 again when the loop is respelled as a while with a break), all of them already in the
+// earlier list; with the padding after the loop the size moves into EBP as retail keeps it, but
+// the frame grows to 0x18 and the first rdtsc's high half moves into a slot of its own, so the
+// body is unchanged.
+// MiniMax B (11-06) round 2: no new form, no lower score (120); the block is unchanged: retail
+// inlines the texture cache update (0x12c600) at this one call site and inlines the fixed-memory
+// constructor, and both of those live outside the files this lane may edit, so the body stays 22
+// bytes short with our size spill and counter registers.
+// MiniMax B (11-06): no new form, no lower score (120); retail inlines the texture cache
+// update (0x12c600) at this one call site and inlines the fixed-memory constructor, and both
+// of those live outside the files this lane may edit, so the body stays 22 bytes short with
+// our size spill and counter registers; the padding after the retry loop, which the earlier
+// round measured at 151, stays worse.
 // MiniMax b (11-04): no new form, no lower score; retail inlines the texture cache update (0x12c600) at this call site only, so the body stays 22 bytes short and keeps our size spill and counter registers.
 // score 120 (was 120): the function still misses retail's inline of the texture cache
 // update (0x12c600) at this one call site and stays 22 bytes short; unchanged this

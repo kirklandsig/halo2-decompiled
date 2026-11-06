@@ -1896,6 +1896,31 @@ void function_b7360(long object_index);
 // 301 (and 0x25ab50 itself 25, 82 bytes); case 5's two tests split 301; the 1/19 reference in a local used for the test
 // and the point 303; the 1/19 point through a pointer local after the actor test 303; the empty-success cases as one
 // label list 301.
+// MiniMax B (11-06) round 2: no new form, no lower score (301); the permuter's rewrite of the
+// field update as an explicit or of its own gives the same score (301), and its argument swap on
+// the recording call lowers this function to 292 on its own (0x259430 stays at 469) but is not
+// kept: retail's call site is `mov ecx, eax; mov eax, [esp + 0x18]; push 0; call`, which the
+// original call reproduces byte for byte, so the swap would replace an exact call with one that
+// passes the unit index as zero and truncates the recorded index; with the field update rewritten
+// as well the score of 0x259430 rises to 485, so that pair is dropped and the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (301); the entry still computes the cs datum
+// pointer before the actor pointer (retail computes the actor pointer first, keeps the actor
+// index in EBP and the actor pointer in EBX, and reads the cs index only after the four
+// register pushes), and the case that returns 2 still spells the value `mov ax,2` where retail
+// uses `xor ax,ax`; the actor local first stays at 487 and the function is unchanged.
+// Walk b4J (11-06), every block against retail 0x258cf0-0x259380 (dispatch tables 0x259384 / 0x25938c /
+// 0x2593a4 / 0x2593fc): the perception test (types 1 and 4 pass), the 0x259e70 byte table (types 1-4, 6-9,
+// 14-19, 21), all 22 jump-table targets (type 11 and out-of-range go to the failure block, 6/12/14/18/21
+// return 0), the 0x25ab50 checks and their order in 17 -> 15/16 and 3 -> 2 -> 1/19, the wait test and the 0x77/0x76
+// updates, the point copy and the 0x40 flag, case 4 (0..3 range, 0xfd/1 flag, 0x1f86a0 on the wait object),
+// cases 7 and 8 (0x26c test, 0xe7|4 and 0xf7|0x14 masks, delay 0.33 and 2.0 read from the XBE, the
+// velocity.forward sum k+j+i and the `> 2.0` test, cos/sin of the unrounded product), the case 10 table,
+// cases 5, 9, 13 and 20 (cccd0 arguments, point copy sizes, store order, the 0x10a bits): fields, widths,
+// conditions, callees, constants and returns all agree with the draft; no behaviour difference found.
+// Left as layout: ours puts `mov ax, 2` inline and `xor ax, ax` last where retail shares the success tail
+// (0x258dc5 and 0x258e15 are reached from both the 15/16/17 and the 1/19 call sites; ours duplicates them) and ends
+// on the failure block; case 13's flag OR is load/or/store (retail `or byte ptr [ecx+0x10a]`). Tried this walk:
+// `bool success;` with `case 11: default: return 2;` 471 (1832, worse); `case 11: return 2;` with the initializer 301.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2286,10 +2311,23 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 469 (was 469): the frame agrees at 0x1c; retail computes the actor base in EBX
+// score 610 (was 469; fast with 0x110ab0 listed): case 1 now tests `!(d > 1.f)`, retail's compare
+// (0x2594b5 `comiss xmm0, [1.0]; jbe 0x2597fa`, true for a NaN distance); `d <= 1.f` compiled to
+// `comiss 1.0, d; jae`, false for NaN. The body is now 2396 bytes like retail, but the positional
+// score rises because retail reloads the state there (`mov eax, [esp+0x38]; add eax, 8`, 0x2594a7)
+// where ours forms `lea eax, [ebx+8]`, which moves every later line by one; revert this line if
+// the score matters more than the NaN edge.
+// Walk b2I (11-06), every block against retail 0x259430-0x259d33 (types 0-21 through the jump table
+// 0x259d34, countdown tail 0x2594c6-0x259d2f): conditions, fields and widths, callees and their
+// registers/stack arguments, constants (1.0, 0.0, 0.984, 0.7, 0.5, 1000.0 read from the XBE), the
+// copy sizes and the exits all agree with the draft. Only the case-1 compare above differed in
+// behaviour. Layout-only differences left: retail places case 14 after 21 (0x259a5d), the retail
+// case 6 flag byte gets two stores (`or 0x29` at 0x259989, then `or 0x48` at 0x2599a1) where ours
+// folds them to `or 0x69`, and the sums in cases 4 and 20 are written in retail's order
+// (k+j)+i / (z2+y2)+x2, which dot3f and length_sq3f (i first) would change for floats.
+// The frame agrees at 0x1c; retail computes the actor base in EBX
 // and spills it at [esp+0x10] before the type dispatch, ours computes it in EDI just
-// before its use and reuses EBX for the state pointer. The body is 2400 bytes against
-// retail's 2396.
+// before its use and reuses EBX for the state pointer.
 // Earlier: retail keeps the object index in EBX and pushes EBP and ESI before EDI, ours keeps the index in EDI and pushes EBP, ESI and EDI in the other order, so the prologue, the jump table and every case body differ; the actor/output acquisition and the length deficit remain.
 // Earlier 478 (was 478): Frame 0x1c agrees; actor/state registers and first point home still differ; eight scope trials restored.
 // Earlier: frame 28 agrees; actor/state registers and first point home still differ.
@@ -2498,6 +2536,17 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // case 1 as `!(d > 1.f)` (retail's NaN-true `jbe`) 610; plain returns in place of the result/goto exits 493; the command
 // script looked up before the actor 617. A register-masked aligned diff of the baseline gives 152 (case 4's facing copy, the
 // countdown tail and retail's duplicated `if (result) return 1` epilogue).
+// MiniMax B (11-06) round 2: no new form, no lower score (469); the only variant the permuter
+// found in this file is the argument swap on the recording call, which belongs to 0x258cf0 and
+// raises this function to 485 when it is applied together with the field rewrite, so it is not
+// kept; the actor and state pointers still take the exchanged registers and the first point
+// still sits at +0x1c where retail keeps it at +0x10; the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (469); the actor and state pointers still take
+// the exchanged registers (ours EDI for the actor and EBX for the state, retail the other way
+// round), the first point still sits at +0x1c where retail keeps it at +0x10, and the post-switch
+// test and the countdown tail keep our layout; the case-1 point read, the plain returns in place
+// of the shared exit and the command script lookup before the actor all stay at 469 or worse,
+// so the body is unchanged.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2513,7 +2562,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 		{
 			point3f local_4;
 			function_b9dd0(arg_1, &local_4);
-			local_3 = function_210b60((s_type_c3b527 *)((byte *)arg_2 + 8), &local_4) <= 1.f;
+			local_3 = !(function_210b60((s_type_c3b527 *)((byte *)arg_2 + 8), &local_4) > 1.f);
 			break;
 		}
 	case 2: case 3: case 15: case 16: case 17: case 19:

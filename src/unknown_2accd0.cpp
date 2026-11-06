@@ -610,6 +610,13 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax E (11-06): no new form, no lower score.
+// The head's total needs a fresh register (retail EDX): dropping the named total fixes it
+// (the sum then lands in EDX) but reorders the header case's loads and scores 88; two size
+// locals with the total from them score 91, the position declared first scores 34 with the
+// scratch getter's stores in retail's order, the position computed first scores 158, and a
+// function-scope position scores 34. Left: the hoisted body_size in ESI (retail ECX), the
+// body pointer in ECX (retail EDX) and the size/position pair swapped between ESI and EDI.
 // MiniMax b (11-04): no new form, no lower score; the entry total still lands in EAX (retail EDX) and the body's size/position still in ESI/EDI (retail EDI/ESI); an unnamed total fixes the head but reorders the header case's loads and scores 88, and the state store moved ahead of the total scores 232; the permuter's 188 annealed tries found nothing below 34, and the scratch clamp reading g_4fa0c8.size directly scores 159.
 // score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
@@ -928,6 +935,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // on the no-total base [82] each of those, the byte count declared later, the total summed body first, sizeof first
 // or through a dword cast; the signature sum written in both the seek and its compare [96] (it reloads after the call).
 // Retail's body_size temporary shares ECX with the body arm's remaining count, so the signature sum cannot fold into it.
+// Round 57 (m3 lane 2, fast; 0x2adb10 matched throughout): the matched sibling's clamp (a `buffer_size` local, `size =
+// MIN(remaining, buffer_size)`) 161 (691 bytes), with the total and the signature position written body first 161; the signature
+// position written body first alone 34 (same code); the direct arm's size before its buffer with `MIN(remaining, size)` 35; the
+// body case's file handle in a two-use local 168 (695 bytes).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

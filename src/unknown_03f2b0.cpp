@@ -1302,7 +1302,7 @@ struct s_render_reset_state;
 struct s_shader_cache;
 struct s_coefficient_layout;
 struct s_lighting_record;
-bool __stdcall function_23690(s_coefficient_layout const *layout, short order, long object_index,
+bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag);
 bool function_3d480(long object_index, long count, transform4x3f const *matrices, transform4x3f *out);
 void function_3dd10(long object_index, bool force);

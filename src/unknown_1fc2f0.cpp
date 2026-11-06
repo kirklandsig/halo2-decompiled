@@ -200,6 +200,16 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax H (11-06): no new form, no lower score; the first difference is at +0x59, retail converting the ticks
+// into xmm3 (the register the rate arrived in) where ours converts them into xmm4, and retail's tick products
+// run j, i, k while its deltas run i, j, k; here the chain order follows the first delta's component and the
+// delta order follows the tick products' order, so that combination has no source form: the deltas i, j, k 79,
+// the chain statements j, i, k with the deltas i, j, k 73, the same with the tick products j, i, k 77, a
+// separate scaled vector 83 and 77 with the chains j, i, k, the tick products j, i, k alone 32 (same code), the
+// tick conversion after the chains 73, the tick conversion and the deltas interleaved 79, and the conversion
+// written at each product 73. Putting the conversion after the chains does put the ticks in xmm3 as retail has
+// them, but the products then copy that register instead of scaling in place, and the conversion at the top of
+// the body scales in place but takes xmm4.
 // MiniMax D (run 46): the rate chains j, i, k with the tick products and the deltas interleaved
 // i, j, k 73 (chains, stores, deltas and the k, j, i sum are then retail's, but the tick products
 // run i, j and the tick stays in XMM4); the products grouped 77; the conversion after the chains 73
@@ -580,6 +590,12 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // `long ticks` local converted at the call 32, `delta` declared before `velocity` 32 (all the same code: the sum is
 // reassociated to (k + i) + j for deltas j, i, k). On this body: the tick products written `tick_scale * v` 32 (same
 // code); the else arm's copy per component 89 (352 bytes).
+// Round 57 (m3 lane 2, fast with 0x1fc660): the fallback copy as memcpy 32 (same code); on round 46's helper prediction
+// (vector3f_add_scaled into a predicted point, scaled_difference3f with the ticks, deltas k, i, j; re-measured 30): the
+// prediction computed in place in velocity (no predicted point) 58 (369 bytes); the correction sums written correction
+// first 30 (same code); rate and tick scale named before the helpers 61 (the ticks leave XMM3 again); the predicted point
+// copied from +0x38 and scale-added in place 126 (395 bytes). Diagnostic, reverted at once: the limit's rate read through a
+// volatile field cast 32 (ticks still XMM4: the rate local's live range is not what holds XMM3; the conversion's place is).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

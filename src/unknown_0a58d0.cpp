@@ -335,6 +335,10 @@ struct s_z_state_world
 // before the type: database ECX; the record by pointer addition with the byte from the array (either order), a bool
 // active from the array: `add eax, ecx` and the offsets folded (14-equivalent); the world local with the index pinned in
 // ECX: database still ECX (so the LTCG world local's ECX is the database's own preference, not the index's).
+// Round 77 (lane 10, fast): one world local at entry named world, aaworld or zzworld 18/18/18 (names are no
+// tie-break); the world local before `result` 18; the definitions local before the active test 22; the type
+// read inline in the table index 13; the record bound by reference 11. 0xa99f0, whose index arrives in EAX,
+// shows the same single cause: retail gives the database the dying world register EDX, ours the free ECX.
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {
@@ -408,6 +412,11 @@ bool function_a9820(long *block, long index)
 // machine is busy with other lanes' builds. Round 89 (with 0xa9820): the world global read at each use
 // builds the same code; one world local for both reads 18 in every spelling (see 0xa9820).
 // Round 60 (with 0xa9820): the records inside a nested table struct at 0x2098 11.
+// MiniMax D (11-06): no new form, no lower score (11): the database pointer is still loaded into ECX where retail
+// reuses the dying world register EDX, so the active byte is still read through the materialised record address;
+// this round a database local read early or late, a world local for the state test, a world local with a database
+// local, the active byte read from the array element with the record pointer taken before or after the test, and
+// the record pointer by pointer addition give 11, 11, 11, 11, 14, 14 and 11.
 // @retail 0xa99f0
 void function_a99f0(long index, long *block)
 {

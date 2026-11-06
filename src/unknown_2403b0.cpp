@@ -37,6 +37,7 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // MiniMax S (11-05): no new form, no lower score: the pool data reload after function_101280 is still blocked by that
 // function's side-effect summary in src/unknown_101280.cpp, which is not editable, so ours keeps the pool data pointer
 // across the two calls and reloads it from the stack where retail keeps it in ecx and reloads the global.
+// MiniMax B (11-06): no new form, no lower score (86); the limit product's two globals still load in the opposite order.
 // MiniMax H (11-05): no new form, no lower score; ours still spills the pool data pointer across 0xcbd50 and
 // 0x101280 and reloads it from the stack where retail keeps it in ecx and reloads the global, and the two
 // completion stores still merge.

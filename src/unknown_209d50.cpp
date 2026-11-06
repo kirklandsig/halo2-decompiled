@@ -103,6 +103,10 @@ static inline void *function_xc5914d(long thread_index, short size)
 // Round 89 (fast): no volatile with `long *const &arguments` bound to the allocation 95 (266: the temporary folds), from a void local 95, declared before the frame 95; an unused const pointer to
 // the local and a reference local to it (diagnostics) 95/95, still promoted; the allocation as dword 95, as byte * 95; result from the allocation with a const reference for the element 95, a const-reference
 // base beside plain arguments 95; no volatile with the result cleared right after the call 93 (268).
+// M3 lane 11 r76 (plain): the volatile kept without the frame-pointer local 112 (306 bytes); no volatile, no frame
+// local and the result cleared first in the evaluated block 74 (280); no volatile with the result set in an else
+// arm 90 (277); the allocator bumping the frame size directly 12 (same code), that with no volatile and the result
+// cleared first 83 (277).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {
