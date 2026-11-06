@@ -380,6 +380,8 @@ struct s_24e9c7_bounds
 // scale 134 (752 B; kind and bitmap homes become retail's, side at -0x10 below the result), scale only 154/134, unit perpendicular 144.
 // Result references lowered: temporary for up 141, named extent 125, with the side 142/143, on the helpers 134/134, assigned last 159;
 // up through a helper 134; `0.0f -` forms for up with the scalars 139 (738 B). Retail keeps the y coordinate in EDX and re-reads x: named y 194/186/207, both at each use 191 (684-705 B).
+// Round 217 (m3 lane 3, fast, base 125 at 743 B): across products as `size * (0.0f - forward_j)` scaled in place by a `real half` with back as `0.0f - across` 134 (739 B); side and back computed after the first corner's base copy 138 (740 B), and with points declared there too 138;
+// back from the across products (`half_width * (0.0f - across)`) 164 (764 B); half_width kept as a real from the division 125 (same positions, other masked code). Slot order unchanged in all: retail's across homes sit above the result.
 // M3 lane 11 r72 (fast, control 125, masked 92): side scalars set to `size * (0.0f - forward_j)` / `size * forward_i` and scaled in place by
 // the half width, side and back kept as points 138 (739; homes unchanged); the bitmap entry indexed at both uses 144 (746, masked 78); `up.x`
 // written `-(placement->forward_i * result)` 125 (same code); `across_i` written `-placement->forward_j * size` 125 (same code, still sunk); bitmap

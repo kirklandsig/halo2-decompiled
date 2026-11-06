@@ -327,6 +327,8 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // (7), and passing the scale itself gives retail's lea ecx and its late object index but loads the scale
 // last (8). A named local for the curve set's address gives the same bytes (7). The permuter ran past its
 // 900-second budget on a loaded machine and was stopped by the harness's background limit; it wrote nothing.
+// MiniMax E (11-05): no new form, no lower score; the seven differences stay the sample base against the
+// entry's data offset, the object index load and the curve pointer setup; passing the scale directly gives 8.
 // score 7 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
@@ -683,6 +685,13 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // 311/311/311/264; raw word with the first three 311/311/311; byte owning
 // declaration plus direct bit-zero admission 311. NOT kept: no equality or
 // gain; original datum layout and body restored, native one-spill/failure byte remain.
+// Round 154 (m3 lane 6, fast with 0x188790 exact): `inline` on 0x188790's definition gives retail's 0x80 frame, xmm0
+// re-zeroed after the calls and the object in EBX but scores 301; on it case 3's failure as `bool failed = true` set
+// from the call only when flag1 is clear 162, audible declared right before 0x18d4f0 134, the object index named
+// before it 125, the top field as `sound->type == 0 ? sound->owner : g_444ae0` 91, cases in order 0, 2, 3 40, the
+// flags cleared by memset 22, a long listener named ahead of the 0x1000 flag 20 (aligned 15). Without the `inline`
+// and the match-only forms (ternary, case order, memset, audible placement kept) 287. NOT kept: the 20 rests on a
+// compiler hint on another function and on match-only forms; the chain is held as build/held/l6-1106-18cbc0-inline-chain.patch.
 // AC555: Effect-provider char/byte/signed-char returns with original Boolean
 // and native failure receivers, eight forms 264 each; provider stays exact. NOT
 // kept: no gain; original declarations/body restored; one-spill/failure byte remain.

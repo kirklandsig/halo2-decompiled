@@ -9,6 +9,7 @@
 // @flags /O2 /arch:SSE /Gr
 #include "projection_storage.h"
 #include "normalize3d.h"
+#include "unknown_11cc90.h"
 
 /* limits read by the range checks below (zero in the retail image; set at run time) */
 real g_54e854;
@@ -1553,10 +1554,10 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 266 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
+// score 284 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
 // the final blend and *distance *= fraction all agree; no behaviour difference found. The remaining diff is the
-// calling convention: retail takes forward in eax and up in ecx with point, distance and offset on the stack
+// calling convention: retail takes up in eax and forward in ecx with point, distance and offset on the stack
 // (ret 0xc; the prologue copies [esp+0xc4] into ebp); ours passes up in eax and point in ebx and leaves forward
 // on the stack. The declared order of the five parameters changes nothing (6 orders tried, same score), and the
 // old `(void)&point` lines were dead code (removed, same bytes). The 0x171d00 call is also set up differently
@@ -1731,23 +1732,34 @@ PRIVATE __forceinline void follow_matrix_vector(transform4x3f const *matrix, vec
 	vector->k = matrix->up.k * k + matrix->left.k * j + matrix->forward.k * i;
 }
 
-// score 346 (was 464): same behaviour as retail (the logic walk found no difference). What still differs:
+// score 336 (was 346; 464 before that, fast): same behaviour as retail. Walked statement by statement against retail
+// (0x170fd0-0x17182b): constants, every field offset, every branch direction, the call arguments and the stack
+// order of 0x171830 (position, &distance, 0.02f) agree; no behaviour difference was found.
+// The horizontal direction is a vector2f normalized with the existing normalize2d_fast (the magnitude is not used
+// after it, and the helper's threshold and scale are the same): retail keeps x at [esp+0x18] and y at [esp+0x1c],
+// and with the vector the frame is retail's 0x20 (the loose real locals gave 0x24) at retail's 2142 bytes. The same
+// pair as a `real direction[2]` with the normalize written out gives 320 and every slot as retail, but that only
+// groups two locals, so it is not kept.
+// What still differs:
 // (1) the call to function_171830. Retail passes forward in ecx, up in eax and &position, &distance, 0.02f on
 //     the stack (0x171684-0x171694); our function_171830 takes position in ebx and forward on the stack, so the
 //     call setup differs and ebx is busy: the state pointer lands in ebp (retail ebx) and the view.up pointer in
-//     ebx (retail ebp). That swap is most of the remaining score and needs function_171830 to match first.
-// (2) the stack slots: retail has distance 0xc, field of view 0x10, magnitude 0x14, direction 0x18/0x1c, position
-//     0x20 (frame 0x20); ours has one more slot (frame 0x24) and a different order.
-// (3) the matrix block: some y and z sums are added in another order, and retail adds the translation as
-//     `offset + translation` (offset loaded first) where ours loads the translation first.
-// Kept (each made it closer): struct copies for the default forward/up and the view forward/up; `up` declared
-// before `forward` (retail's lea order); pointer locals for view.forward/view.up; the y of the direction read as
-// state->current[11] (retail loads [ebx+0x138], x through the forward pointer); the field of view tested on the
-// memory operand; the ternary clamp macro for view.position; `player_index = NONE` then an if; (real)g_45e4c8 so
-// 0.05f is a dword constant; the point helper declares z, y, x in that order (the compiler sorts terms by it).
-// Tried, no help: `a = a + b` for the translation, the other five declaration orders of the vector helper
-// (i, j, k is best) and of the direction/magnitude locals, a `long cluster_index` local in the cluster test (365),
-// __fastcall or reordered parameters on function_171830.
+//     ebx (retail ebp). Needs function_171830 to match first (its own convention comes from its body).
+// (2) the scheduling of the position sums (0x171186-0x1711d9: retail loads current[4] and current[3] into
+//     registers first and multiplies in place; ours folds them as memory operands), a few folded operands in the
+//     matrix block (`movaps; mulss [mem]` where retail loads the matrix field first), the translation add
+//     (retail `offset + translation`), and the branch not taken: retail loads x and z again there
+//     (0x17165c), ours keeps them in registers. Term order and folding move with every upstream change.
+// Kept (each made it closer): the direction vector (above); struct copies for the default forward/up and the view
+// forward/up; `up` declared before `forward` (retail's lea order); pointer locals for view.forward/view.up; the y of
+// the direction read as state->current[11] (retail loads [ebx+0x138], x through the forward pointer); the field of
+// view tested on the memory operand; the ternary clamp macro for view.position; `player_index = NONE` then an if;
+// (real)g_45e4c8 so 0.05f is a dword constant; the point helper declares z, y, x in that order.
+// Tried, no help: `a = a + b` for the translation, the other five declaration orders of the point helper (x,y,z
+// 341, z,x,y 334, others 347-357) and of the vector helper (i,j,k best; 322-327), a `long cluster_index` local in
+// the cluster test (365), __fastcall or reordered parameters on function_171830, 24 spellings of the three
+// position updates (all the same), the updates in z,y,x order (411 with vector2f), `s_location` declared first,
+// real direction_x/y locals (346), the direction array (320, above).
 // @retail 0x170fd0
 void __stdcall function_170fd0(long user_index)
 {
@@ -1777,17 +1789,12 @@ void __stdcall function_170fd0(long user_index)
 	else if (position.z > 50000.0f) position.z = 50000.0f;
 	if (0.0f > distance) distance = 0.0f;
 	else if (distance > g_54e860) distance = g_54e860;
-	real direction_x = forward->i;
-	real direction_y = state->current[11];
-	real magnitude = (real)sqrt(direction_y * direction_y + direction_x * direction_x);
-	if (!(fabs(magnitude) < 0.0001f))
-	{
-		real inverse = 1.0f / magnitude;
-		direction_x *= inverse;
-		direction_y *= inverse;
-	}
-	position.x += state->current[4] * direction_y + state->current[3] * direction_x;
-	position.y = state->current[3] * direction_y - state->current[4] * direction_x + position.y;
+	vector2f direction;
+	direction.i = forward->i;
+	direction.j = state->current[11];
+	normalize2d_fast(&direction);
+	position.x += state->current[4] * direction.j + state->current[3] * direction.i;
+	position.y = state->current[3] * direction.j - state->current[4] * direction.i + position.y;
 	position.z = state->current[5] + position.z;
 	vector3f *view_forward = &state->view.forward;
 	vector3f *view_up = &state->view.up;

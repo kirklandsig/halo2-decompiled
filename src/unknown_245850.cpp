@@ -29,6 +29,7 @@ struct s_245850
 };
 
 #pragma inline_depth(0)
+// MiniMax I (11-05): no new form, no lower score: the plane index is still loaded with a 16 bit move where retail sign extends it; retail's index is 32 bits wide, so the sign extension needs bsp3d_get_plane's definition (src/unknown_14a280.cpp:50) and its four other declarations changed, which are outside this lane's two files.
 // MiniMax B (11-03): a long plane index in this file's declaration leaves the callee unresolved in the
 // reduced image, so LTCG passes it by reference (117); the short load of the plane index remains.
 // MiniMax G (11-04): no new form, no lower score: retail's plane index is a long, so the sign extension needs bsp3d_get_plane's definition and its four other declarations changed.
