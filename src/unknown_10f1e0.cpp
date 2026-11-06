@@ -2295,6 +2295,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // pitch-first and two interleaved producer orders: 829/828/828/829/829/828/828/829.
 // NOT kept: every form regresses; 3403-byte length agrees but frame stays 0xcc/0xd4.
 // Original private helper and full body restored; first-angle/overlay expansion remains.
+// b2B (11-06) walk against retail, all 849 instructions: no behaviour difference (fields, conditions, callees and
+// arguments agree). Still differing: frame 0xcc versus 0xd4; retail inlines the first 0x11df30 and calls channel_play
+// out of line; the x*0.5f+0.5f operand order. Score 776, unchanged.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

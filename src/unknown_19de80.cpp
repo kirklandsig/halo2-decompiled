@@ -554,6 +554,14 @@ static inline bool teams_enabled_19e1c0()
 // conjunction (no bool local) 454 (1394 bytes; listed as the conjunction, re-measured).
 // Every format failure as `result = result < 0 ? remaining : result;` 514 (1524 bytes); the opponent score's
 // number/time arms swapped (`mode < 3 || mode > 4 && mode != 8` takes the number format) 390 (same code).
+// b2N (11-06) statement walk against retail 0x19e1c0-0x19e760, no source change: the twelve token literals
+// (0x454898..0x454708, in order), the event field offsets (+0xc/+0x14 players, +0x10/+0x18 teams, type +0, subtype +4),
+// the type==0 && (subtype 0x2d || 0x17) || team != NONE admission of both team-name arms, the opponent loop (0..7,
+// team != cause_team, best <= score, INT_MIN start), the mode >= 3 && (<= 4 || == 8) time format, the player fields
+// (+0xc0 team byte, +0x170 respawn dword, +0x1ac lives word, index masked 0xffff), the switch-side-time word at +0xe0 and the
+// engine vtable slot 0xc8 (token, token_length, event, destination, remaining) with its token-copy fallback all agree
+// with retail; no behaviour difference found. Only the `long volatile result` is unexplained by behaviour: it is
+// there for the frame/ESI shape (390 against 691 plain) and would be undone in review unless the function matches.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
