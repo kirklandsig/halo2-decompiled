@@ -339,6 +339,19 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // 834/807/837/834/805/834/834/832. NOT kept: all regress, lose the native frame and shorten away from
 // retail. Original input access, clamp and every helper/body restored; early object/input/heading homes
 // remain.
+// Round 76 (m3 lane 10, fast with 0x1f9e70/0x110ab0; aligned = registers and stack offsets kept, base 590): the held
+// lane 12 r91 set rebuilt on this body (0x29b2e0's first vector corrected to the +0x290 pointer, direct input,
+// normalize3d, planar copies, the float root, MIN at both clamps, a named blend complement) 748 (3502 bytes, aligned 517);
+// with the first steering arm as an if / else-if / else chain without an initial value 714 plain (3500, aligned 506),
+// its positive spelling 714; that arm as the direct boolean expression 761 (3499, aligned 509), as one if/else on the
+// combined condition 761. NOT kept: the chain's gain does not hold in the direct form. Leave-one-out on 714: no planar
+// copies 738, no float root 748, no MIN 826, no complement 716, no corrected argument 787, no normalize3d 841, the input
+// reference kept 715 (3499). Float radial squares 771 on 748, 731 on 714. The private normalizer in normalize3d's exit
+// shape with float squares i, k, j 717, with its early return 800, through vector3f_scale 712, written j, k, i 714/719
+// (the squares are reassociated; none gives retail's i, k, j). Retail evidence for the set: each clamp divides twice, the
+// root is a float expression (`fsubr dword [1.0f]`), `1 - field_64` is computed once, and the first steering arm falls
+// through to `mov al, 1` with its false paths in one shared `xor al, al` block. Left: EBX saved in the prologue (retail
+// pushes it after the 0x26c test and pops it before the closing arg_7 test) and frame homes 4 bytes off.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

@@ -572,6 +572,11 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // then scaled_difference3f with `(real)ticks`) with deltas i, j, k and that written-out length 79 (first +0x2f), with deltas
 // k, i, j 30 and j, i, k 32 (both the same code as length_sq3f): MSVC orders the summed squares by the deltas' definition
 // order whatever the expression's order, so retail's (k + j) + i sum implies deltas defined i, j, k.
+// Round 76 (m3 lane 10, fast with 0x1fc660): on the round 46 prediction form (vector3f_add_scaled into a predicted
+// point, scaled_difference3f with the ticks; XMM3 in place, first +0x65; re-measured 32): the length as dot3f 32, a
+// `long ticks` local converted at the call 32, `delta` declared before `velocity` 32 (all the same code: the sum is
+// reassociated to (k + i) + j for deltas j, i, k). On this body: the tick products written `tick_scale * v` 32 (same
+// code); the else arm's copy per component 89 (352 bytes).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

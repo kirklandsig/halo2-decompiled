@@ -285,6 +285,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // (`long index = next;` at the top) with value tests 59 (135), with early returns 52, the twice-used mask 67/51;
 // XOnlineIsUserGuest on the xuid flags compiles as the byte test. Among these, the twice-used mask in the current loop 67
 // and `result = tests; ... break` 59 re-measure listed forms (scores agree). All restored.
+// Round 76 (m3 lane 10, fast, with 0x1a303b/0x2b393c): retail keeps index and entry in one register (`imul esi, esi`)
+// and the successor apart in EBX; every successor form here coalesces the successor with the index instead. A successor
+// declared at function scope with early returns 49; a guarded do-while ending on `next != NONE` with early returns 55
+// (133 bytes); `index = next` right after the successor read, before the iterator store, with early returns 52;
+// `while (index != NONE && !result)` with the successor and `else index = next` 54 (both callers lose); the entry as
+// `g_4cf98c + index` with a successor and early returns 49. Re-measured: successor with early returns 49.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
