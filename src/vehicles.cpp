@@ -2758,39 +2758,37 @@ void function_141590(transform4x3f const *in, transform4x3f *out);
 quaternionf *function_141f60(matrix3x3 const *matrix, quaternionf *out);
 void function_11d790(quaternionf const *q, real *angle, vector3f *axis);
 
+/* a real's magnitude by comparison (retail's comiss form, not fabs) */
+PRIVATE inline real vehicle_magnitude(real value)
+{
+	return value >= 0.0f ? value : 0.0f - value;
+}
+
 /* a damping force against a speed, at most what stops it within a tick */
-PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scale, real s_ticks)
+PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scale, real ticks)
 {
 	real direction = speed > 0.0f ? 1.0f : -1.0f;
 	real magnitude = speed >= 0.0f ? speed : 0.0f - speed;
 	real force = scale * (friction >= 0.0f ? friction : 0.0f - friction) * direction;
-	real limit = magnitude * s_ticks;
+	real limit = magnitude * ticks;
 
-	real result = 0.0f - force;
-
-	if (result < 0.0f - limit)
-	{
-		result = 0.0f - limit;
-	}
-	else if (result > limit)
-	{
-		result = limit;
-	}
-	return result;
+	return PIN(0.0f - force, 0.0f - limit, limit);
 }
 
 /* the physics of type 3 vehicles (the hovering ones): forces toward the
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 664 (was 676): Frame 0x100 versus retail 0xfc; scalar/vector homes and force/trig scheduling still differ; 3246 bytes (retail 3244).
+// score 730 (was 676): Frame 0x100 versus retail 0xfc; scalar/vector homes and force/trig scheduling still differ; 3219 bytes (retail 3244).
 // Walked against retail 0xf2360-0xf3009 statement by statement (v1D, 2026-11-06): the arithmetic, offsets, conditions, callees
 // and call arguments all agree with retail (constants checked by value in the XBE). Structure fixes: the damping-tick static is
 // initialized once before the first friction test (retail 0xf27ba-0xf2818 tests and sets the guard before the speed test, not inside
-// each branch: 811 for that alone, but 664 with the rest); retail evaluates |speed fraction| - |turn| twice (0xf2b81-0xf2bc9);
+// each branch: 811 for that alone); retail evaluates |speed fraction| - |turn| twice (0xf2b81-0xf2bc9), which MAX of the two
+// vehicle_magnitude calls gives (same bytes as the written-out ternaries);
 // the banked up vector stays in `up` and is copied into desired.up after desired.left is crossed (0xf2e2d-0xf2e79 copy [esp+0x20]);
 // 0x142a60 writes a third transform (0xf2ed2: output at [esp+0xd8], inputs at 0xa4/0x70), so the relative transform is its own
-// local (3244 bytes); the friction clamp is an if/else on the negated force (0xf28a4-0xf28b6). Still different: retail multiplies
+// local. The friction clamp stays PIN: retail's 0xf28a4-0xf28b6 is the two compares PIN expands to; the same clamp written out as
+// an if/else on the negated force gives 664 at 3246 bytes, but it is PIN's body by hand, so it is not kept. Still different: retail multiplies
 // 2.5 by the turn rate at run time (0xf2afa) where ours folds the product; it keeps copies of the facing and velocity (i, j)
 // before the slip product (0xf2b22-0xf2b36); frame 0xfc (one slot fewer).
 // Tried on top (v1D): friction scale applied after the direction (0xf288d) 811 (the compiler reassociates, same bytes); turn limits
@@ -3042,8 +3040,7 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 		vehicle->turn / (real)fabs(*(real *)(definition + 0x22c));
 	real speed_fraction = 0.001f > maximum_speed ? 0.0f : inverse_maximum * speed;
 	// Retail takes both magnitudes twice (0xf2b81-0xf2bc9), so they are not shared locals.
-	real slip_scale = 0.0f > (speed_fraction >= 0.0f ? speed_fraction : 0.0f - speed_fraction) - (turn >= 0.0f ? turn : 0.0f - turn) ? 0.0f :
-		(speed_fraction >= 0.0f ? speed_fraction : 0.0f - speed_fraction) - (turn >= 0.0f ? turn : 0.0f - turn);
+	real slip_scale = MAX(0.0f, vehicle_magnitude(speed_fraction) - vehicle_magnitude(turn));
 	real slip = (linear_velocity.j * facing->i - facing->j * linear_velocity.i) / (real)fabs(maximum_speed) *
 		slip_scale * maximum_bank;
 	real bank = turn * maximum_bank * -0.25f;
@@ -3139,12 +3136,6 @@ PRIVATE inline long vehicle_sign(real value)
 PRIVATE inline real vehicle_angle_fraction(real angle)
 {
 	return (1.5707964f - (real)fabs(angle)) * 0.63661975f;
-}
-
-/* a real's magnitude by comparison (retail's comiss form, not fabs) */
-PRIVATE inline real vehicle_magnitude(real value)
-{
-	return value >= 0.0f ? value : 0.0f - value;
 }
 
 /* the physics of type 4 vehicles (the walking and skating ones): forces
