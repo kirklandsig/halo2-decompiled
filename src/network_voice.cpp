@@ -2452,6 +2452,11 @@ long voice_players_share_team(long other, long player)
 // taking the mode 123 (again ECX for settings); 0x53c30 taking a `c_class_58d20 *&` 56, on the kept body 25; a
 // pointer local for the out-parameter in 0x53c30 56; diagnostic, restored at once: that pointer local in the getters
 // 0x59670/0x596a0 56 (a pointer copied from a parameter still counts as a parameter store; 0x53de0 and 0x565c0 stay matched).
+// Round 76 (m3 lane 1, fast): the test through the existing voice_mode_is_passive() with the mode named inside 50 (376 B);
+// a copy of the mode inside the block for the team test 25 (coalesced, same code); the mode named before the entry test
+// 130 (377 B); the getter in both test halves with the mode named inside by a third call 18 (372 B: one getter instance is
+// called out of line, and the test/copy mix is a hand reload, so not kept); the mode named first with
+// voice_mode_is_passive() as the test 112. BLOCKED-BY 0x59670 stands.
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)
 {
