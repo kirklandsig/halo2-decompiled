@@ -1882,6 +1882,8 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax E (11-06): no new form, no lower score; the colour query and zone-base scheduling still keep
+// the frame at 0x40 and both colours spilled.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax R (11-04): no new form, no lower score; retail's early colour read still needs a form that
 // spills only color A and keeps color B in EDI, which every snapshot point tried so far fails.
@@ -2315,6 +2317,9 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax E (11-06): no new form, no lower score: the only difference left is the object's index,
+// which retail reloads after the 0xbadc0 validity call; that call's body lives in
+// src/unknown_0bad50.cpp, which this lane may not edit.
 // MiniMax A (11-03): no new form, no lower score: retail still reloads the object's index after the
 // 0xbadc0 validity call and keeps the definition pointer on the stack; calling the file-local copy
 // object_get_175d70 instead of 0xbadc0 compiles to the same code (63).
@@ -3047,6 +3052,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax E (11-06): the location mode read live from the definition reaches retail's 0x54 frame but
+// scores 108, the same form with the particle system declared before the effect 119 and with color B
+// read at the call 110; no new form, no lower score.
 // score 93 (was 93): frame 0x4c versus 0x54 (retail spills the definition and keeps two more
 // dwords), the particle system in EDI (retail ESI), color B spilled (retail EDI) and the cached
 // mode differ. Tried: transform name 109; query results, particle cursor and colors at entry 109;

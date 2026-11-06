@@ -6961,6 +6961,8 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // (cond) positions = ...` is closer to retail (one jmp and one mov fewer) but scores 513 here because of
 // the shifted slots. Also unaddressed: the point iterator tracks points[i].field_c (retail [edi-0xc], ours [edi-0x10]).
 // The call to 0x4f7e0 matches retail's register setup (tag in ecx, eight stack words).
+// Permuter, 30 minutes (11-06, on the source before the facing-sum change): 291 only with call arguments swapped (pow's
+// two, function_13bb90's last two, function_4ff50's last two), which changes behaviour. Not kept.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {
@@ -8213,6 +8215,9 @@ bool function_016ac0();
 bool function_022710();
 void __stdcall function_2bcd0(long, bool, bool, bool, long, long, real);
 void __stdcall function_21a80(real, real, real);
+// MiniMax I (11-05): matches (score 0) with a #pragma inline_depth(0) ... #pragma inline_depth() pair around
+// the function (keeps the 0x16ac0 call out of line) plus the single expression for world_effects; held, since
+// new #pragma lines are not taken. The lead stays a source form that keeps 0x16ac0 out of line without a pragma.
 // MiniMax D (run 37): retail calls 0x16ac0 out of line, our build inlines it; the inlining is
 // decided by the /Ob flag of the defining file src/unknown_0167a0.cpp (not mine). A single
 // expression for world_effects gives 65; the original 16 is kept.

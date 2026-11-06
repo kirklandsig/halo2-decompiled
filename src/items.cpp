@@ -1171,7 +1171,24 @@ struct s_item_flags_view_10b850
     byte flag6 : 1;
     byte flag7 : 1;
 };
-// score 813 (was 813): Frame 0x154 versus 0x12c; entry Boolean publications and collision/carrier/rotation homes remain.
+// score 824 (was 813): statement-by-statement walk against retail (s1B, 11-06). Behaviour fixes, all kept even though
+// the score rose 11: (1) the byte at [esp+0x12] is ONE flag: the definition's +0xbc bit 2 (skips gravity), set to true
+// before the ray query (0x10ba18) and cleared only by the settle branch (0x10bcf8); the draft's separate
+// `update_position = fixed` skipped the position update after a bounce when the bit was clear (retail 0x10c136
+// tests the flag, bounce never touches it); (2) the 0.05 nudge before function_10c880 is added to the predicted
+// `position`, not to the hit point (0x10bac7 adds [position], only the later bounce nudges at 0x10c0ca use the
+// point); (3) the flow side vector is normal x flow (0x10beb0..0x10bef8), not flow x normal. Not kept: along_side and
+// along_flow are i,j,k dots in retail (0x10bf06..0x10bf22, 0x10bf96..0x10bfc2; the other three are j,i,k, as item_dot); dot3f
+// from vector_products.h gives that order and the same 824, but in the full build it costs matched 0x54590
+// (src/network_voice.cpp, 0 -> 2) through LTCG, so both stay item_dot (a rounding-order difference only).
+// Open behaviour differences: retail passes the node as a raw dword at hit+0x46 (push [esp+0x9e], 0x10bd2b) and
+// stores its low byte, ours zero-extends one byte (callee 0xb8bd0 only reads the word, `long` forms 887/902);
+// the type chain at 0x10bd1c compares 4 and falls into the same code either way (switch with case 4/default merges
+// it away, 837). Frame 0x154 versus 0x12c; entry Boolean publications ([esp+8], [esp+0x10]) and slot homes remain.
+// Frame forms (all behaviour-neutral): ray in an inner block 846 (frame 0x148); inner ray + scalar side vector 949
+// (0x130); + `x < 0 ? -x : x` instead of fabs 940 (frame 0x12c, 4013 bytes, slots all differ); scalar side alone
+// 925; cross3f into a vector 931; ternary abs alone 860; merged value_13a store 866; declaration reorders of
+// carrier_delta/collision with the 0x12c form 940 each.
 // Earlier: Frame 0x154 versus 0x12c; entry Boolean publications and carrier/collision/flow/marker/rotation homes differ.
 
 // Earlier: Frame 0x154 versus 0x12c, entry Boolean bytes and collision/carrier/rotation homes still differ.
@@ -1394,9 +1411,9 @@ void __stdcall function_10b850(long object_index)
         bool carrier = function_109a00(object_index, &local_c01284_3, true, &carrier_delta);
         vector3f velocity = item->linear_velocity;
         vector3f angular = item->angular_velocity;
-        bool fixed = ((*(dword *)(definition + 0xbc) >> 2) & 1) != 0;
+        bool update_position = ((*(dword *)(definition + 0xbc) >> 2) & 1) != 0;
         bool settled = false;
-        if (!fixed)
+        if (!update_position)
         {
             velocity.k -= g_51e9c4->unknown0 * dt;
             local_c01284_3.k -= g_51e9c4->unknown0 * dt;
@@ -1405,7 +1422,7 @@ void __stdcall function_10b850(long object_index)
         vector3f ray = {position.x-item->position.x, position.y-item->position.y, position.z-item->position.z};
         s_collision_result_1697c0 collision;
         collision.unknown24 = NONE;
-        bool update_position = true;
+        update_position = true;
         if (function_1697c0(0x24909c0d, &item->position, &ray, item->ignore_object_index, NONE, &collision))
         {
             byte *hit = (byte *)&collision;
@@ -1413,9 +1430,9 @@ void __stdcall function_10b850(long object_index)
             point3f const &point = *(point3f *)(hit + 8);
             bool floor = normal.k > 0.707099974155426f;
             bool slow = 1.5f > -item_dot(local_c01284_3, normal);
-            position.x = point.x + normal.i*0.05f;
-            position.y = point.y + normal.j*0.05f;
-            position.z = point.z + normal.k*0.05f;
+            position.x += normal.i*0.05f;
+            position.y += normal.j*0.05f;
+            position.z += normal.k*0.05f;
             function_10c880(object_index, (s_item_impact const *)&collision, &velocity, &position);
             bool surface = collision.type == 1 || collision.type == 3;
             if (collision.type == 4)
@@ -1434,7 +1451,7 @@ void __stdcall function_10b850(long object_index)
                 real dot = item_dot(angular, normal);
                 angular.i = normal.i*dot; angular.j = normal.j*dot; angular.k = normal.k*dot;
                 item->spin_axis = normal;
-                fixed = false;
+                update_position = false;
                 settled = true;
                 function_b9b90(object_index, true);
                 if (collision.type == 1 || collision.type == 3)
@@ -1479,7 +1496,7 @@ void __stdcall function_10b850(long object_index)
                         if (length != 0.0f)
                         {
                             real amount = g_510c54->rate * 12.0f;
-                            vector3f side = item_cross(flow, normal);
+                            vector3f side = item_cross(normal, flow);
                             real along_side = item_dot(side, local_c01284_3);
                             if (fabs(along_side) < 3.25f) item_add_scaled(&velocity, side, along_side < 0.0f ? -amount : amount);
                             real along_flow = item_dot(flow, velocity);
@@ -1501,7 +1518,6 @@ void __stdcall function_10b850(long object_index)
                 if (function_168f40(0x24909c0d, (s_vehicle_ray const *)&position, object_index, NONE)) position = item->position;
             }
             item->ignore_object_index = NONE;
-            update_position = fixed;
         }
         if (update_position) function_b75a0(object_index, &position, NULL, NULL, (s_location *)((byte *)&collision + 0x1c), false);
         if (carrier) item_add_scaled(&velocity, carrier_delta, 1.0f);

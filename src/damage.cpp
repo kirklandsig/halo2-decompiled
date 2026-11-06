@@ -524,6 +524,7 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 	return result;
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (3); the `or eax, -1` still comes right after the load of g_47d8e0, retail stores that value at +0x7c first, loads g_4686c4 and only then does the `or`.
 // MiniMax A (11-04, run 41): no new form, no lower score (3); the permuter on this function was stopped by the
 // harness before it produced a try, and only the `or eax, -1` schedule against the two global loads is left.
 // score 3 (was 3): with the callers' image, only the schedule differs: ours puts `or eax, -1` right after the
@@ -650,6 +651,7 @@ void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 	}
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (6); the two stores still keep our order around the three pushes of the ba7f0 call.
 // MiniMax A (11-04, run 41): no new form, no lower score (6); the two stores keep our order around the three
 // pushes of the ba7f0 call, and joining them into one comma statement gives the same bytes.
 // score 6 (was 6): retail pushes -1, 2, -1, then stores unknownf4 and sets shield_depleted, then pushes the
@@ -834,6 +836,7 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 
 /* whether any entry of the block at +0x70 (0x60 byte entries) has the flag
    at +0x40 of the structure it points to */
+// MiniMax D (11-06, run 49): no new form, no lower score (5); the index is still zeroed inside the guarded block, so our `xor edx, edx` lands after the base load where retail zeroes it before the guard.
 // score 5 (was 7): the count guard, the base load and the entry walk now sit in retail's order and the registers
 // agree (owner in ecx, the index in edx). Left: the index is zeroed inside the guarded block instead of before
 // the guard, so our `xor edx, edx` lands after the base load.
@@ -968,6 +971,8 @@ PRIVATE inline long damage_object_root(long object_index)
    hit, else the last object hit */
 // MiniMax G (11-04): no new form, no lower score; the first 0xbadc0 call only leaves the line behind a second
 // count test (248), and the squared distance at both tests (284) or with the mask in a local (275) is worse.
+// MiniMax E (11-06): no new form, no lower score; the first 0xbadc0 use is still expanded here while
+// retail calls it, and that body lives in src/unknown_0bad50.cpp, which this lane may not edit.
 // score 206 (was 206): left is 0xbadc0 and register allocation. The link-time inliner inlines 0xbadc0 at the first
 // use (the flags & 2 unit test) but calls it at the other two; retail calls all three. Retail keeps data in edi,
 // the definition in esi and &data->position in ebx (the distances are [ebx], [ebx+4], [ebx+8]) and spills the
@@ -1568,6 +1573,7 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
+// MiniMax D (11-06, run 49): no new form, no lower score (10); the copy of *owner still goes through ecx, edx, eax where retail uses eax, ecx, edx, and the finished flags are still stored after `push edi` where retail stores them before.
 // MiniMax A (11-04, run 41): no new form, no lower score (10); the aggregate copy of *owner keeps ecx, edx, eax
 // where retail has eax, ecx, edx, and retail stores the flags before `push edi`.
 // score 10 (was 10): two schedule differences remain. Retail copies *owner through eax, ecx, edx (this uses ecx,
@@ -1735,6 +1741,8 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
    threshold allow it, and destroys each now or schedules it after its
    delay */
 // MiniMax G (11-04): no new form, no lower score; the two call setups still follow 0xd9d60's convention.
+// MiniMax E (11-06): no new form, no lower score; the two call setups still follow the conventions their
+// own unmatched bodies decide, so this stays behind 0xd9d60 and 0xda110.
 // score 82 (was 96): the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
 // its index in EAX, 0xd9d60 its flag in AL); both are back-edge targets of the link-time walk. BLOCKED-BY 0xd9d60.
 // Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
@@ -1851,6 +1859,8 @@ long function_1e4a10(long index);
 /* damages an object's shield: scales the damage by the shield material's
    armor, takes it off the shield, passes what is left over to the body
    (accumulator->damage) and stuns the shield's recharge */
+// score 8 (was 8): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
+// MiniMax D (11-06, run 49): no new form, no lower score (8); after the call to function_d5bc0 the 1.0f constant is still reloaded last, retail reloads it before the `xorps` of zero and the spilled locals.
 // MiniMax A (11-04, run 41): no new form, no lower score (10); assigning the multiplier in an else arm instead
 // of at the declaration scores 156, and the reload order after the d5bc0 and d6a70 calls stays as it was.
 // score 8 (was 10): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
@@ -1866,6 +1876,16 @@ long function_1e4a10(long index);
 // M404: complete stun admission in positive bool/byte/word/long and
 // complementary bool/byte/word/long forms: 8/8/8/8/8/8/8/8. Original damage phases,
 // constants and body restored; the post-call reload schedule remains.
+// MiniMax A (11-04, run 41): no new form, no lower score (10); assigning the multiplier in an else arm instead
+// of at the declaration scores 156, and the reload order after the d5bc0 and d6a70 calls stays as it was.
+// Round 139 (m3 lane 8, fast): the reload order after each call is the same at function_d6a70 and function_176780:
+// retail reloads the spilled shield damage before the zero, ours the zero first. Diagnostic, reverted: one 1.0f clamp
+// of the body damage ahead of the first 0.0f (real code, 254) gives retail's shield-then-zero order at both later calls
+// and puts 1.0f first after function_d5bc0 (with the zero last, retail has it second); the same clamp with 5.0f leaves
+// every order as ours, so the order follows where 1.0f is first used. Real: the shield clamp as an if 10; multiplier
+// declared before the material lookup 14, before the inverse 48, before the maximum 206; `0.0f < maximum_shield` 8;
+// the first zero, or every zero ahead of function_d5d80, written as integer 0 8/8 (same code). The 1.0f clamp moved
+// after the early zeros (just ahead of function_d5d80, 209, or of the inverse, 198) flips no order.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2185,6 +2205,7 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 /* damages an object's body: scales the damage by the body's material,
    applies region damage, takes it off the body and depletes the body when
    it runs out */
+// MiniMax D (11-06, run 49): no new form, no lower score (3); the region pointer is still loaded after the `info` test where retail loads it before, the object pointer and the 1 << type shift still use different registers, and the `lea ebx, [ecx + 8]` still comes before the last call's first push.
 // score 3 (was 5; earlier 40): the passed `bool` and the `short` team are locals as in 0xd5d20 (retail stores the comparison
 // result to a stack byte and pushes the dword, and sign-extends the team into esi/ecx); what is left is scheduling (the
 // `mov eax, [edi]` before the `info` test, which register the object pointer and the 1 << type shift use) and the
@@ -2352,6 +2373,9 @@ void function_176330(point3f const *point, s_effect_marker *markers);
    the marker with the object's velocity */
 // MiniMax G (11-04): no new form, no lower score; the flag's register is still fixed by the call cycle that
 // runs through the stubbed functions outside this file.
+// MiniMax E (11-06): no new form, no lower score; the flag stays on the stack because the call cycle
+// through 0xdae60, 0xda110 and 0xdaaa0 gives this body the plain convention, and retail's AL form
+// needs the four stub bodies enabled, which cost two matched callers.
 // score 69 (was 69): retail takes the flag in al, the marker name in ecx and the object index in edx, with two stack
 // arguments (`ret 8`); the parameter order marker, object, flag, effect, owner is the one that gives that assignment
 // (the other orders put the flag in cl or dl, 81), but only while fewer callers pass it. With the calls of 0xdaaa0
@@ -2896,6 +2920,7 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 /* the damage a damage event does to an object before armor: a random
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
+// MiniMax D (11-06, run 49): no new form, no lower score (5); the two final return blocks keep our order, retail puts the no-team return before the not-enemy one.
 // MiniMax A (11-04, run 41): no new form, no lower score (5); the two final return blocks keep our order (the
 // team-false one reloads damage from the stack where retail copies the xmm1 copy), and splitting the damage
 // product into two statements gives the same code.
@@ -4128,6 +4153,9 @@ void function_db670(long object_index, long vehicle_index)
 // @coldspear's permuter (#104, 2026-10-30): 38 -> 29 only by swapping arguments at a call and adding volatiles (not kept).
 // MiniMax A (11-04, run 41): no new form, no lower score (28); the call to 0xd9d60 still takes the flag in a
 // register other than AL and the permutation other than EAX, and that callee's convention may not change.
+// MiniMax E (11-06): no new form, no lower score; the mode-1 call needs 0xd9d60's retail convention
+// (the flag in AL and two stack arguments), and with the flag on the stack ours pushes three, so the
+// permutation base stays in EDX, EDI is saved only in the other arm and the frame offsets differ.
 // score 28 (was 38): frame 0x40 and ingress agree; late EDI save and callee transport remain.
 // The effect flag stays on the stack rather than AL; the destruction permutation stays on the stack
 // rather than EAX. The info argument is now on the stack as retail.
@@ -4650,6 +4678,7 @@ dword function_db810(long object_index, long node_index)
 }
 
 /* the model node of the object's lowest ranked physics node */
+// MiniMax D (11-06, run 49): no new form, no lower score (4); the tag index is still masked after `push ebp` where retail masks it before, and the tag entry is still loaded into edx where retail uses eax.
 // MiniMax A (11-04, run 41): no new form, no lower score (4); naming the masked tag index in a local leaves the
 // same four instructions (the mask after `push ebp`, and the tag entry in edx where retail uses eax).
 // score 4 (was 134): retail calls 0x16d890 here (its only caller), so it is declared noinline ahead of its
@@ -4767,6 +4796,9 @@ struct s_damage_object_creation
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
 // MiniMax C (11-01): the shared loop counter and the permuter's variant reach 217, four points and under the keep bar, so nothing is kept.
+// MiniMax E (11-06): no new form, no lower score; the mask's zero store, the piece loop's guard order
+// and the last two lookups' scratch registers remain, and the shared loop counter and the permuter's
+// variant only reach 217.
 // score 156 (was 174): frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
