@@ -849,6 +849,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // subsets 1/2/4/3/5/6/7, then all with command-record identity:
 // 230/354/349/354/348/354/377/377 (fast control 45).
 // NOT kept: no exact identity-form match; original complete body restored.
+// Round 57 (m3 lane 2, `--fast 0x23de50 0x1f0870`, 45 as the full check): a camera-arm forward pointer for the copy and
+// both products 223 (1272 bytes), with the else-arm forward pointer too 223; an up pointer for the second product and its
+// normalize 45 (same code), with the else-arm forward pointer 47 (1264 bytes); the else-arm forward pointer with direction
+// declared before previous_up 43 (as the pointer alone).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
