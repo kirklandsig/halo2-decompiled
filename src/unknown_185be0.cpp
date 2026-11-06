@@ -143,6 +143,10 @@ union s_185be7
     vector2f field_8;
 };
 
+// MiniMax C (11-06): no new form, no lower score; the first difference is still the prologue's root
+// global (ours loads g_4ed284 into EBX and defers the lea, retail loads it into ECX and forms the
+// pointer at once), retail holds NONE in EBX for seven uses where ours holds the root global, and
+// the xmm roles and the stack slots stay swapped.
 // Coordinator (m3, round 56 review): kept at 590 is the consistent part of the 516 form: the five `field_20` flags through SET_FLAG on
 // the word field (no byte casts) and the selected input as `long`. The 516 form puts PIN and SET_FLAG on a subset of call sites picked
 // by score while the rest stay on 0x185be1/0x185be4 (all clamps through PIN 860 on 589; all 22 flags through SET_FLAG 792 on 590), a

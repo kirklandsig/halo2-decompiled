@@ -483,6 +483,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 
 /* recomputes the teams that have players */
 // score 32 (was 32): the word mask, its one reload ahead of the first jne, and present's update in EBX remain.
+// MiniMax C (11-06): no new form, no lower score; a word old-mask local is rematerialised from
+// globals->team_mask at each use (129, frame 0xc), a named new-mask local (129) only moves the
+// playing teams into EDX, and a volatile word mask (118) reloads the slot cleanly for the compare
+// instead of retail's one shared dword reload into ECX.
 // MiniMax C (11-04): the present-team bit in a named one-use local gives 29 (not kept, m3 review: a one-use local is kept only with a byte match); a word mask (77/78), a non-volatile present (63), a named new mask (30), swapped compares (88) and a dword-cast compare (78) are worse.
 // Earlier: the old team mask is kept as a 32 bit value here and as a 16 bit one in
 // retail; the comparison and the update of the two masks use different registers, and the input
@@ -2667,6 +2671,9 @@ void function_1e9df0(long field, long counter, long team, s_statborg *statistics
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics, long field, long delta, bool by_team);
 
 // score 44 (was 44): frame 0x10 agrees; BLOCKED-BY 0x1967d0 and the 0x1e9df0 call's setup, as the older lines below describe.
+// MiniMax C (11-06): no new form, no lower score; the blockers stand — 0x1e9df0's register-argument
+// setup lives in src/unknown_1e9700.cpp and retail's reload of g_4e6948 after the 0x1967d0 calls
+// lives in src/unknown_1967d0.cpp, both off limits this round.
 // MiniMax H (11-04): no new form, no lower score; the two blockers below still stand.
 // MiniMax R (11-01): no new form, no lower score; beyond the parameter-order block noted below,
 // retail's three 0x1967d0 switch arms use rotated temp registers (case 9 -> ECX, 3 -> EDX,
@@ -5321,6 +5328,9 @@ void function_36580(void);
 void function_36880(s_short_rectangle const *rectangle, color4f const *color);
 void function_161420(long player_index, real alpha);
 
+// MiniMax C (11-06): no new form, no lower score; a named power local still leaves the player copy
+// (mov edx, ebx) ahead of the x87 argument store (fstp dword ptr [esp]), where retail stores the
+// power argument first.
 // MiniMax H (11-04): no new form, no lower score; the x87 store still comes after the player register.
 // MiniMax R (11-01): no new form, no lower score; the single difference is that retail stores the
 // x87 power argument (`fstp dword ptr [esp]`) before it loads the player index into EDX, while
