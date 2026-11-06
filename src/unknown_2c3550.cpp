@@ -601,6 +601,8 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax I (11-06): retail's prologue interleaves the compare with the pushes and keeps the
+// pathfinding read after the radius block; no new form, no lower score.
 // MiniMax A (11-04): pathfinding read after the radius block 674, final_complete below the height 697,
 // radius as one ternary (retail's load order) 704, pathfinding after the radius with a short frame
 // identifier 703, long step counter 764, bool result 736 and 756 with that order, the type guard split
@@ -749,9 +751,27 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // B437: Stored passthrough-point producers with four count/receiver contracts
 // 738/760/741/744; with bool success 766/783/773/755. NOT kept: all regress;
 // byte success, radius/path acquisition and scalar/geometry homes remain.
+// P351: Complementary complete-step truth in bool/byte/short/long with long/Boolean result:
+// 675/675/719/705/754/754/713/719. NOT kept: no byte match; radius/path acquisition, success byte and scalar/geometry homes remain.
+// Original complete body and existing helpers restored.
 // Round 74 (m3 lane 10, fast, caller 0x270930 MATCH in each): count read once into a named short 675; last step index in a long local 732; input pointer after start and start node 675; start node before the start
 // point 707 (2976); `bool last` 736 (2959); `ignored` declared at the loop top 675; first_output declared in the for 675.
 // Then 20 mechanical spellings through the same check (ternary and if, compare forms, operand order, constant declarations swapped): 675 eighteen times, 676, and `!(a <= b)` for a compare 698.
+// w14F walk (r718), statement by statement against retail 0x2c41b0-0x2c4d57: no wrong field, offset, condition direction,
+// callee or argument; every block (entry radius/height/actor, flags, step loop, transforms, search/retry/failure, node walk,
+// copy-out, object-index pass, type chain 2/3/1/4/5/6/7) agrees in behaviour. What retail shows that this source does not:
+// (1) after the radius normalisation retail stores 0.0f at [esp+0x58] (0x2c4ba2), i.e. the segment direction is a three-float
+// local with k = 0; `vector3f delta; ... delta.k = 0.0f;` passed as `(point2f const *)&delta` is 676 (2988 B, frame 0x1f8c);
+// (2) local types: ignored is a short (0x2c4a13 cmp word [esp+0x3c], -1; stored from the word at +0xdae), frame is a short
+// (0x2c4405 word store; the callees take a short), node_index is a short (0x2c48ba test cx,cx), loop indices are shorts
+// (0x2c4570 movsx/cmp si), result is a stack byte (0x2c41f1). Alone: ignored 703, frame 707, node_index 676, result 762,
+// transform loops 712, retry loop 730. ignored+frame+node_index+(1) is 672 (2986 B, frame 0x1f8c) but the mnemonic
+// alignment gets worse (diff 391 against 348), so nothing is kept;
+// (3) callee types, not editable here: the out parameter `type` is a short* (retail writes words at 0x2c4c52..0x2c4cc0 and the
+// caller 0x270b8f stores the low word of its slot), `short *type` with the casts gone is 675 here, identical code, but
+// needs path.cpp's declaration and caller local changed; state->source.unknown04 reaches avoidance_search as a raw
+// zero-extended byte (0x2c4741 xor ecx,ecx; mov cl,[eax+4]) where ours emits test/setne, so the field is a bool in retail
+// (path.h declares byte); the (byte) cast on flags is codegen-neutral (dropped = 675).
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

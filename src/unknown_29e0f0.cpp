@@ -342,6 +342,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH368: Standard coordinate-range squared/length delta and output-copy boundaries,
 // seven subsets then the complete graph with native float root: 437/507/435/555/443/501/537/537.
 // NOT kept: all regress and miss native homes/extent; original metrics, copies and whole body restored.
+// Round 75 (m3 lane 10, fast with 0x29e730 and the three callees; control 390, difflib-aligned 287): retail keeps the
+// group record in EBP and the loop bound in EDI for the whole group loop, ours puts the record in EDI (the mask
+// temporary clobbers it, hence the reload stub ahead of the loop head) and the bound in EBX. Outer index `long` 458
+// (1561 bytes, aligned 272); the link table read after the marker call 392; the group bitmap declared before the
+// marker position 405; the record pointer formed after the marker call 417; the outer bound in a short local 422.
 // M3 lane 11 r72 (fast, control 390, masked 181): the round-64 recipe rebuilt as a control, 155 at 1596 bytes (masked 11); left on it: arg_3 stays
 // in ESI from the range test to the 0x29de20 call in retail (`mov ecx, esi; mov esi, edx`, arg_0 in EDX for the third distance) where ours reloads
 // arg_3 into ECX and gives arg_0 ESI, the found flag stored from AL (retail loads local_29 into EDX, keeping the call's AX = 1), the step's EAX and

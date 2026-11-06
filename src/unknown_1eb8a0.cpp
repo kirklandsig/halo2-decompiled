@@ -183,6 +183,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax h (11-05): the argument order is right (d in the third stack slot, q in the fourth, position in the fifth); retail copies the q slot into EBX and reads d from its own slot at each use, ours copies the d slot, and assigning the fallback pointer with a ternary instead of an if gives 642 with the same code, so no new form is kept.
 // MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
 // constant there, ours multiplies first (642, same code).
 // score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
@@ -636,7 +637,7 @@ long function_1eb8a0(
 					if (len > 0.001f)
 					{
 						real len4 = MIN(m, len);
-						real ratio = s->settle_minimum / hi - 0.5f;
+						real ratio = dist / hi - 0.5f;
 						real back = 0.f - len4;
 						position->j = nq.j * back + qr.j;
 						position->i = nq.i * back + qr.i;

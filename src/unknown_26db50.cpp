@@ -736,6 +736,16 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // N382: Native record/origin/entry object references, seven ownership subsets, then all
 // with outer ring phase: 90/90/90/90/90/90/90/143. NOT kept: no equality or gain;
 // original complete body restored. Radius schedule, ring conversion and rotation spill remain.
+// Round 138 (m3 lane 8, fast unless marked; control 90): `(real)(x * 1.f)` phase steps (diagnostic) 90/215/215 at depth 1/2/3, so no
+// phase lead here; extra parameters on inline no-ops at seven sites compile the same (compile-only). Ring value and phase named, the
+// angle adding the phase 143 (1088); sector read first 235, with the radius reference 109; the rotation with j/k cross terms named 90
+// (same code), as a cross vector read without component copies 100 (1081), that with the named ring 96 (1090, the known 96 form, plain
+// 96); a full cross vector 100, with the ring 149; dot written out 90, with the ring 142; components copied before an inline dot 145;
+// the planar dot2d plus k term 96 (canonicalised like dot3f); a point-along helper at the trace point 96, at both point rows 113 (1086);
+// the structure pointer read before the rotation 72 only together with the staged dot below, alone 166 (1096). On the 96 form the
+// dot staged as `j*j + i*i; += k*k; *= 1 - cos` 72, plain 72 (1090, masked 20: retail's (j + i) + k and its rotation rows; left are the
+// sector read before `add ebp, ecx`, the radius copied through EDX, the spoke counter's store and the 0x2104b0 argument setup). That
+// writes out dot3f and splits a sum, so it is not kept; a natural source for retail's dot order is still open.
 // M3 lane 11 r71 (fast, control 90 at 1085 bytes). Retail's rows subtract axis cross vector, with j and k ahead of
 // the rows and i in its row: three named cross terms 100 (1087), with the ring phase 149 (1090), dot after the cross
 // 231/251; j and k only 100 (1081), with the phase 96 (1090). On that 96, whose ring block and rotation are retail's
@@ -756,6 +766,21 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // ring++)` 266 (1057 bytes, frame 0xd4: no countdown, so retail's countdown is real); in the rotation helper the component
 // copies before the dot 90 (same code), the rows' first two terms swapped 90 (same code); the direction copied after the
 // sine and cosine 101 (aligned 114); the pathfinding pointer as a ternary 217 (aligned 101). Body unchanged at 90.
+// MiniMax B (11-06) round 2: no new form, no lower score (90); the ring value read into a float
+// local inside the ring block and used for the distance gives the same code (90), the same local
+// also used for the angle gives the same code (90), the angle's ring term named on its own gives
+// the same code (90), the distance with the ring's float product widened by an inner cast gives
+// the same code (90), the distance written with the ring and the radius both cast to double
+// scores 266, and the float local used for the distance and the angle together scores 259; the
+// ring is still converted with `fild` where retail converts it to float, keeps that float in a
+// stack slot and reloads it as double: the compiler folds the float local back into the integer
+// conversion, so the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (90); the ring value is still converted to
+// double with `fild` where retail converts it to float, keeps that float in a stack slot and
+// reloads it as double, and the rotation block still uses a different register set from retail's
+// (retail keeps the three components in registers, ours spills one); naming the ring value
+// once for both the distance and the angle scores 259 and the distance term written with the
+// inner cast scores 259, so the body is unchanged.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

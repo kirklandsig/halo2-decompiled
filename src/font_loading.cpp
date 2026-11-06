@@ -507,6 +507,11 @@ static inline word font_character_pixel(long alpha, long color)
 
 /* decodes a character's run-length coded pixels to 16 bit pixels; returns
    how many pixels there are (with no destination it only counts them) */
+// MiniMax D (11-06): no new form, no lower score: the alpha parity is still masked in 16 bits where retail widens
+// it to 32 bits, and the literal word is still assembled in one register; a swapped add literal 110, a long-typed
+// literal 85, a dword count 204, a separate switch-run variable 158 and a cast-free helper 204 all leave the
+// alpha parity masked in 16 bits (and cl, 1; movzx cx, cl) where retail zeroes a 32-bit register first
+// (xor ecx, ecx; mov cl, al; and ecx, 1).
 // MiniMax S (11-05): no new form, no lower score: a long helper result 105, an unmasked parity with a word run pixel
 // 208, an int or a long cast on the parity 85, a byte parity local 85 and the OR operands swapped 85 all leave the
 // alpha parity masked in 16 bits where retail widens it to 32 bits.
@@ -735,6 +740,8 @@ static inline word font_character_pixel(long alpha, long color)
 // N393: Packed/ordinary indexed, descending-copy forward cursor and reverse real cursor
 // fill pairs 01/02/10/11/12/20/21/22: 172/174/172/164/166/175/174/199. NOT kept: unmatched traversal forms;
 // original loops/helper/body restored. Alpha widening, literal assembly and run-two reuse remain.
+// N398: Scoped existing pixel macro with word/numeric result, byte/numeric parity, byte/long ordinary alpha 165/218/224/236/132/136/226/234.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

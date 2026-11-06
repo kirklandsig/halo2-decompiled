@@ -472,6 +472,8 @@ void function_125a90(long value);
 // choice: 0x221810 stays out of line for an inline `||` class-type test, inlined for a named class-type bool) over 80 forms: every
 // inline `||` form lays the kind arm out as the class-type test's fall-through; a named bool, an inline class-test helper or the
 // kind test as `kind == 1 || ... == 4` (no bit test then) all inline 0x221810.
+// J260: Immutable b/a/both policies 36/36/36; receiver initialized from the pool base then advanced by index, with no/b/a/both immutable policies, 36/36/36/36; receiver initialized from base then indexed 36. All eight complete target listings equal the unchanged preview.
+// NOT kept: no eligible native repair; opening executable source restored. EAX multiply/ESI LEA before policy loading and native type/removal block placement remain; original flags, loop, pool refresh, fields, calls and body restored.
 // Round 398: Original single type observation with complete removal-result byte/signed-byte/short/word/
 // int/unsigned-int/long/dword storage: 36/36/95/95/94/94/94/94. NOT kept: no gain; original
 // Boolean removal result, policy captures, comparison widths and complete body restored.

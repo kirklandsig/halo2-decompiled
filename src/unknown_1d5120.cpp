@@ -87,6 +87,10 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
+// MiniMax I (11-06): no new form, no lower score; the lookup still reads [eax + edx + 0x40] where retail reads [edx + eax + 0x40], and the success tail still pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
+// MiniMax G (11-05): no new form, no lower score; the rigid-body lookup's address operands still
+// read `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`, and the success tail still
+// pushes what retail passes in EAX, EBX and ECX: BLOCKED-BY 0x1d0cf0 (src/unknown_1cec30.cpp).
 // MiniMax B (11-04): no new form, no lower score.
 // score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
 // and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).

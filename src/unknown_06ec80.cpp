@@ -18,7 +18,16 @@ union s_6ec80
     __int64 field_2;
 };
 
-// score 5 (was 13): only the mask's zero differs: ours sits before the guard, retail's inside it.
+// MiniMax G (11-06): no new form, no lower score; five more forms that put the mask's zero inside the
+// guard — the two tests split into nested ifs, the mask declared outside and zeroed inside, the mask as
+// a signed int, the mask as an unsigned long, and the mask declared at the top of the function and
+// zeroed in the guard — all score 225. Retail has two `xor esi,esi`: one at the entry, where esi holds
+// the zero constant and ecx holds NONE, and one at the guard, which re-zeroes esi for the mask after esi
+// has been scratch in the setup block. Our baseline has both as well, but the guard's zero sits on the
+// block's dominator. Every form that moves the zero into the block also moves the constant registers
+// (NONE to edi, the zero to ecx) and takes the machines pointer out of ebx, so the placement and the
+// allocation cannot be won together from this source; the baseline stands.
+// score 5 (was 5): only the mask's zero differs: ours sits before the guard, retail's inside it.
 // Before round 75 (13, first written at 53): the two stack slots were swapped: retail keeps the short at esp+0x14 and
 // the pointer at esp+0x10, ours the other way round; the mask is zeroed before the guard.
 // The mask scoped inside the guard gives both retail's slots and its zeroing, but then NONE
@@ -68,6 +77,9 @@ union s_6ec80
 // With the mask scoped on this body: the flags set after the opening stores 228, the name zeroed first or last 225/225,
 // the opening values initialised at declaration 228, in an inline with out parameters 225. A permuter run on this body
 // tried nothing: its baseline (1256 s) and an 818-source reduced image used the whole 2400 s.
+// Round 69 (m3 lane 14, fast): a `while (local_15 < 16)` loop with the mask zeroed before the guard 348 (1059 bytes),
+// the same with the mask scoped 348; with the mask scoped: the players walked through a `player++` pointer 228,
+// `(dword)1 << local_15` 225; the mask declared with the top declarations and zeroed where it is 5 (same code).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

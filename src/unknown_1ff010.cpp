@@ -511,6 +511,8 @@ void __stdcall function_26c2d0(long prop_index);
 bool function_1fef40(s_type_c3b527 const *target, long actor_index);
 extern vector3f *g_4687b0;
 void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* forced inline in src/unknown_1eb8a0.cpp */
+// MiniMax I (11-06): no new form, no lower score; the frame and the prop and point refresh still agree and the first planar normalization is still the difference: retail divides first and tests the planar length after the scale products, ours tests the length against zero before dividing, and that schedule comes from the normalization helper, which is in another file.
+// MiniMax G (11-05): no new form, no lower score; the zero's lifetime depends on the inlined rotation from another file, so the rematerialised test zero stays unmatched.
 // MiniMax G (11-04): no new form, no lower score: the zero's lifetime and the rotation's register homes are the whole difference.
 // score 77 (was 77): frame 0x20 agrees. Retail tests the planar length after the scale products
 // Round 28: the existing rotate_vector_170d70 (src/unknown_170d70.cpp) for rotate_direction 130 at retail's 850

@@ -149,6 +149,13 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax E (11-06): score 110 (was 110): no new form lowered it. The location copy after the flags
+// (retail's header order) with the priority before or after the flags gives 140/150 and the flags as
+// ternaries 160; the priority read from the request alone is 109 at 472 bytes, a gain of one, dropped
+// by the review rule, so the original body stays. Still different: retail builds the flag word in EAX
+// with the source loaded before the tag lookup and ours in EDX, retail's object and platform bits use
+// the or/and complement form and ours only or, retail homes the sound pointer at [esp+4] where ours
+// keeps it in EBP, and retail copies the location after the flags where ours copies it first.
 // MiniMax D (11-04): no lower score. With the source in a local declared before the sound lookup our
 // load order is retail's (the tag table's base, the source, then the lookup) and the priority comes from
 // the request byte, but the link still gives EAX to the source and EDX to the tag table's base where retail
@@ -305,6 +312,11 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // Round 106 (plain): nested class condition, bool/long end-update results, previous value20/value24/both and
 // disjoint source mask 110 each; word +0xa 132 (478), marker-size local 131 (470), location-flags local 111 (474).
 // Original body restored.
+// Round 154 (m3 lane 6, fast with its 8 matched callers): the class lookup as a shared header helper (if/else,
+// named locals, both) 110 (same code); header = NULL then if 131; tag test as == NONE 152; class test through a
+// named bool / inverted / nested 110; flag as a ternary OR 136; retail's header order alone 163. The lookup's inline
+// cost is not lexical (named locals change nothing) and the file already has /Ob1; retail inlines 0x221810 at hot
+// sites (0x20b660's loop), so here it needs a colder site than one `if`. Body unchanged.
 // M399: Existing post-playback class input read-only, immutable variant binding/completed-time producer,
 // seven nonempty subsets 110 each; all with immutable tag-index formal 110. NOT kept: every form ties.
 // Original whole body restored; early source/header work, first query expansion and playback register homes remain.

@@ -1053,6 +1053,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 }
 // MiniMax E (11-05): no new form, no lower score; the session's EAX home belongs to the caller's
 // declaration, which this lane may not change.
+// w14C (11-06): walked against retail block by block; no behaviour difference. The histogram cells are dwords in retail
+// (0x10 dwords cleared at 0x7e66c/0x7e6a5 with rep stosd, 4-byte inc at 0x7e682-0x7e68f and 0x7e740-0x7e74d); `long
+// histogram[16]` with a memset for each clear recovers retail's frame 0xb4 (machine_ids and the histogram share slots) but
+// scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
+// three-way type 5/4/other (no effect).
 // score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
@@ -1244,6 +1249,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Round 148 (m3 lane 6, fast): `inline` on 0x192e60 766, on 0x1934f0 766, both 766. Player loop through a call to 0x63220:
 // forceinline on its definition 1032 (2588), `inline` on its definition 1097 (2524), with `inline` on 0x192e60 1097; each gives
 // 0x73530 its match (session in EAX, ret 4), but a score rise is not kept: held lead. Result first and capacity before the summary 785.
+// M3 lane 12 r93 (fast; 0x73530 8 throughout): the capacity switch with grouped case labels (1-2 height, 3-5 product)
+// 876 (2852 bytes: the switch now inlines as retail's jump table, but the top 0x192e60 call still inlines); that with
+// the loop's variant through 0x192e60 864 (2804 bytes: the loop call stays out of line, the top one inlines, the
+// reverse of retail); that with the player value through 0x63220 1067 (2556 bytes, 0x63220 still out of line); the
+// team-count switch grouped alone 940 (2704 bytes); the capacity helper with external `inline` linkage 840 (2828
+// bytes). Our link inlines the first 0x192e60 call site in source order and keeps 0x63220 out of line.
 // M3 lane 4 r167 (fast, 13 s; the one-file link reads 943 because it keeps the top call out of line, so it is no judge here): retail's top
 // call stays out of line only when its site's frequency is lower than the entry block's. Written as an always-true ternary (no code, diagnostic)
 // 942 (2700 bytes, 0x73530 byte for byte); the whole body in the positive arm of the admission test 815 (2868 bytes), as the else arm of
@@ -1258,6 +1269,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // reverse of retail); that with the player value through 0x63220 1067 (2556 bytes, 0x63220 still out of line); the
 // team-count switch grouped alone 940 (2704 bytes); the capacity helper with external `inline` linkage 840 (2828
 // bytes). Our link inlines the first 0x192e60 call site in source order and keeps 0x63220 out of line.
+// Round 218 (m3 lane 3, fast; masked = register/stack-masked aligned line pairs x2, control 422): the top lookup
+// guarded by `variant_index != NONE ? ... : NULL` (a test retail does not have; diagnostic) 930 (2716 bytes, masked
+// 406): the call stays out of line, the session arrives in EAX with retail's head, and 0x73530 matches byte for byte,
+// but the capacity helper stays a call; with the capacity case labels grouped 940 (2732 bytes: the seven out-of-line
+// calls are retail's set, the capacity switch inlines but as compares, not retail's table, and the early exit jumps to
+// the shared tail where retail has its own `result = false` epilogue); that with a long histogram 928 (2700 bytes, masked
+// 376); grouped labels and a long histogram without the guard 850; the early exit as `result = false; return result;` 766
+// (same code). Lead: retail's call site is out of line with no guard, so its inline choice comes from elsewhere.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
@@ -1349,6 +1368,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 				out->total_counts[i]++;
 			}
 		}
+		// retail tests the array's address here (0x7e5ff-0x7e607: lea, test), so the division below always runs
 		if (!out->rated_counts) out->averages[i] = NONE;
 		else out->averages[i] /= out->rated_counts[i];
 	}

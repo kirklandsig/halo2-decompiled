@@ -642,6 +642,9 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // helper taking the voice pointer 3, taking the voice index 3, or with the index advanced in its own statement 3; a
 // const pointer to the per-type counts for the sum and the bound 3; the counts table without const 3. Harness: probe
 // locals (1-15 at the top, 1-8 in the loop) and the counts read through a pointer local move nothing.
+// Round 171 (lane 4, fast): channel and secondary indices as one chained NONE store 5 (the word stores swap); both
+// permutation pointers as one chained NULL store 5; the voice index declared after the bit-vector fills 9; the inner
+// bound on the left of the compare 5 (`cmp [ebp], si`); the type counter declared ahead of its for 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1240,6 +1243,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax D (11-06, run 49): no new form, no lower score (94); the first arm's sum still differs (retail loads the gain into a register and adds the interpolation into it), the register rotation (inverse, elapsed, 1.0, fade-out) still differs and the gain is still carried differently into the last arm.
 // score 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
 // 1.0, fade-out), and the gain value carried into the last arm.
@@ -2457,6 +2461,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax E (11-05): no new form, no lower score; merging the two set-chunk calls into one site with the
+// range and permutation indices in named locals gives 193 (short indices) and 192 (long indices) - our frame
+// drops to 8 against retail's 0xc. Reverted.
 // score 17 (was 23): left: the range index is sign-extended (`movsx ebp, ax`, one byte) for
 // 0x219070's long set index, the 0x219070 call runs after the chunk index push, and the
 // delayed start sets flag0 before storing the start time. Earlier: the two set-chunk calls narrow their indices to char
@@ -2806,6 +2813,7 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax D (11-06, run 49): no new form, no lower score (96); retail still keeps the result in al (set at the entry, cleared through bl on the failure path and set again after the commit) with an eight-byte frame, ours keeps it in a stack byte with a twelve-byte frame, and retail's failure block still follows the success path.
 // score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
 // keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
@@ -2947,6 +2955,9 @@ static inline short sound_voice_find_available_channel(char type)
 // N385: Independent finder completion state, found/searching polarity in bool/byte/long/dword:
 // 125/125/125/125/125/125/125/125. NOT kept: no equality; completion flags and whole finder/body restored.
 // Frame twelve/eight, saved byte normalization and early failure tail remain.
+// P351: Low-byte requested-buffer bits in byte/word/long/dword with byte/Boolean result:
+// 96/101/101/101/113/109/109/109. NOT kept: no byte match; frame twelve/eight, saved-byte normalization and failure joins remain.
+// Original complete body and existing helpers restored.
 // F399: Explicit candidate admission/rejection/staged-admission/independent bitmap
 // predicates with byte final result 96/96/177/96, Boolean result 113/113/156/113.
 // NOT kept: no gain or equality; original private scan, byte result and whole body
@@ -3436,6 +3447,9 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // range declared at function top 78; sound_index declared before the pool 78; the class flag read into a bool
 // before the definition 78; a permuter run (45 tries) best 62 (a word voice index, which changes the NONE test).
 // On the 24 form: the range index named before the mode with the pointer in case 0 102; the flag bool 24.
+// Round 171 (lane 4, fast): with the range in case 0 (78): the class-flag result named before the range 103; the voice
+// read through the array at each use 163 (572 bytes); a const range pointer 78; the callback table in a local 82
+// (on the 24 form 28); 3-20 dead locals at the top, in case 0 or after the switch (diagnostic) 78 each.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -3900,6 +3914,9 @@ struct s_128ca0
 // signed readonly-reference early/completed and unsigned readonly-reference early/completed:
 // 237/231/237/237/222/237/237/237. NOT kept: no byte match; original pin and full body restored.
 // Frame 0x49c/0x494, initial gain homes and integer pin joins remain.
+// P351: Pin lower-only/both bound comparison truths in bool/byte/short/long:
+// 222/222/222/222/222/222/222/222. NOT kept: no byte match; frame 0x49c/0x494, gain-input homes and pin joins remain.
+// Original complete body and existing helpers restored.
 // F399: Existing native gain-class pin input with integer/class returns, early/common
 // results and direct/overloaded comparisons: 222/227/247/216/251/241/247/216.
 // NOT kept: six-point lead below eight, unmatched record contracts and regressed shared
@@ -4160,6 +4177,9 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 // Round 164: state pointer sunk into the branch and recomputed in the fallback 598; with 0x16f3a0
 // calls 553; fallback in both arms 633, with 0x16f3a0 calls 706, plus 0x14ddc0/0x14de70 at the loop
 // head 740 (retail's loop head, aligned 426 -> 402).
+// Round 609: existing fallback constant plus complete listener/player/environment lvalue identities,
+// seven subsets and the actual entry lvalue, 760 each (2065 bytes, frame 0xe8). NOT kept: native frame alone
+// leaves early saves, loop/helper expansion and record homes different; original body and constant linkage restored.
 // Round 400: shared zone predicate with original/direct publication, then
 // existing cross, point setter and both boundaries: 555/554/643/640/609/610/640/637.
 // NOT kept: every form regresses and lengthens; original predicate, helper

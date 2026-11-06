@@ -73,6 +73,7 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 	return (c_channel_effects_view *)SOUND_DRIVER_GLOBALS->effects;
 }
 
+// MiniMax E (11-05): no new form, no lower score: the named gain difference 537 fast (542 plain, already recorded), the double-cast differences 539 fast and 551 plain, the gain declarations moved ahead of changed 573 and no /Op 723; retail's frame 0x224 and its stream in EBX with the gain in EBP stay unmatched; the permuter was stopped before it printed a result.
 // score 545 (was 545): frame 0x22c versus 0x224; stream/gain homes and mixed math remain (masked aligned 233 of 565 lines, the most of this queue).
 // Round 64 (fast control 532, full 545; masked aligned in brackets, control [240]): send bits through a helper with a named bool result 532 [243] (no dead byte: the store
 // needs the flags in memory); mode sends as a fall-through two-case switch 545 at 1901 bytes [244], with the helper [247], with the gain difference named [240]; gain
@@ -281,6 +282,8 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // M381: Actual voice/buffer/submix API-output zero initialization, seven subsets, then
 // all with initialized status: 566/615/591/615/591/621/607/608 (fast control 532, full 545).
 // NOT kept: unsupported extra stores and regressions; original outputs, helpers and full body restored.
+// Round 217 (m3 lane 3, fast control 532, full 545; the fast image carries the builds-differently caveat): `changed` as a flag preset true and cleared by an if 544; the gain test as `fabs(...) >= 0.1f` 545; `changed` with `== 0` tests 532 (same code);
+// mode and direct read ahead of `changed` 555 (1902 B), with the fall-through two-case send switch (round 212's form, 545 alone) 558 (1913 B); the gain source pointer chosen by an if ahead of the bits read 536. Body unchanged.
 // M3 lane 11 r72 (fast screens only: fast control 532 at 1905 bytes, masked 235, CAVEAT builds differently; plain 545): `(bool)` on the first
 // send bit 550 (1907; still folded to a shift, retail selects with `and al, 1; neg al; sbb; and 4`); gain as a value copy 532 (same code); gain bits
 // read before the stream pointer 577 (1920, first difference +0x0); send state declared at function scope 532 (same code); energy loop over

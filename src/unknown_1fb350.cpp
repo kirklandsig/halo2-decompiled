@@ -321,6 +321,9 @@ extern "C" void _ReadWriteBarrier(void);
 // MiniMax S (11-05): no new form, no lower score: retail's datum scan is inlined with a frame of 0x14, the pool copied
 // to a prologue home and a second pool home for the element, while ours calls the scan out of line with a frame of
 // 0xc and forwards the pool into edi; no source form tried this round changes the frame or the pool homes.
+// MiniMax H (11-05): no new form, no lower score; the frame is still 0xc against retail's 0x14, the pool is
+// still forwarded into EDI for both reads where retail keeps it on the stack, and the flag register is still
+// blocked by 0xf0fd0.
 // MiniMax H (11-04): no new form, no lower score; retail's frame is four bytes taller and it reads the pool from the iterator's home and from a second stack copy where ours forwards the pool into edi for both, and the earlier rounds of forms all leave 122.
 // MiniMax B (11-03): no new form, no lower score.
 // score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for

@@ -490,6 +490,21 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // Round 72 (m3 lane 1, harness with the callees' 8 files: control 386 [112] at 1636 bytes against the plain 356 at 1643, so ranked only; masked aligned in brackets): EBP's entry save on the early exit: empty else 386 [112], `do { } while (false)` in that
 // else or after the block 386 [112], in the exit arm 386 [112] (same code each); `__assume(local_0 >= NONE)` after the block 418 [131] (1652 bytes, EBP still late); flag byte not volatile 440 [129]. Effect flag read: named datum pointer 402 [114], shifted byte local 425 [116],
 // pointer and one-bit bool 414 [127]. Retail's flag byte store at [esp+0x1b] is never read back; no form tried here gives it without the volatile. Not kept; body unchanged.
+// MiniMax B (11-06) round 2: no new form, no lower score (334); the permuter ran for 411 s and
+// tried two forms, the only candidate exchanging the last two arguments of the 0x173fd0 call
+// (which changes what the callee receives, and its declaration is in another file), so it is not
+// kept (334 -> 333, one point); the first random value moved from the local record's field_98 to
+// a plain real local, as the sibling 0x247fd0 does it, measures 392 at retail's 1652 bytes; the
+// frame stays 0xb0 with retail's entry EBP save, and the four random-result stores and the
+// escaped blend, sample and getter homes are unchanged, so the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (334); the function keeps our frame 0xb0, the
+// late EBP save and the escaped blend, sample, random and getter homes, and the grouped
+// workspace order that lands the point, direction and collision result on retail's offsets
+// stays at 355 while the 16-byte local that holds the blend and the sample together drops
+// the frame to 0xa0; the body is unchanged.
+// F404: Actual child-creation success/failure outcome in bool/byte/short/long,
+// after descriptor refresh: 334/334/334/334/334/334/334/334. NOT kept: no exact outcome-storage form.
+// Original handle admission, loop, random stream, geometry and whole body restored; lookup/blend/getter allocation remains.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

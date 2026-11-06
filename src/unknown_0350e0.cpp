@@ -155,6 +155,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // angle and native trig, original/native in-place publication: 356/356/357/357/368/368/370/369. NOT kept:
 // all tie or regress; original private helper contract, helpers and entire body restored.
 // Frame 0x98 versus 0x90, concurrent x87 inputs and scalar publication homes remain.
+// N399: Matrix-field diagonal/positive/negative compound producers, families 1..7
+// then full returned-component accumulation: fast 356/356/356/356/356/356/356/356. Original ordered outputs
+// preserved. NOT kept: no native frame/equality recovery; original two helpers/body restored.
 // F396: Complete parallel rotation products, up/left/forward subsets then immutable complete terms: 356/353/360/356/359/355/356/356.
 // NOT kept: best gain three is below the keep threshold; native frame and concurrent x87 inputs remain. Original complete body and helpers restored.
 // @retail 0x39e50
@@ -829,6 +832,10 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
 // mod-set size limit; retail never takes 0x4858c4's address. Tried: the tag in a local for the tests 26; NULL and 1/0
 // spellings 26; a const shader pointer for the tests 26; the call's tag named after 0x1bd50 26; an early return 26.
 // The storage merge also needs src/unknown_03f2b0.cpp's declaration changed with the other declaring files.
+// Round 171 (lane 4, fast): a typed shader-header view with the 'shad' constant 26; the character constant alone 26;
+// the zero test first 26 (same code); the flag set after the call 31; the non-fast constant upload 61 (129 bytes).
+// A storage aggregate from 0x4858c4 to 0x485a5c takes in about 25 globals over seven files, among them
+// src/unknown_03fdf0.cpp (g_485950).
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -1363,6 +1370,7 @@ bool function_2dba0(long tag, bool alternate, long c, long d, long e, point3f co
 extern bool g_4ba019;
 long function_baf80(long object_index);
 
+// MiniMax D (11-05): no new form, no lower score (12); retail masks the parent index before it loads g_4e0300 and keeps the definition pointer in EAX, ours loads the global first and goes through EDX; a dword truncation, a dword or long masked index, the mask inline in the subscript, a headers local, the model read without the definition local and a dword model all score 12 or worse.
 // score 12 (was 12): the parent lookup differs. Retail masks the parent index (`and eax, 0xffff`,
 // `lea`) before it loads g_4e0300, ours loads g_4e0300 first and uses movzx; the first model
 // load also goes through EDX in ours and EAX in retail. Tried: `long parent_slot = parent & 0xffff`
@@ -1704,6 +1712,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (193); retail still keeps the result in its own stack slot (0.0f at the entry, filled by the atan2 tail, one shared `movss xmm0, [result]` at the end, frame 0x18) where ours keeps the zero in xmm0, returns early on each path and reuses the scale slot for the x87 result (frame 0x14).
 // MiniMax R (11-01): no new form, no lower score: the five-way switch still evaluates the cross products in our order and allocates the XMM registers differently.
 // score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // Retail keeps `result` in its own stack slot (stored 0.0f at entry, fstp'd into by the atan2
@@ -1798,6 +1807,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // DH366: Original final projection zero/nonzero admission, bool/byte/short/long outcomes:
 // 193/193/193/193/193/193/193/193. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// B453: Plain reverse reductions of complete mode-2/4 projection sums: y/x/both for, y/x/both while,
+// paired for/while: 193/227/227/193/227/227/227/227. NOT kept: no byte match; original complete body
+// restored. Native independent result home and frame remain.
 // Y602: Plain component negation/case-three/case-four displacement subsets, then forced existing
 // perpendicular producer: 193/193/193/193/193/193/193/193.
 // NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
@@ -1972,6 +1984,11 @@ real game_time_get_seconds();
 // seven subsets, then complete inputs with the native forward vector value: 586/537/583/507/586/537/583/519.
 // NOT kept: no qualifying gain or equality; all scalar/copy input forms and complete body restored.
 // Native frame 0x94, addressed outputs and definition/NONE homes remain.
+// J261: Existing angle provider inline/forced 610/1450; packed-color provider 507/627; sampled-color provider
+// 507/569; scalar-curve provider 507/659. Packed-color inline worsens another user, forced expansion loses
+// 0x26520 and 0x2e230; forced scalar curve loses 0x134fe0. All independent annotations restored repo-wide.
+// NOT kept: no eligible native repair; opening executable source restored. Native frame 0x94 versus 0x90 and
+// output/NONE homes remain unresolved.
 // B451: Complete animation-channel scalar receivers at original/reflection/
 // attenuation/time/admitted/angle/curve phases, then separate default assignment:
 // 522/516/544/528/536/536/536/522. NOT kept: no exact output-storage graph. Original color record,
@@ -2463,6 +2480,10 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // M387: Shared scale array traversal on the recovered final-sample graph: forward long/int/dword/uint
 // 0/0/0/0; reverse predecrement 273/273/348/348. Forward plain 0 at 965/965, NOT kept:
 // shared users worsen and 25 matches are lost. Original shared scaler restored; middle product fold remains.
+// Round 171 (lane 4, fast; header restored): normalize3d scaling in place with a component loop, `*=` or `= s *`,
+// 27/27 (only the scaler's separate input and output pointers give the fold); three compound statements 27; the
+// reciprocal named before the scale call 27; the length test inverted 27. Diagnostic: 9/16/30 dead locals ahead of
+// the sampling 27 each (symbol count does not move it).
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2626,6 +2647,9 @@ real magnitude3d(vector3f const *v);
 // fallback-loop frame, mutable then immutable, followed by exact widening of
 // current/target receivers: 251/309/320/251/309/320/284/321. NOT kept: no native-matching root/storage
 // graph. Original full body restored; raw-length and promoted-dot homes remain.
+// B453: Standard lower/upper clamp boundaries at current/target roots: lower current/target, upper
+// current/target, both current/target, lower both, both complete: 328/288/305/280/247/325/316/311. NOT
+// kept: no byte match; original complete body restored. Raw-length and promoted-dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2703,6 +2727,7 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
+// MiniMax D (11-06, run 49): no new form, no lower score (113); the input list still rides in ebp from the entry, retail spills it and reloads it at the loop top and keeps the total on the stack, the index in ebx and the cursor in ebp.
 // score 113 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
 // top) and the total on the stack, the index in EBX and the cursor in EBP; ours holds the total in EBP.
 // Earlier at 132: frame 0xa0 and loop constants agree; first +0xb saves
@@ -2816,6 +2841,9 @@ s_cached_input_list g_5234e8[4];
 // J256: Coherent cache-update/filter/queued-producer inline contracts and forced updater expansion:
 // 123/113/123/113/123/113/123/1561. NOT kept: no target gain; updater inline loses a matched caller and forced expansion loses two, with length growing to 1660
 // Original executable source restored; native frame and allocation gaps remain.
+// DL274: Independent query phase before capacity admission, bool/byte/short/long, false/handle-valid entry (fast control 146; full 113): 146/146/140/139/136/136/162/159.
+// NOT kept: native list/total spills, frame and output/index homes remain; no eligible byte match or native repair.
+// Original complete executable source restored.
 // F395: Complete twice-used flag-word snapshot, dword/const-dword/long/const-long,
 // original live list 148/148/148/148; once-read list 136/136/136/136 fast (control 147, full 113).
 // NOT kept: retail loads the flag word twice; nonexact read-once forms are ineligible.
@@ -3021,6 +3049,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // NOT kept: no exact match. Original alias-safe assignment helper and full body restored; native state/prefix/ordinal homes remain unresolved.
 // J259: Paired-entry result feeds prefix/found/both through bool and byte: 439/438/448/439/438/448; complete short/long results 449/442.
 // NOT kept: no eligible native repair; opening executable source restored. Single-consumer forms grow frame 0x30 to 0x34; shared forms retain 0x30 but grow length and regress. Original admission, alias-safe swaps, counts and full body restored; native state/prefix/ordinal homes and decay-copy base remain.
+// J261: Bounded prefix short/word 418/418 (frame 0x2c), signed-byte/byte 379/379 (native frame and extent);
+// signed tail short/byte 435/426; positive growth remainder short/word 347/363. Short growth first differs at
+// +0x33 but still regresses. Every form regresses; all controls preserved and original types restored.
+// NOT kept: no eligible native repair; opening executable source restored. Native state/prefix and ordinal
+// homes plus the decay-copy base remain unresolved.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3246,6 +3279,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // J256: Native maximum/divisor/projection-scale observation subsets and complete projection initialization:
 // 508/490/518/495/496/515/504/504. NOT kept: every form regresses from 486; maximum observations recover only four frame bytes, while scale capture enlarges it
 // Original executable source restored; native frame and allocation gaps remain.
+// DL274: Entry capture/position-transform/first-projection scopes, seven subsets then both output declarations: 486/486/486/486/486/486/486/486.
+// NOT kept: native velocity reloads and frame/projection homes remain; no eligible byte match or native repair.
+// Original complete executable source restored.
 // F395: Plain x/y random-update loop after the original z update, long/int/dword/short,
 // scalar-array then native-vector receivers: 490/490/490/543/490/490/490/543.
 // NOT kept: all regress and enlarge the frame to 0x68/0x38; original complete body restored.
@@ -3543,6 +3579,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (177); the frame is still 0x18 against retail's 0x1c, and the initial alpha and kind stores and the final fade scratch stores keep our order.
 // MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
 // score 177 (was 177): Frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
 // Earlier 175/194: the alpha is read from function_4baf0's second output (the byte pushed
@@ -3647,6 +3684,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // DH366: Original-site first raw/clamped fade equality, accepted/rejected bool/byte/short/long outcomes:
 // 177/177/177/177/177/177/177/177. NOT kept: no byte match or qualifying native repair; original complete
 // body restored.
+// B453: Common opacity query after the two genuine position producers, short/long category and both
+// complete admission/position arm orders: 311/322/310/299/312/323/311/300. NOT kept: no byte match;
+// original complete body restored. Native frame and initial/final fade scratch homes remain.
 // Y602: Standard min/max temporal/first/final clamp subsets and immutable consumers:
 // 155/252/258/289/283/288/322/322.
 // NOT kept: 155 restores frame 0x1c by adding two out-of-line clamp calls absent from retail; no native-
@@ -3806,7 +3846,10 @@ real g_525980[3];
 struct s_1321f0;
 bool function_1321f0(long index, s_1321f0 const *data);
 
-// score 4 (was 4): native frame and extent agree; table/definitions stack homes remain exchanged.
+// score 4 (was 4): table/definitions spill homes remain exchanged; native frame and length agree.
+// native frame and extent agree; table/definitions stack homes remain exchanged.
+// native frame and extent agree; table/definitions stack homes remain exchanged.
+// MiniMax D (11-05): no new form, no lower score (4); retail spills `table` at [esp+0x10] and `definitions` at [esp+0x1c] where ours uses [esp+0x14] and [esp+0x18], and the loop back edge then reloads the two bases from the swapped slots; the declaration orders and the union's place give the same 4, and assigning the definition pointer first gives retail's two homes but hoists its load above the early return (14).
 // Matched in round 55's full check with no edit here (a link-time side effect of other bodies in this file).
 // Before that: only the frame slots of `table` and `definitions` were swapped (retail: table at the lower
 // slot). This body matched in lane 13 round 38's full image and matched on its earlier --fast image; adding almost any one
@@ -3826,6 +3869,9 @@ bool function_1321f0(long index, s_1321f0 const *data);
 // side effect. Its own last difference (+0x6b, score 4) may need the form that change implied.
 // Round 138: view count in a local 104; guard split into separate continues 4; record index written in the
 // record address 4; handle view stored before the range 11; definitions assigned just before the loop 4.
+// F404: Frustum/distance admission outcomes in bool/byte/short/long:
+// 4/4/4/4/4/4/4/4. NOT kept: no exact outcome-storage form. Original complete body restored;
+// table/definitions spill homes remain exchanged.
 // DL267: Direct decoded output; actual callback signatures; native node cursor; emission-only handle; sole exit; enabled callback lifetime; readonly node; readonly leaf records: 152/4/170/228/4/30/4/4.
 // NOT kept: no byte match or eligible native repair; original executable source restored.
 // @retail 0x41640
@@ -4042,6 +4088,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // then all with complete translation captures on the native color frame: 362/369/362/361/362/221/355/355.
 // NOT kept: left/up 221 uses one-use field copies and grows to 1827/1819 bytes; its single
 // families regress. All other forms regress. Original scalar alpha, helper and full body restored.
+// AC560: Complete planar corner input, pointer/reference/value/scalars, scalar/native-color
+// frames: 231/231/449/396/365/365/520/374. NOT kept: no byte equality; native frame/scalar homes remain.
+// Original helper, all input captures, full geometry, scalar alpha and body restored.
 // P349: Complete scale classification before alias-safe inputs, bool/byte/short/long and complementary truth:
 // 446/446/446/446/462/462/458/458. NOT kept: no byte equality; original executable source restored.
 // @retail 0x32ce0
@@ -4282,6 +4331,11 @@ bool __stdcall function_391f0(void *state);
 // NOT kept: no exact match. Original arrays, initialization loop, CRT zero, reads and full body restored; native zero and frame 0x70 remain unresolved.
 // J259: Failure-only positive outcomes in four phases, update/render pairs, all and nested all: 276/261/301/297/263/263/262/262.
 // NOT kept: no eligible native repair; opening executable source restored. Complete forms reach 1014 bytes but retain frame 0x74 versus 0x70; original outcomes, live bounds and all phase loops restored. Native zero/portal/fog homes remain; downstream interfaces untouched.
+// J261: Twice-used first-frame predicate bool/byte/dword 298/298/315; two-side ordinal byte/signed-byte
+// 297/297; bounded fog-pass ordinal byte/word/signed-byte 323/323/323. Every form regresses, grows the body and
+// retains frame 0x74. All matched controls preserved; original observations and domains restored.
+// NOT kept: no eligible native repair; opening executable source restored. Native frame 0x70, early zero and
+// portal/fog homes remain; narrowed domains did not repair them.
 // @retail 0x36b50
 void function_36b50()
 {
@@ -4507,6 +4561,11 @@ long __stdcall function_3ddd0(long object_index);
 // 8 do not; probes after it, globals, temporaries, field accesses, parameters and an inlined helper's locals do not
 // count. Tried: named offset/range parts of the fraction 1; the definition test in a bool local 1; a distances
 // pointer for the copy 1; all three 1; a distances pointer for the test and the copy with the named parts 1.
+// Round 171 (lane 4, fast; a compile-only screen reproduces ours): the count is of distinct locals by first reference
+// (declared at the top but first used after the read: no flip; one local assigned 9 times: no flip); through an inline
+// getter its result needs 5 more symbols ahead of it. The global declared at the file top 1; the definition test as a
+// forceinline predicate 1; the clamp through PIN 1; a for loop 1; the previous level through two forceinline getters
+// (levels pointer, guarded read) 1; a 192-form screen of these with named parts and declaration orders: none flips.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
@@ -4727,6 +4786,7 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
     return NONE;
 }
 
+// MiniMax D (11-05): no new form, no lower score (88); what is left is 0x494b0's swapped argument setup (window first gives 86 but the callee lives in another file) and pass 11's dead g_485898 load and late enabled store (BLOCKED-BY 0x44370).
 // score 88 (was 182): only difference left is one stack slot. Retail's frame is 4 bytes larger: it stores
 // a second zero (the register that also holds the loop index) at [esp+0x1c] before the guard,
 // never read in the loop, and compares the count against that register (`cmp edx, ecx`) where
@@ -4903,6 +4963,7 @@ PRIVATE __forceinline void draw_selected_source_pass(long group, long mode, byte
     if (enabled) { function_44550(); function_445d0(); }
 }
 
+// MiniMax D (11-05): no new form, no lower score (165); retail keeps the pass flag in a register and stores it late (passes 3 and 16) where ours stores it early on every enabled path, and that one extra store shifts the four global stores that follow by an instruction.
 // MiniMax R (11-01): no new form, no lower score: 0x44370 (src/unknown_01cf50.cpp, not my file) is still called out of line where retail inlines it into six of the passes.
 // score 165 (was 165, 213): the pass flag is now tested as retail does (and al,1 stored to the stack slot, then
 // reassigned from the extra gate), and the volatile store on it is gone. What still differs: retail stores
@@ -5035,6 +5096,7 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (138); retail still calls function_14b60 with the flags in eax, still stores 1 into the slot after function_15680 in both arms of pass 3, and still loads g_485898 into a dead eax in the three passes with normal_cull false.
 // score 138 (was 138): earlier 210; the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
 // the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
 // variable so retail's `shr eax,N; and al,1; mov [esp+0x14],al` appears. Still different: retail
@@ -5126,6 +5188,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // AC546: Existing shared pass helper returns availability to all three draw callers in
 // bool/signed-char/byte/short/word/long/dword/int: eight at 138. NOT kept: no gain or
 // native publication repair; original shared helper and every complete caller restored.
+// N399: Shared selector formal in int/dword/unsigned int/short/word/char/signed char/byte,
+// unchanged representable literal modes and all shared users checked: fast 138/138/138/138/138/138/138/138.
+// NOT kept: no native publication/equality recovery; original helper/caller restored.
 // Y602: Existing bit-vector availability byte/bool/short/long, direct/repeated group receivers:
 // 138/138/213/222/138/138/213/222.
 // NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.

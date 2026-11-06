@@ -313,6 +313,9 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
+// MiniMax G (11-05): no new form, no lower score; the forms that reach retail's argument registers
+// move 0x189fe0's request parameter from EAX to EDX and lose that function's eight matched callers,
+// so they are not kept: BLOCKED-BY 0x189fe0 (src/unknown_189010.cpp).
 // MiniMax b (11-04): no new form, no lower score; retail still takes the state pointer in EAX and the tag on the stack where ours takes the tag in EAX and the state on the stack, and the only form that fixes that changes src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0.
 // MiniMax E (11-04): no new form, no lower score; the tag's copy stays at the entry and the class lookup still reloads the state from the stack, so the stream is one instruction short of retail's.
 // MiniMax R (11-01): no new form, no lower score; retail still takes the state pointer in EAX and
@@ -1004,6 +1007,9 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // of the matched functions' esp frames finds a lone byte in a dword-aligned home among dwords only as a dead parameter
 // slot, a struct member or a pushed bool. The record also lands where its two members' weights add up (below the
 // listener), where two separate locals land elsewhere, so retail's pair looks like one symbol.
+// Round 93 (m3 lane 16, plain): the looping record's flags as a word (bit 4 of a word field) 30; a short loop index 167
+// (807 bytes); the flag as `!!(flags & 0x10)` 30; the flag without the bool cast 30; a const entry pointer 30. No
+// existing {long, bool} record type in the sound code to hold the pair.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

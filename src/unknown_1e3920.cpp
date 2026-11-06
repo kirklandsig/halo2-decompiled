@@ -539,7 +539,7 @@ real normalize2d(point2f *vector);
 real function_267370(long object_index);
 
 
-// score 20 (was 98): First +0x140: plane x-product operands, parent-selection carriers
+// score 20 (was 20): First +0x140: plane x-product operands, parent-selection carriers
 // and cross-product registers remain; frame 0x90 and length 1724 agree. Signed zone
 // byte and NONE sentinel recover immediate zone compares, EDI table and later ECX resets
 // (plain 20). Existing marker and every call/value unchanged.
@@ -727,6 +727,9 @@ real function_267370(long object_index);
 // B449: Existing cross producer with whole-vector field/aggregate/setter/const construction,
 // each with aggregate/library publication: 135/135/135/135/135/135/135/135.
 // NOT kept: aggregate staging has no byte match; every shared helper and target body restored.
+// Round 69 (m3 lane 14, fast with 0x1e2a90): the first cross reading up as the field expression 22 (its k products turn
+// b-loaded: the second product as retail, the first away); no up local at all 22; no left local 20, `vector3f *const` up/left
+// 20, the second cross with field expressions 20 (same code each).
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1266,6 +1269,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // 253/253/253/253/253/253/253/253 (fast control 253; full 253).
 // NOT kept: no byte match or eligible gain. Original dynamic successor test, replacement result, query
 // defaults, refreshes, cleanup and full body restored; sentinel ESI and squad/query homes remain.
+// B452: Actual tag/squad/placement input layouts, seven subsets then all with immutable
+// squad/placement bindings: eight at 253. NOT kept: sentinel and query homes unchanged;
+// original input observations, outputs and complete body restored at the native frame/extent.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1532,6 +1538,10 @@ void function_1e3b60(long actor_index);
 // (457); plain unqualified word maximum re-measured 26 (429 at 1616 bytes); the current-target test as one named
 // bool 26 (438); the list head read through the held actor pointer 26 (442, 1616 bytes); the sample/update
 // flags declared before the prior state 26 (412, same code).
+// Round 69 (m3 lane 14, fast, all in 0x262ba0, which loads the actor into EBX at entry but hands EBX to a loop byte flag and
+// re-reads the actor from its stack home 12 times): `maximum` as a plain word 26 (429 at 1616 bytes); sample/update declared
+// at function scope 26 (412); the 0x2641c0 result in its own bool 26 (412); old_state short 26 (413); the actor pointer
+// declared then assigned 26 (412).
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
@@ -1843,6 +1853,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax H (11-06): retail keeps the actor in ESI and the object pool global in EDI across the callees and
+// re-reads the pool's data at every lookup, ours keeps the actor in EDI and re-reads the pool global itself;
+// the difference rides on the callee being opaque to LTCG, and that callee (0x1e53e0) is in another file.
+// MiniMax H (11-06): the pool pointer as a local, declared before or after the actor, gives retail's shape of
+// a held pool pointer, but the pool lands in ESI, the actor stays on the stack and the frame grows to 0x18, 283;
+// the score stays 251.
 // score 251 (was 251): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
 // rotate (ours actor EDI, options ESI, pool never held; retail actor ESI, options EBP, pool global in EDI) and scalar homes remain.
 // Earlier: Frame 0x14 and actor ESI agree; the probability and delay clamps now match
@@ -2011,6 +2027,8 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // B449: Repeated unit-handle/fraction-bound/round-bound field addresses, seven subsets
 // then complete readonly actor receiver: 361/251/361/251/361/251/361/361.
 // NOT kept: no exact field-receiver repair; all original per-use observations, queries and body restored.
+// P350: Shared real clamp at probability/delay/both, ordinary/inline, then forced single sites:
+// 256/284/286/256/284/286/256/284. NOT kept: regressions; original per-use clamps and body restored.
 // Y602: Readonly equipment/grenade settings and fixed unit receivers, then fixed settings pointers:
 // 251/251/251/251/251/251/251/251.
 // NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.

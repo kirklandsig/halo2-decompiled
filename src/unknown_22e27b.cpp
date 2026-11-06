@@ -404,6 +404,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 151 (m3 lane 5, fast): restart written through `&restart` in a forceinline helper at all three sites, expression,
 // if/else, plain inline, by reference 1 each (the address folds away); that helper reading its pointer parameter through its
 // address, expression 186 (zero materialised, jump still threaded), if/else 1.
+// Round 93 (m3 lane 16, fast): the break as `restart && type == 0` (diagnostic) 146 (662 bytes), but the plain-frame
+// path then jumps to the restart test as retail: ours threads it because restart is known false on the back edge as
+// well as at entry. Flags read from the field at each use in the loop 207; the update in `if (!restart) { ... } else
+// break;` 1; the equality boundary tested first 234 (676 bytes); dispose false at its declaration with both resets
+// dropped 1; a byte restart 1; a 600 s permuter run (72 tries) none below 1.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
