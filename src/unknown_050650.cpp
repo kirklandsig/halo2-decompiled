@@ -1624,6 +1624,10 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// b2J (11-06) statement walk against retail 0x298370..0x298b3e (align.py 548 fast, 442 full): every block, offset,
+// condition direction, callee, argument order (0x2980d0 looking/bounds flags, 0x2967b0 type pointers +0x420/+0x434/+0x688 and the movement temp, 0x10f630 first=ESI,
+// 0x11cc90 aiming/forward), constant (-1, 0.70710677, 0.34906584, 1.0, 2.5) and flag home agrees with the source; no behaviour difference
+// found. Remaining differences are the inlined 0x1fdd90 and register/frame layout only.
 // MiniMax E (11-06): score 442 (was 442): no new form lowered it. The frame is 0xcc against retail's
 // 0xc8 and ours is four bytes shorter (2016 against 2020); retail keeps the actor index in ESI and
 // spills the slot offset to [esp+0x30] where ours keeps the index in EDI and the offset in ESI.
