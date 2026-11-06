@@ -3897,6 +3897,12 @@ struct s_128ca0
 // pin joins remain.
 // B440: Existing gain operators at raw nested/argument/inner/update producers
 // 262/262/262/269; parallel branches only 316, with raw nested/inner/update 332/332/321.
+// MiniMax H (11-06): score 164 (was 222): the caller's gain and the location's unknown08 are added
+// to the playback's gain through the decibels type, the scale is read once into a real local and the
+// pitch bounds are read through their own address. The frame is retail's 0x494, the gain sum is
+// gain + (unknown08 + argument), the scale stays in xmm2 and the pitch bounds load as a pair.
+// Still differs: the pitch result and the argument hold swapped stack homes ([0xc] against [0x10])
+// and the two clamp joins in the tail differ.
 // Raw/complete operators with native reused scale 167/252; adjacent pitch bounds too
 // 164/249. Four pitch/gain/raw-result role-name forms on that graph each 164. Native
 // 0x494 frame and early location load recover, but pitch/gain homes and pin joins differ.
@@ -3944,10 +3950,13 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 	memset((byte *)&local_3 + 4, 0, 0x2c);
 	local_3.field_30 = 0;
 	memset((byte *)&local_3 + 0x34, 0, 0x444);
-	s_sound_playback_parameters *local_4 = &SOUND_GLOBALS_DEFINITIONS->playback_parameters[local_2->playback_index];
-	real local_5 = ((real)local_4->pitch_upper - (real)local_4->pitch_lower) * local_1->location.scale + local_1->pitch + (real)local_4->pitch_lower;
-	long local_6 = decibels_add(local_1->location.unknown08, decibels_add(*(long *)&local_1->gain, arg_1));
-	local_6 = function_1251e0(local_2, local_6, local_1->location.scale);
+	short *local_18 = &SOUND_GLOBALS_DEFINITIONS->playback_parameters[local_2->playback_index].pitch_lower;
+	real local_17 = local_1->location.scale;
+	s_decibels gain_sum;
+	real local_5 = ((real)local_18[1] - (real)local_18[0]) * local_17 + local_1->pitch + (real)local_18[0];
+	gain_sum = *(s_decibels *)&local_1->location.unknown08 + (*(s_decibels *)&local_1->gain + *(s_decibels *)&arg_1);
+	long local_6 = *(long *)&gain_sum;
+	local_6 = function_1251e0(local_2, local_6, local_17);
 	function_12a1b0(arg_0, (s_looping_track_sound *)local_1, arg_2, (s_looping_channel_properties *)&local_3);
 	s_sound_pitch_range *local_7 = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[local_2->pitch_range_base + local_1->pitch_range_index];
 	s_sound_permutation const *local_8 = &SOUND_GLOBALS_CHUNKS->permutations[local_7->first_permutation + local_1->permutation_index];
