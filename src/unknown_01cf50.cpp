@@ -2320,6 +2320,9 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // score 4 (was 4): the subtraction of the stream count must come before the last push of the
 // sorter call, and the add of the stipple stride must follow the second rep movsd of the
 // inlined device call.
+// MiniMax D (11-06): no new form, no lower score: the scratch argument's local at function scope
+// (11) and the count in a local or read from the global all keep the subtraction after the sorter's
+// last push, and the permuter run on this function reached its time limit without a measured variant.
 // @retail 0x1e370
 void function_1e370(void)
 {
@@ -2367,6 +2370,9 @@ void function_1e370(void)
 // MiniMax A (11-03): the allocation from the shared helper scores 60 and the permute run was stopped; no lower score.
 // score 8 (was 8): the record table base is held in edi here and in ebp in retail, and the
 // copy of the payload saves and restores the register that choice leaves free.
+// MiniMax D (11-06): no new form, no lower score: the payload copy before the delta (33), the records
+// pointer in a local in the allocator (17) and the address-taken parameters left out (8) all keep the
+// pool's base in edi.
 // @retail 0x1e4e0
 bool function_1e4e0(point3f const *position, t_1e4e0_callback callback, void const *data, long size)
 {
@@ -2624,6 +2630,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // Coordinator review (MiniMax C): the lane's 16 needed a #pragma optimize("p") pair around
 // the function (a per-function compiler setting, not kept); its body without the pragma (ternary maximum, the
 // divisor and reciprocal as locals, no volatile, the enabled branch first) is 47. Body back to its earlier form.
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
@@ -2711,6 +2718,10 @@ struct s_queued_material_payload
 // caller then differs only in xor eax, eax against push 0), but that changes the declaration.
 // score 2 (was 2): the count of the payload is handed to 0x4b220 in eax, retail hands it over
 // in ecx.
+// MiniMax D (11-06): no new form, no lower score: the count reaches the callee in eax here and in
+// ecx in retail; the count's use before the mode's test (9), the address-taken statements reordered
+// (8) and the count read from the global all keep it in eax, and the choice belongs to the callee
+// 0x4b220 in this file.
 // @retail 0x35b00
 void __stdcall function_35b00(void *payload)
 {
@@ -2868,6 +2879,9 @@ struct s_429a0_payload
 // MiniMax D (run 37): no new form, no lower score; the only real difference is that retail
 // folds the record base into the payload pointer one store earlier than we do, the rest of
 // the fast differences are the reduced image's addresses for the globals and the constant.
+// MiniMax D (11-06): no new form, no lower score: retail folds the record base into the payload
+// pointer one store earlier than we do, and the address the record's callback holds is a build
+// address that the comparison cannot map.
 // @retail 0x429a0
 void function_429a0(byte type, long a, long b, long c, point3f const *position,
     point3f const *endpoint, vector3f const *first, vector3f const *second, real opacity)
@@ -3259,6 +3273,9 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // score 2 (was 2): the setup of the call to 0x15a60 zeroes ecx before it loads 9 into eax,
 // retail loads 9 first. The callee lives in src/unknown_0158f0.cpp and is itself unmatched,
 // and its parameter home decides the order of this setup.
+// MiniMax D (11-06): no new form, no lower score: the callee at 0x15a60 takes its first argument
+// before the third one is cleared, and that callee is defined in src/unknown_0158f0.cpp, so its
+// parameter order is reported here rather than changed.
 // @retail 0x1d0e0
 bool function_1d0e0()
 {
@@ -3495,6 +3512,7 @@ bool function_14600()
 // score 40 (was 73): retail loads the width pair first and only then the
 // height pair, ours loads the height pair first; the conversions of the two
 // differences into EDX and EAX now agree
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x1eb00
 void function_1eb00()
 {
@@ -4998,6 +5016,8 @@ void function_1bd50(void *state);
 // score 13 (was 15): the fallback index is masked rather than narrowed to a word, so the load
 // is a dword and the mask; retail loads the word directly and keeps the element argument's
 // push before the branch.
+// MiniMax D (11-06): no new form, no lower score: the fallback's load is a masked dword load where
+// retail widens a word with an xor, because g_4858b8 is a long in this file.
 // @retail 0x1c0d0
 void function_1c0d0(long tag, long stage)
 {
