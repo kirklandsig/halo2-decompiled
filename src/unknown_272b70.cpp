@@ -2874,6 +2874,10 @@ struct s_scenario_scripting_view
 // F401: Actual actor-position field reference at post-actor/admitted-set/iteration/branch phases,
 // original then loop-owned short traversal: 95/99/80/80/102/103/87/87. NOT kept: no exact or eligible gain;
 // original search restored. Actor/counter/selector and guarded scripting-data homes remain.
+// F403: Independent signed lower-bound or short-circuited upper-bound admissions,
+// bool/byte/short/long at the original observations: 80/80/80/80/80/80/80/80.
+// NOT kept: no exact individual-bound result; original direct guards and complete
+// search restored. Actor/counter/selector and guarded scripting-data homes remain.
 // DH380: Actual decoded selector/candidate-pointer/metric bindings immutable, seven subsets,
 // then complete bindings with the actual packed input: 80/80/80/80/80/80/80/80. NOT kept:
 // actor/counter/set and guarded-data homes remain; original bindings and complete search restored.

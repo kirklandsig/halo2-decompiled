@@ -2128,6 +2128,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 6-byte pad becomes `jmp` + 3 bytes and later lines sit one off; direction held in XMM1-3 across the dots. Same code on it: iterator set
 // through an inline helper 383, stores reordered or chained 385, vehicle definition named 383, eligibility bool, inline eligibility
 // helper, inline type getter, type read at each test, loop nested in the test 305 each. Next: that one scratch step, then this recipe.
+// F404: Complete normalized-direction value at distance/query/absolute-speed/relative-speed
+// boundaries, mutable then const: 429/429/429/439/429/429/429/439. NOT kept: no exact value-ownership form.
+// Original normalizers, vectors, predicates and complete body restored; iterator/byte homes and SIMD residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

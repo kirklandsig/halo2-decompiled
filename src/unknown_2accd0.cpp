@@ -900,6 +900,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // subsets 1/2/4/3/5/6/7 and all complementary incompleteness: eight at 34.
 // NOT kept: no exact comparison-result form; original body, getter, API boundaries
 // and cleanup restored. Entry total and seek/size carriers remain.
+// F403: Actual completed-offset/cancellation/signing-flags producer subsets 1/2/4/3/5/6/7,
+// then positive admission on the complete graph: 126/161/161/82/82/161/82/223. NOT kept: all regress;
+// original scalar producers, observations, getter, API tuples and complete body restored.
+// Fresh total and independent extent/seek/transfer carriers remain.
 // Round 57 (m3 lane 15, fast; brackets aligned with registers kept, stack masked; base [23]): cross of total, signature
 // sum and clamp (36 forms): no total local, helper at the signature only, `MIN(g_4fa0c8.size, remaining)` with a buffer_size local 153 (689) [4], left: the signature
 // sum coalesces body_size into ESI, so its load is not head-merged with the body case; the same with the original clamp 28 (687) [17] (one-caller helper, not kept); field

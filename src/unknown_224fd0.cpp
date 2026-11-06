@@ -268,6 +268,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Round 150 (m3 lane 5, fast; m = masked aligned, control m88): retail's flow with scalar products as const refs, complement plain or const ref, all plain scalars 469 (1736) m83,
 // 505 (1708) m79, 505 (1708) m79; kept helper with ij, ik, jk, all three as const refs 495, 495, 495, 491 (1716-1720); retail's statement order on the kept vector locals, plain 357
 // (1820) m68, const refs 409 (1780) m83.
+// F403: Actual mixed-axis products in a native vector, incremental/setter/aggregate/
+// readonly aggregate, original or complete square-vector producer: 219/323/410/410/455/389/509/509.
+// NOT kept: no byte match; original private producer and complete body restored.
+// Axis-specific square/sine/cosine spills, basis homes and table placement remain.
 // AC553: Complete native diagonal-result/cosine-product vectors, initialized,
 // readonly, shared-setter or field-produced: 373/373/411/373/398/398/406/398. NOT kept:
 // grouped outputs do not match; original helper and complete body restored.

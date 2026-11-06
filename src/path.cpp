@@ -630,6 +630,12 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // Y605: Complete transition-step pointer/reference, branch-owned/shared admitted metadata,
 // original long then bounded short link total: 375/375/385/385/392/392/391/391.
 // NOT kept: all regress and shorten away from retail; original indexed fields and body restored.
+// F397: Geometry previous-point/edge/output object references, seven subsets and complete endpoint
+// references: 282/286/286/282/282/286/282/282. NOT kept: best gains four only; original
+// receivers, memcpy and body restored. Extra frame word and predecessor/flag homes remain.
+// F401: Complete three-state transition publication/call result, expression byte/short/long/dword
+// and complete-arm producers: 350/346/344/344/378/368/368/368. NOT kept: all regress and no equality; original
+// metadata stores, calls and full body restored. Extra frame word and predecessor/flag homes remain.
 // M3 lane 11 r71 (fast, plain where marked; masked = aligned with registers and stack offsets ignored). Rebuilt the
 // flag
 // form (short link count; `special` false at the arm's start and set by an if; `usable` by if / else if with a `data`
@@ -1182,6 +1188,8 @@ bool function_2715a0(byte *buffer)
 // Y606: Actual short link discriminator with paired metadata halves/direct depth/shared
 // point producers, masks 0..7: 486/492/481/498/486/492/481/498. NOT kept:
 // five-point leads below eight; half transfers grow extent. Original type/body restored.
+// F396: Complete per-link flags/type/node scalar observations, seven subsets then all immutable: 505/490/485/506/478/524/547/547.
+// NOT kept: 478 grows frame to 0xc58 versus native 0xc54 and combines nonqualifying snapshots; native repeated reads/state EBP remain. Original complete body and helpers restored.
 // M3 lane 11 r71 (fast, control 486 at 2076 bytes). Retail loads the child's entry point into four registers ahead of
 // the closest test's `jbe`: the entry point copied to a local inside `if (destination_valid)` and used by the closest
 // update 488 (masked lower, retail's four loads), declared before the whole test 488; NONE type test ahead of the

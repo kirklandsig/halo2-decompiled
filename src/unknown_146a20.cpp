@@ -314,6 +314,9 @@ bool g_47f05b;
 // on the base: a same-behaviour constructor twin for this one caller carrying a barrier steer, not kept (twin ruling, as
 // 0x45560 in lane 4 r165). Retail keeps the base's abstract vtable store only in this construction (not 0x146b80 or 0x146e30).
 // build/held/lane4-r166-146a20-ctor-twin.patch is the whole change, a lead toward the match.
+// F404: Pool/count outputs, derived/abstract pool result, current/next count
+// before/after publication: 34/34/34/34/34/34/34/34. NOT kept: no exact result-storage form.
+// Original placements, publications and body restored; intermediate vtable store and arm reload remain.
 // B451: Per-element default then terminal override in the existing four-word
 // constructor pass, long/int/short/signed-char ordinals: 34/34/43/43/34/34/43/54. NOT kept:
 // no exact, nonregressing shared form. Entire constructor/header and target restored;
