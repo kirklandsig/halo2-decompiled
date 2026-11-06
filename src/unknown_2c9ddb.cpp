@@ -196,6 +196,18 @@ extern long g_55c154;
 // Round 394: actual selected/saved/source-index eight-byte homes 177/74/61;
 // selected+saved/selected+source/saved+source/all 182/187/104/193; all unsigned 193.
 // Original narrow values and complete body restored; classification spill/copy expansion remain.
+// MiniMax D (11-06): no lower score this round; the body is unchanged. Retail's second half
+// holds two load call sites, the default arm inline and the selected arm out of line at
+// +0x1e3, each with its own 0x54e49c store, its own 0x4c-byte copy into 0x54e4a0 and its own
+// 0x216a50 call, and one shared 0x238c69 request call with the mode and the file type as
+// values sunk into the two arms. Forms that split that half score worse: two load calls 174,
+// one load with a per-arm copy and two request calls 167, one load with a per-arm copy and a
+// mode/type pair feeding one request call 176, two loads feeding one request call 103; each
+// of them reads its arguments at [ebp + 0x8] and its locals at [ebp - 0x150] instead of
+// retail's [ebp + 0x78] and [ebp - 0xe0], and leaves `this` out of EBX. A named count keeps
+// the copy out of line with retail's edi/ecx/esi call but scores 88. Still different: our
+// link expands the copy in place where retail calls 0x13fac0, and the default/existing
+// classification is spilled to a byte slot where retail tests the selected index directly.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
