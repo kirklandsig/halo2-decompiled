@@ -184,6 +184,11 @@ extern long g_55c154;
 // result direct/named 178/178, short-circuit result direct/named 110/110; complete
 // exit with conditional/short-circuit load 178/110. NOT kept: no gain; load-result
 // graphs lose the biased frame. Classification spill and copy expansion remain.
+// Round 153 (m3 lane 5, fast with 0x13fac0/0x212bc0/0x238c69): the game type read once into a local at the function top on
+// the one-load body 178 (575 B), the controller index read once at the top 188 (559 B); on the two load arms: game type at
+// the top 177 (589 B), controller index at the top 172 (580 B), both 174 (575 B). Compile-only screen (32 two-arm forms:
+// store order, assignment or memcpy copy, named count, arm order, entry field or local selection): every two-arm form takes
+// the unbiased frame with `this` in ESI or EDI; none gives retail's `lea ebp, [esp - 0x70]` with `this` in EBX.
 // DH384: byte-array record publication, first/creation/both: memmove 139/143/157,
 // memcpy 61/61/61; bounded loaded-name memcpy/memmove input 99/104. NOT kept:
 // no gain; name snapshots lose the biased frame, even at retail length.

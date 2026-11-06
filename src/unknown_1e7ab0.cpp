@@ -163,6 +163,8 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// MiniMax H (11-05): no new form, no lower score; the 0x1e8d50 getter form still gives 165 and the case 4
+// rotation is still allocator-bound (retail keeps the parent in ESI, ours in ECX), and 0xd0590's order is its own file.
 // Round 30 (lane D): the permuter's best variant scores 601 against its own 608 baseline (seven points,
 // below the retention margin) and it adds volatile qualifiers and swapped call arguments, so it is not
 // kept. Manual trials this round: a named table base 620 (a tie), the player index set to NONE and then

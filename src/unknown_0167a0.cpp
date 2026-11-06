@@ -1037,6 +1037,9 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 // score 2 (was 0): cases 12 and 13 share one tail; ours stores out[3] before out[2], retail stores
 // out[2] before out[3]. A `real *zero = out + 1` copy in cases 14/18 makes this match exactly, but
 // it hides 0x1b2c0's write summary from LTCG and costs 0x19ca0 its byte-for-byte match.
+// M404: direct-output zero propagation in pair/width/height/pair-width/
+// pair-height/width-height/all/all-plus-zero families: 6/2/2/6/6/2/6/6.
+// Original stores and complete body restored; shared pair-zero scheduling remains.
 // @retail 0x1b2c0
 bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {

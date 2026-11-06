@@ -179,131 +179,55 @@ static inline long game_seconds_to_ticks_round(real seconds)
 	return result;
 }
 
-/* a flag field read as word bits: retail reads these flags with a load, a
-   shift and a test of the low bit */
-struct s_flag_word_bits
-{
-	word bit0 : 1;
-	word bit1 : 1;
-	word bit2 : 1;
-	word bit3 : 1;
-	word bit4 : 1;
-	word bit5 : 1;
-	word bit6 : 1;
-	word bit7 : 1;
-	word bit8 : 1;
-	word bit9 : 1;
-	word bit10 : 1;
-	word bit11 : 1;
-	word bit12 : 1;
-	word bit13 : 1;
-	word bit14 : 1;
-	word bit15 : 1;
-};
-
-// score 114 (was 114): the walk found no behaviour difference. Retail tests flag 4 as `test dl, 0x10` on the
-// header's flag byte; that faithful `header->flags & 0x10` (with the parameters read directly) gives 124 here,
-// because with the early returns our link inlines 0x191fab (src/unknown_1916dc.cpp) at the straight-line tail
-// call (364 bytes), where retail calls it. Nesting the body under a `proceed` flag instead of the early returns
-// keeps the call out of line (105) but is a flag set inside a test, so it isn't kept; `/Ob1` on unknown_1916dc.cpp
-// (106) is another file's flags. The word-bitfield view stays.
-// Still differing: retail forms the player before it loads g_4e0300 (ours hoists that load above the pushes, so
-// ecx/edx and the first lines are off by one register), loads the 0x130 float into xmm0 before the cvtsi2ss (ours
-// folds it into the mulss), holds the ticks in edx (ours eax), and tests kind == 3 as `movsx eax, si; sub eax, 3; je`
-// with the 0 and 1 stores on branches (ours branches on `cmp ax, 3`; the ternary and every if/else spelling give
-// `setne` instead, 106). Tried: object/player through pointer locals (same), header first (128), header by
-// tail_object_get (100), flag test before the ticks (108), the float in a local first (same), `seconds * field` or
-// `(real)field * seconds` in the helper (same), an outer switch with `goto` into the shared 0x152000 call (jump
-// table, 96 at 340 bytes), switch over 2/5/3 under `kind != 1` (binary tree, 109), `kind - 3 == 0` (102).
-// Permuter (25 min on r654): best 86, only with a volatile header pointer; not kept.
-// F352: Native header-byte mask producer with both existing stack aliases retained,
-// bool/byte/short/long default-false arms 124/124/129/128; complete true/false
-// arms 123/123/126/125. All restored; player-base/root scheduling, ticks/effect
-// homes and the expanded tail remain. Original word-bitfield view retained.
-// N341: direct unavailable producer 122; call-result admission flat/nontrivial-kind scopes 98/87;
-// short ticks 114, full-width kind/effect 112/113, nested tick admission and sole exit 114 each.
-// NOT kept: conditional success flags remain unmatched; width-only gains are at most two.
-// Player/object load scheduling, native flag mask, effect dispatch and tail inlining remain.
-// Round 51 (m3 lane 15): the two parameter-address locals dropped, parameters read directly 114 (same code, kept);
-// on that: object through tail_object_get 120; `ticks <= 0 || unavailable` early return 114; player looked up after
-// the ticks 120; the flag tested in the ticks condition (no `unavailable`) 122.
-// DH319: Existing rounding producer duration/rate accumulators and named-rate
-// products 114/114/114/114; the same with a short return 135/135/135/135.
-// Original helper restored; player/root scheduling, duration XMM ownership,
-// effect dispatch and expanded tail remain.
-// Native definition/object/both field records 114/114/114; complete-definition
-// pointer/reference rounding inputs 114/114; tick-result output pointer/reference
-// 114/114; result-first named scalar homes 114. All restored; player/root,
-// duration, tick/effect homes and expanded tail remain.
-// AC512: Readonly player/header/object-tag input contracts, seven subsets
-// 114 each; complete readonly graph with native flag-byte admission 124.
-// All restored; player/root allocation, tick/effect homes and expanded tail remain.
-// B397: Duration-field pointer/reference inputs to the existing rounding producer,
-// direct/duration/rate/named-rate graphs 114/114/114/114/114/114/114/114. All restored;
-// scalar frame agrees, player/root ownership, separate SSE input and expanded tail remain.
-// P321: Dispatch 2/5/other and 5/2/other, early-return/sole-exit/Boolean-result/short-result:
-// 98/98/98/98/98/98/98/98. NOT kept: native dispatch tests 1/2/5; reordered
-// arms and retained success carriers do not match. Original body restored.
-// Y567: Complementary available bool/byte/short/long with default-true
-// then exhaustive arms: 116/116/126/122/125/125/131/130. NOT kept: no byte match; original flag
-// producer and body restored, player/root ownership and tail expansion remain.
-// N370: Actual player/header/object-tag reference ownership, seven subsets and native byte admission:
-// 114/114/114/114/114/114/114/124. NOT kept: no equality; original complete body restored.
-// Player/root ownership, tick/effect carriers and expanded notification tail remain.
-// F377: Complete byte/word/long/dword success results, original/native-byte flag pairs:
-// 87/106/96/81/90/78/90/78. NOT kept: unmatched result flags; native-byte long/dword
-// reach 340 bytes. Original body restored; player/root/tick homes remain.
-// B426: Actual masked player/object slot and byte-offset components, separate/paired,
-// then word slot and unsigned paired offsets: 114/114/114/114/114/114/123/114. Seven tie at 366/340; word slot regresses;
-// original lookups and complete body restored. Player/root and tail expansion remain.
-// P325: Caller tick/kind/effect entry declaration subsets 1..7 all tie 114;
-// the complete graph with the later definition-index declaration also ties 114.
-// Every initializer stays at its original producer; original complete body and rounding
-// helper restored. Player/root, tick/effect homes and expanded notification tail remain.
-// F382: Actual byte-owned header flag, test-produced bool/byte/short/long
-// 124/124/129/128; direct producers 113/113/113/113 at 354 bytes.
-// NOT kept: at most one point, and the expanded notification tail remains. Original word view and body restored.
-// N372: Existing rounding forced/unhinted; complete admission/notification scopes with
-// ordinary/forced/unhinted producer, then the one-use object receiver removed: 114 each.
-// Original producer/body restored; player/root, scalar homes and expanded tail remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
 	s_tail_player *player = tail_player_get(player_index);
 	s_tail_object_header *header = (s_tail_object_header *)g_4e0300->data + (object_index & 0xffff);
-	byte *object = (byte *)header->object;
+	byte *object = (byte *)tail_object_get(object_index);
 	byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
 	long ticks = game_seconds_to_ticks_round(*(real *)(definition + 0x130));
 	bool unavailable = false;
-	if (TEST_FIELD_BIT(((s_flag_word_bits *)&header->flags)->bit4))
+	if (header->flags & 0x10)
 		unavailable = true;
 	if ((short)ticks > 0 && !unavailable)
 	{
+		bool proceed = true;
 		short kind = *(short *)(definition + 0x12c);
 		if (kind != 1)
 		{
 			if (kind == 2)
 			{
-				if (!function_d6af0(player->unit_index)) return;
-				player_speed_request_14ea20(player_index);
+				proceed = function_d6af0(player->unit_index);
+				if (proceed) player_speed_request_14ea20(player_index);
 			}
 			else if (kind == 5)
 			{
-				if (!function_d6790(player->unit_index)) return;
-				player_speed_request_14ec00(player_index);
+				proceed = function_d6790(player->unit_index);
+				if (proceed) player_speed_request_14ec00(player_index);
 			}
 			else
 			{
-				short effect = kind == 3 ? 0 : 1;
-				if (!function_152000(player_index, effect, (short)ticks)) return;
-				if (effect == 0) player_speed_request_14eb10(player_index);
+				/* only kinds 3 and 4 remain here */
+				short effect;
+				switch (kind)
+				{
+				case 3: effect = 0; break;
+				case 4: effect = 1; break;
+				default: __assume(0);
+				}
+				proceed = function_152000(player_index, effect, (short)ticks);
+				if (proceed && effect == 0) player_speed_request_14eb10(player_index);
 			}
 		}
-		long definition_index = *(long *)tail_object_get(object_index);
-		function_191fab(definition_index, player->local_index);
-		function_a89c0(player->unit_index, definition_index);
-		if (player->local_index != NONE) function_f8110(object_index);
-		function_b8540(object_index);
+		if (proceed)
+		{
+			long definition_index = *(long *)tail_object_get(object_index);
+			function_191fab(definition_index, player->local_index);
+			function_a89c0(player->unit_index, definition_index);
+			if (player->local_index != NONE) function_f8110(object_index);
+			function_b8540(object_index);
+		}
 	}
 }
 
@@ -1329,6 +1253,8 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 
 // MiniMax A (11-04, run 45): no new form, no lower score (17); the unit index still swaps registers with the object table.
 // MiniMax H (11-04): no new form, no lower score; the unit index and the object table still swap registers.
+// MiniMax E (11-05): no new form, no lower score; the unit index still lands in esi where retail keeps it in
+// edi, and the object table pointer lands in edi where retail keeps esi.
 // score 17 (was 17):
 // Logic and structure match; only the callee-saved registers differ: retail keeps player->unit_index in
 // edi and the object data pointer in esi, this build uses esi and edi. Tried (scores): unit_index in a local
@@ -1650,7 +1576,7 @@ void __stdcall function_167e86(long user_index, long hand);
 void __stdcall player_set_local_user(long player_index, long user_index);
 void __stdcall function_14f270(long player_index, long controller_index);
 
-// score 12 (was 285): retail's length (1992 bytes). The unbind arm calls player_set_local_user(index, NONE) and
+// score 12 (was 12): retail's length (1992 bytes). The unbind arm calls player_set_local_user(index, NONE) and
 // function_14f270(index, NONE), which LTCG expands as retail does, and 0x1682bf (inline on its definition) now
 // expands inside it. Left: in the binding pass retail tests local_index (`cmp word ptr [esi+0x28], -1`) before
 // the address copy and pushes both player_set_local_user arguments before the machine_user store; ours tests
@@ -1735,6 +1661,10 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // local 37/37; the local_index test taken into a bool before the copy 57; the machine_index store in both arms of
 // that test 56; machine_controller stored before machine_user 13; the user local read before the copy 27; a 600 s
 // permuter run (44 tries) none below 12. Renaming the per-player index local never moved its frame slot.
+// Round 69 (m3 lane 14, fast): copy and machine_index in both arms of the local_index test 82 (2036 bytes, no head
+// hoisting), bound arm first 105 (2035 bytes); no user local 12 (same code); the bind body under `users[index] != NONE`
+// instead of `continue` 13. Diagnostics: the copy as a byte-array aggregate assignment 12 (same code), as dword+word 55;
+// the test in a bool before the copy 57 (the cmp moves ahead of the copy as in retail, but `sete`/`test` remain).
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

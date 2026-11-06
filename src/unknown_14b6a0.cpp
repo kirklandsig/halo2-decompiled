@@ -118,8 +118,6 @@ void function_14bac0()
 	s_record_pool_iterator *iterator_reference = &iterator;
 	players_pending_creation_process(iterator_reference);
 }
-// MiniMax B (11-04): no new form, no lower score.
-// MiniMax S (11-01): no new form, no lower score.
 // score 222 (was 222): Frame 0x50 versus 0x3c, exchanged player/scenario spills, point/recipient overlap and readiness homes remain.
 // Round 64 (fast; masked aligned count in brackets, base 222 [87]; ranks by structure where the positional score hides it): stamp through
 // `index`/`stamp` locals and the relocation point used directly 244 [78]; on that: second loop on a block-local datum iterator through
@@ -503,6 +501,16 @@ void function_14bac0()
 // N390: Actual second-phase state-count admission, positive/complementary bool/byte/short/long,
 // 222/222/222/222/222/222/222/222. NOT kept: no exact phase-result/lifetime form;
 // original body restored; native frame, point/recipient overlap and readiness homes remain.
+// MiniMax B (11-04): no new form, no lower score.
+// MiniMax S (11-01): no new form, no lower score.
+// M3 lane 15 r60 (fast): the first loop on the 12-byte iterator through data_iterator_next_calling with the second on a
+// block-local datum iterator through data_datum_iterator_next 228 (frame 0x50; with the dead outer iterator removed 228, frame
+// 0x4c); with the relocation point used directly 237 (1052 bytes, frame 0x40: have_destination at +0x13 and have_alternate in BL
+// as retail, but the first iterator's data cached in EDI where retail keeps the scenario, and the centre in its own slot); the
+// first iterator declared at the request block's top 237 (same code); the centre, height and radius in their own block with the
+// unit read from the player at both calls 262 (1048, frame 0x44). Retail's first iterator is the 16-byte datum one (lane 10
+// r13), so the first-loop change is not retail's. On the original body: the relocation point used directly alone 245 (1048);
+// `point3f alternate, destination;` 222 (same code).
 // @retail 0x14b6a0
 void function_14b6a0()
 {

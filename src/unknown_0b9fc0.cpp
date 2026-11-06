@@ -668,6 +668,7 @@ struct s_component_property_view
 	bool function_1d3550(long key, bool *positive, real *value) const;
 };
 
+// MiniMax G (11-05): no new form, no lower score; the value's load order is the callee's parameter home, so nothing here moves it ahead of the component lookup.
 // MiniMax H (11-04): no new form, no lower score; retail loads g_51e9b8 into eax after the index
 // scaling (the short A1 encoding) and reads value into edx before the component lookup and key
 // into ecx last, ours loads the global through ecx and sets the key up first, so the body is one

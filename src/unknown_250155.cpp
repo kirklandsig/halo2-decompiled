@@ -2741,6 +2741,8 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // spills both bitmaps). Tried: the last call's `(short)i` cast dropped 95; the voice state as one conditional
 // expression 95; no_team from the team byte 97; team_index from the field 95; the lookup pointer declared at
 // function scope 95.
+// Round 609: existing item/team/name validity bitfields, seven complete family subsets and
+// chained paired team flags, 95 each (926 bytes). Scalar homes, voice reload and final receiver stay different; restored.
 // F399: Existing four-output producer with whole-screen pointer/reference, output
 // pointer/reference and direct/captured mode contracts: eight forms 95 each.
 // NOT kept: no gain or equality; original helper, both uses and complete body restored.
