@@ -1182,6 +1182,7 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 }
 
 /* starts throwing a grenade (type 22) */
+// MiniMax D (11-06, run 49): no new form, no lower score (19); the three unit lookups still read the table with the other base and index order (`[ecx + edi + 8]` against retail's `[edi + ecx + 8]`) and the tail still stores the flag byte after the OR.
 // MiniMax H (11-04): no new form, no lower score (19); the earlier rounds' forms still leave the
 // three unit lookups data-first and the exit block with its own copy, so the body stands.
 // MiniMax E (11-01): 16 with the unit's ordinal masked once into a local and the table entry read
@@ -1743,6 +1744,7 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax D (11-06, run 49): no new form, no lower score (11); the entry block still compares the type with 8 first, retail loads the object pool, the unit header and the type, computes the unit and the actions pointer, and only then makes that comparison.
 // MiniMax H (11-04, run 33): no new form, no lower score (11); the permuter managed one try in
 // 326.9 s (best 11, baseline 11, no confirming build), and the entry block keeps the same eleven
 // instructions in another order.
@@ -2036,6 +2038,7 @@ done:
 
 /* gives a unit's weapon to a player's unit, taking the player's weapon
    in exchange (type 21) */
+// MiniMax D (11-06, run 49): no new form, no lower score (97); the frame is still 0x24 against retail's 0x20 (given in a stack byte, retail keeps it in bl), and the second unit lookup still reuses the first pool load where retail reloads the pool data after storing the unit pointer into the dead argument slot.
 // MiniMax G (11-04): no new form, no lower score; retail reloads the pool data for the second unit
 // lookup after storing the unit pointer into the dead argument slot, ours keeps the first pool load,
 // so the reload, the unit/weapon allocation and the result byte's home differ.
@@ -4159,6 +4162,7 @@ bool __stdcall function_ec2d0(long unit_index, s_unit_request *request)
 
 void function_e5750(long unit_index);
 
+// MiniMax D (11-06, run 49): no new form, no lower score (52); function_e5750 still expands here (95 bytes) where retail calls it out of line (67 bytes); that callee is in this file and matches, so it cannot be changed.
 // MiniMax H (11-04): no new form, no lower score (52); the inlined callee is still the whole
 // difference and the noinline spelling is not allowed.
 // MiniMax A (11-04): no new form, no lower score (52). What still differs: our build inlines
@@ -5166,6 +5170,7 @@ void function_edfa0(long unit_index, point2f const *facing)
 }
 
 /* faces a unit along its aiming direction */
+// MiniMax D (11-06, run 49): no new form, no lower score (13); the y product still folds into the dying inverse register, retail stores x first and then loads y into another register to multiply it by the inverse.
 // MiniMax H (11-04): no new form, no lower score (13); the y product still folds into the dying
 // inverse register. The compound assignment on the local, the two products in the other order and
 // the products through a pointer to the local all compile to the same folded multiply.
@@ -5455,6 +5460,7 @@ long function_1039a0(long object_index, long tag_index, long effect_index, real 
 short first_person_weapon_animation_ticks(long weapon_index, long animation_name, short type);
 bool function_1058b0(long weapon_index, long state, bool force);
 
+// MiniMax D (11-06, run 49): no new form, no lower score (54); the first difference is still inside the inlined body of function_1058b0, which lives in src/weapons.cpp: retail keeps the object pool data pointer in edx and copies it where ours keeps it in ecx, and retail's tail reads `mov ecx, [esp+0x18]; mov eax, [ecx+0x144]` where ours reads `mov eax, [esp+0x18]; mov eax, [eax+0x144]`.
 // MiniMax H (11-04): no new form, no lower score (54); the difference is still inside the inlined
 // 0x1058b0, which lives in src/weapons.cpp and is not mine to edit.
 // MiniMax A (11-04): no new form, no lower score (54 reduced / 54 full; the full build no longer

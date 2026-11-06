@@ -2712,6 +2712,18 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // `state` in EBX at the loop top (reloaded at the latch, stored to sound->state from BL), NONE in ESI, track in EBP and the
 // constant 1 in EBX across the start arm (`test bl, cl`, `push ebx`, `mov [edi + 0xae], bx`); ours holds NONE in EBX and
 // track_definition in EBP and spills track and state, and the start arm's field_c_4 = 0 is stored and reloaded in retail.
+// w14K (11-06) statement walk against retail (fast with callers and callees: 597, the full score): every field offset,
+// condition direction, callee and argument, loop and switch shape agrees; no logic error found. One behaviour difference
+// stays: on the availability-fail path (0x21a289/0x21a294/0x21a29f -> 0x21ac18) retail returns the stack byte [esp+0x11],
+// which that path never writes (0x21a2f6 and 0x21ac13 write it later), while `state == 2` is stored to [esp+0xd] at 0x21a261
+// and never read. So retail has a separate `bool stopping = state == 2` and an unset `result` there; ours returns state == 2.
+// Written that way (`bool stopping = state == 2; bool result;` with the two later `state == 2` tests via `stopping`) it
+// reproduces the dead store and the 0x11 read: 645 (reduced 679), with `alternate` declared inside the definition guard
+// (retail computes it after 0x21a26a) 637 / reduced 671 at 2500 bytes. Not kept: it returns an uninitialised bool and the
+// length moves off retail's 2518. Tried (full-like list): the track-transition test as `!looping_sound_track_has_next_sound(
+// track, track_definition)` 673 (not inlined, `call 0x21a050`; retail has none), the old-end fade as function_126df0(1,
+// NONE, old_end, duration) 739 (a call; retail inlines its fade-out half), looping_track_get(index, i) 704, the source flag
+// bits through s_type_99c531's own flag1..flag3 instead of the s_looping_source_flags view 597 (same).
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

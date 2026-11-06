@@ -18,6 +18,9 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax I (11-06): the flags and mode placements were tried again and the original body restored;
+// the permuter produced no variant and the mode flag still loads the flags into edx where retail
+// uses eax; no lower score.
 // MiniMax B (11-04): no lower score; the new forms tried and dropped are the flags and mode
 // placements, the width and height limit types and the mode's own block, all worse or identical.
 // score 174 (was 174; 178 before): the far plane's near distance goes into a named local so the three

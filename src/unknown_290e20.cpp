@@ -483,6 +483,11 @@ struct s_ai_scene_assignment
 // loop body gives retail's dword load in ESI and the role's two reloads, so the choice is a use count, but entry reads
 // don't move it and nothing tried adds a read without code; a real escape of the role's address re-reads it at each store
 // (retail reuses one movsx across all four), so it isn't address-taken; extra code ahead of the loop never swaps the two loads.
+// Round 139 (m3 lane 8, fast): the two causes are independent. Diagnostic: the direct maximum with the scorer passed 0
+// for the role gives retail's `mov esi, dword` maximum and the role's two reloads (84), yet the role still loads before
+// the actor index, so the store-block load order is not the register choice. Stores in field order (actor, score,
+// name, variant) 12; the last-role flag computed after the switch 47, with the direct maximum 86 (350 B); the
+// pre-increment leaf test on the int copy 12; the actor index and a long role named in the found arm 12.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

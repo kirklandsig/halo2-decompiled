@@ -1560,13 +1560,6 @@ static __forceinline void query_restore_pending()
             else if (*state == 5) *state = 4;
         }
 }
-static inline bool query_variant_available(long index)
-{
-    long result = false;
-    if (g_47d8f4.count && (g_47d8f4.flags & 2))
-        result = function_1934f0(&g_551ae8[index]);
-    return result;
-}
 
 #pragma optimize("g", off)
 static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *arg_0)
@@ -1579,7 +1572,18 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
 // `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
-// score 709 (was 709): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
+// score 703 (was 709; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
+// w14D (fast, callers 0x641a0/0x8df50 and the file's matched functions stay MATCH): walked statement by
+// statement against retail: no logic difference found (fields, conditions, callees, arguments, loop and
+// poll shapes all agree). Retail inlines the existing getter 0x192e60 (pointer range check at 0x74be0,
+// 0x74dba, 0x750de, then `test esi, esi`) and the existing 0x749b0 (clamp + store, 0x751c6-0x7520d; it is
+// not in the calls column), so the file's written-out query_variant_available() and clamp-and-store are
+// now calls of those: getter at the three sites 768, 0x749b0 alone (group index loop) 730 (pointer
+// loop 744), both 703. Not kept: a `record_properties` local for the six property initializers rolls
+// the loop as retail (2814 bytes, aligned hunks 143 -> 103) but grows the frame to 0xc8 (771).
+// Identity as a local XUID (type-5 arm copies it, the scan compares against it) 752 (2926 bytes).
+// Not tried: a call of function_75870() in place of query_time_now(): retail inlines the clock at every
+// use, but the fast image cannot show cross-file inlining.
 // Earlier: Frame 0xc0 agrees; initial cursor base/home, slot and request/completion homes remain.
 // frame 0xc0 agrees; native completion-group cursor retained;
 // initial cursor base/home, slot expansion and request/completion homes still differ.
@@ -1843,9 +1847,10 @@ void function_074aa0(void)
                     }
                     for (long i = 0; i < 16; i++)
                     {
-                        if (query_variant_available(i))
+                        s_surface_description *variant = function_192e60(i);
+                        if (variant)
                         {
-                            if ((g_551ae8[i].type != 5 || team) && !values->players[i].state)
+                            if ((variant->type != 5 || team) && !values->players[i].state)
                                 values->players[i].state = 1;
                         }
                         else
@@ -1873,22 +1878,23 @@ void function_074aa0(void)
                 for (long i = 0; i < 16 && added < 4; i++)
                 {
                     s_search_player_values *player = &g_509454[group].players[i];
+                    s_surface_description *variant;
                     if ((player->state == 1 ||
                         (player->state == 4 && now - player->time >= g_network_configuration.valuec74)) &&
-                        query_variant_available(i))
+                        (variant = function_192e60(i)) != NULL)
                     {
-                        const byte *identity = (const byte *)&g_509454[group] + (g_551ae8[i].type == 5 ? 0x10 : 4);
+                        const byte *identity = (const byte *)&g_509454[group] + (variant->type == 5 ? 0x10 : 4);
                         s_cache_property_record *candidate = g_50c474 + records_used;
-                        if (g_551ae8[i].type == 5)
+                        if (variant->type == 5)
                             for (candidate = g_50c474; candidate < g_50c474 + records_used; candidate++)
                                 if (!memcmp(candidate->identity, identity, 12) &&
-                                    candidate->type == g_551ae8[i].field_8)
+                                    candidate->type == variant->field_8)
                                     break;
                         if (candidate == g_50c474 + records_used)
                         {
                             s_cache_property_record *record = &g_50c474[records_used];
                             memcpy(record->identity, identity, 12);
-                            record->type = g_551ae8[i].field_8;
+                            record->type = variant->field_8;
                             record->count = 6;
                             record->properties = &g_50cbf8[properties_used];
                             records_used++;
@@ -1940,35 +1946,30 @@ void function_074aa0(void)
                 if (online_stats_read_result(g_50c46c, (XONLINE_STAT_SPEC *)g_50c474,
                     (word)g_50c470, g_50e9fc, sizeof(g_50e9fc)))
                 {
-                    for (s_search_value_group *completed_values = g_509454; completed_values < g_509454 + 5; ++completed_values)
+                    for (long group = 0; group < 5; group++)
                     {
+                        s_search_value_group *completed_values = &g_509454[group];
                         for (long i = 0; i < 16; i++)
                         {
                             s_search_player_values *player = &completed_values->players[i];
                             if (player->state != 2 && player->state != 5) continue;
-                            if (!query_variant_available(i)) { player->state = 1; continue; }
+                            s_surface_description *variant = function_192e60(i);
+                            if (!variant) { player->state = 1; continue; }
                             long received = 0;
                             for (long record_index = 0; record_index < g_50c470; record_index++)
                             {
                                 s_cache_property_record *record = &g_50c474[record_index];
                                 const byte *identity = (const byte *)completed_values +
-                                    (g_551ae8[i].type == 5 ? 0x10 : 4);
-                                if (!memcmp(identity, record->identity, 12) && record->type == g_551ae8[i].field_8)
+                                    (variant->type == 5 ? 0x10 : 4);
+                                if (!memcmp(identity, record->identity, 12) && record->type == variant->field_8)
                                     for (dword property_index = 0; property_index < (dword)record->count; property_index++)
                                     {
                                         s_cache_property *property = &record->properties[property_index];
                                         long value = property->type ? property->unknown08 : 0;
                                         long index;
                                         if (function_75790(record->type, &index))
-                                        {
-                                            long field = *(word *)&property->unknown00 - 1;
-                                            long bounded = value;
-                                            if (bounded < g_46722c[field][0]) bounded = g_46722c[field][0];
-                                            else if (bounded > g_46722c[field][1]) bounded = g_46722c[field][1];
-                                            s_search_value *destination = &completed_values->players[index].values[field];
-                                            if (!destination->valid || destination->value != bounded)
-                                            { destination->value = bounded; destination->valid = true; }
-                                        }
+                                            function_749b0(group, index,
+                                                *(word *)&property->unknown00 - 1, value);
                                         received++;
                                     }
                             }
