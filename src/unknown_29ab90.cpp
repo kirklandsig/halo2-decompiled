@@ -56,6 +56,9 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
 }
 
+// MiniMax I (11-06): the vector copy order swapped and the magnitude declared early were tried
+// (310, 306); the frame homes of the call result and of the x87 temporary still differ from
+// retail's; no lower score.
 // score 306 (was 306; 345 before): frame 0x64, retail's entry copies and retail's 1863-byte length now agree; saved-direction homes, planar operand order and xmm numbers of the floors remain.
 // Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
 // MiniMax D: the requested direction read through its own address (a stack argument, as

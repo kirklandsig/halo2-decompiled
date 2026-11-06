@@ -563,6 +563,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
+// MiniMax C (11-06): no new form, no lower score.
 // MiniMax R (11-04): no new form, no lower score.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up

@@ -189,6 +189,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // length local itself, const, register, in a block, through a second named total. Partial with rows then flag 200 (harness), rows, partial, flag 102;
 // `k*k` named alone 188, `k*k` then `+= i*i` 193; an unused partial 88 (same code); the flag as memset of one byte, or a one-byte struct copy, 88 (same code);
 // 107 cast shapes of the square sum: best 88 (same code as the base). The open question is a temporary, not a named local, split around the flag.
+// Round 93 (m3 lane 16, fast): the scaled-direction pointer declared beside `facing` 4; a short component counter
+// 243 (960 bytes, not unrolled); local_3 and unit declared after the flag store 4; the degenerate arm first 4;
+// the scaled output written through the field without the pointer 21.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

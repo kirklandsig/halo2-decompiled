@@ -271,6 +271,12 @@ void c_widget::v16()
 // 35 (92 bytes); results bound to const references at entry and step 2; widget initialised to NULL with a named first value and if/else
 // entry and step 12. One-file harness (exact here): a separate first value at the entry always takes the widget's register and its test
 // is threaded into the body; the long-typed result, a named long first value and a `this` widget change nothing.
+// Round 77 (m3 lane 1, fast): the wrapped helpers defined out of the header as forceinline members in this file
+// (the twins then inline them across files) 2, so the tail is not a cross-file inlining effect; the helper results
+// through a `(c_widget *)(dword)` round trip 2; helper entry, the step as an in-place if/else and a `for (;;)` head
+// return 35 (92 bytes); the c_widget wrappers returning a named result 2; the entry as `prev ? prev :
+// previous_wrapped()` 42 (90). Scan: retail has no `test eax, eax; mov esi, eax` anywhere; its only test-before-copy
+// head is 0x7f190's `for (long j = used; ...)` init, where the copied value stays live after the copy.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

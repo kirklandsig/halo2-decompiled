@@ -550,6 +550,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// MiniMax I (11-06): the node-type guard as a named local, as a field reference, against a
+// constant held in a local, with an unsigned field and as an if/else all keep the folded memory
+// compare; no lower score.
 // MiniMax lane A (11-04): no new form, no lower score.
 // score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.

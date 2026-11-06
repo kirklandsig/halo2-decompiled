@@ -848,6 +848,9 @@ real normalize2d(point2f *v);
 // MiniMax D (11-01): the fast flag's test moved into the valid arm 301, a separate trajectory
 // variable 278, `force = force || fast` 253: the result stays memory-homed in every form; no
 // lower score.
+// MiniMax E (11-06): no new form, no lower score; retail keeps the trajectory result in DL and returns
+// the validity flag in BL on the short exits, where ours keeps the result on the stack and folds that
+// exit to a cleared AL (12 bytes short on every path).
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
