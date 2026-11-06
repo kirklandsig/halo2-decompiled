@@ -6961,6 +6961,8 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // (cond) positions = ...` is closer to retail (one jmp and one mov fewer) but scores 513 here because of
 // the shifted slots. Also unaddressed: the point iterator tracks points[i].field_c (retail [edi-0xc], ours [edi-0x10]).
 // The call to 0x4f7e0 matches retail's register setup (tag in ecx, eight stack words).
+// Permuter, 30 minutes (11-06, on the source before the facing-sum change): 291 only with call arguments swapped (pow's
+// two, function_13bb90's last two, function_4ff50's last two), which changes behaviour. Not kept.
 // @retail 0x4f010
 void __stdcall function_4f010(void *payload)
 {
