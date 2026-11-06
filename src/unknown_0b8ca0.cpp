@@ -661,6 +661,10 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax b (11-06): no new form, no lower score; the angle's x87 sequence is retail's byte for byte
+// and only the frame differs (our double home at 0x40 in a four-aligned 0xac frame, retail's at 0x48
+// in a self-aligned 0xb4 frame), and that alignment comes from the call chain of the two callers
+// 0xbf2c0 and 0x268c90, whose files are not mine to edit.
 // MiniMax G (11-05): no new form, no lower score; retail's result byte at 0x13 and the player index at 0x14 need retail's exact local set, which the reachable code cannot produce here.
 // MiniMax H (11-04): no new form, no lower score; retail's frame pointer and 8-byte self-alignment are not ours (frame 0xac against 0xb4).
 // MiniMax H (11-04): no new form, no lower score (230); the earlier rounds' forms still leave the

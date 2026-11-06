@@ -405,7 +405,13 @@ bool function_1d9320(s_1d9240 *slot);
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
 
-// score 37 (was 37): frame 0x104 agrees. Retail tests the visited bit with a mask and still ORs
+// MiniMax b (11-06): score 2 (was 37): the mask test (bit_vector_test) with the pair's target name as a two-use local and the second lookup re-reading it; only the back edge's reload order differs.
+// MiniMax b (11-06): the permuter tried 40 further forms of this body on the reduced image with no lower
+// score, and reading the graph index into a local (2), hoisting the mode and weapon reads above the graph
+// lookup (98) and hoisting the graph lookup above the two arms (143) all move the code away.
+// score 2 (was 37): the visited-bit test is now retail's mask test with its fused OR into the
+// word, and both lookup setups and the 0x1d90e0 arguments match; the back edge still reloads
+// the tag table before the state, where retail reloads the state first.
 // it into memory after computing the word address; with the shift-form test ours gets that update
 // but not the test, and with a mask test (the existing bit_vector_test) the update becomes
 // load/OR/store and two call setups change registers (42, 545 bytes). The back-edge reloads of
@@ -624,15 +630,21 @@ void __stdcall function_113980(long object_index, long target_index, bool altern
 				}
 				if (!found)
 					break;
-				if (iterator->b != NONE && iterator->b && iterator->a != NONE && iterator->a)
+				long target_name = iterator->b;
+				if (target_name != NONE && target_name && iterator->a != NONE && iterator->a)
 				{
-					if (function_b8d30(object_index, iterator->a, &marker, 1, false) &&
-						!((visited[marker.node_index >> 5] >> (marker.node_index & 31)) & 1) &&
-						function_b8d30(target_index, iterator->b, &target, 1, false))
+					if (function_b8d30(object_index, iterator->a, &marker, 1, false))
 					{
-						function_1d90e0(*(long *)(model + 4), marker.node_index, nodes, &marker.node_matrix,
-							&target.matrix, weight, node_count);
-						bit_vector_set(visited, marker.node_index, true);
+						if (!bit_vector_test(visited, marker.node_index))
+						{
+							target_name = iterator->b;
+							if (function_b8d30(target_index, target_name, &target, 1, false))
+							{
+								function_1d90e0(*(long *)(model + 4), marker.node_index, nodes, &marker.node_matrix,
+									&target.matrix, weight, node_count);
+								bit_vector_set(visited, marker.node_index, true);
+							}
+						}
 					}
 				}
 			}
@@ -3436,6 +3448,10 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
+// MiniMax b (11-06): no new form, no lower score; the action short's four-byte slot is the whole frame
+// difference, and it can only be a two-byte compiler temporary if 0xe70b0 returns its two-byte result
+// through a hidden pointer in EAX, as retail's 0xe70b0 does (its definition is in src/unknown_0a76b0.cpp
+// and its caller 0xc98a0 is contributor code), so this stays BLOCKED-BY 0xe70b0.
 // MiniMax A (11-04, run 41): no new form, no lower score (44); the frame is still 0x3c against retail's 0x38,
 // which waits on 0xe70b0's return type.
 // MiniMax D (11-01): no new form, no lower score.
