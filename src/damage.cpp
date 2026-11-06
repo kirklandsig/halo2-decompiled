@@ -1851,9 +1851,7 @@ long function_1e4a10(long index);
 /* damages an object's shield: scales the damage by the shield material's
    armor, takes it off the shield, passes what is left over to the body
    (accumulator->damage) and stuns the shield's recharge */
-// MiniMax A (11-04, run 41): no new form, no lower score (10); assigning the multiplier in an else arm instead
-// of at the declaration scores 156, and the reload order after the d5bc0 and d6a70 calls stays as it was.
-// score 8 (was 10): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
+// score 8 (was 8): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
 // constant before the `xorps` of zero and the spilled locals (ours reloads 1.0f last). The `lea ebx, [edi + 8]`
 // schedule for function_176780 was its parameter order (round 74, m3 lane 1). Tried: owner pointer in
 // a local for the function_176780 call (no change), the tail's unknownd4 handle in a long local (12).
@@ -1866,6 +1864,16 @@ long function_1e4a10(long index);
 // M404: complete stun admission in positive bool/byte/word/long and
 // complementary bool/byte/word/long forms: 8/8/8/8/8/8/8/8. Original damage phases,
 // constants and body restored; the post-call reload schedule remains.
+// MiniMax A (11-04, run 41): no new form, no lower score (10); assigning the multiplier in an else arm instead
+// of at the declaration scores 156, and the reload order after the d5bc0 and d6a70 calls stays as it was.
+// Round 139 (m3 lane 8, fast): the reload order after each call is the same at function_d6a70 and function_176780:
+// retail reloads the spilled shield damage before the zero, ours the zero first. Diagnostic, reverted: one 1.0f clamp
+// of the body damage ahead of the first 0.0f (real code, 254) gives retail's shield-then-zero order at both later calls
+// and puts 1.0f first after function_d5bc0 (with the zero last, retail has it second); the same clamp with 5.0f leaves
+// every order as ours, so the order follows where 1.0f is first used. Real: the shield clamp as an if 10; multiplier
+// declared before the material lookup 14, before the inverse 48, before the maximum 206; `0.0f < maximum_shield` 8;
+// the first zero, or every zero ahead of function_d5d80, written as integer 0 8/8 (same code). The 1.0f clamp moved
+// after the early zeros (just ahead of function_d5d80, 209, or of the inverse, 198) flips no order.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

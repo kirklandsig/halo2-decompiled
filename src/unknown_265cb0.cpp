@@ -1429,6 +1429,14 @@ long function_146650(void);
 // Round 144: actor-reference reads at entry/all behavior queries/final callback, then direct actor_index at the
 // direction producer/iterator setup/movement callback, and split proximity/projected declarations: 14 each,
 // identical listings. NOT kept: no allocation change; the original parameter observations and declarations restored.
+// Round 139 (m3 lane 8; compile-only frame screen, exact for these homes, then fast): diagnostics with a dummy global in
+// place of each direction reference: without the 0x267840 output direction is never written and shares
+// target_direction's slot; without the first query ahead > direction > target; without the second no change; without
+// both retail's ahead > target > direction. Extra target reads count the same outside the loop, at the loop top or
+// deep inside (one passes ahead, two pass direction), so nesting does not weigh them; `(void)&x` counts nothing.
+// Real (fast): `active = state->unknown63; if (!active)` (code differs) not built; ahead as a vector3f 14; the
+// player lookup as nested ifs 14; offset declared before `active` 18; movement declared ahead of its test 14;
+// target_direction declared at the function's top 14.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {

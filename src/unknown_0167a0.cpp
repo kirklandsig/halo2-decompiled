@@ -239,6 +239,11 @@ PRIVATE inline byte const *material_parameters(long tag)
 // with the range reference 5, also serving the first block 5; the pass helper with local copies of `second`, `third`,
 // tables, entry or all of them, eight forms, 5; the word read recomputed from the published tables: direct 294 (981),
 // read first 182 (974), store from `tables` 289 (978), reference store 295 (982). Original body restored.
+// Round 139 (m3 lane 8, fast, forms last measured on the blocked tail, now re-measured on the fixed one): direct entry
+// store with the word read back from the published field 5 (+0x1a7: the tables reload hoists as retail, `second`
+// loads right after the entry lea); that with `second + (packed & 0x1ff)` 5; that with the chain lookup folded into
+// the pass expression 5; the reference form with the swapped sum 5 (+0x19e); the tables field bound through a
+// reference with the direct entry store 6. Original body restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
