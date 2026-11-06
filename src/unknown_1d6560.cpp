@@ -100,6 +100,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax E (11-05): no new form, no lower score: the 24 form needs the object index and the absolute index, each used once (recorded not kept); the header array local with the type hoisted and case 0 through the object index 96 with the caller 0x1d5bf0 at 13.
 // score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
 // component EAX, rigid index ECX, kind EDI and ret 8 agree with the matched caller. A single type read must

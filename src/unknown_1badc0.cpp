@@ -12,6 +12,7 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax E (11-05): no new form, no lower score: the projection's multiply order swapped, the point-minus-actor vector written as two scalars, and both together 180; the centre-minus-actor scalar pair 238 (1031 bytes); the permuter's 83 tries all 180.
 // score 180 (was 180): retail's length (1025), output in EBP and the input copy at +0x28 now agree; SSE scheduling of the
 // opening point copies and differences remains (retail reads the second copy back from memory for the actor difference).
 // Earlier: frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
