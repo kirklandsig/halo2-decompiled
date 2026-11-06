@@ -3314,15 +3314,15 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 }
 #pragma inline_depth(255)
 
-// score 19 (was 31): retail length; the blend sites now call 0x222d0 as retail. Left: the two small
+// score 9 (was 19): retail length; the blend sites now call 0x222d0 as retail. Left: the two small
 // selectors (retail loads small into CL first and computes input before the alpha selector) and the
 // constant/inverse-span reloads after mode zero and one's depth-bias write (retail reloads the span
 // first). Modes one to three's quantizer inputs now take clip's home as retail (round 132 below).
 // Round 137: one function-scope value for every quantizer, with the quantizer a macro, puts modes
 // one to three's inputs in clip's home as retail 19 (a block-scope value 31; the inline helper with a
 // by-value parameter keeps a separate symbol per expansion); whole/alpha/fraction/input 18 (aligned 20).
-// NOT kept: the macro and the shared function-scope value shape lifetimes, and the order was picked by
-// score from 24; body restored at 31. In that build 0x41640 (0350e0.cpp, score 4) matched with no edit to
+// NOT kept: the macro and the shared function-scope value shape lifetimes, and the order was picked by score
+// from 24; body restored at 31. In that build 0x41640 (0350e0.cpp, score 4) matched with no edit to
 // its file (a link-time side effect): a lead for 0x41640's own source.
 // On it, aligned counts in brackets: whole/fraction/input/alpha 939 [15] (one instruction short, no
 // `mov al, cl`), with small declared after the switch 31 [6]: only the false store (after the switch,
@@ -3547,6 +3547,10 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // fraction-first 226/225; (byte)fixed 937; % 256 960; fraction before whole 767; (small ? 1 : 0) + 4 939; if-assigned
 // input 934; fixed through 0x2b460 939/19. The reload pairs follow the end of the skip-state arm (a real if with a
 // body last in that arm flips that pair; empty else, do/while(false), inverted arm 9).
+// Round 93 (m3 lane 16, fast): the two input words through the SDK's PS_COMBINERINPUTS(input, ...) with no shifted
+// local 939 (first difference +0x5b), plus the alpha word the same way 939; the shifted local const 9; `input` as
+// dword 9; `alpha_input` as dword 9. Retail shifts a copy of input in EAX after the clear; ours shifts EBX in place
+// and the scheduler lifts that shift above the clear.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
