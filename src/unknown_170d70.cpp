@@ -1554,7 +1554,7 @@ struct s_camera_reference_171830
 	byte field_14[4];
 };
 
-// score 266 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
+// score 284 (was 266). Logic walked against retail: cluster/reference lookup, plane test (< 0), centre point, four
 // samples (sign, offsets[sample & 1], 0x808c0f/0x808c0d), ten bisection steps (|found - upper_fraction| < 0.1),
 // the final blend and *distance *= fraction all agree; no behaviour difference found. The remaining diff is the
 // calling convention: retail takes up in eax and forward in ecx with point, distance and offset on the stack
