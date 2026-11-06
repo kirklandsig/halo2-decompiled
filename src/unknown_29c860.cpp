@@ -131,7 +131,18 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 }
 
 // MiniMax I (11-05, run 37): no new form, no lower score (277); the 0.9 steering block is still one instruction short and the left and avoidance vectors still swap their slots.
-// score 277 (was 277): the 0.9 steering block is one instruction short (145 of the count); the left and avoidance vectors swap their
+// Walk b5A (11-06, statement by statement against retail 0x29cbb0, every block, field offset, constant value, call argument and branch
+// direction): no behaviour difference found. The body now calls the helpers it had written out: length_sq3f for local_10 (277, same code),
+// vector3f_scale for the 3x store to 0x5ec (393; 2815 bytes; retail's flag store between the first product and its store now matches and
+// the aligned hunks drop 36 -> 32, the score rises because the steering block then schedules differently and shifts the rest).
+// Kept written out on purpose: the +-0x50 speed clamp (PIN_126660 gives the same code but needs a new include, unknown_124f90.h,
+// and new includes have cost the fragile matched 0xc2d00 in full builds), the local_12 scale
+// (vector3f_scale takes its address and moves every stack slot: 356 alone, 432 with the 3x store, 66 hunks; retail never takes 0x3c's
+// address), the velocity dot (retail adds k, j, then i; dot3f adds i, j, k) and the local_16 dot (j product first; dot_product2d is i first).
+// Steering block under the new base: i-sum first, old-i temp, one-expression sums, di/dj locals: 393 each (same code).
+// score 393 (was 277): the steering block's loads and product order differ (it now loads i, j first); the left vector and the avoidance
+// vector swap their 12-byte slots; the 0x5d0 flag store now matches; the early 0x44 load and the local_16 dot's x87 order differ.
+// Older notes follow, written against the 277 form. score 277 (was 277): the 0.9 steering block is one instruction short (145 of the count); the left and avoidance vectors swap their
 // 12-byte slots; the second normalize's j product, the 0x5d0 flag store, the early 0x44 load and the local_16 dot's x87 order differ.
 // MiniMax B (11-04): no lower score; the new forms tried and dropped are the avoidance vector's
 // declaration placed before the left vector (277, identical code) and the flag store's order.
@@ -240,9 +251,7 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 				if (function_30bf0(&direction) > 0.0f)
 				{
 					*(bool *)(local_0 + 0x5d0) = true;
-					((vector3f *)(local_0 + 0x5ec))->i = direction.i * 3.0f;
-					((vector3f *)(local_0 + 0x5ec))->j = direction.j * 3.0f;
-					((vector3f *)(local_0 + 0x5ec))->k = direction.k * 3.0f;
+					vector3f_scale(&direction, 3.0f, (vector3f *)(local_0 + 0x5ec));
 				}
 				else
 					*(bool *)(local_0 + 0x5d0) = false;
@@ -259,7 +268,7 @@ void function_29cbb0(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 	vector3f local_9 = *arg_2;
 	if (function_29cc7e(&local_9) == 0.0f)
 		*(bool *)(local_0 + 0x5d0) = false;
-	real local_10 = (real)sqrt(arg_2->i * arg_2->i + arg_2->j * arg_2->j + arg_2->k * arg_2->k);
+	real local_10 = (real)sqrt(length_sq3f(arg_2));
 	vector3f local_12 = *g_4687a4;
 	vector3f local_11 = local_8;
 	real left_i = -local_8.j;

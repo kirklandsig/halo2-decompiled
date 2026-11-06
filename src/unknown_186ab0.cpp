@@ -152,6 +152,7 @@ void player_action_initialize(s_player_action *arg_0);
 #pragma inline_depth(0)
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax B (11-04): no new form, no lower score.
+// MiniMax S (11-06): no new form, no lower score.
 // score 134 (was 134): frame 0x54 agrees; selection comparison, byte-count extension, cyclic
 // operand order, cold clear and output/angle scheduling differ.
 // Earlier: frame 0x54 and selection inputs agree; comparison order,

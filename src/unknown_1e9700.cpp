@@ -218,6 +218,7 @@ struct s_object_damage_view
 
 // MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
 // kept, the original body is restored.
+// MiniMax S (11-06): the record walk is anchored at the field with the most source-level reads, ties going to the lowest offset: reading the timestamp twice moves the selection walk onto retail's 0x2f0 base (373) and reading the assist player index at each use moves that walk onto retail's 0x2fc base (390), both loops together 390; every such form drops a frame word (0x4c against 0x50) and the base spill, so the original body stays.
 // score 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
 // rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
@@ -1032,6 +1033,9 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // the top leave it at 2, so the load order is no numbering tie.
 // Lane 9 r89 (fast): window x offset as a named short before each inset statement 41, after the insets 38; window y before the bottom inset 44; both 44; address-cast reads
 // 2; pointer to the window pair at the top or before the bottom inset 2/2; `-8 + field` for bottom and right 2/2; whole-record copy first 218; a data pointer to the field or storage (diagnostic) 2/2.
+// Round 155 (m3 lane 5, fast with 0x1e6fe0): coordinates as an initialiser 2; zeros stored before the ones 27; coordinates
+// filled before the piece copy 2; non-const bounds (with 0x1e6fe0's cast) 2; insets read through a const reference 2.
+// Compile-only gives retail's pair with or without the camera storage's address taken in this file.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {

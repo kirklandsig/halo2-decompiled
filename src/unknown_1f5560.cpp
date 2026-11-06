@@ -399,8 +399,11 @@ bool __stdcall function_110ab0(long unit_index);
 /* asks the actor's unit to move to the point facing the given way (request
    0x25), once it is within half a world unit of it; when asked, only while
    it faces within 45 degrees of its prop */
+// The facing is the last parameter: retail's body takes the actor in EAX and the facing in ECX with the
+// other three on the stack, and both callers' argument setup (0x1afb30, 0x1b89d0) matches retail only
+// with the facing declared last.
 // @retail 0x1f4f40
-bool function_1f4f40(long actor_index, vector3f const *facing, short unknown, s_type_c3b527 const *point, bool face_prop)
+bool function_1f4f40(long actor_index, short unknown, s_type_c3b527 const *point, bool face_prop, vector3f const *facing)
 {
 	s_actor_moving *actor = actor_moving_get(actor_index);
 	bool result = false;
@@ -1605,6 +1608,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax G (11-06): no new form, no lower score; retail keeps the normalizer length in the dead target
+// argument slot at [esp+0x54] and the radius at [esp+0x14], this build uses fresh local slots, and retail's
+// zero register is XMM1 where this build uses XMM2.
 // MiniMax R (11-05): no new form, no lower score; the plain origin copy 278 and the flipped side test 239;
 // retail keeps its length in the dead origin argument slot at [esp+0x54] and its radius at [esp+0x14].
 // MiniMax H (11-04): the left flag declared just before its comparison 287; not kept, the

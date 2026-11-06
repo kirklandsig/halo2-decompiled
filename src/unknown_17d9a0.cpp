@@ -124,6 +124,8 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point[2] = matrix->forward.k * *x + matrix->left.k * *y + matrix->position.z;
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
+// MiniMax A (11-06, run 52): no new form, no lower score (46) - retail keeps the axis in ax and the
+// flag in cl, ours sign-extends the axis into ecx and puts the flag in al.
 
 // MiniMax R (11-04): the corner products' operand order (register/memory sides) changes no code at all
 // (46), a short axis result scores 162, the short axis passed to the corners 186, and a plane pointer for
@@ -455,6 +457,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // T59: Existing corner producer as an actual quad member, coordinate pointer/reference,
 // corner ordinal/output reference and inline/force-inline contracts: 160/160/150/150/160/160/150/150.
 // NOT kept: selector and product ranks regress; original free producer and complete body restored.
+// Round 57 (m3 lane 2, `--fast 0x17d9a0 0x120850 0x22bbca`, faithful here: 46 as the full check): the side test written
+// `0.0f < n[axis]` 46 (same code); a `vector3f *normal` for the copy, dot, axis call and side test 91 (re-measured: lane 13's
+// 258 was on the unfaithful image); a `plane3f *plane` with a position-first dot 63; the plane pointer for every plane use 91;
+// the distance as dot3f(position, &matrix->up) 209 (986 bytes).
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -788,6 +794,8 @@ PRIVATE __forceinline void decal_face_plane_17fd20(s_decal_mesh_view const *mesh
 		*plane = *source;
 }
 
+real function_50650(real cosine);
+
 PRIVATE __forceinline real decal_normal_angle_17fd20(vector3f const *a, vector3f const *b)
 {
 	if (*(dword const *)&a->i == *(dword const *)&b->i &&
@@ -796,7 +804,7 @@ PRIVATE __forceinline real decal_normal_angle_17fd20(vector3f const *a, vector3f
 		return 0.0f;
 	real cosine = a->i * b->i + a->k * b->k + a->j * b->j;
 	cosine = cosine < -1.0f ? -1.0f : cosine > 1.0f ? 1.0f : cosine;
-	return (real)acos(cosine < -1.0f ? -1.0f : cosine > 1.0f ? 1.0f : cosine);
+	return function_50650(cosine);
 }
 
 PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, vector3f const *left,
@@ -809,6 +817,11 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
+// w14H (11-06, fast, plain): statement-by-statement walk against retail found no logic difference (fields, offsets,
+// condition directions, callee arguments, loop shapes, rotation coefficients and bounds all agree). The angle helper's second
+// clamp is now the existing function_50650 (retail's inlined clamped arccosine) instead of its body written out: fast 795 -> 793,
+// 3672 bytes both, callers/callees unchanged; the full build is unconfirmed. normalize3d for the axis 812 (its dot3f sums i, j, k;
+// retail sums i, k, j) NOT kept. flags is read as a byte (retail 0x17fdd2, +0xc of the 16-byte entry) through the cast.
 // MiniMax E (11-05): no new form, no lower score; the first +0x41 tag spill, the plane base, the first
 // selectors and the product memory sides are as the earlier rounds left them.
 // score 539 (was 539): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag

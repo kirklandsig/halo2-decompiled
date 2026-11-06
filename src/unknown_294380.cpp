@@ -108,6 +108,11 @@ PRIVATE __forceinline void function_294b56(vector3f *arg_0, vector3f *arg_1,
 
 __forceinline void object_get_forward(long object_index, vector3f *forward);
 
+// MiniMax H (11-06): no new form, no lower score; retail's dead store of zero to the speed vector's i
+// (0x29454d, one of three consecutive stores into the slots 0x88/0x8c/0x90) is still missing, and the value
+// retail reads at 0x294a1e for the 0x294050 argument list comes from the slot 0x84 after one push, not from
+// the stored one; in the scaled-centre block ours reloads the scalar into xmm0 where retail reuses the value it
+// already holds, so ours is one instruction longer there and every later slot offset stays off.
 // score 446 (was 523): entry and registers now retail's (first difference +0x72, masked aligned 25 lines; fast check 465 at 3712 bytes, full build 446). Left: retail's
 // dead store of zero to the speed vector's i (0x294552, overwritten at 0x294feb) is missing, 9 bytes, so the walk head gets
 // a pad and every later line is two off; the walk's position and offset vector take each other's homes (position at 0x94,
@@ -175,6 +180,15 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // same size and frame and without the dead store at 0x294552; the same form's declaration moves and statement orders
 // give 453 without it. How local_19 reaches vector3f_scale sways the whole function's registers, so vector3f_scale's
 // own form may be the place to look. Not kept (an alias with no other use).
+// Round 135 (m3 lane 7, plain checks with 0x293b30, which stays matched; masked aligned difference 70 lines on 446):
+// the object pointer and the nearest distance renamed (object / shortest_distance, the object sorting first) 446, same
+// homes (names do not order these slots); the walk position declared as a vector3f (casts at its three uses) 446, it still
+// takes 0x94; the nearest distance declared first (constant initializer) 516 (scheduling from +0xf, homes unchanged); the
+// centre scaled through the existing scale_particle_vector_2b (retail's s*x, y*s, z*s operand pattern) 446, same code (the
+// operand order canonicalises; retail's early y/z loads are scheduling). Lead, not kept (a gain of 4): the request's speed
+// vector stored before its forward vector 442 (aligned 68: the tail stores then interleave exactly as retail); with that, the
+// nearest fallback's add through vector3f_add_scaled 442 (same code). Matched callees 0x293d30/0x294050/0x295600 take (direction, strength)
+// as separate pointers, so no real record for the speed/offset aggregate exists among them.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {

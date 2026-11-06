@@ -793,6 +793,11 @@ bool sound_driver_voice_create_buffer(
 // P351: Raw playback-bit byte/word/long/dword with playback-first/spatial-first production:
 // 79/152/166/166/179/165/168/168. NOT kept: no byte match; spatial/play and descriptor zero/input homes remain.
 // Original complete body and existing helpers restored.
+// Round 135 (m3 lane 7, fast with 0x191420, which stays matched): the 3D flag first with a word (zero-extended) voice index
+// and a long result 155 (the voice index takes EBP, both bools spill); `__assume(voice_index >= 0)` after the range test 71
+// (same code), with the 3D flag first 182 (599 bytes); the 3D flag first with the voice reference indexed by the count field
+// 193 (589); the 3D flag first with the 3D failure decrement through the `globals` local 141 (618 bytes: globals then holds
+// ESI to the end and the voice index spills as retail, but the zero takes EBX and both bools still spill).
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

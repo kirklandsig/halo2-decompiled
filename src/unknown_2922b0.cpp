@@ -79,6 +79,14 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // frame+0x24 against frame+0x1c and the copied vector at frame+0x4c against frame+0x40, and the first
 // comparison branches the other way round.
 // score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
+// W14L: full statement walk against retail (0x2922b0-0x292df3; args 0x120..0x134 after the pushes): fields +0x14/+0x30/+0x48,
+// tests, callees (0x1e5450, 0x30bf0 x3, 0x1697c0 with its six stack args), both cross/fallback chains, the four points,
+// ray loop, per-ray clamps and signs, both rotations and the arg_6 tails agree; no behaviour difference found. Constants
+// checked from the XBE (0.1, 0.7, 0.3, pi/180, pi/2, FLT_MAX). Remaining: stack-slot order (success at +0x0b, minimum at
+// +0x10, hit bytes at +0x14), retail's (1/range)*minimum computed twice, field_14 re-read per point, dot-sum order in the
+// rotations, inactive exit placed last. Tried (fast): active-if with one `return local_0` 629 (success in BL again);
+// range local before the test 603; non-const tag record 592; PIN_126660 for the clamp 626 (with a local 618), cross3f_staged
+// 678, cross3f 690 (vector_products.h): the cross helpers are not kept; the PIN form is a separate commit.
 // Frame 0x108 agrees; success/input/minimum/hit homes differ from +0x31.
 // Earlier: the true initializer uses BL, saving EBX early.
 // Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.

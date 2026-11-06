@@ -266,6 +266,12 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // the unit load then moves ahead of the object load), (object, seat, unit) 3 (0x11b0c0 lost), (seat, unit, object) 4,
 // (seat, object, unit) 4; last_object_index as the 0xc8200 object argument 69, as all three calls' 128
 // (358 bytes); the definition read at the test without its local 84; object or occupant at function scope 3/3.
+// Round 172 (m3 lane 4, fast): (object, seat, unit) again (definition, declaration, five calls): the
+// seat-pointer reload then takes EAX as retail but the unit load moves from last to second, 3 (0x11b0c0
+// lost, its unit/object moves swapped); `long i` 127 (361 bytes); a fresh actor lookup at the 0xc8200 call
+// 135 (399 bytes); `last_object_index != seats[i].object_index` 4; the seat's object index named at the
+// loop top for the object test, the store, 0xc8f60 and 0x1b8d80 3 (same code); `dword last_object_index` 3;
+// `object->unknown3b4 != 0` 3. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -1357,6 +1363,11 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax C (11-06): no new form, no lower score; the frame is still 0x10 against retail's 0x14,
+// retail still spills the 0x20 mask byte to F+3 and keeps the loop entry in EBX (home F+4, reloaded
+// after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still
+// takes the object-header data in the prologue and reads the flags once above the slot-flag test;
+// the mask read once before the loop scores 136, so the mask is read per iteration as it was.
 // score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the

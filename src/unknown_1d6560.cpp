@@ -100,6 +100,14 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax H (11-06): no new form, no lower score; the incoming register pair is fixed by the matched caller
+// 0x1d5bf0 (component in eax, rigid body index in ecx, kind in edi, ret 8), and every body that changes that
+// promotion flips the pair and leaves the caller differing, so the type read and the kind 7 route stay where
+// they are: the type hoisted into a byte local 94 with the caller at 13, the data pointer in a local 97 with the
+// caller unchanged, the data local declared first 117 with the caller at 160, the type read through the header
+// object in case 0 129 with the caller at 213, direct returns instead of the result local 98 with the caller
+// unchanged, the object index read again for case 0 91 with the caller at 146, and the flags read through the
+// owner chain without a pointer local 117 with the caller at 122.
 // MiniMax E (11-05): no new form, no lower score: the 24 form needs the object index and the absolute index, each used once (recorded not kept); the header array local with the type hoisted and case 0 through the object index 96 with the caller 0x1d5bf0 at 13.
 // score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current
