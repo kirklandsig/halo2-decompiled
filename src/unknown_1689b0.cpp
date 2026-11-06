@@ -1554,21 +1554,17 @@ struct s_camera_shapes_16a8e0
 bool function_2469b0(s_shapes const *shapes, point3f const *start,
 	vector3f const *direction, s_ray_shape_result *result);
 
-PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f const *point, point3f *out)
-{
-	short axis = prism->axis;
-	short const *indices = g_440b94[prism->side + axis * 2];
-	out->n[indices[0]] = point->x;
-	out->n[indices[1]] = point->y;
-	if (fabs(prism->plane.n.n[axis]) < 0.0001f)
-		out->n[axis] = 0.0f;
-	else
-		out->n[axis] = (prism->plane.d - prism->plane.n.n[indices[0]] * point->x -
-			prism->plane.n.n[indices[1]] * point->y) / prism->plane.n.n[axis];
-}
+real *function_120790(real *out, real const *plane, real const *point, short axis, byte side);
 
+// b2C (11-06) retail walk, statement by statement against 0x16a8e0: every condition, field, constant, callee and argument order agrees (entry `radius > 0`, signed clamp to 8 and
+// signed `% point_count`, side/perpendicular/along/separation sums in retail's order, inside and 0.01/0.0001 tests, normal path when the length is <= 0.01, ray hits at +0x14, `0 - radius` opposite ray,
+// face sum below edge sum). Two fidelity fixes, both with retail evidence: the point reconstructions call the existing 0x120790 (retail inlines it: the two word table loads at 0x16aab5/0x16aabc and
+// the axis and side re-read for the second point at 0x16ab14..0x16ab22) instead of a hand-copied body, and the accepted counts are 32-bit (`inc dword ptr` 0x16b274/0x16b2ca, `test eax, eax; jle` 0x16b2fa/0x16b367,
+// `cvtsi2ss` of the register, no `movzx`). Neither changes behaviour (the counts stay below 32768); score 552 -> 640 (2917 bytes), helper alone 651, long counts alone 572.
+// Still differs: retail re-reads the axis after the first point's stores (ours keeps it in a register), starts the `%` before the first reconstruction, and the sum homes (face +0x50, nearest +0x5c, edge +0x60).
+// Tried with the helper: pair struct for first/second 662, `next` index named first (+ long counts) 676.
 // MiniMax C (11-05): no new form, no lower score; retail's prism loop walks &prism->plane.j (plane.i at [esi-4], the point count at [esi+0x14]) where ours walks &prism->point_count (plane.i at [esi-0x18]), and our accumulator homes sit sixteen bytes above retail's.
-// score 552 (was 552): frame 0xb964 agrees; sum/zero homes and point-count-biased prism cursor remain.
+// score 640 (was 552): frame 0xb964 agrees; sum/zero homes, axis re-read and early idiv remain.
 // frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
 // product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
@@ -1796,8 +1792,8 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 		real nearest_squared_local;
 		accumulators.edge_sum = *g_468788;
 		accumulators.face_sum = *g_468788;
-		word edge_count = 0;
-		word face_count = 0;
+		long edge_count = 0;
+		long face_count = 0;
 		real edge_radius = radius;
 		real face_radius = radius;
 		function_16a440(flags, point, radius, 0.0f, 0.0f, ignore_object, ignore_parent, (s_shapes *)&shapes);
@@ -1821,8 +1817,8 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 				{
 					point3f first;
 					point3f second;
-					camera_prism_point_16a8e0(prism, &prism->points[edge_index], &first);
-					camera_prism_point_16a8e0(prism, &prism->points[(edge_index + 1) % prism->point_count], &second);
+					function_120790(first.n, prism->plane.n.n, (real const *)&prism->points[edge_index], prism->axis, prism->side);
+					function_120790(second.n, prism->plane.n.n, (real const *)&prism->points[(edge_index + 1) % prism->point_count], prism->axis, prism->side);
 					vector3f relative;
 					relative.i = projected.x - first.x;
 					relative.j = projected.y - first.y;

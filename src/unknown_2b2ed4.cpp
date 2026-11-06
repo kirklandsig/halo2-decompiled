@@ -226,6 +226,20 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Three-way suffix selectors: native 2,3,default; alternatives 2,default,3 and
 // 3,default,2. All eight non-native order pairs 330, still 2334/2345 bytes.
 // NOT kept: no native case-layout recovery; original complete cases restored.
+// Walk b3J (11-06, vs retail 0x2b2ed4-0x2b37fa, block by block): no logic difference found. Checked: the five
+// find_child calls (6/0 name, 6/1 status, 8/3 invite, 8/5 session, 8/4 voice) and their slots; the empty-row
+// text ids (0x2b2f4b-0x2b2f82) and the 16 cleared flags; the identity copy (dword[28] = XONLINE_USER, ends
+// exactly at ebp+0x18); the item loop (count > 0 guard, cmovne null test, flags >> 12 friends / >> 10 players,
+// flags |= 0x200, ++invitations); bits 4/5/10/11/0/1/7/0x200/0x100; has_user -> player id, voice (0x53b40,
+// 0x53b90, 0x53850 with (local, player)), the inlined active-player lookup (0x59330 before 0x19acc6),
+// joinable via 0x19abe4; `allowed`; all text arms and their ids/order (0x2b31f1-0x2b366f, incl. the
+// is-this-title/known/strlen arms, state 1-6 suffix switch, can_join = session id != 0 && datum+0x20 & 8 &&
+// !active); the invite icon chain (28/17, n+18/n+7, 1, 18, 6, 2, 7); session icons 29/19/0; voice icons 3/5/4;
+// the final layout (80440, 80de0, 2b01a2 with -1 for empty rows or player+0x56, 16-byte copy, flags 2|1,
+// value4 = 0, 22f042). Remaining differences are only the stack homes, the out-of-line shift arm and the
+// join order. Not kept: `other = entry ? entry : NULL` in the item loop 618 (2338 B; retail's cmovne is
+// matched by the plain `other = NULL; if (entry) other = entry;` form). Score-only forms left as found:
+// `value6e = (...) ? true : false` (plain `!empty && !self` 442). No shared helper, include or double local added.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)
