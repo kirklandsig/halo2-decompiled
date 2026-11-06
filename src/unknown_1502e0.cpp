@@ -1253,6 +1253,8 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 
 // MiniMax A (11-04, run 45): no new form, no lower score (17); the unit index still swaps registers with the object table.
 // MiniMax H (11-04): no new form, no lower score; the unit index and the object table still swap registers.
+// MiniMax E (11-05): no new form, no lower score; the unit index still lands in esi where retail keeps it in
+// edi, and the object table pointer lands in edi where retail keeps esi.
 // score 17 (was 17):
 // Logic and structure match; only the callee-saved registers differ: retail keeps player->unit_index in
 // edi and the object data pointer in esi, this build uses esi and edi. Tried (scores): unit_index in a local
