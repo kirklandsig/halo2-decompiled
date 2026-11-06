@@ -1336,6 +1336,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
+// w14B (11-06): walked against retail statement by statement: no logic difference (field offsets, constants,
+// condition directions, call arguments and the result path all agree). Early return (`if (parameters) {...
+// return true;} return false;`) 566: frame 0x28 and the stack-argument load agree, block still in EDX and query in
+// EAX; every order of the type/query/block parameters stays 566 (only 0xd4080 moves, 440-441): the convention
+// follows the body. `bool result = false; ... result = true;` 573 (0xd4080 509); `if (count <= 0) return false;` 561.
+// Retail's statement order (adjusted pinned with lower2/upper2 before base; square formed right after the
+// direction1 negate): pins swapped 560, early square 555, both 547; none kept (0xd4080 363 and 0x3db00 MATCH unchanged).
 // Round 52 (lane 13, fast): the selection loop without the outer count test and the mask in the test 581;
 // that loop with `bool result = false` ... `result = true` 602 (0x3db00 lost); with `if (!parameters) return
 // false;` ... `return true;` 563 (frame 0x28, single count test and constant results as retail; block/query
@@ -2093,6 +2100,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 
 // MiniMax C (11-06): no new form, no lower score.
 // score 542 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
+// no logic difference (offsets, constants, condition directions, call arguments, result values and the
+// final colour_a/colour_b/normal stores all agree). Remaining difference is stack homes only.
 // Round 52 (lane 13, fast): the format byte as a named byte local before/after the data pointer 555/555;
 // the result as `dynamic_valid ? 0 : 1` 687 (3040 bytes); the result test inverted 555; diagnostic, a flag
 // set in a test (`if (call) dynamic_valid = true;` in both format arms) 553. Retail after 0x24490 holds
