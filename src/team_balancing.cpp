@@ -1137,6 +1137,16 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // extra_count` (no total local) 74; the copy through a `long const *` to the element 34 (same code); the tail as
 // `imbalance -= open_slots; if (imbalance < 0) imbalance = 0;` 46; the fill under `if (extra_count > 0)` 74 (198
 // bytes); a `long const` of the index plus one named for the maximum and the copy 87 (169 bytes).
+// Round 75 (m3 lane 11, fast with 0x91e30): the subtraction in place, `imbalance -= open_slots;` with the clamp
+// on `imbalance`, 34; parameters (extra_count, party_indices, player_count) as the caller's setup order shows,
+// definition, declaration and the call in 0x7e210 changed together, on that 35 (the `lea` operands then as retail,
+// player count still EDX; 0x7e210 stays 766); diagnostics on that: `(short)` on the fill value 6 (191 bytes, roles
+// as retail), then the clamp as an excess local 6, `if (imbalance < 0) imbalance = 0;` 19, `imbalance >= 0 ?
+// imbalance : 0` 6, the clamp assigned back, `imbalance = imbalance < 0 ? 0 : imbalance;` then the compare, 4 (only
+// the movsx: the `and eax, ecx` order comes from assigning the clamp to the value's own variable); the same without
+// the cast 46 (192 bytes); that clamp assignment alone with the original order 45 (192 bytes); an early `return
+// false` for a failed count balance 63 (203 bytes). The real build agrees with round 114's harness: the open
+// question is still a natural fill value that is evaluated after the count and destination.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
