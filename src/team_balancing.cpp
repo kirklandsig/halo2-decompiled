@@ -895,6 +895,14 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 /* whether the players and the extra players joining them can be balanced
    into the teams within the given imbalance; each extra player is a party
    of its own */
+// MiniMax h (11-05): the count roles stay as they are in a local player count used by the sum and
+// the copy loop (34), in the sum as `extra + player` (34), as `total = extra; total += player` (34)
+// and through a local extra or players (34); only the value-changing `(short)` fill moves the player
+// count to EAX (7, and 5 with the clamp's subtraction written in place), which the note below keeps out.
+// Retail's sum reads the extra count first and the player count second, and the operand order of the
+// sum follows the order the two counts are declared in, so retail's declaration has the extra count
+// first: swapping the two declarations here gives 35 and would need the call site in
+// src/unknown_07a9a0.cpp to pass (count, groups, player count) instead of its current order.
 // score 34 (was 34): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
 // (retail player count in EAX, extra count in EDX) and flow through the copy, fill, call setup and
 // the final clamp's register: our loop temporaries take EDI/EAX (retail EDX/EDI), leaving EDX for the
