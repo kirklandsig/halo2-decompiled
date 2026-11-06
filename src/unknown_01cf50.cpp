@@ -4008,14 +4008,17 @@ long function_184000(long index, long bit);
 // argument lists and adds a volatile qualifier, so it is not keepable; no new form, no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
 // MiniMax E (11-06): the bias term is now tested as a byte and masked again for the value, and the
-// transform lookup writes the three floats separately in each of its two paths, as retail does.
-// score 301 (was 332): our body is 26 bytes shorter than retail's (971 against 997); retail keeps the
+// transform lookup writes the three floats separately in each of its two paths, as retail does. With
+// the volatile `out` read also dropped this is 301, but the caller 0x44ac0 then loses its match
+// (0 -> 58), so the read stays.
+// score 303 (was 332): our body is 24 bytes shorter than retail's (973 against 997); retail keeps the
 // output pointer in edi and the definition pointer in ecx, and passes the index in ecx and the output
-// pointer in eax, while ours takes the index in ax and the output pointer on the stack.
-// transform lookup and the outlined helper's argument order still differ from retail's.
+// pointer in eax, while ours takes the index in ax and the output pointer on the stack; the outlined
+// helper's argument order still differs from retail's.
 // @retail 0x45ce0
 bool function_45ce0(short index, byte *out, short part, short transform_index)
 {
+    out = *(byte *volatile *)&out;
     s_44940_entry *entry = &g_4ba138[index];
     byte *definition;
     if (entry->tag != NONE)
