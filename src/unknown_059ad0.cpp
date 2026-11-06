@@ -3550,15 +3550,12 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
 // session+0x10 into the reply id's stack slot before the timeout call, and returns through two
 // epilogues (1 and 0) where ours keeps the peer result in EBX.
-// MiniMax G (11-05): the timeout call's member state taken through a named pointer with an
-// __assume on it, and the peer block reordered (the member-state pointer first, then the id, with
-// the two exits), give retail's split member-state lea and its exact peer block.
-// MiniMax G (11-05, r2): the state tests set a take flag, the leave flag is set under its guard,
-// and the reply id is copied before the member-state pointer; retail's timeout spill, its
-// announcement block and its peer block now match byte for byte.
-// score 0 (was 47): matches (MiniMax G, 11-05). The state tests set a take flag, the channel is
-// read into its own local, the leave flag is set under its guard, and the reply id is copied
-// before the member-state pointer.
+// MiniMax G (11-05, held at m3 review): a take flag set by the state tests, the host member state
+// taken through a named pointer, the reply id written from session+0x10 before the timeout call and
+// the peer block returning true/false match byte for byte only with __assume(host_state != NULL),
+// which is false when state 9 or value44 sets the flag (host_state stays NULL there); 120 without
+// it. Held: build/held/mmg-1105-5e3f0-false-assume.patch.
+// score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
 // Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
 // member-state lea, before the timeout call (BLOCKED-BY 0x769a0, held file; same spill in 0x5e7f0),
@@ -3679,35 +3676,14 @@ bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *addr
  long member = network_session_find_member_by_address(session, address);
  bool was_host = false;
  bool leave = false;
- s_session_id id;
  if (member != NONE && member != session->current_member)
  {
   long state = session->state;
   long host;
-  s_network_session_member_state *host_state = NULL;
-  bool take = false;
-  if (state == 9)
-   take = true;
-  else if (state > 2 && state <= 8)
+  if (state == 9 || ((state > 2 && state <= 8) && member != (host = session->member_index) &&
+   (member == session->value44 || (!session->function_058d20() &&
+    !network_observer_channel_timed_out(session->observer, session->member_states[host].unknown04)))))
   {
-   host = session->member_index;
-   if (member != host)
-   {
-    if (member == session->value44)
-     take = true;
-    else if (!session->function_058d20())
-    {
-     host_state = &session->member_states[host];
-     long channel = host_state->unknown04;
-     id.a = session->value10;
-     if (!network_observer_channel_timed_out(session->observer, channel))
-      take = true;
-    }
-   }
-  }
-  if (take)
-  {
-   __assume(host_state != NULL);
    if (session->function_058d20())
    {
     struct s_handoff_announcement
@@ -3724,8 +3700,7 @@ bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *addr
     memcpy(&message.identity, session->members[member].words, sizeof(message.identity));
     network_session_send_to_members(session, 0, 0x13, sizeof(message), &message);
     was_host = true;
-    if (session->state == 7 && *(byte *)&session->value7420)
-     leave = true;
+    leave = session->state == 7 && *(byte *)&session->value7420;
    }
    session->member_index = member;
    session->value44 = NONE;
@@ -3735,18 +3710,18 @@ bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *addr
     function_612c0(session);
   }
  }
- if (network_session_address_is_peer(session, address))
+ bool result = network_session_address_is_peer(session, address);
+ if (result)
  {
-  id = *(s_session_id *)&session->unknown1c;
+  s_session_id id = *(s_session_id *)&session->unknown1c;
   s_network_session_member_state *member_state = &session->member_states[session->member_index];
   if (member_state->flag1)
    network_observer_send_message(session->observer, session->value10, member_state->unknown04,
     false, 0x14, sizeof(id), &id);
   if (leave)
    session->leave(false);
-  return true;
  }
- return false;
+ return result;
 }
 #pragma inline_depth()
 
