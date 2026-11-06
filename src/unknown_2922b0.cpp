@@ -74,6 +74,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
+// MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
+// retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
+// frame+0x24 against frame+0x1c and the copied vector at frame+0x4c against frame+0x40, and the first
+// comparison branches the other way round.
 // score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
 // Frame 0x108 agrees; success/input/minimum/hit homes differ from +0x31.
 // Earlier: the true initializer uses BL, saving EBX early.
@@ -379,6 +383,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // AC557: Native root quotient producer, optional remaining/clamped scalar stages,
 // mutable/immutable complete families: eight at 607 (2817/2886). NOT kept:
 // all regress and shorten farther from retail; original helper and body restored.
+// AC559: Whole active-range admission/rejection, bool/byte/short/long: eight at 687
+// (2830/2886). NOT kept: all regress; original live guard, complete helpers and
+// in-place snapshots restored. Success/input/minimum/hit homes and inactive exit remain.
 // J259: Full root/sine/cosine return storage, separate/paired/all and immutable all: 689/706/698/690/682/701/683/683.
 // NOT kept: no eligible native repair; opening executable source restored. Native frame 0x108 is lost; original real helpers and every in-place capture restored; success/input/minimum/hit homes and inactive exit remain.
 // M400: Complete original input/basis/origin/distance/ray/root/rotation-cross/projection defaults

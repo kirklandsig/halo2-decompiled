@@ -550,8 +550,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
+// MiniMax I (11-06): the node-type guard as a named local, as a field reference, against a
+// constant held in a local, with an unsigned field and as an if/else all keep the folded memory
+// compare; no lower score.
 // MiniMax lane A (11-04): no new form, no lower score.
-// score 239 (was 308): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
+// score 239 (was 239): frame 0x40 versus 0x44 (retail keeps origin y/z in reused slots and has two unused dwords below
 // the plane); classifier clamp form, origin and hit copies, transformed-plane and output homes remain.
 // normal component loop 319; material-output scope 319; direct validity 351;
 // key-clamp result arms 319; optional entity result 319.
@@ -764,6 +767,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // long root type 319 (80), plus a next-shape local 319 (79), plus a one-use bool for the byte test 323 (79). Normal row terms in six orders 239 each (aligned 106-116).
 // long plane index locals 239 (same `mov dx`: the short formal narrows; the callee's formal is the real blocker, a caller rose before). Hit through
 // a contact position pointer 310 (folds). Left: contact takes a register once the hit is read by components (retail keeps it on the stack), three data reads.
+// Round 153 (m3 lane 5, fast): a shape local inside the kind-24 block (retail keeps second->shape in EBX there for the data
+// read and the 0x1ee410 call) 327 (1249 B); index/other_index declared at the top 274 (1244 B); that shape local with the hit
+// read by components and published by aggregate assignment 248 (1243 B, entry registers move to EBP/ESI); hit by components
+// with aggregate publication 312; aggregate publication alone 340 (1227 B). Retail's frame reads like a scalarized origin: x keeps
+// the 12-byte home (+0x28, y/z slots unused) while y and z are spilled into first's and friction's slots (+4, +8); no form
+// here (aggregate copy, components x/y/z or z/y/x, through a position pointer) does that in a compile-only screen.
 // Y603: Separate queried planes, earlier uninitialized material/coefficient outputs and
 // source-arm plane names: 239/231/239/231/239/231/239/231/231/239/231. NOT kept: 231 recovers frame 0x44
 // but moves the first-node home to +0x14 (retail +0x10); unmatched frame-only steering.

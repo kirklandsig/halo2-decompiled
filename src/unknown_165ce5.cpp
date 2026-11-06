@@ -1764,6 +1764,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (2191, aligned 103). Retail's logic decoded: zoomed = speed > 0.1; scoped = zoomed && query; both cleared on the second query; scoped cleared
 // when the overlay lookup fails; the play's `else if (zoomed)` under `if (zoomed || scoped)` is retail's own implied test (`cmp [ebp-2], 0; je`).
 // Still BLOCKED by the stand-in (round 98) for ESI/EDI; no byte match is reachable without it, so no match-only form can stay. Body unchanged.
+// Round 76 (m3 lane 1, fast control 220, full 218; aligned 116): look outputs declared first in the unit block 220; declared at
+// their PIN assignments 220; the aiming velocity as a named pointer for its three uses 233 (2190 B, aligned 118; the pointer takes
+// unit's home, unit/mode homes unchanged); a const unit pointer 220; a const look pointer 220. Retail's movzx flag test is not
+// followed by any use of EAX (the next instruction reloads it), so no two-use local is behind it. Body unchanged.
 // Round 132 (m3 lane 7, fast, control 220): the look values declared where they are computed 220, as
 // `real const` there 220, declared first in the block 220 (all same code: their homes stay -0xc/-8);
 // the look pointer, flags and weapon counter declared at first use 220; the pitch as `y * (-1 / rate)`

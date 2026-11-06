@@ -745,6 +745,7 @@ void c_session_client::function_06dbc0()
 	function_06dc60(this, 3);
 }
 
+// MiniMax B (11-05): no new form, no lower score (43); separate case 7 and case 8 bodies give retail's direct 7-entry table but 47, and an early member-index read gives retail's head (this copied to EBX) but 24 without an exact match, so it is not kept; 26 further forms (early reads of the mode, the type and the index, nested and inverted tests, an explicit default, state-2 case values, a client copy, an inverted flag test, id copies) measured 45-68; still differs in the this/mode/id register homes and in the two-level case table.
 // MiniMax I (11-04, machine 3, second pass; not kept, m3 review: the 24 rests on a one-use member-index local
 // read before the switch, kept only with a byte match; the case split alone is 47): 24 with separate case 7 and case 8 bodies, which give
 // retail's direct 7-entry table, and reading the member index into a local before the switch gives

@@ -419,6 +419,14 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // twice 98 (399); the base reused for the actor pointer 28 (same code); the record pointer declared ahead of the lookup 28 (same code). Probes (reverted):
 // a store to a new field ahead of the copy 109, ahead of the update 110, at the end 41, in the creature loop 84, one more product at the end 118: none flips the
 // loop's lookup to retail's `lea edx, [ecx + ecx*2]` with the pool in ECX. Matched functions hold both lookup shapes with the same inline.
+// Round 75 (m3 lane 11, fast with 0x1e3b60 and 0x28f890): the record is a swarm (g_5044c8): the body on swarm.h's
+// swarm record, swarm_get, the creature data record and its named fields (position, creature count, first creature,
+// next creature) 28 (same code); on it: the count cleared in the caller right after the copy 29; the swarm addressed
+// as a typed array element in place of swarm_get 28 (same code); the first creature read in the caller before the
+// copy and passed to the centre update 30; the averaging step in the caller after the centre update 28. Reading:
+// every difference is one scratch register on from retail (origin before pool data in the prologue, pool before
+// index in the loop, the reload and the sign extension), the round-robin pattern seen in 0x5c720, so the cause is
+// likely one allocation more or less before the prologue's actor block, not any one statement's form.
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

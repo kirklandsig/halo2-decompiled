@@ -156,7 +156,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 866 (was 866): frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice carriers remain.
+// MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
+// and the choice carriers are as the earlier rounds left them.
+// score 866 (s1F walk 11-06): walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// counts as dwords (0x18aeef, 0x18af10, 0x18af84, 0x18af81); the `short` copies here narrow them (no observable difference:
+// counts <= 64). As `long` it scores 942, so it is not kept without a match. Frame 0x4e0 agrees; on the long form the choice count
+// and first-loop index stay in memory (retail: ESI/EDI), 3297 bytes (retail 3327). s1F also tried, on that base: grouping
+// {count, items[]} structs for targets+existing 933 (3327 B, frame 0x4e4), existing only 938, plus choices 1024-1025 (3413 B);
+// the three 1.0f defaults as separate statements (retail's store order) 942. Retail evidence for grouped lists: counts at
+// 0x34/0x88/0xec directly below arrays at 0x38/0x8c/0xf0, and the query gains share the existing list's slot at 0xec.
 // Earlier 919 (was 919): count/array homes and choice registers differ in the 0x4e0 frame;
 // count/array homes and choice registers differ in the 0x4e0 frame;
 // Frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice registers remain.
@@ -353,6 +361,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // local 866, tag local 866, both 866, hoisted sounds 924 (3327 B), choice pointer 962 (3284 B), long query count 919 (aligned
 // 584), long choice count 956 (3281 B), both 942 (3297 B, masked 288), with the pointer 960. With hoisted sounds: long query 881
 // (3327 B), long choice 976, both 963, with flags and tag 949/881.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 866 [703]): the choice cap as `if (choice_count == 2) break;`
+// at the loop top 866 (same code); the first loop's three `continue`s as nested ifs 924 (3327 B, retail's entry: ESI zero
+// register, first difference moves to the target-count home +0x17); the sound fields read through `bsp->sounds[index]` at
+// each use 1005 (3381 B); nested ifs with long choice count and the query bound read from `count` 942 (3297 B) [577]; that
+// with `&choices[choice_count++]` stored in retail's order (tag, source, decibels, cluster) 960 (3308 B) [801].
 // Round 66 (m3 lane 14, fast): retail reloads the address-taken count at every use (`mov eax, [esp+0x10]` at each loop test and
 // for `> 1`, no copy): count used directly with no query copy 919 (same as the long copy); with a long choice count 942 (3297 B);
 // with the choice taken as `&choices[choice_count++]` 960 (3308 B; the cursor is strength-reduced into a hoisted pointer), with a

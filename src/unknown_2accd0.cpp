@@ -610,6 +610,13 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax E (11-06): no new form, no lower score.
+// The head's total needs a fresh register (retail EDX): dropping the named total fixes it
+// (the sum then lands in EDX) but reorders the header case's loads and scores 88; two size
+// locals with the total from them score 91, the position declared first scores 34 with the
+// scratch getter's stores in retail's order, the position computed first scores 158, and a
+// function-scope position scores 34. Left: the hoisted body_size in ESI (retail ECX), the
+// body pointer in ECX (retail EDX) and the size/position pair swapped between ESI and EDI.
 // MiniMax b (11-04): no new form, no lower score; the entry total still lands in EAX (retail EDX) and the body's size/position still in ESI/EDI (retail EDI/ESI); an unnamed total fixes the head but reorders the header case's loads and scores 88, and the state store moved ahead of the total scores 232; the permuter's 188 annealed tries found nothing below 34, and the scratch clamp reading g_4fa0c8.size directly scores 159.
 // score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
@@ -900,6 +907,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // subsets 1/2/4/3/5/6/7 and all complementary incompleteness: eight at 34.
 // NOT kept: no exact comparison-result form; original body, getter, API boundaries
 // and cleanup restored. Entry total and seek/size carriers remain.
+// F403: Actual completed-offset/cancellation/signing-flags producer subsets 1/2/4/3/5/6/7,
+// then positive admission on the complete graph: 126/161/161/82/82/161/82/223. NOT kept: all regress;
+// original scalar producers, observations, getter, API tuples and complete body restored.
+// Fresh total and independent extent/seek/transfer carriers remain.
 // Round 57 (m3 lane 15, fast; brackets aligned with registers kept, stack masked; base [23]): cross of total, signature
 // sum and clamp (36 forms): no total local, helper at the signature only, `MIN(g_4fa0c8.size, remaining)` with a buffer_size local 153 (689) [4], left: the signature
 // sum coalesces body_size into ESI, so its load is not head-merged with the body case; the same with the original clamp 28 (687) [17] (one-caller helper, not kept); field
@@ -916,6 +927,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // DL271: Standard-library capacity minimum, shared/separate capacity and direct/named
 // remaining expressions, both native bound directions: eight at 207, 717/719 bytes.
 // NOT kept: no equality; original macro, capacity output, total/seek homes and body restored.
+// Round 76 (m3 lane 10; fast, a compile-only harness in brackets, base [27]): a two-caller inline read-at-position
+// helper (seek, read, byte-count test) for the body and signature cases 212 (691 bytes); no total local with the
+// position on the left of each seek compare 89; the signature seek and read as nested ifs 34; a const signature
+// position 34; the body pointer as `&body[offset]` 34. Harness only, all [27] (same code): the signature position
+// declared after the buffers, `body != NULL`, a const total or total_size; the position on the compare's left [28];
+// on the no-total base [82] each of those, the byte count declared later, the total summed body first, sizeof first
+// or through a dword cast; the signature sum written in both the seek and its compare [96] (it reloads after the call).
+// Retail's body_size temporary shares ECX with the body arm's remaining count, so the signature sum cannot fold into it.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

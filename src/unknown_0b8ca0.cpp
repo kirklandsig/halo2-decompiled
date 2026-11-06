@@ -258,6 +258,9 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // the arm 4; `disable == false` 4. Diagnostics, reverted at once: one to three volatile probes at the top, ahead
 // of the `disable` test or inside it leave the data load after the `lea` in EAX, so unlike 0x15adb0 this is no
 // missing rotation step: retail allocates the data load while the masked index still holds EAX.
+// Round 77 (lane 10, fast): a dword type 4; a short type 11 (201 bytes). Diagnostics: without the
+// `else if (disable)` store 41, without the 0x1c/0x20 tail 73, without the final `if (!disable)` block 79:
+// the data still loads into EAX after the scaling in each, so no other block of the body sets it.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -658,6 +661,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax G (11-05): no new form, no lower score; retail's result byte at 0x13 and the player index at 0x14 need retail's exact local set, which the reachable code cannot produce here.
 // MiniMax H (11-04): no new form, no lower score; retail's frame pointer and 8-byte self-alignment are not ours (frame 0xac against 0xb4).
 // MiniMax H (11-04): no new form, no lower score (230); the earlier rounds' forms still leave the
 // caller-dependent frame alignment and the dword result, so the body stands.
@@ -1624,6 +1628,10 @@ done:
 // at the call 32/28/28/28/34; the palette pointer through it: local 33/32/32/33/33, at the call 33/32/32/33/27.
 // Lead: retail's `mov esi, eax` fits a definition local taking a value already read, with the size coalesced to
 // EAX for the product; every form above propagates the copy, so the type never reaches ECX.
+// Round 77 (lane 10, fast): the type read beside the placement index, ahead of the NONE test, 23 (238 bytes);
+// that with long offsets and size and the palette at the call 32 (236 bytes); the palette pointer formed after
+// the placements read 26 (237 bytes); the placement block address named before its element read 17 (same
+// code); long palette offset and size with the palette local where it is 27 (236 bytes).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1790,6 +1798,8 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax E (11-05): no new form, no lower score; no new form for the shared epilogue or for the inlined
+// 0xb8bd0 marker pointer (that file is /Ob1).
 // MiniMax H (11-04): no new form, no lower score; the body still differs from its first instruction.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the

@@ -335,6 +335,10 @@ struct s_z_state_world
 // before the type: database ECX; the record by pointer addition with the byte from the array (either order), a bool
 // active from the array: `add eax, ecx` and the offsets folded (14-equivalent); the world local with the index pinned in
 // ECX: database still ECX (so the LTCG world local's ECX is the database's own preference, not the index's).
+// Round 77 (lane 10, fast): one world local at entry named world, aaworld or zzworld 18/18/18 (names are no
+// tie-break); the world local before `result` 18; the definitions local before the active test 22; the type
+// read inline in the table index 13; the record bound by reference 11. 0xa99f0, whose index arrives in EAX,
+// shows the same single cause: retail gives the database the dying world register EDX, ours the free ECX.
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {
@@ -361,6 +365,9 @@ bool function_a9820(long *block, long index)
 // the dead world register, so the active byte is still read through the materialised record address; the active byte
 // read from the database array with the record pointer taken in the branch 14, the same with a state local 11 and
 // with a world local 21 all leave the record address folded into the index instead of materialised.
+// MiniMax H (11-05): no new form, no lower score; a database local with the byte read from the array, the byte
+// read through a computed offset and the record taken inside the branch all give 14, and retail's EDX database
+// with its folded byte load cannot be reproduced from the source.
 // MiniMax B (11-04): no new form, no lower score: the database pointer is still loaded into ECX where retail
 // loads it into EDX, and the active byte is still read through the materialised record address; an active
 // byte in a local read before the record pointer 14, a database local with the byte read from the array 14,

@@ -84,7 +84,7 @@ struct s_object_header_291ea0
 	s_unit_291ea0 *object;
 };
 
-inline void dialogue_name_override(long volatile *name, long value)
+inline void dialogue_name_override(long *name, long value)
 {
 	if (value != 0 && value != NONE)
 		*name = value;
@@ -116,6 +116,10 @@ inline void dialogue_name_override(long volatile *name, long value)
 // use 9; an inline element getter 97 (467 bytes). Dead `volatile` load probes (reverted) before the tag, the test, the name or the unit lookup 84-110
 // (440-448 bytes: the name leaves the stack and the frame shrinks), so no rotation step could be located. Retail's lookup shape (scaled index EDX, pool
 // reuses EAX) also matches 0x28f8d0's difference; both shapes occur in matched functions with the same inline.
+// Round 75 (m3 lane 11, fast): the override helper's pointer parameter without `volatile` 9 (same code, kept); `name`
+// declared first in the found block 9; the default name at function scope, zeroed at entry, 146 (450 bytes); the unit
+// lookup through the `unit_index` local 129 (the listed cached unit index, re-measured); the default name from a
+// force-inline helper with early returns 48; the tag table global read at each use, no `tags` local, 9 (same code).
 // @retail 0x291ea0
 bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real *duration)
 {

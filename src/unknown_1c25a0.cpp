@@ -972,6 +972,11 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // matches. 0xb7b40 and 0xb8540: 1, 0x1d1540 back at 97, 0xb8540 matches, 28 lost (0x1c3770 goes custom, 41). All four drafts: 1, 29 lost.
 // 0xb7b40, 0xb7430 and 0x2902b0: 1, 229 lost. Lead: with 0xb7b40 enabled 0x1d1540 needs a caller built before it, which takes 0x146bf0
 // being reached before 0x278f00 is on the walk's stack (then 0x1c4040 -> 0x278f00 -> 0xb8890 builds that caller first).
+// Round 94 (fast, all restored): 0xb7b40's draft enabled with 0x1c4040's array store without its cast and the fixed island
+// read through g_51e9a4: this function, 0x1c4040 and 0x146bf0 match, 0x1d1540 custom (215), six lost (0xe16b0 114, 0xb8890
+// 15, 0x1c35f0 40, 0x1c3770 21, 0x1c39c0 41, 0xf0fd0 27). Added to that: 0xb8890 declared before 0x1c3770 in
+// src/unknown_278f00.cpp 1 (nothing lost, 0x1c4040 plain again, 17); 0x146bf0 first in src/unknown_0b7b40.cpp 1 (0x278f00
+// lost 185); both 1; 0x1c2a10 declared first in src/unknown_1c2690.cpp no change. BLOCKED-BY 0x1c4040 (its convention).
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {

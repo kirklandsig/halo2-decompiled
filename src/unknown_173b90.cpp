@@ -716,6 +716,11 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // better. Index spellings (typed sum, dword, ++, += 1) identical; declaration moves and the particle mask inline identical.
 // Named input components x, y, z in every subset, order and phase (336 forms) no better than 13 block differences.
 // Left for a match: all products load-first in the retail phase. A new one-caller helper is match-only: body unchanged.
+// Round 95 (m3 lane 12, fast): the emitter loop as a for with the offset as its init and step 42 (the zero store stays ahead
+// of the guard; retail stores it after the guard, beside the shrink-wrapped push ebp); scale first re-measured 40 (gain 2);
+// the offset declared before the emitter index 42; the particle copies motion first 50; the next index read right after the
+// particle lookup 272 (1113 B); scale first with the colour declared before the frame locals 40; scale first with the
+// particle mask formed beside the emitter mask 261 (1117 B).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1850,6 +1855,17 @@ bool function_17afd0(long effect_index, long value);
 // store, only the arm layout left (retail's first arm jumps into the second's copy), the condition inverted 17; with direct
 // availability 120, with a view local 27 [5] (494 bytes); `attached = same_view ? short : full` or an if/else on same_view
 // 91 [2] (500 bytes: `je; mov; jmp` for retail's `mov; jne`). All need the flag form, so match-only: body kept at 47.
+// M3 lane 14 r68 (fast; the 47 body differs from retail in 7 aligned instructions: the availability's `xor bl, bl`
+// before the 0x1751d0 call, `neg/sbb/inc` for retail's `test; jne; mov bl, 1`, and the view reload after 0x17afd0):
+// `if (view != NONE && !query(view)) available = true;` 135 (availability spilled, NONE in EBX); `available = view
+// != NONE && !query(view)` reassigned 125 (492); `query(view) ? false : true` 47 (same code); retail's shape with
+// the view global at each use and same_view declared at function scope 138 (510); same_view defaulted false at
+// the arm's top and reassigned whole 138. The branchy availability always hands BL to same_view.
+// MiniMax E (11-06): no new form, no lower score.
+// The availability result moved after the view load 125, after the definition
+// call 138 and before the effect index 138: each move flips the NONE constant
+// from EBP to EBX. The branchy availability (test/jne/mov bl,1) 135 spills the
+// result to a stack byte. The base's 47 stands.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

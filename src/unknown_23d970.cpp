@@ -563,6 +563,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
+// MiniMax C (11-06): no new form, no lower score.
 // MiniMax R (11-04): no new form, no lower score.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
 // (function_1f087b, every component computed before the stores, i first) gives retail's previous_up
@@ -844,6 +845,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // Round 151 (harness, exact at 45): grid of 200 forms, second product (function_1f087b, cross3f_staged, staged through a view of the output, k accumulated, k accumulated through a view) by
 // first product (cross3f, function_1f087b, written jik, kji, ikj) by the else-arm forward pointer by 0-3 dead temps ahead of the first product: best 43 at 1262 bytes (the else pointer alone), none lower.
 // Random grid of 143 natural forms (those products, the else pointer, a named up or forward pointer, declaration orders, a named distance, advance and command placement): none below 45.
+// Y610: Paired angle/forward/up field lvalue identities,
+// subsets 1/2/4/3/5/6/7, then all with command-record identity:
+// 230/354/349/354/348/354/377/377 (fast control 45).
+// NOT kept: no exact identity-form match; original complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

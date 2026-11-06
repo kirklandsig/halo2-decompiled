@@ -105,7 +105,6 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// MiniMax E (11-04): the residual subtract in both limit arms 1065, the subtract helper taking a scale in both arms 1017 and with a scale variable 1009, the contact array hoisted out of the loop 1004, the fused scaled subtract in both limit arms 1016 and in the radial arm only 996 or the planar arm only 1017; no lower score.
 // score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
 // Earlier score 902 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
 // Round 105: retail has 23 more mulss, 22 more movss and 15 more movaps, ours ~10 extra counted loops
@@ -378,6 +377,14 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // both complete dot interfaces, then both with planar input references: eight at 902.
 // NOT kept: native input identities do not recover the entry pair or frame; original kernels
 // and complete body restored.
+// MiniMax E (11-04): the residual subtract in both limit arms 1065, the subtract helper taking a scale in both arms 1017 and with a scale variable 1009, the contact array hoisted out of the loop 1004, the fused scaled subtract in both limit arms 1016 and in the radial arm only 996 or the planar arm only 1017; no lower score.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 902 [548]): retail's in-loop byte homes are record bit 2
+// at +9 and the second activity flag at +0xa (ours the other way round); record bit 2 renamed to sort before the activity
+// flag 902 (same code: names do not move these homes); the clamp tested in the condition after the null test (no clamped
+// local) 917 (4283 B) [552]; the removal as one `data[i] = data[--size]` statement 902 (same code); the body position
+// copied without its pointer local 965 (4284 B) [612]; the record flags read from the field at each use (retail reads
+// the word twice) 964 (4248 B) [547]. Retail also keeps the record element as a pointer (`shl eax, 3; add esi, eax`) and
+// the attached object index in EDI across the lookup, where ours re-reads `[ebx + edi*8 + 4]` three times.
 // M3 lane 12 r93 (fast): LEAD, the unroll blocker found: under LTCG the scale helper's loop unrolls only with a
 // `long` counter (a `short` one stays rolled even alone in a three-line body) and only when the function calls no
 // destructor (`delete` of the contact array, its explicit destructor call, plain or inside a helper all keep every

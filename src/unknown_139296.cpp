@@ -1265,6 +1265,9 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // of their guards (second, third, both) with a sibling or indexed first loop 118 each (same code); offset-compared do re-measured 12. `__assume` forms: on the
 // count, the offset, the pointer, a count bound or `count > 0` in the for form 1 each; on the first offset, pointer, item, field or count with a sibling first
 // loop 118 each; on the later counts or offsets, the first mask or the pointer after the setup 118 each. A 600 s permuter run, none below 1.
+// Round 96 (m3 lane 12, fast): later loops indexed over the field (`i < field`, element base + i * size) 61 (372 bytes, the count
+// re-read after the calls); the masks declared ahead of the flag and the definition pointer 6; the first loop's offset in the for
+// initialiser beside the count 1; the first guard written `0 < count` 1; the item output declared before the masks 1.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

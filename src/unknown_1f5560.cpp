@@ -848,6 +848,9 @@ real normalize2d(point2f *v);
 // MiniMax D (11-01): the fast flag's test moved into the valid arm 301, a separate trajectory
 // variable 278, `force = force || fast` 253: the result stays memory-homed in every form; no
 // lower score.
+// MiniMax E (11-06): no new form, no lower score; retail keeps the trajectory result in DL and returns
+// the validity flag in BL on the short exits, where ours keeps the result on the stack and folds that
+// exit to a cleared AL (12 bytes short on every path).
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
@@ -1055,6 +1058,9 @@ real normalize2d(point2f *v);
 // NOT kept: no byte match or eligible native repair; original executable source restored.
 // DL272: Default persistent vertical/horizontal, their pair, retry vertical/horizontal, retry pair, all four and all with direction; native DL and separate return transport remain. Scores 118/117/157/138/137/158/190/221.
 // NOT kept: output default stores are absent in native code and the unmatched defaults are not retained; original executable source restored.
+// DL274: Own force/initial-target/retry-target home reads, seven subsets then request-target home: 135/134/134/134/134/134/134/134.
+// NOT kept: native DL retention and separate request/invalid return transport remain; no eligible byte match or native repair.
+// Original complete executable source restored.
 // DH382: Completed invalid type admission at absent definition/rejected forced mask/
 // exhausted short search, seven subsets 136/244/253/238/253/267/267; all typed-first 249.
 // NOT kept: all regress and disturb the native entry/type prefix; original entire body,

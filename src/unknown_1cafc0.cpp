@@ -513,6 +513,7 @@ bool function_1cb920(void *data, long mode)
 void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type, bool urgent,
 	bool other);
 
+// MiniMax C (11-06): no new form, no lower score.
 // MiniMax H (11-04): no new form, no lower score; the two animation lookups' graph stays in ebx in retail and in ebp in ours, and its final mov al is not normalised there, both of which come from the inlined graph helpers rather than from the form of this body.
 // MiniMax D (run 37): no new form, no lower score; the permuter (15 minutes, --fast) spent all of
 // its time on the first build and never reached a search, and the forms of the earlier rounds leave
@@ -710,6 +711,10 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // DL267: Complete sorted-block declaration, then actual graph/mode/class block receivers, subsets 1/2/4/3/5/6/7, then all with Boolean success: 348/348/348/348/348/348/348/348/478.
 // NOT kept: no byte match or eligible native repair; original executable source restored.
 // DL272: Repeated fallback input names in original same-role formals, seven subsets then all with Boolean success; native graph-base/reload homes and byte normalization remain. Scores 348/357/355/357/355/357/357/482.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL274: Two-use permission mask after resolution/after found publication, dword/byte/word/long: 639/639/515/515/509/509/639/639.
+// NOT kept: native graph/base reload and byte normalization remain; no eligible byte match or native repair.
+// Original complete executable source restored.
 // DH382: Saved graph receivers for paired animation queries/fallback queries/separate
 // query phases/complete lookup phase, byte then Boolean status: 348/348/348/348/478/478/478/478.
 // NOT kept: aliases give no native graph-base/reload repair, Boolean status lengthens;
