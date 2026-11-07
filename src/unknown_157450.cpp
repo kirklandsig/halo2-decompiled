@@ -2282,6 +2282,10 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // and no other placement does (one load before the index read, ahead of the bounds test or inside the
 // old-index guard changes nothing): the lookup wants one more temporary allocated between those two tests.
 // Matched 0x1e06b0 and 0xe3700 test and look up the same way with a field of an object pointer.
+// Round 97 (m3 lane 12, fast): plain object and iterator locals, no grouping aggregate 33 (frame 0x10, the
+// object's store goes); `for (object = next; object; object = next)` as in 0x3d380 8; a named object copy of
+// the grouped member as in 0x15aad0 8; the iterator's object index read before the old-index test 8 (the
+// load stays after the release); index declared at function scope 8.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
