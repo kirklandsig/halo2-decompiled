@@ -4555,16 +4555,16 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
-// MiniMax B (11-07): the first rotation and the normalize call take the forward field instead of the `forward` pointer,
-// 79 -> 63 at 892 bytes; the first rotation's dot sum order is still k, j, i here against retail's i, k, j.
+// MiniMax B (11-07): 63 (892 bytes), not kept: the first rotation and the normalize call take &biped->forward
+// while the forward local declared above them serves the later uses; with the local in all of them 79 (main),
+// with the field in all of them 154, with the local declared at its first use (the first cross) 77 at 887 bytes.
+// A spelling and declaration point picked by score are kept only with a byte match. Left at 63: the first
+// rotation's dot sum order (ours k, j, i against retail's i, k, j).
 // MiniMax C (11-05): no new form, no lower score: the normalization SIMD numbering and the trigonometric
 // and rotation homes remain.
 // MiniMax A (11-03): no new form, no lower score: the normalization SIMD numbering and the trigonometric
 // and basis homes remain.
-// score 63 (was 79): frame 0x24 and the register homes agree, 892 bytes against 887, first +0xc6. Left: the first rotation's dot
-// sum order (retail i, k, j; ours k, j, i) and the products it keeps ahead of the cosine. Earlier (79): the first rotation's cross
-// terms read the forward x load-first where retail multiplies by it in memory, and the final cross reads forward y load-first where
-// retail has it in memory (one extra load, the seven bytes). Earlier: 145: frame 0x24 and retail length agreed; first +0x4f was normalization SIMD numbering,
+// score 79 (was 145): frame 0x24 and the register homes agree, 894 bytes against 887, first +0x107. Left: the first rotation's cross terms read the
 // forward x load-first where retail multiplies by it in memory, and the final cross reads forward y load-first where retail has it
 // in memory (one extra load, the seven bytes). Earlier: 145: frame 0x24 and retail length agreed; first +0x4f was normalization SIMD numbering,
 // followed by rotation/basis carriers and trigonometric homes. Earlier frame 0x30 had cross spills.
@@ -4736,8 +4736,8 @@ void function_e3910(long arg_159e6d)
 	cosine = (real)cos(angle);
 	sine = (real)sin(angle);
 	vector3f *forward = &biped->forward;
-	rotate_direction(&biped->forward, &axis, sine, cosine);
-	function_30bf0(&biped->forward);
+	rotate_direction(forward, &axis, sine, cosine);
+	function_30bf0(forward);
 	up = biped->up;
 	rotate_direction(&up, &axis, sine, cosine);
 	cross3f(forward, &up, &side);
