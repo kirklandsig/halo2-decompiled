@@ -44,15 +44,9 @@ void table_2e5a20::set_all(referenced_2d88a0 *object, long index)
 
 char const *__cdecl function_2e6220(long type);
 
-// score 166 (was unwritten; 174 with the alternate tests nested under a joint test, 166 as if/else-if):
-// frame 0x410 versus 0x424; the type, row and
-// text-call values use other registers and stack slots. Buffer extent 174;
-// ordered text locals 159; separate level 175; both bounds 171; first bound
-// 156; second bound 169; row/column names 171; array indexing 171; direct
-// alternate fields 171; early bounds 195; record stores reordered 171;
-// separate maps 171; record pointer 171; direct record fields 175; direct
-// arguments with both bounds 178, first bound 189, separate level 189;
-// branch bounds 141, with direct arguments 189. Text locals were reverted.
+// Expands alternate shape types before replacing the selected handler rows.
+// Diagnostics describe this recursive pair; the record keeps the original
+// registration pair. Resolve the four names in retail call order.
 // @retail 0x2e5a90
 void s_1c3a40::function_2e5a90(handlers_2e5d50 const *handlers, long first_type, long second_type,
 	long first_type_again, long second_type_again, long level)
@@ -61,44 +55,53 @@ void s_1c3a40::function_2e5a90(handlers_2e5d50 const *handlers, long first_type,
 	for (long index = 0; index < alternate_types.size; ++index)
 	{
 		alternate_type_2e5d50 const &alternate = alternate_types.data[index];
-		if (alternate.alternate == first_type)
-			function_2e5a90(handlers, alternate.type, second_type, first_type_again, second_type_again, level + 1);
-		else if (alternate.alternate == second_type)
-			function_2e5a90(handlers, first_type, alternate.type, first_type_again, second_type_again, level + 1);
+		if (alternate.alternate == first_type || alternate.alternate == second_type)
+		{
+			if (alternate.alternate == first_type)
+				function_2e5a90(handlers, alternate.type, second_type, first_type_again, second_type_again, level + 1);
+			else
+				function_2e5a90(handlers, first_type, alternate.type, first_type_again, second_type_again, level + 1);
+		}
 	}
+	long first_begin = first_type;
+	long second_begin = second_type;
 	long first_end = first_type + 1;
 	long second_end = second_type + 1;
+	long registration_level = level;
 	if (first_type == -1)
 	{
-		first_type = 1;
+		first_begin = 1;
 		first_end = 32;
-		++level;
+		++registration_level;
 	}
 	if (second_type == -1)
 	{
-		second_type = 1;
+		second_begin = 1;
 		second_end = 32;
-		++level;
+		++registration_level;
 	}
-	for (long first = first_type; first < first_end; ++first)
+	for (long first = first_begin; first < first_end; ++first)
 	{
-		for (long second = second_type; second < second_end; ++second)
+		for (long second = second_begin; second < second_end; ++second)
 		{
 			for (long slot = 0; slot < 4; ++slot)
 				handler_tables[slot][first][second] = handlers->handler[slot];
 			pair_record_2e5a90 &record = pair_records[first][second];
-			if (field_4d8d && level > record.level)
+			if (field_4d8d && registration_level > record.level)
 			{
 				char buffer[1024];
+				char const *old_first = function_2e6220(record.first_type);
+				char const *old_second = function_2e6220(record.second_type);
+				char const *new_first = function_2e6220(first_type);
+				char const *new_second = function_2e6220(second_type);
 				function_2d8ca0(buffer, 1000,
 					"Agent handling types <%s-%s> would override more specialized agent <%s-%s>\n"
 					"Maybe the order of registering your collision agent is wrong, make sure you register your alternate type agents first",
-					function_2e6220(first_type_again), function_2e6220(second_type_again),
-					function_2e6220(record.first_type), function_2e6220(record.second_type));
+					new_first, new_second, old_first, old_second);
 			}
+			record.level = registration_level;
 			record.first_type = first_type_again;
 			record.second_type = second_type_again;
-			record.level = level;
 		}
 	}
 }
