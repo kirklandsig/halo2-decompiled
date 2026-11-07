@@ -7046,6 +7046,10 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax B (11-07): no new form, no lower score (310); the group stride is still strength-reduced into a second
+// counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894, the zero for the counters lives in EBP
+// and every local above that slot sits 4 bytes higher; writing the two count tests as equality tests (retail
+// compares with `test`, so a negative count behaves as retail's) leaves the code unchanged.
 // fast score 310 (was 308), statement-by-statement walk against retail (f1D, 11-05): every field, offset,
 // condition direction, callee, argument, constant and loop/branch shape agrees with retail; the one
 // behaviour difference found is the order of the x87 sum for the facing cosine. Retail adds

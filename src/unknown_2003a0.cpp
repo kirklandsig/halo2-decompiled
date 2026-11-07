@@ -2379,6 +2379,8 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
     return result;
 }
 
+// MiniMax B (11-07): no new form, no lower score (157); the frame is 0x44 against retail's 0x54 and the two area
+// locals (the structure pointer and the removed index) sit 4 bytes higher than retail's +0x30 and +0x38.
 // score 157 (was 275): 1118 bytes against 1122, aligned 4. Left: frame 0x44 against 0x54 (point packs with the area
 // iterator) and the intersection's store with no read. Earlier scores in this note are on the older body.
 // MiniMax R (11-05): no new form, no lower score; retail's frame is 0x54 with the elapsed conversion before
@@ -3333,6 +3335,9 @@ long function_203780(long arg_0, short arg_1, short arg_2, bool arg_3);
 long function_201010(long arg_0, short arg_1, short arg_2, short *arg_3);
 void function_2011f0(long arg_0);
 
+// MiniMax B (11-07): no new form, no lower score (318); retail reads the index as a dword and masks it with AND
+// where ours keeps a zero-extended word: the masked products 377, a squad pointer local 354 (1328 bytes, retail's
+// length), both together 359 and the unmasked calls 378 are all worse, and each drops the frame to 0x130.
 // MiniMax R (11-05): no new form, no lower score; retail reads the index and the 0x98 stride before the pushes and
 // keeps the squad pointer in its own slot, ours sinks that load into the definition test (a named squad pointer 403).
 // score 318 (was 318): 1332 bytes against 1328. Left: the squad index is kept as a zero-extended word in EBP
