@@ -730,6 +730,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // 150 (566 bytes); the party pointers as `s_balance_party const &` 67 (same code); the reference defaulting to
 // `&best` with `if (!improved) reference = &current;` 117 (540 bytes); `improved` read into a `bool const`
 // after the swaps 67; cost() summing two named queries 67. The candidate's count_spread still runs second.
+// Round 135 (m3 lane 7, fast with 0x91dd0/0x91860, both stay matched): the spreads passed to forceinline `greater`/`equal`
+// value helpers in (reference, candidate) order, to test right-to-left argument evaluation, 65 (the reference's query still
+// runs first); that with the cost written candidate-first 65; only the `<` test through the reversed helper 66; the swaps and
+// the test in a forceinline optimizer method taking the candidate by value 395 (not inlined, 265 bytes; 0x91dd0 10); the
+// candidate copied at the top of the inner loop, ahead of the party tests, 174 (537 bytes).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

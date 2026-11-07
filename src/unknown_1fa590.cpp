@@ -509,6 +509,7 @@ bool function_1faf80(long object_index, void const *settings_pointer, vector3f c
     return true;
 }
 
+// MiniMax S (11-06): no new form, no lower score: the idle arm still pairs and adds its products in a different order from retail's, and the sine, the cosine and the axis keep different homes; the body is still 15 bytes longer than retail.
 // score 214 (was 214): frame 0x28 agrees; angle/trig homes, the x87 angle copy (ours `fld st(0)`, retail reloads
 // the angle from its home for fsin in both arms) and projection/product scheduling remain. Earlier, 214 from 251:
 // trig homes and projection registers differ;

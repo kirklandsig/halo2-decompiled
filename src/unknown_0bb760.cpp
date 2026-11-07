@@ -467,6 +467,7 @@ void function_3dd10(long object_index, bool force);
 // 8 bytes short and every later branch target shifts. Original body kept.
 // MiniMax R (11-01): no new form, no lower score; the inverse before the eligible test 208 and the
 // constant order at the block entry stay as they are.
+// MiniMax G (11-06): the inverse moved into the found branch 132; no lower score.
 // score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator

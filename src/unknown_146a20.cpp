@@ -58,9 +58,9 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
-// MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
+// score 34 (was 34): MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax b (11-04): no new form, no lower score; the abstract allocator's base vtable store is still dropped (it comes from the header's inline constructor) and the pool placement still reloads g_479888 at the join.
-// score 34 (was 34): unchanged this round: retail still stores the abstract allocator's vtable at
+// Earlier at 34: unchanged that round: retail still stores the abstract allocator's vtable at
 // the object before the two following stores (our build drops that store, which comes from the
 // header's inline constructor and so is out of reach from this file) and still reloads g_479888 on
 // the constructed arm where ours reloads it at the join.
@@ -322,6 +322,11 @@ bool g_47f05b;
 // constructor pass, long/int/short/signed-char ordinals: 34/34/43/43/34/34/43/54. NOT kept:
 // no exact, nonregressing shared form. Entire constructor/header and target restored;
 // intermediate vtable store and successful-arm reload remain.
+// Round 70 (m3 lane 14, fast with 0x146b80/0x146e30/0x22c3e0, on `g_479894 = g_479888 ? new (block) ... : NULL;` 35):
+// the abstract's zeros as one chained assignment and a NONE store 33 (0x146b80 6, 0x22c3e0 6); a novtable fixed base 35;
+// the refcount 1 as a member initializer 35. Diagnostic only: the abstract constructor storing the refcount again 15
+// (143 bytes: the duplicate +4 store survives where retail stores the vtable, so plain dead-store removal keeps it and
+// the vtable store goes in a separate pass; 0x146b80 24, 0x22c3e0 202).
 // @retail 0x146a20
 void function_146a20(void)
 {
@@ -515,6 +520,22 @@ void function_146de0(void)
 	}
 }
 
+// MiniMax B (11-06) round 3: no new form, no lower score (120); the padding as the round-up of
+// the block (the block plus 0xf masked with 0xfffffff0, minus the block) measured as a long
+// adjustment inside the loop scores 143 and the same padding computed after the loop scores 149
+// (149 again when the loop is respelled as a while with a break), all of them already in the
+// earlier list; with the padding after the loop the size moves into EBP as retail keeps it, but
+// the frame grows to 0x18 and the first rdtsc's high half moves into a slot of its own, so the
+// body is unchanged.
+// MiniMax B (11-06) round 2: no new form, no lower score (120); the block is unchanged: retail
+// inlines the texture cache update (0x12c600) at this one call site and inlines the fixed-memory
+// constructor, and both of those live outside the files this lane may edit, so the body stays 22
+// bytes short with our size spill and counter registers.
+// MiniMax B (11-06): no new form, no lower score (120); retail inlines the texture cache
+// update (0x12c600) at this one call site and inlines the fixed-memory constructor, and both
+// of those live outside the files this lane may edit, so the body stays 22 bytes short with
+// our size spill and counter registers; the padding after the retry loop, which the earlier
+// round measured at 151, stays worse.
 // MiniMax b (11-04): no new form, no lower score; retail inlines the texture cache update (0x12c600) at this call site only, so the body stays 22 bytes short and keeps our size spill and counter registers.
 // score 120 (was 120): the function still misses retail's inline of the texture cache
 // update (0x12c600) at this one call site and stays 22 bytes short; unchanged this

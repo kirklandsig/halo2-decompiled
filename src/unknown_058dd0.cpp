@@ -745,6 +745,18 @@ void c_session_client::function_06dbc0()
 	function_06dc60(this, 3);
 }
 
+// MiniMax I (11-06): no new form, no lower score (43). Retail copies this to EBX at entry and
+// gives EDX to the mode and then to the member index, EBP to the id and EAX to the session; ours
+// keeps this in EDX, so the mode and the member index share ESI and the id takes EBX, and every
+// instruction of the function shifts by the missing push ebx. Retail's head needs this and the id
+// live across a call, which there is the inlined busy-state test; our 0x58d90 stays out of line
+// (its own file is /Ob0 and is not editable from here), and with that test written inline there
+// is no call at all, so the mode and the index take ESI instead of EDX. Separate case 7 and case 8
+// bodies give retail's direct 7-entry table and its single flag block but score 47; with the
+// member index read into a local before the switch the head matches (this in EBX, the id in EBP)
+// and the score is 24, but that form rests on a one-use local, which the review keeps only with a
+// byte match, so it is not committed here. The mode and the index share EDX in retail only because
+// the mode dies before the index is read; ours reads the member index late but in ESI.
 // MiniMax B (11-05): no new form, no lower score (43); separate case 7 and case 8 bodies give retail's direct 7-entry table but 47, and an early member-index read gives retail's head (this copied to EBX) but 24 without an exact match, so it is not kept; 26 further forms (early reads of the mode, the type and the index, nested and inverted tests, an explicit default, state-2 case values, a client copy, an inverted flag test, id copies) measured 45-68; still differs in the this/mode/id register homes and in the two-level case table.
 // MiniMax I (11-04, machine 3, second pass; not kept, m3 review: the 24 rests on a one-use member-index local
 // read before the switch, kept only with a byte match; the case split alone is 47): 24 with separate case 7 and case 8 bodies, which give

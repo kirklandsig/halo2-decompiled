@@ -404,6 +404,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (aligned 20, masked 12); clamp written `count + 1 > 0x200` 53 (90 bytes) [104]. Plain string: early source 49 (92 bytes) [6]; source at
 // clamp 41 (104) [35]; early text 41 (104) [35]; string kept through its own address: at clamp 40 (104) [6], text read 40 [6], reversed
 // 40 [6], early 49 (92) [6], `start +=` 40 [6]. Left: count and walk swapped on the match-keeping form, or start's entry register on the other.
+// Round 96 (m3 lane 12, fast with 0xb5f10/0xb61d0; [0xb5f10]): nested tests with the source before the named length 37 [84] (250-byte
+// caller); the length named first, then the source, re-measured 21 [match] (walk ECX/count EDX, retail EDX/ECX), with its compare
+// reversed 21 [match]; the copy's end named before the scan 40 [83] (96 bytes); the original compare reversed 40 [match]; the
+// `start +=` ahead of the clamp 36 [6].
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -731,6 +735,9 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // label 67 (the false result in a stack byte); that label with `return true` 72, plus `result = false` ahead of the test 72 (false folds,
 // EBP dropped). Every form that puts the false exit between the sentinel test and the restore adds a third false copy or folds or
 // spills the false result. Original body restored.
+// Round 172 (m3 lane 4, fast): the would-block arm setting the result before the position 10; the buffer declared
+// before the result 10; `sent <= -1` 23; `-2 == sent` 10; `result = sent >= 0` tested in place of `sent < 0` 74;
+// the send count passed without its `(short)` cast 10.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

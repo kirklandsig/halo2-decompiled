@@ -477,6 +477,7 @@ void function_125a90(long value);
 // Round 398: Original single type observation with complete removal-result byte/signed-byte/short/word/
 // int/unsigned-int/long/dword storage: 36/36/95/95/94/94/94/94. NOT kept: no gain; original
 // Boolean removal result, policy captures, comparison widths and complete body restored.
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
