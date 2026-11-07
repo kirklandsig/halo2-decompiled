@@ -361,6 +361,7 @@ bool function_a9820(long *block, long index)
 	return result;
 }
 
+// MiniMax C (11-06): no new form, no lower score; the database pointer still loads into ECX where retail reuses the dying world register EDX, so the active byte cannot fold into the scaled record address.
 // MiniMax S (11-05): no new form, no lower score: the database pointer is still loaded into ECX where retail reuses
 // the dead world register, so the active byte is still read through the materialised record address; the active byte
 // read from the database array with the record pointer taken in the branch 14, the same with a state local 11 and
