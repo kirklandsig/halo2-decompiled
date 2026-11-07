@@ -1225,6 +1225,12 @@ done:
 	return result;
 }
 
+// MiniMax E (11-07): score 9 (was 9): forms tried, none lower (the masked byte offset in a local, the
+// data base in a local and the inline byte-pointer product with the literal size all compile to the same
+// code); the prologue still builds the offset in ESI and adds the base where retail keeps it in EAX and
+// forms the actor with a lea; retail's matched sibling 0x297a50 uses the same getter and compiles the
+// same way as ours (the chain in ESI and an add), so what differs here is the allocation in this one
+// function, not the spelling of the lookup.
 // MiniMax E (11-06): score 9 (was 9): no new form tried this round; the prologue still builds the
 // actor offset in ESI and adds the base where retail builds it in EAX and forms the actor with a lea,
 // and ours ends a byte short with a trailing int3; two of the nine are reduced-image artifacts.

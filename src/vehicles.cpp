@@ -3769,6 +3769,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
+// MiniMax E (11-07): no new form, no lower score (136); the projection and cross operand ranks and the
+// x87 angle and trig homes are unchanged from the earlier rounds' forms.
 // MiniMax R (11-06): no new form, no lower score (136); the entry and the frame agree, and the body differences of the note below are unchanged.
 // score 136 (was 136): Fallback up setter with staged cross, native up receiver and rotation setters kept;
 // projection/cross operand ranks and trig homes remain.
@@ -4161,6 +4163,8 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 /* a hovering vehicle's wash: from each of its engine markers, a ray down a
    cone around the marker's forward, and the definition's effect where it
    hits, fading with the distance */
+// MiniMax E (11-07): no new form, no lower score; the marker count sum still lands in EAX here and in
+// EDI in retail, and the 0x146320 set-up pair still waits on that file.
 // MiniMax R (11-01): no new form, no lower score; a long local for the second count and the sum's
 // operands swapped both leave the second count's sign extension in EAX.
 // MiniMax R (11-06): forms tried, none lower (48; a named short count compiles the same); the marker count sum lands in EAX here and in EDI in retail, and the scratch zero store follows the sum here and precedes it in retail.
@@ -4256,6 +4260,8 @@ extern byte g_5107ee;
    marker's downward pitch, the distance and the vehicle's speed; the
    effect's last marker sits between the marker and the hit, aimed along
    the reflected ray */
+// MiniMax E (11-07): no new form, no lower score (41); the cone call's EDI-before-ECX pair still
+// waits on 0x146320's file, and the middle-point copy is still scheduled ahead of the reflection's loads.
 // MiniMax R (11-06): no new form, no lower score (41); a named seed pointer for the cone call compiles
 // the same, and what is left is the cone call's EDI-before-ECX pair and the middle-point, dot and memset order.
 // score 41 (was 160): left: the cone call sets up EDI before ECX (retail ECX first; the same in

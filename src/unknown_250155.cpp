@@ -1363,6 +1363,8 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 
 /* fills the list with the session's players, then the empty slots */
 // MiniMax C (11-04): no new form, no lower score: an item_count declaration initialiser moves its home to ebp-0xc but grows the frame to 0x58 and spills the mode (121), dropping the branch-one zeroing gives 137, seven declaration orders give 123.
+// MiniMax E (11-07): no new form, no lower score; the two count homes stay exchanged and the tail fill
+// stays a pointer loop where retail uses a guarded rep stosd.
 // MiniMax G (11-06): no new form, no lower score; the two count homes are still exchanged (ebp-8 against
 // retail's ebp-0xc) and the tail fill is still a manual pointer loop where retail uses a guarded rep
 // stosd, both following from the same allocation difference the earlier rounds describe.
@@ -2605,6 +2607,8 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax E (11-07): no new form, no lower score; the locals' stack homes, the players[i] reload and
+// the last loop's screen and bitmap registers stay as the earlier rounds left them.
 // MiniMax G (11-06): no new form, no lower score; the count, the element address and the player keep the
 // same three homes, permuted against retail's (ebp-0xc, ebp-8 and ebp-0x14 against our ebp-8, ebp-0x18
 // and ebp-0xc), and the last loop still keeps the screen in ebx where retail gives ebx to a bitmap.

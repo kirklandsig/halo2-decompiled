@@ -493,6 +493,8 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // callee's own body in src/unknown_11cb00.cpp (126 off retail), which is not this machine's file,
 // so the call site cannot be fixed from here: BLOCKED-BY 0x11e800.
 // Also still different: the BSP/section carriers and the plane/instance stack homes.
+// MiniMax E (11-07): no new form, no lower score; the BSP and section carriers and the range and
+// plane homes are unchanged, and the vertex block still waits on 0x11e800's registers.
 // MiniMax E (11-01): no new form, no lower score; the byte result set before the type branch gives
 // 197 and the range declared before the section 172 with identical code. Left: the BSP in EBX with the
 // section in its stack home, the rotated range/plane/instance homes and the 0x16e1b0 output homes.
