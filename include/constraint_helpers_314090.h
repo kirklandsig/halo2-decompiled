@@ -1,6 +1,7 @@
 #ifndef CONSTRAINT_HELPERS_314090_H
 #define CONSTRAINT_HELPERS_314090_H
 #include "lane_b_constraint_dependencies.h"
+#include "unknown_0a9f20.h"
 
 // Description layouts follow the retail constructors and import/export copies.
 // The base occupies twelve bytes, followed by aligned vector fields.
@@ -30,6 +31,8 @@ struct c_component_joint_snapshot_5 : lane_b_rigid_constraint_description
 class lane_a_ball_socket : public lane_b_rigid_constraint
 {
 public:
+	lane_a_ball_socket(c_component_joint_snapshot_4 const *description);
+	virtual void *v3();
 	__m128 pivot_a, pivot_b;
 	lane_a_solver_result results[3];
 	virtual lane_a_solver_result *runtime();
@@ -44,6 +47,8 @@ public:
 class lane_a_spring : public lane_b_rigid_constraint
 {
 public:
+	lane_a_spring(c_component_joint_snapshot_3 const *description);
+	virtual void *v3();
 	__m128 pivot_a, pivot_b;
 	float length;
 	lane_a_solver_result results[1];
@@ -59,6 +64,8 @@ public:
 class lane_a_prismatic : public lane_b_rigid_constraint
 {
 public:
+	lane_a_prismatic(c_component_joint_snapshot_5 const *description);
+	virtual void *v3();
 	__m128 pivot_a, pivot_b, axis_a, axis_b, perpendicular_b;
 	__m128 frame_b[3];
 	float minimum, maximum, friction;
@@ -89,28 +96,37 @@ struct s_1d1870
 };
 class hkEntity;
 class shape_bounds_314650;
-// Its vector fields make it 16-byte aligned, which is why the game's 0x1d1540
-// allocates 0x70 bytes for the eight-byte subclass c_1d19d0.
-class c_314710 : public c_a
+// The counted reference owns the shared out-of-line registry teardown.
+// These slots reuse the existing registry operations on the common prefix.
+class __declspec(novtable) motion_reference_314710 : public c_reference_a9f20
 {
 public:
+ virtual unsigned int v1(char *buffer, unsigned int size)
+ { return ((c_a *)this)->c_a::v1(buffer, size); }
+ virtual void v2(char const *name) { ((c_a *)this)->c_a::v2(name); }
+ virtual void *v3() { return &g_480120; }
+ virtual void v4(dword unused) {}
+};
+// Its vector fields make it 16-byte aligned, which is why the game's 0x1d1540
+// allocates 0x70 bytes for the eight-byte subclass c_1d19d0.
+// Retail table 0x414abc has the five registry slots, two motion tests, and kind.
+class c_314710 : public motion_reference_314710
+{
+public:
+	REFERENCED_NEW_2D88A0(0x26)
 	float radius_squared;
 	byte unknown0c[4];
 	__m128 position_a, rotation_a, position_b, rotation_b;
 	float distance_a, angle_a, distance_b, angle_b;
 	c_314710(hkEntity *entity);
-	s_1d1870 function_3144b0(void *body);
-	s_1d1870 function_314580(void *body);
+	c_314710(s_314320 const *description);
+	virtual void *v3();
+	virtual s_1d1870 function_3144b0(void *body);
+	virtual s_1d1870 function_314580(void *body);
+	virtual long kind() { return 2; }
 	float update_radius_squared(shape_bounds_314650 const *shape);
 	void export_description(s_314320 *description) const;
 	void import_description(s_314320 const *description);
 };
-struct contact_sizes_3155f0 : lane_b_contact_constraint_prefix
-{
-	void get_sizes(lane_b_constraint_sizes *sizes);
-};
-struct contact_sizes_315720 : lane_b_contact_constraint_prefix
-{
-	void get_sizes(lane_b_constraint_sizes *sizes);
-};
+#include "contact_constraint_315510.h"
 #endif

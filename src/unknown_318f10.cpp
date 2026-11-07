@@ -1,31 +1,7 @@
 // @flags /O2 /GL-
 // Contact-id indirection and collection. This is only the accessed storage
 // prefix, not a reconstructed virtual interface or complete object layout.
-#include <xmmintrin.h>
-#include "growable_array_2d91d0.h"
-struct s_contact_point_318f10 { __m128 position, normal; };
-struct s_contact_property_318f30 { unsigned char bytes[0x1c]; };
-struct s_contact_ids_318f50
-{
-	unsigned char *data;
-	long size, capacity_and_flags;
-	void collect(array_2d91d0 *out) const;
-};
-struct s_contact_storage_318f10
-{
-	unsigned char unknown0[8];
-	void *world;
-	long remaining;
-	unsigned char unknown10[0x20];
-	s_contact_ids_318f50 ids;
-	unsigned long unknown3c[2];
-	s_contact_point_318f10 *points;
-	unsigned char unknown48[0x58];
-	s_contact_property_318f30 *properties;
-	s_contact_point_318f10 *point(unsigned short id);
-	s_contact_property_318f30 *property(unsigned short id);
-	void collect(array_2d91d0 *out) const;
-};
+#include "contact_storage_318f10.h"
 // @retail 0x318f10
 s_contact_point_318f10 *s_contact_storage_318f10::point(unsigned short id)
 {

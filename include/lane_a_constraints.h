@@ -1,6 +1,7 @@
 #ifndef LANE_A_CONSTRAINTS_H
 #define LANE_A_CONSTRAINTS_H
 #include "unknown_1efac0.h"
+#include "unknown_0a9f20.h"
 #include "reference_counted_2d88a0.h"
 #include <xmmintrin.h>
 #include "matrix_compare_2da7f0.h"
@@ -45,7 +46,18 @@ struct lane_a_constraint_interface
 	virtual void event_2(hkEntity *);
 	virtual void event_3(hkEntity *);
 };
-class lane_a_constraint : public c_a, public lane_a_constraint_interface
+// Registry virtuals share the counted reference's out-of-line teardown.
+// This interface introduces no intermediate table during destruction.
+class __declspec(novtable) constraint_reference_31b9e0 : public c_reference_a9f20
+{
+public:
+	virtual unsigned int v1(char *buffer, unsigned int size)
+	{ return ((c_a *)this)->c_a::v1(buffer, size); }
+	virtual void v2(char const *name) { ((c_a *)this)->c_a::v2(name); }
+	virtual void *v3() { return &g_480120; }
+	virtual void v4(dword unused) {}
+};
+class lane_a_constraint : public constraint_reference_31b9e0, public lane_a_constraint_interface
 {
 public:
 	void *body_a;
@@ -65,6 +77,7 @@ public:
 	}
 	void export_base(lane_a_constraint_description *description) const;
 	void import_base(lane_a_constraint_description const *description);
+	__forceinline lane_a_constraint() {}
 	lane_a_constraint(lane_a_constraint_description const *description);
 	virtual ~lane_a_constraint();
 	virtual void *v3();
@@ -78,11 +91,13 @@ public:
 	void set_entity_a(hkEntity *entity);
 	void set_entity_b(hkEntity *entity);
 };
-// The empty runtime layer has its own out-of-line destructor. Constructor
-// unwind records target that wrapper, which tail-calls lane_a_constraint.
-class lane_b_rigid_constraint : public lane_a_constraint
+// The abstract runtime layer installs no intermediate table. Its out-of-line
+// destructor is shared by the concrete joints and tail-calls lane_a_constraint.
+class __declspec(novtable) lane_b_rigid_constraint : public lane_a_constraint
 {
 public:
+	virtual ~lane_b_rigid_constraint();
+	virtual void build(lane_a_solver_input const *, lane_a_solver_output *) = 0;
 	lane_b_rigid_constraint(lane_a_constraint_description const *description)
 		: lane_a_constraint(description) {}
 };
