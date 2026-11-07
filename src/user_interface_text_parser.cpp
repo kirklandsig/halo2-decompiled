@@ -258,6 +258,19 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
+// MiniMax E (11-06): no new form, no lower score (32). Retail's head (the raw variant getter with the
+// &g_54e4a0 fallback at the call site, the tag read into ESI, the selector in EAX, the EDI save in the
+// dispatch) reproduces retail's prologue row for row, but our build hoists the twice-used buffer address
+// 0x55c6e4 into EBX: `push ebx` in the prologue and `mov ebx, imm` before the globals test, and those
+// two rows shift every later row by two (54, 173 bytes). Tried this round: the copy's source through a
+// local 54, the translator's argument through a local 54, the tag read after the fallback 54 (the tag
+// still coalesces into ESI and the selector falls to ECX), the fallback as a conditional expression 54,
+// the copy's source cast like the translator's argument 54, the tag read at the call with the copy's
+// source through a local 45 (171 bytes), retail's control flow (the default arm jumping past the
+// translator, one shared copy block) 54 and the same with the tag read at the call 45, and the copy in
+// the then-arm with retail's head 81 (194 bytes). The kept body keeps the address in ESI and
+// rematerializes the join's copy, but saves EDI early and holds the tag in EDX with the selector in
+// ECX; that is the 32 that stands.
 // MiniMax B (11-06): no new form, no lower score (32).
 // MiniMax A (11-05, second round): no new form, no lower score; the switch subject written as an inline
 // `get_game_variant()->field_xcb8724` puts the selector in EAX as retail has it but moves the tag into EBX
