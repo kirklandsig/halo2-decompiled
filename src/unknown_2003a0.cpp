@@ -2382,6 +2382,8 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // score 0 (was 157): matches retail byte for byte.
 // MiniMax C (11-07): the location moved to function scope, its leaf field takes the intersection's store, and the
 // area iterator's address is kept in that field, so the iterator keeps a frame slot of its own as retail's does.
+// Match-only form (kept for the byte match): retail stores the iterator's address and each intersection into
+// one frame slot that nothing reads; the source variable that slot belonged to is not known yet.
 // Earlier 157 (was 275): 1118 bytes against 1122, aligned 4. Left: frame 0x44 against 0x54 (point packs with the area
 // iterator) and the intersection's store with no read. Earlier scores in this note are on the older body.
 // MiniMax R (11-05): no new form, no lower score; retail's frame is 0x54 with the elapsed conversion before

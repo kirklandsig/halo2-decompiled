@@ -1180,14 +1180,13 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 }
 #pragma inline_depth(8)
 
-// MiniMax C (11-07): round 53: no new form, no lower score; the permuter never left its baseline build.
-// MiniMax C (11-07): score 38 (was 49): the count as a local, the direction arms split into `>` and `else if`,
-// and the upper bound copied from `removed` before the `<` correction; the removed index still loads into ESI
-// before EDX, the upper bound stays in EAX where retail keeps it in ECX, and the arms' branches are inverted.
+// MiniMax C (11-07): 38 (was 49), not kept: the gain needs two no-op `downward = false` assignments (a
+// `removed > position` arm and the no-cache branch; without them 371), with the upper bound stored before the
+// lower and the min spelled `removed > position`. No-op statements are kept only with a byte match. The count
+// as a local re-read after the two calls, on main's body alone: 370.
 // MiniMax A (11-05): no new form, no lower score; an else arm that assigns the downward flag false again
 // (retail's second `xor bl, bl` at the merge point) grows the body to 1178 bytes and scores 382.
-// score 38 (was 49): frame 0xc and the whole tail agree; the removed index still loads into ESI before EDX, the
-// upper bound's register (retail ECX) and the direction arms' branch polarity remain.
+// score 49 (was 49): frame 0xc and the whole tail agree; the admission prefix (a `cache_full` bool, retail
 // tests the count directly and loads the removed index into EDX) and the upper bound's register (retail ECX,
 // so the forward copy index takes EAX) remain.
 // Paired range arms 373;
@@ -1483,40 +1482,31 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
-	long count = g_4cf978;
-	long removed = NONE;
-	if (count == 350)
+	bool cache_full = g_4cf978 == 350;
+	long const removed = cache_full ? g_4cf980 : NONE;
+	if (cache_full)
 	{
-		removed = g_4cf980;
 		function_7fd10(removed);
 		function_7fd80(removed);
-		count = g_4cf978;
 	}
 	long lower = 0;
 	long upper = 0;
 	bool downward = false;
 	if (removed != NONE)
 	{
-		lower = removed > position ? position : removed;
-		upper = removed;
+		lower = position < removed ? position : removed;
+		upper = removed > position ? removed : position;
 		if (removed < position)
-			upper = position;
-		if (removed > position)
-		{
-			downward = false;
-		}
-		else if (removed < position)
 		{
 			upper--;
 			position--;
 			downward = true;
 		}
 	}
-	else if (position < count)
+	else if (position < g_4cf978)
 	{
-		upper = count;
 		lower = position;
-		downward = false;
+		upper = g_4cf978;
 	}
 	if (upper > lower)
 	{
