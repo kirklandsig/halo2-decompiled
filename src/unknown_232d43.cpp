@@ -1024,6 +1024,12 @@ struct s_string_buffer
 // (482), the arms negated or swapped 65/65/65/93; each arm with its own score1 format call, or the else arm formatting 0, 99 (483),
 // one combined test with its own format calls 100 (483), the `== 9` arm and else sharing a call 84 (502). All leave 9 in line.
 // `__assume` (fast) at the head or tail of either arm, on the mode or the row, or in a flag form, nine placements 65 each; on the flag itself 100 (485).
+// Round 71 (lane 14, plain; compile-only reproduces this layout at 0.7 s per form): the values loaded under one chain of all seven
+// modes with 2 first, then `if (== 2)` time else `%d`, 96 (471 bytes); a switch with a separate identical arm per case 90 (475,
+// dec/je chain); a switch with case 2 and the six cases falling into the `%d` default 102 (475); the `== 9` else-if arm after a
+// chain whose 7/8 tests are a range 50 (481); the `== 9` arm's loads through byte offsets (to keep the arms apart) 50 (481).
+// Compile-only, all 9 in line: the `== 9` arm's loads reversed, through pointer arithmetic, `(long)(dword)` casts or a row
+// pointer; a separate-arm switch in descending order; a 1/3/4 + 7/8/9 two-arm switch; a 1/3/4/7/8 + 9 switch; speed preference.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

@@ -387,6 +387,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 }
 #pragma function(_ReadWriteBarrier)
 
+// MiniMax G (11-06): no new form, no lower score: our build queries the reference's count_spread first in
+// both spread pairs whatever the operand order (reference-left 65 and 66, a const reference 67), while retail
+// queries the candidate's first; the extra two-byte `mov ebx, esi` and the 514 against 512 byte length
+// follow from that same ordering.
 // MiniMax A (11-05): the reference on the left of the first comparison 65 (only the compare operands
 // match retail; the branch polarity flips and the call order stays reference-first), a named spread for
 // each side 67, both sides as const references 67; nothing gained 8, so the body is unchanged.
@@ -919,6 +923,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // sum follows the order the two counts are declared in, so retail's declaration has the extra count
 // first: swapping the two declarations here gives 35 and would need the call site in
 // src/unknown_07a9a0.cpp to pass (count, groups, player count) instead of its current order.
+// MiniMax G (11-06): no new form, no lower score: the register that carries the player count into this
+// function is chosen at the call site, and retail's caller 0x7e210 (src/unknown_07a9a0.cpp, out of this
+// lane) puts the player count in EAX while our build puts it in EDX; the copy loop, the `rep stosd` fill,
+// the argument rotation and the final clamp all follow from that one difference.
 // score 34 (was 34): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
 // (retail player count in EAX, extra count in EDX) and flow through the copy, fill, call setup and
 // the final clamp's register: our loop temporaries take EDI/EAX (retail EDX/EDI), leaving EDX for the

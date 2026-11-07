@@ -108,6 +108,11 @@ PRIVATE __forceinline void function_294b56(vector3f *arg_0, vector3f *arg_1,
 
 __forceinline void object_get_forward(long object_index, vector3f *forward);
 
+// MiniMax H (11-06): no new form, no lower score; retail's dead store of zero to the speed vector's i
+// (0x29454d, one of three consecutive stores into the slots 0x88/0x8c/0x90) is still missing, and the value
+// retail reads at 0x294a1e for the 0x294050 argument list comes from the slot 0x84 after one push, not from
+// the stored one; in the scaled-centre block ours reloads the scalar into xmm0 where retail reuses the value it
+// already holds, so ours is one instruction longer there and every later slot offset stays off.
 // score 446 (was 523): entry and registers now retail's (first difference +0x72, masked aligned 25 lines; fast check 465 at 3712 bytes, full build 446). Left: retail's
 // dead store of zero to the speed vector's i (0x294552, overwritten at 0x294feb) is missing, 9 bytes, so the walk head gets
 // a pad and every later line is two off; the walk's position and offset vector take each other's homes (position at 0x94,

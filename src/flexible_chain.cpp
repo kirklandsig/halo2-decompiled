@@ -233,6 +233,7 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// MiniMax I (11-06): no new form, no lower score; the stiffness product with the operands swapped keeps 171 and the node position read into its three components gives 220.
 // MiniMax A (11-05): no new form, no lower score; the segment selected before the node 279 (as before),
 // and our segment base takes EDI with the segment pointer in ECX where retail keeps both in EDX, the
 // node-position copy uses EDX where retail uses ECX, and the physics index is masked in EAX before the

@@ -1251,6 +1251,10 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // Round 169 (lane 4, fast with the same list; 0x126df0's file was off limits): duration or curve read once through
 // its own address 24/24; the iterator set up ahead of the NONE guard 58 (205 bytes); the guard folded into the loop
 // condition with the iterator set up unconditionally 58 (205 bytes); the state compared as an unsigned byte 24.
+// Round 71 (lane 14, fast with the same list; both builds already `ret 8`): the loop index renamed sound_index, z_index or
+// a_index and the iterator renamed 24 each; an element local in the body tested and the call kept 24; the element local
+// declared at function scope 24; the state in a one-use byte local 24; the state test through an inline predicate 24.
+// Matched 0x21bd00 gets retail's index EDI / element ESI with a named element that is also read before the inlined call.
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -1759,8 +1763,10 @@ bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_inde
 }
 
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
+// MiniMax G (11-06): no new form, no lower score; the first difference is at +0x2, where retail stores the
+// outer datum index at +0x14 and this build stores it at +0x1c, and the frame is 0x11c against retail's 0x128.
 // MiniMax E (11-05): no new form, no lower score.
-// score 305 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
+// score 304 (was 305): the frame is 0x11c where retail's is 0x128, because the 0xa0-byte sound play
 // state is passed on (this file's view of the detail request stops at 0x90); retail also keeps the
 // playback pointer in EDI where ours keeps it in a slot, and reads each pitch-range loop's count
 // once into a stack slot. The definition, index and ring homes still differ.
@@ -1971,6 +1977,15 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // (each used once, in the creation call) where retail holds NONE in EBX and track_definition in EBP, so track_definition
 // keeps its own slot instead of sharing it with the gains copy. On 248: the range entry's two stores through two getter calls
 // 419 (1939 bytes; the store reloads the pool data, where retail loads it once and forms both addresses before either store).
+// b5O walk (11-06, statement by statement against retail 0x21b0e0..0x21b860): one behaviour fix, kept. The pitch sum is
+// ((range * gain) + playing pitch) + lower bound: retail adds the playing pitch first (0x21b320 mulss, 0x21b325 addss
+// [esi+0x90], 0x21b32d addss xmm0 = lower) and never rounds between them; the unparenthesised form compiled lower
+// first, so the grouping is written out: 305 -> 304, callers/callees unchanged. Every other block agrees with retail:
+// update test and 0x21b070 call, gain approach, controller seed, 0x2000 path (sounds/gains init, ring walk, mask,
+// 0x21b940 argument order, gain store through a dword), replacement path (0x21b870/0x21b940/0x126df0), detail loop
+// (flag tests, the x87 delay sum with no float store before the __ftol2 at 0x21b7b1) and the datum advance.
+// What differs is only layout: 16 scalar slots plus the 0xa0 request in retail against 17 here, because `active`
+// (retail EDI) and the sounds[i] address are spilled; fast check with callers/callees 304 at 1923 bytes.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2012,7 +2027,7 @@ void function_21b0e0(bool update)
 					long definition_index = playing->definition_index;
 					s_looping_playback_definition *playback = (s_looping_playback_definition *)g_4e3b44[definition_index & 0xffff].bytes;
 					s_looping_pitch_modifier *modifier = &((s_looping_sound_tables *)g_51ebd4)->pitch_modifiers[playback->playback_index];
-					real pitch = ((real)modifier->pitch_bounds.upper - (real)modifier->pitch_bounds.lower) * track->gain + playing->pitch + (real)modifier->pitch_bounds.lower;
+					real pitch = (((real)modifier->pitch_bounds.upper - (real)modifier->pitch_bounds.lower) * track->gain + playing->pitch) + (real)modifier->pitch_bounds.lower;
 					c_class_219e90 *controller = controller_get(sound->controller_index);
 					if (controller->definition_index == NONE)
 						random_next(&controller->field_8_4);

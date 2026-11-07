@@ -175,6 +175,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // argument and the 2308-byte length agree.
 // MiniMax A (11-04): no new form, no lower score; the getter's table/result rotation survives the declaration order, the
 // second table read and the nested seat test (117, one point, restored).
+// MiniMax G (11-06): no new form, no lower score: the gap opens at the getter's table/result rotation
+// (ours table EAX and result ECX, retail table ECX and result EAX) and that rotation is fixed by the
+// parameter order of 0xd0590, which lives outside this file.
 // score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // Earlier: retail loads the state table into ESI and the state pointer into EDI, then reuses

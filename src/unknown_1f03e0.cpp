@@ -650,6 +650,12 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
+// MiniMax R (11-06): no new form, no lower score (163); a compile-only probe of the same three-term float sum
+// gives retail's (k + j) + i order when the three products have fresh component nodes, so the
+// state dot's shared ground-normal loads cannot reach that order from the forms the note below records.
+// MiniMax R (11-06): the state dot written i, j, k reaches 162 (the products pair old_up->x with up->x as retail's
+// do); the parenthesized (k + j) + i form of the same dot 176, the parenthesized rotation dot 235, the parenthesized
+// final test dot 235; the one point is below this round's eight-point bar, so the original body was restored.
 // score 163 (was 163): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // Round 219 (lane 3, fast, 0x1e5af0 listed; the arm-order and staged-cross levers that took 0x1f2a80 to 43): `if (!(dot > 0.0f)) axis = *old_up;
 // else rotate = false;` 163; the same as `dot <= 0.0f` 164; fallback stores forward first 186 (1230); up result stored first 196; inactive
@@ -905,7 +911,8 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
 // sides and the low-normal arm's homes remain as noted below.
 
-// score 358 (was 344): 3049 bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
+// score 347 (was 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
+// bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
 // arm, compare direction, field offset (flags 0x14, settings 0x8, speed 0x20, normal 0x8c, damping 0x98, facing 0x9c, flag 0xa8,
 // up 0x100, basis 0x118, velocity 0x124, gravity 0x130, input 0x138, accelerations 0x144/0x148), constant (0.001, 0.234, 5.0, 1.0,
 // 0.5 read from the XBE), callee and argument agrees with retail; what is left is operand/register/stack-slot scheduling (delta and
@@ -914,9 +921,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // (i2 + j2) + k2 for the input length (0x1f0b07-0x1f0b22), (j2 + k2) + i2 for the history change length (0x1f0fe1-0x1f1047),
 // (in.j*side.k + projected.k) + in.k for the low arm's desired.k (0x1f1327-0x1f1337); those three are now parenthesised
 // (343 / 345 / 364 alone, 358 together; the history length costs the 14 points, ours came out (i2 + k2) + j2 before).
-// Not done (outside this function): the low arm's two plane dots go through shape_dot, whose a.k*b.k + a.j*b.j + a.i*b.i also
-// compiles as (i + k) + j where retail (0x1f1202-0x1f12be) sums (k + j) + i; `(a.k * b.k + a.j * b.j) + a.i * b.i` in shape_dot
-// gives retail's order, 347 here with these edits, 0x1f2250 unchanged at 418, 0x1f0450 MATCH. Tried and dropped for the input
+// Done in #1102 (r723, outside this function): the low arm's two plane dots go through shape_dot, whose a.k*b.k + a.j*b.j +
+// a.i*b.i compiled as (i + k) + j where retail (0x1f1202-0x1f12be) sums (k + j) + i; shape_dot is now
+// `(a.k * b.k + a.j * b.j) + a.i * b.i`, retail's order: 347 here, 0x1f0450 MATCH. Tried and dropped for the input
 // length: magnitude3d(input) (0x24590 is exactly retail's block, inlines with the (j2 + k2) + i2 order, 403, 3038 bytes), dot3f 403,
 // length_sq3f 403, six unparenthesised spellings 403, three scalar locals loaded k, j, i reproduce retail's x87 block exactly
 // (3047 bytes) but are steering locals, 568. The (real) on the history sqrt rounds nothing in ours either: both keep the
