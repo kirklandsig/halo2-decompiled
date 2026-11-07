@@ -604,6 +604,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // MiniMax D (11-05): four declaration orders for the u and v scalars and their step and width partners
 // give 274/287/285 against 265; the frame stays 0xa8 against retail's 0xac, so no lower score.
+// MiniMax E (11-06): no new form, no lower score; retail's frame is 0xac against our 0xa8. Retail
+// keeps u at frame +0x50, v at +0x80, the u step at +0x94 and the v width at +0x9c, ours keeps u at
+// +0x48, the u step at +0x80, the v width at +0x88 and v at +0x90, and retail keeps the state width
+// in a slot of its own at +0x3c where ours keeps the vertex pointer. Declaring v before the u step,
+// with retail's statement order kept, and moving the state width out of the inner scope both give
+// the same code and the same 250.
 // score 265 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Earlier: Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
 // dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing

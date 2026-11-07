@@ -1316,6 +1316,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Round 74 (m3 lane 10, all plain; caller 0x7afd0 and 0x93aa0, 0x92ef0, 0x92d10 checked): on the one retail-order switch (control 217, 420 bytes, 0x7afd0 3): 0x92ef0 declared in the order its callers set its registers up, (kind, address, link), with definition,
 // declarations and every call 236 (404, 0x7afd0 6); (address, kind, link) 236 (404, 0x7afd0 6); `default: return;` as the switch's first label 217; case 10 first 217; case 10 last 220. A harness without the ballast object: `__assume` on the address, the message,
 // the type or `this` at entry or around the lookups, and nesting the lookups under extra tests, left the address's EAX home alone; not representative, so listed only as a lead that block depth alone doesn't look like the cause.
+// MiniMax D (11-06): no new form, no lower score: the message parameter is in esi here and in edi in
+// retail, and the switch saves the other register before the jump table; the connection index in each
+// case block (196) and the two switches merged into one (213) leave the same choice.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

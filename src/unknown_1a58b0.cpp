@@ -669,6 +669,12 @@ void function_1a6d80(void)
 // result compared `!= false` 15 (106 bytes); the permuter (600 s, 65 tries) nothing below 6. Reading: ours
 // gives the count pointer EAX, free once the valid store has used AL, so its load waits for that store;
 // retail's EDX choice means EAX was taken (the return value) when the count pointer was allocated.
+// Round 140 (lane 8, fast): `__stdcall` on the definition 6; the two output parameters renamed so the
+// count pointer sorts first or last 6/6 (no name tie); the valid store embedded in the count store
+// (`*count = (*valid = ..., node_count)`) 6; reference output parameters, the three callers passing the
+// locals, 6; the count read first and the node list as `g_4f0a60 + index` 6 (all same code). A
+// compile-only build (no LTCG: the callee's count in EDI, fastcall arguments) gives retail's tail (valid
+// ECX, count EDX, both loaded before the stores), so the tie follows the LTCG convention around 0x1a71f0.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {

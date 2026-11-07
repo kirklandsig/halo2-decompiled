@@ -80,6 +80,11 @@ union s_6ec80
 // Round 69 (m3 lane 14, fast): a `while (local_15 < 16)` loop with the mask zeroed before the guard 348 (1059 bytes),
 // the same with the mask scoped 348; with the mask scoped: the players walked through a `player++` pointer 228,
 // `(dword)1 << local_15` 225; the mask declared with the top declarations and zeroed where it is 5 (same code).
+// Round 43 (m3 lane 18, fast): on this body a forced-inline active-mask helper called inside the guard 225 (plain
+// inline 287, 940 bytes, not inlined, as listed); an inline out-pointer getter for the 0x4f24/0x4f90 blocks (live
+// and flag test inside, as 0x6e720's lead) 5 (same code), with the mask scoped 225; the guard as two nested ifs
+// with the mask scoped 225; a forced-inline populated-blocks predicate (null tests, mask loop, data test) 226.
+// The scoped forms all give NONE EDI for its whole range and drop the machines pointer's EBX range.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

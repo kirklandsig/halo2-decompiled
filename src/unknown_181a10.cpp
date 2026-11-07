@@ -421,6 +421,10 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // first's flag through the indexed expression 47 both give retail's j, first, i, but also move second to the top and swap the scaled indices (retail second, scaled i,
 // scaled j); with both 47; second's flag indexed 230, both flags 233; first's count in a local 36, with the extra read 42, with the flag 174; contact count local 865;
 // entry pointer for one body 8/8. So one reference fewer on first or one more on j is the right direction; the second group is what is left.
+// Round 78 (m3 lane 1, fast; control 8): the j-loop test as `second->count > j` 10; the i-loop test as
+// `first->count > i` 10; pre-increments 8; const component pointers 8; the contact-loop test as
+// `collector.entries.count > k` 8. Re-measured: first's flag through the indexed expression 47 (669 bytes) with
+// the slots unchanged in this build (first 0x24, i 0x28, j 0x2c; retail j 0x24, first 0x28, i 0x2c).
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -789,6 +793,17 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // frame/home recovery; original names and complete collector restored.
 // N397: Complete scalar origin xzy/yxz/yzx/zxy orders, original then early material output 308/308/308/308/311/311/311/311.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// b5I (11-06) retail walk, statement by statement (0x1822f0..0x1827c6): root walk and 0x2001 property scan, the
+// kind 24 / data / 1..16 clamp exclusion, kind 4 test, component_index test, key adjust (+ next->shape->data * 8 - 8),
+// key clamp, origin (+0x50), distance + radius, fraction test, the kind 24 data decode (shr 0x1d; dec; je), both
+// plane arms (operand orders and 0.0f tests), 0x1ee410 material, the final scale test and result stores: no
+// behaviour difference found. Retail inlines 0x183da0 (get_last) and 0x1cf280 (property 0x2001 scan) at the top, plus
+// one dead second get_last walk (0x18235a), and calls them only in the else arm (0x182776, 0x1827b2), so the top keeps
+// their bodies written out (batch_contact_root / batch_contact_component). Calling the real helpers there instead
+// (query_node_entity, havok_entity_component_index_get) stays out of line: 392 (1200 bytes); index_get alone 368,
+// query_node_entity alone 361, with the dead walk inline 384, without it 404. The else arm calls query_node_entity and
+// the normal publish uses vector3f_assign instead of a (point3f *) cast (same code, 239). `results[key].normal =
+// contact->normal` 272 (1243 bytes), `results[key].position = hit` 340.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
@@ -858,8 +873,7 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 	}
 	else
 	{
-		s_query_node *node = (s_query_node *)((s_node *)second)->get_last();
-		hkEntity *entity = node->type == 1 ? node->entity : NULL;
+		hkEntity *entity = query_node_entity((s_node *)second);
 		real friction, restitution;
 		function_182b90((c_material_shape *)second->shape, entity, &friction, &restitution, &results[key].material);
 		if (entity)
@@ -872,7 +886,7 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 	{
 		results[key].found = true;
 		real_point3d_set(&results[key].position, hit.x, hit.y, hit.z);
-		real_point3d_set((point3f *)&results[key].normal, contact->normal.i, contact->normal.j, contact->normal.k);
+		vector3f_assign(&results[key].normal, contact->normal.i, contact->normal.j, contact->normal.k);
 		results[key].fraction = distance;
 		results[key].index = index;
 		results[key].other_index = other_index;

@@ -1908,6 +1908,19 @@ void function_b7360(long object_index);
 // index in EBP and the actor pointer in EBX, and reads the cs index only after the four
 // register pushes), and the case that returns 2 still spells the value `mov ax,2` where retail
 // uses `xor ax,ax`; the actor local first stays at 487 and the function is unchanged.
+// Walk b4J (11-06), every block against retail 0x258cf0-0x259380 (dispatch tables 0x259384 / 0x25938c /
+// 0x2593a4 / 0x2593fc): the perception test (types 1 and 4 pass), the 0x259e70 byte table (types 1-4, 6-9,
+// 14-19, 21), all 22 jump-table targets (type 11 and out-of-range go to the failure block, 6/12/14/18/21
+// return 0), the 0x25ab50 checks and their order in 17 -> 15/16 and 3 -> 2 -> 1/19, the wait test and the 0x77/0x76
+// updates, the point copy and the 0x40 flag, case 4 (0..3 range, 0xfd/1 flag, 0x1f86a0 on the wait object),
+// cases 7 and 8 (0x26c test, 0xe7|4 and 0xf7|0x14 masks, delay 0.33 and 2.0 read from the XBE, the
+// velocity.forward sum k+j+i and the `> 2.0` test, cos/sin of the unrounded product), the case 10 table,
+// cases 5, 9, 13 and 20 (cccd0 arguments, point copy sizes, store order, the 0x10a bits): fields, widths,
+// conditions, callees, constants and returns all agree with the draft; no behaviour difference found.
+// Left as layout: ours puts `mov ax, 2` inline and `xor ax, ax` last where retail shares the success tail
+// (0x258dc5 and 0x258e15 are reached from both the 15/16/17 and the 1/19 call sites; ours duplicates them) and ends
+// on the failure block; case 13's flag OR is load/or/store (retail `or byte ptr [ecx+0x10a]`). Tried this walk:
+// `bool success;` with `case 11: default: return 2;` 471 (1832, worse); `case 11: return 2;` with the initializer 301.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

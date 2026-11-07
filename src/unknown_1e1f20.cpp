@@ -592,6 +592,7 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax H (11-07): no new form, no lower score; the prologue still differs (retail loads the actor pool into ecx and the byte offset into eax, ours into eax and ebx, with a frame of 0x1c against 0x20) and the memory walk with it: retail walks an entry pointer in ebx with the byte offset in edx, the count in a stack slot and the actor re-derived inside the body, and it reads the slot field twice, while ours keeps the count in ebx, the offset in esi and the slot in a local.
 // MiniMax I (11-06): the actor view inlined at every use (310) and a local copy of the actor
 // index (same code) were tried; the memory loop as a countdown, with the slot read twice and with
 // the fields read through the indexed form gave 268, 286 and 363; no lower score.

@@ -719,6 +719,15 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // query phases/complete lookup phase, byte then Boolean status: 348/348/348/348/478/478/478/478.
 // NOT kept: aliases give no native graph-base/reload repair, Boolean status lengthens;
 // original entire body and byte return producer restored.
+// b3F (11-06) statement walk against retail, no behaviour difference found: through +0x1de the bytes are identical
+// (graph from [this+0x68] & 0xffff, names_resolve, *found = *names, primary lookup, the flags & 2 set 0x400000c retry
+// with found->set, the flags & 4 five-step default-name chain with its found-field stores); the request tail is
+// the same opcode sequence with the same immediates (mode 0x14, class 0x14, type 0x34 sorted-array lookups, urgent
+// loop only, five default groups, then the inheritance loop with count [+0x4c], array [+0x50] stride 0x20, index
+// [+4]); only register homes differ. Retail's final `mov al, [esp+0x13]` is not normalised (0x1ccac3), which is a
+// bool-typed success; `bool success` reproduces that tail but scores 478 (graph in EBP, &mode_count recomputed per
+// group instead of retail's EBX copy), so `byte` stays. Retail also splits the roles: main graph in EBP with
+// &mode_count in EBX for the first five groups, then graph in EBX and &mode_count in EBP in the inheritance loop.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

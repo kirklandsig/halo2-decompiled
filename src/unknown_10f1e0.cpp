@@ -405,6 +405,11 @@ bool function_1d9320(s_1d9240 *slot);
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
 
+// MiniMax b (11-06): 2 with the pair's target name as a two-use local, re-read from the iterator just before the
+// second lookup, and the mask test (bit_vector_test) in nested ifs; not kept: the re-read is a no-op that only
+// steers registers (without it 49; without the local, or the local only in the test, 42). On that form the
+// permuter tried 40 further bodies with no lower score; a graph-index local (2), the mode and weapon reads above
+// the graph lookup (98) and the graph lookup above the two arms (143) do not help.
 // score 37 (was 37): frame 0x104 agrees. Retail tests the visited bit with a mask and still ORs
 // it into memory after computing the word address; with the shift-form test ours gets that update
 // but not the test, and with a mask test (the existing bit_vector_test) the update becomes
@@ -588,6 +593,14 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // frame slot (80, frame 0x108); state copied into a local 135, an opaque call in the loop 21/82, either or
 // both 0xb8d30 calls removed, and 0x142a60 non-naked: order unchanged. In our image the reversed pair (global
 // before stack) occurs only here and in 0x14b6a0; retail never has it.
+// Round 69 (m3 lane 13, fast, all on the held re-read form at 2): the function moved ahead of every tag-table use in
+// the file (diagnostic for the table global's symbol order) 2; the entry graph through graph_tag_get 2; both arms'
+// graphs through it 2; a block-scoped graph local per arm 2, with graph_tag_get 2; `found` declared before the loop 2;
+// the unit lookup folded into the definition read 2; entry and arm graph_tag_get together 2; a tag-table local at the
+// loop top for the two arms' lookups 2; the same local at the walk's entry 147 (frame 0x108); the source name as a
+// two-use local 11; a do/while on `found` with the pair block under `if (found)` 2. Every callee under the loop's calls
+// is matched C (0x142a60 under 0x1d90e0 is naked asm in our source); the re-read and the back-edge order
+// both look like retail's compiler assuming the calls may write the iterator and the table, which our LTCG rules out.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1574,6 +1587,16 @@ long function_cbd50(long unit_index, short weapon_index);
 // argument (no parameter address) 324 (1287 B); if-form with byte depleted/interruptible 330 (1292 B); if-form
 // with the interruptibility test first in the controlling block 330 (1292 B), plus the plain argument 327
 // (1279 B); if-form, plain argument and bool result 367 (1238 B).
+// Round 69 (m3 lane 13, fast; aligned/masked difflib counts in brackets, control [132/49]): a headers local (the pool's
+// data) in the controlled block for both weapon-object reads with the if-form depletion 326 (1292 B) [100/61]: the flags
+// take retail's +0x11..+0x13 slots and entry stores and the first query re-derives the unit through the data, but
+// depleted stays in memory; the headers local at entry (unit read through it) 325 (1286 B, retail's length, EBP data
+// from entry) [120/64], with interruptible declared before depleted 324 (only the entry store order moves), with the
+// controlling field tested directly 325 (same code), with the first depletion as an expression 328 (1293 B) [118/60].
+// On these forms the overlay keeps EBX for the whole body and depleted has no register; retail spills the overlay and
+// splits depleted (memory home for the initial false, BL from the first query on) because EAX (pool) and EDX (index*12)
+// stay live for the second query's fresh data load, which none of these forms reproduce. On the headers-at-entry form:
+// the controlling read before the overlay and name reads 325; the second weapon object through the pool macro 325.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1701,7 +1724,17 @@ bool __stdcall function_110ab0(long unit_index)
 // uninitialised one; a second 900 s permuter search (seed 7) found no better form either.
 // MiniMax H (11-06): the permuter's 300 s search found no better form (reduced 467, full 447, both the
 // baseline); the frame word and the requested-in-EDI lifetime still differ.
-// score 450 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
+// b4D walk (11-06, statement by statement against retail 0x1103a0-0x110aa0, with an emulation of retail's
+// state-switch compare tree over every case constant of both files): no logic difference. The state switch
+// (all 12 groups: interruptible, `requested == 0x600008c ? true : interruptible`, depleted, 0x600008c's
+// requested set, the 0x600008d/e + 0xc000043 + 0xd000042 group, allow, false, default true), the
+// 0xa000010 jump table, the depletion pair (first `<= 0` sets, second `> 0` clears, via the inlined
+// function_cbd50 slot test) and both 11-value requested sets of the overlay switch (overlay 0xb0 bit 4 /
+// depleted) all agree. Changes: `result = interruptible; if (requested == 0x600008c) result = true;`
+// (value set then overridden) is now the ternary, 453 (1793 B, was 450 at 1789 B); the raw +0x14/+0xb0
+// flag tests use the named `channels[0].unknown14` / `channel_9c.unknown14`, same code. Tried:
+// `bool result = true;` with the default arm dropped 483 (1785 B).
+// score 453 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
 // index*12 in EDX so the unit is re-derived for the query; ours keeps the unit in a register.
 // Earlier: this round found no gain - retail keeps the pool pointer live in ECX and the data in
@@ -1878,7 +1911,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		long second = function_cbd50(unit_index, *(char *)((byte *)UNIT_ANIMATION_OBJECT(unit_index) + 0x213));
 		if (second != NONE && *(short *)((byte *)UNIT_ANIMATION_OBJECT(second) + 0x17c) > 0)
 			depleted = false;
-		if (*(byte *)((byte *)state + 0x14) & 0x10)
+		if (state->channels[0].unknown14 & 0x10)
 			interruptible = true;
 	}
 	if (function_0c7070(unit_index))
@@ -1912,9 +1945,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		case 0xe00002a:
 		case 0xe0000c3:
 		case 0x1000006c:
-			result = interruptible;
-			if (requested == 0x600008c)
-				result = true;
+			result = requested == 0x600008c ? true : interruptible;
 			break;
 		case 0x500000a:
 		case 0x5000024:
@@ -1988,7 +2019,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		}
 	}
 	byte overlay_interruptible = false;
-	if (controlling != NONE && (*(byte *)((byte *)control + 0xb0) & 0x10))
+	if (controlling != NONE && (control->channel_9c.unknown14 & 0x10))
 		overlay_interruptible = true;
 	switch (control->channel_9c.unknown08)
 	{
@@ -2575,6 +2606,11 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // Round 69 (m3 lane 14, fast): the fallback lookup assigned inside the NONE test's condition 16 (same code); the sound
 // index stored before the delay 23, first after the memset 24; the definition index stored after the delay 44; the
 // output written through a `long &` reference to the priority parameter 16 (same code).
+// Round 69 (m3 lane 13, fast): the fallback result in its own short local copied to the index after its NONE test 17;
+// the extra arms inverted (defaults under `!extra` first) 29; the request value-initialised (`= s_request_114b60()`)
+// for the memset 105 (272 bytes, temporary plus copy); the default arm's NONE stores chained 16 (same code); the index
+// from an if/else on entry_index with extra copied as an aggregate 16; the request cleared before the 0x114520 query 83
+// (254 bytes); the extra filled before the common fields 85 (228 bytes).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -3107,6 +3143,35 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
 // frame dword (the decision's own byte), BLOCKED-BY 0xe6a20 (contributor; retail passes the +0x14/+0x16
 // words whole), the buffer address re-formed after 0x1c7380, NONE kept in ESI late, the tail's OR order. The
 // request wants a two-name, two-bool record type for the parameter (declared in bipeds.cpp and vehicles.cpp).
+// Walk b3A2 (2026-11-06, statement by statement against 0x111650..0x11205e, fast + align.py): no logic difference
+// found. Checked: the request words (+0, +4, +8, +9), the parent test and its four-way local_4 chain (0x1116f1-0x1117af),
+// every 0xe6b00 out slot (0x1118b4), the switch tree (0xa00001d, 0x9000020, 0x700005c, 0x800001c and the 0xc000043 /
+// 0xd000042 / 0xe0000c2 half) and each case body, the node-offset float code (0x111a13-0x111a43, no x87 and no rounding),
+// the 0x111010 / 0xc7070 tail, the decision (0x111c69-0x111cbb), the 0x10f430 call (pushes at 0x111cf5-0x111d05), the
+// periodic block (0x111d6f-0x111dd8) and the three channel blocks (0x111ddf-0x112037), the 0.267f / 0.1335f constants
+// (0x3e88b439 / 0x3e08b439) and the OR tail. Kept: the node offset through vector3d_from_points3d(&local_22,
+// &local_23->position, &local_19) (retail takes the position pointer once, `add eax, 0x28` at 0x111a1e, then [eax+4],
+// [eax+8]; the written-out subtractions re-add the offsets); a NEW use of that shared inline in this file (visible through
+// globals.h already) for the full check. The fast score reads 621 (was 511) only because the listing is positional and
+// ours now has 701 instructions against 703 (align.py: 113 hunks, ratio 0.779, unchanged).
+// Precision/type findings NOT kept (each needs other files or is a score-only form), with fast numbers on this base:
+//  - 0xe6a20 (called only here, 0x11182a, 0x111ec6, 0x111fce) gets the channels' +0x14/+0x16 words whole, zero-extended
+//    (movzx), not bools: its `active`/`keep` are integers (it only tests bit 0) and the channel fields are words.
+//    With unknown_0a76b0.cpp `long active, long keep` (0xe6a20 stays MATCH), unknown_1c62f0.h `word unknown14; word
+//    unknown16;` and the calls passing the fields raw, together with the two forms below: 345 (branch agent/b3A2-xfile).
+//    `word` parameters alone gave `xor/mov` instead of retail's movzx (624).
+//  - retail's decision byte is its own stack slot (+0x1b, cleared at 0x111c87, set at 0x111cb6) and function_111651
+//    is expanded at all 8 sites: `bool local_30 = false; ... if (local_6 || !local_28) local_30 = true;` gives frame
+//    0x80 and the first 0x165 bytes identical (align ratio 0.78 -> 0.91), `__forceinline` on function_111651 expands
+//    the three calls in the 0x700005c case (ratio 0.93). A flag set in a test and a forced-inline helper are not
+//    behaviour fixes, so they are not kept without a match.
+//  - the channel-clear test as `((local_5 == 0x7000101 && unknown7c == 0x400000c) || local_5 == 0x400000c)` is retail's
+//    threaded branch shape (0x111d14-0x111d33, the ternary always makes a sete); same behaviour, 622 against 621.
+// Left (codegen only): the control pointer is cached in EBX where retail re-reads [esp+0x24] at each block, and
+// retail keeps the `graph_tag_index != NONE && !(flags & 1)` guards of the three channel blocks (0x111e03-0x111e0c)
+// that ours folds into the block's own test; `mov edx, edi` for the s_bit_owner where retail re-forms `lea edx` (0x1119b5,
+// 0x1119ca); local_28 (0x111c69) is computed before the change flag in retail but moving it up costs 684-707 (slot homes
+// swap); the OR order of the tail (0x112045).
 // @retail 0x111650
 bool __stdcall function_111650(long arg_0, long *arg_1)
 {
@@ -3207,9 +3272,7 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
                                     c_animation_channel_node_position_get(&local_2->channels[0], &local_22, 0.0f, (short)local_20);
                                     transform4x3f_apply_point(&local_21, &local_22, &local_22);
                                     transform4x3f *local_23 = function_b8bd0(arg_0, (short)local_17);
-                                    local_19.i = local_23->position.x - local_22.x;
-                                    local_19.j = local_23->position.y - local_22.y;
-                                    local_19.k = local_23->position.z - local_22.z;
+                                    vector3d_from_points3d(&local_22, &local_23->position, &local_19);
                                 }
                                 else
                                     local_19 = *g_4687a4;
@@ -3401,9 +3464,16 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
+// MiniMax b (11-06): no new form, no lower score; the action short's four-byte slot is the whole frame
+// difference, and it can only be a two-byte compiler temporary if 0xe70b0 returns its two-byte result
+// through a hidden pointer in EAX, as retail's 0xe70b0 does (its definition is in src/unknown_0a76b0.cpp
+// and its caller 0xc98a0 is contributor code), so this stays BLOCKED-BY 0xe70b0.
 // MiniMax A (11-04, run 41): no new form, no lower score (44); the frame is still 0x3c against retail's 0x38,
 // which waits on 0xe70b0's return type.
 // MiniMax D (11-01): no new form, no lower score.
+// MiniMax A (11-07, run 54): no new form, no lower score (44); the frame is still 0x3c against retail's
+// 0x38 (the action short keeps a 4-aligned slot and the two bytes under the flags go unused), which
+// waits on 0xe70b0's return type.
 // score 44 (was 44): BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38. Measured from
 // the frame top every slot agrees except the action short (ours 4-aligned below the 4-byte slots,
 // retail 2-aligned with the two flag bytes under it) and the control/definition pair; VC7.1 gives a
@@ -3532,6 +3602,10 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // The channel workspace at function scope 44; `result = force_overlay = false;` after plain declarations 44;
 // `*flag = false;` first, before the unit lookup 79 (669 B); the state looked up before the definition 54;
 // action and overlay declared before the flags with force before result 44.
+// Round 69 (m3 lane 13, plain; --fast still builds any edit at 687 bytes): still BLOCKED-BY 0xe70b0 (its file avoided
+// again). The state looked up before control and definition 55; definition declared before control 52; control declared
+// after state 52; the action short declared before the two flags 44; the force flag declared before the result 44;
+// the `type < 3` test after the state test 84; the set passed directly with no selected-set local 120.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

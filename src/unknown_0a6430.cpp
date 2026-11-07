@@ -51,6 +51,11 @@ PRIVATE byte *update_object_0a6430(long index)
 // in place 45 (553 bytes), through a forced helper with the count first or after 45/48, as a ternary 59, plain inline
 // 113. Diagnostic: a dead load at the 0x100 head gives that block retail's 0x200 shape (index first, EDX object); no
 // count of dead loads gives retail's own 0x100 shape, where only the object differs (ours ECX, retail EAX).
+// Round 71 (lane 14, fast; compile-only reproduces both blocks' shapes but not the call conventions): the 0x200 object
+// folded into the model read 16; a named states pointer for the 0x100 call 16; the 0x100 level as a long quotient local 16;
+// the count declared after the model read 20 (550 bytes); the 0x100 object folded into its compare 16. Compile-only, all
+// identical to ours: the 0x200 lookup through the header form, index-first, or folded into the definition; the 0x100 lookup
+// through the header form or folded; a named short level; the count declared after the object.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

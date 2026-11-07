@@ -633,6 +633,16 @@ struct s_device_machine_view
 };
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+// MiniMax A (11-06, run 52), not kept: 2 (from 34) with MiniMax D's form below, the group flags read
+// through the device-group macro into a word before the machine test and masked into a byte after
+// it, plus `function_value = 0.0f;` first in case 0x1200055f's velocity block (a dead store there,
+// match-only). What is left at 2 is retail's address fold (a lea before the load) where ours loads
+// the word through the combined address, plus the mask instruction retail does not have. A named group pointer gives
+// retail's delayed word load but lands in ESI, not EAX; a dword local for the element address does
+// put the address in EAX but the load then narrows to a byte (115) or the address falls back to
+// ESI (122), and two separate reads of the flags do not merge either (122). Lead: case 0xf00055e
+// also starts its velocity block with `function_value = 0.0f;`, so retail's result may not be
+// zero-initialised at entry; dropping the initialiser needs a store on every other path.
 
 // MiniMax D (11-05), not kept: 2 fast (from 34) with the group flags read into a word before the machine test, masked
 // into a byte (`byte group_flag_bits = (byte)(group_flags & 3)`), and `function_value = 0.0f;` added at the top of case
@@ -641,6 +651,9 @@ struct s_device_machine_view
 // zero store in that case suggests the result is not zero-initialized at entry the way ours is.
 // MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
 // with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
+// MiniMax D (11-07): the flags read in both arms of the machine-flags test plus `function_value = 0.0f;` at the top
+// of case 0x1200055f's velocity block 3, Round 62's form; not kept (a read written into both arms only to shape the
+// load, and a store of the 0 the result already holds).
 // score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
@@ -1106,6 +1119,10 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax A (11-06, run 52): no new form, no lower score (121) - retail keeps the initial velocity in
+// xmm6 and leaves the ramp-down time in memory, ours caches the ramp-down time and pushes the initial
+// velocity; both ramp-down clamps written as if-statements (retail's conditional-store form) score 122,
+// and the permuter was stopped after half an hour without producing a try.
 // MiniMax D (11-05): no new form, no lower score (121); the permuter run was killed at its time limit
 // before it produced any result.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
@@ -1667,6 +1684,23 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
+// MiniMax R (11-06): no new form, no lower score (248); the frame agrees and the registers are pushed in the order EBP, ESI, EDI here and EBX, EBP, ESI in retail.
+// Walk 11-06 (b5P, statement by statement against retail 0x106790..0x106d64, no behaviour difference found): entry
+// (datum, definition = table[def & 0xffff] + 8, state from the +0x12a offset, flags &= ~0x100); the manual power arm
+// (0x106810-0x10689f: 0x107cc0 with previous in xmm0 and &position, velocity = (position - previous) / rate, 0x20 set
+// or cleared, 0x107520, result); the power-group arm (0x1068a4-0x106b70: idle test value/power/velocity/0x80 -> delay 0;
+// channel guard + 0x1c6620; acceleration = 0xcc*pos + 0xd4*(1-pos), speed = 0xc8*pos + 0xd0*(1-pos); 0x100 from
+// acceleration > 0 && speed > 0; delay test with delay_ticks (movsx) * rate >= +0x10c, power == 0, power > value; fabs clamp;
+// 0x11eed0 with wrap = def[0xbc] & 1; event ids 0xf0/0xf8 reached, 0xe0/0xe8 reversal; refresh + advance on change or
+// 0x80); the manual position arm (0x106b7f-0x106bc9); the position-group arm (0x106bd3-0x106cd9, speed +0xc0, acceleration
+// +0xc4, wrap false); the 0x80 tail (type bit 7 -> 0xbd020 + 0x115b10, byte +0xb3 == 0 or index NONE clears 0x80, returns true).
+// Every field, condition direction, constant, callee and argument agrees; all float products and sums are in retail's
+// order (the 0xcc/0xd4 pair and the 0xc8/0xd0 pair are added in retail's order, the 0.0f - speed negation is retail's
+// xorps + subss) and there is no fst/fstp dword rounding point in retail to keep (fabs is the one x87 use, on the
+// velocity copy in memory). What is left (248) is the callee-saved permutation (retail pushes EBX, EBP, ESI, with index * 12
+// in EBX), the result as a stack byte at [esp+0xf] (ours DL), and one dead store retail makes before the power 0x11eed0
+// call (rate into the speed's slot, 0x106aa3). Tried: the rate read once into a local `time_step` for the delay product
+// and the call 334 (frame 0x24).
 // score 248 (was 285): frame 0x20 and the state test as retail; left are the index and index * 12 in EDI/ESI
 // where retail has ESI/EBX, the result in DL where retail keeps a stack byte, and the definition's re-reads.
 // Earlier (285, was 285): our frame is 0x1c and retail's 0x20, and the index, header, state and result
