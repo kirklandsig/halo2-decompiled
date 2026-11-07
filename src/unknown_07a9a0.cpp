@@ -1053,6 +1053,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 }
 // MiniMax E (11-05): no new form, no lower score; the session's EAX home belongs to the caller's
 // declaration, which this lane may not change.
+// w14C (11-06): walked against retail block by block; no behaviour difference. The histogram cells are dwords in retail
+// (0x10 dwords cleared at 0x7e66c/0x7e6a5 with rep stosd, 4-byte inc at 0x7e682-0x7e68f and 0x7e740-0x7e74d); `long
+// histogram[16]` with a memset for each clear recovers retail's frame 0xb4 (machine_ids and the histogram share slots) but
+// scores 844 (2772 bytes). The histogram is never read, so it is not kept without a match. Tried: the add-loop minimum as a
+// three-way type 5/4/other (no effect).
 // score 766 (was 766): the frame is 0xd4 where retail's is 0xb4, the session comes in on the stack
 // where retail passes it in EAX and the output pointer on the stack, and the opening lookup is
 // expanded here while retail calls the matched 0x192e60 out of line.
@@ -1363,6 +1368,7 @@ bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 				out->total_counts[i]++;
 			}
 		}
+		// retail tests the array's address here (0x7e5ff-0x7e607: lea, test), so the division below always runs
 		if (!out->rated_counts) out->averages[i] = NONE;
 		else out->averages[i] /= out->rated_counts[i];
 	}

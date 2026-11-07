@@ -154,6 +154,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // 4 (plain 32), the index first 5, const reference or pointer local for the kind 4/4, const reference for the index
 // 4, getter helper 4/4, the request read once through its own address 4/4. `setting = kind` on both failing arms 4,
 // a byte-width second test of the kind 33 (103 bytes).
+// Round 172 (m3 lane 4, fast): a shared inline controller-voice setter (index, setting) used by 0x8c5b0 as well
+// (0x8c5b0 stays matched): the plain kind read as the selector's argument 30 (95 bytes), the volatile read in
+// the call 23; the setter taking the request 30/23 (plain/volatile); the kind and index read first, then the
+// setter 4 (same code). Original body restored.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

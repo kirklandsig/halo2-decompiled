@@ -367,6 +367,10 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
+// MiniMax E (11-06): score 188 (was 188): no new form lowered it. The byte locals sit two bytes lower
+// than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at
+// esp+0x14 with a jump table where ours tests the mode with branches, and ours is twenty bytes
+// shorter than retail (1632 against 1652).
 // score 188 (was 188): Frame 0x80, prologue and first exit agree; the route test's layout, case 7's stores and the result's home differ.
 // Earlier at 228: Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
 // MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's

@@ -149,6 +149,13 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax E (11-06): score 110 (was 110): no new form lowered it. The location copy after the flags
+// (retail's header order) with the priority before or after the flags gives 140/150 and the flags as
+// ternaries 160; the priority read from the request alone is 109 at 472 bytes, a gain of one, dropped
+// by the review rule, so the original body stays. Still different: retail builds the flag word in EAX
+// with the source loaded before the tag lookup and ours in EDX, retail's object and platform bits use
+// the or/and complement form and ours only or, retail homes the sound pointer at [esp+4] where ours
+// keeps it in EBP, and retail copies the location after the flags where ours copies it first.
 // MiniMax D (11-04): no lower score. With the source in a local declared before the sound lookup our
 // load order is retail's (the tag table's base, the source, then the lookup) and the priority comes from
 // the request byte, but the link still gives EAX to the source and EDX to the tag table's base where retail
@@ -778,6 +785,9 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // distance looked up just before the along test 197 (676 bytes); the length test arms swapped (`== 0.0f` first) 127 (661
 // bytes). Lead: retail's `pop esi; mov al, 1` is what a scheduler gives when the call is taken to define EAX; the 0x1895f0
 // result reaches callers through 0x189400 -> 0x189210 -> 0xc5890 (0x188180 and 0xc58f0 drop it).
+// Round 155 (m3 lane 6, fast with 0x188180): the play call through a void inline wrapper 35; the result flag as a long
+// 169 (657 bytes); the player unit lookup as a ternary 157 (658 bytes); the forward normalized before the position sums
+// 27; the camera-active exit as an enclosing test with the other exit kept 2.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

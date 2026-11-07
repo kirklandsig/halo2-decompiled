@@ -37,26 +37,23 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 	if (fabs(local_0) < 0.0001f) local_0 = 0.0f;
 	return local_0;
 }
-PRIVATE __forceinline real function_29ab92(vector2f *arg_0)
-{
-	real local_0 = magnitude2d(arg_0);
-	if (!(fabs(local_0) < 0.0001f))
-	{
-		real local_1 = 1.0f / local_0;
-		arg_0->i = local_1 * arg_0->i;
-		arg_0->j = arg_0->j * local_1;
-	}
-	else
-		local_0 = 0.0f;
-	return local_0;
-}
+#define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
-PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
-{
-	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
-}
-
-// score 306 (was 306; 345 before): frame 0x64, retail's entry copies and retail's 1863-byte length now agree; saved-direction homes, planar operand order and xmm numbers of the floors remain.
+// b3M walk (11-06), every block against retail 0x29ab90..0x29b2d4: entry copies/0x658-0x678 history shift,
+// actor+0x26c test, 3-D magnitude (k,j,i sum, unrounded fabs test), 0x5d0/*arg_7 scale test, 1f9760 call, planar
+// normalizations (j,i sum), 2922b0 call, 30bf0 == 0 fallback, 0x47c branch, floor/ceiling clamps, 29b2e0 call
+// (+0x290 pointer in EBX), field_50/68/6c/64 arithmetic, -1..1 clamps, 0x656/0x66c/output stores all agree with
+// retail. ONE behaviour difference, fixed: 1f9e70's facing/desired vectors were swapped. Retail pushes &local_15
+// (the +0x290 planar direction, 0x29b0b6..0x29b0be lea [esp+0x28] at shift 0xc = esp+0x1c) first and &local_20 (the
+// new heading, lea [esp+0x3c] = esp+0x2c) second, so arg_4 (facing) = local_20 and arg_5 (desired) = local_15; the
+// callee (0x1f9e70) takes the velocity dot with arg_5. The score is unchanged (306): the compiled pushes now match.
+// The written-out PIN clamp helper became the file-local PIN macro (as bipeds.cpp does) at 306, and the written-out
+// 2-D normalizer became normalize2d_fast from unknown_11cc90.h (already included) at 320 / 1866 bytes (retail keeps
+// the normalizing path as the fall-through, the header helper flips it); written-out form was 306.
+// MiniMax I (11-06): the vector copy order swapped and the magnitude declared early were tried
+// (310, 306); the frame homes of the call result and of the x87 temporary still differ from
+// retail's; no lower score.
+// score 320 (was 306; 345 before): frame 0x64, retail's entry copies and retail's 1863-byte length now agree; saved-direction homes, planar operand order and xmm numbers of the floors remain.
 // Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
 // MiniMax D: the requested direction read through its own address (a stack argument, as
 // retail's) 366, not kept (an address-taken read needs a byte match); the magnitude summed in
@@ -440,9 +437,9 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 		}
 		function_26c180(arg_0);
 		vector2f local_13 = { arg_2->i, arg_2->j };
-		real local_14 = function_29ab92(&local_13);
+		real local_14 = normalize2d_fast(&local_13);
 		vector2f local_15 = { local_3->i, local_3->j };
-		function_29ab92(&local_15);
+		normalize2d_fast(&local_15);
 		local_4 = *arg_2;
 		real local_16 = 1.0f;
 		real local_17;
@@ -467,15 +464,15 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 			local_18 = (1.0f - local_26) * 0.5f * local_20 * 4.0f;
 		}
 		if (local_2->field_4c > local_19) local_19 = local_2->field_4c;
-		local_18 = function_29ab93(local_18, local_19, 1.0f);
+		local_18 = PIN(local_18, local_19, 1.0f);
 		if (!(local_18 > local_17)) local_18 = local_17;
 		vector3f local_27 = local_4;
 		function_29b2e0(arg_0, arg_1, local_3, &local_4, local_18, &local_4);
 		vector2f local_20 = { local_27.i, local_27.j };
 		*(real *)(local_0 + 0x668) = local_18;
-		function_29ab92(&local_20);
+		normalize2d_fast(&local_20);
 		real local_30 = function_1f9e70(arg_0, arg_1, (point2f const *)&local_7,
-			&local_13, &local_15, &local_20, NULL, local_9, false) * local_2->field_50;
+			&local_13, &local_20, &local_15, NULL, local_9, false) * local_2->field_50;
 		*arg_6 = false;
 		if (local_30 > local_16) local_30 = local_16;
 		vector3f local_22;
@@ -500,9 +497,9 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 		local_5.i = local_31.i * local_32 + history->i * history_weight;
 		local_5.j = local_31.j * local_32 + history->j * history_weight;
 		local_5.k = local_31.k * local_32 + history->k * history_weight;
-		local_5.i = function_29ab93(local_5.i, -1.0f, 1.0f);
-		local_5.j = function_29ab93(local_5.j, -1.0f, 1.0f);
-		local_5.k = function_29ab93(local_5.k, -1.0f, 1.0f);
+		local_5.i = PIN(local_5.i, -1.0f, 1.0f);
+		local_5.j = PIN(local_5.j, -1.0f, 1.0f);
+		local_5.k = PIN(local_5.k, -1.0f, 1.0f);
 		*(short *)(local_0 + 0x656) = NONE;
 	}
 	*(vector3f *)(local_0 + 0x66c) = local_5;

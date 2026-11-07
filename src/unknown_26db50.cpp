@@ -766,6 +766,21 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // ring++)` 266 (1057 bytes, frame 0xd4: no countdown, so retail's countdown is real); in the rotation helper the component
 // copies before the dot 90 (same code), the rows' first two terms swapped 90 (same code); the direction copied after the
 // sine and cosine 101 (aligned 114); the pathfinding pointer as a ternary 217 (aligned 101). Body unchanged at 90.
+// MiniMax B (11-06) round 2: no new form, no lower score (90); the ring value read into a float
+// local inside the ring block and used for the distance gives the same code (90), the same local
+// also used for the angle gives the same code (90), the angle's ring term named on its own gives
+// the same code (90), the distance with the ring's float product widened by an inner cast gives
+// the same code (90), the distance written with the ring and the radius both cast to double
+// scores 266, and the float local used for the distance and the angle together scores 259; the
+// ring is still converted with `fild` where retail converts it to float, keeps that float in a
+// stack slot and reloads it as double: the compiler folds the float local back into the integer
+// conversion, so the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (90); the ring value is still converted to
+// double with `fild` where retail converts it to float, keeps that float in a stack slot and
+// reloads it as double, and the rotation block still uses a different register set from retail's
+// (retail keeps the three components in registers, ours spills one); naming the ring value
+// once for both the distance and the angle scores 259 and the distance term written with the
+// inner cast scores 259, so the body is unchanged.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

@@ -58,7 +58,8 @@ PRIVATE __forceinline real function_29e2ea(point3f const *arg_0, point3f const *
     real local_0 = arg_1->x - arg_0->x;
     real local_1 = arg_1->y - arg_0->y;
     real local_2 = arg_1->z - arg_0->z;
-    return local_1 * local_1 + (local_0 * local_0 + local_2 * local_2);
+    /* retail adds (y*y + z*z) first, then x*x (0x29e316-0x29e32c) */
+    return local_0 * local_0 + (local_1 * local_1 + local_2 * local_2);
 }
 PRIVATE __forceinline void function_29e64d(s_29e0f8 *arg_0, point3f const *arg_1)
 {
@@ -78,7 +79,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
 // MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
-// score 390 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// score 391 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Round 64 (fast; masked aligned count in brackets, base 390 [182]): NOT kept, scratch recipe reaching 155 [11] at retail's 1596 bytes with every stack
 // slot right (aligned 428 -> 22): (1) group as `long`, tested on the field read and copied after: `if (bit_vector_test(visited_groups, entry.field_0))
 // continue; long local_15 = entry.field_0;`, set through bit_vector_set: 398 [161] (read beside a local copy, match-only; without it the rest stays 435-461);
@@ -366,6 +367,14 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH380: Actual incoming origin/record/output pointer bindings made immutable, seven subsets,
 // then all with the packed-reference binding: 390/390/390/390/390/390/390/390. NOT kept: no native
 // selected/default/root-home recovery; original parameter bindings, helpers and full body restored.
+// b2M (11-06) statement-by-statement walk against retail 0x29e0f0..0x29e729: every test, bound, field offset, stride, callee,
+// argument and exit agrees with the source. One behaviour fix: the SSE squared distance (0x29e2f0-0x29e32c) adds
+// (z*z + y*y) + x*x, so the helper is x*x + (y*y + z*z); the old y*y + (x*x + z*z) rounded the sum differently (390 -> 391).
+// Float rounding points agree: fstp dword at 0x29e400/0x29e4a8 (pass-start and visited length), 0x29e51f (second pair length,
+// reloaded), 0x29e54d (total); the first pair length stays unrounded on the x87 stack. The x87 square sums canonicalise
+// whatever the written order (three per-site orders tried, same code), so the per-site x87 association stays 390-level.
+// Width only, no behaviour: retail compares the nearest point as a word (0x29e60c, 0x29e680, 0x29e687): short local_2 392;
+// local_29 as short/word/long 447/447/436 (1563/1579 bytes), unsigned char 391; indices stay below 32 (one-word visited bitmap).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

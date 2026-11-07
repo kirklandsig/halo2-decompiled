@@ -425,6 +425,9 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // move every vertex out. Local helpers don't spend the budget (`inline` instead of forceinline on the two lookup helpers, the
 // full getter body, the color helper, the inline 0x137550 getter: 440 each), so a consumer that emits no code is still missing.
 // A 600 s permuter run on this form, 45 tries, best 2.
+// Round 171 (lane 4, fast): the blend-state and texture-stage arguments by enum name 2 (same code, kept); the alpha
+// constant through D3DCOLOR_ARGB 2 (same code, kept); the reference casts dropped from the first texture-stage calls 465
+// (2236 bytes; 0x254200 loses its match); the bitmap getter as if/else 524; the render-target getter as a ternary 2.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
@@ -484,8 +487,8 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			#pragma inline_depth()
 			function_14390(0, (s_type_7ba8e9 *)local_1, 0.f);
 #pragma inline_depth(0)
-			function_0222d0((D3DRENDERSTATETYPE)0x3e, 0);
-			function_0222d0((D3DRENDERSTATETYPE)0x3f, 0x302);
+			function_0222d0(D3DRS_SRCBLEND, 0);
+			function_0222d0(D3DRS_DESTBLEND, 0x302);
 #pragma inline_depth()
 			memset(&g_484f68, 0, sizeof(g_484f68));
 			g_484f68.PSCombinerCount = 1;
@@ -508,11 +511,11 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			D3DDevice_End();
 			function_14bc0((short)g_4858b8, 0, true);
 			function_14f60(0, 0x1d);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)0, 3);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)1, 3);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)3, 2);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)4, 2);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)5, 1);
+			function_0224f0(0, D3DTSS_ADDRESSU, 3);
+			function_0224f0(0, D3DTSS_ADDRESSV, 3);
+			function_0224f0(0, D3DTSS_MAGFILTER, 2);
+			function_0224f0(0, D3DTSS_MINFILTER, 2);
+			function_0224f0(0, D3DTSS_MIPFILTER, 1);
 			#pragma inline_depth()
 			D3DDevice_SetTextureStageState(0, D3DTSS_BORDERCOLOR, 0);
 			#pragma inline_depth(0)
@@ -521,11 +524,11 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			function_0224f0(0, D3DTSS_MAXMIPLEVEL, 0);
 			function_0224f0(0, D3DTSS_COLORSIGN, 0);
 			function_0224f0(0, D3DTSS_ALPHAKILL, 0);
-			function_0222d0((D3DRENDERSTATETYPE)0x3e, 1);
-			function_0222d0((D3DRENDERSTATETYPE)0x3f, 0x303);
+			function_0222d0(D3DRS_SRCBLEND, 1);
+			function_0222d0(D3DRS_DESTBLEND, 0x303);
 			byte local_6 = (byte)(long)(function_1392a9(g_4b9ed8) * 255.f);
 			memset(&g_484f68, 0, sizeof(g_484f68));
-			g_484f68.PSConstant0[0] = (((((dword)local_6 << 8) | local_6) << 8 | local_6) << 8) | local_6;
+			g_484f68.PSConstant0[0] = D3DCOLOR_ARGB(local_6, local_6, local_6, local_6);
 			g_484f68.PSCombinerCount = 1;
 			g_484f68.PSTextureModes = 1;
 			g_484f68.PSRGBInputs[0] = 0x8010000;
