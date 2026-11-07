@@ -888,6 +888,16 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax A (11-06): no new form, no lower score; the whole difference is the colouring of the two values
+// the callee 0xac050 takes: retail loads the selected identity pointer into EAX and the requested rank
+// into ECX, ours keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the
+// call, which also costs two bytes and shifts every later jump; the trial of a local copy of the rank
+// (`long requested = rank;` used in the four places of the block) compiles to exactly the same bytes, so
+// the copy is propagated and the parameter stays promoted.
+// MiniMax A (11-06): no new form, no lower score; retail loads the selected identity pointer into EAX and the
+// requested rank into ECX, ours keeps the pointer in ECX and the rank in EAX and inserts a copy before the
+// removal call; the rank's store is what gives the rank EAX, and dropping that store or storing a constant
+// instead changes the behaviour.
 // MiniMax H (11-06): no new form, no lower score; the whole difference is still the register colouring of the
 // two values the matched callee 0xac050 takes: retail loads the selected identity pointer into eax and the
 // requested rank into ecx so the callee needs no copy, ours keeps the pointer in ecx and the rank in eax and
