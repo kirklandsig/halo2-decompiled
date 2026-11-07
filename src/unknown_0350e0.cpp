@@ -794,7 +794,6 @@ long function_35510(long format)
 	}
 }
 
-extern byte *g_4858c4;
 extern byte g_485a77;
 real g_48597c[36];
 extern byte g_4858bc;
@@ -814,33 +813,6 @@ void function_1bd50(void *state);
 bool __stdcall function_16610(long tag, long stage, long wanted_pass, long variant,
     long target, bool copy);
 
-// score 26 (was 26): retail reloads g_4858c4 after function_1bd50 (no saved register, no
-// push/pop esi); ours keeps it in ESI across the call. Tried: a local for the first read,
-// a local for the tag (both 26). Also tried (all 26): an early return, the test in a bool local,
-// a pointer to the +0xe0 field for the tests, `NULL`/`true` spellings of the arguments, a local for
-// the second tag read after the call. Retail never takes g_4858c4's address, so its reload means
-// retail's 0x1bd50 counts as writing it (the same symbol as a global 0x1bd50 stores, a structure?).
-// Round 186: a store to g_4858c4 added to 0x1bd50 as a diagnostic gives retail's reload exactly, so the
-// cause is outside this body: g_4858c4 and g_485a58 (which 0x1bd50 writes) look like members of one
-// retail storage struct, BLOCKED-BY g_4858c4's definition (src/unknown_030290.cpp). Tried (all 26 unless
-// noted): `_ReadWriteBarrier()` after the call; the signature test nested in its own `if`; the fields
-// read by index (`((long *)g_4858c4)[0x38]`); `&& tag` for `!= 0`; the flag stored after the call 31.
-// Round 109 (all 26): ours already reloads `[esi+0xe0]` after 0x1bd50, only the g_4858c4 symbol stays cached;
-// the signature tested first; the test as `!(... == NONE || ... == 0 || ... != 'shad')`; a shader local assigned
-// again from the global after the call; an early return on a tag local; an inline predicate on the shader.
-// Round 138 (all 26 unless noted): inline tag accessor at all three reads; all three tests nested; tag validity
-// inline taking the value; g_4858c4 defined in 0x1bd50's file; fields read through const views. Diagnostic: a call
-// to an opaque symbol gives retail's reload (2, only that call's target and argument register differ). One storage
-// struct over g_4858c4 and g_485a58 with macros: no result, the compiler front end did not finish on the first two
-// including files. That lead needs another spelling and src/unknown_03f2b0.cpp's declaration.
-// Round 70 (lane 10, fast): 0x1bd50 storing four more distinct globals (diagnostic) 26, so the reload is not a
-// mod-set size limit; retail never takes 0x4858c4's address. Tried: the tag in a local for the tests 26; NULL and 1/0
-// spellings 26; a const shader pointer for the tests 26; the call's tag named after 0x1bd50 26; an early return 26.
-// The storage merge also needs src/unknown_03f2b0.cpp's declaration changed with the other declaring files.
-// Round 171 (lane 4, fast): a typed shader-header view with the 'shad' constant 26; the character constant alone 26;
-// the zero test first 26 (same code); the flag set after the call 31; the non-fast constant upload 61 (129 bytes).
-// A storage aggregate from 0x4858c4 to 0x485a5c takes in about 25 globals over seven files, among them
-// src/unknown_03fdf0.cpp (g_485950).
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -2494,6 +2466,11 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // 27/27 (only the scaler's separate input and output pointers give the fold); three compound statements 27; the
 // reciprocal named before the scale call 27; the length test inverted 27. Diagnostic: 9/16/30 dead locals ahead of
 // the sampling 27 each (symbol count does not move it).
+// Round 94 (lane 9, fast): the j fill stored as a vector3f field (diagnostic) 27; a vector3f pointer for the three
+// fills and normalize3d 142 (965 bytes: the k product turns scale-first in place, j unchanged); diagnostic grid of
+// that pointer per fill: only j and k both through it give retail's j form (141, k then differs); a typed 0x20-byte
+// record (direction, second vector, range, last) 27; the record pointer as `real *` plus `i * 8` 27;
+// normalize3d on `&motion[0]` 27; normalize3d on the re-derived record address 256 (970 bytes).
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2742,9 +2719,9 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// MiniMax D (11-06, run 49): no new form, no lower score (113); the input list still rides in ebp from the entry, retail spills it and reloads it at the loop top and keeps the total on the stack, the index in ebx and the cursor in ebp.
-// score 113 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
+// score 113 (was 113): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
 // top) and the total on the stack, the index in EBX and the cursor in EBP; ours holds the total in EBP.
+// Earlier 113 (was 132). MiniMax D (11-06, run 49): no new form, no lower score (113); the input list still rides in ebp from the entry, retail spills it and reloads it at the loop top and keeps the total on the stack, the index in ebx and the cursor in ebp.
 // Earlier at 132: frame 0xa0 and loop constants agree; first +0xb saves
 // Round 55 (plain): the three sibling 0x33400 forms 130; with const list/table reads 130; with a bool object
 // flag 127 (551 bytes; retail stores a long 1/0, so a width artifact); with list read first 130; with the shape
@@ -2866,6 +2843,11 @@ s_cached_input_list g_5234e8[4];
 // M396: Immutable original view/total/handle producers, subsets 1/2/4/3/5/6/7,
 // then complete immutable observation/result graph: eight at fast 146 (control 146, full 113).
 // NOT kept: no native list/total spill or output/index allocation repair; original body restored.
+// Round 94 (lane 9, plain checks; the fast image builds 0x31590 and 0x3e9c0 differently here, so earlier fast-only
+// counts are not comparable): `!(depth >= 0.0f)` (sibling 0x33400's clamp) 111; with the sibling's depth sum order
+// 109 (gain under the bar, not kept); a streaming output pointer (`++result` per accepted light) 113; the index test
+// and the query/capacity test as nested ifs 113; as `continue` guards 113; the 109 form with `&g_5234e8[view]` at
+// both calls 118 (556 bytes); the 109 form with a once-read `list` local 133.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3899,6 +3881,9 @@ bool function_1321f0(long index, s_1321f0 const *data);
 // table/definitions spill homes remain exchanged.
 // DL267: Direct decoded output; actual callback signatures; native node cursor; emission-only handle; sole exit; enabled callback lifetime; readonly node; readonly leaf records: 152/4/170/228/4/30/4/4.
 // NOT kept: no byte match or eligible native repair; original executable source restored.
+// Round 94 (lane 9, fast): the handle's record field from `record_index` 127; the callback type read once into a
+// `type` local for both arrays 61; the definition index as `long` from a signed-char read 161; the table read
+// ahead of the callback arrays 21; the handle as a named aggregate type at file scope 4. Body restored.
 // @retail 0x41640
 void function_41640(void)
 {
@@ -5121,8 +5106,8 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
-// MiniMax D (11-06, run 49): no new form, no lower score (138); retail still calls function_14b60 with the flags in eax, still stores 1 into the slot after function_15680 in both arms of pass 3, and still loads g_485898 into a dead eax in the three passes with normal_cull false.
 // score 138 (was 138): earlier 210; the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
+// Earlier 138. MiniMax D (11-06, run 49): no new form, no lower score (138); retail still calls function_14b60 with the flags in eax, still stores 1 into the slot after function_15680 in both arms of pass 3, and still loads g_485898 into a dead eax in the three passes with normal_cull false.
 // the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
 // variable so retail's `shr eax,N; and al,1; mov [esp+0x14],al` appears. Still different: retail
 // calls function_14b60 with flags in eax (the stub declares it __stdcall, 4 stack args), retail
@@ -5222,6 +5207,12 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F397: Separate byte result with bool/char/signed-char/short/word/int/long/dword gate
 // formals: 138/138/138/138/138/138/138/138. NOT kept: target ties; bool changes shared
 // caller to 307 without repairing native raw-byte publication. Original helper/body restored.
+// Round 94 (lane 9, fast): 0x14b60 written in place of its stub (eax flags, three stack arguments) 268 (991 bytes:
+// 0x14b60 and 0x14ac0 get a 4-byte pad and this function realigns with `and esp,-8`; 0x14ac0, 0x31c80 lost); with
+// its depth parameter address-taken 268. Diagnostic: 0x14b60 without its 0x14ac0 call gives no pad and 132 here
+// (0x423c0 160), so the alignment demand comes through 0x14ac0, not D3DDevice_Clear. Shared pass helper: the clear
+// test nested under `mode == 1` 138; a `sources` pointer for the flags and g_467138 138; 0x44370's mask-gated
+// flag test 141. 0x44370 is retail-inlined here but lives in an /Ob1 file, so it stays out of line.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
