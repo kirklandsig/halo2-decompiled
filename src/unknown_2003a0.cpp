@@ -2007,6 +2007,10 @@ void function_204450(long definition_index, long squad_index)
 bool function_1e11b0(long actor_index, bool active);
 
 #pragma inline_depth(0)
+// MiniMax H (11-07): no new form, no lower score (64); the squad address is still kept in EBX
+// where retail keeps the parameter in EBP and the squad address in ESI (spilled into the slot above
+// the argument), the loop is still rotated with its test at the bottom, and the flag store still
+// reads the byte into a register where retail updates the byte in memory and reads it back.
 // score 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
 // retail's spilled ESI pointer and EBP handle. The common loop head and
 // full-width return mask still differ.
@@ -2901,6 +2905,10 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// MiniMax H (11-07): no new form, no lower score (50); the first call still reloads the squad
+// index from its stack home where retail keeps it in EBP (`mov eax, ebp`), which shifts the later
+// jump targets. A copy of the parameter in a local (plain, unsigned, or scoped to the block) is
+// copy-propagated back and compiles to the same reload (50).
 // MiniMax C (11-05): no new form, no lower score: the first call still reloads the squad index from its stack
 // home where retail keeps it in EBP.
 // score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
