@@ -293,6 +293,9 @@ const long g_43e8e8[4] = { 32, 64, 128, 256 };
 // push deeper and the copy count rides in EDI; retail keeps the size in ebp across the copy and
 // reads the callback from its stack slot late, which the callee's register choice fixes here.
 // MiniMax E (11-01): the copy count read at the copy site instead of before the allocation
+// MiniMax G (11-06): no new form, no lower score: the allocation callee takes its out pointer in ESI here and
+// in EBX in retail, and 0x15b10 is in src/unknown_0158f0.cpp, so the frame stays one push deeper and the
+// copy count rides in EDI; the convention cannot be changed from this file.
 // score 58 (was 58): this round found no gain - the allocation callee takes its out pointer in ESI here and
 // in EBX in retail, and 0x15b10 is in src/unknown_0158f0.cpp, so the convention cannot be changed here.
 // scores 76 (was 62); no lower score.
@@ -2548,6 +2551,10 @@ struct s_render_transform_record
 // whole body (111), so the region stays around the 0x4cb80 call alone.
 // MiniMax D (run 37): no new form, no lower score; the second table_entry_data lookup has to
 // stay out of line like retail's, and that is decided in src/unknown_023540.cpp (not my file).
+// MiniMax G (11-06): no new form, no lower score: retail calls table_entry_data out of line for the
+// transform table while we inline it, and that helper's `__inline` is declared in
+// src/unknown_023540.cpp, so it cannot be changed from this file; a function pointer to the helper
+// rebuilds the body (133).
 // score 51 (was 51): this round found no gain - retail calls table_entry_data out of line for the
 // transform table and we inline it, which also makes our body eleven bytes longer; that helper's
 // inline-ness is decided in src/unknown_023540.cpp.
@@ -5548,6 +5555,9 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
     function_4ede0(tag, context, first, second, third, handle, material);
 }
 
+// MiniMax G (11-06): no new form, no lower score: the score still rests on the load-bearing volatile tag
+// local; without it the compiler rebuilds the body (117), computing the block before the tag gives 111 and
+// the two-element tag table gives 115, so the body is unchanged.
 // score 54 (was 54): this round found no gain - the score rests on the volatile tag local; without it the
 // compiler rebuilds the body (117), computing the block before the tag gives 111 and the two-element tag
 // table gives 115, so the body is unchanged.
@@ -5820,6 +5830,9 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
 // function is then 21 bytes short with a frame four bytes too big; retail adds the horizontal offset in
 // 32 bits where ours adds it in place in 16 bits, and only a long offset forces that (128).
 // MiniMax D (run 37): no new form, no lower score; the bitmap pointer declared first, the two rectangles swapped and the casts removed all give 60, a short top gives 99 and the clamps written as if/else give 187, the four clamp values as longs or declared first in the outer scope give 122 and 113, and retail's frame leaves sixteen bytes below the rectangles where ours leaves twelve, which the type and the order of the clamp locals do not move.
+// MiniMax G (11-06): no new form, no lower score: a `long` for the left edge gives retail's frame slots
+// and its branchy clamps but grows the frame to 0xb0 (177), and reordering the helper's fields gives
+// 76 and 161, so the body is unchanged.
 // score 60 (was 75): the two rectangles sit four bytes higher in the frame than retail's and the
 // bitmap pointer shares the clip's slot instead of being spilled; the clip branch clamps the left
 // edge with a conditional set instead of retail's branch.
