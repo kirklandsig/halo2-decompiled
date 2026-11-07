@@ -907,6 +907,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax S (11-07): no new form, no lower score; the crosses declared apart, declared at first use or
+// declared at the top of the body give 114, the two cross calls swapped give 124 and the goal copy by
+// components gives 120, so the body stays; the rotation products, the side-dot order and the exit copies differ.
 // MiniMax R (11-05): no new form, no lower score; writing the two turn-block crosses out with retail's
 // differing third terms gives 140 at retail length (the rotation block is re-generated), so the body stays.
 // score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
