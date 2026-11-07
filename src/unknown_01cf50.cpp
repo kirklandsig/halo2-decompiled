@@ -56,7 +56,6 @@ byte g_485a77, g_55e6bd;
 short g_4858c8;
 long g_4e6978, g_4e697c;
 long g_485a78[2];
-extern byte *g_4858c4;
 extern byte g_485a76;
 #include "texture_stage_storage.h"
 #include "sampler_state.h"
@@ -4660,7 +4659,9 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
 
 #define PIN(value, minimum, maximum) ((value) < (minimum) ? (minimum) : ((value) > (maximum) ? (maximum) : (value)))
 
-// score 585 (was 580; the fast image says 612), 1652 bytes against retail's 1700 (the fast image builds 1636). Round 122: 0x144f0
+// score 498 (was 585): round 94 put g_4858c4 in the reset storage aggregate (include/reset_storage.h), so it is
+// reloaded after calls as retail does; 1696 bytes against retail's 1700; g_4858c8 and g_4858b8 below remain separate.
+// Earlier 585 (was 580; the fast image says 612), 1652 bytes against retail's 1700 (the fast image builds 1636). Round 122: 0x144f0
 // matches; both its calls pass retail's values (fallback 0, fallback index 1: `xor ebx, ebx`, `push ecx` with ECX 1).
 // Round 1 of #1066: the 24/25 else branch now calls function_14f60(stage, 1) (retail jumps to the case 2 block, which
 // does `mov edi, ecx` with ECX = 1; it used to pass the surface); case 8 follows case 13 as in retail's layout;

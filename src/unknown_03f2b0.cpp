@@ -495,7 +495,6 @@ void __stdcall function_44040(long cell, short mask)
 }
 #pragma inline_depth()
 
-extern byte *g_4858c4;
 long g_485a2c, g_485a64, g_485a68;
 
 // @retail 0x34060
