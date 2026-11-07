@@ -1714,7 +1714,7 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    callback with its value */
 // MiniMax R (11-06): no new form, no lower score (9); the flat sum keeps (i + j) + k here for every term order and
 // operand orientation and for the array-member spelling too, while a compile-only probe of the same expression
-// (build/mm/probeR4.cpp) gives retail's (k + j) + i order when the three products have fresh component nodes.
+// gives retail's (k + j) + i order when the three products have fresh component nodes.
 // score 9 (was 13): the cross is now retail's; left: the two VEHICLE_GET lookups' SIB order (2), the three
 // reloads after the overlay-kind loop (3) and the forward-speed sum's first two products (4).
 // Earlier at 13: Graph-loop scope fixes constructor/load scheduling; header SIB forms, join reload
@@ -2814,7 +2814,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    facing, banked into its turns */
 // MiniMax R (11-06): no new form, no lower score (730); the permuter (600 s, 40 tries, seed 5501) gave best 709 differing
 // instructions against the 711 of the body, and its variants swap call arguments, so the file was restored; the column
-// alignment (build/mm/chk_f2360_cols.txt) puts the first differences at the frame (0x100 against 0xfc), the top slot
+// alignment puts the first differences at the frame (0x100 against 0xfc), the top slot
 // (esp+0x108 against esp+0x104) and the first float home (esp+0x20 against esp+0x34).
 // score 730 (was 676): Frame 0x100 versus retail 0xfc; scalar/vector homes and force/trig scheduling still differ; 3219 bytes (retail 3244).
 // Walked against retail 0xf2360-0xf3009 statement by statement (v1D, 2026-11-06): the arithmetic, offsets, conditions, callees
@@ -3184,7 +3184,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // MiniMax R (11-06): no new form, no lower score (1000); the frame is 0x78 against retail's 0x74 and the homes
 // between them are not one uniform shift (the parameter reloads sit 4 apart, the pair at esp+0x64 0x10 apart and the
 // first float home 8 the other way), so it is not a single missing local; the column alignment of this round
-// (build/mm/chk_f3010_cols.txt) finds no earlier split to work from.
+// finds no earlier split to work from.
 // score 1000 (was 1052): Statement-by-statement walk against retail (2026-11-06, v1B) found no behaviour difference
 // (field offsets, the 29 constants, condition directions, callee arguments, loop shapes and local types agree).
 // Retail takes |pitch_slope|, |roll_slope|, the yaw |arg| and the |target| / |steering| pair in the yaw test by

@@ -651,7 +651,7 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 }
 
 // MiniMax R (11-06): no new form, no lower score (163); a compile-only probe of the same three-term float sum
-// (build/mm/probeR4.cpp) gives retail's (k + j) + i order when the three products have fresh component nodes, so the
+// gives retail's (k + j) + i order when the three products have fresh component nodes, so the
 // state dot's shared ground-normal loads cannot reach that order from the forms the note below records.
 // MiniMax R (11-06): the state dot written i, j, k reaches 162 (the products pair old_up->x with up->x as retail's
 // do); the parenthesized (k + j) + i form of the same dot 176, the parenthesized rotation dot 235, the parenthesized
