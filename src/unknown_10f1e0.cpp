@@ -405,6 +405,11 @@ bool function_1d9320(s_1d9240 *slot);
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
 
+// MiniMax b (11-06): 2 with the pair's target name as a two-use local, re-read from the iterator just before the
+// second lookup, and the mask test (bit_vector_test) in nested ifs; not kept: the re-read is a no-op that only
+// steers registers (without it 49; without the local, or the local only in the test, 42). On that form the
+// permuter tried 40 further bodies with no lower score; a graph-index local (2), the mode and weapon reads above
+// the graph lookup (98) and the graph lookup above the two arms (143) do not help.
 // score 37 (was 37): frame 0x104 agrees. Retail tests the visited bit with a mask and still ORs
 // it into memory after computing the word address; with the shift-form test ours gets that update
 // but not the test, and with a mask test (the existing bit_vector_test) the update becomes
@@ -3436,9 +3441,16 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
+// MiniMax b (11-06): no new form, no lower score; the action short's four-byte slot is the whole frame
+// difference, and it can only be a two-byte compiler temporary if 0xe70b0 returns its two-byte result
+// through a hidden pointer in EAX, as retail's 0xe70b0 does (its definition is in src/unknown_0a76b0.cpp
+// and its caller 0xc98a0 is contributor code), so this stays BLOCKED-BY 0xe70b0.
 // MiniMax A (11-04, run 41): no new form, no lower score (44); the frame is still 0x3c against retail's 0x38,
 // which waits on 0xe70b0's return type.
 // MiniMax D (11-01): no new form, no lower score.
+// MiniMax A (11-07, run 54): no new form, no lower score (44); the frame is still 0x3c against retail's
+// 0x38 (the action short keeps a 4-aligned slot and the two bytes under the flags go unused), which
+// waits on 0xe70b0's return type.
 // score 44 (was 44): BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38. Measured from
 // the frame top every slot agrees except the action short (ours 4-aligned below the 4-byte slots,
 // retail 2-aligned with the two flag bytes under it) and the control/definition pair; VC7.1 gives a

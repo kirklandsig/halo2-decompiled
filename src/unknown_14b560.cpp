@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax H (11-07): no new form, no lower score (43); the datum address is still computed in EBX
+// where retail computes it in EDI and the two are used the other way round, and the root walk is
+// still the out-of-line 0xbaf80, whose source sits in src/unknown_0bad50.cpp.
 // score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // MiniMax E (11-06): no new form, no lower score; retail inlines the 0xbaf80 root walk with its entry
 // test, while our build keeps that walk out of line because another file pins it, so the player and
@@ -2871,6 +2874,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax H (11-07): no new form, no lower score; the globals pointer and the iterator's index
+// array still swap registers, and the two globals are still read in the other order, so the
+// reduced image still scores 193.
 // score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
 // `globals` local builds to the same bytes in the full build (611 = 611, first difference
 // +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the

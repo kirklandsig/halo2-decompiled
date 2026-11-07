@@ -499,6 +499,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 	return local_0;
 }
 
+// MiniMax S (11-06): no new form, no lower score (89): the source permuter (one run stopped, one 420 s
+// with 37 tries) found nothing below 89; the 0x110ab0 argument register, the object-plus-radius operand
+// order and the length and projection homes still differ.
 // MiniMax G (11-05): a split guard with the unit index in a one-use local reaches 19 (the object lookup first and the short request store first), but a one-use local is match-only, so it and the forms without it (guard split 89, guard reorder 296, nested heading length 1263) are reverted; moving the object lookup ahead of the two vector copies reproduces retail's prologue (the global load at +0x15 and the lookup before the copies) but gives 94, because the register rotation (retail EAX/ECX/EDX against ours ECX/EDX/EAX) and the tail homes still differ; no new form, no lower score.
 // MiniMax G (11-06): the object-plus-radius sum named as a local 222, the two addends of that sum in the
 // other order 89, and the object lookup moved before the two vector copies 94; no lower score.

@@ -175,6 +175,11 @@ void c_widget::v15(c_widget *widget)
 // Round 65 (m3 lane 13, fast): `__assume((dword)widget != 1)` after the step 2, after the entry and the step 2; an empty do-while at the loop head or after
 // the step 2/2; guarded do-while with `break` 2; `self` and `candidate` locals 2; a forceinline presence helper as the condition 2; `found` flag with
 // `widget && !found` 56 (106 bytes).
+// Round 140 (lane 8, fast; the base helpers in screen_widgets.h changed, checked with v17, 0x2c8f56 and
+// 0x2c8fb4): first_sibling testing a `previous` local 41 (92 bytes; 0x2c8f56 41); next_wrapped as
+// `if (!next) result = first_sibling(); else result = next;` 2; as `if (!next) return first_sibling();
+// return next;` 2 (0x2c8f56 12); first_sibling as an empty-body for loop 2, as a guarded do-while 2.
+// Header restored. A compile-only build keeps `test eax, eax; mov esi, eax` in every helper form.
 // @retail 0x22ebc3
 void c_widget::v16()
 {

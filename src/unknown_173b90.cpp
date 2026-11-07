@@ -1641,6 +1641,7 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
+// MiniMax C (11-06): no new form, no lower score; the availability flag is still computed with neg/sbb/inc where retail clears BL before the view test and sets it with a branch, and retail still re-reads the view global after the 0x17afd0 call.
 // score 47 (was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
 // availability clear/production and the post-attachment view observation remain.
@@ -1875,6 +1876,10 @@ bool function_17afd0(long effect_index, long value);
 // != NONE && !query(view)` reassigned 125 (492); `query(view) ? false : true` 47 (same code); retail's shape with
 // the view global at each use and same_view declared at function scope 138 (510); same_view defaulted false at
 // the arm's top and reassigned whole 138. The branchy availability always hands BL to same_view.
+// MiniMax B (11-06): no lower score (the availability produced by a branch 135, by a negated long 131,
+// moved after the view load 125, the view reloaded after the attachment query 110, the same-view result at
+// function scope 47); the availability is still cleared before the second definition call and the query
+// result still goes through a negated long where retail tests the result and branches.
 // MiniMax E (11-06): no new form, no lower score.
 // The availability result moved after the view load 125, after the definition
 // call 138 and before the effect index 138: each move flips the NONE constant

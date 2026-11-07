@@ -103,6 +103,7 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// MiniMax D (11-06): no new form, no lower score; the entry still loads the index before the radius constant and the loop still forms the vertex address before its x store; this round the x store as a long copy through the array element with the other components through the pointer (112), the x store through the array element with the point helper kept for x, y and z (119), the x store through the array element with y and z through the pointer (112) and the x store through the array element with y and z through the point3f view (112) are all worse, because only the single helper call keeps the y and z stores as float copies and it forces the x store through the materialised pointer; the x, y and z stores written out one by one through a point3f view of the vertex pointer are worse still (106), because the view needs a stack home.
 // MiniMax I (11-06): no new form, no lower score; the entry still loads the index before the radius constant and the loop still forms the vertex address before its x store; this round the x store through the array element with the other components through the pointer (112), all four components through the array (144) and the x store beside the point helper (119) are all worse, and the permuter (480 s) found no candidate.
 // MiniMax G (11-05): no new form, no lower score. The entry still loads the index before the radius
 // constant and the loop still materialises the vertex address before its x store. This round: the
@@ -220,6 +221,10 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // cause is that `first` and `second` are address-taken locals that cross3f takes by reference, so
 // they need a home. The caller 0x23a220 passes its arguments in retail's order, but its definition
 // lives in another lane's file, so nothing here was changed.
+// MiniMax S (11-06): no new form, no lower score. Retail still sets up the polygon query with the point in
+// EBX and the polygon array in EDX and the count and epsilon on the stack, so the call to 0x23a220 needs
+// that argument order; its definition (src/unknown_239b80.cpp) is another lane's file, so the order cannot
+// be changed here, and every call site of it keeps the four arguments on the stack.
 // MiniMax S (10-31): no new form, no lower score. Retail keeps the shape's edges and the ray direction
 // in xmm1-xmm7 and computes the three edge vectors in registers, storing only four floats; ours spills
 // every component of every difference to the stack and re-reads them, so the frame is 0x84 against 0x90.

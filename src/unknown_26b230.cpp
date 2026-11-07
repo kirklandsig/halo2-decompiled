@@ -1839,6 +1839,14 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax I (11-06): the walk's reload is what shifts the rest of the listing: the shared helper takes
+// the iterator by pointer, so the pool is re-read from its field into ecx at every step, where retail
+// keeps the pool in ebx across the scan and reloads it after the bit scan clobbers ebx; three extra
+// instructions before the compare, and the body stands at 89 (fast) and 87 (plain).
+// MiniMax I (11-06): the in-arm compare re-measured at 126 (fast) against this body's 89 (fast); besides retail's
+// three homes and its x87 compare it carries the best score in xmm0 across the walk as retail does,
+// and what still differs is the walk's pool (the stack slot and ecx against retail's ebx) and the
+// selection's copy in edi.
 // score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
 // MiniMax B (11-03): no new form, no lower score.
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
