@@ -2,6 +2,16 @@
 
 The newest entry comes first.
 
+## 2026-11-07: 10506 functions match
+
+```
+matched 10506 of 11326 game functions (1970593 of 2786206 bytes, 70.73%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+3 new matches, with `0xc2d00` lost (its match comes and goes with the whole-image /GL build, a loss the maintainer accepted on 11-05):
+- @BrassMonkey71's #937, @coldspear's #946: `0xdc0a0`, `0x1f7c70` and `0x26fe90` match.
+
 ## 2026-11-06: 10504 functions match
 
 ```
