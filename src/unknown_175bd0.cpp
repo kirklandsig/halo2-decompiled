@@ -1882,6 +1882,19 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// MiniMax A (11-06): no new form, no lower score; retail's head takes the definition (its third stack
+// argument) into EAX and the location index from there, keeps the effect in EBP and the particle system in
+// ESI, reads both colours before the 0x1751d0 type query (colour A in a frame home, colour B in EDI, the
+// tint in BL) and pushes the multiplied value straight from EAX; ours keeps the particle system in EDI
+// across the query, reads both colours at the 0x175a80 call site and spills the multiplied value to a
+// byte home before the push, so every later jump is shifted; the frame is 0x40 against retail's 0x44.
+// Retail's argument order is the one we already use (the scale in xmm0, then the effect, the particle
+// system and the definition).
+// MiniMax A (11-06): no new form, no lower score; retail keeps the first colour in a frame home at frame+0 and
+// the second in EDI, so both colours are read before the type query; reading them into two locals after the
+// location setup gives 184 and, with the two declaration orders exchanged, 185 (the frame grows to 0x48 and the
+// location index leaves the argument home); a permuter run on this function finished with no candidate (5 tries
+// in 315 s, best the baseline, no confirming build).
 // MiniMax E (11-06): no new form, no lower score; the colour query and zone-base scheduling still keep
 // the frame at 0x40 and both colours spilled.
 // score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
@@ -2323,6 +2336,14 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax A (11-06): no new form, no lower score; retail reloads the object's index from the effect after
+// the 0xbadc0 validity call, and that reload appears only when the compiler cannot prove that call
+// read-only, so the difference cannot be produced from this side: the body of 0xbadc0 is in another file
+// this lane may not edit (BLOCKED-BY 0xbadc0).
+// MiniMax A (11-06): no new form, no lower score; the only difference is the object's index, which retail reads
+// again after the 0xbadc0 validity call while ours keeps it in a register across that call; the body of 0xbadc0 is
+// in src/unknown_0bad50.cpp, which this lane may not edit, so the reload cannot be produced here
+// (BLOCKED-BY 0xbadc0).
 // MiniMax E (11-06): no new form, no lower score: the only difference left is the object's index,
 // which retail reloads after the 0xbadc0 validity call; that call's body lives in
 // src/unknown_0bad50.cpp, which this lane may not edit.
@@ -3061,6 +3082,15 @@ void __stdcall function_17a380(s_effect_datum *effect)
 	}
 }
 
+// MiniMax A (11-06): no new form, no lower score; the same cause as 0x178c80: retail reads both colours
+// before the type query and keeps the particle system in ESI with colour B in EDI, ours keeps the system
+// in EDI and the datum in ESI, and retail's frame is 0x54 against our 0x4c; the recorded best form (the
+// spawn cursor with a long mode) reaches 89, a gain of four that the gate drops, and the per-call mode
+// read reaches 108 while the matched caller 0x176f60 falls to 25.
+// MiniMax A (11-06): no new form, no lower score; retail's frame is 0x54 with the definition in a frame home, the
+// first colour spilled and the second in EDI, and the location mode read again for each call, while ours keeps
+// the mode in a frame slot and the type object in ESI; the mode read for each call gives 108 and the matched
+// caller 0x176f60 falls to 25, and the spawn-cursor form reaches 89/90, a gain under the gate.
 // MiniMax E (11-06): the location mode read live from the definition reaches retail's 0x54 frame but
 // scores 108, the same form with the particle system declared before the effect 119 and with color B
 // read at the call 110; no new form, no lower score.

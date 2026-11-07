@@ -724,6 +724,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // in memory and fuses the zero-extension into the compare's load. On the word mask (77): the playing bit from the team
 // local 83 (383 bytes), one function-scope team local 77, the flag test ahead of the present update 83 (392 bytes), the
 // iterator declared first 77, a word playing accumulator 100 (391 bytes).
+// MiniMax D (11-06): 21 (main 32), not kept: the present compare cast to a word (`(word)present_teams !=
+// old_team_mask`, the old mask a word local) and the team bit in a one-use local before the present update. Retail
+// compares the present teams as a dword against the zero-extended mask (`movzx eax, cx; cmp esi, eax`), so the
+// word compare is not retail's; without the local 24, without the cast 77, and the flag test as an early
+// `continue` alone stays at 32.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2282,6 +2287,10 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // and no other placement does (one load before the index read, ahead of the bounds test or inside the
 // old-index guard changes nothing): the lookup wants one more temporary allocated between those two tests.
 // Matched 0x1e06b0 and 0xe3700 test and look up the same way with a field of an object pointer.
+// Round 97 (m3 lane 12, fast): plain object and iterator locals, no grouping aggregate 33 (frame 0x10, the
+// object's store goes); `for (object = next; object; object = next)` as in 0x3d380 8; a named object copy of
+// the grouped member as in 0x15aad0 8; the iterator's object index read before the old-index test 8 (the
+// load stays after the release); index declared at function scope 8.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
@@ -2675,6 +2684,10 @@ void function_15b980(bool skip_event)
 void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics, long field, long delta, bool by_team);
 
+// MiniMax D (11-06): no new form, no lower score (44); retail sets up the 0x1e9df0 arguments after the
+// zero and the NONE (or ecx,0xffffffff / xor eax,eax / mov edx,ebx) and reloads g_4e6948 through EAX
+// instead of holding it in EBX, which also rotates the per-case delta registers; both come from the
+// callees' file (0x1e9df0 in src/unknown_1e9700.cpp, 0x1967d0 elsewhere), so the blockers stand.
 // score 44 (was 44): frame 0x10 agrees; BLOCKED-BY 0x1967d0 and the 0x1e9df0 call's setup, as the older lines below describe.
 // MiniMax C (11-06): no new form, no lower score; the blockers stand — 0x1e9df0's register-argument
 // setup lives in src/unknown_1e9700.cpp and retail's reload of g_4e6948 after the 0x1967d0 calls
@@ -5333,6 +5346,10 @@ void function_36580(void);
 void function_36880(s_short_rectangle const *rectangle, color4f const *color);
 void function_161420(long player_index, real alpha);
 
+// MiniMax D (11-06): no new form, no lower score (2); the only difference is still the order of the
+// player copy (mov edx, ebx) and the x87 argument store (fstp dword ptr [esp]) in front of the
+// 0x161420 call. This round a braced named power local (real and float), the power computed before
+// the test, a cast on the power and a cast on the index all measure 2 and leave the copy first.
 // MiniMax C (11-06): no new form, no lower score; a named power local still leaves the player copy
 // (mov edx, ebx) ahead of the x87 argument store (fstp dword ptr [esp]), where retail stores the
 // power argument first.

@@ -179,6 +179,11 @@ PRIVATE __forceinline real function_217c41(real arg_0)
 // DH378: Paired real-angle identities (two orders), offset identities and absolute-offset identities 25 each;
 // first/second/both compound offset subtraction producers 25/25/25; existing paired magnitude API 26.
 // NOT kept: no exact match or improvement; original complete body, helper, inputs and includes restored.
+// Round 97 (m3 lane 12, fast, on the fabs-at-each-use 2 form): the two hoisted loads follow each constant's first mention in
+// the loop body (a probe use of the scale ahead of the first `1.0f /` flips them to retail's order, one after it does not), so
+// retail's body reaches the scale first. Division by a named maximum 20 (one reciprocal from 1.0, 1.0 still first); the scale
+// as `/ 32767.0f` 2; named maximum then `1.0f / maximum` 2; `coordinate * scale * (1.0f / maximum)` 20 (the constant is
+// reassociated to the end, 1.0 still first); scaled stick locals ahead of the angles 562 (1988 bytes).
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

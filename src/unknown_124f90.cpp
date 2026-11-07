@@ -1244,6 +1244,10 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax H (11-07): no new form, no lower score (94); the fade block still holds the running
+// difference in another register (ours xmm2, retail xmm3) and still divides by the fade-in time in
+// the other form (ours multiplies by its reciprocal).
+// MiniMax R (11-06): no new form, no lower score (94).
 // MiniMax D (11-06, run 49): no new form, no lower score (94); the first arm's sum still differs (retail loads the gain into a register and adds the interpolation into it), the register rotation (inverse, elapsed, 1.0, fade-out) still differs and the gain is still carried differently into the last arm.
 // score 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
@@ -2462,6 +2466,11 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax H (11-07): no new form, no lower score (17); the sound set index is still narrowed to a
+// short here (`movsx ebp, ax`) where retail keeps the full value (`mov ebp, eax`), because the
+// callee 0x219070 only reads the low half of that parameter, and the tail still stores the flag
+// byte and the start time in the other order.
+// MiniMax R (11-06): no lower score (17); the movsx at the 0x219070 call comes from 0x218f50 and 0x218f10 returning short (both byte-exact, src/unknown_218ac0.cpp) where retail's caller copies the dword, and declaring them long here scores 80 and leaves the call unresolved.
 // MiniMax E (11-05): no new form, no lower score; merging the two set-chunk calls into one site with the
 // range and permutation indices in named locals gives 193 (short indices) and 192 (long indices) - our frame
 // drops to 8 against retail's 0xc. Reverted.
@@ -2814,6 +2823,11 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax H (11-07): no new form, no lower score (96); retail narrows the first parameter to a word
+// and scales it by nine where ours narrows a later parameter and scales that one, the result still
+// lives in a stack byte in ours and in al in retail, and the frame is 0xc against retail's eight
+// bytes.
+// MiniMax R (11-06): no new form, no lower score (96).
 // MiniMax D (11-06, run 49): no new form, no lower score (96); retail still keeps the result in al (set at the entry, cleared through bl on the failure path and set again after the commit) with an eight-byte frame, ours keeps it in a stack byte with a twelve-byte frame, and retail's failure block still follows the success path.
 // score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
@@ -3897,6 +3911,12 @@ struct s_128ca0
 // pin joins remain.
 // B440: Existing gain operators at raw nested/argument/inner/update producers
 // 262/262/262/269; parallel branches only 316, with raw nested/inner/update 332/332/321.
+// MiniMax H (11-06): score 167 (was 222): the caller's gain and the location's unknown08 are added
+// to the playback's gain through the decibels type (s_decibels' operator+, as 0x21e330's reverb sums do),
+// and the scale is read once into a real local. The frame is retail's 0x494 and the scale stays in xmm2.
+// Not kept: reading the pitch bounds as a pair through &pitch_lower (local_18[0]/[1]) gave 164, three
+// points, under the bar. Still differs: the pitch result and the argument hold swapped stack homes
+// ([0xc] against [0x10]) and the two clamp joins in the tail differ.
 // Raw/complete operators with native reused scale 167/252; adjacent pitch bounds too
 // 164/249. Four pitch/gain/raw-result role-name forms on that graph each 164. Native
 // 0x494 frame and early location load recover, but pitch/gain homes and pin joins differ.
@@ -3945,9 +3965,11 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 	local_3.field_30 = 0;
 	memset((byte *)&local_3 + 0x34, 0, 0x444);
 	s_sound_playback_parameters *local_4 = &SOUND_GLOBALS_DEFINITIONS->playback_parameters[local_2->playback_index];
-	real local_5 = ((real)local_4->pitch_upper - (real)local_4->pitch_lower) * local_1->location.scale + local_1->pitch + (real)local_4->pitch_lower;
-	long local_6 = decibels_add(local_1->location.unknown08, decibels_add(*(long *)&local_1->gain, arg_1));
-	local_6 = function_1251e0(local_2, local_6, local_1->location.scale);
+	real local_17 = local_1->location.scale;
+	real local_5 = ((real)local_4->pitch_upper - (real)local_4->pitch_lower) * local_17 + local_1->pitch + (real)local_4->pitch_lower;
+	s_decibels gain_sum = *(s_decibels *)&local_1->location.unknown08 + (*(s_decibels *)&local_1->gain + *(s_decibels *)&arg_1);
+	long local_6 = *(long *)&gain_sum;
+	local_6 = function_1251e0(local_2, local_6, local_17);
 	function_12a1b0(arg_0, (s_looping_track_sound *)local_1, arg_2, (s_looping_channel_properties *)&local_3);
 	s_sound_pitch_range *local_7 = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[local_2->pitch_range_base + local_1->pitch_range_index];
 	s_sound_permutation const *local_8 = &SOUND_GLOBALS_CHUNKS->permutations[local_7->first_permutation + local_1->permutation_index];

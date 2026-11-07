@@ -109,6 +109,14 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // lookup inside 9 on this body, 68 (254 bytes) on the x, y, z-read helper; on the x, y, z-read helper with
 // the scale at each use (37) `1.f != face->scale` 37 (243 bytes), one combined declaration 37 (same code);
 // stores i, k, j there 29 (retail's code with the step and zero registers swapped).
+// Round 172 (m3 lane 4, fast): the x, y, z-read helper with `face->scale` at each use (37) is retail's
+// code but for the zero/z registers (zero XMM2, made after the products, z XMM3; retail XMM3/XMM2), and
+// z read first there moves only the row product order (47). z read in the entry block with x/y read in
+// each arm 43 (239 bytes); the grid stores through vector3f_assign on this body 9 (same code); the else
+// arm ordered x, z, y 56 (244 bytes: z splits from the scale, zero/scale/z XMM2/3/4) or z first 56; z
+// read in the entry block with the arm z, x, y and the scale local 50 (zero/scale/z XMM2/3/4), with the
+// scale at each use 39 (XMM2/4/3); on the x, y, z-read helper, x, y and a zero named before the stores
+// 68 (254 bytes) and the face index named first 68 (254 bytes).
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {

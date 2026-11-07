@@ -155,6 +155,13 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // before it. Binding the address inside the guarded block lets MSVC sink `push ebp` into that
 // block and re-encode the stack slots: null-initialised, redeclared, the result pointer moved
 // into the block and the address taken at the call all score 8.
+// MiniMax E (11-07): forms tried, none lower (2 unchanged; the engine pointer bound after the guard,
+// in an else arm and in a nested block scope all score 8, because MSVC then sinks the save of ebp into
+// the guarded block and the frame slots shift; the field address taken in the creation call is 2);
+// a reference to the engine member keeps the save of ebp at the entry but loads the address before the
+// branch (6), the same reference bound inside the guarded block sinks the save (8), and the engine
+// pointer bound before the parameters call loads the address at the top (6); a permuter run reached
+// its time limit without a measured variant.
 // score 2 (was 2): the engine pointer is loaded into ebp before the branch that
 // skips the creation; retail loads it after the branch. Direct creation with
 // the pointer bound after the call or in its argument 8; initialized error 2;
@@ -166,6 +173,16 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // E_FAIL-initialised status tested after the guarded creation 39, with the field
 // address in the creation call 42, with the stored result 26; plain store
 // through the result pointer 36.
+// MiniMax D (11-06): no new form, no lower score: binding the engine pointer after the guard still sinks
+// the push of ebp into the guarded block, and the permuter run on this function reached its time limit
+// without a measured variant.
+// Round 78 (lane 10, fast): ours forwards AL to the result on the guard-fail edge (its `je` lands one
+// instruction past retail's `mov al, [esp + 0xb]`; with the engine bound after the guard it lands on
+// `pop ebx`, two past, and `push ebp` sinks: 8). The natural form (no volatile, goto or result pointer;
+// nested SUCCEEDED ifs, `result = true` after the ports loop) already gives the result retail's spill
+// slot, but copies a `mov al, 1` exit into the success path: 42 (284 bytes). On it: a flat chain of three
+// SUCCEEDED blocks 42; `result = true` ahead of the ports loop 79; `result = SUCCEEDED(error)` 42;
+// `result = port == NONE` 42; `__assume(xhv != NULL)` before the return 50.
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
@@ -1249,6 +1266,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax E (11-07): no new form, no lower score; the named per-channel contribution and the value and
+// contribution locals of the earlier rounds leave the flag in bl, and the flag's own declaration order
+// only moves the score to 93, under the review threshold.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // MiniMax R (11-04): forms tried - the flag declared before the cursor and the total 93 (the channels argument leaves eax, and the gain is under the review threshold, so the original body is restored), the shared helper rewritten with an early return 94 here but 0x56160 falls to 25, the contribution written constant-first 94 (the same bytes) and a pointer-indexed walk 128, a nested four-by-four group loop 94 (it reproduces retail's unrolled four-channel block, its memory counter and its prologue, but the identity flag stays in bl), the same nest with a separate group cursor 112 and 118 and with the flag first 111 (the channels argument leaves eax), the declaration orders on that nest 93, 99 and 108, and the fast permuter 47 tries with no lower score.
 // MiniMax D (11-01): no new form, no lower score; the declaration order may not change, and the
@@ -1409,6 +1429,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // M400: Shared membership seeded from its active byte, bool/byte/signed-char/short/word/
 // long/dword/int storage: 94/94/94/146/146/133/133/133. NOT kept: every form
 // raises shared-user scores; original false-seeded helper and target body restored.
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1462,6 +1483,8 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax E (11-07): no new form, no lower score; the earlier round's 24 statement orders of the
+// capacity, size, written and mask statements leave the result in EAX with its own epilogue.
 // MiniMax h (11-06): no new form, no lower score: all 24 orders of the capacity, size, written and mask statements were measured and the current one is the best (134); every order with the mask first (135-171) moves the player onto the stack and breaks 0x56380, so retail's mask in EBX, its literal zero store and its single epilogue stay out of reach.
 // score 134 (was 134): the retained mask is a plain local and the pre-loop statements run capacity,
 // size, written, mask: the bit (EBP), size (EBX), count (ECX), the frame order i/written/kept/size/bit
@@ -1585,6 +1608,7 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // retail's schedule order (kept, written, capacity, entry size) 137 (445 bytes, player on the stack, 0x56380 13); the
 // player bit declared at function scope ahead of the result 134 and entry size/written/kept declared at the top of the
 // active block 134 (both same code). Restored.
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -1724,6 +1748,8 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax E (11-07): no new form, no lower score; the gap needs the two session getters and 0x53bb0,
+// which live outside this file.
 // MiniMax h (11-06): no new form, no lower score: the remaining gap needs the two session getters and 0x53bb0, which live outside this file.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
@@ -1813,6 +1839,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // M400: Immutable original membership/local/remote bindings, all seven subsets, then
 // all with immutable input/player-bit bindings: 85 each. Original bindings restored;
 // no readiness/query boundary or remote residency change; all calibrated controls unchanged.
+// MiniMax D (11-06): no new form, no lower score: retail reads the flag byte before the mask and passes
+// the address of the settings member, an address the comparison cannot map, so the call setup differs
+// in more than the register order.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3606,6 +3635,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax E (11-07): no new form, no lower score; the channel and the cursor homes follow the earlier
+// rounds' forms, none of which reaches retail's channel in ebp with the cursor in edi.
 // MiniMax h (11-06): no new form, no lower score: with the packet cursor advanced on its own the member word takes ebp over the channel (164), and retail's channel in ebp, advancing cursor in edi and stride in esi stay out of reach together.
 // score 139 (was 139): channel/cursor/count registers and route homes differ;
 // Round 19: unchanged; retail keeps the channel in ebp from entry and the cursor in edi, ours
@@ -3799,6 +3830,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // DH385: Packed recipient-word memcpy/memmove on original/cursor and scalar/bulk-route
 // graphs: 139/188/164/187/152/183/172/179. NOT kept: no gain or native channel-home recovery;
 // original word read, live counts, packet induction, route stores and whole body restored.
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

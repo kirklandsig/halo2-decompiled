@@ -2,6 +2,7 @@
 #include "unknown_0259d0.h"
 #include "unknown_030290.h"
 #include "globals.h"
+#include "reset_storage.h"
 #include <math.h>
 #include "normalize3d.h"
 #include "vector_products.h"
@@ -68,7 +69,6 @@ void __stdcall function_31f50(long index, point3f const *origin, vector3f const 
 
 /* ---- globals ---- */
 #define BIT(n) ((bool)((g_4ba014 >> (n)) & 1))
-byte *g_4858c4;
 long g_4ba134;
 
 /* the vector scaled and rotated into the camera's frame (no translation) */
@@ -510,6 +510,7 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // N396: Complete ordered epsilon outcomes, direct/exhaustive/default-false/default-true
 // bool and byte producers: eight at 195. NOT kept: no equality or gain; original complete body
 // restored, native inverse homes and the second-transform X/Z spill remain.
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

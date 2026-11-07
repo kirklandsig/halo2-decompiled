@@ -1737,6 +1737,7 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
+// MiniMax S (11-06): no new form, no lower score (4): the collision flag's byte home stays at +0x13 for char, uchar, byte, const bool, ternary and duplicated-flag spellings; naming the guard comparison, the range comparison or the flag moves the flag into a register (261 each), and so do nested ifs for the guard with an early return (244) and with the else block duplicated (753). The permuter (600 s) found nothing below 4.
 // MiniMax H (11-04): no new form, no lower score: the collision flag's byte home stays at +0x13 even when its
 // declaration moves to the function top (it keeps the top byte of the first four byte pack, so retail must
 // create three boolean objects before it), and the product keeps the hit fraction in the register: swapping
@@ -1747,6 +1748,9 @@ struct s_collision_result_25f7b0
 // alongside an unrelated edit in src/unknown_16bd10.cpp, not kept).
 // MiniMax D (10-31): the same named hit-fraction local again 22 (a one-use local, not kept without a match).
 // MiniMax G (11-04): no new form, no lower score: the collision flag's byte home stays at +0x13 and the product keeps the hit fraction in the register.
+// MiniMax B (11-06): the hit fraction read into a named local before the distance is computed scores 2,
+// but that local holds a value used once and the same form was recorded as not kept on 10-31, so the
+// original body is restored (4); only the collision bool's byte home is left.
 // score 4 (was 7): the collision bool's byte home is +0x13 where retail keeps it at +0x10,
 // and the product loads the hit fraction where retail loads the distance.
 // Earlier rounds (7 or worse): byte collision flag, byte allow flag, long initial mode, short
