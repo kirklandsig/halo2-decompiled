@@ -651,16 +651,13 @@ struct s_device_machine_view
 // zero store in that case suggests the result is not zero-initialized at entry the way ours is.
 // MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
 // with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
-// MiniMax D (11-07): the group flags are read in both arms of the machine-flags test and the result is
-// cleared at the top of case 0x1200055f's velocity block, as retail does; the flags word loads into the
-// group pointer's register and the two bit tests are retail's.
-// score 3 (was 34): the group flags now load as retail's word into the group pointer's register and the
-// two bit tests are retail's; what is left is that our word load sits before the machine-flags branch
-// while retail's sits after that branch's join.
+// MiniMax D (11-07): the flags read in both arms of the machine-flags test plus `function_value = 0.0f;` at the top
+// of case 0x1200055f's velocity block 3, Round 62's form; not kept (a read written into both arms only to shape the
+// load, and a store of the 0 the result already holds).
+// score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
 // retail's shifted by one. Plain masks plus the zero store leave only the group pointer's register.
-
 // MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
 // with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
 // Lane S (34, was 42): masking the group flags into a dword local gives retail's `test al, 1` and
@@ -933,15 +930,10 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 			word group_flags;
 
 			if (machine_flags & 0xd)
-			{
 				function_value = 1.0f;
-				group_flags = group->flags;
-			}
-			else
-			{
-				group_flags = group->flags;
-			}
-			if ((group_flags & 1) && (group_flags & 2))
+			group_flags = group->flags;
+			dword group_flag_bits = group_flags & 3;
+			if ((group_flag_bits & 1) && (group_flag_bits & 2))
 				function_value = 1.0f;
 			if (device->power == 1.0f || (machine_flags & 0x10))
 			{
@@ -964,7 +956,6 @@ bool __stdcall device_export_function(long device_index, long name, real *value,
 	case 0x1200055f:
 		if (device->power_velocity != 0.0f)
 		{
-			function_value = 0.0f;
 			if (device->flags & 8)
 			{
 				if (!(device->flags & 0x20) && !(0.0001f > fabs(device->motion_14c.cruise_velocity)))
