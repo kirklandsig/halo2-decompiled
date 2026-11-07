@@ -2582,7 +2582,7 @@ void function_201ea0(void)
             {
                 s_squad_iterator areas;
                 function_204ec0(&areas, (short)squad_index, 15, 2);
-                location.leaf_index = (long)(intptr_t)&areas;
+                location.leaf_index = (long)&areas;
                 while (function_205010(&areas) != NONE)
                 {
                     if (wake)
