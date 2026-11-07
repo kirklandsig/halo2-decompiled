@@ -405,11 +405,7 @@ bool function_1d9320(s_1d9240 *slot);
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
 
-// score 2 (was 37): frame 0x104 and the length agree. The visited-bit test is a mask (the
-// existing bit_vector_test) and the pair's target name is a two-use local that is read again
-// before the second lookup, which gives retail's fused OR into memory and its 0x1d90e0 setup.
-// Left: the back-edge reloads run in the other order (we reload the tag table before the state,
-// retail the state before the tag table).
+// score 37 (was 37): frame 0x104 agrees. Retail tests the visited bit with a mask and still ORs
 // it into memory after computing the word address; with the shift-form test ours gets that update
 // but not the test, and with a mask test (the existing bit_vector_test) the update becomes
 // load/OR/store and two call setups change registers (42, 545 bytes). The back-edge reloads of
@@ -628,21 +624,17 @@ void __stdcall function_113980(long object_index, long target_index, bool altern
 				}
 				if (!found)
 					break;
-					long target_name = iterator->b;
-					if (target_name != NONE && target_name && iterator->a != NONE && iterator->a)
+				if (iterator->b != NONE && iterator->b && iterator->a != NONE && iterator->a)
+				{
+					if (function_b8d30(object_index, iterator->a, &marker, 1, false) &&
+						!((visited[marker.node_index >> 5] >> (marker.node_index & 31)) & 1) &&
+						function_b8d30(target_index, iterator->b, &target, 1, false))
 					{
-										if (function_b8d30(object_index, iterator->a, &marker, 1, false) &&
-															!bit_vector_test(visited, marker.node_index))
-										{
-															target_name = iterator->b;
-															if (function_b8d30(target_index, target_name, &target, 1, false))
-															{
-																				function_1d90e0(*(long *)(model + 4), marker.node_index, nodes, &marker.node_matrix,
-																									&target.matrix, weight, node_count);
-																				bit_vector_set(visited, marker.node_index, true);
-															}
-										}
+						function_1d90e0(*(long *)(model + 4), marker.node_index, nodes, &marker.node_matrix,
+							&target.matrix, weight, node_count);
+						bit_vector_set(visited, marker.node_index, true);
 					}
+				}
 			}
 		}
 	}
