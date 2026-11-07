@@ -943,6 +943,10 @@ __forceinline long vehicle_round(real value)
 // a named dt (D), a named dot (N) and a forward pointer used throughout (F), 32 combinations: S 6, U+S 6, U+N 6, U 8,
 // N 10, D 14, S+N 19, S+D 23, every form with F 164; with dead locals on S/U+S/U+N the best is U+N 4 (left: the side
 // cross's forward.k * up.j and the dot's i term). All are one-use forms, kept only on a match.
+// Round 78 (lane 10, fast): the vehicle through the existing inline getter `(s_vehicle *)havok_object_get(...)`
+// 8 (same code); an up pointer for the condition, the rate and both crosses 98 (735 bytes); the up pointer
+// after the velocity call at both crosses 96, with the rate too 96 (735 bytes each); cross3f_staged for the
+// first cross alone 10.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1807,6 +1811,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // VEHICLE_GET as pointer arithmetic (base + index) 9; the second / first lookup through
 // VEHICLE_HEADER_GET(...)->vehicle 9/9 (all identical code). Retail reloads state, graph, then the vehicle index
 // after the kind loop (the reverse of the order the update block clobbers EDI, EBX, ESI); ours the index first.
+// Round 78 (lane 10, fast): dot3f(&vehicle->forward, &linear_velocity) for the forward speed 11 (the sum then
+// runs (j + k) + i and the i term still loads forward.i), dot3f(&linear_velocity, &vehicle->forward) 11 (same
+// code); a forward pointer for the speed terms 15 (one-use; the cross products flip too); the graph through
+// graph_tag_get(*(long *)(model + 4)) 9 (same code); both dots through dot3f 365 (2011 bytes).
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2699,6 +2707,10 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // needs a match); a wrap-only helper `(real *spin, real const *period)` with the caller doing `+=` 80 (976 bytes), with
 // `torque * dt` 84; on the 8 form: dead pointer locals (diagnostic) 1-8 give 8/10/10/10/10/10/10/10 (the slots never
 // move), vehicle_contact_steer written out at both sites 10.
+// Round 78 (lane 10, fast): the throttle magnitude held in `torque` itself (diagnostic) 12, the joint variable
+// still at 0x14 and the loop offset at 0x18; the throttle through the file's vehicle_magnitude 128; the contact
+// flags read once into a dword local 160; vehicle_wheel_spin_wrap or vehicle_contact_steer declared
+// __forceinline 10/10 (same code); a bare block around the second lookup and the braking test 10 (same code).
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {

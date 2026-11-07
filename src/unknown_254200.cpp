@@ -428,6 +428,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // Round 171 (lane 4, fast): the blend-state and texture-stage arguments by enum name 2 (same code, kept); the alpha
 // constant through D3DCOLOR_ARGB 2 (same code, kept); the reference casts dropped from the first texture-stage calls 465
 // (2236 bytes; 0x254200 loses its match); the bitmap getter as if/else 524; the render-target getter as a ternary 2.
+// Round 78 (lane 10, fast): the alpha byte without the (long) step 2 (same code); the inline_depth pair around
+// the second SRCBLEND/DESTBLEND setters dropped 436 (2262 bytes, the setters inline); the size as a 42 default
+// overridden by `if (g_4ba04c > 1)` 94 (2258 bytes); the point pointers declared after the 0x1cf50 call 2 (same
+// code); the guard as one condition with an `else if (g_51ec9a)` arm 2 (same code).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
