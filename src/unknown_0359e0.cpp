@@ -59,6 +59,11 @@ PRIVATE inline long swizzle_log2(dword value)
 	return result;
 }
 
+// MiniMax B (11-06): no new form, no lower score; the argument registers are retail's (the width in EAX,
+// the two coordinates in EDX and ECX, the height and the output on the stack), so only the body's use of
+// them differs: this build widens the third argument into EDI and the second into ESI at the entry where
+// retail copies the third into SI as a word and widens the second only where it is used.
+// MiniMax S (11-06): no new form, no lower score: the two coordinates still arrive in the other registers (retail x in EDX, ours in CX), so the widened copies, the two table lookups and the common count keep different homes; retail's minimum branches once and stores the common count after the join.
 // score 57 (was 82): both logarithms now have retail's loop and the common count is
 // taken by retail's branch, so the height count sits in ebx as in retail; left: the row
 // coordinate (retail keeps it 16-bit in si and widens it late), the column (retail

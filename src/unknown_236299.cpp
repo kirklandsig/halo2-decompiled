@@ -688,6 +688,13 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // Round 131 (lane 7, fast): bounds as the first, second, third or fourth parameter at the definition and both calls 8 each, on the extents-first
 // form 86 each (288 bytes; the two callers keep their matches); that form with the bottom sums, the right sums, or both written height/width first
 // 86 each; height declared before width 85, also with the bottom sums reversed 85; the corner array declared after the extents 86.
+// Round 44 (m3 lane 17, fast): corner 0's y, the extents, corners 1 and 2's x, then corner 0's x 85 (281 bytes: x0 shared with the
+// right sum); corner 0's x after corner 3's x 85 (281); the extents as an aggregate size local after corner 0's y 87 (281); the
+// bounds copied into a local rectangle 88 (284); corner 0's y read back from corner 1's y on the extents-first form 19. Compile-only
+// screen (it reproduces this block exactly): all 900 interleavings of the two extents and corner 0's stores into both corner orders,
+// 6000 random forms (named sums, read-backs, operand orders), extent names, the bounds on the stack: none in retail's colours. Retail's
+// colours need height and the bottom sum in one register with height defined before corner 0 (only `height +=` forms reach that,
+// and those share y0 with corner 0's y).
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {

@@ -572,6 +572,20 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // DH378: Direct combined rejection and readiness/loading/both positive pipeline ownership 246/246/246/246;
 // complete skip expression 277, direct mode-arm publication/both local outcomes/direct query-arm stores 272/272/272.
 // NOT kept: native 1098-byte skip forms regress and keep frame 0x3c; original complete body restored.
+// b5G (statement walk against retail, 2026-11-06, fast, base 8cda3c91d): every block compared with 0x156090..0x1564e0
+// (entry check and 0x100 override, finished/unknown03 stores, size (flags & 0x100 | 0x40) << 16, retry loop and its
+// 30-attempt limit, tsc elapsed clamp, 0.1 s test, XPhysicalProtect 2 / 0x404, direct sound call order, movie open
+// 0x8002000, surround bins {0,1,4,5} volumes {0x8000,0x8000,0x5472,0x5472} and stereo, 0x23e340 argument order, material
+// memset 0x98 and the four 1.0f stores, bitmap fields and size, flags & 4 pair, final flag stores): no behaviour difference.
+// Retail keeps the seconds unrounded: `fld dword [0.1f]; fcompi st(1)`, no fstp dword, and ours has no (real) cast either.
+// Changes (246 -> 272, 1098 bytes = retail's size): the timeout test is `!(seconds < 0.1f)` (retail's jbe also leaves the
+// loop on NaN; was `>= 0.1f`; same code), and the skip flag is `!function_2148b0(0)` (ternary and `== false` the same) instead of
+// `bool skippable = true; if (call) skippable = false;` (Kirk undoes a value set before a test and overridden; that form scored
+// 246 and is the closest to retail's `mov byte [esp+7], 1` before the call; plain form gives neg/sbb/inc). 0x1568d0 shows
+// score 7 in fast checks that also list the callers, base included (image composition, not this body). Callers 0x12bf90
+// 0x163890 0x223a21 0x2ab8c0 and callees stay MATCH.
+// `dword large = flags & 0x100; size = (large | 0x40) << 16` 273 (1102) on the old skip, 290 (1087) on the plain one. The rest of the gap is
+// flags: retail is SSE code (movss 1.0f stores, `fld dword; fcompi` timeout), this file has no /arch:SSE, so it cannot match here.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
@@ -591,11 +605,7 @@ void function_156090(char const *name, dword flags)
 	}
 	else
 	{
-		bool skippable = true;
-
-		if (function_2148b0(0))
-			skippable = false;
-		g_4e9188.unknown03 = skippable;
+		g_4e9188.unknown03 = !function_2148b0(0);
 	}
 
 	bool large = (flags & 0x100) != 0;
@@ -623,7 +633,7 @@ void function_156090(char const *name, dword flags)
 			__int64 elapsed = bink_read_tsc() - start;
 			if (elapsed < 0)
 				elapsed = 0;
-			if (timing_ticks_to_seconds(elapsed) >= 0.1f)
+			if (!(timing_ticks_to_seconds(elapsed) < 0.1f))
 				break;
 			D3DDevice_KickPushBuffer();
 			D3DDevice_IsBusy();

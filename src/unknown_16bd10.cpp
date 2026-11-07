@@ -723,7 +723,13 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 
 /* the camera director of scripted cameras: fills the observer's command */
 // MiniMax C (11-05): no new form, no lower score; the plane's three normal copies are reloaded in the same order in both (i, k, j), but retail gives them XMM3/4/5 for i/j/k where ours gives XMM5/3/4; the squared length in field order scores 389, in k,i,j order 243, with the first two addends swapped 238, written from the direction alone 465, and with the multiply operands swapped it is byte-identical at 236.
-// score 236 (was 236): frame 72 agrees; the first real difference is the plane block's direction preload
+// score 385 (was 236): b5K 11-06 statement walk against retail found no wrong field, offset, condition, callee or loop; the one
+// behaviour fix is the point-mode timer, which retail computes as (ticks * rate) / scale (cvtsi2ss, mulss [ebx+4], divss at
+// 0x16ca6e-0x16ca78) and the one-line ternary compiled as (rate / scale) * ticks, rounding differently; the `seconds` local makes
+// ours retail's order. That costs 149 only because the whole tail then shifts one line against retail's split default arm
+// (xorps/or/mov at 0x16ca54); the plain if/else form scores 381. Also seen, compiler-side: the pan block's quaternion length sums
+// w,k,j,i in retail (0x16cc2b) and j,k,w,i in ours (the helper's text is w,k,j,i and 0xa9b40 matches with it; not source-fixable here).
+// Before the timer change (236): frame 72 agrees; the first real difference is the plane block's direction preload
 // (retail d.j, ours d.k) with the normal in XMM3/4/5 for i/j/k (ours XMM5/3/4), then the zero/length roles.
 // Earlier: the first difference was put at the switch's dispatch —
 // frame 72 agrees and the arms are in retail's order at 1696 bytes (aligned
@@ -1028,7 +1034,9 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 					break;
 				}
 			}
-			command->timer = time_scale != 0.0f ? game_ticks_to_seconds(camera->ticks) / time_scale : 0.0f;
+			real seconds = game_ticks_to_seconds(camera->ticks);
+
+			command->timer = time_scale != 0.0f ? seconds / time_scale : 0.0f;
 			command->forward = camera->forward;
 			command->up = camera->up;
 			dword camera_object_index = camera->object_index;

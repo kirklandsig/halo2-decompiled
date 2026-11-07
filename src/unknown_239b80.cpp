@@ -111,6 +111,11 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // element addresses at each use 5 (same code); deltas as a vector2f local 7; helper parameter renames 5 (no change);
 // `distance < -epsilon` 5 (same code). Removing the classification's x or y product or the denominator's x term
 // reorders the first intersection's numerator, so its x product is a numbering tie with the whole function.
+// Round 97 (m3 lane 12, one-file LTCG harness, base 5 exact): numerator, denominator and classification spellings
+// (operand sides, term orders) 5 each, 6 each on the side + current-point form (all compile the same); previous-point
+// pointer at the loop top 20 (with side + current-point 20); current-point pointer at the loop top 30, with side 32;
+// the else-arm current-point pointer without side 28; classification point pointer 9 (with side + current-point 8);
+// one index variable for both loops 196 (199 instructions).
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -290,6 +295,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax G (11-06): a bool departure flag 248, the angle zeroed before the lowest scan 207, both together 204, the
+// hull counter merged into the pass counter as a while loop with the increment at the top 272, and a 16-bit copy of
+// the count as the scan bound 170 (the same code); no lower score.
 // score 170 (was 170): native output ordinal separates iteration from produced length;
 // frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
 // Earlier at 203: frame 0x14 agreed; count/departure homes, scan bound, equality and compaction differed.
@@ -668,6 +676,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax G (11-06): no new form, no lower score; retail's count parameter is a dword (mov ecx, [ebp + 8]; movsx edi, cx;
+// test cx, cx, and mov ebx, [ebp + 8] for the returned count) where this declaration takes a short, retail keeps the current
+// side at [esp + 0xc] and the previous side at [esp + 0xd] where this build keeps the previous side in CL.
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
 // Round 132 (m3 lane 5, fast): the previous side's register is the one cause of the entry and loop-head

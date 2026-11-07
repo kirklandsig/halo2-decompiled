@@ -258,6 +258,20 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
+// MiniMax E (11-06): no new form, no lower score (32). Retail's head (the raw variant getter with the
+// &g_54e4a0 fallback at the call site, the tag read into ESI, the selector in EAX, the EDI save in the
+// dispatch) reproduces retail's prologue row for row, but our build hoists the twice-used buffer address
+// 0x55c6e4 into EBX: `push ebx` in the prologue and `mov ebx, imm` before the globals test, and those
+// two rows shift every later row by two (54, 173 bytes). Tried this round: the copy's source through a
+// local 54, the translator's argument through a local 54, the tag read after the fallback 54 (the tag
+// still coalesces into ESI and the selector falls to ECX), the fallback as a conditional expression 54,
+// the copy's source cast like the translator's argument 54, the tag read at the call with the copy's
+// source through a local 45 (171 bytes), retail's control flow (the default arm jumping past the
+// translator, one shared copy block) 54 and the same with the tag read at the call 45, and the copy in
+// the then-arm with retail's head 81 (194 bytes). The kept body keeps the address in ESI and
+// rematerializes the join's copy, but saves EDI early and holds the tag in EDX with the selector in
+// ECX; that is the 32 that stands.
+// MiniMax B (11-06): no new form, no lower score (32).
 // MiniMax A (11-05, second round): no new form, no lower score; the switch subject written as an inline
 // `get_game_variant()->field_xcb8724` puts the selector in EAX as retail has it but moves the tag into EBX
 // before the call (44), the tag read after the switch gives 45, and a field pointer for the tag or a named
@@ -737,6 +751,11 @@ done:
 // F402: Complementary selector partitions at 1/2/3/4/5/7/8/9, retaining original
 // translation/copy completion, 70/65/63/63/69/69/63/69. NOT kept: all regress;
 // original complete dispatch restored; early EDI save and scratch/tag ownership remain.
+// Round 135 (m3 lane 7, fast; 0x22d503 and 0x22d52e stay matched): one copy with `__assume(variant != 0)` after the getter
+// 54 (173 bytes, `mov ebx, imm` still placed ahead of the globals test); one copy with the tag read after the switch,
+// just before the translator, 45 (171 bytes, hoist stays); one copy with a `dword` name 54; the two-copy body with the tag
+// read just before the translator 45 (178); the two-copy body with `__assume(variant != 0)` 32 (same code). The hoist is
+// a byte-cost tie (10 bytes either way), so only a cost change outside the source decides it.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

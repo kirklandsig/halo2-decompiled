@@ -387,6 +387,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 }
 #pragma function(_ReadWriteBarrier)
 
+// MiniMax G (11-06): no new form, no lower score: our build queries the reference's count_spread first in
+// both spread pairs whatever the operand order (reference-left 65 and 66, a const reference 67), while retail
+// queries the candidate's first; the extra two-byte `mov ebx, esi` and the 514 against 512 byte length
+// follow from that same ordering.
 // MiniMax A (11-05): the reference on the left of the first comparison 65 (only the compare operands
 // match retail; the branch polarity flips and the call order stays reference-first), a named spread for
 // each side 67, both sides as const references 67; nothing gained 8, so the body is unchanged.
@@ -730,6 +734,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // 150 (566 bytes); the party pointers as `s_balance_party const &` 67 (same code); the reference defaulting to
 // `&best` with `if (!improved) reference = &current;` 117 (540 bytes); `improved` read into a `bool const`
 // after the swaps 67; cost() summing two named queries 67. The candidate's count_spread still runs second.
+// Round 135 (m3 lane 7, fast with 0x91dd0/0x91860, both stay matched): the spreads passed to forceinline `greater`/`equal`
+// value helpers in (reference, candidate) order, to test right-to-left argument evaluation, 65 (the reference's query still
+// runs first); that with the cost written candidate-first 65; only the `<` test through the reversed helper 66; the swaps and
+// the test in a forceinline optimizer method taking the candidate by value 395 (not inlined, 265 bytes; 0x91dd0 10); the
+// candidate copied at the top of the inner loop, ahead of the party tests, 174 (537 bytes).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -914,6 +923,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // sum follows the order the two counts are declared in, so retail's declaration has the extra count
 // first: swapping the two declarations here gives 35 and would need the call site in
 // src/unknown_07a9a0.cpp to pass (count, groups, player count) instead of its current order.
+// MiniMax G (11-06): no new form, no lower score: the register that carries the player count into this
+// function is chosen at the call site, and retail's caller 0x7e210 (src/unknown_07a9a0.cpp, out of this
+// lane) puts the player count in EAX while our build puts it in EDX; the copy loop, the `rep stosd` fill,
+// the argument rotation and the final clamp all follow from that one difference.
 // score 34 (was 34): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
 // (retail player count in EAX, extra count in EDX) and flow through the copy, fill, call setup and
 // the final clamp's register: our loop temporaries take EDI/EAX (retail EDX/EDI), leaving EDX for the

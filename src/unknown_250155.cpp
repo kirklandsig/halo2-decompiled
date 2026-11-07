@@ -1362,7 +1362,17 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax I (11-06): retail's guarded rep stosd does come from an index loop over the tail
+// (`for (i = index_count; i < 16; i++) indices[i] = NONE;`): the idiom appears, but the write count then
+// moves to EBX and the mode to its slot (172); with the item_count home moved to ebp-0xc by an
+// initialiser the frame stays 0x54 and the two homes match retail, but the top gains a zeroing and the
+// mode is spilled (134).
+// MiniMax I (11-06): a 300 s permuter run over this body produced 27 variants and none beat the
+// baseline (81 in the reduced image, 83 in the full one); no other form tried this round.
 // MiniMax C (11-04): no new form, no lower score: an item_count declaration initialiser moves its home to ebp-0xc but grows the frame to 0x58 and spills the mode (121), dropping the branch-one zeroing gives 137, seven declaration orders give 123.
+// MiniMax G (11-06): no new form, no lower score; the two count homes are still exchanged (ebp-8 against
+// retail's ebp-0xc) and the tail fill is still a manual pointer loop where retail uses a guarded rep
+// stosd, both following from the same allocation difference the earlier rounds describe.
 // MiniMax H (11-03): no new form, no lower score; ours puts item_count at ebp-8 and index_count at ebp-0xc where retail puts index_count at ebp-8 and item_count at ebp-0xc, and the permuter's best candidate (the mode-one call to 0x199dc9 with its two arguments the other way round) gives 79 in both images, under the keep bar.
 // MiniMax I (11-01): no new form, no lower score.
 // MiniMax G (11-04): no new form, no lower score: the index_count/item_count homes stay swapped and the tail fill stays a pointer loop.
@@ -2602,6 +2612,26 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax I (11-06): 77 (921 bytes), not kept: the last widget index (bitmap_b) hoisted to function scope with
+// the other three declared inside each of the two loops, the second loop on a counter of its own (j), and the
+// helper's default arm storing bitmap_b, bitmap_a, text_b in place of text_b, bitmap_a, bitmap_b; locals regrouped
+// to shape the frame and a store order picked by score are kept only with a byte match. Still
+// different there: the homes of the count copy, of the first loop's player and of the team-flag byte are permuted against retail's, the voice query
+// reloads the player's entry where retail keeps the entry's address, and the last loop spills a
+// bitmap to memory where retail keeps it in ebx.
+// MiniMax I (11-06): the four widget indices declared once at function scope and shared by both
+// loops, with the helper's default arm assigning the four outputs in the order text_a, bitmap_b,
+// bitmap_a, text_b, and the second loop with a counter of its own: 84 (921 bytes). Still different:
+// the homes of the count copy, the team-flag byte and the four indices; the voice query's reload of
+// the player's entry; the last loop, which still spills both bitmaps and holds the screen in ebx
+// where retail holds a bitmap in ebx and reloads the screen into edi.
+// MiniMax I (11-06): the last loop's widget indices written by an inline switch give retail's
+// comparison chain (93), with the helper's default arm chained 92, with the indices as longs 119 and
+// from an aggregate-returning helper 275; the four indices still land in memory where retail holds
+// three of them in registers, so the original body stands.
+// MiniMax G (11-06): no new form, no lower score; the count, the element address and the player keep the
+// same three homes, permuted against retail's (ebp-0xc, ebp-8 and ebp-0x14 against our ebp-8, ebp-0x18
+// and ebp-0xc), and the last loop still keeps the screen in ebx where retail gives ebx to a bitmap.
 // MiniMax A (11-05): the four widget indices at function scope with the last loop's inline switch score 89 (was 95), but the gain is under eight, so the original body stands.
 // MiniMax A (11-04): the four widget-index shorts' declaration order (seven orders) 95 each; the players[i] address kept in a local (function scope and loop scope) 95 each; no lower score.
 // MiniMax I (11-01): no new form, no lower score.

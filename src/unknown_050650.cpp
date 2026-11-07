@@ -504,6 +504,13 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// Walk b4H (11-06, fast 303): statement-by-statement against retail 0x296e60-0x2973ec found no behaviour difference. Checked: pitch axis
+// (-j, i, 0) and the 1e-4 magnitude test (0x296ec2) with the g_4687ac fallback (0x296f0c); hoisted yaw/pitch ranges (0x296f32-0x296f66); yaw drawn first, pitch
+// second, kept unrounded on the x87 stack into fsin (0x297006); sine/cosine rounded (fstp dword 0x297047/0x29704d); pitch rotation about the axis, then yaw
+// about g_4687b0 (0x2970f5-0x2971d0); ray = candidate * 3.0 (0x45dbd4), flags 0x10800001, ids NONE (0x2971e3-0x297206), word NONE at +0x24 (0x29720b); hit test
+// `fraction > best` at result+4 (0x29723a); success normalizes the candidate (0x2972a2-0x297334); exit tail `!clear && best > 0.0` (0x297336-0x29734c).
+// Plain-form tries: drop `clear`, tail `!result && best_fraction > 0.f` 361 (1446 B, demotes matched 0x297660 to 10); `else clear = true;` 372 (1455 B). Kept `clear = true`
+// at the loop top: retail's `mov al, 1` (0x296f8f) sets it there on every attempt, and only this form matches 0x297660.
 // MiniMax E (11-06): score 303 (was 303): no new form lowered it. Retail puts the first 4-byte
 // temporary (the length, the integer and the sine) at the frame bottom where ours puts it above the
 // result byte, so the axis and result homes sit four lower, and ours is twelve bytes longer than
@@ -1028,6 +1035,14 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // bool/byte/short/long, original comparison results 389/380/375/372; failure-only normalization
 // 267/280/300/301. NOT kept: every full-graph lifetime regresses against calibrated 258 (full 257);
 // original result/presence, all calls, cases and entire decoder restored.
+// b5B (11-06) statement-by-statement walk against retail 0x2967b0-0x296d38, no source change: all seven
+// cases, the jump-table order, every offset (0x5d0/0x5ec/0x26c/0x84/0x539/0x53a/0x50c+0x3c, 0x338/0x33c/0x340,
+// 0x358/0x370, 0x18, 0x22c position), the signed short state tests (0x24: <1 / >2), the (1 << type) & 3 test on
+// [object+0xaa] with the player_index [+0x13c] != NONE test, the 1ffbd0 argument list, comiss > 0.0 (jbe fails),
+// the magnitude < 1.0 test (fld const; fcompi; jbe skips), and the optional outputs match retail; no float is
+// rounded through fst/fstp, point - origin / point - position are subss in x, y, z order as in retail. No
+// behaviour difference found. Only the point_valid/result stack homes (esp+0xa/0xb swapped) and the cross-jumped
+// cafc0 blocks differ. Declaring point_valid first 341, separate initialisers 343/341 (fast control 341): dropped.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1210,6 +1225,10 @@ done:
 	return result;
 }
 
+// MiniMax D (11-06): no new form, no lower score (9); five more spellings of the shared lookup (a data
+// base and a masked slot local in either order, a byte offset local, the slot first, the current one)
+// compile to the same code, so retail's offset in EAX and its `lea esi, [eax + edx]` are not
+// steerable from the source; the reduced image also leaves our body one byte short.
 // MiniMax E (11-06): score 9 (was 9): no new form tried this round; the prologue still builds the
 // actor offset in ESI and adds the base where retail builds it in EAX and forms the actor with a lea,
 // and ours ends a byte short with a trailing int3; two of the nine are reduced-image artifacts.
@@ -1624,6 +1643,10 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// b2J (11-06) statement walk against retail 0x298370..0x298b3e (align.py 548 fast, 442 full): every block, offset,
+// condition direction, callee, argument order (0x2980d0 looking/bounds flags, 0x2967b0 type pointers +0x420/+0x434/+0x688 and the movement temp, 0x10f630 first=ESI,
+// 0x11cc90 aiming/forward), constant (-1, 0.70710677, 0.34906584, 1.0, 2.5) and flag home agrees with the source; no behaviour difference
+// found. Remaining differences are the inlined 0x1fdd90 and register/frame layout only.
 // MiniMax E (11-06): score 442 (was 442): no new form lowered it. The frame is 0xcc against retail's
 // 0xc8 and ours is four bytes shorter (2016 against 2020); retail keeps the actor index in ESI and
 // spills the slot offset to [esp+0x30] where ours keeps the index in EDI and the offset in ESI.

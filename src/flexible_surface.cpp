@@ -366,6 +366,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 }
 
 // MiniMax D (11-05): no new form, no lower score.
+// MiniMax S (11-06): no new form, no lower score: retail still loads the random-state pointer before the time multiply and keeps the old direction in registers, ours spills the old direction to the stack and frames 0x28 against retail's 0x20.
+// MiniMax G (11-06): no new form, no lower score: the frame is 0x28 against retail's 0x20 because retail loads
+// the random-state pointer before the seed read, so our locals sit eight bytes higher (esp+0x28 and esp+0x2c
+// against retail's esp+0x18 and esp+0x20).
 // score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // Earlier (round 28 reached 104, not kept: its gain needs the rotation's cross product as scalar terms, which is
 // cross3f's body written inline and is kept only with a match; with cross3f the round's other changes give 163).
