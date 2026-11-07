@@ -1362,6 +1362,13 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax I (11-06): retail's guarded rep stosd does come from an index loop over the tail
+// (`for (i = index_count; i < 16; i++) indices[i] = NONE;`): the idiom appears, but the write count then
+// moves to EBX and the mode to its slot (172); with the item_count home moved to ebp-0xc by an
+// initialiser the frame stays 0x54 and the two homes match retail, but the top gains a zeroing and the
+// mode is spilled (134).
+// MiniMax I (11-06): a 300 s permuter run over this body produced 27 variants and none beat the
+// baseline (81 in the reduced image, 83 in the full one); no other form tried this round.
 // MiniMax C (11-04): no new form, no lower score: an item_count declaration initialiser moves its home to ebp-0xc but grows the frame to 0x58 and spills the mode (121), dropping the branch-one zeroing gives 137, seven declaration orders give 123.
 // MiniMax G (11-06): no new form, no lower score; the two count homes are still exchanged (ebp-8 against
 // retail's ebp-0xc) and the tail fill is still a manual pointer loop where retail uses a guarded rep
@@ -2583,9 +2590,9 @@ static __forceinline void lobby_slot_widget_indices(short mode, long slot, short
 		break;
 	default:
 		*text_a = NONE;
-		*text_b = NONE;
-		*bitmap_a = NONE;
 		*bitmap_b = NONE;
+		*bitmap_a = NONE;
+		*text_b = NONE;
 		break;
 	}
 }
@@ -2605,6 +2612,21 @@ static __forceinline long local_player_find(long const *local_list, long player)
 
 /* fills the lobby's player list (players, count of them), with the local
    players' chosen teams; hides the slots past the count */
+// MiniMax I (11-06): only the last widget index kept at function scope, the other three declared
+// inside each of the two loops: 77 (921 bytes). Still different: the homes of the count copy, of
+// the first loop's player and of the team-flag byte are permuted against retail's, the voice query
+// reloads the player's entry where retail keeps the entry's address, and the last loop spills a
+// bitmap to memory where retail keeps it in ebx.
+// MiniMax I (11-06): the four widget indices declared once at function scope and shared by both
+// loops, with the helper's default arm assigning the four outputs in the order text_a, bitmap_b,
+// bitmap_a, text_b, and the second loop with a counter of its own: 84 (921 bytes). Still different:
+// the homes of the count copy, the team-flag byte and the four indices; the voice query's reload of
+// the player's entry; the last loop, which still spills both bitmaps and holds the screen in ebx
+// where retail holds a bitmap in ebx and reloads the screen into edi.
+// MiniMax I (11-06): the last loop's widget indices written by an inline switch give retail's
+// comparison chain (93), with the helper's default arm chained 92, with the indices as longs 119 and
+// from an aggregate-returning helper 275; the four indices still land in memory where retail holds
+// three of them in registers, so the original body stands.
 // MiniMax G (11-06): no new form, no lower score; the count, the element address and the player keep the
 // same three homes, permuted against retail's (ebp-0xc, ebp-8 and ebp-0x14 against our ebp-8, ebp-0x18
 // and ebp-0xc), and the last loop still keeps the screen in ebx where retail gives ebx to a bitmap.
@@ -2759,6 +2781,8 @@ void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags
 	long shown_count = count;
 	bool in_matchmaking = function_199994();
 	long i;
+	long j;
+	short bitmap_b;
 
 	if (valid != NONE)
 	{
@@ -2855,21 +2879,20 @@ void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags
 		shown_count = 0;
 	}
 
-	for (i = 0; i < shown_count; i++)
+	for (j = 0; j < shown_count; j++)
 	{
-		s_matchmaking_player *player = (s_matchmaking_player *)function_19aaa5(players[i]);
-		short text_a;
-		short text_b;
-		short bitmap_a;
-		short bitmap_b;
+		s_matchmaking_player *player = (s_matchmaking_player *)function_19aaa5(players[j]);
 		long team_index = NONE;
 		bool no_team = false;
 		color3f colors[4];
 		long local;
 		c_class_1a2c81 *bitmap;
+		short text_a;
+		short text_b;
+		short bitmap_a;
 
-		local = local_player_find(local_list, players[i]);
-		lobby_slot_widget_indices(screen->mode, i, &text_a, &text_b, &bitmap_a, &bitmap_b);
+		local = local_player_find(local_list, players[j]);
+		lobby_slot_widget_indices(screen->mode, j, &text_a, &text_b, &bitmap_a, &bitmap_b);
 		if (!in_matchmaking && session && TEST_FIELD_BIT(session->flag0))
 		{
 			char team = player->team;
@@ -2901,9 +2924,9 @@ void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags
 		{
 			short state;
 
-			if (voice_port_flag0_only(players[i]))
+			if (voice_port_flag0_only(players[j]))
 			{
-				state = !function_53750(players[i]);
+				state = !function_53750(players[j]);
 			}
 			else
 			{
@@ -2918,7 +2941,6 @@ void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags
 		short text_a;
 		short text_b;
 		short bitmap_a;
-		short bitmap_b;
 
 		lobby_slot_widget_indices(screen->mode, i, &text_a, &text_b, &bitmap_a, &bitmap_b);
 		screen->set_child_value6e(6, text_a, false);
