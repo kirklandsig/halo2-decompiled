@@ -984,6 +984,12 @@ void function_1ca290(long tag_index, long ticks, long object_index, long node_in
 	}
 }
 
+// b5H (11-06) walk against retail, statement by statement: the tests, constants (15.0, 12.0, 5.0, 4.0, 3.0 seconds) and the
+// three returns of the actor index agree. Fixed (precision): the distance adds z, y, x as retail does ((dz^2 + dy^2) + dx^2,
+// 0x1ca499-0x1ca4c7, rounded once at 0x1ca4d1). Found: retail walks the prop nodes with a 16-byte datum iterator at +0x38
+// (datum_index +0x40, index +0x44; the pool re-read from g_502418 at 0x1ca30a and 0x1ca34d). Written with
+// data_datum_iterator_next_inlined (a new #include "data_iterator.h") the function MATCHES, but the full build then loses
+// the matched 0x54590 and 0xc2d00, so the index walk stays. s_record_pool_iterator 216; `ignore = !actor->unknown009` 209.
 // @retail 0x1ca2d0
 long function_1ca2d0(bool unknown)
 {
@@ -1033,9 +1039,9 @@ long function_1ca2d0(bool unknown)
 		}
 		view = (s_ai_conversation_view *)function_25d740((s_prop_node *)node);
 		function_b9dd0(node->object_index, &position);
-		distance = (real)sqrt((position.x - actor->position.x) * (position.x - actor->position.x) +
+		distance = (real)sqrt((position.z - actor->position.z) * (position.z - actor->position.z) +
 			(position.y - actor->position.y) * (position.y - actor->position.y) +
-			(position.z - actor->position.z) * (position.z - actor->position.z));
+			(position.x - actor->position.x) * (position.x - actor->position.x));
 		if (view && !(node->unknown24 >= 1 && node->unknown24 <= 2) && view->time != NONE &&
 			game_time - view->time < ai_seconds_to_ticks(3.0f) && 12.0f > distance)
 		{

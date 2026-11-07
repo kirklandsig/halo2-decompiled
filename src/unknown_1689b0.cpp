@@ -1560,7 +1560,7 @@ real *function_120790(real *out, real const *plane, real const *point, short axi
 // signed `% point_count`, side/perpendicular/along/separation sums in retail's order, inside and 0.01/0.0001 tests, normal path when the length is <= 0.01, ray hits at +0x14, `0 - radius` opposite ray,
 // face sum below edge sum). Two fidelity fixes, both with retail evidence: the point reconstructions call the existing 0x120790 (retail inlines it: the two word table loads at 0x16aab5/0x16aabc and
 // the axis and side re-read for the second point at 0x16ab14..0x16ab22) instead of a hand-copied body, and the accepted counts are 32-bit (`inc dword ptr` 0x16b274/0x16b2ca, `test eax, eax; jle` 0x16b2fa/0x16b367,
-// `cvtsi2ss` of the register, no `movzx`). The only observable difference removed is none (counts stay below 32768); score 552 -> 640 (2917 bytes), helper alone 651, long counts alone 572.
+// `cvtsi2ss` of the register, no `movzx`). Neither changes behaviour (the counts stay below 32768); score 552 -> 640 (2917 bytes), helper alone 651, long counts alone 572.
 // Still differs: retail re-reads the axis after the first point's stores (ours keeps it in a register), starts the `%` before the first reconstruction, and the sum homes (face +0x50, nearest +0x5c, edge +0x60).
 // Tried with the helper: pair struct for first/second 662, `next` index named first (+ long counts) 676.
 // MiniMax C (11-05): no new form, no lower score; retail's prism loop walks &prism->plane.j (plane.i at [esi-4], the point count at [esi+0x14]) where ours walks &prism->point_count (plane.i at [esi-0x18]), and our accumulator homes sit sixteen bytes above retail's.

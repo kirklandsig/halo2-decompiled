@@ -192,6 +192,14 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 93 (m3 lane 16, fast): the scaled-direction pointer declared beside `facing` 4; a short component counter
 // 243 (960 bytes, not unrolled); local_3 and unit declared after the flag store 4; the degenerate arm first 4;
 // the scaled output written through the field without the pointer 21.
+// Round 69 (m3 lane 13, fast): each row as a sum then `-=` the offset in the loop 195 (1001 bytes); the rows before the
+// copy and the flag 56 (992 bytes); the rows read through real arrays over the three vectors 4; the copy after the flag 4;
+// the loop as `component <= 2` with the increment in the body 4; the rows written out by field 192 (1001 bytes: the
+// subss/faddp interleave is retail's, but the flag store sinks below the rows and the half and rows take other XMM
+// registers), with the scale first, 0.5f on the left, the flag after the rows or the rows k, j, i 192 each. Reading:
+// with the loop the flag store stays ahead of the rows' loads (an ordering edge that delays them a slot), with the rows
+// written out it has none and sinks; retail keeps it early without the delay. Also: each row written through a pointer
+// to its component 4; position read through a const reference declared before the loop 4.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

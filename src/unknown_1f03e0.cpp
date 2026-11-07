@@ -650,6 +650,12 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 	return (arg_0 >> 3) & 1;
 }
 
+// MiniMax R (11-06): no new form, no lower score (163); a compile-only probe of the same three-term float sum
+// gives retail's (k + j) + i order when the three products have fresh component nodes, so the
+// state dot's shared ground-normal loads cannot reach that order from the forms the note below records.
+// MiniMax R (11-06): the state dot written i, j, k reaches 162 (the products pair old_up->x with up->x as retail's
+// do); the parenthesized (k + j) + i form of the same dot 176, the parenthesized rotation dot 235, the parenthesized
+// final test dot 235; the one point is below this round's eight-point bar, so the original body was restored.
 // score 163 (was 163): 1229 bytes, frame 0x28 and the EDI/EBX convention agree; left are up's registers (XMM4-6, retail XMM5-7) from the state dot on and the rotation's schedule.
 // Round 219 (lane 3, fast, 0x1e5af0 listed; the arm-order and staged-cross levers that took 0x1f2a80 to 43): `if (!(dot > 0.0f)) axis = *old_up;
 // else rotate = false;` 163; the same as `dot <= 0.0f` 164; fallback stores forward first 186 (1230); up result stored first 196; inactive
@@ -878,9 +884,11 @@ real g_47ffb0 = 0.5f;
 real normalize2d(point2f *v);
 bool __stdcall function_a75d0(vector3f *vector, real maximum);
 
+/* retail sums these dots (k + j) + i (0x1f1202-0x1f12be in 0x1f0870, 0x1f2981-0x1f29af in 0x1f2250); the
+   parentheses keep that grouping, an unparenthesized k, j, i chain is regrouped (i + k) + j by the compiler */
 PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b)
 {
-    return a.k * b.k + a.j * b.j + a.i * b.i;
+    return (a.k * b.k + a.j * b.j) + a.i * b.i;
 }
 
 
@@ -903,7 +911,8 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // products and its two vector homes sit in other registers and stack slots than retail's, and the crosses' product
 // sides and the low-normal arm's homes remain as noted below.
 
-// score 358 (was 344): 3049 bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
+// score 347 (was 358): shape_dot now sums its dots (k + j) + i as retail (#1102, r723). Before that, 358 (was 344): 3049
+// bytes (retail 3047). Statement-by-statement walk against retail (b2K, 2026-11-06, fast): every
 // arm, compare direction, field offset (flags 0x14, settings 0x8, speed 0x20, normal 0x8c, damping 0x98, facing 0x9c, flag 0xa8,
 // up 0x100, basis 0x118, velocity 0x124, gravity 0x130, input 0x138, accelerations 0x144/0x148), constant (0.001, 0.234, 5.0, 1.0,
 // 0.5 read from the XBE), callee and argument agrees with retail; what is left is operand/register/stack-slot scheduling (delta and
@@ -912,9 +921,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // (i2 + j2) + k2 for the input length (0x1f0b07-0x1f0b22), (j2 + k2) + i2 for the history change length (0x1f0fe1-0x1f1047),
 // (in.j*side.k + projected.k) + in.k for the low arm's desired.k (0x1f1327-0x1f1337); those three are now parenthesised
 // (343 / 345 / 364 alone, 358 together; the history length costs the 14 points, ours came out (i2 + k2) + j2 before).
-// Not done (outside this function): the low arm's two plane dots go through shape_dot, whose a.k*b.k + a.j*b.j + a.i*b.i also
-// compiles as (i + k) + j where retail (0x1f1202-0x1f12be) sums (k + j) + i; `(a.k * b.k + a.j * b.j) + a.i * b.i` in shape_dot
-// gives retail's order, 347 here with these edits, 0x1f2250 unchanged at 418, 0x1f0450 MATCH. Tried and dropped for the input
+// Done in #1102 (r723, outside this function): the low arm's two plane dots go through shape_dot, whose a.k*b.k + a.j*b.j +
+// a.i*b.i compiled as (i + k) + j where retail (0x1f1202-0x1f12be) sums (k + j) + i; shape_dot is now
+// `(a.k * b.k + a.j * b.j) + a.i * b.i`, retail's order: 347 here, 0x1f0450 MATCH. Tried and dropped for the input
 // length: magnitude3d(input) (0x24590 is exactly retail's block, inlines with the (j2 + k2) + i2 order, 403, 3038 bytes), dot3f 403,
 // length_sq3f 403, six unparenthesised spellings 403, three scalar locals loaded k, j, i reproduce retail's x87 block exactly
 // (3047 bytes) but are steering locals, 568. The (real) on the history sqrt rounds nothing in ours either: both keep the
@@ -1429,7 +1438,8 @@ bool function_109fd0(long object_index, vector3f *velocity);
 
 PRIVATE inline real contact_normalize(vector3f *vector)
 {
-    real length = (real)sqrt(vector->i * vector->i + vector->j * vector->j + vector->k * vector->k);
+    /* grouped (j + i) + k as retail's 0x1f2250 sum at 0x1f251b-0x1f2535 (the unparenthesized chain compiles (k + j) + i) */
+    real length = (real)sqrt((vector->j * vector->j + vector->i * vector->i) + vector->k * vector->k);
     if (fabs(length) < 0.0001f)
         return 0.0f;
     real inverse = 1.0f / length;
@@ -1439,7 +1449,16 @@ PRIVATE inline real contact_normalize(vector3f *vector)
     return length;
 }
 
-// score 418 (was 418): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
+// score 413 (was 418): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
+// Statement walk against retail (r721, b3B): every statement, offset, condition direction, callee, argument, loop and
+// switch shape agrees; the only behaviour differences were float sum groupings, which compile differently for an
+// unparenthesized chain (the compiler regroups it) than for a parenthesized one. Retail's groupings and ours now:
+// desired length 0x1f251b-0x1f2535 (j² + i²) + k², now explicit 418 -> 413; candidate dot 0x1f2651-0x1f2671 (j + i) + k,
+// now explicit (dot3f gave (k + j) + i) 413 -> 413; tangent length 0x1f2813-0x1f2823 (k² + j²) + i², by the existing
+// normalize3d (same as the file's helper) 413; final-loop dot 0x1f2981-0x1f29af (k + j) + i, shape_dot (now
+// parenthesized, same bytes here). NOT fixed: the tangent dot 0x1f2859-0x1f2879 is (j + i) + k in retail, dot3f gives
+// (k + j) + i; the written-out sum scores 434 (named `along`), 478 inline, k-first grouping 510. The other candidates
+// for a source-order fix, six term orders of the unparenthesized sums, change nothing (the compiler regroups them).
 // Round 219 (lane 3, fast, 0x1f2a80 and 0x1f19c0 listed): both negations through vector3f_scale(normal, -1.0f, &desired) 425, the first
 // loop's only 425, the fallback's only 418; the fallback's minimum/selected stores before the negation 418, its direction copy after
 // them 418; one inline helper for the 0x1f2e60 request call (base point, stepping bit, height) at the three calls here and 0x1f2a80's
@@ -1561,6 +1580,7 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
     *out = *g_4687b0;
     *surface = NONE;
     *object_index = NONE;
+    /* retail keeps count in the bottom stack slot (0x1f22ce, 0x1f2791); a plain long scores 531 */
     volatile long count = 0;
     long indices[3];
     if (!moving)
@@ -1643,7 +1663,10 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
                     (((*(dword *)(request + 0x18) >> 1) & 1) != 0), *(real *)((*(byte **)request) + 0xc)) &&
                     (!((*(dword *)(request + 0x18) & 2) != 0) || *(long *)(request + 0x44) == NONE || *(long *)(request + 0x44) == *(long *)(candidate + 0x14)))
                 {
-                    real dot = dot3f(&direction, (vector3f *)(candidate + 0x28));
+                    /* retail sums this dot (j + i) + k (0x1f2651-0x1f2671); dot3f compiles (k + j) + i */
+                    vector3f const *candidate_normal = (vector3f *)(candidate + 0x28);
+                    real dot = (candidate_normal->j * direction.j + candidate_normal->i * direction.i) +
+                        candidate_normal->k * direction.k;
                     if (dot < -0.025f && dot < minimum)
                     {
                         minimum = dot;
@@ -1673,7 +1696,7 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
                 vector3f tangent;
                 contact_cross((vector3f *)(contacts + indices[0] * 0x48 + 0x28),
                     (vector3f *)(contacts + indices[1] * 0x48 + 0x28), &tangent);
-                contact_normalize(&tangent);
+                normalize3d(&tangent);
                 vector3f_scale(&tangent, dot3f(&tangent, &desired), &direction);
             }
             else if (count == 1)

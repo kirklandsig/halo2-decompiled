@@ -115,6 +115,8 @@ struct s_24e9c7_bounds
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
+// MiniMax S (11-06): no new form, no lower score (125): nothing new for the eight-byte-higher homes, the 1.0 constant's register or the SSE schedule.
+// MiniMax B (11-06): no new form, no lower score (125); the source permuter (240 s) found 123, but it adds a bool set by one test and tested by the next and swaps two arguments of function_22a664, so the original body is restored.
 // MiniMax b (11-04): no new form, no lower score; the result/kind/bitmap homes stay eight bytes above retail's, the 1.0 constant stays in xmm4 where retail uses xmm5, and the geometric SSE schedule stays ours.
 // MiniMax D (run 46): no new form, no lower score.
 // score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is

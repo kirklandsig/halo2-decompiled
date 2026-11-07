@@ -1710,6 +1710,15 @@ real function_30bf0(vector3f *vector);
 // Round 398: Original-boundary normal scalar observations, six component read orders, immutable
 // channels and the existing vector setter: 458/458/458/458/458/458/458/457. NOT kept: all regress
 // and grow away from retail; original independent length observation, normal copy and full body restored.
+// score 378 (was 363, volatile dropped per review rule). b3E (11-06): walked against retail 0xd4080 statement by statement: no logic difference (field offsets, constants
+// 0.25/0.75/0.0001/2.0/0.114/0.587/0.299/1.18/0.6/0.4 read from the XBE, pin directions, call arguments, final pin order,
+// `ret 4` with the flag unread). The `flag_reference` lines keep the unread stack parameter (without them the callee drops
+// it: 440, and 0x3db00 loses its MATCH). `volatile` dropped from `mobile` (362 with the set-then-override form, 378 plain).
+// Precision: retail adds the rotation projection as (k + i) + j (0xd4424-0xd4464, axis read live from [eax]); the draft's
+// copied axis compiles to (j + k) + i, and the source order of the three terms does not change that (all 6 orders: two
+// schedules, neither retail's). Axis read live + direction2 rotated in place (retail 0xd4524, 0xd41db-0xd4210) gives
+// (k + i) + j and frame 0x40 but scores 469-480 (separate lighting_rotate_live copy; layered helper gives (j + i) + k and
+// bumps 0xd37f0 to 531): kept on branch agent/b3E-live only. Changing the shared lighting_rotate to a live axis loses 0x3db00.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -1719,9 +1728,7 @@ void function_d4080(long type, s_effect_color_query const *query, long flag, s_l
 	byte *context = (byte *)g_4e0350;
 	vector3f const *input_normal = (vector3f const *)query;
 	real length = (real)sqrt(input_normal->i * input_normal->i + input_normal->j * input_normal->j + input_normal->k * input_normal->k);
-	volatile bool mobile = false;
-	if (type == 0 || type == 1 || type == 2)
-		mobile = true;
+	bool mobile = type == 0 || type == 1 || type == 2;
 	vector3f normal = *input_normal;
 	record->length = lighting_normalize_ordered(&normal, (normal.i * normal.i + normal.k * normal.k) + normal.j * normal.j);
 	color3f base, lightmap;
@@ -1877,6 +1884,9 @@ dword function_015cd0(long index, dword entry);
 // dropped 4 (same code); `result` renamed `status` 4. Callee register sets (0x12ce00, 0x358d0 under 0x1362b0) write the
 // same general registers as retail. A volatile probe (diagnostic, reverted) in callee 0xd1630 or in 0xd30d0 leaves both leas:
 // the rotation comes from this body.
+// Round 97 (m3 lane 12, fast): guard-clause returns for the prelude 49 (328 B); the tag read folded into the prelude test 4;
+// zero-store arm first 4; a dword conversion buffer 4; the tag as structures.cpp's const bsp read 4. Matched 0xd30d0 (same
+// arms) takes EDX/ECX for the two leas, so the step is set by this body's own earlier code.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
