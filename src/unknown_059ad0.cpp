@@ -3546,6 +3546,8 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax S (11-06): no new form, no lower score (101): retail's call into the timed-out check passes one argument on the stack and keeps the channel index in a register, ours passes two; the callee's declaration and definition are in other files.
+// MiniMax B (11-06): no new form, no lower score (101).
 // MiniMax G (11-04): no new form, no lower score; retail reads the member state through its own
 // address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
 // session+0x10 into the reply id's stack slot before the timeout call, and returns through two
@@ -4490,6 +4492,15 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // (masked 181), reason 2 sinks; acknowledgement written at both sites 604 (1472 bytes, no cross-jump); `__assume(!result)` 365; returns with that assume and
 // one `||` 386 (1231 bytes). Pointer to `result` for its stores 305 (same code, it folds away). Retail's later blocks come in source order once a trace ends
 // (reason 1 right after the first version arm's `jmp`), and the acknowledgement's two entries differ by `mov edi, [esp+0x10]`.
+// Walk b3N (11-06), statement by statement against retail 0x5e7f0-0x5ecdd: every reason code (1-9), the state tests,
+// the host identity compare (9 dwords at message+8), the timeout/channel-state tests, the version/preference
+// tie-break, the pending/failed bit updates, the reply time, the acknowledgement and the clear_peer tail agree;
+// no field, direction or constant differs. Two differences: (1) retail calls 0x62c20 as (local, received, remote)
+// at 0x5ea21 and (local, map, remote) at 0x5ea36 (edx = local both times, remote pushed first), so the second call is
+// `(local, map, remote)`; the earlier `(remote, map, local)` was a score-only swap (callee is symmetric in its two
+// members), it scored 305 with `remote` declared first and 306 (1265 bytes) in retail order; declaring `local`
+// before `remote` with retail order gives 305. (2) retail stores session->value10 into [esp+0x1c] at 0x5e91b before
+// the 0x769a0 call (its unread owner parameter, see the 0x5e3f0 note); not expressible until 0x769a0 takes it.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
@@ -4587,15 +4598,15 @@ bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *addr
  }
  {
   byte received[0xc0];
+  s_session_member_header *local = (s_session_member_header *)&session->members[session->current_member];
   s_session_member_header *remote = (s_session_member_header *)&session->members[sender];
   memcpy(received, (const byte *)message + 8, sizeof(received));
-  s_session_member_header *local = (s_session_member_header *)&session->members[session->current_member];
   s_session_peer_transition *transition = (s_session_peer_transition *)&session->value7420;
   s_session_peer_map *map = (s_session_peer_map *)transition->map;
   bool better = false;
   bool same = false;
   session_peer_map_update_reachable(local, (s_session_peer_map *)received, remote);
-  session_peer_map_update_reachable(remote, map, local);
+  session_peer_map_update_reachable(local, map, remote);
   long selected = network_session_find_member(session, (const s_session_member_identity *)(received + 0x24));
   long version = *(long *)(received + 0x48);
   long old_version = *(long *)(transition->map + 0x48);

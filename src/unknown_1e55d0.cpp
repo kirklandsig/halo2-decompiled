@@ -67,6 +67,14 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// Walk b3I (11-06): every statement and block checked against retail 0x1e55d0-0x1e5a58 (field offsets, switch table 1..6 with
+// 4/5 shared, case-6 0.3f scale and fistp into the countdown byte, shape compare at 0x1e5740-0x1e5757/0x1e591a, capsule arm at
+// 0x1e5940-0x1e59f9, position range test at 0x1e587f-0x1e58ae, constants 0.3/1e-4/0.001/0.5/+-32768 read from the XBE): no
+// behaviour difference found. Retail inlines 0xb77d0 (0x1e5775-0x1e57e1; angular NULL) and the disabled 0xb7430 position
+// move (0x1e5801-0x1e58ed); the draft writes both out. `function_b77d0(object_index, &velocity, NULL)` instead of the
+// written-out velocity block stays a call: 374 (1076 bytes), and the full build moves its caller 0x118700 from 92 to 148, not kept. Retail's `test ebx, ebx` (0x1e5796) is that
+// inlined parameter's null test and is always false for &velocity, so no behaviour changes. The fast build also
+// inlines the capsule destructor where retail calls 0xdc370 (0x1e59e1/0x1e59f4); full build not affected by this note.
 // MiniMax I (11-05): no new form, no lower score. Retail takes its first argument in eax and keeps the
 // output in ebx and the physics pointer in edi, ours takes all three on the stack; retail's case-3
 // callee 0x1ec690 also takes the input in edi and the state in eax (src/stubs/bipeds.cpp, another lane).

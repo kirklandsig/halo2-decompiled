@@ -149,6 +149,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax B (11-06): no new form, no lower score; retail reads the audible byte from the request and
+// builds the priority and the flag word before it copies the request, this build copies the request first
+// and takes the byte from the copy, and retail still calls 0x221810 where this link expands it.
+// MiniMax C (11-06): no new form, no lower score; this link still inlines 0x221810 so the state flags are forwarded across the call where retail reloads them (0x221810 lives in src/unknown_221490.cpp).
 // MiniMax E (11-06): score 110 (was 110): no new form lowered it. The location copy after the flags
 // (retail's header order) with the priority before or after the flags gives 140/150 and the flags as
 // ternaries 160; the priority read from the request alone is 109 at 472 bytes, a gain of one, dropped
@@ -785,6 +789,9 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // distance looked up just before the along test 197 (676 bytes); the length test arms swapped (`== 0.0f` first) 127 (661
 // bytes). Lead: retail's `pop esi; mov al, 1` is what a scheduler gives when the call is taken to define EAX; the 0x1895f0
 // result reaches callers through 0x189400 -> 0x189210 -> 0xc5890 (0x188180 and 0xc58f0 drop it).
+// Round 155 (m3 lane 6, fast with 0x188180): the play call through a void inline wrapper 35; the result flag as a long
+// 169 (657 bytes); the player unit lookup as a ternary 157 (658 bytes); the forward normalized before the position sums
+// 27; the camera-active exit as an enclosing test with the other exit kept 2.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {
