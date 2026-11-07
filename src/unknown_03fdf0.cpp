@@ -508,6 +508,10 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // so the two starts in the preheader are the question. Entries in a local before/after first 2/2, ahead of the outer test 28; `n + entries` with `n + first` ahead of it 2; first read after the copy 119;
 // index from `previous + n` 142 (496 bytes); `__assume` on the index before/after entry 2/2; entry from `index - first` 2; index as the loop variable, n derived 8, with cursor from it 122 (490); count named in the block 73 (495);
 // index defined inside the entry test, first or after the weight, or `n + first` there 2/2/2; entry by bytes `<< 5`, by `* sizeof` or a named offset 2/2/2; `entries` then `+= n` 2; `first + (short)n` 102; the weight through `first + n` 100; n declared ahead of the selection 14.
+// Round 97 (m3 lane 12, fast): retail's cursor start is a copy of the entries base live across the copy, so its range overlaps
+// first. first split from the chain (`first = previous; current = first;`) 158 (492 bytes); the entry test as an early continue 2;
+// the copy's source pointer named before the copy and stepped as the loop cursor 163 (490 bytes); selection declared ahead of
+// first 2; a named block index for the six block reads 55.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

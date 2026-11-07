@@ -1311,6 +1311,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // parent/mirrored defaults in an else arm 45 (1391); the masked parent index named 44; declarations index, mirrored,
 // parent 46; without the guard, the no-model parent through slot_handler.h's object_get/object_node_matrix 97 (same
 // code). The guard byte pattern (`test; jle; mov reg, 1; cmp; jle`) occurs nowhere else in retail.
+// Round 57 (m3 lane 2, fast, on the 97 base): masked nodes skipped by `continue` 97 (same code); the no-model parent index
+// declared before the defaults 97, with the mirrored flag read first 97 (same code); the no-model 0xbdc40 call written in both
+// arms of the parent test 405 (1406 bytes); the render node count bound to a `long const &` for the default test and the
+// loop bound 97 (same code).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

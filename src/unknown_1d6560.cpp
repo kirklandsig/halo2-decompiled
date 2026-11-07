@@ -100,6 +100,24 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
+// MiniMax A (11-06): no new form, no lower score; retail loads the object-header pool and its data at the
+// entry, keeps the level in EBX, the component in EBP and the rigid body in ESI (three pushes against our
+// one) and reads the type byte once into EAX before the kind test, using it for both routes (the kind
+// route as a decrement and a test, the switch as a table dispatch); ours reads the type in each branch.
+// The recorded one-read forms (111 and 127) move the caller's argument setup and leave the matched caller
+// 0x1d5bf0 at 194 and 209.
+// MiniMax A (11-06): no new form, no lower score; retail reads the object type once before the kind test and uses
+// it for both kind routes, ours reads it in each branch; the one-read forms give 127 (a byte type at the entry),
+// 111 (the header array, the object index and a byte type) and 111 (the component read twice) with the matched
+// caller 0x1d5bf0 at 194, 209 and 209, so the one-read shape is not eligible while the caller is matched.
+// MiniMax H (11-06): no new form, no lower score; the incoming register pair is fixed by the matched caller
+// 0x1d5bf0 (component in eax, rigid body index in ecx, kind in edi, ret 8), and every body that changes that
+// promotion flips the pair and leaves the caller differing, so the type read and the kind 7 route stay where
+// they are: the type hoisted into a byte local 94 with the caller at 13, the data pointer in a local 97 with the
+// caller unchanged, the data local declared first 117 with the caller at 160, the type read through the header
+// object in case 0 129 with the caller at 213, direct returns instead of the result local 98 with the caller
+// unchanged, the object index read again for case 0 91 with the caller at 146, and the flags read through the
+// owner chain without a pointer local 117 with the caller at 122.
 // MiniMax E (11-05): no new form, no lower score: the 24 form needs the object index and the absolute index, each used once (recorded not kept); the header array local with the type hoisted and case 0 through the object index 96 with the caller 0x1d5bf0 at 13.
 // score 96 (was 96): no local frame; retail reads the type once before the kind test (one type read shared by
 // both kind routes, and case 0 through the same header data) and keeps the body array/body in EBP/ESI. Current

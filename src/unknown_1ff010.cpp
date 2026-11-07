@@ -665,6 +665,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Round 87 (m3 lane 16, fast with 0x1ecf50 and 0x2b400): the three tests through a `real const zero` 119 (840 bytes); magnitude and facing tests as
 // `!(<=)`, `!(>=)` 77 (same code); the side test as `!(<=)` 78; the side as a negated cross `< 0` 128 (853); the rotation's cosine as `sine * 0.0f` 138 (861);
 // the cosine named before the sine 77 (same code). The zero's register is still XMM6 in the kept form. Original body restored.
+// MiniMax D (11-06): no new form, no lower score; the test zero is still one XMM register held from above the divide through
+// the rotation, so our `comiss` is scheduled before the `divss` where retail materialises the zero after the scale products
+// and multiplies the rotation's cosine from the constant pool; the rotation is an inlined helper from src/unknown_1eb8a0.cpp,
+// so its body cannot be steered from this file, and a local copy of that body is a form this round does not use.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {

@@ -1562,6 +1562,10 @@ void function_2422d0(long slot)
 // taking the index by const reference 7, or filling an out parameter 7; a NULL object seed before the getter, in the
 // loop or at function top, 7/7; an accepted flag then a reject test 7; a named element pointer with `continue` in the
 // accepted arm 7.
+// Round 172 (m3 lane 4, fast): an accepted flag with the reject arm under `if (!accepted)` 7; the function-scope
+// declarations as result, arrays, count, i 7; count before result 9; i before result and count 7; the scalars
+// before the arrays 7; the table filled by `memset(..., 0xff, ...)` 7. Diagnostics: either second-loop call removed
+// 63/67 (the whole allocation moves).
 // @retail 0x2423f0
 bool function_2423f0()
 {

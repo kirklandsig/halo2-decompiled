@@ -616,6 +616,7 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// MiniMax I (11-06): no new form, no lower score; the view vector copied into a local for the first plane's dot product gives 463 and 452 against 115.
 // MiniMax A (11-05): no new form, no lower score; the plane-0 term still loads `vector_e4.i` after the
 // forward copy and keeps the zero in xmm3 where retail has it in xmm4.
 // score 115 (was 115): coefficient XMM roles, classification operands and projection staging still differ.

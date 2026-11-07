@@ -646,6 +646,9 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // Round 171 (lane 4, fast): channel and secondary indices as one chained NONE store 5 (the word stores swap); both
 // permutation pointers as one chained NULL store 5; the voice index declared after the bit-vector fills 9; the inner
 // bound on the left of the compare 5 (`cmp [ebp], si`); the type counter declared ahead of its for 3.
+// Lane 15 round 62 (fast): definition_type stored without the `(byte)` cast 3; voice_index declared before the
+// system reload 3; the inner bound assembled from the count bytes 122 (607 bytes); the voice index advanced right
+// after the first store 3; stream_reset stored as 0 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1244,6 +1247,10 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax H (11-07): no new form, no lower score (94); the fade block still holds the running
+// difference in another register (ours xmm2, retail xmm3) and still divides by the fade-in time in
+// the other form (ours multiplies by its reciprocal).
+// MiniMax R (11-06): no new form, no lower score (94).
 // MiniMax D (11-06, run 49): no new form, no lower score (94); the first arm's sum still differs (retail loads the gain into a register and adds the interpolation into it), the register rotation (inverse, elapsed, 1.0, fade-out) still differs and the gain is still carried differently into the last arm.
 // score 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
@@ -1408,6 +1415,13 @@ long function_2197f0(real gain);
 // same-ambience group, absent-current gain, rejected attack duration and disabled admission:
 // 183/184/176/184/184/184/165/175. NOT kept: every form regresses and shortens away from retail;
 // original complete body restored; reciprocal/elapsed, first gain load and late attack join remain.
+// Lane 15 round 62 (fast): retail's first arm keeps a true `divss` for the clamp value while its test multiplies by
+// the reciprocal; ours turns `time / fade_in` into `inverse * time`. Divisions in place of the inverse local (the
+// compiler then makes the reciprocal itself, tests by multiplying and keeps the value's divss as retail): with the
+// if-form clamp 145 (681), as a ternary 125 (678 bytes, aligned 58), `t = time / fade_in; if (!(1.0f > t)) t = 1.0f;`
+// 153 (669); the product still takes fade_out before the reciprocal in all three. The inverse local declared before
+// the fade-out test 154 (665: the reciprocal is then hoisted above that test), with a ternary clamp 177, with the
+// clamp's test as a division 184.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2462,6 +2476,11 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax H (11-07): no new form, no lower score (17); the sound set index is still narrowed to a
+// short here (`movsx ebp, ax`) where retail keeps the full value (`mov ebp, eax`), because the
+// callee 0x219070 only reads the low half of that parameter, and the tail still stores the flag
+// byte and the start time in the other order.
+// MiniMax R (11-06): no lower score (17); the movsx at the 0x219070 call comes from 0x218f50 and 0x218f10 returning short (both byte-exact, src/unknown_218ac0.cpp) where retail's caller copies the dword, and declaring them long here scores 80 and leaves the call unresolved.
 // MiniMax E (11-05): no new form, no lower score; merging the two set-chunk calls into one site with the
 // range and permutation indices in named locals gives 193 (short indices) and 192 (long indices) - our frame
 // drops to 8 against retail's 0xc. Reverted.
@@ -2814,6 +2833,11 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax H (11-07): no new form, no lower score (96); retail narrows the first parameter to a word
+// and scales it by nine where ours narrows a later parameter and scales that one, the result still
+// lives in a stack byte in ours and in al in retail, and the frame is 0xc against retail's eight
+// bytes.
+// MiniMax R (11-06): no new form, no lower score (96).
 // MiniMax D (11-06, run 49): no new form, no lower score (96); retail still keeps the result in al (set at the entry, cleared through bl on the failure path and set again after the commit) with an eight-byte frame, ours keeps it in a stack byte with a twelve-byte frame, and retail's failure block still follows the success path.
 // score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
@@ -2974,6 +2998,9 @@ static inline short sound_voice_find_available_channel(char type)
 // original finder, result, defaults and full body restored. Frame and failure tail remain.
 // N397: Complete byte-result, channel, driver, buffer and status native home identities 96/96/96/96/96/96/96/96.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Lane 15 round 62 (fast): `~status & DSBSTATUS_PLAYING` on the byte result 127 (439 bytes), with a bool result 130
+// (430 bytes, aligned 126); status declared at the top 96 or in the channel block 96 (same code); the driver and
+// buffer defaults declared before the search 171 (468 bytes).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3451,6 +3478,11 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // Round 171 (lane 4, fast): with the range in case 0 (78): the class-flag result named before the range 103; the voice
 // read through the array at each use 163 (572 bytes); a const range pointer 78; the callback table in a local 82
 // (on the 24 form 28); 3-20 dead locals at the top, in case 0 or after the switch (diagnostic) 78 each.
+// Lane 15 round 62 (fast): on the 24 form a const range pointer 24 (same code), a long mode 69; with the range in
+// case 0 (78; register-blind only 5: a pure EBX/EBP mirror, the pool and range in EBX, the sound index in EBP): the
+// range declared at the block top and assigned in case 0 78, reason declared before the lookup flag test 78, a const
+// definition pointer 78; the pool global read directly at one of its two uses (entry datum, entry search, loop-end
+// datum or loop-end search) 78 each.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -3897,6 +3929,12 @@ struct s_128ca0
 // pin joins remain.
 // B440: Existing gain operators at raw nested/argument/inner/update producers
 // 262/262/262/269; parallel branches only 316, with raw nested/inner/update 332/332/321.
+// MiniMax H (11-06): score 167 (was 222): the caller's gain and the location's unknown08 are added
+// to the playback's gain through the decibels type (s_decibels' operator+, as 0x21e330's reverb sums do),
+// and the scale is read once into a real local. The frame is retail's 0x494 and the scale stays in xmm2.
+// Not kept: reading the pitch bounds as a pair through &pitch_lower (local_18[0]/[1]) gave 164, three
+// points, under the bar. Still differs: the pitch result and the argument hold swapped stack homes
+// ([0xc] against [0x10]) and the two clamp joins in the tail differ.
 // Raw/complete operators with native reused scale 167/252; adjacent pitch bounds too
 // 164/249. Four pitch/gain/raw-result role-name forms on that graph each 164. Native
 // 0x494 frame and early location load recover, but pitch/gain homes and pin joins differ.
@@ -3945,9 +3983,11 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 	local_3.field_30 = 0;
 	memset((byte *)&local_3 + 0x34, 0, 0x444);
 	s_sound_playback_parameters *local_4 = &SOUND_GLOBALS_DEFINITIONS->playback_parameters[local_2->playback_index];
-	real local_5 = ((real)local_4->pitch_upper - (real)local_4->pitch_lower) * local_1->location.scale + local_1->pitch + (real)local_4->pitch_lower;
-	long local_6 = decibels_add(local_1->location.unknown08, decibels_add(*(long *)&local_1->gain, arg_1));
-	local_6 = function_1251e0(local_2, local_6, local_1->location.scale);
+	real local_17 = local_1->location.scale;
+	real local_5 = ((real)local_4->pitch_upper - (real)local_4->pitch_lower) * local_17 + local_1->pitch + (real)local_4->pitch_lower;
+	s_decibels gain_sum = *(s_decibels *)&local_1->location.unknown08 + (*(s_decibels *)&local_1->gain + *(s_decibels *)&arg_1);
+	long local_6 = *(long *)&gain_sum;
+	local_6 = function_1251e0(local_2, local_6, local_17);
 	function_12a1b0(arg_0, (s_looping_track_sound *)local_1, arg_2, (s_looping_channel_properties *)&local_3);
 	s_sound_pitch_range *local_7 = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[local_2->pitch_range_base + local_1->pitch_range_index];
 	s_sound_permutation const *local_8 = &SOUND_GLOBALS_CHUNKS->permutations[local_7->first_permutation + local_1->permutation_index];

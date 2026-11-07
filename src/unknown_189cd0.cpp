@@ -109,6 +109,10 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // bytes). Every one-load form gives the late object ESI before the sound index is coloured; retail colours the sound index
 // ESI and copies an EBX object into ESI for the call. Plain reads throughout (diagnostic, 116) put the object in EBP and
 // the tag in EDI from the early test on and spill spatialization. Restored.
+// M3 lane 11 r76 (plain): the two arms swapped (the positioned arm as the `if`) 21 (same code), with plain late
+// reads 90; the playback result named for the test, the dispatch and the slot 65 (526 bytes: the merged sound index
+// drops to EAX in the request arm), that with plain late reads 57 (521 bytes, first difference at +0xd1: the late
+// object keeps ESI, the named result EDI); plain late reads with the audible value named before the call 90.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {
