@@ -117,6 +117,17 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // read in the entry block with the arm z, x, y and the scale local 50 (zero/scale/z XMM2/3/4), with the
 // scale at each use 39 (XMM2/4/3); on the x, y, z-read helper, x, y and a zero named before the stores
 // 68 (254 bytes) and the face index named first 68 (254 bytes).
+// Round 156 (m3 lane 6, fast): the face read through its own address as in 0x142570's body 37; x, y, z read at entry
+// and all three re-read in the arm (`x = point->i * face->scale`) 37 (a CL-only compile of that form is retail's code
+// byte for byte; the LTCG link gives the zero XMM2/z XMM3 swap again). LTCG one-file harness (this file, 0x30bf0's file
+// and the ballast; base 8 = real 9): 150 entry-z helpers (read order, which components the arm re-reads, scale local
+// first/last/in the arm, product forms, arm order, row forms) best 38; 60 per-arm helpers best 23 (kept body 8); caller
+// int-part variants (masked index, face pointer first, step local, result local) with the kept, entry-z and re-read
+// helpers best 8/56/38. CL-only, an arm-scoped `real scale = face->scale;` also makes the zero first (7 at 62
+// instructions, x and y copied through the scale register); 54 in the LTCG harness. Fast checks of harness forms:
+// per-arm z with an arm-scoped scale local and x, y re-read in the arm 23; per-arm z with a function-scope scale
+// local and x re-read 24 (zero/z right, product and copy order off); the caller with a named face index and the
+// coordinates named y first 9.
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {
