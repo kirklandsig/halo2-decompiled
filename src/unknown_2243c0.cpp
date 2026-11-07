@@ -217,6 +217,11 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax D (11-06): no new form, no lower score; the fallback lookup still zero-extends the tag index where retail masks it in place in edx, the element reads still use fused addressing with arg_3 in ebp instead of esi, and the four cache zeros still land before the material lookup.
+// MiniMax H (11-06): no new form, no lower score; the fallback lookup's masked tag index still takes a fresh
+// register where retail masks it in place in edx, and the element loads and the fallback path's call order still
+// differ; the only lower form needs by-value tag accessors with the head, stage and pass elements bound, which
+// is a score-picked form.
 // MiniMax A (11-05): no new form, no lower score; the fallback lookup's tag index and the element loads still sit in different registers than retail's.
 // MiniMax H (11-03): no new form, no lower score; the fallback lookup masks the tag into a fresh register where retail masks it in place in edx, and the in-place form scores 152 against 117, so it was dropped.
 // score 117 (was 117): retail keeps the masked index in EDX where ours reuses EAX for the table

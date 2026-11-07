@@ -637,7 +637,7 @@ long function_1eb8a0(
 					if (len > 0.001f)
 					{
 						real len4 = MIN(m, len);
-						real ratio = s->settle_minimum / hi - 0.5f;
+						real ratio = dist / hi - 0.5f;
 						real back = 0.f - len4;
 						position->j = nq.j * back + qr.j;
 						position->i = nq.i * back + qr.i;

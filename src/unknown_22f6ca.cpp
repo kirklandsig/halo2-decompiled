@@ -145,6 +145,8 @@ void function_22fba9(c_class_1473c9 *screen)
 // the model loop's animation start 23; own text/model/both counters with the counter zeroed above the pane call 25/25/25,
 // zeroed inside the if 66/66/66, above the if 23/23/23 (own counters never change the code). In retail the loops with a
 // value0a store reset the offset with `mov` and the text loop (none) with `and`; ours swaps the text and model loops.
+// Round 94 (lane 16, fast): text, model or block-18 element as pointer plus index 23/23/23; `bool const animating` 23;
+// a const pane pointer 23.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

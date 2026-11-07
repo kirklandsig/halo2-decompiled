@@ -1336,6 +1336,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
+// w14B (11-06): walked against retail statement by statement: no logic difference (field offsets, constants,
+// condition directions, call arguments and the result path all agree). Early return (`if (parameters) {...
+// return true;} return false;`) 566: frame 0x28 and the stack-argument load agree, block still in EDX and query in
+// EAX; every order of the type/query/block parameters stays 566 (only 0xd4080 moves, 440-441): the convention
+// follows the body. `bool result = false; ... result = true;` 573 (0xd4080 509); `if (count <= 0) return false;` 561.
+// Retail's statement order (adjusted pinned with lower2/upper2 before base; square formed right after the
+// direction1 negate): pins swapped 560, early square 555, both 547; none kept (0xd4080 363 and 0x3db00 MATCH unchanged).
 // Round 52 (lane 13, fast): the selection loop without the outer count test and the mask in the test 581;
 // that loop with `bool result = false` ... `result = true` 602 (0x3db00 lost); with `if (!parameters) return
 // false;` ... `return true;` 563 (frame 0x28, single count test and constant results as retail; block/query
@@ -1703,6 +1710,15 @@ real function_30bf0(vector3f *vector);
 // Round 398: Original-boundary normal scalar observations, six component read orders, immutable
 // channels and the existing vector setter: 458/458/458/458/458/458/458/457. NOT kept: all regress
 // and grow away from retail; original independent length observation, normal copy and full body restored.
+// score 378 (was 363, volatile dropped per review rule). b3E (11-06): walked against retail 0xd4080 statement by statement: no logic difference (field offsets, constants
+// 0.25/0.75/0.0001/2.0/0.114/0.587/0.299/1.18/0.6/0.4 read from the XBE, pin directions, call arguments, final pin order,
+// `ret 4` with the flag unread). The `flag_reference` lines keep the unread stack parameter (without them the callee drops
+// it: 440, and 0x3db00 loses its MATCH). `volatile` dropped from `mobile` (362 with the set-then-override form, 378 plain).
+// Precision: retail adds the rotation projection as (k + i) + j (0xd4424-0xd4464, axis read live from [eax]); the draft's
+// copied axis compiles to (j + k) + i, and the source order of the three terms does not change that (all 6 orders: two
+// schedules, neither retail's). Axis read live + direction2 rotated in place (retail 0xd4524, 0xd41db-0xd4210) gives
+// (k + i) + j and frame 0x40 but scores 469-480 (separate lighting_rotate_live copy; layered helper gives (j + i) + k and
+// bumps 0xd37f0 to 531): kept on branch agent/b3E-live only. Changing the shared lighting_rotate to a live axis loses 0x3db00.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -1712,9 +1728,7 @@ void function_d4080(long type, s_effect_color_query const *query, long flag, s_l
 	byte *context = (byte *)g_4e0350;
 	vector3f const *input_normal = (vector3f const *)query;
 	real length = (real)sqrt(input_normal->i * input_normal->i + input_normal->j * input_normal->j + input_normal->k * input_normal->k);
-	volatile bool mobile = false;
-	if (type == 0 || type == 1 || type == 2)
-		mobile = true;
+	bool mobile = type == 0 || type == 1 || type == 2;
 	vector3f normal = *input_normal;
 	record->length = lighting_normalize_ordered(&normal, (normal.i * normal.i + normal.k * normal.k) + normal.j * normal.j);
 	color3f base, lightmap;
@@ -1870,6 +1884,9 @@ dword function_015cd0(long index, dword entry);
 // dropped 4 (same code); `result` renamed `status` 4. Callee register sets (0x12ce00, 0x358d0 under 0x1362b0) write the
 // same general registers as retail. A volatile probe (diagnostic, reverted) in callee 0xd1630 or in 0xd30d0 leaves both leas:
 // the rotation comes from this body.
+// Round 97 (m3 lane 12, fast): guard-clause returns for the prelude 49 (328 B); the tag read folded into the prelude test 4;
+// zero-store arm first 4; a dword conversion buffer 4; the tag as structures.cpp's const bsp read 4. Matched 0xd30d0 (same
+// arms) takes EDX/ECX for the two leas, so the step is set by this body's own earlier code.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
@@ -2093,6 +2110,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 
 // MiniMax C (11-06): no new form, no lower score.
 // score 542 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
+// no logic difference (offsets, constants, condition directions, call arguments, result values and the
+// final colour_a/colour_b/normal stores all agree). Remaining difference is stack homes only.
 // Round 52 (lane 13, fast): the format byte as a named byte local before/after the data pointer 555/555;
 // the result as `dynamic_valid ? 0 : 1` 687 (3040 bytes); the result test inverted 555; diagnostic, a flag
 // set in a test (`if (call) dynamic_valid = true;` in both format arms) 553. Retail after 0x24490 holds

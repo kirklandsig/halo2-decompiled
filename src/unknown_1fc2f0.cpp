@@ -9,6 +9,7 @@
 #include "unknown_1cec30.h"
 #include "unknown_1946f0.h"
 #include "object_default_placement.h"
+#include "vector_products.h"
 #include <math.h>
 
 void function_1d4360(s_havok_component *component, transform4x3f *volatile result);
@@ -200,13 +201,27 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax H (11-06): no new form, no lower score; the first difference is at +0x59, retail converting the ticks
+// into xmm3 (the register the rate arrived in) where ours converts them into xmm4, and retail's tick products
+// run j, i, k while its deltas run i, j, k; here the chain order follows the first delta's component and the
+// delta order follows the tick products' order, so that combination has no source form: the deltas i, j, k 79,
+// the chain statements j, i, k with the deltas i, j, k 73, the same with the tick products j, i, k 77, a
+// separate scaled vector 83 and 77 with the chains j, i, k, the tick products j, i, k alone 32 (same code), the
+// tick conversion after the chains 73, the tick conversion and the deltas interleaved 79, and the conversion
+// written at each product 73. Putting the conversion after the chains does put the ticks in xmm3 as retail has
+// them, but the products then copy that register instead of scaling in place, and the conversion at the top of
+// the body scales in place but takes xmm4.
 // MiniMax D (run 46): the rate chains j, i, k with the tick products and the deltas interleaved
 // i, j, k 73 (chains, stores, deltas and the k, j, i sum are then retail's, but the tick products
 // run i, j and the tick stays in XMM4); the products grouped 77; the conversion after the chains 73
 // (XMM3 as retail, but the chains run k, j, i and the products copy the tick register); the velocity
 // copied before the subtractions 34; the deltas i, j, k 79.
-// score 32 (was 32): Frame 0x10 and prediction prefix agree; first +0x59 converts ticks
-// into XMM4 rather than XMM3. Velocity/delta scheduling and correction products/adds remain.
+// MiniMax D (11-07): the prediction runs through the existing vector3f_add_scaled into a predicted point and
+// the ticks through the existing scaled_difference3f (the same arithmetic as the hand-written chains): 32, with
+// the tick conversion in XMM3 as retail's. Not kept: the deltas reordered to k, i, j for 30 (an order picked by
+// score; i, j, k with the helpers 79).
+// score 32 (was 32): frame 0x10 and the prediction prefix agree; first difference at +0x65: the velocity stores
+// and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // Earlier: the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
@@ -580,6 +595,12 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // `long ticks` local converted at the call 32, `delta` declared before `velocity` 32 (all the same code: the sum is
 // reassociated to (k + i) + j for deltas j, i, k). On this body: the tick products written `tick_scale * v` 32 (same
 // code); the else arm's copy per component 89 (352 bytes).
+// Round 57 (m3 lane 2, fast with 0x1fc660): the fallback copy as memcpy 32 (same code); on round 46's helper prediction
+// (vector3f_add_scaled into a predicted point, scaled_difference3f with the ticks, deltas k, i, j; re-measured 30): the
+// prediction computed in place in velocity (no predicted point) 58 (369 bytes); the correction sums written correction
+// first 30 (same code); rate and tick scale named before the helpers 61 (the ticks leave XMM3 again); the predicted point
+// copied from +0x38 and scale-added in place 126 (395 bytes). Diagnostic, reverted at once: the limit's rate read through a
+// volatile field cast 32 (ticks still XMM4: the rate local's live range is not what holds XMM3; the conversion's place is).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
@@ -591,22 +612,9 @@ void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_
 	function_1fc660(*tracked_reference, state, output);
 	real rate = g_510c54->rate;
 	long ticks = g_510c54->field_2_3;
-	real tick_scale = (real)ticks;
-	velocity.i = state->velocity.i;
-	velocity.j = state->velocity.j;
-	velocity.k = state->velocity.k;
-	velocity.i *= rate;
-	velocity.i += state->unknown38.x;
-	velocity.i -= state->unknown2c.x;
-	velocity.j *= rate;
-	velocity.j += state->unknown38.y;
-	velocity.j -= state->unknown2c.y;
-	velocity.k *= rate;
-	velocity.k += state->unknown38.z;
-	velocity.k -= state->unknown2c.z;
-	velocity.i *= tick_scale;
-	velocity.j *= tick_scale;
-	velocity.k *= tick_scale;
+	vector3f predicted;
+	vector3f_add_scaled((vector3f const *)&state->unknown38, &state->velocity, rate, &predicted);
+	scaled_difference3f(state->unknown2c.n, predicted.n, (real)ticks, velocity.n);
 	delta.j = velocity.j - state->velocity.j;
 	delta.i = velocity.i - state->velocity.i;
 	delta.k = velocity.k - state->velocity.k;
