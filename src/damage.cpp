@@ -979,6 +979,11 @@ PRIVATE inline long damage_object_root(long object_index)
 
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// MiniMax G (11-06): matches only when the three object lookups call 0x175d70's file-local noinline copy of
+// 0xbadc0 (object_get_175d70) from here, which keeps them out of line as retail has them; held under the
+// noinline ruling (an existing noinline copy called from another file is the same steer), patch kept. The rest
+// of that body (the s_player_iterator scan, a squared-distance helper called at both tests, the mask in a local
+// before 0xbb050, the last object index declared first) with the lookups through 0xbadc0 is 246.
 // MiniMax G (11-04): no new form, no lower score; the first 0xbadc0 call only leaves the line behind a second
 // count test (248), and the squared distance at both tests (284) or with the mask in a local (275) is worse.
 // MiniMax E (11-06): no new form, no lower score; the first 0xbadc0 use is still expanded here while
@@ -1757,6 +1762,9 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 // MiniMax G (11-04): no new form, no lower score; the two call setups still follow 0xd9d60's convention.
 // MiniMax E (11-06): no new form, no lower score; the two call setups still follow the conventions their
 // own unmatched bodies decide, so this stays behind 0xd9d60 and 0xda110.
+// MiniMax G (11-06): no new form, no lower score; the instruction stream agrees with retail except for one
+// extra `push eax` before the call to 0xda110, whose index retail passes in EAX; that transport is the
+// callee's own convention. BLOCKED-BY 0xda110.
 // score 82 (was 96): the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
 // its index in EAX, 0xd9d60 its flag in AL); both are back-edge targets of the link-time walk. BLOCKED-BY 0xd9d60.
 // Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
@@ -2395,6 +2403,9 @@ void function_176330(point3f const *point, s_effect_marker *markers);
 // MiniMax E (11-06): no new form, no lower score; the flag stays on the stack because the call cycle
 // through 0xdae60, 0xda110 and 0xdaaa0 gives this body the plain convention, and retail's AL form
 // needs the four stub bodies enabled, which cost two matched callers.
+// MiniMax G (11-06): no new form, no lower score; the flag is read from the stack (`mov al, [esp + 4]`)
+// where retail takes it in AL, and that register is this function's own convention, which the call cycle
+// through the stubbed bodies outside this file settles. BLOCKED-BY 0xb8540.
 // score 69 (was 69): retail takes the flag in al, the marker name in ecx and the object index in edx, with two stack
 // arguments (`ret 8`); the parameter order marker, object, flag, effect, owner is the one that gives that assignment
 // (the other orders put the flag in cl or dl, 81), but only while fewer callers pass it. With the calls of 0xdaaa0
@@ -4190,6 +4201,9 @@ void function_db670(long object_index, long vehicle_index)
 // MiniMax E (11-06): no new form, no lower score; the mode-1 call needs 0xd9d60's retail convention
 // (the flag in AL and two stack arguments), and with the flag on the stack ours pushes three, so the
 // permutation base stays in EDX, EDI is saved only in the other arm and the frame offsets differ.
+// MiniMax G (11-06): no new form, no lower score; the effect flag is computed in EDX and passed on the
+// stack, retail computes it in AL and passes it in a register, and the permutation base stays in EDX
+// where retail keeps it in EDI. BLOCKED-BY 0xd9d60.
 // score 28 (was 38): frame 0x40 and ingress agree; late EDI save and callee transport remain.
 // The effect flag stays on the stack rather than AL; the destruction permutation stays on the stack
 // rather than EAX. The info argument is now on the stack as retail.
@@ -4834,6 +4848,9 @@ struct s_damage_object_creation
 // MiniMax E (11-06): no new form, no lower score; the mask's zero store, the piece loop's guard order
 // and the last two lookups' scratch registers remain, and the shared loop counter and the permuter's
 // variant only reach 217.
+// MiniMax G (11-06): no new form, no lower score kept; the mask's zero is stored before the mask block,
+// where retail stores it in the node loop's preheader; storing it inside the block gives retail's store and
+// nop but a different frame layout (170). Retail's guard order and its do-while search each cost four bytes.
 // score 156 (was 174): frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
