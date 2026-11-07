@@ -3439,6 +3439,9 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // MiniMax A (11-04, run 41): no new form, no lower score (44); the frame is still 0x3c against retail's 0x38,
 // which waits on 0xe70b0's return type.
 // MiniMax D (11-01): no new form, no lower score.
+// MiniMax A (11-07, run 54): no new form, no lower score (44); the frame is still 0x3c against retail's
+// 0x38 (the action short keeps a 4-aligned slot and the two bytes under the flags go unused), which
+// waits on 0xe70b0's return type.
 // score 44 (was 44): BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38. Measured from
 // the frame top every slot agrees except the action short (ours 4-aligned below the 4-byte slots,
 // retail 2-aligned with the two flag bytes under it) and the control/definition pair; VC7.1 gives a
