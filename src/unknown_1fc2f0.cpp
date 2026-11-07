@@ -9,6 +9,7 @@
 #include "unknown_1cec30.h"
 #include "unknown_1946f0.h"
 #include "object_default_placement.h"
+#include "vector_products.h"
 #include <math.h>
 
 void function_1d4360(s_havok_component *component, transform4x3f *volatile result);
@@ -215,7 +216,14 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // run i, j and the tick stays in XMM4); the products grouped 77; the conversion after the chains 73
 // (XMM3 as retail, but the chains run k, j, i and the products copy the tick register); the velocity
 // copied before the subtractions 34; the deltas i, j, k 79.
-// score 32 (was 32): Frame 0x10 and prediction prefix agree; first +0x59 converts ticks
+// MiniMax D (11-07): score 30 (was 32): the prediction now runs through the existing
+// vector3f_add_scaled into a predicted point and the ticks through the existing scaled_difference3f, so the
+// chains and the tick conversion agree with retail (XMM3) and the first difference moves to +0x65. The
+// velocity stores and the deltas still run j, i where retail runs i, j, so the squared length sums
+// (j + i) + k against retail's (k + j) + i, and the correction products are all scale * delta where retail
+// scales the j and k deltas in place and forms the three products before the load-first adds.
+// score 30 (was 32): Frame 0x10 and prediction prefix agree; the tick conversion now takes XMM3 as retail's.
+// The velocity stores and the deltas run j, i where retail runs i, j, and the correction products and adds differ.
 // into XMM4 rather than XMM3. Velocity/delta scheduling and correction products/adds remain.
 // Earlier: the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
@@ -607,25 +615,12 @@ void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_
 	function_1fc660(*tracked_reference, state, output);
 	real rate = g_510c54->rate;
 	long ticks = g_510c54->field_2_3;
-	real tick_scale = (real)ticks;
-	velocity.i = state->velocity.i;
-	velocity.j = state->velocity.j;
-	velocity.k = state->velocity.k;
-	velocity.i *= rate;
-	velocity.i += state->unknown38.x;
-	velocity.i -= state->unknown2c.x;
-	velocity.j *= rate;
-	velocity.j += state->unknown38.y;
-	velocity.j -= state->unknown2c.y;
-	velocity.k *= rate;
-	velocity.k += state->unknown38.z;
-	velocity.k -= state->unknown2c.z;
-	velocity.i *= tick_scale;
-	velocity.j *= tick_scale;
-	velocity.k *= tick_scale;
-	delta.j = velocity.j - state->velocity.j;
-	delta.i = velocity.i - state->velocity.i;
+	vector3f predicted;
+	vector3f_add_scaled((vector3f const *)&state->unknown38, &state->velocity, rate, &predicted);
+	scaled_difference3f(state->unknown2c.n, predicted.n, (real)ticks, velocity.n);
 	delta.k = velocity.k - state->velocity.k;
+	delta.i = velocity.i - state->velocity.i;
+	delta.j = velocity.j - state->velocity.j;
 	real length_squared = length_sq3f(&delta);
 	limit = g_510c54->rate * 0.5f;
 	if (!(limit * limit > length_squared) &&
