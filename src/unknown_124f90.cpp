@@ -646,6 +646,9 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // Round 171 (lane 4, fast): channel and secondary indices as one chained NONE store 5 (the word stores swap); both
 // permutation pointers as one chained NULL store 5; the voice index declared after the bit-vector fills 9; the inner
 // bound on the left of the compare 5 (`cmp [ebp], si`); the type counter declared ahead of its for 3.
+// Lane 15 round 62 (fast): definition_type stored without the `(byte)` cast 3; voice_index declared before the
+// system reload 3; the inner bound assembled from the count bytes 122 (607 bytes); the voice index advanced right
+// after the first store 3; stream_reset stored as 0 3.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1412,6 +1415,13 @@ long function_2197f0(real gain);
 // same-ambience group, absent-current gain, rejected attack duration and disabled admission:
 // 183/184/176/184/184/184/165/175. NOT kept: every form regresses and shortens away from retail;
 // original complete body restored; reciprocal/elapsed, first gain load and late attack join remain.
+// Lane 15 round 62 (fast): retail's first arm keeps a true `divss` for the clamp value while its test multiplies by
+// the reciprocal; ours turns `time / fade_in` into `inverse * time`. Divisions in place of the inverse local (the
+// compiler then makes the reciprocal itself, tests by multiplying and keeps the value's divss as retail): with the
+// if-form clamp 145 (681), as a ternary 125 (678 bytes, aligned 58), `t = time / fade_in; if (!(1.0f > t)) t = 1.0f;`
+// 153 (669); the product still takes fade_out before the reciprocal in all three. The inverse local declared before
+// the fade-out test 154 (665: the reciprocal is then hoisted above that test), with a ternary clamp 177, with the
+// clamp's test as a division 184.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2988,6 +2998,9 @@ static inline short sound_voice_find_available_channel(char type)
 // original finder, result, defaults and full body restored. Frame and failure tail remain.
 // N397: Complete byte-result, channel, driver, buffer and status native home identities 96/96/96/96/96/96/96/96.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Lane 15 round 62 (fast): `~status & DSBSTATUS_PLAYING` on the byte result 127 (439 bytes), with a bool result 130
+// (430 bytes, aligned 126); status declared at the top 96 or in the channel block 96 (same code); the driver and
+// buffer defaults declared before the search 171 (468 bytes).
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3465,6 +3478,11 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // Round 171 (lane 4, fast): with the range in case 0 (78): the class-flag result named before the range 103; the voice
 // read through the array at each use 163 (572 bytes); a const range pointer 78; the callback table in a local 82
 // (on the 24 form 28); 3-20 dead locals at the top, in case 0 or after the switch (diagnostic) 78 each.
+// Lane 15 round 62 (fast): on the 24 form a const range pointer 24 (same code), a long mode 69; with the range in
+// case 0 (78; register-blind only 5: a pure EBX/EBP mirror, the pool and range in EBX, the sound index in EBP): the
+// range declared at the block top and assigned in case 0 78, reason declared before the lookup flag test 78, a const
+// definition pointer 78; the pool global read directly at one of its two uses (entry datum, entry search, loop-end
+// datum or loop-end search) 78 each.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
