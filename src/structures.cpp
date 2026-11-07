@@ -171,6 +171,9 @@ static __forceinline bool structure_bsp_collision_available()
         *(long const *)((byte const *)g_4e0344->bsp + 4) == *(long const *)((byte const *)g_4e0348 + 8);
 }
 
+// MiniMax I (11-06): 45, not kept: the model query's result stored in `result` with a new `goto done` to the
+// shared exit in place of the early return (retail's 286 bytes, same code otherwise); a goto main's body does
+// not have is kept only with a byte match.
 // score 53 (was 53): frame 0x60/prefix agree; exclusion BL and source-slot rewrite/reload remain absent; the byte result
 // is still normalized with setne at both exits.
 // Earlier at 53 (was 61): the 0xbf9a0 probe is inverted, so the 0x14a8e0 return is laid out after the requery as
