@@ -593,6 +593,14 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // frame slot (80, frame 0x108); state copied into a local 135, an opaque call in the loop 21/82, either or
 // both 0xb8d30 calls removed, and 0x142a60 non-naked: order unchanged. In our image the reversed pair (global
 // before stack) occurs only here and in 0x14b6a0; retail never has it.
+// Round 69 (m3 lane 13, fast, all on the held re-read form at 2): the function moved ahead of every tag-table use in
+// the file (diagnostic for the table global's symbol order) 2; the entry graph through graph_tag_get 2; both arms'
+// graphs through it 2; a block-scoped graph local per arm 2, with graph_tag_get 2; `found` declared before the loop 2;
+// the unit lookup folded into the definition read 2; entry and arm graph_tag_get together 2; a tag-table local at the
+// loop top for the two arms' lookups 2; the same local at the walk's entry 147 (frame 0x108); the source name as a
+// two-use local 11; a do/while on `found` with the pair block under `if (found)` 2. Every callee under the loop's calls
+// is matched C (0x142a60 under 0x1d90e0 is naked asm in our source); the re-read and the back-edge order
+// both look like retail's compiler assuming the calls may write the iterator and the table, which our LTCG rules out.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1579,6 +1587,16 @@ long function_cbd50(long unit_index, short weapon_index);
 // argument (no parameter address) 324 (1287 B); if-form with byte depleted/interruptible 330 (1292 B); if-form
 // with the interruptibility test first in the controlling block 330 (1292 B), plus the plain argument 327
 // (1279 B); if-form, plain argument and bool result 367 (1238 B).
+// Round 69 (m3 lane 13, fast; aligned/masked difflib counts in brackets, control [132/49]): a headers local (the pool's
+// data) in the controlled block for both weapon-object reads with the if-form depletion 326 (1292 B) [100/61]: the flags
+// take retail's +0x11..+0x13 slots and entry stores and the first query re-derives the unit through the data, but
+// depleted stays in memory; the headers local at entry (unit read through it) 325 (1286 B, retail's length, EBP data
+// from entry) [120/64], with interruptible declared before depleted 324 (only the entry store order moves), with the
+// controlling field tested directly 325 (same code), with the first depletion as an expression 328 (1293 B) [118/60].
+// On these forms the overlay keeps EBX for the whole body and depleted has no register; retail spills the overlay and
+// splits depleted (memory home for the initial false, BL from the first query on) because EAX (pool) and EDX (index*12)
+// stay live for the second query's fresh data load, which none of these forms reproduce. On the headers-at-entry form:
+// the controlling read before the overlay and name reads 325; the second weapon object through the pool macro 325.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -2588,6 +2606,11 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // Round 69 (m3 lane 14, fast): the fallback lookup assigned inside the NONE test's condition 16 (same code); the sound
 // index stored before the delay 23, first after the memset 24; the definition index stored after the delay 44; the
 // output written through a `long &` reference to the priority parameter 16 (same code).
+// Round 69 (m3 lane 13, fast): the fallback result in its own short local copied to the index after its NONE test 17;
+// the extra arms inverted (defaults under `!extra` first) 29; the request value-initialised (`= s_request_114b60()`)
+// for the memset 105 (272 bytes, temporary plus copy); the default arm's NONE stores chained 16 (same code); the index
+// from an if/else on entry_index with extra copied as an aggregate 16; the request cleared before the 0x114520 query 83
+// (254 bytes); the extra filled before the common fields 85 (228 bytes).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -3579,6 +3602,10 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // The channel workspace at function scope 44; `result = force_overlay = false;` after plain declarations 44;
 // `*flag = false;` first, before the unit lookup 79 (669 B); the state looked up before the definition 54;
 // action and overlay declared before the flags with force before result 44.
+// Round 69 (m3 lane 13, plain; --fast still builds any edit at 687 bytes): still BLOCKED-BY 0xe70b0 (its file avoided
+// again). The state looked up before control and definition 55; definition declared before control 52; control declared
+// after state 52; the action short declared before the two flags 44; the force flag declared before the result 44;
+// the `type < 3` test after the state test 84; the set passed directly with no selected-set local 120.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)
