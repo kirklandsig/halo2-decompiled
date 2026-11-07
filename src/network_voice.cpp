@@ -150,6 +150,7 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 	return result;
 }
 
+// MiniMax h (11-06): no new form, no lower score: the engine address bound after the guard (8), bound as a declaration initializer (8), read from the member at each use (8) and a volatile result (30) all sink the push of ebp into the guarded block, while a reference to the member keeps that push at the entry but loads the address before the branch (6).
 // Round 19: unchanged; retail loads the engine address after the guard branch and ours loads it
 // before it. Binding the address inside the guarded block lets MSVC sink `push ebp` into that
 // block and re-encode the stack slots: null-initialised, redeclared, the result pointer moved
@@ -165,6 +166,9 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // E_FAIL-initialised status tested after the guarded creation 39, with the field
 // address in the creation call 42, with the stored result 26; plain store
 // through the result pointer 36.
+// MiniMax D (11-06): no new form, no lower score: binding the engine pointer after the guard still sinks
+// the push of ebp into the guarded block, and the permuter run on this function reached its time limit
+// without a measured variant.
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
@@ -1408,6 +1412,7 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // M400: Shared membership seeded from its active byte, bool/byte/signed-char/short/word/
 // long/dword/int storage: 94/94/94/146/146/133/133/133. NOT kept: every form
 // raises shared-user scores; original false-seeded helper and target body restored.
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1461,6 +1466,7 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
+// MiniMax h (11-06): no new form, no lower score: all 24 orders of the capacity, size, written and mask statements were measured and the current one is the best (134); every order with the mask first (135-171) moves the player onto the stack and breaks 0x56380, so retail's mask in EBX, its literal zero store and its single epilogue stay out of reach.
 // score 134 (was 134): the retained mask is a plain local and the pre-loop statements run capacity,
 // size, written, mask: the bit (EBP), size (EBX), count (ECX), the frame order i/written/kept/size/bit
 // and the single mask read at the end now agree with retail. Still differs: EAX's zero is reused for
@@ -1583,6 +1589,7 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // retail's schedule order (kept, written, capacity, entry size) 137 (445 bytes, player on the stack, 0x56380 13); the
 // player bit declared at function scope ahead of the result 134 and entry size/written/kept declared at the top of the
 // active block 134 (both same code). Restored.
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -1722,6 +1729,7 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax h (11-06): no new form, no lower score: the remaining gap needs the two session getters and 0x53bb0, which live outside this file.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
@@ -1810,6 +1818,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // M400: Immutable original membership/local/remote bindings, all seven subsets, then
 // all with immutable input/player-bit bindings: 85 each. Original bindings restored;
 // no readiness/query boundary or remote residency change; all calibrated controls unchanged.
+// MiniMax D (11-06): no new form, no lower score: retail reads the flag byte before the mask and passes
+// the address of the settings member, an address the comparison cannot map, so the call setup differs
+// in more than the register order.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3603,6 +3614,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax h (11-06): no new form, no lower score: with the packet cursor advanced on its own the member word takes ebp over the channel (164), and retail's channel in ebp, advancing cursor in edi and stride in esi stay out of reach together.
 // score 139 (was 139): channel/cursor/count registers and route homes differ;
 // Round 19: unchanged; retail keeps the channel in ebp from entry and the cursor in edi, ours
 // gives the member index ebp and reloads the channel; no new form was found.
@@ -3795,6 +3807,7 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // DH385: Packed recipient-word memcpy/memmove on original/cursor and scalar/bulk-route
 // graphs: 139/188/164/187/152/183/172/179. NOT kept: no gain or native channel-home recovery;
 // original word read, live counts, packet induction, route stores and whole body restored.
+// MiniMax D (11-06): no new form, no lower score.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

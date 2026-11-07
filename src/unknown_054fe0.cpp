@@ -1702,6 +1702,18 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// Walk vs retail 0x64d70-0x65278 (b3G, 11-06, statement by statement): no behaviour difference found. Checked: state/value18/live
+// range guards; get_values_4d08 outputs (map, map_variant, map_data) and the pre-call name pointer; memset 0x714; header
+// words; type/local/mode; wcsncpy(.., 0x1f) + name[31]; id/key behind `state && flag24` (retail's per-destination null
+// tests are the inlined getter's, equal in effect); identity from member_index; full-session vs open-slot branch and the
+// mode 0/1/2 stores (0x98/0x94, 0x9a/0x96, 0x9a); variant 2/1; state; game_type/map/option/map_variant/teams;
+// statistics gate (+0x1120, state 2, state 3); player loop (mask, stride 0x13c, sort fields, i != NONE && i >= 0 &&
+// i < high_water, +0xc0 team, 0xff); sort; copy-out strides; team scores/mask. No float code.
+// New evidence on the cmovne (b3G, fast): `// @flags /O2 /Ob1 /arch:SSE /Gr` on this file leaves the other 58 functions
+// in it MATCH (fast) and turns `short state = 0; if (g_527330.initialized) state = (short)g_527330.state;` into
+// retail's `xor esi,esi / test al,al / cmovne esi, [0x527334]` (the `?:` form still compiles to neg/sbb/and). 64d70
+// then scores 353 (positional: the prologue and membership homes remain), so it is not kept here; the flag line is
+// outside this function's edit scope, so it is for the coordinator to full-check.
 // MiniMax I (11-05, run 37): no new form, no lower score (339); retail's cmovne needs /arch:SSE, which this file's flags do not set, and retail's inlined 0x5a680 is out of line here.
 // MiniMax R (11-01): no new form; the retail prologue shape (global pointer then field at 0x741c,
 // then the 2/8 range tests) is not reachable from this body without the inlined membership helper.

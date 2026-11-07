@@ -70,6 +70,7 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
+// MiniMax R (11-06): no new form, no lower score (371); the frame is 0x38 here and 0x34 in retail, and this takes a frame pointer where retail keeps the connection in EDI.
 // score 371 (was 393): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
 // and counter homes remain.
 // MiniMax I (11-01): 374 with the has-host and packet flags as words (score-picked, see below), the record as

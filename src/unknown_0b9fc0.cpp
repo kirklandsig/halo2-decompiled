@@ -702,6 +702,9 @@ struct s_component_property_view
 // early); result declared first 13; index term first in the address 13;
 // 0x1d3550 declared (key, value, positive) 13 (diagnostic only, its file was
 // held this round). All restored.
+// MiniMax D (11-06): no new form, no lower score: retail loads the value argument before the
+// component lookup and the key last, and the callee 0x1d3550 takes its arguments in the order its
+// declaration in src/unknown_1cec30.cpp fixes, so that order is reported here rather than changed.
 // @retail 0x11bd60
 bool __stdcall function_11bd60(long object_index, long key, long value, long positive)
 {

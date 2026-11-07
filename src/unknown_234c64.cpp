@@ -322,6 +322,10 @@ void c_window_channel::v9()
 // call or the load call inside its own `do { } while (false)` 3/3; the builder in its own block 3 (a block
 // boundary does not stop the ECX copy). An inline constructor taking the builder's arguments was not tried: it
 // is the same one-caller wrapper as round 26's method.
+// Round 77 (lane 10, fast): a two-use parameters pointer after the builder for the load and set_next 3; the
+// request constructor forced inline 3; the builder through a forced-inline helper taking the request by
+// reference 3 (diagnostic: a reference parameter folds back like a pointer one); a two-use load-procedure
+// local after the type clear 29 (79 bytes), at the top of the block 29.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

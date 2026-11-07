@@ -488,6 +488,7 @@ bool sound_driver_voice_create_buffer(
 	return result;
 }
 
+// MiniMax I (11-06): no new form, no lower score; the two flag bytes still take the opposite roles of retail's (retail copies the flags byte into BL and keeps the play bit in the stack byte, ours keeps the play bit in BL and the 3D bit in the stack byte), and the EAX and ECX roles for the voice offset are still swapped; this round the play bit written as (flags >> 1) & 1, the 3D bit through a byte cast and the two declarations in both orders score 71, 71, 71 and 182, and the 24 statement orders of the voice, count and flag block score 68 at best, a gain of three that the keep rule drops on a function still above 30, so the original body stands.
 // score 71 (was 71): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
 // and the failure exit agree. Still differs: the 3D bool sits in a stack byte and the play bool in BL where
 // retail keeps the 3D bool in BL and the play bool in the stack byte; with that, the EAX/ECX roles for the
@@ -792,6 +793,11 @@ bool sound_driver_voice_create_buffer(
 // P351: Raw playback-bit byte/word/long/dword with playback-first/spatial-first production:
 // 79/152/166/166/179/165/168/168. NOT kept: no byte match; spatial/play and descriptor zero/input homes remain.
 // Original complete body and existing helpers restored.
+// Round 135 (m3 lane 7, fast with 0x191420, which stays matched): the 3D flag first with a word (zero-extended) voice index
+// and a long result 155 (the voice index takes EBP, both bools spill); `__assume(voice_index >= 0)` after the range test 71
+// (same code), with the 3D flag first 182 (599 bytes); the 3D flag first with the voice reference indexed by the count field
+// 193 (589); the 3D flag first with the 3D failure decrement through the `globals` local 141 (618 bytes: globals then holds
+// ESI to the end and the voice index spills as retail, but the zero takes EBX and both bools still spill).
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

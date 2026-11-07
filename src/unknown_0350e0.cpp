@@ -70,6 +70,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax H (11-06): score 356 (was 356): no new form, no lower score.
+// Retail builds both matrices from the same two axis angles and rotates with the same nine-component sums
+// as the source, so the remaining difference is scheduling: our frame is 0x98 against retail's 0x90, we
+// keep the sine and cosine of the two axes in xmm4, xmm5 and xmm6 where retail uses xmm0, xmm3 and xmm7,
+// and the nine published components land in different stack homes.
 // MiniMax R (11-01): no new form, no lower score.
 // score 356 (was 356): second pass walked retail 0x39e50-0x3a540 formula by formula and found no behaviour
 // difference: both matrices (forward axis angle step*0.5 from 0x485624.., up axis angle step*0.3 from 0x485630..,
@@ -832,6 +837,10 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
 // mod-set size limit; retail never takes 0x4858c4's address. Tried: the tag in a local for the tests 26; NULL and 1/0
 // spellings 26; a const shader pointer for the tests 26; the call's tag named after 0x1bd50 26; an early return 26.
 // The storage merge also needs src/unknown_03f2b0.cpp's declaration changed with the other declaring files.
+// Round 171 (lane 4, fast): a typed shader-header view with the 'shad' constant 26; the character constant alone 26;
+// the zero test first 26 (same code); the flag set after the call 31; the non-fast constant upload 61 (129 bytes).
+// A storage aggregate from 0x4858c4 to 0x485a5c takes in about 25 globals over seven files, among them
+// src/unknown_03fdf0.cpp (g_485950).
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -1708,6 +1717,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (193); retail still keeps the result in its own stack slot (0.0f at the entry, filled by the atan2 tail, one shared `movss xmm0, [result]` at the end, frame 0x18) where ours keeps the zero in xmm0, returns early on each path and reuses the scale slot for the x87 result (frame 0x14).
 // MiniMax R (11-01): no new form, no lower score: the five-way switch still evaluates the cross products in our order and allocates the XMM registers differently.
 // score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // Retail keeps `result` in its own stack slot (stored 0.0f at entry, fstp'd into by the atan2
@@ -1880,6 +1890,11 @@ PRIVATE inline real clamp_2e9e0(real value)
 
 real game_time_get_seconds();
 
+// MiniMax H (11-06): score 507 (was 507): no new form, no lower score.
+// The argument order into function_480a0, the field offsets, the constants and the loop shape all agree with
+// retail; what is left is the frame (0x90 against retail's 0x94), the sentinel register (we keep the -1 in
+// ebx and retail keeps it in ebp, so the saved-register layout differs) and the stack homes of the sentinel
+// and of the definition pointer.
 // score 507 (was 507): Frame 0x90 versus 0x94, output homes and definition/NONE registers remain.
 // MiniMax R (11-01): no new form, no lower score.
 // Earlier (507 (was 508, 594 originally)): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
@@ -2475,6 +2490,10 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // M387: Shared scale array traversal on the recovered final-sample graph: forward long/int/dword/uint
 // 0/0/0/0; reverse predecrement 273/273/348/348. Forward plain 0 at 965/965, NOT kept:
 // shared users worsen and 25 matches are lost. Original shared scaler restored; middle product fold remains.
+// Round 171 (lane 4, fast; header restored): normalize3d scaling in place with a component loop, `*=` or `= s *`,
+// 27/27 (only the scaler's separate input and output pointers give the fold); three compound statements 27; the
+// reciprocal named before the scale call 27; the length test inverted 27. Diagnostic: 9/16/30 dead locals ahead of
+// the sampling 27 each (symbol count does not move it).
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2525,6 +2544,11 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax H (11-06): score 170 (was 170): no new form, no lower score.
+// Retail computes the angle through a single-precision arccosine wrapper (0x322bd8) that loads the dot
+// product as a float from [esp+0xc]; we keep a double-precision copy of the dot at [esp+0xc] and call the
+// double arccosine (0x48a538) instead. The magnitude homes also differ: retail keeps the raw length in its
+// own slot and the pinned value in another, where we reuse one slot for both.
 // score 170 (was 170): plain fallback component loop recovers retail frame 0x38;
 // first +0x30 stores the raw length at +4 rather than +0xc; rotation allocation still differs.
 // MiniMax R (11-01): 132 with the shared or staged axis cross and the rotated components as named locals, but it costs 0xc2d00 its match in the full build like the held cross3f form, so it is not kept; the named components alone (182) and the axis written out in the helper's operand order (182) change nothing.
@@ -2718,6 +2742,7 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
+// MiniMax D (11-06, run 49): no new form, no lower score (113); the input list still rides in ebp from the entry, retail spills it and reloads it at the loop top and keeps the total on the stack, the index in ebx and the cursor in ebp.
 // score 113 (was 132): frame 0x9c versus 0xa0: retail keeps a spilled list local (reloaded at the loop
 // top) and the total on the stack, the index in EBX and the cursor in EBP; ours holds the total in EBP.
 // Earlier at 132: frame 0xa0 and loop constants agree; first +0xb saves
@@ -2944,6 +2969,11 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// MiniMax H (11-06): score 317 (was 317): no new form, no lower score.
+// The four passes, both sorts, the decay and growth loops and the output copy all agree with retail; what
+// is left is register allocation. Retail keeps the admission counter in edx and the entries base in ebp,
+// while we keep the counter in ebp and the base in edx, and the two stack homes follow: retail stores the
+// counter at [esp+0x10] and the base at [esp+0x14], we store them the other way round.
 // score 317 (was 317): the logic was walked against retail block by block (0x4ac30-0x4b159) and
 // agrees: the four passes (pairs to the front, first flagged entry, drop of just-created flagged entries, duplicate
 // key removal), both sorts (modes 1 and 2), the decay loop, the growth loop and the output copy. What is left is
@@ -3167,6 +3197,11 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// MiniMax H (11-06): score 486 (was 486): no new form, no lower score.
+// The frame is the main difference: retail's is 0x38 against our 0x60. Retail keeps the entry pointer in
+// edx and the object pointer in ebx and reads the three velocity components back from memory before both
+// square roots, while we push four registers, keep the velocity in registers and spill the results through
+// the stack. The rest of the loop and the two square roots agree.
 // score 486 (was 517): frame 0x60 versus 0x38; retail reads the added velocity back from memory for both square
 // roots (ours spills its registers), and the projection results are copied through the stack.
 // Earlier at 517: frame 0x60 versus 0x38; stored velocity reads and loop homes differ.
@@ -3569,6 +3604,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (177); the frame is still 0x18 against retail's 0x1c, and the initial alpha and kind stores and the final fade scratch stores keep our order.
 // MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
 // score 177 (was 177): Frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
 // Earlier 175/194: the alpha is read from function_4baf0's second output (the byte pushed
@@ -3986,6 +4022,13 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
     corner->z += 0.001f;
 }
 
+// MiniMax H (11-06): score 231 (was 231): no new form, no lower score.
+// The corner geometry does not match retail: retail's four corners are (-r,-r), (-r,+r), (+r,+r) and
+// (+r,-r), while ours twists the quad as (-r,-r), (+r,-r), (+r,+r), (-r,+r), and the vertex writes follow
+// the same twisted order. Retail also uses a frame of 0xe0 against our 0xd0, with the corner count home at
+// [esp+0xac] against our [esp+0x9c] and the radius home at [esp+8] against our [esp+0xc]. A variant with
+// retail's corner order, the colour aggregate and the helper call reordered reached 225, six short of the
+// keep bar, so the original body is restored.
 // score 231 (was 394): the corner helper adds the origin as one complete vector sum after the transform;
 // 1820 bytes (retail 1819), first difference the frame size at +0x2.
 // Earlier 394: the four corners are written out (retail has four copies of the scale
@@ -4221,6 +4264,10 @@ bool __stdcall function_38450(byte *state, byte const *definition, real remainin
 bool __stdcall function_37a60(void *state);
 bool __stdcall function_391f0(void *state);
 
+// MiniMax H (11-06): score 251 (was 251): no new form, no lower score.
+// The frame is 0x74 against retail's 0x70 and the value saved right after the index test sits at [esp+0x30]
+// where retail keeps it at [esp+0x2c]; we zero a register before the test where retail zeroes one after it,
+// and the portal and fog loop bodies and their homes still differ.
 // score 251 (was 251): frame 0x74 versus 0x70, early zero and portal/fog loop homes remain.
 // Earlier short-fog gain 272 -> 251; 257 with a volatile counter was not retained.
 // MiniMax R (11-01): no new form, no lower score.
@@ -4550,6 +4597,11 @@ long __stdcall function_3ddd0(long object_index);
 // 8 do not; probes after it, globals, temporaries, field accesses, parameters and an inlined helper's locals do not
 // count. Tried: named offset/range parts of the fraction 1; the definition test in a bool local 1; a distances
 // pointer for the copy 1; all three 1; a distances pointer for the test and the copy with the named parts 1.
+// Round 171 (lane 4, fast; a compile-only screen reproduces ours): the count is of distinct locals by first reference
+// (declared at the top but first used after the read: no flip; one local assigned 9 times: no flip); through an inline
+// getter its result needs 5 more symbols ahead of it. The global declared at the file top 1; the definition test as a
+// forceinline predicate 1; the clamp through PIN 1; a for loop 1; the previous level through two forceinline getters
+// (levels pointer, guarded read) 1; a 192-form screen of these with named parts and declaration orders: none flips.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
@@ -5080,6 +5132,7 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
+// MiniMax D (11-06, run 49): no new form, no lower score (138); retail still calls function_14b60 with the flags in eax, still stores 1 into the slot after function_15680 in both arms of pass 3, and still loads g_485898 into a dead eax in the three passes with normal_cull false.
 // score 138 (was 138): earlier 210; the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
 // the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
 // variable so retail's `shr eax,N; and al,1; mov [esp+0x14],al` appears. Still different: retail
@@ -5241,6 +5294,12 @@ void function_020770();
 void __stdcall function_13870(bool finish, bool blur);
 bool function_13630();
 
+// Walk b3H (11-06), no source change: every block compared with retail 0x2bcd0-0x2c333 (prologue and memset block, the
+// 0x289e0/0x159610 early outs, frame_mode 1/2 vs the other path, passes 1,3,5,8,20 against the 0x44370 mode table
+// (target, clear flags, cull mode and depth flag read from the retail table: all agree), the 0x25dc0 flag pairs, the
+// local-player weapon scale chain with its ucomiss tests, 0x3fdf0/0x404b0 order, the finish/0x20770/0x13870 tail):
+// no field, offset, condition, callee or argument difference left; every remaining difference is the 0x44370 inlining
+// listed below. Tried again: the five inlined passes as draw_configured_pass_r18 calls (922).
 // MiniMax R (11-01): no new form, no lower score.
 // score 331 (was 453; the fast check's score counts every line after a one-instruction shift, so most of it is
 // shift): the prologue now matches to +0x48 (memset of the parameters, the identifier read first); draw_ui and

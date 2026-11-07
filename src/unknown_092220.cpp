@@ -181,6 +181,11 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax C (11-06): no new form, no lower score; the user flags still load into eax where retail
+// loads them into the dying user pointer register ecx, and the block layout is the same in both
+// builds, so every other difference the reduced image reports is a global address, a call target
+// or a branch displacement; the permuter on this function was killed at its time limit and wrote
+// nothing, so it searched nothing.
 // MiniMax G (11-05, r3): no new form, no lower score; the flags still load into eax where retail
 // loads them into the dying pointer register ecx.
 // MiniMax G (11-05, r2): no new form, no lower score; the flags in a named local, the flags read

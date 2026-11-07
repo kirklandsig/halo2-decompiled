@@ -301,6 +301,10 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // the true flag first or the +0x18 pair first, loop counters shared. Best 29 (true flag first, one point, not kept), then 30;
 // the shared counters, the pair pointer and the accumulated dots range 40-120. A one-file harness with 0x259d0, 0xb7930,
 // 0x2936b0 and the ballast is not exact (508, 1268 bytes). Original body restored.
+// Round 139 (m3 lane 8, fast): sinf/cosf in the helper 60 (1409 bytes); the helper taking the axis and the
+// vector as references 30 (same code); the z flag read before the member pointer 315; the angle read right
+// after the member pointer 278 (1420 bytes); the random count passed straight instead of through its one-use
+// local 30 (same code, kept).
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {
@@ -397,8 +401,7 @@ long __stdcall function_293130(long arg_0)
 					function_2936b0(arg_0, local_0);
 					if (local_3->field_14 > 0)
 					{
-						short count = (short)local_3->field_14;
-						local_15->field_4 = random_index(&g_4e7408->unknown0, count);
+						local_15->field_4 = random_index(&g_4e7408->unknown0, (short)local_3->field_14);
 					}
 				}
 				else

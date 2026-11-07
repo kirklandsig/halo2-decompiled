@@ -483,6 +483,18 @@ PRIVATE inline long polygon_round_19f(real value)
 // result 370; the top point as its own initializer with `center->z + height` 359; the alpha clamp as one
 // ternary 316 (same code); the wrapped index as `step < count ? step : 0` 316 (same code); the repetition
 // divisor as `1.2f * height` 316 (same code). BLOCKED-BY 0x4b2d0 and 0x1ccb0 as noted.
+// score 370 (was 316): statement walk against retail (b3K, 11-06). Behaviour fix: the alpha is now
+// `(maximum_distance - sqrt) / (maximum_distance - spread)`. With the denominator in a named local the
+// compiler turned the loop's divide into a reciprocal multiply (1.0f / denominator hoisted, then fmul),
+// which rounds differently from retail's `fdiv dword [esp+0x5c]` at 0x19f997 (316 -> 370, callers 0x244470
+// and 0x2be5d0 stay MATCH). Walked and equal to retail: the fade (0x19f6d3-0x19f711: unrounded distance
+// tested against 0, float-rounded distance against 1.5 * radius, one divss), spread/maximum (0x19f71e-0x19f736),
+// the 4b2d0 arguments, material/group/variant/shader/attribute chain (0x19f75f-0x19f83e), the repetition
+// count and texture scale (0x19f8b3-0x19f927), the wrapped index (0x19f966), the alpha clamp (unrounded value
+// against 0 at 0x19f99f, rounded against 1.0 at 0x19f9be), the vertex records (0x19f9c9-0x19fbd0) and the
+// edge-length walk (0x19fbd7-0x19fc08: sqrt unrounded, scaled, subtracted, one fstp). Not fixable here:
+// retail reads the 1.5 factor from a writable .data float at 0x47ff94 (only this function uses it), ours
+// uses the literal; the `volatile` variant reads are a call-transport trick (retail reads it once into EBP).
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
@@ -544,9 +556,8 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
             long index = step == count ? 0 : step;
             double vertex_x = (double)vertices[index].x - (double)g_4b9da0.x;
             double vertex_y = (double)vertices[index].y - (double)g_4b9da0.y;
-            real radial_denominator = maximum_distance - spread;
             real alpha = (maximum_distance - (real)sqrt(vertex_x * vertex_x + vertex_y * vertex_y)) /
-                radial_denominator;
+                (maximum_distance - spread);
             if (alpha < 0.0f)
                 alpha = 0.0f;
             else if (alpha > 1.0f)
