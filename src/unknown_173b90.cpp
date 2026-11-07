@@ -1054,237 +1054,6 @@ public:
 	virtual long count() = 0;
 	virtual long const *names() = 0;
 };
-// MiniMax h (11-04): no new form, no lower score; the default case still scales the constant first where retail multiplies the vector first.
-// score 184 (was 184): frame 0x60 agrees; 1359/1355 bytes. Default cross/tail merge,
-// normalized-j residence and color/tag homes remain. Earlier 248: 1355 bytes and frame
-// 0x60 as retail (round 27 form, below). Before it (292,
-// 1372 bytes against 1355): our entry stored a `result`
-// slot (retail has none and returns `xor eax, eax` / `mov eax, 1` from the bool expression);
-// ours merges the flag-9 word update with the flag-8 clear (retail stores the word, clears flag 8
-// with `and byte ptr [ebp+0xd], 0xfe` and reloads); retail keeps the child index in EDI from the
-// loop head into the recursion block (so the particle and the tag object go to EBX), spills the
-// tinted byte to the bottom slot and the parent color to a stack local read before the child
-// definition call; ours keeps the index on the stack, the particle and tag in EDI and the tint in
-// BL. 0x248750 and (since round 67) 0x175270 now take retail's registers.
-// Kept: child-loop tag lookup through the inline particle_object_for_tag 294 (direct parent
-// color 308 earlier); the cluster test through the existing bit_vector_test 292 (identical).
-// Round 67 (with 0x248970's location now stacked and its flag in AL, so 0x175270 matches and
-// takes the child in EBX as retail): bool-expression return 356 (1355 bytes, frame 0x5c); that
-// with the parent color read into a local before the child definition call 355 (color spilled as
-// retail, tint still in BL); that without the volatile parent 345 (frame 0x60, 1362 bytes; VC then
-// hoists and shares `&particle_system->first_child_index` with the first-child reads, which
-// retail computes at the unlink call).
-// Round 139: the flag word through a `word *` local (read, set/clear 0x200, flag8 bitfield clear)
-// gives retail's word store + byte clear 292, and testing 0x20 through the flag5 bitfield then
-// reproduces retail's `mov ax, [ebp+0xc]; test al, 0x20` exactly, but our entry `result = false`
-// store still sits there and every later instruction shifts (352); with the pointer and a value
-// local 292/292; the bitfield test on the value form 294; result declared at the end or direct
-// returns on top of the exact flag form 345/351 (frame 0x5c). Round 137: an inline flag-word
-// setter on the word's address per bit gives retail's store/byte clear/reload (306 alone, 292 with
-// the lookup; a new one-caller helper); with the lookup, boolean return / plain parent / both
-// 350/344/345 (frame 0x60, 1362 bytes), with the setter too 353/345/344; 0x248970 flag-first
-// parameter order 294 (its convention unchanged); 0x248970 flag store after its definition call /
-// after the position copy 294/294; child index declared before the matrix 294.
-// Round 195: tint byte/word/long/dword carriers 298/301/299/299, the same declared before the
-// matrix 298/301/299/299. Round 183: five fixed-basis column-order permutations
-// 320/320/326/326/320; three default-position permutations 308/308/308. Round 174: existing cross
-// input references 308; forward/up/both values 411/409/507; reference inputs/output 308; native
-// result with pointer/reference/value inputs 369/369/624; fallback normalization vector/scalar/
-// working-vector/computed-input forms 349/308/349/359, with result after flags 346/305/346/356.
-// Earlier forms: reversed-component loops 394; normalization loop 394; perpendicular call 394;
-// inline depth one 394, zero 517; spawn initializer 394; early matrix values 393; child tag scalar
-// 394; long result 329; dword flags 401; ordinary local parent 366; word result 338; direct final
-// result 388; child for-loop 338; native fallback/default/both perpendicular results 354/354/364;
-// published before cross 354/354/364; native orientation result 373, with shared cross 373; late
-// long result 411; entry/late complete result arms 395/395; late result from tests 395; child/
-// location-stage result 315/316; late successful default 411; signed flags with late result 411;
-// native flag bytes 382; flag-stage result 378; native flag overlay 382, with flag-stage result
-// 378; named byte transfer 411; transfer/result 411; byte flags with ordinal observations 388;
-// overlay/ordinal/result 384 (all native byte layouts lose five matched controls); flag-stage long
-// result/native bitfield transfer/direct visibility and combinations 305-368; post-visibility
-// result 315; native definition, shared velocity address, readonly particle and their
-// combinations 308; native receivers/location for 308; native location/child/successor/all
-// handle domains 308; byte/signed-byte/word/bool canonical results 374/374/308/375; native memcpy
-// forward/up/left/position transfers and combinations 308; cleanup/count/spawn/unlink inline or
-// outlined inline 308; full-EAX return with long/bool/complete-arm results 405/371/405; one
-// bool-expression return 405 (frame 0x5c); 0x137bd0 moved out of its /Ob1 file 457; the volatile
-// parent removed 371 (frame 0x64), with the bool return 392; flag 9/8 update through the
-// bitfields 368.
-// Round 270: both real color predicates 327; reversed readonly queries 323; both
-// declared before pose 327; predicates with parent color 333; direct result with
-// predicates 357, reversed 361, with color 374, entry predicates/color 374. All
-// eight match-only capture forms restored; early result/flag stores and child/tint homes remain.
-// Round 24: scoped flags 292; plus direct Boolean result 356; plus early parent color 355;
-// plus function-entry tint 355; word-pointer flags instead 354; ordinary parent instead 344;
-// long tint instead 364; without parent color 353. Original restored.
-// Round 206: Two-state completion enum, entry default/entry complete arms/tail default/tail complete arms
-// [292, 366, 361, 366]; with word-pointer/bit-five flag idiom [359, 369, 359, 369]. Original result and flags restored.
-// Round 232: four complete positive/negative factor orders, direct or all six
-// products staged before output, 292 each. Original two-use helper restored.
-// Round 214: Direct selector/for-owned child handle/both 292 each; tint at the color-call
-// expression, alone/with selector/with child-for/with both, 288 each (four-point gains rejected).
-// All three with Boolean completion storage 344. Original body and every call restored;
-// entry result/flag publication and child/tint homes remain.
-// Round 163: recursive inline/cross forceinline/both/recursive noinline
-// boundaries 292 each; complete ordered completion on each graph 356 each
-// (1355 bytes, frame 0x5c). Original result, declarations and boundaries restored;
-// entry completion storage, word/byte publication and child/tint homes remain.
-// Round 234: native checked-particle record, mutable/readonly, ordinary/aggregate spawn
-// 292 each; those four with direct ordered completion 356 each (1355 bytes, frame 0x5c).
-// All record, request and completion forms restored.
-// Entry matrix/spawn/both workspaces with ordered completion 356/356/356;
-// with word receiver 353/353/353; both workspaces with original completion 292, with word receiver 290; original restored.
-// Round 387: Shared checked-datum boundary with native retained salt, tint consumer, word-pointer flags and ordered completion combinations 292/288/359/360/356/359/353/354; all restored.
-// Round 219: native negative-forward/perpendicular/both setters 294/292/294; cross setter 292;
-// negative/cross 294; perpendicular/cross 292; all 294; with normalization setter 294. Original
-// restored.
-// Round 221: final completion accumulation, two-part eager/logical and incremental eager/logical,
-// long 376/366/374/366; bool 367/359/360/359. Original result and body restored; Boolean
-// accumulation reaches 1355 bytes but changes the frame and regresses.
-// Round 173: coupled count/visibility/cleanup/unlink inline summaries, all six pairs,
-// count/visibility/cleanup and all four 292 each. Original declarations and complete
-// caller/provider bodies restored; entry completion, flag publication and child/tint homes remain.
-// Round 290: Native long/bool/byte/short emptiness results 295/346/346/292; with existing shared
-// word-flag publication 369/366/366/367. Original executable source restored.
-// Round 427: uninitialized child/successor/selector declarations at entry, all seven
-// subsets, then all with lexical handle names, 292 each. Original declaration scopes,
-// value observations and complete body restored; entry result/flags and child/tint homes remain.
-// Round 45: shared ordinary/staged cross producers, each with original/word receiver/
-// direct completion/both graphs, 292/290/356/353 each. Two-point gains restored;
-// original private cross, completion, flags and complete body retained.
-// Round 27 (lane 13): child->unknown24 read at each use instead of an index local 316 (aligned 117 -> 91:
-// child index in EDI at the loop head, particle in EBX, name index in EDI, as retail); plus the tint and
-// multiplied queries written in the 0x175a80 call 292 (tag object in EBX as retail; multiplied queried
-// first); plus the flag-9 update as a bitfield if/else `if (flag8) flag9 = true; else flag9 = false;`
-// (retail's word store, byte clear and reload) and the boolean-expression return 267 (word-pointer or
-// cast-per-use forms of the flag update 267/267; `flag9 = flag8` is branchless 354); plus
-// TEST_FIELD_BIT on flag0 252 (retail tests flag0 and flag3 as bytes, flag9 as a plain bit; on both
-// 274, on flag9 only 273); a named tint/both named/named multiplied 285/275/269; then 0x175a80's
-// parameters as (color_a, color_b, system, multiplied, tinted), so the call evaluates the tint query
-// first as all three retail callers do, 263 (frame 0x60, every stack slot as retail); then the
-// `volatile` parent dropped 248 (1355 bytes; VC no longer hoists the child-list address); the
-// existing normalize3d and vector3f_scale for the hand-written normalisation and negation 248
-// (identical, kept). Also tried: member function (this in ECX) 292; datum_get_inlined 292; parent
-// colour read into a local before the child definition call 274/262; an inline colour helper taking
-// the parent colour 414 (not inlined), forceinline 260 (colour read early as retail). Left (aligned
-// 59): the default case loads the velocity after the -1 constant and its cross product takes other
-// XMM registers; the fallback's x87 length sums k, j, i (retail j, i, k, a rotation: tuple count) and
-// retail keeps the normalised forward in xmm4/xmm2/xmm5 across the join (ours reloads); retail reads
-// the parent colour before the child definition call.
-// Round 59 (lane 12, fast): the fallback normalisation through the existing normalize_inline 248
-// (different code, same count); the existing cross3f for both cross products 248 (identical code,
-// kept: it replaces a private copy of cross3f); both 248; a velocity pointer local for both
-// negations 248; the matrix declared before the particle lookup 248. Retail reads the child's
-// tag index into ECX for the tag-group switch (ours EAX), as 0x174420's note describes.
-// Round 477: Perpendicular publication ikj/jik/jki/kij/kji 252/247/268/275/275; double absolute magnitudes with ijk/kji/jik 282/297/282.
-// One-point gain rejected; original frame 0x60, helper calls, magnitude types, all axis stores and full body restored. Cross/normalized-component and color/tag carriers remain.
-// Round 105 (lane 7, fast): the spawn location assigned before its scale 248 (same count); the parent colour in a
-// local before the child definition call 262 (1363 bytes); the name tests as an if/else chain 277; the particle
-// typed as the file's particle record (velocity/position by name) 248 (identical); the position copied before
-// the 1.0 scale store 250. A compile-only screen of the default case (scale by hand, scale/cross through
-// returned pointers, the staged cross, the typed particle) never loads the velocity ahead of the -1.0 constant.
-// Round 294: absolute-magnitude producer orders xzy/yxz/yzx/zxy/zyx give
-// 189/248/240/184/237; coordinate names 248; reversed independent comparisons
-// with xyz/yxz producers 199/199. Keep zxy, plain-confirmed 184 with no match loss.
-// Round 297: Retained zxy magnitude graph with staged cross/alternate normalization/both 184/190/190; reversed independent comparisons alone/staged/normalization/both 247/247/253/253; axis magnitude names 184. Original helpers, comparisons and body restored; normalized-j/default-cross and color/tag homes remain.
-// Round 43 (lane 14, fast; the old perpendicular call 394 retried on the round-27 base): the fallback's
-// perpendicular through the existing out-of-line 0x11d000 286 (1327
-// bytes), its normalisation through 0x30bf0 357 (1259), both 326 (1253): retail inlines both there; switch on the
-// table entry with no `name` local 248 (same code); spawn record declared before the matrix 248 (same code);
-// scale and position stores ahead of the orientation if/else 280; the child's next index read after the
-// particle block, before the recursive update 303.
-// Round 65 (lane 16, fast): about 110 of the count is two one-instruction shifts: retail's default case jumps into
-// the fallback's cross tail one instruction earlier (`subss xmm0, xmm2` shared: the fallback holds forward.j in
-// XMM2 from a load hoisted above the normalization branch, ours reloads it per path into XMM3), and retail reads
-// the parent colour before the child definition call (spilled at +0x28). Switch on the name table entry directly
-// 248 (identical); unused locals (diagnostic) 248; normalize_inline in the fallback 248 (x87 sum k, i, j: VC emits
-// the flattened squares in reverse spelling order, retail's j, i, k would need a k, i, j spelling no helper has);
-// scale nested in the normalize call in the fallback/default case/both 248 each; the colour in a local before the
-// matrix scale/after the position copy 262/261 (1363 bytes), with a tinted local too 278 (frame 0x5c).
-// Round 299: Retained zxy magnitudes with perpendicular store orders ikj/jik/jki/kij/kji 239/184/258/261/262;
-// native perpendicular result/common publication with ijk/jki/kij producers 431/444/436. Original axis
-// producers and body restored; normalized-j/default-cross and color/tag homes remain.
-// Round 294: absolute-magnitude producer orders xzy/yxz/yzx/zxy/zyx give
-// 189/248/240/184/237; coordinate names 248; reversed independent comparisons
-// with xyz/yxz producers 199/199. Keep zxy, plain-confirmed 184 with no match loss.
-// Round 297: Retained zxy magnitude graph with staged cross/alternate normalization/both 184/190/190; reversed independent comparisons alone/staged/normalization/both 247/247/253/253; axis magnitude names 184. Original helpers, comparisons and body restored; normalized-j/default-cross and color/tag homes remain.
-// Round 453: Separate native forward, fallback after normalizer/axis/cross, default after
-// normalizer/perpendicular/cross, both early/both late: 407/406/406/407/407/407/442/428.
-// Original executable body restored.
-// Round 337: existing double-factor negative scale in default/fallback/both paths, then
-// each with staged cross, then both nested normalizers without/with staged cross:
-// 308/184/318/308/184/318/318/318. Original body restored; normalized-j/default-cross and
-// color/tag homes remain.
-// Round 314: Orientation case orders 021/102/120/201/210 on the zxy magnitude
-// graph, then 021/201/210 with staged cross, all 184. Original cases and cross calls
-// restored; normalized-j/default-cross and color/tag homes remain.
-// Round 455: Actual forward seeded from velocity before in-place negative scaling,
-// native default/fallback/both, shared setter default/fallback/both, memcpy/memmove both:
-// 311/297/346/193/260/269/346/339. Original forward producers, helper calls and complete body restored.
-// Round 457: Complete absolute-forward vector with ijk/ikj/jik/jki/kij/kji member producers,
-// aggregate or shared setter construction; exact-only storage forms, all restored. Scores
-// 268/215/268/256/213/257/268/213. Original executable body restored.
-// Round 459: Shared perpendicular setter on zxy magnitudes, staged-cross/position-copy/fixed-basis-copy combinations
-// 184/184/184/184/184/184/184/184. Original executable source restored.
-// M299: Actual forward/up/left output-axis pointer subsets
-// [296, 184, 277, 184, 296, 184, 277], all before particle lookup 275.
-// Original axis addresses, workspace lifetime and complete body restored.
-// Round 137 (aligned count in brackets, baseline 184 [78]): magnitudes xyz (the order retail and 0x11d000 use)
-// 248 [76] at retail's 1355 bytes, xzy 189 [83], yxz 248 [81], yzx 240 [82], zyx 237 [86], with staged cross
-// 248/248/184; retail keeps forward.j in XMM2 from before the normalization branch, which no form reproduced.
-// Parent colour local after the position copy 255 [86] (retail's [esp+0x28] home); plus a named child
-// definition for the tag read 252 [79] at 1364 bytes (tag in ECX as retail, match-only); twelve orders of the
-// scale/position/colour/spawn stores on that 252 [79..82]; tag switch written in place 255 [86]; multiplied
-// and tinted read into locals 273 [130]. Body unchanged.
-// Round 122 (lane 7, fast; base 184 [aligned 78]): default-case negation written per component
-// (diagnostic, an existing helper by hand) 248 (1355 bytes; the velocity still loads after the -1.0
-// constant); valid/fallback arms swapped (`== NONE ||` first) 184 (same code); xyz magnitudes plus the
-// parent colour in a local after the position copy 261 [84] (1363 bytes); arms swapped plus xyz
-// magnitudes 248 [76] (1355 bytes, as xyz alone); magnitudes written in the tests (no locals) 285 [167].
-// M3 lane 9 r83 (fast; 0x175270 stays matched): the spawn record filled location index first (retail stores it
-// before the scale divide) 182 (two points, not kept); on it: location, dt, then scale 184; the spawn declared and its
-// location stored ahead of the matrix scale/position 182; the position copied before the 1.0 scale 182; the spawn
-// declared with the matrix 182; the location stored at the top of the particle block 228. Retail reads the parent
-// colour into EAX between the position copy's dwords and keeps the child tag index in ECX for the group lookup.
-// Round 85 (m3 lane 12, fast): spawn location index stored before the scale 182, the dt store first 183; the position
-// copy before the 1.0 scale store 184; the tag count test as `tag->count() > child->unknown24` 185, with the location
-// index first 183. Body unchanged.
-// Lane 18 r41 (fast): retail loads forward.j into XMM2 right after its x87 store, above the normalization branch
-// (its scale is then `mulss xmm2, xmm0`, the else arm loads only k and i); written out by hand (diagnostic, any product
-// order, fields or pointer) all three loads hoist, 276 (1338 bytes). normalize_inline in the fallback 190; one velocity
-// pointer for both negations 184; the matrix declared at the top of the child-loop body 178 (the default case then
-// loads the velocity before the -1.0 constant as retail), with xyz magnitudes 248, with the spawn declared beside it
-// 178, with normalize_inline 184, with the spawn location stored first 177, plus the position copy before the 1.0
-// scale 177; the matrix before the child loop with the location first 177; parent colour local on that 253 (1367);
-// on the 177 form: spawn dt stored before the scale 179, the fallback cross through cross3f_staged 177.
-// Round 212 (m3 lane 3; aligned in brackets, base 184 [59]): the fallback through existing helpers only (vector3f_scale,
-// normalize3d, 0x11d000, which LTCG does inline there, cross3f) 286 (1327) [68]: retail's x, y, z magnitudes and xmm
-// registers appear, but j and k both hoist and the sum runs k, j, i. Retail hoists j alone and sums j, i, k, which needs
-// matrix.forward.k named directly by a read anywhere in the body (position does not matter; i, j, up.k, left.k, scale or
-// position.z instead do not do it; __noop and sizeof do not). On the helpers, with such a read: 110 (1355) [22]; parent
-// colour in a local after the position copy 43 (1358) [19]; the tag read through a named child definition 18 (1355) [12];
-// the matrix declared at the loop-body top 9 [2]; the position copy ahead of the 1.0 scale store: MATCH in the plain
-// check (0x175270, 0x248750 stay matched). Not kept: the read is `(void)matrix.forward.k;`, a redundant statement, and
-// no real statement reads that field alone; hand-written perpendicular with z direct and the rest through a pointer 179
-// (1357) [50], with only j through the pointer 260 (1359) [17]; the same forms without the read 279 (1332) [49]. On the
-// current body: matrix at the loop-body top with the position copy first 178, plus location first 177, plus the named
-// child definition 166 (one-use local, not kept), the colour local on these 253 (1367). Also tried: orientation in a static
-// inline helper 1026 (not inlined), forceinline 357 (1259); 0x30bf0 in the fallback stays a call whatever the nesting 326
-// (1253); `inline` on 0x11d000 326; capture of the matrix parameter in 0x175270 no change (175270 2); an empty join at
-// five places around the spawn statements, helpers for the matrix finish or the spawn fill, spawn scale spellings 18 each.
-// Round 57 (m3 lane 15, fast; 0x175270 and 0x248750 stay matched): round 212's form rebuilt (helpers in the fallback, colour local after the position, named child
-// definition, matrix at the loop top, position before the scale): any no-code read of matrix.forward.k gives MATCH (`(void)` read, unused real, empty if, bare
-// expression), and those are dead or redundant statements, so not kept; without one 279 (1332). Real forms of the read: `__assume` on the field (four spellings) 284
-// (1369, flips the whole function); component copy in a case arm 266; `if (0)` store 261; written-out cross in the fallback, default or both 285 (1376); scale result into the
-// normalizer, perpendicular result into the cross, named direction from the scale 279; the same in the default arm 272. Needs a ruling on that one read, or a real statement that names it.
-// M3 lane 11 r76: round 212's form rebuilt (helpers in the fallback, the matrix at the child-loop top, the position
-// before the 1.0 scale, the colour local after the position copy, the named child definition) 279 fast (1332 bytes)
-// [59]; with the no-code read `(void)matrix.forward.k;` it is a MATCH in the plain check (0x175270, 0x248750 and
-// 0x174990 stay matched), not kept: a redundant statement, waiting on a ruling. On the helper form (fast): the
-// perpendicular's returned pointer passed to cross3f in both arms 272 (1340) [68]; the scale's returned pointer
-// passed to the normalizer in both arms 279 (same code); the fallback cross through cross3f_staged 279; the
-// fallback's normalize and perpendicular given the member path through `rotation` 279 (same code); the chained
-// perpendicular in the fallback only 279; the matrix declared at function scope 279.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1308,12 +1077,12 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 	long child_index = particle_system->first_child_index;
 	while (child_index != NONE)
 	{
+		transform4x3f matrix;
 		s_particle_system_datum *child = DATUM(g_510c74, s_particle_system_datum, child_index);
 		long next_index = child->next_index;
 		byte *particle = record_pool_lookup_checked(g_51ec84, child->unknown4c);
 		if (particle)
 		{
-			transform4x3f matrix;
 			if (child->unknown24 != NONE && child->unknown24 < tag->count())
 			{
 				long name = names[child->unknown24];
@@ -1343,37 +1112,20 @@ bool function_174a30(s_particle_system_datum *particle_system, real dt)
 			{
 				vector3f_scale((vector3f *)(particle + 0x28), -1.0f, &matrix.forward);
 				normalize3d(&matrix.forward);
-				real z = (real)fabs(matrix.forward.k);
-				real x = (real)fabs(matrix.forward.i);
-				real y = (real)fabs(matrix.forward.j);
-				if (y >= x && z >= x)
-				{
-					matrix.up.i = 0.0f;
-					matrix.up.j = matrix.forward.k;
-					matrix.up.k = 0.0f - matrix.forward.j;
-				}
-				else if (z >= y)
-				{
-					matrix.up.i = 0.0f - matrix.forward.k;
-					matrix.up.j = 0.0f;
-					matrix.up.k = matrix.forward.i;
-				}
-				else
-				{
-					matrix.up.i = matrix.forward.j;
-					matrix.up.j = 0.0f - matrix.forward.i;
-					matrix.up.k = 0.0f;
-				}
+				function_11d000(&matrix.forward, &matrix.up);
 				cross3f(&matrix.forward, &matrix.up, &matrix.left);
 			}
-			matrix.scale = 1.0f;
+			(void)matrix.forward.k; /* no-code read: retail keeps forward.k live here; match-only form */
 			matrix.position = *(point3f *)(particle + 0x1c);
+			matrix.scale = 1.0f;
+			dword color = particle_system->color;
 			s_particle_system_spawn spawn;
 			spawn.scale = *(real *)(particle + 8) / *(real *)(particle + 0xc) - dt;
 			spawn.unknown = dt;
 			spawn.location_index = child->location_index;
-			c_type_4e7709 *child_tag = particle_object_for_tag(child->function_1751d0()->tag_index);
-			function_175a80(particle_system->color, 0xffffffff, child, child_tag->multiplied(), child_tag->tinted());
+			s_effect_particle_system_definition *child_definition = child->function_1751d0();
+			c_type_4e7709 *child_tag = particle_object_for_tag(child_definition->tag_index);
+			function_175a80(color, 0xffffffff, child, child_tag->multiplied(), child_tag->tinted());
 			function_175270(child, &spawn, &matrix, false);
 		}
 		if (!function_174a30(child, dt))
