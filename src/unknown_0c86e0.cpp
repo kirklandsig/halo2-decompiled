@@ -92,6 +92,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax C (11-06): no new form, no lower score; the unit pointer is still fetched once and merged across the two 0xbadc0 calls where retail re-reads the table base (blocked by 0xbadc0's memory summary in src/unknown_0bad50.cpp).
 // MiniMax G (11-06): no new form, no lower score; still blocked by 0xbadc0, whose body is in a file
 // outside this lane: retail re-fetches the unit after the two calls (the index times twelve kept in esi)
 // where ours reuses the entry fetch, because our link knows the callee writes no memory, so every later

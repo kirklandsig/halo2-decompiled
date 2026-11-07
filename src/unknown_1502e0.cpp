@@ -923,6 +923,7 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
+// MiniMax C (11-06): no new form, no lower score; the traits, unit and NONE homes and the pool reloads remain.
 // MiniMax G (11-06): no new form, no lower score; the first 0x11c bytes agree with retail and the rest is
 // allocation: retail keeps the unit index in ebp and NONE in edi and spills the selected traits to the
 // stack, this build keeps the traits in ebp and the unit index in eax, with the four homes shifted.
@@ -1301,6 +1302,7 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
+// MiniMax C (11-06): no new form, no lower score; the unit index still lands in ESI where retail keeps it in EDI and the object table pointer lands in EDI where retail keeps ESI.
 // MiniMax D (11-06): no new form, no lower score (17): the unit index still lands in esi where retail keeps it in
 // edi and the object table pointer lands in edi where retail keeps esi; this round a read-only player, a read-only
 // pickup unit, a byte, bool or short hand, the hand before the unit index test, the unit index in a local, the two
@@ -1375,6 +1377,7 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax C (11-06): no new form, no lower score; the player pointer still lands in EDI where retail keeps it in ESI and the hand in ESI where retail keeps EDI.
 // MiniMax G (11-06): no new form, no lower score; four ways of deriving the hand (the negation, a
 // conditional, an int and a bool) and two declaration orders (the result before the player) all leave
 // this body exactly as it was (43, and 89 for the bool hand): the player pointer and the hand still
