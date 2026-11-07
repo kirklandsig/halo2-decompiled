@@ -4577,31 +4577,24 @@ extern s_record_pool *g_509434;
 extern long g_4ba050;
 long __stdcall function_3ddd0(long object_index);
 
-// score 1 (was 1): indexed byte-load encoding remains.
-// Native previous-level short/long, four-byte byte/signed-char table pointers, selected byte/signed-char element
-// pointers, read-only table with char/short previous; pointer advance mutable/const, exhaustive null branches,
-// late null-pointer lifetime: 13/53/1/1/1/1/1/13/1/1/50/53. Indexed cache byte still differs only in SIB
-// base/index order; original loads and arithmetic restored.
-// A 480-second annealed search: 45 attempts, none below 1.
-// Direct/commuted pointer addition, cache/slot declarations swapped, role-based local names, an unsigned index,
-// one-byte memcpy, implicit byte conversion and a four-element array reference: all 1. Original body restored.
-// Round 447: entry-scope previous/cache/nullable-table lifetimes, subsets 1..7: 105/1/105/162/147/162/147; complete lifetimes after float workspace 147. Original body restored; indexed-byte SIB order remains.
-// Round 28 (lane 17, fast): global read through a const cast 1; named index local 1; whole read as an inline
-// getter 1; slot from an inline getter, indexed in two statements / one expression 1/1; read through an inline
-// taking (table, index) 1; both inlines 1; struct at +0xbc with a levels array, indexed / pointer sum 1/1; record
-// struct with a levels member, element form / record pointer 46/46 (491 bytes); uninitialized slot declared at
-// the top / before / after the previous byte 1/1/1; one-byte element struct 1; pointer to a one-byte row 1; read
-// through a cast of the element address 1; slot as long 1. Original body restored.
-// Round 70 (lane 10): the SIB order follows how many locals the body references before `slot` (compile-only
-// screens, confirmed in --fast): 9 more probe locals anywhere before it give retail's [edi+eax] and a byte match,
-// 8 do not; probes after it, globals, temporaries, field accesses, parameters and an inlined helper's locals do not
-// count. Tried: named offset/range parts of the fraction 1; the definition test in a bool local 1; a distances
-// pointer for the copy 1; all three 1; a distances pointer for the test and the copy with the named parts 1.
-// Round 171 (lane 4, fast; a compile-only screen reproduces ours): the count is of distinct locals by first reference
-// (declared at the top but first used after the read: no flip; one local assigned 9 times: no flip); through an inline
-// getter its result needs 5 more symbols ahead of it. The global declared at the file top 1; the definition test as a
-// forceinline predicate 1; the clamp through PIN 1; a for loop 1; the previous level through two forceinline getters
-// (levels pointer, guarded read) 1; a 192-form screen of these with named parts and declaration orders: none flips.
+// The level byte cached for the current view: the read counterpart of function_4c640.
+PRIVATE inline signed char cached_level_4c450(long object_index)
+{
+    signed char result = -1;
+    if (g_4ba050 >= 0 && g_4ba050 < 4)
+    {
+        byte *slot = NULL;
+        long cache = function_3ddd0(object_index);
+        if (cache != NONE)
+            slot = g_509434->data + (cache & 0xffff) * 0x100 + 0xbc;
+        result = (signed char)slot[g_4ba050];
+    }
+    return result;
+}
+
+// Match-only form (kept for the byte match): the previous level through the getter and the named distances,
+// validity and fraction parts; with fewer named locals ahead of the cache read, the indexed byte load's base and
+// index registers swap (score 1).
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
@@ -4610,11 +4603,13 @@ long function_4c450(long object_index, real distance, real const *definition, re
     real thresholds[6];
     real upper;
     *fraction = 0.9999f;
-    if (definition && definition[3] > 0.0f && definition[3] >= definition[4]
-        && definition[4] >= definition[5] && definition[5] >= definition[6]
-        && definition[6] >= definition[7] && definition[8] == 0.0f)
+    real const *distances = definition + 3;
+    bool valid = definition && distances[0] > 0.0f && distances[0] >= distances[1]
+        && distances[1] >= distances[2] && distances[2] >= distances[3]
+        && distances[3] >= distances[4] && distances[5] == 0.0f;
+    if (valid)
     {
-        memcpy(thresholds, definition + 3, sizeof(thresholds));
+        memcpy(thresholds, distances, sizeof(thresholds));
         upper = definition[0];
     }
     else
@@ -4637,7 +4632,9 @@ long function_4c450(long object_index, real distance, real const *definition, re
                 }
             }
             else upper = thresholds[level - 1];
-            real value = (upper - distance) / (upper - lower);
+            real offset = upper - distance;
+            real range = upper - lower;
+            real value = offset / range;
             if (value < 0.0f) value = 0.0f;
             else if (value > 0.9999f) value = 0.9999f;
             *fraction = value;
@@ -4645,15 +4642,7 @@ long function_4c450(long object_index, real distance, real const *definition, re
         }
         ++level;
     }
-    signed char previous = -1;
-    if (g_4ba050 >= 0 && g_4ba050 < 4)
-    {
-        byte *slot = NULL;
-        long cache = function_3ddd0(object_index);
-        if (cache != NONE)
-            slot = g_509434->data + (cache & 0xffff) * 0x100 + 0xbc;
-        previous = (signed char)slot[g_4ba050];
-    }
+    signed char previous = cached_level_4c450(object_index);
     long previous_level = previous;
     if (previous_level != -1)
     {
