@@ -499,11 +499,8 @@ void function_e5930(long unit_index);
 
 /* resets the biped's state: its flags, landing and melee timers, its ground
    contact and its physics mode */
-// MiniMax G (11-07): score 9 (was 118): the reset call now sits under `if (biped != NULL)`, which keeps 0xe5930 out
-// of line (our link expands it at straight-line call sites) and so gives retail's 343 bytes; what is left is the
-// 0x1f0 bit test, still folded to a byte test where retail shifts the dword first, and the two flag branches, still
-// folded into one load and store where retail does the or and the and in place. The guard only skips the reset when
-// the biped pointer is empty.
+// MiniMax G (11-07): `if (biped != NULL)` around the reset call (always true: biped is written just above) keeps
+// 0xe5930 out of line, 9; not kept (an always-true test that only steers inlining).
 // MiniMax D (11-06, run 49): no new form, no lower score (118); 0xe5930 (src/unknown_0e57e0.cpp, not this lane's file) still expands here, and the 0x1f0 bit test is folded to a byte test where retail shifts the dword first.
 // MiniMax A (11-04): no new form, no lower score; the reset call still expands here.
 // MiniMax A (11-03): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) still
@@ -596,10 +593,7 @@ void __stdcall function_de4c0(long arg_159e6d)
 	biped->physics_mode = 0;
 	biped->unknown3e4 = NONE;
 	biped->unknown3e8 = NONE;
-	if (biped != NULL)
-	{
-		function_e5930(arg_159e6d);
-	}
+	function_e5930(arg_159e6d);
 }
 
 bool __stdcall function_de9d0(long arg_159e6d, long target_index);
@@ -4250,12 +4244,9 @@ void function_e4300(long arg_159e6d)
 }
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
-// MiniMax G (11-07): score 5 (was 91): the reset call now sits under `if (biped != NULL)`, which keeps 0xe5930
-// out of line (our link expands it at straight-line call sites) and so gives retail's 61 bytes and its unit home in
-// ESI; the flag test keeps the file's folded byte test, so retail's mov al/shr al,6/test al,1 is what is left. A
-// noinline declaration of this function keeps it out of 0xcaf00, which then calls it as retail does and shifts the
-// type in EAX (13 -> 5). The guard only skips the reset when the biped pointer is empty, and retail reads that
-// biped's flags right after, so it would fault there anyway.
+// MiniMax G (11-07): `if (biped != NULL)` around the reset call (always true: biped's flags are read right after)
+// keeps 0xe5930 out of line, 5, and a new noinline declaration of this function takes 0xcaf00 13 -> 5; neither kept
+// (an always-true test that only steers inlining, and a new noinline).
 // MiniMax D (11-06, run 49): no new form, no lower score (91); 0xe5930 (src/unknown_0e57e0.cpp, not this lane's file) still expands here, so the body is 113 bytes against retail's 61.
 // MiniMax A (11-04): no new form, no lower score; the reset call still expands here.
 // MiniMax A (11-03): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) is still
@@ -4295,17 +4286,13 @@ void function_e4300(long arg_159e6d)
 // `asleep` bool read after the calls 98; field_bit_test 98. Still BLOCKED-BY 0xe5930.
 // Round 214 (m3 lane 3, fast): TEST_FIELD_BIT on the flag test 98 (118 bytes); a named copy of the index 91. 0xe5930 body spellings as in 0xde4c0's note:
 // 91 while it still matches, 94 and 98 otherwise. 0xcaf00 stays 13 throughout. Still BLOCKED-BY 0xe5930.
-__declspec(noinline) void function_e4bd0(long arg_159e6d);
 // @retail 0xe4bd0
 void function_e4bd0(long arg_159e6d)
 {
 	s_biped *biped = BIPED_GET(arg_159e6d);
 
 	function_e18d0(arg_159e6d, true);
-	if (biped != NULL)
-	{
-		function_e5930(arg_159e6d);
-	}
+	function_e5930(arg_159e6d);
 	if (!((biped->flags_c0 >> 6) & 1))
 	{
 		function_b8890(arg_159e6d);
