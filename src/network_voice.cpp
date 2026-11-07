@@ -169,6 +169,13 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // MiniMax D (11-06): no new form, no lower score: binding the engine pointer after the guard still sinks
 // the push of ebp into the guarded block, and the permuter run on this function reached its time limit
 // without a measured variant.
+// Round 78 (lane 10, fast): ours forwards AL to the result on the guard-fail edge (its `je` lands one
+// instruction past retail's `mov al, [esp + 0xb]`; with the engine bound after the guard it lands on
+// `pop ebx`, two past, and `push ebp` sinks: 8). The natural form (no volatile, goto or result pointer;
+// nested SUCCEEDED ifs, `result = true` after the ports loop) already gives the result retail's spill
+// slot, but copies a `mov al, 1` exit into the success path: 42 (284 bytes). On it: a flat chain of three
+// SUCCEEDED blocks 42; `result = true` ahead of the ports loop 79; `result = SUCCEEDED(error)` 42;
+// `result = port == NONE` 42; `__assume(xhv != NULL)` before the return 50.
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
