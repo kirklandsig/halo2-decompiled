@@ -1804,6 +1804,8 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax S (11-06): no new form, no lower score (285): the pool and permission registers and the 0xb8bd0
+// inline boundary still differ, and retail's inlined marker pointer needs that other file's /Ob1 flag.
 // MiniMax E (11-05): no new form, no lower score; no new form for the shared epilogue or for the inlined
 // 0xb8bd0 marker pointer (that file is /Ob1).
 // MiniMax H (11-04): no new form, no lower score; the body still differs from its first instruction.
