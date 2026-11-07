@@ -7045,6 +7045,7 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax C (11-07): round 53: no new form, no lower score; the permuter never left its baseline build.
 // fast score 310 (was 308), statement-by-statement walk against retail (f1D, 11-05): every field, offset,
 // condition direction, callee, argument, constant and loop/branch shape agrees with retail; the one
 // behaviour difference found is the order of the x87 sum for the facing cosine. Retail adds
