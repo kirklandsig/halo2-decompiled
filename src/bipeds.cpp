@@ -499,6 +499,8 @@ void function_e5930(long unit_index);
 
 /* resets the biped's state: its flags, landing and melee timers, its ground
    contact and its physics mode */
+// MiniMax G (11-07): `if (biped != NULL)` around the reset call (always true: biped is written just above) keeps
+// 0xe5930 out of line, 9; not kept (an always-true test that only steers inlining).
 // MiniMax D (11-06, run 49): no new form, no lower score (118); 0xe5930 (src/unknown_0e57e0.cpp, not this lane's file) still expands here, and the 0x1f0 bit test is folded to a byte test where retail shifts the dword first.
 // MiniMax A (11-04): no new form, no lower score; the reset call still expands here.
 // MiniMax A (11-03): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) still
@@ -2647,6 +2649,11 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // as `(short)body` 66. The getter with the second-lookup re-read (91) frees EAX but EBP still takes the array base,
 // folded into [ecx+ebp+0x18] where retail adds it into ECX first. 0x1d5120's own prologue and convention are retail's.
 // The rate through a file-local tick getter 63.
+// MiniMax G (11-07): the header getter alone 75 (its 16-bit body selection is retail's movsx ax,al / or eax,-1 /
+// movsx edx,ax), with a char steps local the array lookup also matches retail's mov eax,[edx+0x44]; add ecx,eax;
+// mov al,byte [ecx+0x18] 99, the byte mask written as a byte 103, the steps byte re-read at the call 82. NOT kept:
+// every form that frees EAX moves the argument off EBX onto the stack and the frame becomes __stdcall, so 63 stands;
+// original body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4237,6 +4244,9 @@ void function_e4300(long arg_159e6d)
 }
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
+// MiniMax G (11-07): `if (biped != NULL)` around the reset call (always true: biped's flags are read right after)
+// keeps 0xe5930 out of line, 5, and a new noinline declaration of this function takes 0xcaf00 13 -> 5; neither kept
+// (an always-true test that only steers inlining, and a new noinline).
 // MiniMax D (11-06, run 49): no new form, no lower score (91); 0xe5930 (src/unknown_0e57e0.cpp, not this lane's file) still expands here, so the body is 113 bytes against retail's 61.
 // MiniMax A (11-04): no new form, no lower score; the reset call still expands here.
 // MiniMax A (11-03): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) is still
