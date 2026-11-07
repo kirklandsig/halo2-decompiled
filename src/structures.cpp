@@ -496,6 +496,10 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // MiniMax E (11-01): no new form, no lower score; the byte result set before the type branch gives
 // 197 and the range declared before the section 172 with identical code. Left: the BSP in EBX with the
 // section in its stack home, the rotated range/plane/instance homes and the 0x16e1b0 output homes.
+// MiniMax D (11-06): no new form, no lower score (172); the prologue still keeps the BSP in EBP and
+// the section in EBX where retail keeps the BSP in EBX and the section in its stack home, the range,
+// plane and instance homes are rotated and the 0x16e1b0 output homes and the vertex joins still
+// differ; BLOCKED-BY 0x11e800 (its v0/v1/v2 registers) and by 0x16e1b0, both in other files.
 // score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,
