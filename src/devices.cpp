@@ -1476,6 +1476,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Round 94 (fast): the animation default-constructed then assigned 2; `time - step` named in a nested test 2; speed
 // declared before had_animation 4; the state declared after both flags 2; the time renamed 2. With the time read only
 // by the second call (diagnostic) the fstp still precedes the animation push.
+// Round 58 (m3 lane 2, fast): the factor as the literal `0.033333335f` (as 0x0a76b0's file writes it) 2, written first 2;
+// the first call's time as integer `0` 2; the frame position named before the product 2; `(real)(frame / 30.0)` 5.
+// Diagnostic: 1 to 12 dead locals at the top (symbol count) 2 each, so the fstp slot is not a numbering tie.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
