@@ -610,6 +610,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax D (11-07): score 34 (was 34): no new form and no lower score; dropping the named total still gives
+// retail's head (the sum in EDX, the task pointer in EAX) but the dispatch then hoists body_size into ESI where
+// retail reuses the switch register ECX, so the signature position is a one-byte-shorter add and every later
+// branch shifts by one byte; the signature case made the switch default with that total scores 177.
 // MiniMax E (11-06): no new form, no lower score.
 // The head's total needs a fresh register (retail EDX): dropping the named total fixes it
 // (the sum then lands in EDX) but reorders the header case's loads and scores 88; two size

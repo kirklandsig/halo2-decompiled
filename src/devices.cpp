@@ -633,6 +633,16 @@ struct s_device_machine_view
 };
 
 #define DEVICE_PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+// MiniMax A (11-06, run 52), not kept: 2 (from 34) with MiniMax D's form below, the group flags read
+// through the device-group macro into a word before the machine test and masked into a byte after
+// it, plus `function_value = 0.0f;` first in case 0x1200055f's velocity block (a dead store there,
+// match-only). What is left at 2 is retail's address fold (a lea before the load) where ours loads
+// the word through the combined address, plus the mask instruction retail does not have. A named group pointer gives
+// retail's delayed word load but lands in ESI, not EAX; a dword local for the element address does
+// put the address in EAX but the load then narrows to a byte (115) or the address falls back to
+// ESI (122), and two separate reads of the flags do not merge either (122). Lead: case 0xf00055e
+// also starts its velocity block with `function_value = 0.0f;`, so retail's result may not be
+// zero-initialised at entry; dropping the initialiser needs a store on every other path.
 
 // MiniMax D (11-05), not kept: 2 fast (from 34) with the group flags read into a word before the machine test, masked
 // into a byte (`byte group_flag_bits = (byte)(group_flags & 3)`), and `function_value = 0.0f;` added at the top of case
@@ -641,6 +651,9 @@ struct s_device_machine_view
 // zero store in that case suggests the result is not zero-initialized at entry the way ours is.
 // MiniMax A (11-04, run 41): no new form, no lower score (34); the device-group flags are still a byte load
 // with a mask where retail loads a word, and retail's zero store in case 0x1200055f is still missing.
+// MiniMax D (11-07): the flags read in both arms of the machine-flags test plus `function_value = 0.0f;` at the top
+// of case 0x1200055f's velocity block 3, Round 62's form; not kept (a read written into both arms only to shape the
+// load, and a store of the 0 the result already holds).
 // score 34 (was 34): the `group_flags & 3` local (lane S) loads the flags as `movzx eax, byte [eax+2];
 // and eax, 3` where retail loads `mov ax, [eax+2]` and tests al twice (one extra instruction), and
 // retail clears the result in case 0x1200055f (one instruction missing); between the two the code is
@@ -1106,6 +1119,10 @@ bool function_108530(long device_index, long name)
 /* starts a motion from the current position toward a target (both pinned to
    0..1) over a duration: accelerating from a velocity for the acceleration
    time, cruising, and decelerating to a final velocity */
+// MiniMax A (11-06, run 52): no new form, no lower score (121) - retail keeps the initial velocity in
+// xmm6 and leaves the ramp-down time in memory, ours caches the ramp-down time and pushes the initial
+// velocity; both ramp-down clamps written as if-statements (retail's conditional-store form) score 122,
+// and the permuter was stopped after half an hour without producing a try.
 // MiniMax D (11-05): no new form, no lower score (121); the permuter run was killed at its time limit
 // before it produced any result.
 // score 121 (was 121): Initial velocity remains stack-passed instead of XMM6; ramp-down residency and return size differ.
@@ -1459,6 +1476,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Round 94 (fast): the animation default-constructed then assigned 2; `time - step` named in a nested test 2; speed
 // declared before had_animation 4; the state declared after both flags 2; the time renamed 2. With the time read only
 // by the second call (diagnostic) the fstp still precedes the animation push.
+// Round 58 (m3 lane 2, fast): the factor as the literal `0.033333335f` (as 0x0a76b0's file writes it) 2, written first 2;
+// the first call's time as integer `0` 2; the frame position named before the product 2; `(real)(frame / 30.0)` 5.
+// Diagnostic: 1 to 12 dead locals at the top (symbol count) 2 each, so the fstp slot is not a numbering tie.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

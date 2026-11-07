@@ -1569,36 +1569,9 @@ real function_204950(long squad_index, long actor_index, short mode)
 
 PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *arg_0);
 
-// score 2 (was 2): the record pool's pointer is reloaded after the branch on the index,
-// retail reloads it before, so the jump lands on the shared reload.
-// Pool read before the active test 2; record address size * index + data 2; not-found
-// stores swapped 2; datum index written index | salt 2; early return when inactive 20.
-// Round 32: the file's data-iterator step (0x200db0's helper) 110 (368 bytes); `while (step(&iterator))` with
-// the squad read from the iterator 2, the index read first 2; squad declared in the while
-// condition 2; squad index read before the NULL test 2; next index read before the pool in the
-// shared step 2.
-// Round 75 (lane 12, fast): step's index test inverted 80 (392 bytes); the squad index field read at each use 2;
-// search result stored in the iterator's index and tested there 113; distance test as a continue 2;
-// squad index read after the flag test 2.
-// Round 119: ordinary inline helper 216; existing datum helper in the shared step 110; existing squad
-// step reused 88; preincremented search input 2; index declared before the pool 2; step in the for
-// update 196; active return of the stored squad 2; behavioral local names 2; helper defined before
-// the caller 2; lighter squad step in the caller 169; record-subobject reference 2; long mode 2;
-// byte-return helper 2; boolean datum step directly in the caller 150.
-// Round 41 (lane 2, fast): in the squad step, the pool read after the search 2, in each arm 2, the iterator field at each use 2,
-// read again after the search 2, a `found` local tested 2. In the shared index search (0x1c8700 alongside): direct returns 2;
-// while loop 2; result assigned after the loop 68 (380 bytes, 0x201df0, 0x200d80 lost); count local 2; mask local 2.
-// Round 132 (fast): in the squad step, a compiled-out `do {} while (false);` after the search 2, closing the found arm 2, closing the
-// not-found arm 2; not-found stores swapped with the bound read after 2; the pool re-read from the iterator at every use in both arms 2.
-// Harness (exact): that statement at the found arm's top, the not-found top, the join or both arm ends 2 each; a named offset 2; found
-// stores in either other order 2/2; named datum 2; named bound 2; two sequential index tests 2; datum NONE stored first 114; both
-// not-found stores first 111; `local_2 == NONE` first 80; pointer from a ternary then tested 86.
-// Round 74 (m3 lane 10, full and fast checks, exact one-file harness): the reload placement is decided by the shared search's loop shape, not by this body. The search in
-// include/data_array.h as `if (index >= 0 && index < high) do { ...; index++; } while (index < high)`, also with `while (++index < high)`, two nested ifs or early returns, 0 here
-// and 0 on 0x1c8700 (its body untouched), but 0x294050 MATCH -> 62 (817 bytes; both field_20 products load the field first); about 100 forms on 0x294050 did not bring it back and a 600 s permuter
-// run stopped at 25 with a value-changing `word` read. Not kept: a hand-inverted loop that costs a match; the question is with the coordinator. The same guard on for or while 2; for with `continue` and `do { if
-// (index >= high) break; ... } while (true)` keep 0x294050 and leave this at 2; a local for the high-water count 2 (0x1c8700 136); bitmap/mask/word locals change nothing. Out-of-line
-// 0x16bc00 matches under for and do alike, so it doesn't discriminate. In the squad step: the iterator helper with a do search 101 (368 bytes), same with for.
+/* the squad nearest the actor by weighted distance, below 15: squads of another team count 1.333 times as far
+   (those for which function_1df560(team, actor_team) is true are skipped), the actor's own squad 0.666 times;
+   NONE when there is none */
 // @retail 0x204b20
 long function_204b20(long actor_index, short mode)
 {
@@ -2007,6 +1980,10 @@ void function_204450(long definition_index, long squad_index)
 bool function_1e11b0(long actor_index, bool active);
 
 #pragma inline_depth(0)
+// MiniMax H (11-07): no new form, no lower score (64); the squad address is still kept in EBX
+// where retail keeps the parameter in EBP and the squad address in ESI (spilled into the slot above
+// the argument), the loop is still rotated with its test at the bottom, and the flag store still
+// reads the byte into a register where retail updates the byte in memory and reads it back.
 // score 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
 // retail's spilled ESI pointer and EBP handle. The common loop head and
 // full-width return mask still differ.
@@ -2379,7 +2356,15 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
     return result;
 }
 
+// MiniMax B (11-07): no new form, no lower score (157); the frame is 0x44 against retail's 0x54 and the two area
+// locals (the structure pointer and the removed index) sit 4 bytes higher than retail's +0x30 and +0x38.
 // score 157 (was 275): 1118 bytes against 1122, aligned 4. Left: frame 0x44 against 0x54 (point packs with the area
+// matches retail byte for byte.
+// MiniMax C (11-07): the location moved to function scope, its leaf field takes the intersection's store, and the
+// area iterator's address is kept in that field, so the iterator keeps a frame slot of its own as retail's does.
+// Match-only form (kept for the byte match): retail stores the iterator's address and each intersection into
+// one frame slot that nothing reads; the source variable that slot belonged to is not known yet.
+// Earlier 157 (was 275): 1118 bytes against 1122, aligned 4. Left: frame 0x44 against 0x54 (point packs with the area
 // iterator) and the intersection's store with no read. Earlier scores in this note are on the older body.
 // MiniMax R (11-05): no new form, no lower score; retail's frame is 0x54 with the elapsed conversion before
 // the pushes and its clusters/elapsed/structure at +0x04/+0x08/+0x0c, ours 0x48 with them at +0x14/+0x18.
@@ -2536,6 +2521,7 @@ void function_201ea0(void)
     byte *structure = (byte *)g_4e0348;
     dword const *clusters = (dword const *)((byte *)g_4e6948 + 0x1138);
     s_squad_datum_walk squads;
+    s_location location;
     if (g_4f55d0->active)
     {
         squads.iterator.data = g_51e9d8;
@@ -2569,6 +2555,7 @@ void function_201ea0(void)
             {
                 s_squad_iterator areas;
                 function_204ec0(&areas, (short)squad_index, 15, 2);
+                location.leaf_index = (long)&areas;
                 while (function_205010(&areas) != NONE)
                 {
                     if (wake)
@@ -2579,8 +2566,8 @@ void function_201ea0(void)
                     bool overlap = false;
                     while (--words >= 0)
                     {
-                        dword intersection = clusters[words] & ((dword *)(area + 0x3c))[words];
-                        if (intersection)
+                        location.leaf_index = clusters[words] & ((dword *)(area + 0x3c))[words];
+                        if (location.leaf_index)
                             overlap = true;
                     }
                     wake |= overlap;
@@ -2623,7 +2610,6 @@ void function_201ea0(void)
                     raised.x = point.x + g_4687b0->i * 0.1f;
                     raised.y = point.y + g_4687b0->j * 0.1f;
                     raised.z = point.z + g_4687b0->k * 0.1f;
-                    s_location location;
                     function_11bed0(&location, &raised);
                     if (location.cluster_index != NONE)
                         wake = (clusters[location.cluster_index >> 5] & (1 << (location.cluster_index & 31))) != 0;
@@ -2779,7 +2765,7 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
     if (g_4f55d0->active)
     {
         s_record_pool *local_1 = arg_0->records.data;
-        long local_2 = data_next_absolute_index_inlined(local_1, arg_0->records.index + 1);
+        long local_2 = data_find_index(local_1, arg_0->records.index + 1);
         if (local_2 != NONE)
         {
             local_0 = (s_squad_datum *)(local_1->data + local_1->size * local_2);
@@ -2901,6 +2887,10 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// MiniMax H (11-07): no new form, no lower score (50); the first call still reloads the squad
+// index from its stack home where retail keeps it in EBP (`mov eax, ebp`), which shifts the later
+// jump targets. A copy of the parameter in a local (plain, unsigned, or scoped to the block) is
+// copy-propagated back and compiles to the same reload (50).
 // MiniMax C (11-05): no new form, no lower score: the first call still reloads the squad index from its stack
 // home where retail keeps it in EBP.
 // score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
@@ -3333,6 +3323,10 @@ long function_203780(long arg_0, short arg_1, short arg_2, bool arg_3);
 long function_201010(long arg_0, short arg_1, short arg_2, short *arg_3);
 void function_2011f0(long arg_0);
 
+// MiniMax B (11-07): no new form, no lower score (318); retail reads the index as a dword and masks it with AND
+// where ours keeps a zero-extended word: the masked products 377, a squad pointer local 354 (1328 bytes, retail's
+// length), both together 359 and the unmasked calls 378 are all worse, and each drops the frame to 0x130.
+// MiniMax C (11-07): round 53: no new form, no lower score; the squad index's word carrier, the masked third argument and the row/seat/chain slots stay as the earlier rounds left them.
 // MiniMax R (11-05): no new form, no lower score; retail reads the index and the 0x98 stride before the pushes and
 // keeps the squad pointer in its own slot, ours sinks that load into the definition test (a named squad pointer 403).
 // score 318 (was 318): 1332 bytes against 1328. Left: the squad index is kept as a zero-extended word in EBP
