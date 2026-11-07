@@ -1881,14 +1881,17 @@ long function_1e4a10(long index);
 /* damages an object's shield: scales the damage by the shield material's
    armor, takes it off the shield, passes what is left over to the body
    (accumulator->damage) and stuns the shield's recharge */
+// score 8 (was 8): only the reload order after three calls differs: after function_d5bc0 retail reloads 1.0f, the
+// zero, the maximum and the inverse (ours the zero, maximum, inverse, then 1.0f); after function_d6a70 and
+// function_176780 retail reloads the spilled shield damage before the zero (ours the zero first).
 // MiniMax B (11-06, run 42): no new form and no lower score (8); after the call to function_d5bc0 retail reloads the
 // 1.0f constant before the `xorps` of zero and the spilled locals, ours reloads it last; moving the declaration of
 // the multiplier only makes the constant take a stack home and scores far worse.
-// score 8 (was 8): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
+// Earlier (8, was 8): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
 // MiniMax D (11-06, run 49): no new form, no lower score (8); after the call to function_d5bc0 the 1.0f constant is still reloaded last, retail reloads it before the `xorps` of zero and the spilled locals.
 // MiniMax A (11-04, run 41): no new form, no lower score (10); assigning the multiplier in an else arm instead
 // of at the declaration scores 156, and the reload order after the d5bc0 and d6a70 calls stays as it was.
-// score 8 (was 10): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
+// Earlier (8, was 10): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
 // constant before the `xorps` of zero and the spilled locals (ours reloads 1.0f last). The `lea ebx, [edi + 8]`
 // schedule for function_176780 was its parameter order (round 74, m3 lane 1). Tried: owner pointer in
 // a local for the function_176780 call (no change), the tail's unknownd4 handle in a long local (12).
@@ -1911,6 +1914,13 @@ long function_1e4a10(long index);
 // declared before the material lookup 14, before the inverse 48, before the maximum 206; `0.0f < maximum_shield` 8;
 // the first zero, or every zero ahead of function_d5d80, written as integer 0 8/8 (same code). The 1.0f clamp moved
 // after the early zeros (just ahead of function_d5d80, 209, or of the inverse, 198) flips no order.
+// Round 58 (m3 lane 2, fast): the d5bc0 reload order follows the function's total symbol count, wherever the extra
+// symbols sit (diagnostic dead locals, reverted): +6/+7 give retail's d5bc0 order (4), +8/+9 7, +10 to +64 8; no count
+// flips the shield/zero order and renames change nothing. Real: the end lookup into a fresh `damaged` local as 0xd8cb0
+// writes it 8 (same code); an `info` local for the five field_4_2 reads 220 (883 bytes; it flips shield/zero to
+// retail's); the category test passed directly 189 (874 bytes); the stun ticks through slot_handler.h's real_to_long
+// 7 (also with `seconds` named, 7); the actor through actor_get 8 (same code); 18 combinations of those with the
+// inverse as an if/else 7 or 8 each.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

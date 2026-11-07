@@ -1165,6 +1165,13 @@ void function_2118c0(void)
 // wrapped rows with `(b << 3) + k` for p1 and out 150; every row through a `vector3f (*band)[8]` pointer 248 (847
 // bytes); `word` per-row indices from `long row = b * 8` 161 (787 bytes: retail's `add esi, 8` row and unreduced rows,
 // plus three movzx). Diagnostics: `b * 8` alone 150 (five pointer IVs), a short row stepped by 8 beside b 130.
+// Round 58 (m3 lane 2, fast; compile-only screen agrees): the interpolation pass with its own loop variables 10 (same
+// code); the wrapped indices as `long` holding the word value 170 (761 bytes); a short row stepped by 8 beside b with
+// the row sums cast to word 148 (779); the wrapped indices in a word array filled by a four-step loop 174 (792); the
+// wrapped indices computed at the head of the m loop 155 (780). Diagnostics (screen only): a wrapped index read from
+// a global gives retail's `add esi, 8` row with that row unreduced, so the rows stay unreduced only when VC cannot
+// treat the index as invariant; taking the indices' addresses (`(void)&w`, a pointer array) or a second global
+// symbol for some rows still reduces every row.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

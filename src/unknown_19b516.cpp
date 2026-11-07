@@ -282,6 +282,12 @@ void c_widget::v16()
 // return 35 (92 bytes); the c_widget wrappers returning a named result 2; the entry as `prev ? prev :
 // previous_wrapped()` 42 (90). Scan: retail has no `test eax, eax; mov esi, eax` anywhere; its only test-before-copy
 // head is 0x7f190's `for (long j = used; ...)` init, where the copied value stays live after the copy.
+// Round 58 (m3 lane 2, fast): a `start` local for this at the entry and the focus call 2; `NULL != widget` 2; a
+// `c_widget &found` in the found arm 2; the step taken before the eligibility test through a `current` local 38 (94
+// bytes); the loop also ending at `widget != this` (diagnostic, not retail's test) 34 (92). Scan: retail has no
+// out-of-line copy of the previous-or-last walk (its only instances are inside 0x22ec1b and 0x2c8fb4), so the
+// copy-then-test head does not come from an LTCG-inlined call; a plain compile of this file does not reproduce
+// the callees' register conventions, so screens need the one-file LTCG link.
 // @retail 0x22ec1b
 void c_widget::v17()
 {
