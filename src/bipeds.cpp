@@ -3768,6 +3768,7 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
    out of the world, turned to follow), or the first body at the point */
 // MiniMax B (11-07): no new form, no lower score (354); our origin, distance and matrix homes are 0x44, 0x34 and
 // 0x60 against retail's 0x40, 0x4c and 0x50, while every home from 0x94 up agrees.
+// MiniMax C (11-07): round 53: no new form, no lower score; the transform's matrix, origin and distance homes stay where the earlier rounds left them.
 // score 354 (was 354): MiniMax D (11-05): no new form, no lower score; our origin, distance and matrix homes are 0x44, 0x34
 // and 0x60 against retail's 0x40, 0x4c and 0x50, while every home from 0x94 up agrees.
 // Earlier at 368: NOT kept (lane 1 r62): the pivot pair as two ternaries on the same property test gave 351
@@ -4564,6 +4565,7 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // and rotation homes remain.
 // MiniMax A (11-03): no new form, no lower score: the normalization SIMD numbering and the trigonometric
 // and basis homes remain.
+// MiniMax C (11-07): round 53: no new form, no lower score; the shared rotation helper's bytes are the difference.
 // score 79 (was 145): frame 0x24 and the register homes agree, 894 bytes against 887, first +0x107. Left: the first rotation's cross terms read the
 // forward x load-first where retail multiplies by it in memory, and the final cross reads forward y load-first where retail has it
 // in memory (one extra load, the seven bytes). Earlier: 145: frame 0x24 and retail length agreed; first +0x4f was normalization SIMD numbering,

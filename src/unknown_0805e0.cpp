@@ -1183,6 +1183,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // MiniMax B (11-07): no new form, no lower score (49); the admission prefix still tests the count through a
 // `cache_full` flag and the upper bound still sits in EAX instead of retail's ECX; the plain-entry admission
 // reaches retail's first 76 bytes but scores 53, and the min spelling alone 47 (a two-point gain, dropped).
+// MiniMax C (11-07): 38 (was 49), not kept: the gain needs two no-op `downward = false` assignments (a
+// `removed > position` arm and the no-cache branch; without them 371), with the upper bound stored before the
+// lower and the min spelled `removed > position`. No-op statements are kept only with a byte match. The count
+// as a local re-read after the two calls, on main's body alone: 370.
 // MiniMax A (11-05): no new form, no lower score; an else arm that assigns the downward flag false again
 // (retail's second `xor bl, bl` at the merge point) grows the body to 1178 bytes and scores 382.
 // score 49 (was 49): frame 0xc and the whole tail agree; the admission prefix (a `cache_full` bool, retail

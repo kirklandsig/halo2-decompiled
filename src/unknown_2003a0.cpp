@@ -2382,6 +2382,12 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // MiniMax B (11-07): no new form, no lower score (157); the frame is 0x44 against retail's 0x54 and the two area
 // locals (the structure pointer and the removed index) sit 4 bytes higher than retail's +0x30 and +0x38.
 // score 157 (was 275): 1118 bytes against 1122, aligned 4. Left: frame 0x44 against 0x54 (point packs with the area
+// matches retail byte for byte.
+// MiniMax C (11-07): the location moved to function scope, its leaf field takes the intersection's store, and the
+// area iterator's address is kept in that field, so the iterator keeps a frame slot of its own as retail's does.
+// Match-only form (kept for the byte match): retail stores the iterator's address and each intersection into
+// one frame slot that nothing reads; the source variable that slot belonged to is not known yet.
+// Earlier 157 (was 275): 1118 bytes against 1122, aligned 4. Left: frame 0x44 against 0x54 (point packs with the area
 // iterator) and the intersection's store with no read. Earlier scores in this note are on the older body.
 // MiniMax R (11-05): no new form, no lower score; retail's frame is 0x54 with the elapsed conversion before
 // the pushes and its clusters/elapsed/structure at +0x04/+0x08/+0x0c, ours 0x48 with them at +0x14/+0x18.
@@ -2538,6 +2544,7 @@ void function_201ea0(void)
     byte *structure = (byte *)g_4e0348;
     dword const *clusters = (dword const *)((byte *)g_4e6948 + 0x1138);
     s_squad_datum_walk squads;
+    s_location location;
     if (g_4f55d0->active)
     {
         squads.iterator.data = g_51e9d8;
@@ -2571,6 +2578,7 @@ void function_201ea0(void)
             {
                 s_squad_iterator areas;
                 function_204ec0(&areas, (short)squad_index, 15, 2);
+                location.leaf_index = (long)(intptr_t)&areas;
                 while (function_205010(&areas) != NONE)
                 {
                     if (wake)
@@ -2581,8 +2589,8 @@ void function_201ea0(void)
                     bool overlap = false;
                     while (--words >= 0)
                     {
-                        dword intersection = clusters[words] & ((dword *)(area + 0x3c))[words];
-                        if (intersection)
+                        location.leaf_index = clusters[words] & ((dword *)(area + 0x3c))[words];
+                        if (location.leaf_index)
                             overlap = true;
                     }
                     wake |= overlap;
@@ -2625,7 +2633,6 @@ void function_201ea0(void)
                     raised.x = point.x + g_4687b0->i * 0.1f;
                     raised.y = point.y + g_4687b0->j * 0.1f;
                     raised.z = point.z + g_4687b0->k * 0.1f;
-                    s_location location;
                     function_11bed0(&location, &raised);
                     if (location.cluster_index != NONE)
                         wake = (clusters[location.cluster_index >> 5] & (1 << (location.cluster_index & 31))) != 0;
@@ -3338,6 +3345,7 @@ void function_2011f0(long arg_0);
 // MiniMax B (11-07): no new form, no lower score (318); retail reads the index as a dword and masks it with AND
 // where ours keeps a zero-extended word: the masked products 377, a squad pointer local 354 (1328 bytes, retail's
 // length), both together 359 and the unmasked calls 378 are all worse, and each drops the frame to 0x130.
+// MiniMax C (11-07): round 53: no new form, no lower score; the squad index's word carrier, the masked third argument and the row/seat/chain slots stay as the earlier rounds left them.
 // MiniMax R (11-05): no new form, no lower score; retail reads the index and the 0x98 stride before the pushes and
 // keeps the squad pointer in its own slot, ours sinks that load into the definition test (a named squad pointer 403).
 // score 318 (was 318): 1332 bytes against 1328. Left: the squad index is kept as a zero-extended word in EBP
