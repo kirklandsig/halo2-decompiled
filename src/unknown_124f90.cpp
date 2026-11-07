@@ -1247,6 +1247,7 @@ long function_2197f0(real gain);
 // MiniMax H (11-07): no new form, no lower score (94); the fade block still holds the running
 // difference in another register (ours xmm2, retail xmm3) and still divides by the fade-in time in
 // the other form (ours multiplies by its reciprocal).
+// MiniMax R (11-06): no new form, no lower score (94).
 // MiniMax D (11-06, run 49): no new form, no lower score (94); the first arm's sum still differs (retail loads the gain into a register and adds the interpolation into it), the register rotation (inverse, elapsed, 1.0, fade-out) still differs and the gain is still carried differently into the last arm.
 // score 94 (was 177): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
 // register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
@@ -2469,6 +2470,7 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // short here (`movsx ebp, ax`) where retail keeps the full value (`mov ebp, eax`), because the
 // callee 0x219070 only reads the low half of that parameter, and the tail still stores the flag
 // byte and the start time in the other order.
+// MiniMax R (11-06): no lower score (17); the movsx at the 0x219070 call comes from 0x218f50 and 0x218f10 returning short (both byte-exact, src/unknown_218ac0.cpp) where retail's caller copies the dword, and declaring them long here scores 80 and leaves the call unresolved.
 // MiniMax E (11-05): no new form, no lower score; merging the two set-chunk calls into one site with the
 // range and permutation indices in named locals gives 193 (short indices) and 192 (long indices) - our frame
 // drops to 8 against retail's 0xc. Reverted.
@@ -2825,6 +2827,7 @@ static inline short sound_voice_find_available_channel(char type)
 // and scales it by nine where ours narrows a later parameter and scales that one, the result still
 // lives in a stack byte in ours and in al in retail, and the frame is 0xc against retail's eight
 // bytes.
+// MiniMax R (11-06): no new form, no lower score (96).
 // MiniMax D (11-06, run 49): no new form, no lower score (96); retail still keeps the result in al (set at the entry, cleared through bl on the failure path and set again after the commit) with an eight-byte frame, ours keeps it in a stack byte with a twelve-byte frame, and retail's failure block still follows the success path.
 // score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours

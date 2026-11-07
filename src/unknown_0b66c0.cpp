@@ -143,6 +143,7 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // pointer (34, caller loss); the length masked with 0x1ff, which gives retail's scan registers but
 // an extra instruction (29); the compare as count <= length - start (35, caller loss); the scan
 // helper walking a local (0xb61d0 then differs at 2).
+// MiniMax R (11-06): no lower score (40); the matched caller 0xb5f10 sets the start in ECX and the count in EAX with the string and the destination on the stack, so the declared order already produces retail's call setup; what is left is retail's start saved in EDI and its scan in EDX/ECX against our start in ECX and scan in EDI/EDX.
 // MiniMax D (run 46): the start copied into a local before or after the guard gives retail's body
 // (28) but LTCG then passes the start in EDX and the matched caller 0xb5f10 differs at 6; not kept.
 // A second local for the count gives 51, the guard still testing the parameter gives 28 with the same
