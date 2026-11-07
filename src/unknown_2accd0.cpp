@@ -935,6 +935,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // on the no-total base [82] each of those, the byte count declared later, the total summed body first, sizeof first
 // or through a dword cast; the signature sum written in both the seek and its compare [96] (it reloads after the call).
 // Retail's body_size temporary shares ECX with the body arm's remaining count, so the signature sum cannot fold into it.
+// Round 57 (m3 lane 2, fast; 0x2adb10 matched throughout): the matched sibling's clamp (a `buffer_size` local, `size =
+// MIN(remaining, buffer_size)`) 161 (691 bytes), with the total and the signature position written body first 161; the signature
+// position written body first alone 34 (same code); the direct arm's size before its buffer with `MIN(remaining, size)` 35; the
+// body case's file handle in a two-use local 168 (695 bytes).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

@@ -30,6 +30,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// MiniMax H (11-06): no new form, no lower score; the only difference in the axis block is the dot product's
+// i term, where ours multiplies up's i first and retail multiplies forward's i first; the two shapes that flip
+// it need the dot written out by hand and the k term read through the matrix field, so they stay score-picked
+// forms; the normalizer's squared length still has to go through the existing dot3f.
 // MiniMax A (11-05, held at m3 review): 110 -> 2 with the normalizer's squared length through the existing
 // dot3f and the caller's dot3f(forward, up) written out by hand with its k term read as
 // local_1[0].forward.k (the same field forward points to); only the i term then differs (ours copies up.i,

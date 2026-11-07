@@ -735,6 +735,9 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // label 67 (the false result in a stack byte); that label with `return true` 72, plus `result = false` ahead of the test 72 (false folds,
 // EBP dropped). Every form that puts the false exit between the sentinel test and the restore adds a third false copy or folds or
 // spills the false result. Original body restored.
+// Round 172 (m3 lane 4, fast): the would-block arm setting the result before the position 10; the buffer declared
+// before the result 10; `sent <= -1` 23; `-2 == sent` 10; `result = sent >= 0` tested in place of `sent < 0` 74;
+// the send count passed without its `(short)` cast 10.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

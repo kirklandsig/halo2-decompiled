@@ -1613,6 +1613,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 	vector3f velocity = {direction->i*scale, direction->j*scale, direction->k*scale};
 	function_10cf80(&velocity, object_index, false);
 }
+// MiniMax A (11-06, run 52): no new form, no lower score (140) - retail keeps the two release
+// impulse paths apart with the flag clear at a different point in each, so splitting ours that way
+// (223) and giving the clear a byte-unit bit field (206) both score worse.
 
 // MiniMax D (11-05): no new form, no lower score.
 // score 140 (was 140): frame 0xac agrees; return byte +0xe/+0xf, release-byte RMW/tail,

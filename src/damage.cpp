@@ -1111,6 +1111,7 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 }
 
 /* damages one object of the radius (and its children and siblings): the geometry to it, then the damage */
+// MiniMax R (11-06): forms tried, none lower (38 grouped negations, 40 with the node stores first, 41 one negation per row, 286-288 negated in place, 304 inlined, 38 with the near block's and the else arm's sums the operands the other way round); the near block still folds the normal into the k row where retail folds the destination, and the else arm still folds the destination in its i and k rows.
 // score 38 (was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // (`movss xmm0, [ebx + 8]; addss xmm0, [edi + 8]`, retail the other way).
 // Earlier 92 (was 286): frame 0x54 agrees, 1537 bytes against 1535, 82 instructions from the top agree. Left: zero in xmm0
@@ -2542,6 +2543,18 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
+// MiniMax R (11-06): no new form, no lower score (472); the frame agrees, and the entry takes the argument first here and the global first in retail.
+// b5N walk (11-06, against retail block by block, fast 472 unchanged): no behaviour difference found. Every field, offset, test
+// direction, callee and argument agrees: region state word |= 1 << permutation (0xda1e8), the 0x22/0x20 NONE tests, the type&3 and
+// unknown20 >= 3 seat-eject scan (0xda23b-0xda2bf), d9d60 (al = flags bit 20, 0xda2d9-0xda2e8), d9e70 (info+0x11 & 0x3f), the four
+// flag-to-byte-0x19 stores, accumulator 0x400, the 0x60/0x300 weapon blocks, the six vehicle bits at +0x352, the db110 test (flags
+// & 1 -> (obj, 0, 0), else flags & 0x10000 with state != 1 destroying or (obj, 1, 0)), the mode-4 once-only block, the child walk
+// (bit 26), the section scan and kind > 2 split, the switch (jump table 0xda848, no default), the seat scan with the inlined
+// iterator and event, and the tail d9ff0. No float precision issue: the only reals are the 0.0f at body_vitality (xorps/movss) and
+// the 0.0f contrail time pushed as 0. The remaining differences are encoding only: the permutation (eax in retail, caller 0xd5f50
+// `mov eax, esi`), `or word [x+0x352], si` (retail keeps the 1 in esi, ours narrows to `or byte [x+0x352], 1`), the drop value
+// (retail `not eax; and eax, 1` as a long, it is function_100390/1003e0's barrel_index; as a long here 531), and the db110 result
+// test (retail one shared call, `test al, al`; ours `neg al; sbb; inc`). Nothing was added or kept.
 // score 472 (was 472): frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // with register homes/call setup and 1884/1868-byte length still differing.
 // Earlier 533 from 624: the body is statement for statement retail's (same size, same block order). What is left is
@@ -4207,7 +4220,9 @@ bool function_138880();
 /* an object's damage per tick: delayed permutations, stun timers, shield
    and body recharge, the regions' damage levels and the recent damage;
    returns whether anything changed */
-// score 402 (was 607): 2150 bytes against 2170, frame 0x70. Left: flag pairs that cross the word's bytes merge into one `and word` (three
+// score 400 (was 402, 607 before that): 2148 bytes against 2170, frame 0x70. Round 75 (b4E) walked every block against retail 0xd5de0-0xd6657:
+// one behaviour fix (the region decay else arm also runs when `info->region_count <= i`, retail 0xd6518 jle -> 0xd6571); every other test,
+// field, callee, argument order and float op agrees. `if (shield > max) {clamp} else {changed}` arm order: no change (393 alone, 400 with the callers, the same as without it). Left: flag pairs that cross the word's bytes merge into one `and word` (three
 // sites, each a line short, which shifts what follows), retail takes the 0xda110 permutation in EAX (`mov eax, esi`, BLOCKED-BY 0xda110's
 // convention), `xor ecx, ecx` ahead of the team word at both 0x1e9720 calls, bounds and info in swapped frame slots, the 0x80 notify
 // arguments hoisted over the clamp test, the second 0x138880 inlined (retail calls it), and scratch rotation in the region loop.
@@ -4457,33 +4472,30 @@ bool function_d5de0(long object_index)
 			{
 				if (state->unknown02 > 0)
 				{
-					if (state->damage_level_ticks == 0)
+					if (state->damage_level_ticks == 0 && info->region_count > i)
 					{
-						if (info->region_count > i)
+						s_damage_info_region *region = &info->regions[i];
+
+						if (*(real *)((byte *)region + 0x2c) > 0.0f)
 						{
-							s_damage_info_region *region = &info->regions[i];
+							real decay = g_510c54->rate * *(real *)((byte *)region + 0x2c) * 255.0f;
+							long amount;
 
-							if (*(real *)((byte *)region + 0x2c) > 0.0f)
+							__asm
 							{
-								real decay = g_510c54->rate * *(real *)((byte *)region + 0x2c) * 255.0f;
-								long amount;
-
-								__asm
-								{
-									fld decay
-									fistp amount
-								}
-								if ((long)state->unknown02 > amount)
-								{
-									state->unknown02 -= (byte)amount;
-								}
-								else
-								{
-									state->unknown02 = 0;
-									continue;
-								}
-								changed = true;
+								fld decay
+								fistp amount
 							}
+							if ((long)state->unknown02 > amount)
+							{
+								state->unknown02 -= (byte)amount;
+							}
+							else
+							{
+								state->unknown02 = 0;
+								continue;
+							}
+							changed = true;
 						}
 					}
 					else

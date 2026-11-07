@@ -226,6 +226,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 		info->identifier = (salt << 28) | (identifier & 0x3ff);
 	}
 }
+// MiniMax A (11-06, run 52): no new form, no lower score (49) - a byte result set after the attach
+// reaches retail's shape but scores 77, and reading the header through the entity changes nothing;
+// retail keeps the result in bl and looks the header up twice.
 
 // MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
 // pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
@@ -969,6 +972,10 @@ bool c_projectile_type::v8(long a, long b)
 // Round 215 (lane 3, fast), full-width mask unless noted: the mask alone 12; a dword bitfield's low word 12; a 12-byte group array indexed
 // `[index & 0xffff]` 12; a by-value one-long handle with inline accessors 12; a group local masked after the test 12; `(dword)(index << 16) >> 16` 12;
 // the object through a typed view 12; a word bitfield's low word 5 (movzx, no mask).
+// Round 78 (m3 lane 1, fast; control 5), all with the full-width mask unless noted: a dword result 12; a groups
+// pool local 12; the entry as `&data[(index & 0xffff) * 12]` 12; a const entry pointer 12; the multiply as
+// `12 * (index & 0xffff)` 12; a dword result with the word read 5. Re-measured: const flags 12 (round 94); a const
+// value local for the two group reads 24.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

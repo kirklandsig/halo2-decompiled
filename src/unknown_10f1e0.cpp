@@ -1409,6 +1409,12 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax H (11-06): the index masked in a local of its own gives 322, the unit pointer dropped in favour of
+// the macro at every use gives 344 and the volatile cast on the argument read dropped gives 271; the slot
+// argument taken from the unit local gives 164, the same code as retail's re-derived read.
+// MiniMax H (11-06): the pool pointer, the header array and index*12 as a byte offset in locals reproduce
+// retail's entry shape (headers in EBP, index*12 in EDX, the pool re-read for the second query) but the index
+// still lands in EAX and the pool in EDX, 377; the score stays 164.
 // MiniMax R (11-04): the case list with 0xb000061 (170), the split depletion queries (330) and a bool
 // result (194) all lose against 164; splitting only the first query (328) and the retail-shaped second
 // query that clears the flag on a positive value (330) lose too, though the latter reaches setle; no
@@ -1691,7 +1697,21 @@ bool __stdcall function_110ab0(long unit_index)
 
 // MiniMax R (11-04): no new form, no lower score.
 // MiniMax R (10-31): no new form, no lower score.
-// score 450 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
+// MiniMax H (11-06): the result initialised to true at the declaration gives 450, the same code as the
+// uninitialised one; a second 900 s permuter search (seed 7) found no better form either.
+// MiniMax H (11-06): the permuter's 300 s search found no better form (reduced 467, full 447, both the
+// baseline); the frame word and the requested-in-EDI lifetime still differ.
+// b4D walk (11-06, statement by statement against retail 0x1103a0-0x110aa0, with an emulation of retail's
+// state-switch compare tree over every case constant of both files): no logic difference. The state switch
+// (all 12 groups: interruptible, `requested == 0x600008c ? true : interruptible`, depleted, 0x600008c's
+// requested set, the 0x600008d/e + 0xc000043 + 0xd000042 group, allow, false, default true), the
+// 0xa000010 jump table, the depletion pair (first `<= 0` sets, second `> 0` clears, via the inlined
+// function_cbd50 slot test) and both 11-value requested sets of the overlay switch (overlay 0xb0 bit 4 /
+// depleted) all agree. Changes: `result = interruptible; if (requested == 0x600008c) result = true;`
+// (value set then overridden) is now the ternary, 453 (1793 B, was 450 at 1789 B); the raw +0x14/+0xb0
+// flag tests use the named `channels[0].unknown14` / `channel_9c.unknown14`, same code. Tried:
+// `bool result = true;` with the default arm dropped 483 (1785 B).
+// score 453 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
 // index*12 in EDX so the unit is re-derived for the query; ours keeps the unit in a register.
 // Earlier: this round found no gain - retail keeps the pool pointer live in ECX and the data in
@@ -1868,7 +1888,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		long second = function_cbd50(unit_index, *(char *)((byte *)UNIT_ANIMATION_OBJECT(unit_index) + 0x213));
 		if (second != NONE && *(short *)((byte *)UNIT_ANIMATION_OBJECT(second) + 0x17c) > 0)
 			depleted = false;
-		if (*(byte *)((byte *)state + 0x14) & 0x10)
+		if (state->channels[0].unknown14 & 0x10)
 			interruptible = true;
 	}
 	if (function_0c7070(unit_index))
@@ -1902,9 +1922,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		case 0xe00002a:
 		case 0xe0000c3:
 		case 0x1000006c:
-			result = interruptible;
-			if (requested == 0x600008c)
-				result = true;
+			result = requested == 0x600008c ? true : interruptible;
 			break;
 		case 0x500000a:
 		case 0x5000024:
@@ -1978,7 +1996,7 @@ bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 		}
 	}
 	byte overlay_interruptible = false;
-	if (controlling != NONE && (*(byte *)((byte *)control + 0xb0) & 0x10))
+	if (controlling != NONE && (control->channel_9c.unknown14 & 0x10))
 		overlay_interruptible = true;
 	switch (control->channel_9c.unknown08)
 	{
@@ -2285,9 +2303,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // pitch-first and two interleaved producer orders: 829/828/828/829/829/828/828/829.
 // NOT kept: every form regresses; 3403-byte length agrees but frame stays 0xcc/0xd4.
 // Original private helper and full body restored; first-angle/overlay expansion remains.
-// Round 93 (m3 lane 9, fast with all six queue functions): the overlay identifier read at each use 837 at 3403
-// B (still four channel_play calls and two 0x11df30 calls, so the length is a coincidence), as a `for` loop 884
-// (3346 B); the ratio test and the play call nested 776; the overlay-default play nested 776; both 776.
+// b2B (11-06) walk against retail, all 849 instructions: no behaviour difference (fields, conditions, callees and
+// arguments agree). Still differing: frame 0xcc versus 0xd4; retail inlines the first 0x11df30 and calls channel_play
+// out of line; the x*0.5f+0.5f operand order. Score 776, unchanged.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -3097,6 +3115,35 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
 // frame dword (the decision's own byte), BLOCKED-BY 0xe6a20 (contributor; retail passes the +0x14/+0x16
 // words whole), the buffer address re-formed after 0x1c7380, NONE kept in ESI late, the tail's OR order. The
 // request wants a two-name, two-bool record type for the parameter (declared in bipeds.cpp and vehicles.cpp).
+// Walk b3A2 (2026-11-06, statement by statement against 0x111650..0x11205e, fast + align.py): no logic difference
+// found. Checked: the request words (+0, +4, +8, +9), the parent test and its four-way local_4 chain (0x1116f1-0x1117af),
+// every 0xe6b00 out slot (0x1118b4), the switch tree (0xa00001d, 0x9000020, 0x700005c, 0x800001c and the 0xc000043 /
+// 0xd000042 / 0xe0000c2 half) and each case body, the node-offset float code (0x111a13-0x111a43, no x87 and no rounding),
+// the 0x111010 / 0xc7070 tail, the decision (0x111c69-0x111cbb), the 0x10f430 call (pushes at 0x111cf5-0x111d05), the
+// periodic block (0x111d6f-0x111dd8) and the three channel blocks (0x111ddf-0x112037), the 0.267f / 0.1335f constants
+// (0x3e88b439 / 0x3e08b439) and the OR tail. Kept: the node offset through vector3d_from_points3d(&local_22,
+// &local_23->position, &local_19) (retail takes the position pointer once, `add eax, 0x28` at 0x111a1e, then [eax+4],
+// [eax+8]; the written-out subtractions re-add the offsets); a NEW use of that shared inline in this file (visible through
+// globals.h already) for the full check. The fast score reads 621 (was 511) only because the listing is positional and
+// ours now has 701 instructions against 703 (align.py: 113 hunks, ratio 0.779, unchanged).
+// Precision/type findings NOT kept (each needs other files or is a score-only form), with fast numbers on this base:
+//  - 0xe6a20 (called only here, 0x11182a, 0x111ec6, 0x111fce) gets the channels' +0x14/+0x16 words whole, zero-extended
+//    (movzx), not bools: its `active`/`keep` are integers (it only tests bit 0) and the channel fields are words.
+//    With unknown_0a76b0.cpp `long active, long keep` (0xe6a20 stays MATCH), unknown_1c62f0.h `word unknown14; word
+//    unknown16;` and the calls passing the fields raw, together with the two forms below: 345 (branch agent/b3A2-xfile).
+//    `word` parameters alone gave `xor/mov` instead of retail's movzx (624).
+//  - retail's decision byte is its own stack slot (+0x1b, cleared at 0x111c87, set at 0x111cb6) and function_111651
+//    is expanded at all 8 sites: `bool local_30 = false; ... if (local_6 || !local_28) local_30 = true;` gives frame
+//    0x80 and the first 0x165 bytes identical (align ratio 0.78 -> 0.91), `__forceinline` on function_111651 expands
+//    the three calls in the 0x700005c case (ratio 0.93). A flag set in a test and a forced-inline helper are not
+//    behaviour fixes, so they are not kept without a match.
+//  - the channel-clear test as `((local_5 == 0x7000101 && unknown7c == 0x400000c) || local_5 == 0x400000c)` is retail's
+//    threaded branch shape (0x111d14-0x111d33, the ternary always makes a sete); same behaviour, 622 against 621.
+// Left (codegen only): the control pointer is cached in EBX where retail re-reads [esp+0x24] at each block, and
+// retail keeps the `graph_tag_index != NONE && !(flags & 1)` guards of the three channel blocks (0x111e03-0x111e0c)
+// that ours folds into the block's own test; `mov edx, edi` for the s_bit_owner where retail re-forms `lea edx` (0x1119b5,
+// 0x1119ca); local_28 (0x111c69) is computed before the change flag in retail but moving it up costs 684-707 (slot homes
+// swap); the OR order of the tail (0x112045).
 // @retail 0x111650
 bool __stdcall function_111650(long arg_0, long *arg_1)
 {
@@ -3197,9 +3244,7 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
                                     c_animation_channel_node_position_get(&local_2->channels[0], &local_22, 0.0f, (short)local_20);
                                     transform4x3f_apply_point(&local_21, &local_22, &local_22);
                                     transform4x3f *local_23 = function_b8bd0(arg_0, (short)local_17);
-                                    local_19.i = local_23->position.x - local_22.x;
-                                    local_19.j = local_23->position.y - local_22.y;
-                                    local_19.k = local_23->position.z - local_22.z;
+                                    vector3d_from_points3d(&local_22, &local_23->position, &local_19);
                                 }
                                 else
                                     local_19 = *g_4687a4;

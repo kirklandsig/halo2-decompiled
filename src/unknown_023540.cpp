@@ -364,7 +364,20 @@ extern real g_4b8940[9], g_4b8964[9], g_4b8988[9];
 void function_022750(real const *a, long size, real const *b, real *out, real t);
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result);
 
-// score 237 (was 237): frame 0x80/0x68, axis/trig homes and rolled coefficient calls remain.
+// score 252 (was 237): b5J walk against retail (2026-11-06). Behaviour: the period test is `> 0` with the
+// false path last (0x22adc comiss, 0x22ae0 jbe 0x22c1d), so a NaN period clears g_5093f4 (was: ran the update);
+// rotation[5] and [7] use j*(k*complement) with k*complement shared with [2]/[6] (0x22a0e, 0x22a36), was (j*k)*complement.
+// Structure (retail shape): reset loop indexed with a signed bound, stores in retail order (0x22860-0x22888);
+// sample loop keeps the ebx offset and a countdown (0x22abf-0x22ace); samples, source and the structure pointer are re-read after the calls
+// (0x22900, 0x22ab5, 0x22b06); axis fields are read from memory at each use (0x2292f-0x2294f); squares once.
+// Remaining: frame 0x5c/0x68, ebp saved in the prologue (retail pushes it after the checks, 0x228f6), retail's
+// second load of [edi+0x84] (0x228d9; not reproduced), sine_i on the x87 stack (0x229a1), and callee 0x143600
+// has no source here so its argument registers differ. Retail makes three explicit coefficient calls with a copy
+// back (0x22a6f, 0x22a8a, 0x22aa5), but written that way the full build moves the callers 0x12a50 from 153 to 178 and
+// 0x2ca00 from 3 to 89, so the rolled loop stays. Tried, not kept: store g_5093f0 then clamp and store again (retail
+// 0x22b29-0x22b36) 240; first checks through a second [edi+0x84] expression 239; (double) multiply for sine_i 244;
+// cross_ji local 236; vector3f axis copy 255; `i < count` without the countdown 239.
+// Trials on the earlier shape (rolled coefficient loop, axis copy):
 // Earlier trials: frame 0x78 versus 0x68; axis/angle homes and rolled coefficient calls differ.
 // Sample cursor 258; sine-scaled axis 259; diagonals first 288; elapsed snapshot 258; size optimization 397.
 // frame 0x7c versus 0x68; axis/trigonometric homes and rotation-call layout differ.
@@ -387,48 +400,43 @@ real *function_143600(real const *rotation, unsigned long order, real const *coe
 // @retail 0x22850
 void function_22850(void)
 {
-    for (s_table_entry *entry = g_4b89b0; entry != g_4b89b0 + 24; ++entry)
+    for (long entry_index = 0; entry_index < 24; ++entry_index)
     {
-        entry->key = NONE;
-        *(short *)&entry->unknown4 = NONE;
+        s_table_entry *entry = &g_4b89b0[entry_index];
         entry->data_handle = NONE;
+        *(short *)&entry->unknown4 = NONE;
+        entry->key = NONE;
         memset(entry->data_offset, 0, sizeof(entry->data_offset));
         memset(entry->data_count, 0, sizeof(entry->data_count));
     }
     g_5093e8 = 0;
-    byte const *structure = (byte *)g_4e0344;
-    if (!structure || *(long const *)(structure + 0x80) <= 0 || !g_4e0348) return;
-    byte *source = *(byte **)(structure + 0x84);
+    if (!g_4e0344 || *(long const *)((byte *)g_4e0344 + 0x80) <= 0 || !g_4e0348) return;
+    byte *source = *(byte **)((byte *)g_4e0344 + 0x84);
     if (*(long *)(source + 0x1c) == NONE || *(long *)(source + 4) != *(long *)((byte *)g_4e0348 + 8)) return;
     long count = *(long *)(source + 0x38);
     if (count <= 0) return;
-    byte *samples = *(byte **)(source + 0x3c);
     for (long i = 0, remaining = count; remaining > 0; ++i)
     {
-        byte *sample = samples + i * 0xdc;
-        real angle = *(real *)(sample + 0xa0);
-        if (angle != 0.0f)
+        byte *sample = *(byte **)(source + 0x3c) + i * 0xdc;
+        if (*(real *)(sample + 0xa0) != 0.0f)
         {
-            vector3f axis = *(vector3f *)(sample + 0x94);
-            real sine = (real)sin(angle), cosine = (real)cos(angle), complement = 1.0f - cosine;
-            real square_i = axis.i * axis.i;
-            real square_j = axis.j * axis.j;
-            real square_k = axis.k * axis.k;
-            real cross_ji = axis.j * complement * axis.i;
-            real cross_ki = axis.k * complement * axis.i;
-            real cross_jk = axis.j * axis.k * complement;
-            real sine_i = axis.i * sine;
-            real sine_j = axis.j * sine;
-            real sine_k = axis.k * sine;
+            vector3f const *axis = (vector3f const *)(sample + 0x94);
+            real sine = (real)sin(*(real *)(sample + 0xa0));
+            real cosine = (real)cos(*(real *)(sample + 0xa0));
+            real complement = 1.0f - cosine;
+            real square_i = axis->i * axis->i;
+            real square_j = axis->j * axis->j;
+            real square_k = axis->k * axis->k;
+            real k_complement = axis->k * complement;
             real rotation[9];
             rotation[0] = (1.0f - square_i) * cosine + square_i;
-            rotation[1] = cross_ji + sine_k;
-            rotation[2] = cross_ki - sine_j;
-            rotation[3] = cross_ji - sine_k;
+            rotation[1] = axis->j * complement * axis->i + axis->k * sine;
+            rotation[2] = k_complement * axis->i - axis->j * sine;
+            rotation[3] = axis->j * complement * axis->i - axis->k * sine;
             rotation[4] = (1.0f - square_j) * cosine + square_j;
-            rotation[5] = cross_jk + sine_i;
-            rotation[6] = cross_ki + sine_j;
-            rotation[7] = cross_jk - sine_i;
+            rotation[5] = k_complement * axis->j + axis->i * sine;
+            rotation[6] = k_complement * axis->i + axis->j * sine;
+            rotation[7] = k_complement * axis->j - axis->i * sine;
             rotation[8] = (1.0f - square_k) * cosine + square_k;
             for (real *coefficients = (real *)(sample + 0xc);
                 coefficients != (real *)(sample + 0x78); coefficients += 9)
@@ -440,36 +448,36 @@ void function_22850(void)
         }
         --remaining;
     }
-    real period = *(real const *)(structure + 0x34);
-    if (period <= 0.0f)
+    if (*(real const *)((byte *)g_4e0344 + 0x34) > 0.0f)
     {
-        g_5093f4 = false;
-        return;
-    }
-    real previous = g_5093ec;
-    g_5093ec = (real)g_4858a0;
-    real phase = (g_5093ec - previous) / period + g_5093f0;
-    phase -= real_truncate(phase);
-    g_5093f4 = true;
-    if (phase < 0.0f) phase = 0.0f;
-    g_5093f0 = phase;
-    if (count == 1)
-    {
-        memcpy(g_4b8940, samples + 0xc, sizeof(g_4b8940));
-        memcpy(g_4b8964, samples + 0x30, sizeof(g_4b8964));
-        memcpy(g_4b8988, samples + 0x54, sizeof(g_4b8988));
+        real previous = g_5093ec;
+        g_5093ec = (real)g_4858a0;
+        real phase = (g_5093ec - previous) / *(real const *)((byte *)g_4e0344 + 0x34) + g_5093f0;
+        phase -= real_truncate(phase);
+        g_5093f4 = true;
+        if (phase < 0.0f) phase = 0.0f;
+        g_5093f0 = phase;
+        if (count == 1)
+        {
+            byte *samples = *(byte **)(source + 0x3c);
+            memcpy(g_4b8940, samples + 0xc, sizeof(g_4b8940));
+            memcpy(g_4b8964, samples + 0x30, sizeof(g_4b8964));
+            memcpy(g_4b8988, samples + 0x54, sizeof(g_4b8988));
+        }
+        else
+        {
+            real step = 1.0f / (count - 1);
+            real inverse = 1.0f / step;
+            long index = real_truncate(phase * inverse);
+            real fraction = (phase - index * step) * inverse;
+            byte *sample = *(byte **)(source + 0x3c) + index * 0xdc;
+            function_022750((real *)(sample + 0xe8), 3, (real *)(sample + 0xc), g_4b8940, fraction);
+            function_022750((real *)(sample + 0x10c), 3, (real *)(sample + 0x30), g_4b8964, fraction);
+            function_022750((real *)(sample + 0x130), 3, (real *)(sample + 0x54), g_4b8988, fraction);
+        }
     }
     else
-    {
-        real step = 1.0f / (count - 1);
-        real inverse = 1.0f / step;
-        long index = real_truncate(phase * inverse);
-        real fraction = (phase - index * step) * inverse;
-        byte *sample = samples + index * 0xdc;
-        function_022750((real *)(sample + 0xe8), 3, (real *)(sample + 0xc), g_4b8940, fraction);
-        function_022750((real *)(sample + 0x10c), 3, (real *)(sample + 0x30), g_4b8964, fraction);
-        function_022750((real *)(sample + 0x130), 3, (real *)(sample + 0x54), g_4b8988, fraction);
-    }
+        g_5093f4 = false;
 }
 
 struct s_487b10_arena
@@ -2688,7 +2696,22 @@ bool spherical_harmonics_evaluate_directional_light(vector3f const *direction, d
     real red, real green, real blue, real *red_result, real *green_result, real *blue_result);
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green,
     real *blue, byte order, vector3f *direction, point3f const *position);
-// score 506 (was 530): frame 0x21c versus 0x200; order, coefficient and separate sample homes differ.
+// score 401 (was 481, full build): walked against retail block by block (b2H, 11-06). Fixed, all with retail evidence:
+// the result is a bool slot (0x13);
+// `order` is a full dword argument (retail pushes it movsx'd at 0x4b9e5 and reads it whole at 0x237ae; short here
+// made 0x4b5d0 175, long makes it 93); the structure global is read
+// at the use (0x23941, 0x23b75) before the position lookup; the coefficient address is formed once before the cache
+// fill (0x237c4). Unchanged and equal to retail: both determinant trees, every callee argument and the loop shapes.
+// Still differs: retail inlines the first 0x235a0 copy (0x238a4-0x23935) but calls 0x235a0 for the second (0x23acc,
+// its only retail call), ours inlines both; ours keeps a short-compare of the sample count (jbe) against retail's
+// dword spill and jle (a long count scored 515 on the old body); esi/edi swap in the prologue. Tried: entry pointer
+// local 494; `level < limit ? level : limit` 449 (no change); return false in the failure arm 534; long result 530;
+// use_samples stored false and then set by the test (retail stores false at 0x23716) 463, not kept (a value set
+// before a test and then overridden).
+// Not kept: retail inlines render_memory_allocate and table_entry_data here (dword rounding at 0x237fd-0x23810, the
+// NONE test at 0x23830, the sign test at 0x23843); calling them (render_memory.h) scores 467 but loses the matched
+// 0xc2d00 in the full build, so the allocation stays written out. The byte count is count << 2, so the rounding never applies.
+// Earlier score 506 (was 530): frame 0x21c versus 0x200; order, coefficient and separate sample homes differ.
 // Earlier: Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
 
 // Earlier score 530 (was 530): Frame 0x20c versus 0x200; order, coefficient homes and sample paths remain.
@@ -2741,10 +2764,10 @@ void __stdcall function_22cf0(s_light_sample_source const *source, real *red, re
 // Direct cache-hit completion and found-byte break, each with long/bool success and original/positive
 // eligibility results, 554/549/554/549 each. Original exhaustive scan and body restored.
 // @retail 0x23690
-bool __stdcall function_23690(s_coefficient_layout const *layout, short order, long object_index,
+bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag)
 {
-    long result = true;
+    bool result = true;
     {
         bool found = false;
         for (short i = 0; i < g_5093e8; ++i)
@@ -2765,9 +2788,10 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
         }
         long level = 5 - order;
         if (level > layout->level_count - 1) level = layout->level_count - 1;
+        real const *coefficients = layout->data + layout->levels[level].offset;
         long stride = layout->groups * (layout->columns * 3 + 4);
         s_bucket_source const *buckets = (s_bucket_source const *)vertices;
-        long total = function_023540((short)count, buckets, &g_4b89b0[g_5093e8], stride);
+        long total = function_023540(count, buckets, &g_4b89b0[g_5093e8], stride);
         long bytes = total * stride * sizeof(real);
         if (!bytes) goto done;
         long next = g_487b18.size + bytes;
@@ -2790,12 +2814,12 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
                 function_0235a0(source, &matrix);
                 if (use_samples)
                 {
+                    byte *bsp = *(byte **)((byte *)g_4e0344 + 0x84);
                     point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, 0);
                     if (position)
                     {
-                        byte *bsp = *(byte **)(structure + 0x84);
                         function_22cf0((s_light_sample_source const *)(bsp + 0x38), red, green, blue,
-                            (byte)layout->order, &g_4b89b0[g_5093e8].scale, position);
+                            layout->order, &g_4b89b0[g_5093e8].scale, position);
                     }
                 }
                 determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
@@ -2808,7 +2832,7 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
                 function_143600((real const *)&rotation, 3, red, rotated_red);
                 function_143600((real const *)&rotation, 3, green, rotated_green);
                 function_143600((real const *)&rotation, 3, blue, rotated_blue);
-                function_023ca0((s_block_layout const *)layout, layout->data + layout->levels[level].offset, rotated_red, rotated_green, rotated_blue, output);
+                function_023ca0((s_block_layout const *)layout, coefficients, rotated_red, rotated_green, rotated_blue, output);
                 output += stride;
                 if (available_samples > 1)
                 {
@@ -2822,18 +2846,18 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
                     function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
                     if (use_samples)
                     {
+                        byte *bsp = *(byte **)((byte *)g_4e0344 + 0x84);
                         point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, 1);
                         if (position)
                         {
-                            byte *bsp = *(byte **)(structure + 0x84);
                             function_22cf0((s_light_sample_source const *)(bsp + 0x38), red, green, blue,
-                                (byte)layout->order, &g_4b89b0[g_5093e8].scale, position);
+                                layout->order, &g_4b89b0[g_5093e8].scale, position);
                         }
                     }
                     function_143600((real const *)&rotation, 3, red, rotated_red);
                     function_143600((real const *)&rotation, 3, green, rotated_green);
                     function_143600((real const *)&rotation, 3, blue, rotated_blue);
-                    function_023ca0((s_block_layout const *)layout, layout->data + layout->levels[level].offset, rotated_red, rotated_green, rotated_blue, output);
+                    function_023ca0((s_block_layout const *)layout, coefficients, rotated_red, rotated_green, rotated_blue, output);
                     output += stride;
                 }
             }
