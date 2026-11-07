@@ -673,6 +673,9 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// MiniMax R (11-07, run 38): no new form, no lower score (77); still BLOCKED-BY 0x1883e0's fourth and fifth
+// parameter types, whose declarations are in src/impacts.cpp and src/projectiles.cpp, so retail's point and
+// forward register split, its twelve stack arguments and the two scans stand as they are.
 // MiniMax C (11-06): no new form, no lower score; still BLOCKED-BY 0x1883e0's fourth and fifth
 // parameter types, whose declarations are in src/impacts.cpp and src/projectiles.cpp, so retail's
 // point and forward register split, its twelve stack arguments and the two scans stand as they are.

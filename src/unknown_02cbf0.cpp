@@ -49,6 +49,16 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
+// MiniMax R (11-07, r6): no new form, no lower score (10); the first word's OR order, the kind shift and the
+// pool register set still differ. This round: the kind word's two operands swapped so that the kept bits come
+// first put the shift in the call's result register as retail has it, but the entry's tag load then moves into
+// ECX where retail has EDX (79); the kind word written as one expression with the shift in a named local is far
+// worse (79); the source permuter over the body was killed at its time limit and produced no variant.
+// MiniMax R (11-07, run 38, later): no new form, no lower score (10); swapping the first two terms of the first
+// word is byte-identical to the baseline, the kind word written as one expression is far worse (79), and the kind
+// word built straight from the call's result is byte-identical (10), so the kind shift still copies the result to
+// ESI before shifting it where retail shifts the result in place and copies it afterwards.
+// MiniMax R (11-07, run 38): no new form, no lower score (10); the first word's OR order, the kind shift and the pool register set still differ. This round: the first word's terms written in retail's order (flags, category, kept top bits) and the same words split into two statements both compile to the baseline's code, so the order does not follow the source; the kept-bits term in a named local, the pool argument named before its test and the kept-top-bits mask written as ~0x1fffffff are byte-identical to the baseline; either packed word written as one expression is far worse (79 and 288 differences).
 // MiniMax I (11-05, run 37): no new form, no lower score (10); the first word's OR order, the kind shift and the pool register set still differ.
 // score 10 (was 15): left: the first word's OR order (retail ORs flags and category before the
 // kept top bits), the kind shift (retail `shl eax, 0x1d; mov esi, eax`, ours `mov esi, eax; shl esi, 0x1d`)

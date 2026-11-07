@@ -311,6 +311,65 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// MiniMax R (11-07, r6): no new form, no lower score (2); the kept body still loads the samples into EDI and
+// the entry's data offset into EDX where retail loads the samples into EDX and the offset into EDI. This round:
+// every plain form of the sum (the pointer sum, the pointer increment, the two int sums in either order, the
+// offset cast to an unsigned long, and the signed and unsigned int sums) puts the entry's data offset in the
+// add's destination and loads the samples into EAX, with the scale's load sinking after the add (8 each); a copy
+// of the offset with the samples read as a plain load puts the samples in EDX and the offset in the add's
+// destination as retail has them, but the copy's destination coalesces with the entry pointer register ESI and
+// the copy is emitted before the samples' load, so the offset lands in ESI where retail has EDI and the two
+// loads come out in the wrong order (3); the offset's address taken through the array expression moves the
+// copy's destination to EDI but rewrites the entry pointer's computation (23); a short cast of the offset
+// sign-extends that load and folds the samples' load into the add as a memory operand (17), and the pointer
+// plus pointer spelling does not compile.
+// MiniMax R (11-07, r5): no new form, no lower score (2); the kept body still loads the samples into EDI and
+// the entry's data offset into EDX where retail loads the samples into EDX and the offset into EDI. This round:
+// a copy of the offset (memcpy of the field) with the samples read as a plain load is the only form whose add
+// holds the samples in its destination (3), but the copy's destination coalesces with the entry pointer register
+// ESI and the copy is emitted before the samples' load, so the offset lands in ESI where retail has EDI; a copy
+// of the scale hoists the scale's load to the top of the tail as retail has it, but leaves a redundant reload of
+// the copied bits and leaves both address loads in the same registers (7); a copy of both fields puts the two
+// loads in retail's order (the samples then the offset) but each copy's destination coalesces with its own base
+// register and the object index load moves ahead of the pushes (9); the offset's address taken through the
+// array expression moves the copy's destination to EDI but changes the entry pointer's computation (21); the
+// offset cast to an unsigned long, the samples indexed and the sum written as two integers in either order all
+// give 8, each with the entry's data offset in the add's destination.
+// MiniMax R (11-07, r4): no new form, no lower score (2); every plain form of the curve address (the pointer sum,
+// the pointer increment, the sum with the operands swapped, the samples read as a dword or as a long) puts the
+// entry's data offset in the add's destination and loads the samples into EAX, with the scale's load sinking
+// after the add; only a copy of the offset makes the samples the add's destination (3), and then the copy's
+// destination coalesces with the entry pointer register and the copy is emitted before the samples' load, so the
+// offset lands in ESI instead of EDI; reading the entry's count again in the tail does not stop that coalescing.
+// MiniMax R (11-07, r3): no new form, no lower score (2); the two loads of the curve address still take the
+// opposite registers: retail loads the samples into EDX and the entry's data offset into EDI, ours loads the
+// samples into EDI and the offset into EDX; the add and everything after it match. This round: the samples
+// read through a dword pointer cast, the samples read as a plain integer with the offset in a local of its own,
+// the pointer sum data->samples + entry->data_offset and the sum written with both operands read inline (the
+// samples first and the offset first) all give 8, each with the scale load after the add instead of before
+// it; the copy into a pointer local with a pointer sum, the copy into a signed long, the offset read into a
+// local after the copy and the sum's two operands swapped all give the same 2 as the kept body.
+// MiniMax R (11-07, r2): no new form, no lower score; the curve address still loads the samples into EDI and
+// the entry's data offset into EDX where retail loads the samples into EDX and the offset into EDI. This
+// round: the front end canonicalises the sum, so writing the samples first changes nothing; the samples read
+// as a plain integer with the offset copied into a dword gives 3 (the add's destination then holds the
+// samples, but the offset's load comes first and takes the entry pointer's register ESI); copying both
+// fields gives 9; the pointer sum gives 8 (the samples load into EAX, the offset into EDX and the scale loads
+// last); a dword view of the promotion data gives 8; the offset's full entry expression gives 23.
+// MiniMax R (11-07): no new form, no lower score; the two loads of the curve address still take the opposite
+// registers: retail loads the samples into EDX and the entry's data offset into EDI, ours loads the samples
+// into EDI and the offset into EDX; the add itself and everything after it match. The samples read as a plain
+// integer, the offset read as a plain integer, both read through a local of their own and the sum written with
+// the samples first all give 8; the sample read as a plain integer with the offset copied into a dword gives 3
+// (the add's destination then holds the samples, but the offset's load comes first and takes ESI).
+// MiniMax R (11-06): the curve address is built in integer arithmetic (the samples pointer's four bytes
+// copied into a dword with memcpy, then the entry's data offset added) and the scale is passed straight to
+// the callee; that gives retail's load order, its lea ecx for the curve set and its late object index load,
+// 7 -> 2. The memcpy reads the samples field's bytes through its address, so this form is worth keeping
+// only if it matches.
+// score 2 (was 7): the two loads of the curve address still take the opposite registers: retail loads the
+// samples into EDX and the entry's data offset into EDI, ours loads the samples into EDI and the offset
+// into EDX; the add itself and everything after it match.
 // MiniMax C (11-06): no new form, no lower score; copying the samples' address into a dword with memcpy
 // and passing the scale straight to the callee scores 2, and copying the entry's data offset instead scores 3,
 // but both read a field's bits through its address and are not kept; passing the scale straight to the callee
@@ -362,12 +421,11 @@ void __stdcall function_18ca20(long object_index, long tag_index, s_sound_permut
 	if (count > 0 && g_4ed28c->valid && function_badc0(object_index, 3))
 	{
 		s_sound_promotion_state curves;
-		union { dword field_0; real field_4; } local_0;
-		dword const volatile *local_1 = (dword const volatile *)&scale;
-		local_0.field_0 = *local_1;
-		curves.data = entry->data_offset + data->samples;
+		dword base;
+		memcpy(&base, &data->samples, sizeof(base));
+		curves.data = (byte const *)(entry->data_offset + base);
 		curves.count = count;
-		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, local_0.field_4);
+		function_10e480(object_index, tag_index, (s_vibration_curve_set *)&curves, scale);
 	}
 }
 
