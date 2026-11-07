@@ -20,7 +20,8 @@ struct pointers_30c650
 	{
 		if ((capacity_and_flags & 0x80000000) == 0)
 		{
-			g_memory_2d88a0->release_block(data, (capacity_and_flags & 0x7fffffff) * sizeof(void *), 0x12);
+			long capacity = capacity_and_flags & 0x7fffffff;
+			g_memory_2d88a0->release_block(data, capacity * sizeof(void *), 0x12);
 		}
 	}
 
@@ -188,28 +189,8 @@ static void __cdecl function_30d0c0(pointers_30c650 *out, owner_30d480 const *ow
 
 // appends everything the owner lists to `out`: the +0x3c lists, the owner's
 // own +0x120 list, the parts, the +0x4c lists, then its +0xd0 pointer
-// score 152 (was 183): retail keeps the zero in eax and the gathered array's
-// data in ebx and computes the freed size with lea, ours keeps the zero in
-// ebx, reloads the data pointer and computes the size with shl.
-// Explicit capacity 152; distinct array types 183, with capacity 152;
-// capacity word 181; object names 152; size-first view stores 201;
-// empty-array stores, a view base and pointer-first view stores 152;
-// unsigned capacity 183.
-// score 72 (was 152): the first EDI/ESI setup is reversed; the ownership
-// word is formed before the size store, and release bytes overwrite ESI.
-// Capacity snapshot 152; named byte count 199; const locals, a storage pointer,
-// copy initialization of the locals and a forced inline release 152; split
-// empty initialization 154. Signed byte counts, capacity plus byte count,
-// ordered stores plus byte count and const byte count 199; split empty
-// initialization plus byte count 201. Complete flags plus byte count 80;
-// argument orders 199; complete flags with ordered stores 76;
-// the capacity parameter renamed 76. Kept: complete flags with ordered stores
-// and the byte count written in the call 72 (the named byte count, 76, is a
-// one-use local and not kept).
-// Further trials: signed ownership 183; view member initializers 181;
-// release function defined separately, input/output object references, unsigned
-// complete flags and distinct gathered types 72; cleanup resets 122;
-// signed release multiplication and a full-flags snapshot 72.
+// The temporary-view setup and cleanup still differ in instruction scheduling
+// and register allocation; the ordinary checker reports score 56.
 // @retail 0x30d480
 void __cdecl function_30d480(owner_30d480 const *owner, pointers_30c650 *out)
 {

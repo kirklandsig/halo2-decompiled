@@ -133,7 +133,7 @@ struct tables_316dd0
 {
 	char unknown0[0xc];
 	creator_316dd0 *creators[12][8];
-	handler_316dd0 handlers[1][32];
+	handler_316dd0 handlers[32][32];
 };
 
 struct dispatcher_316dd0
@@ -200,26 +200,8 @@ public:
 	void function_316dd0(handle_pair_316dd0 const *pair);
 };
 
-// score 71 (was 115): saved dispatcher restores the entry registers; record
-// and object spill homes, repeated loads and later agent scheduling differ.
-// Record ref/post-increment 71; island locals/if-else 71; filter arms 71;
-// nested/reversed repeated test 77; record rename 77; const object locals 71;
-// creator local with saved dispatcher 71. One-use callback 2 (not kept);
-// a nested repeated test, separate id guards, incoming handle, const old range
-// and old id with callback 2 each; a repeated result flag 190. Earlier score 115 (was 122): the two id
-// comparisons now read the pair's object
-// first, as retail does, but retail keeps the merger in edi and the pair in
-// esi; that register swap is fixed by the saved dispatcher below
-// Reversed first/second/both equalities with callback 8/4/8; stored-agent
-// test 71; existing-record reference and record pair base with callback 2;
-// two guarded handles 8; a conditional repeated test 186; id-field references 2;
-// two id values 8. Callback forms remain discarded while unmatched.
-// Pair ref with callback 2; incoming id snapshots 2; one incoming scalar
-// with stored-id-first 8; scoped call locals 2; unsigned-int ids 2; explicit
-// callback dereference 71; shared three-way compare 219; incoming handle
-// with stored-id-first 8; id accessor 5, reversed equality 11; shared member
-// id test with pointer/ref 8/8, reversed operands 8/8; insertion guard 2;
-// parameter rename 2. Callback forms discarded without an exact match.
+// The remaining byte differences are the two first-handle loads in the
+// duplicate check. Capture the selected callback before passing its arguments.
 // @retail 0x316dd0
 void merger_316dd0::function_316dd0(handle_pair_316dd0 const *pair)
 {
@@ -263,7 +245,8 @@ void merger_316dd0::function_316dd0(handle_pair_316dd0 const *pair)
 	tables_316dd0 *tables = dispatch->tables;
 	long const first_shape = a->shape->type();
 	long const second_shape = b->shape->type();
-	agent_316dd0 *agent = tables->handlers[first_shape][second_shape](a, b, dispatch, info);
+	handler_316dd0 handler = tables->handlers[first_shape][second_shape];
+	agent_316dd0 *agent = handler(a, b, dispatch, info);
 	record->agent = agent;
 	if (agent != 0 && agent->field_8 != 0)
 	{
