@@ -101,7 +101,7 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // score 408 (was 395; the rise is two retail-evidenced fixes, see b3C below): entry schedule and normalized XY/magnitude homes differ, frame 0x68 against retail's 0x64.
 // b3C (11-06), statement walk against retail 0x298d90..0x299451, fast with callers/callees (0x29a190, 0x298c30 stay MATCH):
 // FIXED (behaviour): both 0x298c30 calls pass the endpoint distance local_9 (`mov edx, [esp+0x20]; push edx` at 0x29933d/0x2993ec reads the slot of
-// `fst [esp+0x1c]` at 0x298f28; the ratio local_13 is stored at 0x299071 and is dead after the arccosine), ours passed the clamped ratio: 395 -> 414.
+// `fst [esp+0x1c]` at 0x298f28; the ratio local_13 is stored at 0x29906d (`fst [esp+0x18]`) and is dead after the arccosine), ours passed the clamped ratio: 395 -> 414.
 // FIXED (type): the outer endpoint counter is 16-bit in retail (`movsx esi, bx` 0x298ef4, `cmp bx, 1` 0x298f0a, `cmp bx, 2` 0x299435): short 414 -> 408.
 // NOT fixed (precision): retail keeps dx/dy of the loop's distance unrounded on the x87 stack (`fld [esp+0x54]; fsub [esp+esi*8+0x64]`, 0x298ef0-0x298f22);
 // ours subtracts x with `subss` and rounds it to a float slot. `double dx, dy` gives that head (400) but 0x29a190's frame grows to 0x588 (45).

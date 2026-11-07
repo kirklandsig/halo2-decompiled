@@ -696,6 +696,8 @@ struct s_player_axes_153d10
 // pointer parameters in four parameter orders, all row orders, direct or staged, all product text orders, 4 phases: 240 samples, best 31 (helper forms flip far more products); per-read spelling of the 12 cross reads through axes
 // or forward/up, dot spellings, both pointer orders, 0-3 unused locals: 1,100 samples and three hill climbs, floor 5, several at 7/9 with this product right but the up.k-against-forward.j product or the up.i one wrong, none with all right;
 // origin and target swapped or split 5/5; state dropped, axes from the call 11; axes at the top of the block 5; the pointers after delta 5; relative before cross 5; owner index named 9; slot fields by array 5.
+// Round 94 (lane 16, plain): forward/up as const references 2; cross as an aggregate initializer 2; relative as an aggregate
+// initializer 2; a const axes view pointer 2; const axis pointers (`vector3f const *const`) 2.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

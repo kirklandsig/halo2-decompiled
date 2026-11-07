@@ -3546,6 +3546,8 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
+// MiniMax S (11-06): no new form, no lower score (101): retail's call into the timed-out check passes one argument on the stack and keeps the channel index in a register, ours passes two; the callee's declaration and definition are in other files.
+// MiniMax B (11-06): no new form, no lower score (101).
 // MiniMax G (11-04): no new form, no lower score; retail reads the member state through its own
 // address (lea plus a load at +4) where ours folds the +4 into the load, keeps a dead spill of
 // session+0x10 into the reply id's stack slot before the timeout call, and returns through two

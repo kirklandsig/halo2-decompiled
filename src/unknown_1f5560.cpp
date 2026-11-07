@@ -399,8 +399,11 @@ bool __stdcall function_110ab0(long unit_index);
 /* asks the actor's unit to move to the point facing the given way (request
    0x25), once it is within half a world unit of it; when asked, only while
    it faces within 45 degrees of its prop */
+// The facing is the last parameter: retail's body takes the actor in EAX and the facing in ECX with the
+// other three on the stack, and both callers' argument setup (0x1afb30, 0x1b89d0) matches retail only
+// with the facing declared last.
 // @retail 0x1f4f40
-bool function_1f4f40(long actor_index, vector3f const *facing, short unknown, s_type_c3b527 const *point, bool face_prop)
+bool function_1f4f40(long actor_index, short unknown, s_type_c3b527 const *point, bool face_prop, vector3f const *facing)
 {
 	s_actor_moving *actor = actor_moving_get(actor_index);
 	bool result = false;
@@ -830,6 +833,7 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax R (11-06): no new form, no lower score (135).
 // MiniMax G (11-04), not kept (coordinator): 59 with the trajectory result compared against zero
 // (`fa1a0(...) != 0` on a bool call; retail has no setne, it only moves the result to DL, so the
 // compare steers registers: 165 without it), the request point copied component by component and the
@@ -851,6 +855,9 @@ real normalize2d(point2f *v);
 // MiniMax E (11-06): no new form, no lower score; retail keeps the trajectory result in DL and returns
 // the validity flag in BL on the short exits, where ours keeps the result on the stack and folds that
 // exit to a cleared AL (12 bytes short on every path).
+// MiniMax H (11-07): no new form, no lower score (135); retail copies the fast flag through DL
+// before storing it (`mov dl, al` then `mov byte ptr [esp + 0x5c], dl`) where ours stores AL
+// directly, and the trajectory result still stays on the stack here while retail keeps it in DL.
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table
@@ -1460,16 +1467,14 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
 
 #include "object_markers.h"
 #include "unknown_1f9240.h"
-bool function_26f2d0(s_path_settings const *settings, point3f const *start, point3f const *end);
-bool function_26f360(s_path_settings const *settings, point3f const *start, point3f const *end);
+bool function_26f2d0(point3f const *start, point3f const *end, s_path_settings const *settings);
+bool function_26f360(point3f const *start, point3f const *end, s_path_settings const *settings);
 bool function_26fe90(long actor_index, long object_index, real distance, s_object_marker *out, point3f *point);
 bool function_26f990(long actor_index, long object_index, real distance, s_object_marker *out, point3f *point);
 
-// score 81 (was 235): Frame 0xe4 agrees; actor/character registers, selector tests and target/direction homes still differ.
-// Shared point difference 240; entry request reservation 236; both 242; initial if admission 226;
-// if admission plus shared difference 202 kept (1002 bytes); entry request plus if 228;
-// complete graph/role names 209/209. Ascending admission 226, with shared difference 202,
-// with typed request fields 214, with both 210. Original game-call values and orders retained.
+/* handles actor movement for transition types 3 and 5, selecting a target
+   marker and either issuing the corresponding movement request or producing
+   steering output toward the target. */
 // @retail 0x1f7c70
 bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, vector3f *direction_out, short *type_out, vector3f *movement_out)
 {
@@ -1482,61 +1487,75 @@ bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, ve
     s_object_marker marker;
     point3f target;
     real minimum;
-    if (type == 5)
+    switch (type)
     {
+    case 5:
         if (!function_10f9b0(actor->unknown018, 0x5000534, 0x5000049, 3, &animation, false) ||
             !function_26fe90(actor_index, object_index, *(real *)(character + 4), &marker, &target))
             goto failed;
         minimum = 0.8660253882408142f;
-    }
-    else if (type == 3)
-    {
+        break;
+
+    case 3:
         if (!function_10f9b0(actor->unknown018, 0x5000281, 0x5000049, 3, &animation, false) ||
             !function_26f990(actor_index, object_index, *(real *)(character + 4), &marker, &target))
             goto failed;
         minimum = 0.95f;
-    }
-    else
+        break;
+
+    default:
         goto failed;
+    }
+
     {
         vector3f direction;
         vector3d_from_points3d(&actor->position, &target, &direction);
         direction.k = 0.0f;
         real distance = function_30bf0(&direction);
-        if (distance > 0.0f && animation.position.x * -1.3f > distance && dot3f(&actor->unknown290, &direction) > 0.0f)
+
+        if (distance > 0.0f &&
+            animation.position.x * -1.3f > distance &&
+            dot3f(&actor->unknown290, &direction) > 0.0f)
         {
             if (fabs(dot3f(&marker.matrix.left, &direction)) < minimum)
                 goto failed;
+
             if (dot3f(&actor->unknown290, &direction) > 0.99f)
             {
                 result = false;
                 function_1f9450(actor_index, object_index);
+
                 s_path_settings settings;
                 function_1f9240(actor_index, &settings);
+
                 s_unit_request request;
                 bool can_move = false;
+
                 switch (type)
                 {
                 case 5:
-                    if (function_26f2d0(&settings, &actor->position, &target))
+                    if (function_26f2d0(&actor->position, &target, &settings))
                     {
                         request.type = 0x2b;
                         can_move = true;
                     }
                     break;
+
                 case 3:
-                    if (function_26f360(&settings, &actor->position, &target))
+                    if (function_26f360(&actor->position, &target, &settings))
                     {
                         request.type = 0x2a;
                         can_move = true;
                     }
                     break;
                 }
+
                 if (can_move)
                 {
                     *(vector3f *)((byte *)&request + 0x10) = direction;
                     *(point3f *)((byte *)&request + 4) = target;
                     result = function_e6900(actor->unknown018, &request);
+
                     if (result)
                     {
                         actor->unknown5ac = NONE;
@@ -1544,12 +1563,15 @@ bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, ve
                         goto completed;
                     }
                 }
+
                 if (allow_jump && function_1f8160(actor_index, 0, &target, true))
                 {
                     actor->unknown5ac = NONE;
                     actor->unknown5b0 = NONE;
                 }
-                if (!result) failed = true;
+
+                if (!result)
+                    failed = true;
             }
             else
             {
@@ -1560,20 +1582,27 @@ bool __stdcall function_1f7c70(long actor_index, short type, bool allow_jump, ve
                 *((bool *)actor + 0x6d1) = false;
                 actor->unknown5d0 = false;
             }
+
 completed:
             result = true;
-            if (failed) goto failed;
+            if (failed)
+                goto failed;
+
+            return result;
         }
-        return result;
+
+        goto done;
     }
+
 failed:
     *movement_out = *g_4687a4;
     actor = actor_get(actor_index);
     *(long *)((byte *)actor + 0x300) = object_index;
     *(short *)((byte *)actor + 0x304) = g_510c54->field_2_3 * 5;
+
+done:
     return result;
 }
-
 
 struct s_pathfinding_data;
 struct s_obstacle_list;
@@ -1605,6 +1634,9 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax G (11-06): no new form, no lower score; retail keeps the normalizer length in the dead target
+// argument slot at [esp+0x54] and the radius at [esp+0x14], this build uses fresh local slots, and retail's
+// zero register is XMM1 where this build uses XMM2.
 // MiniMax R (11-05): no new form, no lower score; the plain origin copy 278 and the flipped side test 239;
 // retail keeps its length in the dead origin argument slot at [esp+0x54] and its radius at [esp+0x14].
 // MiniMax H (11-04): the left flag declared just before its comparison 287; not kept, the

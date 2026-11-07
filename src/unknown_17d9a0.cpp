@@ -124,6 +124,8 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point[2] = matrix->forward.k * *x + matrix->left.k * *y + matrix->position.z;
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
+// MiniMax A (11-06, run 52): no new form, no lower score (46) - retail keeps the axis in ax and the
+// flag in cl, ours sign-extends the axis into ecx and puts the flag in al.
 
 // MiniMax R (11-04): the corner products' operand order (register/memory sides) changes no code at all
 // (46), a short axis result scores 162, the short axis passed to the corners 186, and a plane pointer for
@@ -455,6 +457,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // T59: Existing corner producer as an actual quad member, coordinate pointer/reference,
 // corner ordinal/output reference and inline/force-inline contracts: 160/160/150/150/160/160/150/150.
 // NOT kept: selector and product ranks regress; original free producer and complete body restored.
+// Round 57 (m3 lane 2, `--fast 0x17d9a0 0x120850 0x22bbca`, faithful here: 46 as the full check): the side test written
+// `0.0f < n[axis]` 46 (same code); a `vector3f *normal` for the copy, dot, axis call and side test 91 (re-measured: lane 13's
+// 258 was on the unfaithful image); a `plane3f *plane` with a position-first dot 63; the plane pointer for every plane use 91;
+// the distance as dot3f(position, &matrix->up) 209 (986 bytes).
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
