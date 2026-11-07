@@ -1847,6 +1847,8 @@ void function_269250(long clump_index, long actor_index);
 // three homes and its x87 compare it carries the best score in xmm0 across the walk as retail does,
 // and what still differs is the walk's pool (the stack slot and ecx against retail's ebx) and the
 // selection's copy in edi.
+// MiniMax E (11-07): no new form, no lower score; the walk's pool load stays in memory and the
+// selection stays in edi where retail hoists the pool into ebx and keeps the selection on the stack.
 // score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
 // MiniMax B (11-03): no new form, no lower score.
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);

@@ -395,6 +395,13 @@ bool function_1b1970(long actor_index, short index, short mode, vector2f const *
 	return result;
 }
 
+// MiniMax E (11-07): no new form, no lower score; the 0x1b0e40 call still sets the origin in EBX first and
+// the forward address after the mode push, retail sets the point, then the forward, then the origin; the
+// callee 0x1b0e40 matches retail byte for byte, so the argument registers are fixed (the point in ECX, the
+// index in EDX, the origin in EBX, the forward in EDI, the mode and the left on the stack) and only the
+// order of the three address computations is left; naming the three addresses in locals (the point, the
+// forward and the origin) before the call keeps our order, and a permuter run (39 tries) found nothing
+// better than 3.
 // score 3 (was 12): only the 0x1b0e40 call's register setup differs: ours sets EBX (origin) before ECX
 // (point) and EDI (forward), retail sets ECX, EDI, pushes the mode, then EBX. Round 155 (m3 lane 6): 0x1b1970's
 // parameters as (actor_index, index, mode, forward, left) (retail's one call sets CX, then EDI, then EAX: the

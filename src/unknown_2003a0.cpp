@@ -1569,36 +1569,9 @@ real function_204950(long squad_index, long actor_index, short mode)
 
 PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *arg_0);
 
-// score 2 (was 2): the record pool's pointer is reloaded after the branch on the index,
-// retail reloads it before, so the jump lands on the shared reload.
-// Pool read before the active test 2; record address size * index + data 2; not-found
-// stores swapped 2; datum index written index | salt 2; early return when inactive 20.
-// Round 32: the file's data-iterator step (0x200db0's helper) 110 (368 bytes); `while (step(&iterator))` with
-// the squad read from the iterator 2, the index read first 2; squad declared in the while
-// condition 2; squad index read before the NULL test 2; next index read before the pool in the
-// shared step 2.
-// Round 75 (lane 12, fast): step's index test inverted 80 (392 bytes); the squad index field read at each use 2;
-// search result stored in the iterator's index and tested there 113; distance test as a continue 2;
-// squad index read after the flag test 2.
-// Round 119: ordinary inline helper 216; existing datum helper in the shared step 110; existing squad
-// step reused 88; preincremented search input 2; index declared before the pool 2; step in the for
-// update 196; active return of the stored squad 2; behavioral local names 2; helper defined before
-// the caller 2; lighter squad step in the caller 169; record-subobject reference 2; long mode 2;
-// byte-return helper 2; boolean datum step directly in the caller 150.
-// Round 41 (lane 2, fast): in the squad step, the pool read after the search 2, in each arm 2, the iterator field at each use 2,
-// read again after the search 2, a `found` local tested 2. In the shared index search (0x1c8700 alongside): direct returns 2;
-// while loop 2; result assigned after the loop 68 (380 bytes, 0x201df0, 0x200d80 lost); count local 2; mask local 2.
-// Round 132 (fast): in the squad step, a compiled-out `do {} while (false);` after the search 2, closing the found arm 2, closing the
-// not-found arm 2; not-found stores swapped with the bound read after 2; the pool re-read from the iterator at every use in both arms 2.
-// Harness (exact): that statement at the found arm's top, the not-found top, the join or both arm ends 2 each; a named offset 2; found
-// stores in either other order 2/2; named datum 2; named bound 2; two sequential index tests 2; datum NONE stored first 114; both
-// not-found stores first 111; `local_2 == NONE` first 80; pointer from a ternary then tested 86.
-// Round 74 (m3 lane 10, full and fast checks, exact one-file harness): the reload placement is decided by the shared search's loop shape, not by this body. The search in
-// include/data_array.h as `if (index >= 0 && index < high) do { ...; index++; } while (index < high)`, also with `while (++index < high)`, two nested ifs or early returns, 0 here
-// and 0 on 0x1c8700 (its body untouched), but 0x294050 MATCH -> 62 (817 bytes; both field_20 products load the field first); about 100 forms on 0x294050 did not bring it back and a 600 s permuter
-// run stopped at 25 with a value-changing `word` read. Not kept: a hand-inverted loop that costs a match; the question is with the coordinator. The same guard on for or while 2; for with `continue` and `do { if
-// (index >= high) break; ... } while (true)` keep 0x294050 and leave this at 2; a local for the high-water count 2 (0x1c8700 136); bitmap/mask/word locals change nothing. Out-of-line
-// 0x16bc00 matches under for and do alike, so it doesn't discriminate. In the squad step: the iterator helper with a do search 101 (368 bytes), same with for.
+/* the squad nearest the actor by weighted distance, below 15: squads of another team count 1.333 times as far
+   (those for which function_1df560(team, actor_team) is true are skipped), the actor's own squad 0.666 times;
+   NONE when there is none */
 // @retail 0x204b20
 long function_204b20(long actor_index, short mode)
 {
@@ -2792,7 +2765,7 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
     if (g_4f55d0->active)
     {
         s_record_pool *local_1 = arg_0->records.data;
-        long local_2 = data_next_absolute_index_inlined(local_1, arg_0->records.index + 1);
+        long local_2 = data_find_index(local_1, arg_0->records.index + 1);
         if (local_2 != NONE)
         {
             local_0 = (s_squad_datum *)(local_1->data + local_1->size * local_2);
