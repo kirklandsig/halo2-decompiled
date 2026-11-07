@@ -798,6 +798,12 @@ bool sound_driver_voice_create_buffer(
 // (same code), with the 3D flag first 182 (599 bytes); the 3D flag first with the voice reference indexed by the count field
 // 193 (589); the 3D flag first with the 3D failure decrement through the `globals` local 141 (618 bytes: globals then holds
 // ESI to the end and the voice index spills as retail, but the zero takes EBX and both bools still spill).
+// MiniMax D (11-06): no lower score; this round the two flag bools' declaration order swapped (182), the 3D flag
+// as a byte declared first (182) and second (71, the same code), the 3D test spelled `(byte)flags & 1` (71, the
+// same code), the play bit shifted instead of masked (71, the same code), a byte copy of the flags word with the
+// play bit shifted (71, the same code), and the 3D local dropped so the test reads `flags & 1` (that one breaks
+// the caller 0x191420, so it was reverted). Still differs: retail computes the 3D descriptor flags arithmetically
+// and copies the impulse parameter address through EAX where ours copies it through EDX.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
