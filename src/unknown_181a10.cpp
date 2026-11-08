@@ -425,6 +425,10 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // `first->count > i` 10; pre-increments 8; const component pointers 8; the contact-loop test as
 // `collector.entries.count > k` 8. Re-measured: first's flag through the indexed expression 47 (669 bytes) with
 // the slots unchanged in this build (first 0x24, i 0x28, j 0x2c; retail j 0x24, first 0x28, i 0x2c).
+// Round 141 (m3 lane 8, fast): a named component data pointer for first and second 8; a per-iteration contact
+// pointer in the contact loop 8; both body reads ahead of the collector set-up 27 (slots unchanged); the shape
+// addresses passed as `&body->shape` at the call (no address locals) 17 (slots unchanged, EBX/EDI swap);
+// a named world pointer for the context copy 170 (682 bytes).
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {

@@ -695,6 +695,12 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // 6000 random forms (named sums, read-backs, operand orders), extent names, the bounds on the stack: none in retail's colours. Retail's
 // colours need height and the bottom sum in one register with height defined before corner 0 (only `height +=` forms reach that,
 // and those share y0 with corner 0's y).
+// Round 141 (m3 lane 8, fast with callers 0x235e5e and 0x235f31): whole-point copies between corners on the
+// extents-first form: corner 2 copied from corner 1 then its y set 87 (288 bytes); corner 1 copied from corner 0
+// then its x set 93 (292); corner 3 copied from corner 0 then its y set 98 (298); corners 1 and 3 from corner 0 and
+// corner 2 from corner 1 90 (289); corner 2 from corner 1 and corner 3 from corner 0 93 (291). Compile-only: the
+// sum's operand order is canonicalised (both orders give the same code), and removing or adding float work after
+// the corner block (the scales, a texture coordinate) leaves its colours, so they are decided inside the block.
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {
