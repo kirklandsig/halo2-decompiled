@@ -337,6 +337,10 @@ bool g_47f05b;
 // long/int/short/signed-char, forward 34/34/43/54; reverse 33/33/43/54. NOT kept:
 // no exact, nonregressing shared form; original header, constructor pass and target restored.
 // Intermediate vtable store and successful-arm backing reload remain.
+// P372: Four-word contents carried through the real array loop, long/int/short/signed-char
+// ordinals: forward 34/34/54/54, reverse 33/33/54/54. NOT kept: no qualifying gain;
+// reverse full-width forms lose two exact users, narrow forms also regress users.
+// Entire shared constructor/header and original body restored; base-vtable/arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {

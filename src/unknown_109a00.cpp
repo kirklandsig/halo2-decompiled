@@ -550,6 +550,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // after composition: 124/55/54/48 twice. NOT kept: no exact native axis/dot shape; late subobject bases still feed
 // derived axis addresses. Original whole body restored; frame 0x48, definition spill and failure tail remain. Early
 // pointer/reference forms lose 0xb7060 (0 -> 11); all restored.
+// P372: Bare inverse workspace before model/physics/admitted-record/default/latch/search,
+// body admission and previous-state transfer: eight 56. NOT kept: no native early spill,
+// axis/dot or failure-tail repair. Original complete body restored; all six exact controls
+// including the caller survive; frame 0x48 and 925-byte extent agree.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

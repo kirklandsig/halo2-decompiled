@@ -5668,6 +5668,10 @@ void __stdcall function_d6bc0(long object_index);
 // P370: Complete zero-first modifier with one shared dispatch, branch/conditional producer,
 // signed-byte/short/int/long kind: 77/86/82/82/77/86/82/82. NOT kept: all regress and
 // grow beyond native 869 bytes; original admitted-scope modifier and complete body restored.
+// P372: Actual scheduling-mode selector in short/word/long/dword, declared at the switch
+// or bare at iteration entry, observed at the original switch: 60/61/60/60 twice.
+// NOT kept: no exact native selector/index recovery; complete original body restored.
+// Native frame/length agree; initial stores, cached index and case-byte/dispatch layout remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

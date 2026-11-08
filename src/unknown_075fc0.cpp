@@ -197,6 +197,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // P370: Complete host-first/callback-first rate producers, branch/expression, independently or
 // jointly selected limits: 422/422/417/417/422/422/417/417 at 1384/1380 bytes. NOT kept: all
 // regress and grow from native length; original rate, limits and complete body restored.
+// P372: Reciprocal-limit ownership, immutable/mutable/earlier bare storage,
+// disjoint clamp arms, full conditional, conditional with reciprocal, carried candidate,
+// successive reciprocal division: 399/399/399/421/356/399/399/399.
+// NOT kept: ties/regressions; original complete body restored. Native frame 0x34,
+// observer EDI, bandwidth EBP and counter/result homes remain unrecovered.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

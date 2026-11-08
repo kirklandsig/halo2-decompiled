@@ -621,6 +621,10 @@ real function_30bf0(vector3f *vector);
 // P369: Complete native delta/clipped-point aggregate and existing plane-normal CRT transfer boundaries, masks
 // 1/2/4/3/5/6/7, then immutable clipped point: eight 84. NOT kept: no scalar-home, range-ingress or product repair;
 // original motion helper, native copies and full body restored.
+// P372: Indexed-seat occupant/player/both eligibility continues: 84/84/84; ordinary
+// forward while with step after final index use, no/occupant/player/both continues:
+// four 161; both continues with separately declared short ordinal 84. NOT kept:
+// ties/regressions; original full body restored. Scalar homes and basis products remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
