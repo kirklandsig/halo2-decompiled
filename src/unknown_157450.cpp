@@ -5448,8 +5448,9 @@ void function_159880(void)
 
 void __stdcall function_d6bc0(long object_index);
 
-// score 112 (was 144): retail's frame and homes (timer spilled at +0x20, `entries` reloaded at each use); left are the index tests
-// (`cmp ebx, -1` for retail's field compare), d6bc0's argument and the schedule block's layout (872/869 B, case 1's value bool).
+// score 97 (was 112): native frame 0x18 and 869-byte length; initial scenario/rate stores, cached index test,
+// case-1 CL versus AL, modifier EDX versus ECX and removal index reload remain. Earlier at 112: timer at +0x20
+// and entry-base reloads agreed, 872/869 bytes; scheduling materialized the case-1 Boolean.
 // Match-only recipe, score 7 at retail's length: replace `bool schedule = true; if (index != NONE)` and case 1 below with
 // `bool schedule; if (index == NONE) schedule = true; else { schedule = false; switch ... case 1: if (bit) schedule = true; break;
 // case 0: if (mask && bits) schedule = true; else { ...; schedule = d > 1.0f; } break; }`, the modifier switch written out in each
@@ -5651,6 +5652,10 @@ void __stdcall function_d6bc0(long object_index);
 // bool/byte/char/signed-char/short/word/int/long: 112/112/112/112/133/133/130/130.
 // NOT kept: ties/regressions; original complete body restored. Native frame/timer agree;
 // initial scalar stores, scheduling branch ownership and entry observations remain.
+// P363: Complete zero-timer scheduling rejection with real continues: original countdown, switch case 1/0 first
+// 97/97, mode-if 1/0 first 102/126; countdown owning both zero/expiry samples 97/97/102/126.
+// Kept the original-case-order switch and original countdown, 112 -> 97 plain/full, 869/869 bytes. No scheduling
+// flag, new local, arithmetic or call-tuple change; rejected zero timers skip the expiry guard.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
@@ -5695,15 +5700,15 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
         }
         if (entries[i].value04 == 0)
         {
-            bool schedule = true;
             if (index != NONE)
             {
                 switch (*(short *)(placement + 0x12))
                 {
                 case 1:
-                    schedule = TEST_FIELD_BIT(object->flag10a_bit2);
+                    if (!TEST_FIELD_BIT(object->flag10a_bit2)) continue;
                     break;
                 case 0:
+                {
                     if (!(((1 << object->type) & 0x1c) && (TEST_FIELD_BIT(object->flag12c_bit0) || TEST_FIELD_BIT(object->flag12c_bit1))))
                     {
                         vector3f displacement;
@@ -5711,29 +5716,25 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
                         real distance_squared = displacement.k * displacement.k;
                         distance_squared += displacement.j * displacement.j;
                         distance_squared += displacement.i * displacement.i;
-                        schedule = distance_squared > 1.0f;
+                        if (!(distance_squared > 1.0f)) continue;
                     }
                     break;
-                default:
-                    schedule = false;
-                    break;
+                }
+                default: continue;
                 }
             }
-            if (schedule)
+            long delay = function_15ac50(i);
+            long modifier = 0;
+            signed char kind = *(signed char *)(placement + 0x14);
+            if (kind == 0) modifier = *(signed char *)((byte *)g_4e6948 + 0x211);
+            else if (kind >= 1 && kind <= 7) modifier = *(signed char *)((byte *)g_4e6948 + 0x208);
+            switch (modifier)
             {
-                long delay = function_15ac50(i);
-                long modifier = 0;
-                signed char kind = *(signed char *)(placement + 0x14);
-                if (kind == 0) modifier = *(signed char *)((byte *)g_4e6948 + 0x211);
-                else if (kind >= 1 && kind <= 7) modifier = *(signed char *)((byte *)g_4e6948 + 0x208);
-                switch (modifier)
-                {
-                case 1: delay = NONE; break;
-                case 2: delay >>= 1; break;
-                case 3: delay <<= 1; break;
-                }
-                entries[i].value04 = (short)delay;
+            case 1: delay = NONE; break;
+            case 2: delay >>= 1; break;
+            case 3: delay <<= 1; break;
             }
+            entries[i].value04 = (short)delay;
         }
         short countdown = entries[i].value04;
         if (countdown > 0)

@@ -3222,6 +3222,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // stack in EBP with the biped in EBX) and its only caller 0xdd360 goes 222 -> 224, so it is not kept. Also on the fixed
 // body: along through vector3d_from_points3d 537; the fallback through vector3f_scale 539; hit initialised at its
 // declaration 539.
+// P363: Both projection scans through computed relative vectors, shared difference/aggregate/setter/dot
+// producers: 535/535/535/535; each with mass query before the position lookup 576/576/576/576.
+// NOT kept: four-point leads miss the margin; reordered forms regress. Original complete body,
+// numeric trees, bounds, state/fallback values and call tuples restored; frame/result homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3973,6 +3977,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // from origin to the matrix position added to the lowered point 392 (1962 bytes); back through vector3f_scale 356; delta
 // through vector3d_from_points3d 354; offset and delta both 370. With a collision-result constructor (unknown24 = NONE;
 // it matches 0xdef60 but loses 0x54590, not kept) 354.
+// P363: Current scalar-input pivot rows through two-term/first-term/projection/complete accumulators,
+// ordinary then forced inline: 354/353/354/353/354/353/354/353. NOT kept: one-point leads
+// miss the margin and native matrix/origin homes; original helper and complete body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4795,6 +4802,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // staged cross, the length test and the reset 225 (913 bytes). A CL-only copy with rotate_direction's body pasted in
 // reproduces our listing; 150 random mixes of local declaration orders, forward-pointer placement, trig order, axis
 // assignment, up at its copy and rate-first never went below the base: the operand sides sit in the shared helper.
+// P363: On the shared-rotation/native-prefix graph, up snapshot through memcpy/memmove/setter
+// 79/145/215; both fallback copies through memcpy/memmove/setters 79/73/94;
+// final nonzero-length return 79; both input snapshots through memcpy 79.
+// NOT kept: memmove fallback gains only six; transfer/allocation forms miss equality.
+// Original complete body restored; first rotation i operands and final cross j reload remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
