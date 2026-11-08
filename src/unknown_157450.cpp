@@ -5675,6 +5675,9 @@ void __stdcall function_d6bc0(long object_index);
 // P375: On the admitted-long-modifier graph, complete scheduling rejection reaching the native countdown
 // guard, bool/byte/char/signed-char/short/word/int/long: 109/109/109/109/132/132/129/129. NOT kept: no byte match;
 // rejection-state transport regresses and grows from native length. Original complete body restored.
+// P377: Pure eligibility boundary returning bool/byte/char/signed-char/short/word/long/dword,
+// separate from delay production: 60/60/60/60/60/60/60/60. NOT kept: unchanged native index/byte-branch differences;
+// the single-caller helper is disallowed. Original complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

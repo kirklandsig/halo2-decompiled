@@ -2152,6 +2152,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // P373: Actual facing-excess/closeness/retention-span arithmetic parts, seven subsets,
 // complete immutable parts: eight 168s, 2880/2880 bytes, first +0x5c. NOT kept:
 // no SIMD/iterator/policy equality; original complete body and helpers restored.
+// P377: Actual unit-velocity/actor-position/view-strength field receivers, seven
+// subsets then complete immutable pointers: 168/168/168/168/168/168/168/168. NOT kept: no native iterator/pool/SIMD
+// equality; original complete body, field observations and helpers restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

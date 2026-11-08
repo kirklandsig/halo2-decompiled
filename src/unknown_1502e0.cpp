@@ -2292,6 +2292,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // P373: Existing header ordinal, unit/object/player receivers and held/current/slot
 // lexical identities, singly then together: eight 120s, 723/721 bytes. NOT kept:
 // native ingress/retained extent unchanged; original complete body and names restored.
+// P377: Actual inventory/selection/unit-index field receivers, seven subsets then
+// complete immutable pointers: 120/120/120/120/120/120/120/120. NOT kept: no native pool/header-extent equality;
+// original entire body, direct field observations and every getter restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

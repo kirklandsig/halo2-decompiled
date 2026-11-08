@@ -1631,6 +1631,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P375: Fixed-first initial velocity, conditional facing source and actual multi-use motion receiver,
 // masks 1..7, then complete read-only motion receiver: 604/661/671/588/604/661/671/671. NOT kept: no native frame/home
 // equality; original full body restored, including every shared eye helper and gravity observation.
+// P377: Native initialization bit-result producers for motion/animation/paired movement
+// flags, seven subsets then complete immutable results: 584/591/557/599/583/587/557/557. NOT kept: one-use inputs
+// require equality; original complete body, gravity observation and all shared helpers restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

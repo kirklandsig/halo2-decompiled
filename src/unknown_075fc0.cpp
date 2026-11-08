@@ -205,6 +205,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // P375: Entry constant-default lifetimes for selected capacities/pacing/payload-output, masks 1..7,
 // then complete defaults with returned Boolean first: 429/488/463/350/424/499/505/506. NOT kept: 350 reaches native
 // 1369 bytes but gains only six; no native sentinel/home match. All original defaults and body restored.
+// P377: Whole packet-scale branch/negative-chain/callback-first/expression producers,
+// then each with its actual scaled-payload node: 356/363/413/363/356/363/413/363. NOT kept: no native observer/budget/frame
+// equality; complete original scale, rounder, counter and result graph restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
