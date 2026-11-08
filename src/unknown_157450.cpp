@@ -2291,6 +2291,10 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // object's store goes); `for (object = next; object; object = next)` as in 0x3d380 8; a named object copy of
 // the grouped member as in 0x15aad0 8; the iterator's object index read before the old-index test 8 (the
 // load stays after the release); index declared at function scope 8.
+// Round 72 (m3 lane 14, fast): the entry field read at each use (bounds test on the field, index read inside) 38
+// (192 bytes); a pre-read `while (local.object)` with the next read at the body end 8; the two tail stores swapped 9;
+// `NONE != entries[index].index` 8; the release's lookup after its mode test 37 (195 bytes; 0x15b1e0 12). Re-measured:
+// the release's lookup through engine_object_get 9 (also 0x162060, which the reduced image builds at 5 either way).
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {

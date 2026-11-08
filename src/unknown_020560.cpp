@@ -95,6 +95,12 @@ PRIVATE __forceinline long texture_floor(real value)
 // may be one hidden allocation off retail rather than a property of the clear.
 // Round 155 (m3 lane 5, fast): the floor's asm split after cvttss2si 4; floor parameter `real const` 4; one-line asm
 // statements 4; adjusted bias as a ternary 65 (399 bytes). Permuter (600 s, 41 variants) found nothing below 4.
+// Round 141 (m3 lane 8, fast with 0x143c0 and caller 0x16b90): the call cast to void 4; the remainder in a named
+// local 4; the bias arm as one combined test without `adjusted` 65 (400 bytes); the entry as `&state[0x1320] +
+// index * 0x40` 4; the frame value named for the magnitude test and the remainder 108 (406 bytes); a pointer to
+// the entry's level used for the test and the store 4. Caution: the compile-only harness is not faithful here
+// (non-LTCG /Gr passes the bitmap to 0x143c0 in EDX, so EDX is natural there; LTCG passes it in ECX), so its
+// screens of the bitmap block say nothing; retail 0x143c0 itself clobbers EDX.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
