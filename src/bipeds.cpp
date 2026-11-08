@@ -2231,6 +2231,10 @@ void function_dfd70(long arg_159e6d)
 // base type it also takes contributor 0xe5d50 406 -> 435. A dead `{ point3f d; real_point3d_set(&d, ...); }` at the
 // raise's top (diagnostic) matches 0xdef60 and keeps 0x54590: an existing helper's expansion leaves the image tie alone,
 // a new inline function does not. Lead: a natural existing-helper form ahead of the back scale.
+// P362: On the native 7-point graph, initial head setter/aggregate/memcpy/memmove
+// 160/156/7/163; collision at its sentinel store 7; raised-point/backward-ray identities
+// 7/7; immutable named first-ray fraction 7; sentinel memset 7. NOT kept: no byte
+// equality; setter/aggregate/memmove also regress shared users. Both helpers restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
