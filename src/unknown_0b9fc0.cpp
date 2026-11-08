@@ -668,6 +668,10 @@ struct s_component_property_view
 	bool function_1d3550(long key, bool *positive, real *value) const;
 };
 
+// MiniMax H (11-07): no new form, no lower score (13); retail reads the value argument into edx
+// before it looks the component up and reads the key into ecx last, just before the call, ours
+// reads the pool global first, the key early and the value last (93 bytes against 92); the
+// argument order the callee takes is the one its declaration in src/unknown_1cec30.cpp gives.
 // MiniMax G (11-05): no new form, no lower score; the value's load order is the callee's parameter home, so nothing here moves it ahead of the component lookup.
 // MiniMax H (11-04): no new form, no lower score; retail loads g_51e9b8 into eax after the index
 // scaling (the short A1 encoding) and reads value into edx before the component lookup and key

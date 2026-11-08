@@ -3027,7 +3027,18 @@ void __stdcall function_ced30(long unit_index, long object_index)
 
 /* the request a weapon event sends the unit holding the weapon (and the
    unit +0x24c names): by the event type, for its first or second hand */
-// score 127 (was 131): retail reloads the pool's data and the unit for the second hand's lookup,
+// score 2 (was 127): only the rider lookup after the first 0xe68c0 call differs: retail loads the unit into ESI (the
+// dying scaled index), ours into EDX. Round 220 (m3 lane 3): the first hand read through its own copy of the pool, as
+// 0xd1540 reads each hand, gives retail's second-hand reload and register plan (and matches 0xfff40, which inlines this
+// through 0x1058b0); the weapon index reference is no longer needed (0x1058b0 still matches). Forms (fast): both hands
+// written out through two pool copies 117; 0xcbd50 kept with each/only the second/only the first hand's slot argument
+// through a pool copy 28/28/127; the copy declared between the hands 127; the second hand written out through the copy
+// 3 (with a named unit pointer 3, the copy at function entry 3, the rider lookup through it too 102); on the kept form:
+// the second hand's argument through the same copy 124, the reference read at the second hand 2, the rider field read at
+// each use 2, rider index declared with the other locals 2, the second hand written out through the global 2, the
+// rider through the existing unit view getter 2, a named unit pointer for the first hand 131 (register convention),
+// the rider through the pool copy 123 (368 B), a char slot index for the first hand 35 (0xfff40 then 11).
+// Earlier: score 127 (was 131): retail reloads the pool's data and the unit for the second hand's lookup,
 // keeping g_4e0300 in EDI and the type on the stack; ours reuses the first lookup's unit, so the
 // registers differ (with the second lookup's data read through a volatile pool, a diagnostic
 // only: 28). The existing weapon getter for both hands and retail's case order (3, 4, 1, 2, 7, 8)
@@ -3048,11 +3059,17 @@ void __stdcall function_ced30(long unit_index, long object_index)
 // @retail 0xc9d00
 void __stdcall function_c9d00(long unit_index, long weapon_index, long type)
 {
-	// Retail keeps this argument on the stack.
-	long const *weapon_reference = &weapon_index;
 	if (type)
 	{
-		bool first = *weapon_reference == function_cbd50(unit_index, UNIT_GET(unit_index)->current_weapon_index);
+		s_record_pool *objects = g_4e0300;
+		short index = ((s_unit_header *)objects->data)[unit_index & 0xffff].unit->current_weapon_index;
+		long current_weapon_index = NONE;
+
+		if (index != NONE)
+		{
+			current_weapon_index = ((s_unit_header *)objects->data)[unit_index & 0xffff].unit->weapon_object_indices[index];
+		}
+		bool first = weapon_index == current_weapon_index;
 		bool second = weapon_index == function_cbd50(unit_index, UNIT_GET(unit_index)->next_weapon_index);
 		long action;
 

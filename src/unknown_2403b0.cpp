@@ -34,6 +34,9 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 	return !(table->flags[team] & 1);
 }
 
+// MiniMax S (11-06): no new form, no lower score (86): the disassembly of both callees shows they only read
+// memory, so retail's pool reload needs one of them to write, which is src/unknown_0cbd50.cpp and
+// src/unknown_101280.cpp, outside this lane; the permuter (900 s) was stopped with no result.
 // MiniMax S (11-05): no new form, no lower score: the pool data reload after function_101280 is still blocked by that
 // function's side-effect summary in src/unknown_101280.cpp, which is not editable, so ours keeps the pool data pointer
 // across the two calls and reloads it from the stack where retail keeps it in ecx and reloads the global.

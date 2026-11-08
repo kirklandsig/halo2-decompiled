@@ -149,6 +149,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax B (11-06): no new form, no lower score; retail reads the audible byte from the request and
+// builds the priority and the flag word before it copies the request, this build copies the request first
+// and takes the byte from the copy, and retail still calls 0x221810 where this link expands it.
+// MiniMax C (11-06): no new form, no lower score; this link still inlines 0x221810 so the state flags are forwarded across the call where retail reloads them (0x221810 lives in src/unknown_221490.cpp).
 // MiniMax E (11-06): score 110 (was 110): no new form lowered it. The location copy after the flags
 // (retail's header order) with the priority before or after the flags gives 140/150 and the flags as
 // ternaries 160; the priority read from the request alone is 109 at 472 bytes, a gain of one, dropped

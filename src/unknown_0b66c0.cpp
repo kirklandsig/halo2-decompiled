@@ -132,11 +132,23 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 	return destination;
 }
 
+// MiniMax H (11-07): the sign and count tests with the bounded length in a named local and the
+// source pointer named before the compare give 21 with the matched caller 0xb5f10 and the matched
+// 0xb61d0 unchanged: the start now reaches EDI at entry as in retail, but the inlined scan still
+// walks the text in ECX and counts in EDX where retail walks in EDX and counts in ECX, so the
+// bounded-length sum and the copied source stay one register off. Tried and not kept: the source
+// named after the compare (28, the start then arrives in EDX and 0xb5f10 differs at 6); a local
+// copy of the start (28, same caller loss); the count tested before the start (27); the source
+// named but the length inlined (28, caller loss); the source and the sum written through the text
+// pointer (34, caller loss); the length masked with 0x1ff, which gives retail's scan registers but
+// an extra instruction (29); the compare as count <= length - start (35, caller loss); the scan
+// helper walking a local (0xb61d0 then differs at 2).
+// MiniMax R (11-06): no lower score (40); the matched caller 0xb5f10 sets the start in ECX and the count in EAX with the string and the destination on the stack, so the declared order already produces retail's call setup; what is left is retail's start saved in EDI and its scan in EDX/ECX against our start in ECX and scan in EDI/EDX.
 // MiniMax D (run 46): the start copied into a local before or after the guard gives retail's body
 // (28) but LTCG then passes the start in EDX and the matched caller 0xb5f10 differs at 6; not kept.
 // A second local for the count gives 51, the guard still testing the parameter gives 28 with the same
 // caller loss, and the scanner helper without __forceinline gives 56 here and 49 for 0xb61d0.
-// score 40 (was 40): the string pointer and the character counter are kept in different registers
+// score 21 (was 40): the string pointer and the character counter are kept in different registers
 // here, and an extra register is pushed and restored around the copy loop. Tried: count before
 // start in the parameter list 40; the length in a named local after the sign tests 40;
 // string + start with start unmodified 28 but start then arrives in edx (0xb5f10 differs);
@@ -412,14 +424,18 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
 	bool result = false;
-	if (start >= 0 && count > 0 && start + count <= (long)string_length_512_ab(string))
+	if (start >= 0 && count > 0)
 	{
-		count++;
-		if (count > 0x200)
-			count = 0x200;
-		start += (long)string;
-		upload_copy_ab(destination, (char const *)start, count);
-		result = true;
+		long length = (long)string_length_512_ab(string);
+		char const *source = string + start;
+		if (start + count <= length)
+		{
+			count++;
+			if (count > 0x200)
+				count = 0x200;
+			upload_copy_ab(destination, source, count);
+			result = true;
+		}
 	}
 	return result;
 }

@@ -542,6 +542,9 @@ struct s_1af5c6
 // from the prop node at each use after 0x2640c0 20. Left: retail's tail is 0x1c8df0 inlined with constant arguments
 // (only this call site; LTCG keeps ours out of line), so the mask temp (EAX, retail ECX), the early ignore-index load
 // and the distance's slot follow that inlined body's temporaries.
+// Round 71 (lane 14, plain): the ignore index chosen without the assignment inside the condition, as a nested if/else
+// (kept: identical code), as NONE then two ifs, or as a ternary with a NONE fallback test, 20 each; the object index first
+// with the actor field taken when the header flag is clear and the field is set 29; the header flag tested as a bool 20.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {
@@ -562,7 +565,13 @@ long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 	function_2640c0(local_19, (s_object_motion_view *)&local_7);
 	local_19 = local_1->object_index;
 	local_3 = &((s_1af5c2 *)g_4e0300->data)[local_19 & 0xffff];
-	if (local_3->field_3 != 0 || (local_8 = ((s_1af5c3 *)local_4)->field_14) == NONE)
+	if (local_3->field_3 == 0)
+	{
+		local_8 = ((s_1af5c3 *)local_4)->field_14;
+		if (local_8 == NONE)
+			local_8 = local_19;
+	}
+	else
 		local_8 = local_19;
 	local_8 = function_baf40(local_8);
 	if ((short)arg_3 == 0)
