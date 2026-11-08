@@ -2133,6 +2133,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // P365: Three direction scalars captured after the absolute dot and before relative normalization,
 // six declaration orders plus two immutable orders: eight 168. NOT kept: no native SIMD
 // producer equality or gain; complete original body and helpers restored.
+// P367: Independent live approach/facing/acceptance scalar-home identities, seven
+// subsets and complete threshold identity: eight 168s. NOT kept: no native SIMD
+// or player-iterator home equality; complete original body and names restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

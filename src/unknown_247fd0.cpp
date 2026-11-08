@@ -513,6 +513,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // setter publication, then one sequential workspace in both forms:
 // 386/384/401/386/386/430/399/415 (1681-1729 bytes). NOT kept: native calls use
 // in-place outputs; frame and length move away. Original complete body restored.
+// P367: Complete contact-normal value for both offset/direction consumers,
+// producer/contact/geometry/entry declarations and two vector-home names:
+// eight 366s, frame 0xbc and 1665/1652 bytes. NOT kept: record-copy and frame
+// shape miss native 0xb0; original normal pointer and complete body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

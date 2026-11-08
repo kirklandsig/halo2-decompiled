@@ -2977,6 +2977,12 @@ real g_47ff30 = 2.5f;
 // P364: Complete directional energy/mass producers, mutable/const immediate/phased
 // squares and four accumulator boundaries: 697/697/697/697/699/721/698/699. NOT kept: no native
 // frame/producer equality; best gains two. Original full body restored, including the retained torque scale.
+// P367: Discarded angular-output workspace reused for up/left/bank axis/rotation
+// axis/force/torque/desired-left/current-left: 744/699/699/684/699/693/696/696.
+// NOT kept: 684 reaches native length but grows frame to 0x10c versus 0xfc and
+// shares native-distinct query/axis homes; other leads miss the gain gate.
+// Actual query-scope ending on this graph 699. Original three transforms,
+// independent outputs, common torque scale and complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

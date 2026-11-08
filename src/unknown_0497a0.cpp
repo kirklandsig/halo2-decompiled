@@ -931,6 +931,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // third-component scaling 485 (frame 0xac, 2628 bytes). NOT kept: no equality; the camera
 // side sum changes association. Unscaled-third-component diagnostic 426 excluded.
 // Original roots, scaling, geometry, helpers and complete body restored.
+// P367: Next-iteration U after UV/geometry/position/opacity consumers
+// 606/306/304/274; each with transition width after its color loop
+// 564/418/415/386. NOT kept: no native frame/scalar equality; statement-
+// lifetime forms regress. Original texture/width sequence and body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

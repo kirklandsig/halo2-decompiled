@@ -472,6 +472,9 @@ struct s_physical_block_iterator
 // P365: Complete selected-candidate scalar publications in eight field schedules: eight 359
 // at 1217/1213 bytes, first +1. NOT kept: no native policy/copy equality; original
 // record assignment, arithmetic, entry/frame and complete body restored.
+// P367: Case-zero repeated candidate/best timestamp values, singly and in both
+// declaration orders, mutable/const: eight 209s. NOT kept: no native policy
+// placement or result equality; original field observations and body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
