@@ -2261,6 +2261,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // through object_index with object_slot kept for the type read only, after or before it 209/205; the shared `object_index & 0xffff`
 // form 209, with parent_ok first 197: entry code then retail's but for g_4e0300 in ECX (EBP holds retail's index*12); the parent block
 // keeps data in ECX instead of reloading it through g_4e0300 in EDX, so it is one instruction short and everything after it shifts.
+// T63: Plain four-slot scan with empty/failed/both rejection continues or actual
+// transfer result, original/iteration weapon lifetime: eight 164, 752/721 bytes.
+// NOT kept: all regress; original full body restored, header offset/lookup homes remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

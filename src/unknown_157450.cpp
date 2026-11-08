@@ -5640,6 +5640,9 @@ void __stdcall function_d6bc0(long object_index);
 // Kept form's spellings: the modifier switch in each kind arm 129 (877 B) [11, 11], one switch with the zero in an else arm 134 [13, 13],
 // with an initializer 132 [12, 16]; d6bc0 given index on those 121/125/110 (872 B) [12, 19]. On that scenario read ahead of the rate is
 // retail's store order but gains only 2: main's order kept, 112 (872 B) [12, 20]. Short modifier 128 (877 B) [13, 17], short kind 185 (869 B) [17, 52].
+// T63: On the native-frame/signed-byte-kind graph, timer address at scheduling/index/
+// entry/placement/eligibility, separate scheduling-expiry pointers, scheduling-only/expiry-only:
+// 170/233/229/229/233/112/112/112. NOT kept: ties/regressions; original complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
