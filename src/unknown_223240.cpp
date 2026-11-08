@@ -277,6 +277,10 @@ void function_2232a0(void)
 // its first fields as [index + displacement] and then forms `lea eax, [eax + g]` for the rest. The reset helper taking an index 57 (576,
 // masked 4: every line right but those three, the pointer folds); a separate finishing helper, `g + index`, the first stores in the caller
 // and `__assume(pointer != NULL)` at three places 57 each; a const reference to the pointer 57 (masked 15).
+// MiniMax D (11-06): no new form, no lower score; the tail call still needs 0x2b5d0's own body:
+// BLOCKED-BY 0x2b5d0 (src/stubs/lane_k.cpp). Giving that stub a real body here drops this function to 60 but
+// breaks 0x13b90, 0x1dc40 and 0x223240, so it stays stubbed. Retail's outer loop still has the pretest our
+// do-while lacks and the player-scan base pointer is still EDX in retail against ECX in ours.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

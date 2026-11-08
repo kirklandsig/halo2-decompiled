@@ -87,7 +87,7 @@ void __stdcall function_191ec4(long definition_index, long player_index, short c
 }
 
 // @retail 0x191f3a
-void __stdcall function_191f3a(long definition_index, long player_index)
+void __stdcall function_191f3a(long player_index, long definition_index)
 {
 	if (player_index != NONE)
 	{

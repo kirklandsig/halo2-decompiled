@@ -1874,6 +1874,11 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N375: Complete post-decrement mode/count expiry admission in positive/complementary
 // native truth domains, eight valid forms 140 each; original full body restored.
 // NOT kept: no byte match or frame/home gain; return byte and release/event homes remain.
+// MiniMax C (11-06): no new form, no lower score - retail still emits the release impulse once per clear
+// branch and still clears the flag byte with a read-modify-write on both paths; the callee 0xba300's
+// convention lives in src/unknown_0b8bd0.cpp, which this lane may not edit.
+// score 140 (was 140): the return byte and the release-byte read-modify-write still sit in other homes,
+// and the callee's parameter order is fixed in a file this lane may not edit.
 // N377: Existing release producer time/gain root pointers, both and native references,
 // then release-completion success at first/second/both sites and accumulated completion:
 // 140/140/171/171/140/140/140/140. NOT kept: no equality or gain; full helper and body restored.

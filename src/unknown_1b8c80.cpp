@@ -383,6 +383,7 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax R (11-06): no lower score (8); the exclusive bound 11, the same with the count in a local 11, the index declared before the seat pointer 11, both together 11 and the inclusive bound with a local count 26 all move the count to EBP and the index to ESI; a long count local with the index declared before the seat pointer is 11 as well, and a short count makes the compiler compare in 16 bits and rewrites the loop.
 // MiniMax E (11-06): no new form, no lower score.
 // Exclusive bound with the index declared before the seat pointer 11, the same
 // with the count in a local 11, a widened int copy of the index 11, an
@@ -660,6 +661,11 @@ extern "C" void _ReadWriteBarrier(void);
 // copied field by field 33; the flags byte read into a local inside the NONE block 6; the 0x450 store written in
 // every arm 6; the early return for a busy actor 14 (repeat). Screened only: an `idle` bool tested in each arm,
 // the NONE test repeated in an && chain, flags tested before the NONE test: none loads the slot at entry.
+// Round 94 (lane 16, fast): `__assume(state != NULL)` after the state with the barrier 6, without it 44; `__assume(actor
+// != NULL)` in place of the barrier 44; the state after the actor with `__assume(state != NULL)` in place of the barrier
+// 44; a point pointer at the top with the barrier 6. Diagnostics: a real slot read in the join block after the outer if
+// loads the slot in the entry block, but after the 0x26c compare (just before the jne), with or without the barrier
+// (retail loads it before the mask); an extra read inside the flags arm does not; an `__assume` at the join does not.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

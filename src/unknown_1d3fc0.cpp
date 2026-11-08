@@ -30,6 +30,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// MiniMax D (11-06): no new form, no lower score; the helper's scale order k, i, j 115 and the k product with the
+// reciprocal first 110 (the same code); the axis block's dot product still multiplies up's i first where retail
+// multiplies forward's i first, and no shared helper computes that product order.
 // MiniMax H (11-06): no new form, no lower score; the only difference in the axis block is the dot product's
 // i term, where ours multiplies up's i first and retail multiplies forward's i first; the two shapes that flip
 // it need the dot written out by hand and the k term read through the matrix field, so they stay score-picked

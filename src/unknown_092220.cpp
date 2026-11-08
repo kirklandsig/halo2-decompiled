@@ -181,6 +181,10 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax R (11-07): no new form, no lower score; the user flags still load into eax where retail loads them
+// into the dying user pointer register ecx. This round: reading the flags once into a named dword, so the
+// pointer is used only for that load, is byte-identical to the baseline, so the register choice does not come
+// from the number of loads; the reduced image still leaves the 0x6cd50 call and two globals unresolved.
 // MiniMax C (11-06): no new form, no lower score; the user flags still load into eax where retail
 // loads them into the dying user pointer register ecx, and the block layout is the same in both
 // builds, so every other difference the reduced image reports is a global address, a call target

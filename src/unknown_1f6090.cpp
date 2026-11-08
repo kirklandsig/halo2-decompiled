@@ -124,7 +124,7 @@ void function_e64e0(vector3f const *reference, vector3f const *direction, vector
 void function_1f40b0(long actor_index, real *stopping_distance, real *round_trip_distance);
 bool function_1f58c0(long actor_index, vector3f *facing, short *unknown);
 bool function_1f9240(long actor_index, s_path_settings *settings);
-bool function_26f2d0(s_path_settings const *settings, point3f const *start, point3f const *end);
+bool function_26f2d0(point3f const *start, point3f const *end, s_path_settings const *settings);
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force);
 bool function_2702a0(long actor_index, long mode, long set, long target_mode, long target_set,
 	point3f const *position, vector3f const *forward, point3f *out_position,
@@ -755,7 +755,7 @@ void __stdcall function_1f6090(long actor_index, vector3f const *input, vector3f
 					function_1f9240(actor_index, &settings);
 					point3f const *vertices = pathfinding->vertices;
 					point3f const *end = &vertices[surface->second_vertex];
-					if (function_26f2d0(&settings, &actor->position, end))
+					if (function_26f2d0(&actor->position, end, &settings))
 					{
 						point3f const *away = &vertices[surface->unknown0a];
 						s_request_vector request;

@@ -318,6 +318,17 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax A (11-06): no new form, no lower score; retail's frame is 0x14 with the pool in two stack homes
+// (one for the scan, one for the element), the index home a third, the datum index in EDI and the object
+// pool re-read from the global at each use, while ours has a frame of 0xc with the pool forwarded into
+// EDI, the object pool hoisted into EBP and the datum index in EBX; the element's fourth dword is read
+// after the datum's short in ours and before it in retail. The fast check builds a reduced image in which
+// the two globals are unresolved, so every load of them counts as a difference and the fast score
+// overstates the real gap.
+// MiniMax A (11-06): no new form, no lower score; retail's frame is 0x14 with the pool in two stack homes and the
+// object pool read again at each use, ours keeps the pool in EDI and the object pool in EBP across the loop; a
+// second pool home needs a second pool value at the call, and the spellings of that give 155 (the global at the
+// call), 157 (the global for the scan) and 163 (a pool local), all worse.
 // MiniMax H (11-06): no new form, no lower score; retail's frame is still 0x14 with the pool copied to a
 // prologue home and a second home for the element and the datum index in a register, ours is 0xc with the pool
 // forwarded into edi for both reads; every form that gives the pool a second home leaves the frame at 0x10 and
