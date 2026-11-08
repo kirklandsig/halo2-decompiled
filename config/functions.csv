@@ -3798,7 +3798,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0011bb40,169,game,unknown,a16,,,000bb950,src/garbage.cpp,matched
 0011bbf0,237,game,speed,a16 pad,,,0020a9a0,src/crates.cpp,matched
 0011bce0,121,game,speed,a16 pad,,,001d24a0,src/crates.cpp,matched
-0011bd60,92,game,speed,a16 pad,,,001d3550,src/unknown_0b9fc0.cpp,todo
+0011bd60,92,game,speed,a16 pad,,,001d3550,src/unknown_0b9fc0.cpp,matched
 0011bdc0,88,game,speed,a16 pad,,,,src/unknown_11bdc0.cpp,matched
 0011be20,28,game,speed,a16 pad,,,00211cc0,src/unknown_11be40.cpp,matched
 0011be40,8,game,speed,a16 pad,,,,src/unknown_11be40.cpp,matched

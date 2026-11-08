@@ -800,6 +800,10 @@ bool g_51e9bc;
 // Original complete body restored; projection ownership and jitter spill homes remain.
 // N397: Confined whole on/sign/weight scalar identities on the native-extent body 118/118/118/118/118/118/118/118.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// T65: On the 49-point native-prefix graph, consumed-limit rows/setter and separate output setter
+// 57/56/57; complete coefficient magnitudes with separate rows/setter or consumed-limit rows/setter
+// 54/61/61/55; coordinate-local magnitude/product stages 54. NOT kept: all regress;
+// original body restored. Projection j/k ownership and native jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

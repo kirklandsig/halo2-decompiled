@@ -978,6 +978,9 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // reader parameter 101 (0x194260 117); the volatile local in an inner block that ends before the asm 3. Diagnostic
 // only (barred, reverted): the non-volatile local made address-taken by a dead asm reference matches, with 0x194260
 // kept. Blocked by the asm ruling: retail's zero stores are non-volatile and survive because the address is taken.
+// Round 98 (m3 lane 12, fast, 0x194260 checked each time): a barrier after the reader's rdtsc 94 (259 bytes; 0x194260 92);
+// the allocator returning early when there are no pages 3; a barrier after the allocator's start read 6 (0x194260 4); the
+// elapsed time from a `now` local 3; the reader defined after the allocator, declared before it 3.
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {

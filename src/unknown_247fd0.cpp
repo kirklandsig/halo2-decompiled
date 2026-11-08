@@ -505,6 +505,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // F404: Actual child-creation success/failure outcome in bool/byte/short/long,
 // after descriptor refresh: 334/334/334/334/334/334/334/334. NOT kept: no exact outcome-storage form.
 // Original handle admission, loop, random stream, geometry and whole body restored; lookup/blend/getter allocation remains.
+// T64: Real byte-span element addressing at effect/allocation/velocity/child lookups,
+// singles/effect pair/particle pair/all: seven 334s; all with named offset producers 338.
+// NOT kept: separate native address adds and scalar homes are not recovered; complete
+// original typed lookups, geometry, random stream, qualifier and body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

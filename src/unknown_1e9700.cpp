@@ -1036,6 +1036,10 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // Round 155 (m3 lane 5, fast with 0x1e6fe0): coordinates as an initialiser 2; zeros stored before the ones 27; coordinates
 // filled before the piece copy 2; non-const bounds (with 0x1e6fe0's cast) 2; insets read through a const reference 2.
 // Compile-only gives retail's pair with or without the camera storage's address taken in this file.
+// Round 141 (m3 lane 8, fast): coordinates filled after the first piece call 36 (same pair, the constants
+// move); colour read after the alternate selection 314 (1171 bytes); bitmap pointers read inside the calls
+// 285 (1148 bytes); bottom inset and offset in one expression 49; inner as an aggregate initialiser 133
+// (1163 bytes). Compile-only (non-LTCG) loads the global before the bottom word with the current source.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {

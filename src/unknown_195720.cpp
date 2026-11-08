@@ -66,6 +66,12 @@ bool function_1946f0(s_bitstream *stream)
 // `saved / 8` index expressions and a single-use start index 2 (identical); the early data local used for the clear
 // only 40 (the clear LEA becomes retail's `[edx + edi + 1]`); the data local read at the function's top for both 52.
 // The newer value goes first, so retail orders its in-block field loads as values older than the index.
+// Round 173 (m3 lane 4): compile-only screen of 22 forms (size-first compare, data + index pointer sum, `saved / 8` at the
+// mask or the clear, a named next index, a named bit first, counter stores after the index, a size local, the count before
+// the mask, buffer member or char casts, data locals at the function, discard-block, mode-block or mask-block top): no
+// spelling flips the masked-byte LEA; only a data local read before the index flips the clear LEA (and keeps the data in
+// a register). Real (fast): size-first compare 4; char-typed masked byte 2; data local at the mode block's top 49; data
+// local in the mask block 35; counter stores after the index 17.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

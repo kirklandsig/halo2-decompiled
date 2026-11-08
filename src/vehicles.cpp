@@ -2820,6 +2820,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 	return PIN(0.0f - force, 0.0f - limit, limit);
 }
 
+/* the turn rate multiplier while control flag 0x1000 is set (writable data in retail) */
+real g_47ff30 = 2.5f;
+
 /* the physics of type 3 vehicles (the hovering ones): forces toward the
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
@@ -2828,7 +2831,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // instructions against the 711 of the body, and its variants swap call arguments, so the file was restored; the column
 // alignment puts the first differences at the frame (0x100 against 0xfc), the top slot
 // (esp+0x108 against esp+0x104) and the first float home (esp+0x20 against esp+0x34).
-// score 730 (was 676): Frame 0x100 versus retail 0xfc; scalar/vector homes and force/trig scheduling still differ; 3219 bytes (retail 3244).
+// score 713 (was 730): Native mutable turn multiplier restored; frame 0x100 versus retail 0xfc;
+// scalar/vector homes and force/trig scheduling still differ; 3223 bytes (retail 3244).
+// Earlier (730, was 676): frame 0x100, 3219/3244 bytes.
 // Walked against retail 0xf2360-0xf3009 statement by statement (v1D, 2026-11-06): the arithmetic, offsets, conditions, callees
 // and call arguments all agree with retail (constants checked by value in the XBE). Structure fixes: the damping-tick static is
 // initialized once before the first friction test (retail 0xf27ba-0xf2818 tests and sets the guard before the speed test, not inside
@@ -2837,8 +2842,8 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // the banked up vector stays in `up` and is copied into desired.up after desired.left is crossed (0xf2e2d-0xf2e79 copy [esp+0x20]);
 // 0x142a60 writes a third transform (0xf2ed2: output at [esp+0xd8], inputs at 0xa4/0x70), so the relative transform is its own
 // local. The friction clamp stays PIN: retail's 0xf28a4-0xf28b6 is the two compares PIN expands to; the same clamp written out as
-// an if/else on the negated force gives 664 at 3246 bytes, but it is PIN's body by hand, so it is not kept. Still different: retail multiplies
-// 2.5 by the turn rate at run time (0xf2afa) where ours folds the product; it keeps copies of the facing and velocity (i, j)
+// an if/else on the negated force gives 664 at 3246 bytes, but it is PIN's body by hand, so it is not kept. The native multiplication of
+// 2.5 by the turn rate (0xf2afa) is recovered in T64. Still different: native copies of facing and velocity (i, j)
 // before the slip product (0xf2b22-0xf2b36); frame 0xfc (one slot fewer).
 // Tried on top (v1D): friction scale applied after the direction (0xf288d) 811 (the compiler reassociates, same bytes); turn limits
 // through an inline helper with pointer outputs 771 (folds the same); facing/velocity (i, j) as point2f copies 744 (was 715 at the time); ba1d0's second
@@ -2956,6 +2961,10 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // NOT kept: no eligible native repair; opening executable source restored. Native frame 0xfc and first difference +0x66 recovered at 774; scalar homes and force scheduling still differ. Association, initialization and early one-use results require exact equality; all restored.
 // Permuter, 30 minutes (11-06, on the form before PIN came back): 651 from 662, only with a volatile definition pointer and
 // vehicle_friction's arguments swapped. Not kept.
+// T64: Native mutable 2.5 turn multiplier alone 730 -> 713, plain confirmed (3223/3244).
+// Current-matrix identity/declaration/both 713/713/713; complete force/torque/up setters
+// 712/713/731; force+torque 712. NOT kept: one-point leads or nonnative storage;
+// only the actual data-object read remains, with every original call and math tree.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3082,7 +3091,7 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	{
 		if (vehicle->control_flags & 0x1000)
 		{
-			maximum_turn_rate = 2.5f * maximum_turn_rate;
+			maximum_turn_rate = g_47ff30 * maximum_turn_rate;
 		}
 		maximum_bank = 0.78539819f;
 	}
