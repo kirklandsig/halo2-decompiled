@@ -481,6 +481,9 @@ struct s_physical_block_iterator
 // P371: Existing paired-age bare declarations at entry/ring/selected-record/outer-scan/
 // candidate-scan/iteration/size-admission/policy-admission: eight 209s. NOT kept:
 // no native clamp-register or policy-placement repair; original complete body restored.
+// P373: Existing policy-result bare declaration at function/admission/record/outer-scan/
+// outer-iteration/inner-scan/inner-iteration/size-admission boundaries: eight 209s. NOT kept:
+// policy-placement/clamp homes unchanged; original whole body and false producer restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

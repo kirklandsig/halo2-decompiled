@@ -938,6 +938,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // P371: Complete complementary normal request in bool/char/signed-char/byte/short/word/long/dword:
 // 567/567/567/567/592/592/596/596, 2576/2596 bytes. NOT kept: regressions and
 // nonnative frame/spill allocation; original per-case observations and complete body restored.
+// P373: Ordinary pretested channel counters for initial/next/blend color walks, seven subsets,
+// all with the tint walk: eight 250s, 2592/2596 bytes. NOT kept: frame 0xa8/0xac
+// and scalar homes unchanged; original color traversals and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

@@ -2289,6 +2289,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // P370: Existing actual player/object getters, eight paired force-inline/automatic-inline
 // contracts: 120 each, 723/721 bytes, first +0x27. NOT kept: no ingress/extent recovery;
 // original annotations, helper bodies and complete target restored.
+// P373: Existing header ordinal, unit/object/player receivers and held/current/slot
+// lexical identities, singly then together: eight 120s, 723/721 bytes. NOT kept:
+// native ingress/retained extent unchanged; original complete body and names restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

@@ -2146,6 +2146,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // P370: Uniform k/j-pair, i-term and complete accumulation boundaries in all three dots,
 // masks 1..7 and immutable complete parts: 168/174/168/168/168/168/168/168. NOT kept:
 // no SIMD/iterator recovery or byte match; original expressions and complete body restored.
+// P373: Actual facing-excess/closeness/retention-span arithmetic parts, seven subsets,
+// complete immutable parts: eight 168s, 2880/2880 bytes, first +0x5c. NOT kept:
+// no SIMD/iterator/policy equality; original complete body and helpers restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

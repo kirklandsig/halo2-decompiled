@@ -1625,6 +1625,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P371: Complete complementary movement outcome in bool/char/signed-char/byte/short/word/long/dword:
 // 585/585/585/585/590/590/588/588. NOT kept: best gains three, wider forms grow
 // to 2832/2828 bytes, and frame stays 0xf8/0xfc; original complete body restored.
+// P373: Actual center-top/eye-height/correction arithmetic boundaries, seven subsets,
+// then half-span with the complete correction: 588/588/588/588/588/588/585/588, 2828 bytes.
+// NOT kept: best gains three, with no native frame equality; original whole body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
