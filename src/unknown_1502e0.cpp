@@ -1337,6 +1337,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // Round 104: unit declared at entry 17; slot declared at entry 17; unit then result before player 35;
 // read-only player/unit receivers 17 each; nested slot/weapon tests 17; held-slot array pointer 17;
 // weapons array pointer 17. NOT kept: no byte match or gain; original body restored, EDI/ESI still exchanged.
+// Round 359: byte result 44; signed-byte result 44; short result 60; long result 57; dispatch
+// outcome accumulated 17; dispatch test sets success 67; weapon snapshot in valid-slot scope 17;
+// unavailability result 67. NOT kept: no qualifying byte match or gain; original body restored.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
