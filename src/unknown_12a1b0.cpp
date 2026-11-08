@@ -1251,6 +1251,13 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // Round 169 (lane 4, fast with the same list; 0x126df0's file was off limits): duration or curve read once through
 // its own address 24/24; the iterator set up ahead of the NONE guard 58 (205 bytes); the guard folded into the loop
 // condition with the iterator set up unconditionally 58 (205 bytes); the state compared as an unsigned byte 24.
+// Round 71 (lane 14, fast with the same list; both builds already `ret 8`): the loop index renamed sound_index, z_index or
+// a_index and the iterator renamed 24 each; an element local in the body tested and the call kept 24; the element local
+// declared at function scope 24; the state in a one-use byte local 24; the state test through an inline predicate 24.
+// Matched 0x21bd00 gets retail's index EDI / element ESI with a named element that is also read before the inlined call.
+// Round 79 (fast, `ret 8` in both builds): the next helper reading the index into a local and storing it once 64 (205
+// bytes; 0x21bd00 54); the body reading `iterator.index` with no index local 24; the state through this file's
+// track_sound_get view 24, as a named view pointer 24, `long index = NONE;` at the function top 24 (all same code).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {

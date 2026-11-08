@@ -745,6 +745,19 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // 32 (retail pushes the slot before loading `updates`, its argument order; 0x84e90 stays matched), with the
 // occupied key through a const reference 32, with the occupied update as `updates + ++*count - 1` 32; on
 // the current order the occupied key as `&collection->players[i].key` 28 and that update form 28 (same code).
+// Round 140 (lane 8, fast with 0x83c90/0x84e90/0x84c90/0x69260): `if (occupied != false)` 28; `collection`
+// as a const pointer 28; `slot` and `occupied` declared in the other order 28, at the loop top 28; the
+// session-mask test wrapping the body in place of its `continue` 28 (all same code); `collection` at
+// function scope, with or without the first loop using it, 228/228 (1088 bytes, frame slots move). Retail's two loop
+// invariants: [esp+0x10] is the cursor (watcher + 0xb0 + i * 0xb4, the player's configuration) and
+// [esp+0x34] is minus its start (0xffffff50 - watcher), so retail's key is (collection - start) + cursor + 4
+// and ours (cursor - start) + collection + 4: retail pairs `collection` with the other invariant.
+// Round 79 (fast): the inverse start is used only by the occupied key (the strength-reduced i * 0xb4); any
+// watcher-based key folds into the cursor (cursor - 0x24, frame 0x8c), so retail's base is opaque yet ranked
+// invariant. Every else-branch use through `&watcher->players` 294 (1064 bytes); only the key as
+// `(&watcher->players)->players[i].key` 294; the swap order above 32 (re-measured), with the else-branch calls
+// through `&watcher->players` 32; `slot`/`occupied` at the else branch's top 28 (same code); the second loop's
+// `update` declared `= NULL` 28 (same code).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

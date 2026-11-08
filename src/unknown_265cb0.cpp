@@ -602,6 +602,13 @@ real function_30bf0(vector3f *vector);
 // at +0x34, retail the result at +0x08, the range at +0x30, the delta at +0x3c..0x44 and the
 // cursor at +0x48), the range still loads into XMM2 where retail uses XMM0, and the two
 // cross-product products still take their operands in the exchanged order; the body is unchanged.
+// T63: Shared cross-product complete products, scoped/unscoped mutable/const,
+// component results mutable/const, successive subtraction and uniform positive products:
+// 154/154/154/154/84/84/150/150. NOT kept: ties/regressions; shared header and full body restored.
+// T65: On the current ordinary-result/indexed-seat graph, semantic result/range/fraction
+// home identities, seven subsets and complete squared-distance identity: eight 84.
+// NOT kept: identical code; original body restored. Native scalar homes, range ingress
+// and the two cross-product operand schedules remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1252,61 +1259,6 @@ struct s_equipped_object_view
 
 /* The held-object lookup rereads the pool's data field. */
 
-// score 6 (was 6): the tag lookup: retail keeps the index in ecx and the
-// table base in eax, ours keeps the index in eax and the base in ecx;
-// thirteen source rewrites all scored 6. Retail reloads the pool's data for
-// the held object with no store or call in between; every form without the
-// volatile pool view shares the first load (28): the held index through
-// function_cbd50 28 (6 with the view kept), the held object through
-// object_get 28 or object_header_get 28. Tried (r27b): the comparison through a
-// real local 12; the tag index through a long local 12; `if (...) result = true`
-// 14. 0xee8a0 (matched) needs the same volatile view for its weapon lookup.
-// Round 14, no volatile: the existing function_cbd50 for the held index 28 (result
-// declared first 40); the existing unit_get_current_weapon 28; the fields at each use
-// 27; the object pointer for the held slot with the slot read through a second
-// lookup 4 (retail's reload; only the entry's data register and the slot's sign
-// extension differ). Two held lookups reload it data-first (15, 142 bytes).
-// Round 38, no volatile: the 0x267370 form (held index through function_cbd50, the
-// definition read inside the compare) 31; a pool pointer local for both lookups 27; the
-// threshold entries selected (NULL when empty) before the held lookup 30 (142 bytes); the
-// entry object through object_header_get's header 28; an unused header lookup in the entry
-// block (diagnostic) gives retail's entry block but a data-first held reload 15 (142 bytes).
-// Round 67: two used entry lookups with the object pointer kept for the held slot 4 (tag chain exact;
-// entry data/index registers differ); a widened selected index or an object-array pointer 4 each; signed-byte
-// selected 11; entry object_get 27, second object_get 4; held index before object 4; result first 36;
-// conditional held index 38 (144 bytes). Selected declared before held index makes the entry exact but gives
-// a data-first held reload 15 (142 bytes), unchanged by threshold/held order or held object_get; result first
-// 36, result between selected and held index 33. Reversed fresh lookup for the held slot 27.
-// Round 58 (m3 lane 1, fast, no volatile): the held reload comes from either a pool local read
-// before `held_index = NONE` and used only for the held lookup 15 (142 bytes; read after the
-// slot's if 28) or a second entry lookup for the selected byte 4; the order of `held_index = NONE`
-// against the selected load decides both halves (NONE first: held block exact, entry data EDX and
-// widened index ECX; NONE after: entry exact, held data first). On the second-lookup form: the
-// NONE store split from its declaration 15; object/selected/NONE in all six orders 4/15; result
-// first 36, result before selected 36; `(short)` selected 4; selected or object through
-// object_header_get / object_get 4/4/4 (both through object_get 27); thresholds and definition at
-// the block top, after the held lookup or inside the compare 4 each (15 each on the NONE-after
-// form); the held lookup through object_header_get / object_get 4/4 (15/15 NONE-after). The
-// 0x267370 form (object_get + function_cbd50, held object inline in the definition) 28, and with
-// the object read inside the argument 28; a pool local for the entry only 28; one inside the held block 28.
-// On the second-lookup form: a masked index local for both entry lookups 4; a pool local for the entry lookups
-// 4, and for the held lookup too 4; a header pointer for both entry reads 33; a data local for them 28; a named
-// threshold table pointer 8 (18 on the NONE-after form, 31 on the plain form, 18 with the pool local); the count
-// test nested 15 on the NONE-after form.
-// Round 139 (lane 6): the comparison written definition >= threshold 12; a tag-instance pointer for
-// the held definition 6; the definition read inside the compare 6; thresholds read after the
-// definition 6; a real pointer to the definition field 6.
-// Round 89 (m3 lane 12, fast), no volatile unless named: plain pool reads keep the data in ESI 28, with the held index stored through a
-// pointer local 28, through a force-inline out-parameter helper 28, or NONE stored by a force-inline helper 28, so a store through a
-// pointer does not stop the data CSE. The held or the entry read as another type (byte pointer, long, const view) 28 each. On the
-// second-lookup form (selected through its own lookup, 4): exact tag chain, data EDX and widened index ECX for retail's ECX and EDX.
-// A volatile probe local (diagnostic, reverted) ahead of any entry statement does not move the widened index (59, 152 bytes; 51, 149).
-// The pool and its data compete for ESI by references, so the entry's second lookup is what hands ESI to the pool, but it also swaps
-// the entry's registers. That form stays unkept: a local for some reads and a lookup for others is a hand reload without a match.
-// Round 169 (lane 4, fast): the threshold count test nested inside the held test 6; the tag instance by pointer
-// arithmetic (`g_4e3b44 + index`, then `->bytes`) 6; one volatile pool view local for both lookups 6; early returns in
-// place of the result 39; the held object through a header pointer into the pool 20 (143 bytes); a 600 s fast annealing
-// permuter run (its reduced image scores the original 6): 56 tries, none below 6.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
@@ -1319,9 +1271,8 @@ bool function_2675f0(long object_index)
 	if (held_index != NONE && ((s_prop_threshold_table *)g_4e034c)->count > 0)
 	{
 		s_prop_thresholds *thresholds = ((s_prop_threshold_table *)g_4e034c)->entries;
-		s_equipped_object_view *held = (s_equipped_object_view *)((s_object_header_view *)((s_record_pool volatile *)g_4e0300)->data)[held_index & 0xffff].object;
-		byte *definition = g_4e3b44[held->tag_index & 0xffff].bytes;
-		result = thresholds->object_threshold <= *(real *)(definition + 0x238);
+		real held_value = *(real *)(g_4e3b44[((s_equipped_object_view *)((s_object_header_view *)((s_record_pool volatile *)g_4e0300)->data)[held_index & 0xffff].object)->tag_index & 0xffff].bytes + 0x238);
+		result = thresholds->object_threshold <= held_value;
 	}
 	return result;
 }
@@ -2167,6 +2118,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // still loads into ECX where retail uses EAX (which makes our loop head one byte longer and
 // puts every later line one off), and the normalized direction is still folded instead of
 // being kept in XMM1..XMM3 across the three dots; the body is unchanged.
+// T63: Existing iterator start/advance/state-query inline contracts, seven subsets
+// then all with target inline metadata: eight 168; exact query stays matched.
+// NOT kept: no equality or gain; original body and all declaration metadata restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

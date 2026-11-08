@@ -472,6 +472,13 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // too 34 (1521); the cache type renamed 10 (same code); `if (next != NONE) do ... while` 10 (same code). As in 0x2bdc70 and
 // 0x281b60, ours reloads the parameters in descending declaration order and retail ascending. The blend's first add as
 // change + velocity 10 (same code).
+// Round 94 (lane 16, fast): particle as the pool data plus the masked index 10; change zeroed by an aggregate
+// initializer 10; maximum test as `maximum_speed * maximum_speed < squared` 10; minimum test as
+// `squared < minimum_speed * minimum_speed` 10; change scaled through vector3f_scale 10. With first and definition
+// swapped (diagnostic) the reloads keep their positional order (third parameter, next, first parameter).
+// Round 72 (m3 lane 14, fast): first typed dword 10; next typed dword 10; next declared in a `for` header with the
+// successor read in the body 64 (1517 bytes); nearest declared at function scope 10; the particle-change clear as
+// `&= ~0xf80f` 10.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {

@@ -573,7 +573,9 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
-// score 118 (was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
+// score 49 (was 118): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
+// argument; the dot's term order and the jitter block's register allocation still differ.
+// Before 11-07 (118, was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
 // y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
 // 1020 bytes; aligned difference 129 against this body's 154); on/off first in a jitter vector 163 (1048 bytes,
@@ -798,6 +800,10 @@ bool g_51e9bc;
 // Original complete body restored; projection ownership and jitter spill homes remain.
 // N397: Confined whole on/sign/weight scalar identities on the native-extent body 118/118/118/118/118/118/118/118.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// T65: On the 49-point native-prefix graph, consumed-limit rows/setter and separate output setter
+// 57/56/57; complete coefficient magnitudes with separate rows/setter or consumed-limit rows/setter
+// 54/61/61/55; coordinate-local magnitude/product stages 54. NOT kept: all regress;
+// original body restored. Projection j/k ownership and native jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -835,8 +841,8 @@ void function_1e6360(s_biped_physics_output *output, real rate, long object_inde
   movement.k *= scale;
   vector3f direction = movement;
   normalize_particle_direction_2b(&direction);
-  real projection = 0.0f - dot3f(&state->velocity, &direction);
-  vector3f_add_scaled(&state->velocity, &direction, projection, &state->velocity);
+  real projection = dot3f(&state->velocity, &direction);
+  vector3f_add_scaled(&state->velocity, &direction, 0.0f - projection, &state->velocity);
   vector3f_add(&state->velocity, &movement, &state->velocity);
  }
  if (g_51e9bc)
@@ -907,6 +913,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax S (11-07): no new form, no lower score; the crosses declared apart, declared at first use or
+// declared at the top of the body give 114, the two cross calls swapped give 124 and the goal copy by
+// components gives 120, so the body stays; the rotation products, the side-dot order and the exit copies differ.
 // MiniMax R (11-05): no new form, no lower score; writing the two turn-block crosses out with retail's
 // differing third terms gives 140 at retail length (the rotation block is re-generated), so the body stays.
 // score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.

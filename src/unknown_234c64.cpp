@@ -326,6 +326,10 @@ void c_window_channel::v9()
 // request constructor forced inline 3; the builder through a forced-inline helper taking the request by
 // reference 3 (diagnostic: a reference parameter folds back like a pointer one); a two-use load-procedure
 // local after the type clear 29 (79 bytes), at the top of the block 29.
+// Round 156 (lane 5, fast): the builder's message pointer named before the type clear 3; a base-type reference
+// to the new request for the load and set_next 3; `screen` as a const pointer 3; the id as `&request.id[0]` 3;
+// base parameters storage with field_c cleared after the type clear 5. The builder is a leaf, so v10 can't be
+// compiled ahead of it in LTCG's walk; the reload is not a walk-order effect.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

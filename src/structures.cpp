@@ -171,6 +171,9 @@ static __forceinline bool structure_bsp_collision_available()
         *(long const *)((byte const *)g_4e0344->bsp + 4) == *(long const *)((byte const *)g_4e0348 + 8);
 }
 
+// MiniMax I (11-06): 45, not kept: the model query's result stored in `result` with a new `goto done` to the
+// shared exit in place of the early return (retail's 286 bytes, same code otherwise); a goto main's body does
+// not have is kept only with a byte match.
 // score 53 (was 53): frame 0x60/prefix agree; exclusion BL and source-slot rewrite/reload remain absent; the byte result
 // is still normalized with setne at both exits.
 // Earlier at 53 (was 61): the 0xbf9a0 probe is inverted, so the 0x14a8e0 return is laid out after the requery as
@@ -493,9 +496,15 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // callee's own body in src/unknown_11cb00.cpp (126 off retail), which is not this machine's file,
 // so the call site cannot be fixed from here: BLOCKED-BY 0x11e800.
 // Also still different: the BSP/section carriers and the plane/instance stack homes.
+// MiniMax E (11-07): no new form, no lower score; the BSP and section carriers and the range and
+// plane homes are unchanged, and the vertex block still waits on 0x11e800's registers.
 // MiniMax E (11-01): no new form, no lower score; the byte result set before the type branch gives
 // 197 and the range declared before the section 172 with identical code. Left: the BSP in EBX with the
 // section in its stack home, the rotated range/plane/instance homes and the 0x16e1b0 output homes.
+// MiniMax D (11-06): no new form, no lower score (172); the prologue still keeps the BSP in EBP and
+// the section in EBX where retail keeps the BSP in EBX and the section in its stack home, the range,
+// plane and instance homes are rotated and the 0x16e1b0 output homes and the vertex joins still
+// differ; BLOCKED-BY 0x11e800 (its v0/v1/v2 registers) and by 0x16e1b0, both in other files.
 // score 172 (was 172): Frame 0x58 agrees; BSP/section carriers (ours keeps the section in EBX and
 // the BSP in EBP, retail the BSP in EBX with the section in its stack home), range/plane homes and
 // vertex joins remain. Retail never initialises its vertex flag (set only when a vertex exists,

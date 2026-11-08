@@ -261,6 +261,12 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // Round 77 (lane 10, fast): a dword type 4; a short type 11 (201 bytes). Diagnostics: without the
 // `else if (disable)` store 41, without the 0x1c/0x20 tail 73, without the final `if (!disable)` block 79:
 // the data still loads into EAX after the scaling in each, so no other block of the body sets it.
+// Round 156 (lane 5, fast): a direct `bool has_physics = ...` with `if (disable) ... else ...` 80 (228 bytes,
+// three callers lose); a component local at function scope assigned in the arm 4; the component pool data
+// read into a typed local at entry 4 (sunk into the arm); the two disabled-bit stores through the flags
+// word 4; the component index field as dword 4. Matched 0xbc470 makes this exact lookup index-first from
+// the same call-argument form, and the data-first sites with one data use (0xbc5e0, 0x1c35f0) keep the
+// component in a multi-use local, so retail's ECX data points to a second use of the component here.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -661,14 +667,20 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
+// bool result byte) while ours keeps EBP for the global base and a dword result.
+// MiniMax b (11-06): no new form, no lower score; the angle's x87 sequence is retail's byte for byte
+// and only the frame differs (our double home at 0x40 in a four-aligned 0xac frame, retail's at 0x48
+// in a self-aligned 0xb4 frame), and that alignment comes from the call chain of the two callers
+// 0xbf2c0 and 0x268c90, whose files are not mine to edit.
 // MiniMax G (11-05): no new form, no lower score; retail's result byte at 0x13 and the player index at 0x14 need retail's exact local set, which the reachable code cannot produce here.
 // MiniMax H (11-04): no new form, no lower score; retail's frame pointer and 8-byte self-alignment are not ours (frame 0xac against 0xb4).
 // MiniMax H (11-04): no new form, no lower score (230); the earlier rounds' forms still leave the
 // caller-dependent frame alignment and the dword result, so the body stands.
 // MiniMax R (11-01): no new form, no lower score: our frame is still 0xac against retail's self-aligned 0xb4; the alignment is decided by LTCG from the call chain (callers 0xbf2c0 and 0x268c90), not by this body.
 // MiniMax A (11-03): no new form, no lower score.
-// score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
-// bool result byte) while ours keeps EBP for the global base and a dword result.
+// MiniMax A (11-07, run 54): no new form, no lower score (230); the frame is still ours 0xac against
+// retail's self-aligned 0xb4, and that alignment is decided by LTCG from the call chain, not here.
 // MiniMax R (11-01): no new form, no lower score: our frame is still 0xac against retail's self-aligned 0xb4; the alignment is decided by LTCG from the call chain (callers 0xbf2c0 and 0x268c90), not by this body.
 // Earlier round: the root-walk loop and the table read are the only places
 // left that could give retail's frame shape, so each was tried alone and together: the table
@@ -794,6 +806,13 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // named ternary result 264 (929); non-NONE-first input with the direct ternary 224 (895); one-variable query result
 // 258 (923). NOT kept: 224 is only a six-point gain; every other form regresses or moves the frame/length away.
 // Original helper, range, model, root and flag forms restored.
+// Round 156 (lane 5, fast, both callers in the image): rebuilt the 224 lead (else-arm zero + `index != NONE ? ...
+// : 0` step + model index at each use; aligned 98 with stack offsets masked) and on it: the ancestry walk through
+// OBJECT_GET at each step (no entry table local; retail's fresh table read after the walk) 230 (aligned 94); the
+// cluster search as first query, NONE exit, then `while (!visible) { next; if NONE exit }` 240; one step site
+// `while ((player_index = step(players, player_index)) != NONE)` 289 (841 bytes: the step is not duplicated);
+// the definition read at each use 227; the step returning one ternary 224 (same code). Retail keeps the
+// loop-bottom step's `index != NONE` test (its player index lives in memory); main and the 224 lead fold it.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -1632,6 +1651,11 @@ done:
 // that with long offsets and size and the palette at the call 32 (236 bytes); the palette pointer formed after
 // the placements read 26 (237 bytes); the placement block address named before its element read 17 (same
 // code); long palette offset and size with the palette local where it is 27 (236 bytes).
+// Round 156 (lane 5, fast): on a datum local (retail's statement order: size into EAX at its load, product before
+// the pushes, palette added at its push), the scenario from the global at each use 33, with the type re-read too
+// 33 (index back in DI; scenario EBX, type ESI, definition ECX); a screen of scenario local/global x type
+// local/re-read x definition local/table at each use x palette local/at the call x size short/long: palette
+// local 33 in all sixteen (236 bytes), palette at the call 17 with the scenario local and 25 with the global (237).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1798,9 +1822,6 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
-// MiniMax E (11-05): no new form, no lower score; no new form for the shared epilogue or for the inlined
-// 0xb8bd0 marker pointer (that file is /Ob1).
-// MiniMax H (11-04): no new form, no lower score; the body still differs from its first instruction.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60
@@ -1810,6 +1831,11 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // pointer; that file is /Ob1, so LTCG keeps our call and it cannot be changed here. This round:
 // the shared exit together with the byte activity bit is 308, and marking the declaration of
 // function_b8bd0 in this file __forceinline changes nothing (the call stays).
+// MiniMax S (11-06): no new form, no lower score (285): the pool and permission registers and the 0xb8bd0
+// inline boundary still differ, and retail's inlined marker pointer needs that other file's /Ob1 flag.
+// MiniMax E (11-05): no new form, no lower score; no new form for the shared epilogue or for the inlined
+// 0xb8bd0 marker pointer (that file is /Ob1).
+// MiniMax H (11-04): no new form, no lower score; the body still differs from its first instruction.
 // Earlier: retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // Another round (at 285, was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
@@ -1965,6 +1991,13 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // through object_node_matrix(object_get(parent_index), node_index) at the call 342 (1269 bytes); the same
 // pointer taken before the link stores, as retail reads it, 358 (1288 bytes); that with `index` not
 // volatile 340 (1254 bytes). Without it: node_index read at entry 346 (1260 bytes); `allowed` as a long 297.
+// Round 156 (lane 5, fast): BLOCKED-BY 0xb8bd0 again (matched 0xbcc20, an /O2 file, calls it out of line in retail
+// too, so the inline here is not a file-flag effect). All three volatiles dropped 317 (1200 bytes); the root tail
+// as an outer `if (!(root flags & 1))` with the cluster word read at each use inside 284 (the tail is then
+// retail's, aligned 198 -> 151); on it `index` not volatile 324 (1201 bytes), the byte activity bit `(flags & 4)
+// != 0` 282 (1237 bytes), and on 282 the inner bit-8 test by shift 284, the outer bit-7 test by shift 286, the
+// type test as `!((1 << type) & 0x80)` 291, all four retail forms 298 (1254 bytes), the 0xc0 bit-6 test by
+// shift 282. Best 282 is three under, not kept.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

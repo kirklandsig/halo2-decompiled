@@ -339,6 +339,11 @@ struct s_z_state_world
 // tie-break); the world local before `result` 18; the definitions local before the active test 22; the type
 // read inline in the table index 13; the record bound by reference 11. 0xa99f0, whose index arrives in EAX,
 // shows the same single cause: retail gives the database the dying world register EDX, ours the free ECX.
+// Round 95 (m3 lane 16, fast): the entity pointer, the type, the definitions pointer, the identifier and all four declared at
+// the top of the function and assigned in place 11/11/11/11/11 (declaration order is no tie-break either); the database read
+// into a local at the top of the state block with a `_ReadWriteBarrier()` after it 37 (the database takes EDX and the active byte
+// folds as retail's, but the load stays ahead of the lookup and the index convention flips); the entity as the array then
+// `+= identifier & 0x3ff` 11; the identifier masked in place 11; `(dword)identifier & 0x3ff` 11.
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {
@@ -361,6 +366,7 @@ bool function_a9820(long *block, long index)
 	return result;
 }
 
+// MiniMax C (11-06): no new form, no lower score; the database pointer still loads into ECX where retail reuses the dying world register EDX, so the active byte cannot fold into the scaled record address.
 // MiniMax S (11-05): no new form, no lower score: the database pointer is still loaded into ECX where retail reuses
 // the dead world register, so the active byte is still read through the materialised record address; the active byte
 // read from the database array with the record pointer taken in the branch 14, the same with a state local 11 and
@@ -412,6 +418,10 @@ bool function_a9820(long *block, long index)
 // machine is busy with other lanes' builds. Round 89 (with 0xa9820): the world global read at each use
 // builds the same code; one world local for both reads 18 in every spelling (see 0xa9820).
 // Round 60 (with 0xa9820): the records inside a nested table struct at 0x2098 11.
+// MiniMax B (11-06): no new form, no lower score (a world local with a database local 21, a database local
+// 14, the record index in a local 14, a world local with the record pointer 14); retail folds the active
+// byte into the array address and takes the record address only after the test, ours takes the record
+// address first and reads the byte through it.
 // MiniMax D (11-06): no new form, no lower score (11): the database pointer is still loaded into ECX where retail
 // reuses the dying world register EDX, so the active byte is still read through the materialised record address;
 // this round a database local read early or late, a world local for the state test, a world local with a database

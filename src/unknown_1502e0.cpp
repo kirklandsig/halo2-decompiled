@@ -923,6 +923,10 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
+// MiniMax B (11-06): no new form, no lower score; the first 0x11c bytes agree with retail and the rest is
+// allocation: retail puts the unit index in EAX and NONE in EDI and reloads the object table from the
+// global for the seat test, this build keeps the unit index in EBP, NONE in EDX and the table in ESI.
+// MiniMax C (11-06): no new form, no lower score; the traits, unit and NONE homes and the pool reloads remain.
 // MiniMax G (11-06): no new form, no lower score; the first 0x11c bytes agree with retail and the rest is
 // allocation: retail keeps the unit index in ebp and NONE in edi and spills the selected traits to the
 // stack, this build keeps the traits in ebp and the unit index in eax, with the four homes shifted.
@@ -1301,12 +1305,16 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
+// MiniMax C (11-06): no new form, no lower score; the unit index still lands in ESI where retail keeps it in EDI and the object table pointer lands in EDI where retail keeps ESI.
 // MiniMax D (11-06): no new form, no lower score (17): the unit index still lands in esi where retail keeps it in
 // edi and the object table pointer lands in edi where retail keeps esi; this round a read-only player, a read-only
 // pickup unit, a byte, bool or short hand, the hand before the unit index test, the unit index in a local, the two
 // slot tests nested, the else branch as an else-if, the mode comparison reversed, the mode in a local and the
 // globals in a local all give 17, and the hand as a byte, bool or short and the unit index local give 44, 44, 38
 // and 46.
+// MiniMax B (11-06): no new form, no lower score; the whole body agrees with retail except the two
+// callee-saved registers: retail keeps the unit index in EDI and the object table in ESI, this build
+// keeps the index in ESI and the table in EDI, and the held-slot byte moves with them.
 // MiniMax A (11-04, run 45): no new form, no lower score (17); the unit index still swaps registers with the object table.
 // MiniMax H (11-04): no new form, no lower score; the unit index and the object table still swap registers.
 // MiniMax E (11-05): no new form, no lower score; the unit index still lands in esi where retail keeps it in
@@ -1329,6 +1337,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // Round 104: unit declared at entry 17; slot declared at entry 17; unit then result before player 35;
 // read-only player/unit receivers 17 each; nested slot/weapon tests 17; held-slot array pointer 17;
 // weapons array pointer 17. NOT kept: no byte match or gain; original body restored, EDI/ESI still exchanged.
+// Round 359: byte result 44; signed-byte result 44; short result 60; long result 57; dispatch
+// outcome accumulated 17; dispatch test sets success 67; weapon snapshot in valid-slot scope 17;
+// unavailability result 67. NOT kept: no qualifying byte match or gain; original body restored.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1375,6 +1386,10 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax B (11-06): no new form, no lower score; the player pointer and the hand still swap ESI and EDI
+// and the hand's comparison result still lands in DL where retail's lands in AL, and the unit index is in
+// ECX where retail keeps it in EDX.
+// MiniMax C (11-06): no new form, no lower score; the player pointer still lands in EDI where retail keeps it in ESI and the hand in ESI where retail keeps EDI.
 // MiniMax G (11-06): no new form, no lower score; four ways of deriving the hand (the negation, a
 // conditional, an int and a bool) and two declaration orders (the result before the player) all leave
 // this body exactly as it was (43, and 89 for the bool hand): the player pointer and the hand still
@@ -2249,6 +2264,13 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // through object_index with object_slot kept for the type read only, after or before it 209/205; the shared `object_index & 0xffff`
 // form 209, with parent_ok first 197: entry code then retail's but for g_4e0300 in ECX (EBP holds retail's index*12); the parent block
 // keeps data in ECX instead of reloading it through g_4e0300 in EDX, so it is one instruction short and everything after it shifts.
+// T63: Plain four-slot scan with empty/failed/both rejection continues or actual
+// transfer result, original/iteration weapon lifetime: eight 164, 752/721 bytes.
+// NOT kept: all regress; original full body restored, header offset/lookup homes remain.
+// T65: Actual header byte extent in long/dword, mutable/immutable, with the existing getter:
+// final ordinal 255/255/255/255; real-header byte displacement 242/242/242/242.
+// NOT kept: extent-to-ordinal division survives, growing code to 755/750 against 721;
+// original body restored. Native header-offset, pool and parent ownership remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

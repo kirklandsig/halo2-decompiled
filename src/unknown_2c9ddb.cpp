@@ -196,6 +196,23 @@ extern long g_55c154;
 // Round 394: actual selected/saved/source-index eight-byte homes 177/74/61;
 // selected+saved/selected+source/saved+source/all 182/187/104/193; all unsigned 193.
 // Original narrow values and complete body restored; classification spill/copy expansion remain.
+// MiniMax E (11-06): no lower score this round; the body is unchanged. Retail's second half
+// holds two load call sites (the default arm inline, the selected arm out of line at +0x1e3),
+// each with its own 0x54e49c store and its own 0x4c-byte copy into 0x54e4a0, and one shared
+// 0x238c69 request call that both arms reach with the mode (5 or 7), the file type, the name
+// and the count pushed as values. Forms measured (fast): the load index chosen by an if 77 and
+// by the inverse test 81, the index chosen by a bool plus a conditional 62, one load with a
+// shared request call 90, one load with a named destination, a named count and a shared
+// request call 104 (546 bytes), two loads feeding one request call 92, two loads with one copy
+// and one request call 178, the screen parameters local moved to the top 92. The cause of the
+// gap is now isolated: every form with a second load call site flips the frame to `mov ebp, esp`
+// with `sub esp, 0x254` and moves `this` out of EBX, so retail's biased 0x250 frame and the
+// instruction-identical first half cannot be kept at the same time as retail's two call sites.
+// Still different: our link expands the name copy in place where retail calls 0x13fac0, our
+// copy's destination address is hoisted into EAX where retail uses the immediate 0x54e4a0, and
+// the default/existing choice is spilled to a byte slot where retail branches on the selected
+// index itself. The permuter was started for 300 s and the harness stopped it before it
+// printed a result.
 // MiniMax D (11-06): no lower score this round; the body is unchanged. Retail's second half
 // holds two load call sites, the default arm inline and the selected arm out of line at
 // +0x1e3, each with its own 0x54e49c store, its own 0x4c-byte copy into 0x54e4a0 and its own

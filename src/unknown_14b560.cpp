@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax H (11-07): no new form, no lower score (43); the datum address is still computed in EBX
+// where retail computes it in EDI and the two are used the other way round, and the root walk is
+// still the out-of-line 0xbaf80, whose source sits in src/unknown_0bad50.cpp.
 // score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
 // MiniMax E (11-06): no new form, no lower score; retail inlines the 0xbaf80 root walk with its entry
 // test, while our build keeps that walk out of line because another file pins it, so the player and
@@ -1123,6 +1126,12 @@ bool function_14ed80(void)
 // the representation local 60 (153 bytes); the fields read through the globals without the representation local
 // 10 (the dead `add` stays); the representation index read into a char local 51, with the player getter folded
 // into it 48. Retail's 0x14f0f0/0x14f2e0 calls set up EBX then EAX after the push: the declared order already.
+// Round 173 (m3 lane 4, fast): the bound test's count read through the global, the local serving the clamp and the array
+// 53 (first takes EDX as retail, but third ESI and the globals EDI, and the player base folds into the add); the array read
+// through the global 53; one globals local scoped in the clamp arm and a second before the bound test 54; the outputs
+// declared and set to NONE after the remap 63 (151 bytes, 0x14f0f0 lost); the bound-test form with `globals` declared
+// between first and third and assigned after the player 53 (declaration order does not break the first/third tie).
+// Retail's two callers (0x14f0f0, 0x14f2e0) never read EAX after the call, so the void return stands.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -2871,6 +2880,9 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax H (11-07): no new form, no lower score; the globals pointer and the iterator's index
+// array still swap registers, and the two globals are still read in the other order, so the
+// reduced image still scores 193.
 // score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
 // `globals` local builds to the same bytes in the full build (611 = 611, first difference
 // +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the

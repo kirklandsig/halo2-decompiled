@@ -882,6 +882,10 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // Round 219 (lane 3, fast over all 183 functions of the reader header's includers): the barrier intrinsic inside the shared reader after
 // its zero store 2 (nothing anywhere moves), before it 2 (0x80e10 13, 0x862e0 19, but 0x6a8a0 3 and 0x199740 4); the pump loop as
 // `while (result == 0)` 2; an explicit `default: break;` 2; the pump counter initialised at its declaration 28.
+// Round 156 (lane 5, fast): the two cases in source order 2, 1 2; the size/page guard as an early return with
+// the loop unnested 94 (300 bytes, four callers lose); each case storing the pump bound first 2, the attempts
+// first 4; the attempts declaration ahead of the reader 12. BLOCKED-BY the shared reader's form
+// (include/unknown_080e10.h): only the reader's zero stores move, and no body statement reaches them.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
@@ -989,6 +993,10 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax B (11-06): no new form, no lower score; the last three instructions are the whole difference:
+// retail masks the level address in the dying bitmap base and stores it from there, this build loads it
+// into EDX and masks it there; a permuter run over the function was stopped before it reported a variant.
+// MiniMax C (11-06): no new form, no lower score; the masked level address is still loaded into EDX where retail reuses the dead bitmap register ESI.
 // MiniMax D (11-06): no new form, no lower score: the masked level address is still loaded into EDX where retail reuses the dead base register; this round the element type (long, int, unsigned int, void pointer, dword pointer), a copy of the bitmap in a local used for the load, a function-scope local for the address, a store through a dword pointer to the field, the mask as a complement, an unsigned literal or the operands reversed, and reorderings of the local declarations in the two branches all leave the same three instructions (3) or make the code worse (110, 44, 158, 100).
 // MiniMax S (11-05): no new form, no lower score: the frame, the reduction branch, the format bits and the two
 // stores all agree with retail; only the last three instructions differ, where the masked level address is loaded

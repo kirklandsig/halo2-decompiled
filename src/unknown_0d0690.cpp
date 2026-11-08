@@ -1884,6 +1884,12 @@ dword function_015cd0(long index, dword entry);
 // dropped 4 (same code); `result` renamed `status` 4. Callee register sets (0x12ce00, 0x358d0 under 0x1362b0) write the
 // same general registers as retail. A volatile probe (diagnostic, reverted) in callee 0xd1630 or in 0xd30d0 leaves both leas:
 // the rotation comes from this body.
+// Round 97 (m3 lane 12, fast): guard-clause returns for the prelude 49 (328 B); the tag read folded into the prelude test 4;
+// zero-store arm first 4; a dword conversion buffer 4; the tag as structures.cpp's const bsp read 4. Matched 0xd30d0 (same
+// arms) takes EDX/ECX for the two leas, so the step is set by this body's own earlier code.
+// Round 72 (m3 lane 14, fast): the conversion buffer as the 0x74-byte bitmap type (`s_type_7ba8e9 converted;`) 4;
+// the redundant `result = 1` after 0x12360 dropped 73 (299 bytes: its `mov edi, 1` goes); bitmap_index as long 4;
+// bitmap declared at the function top 4; the flag test as `(flags >> 1) & 1` 4.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {

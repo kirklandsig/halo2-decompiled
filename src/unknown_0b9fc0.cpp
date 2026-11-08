@@ -668,51 +668,15 @@ struct s_component_property_view
 	bool function_1d3550(long key, bool *positive, real *value) const;
 };
 
-// MiniMax G (11-05): no new form, no lower score; the value's load order is the callee's parameter home, so nothing here moves it ahead of the component lookup.
-// MiniMax H (11-04): no new form, no lower score; retail loads g_51e9b8 into eax after the index
-// scaling (the short A1 encoding) and reads value into edx before the component lookup and key
-// into ecx last, ours loads the global through ecx and sets the key up first, so the body is one
-// byte longer (13; a real* local for the value: 13).
-// MiniMax lane E (11-01): argument locals for the value, the positive flag and the key, the index
-// named in a local, the index term first in the address and a 240 s permuter run all score 13; no
-// lower score.
-// MiniMax D (11-01): the arguments pre-read into named locals compile identically (13); no new
-// form, no lower score.
-// MiniMax A (11-03): no new form, no lower score.
-// MiniMax G (11-04): no new form, no lower score.
-// score 13 (was 13): retail reads value into edx before it looks up the
-// component and reads key into ecx last, just before the call; ours reads key
-// first, value last, and loads g_51e9b8 through ecx (93 bytes against 92).
-// Locals or const references for the value pointer or the component offset,
-// a volatile read of the parameters, the call inline in the test, early
-// returns and the havok_component_get form score 13 to 23; the 600 s
-// permutation run found no improvement. Round 45: direct query result 26;
-// component declared before/after result 13/13; const component 13; value/key
-// through their own addresses 13/13; named validity 13; validity-initialized
-// result 23.
-// permutation run found no improvement. The callee's parameters in all five
-// other orders 13 (identical code); a free-function callee with the component
-// first, second, third or last 13; the component written in the call 14; offset
-// before the data pointer 13; 0xa0-byte element indexing 13; result declared
-// first 13; one && test with the call 14.
-// permutation run found no improvement. Round 39 (m3 lane 12): ours also
-// hoists the g_51e9b8 load to the front, where retail loads it into eax after
-// the index scaling. Pointer-typed value/positive parameters (table type too)
-// 13; the component expression inside the call 14 (positive then loads
-// early); result declared first 13; index term first in the address 13;
-// 0x1d3550 declared (key, value, positive) 13 (diagnostic only, its file was
-// held this round). All restored.
-// MiniMax D (11-06): no new form, no lower score: retail loads the value argument before the
-// component lookup and the key last, and the callee 0x1d3550 takes its arguments in the order its
-// declaration in src/unknown_1cec30.cpp fixes, so that order is reported here rather than changed.
+// Queries a machine component property.
 // @retail 0x11bd60
 bool __stdcall function_11bd60(long object_index, long key, long value, long positive)
 {
-	long index = MACHINE_GET(object_index)->havok_component_index;
+	s_machine *machine = MACHINE_GET(object_index);
 	bool result = false;
-	if (index != NONE)
+	if (machine->havok_component_index != NONE)
 	{
-		s_component_property_view *component = (s_component_property_view *)((byte *)g_51e9b8->data + (index & 0xffff) * 0xa0);
+		s_component_property_view *component = (s_component_property_view *)((byte *)g_51e9b8->data + (machine->havok_component_index & 0xffff) * 0xa0);
 		if (component->function_1d3550(key, (bool *)positive, (real *)value))
 			result = true;
 	}

@@ -1165,6 +1165,13 @@ void function_2118c0(void)
 // wrapped rows with `(b << 3) + k` for p1 and out 150; every row through a `vector3f (*band)[8]` pointer 248 (847
 // bytes); `word` per-row indices from `long row = b * 8` 161 (787 bytes: retail's `add esi, 8` row and unreduced rows,
 // plus three movzx). Diagnostics: `b * 8` alone 150 (five pointer IVs), a short row stepped by 8 beside b 130.
+// Round 58 (m3 lane 2, fast; compile-only screen agrees): the interpolation pass with its own loop variables 10 (same
+// code); the wrapped indices as `long` holding the word value 170 (761 bytes); a short row stepped by 8 beside b with
+// the row sums cast to word 148 (779); the wrapped indices in a word array filled by a four-step loop 174 (792); the
+// wrapped indices computed at the head of the m loop 155 (780). Diagnostics (screen only): a wrapped index read from
+// a global gives retail's `add esi, 8` row with that row unreduced, so the rows stay unreduced only when VC cannot
+// treat the index as invariant; taking the indices' addresses (`(void)&w`, a pointer array) or a second global
+// symbol for some rows still reduces every row.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2591,6 +2598,16 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // bytes, not inlined); its first two squares as one `dz * dz + dy * dy` 7 (dz scheduled first, the
 // square registers swapped); its differences in one declaration 3; the outer x, y, z written where the
 // cases use them 366.
+// Round 140 (lane 8, fast): cases 8 and 9 comparing the z difference written out 3; the selector read
+// before the two point lookups 3; the helper taking the points by const reference 3; the helper's
+// differences `real const` 3; the outer x, y, z `real const` 3 (all same code; the outer locals written
+// at each use, rechecked, 366). No XMM value is live across the point lookups, so nothing holds XMM1
+// back: in ours the z load is hoisted above the y load and subtract, in retail it follows them.
+// Round 95 (m3 lane 16): the existing out-of-line distance_sq3f (0x24550) in place of the helper, plain 25 (LTCG inlines it in
+// the full build: x scheduled first, XMM1-3 in x, y, z order; the fast image calls it, 443); the existing devices.cpp helper with
+// the outer z, x, y locals ahead of it, plain 432 (1940 bytes, copies before the squares); (fast) the helper defined below the
+// function 3 (same code); the sum started from the y square (`sum = dy * dy; sum = dz * dz + sum;`) 7 (z then fully first); the y
+// square added on the left 3 (same code as `+=`).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2889,6 +2906,18 @@ void function_20fda0(long arg_0);
 // code). Reading: retail's owner base takes EAX (loaded after the MOVSX), the pool EDX and the node offset
 // ECX, so the node add must come before the flag byte load into CL; ours gives the owner base EDX, the
 // pool ECX and the offset EAX, which lets the flag load fold the add.
+// Round 140 (lane 8, fast): the call folded into the owner with a short team local (0x20f2d0's form) 19;
+// the node expression written at each use 50 (150 bytes: the 0x20d570 argument registers become retail's,
+// but the data pointer is reloaded); the owner from a one-line inline team-to-queue helper 19; the owner
+// as a `byte *` queue cast at the calls 19; the two global declarations swapped 19 (all same code).
+// Compile-only screens (their listing agrees with the real one): 97 combinations of the team and side
+// local types, the owner before or after the node, a local, typed or at-each-use node and the arm order,
+// and all 45 orders of the side, offset, pool, queue base, owner, data and node statements after the
+// call: none moves the base EDX / pool ECX / offset EAX assignment; nor do /O1, /Ox, /G6, /G7 or /Op.
+// Round 95 (m3 lane 16, fast): an `arg_1 == NONE` early return 19; the object lookup through an offset local (0xa1f70's
+// idiom) 19; the team read inside the call's argument 20; the node as `&data[(arg_1 & 0xffff) * 0x54]` 19; a node offset local
+// 19; every local declared at the top, assigned in place 19. Diagnostic: 1-8 unused locals ahead of the lookup 19 each (retail's
+// EAX/EDX/ECX is ours rotated by one; no numbering tie).
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

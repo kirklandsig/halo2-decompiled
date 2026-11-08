@@ -833,6 +833,7 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax R (11-06): no new form, no lower score (135).
 // MiniMax G (11-04), not kept (coordinator): 59 with the trajectory result compared against zero
 // (`fa1a0(...) != 0` on a bool call; retail has no setne, it only moves the result to DL, so the
 // compare steers registers: 165 without it), the request point copied component by component and the
@@ -854,6 +855,9 @@ real normalize2d(point2f *v);
 // MiniMax E (11-06): no new form, no lower score; retail keeps the trajectory result in DL and returns
 // the validity flag in BL on the short exits, where ours keeps the result on the stack and folds that
 // exit to a cleared AL (12 bytes short on every path).
+// MiniMax H (11-07): no new form, no lower score (135); retail copies the fast flag through DL
+// before storing it (`mov dl, al` then `mov byte ptr [esp + 0x5c], dl`) where ours stores AL
+// directly, and the trajectory result still stays on the stack here while retail keeps it in DL.
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table

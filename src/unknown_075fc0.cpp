@@ -183,6 +183,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // payload `local_29 - 45` as a named local for its test and store 427 [203] (1385 bytes; retail forms it early, `lea ebp, [ecx - 0x2d]`);
 // the snapshot and reset as `*(__int64 *)&g_4e6398` (unknown_12b070.cpp's view) 426 [229] (1340 bytes). Retail keeps the result byte in
 // arg_1's dead slot and the rounding temp in arg_3's ([esp+0x48], [esp+0x50]), fistp straight into local_13's home.
+// T64: Explicit high/low integer-value producers through SDK/existing counter unions,
+// snapshot only or snapshot/reset and both component orders: 424/424/425/425/424/425/424/425.
+// Frame reaches 0x34 but result/budget/observer homes regress. NOT kept: unmatched native-value
+// union/copy forms; original bit composition, all thresholds, outputs and body restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
