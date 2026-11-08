@@ -1268,6 +1268,9 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // Round 96 (m3 lane 12, fast): later loops indexed over the field (`i < field`, element base + i * size) 61 (372 bytes, the count
 // re-read after the calls); the masks declared ahead of the flag and the definition pointer 6; the first loop's offset in the for
 // initialiser beside the count 1; the first guard written `0 < count` 1; the item output declared before the masks 1.
+// Round 58 (m3 lane 2, fast): the masks declared (and zeroed) in reverse order 5; declared bare and assigned zero in
+// reverse order before the call 5; the item output declared ahead of the masks 1; an indexed first loop with the masks in
+// reverse order 122 (375 bytes); the success byte declared after the setup call 19.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

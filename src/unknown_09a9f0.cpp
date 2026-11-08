@@ -976,6 +976,11 @@ bool c_projectile_type::v8(long a, long b)
 // pool local 12; the entry as `&data[(index & 0xffff) * 12]` 12; a const entry pointer 12; the multiply as
 // `12 * (index & 0xffff)` 12; a dword result with the word read 5. Re-measured: const flags 12 (round 94); a const
 // value local for the two group reads 24.
+// Round 95 (m3 lane 16, fast), all with the full-width mask: the swap is a use-count tie (diagnostic: without
+// the 0x400 test the object takes esi, 40); flags read once through the parameter's address 12; the call's mask
+// read through the parameter's address with flags copied after or before the call 12/12 (the loads merge before
+// allocation); an object header local 12; object and flags declared, then assigned 12. Retail's code in this file
+// never zero-extends with a reg-reg movzx, only `and r, 0xffff`.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

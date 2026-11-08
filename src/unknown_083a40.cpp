@@ -752,6 +752,12 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // invariants: [esp+0x10] is the cursor (watcher + 0xb0 + i * 0xb4, the player's configuration) and
 // [esp+0x34] is minus its start (0xffffff50 - watcher), so retail's key is (collection - start) + cursor + 4
 // and ours (cursor - start) + collection + 4: retail pairs `collection` with the other invariant.
+// Round 79 (fast): the inverse start is used only by the occupied key (the strength-reduced i * 0xb4); any
+// watcher-based key folds into the cursor (cursor - 0x24, frame 0x8c), so retail's base is opaque yet ranked
+// invariant. Every else-branch use through `&watcher->players` 294 (1064 bytes); only the key as
+// `(&watcher->players)->players[i].key` 294; the swap order above 32 (re-measured), with the else-branch calls
+// through `&watcher->players` 32; `slot`/`occupied` at the else branch's top 28 (same code); the second loop's
+// `update` declared `= NULL` 28 (same code).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

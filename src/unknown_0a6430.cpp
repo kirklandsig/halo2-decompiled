@@ -56,6 +56,8 @@ PRIVATE byte *update_object_0a6430(long index)
 // the count declared after the model read 20 (550 bytes); the 0x100 object folded into its compare 16. Compile-only, all
 // identical to ours: the 0x200 lookup through the header form, index-first, or folded into the definition; the 0x100 lookup
 // through the header form or folded; a named short level; the count declared after the object.
+// Round 79 (fast): one function-scope object pointer for the 0x40/0x100/0x200 blocks 16, for 0x100/0x200 only 16;
+// the existing header getter object_get for the 0x100 lookup, the 0x200 lookup or all three 16/16/16 (all same code).
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

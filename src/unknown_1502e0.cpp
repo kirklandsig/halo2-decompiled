@@ -1337,6 +1337,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // Round 104: unit declared at entry 17; slot declared at entry 17; unit then result before player 35;
 // read-only player/unit receivers 17 each; nested slot/weapon tests 17; held-slot array pointer 17;
 // weapons array pointer 17. NOT kept: no byte match or gain; original body restored, EDI/ESI still exchanged.
+// Round 359: byte result 44; signed-byte result 44; short result 60; long result 57; dispatch
+// outcome accumulated 17; dispatch test sets success 67; weapon snapshot in valid-slot scope 17;
+// unavailability result 67. NOT kept: no qualifying byte match or gain; original body restored.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -2261,6 +2264,13 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // through object_index with object_slot kept for the type read only, after or before it 209/205; the shared `object_index & 0xffff`
 // form 209, with parent_ok first 197: entry code then retail's but for g_4e0300 in ECX (EBP holds retail's index*12); the parent block
 // keeps data in ECX instead of reloading it through g_4e0300 in EDX, so it is one instruction short and everything after it shifts.
+// T63: Plain four-slot scan with empty/failed/both rejection continues or actual
+// transfer result, original/iteration weapon lifetime: eight 164, 752/721 bytes.
+// NOT kept: all regress; original full body restored, header offset/lookup homes remain.
+// T65: Actual header byte extent in long/dword, mutable/immutable, with the existing getter:
+// final ordinal 255/255/255/255; real-header byte displacement 242/242/242/242.
+// NOT kept: extent-to-ordinal division survives, growing code to 755/750 against 721;
+// original body restored. Native header-offset, pool and parent ownership remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

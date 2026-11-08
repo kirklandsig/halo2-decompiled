@@ -1126,6 +1126,12 @@ bool function_14ed80(void)
 // the representation local 60 (153 bytes); the fields read through the globals without the representation local
 // 10 (the dead `add` stays); the representation index read into a char local 51, with the player getter folded
 // into it 48. Retail's 0x14f0f0/0x14f2e0 calls set up EBX then EAX after the push: the declared order already.
+// Round 173 (m3 lane 4, fast): the bound test's count read through the global, the local serving the clamp and the array
+// 53 (first takes EDX as retail, but third ESI and the globals EDI, and the player base folds into the add); the array read
+// through the global 53; one globals local scoped in the clamp arm and a second before the bound test 54; the outputs
+// declared and set to NONE after the remap 63 (151 bytes, 0x14f0f0 lost); the bound-test form with `globals` declared
+// between first and third and assigned after the player 53 (declaration order does not break the first/third tie).
+// Retail's two callers (0x14f0f0, 0x14f2e0) never read EAX after the call, so the void return stands.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
