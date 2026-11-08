@@ -509,6 +509,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // singles/effect pair/particle pair/all: seven 334s; all with named offset producers 338.
 // NOT kept: separate native address adds and scalar homes are not recovered; complete
 // original typed lookups, geometry, random stream, qualifier and body restored.
+// P365: Real position/direction/both matrix-output workspaces, field/native then shared
+// setter publication, then one sequential workspace in both forms:
+// 386/384/401/386/386/430/399/415 (1681-1729 bytes). NOT kept: native calls use
+// in-place outputs; frame and length move away. Original complete body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

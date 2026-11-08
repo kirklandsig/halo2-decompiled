@@ -926,6 +926,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // T64: Texture-word/current-state-dword/state-array input owners, singles/pairs/all and
 // all with readonly state/endpoints: eight 250s. NOT kept: native flag/receiver observations
 // canonicalize without the extra frame slot or first-edge Y/half-width homes; full body restored.
+// P365: Existing norm-dimension/squared-length producers at vertical/side/normal sites,
+// masks 1/2/4/3/5/6/7: 250/368/250/368/250/368/368; planar normalizer retaining
+// third-component scaling 485 (frame 0xac, 2628 bytes). NOT kept: no equality; the camera
+// side sum changes association. Unscaled-third-component diagnostic 426 excluded.
+// Original roots, scaling, geometry, helpers and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

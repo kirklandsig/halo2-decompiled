@@ -2126,6 +2126,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // T63: Existing iterator start/advance/state-query inline contracts, seven subsets
 // then all with target inline metadata: eight 168; exact query stays matched.
 // NOT kept: no equality or gain; original body and all declaration metadata restored.
+// P365: Three direction scalars captured after the absolute dot and before relative normalization,
+// six declaration orders plus two immutable orders: eight 168. NOT kept: no native SIMD
+// producer equality or gain; complete original body and helpers restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

@@ -469,6 +469,9 @@ struct s_physical_block_iterator
 // sequential/paired once-produced ages [373, 373]; zero-first stages [225, 225];
 // zero-default/explicit positive-zero/zero-test results [260, 209, 222]. NOT kept: no byte match;
 // original macro, field observations, policy, ring, deletion and linking restored.
+// P365: Complete selected-candidate scalar publications in eight field schedules: eight 359
+// at 1217/1213 bytes, first +1. NOT kept: no native policy/copy equality; original
+// record assignment, arithmetic, entry/frame and complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
