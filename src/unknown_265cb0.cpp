@@ -605,6 +605,10 @@ real function_30bf0(vector3f *vector);
 // T63: Shared cross-product complete products, scoped/unscoped mutable/const,
 // component results mutable/const, successive subtraction and uniform positive products:
 // 154/154/154/154/84/84/150/150. NOT kept: ties/regressions; shared header and full body restored.
+// T65: On the current ordinary-result/indexed-seat graph, semantic result/range/fraction
+// home identities, seven subsets and complete squared-distance identity: eight 84.
+// NOT kept: identical code; original body restored. Native scalar homes, range ingress
+// and the two cross-product operand schedules remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

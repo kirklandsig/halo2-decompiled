@@ -5643,6 +5643,10 @@ void __stdcall function_d6bc0(long object_index);
 // T63: On the native-frame/signed-byte-kind graph, timer address at scheduling/index/
 // entry/placement/eligibility, separate scheduling-expiry pointers, scheduling-only/expiry-only:
 // 170/233/229/229/233/112/112/112. NOT kept: ties/regressions; original complete body restored.
+// T65: Complete branch-owned scheduling without an entry initializer,
+// bool/byte/char/signed-char/short/word/int/long: 112/112/112/112/133/133/130/130.
+// NOT kept: ties/regressions; original complete body restored. Native frame/timer agree;
+// initial scalar stores, scheduling branch ownership and entry observations remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

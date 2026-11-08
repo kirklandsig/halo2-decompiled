@@ -2264,6 +2264,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // T63: Plain four-slot scan with empty/failed/both rejection continues or actual
 // transfer result, original/iteration weapon lifetime: eight 164, 752/721 bytes.
 // NOT kept: all regress; original full body restored, header offset/lookup homes remain.
+// T65: Actual header byte extent in long/dword, mutable/immutable, with the existing getter:
+// final ordinal 255/255/255/255; real-header byte displacement 242/242/242/242.
+// NOT kept: extent-to-ordinal division survives, growing code to 755/750 against 721;
+// original body restored. Native header-offset, pool and parent ownership remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
