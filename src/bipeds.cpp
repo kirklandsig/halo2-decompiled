@@ -1613,6 +1613,12 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // bool/char/signed-char/byte/short/word/long/dword: 589/589/589/589/588/588/583/583.
 // NOT kept: best gains five; native success publication follows distance calculation.
 // Original whole body restored; frame 0xf8 versus 0xfc and scalar/argument homes remain.
+// P366: Actual case-6 target-entry CRT copy/fallback point setter/coherent zero-velocity CRT transfers, masks
+// 1/2/3/4/5/6/7: 588/589/589/588/588/589/589; complete graph with existing scaled add 585. NOT kept: best
+// gains only three; frame remains 0xf8/0xfc. Original complete body, call values and helpers restored;
+// material/airborne/animation homes remain.
+// Behaviour fix (11-08, from P366's finding): retail 0xdd022..0xdd03f passes the case-6 target position as
+// 0x1e6850's first point (stack, stored to +0xc0) and the velocity as its second (ECX, +0xcc); ours had them swapped.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1775,8 +1781,8 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 			velocity = *g_4687a4;
 			moved = true;
 		}
-		function_1e6850((s_type_94656b *)output, moved, (point3f *)&velocity,
-			&target_position, distance);
+		function_1e6850((s_type_94656b *)output, moved, &target_position,
+			(point3f *)&velocity, distance);
 		break;
 	}
 	case 4:
@@ -5774,6 +5780,11 @@ void __stdcall function_b8600(long object_index, long unknown);
 // P364: Existing flag-test producer at entry/tag/crouch/grab/movement/body/sleep/complete
 // consumer boundaries: 594/594/594/594/594/594/594/594. NOT kept: no native frame/home repair or exact
 // equality; fast control 594, full 588. Original whole body and shared helper restored.
+// P366: Completion provider inline at caller/definition/both 594/594/594; complete four-branch step producers
+// mutable/const 594/594, branch-local updated values mutable/const 594/594, both 594. Fast control 594, full
+// 588. NOT kept: all eight are byte-neutral in the reduced image; every shared user retains its calibrated
+// score. Original target and provider metadata restored; native truth byte, scalar homes and completion
+// expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

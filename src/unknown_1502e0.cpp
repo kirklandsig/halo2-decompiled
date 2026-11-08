@@ -2277,6 +2277,11 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // masked getter, long/const-long/dword/const-dword after/before the unit getter:
 // 209/209/209/209/119/119/119/119. NOT kept: the one-use extent lives across calls and requires
 // equality; best gains one and shortens away. Original ordinal, getters and whole body restored.
+// P366: Counted notification formals (player, definition, count) 104, with singular reorder 104; singular
+// alone 120; counted (player, count, definition) alone/with singular 114/114; initial-only pool receiver
+// mutable/immutable/scoped 120/120/136. NOT kept: 0x191ec4's parameter order (player, definition, count)
+// gives 104 at 722/721 bytes with 0x191ec4 and 0x9ffa0 still exact, but a declaration's parameter order is
+// not changed for a lower score (reported for a match only). Native pool/parent/header-offset ownership remains.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

@@ -5656,6 +5656,11 @@ void __stdcall function_d6bc0(long object_index);
 // 97/97, mode-if 1/0 first 102/126; countdown owning both zero/expiry samples 97/97/102/126.
 // Kept the original-case-order switch and original countdown, 112 -> 97 plain/full, 869/869 bytes. No scheduling
 // flag, new local, arithmetic or call-tuple change; rejected zero timers skip the expiry guard.
+// P366: Native scheduling/removal entry observations 152/104, both 147; separate reset/expiry index scopes
+// with scheduling field and cached/direct removal 93/147; complete direct index observations 147;
+// scoped/native-observation metadata home names 93/147. NOT kept: the four-point scope gain is below margin,
+// all other forms regress. Original complete body restored; native frame/length agree, index observation and
+// scalar schedules remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

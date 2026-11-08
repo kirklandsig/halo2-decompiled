@@ -614,6 +614,10 @@ real function_30bf0(vector3f *vector);
 // P364: Escaping plane-distance field/scalar accumulation boundaries, preserving
 // the original y+z+x tree: 96/154/150/86/154/96/84/84. NOT kept: native scalar homes/producer
 // equality absent; original complete body restored, shared helpers unchanged.
+// P366: Resolved 3/2/1 result-leaf exit subsets 1/2/3/4/5/6/7 score 149/143/180/136/180/174/356; all leaves
+// plus radius-failure exits 356. NOT kept: all regress and several shorten away from native; original long
+// result, call tuples and complete body restored. Result/range/projection homes and both cross-product
+// schedules remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
