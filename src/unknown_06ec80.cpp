@@ -18,6 +18,7 @@ union s_6ec80
     __int64 field_2;
 };
 
+// score 5 (was 5): only the mask's zero differs: ours sits before the guard, retail's inside it.
 // MiniMax G (11-06): no new form, no lower score; five more forms that put the mask's zero inside the
 // guard — the two tests split into nested ifs, the mask declared outside and zeroed inside, the mask as
 // a signed int, the mask as an unsigned long, and the mask declared at the top of the function and
@@ -27,7 +28,6 @@ union s_6ec80
 // block's dominator. Every form that moves the zero into the block also moves the constant registers
 // (NONE to edi, the zero to ecx) and takes the machines pointer out of ebx, so the placement and the
 // allocation cannot be won together from this source; the baseline stands.
-// score 5 (was 5): only the mask's zero differs: ours sits before the guard, retail's inside it.
 // Before round 75 (13, first written at 53): the two stack slots were swapped: retail keeps the short at esp+0x14 and
 // the pointer at esp+0x10, ours the other way round; the mask is zeroed before the guard.
 // The mask scoped inside the guard gives both retail's slots and its zeroing, but then NONE
@@ -85,6 +85,9 @@ union s_6ec80
 // and flag test inside, as 0x6e720's lead) 5 (same code), with the mask scoped 225; the guard as two nested ifs
 // with the mask scoped 225; a forced-inline populated-blocks predicate (null tests, mask loop, data test) 226.
 // The scoped forms all give NONE EDI for its whole range and drop the machines pointer's EBX range.
+// Round 173 (m3 lane 4, fast), all with the mask scoped in the guard: `while (++local_15 < 16)` 225; a word mask 224;
+// the bit or-ed through a ternary 240 (974 bytes); the bit named in the loop body 109; the data and mask tests as two
+// ifs 228 (977 bytes).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
