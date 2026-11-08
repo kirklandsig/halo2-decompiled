@@ -602,6 +602,8 @@ real function_30bf0(vector3f *vector);
 // at +0x34, retail the result at +0x08, the range at +0x30, the delta at +0x3c..0x44 and the
 // cursor at +0x48), the range still loads into XMM2 where retail uses XMM0, and the two
 // cross-product products still take their operands in the exchanged order; the body is unchanged.
+// P360: Complete outer/scaled radius rejection results in bool/byte/short/long: 152/152/152/152/152/152/152/152.
+// NOT kept: no exact native source recovery; original complete body restored; result/range/projection homes and two basis product schedules remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

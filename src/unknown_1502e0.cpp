@@ -2264,6 +2264,8 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // through object_index with object_slot kept for the type read only, after or before it 209/205; the shared `object_index & 0xffff`
 // form 209, with parent_ok first 197: entry code then retail's but for g_4e0300 in ECX (EBP holds retail's index*12); the parent block
 // keeps data in ECX instead of reloading it through g_4e0300 in EDX, so it is one instruction short and everything after it shifts.
+// P360: Read-only unit/object/player input roles, seven subsets, then complete graph with read-only pickup query: 120/120/120/120/120/120/120/120.
+// NOT kept: no exact native source recovery; original complete body restored; native unit-first ingress, pool/parent ownership and scaled header offset remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

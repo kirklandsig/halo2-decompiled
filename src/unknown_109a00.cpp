@@ -544,6 +544,8 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // (928 bytes, the head flips, 0xb7060 11; close to round 151's pointers from entry); an explicit return closing the validity block 56 (same
 // code); the definition as a pointer to const 56; the matrix call given `&entry->transform` 56 (same code). Re-measured: `forward` named
 // beside `up` 65.
+// P360: Existing default selector complete valid/invalid comparison result in bool/byte/short/long: 61/61/61/61/61/61/61/61.
+// NOT kept: no exact native source recovery; original complete body restored; early physics spill, transform-base production, dot/cross schedule and failure tail remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

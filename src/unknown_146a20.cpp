@@ -330,6 +330,8 @@ bool g_47f05b;
 // the refcount 1 as a member initializer 35. Diagnostic only: the abstract constructor storing the refcount again 15
 // (143 bytes: the duplicate +4 store survives where retail stores the vtable, so plain dead-store removal keeps it and
 // the vtable store goes in a separate pass; 0x146b80 24, 0x22c3e0 202).
+// P360: Nonthrowing abstract/fixed-base/fixed-derived constructor contracts, seven subsets, then the reference-count constructor contract: 34/34/34/34/34/34/34/34.
+// NOT kept: no exact native source recovery; original complete body restored; intermediate vtable store and successful-arm backing reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {
