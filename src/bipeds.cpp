@@ -5785,6 +5785,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // 588. NOT kept: all eight are byte-neutral in the reduced image; every shared user retains its calibrated
 // score. Original target and provider metadata restored; native truth byte, scalar homes and completion
 // expansion remain.
+// P368: Existing animation lookup/touch inline declaration/definition/both contracts and combined
+// header/all graphs: eight fast 594s (control 594, full 588). Direct result initialization
+// after the name store, mutable/const on this entry graph: 651/651, 2301/2190 bytes. NOT kept:
+// neutral contracts or regressing result transfer; original target, header and providers restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

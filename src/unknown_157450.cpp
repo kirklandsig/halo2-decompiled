@@ -5448,8 +5448,8 @@ void function_159880(void)
 
 void __stdcall function_d6bc0(long object_index);
 
-// score 97 (was 112): native frame 0x18 and 869-byte length; initial scenario/rate stores, cached index test,
-// case-1 CL versus AL, modifier EDX versus ECX and removal index reload remain. Earlier at 112: timer at +0x20
+// score 60 (was 97): native frame 0x18 and 869-byte length; initial scenario/rate stores, cached index test,
+// case-1 CL versus AL, modifier admission order and removal index reload remain. Earlier at 112: timer at +0x20
 // and entry-base reloads agreed, 872/869 bytes; scheduling materialized the case-1 Boolean.
 // Match-only recipe, score 7 at retail's length: replace `bool schedule = true; if (index != NONE)` and case 1 below with
 // `bool schedule; if (index == NONE) schedule = true; else { schedule = false; switch ... case 1: if (bit) schedule = true; break;
@@ -5661,6 +5661,10 @@ void __stdcall function_d6bc0(long object_index);
 // scoped/native-observation metadata home names 93/147. NOT kept: the four-point scope gain is below margin,
 // all other forms regress. Original complete body restored; native frame/length agree, index observation and
 // scalar schedules remain.
+// P368: Modifier exists only for admitted kinds 0..7; native long branch producer 60 plain,
+// signed-byte/short/word 98/97/97; conditional long/byte/short/word 98/98/98/82. Keep only
+// original-long branch scope: no default XOR, native ECX dispatch, frame 0x18 and 869-byte length.
+// Zero-kind comparison order, initial stores, cached index/case test and removal reload remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
@@ -5729,15 +5733,18 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
                 }
             }
             long delay = function_15ac50(i);
-            long modifier = 0;
             signed char kind = *(signed char *)(placement + 0x14);
-            if (kind == 0) modifier = *(signed char *)((byte *)g_4e6948 + 0x211);
-            else if (kind >= 1 && kind <= 7) modifier = *(signed char *)((byte *)g_4e6948 + 0x208);
-            switch (modifier)
+            if (kind >= 0 && kind <= 7)
             {
-            case 1: delay = NONE; break;
-            case 2: delay >>= 1; break;
-            case 3: delay <<= 1; break;
+                long modifier;
+                if (kind == 0) modifier = *(signed char *)((byte *)g_4e6948 + 0x211);
+                else modifier = *(signed char *)((byte *)g_4e6948 + 0x208);
+                switch (modifier)
+                {
+                case 1: delay = NONE; break;
+                case 2: delay >>= 1; break;
+                case 3: delay <<= 1; break;
+                }
             }
             entries[i].value04 = (short)delay;
         }

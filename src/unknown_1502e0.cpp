@@ -2190,10 +2190,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // byte-offset forms of the two object lookups (retail's lea and shl) widened the difference: 214 for the
 // object, 153 for the unit, 203 for both. The lookup order with the object first scores 164 and the flag
 // types bool, char and byte all score 120, so none of them is kept.
-// score 120 (was 130): the object index is masked once into a local (object_slot) used by both the object
-// lookup and its type, so the scaled header offset stays in a register across the calls as retail's EBP does;
-// the parent index is read in place instead of through a local, which leaves the object pointer in ESI and the
-// parent index in EAX as retail has them. The player lookup and the object header setup now match retail.
+// score 120 (was 130): frame 0x28 and the distance block agree; EBP retains an ordinal rather than retail's
+// byte extent, while unit/pool/parent ownership and later call setup still differ.
+// Retained forms: object_slot is masked once for the object lookup and final type read;
+// the parent index is read at use rather than through a local.
 // Earlier 202: Frame 0x28 agrees; player data uses ECX versus EDX,
 // the object uses EBP versus ESI and the scaled header offset spills instead of staying in EBP.
 // Earlier: the prologue's registers differ: retail keeps the player base in ebx
@@ -2282,6 +2282,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // mutable/immutable/scoped 120/120/136. NOT kept: 0x191ec4's parameter order (player, definition, count)
 // gives 104 at 722/721 bytes with 0x191ec4 and 0x9ffa0 still exact, but a declaration's parameter order is
 // not changed for a lower score (reported for a match only). Native pool/parent/header-offset ownership remains.
+// P368: Existing shared parent/final header and ingress object APIs, seven subsets,
+// then complete graph with transferred-weapon getter: 120/209/120/209/120/209/209/209.
+// NOT kept: no native ingress/extent recovery; final header forms shrink away to 714/721 bytes.
+// Original getters, ordinal, every call and complete body restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
