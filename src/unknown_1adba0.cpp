@@ -515,6 +515,9 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // on the tested field 15 each. A compiled-out `do { } while (false);` before or after the result, at the settings block
 // head, before the unit index or the first node read 15 each. Diagnostic: one or two dead result reads 82/85: the
 // result goes to EDI and NONE stays EBX. Sibling 0x1ae440 keeps NONE in EBX and reads the clock inline.
+// Round 71 (lane 14, fast with 0x110ab0 listed, which reproduces 15): the unknown225 test in its own nested if 15; the
+// prop-state NONE test nested under the range test as a separate if 15; the ticks read after the 0x18 call 80; the two
+// state/flag tests through an inline predicate 113 (391 bytes); the 0x18 call's result in a named local 78 (417 bytes).
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

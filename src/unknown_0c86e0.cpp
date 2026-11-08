@@ -92,6 +92,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax B (11-06): no new form, no lower score; retail loads the object table after the prologue pushes
+// and keeps the unit index in EDI, the unit in EBP and NONE in EBX, this build loads the table before the
+// pushes and keeps them in ESI, EDI and EBP; the user index is a 32-bit value in EBX in retail, a 16-bit
+// store in BP here.
+// MiniMax C (11-06): no new form, no lower score; the unit pointer is still fetched once and merged across the two 0xbadc0 calls where retail re-reads the table base (blocked by 0xbadc0's memory summary in src/unknown_0bad50.cpp).
 // MiniMax G (11-06): no new form, no lower score; still blocked by 0xbadc0, whose body is in a file
 // outside this lane: retail re-fetches the unit after the two calls (the index times twelve kept in esi)
 // where ours reuses the entry fetch, because our link knows the callee writes no memory, so every later
