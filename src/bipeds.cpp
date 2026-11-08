@@ -1628,6 +1628,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P373: Actual center-top/eye-height/correction arithmetic boundaries, seven subsets,
 // then half-span with the complete correction: 588/588/588/588/588/588/585/588, 2828 bytes.
 // NOT kept: best gains three, with no native frame equality; original whole body restored.
+// P375: Fixed-first initial velocity, conditional facing source and actual multi-use motion receiver,
+// masks 1..7, then complete read-only motion receiver: 604/661/671/588/604/661/671/671. NOT kept: no native frame/home
+// equality; original full body restored, including every shared eye helper and gravity observation.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -5810,6 +5813,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // P371: Complete complementary still-query result, bool/char/signed-char/byte/short/word/long/dword:
 // 685/685/685/685/685/685/677/677; fast control 594, full 588. NOT kept: no native truth-byte/home recovery;
 // all regress; original result, early/final returns and complete body restored.
+// P375: Complete retained forward/up/physics-mode field addresses, masks 1..7, then complete entry
+// address lifetimes: 603/640/645/594/603/640/645/627. NOT kept: no native home/producer match; all original direct
+// field observations, copies, helper boundaries and complete body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

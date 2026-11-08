@@ -202,6 +202,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // successive reciprocal division: 399/399/399/421/356/399/399/399.
 // NOT kept: ties/regressions; original complete body restored. Native frame 0x34,
 // observer EDI, bandwidth EBP and counter/result homes remain unrecovered.
+// P375: Entry constant-default lifetimes for selected capacities/pacing/payload-output, masks 1..7,
+// then complete defaults with returned Boolean first: 429/488/463/350/424/499/505/506. NOT kept: 350 reaches native
+// 1369 bytes but gains only six; no native sentinel/home match. All original defaults and body restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

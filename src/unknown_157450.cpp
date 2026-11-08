@@ -5672,6 +5672,9 @@ void __stdcall function_d6bc0(long object_index);
 // or bare at iteration entry, observed at the original switch: 60/61/60/60 twice.
 // NOT kept: no exact native selector/index recovery; complete original body restored.
 // Native frame/length agree; initial stores, cached index and case-byte/dispatch layout remain.
+// P375: On the admitted-long-modifier graph, complete scheduling rejection reaching the native countdown
+// guard, bool/byte/char/signed-char/short/word/int/long: 109/109/109/109/132/132/129/129. NOT kept: no byte match;
+// rejection-state transport regresses and grows from native length. Original complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

@@ -625,6 +625,9 @@ real function_30bf0(vector3f *vector);
 // forward while with step after final index use, no/occupant/player/both continues:
 // four 161; both continues with separately declared short ordinal 84. NOT kept:
 // ties/regressions; original full body restored. Scalar homes and basis products remain.
+// P375: Existing safe staged cross with first/second/both inputs as complete twice-used scalar
+// captures, mutable/const, then both native/aggregate vector snapshots: 166/162/165/166/162/165/387/165. NOT kept: no native
+// scalar-home/product equality; shared header and complete original body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
