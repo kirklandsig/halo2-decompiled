@@ -1621,6 +1621,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // P374: Inclusive final-ordinal outer/scan/terminal consumers, seven long-bound subsets
 // then complete short bound: 499/516/484/521/485/502/460/467. NOT kept: all regress; original
 // whole body restored; native frame, persistent zero/count and edge/orientation homes remain.
+// P376: Scan-end scope before reverse candidate, short/long for/while, original/ended avoidance-output scope:
+// 400/456/400/456/400/456/400/456. NOT kept: ties/regressions; frame 0x114 versus 0x10c persists.
+// Original signed scans and whole body restored; zero/count/edge/orientation homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
