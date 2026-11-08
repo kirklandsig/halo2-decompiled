@@ -509,6 +509,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // singles/effect pair/particle pair/all: seven 334s; all with named offset producers 338.
 // NOT kept: separate native address adds and scalar homes are not recovered; complete
 // original typed lookups, geometry, random stream, qualifier and body restored.
+// T68: Actual effect-presence/absence snapshots in bool/byte/short/long, reused
+// for admission and inherited velocity:
+// 421/421/426/429/421/421/426/429. NOT kept: no exact ownership/home repair. Original executable body restored.
+// Early address/flag home and blend/getter allocation remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

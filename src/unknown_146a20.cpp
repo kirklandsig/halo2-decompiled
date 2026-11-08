@@ -330,6 +330,10 @@ bool g_47f05b;
 // the refcount 1 as a member initializer 35. Diagnostic only: the abstract constructor storing the refcount again 15
 // (143 bytes: the duplicate +4 store survives where retail stores the vtable, so plain dead-store removal keeps it and
 // the vtable store goes in a separate pass; 0x146b80 24, 0x22c3e0 202).
+// T68: Starting/next reference-count captures before backing read/reset/fixed/
+// pool construction:
+// 36/36/36/28/39/39/39/26. NOT kept: early one-use counter observations require equality. Original executable body restored.
+// Intermediate vtable store and successful-arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {

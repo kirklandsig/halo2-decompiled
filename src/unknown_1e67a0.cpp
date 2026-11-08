@@ -804,6 +804,10 @@ bool g_51e9bc;
 // 57/56/57; complete coefficient magnitudes with separate rows/setter or consumed-limit rows/setter
 // 54/61/61/55; coordinate-local magnitude/product stages 54. NOT kept: all regress;
 // original body restored. Projection j/k ownership and native jitter spill homes remain.
+// T68: Existing on-x/on-y/on-z/sign-x/sign-y/sign-z defaults, y/z pair and all six
+// initialized at entry, then after movement processing before the jitter gate:
+// 234/236/237/248/263/259/247/301/53/56/59/72/107/96/59/133. NOT kept: no exact ownership/home repair. Original executable body restored.
+// Projection j/k ownership and native jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
