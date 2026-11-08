@@ -804,6 +804,9 @@ bool g_51e9bc;
 // 57/56/57; complete coefficient magnitudes with separate rows/setter or consumed-limit rows/setter
 // 54/61/61/55; coordinate-local magnitude/product stages 54. NOT kept: all regress;
 // original body restored. Projection j/k ownership and native jitter spill homes remain.
+// P361: Existing shared dot producer with all component-product locals, six declaration orders and mutable/immutable initializers:
+// 56/56/56/56/56/56/56/56. NOT kept: no byte equality or eligible native-shape gain; original shared helper and complete body restored.
+// Projection j/k ownership and native jitter spill-home reuse remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

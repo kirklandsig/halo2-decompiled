@@ -2831,7 +2831,9 @@ real g_47ff30 = 2.5f;
 // instructions against the 711 of the body, and its variants swap call arguments, so the file was restored; the column
 // alignment puts the first differences at the frame (0x100 against 0xfc), the top slot
 // (esp+0x108 against esp+0x104) and the first float home (esp+0x20 against esp+0x34).
-// score 713 (was 730): Native mutable turn multiplier restored; frame 0x100 versus retail 0xfc;
+// score 699 (was 713): Complete angular error in the torque output, then the existing in-place scale;
+// frame 0x100 versus retail 0xfc, 3229/3244 bytes; scalar/vector/transform homes remain.
+// Earlier at 713 (was 730): Native mutable turn multiplier restored; frame 0x100 versus retail 0xfc;
 // scalar/vector homes and force/trig scheduling still differ; 3223 bytes (retail 3244).
 // Earlier (730, was 676): frame 0x100, 3219/3244 bytes.
 // Walked against retail 0xf2360-0xf3009 statement by statement (v1D, 2026-11-06): the arithmetic, offsets, conditions, callees
@@ -2965,6 +2967,13 @@ real g_47ff30 = 2.5f;
 // Current-matrix identity/declaration/both 713/713/713; complete force/torque/up setters
 // 712/713/731; force+torque 712. NOT kept: one-point leads or nonnative storage;
 // only the actual data-object read remains, with every original call and math tree.
+// P361: Angular rate part / lower bound / both 713/720/711; complete error alone / with rate /
+// with bound / with both 713/713/720/713. NOT kept: the two-point combined lead is below the gain gate.
+// Complete error before common scale: extra vector / direct torque products / existing scale /
+// scale-expression argument 699/699/699/699. Kept only the last, with the actual torque output
+// and the existing in-place scale, no extra vector or one-use scale local. Retail 0xf2f4c..0xf2f83
+// finishes all three errors before applying their common gain; source trees and game calls agree.
+// Plain whole-program check confirms 699; all other measurements and baseline matches survive.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3162,11 +3171,11 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 
 	real rate = PIN(rotation_angle * maximum_turn_rate * 0.95492965f, 0.0f - maximum_turn_rate, maximum_turn_rate);
 	vector3f torque;
-	real torque_scale = angular_scale * state->unknown6c;
 
-	torque.i = (rotation_axis.i * rate - vehicle->angular_velocity.i) * torque_scale;
-	torque.j = (rotation_axis.j * rate - vehicle->angular_velocity.j) * torque_scale;
-	torque.k = (rotation_axis.k * rate - vehicle->angular_velocity.k) * torque_scale;
+	torque.i = rotation_axis.i * rate - vehicle->angular_velocity.i;
+	torque.j = rotation_axis.j * rate - vehicle->angular_velocity.j;
+	torque.k = rotation_axis.k * rate - vehicle->angular_velocity.k;
+	vector3f_scale(&torque, angular_scale * state->unknown6c, &torque);
 	force.i *= mass;
 	force.j *= mass;
 	force.k *= mass;
