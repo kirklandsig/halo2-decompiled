@@ -1729,6 +1729,11 @@ struct s_camera_clip_reference_16ebf0
 // 203, with forward/up pointer locals 203/206; a typed observer view (position/forward/up/flags
 // fields) 120 (identical code) in every pointer form; position through the pointer at each subset
 // of its four uses (copy, call, interpolation, store-back): only the interpolation decides, 119/220.
+// MiniMax C (11-06): no new form, no lower score - the frame now agrees at 0x98 bytes on both sides; what
+// is left in the first block is the cross product's register plan, retail loads forward.y into xmm1 right
+// after the forward copy and up.z into xmm0 late, ours loads up.z into xmm1 right after the up copy and
+// forward.y into xmm0 late, so the first product's operands are the other way round; the callee 0x171d00's
+// narrow/fraction convention (in another lane's file) still decides the extra spill.
 // N271: signed-byte reference with byte/bool/signed-byte/long truth 112/87/112/115;
 // short/word/long/dword references 95 each. On the 87 graph, staged cross 90, retained basis
 // inputs 87, both 90, both without the inner position alias 90. Keep signed reference and bool

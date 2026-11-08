@@ -189,6 +189,9 @@ static __forceinline long real_to_long(real value);
 // round 45's 87 form 87 (457 bytes: the count failure's e4 and the node-level e4 merge at the count test, each merged return staying at its
 // first occurrence, and e8 sits after the countdown; VC lays blocks out by trace, not source order). Of the matched functions only 0x1b2630
 // and 0x1bbf40 have two identical e4 return blocks in retail.
+// Round 94 (lane 16, fast): participants as accepted plus the joint's count 24; count test `<= 1` 28 (444 bytes); the
+// participant status in a short local for both tests 24; node test `<= 0` 119; participant pointer stepped with the
+// counter 26.
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {

@@ -2004,6 +2004,11 @@ void function_27dd10(void)
 // after `arg_5 + 8` 208 (0x281b60 241, 0x288570 401), as `local_3 = arg_7; if (arg_5 + 8 < local_3) ...` 5
 // (`jge` for retail's `jg`, the reload pair unchanged; 0x281b60 64); the outer for as a while 2; the
 // output selection as if/else 2; in function_288573 the blend-1 rotation weight named 2.
+// Round 140 (lane 8, fast with the four matched walk users): the wrapper's count local renamed
+// `node_count` or `count` 2/2 and the walk's bit-flags local renamed 2 (the reload pair is not a name
+// tie); the bit flags as int 2; the count parameter `long const` 2 (0x281b60 2 throughout). The two
+// reloads sit on the bit-set path only (the bit-clear path joins at the bound load), after the blend-1
+// asm that clobbers EBX; blend 3 (0x285750, matched) applies through C code and the EAX-only multiply.
 // @retail 0x27dff0
 void function_27dff0(void)
 {

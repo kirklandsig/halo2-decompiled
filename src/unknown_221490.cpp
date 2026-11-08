@@ -798,6 +798,12 @@ bool sound_driver_voice_create_buffer(
 // (same code), with the 3D flag first 182 (599 bytes); the 3D flag first with the voice reference indexed by the count field
 // 193 (589); the 3D flag first with the 3D failure decrement through the `globals` local 141 (618 bytes: globals then holds
 // ESI to the end and the voice index spills as retail, but the zero takes EBX and both bools still spill).
+// MiniMax D (11-06): no lower score; this round the two flag bools' declaration order swapped (182), the 3D flag
+// as a byte declared first (182) and second (71, the same code), the 3D test spelled `(byte)flags & 1` (71, the
+// same code), the play bit shifted instead of masked (71, the same code), a byte copy of the flags word with the
+// play bit shifted (71, the same code), and the 3D local dropped so the test reads `flags & 1` (that one breaks
+// the caller 0x191420, so it was reverted). Still differs: retail computes the 3D descriptor flags arithmetically
+// and copies the impulse parameter address through EAX where ours copies it through EDX.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
@@ -968,6 +974,9 @@ extern "C" void _ReadWriteBarrier(void);
 // the two volumes, the macro at the two volumes, dead zero or floor stores to the room, HF or direct fields, memset
 // forwarders and a zero helper, a volume-store helper for two or four stores: 28 each. `= { 0 }` plus a barrier 192
 // (667 bytes), `= { }` or memset plus a barrier 35 (without the first barrier 41); the gain helper by const reference 183.
+// Round 94 (lane 16, fast): without both barriers (control 28): the globals read at each use 28; the voice pointer assigned
+// after the memset 29; one volume local for the first two volumes and the pinned room 28. The volume helper with early
+// returns 184 (699 bytes; 0x220fd0 204); the voice as a reference 21.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,
