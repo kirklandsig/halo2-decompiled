@@ -239,6 +239,10 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // reads and stores and +4 reads alone do nothing. No natural form moves it: memcpy for the seeds and the copy (all 8 subsets), count and lights
 // locals, tag-block views of the sky, light and scenario blocks (all 8 subsets), the blend as a repeated-expression PIN, inline helpers with
 // value, pointer or reference strength, a const entry, nested else and `<=` tests.
+// Round 95 (m3 lane 12, fast; colour first alone 121, only the post-call add and the ECX/EDI pair differ): on it, strength
+// declared bare and set before the count test 121; the collision sentinel stored after `result = 2` 123; the direction
+// seed declared bare then assigned 121; the blend computed in the 0x131c20 call 121; loop index and entry renamed 121.
+// Diagnostic: `strength +=` in the first-light block as well 141, the post-call add stays load-first.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1332,6 +1336,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
+// w14B (11-06): walked against retail statement by statement: no logic difference (field offsets, constants,
+// condition directions, call arguments and the result path all agree). Early return (`if (parameters) {...
+// return true;} return false;`) 566: frame 0x28 and the stack-argument load agree, block still in EDX and query in
+// EAX; every order of the type/query/block parameters stays 566 (only 0xd4080 moves, 440-441): the convention
+// follows the body. `bool result = false; ... result = true;` 573 (0xd4080 509); `if (count <= 0) return false;` 561.
+// Retail's statement order (adjusted pinned with lower2/upper2 before base; square formed right after the
+// direction1 negate): pins swapped 560, early square 555, both 547; none kept (0xd4080 363 and 0x3db00 MATCH unchanged).
 // Round 52 (lane 13, fast): the selection loop without the outer count test and the mask in the test 581;
 // that loop with `bool result = false` ... `result = true` 602 (0x3db00 lost); with `if (!parameters) return
 // false;` ... `return true;` 563 (frame 0x28, single count test and constant results as retail; block/query
@@ -1506,6 +1517,21 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // M390: Double square/three color scales/two luminances, subsets 1/2/4/3/5/6/7,
 // then all with immutable real length: 566/570/573/605/595/615/624/624. NOT kept: nonexact precision
 // forms; original body restored, frame/result and block/query homes remain.
+// M392: Existing normalization magnitude/paired rotation trig/projection double receivers, subsets 1/2/4/3/5/6/7 then immutable all: 628/618/617/676/673/622/678/678.
+// NOT kept: nonexact precision/lifetime forms; no supported native-frame repair. Original complete body restored.
+// AC556: Per-entry admission result confined to the original OR producer,
+// bool/byte/char/signed-char/short/word/int/long: eight at 569, 2174 bytes.
+// NOT kept: all regress and shorten away from retail; original scan, result,
+// helpers, all nonqueued bodies and full target body restored.
+// M398: Original primary/bounded-base/bounded-lightmap output defaults, masks
+// 1/2/3/4/5/6/7, then all at entry: 529/529/529/553/553/529/529/580.
+// NOT kept: no frame/result/carrier gain; original workspaces, helpers and body restored.
+// M403: Actual serialized curve header, local/tag-field producer, native float/bounds
+// members and mutable/readonly input: eight at 529/2189. NOT kept: no native
+// frame/result/carrier recovery; original helper, records and entire body restored.
+// N390: Explicit absolute-magnitude real/immutable-real, success/early exits,
+// 574/574/574/574; double/immutable-double 573/573/573/573. NOT kept:
+// no exact scratch/result form, shared-user regressions; original normalizer and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1679,6 +1705,20 @@ real function_30bf0(vector3f *vector);
 // in both functions); (k, i, j) alone 357; with the colour2 positive checks as stored selects 433 (1878 B).
 // Round 402: Complete applied/fallback query outcomes, bool/byte/short/long, at the real query boundary.
 // Scores 450/450/450/450/450/450/450/450. NOT kept: unmatched outcome forms; original complete body restored.
+// J260: Native root/square/both/reciprocal storage 447/461/385/449; complete scale-input captures inside/before the root, ordinary/immutable, 436/436/436/436. The first four lose the matched caller; the final four recover frame 0x40 but regress to 1874 bytes.
+// NOT kept: no eligible native repair; opening executable source restored. Recover normal I/K copy scheduling and native color/rotation homes; original helper and every body restored.
+// Round 398: Original-boundary normal scalar observations, six component read orders, immutable
+// channels and the existing vector setter: 458/458/458/458/458/458/458/457. NOT kept: all regress
+// and grow away from retail; original independent length observation, normal copy and full body restored.
+// score 378 (was 363, volatile dropped per review rule). b3E (11-06): walked against retail 0xd4080 statement by statement: no logic difference (field offsets, constants
+// 0.25/0.75/0.0001/2.0/0.114/0.587/0.299/1.18/0.6/0.4 read from the XBE, pin directions, call arguments, final pin order,
+// `ret 4` with the flag unread). The `flag_reference` lines keep the unread stack parameter (without them the callee drops
+// it: 440, and 0x3db00 loses its MATCH). `volatile` dropped from `mobile` (362 with the set-then-override form, 378 plain).
+// Precision: retail adds the rotation projection as (k + i) + j (0xd4424-0xd4464, axis read live from [eax]); the draft's
+// copied axis compiles to (j + k) + i, and the source order of the three terms does not change that (all 6 orders: two
+// schedules, neither retail's). Axis read live + direction2 rotated in place (retail 0xd4524, 0xd41db-0xd4210) gives
+// (k + i) + j and frame 0x40 but scores 469-480 (separate lighting_rotate_live copy; layered helper gives (j + i) + k and
+// bumps 0xd37f0 to 531): kept on branch agent/b3E-live only. Changing the shared lighting_rotate to a live axis loses 0x3db00.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -1688,9 +1728,7 @@ void function_d4080(long type, s_effect_color_query const *query, long flag, s_l
 	byte *context = (byte *)g_4e0350;
 	vector3f const *input_normal = (vector3f const *)query;
 	real length = (real)sqrt(input_normal->i * input_normal->i + input_normal->j * input_normal->j + input_normal->k * input_normal->k);
-	volatile bool mobile = false;
-	if (type == 0 || type == 1 || type == 2)
-		mobile = true;
+	bool mobile = type == 0 || type == 1 || type == 2;
 	vector3f normal = *input_normal;
 	record->length = lighting_normalize_ordered(&normal, (normal.i * normal.i + normal.k * normal.k) + normal.j * normal.j);
 	color3f base, lightmap;
@@ -1841,6 +1879,14 @@ dword function_015cd0(long index, dword entry);
 // (312 B; the extra test stays). No shift (4 each): nested prelude tests; tag defaulting to NONE, by if, ternary or helper; a count
 // defaulting to 0, by local, helper or in the test; a named bool or bool helper for the prelude; a locations local, with or without
 // `do {} while (false)` or declared outside the block; a globals getter at each use or in a local; a location getter; `0 < count`.
+// Round 95 (m3 lane 12, fast): the tag field read at its test and again at the 0x137550 call 4; the sample test as
+// `bitmap && result != 1` 4; the texture test positive (conversion arm first) 57 (316 B); the redundant `else bitmap = NULL`
+// dropped 4 (same code); `result` renamed `status` 4. Callee register sets (0x12ce00, 0x358d0 under 0x1362b0) write the
+// same general registers as retail. A volatile probe (diagnostic, reverted) in callee 0xd1630 or in 0xd30d0 leaves both leas:
+// the rotation comes from this body.
+// Round 97 (m3 lane 12, fast): guard-clause returns for the prelude 49 (328 B); the tag read folded into the prelude test 4;
+// zero-store arm first 4; a dword conversion buffer 4; the tag as structures.cpp's const bsp read 4. Matched 0xd30d0 (same
+// arms) takes EDX/ECX for the two leas, so the step is set by this body's own earlier code.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
@@ -2062,7 +2108,11 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
     point->weight[3] = dequantize16(source[4]);
 }
 
+// MiniMax C (11-06): no new form, no lower score.
 // score 542 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// w14B (11-06): walked against retail statement by statement, both arms and every dynamic/base weight path:
+// no logic difference (offsets, constants, condition directions, call arguments, result values and the
+// final colour_a/colour_b/normal stores all agree). Remaining difference is stack homes only.
 // Round 52 (lane 13, fast): the format byte as a named byte local before/after the data pointer 555/555;
 // the result as `dynamic_valid ? 0 : 1` 687 (3040 bytes); the result test inverted 555; diagnostic, a flag
 // set in a test (`if (call) dynamic_valid = true;` in both format arms) 553. Retail after 0x24490 holds
@@ -2282,12 +2332,31 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // P326: Model luminance weights/normal magnitudes/final rescale declaration lifetimes,
 // subsets 1..7 at model entry, then all at function entry: 542 each. Every initializer
 // stayed at its producer. NOT kept: no gain; original body, status/mesh homes and helpers remain.
+// B448: Complete structure/model shading-path providers, query pointer/reference and forced/ordinary inline:
+// 880/880/1676/1676/805/805/3015/3015. NOT kept: no byte match; complete original body restored.
 // M379: Complete default normal/base/lightmap memmove transfers, subsets 1/2/4/3/5/6/7,
 // then all normal publications: 589/599/561/744/736/732/757/773. NOT kept: all regress;
 // original copies and body restored; status/mesh/sample homes and selective expansion remain.
+// P347: Actual twice-consumed dynamic-brightness result, bool/byte/short/long, positive/complementary truth:
+// 542/542/542/542/542/542/542/542. NOT kept: All eight tie 542 at native extent and frame; status/mesh homes and selective helper expansion remain. Original complete body restored.
 // M390: Double paired luminances/magnitudes/reciprocal scales, subsets 1/2/4/3/5/6/7,
 // then all with double final length: 726/658/640/708/663/648/676/697. NOT kept: nonexact precision
 // forms; original body restored, native status/mesh and output homes remain.
+// AC558: Persistent positive dynamic/base validity bool/byte/char pairs except
+// original bool/bool: eight at 542, native frame/extent. NOT kept: no exact match;
+// original domains, providers, shared offsets, separate samples and body restored.
+// Y605: Actual query direction member with native/shared-setter/CRT-copy/CRT-move
+// publications, existing then direct weighted receiver: 542/611/542/613/542/611/542/613.
+// NOT kept: no byte match; original query declaration, helpers, publications and body restored.
+// F397: Existing color pin owns packed return/output, color pointer/reference and forced/ordinary
+// expansion: 667/667/1456/1456/667/667/1457/1457. NOT kept: all regress; original helper/body
+// restored, native status/mesh homes and selective expansion remain.
+// M395: Component aggregate default normal/base/lightmap families 1/2/4/3/5/6/7, then complete member assignment construction:
+// 623/621/618/621/621/621/666/666. NOT kept: no exact native-shape candidate; native status/part/mesh homes and selective helper expansion remain.
+// Original complete body restored.
+// N395: Actual dynamic-failure bool/byte/short/long outcomes 589/589/609/610;
+// actual base-failure outcomes 542/542/550/548. NOT kept: no native status/mesh
+// home recovery or equality; original positive validity and complete body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

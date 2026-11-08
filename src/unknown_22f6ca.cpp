@@ -140,6 +140,13 @@ void function_22fba9(c_class_1473c9 *screen)
 // own counters over the first, block-18, text and model loops in all 15 combinations 23-73; first loop resetting the counter with the zero above the if or above
 // the call, `pane != NULL`, an extra `i = 0;` in the if 66 each; `long i;` above the lookup and `i = 0;` above the test 23; the model read through a base cast 23.
 // Stores (block-18, text, model): counter zeroed above the if mov/mov/and, above the call mov/and/and, inside the if mov/mov/mov; retail mov/and/mov.
+// Round 216 (m3 lane 3, fast): the model call and its animation read through one `c_class_1a2c81 *parent = screen;`
+// (0x22fa5b takes the base pointer) 23 (same code: the EAX copy stays); the class's inline function_22e957 wrapper for
+// the model loop's animation start 23; own text/model/both counters with the counter zeroed above the pane call 25/25/25,
+// zeroed inside the if 66/66/66, above the if 23/23/23 (own counters never change the code). In retail the loops with a
+// value0a store reset the offset with `mov` and the text loop (none) with `and`; ours swaps the text and model loops.
+// Round 94 (lane 16, fast): text, model or block-18 element as pointer plus index 23/23/23; `bool const animating` 23;
+// a const pane pointer 23.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

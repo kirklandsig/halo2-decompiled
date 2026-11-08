@@ -412,10 +412,11 @@ bool friends_list_contains(XUID const *xuid)
 	if (g_global_4acf62.field_4_4 && xuid->qwUserID)
 	{
 		s_list_item_iterator iterator;
+		s_record_pool_iterator &data_iterator = iterator.iterator;
 
-		iterator.iterator.index = NONE;
-		iterator.iterator.datum_index = NONE;
-		iterator.iterator.data = g_global_4acf62.field_4_4;
+		data_iterator.index = NONE;
+		data_iterator.datum_index = NONE;
+		data_iterator.data = g_global_4acf62.field_4_4;
 		while (function_2b2327(&iterator) && !result)
 			result = xuid_equal((XUID const *)(iterator.item + 4), xuid, false);
 	}
@@ -430,10 +431,11 @@ bool players_list_contains(XUID const *xuid)
 	if (g_global_4acf62.field_8_2 && xuid->qwUserID)
 	{
 		s_list_item_iterator iterator;
+		s_record_pool_iterator &data_iterator = iterator.iterator;
 
-		iterator.iterator.index = NONE;
-		iterator.iterator.datum_index = NONE;
-		iterator.iterator.data = g_global_4acf62.field_8_2;
+		data_iterator.index = NONE;
+		data_iterator.datum_index = NONE;
+		data_iterator.data = g_global_4acf62.field_8_2;
 		while (function_2b2327(&iterator) && !result)
 			result = xuid_equal((XUID const *)(iterator.item + 4), xuid, false);
 	}
@@ -1402,126 +1404,6 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 
 /* copies the presence task's results into the friends and team members
    lists */
-// MiniMax B (11-04): no new form, no lower score.
-// MiniMax A (11-03): no new form, no lower score: the friend count is still homed at [ebp-8] and the
-// clan count at [ebp-4] where retail reads the friend count first into [ebp-4] and reloads it into ESI,
-// and the three reversed xuid_equal argument roles still differ.
-// MiniMax S (11-01): no new form, no lower score; the friend count is still homed at [ebp-8] and the clan count at [ebp-4] where retail reads the friend count first into [ebp-4] and reloads it into ESI, and the three reversed xuid_equal argument roles still differ.
-// score 195 (was 117): 0x63d00's definition is now `inline` (round 145, for 0x1a4441's match); the body is
-// unchanged and runs 853 bytes against 835: our link holds flags20 in a register across 0x1a32fc/0x1a32ae,
-// whose iterator 0x2b2327 is in another lane's file, where retail tests and updates it in memory.
-// Earlier 117 (was 117): BLOCKED-BY 0x63d00. Retail keeps &player->xuid in ESI across 0x63d00 in the
-// clan-list loop (it treats 0x63d00 as clobbering EDX), so j takes EDI and the presence cursor spills to
-// [ebp-4], the friend count's earlier home; the early count homes follow from that.
-// BLOCKED-BY 0x63d00 (a non-LTCG fastcall function in retail; its retail callers all reload EDX after it).
-// Round 71 (lane 9, fast): the user record declared before the presence arrays 117; the merge as
-// `clan |= friend; friend = clan` 122; one function-scope iterator for both friends-list walks 120; the counts
-// set by if statements 242 (839 bytes); the presence task index in a named local 220 (829 bytes). Flags lead
-// (scratch copy of the tree): with 0x63d00 alone in a `/O2 /Ob1 /Gr /GL-` file this scores 10, and with the
-// friend count read first plus the argument roles (&clan_presences[j].xuid, &friend_presences[i].xuid),
-// (&friend_->xuid, &friend_presences[j].xuid) and (&player->xuid, &clan_presences[j].xuid) it matches (fast).
-// MiniMax R (11-01): no new form, no lower score; the member count is still read into ESI and
-// pushed where retail keeps it in EAX, and the friend/presence pointers still stay in EDX across
-// the 0x63d00 calls; still BLOCKED-BY 0x63d00 and 0x2b642e in other lanes' files.
-// Earlier score 117 (was 117): count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
-// count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
-// Round 19: unchanged; the count homes, the delayed count load and the post-membership flag
-// reloads remain; still BLOCKED-BY 0x63d00.
-// Earlier, 117 (was 117): frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization
-// Earlier, 117: frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization
-// off 1206; bounded friend search 230; bounded member search 219; both 211; indexed merge-record pointer
-// 162.
-// Completed friend/member/both flag results 159/218/218; signed friend/member results
-// 159/218; complete friend flag accumulation 229; both results with friend-first count 219;
-// merged field result 164. Count homes, early zero and post-call flags still differ.
-// Native session library copies member/friend/both 162/159/162; complete friend/member/both iterator
-// initializers 231/227/211; native friend/member presence values 256/239. Count homes, early zero and post-
-// call flag reloads remain.
-// Friend/member/both low-bit subtraction 210/218/215; friend/member/both self-bit
-// results 229/164/231; friend-field merge 164; inherited member receiver 159.
-// Count homes, early zero and memory flag updates still differ.
-// Empty friend/member/both row guards 159/159/159; friend/member/both identity values 265/248/287;
-// friend-first/member-first merged-state accumulation 162/162. Original count homes and flag reloads remain.
-// Frame and early EBX zero agree; count homes, early count lifetimes and membership flag reloads
-// differ. friend self equality inputs 160; member self equality inputs 161; presence merge
-// equality inputs 188; friend presence equality inputs 164; member presence equality inputs 214;
-// nested merge equality inputs 161; friend membership result 159; member membership result 159;
-// merge friend count first 195; merge member count home 188; merge count order and home 195; merge
-// counts member row 129; merge counts friend row 190; merge counts both rows 124.
-// Frame and early EBX zero agree; count homes, early count lifetimes and membership flag reloads
-// differ. immutable count snapshots 124; native list record references 124; original count name
-// 124; original count observation order 117; original count names and order 117; row pair without
-// initial merge 219.
-// count homes, early count retention and membership flag reloads remain.
-// On the recovered comparison carriers: outer/inner/both merge cursors 231/117/231;
-// friend/member/both search cursors 186/219/222; outer-plus-friend 236, inner-plus-member 217.
-// Count homes, early saved-count lifetime and memory flag updates remain. friend field binding 120; member
-// field binding 117; both field bindings 120; native count results 117; merge ordinal scope 117; friend
-// count arms 117; member count arms 117; both count arms 117.
-// On the recovered row/zero context: early count storage 117; matched member pointer/reference
-// 151/151; existing member-bit/friend-byte/both eligibility 186/117/189; independent
-// merge/friend ordinals 117; immutable count storage 117. Count homes, delayed count loads
-// and memory flag updates still differ.
-// clan count renamed to sort after the friend count 117; friend count read
-// first 124 (its home stays ebp-8, loaded into esi at once); both 124; both counts before the
-// arrays 124; both list-contains helpers declared inline 117. Ours keeps flags20 in a register
-// across those helpers (they write no memory here); retail tests and updates it in memory.
-// friend-side count rename 117; friend-first with that rename 124;
-// retail equality call roles with the rename 159/844; nested friend/member/both membership
-// guards 117/117/117; counts before the user record 117; shared user pointer 117.
-// Count homes, the delayed count load and post-membership flag reloads remain.
-// BLOCKED-BY 0x63d00 (round 14): our LTCG knows xuid_equal never writes EDX and keeps
-// friend/presence pointers there across the calls (`mov esi, edx` after the call); retail
-// recomputes them, as at all 21 retail calls of 0x63d00. The flags20 register across
-// players_list_contains/friends_list_contains is the same gap (retail treats them as
-// writing memory). Separate noinline inline declarations of those two change nothing.
-// Round 14: retail's argument roles in the merge, friend-presence and player-presence calls
-// 159; that plus the friend count first 160; merge and player roles only 164; friend count
-// first 124; loop-scoped merge index 117.
-// Round 418: member count after user copy 124; friend count after user copy 118; both counts after user
-// copy 126; friend-first after user copy 126; named member after user 124; named friend after user 118;
-// named both after user 126; named friend-first after user 126. count homes, early count retention and
-// membership flag reloads remain.
-// Earlier, 117 (was 117): this round: the two member counts in a local two-member struct (both kept
-// Earlier score 117 (was 117): this round: the two member counts in a local two-member struct (both kept
-// Earlier, 117: the two member counts in a local two-member struct (both kept
-// in memory) give 124, the same as exchanging the two declarations; the score stays 117. The
-// member count is still read into ESI and pushed where retail keeps it in EAX, and the count
-// homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
-// 0x63d00 and 0x2b642e, whose files belong to other lanes.
-// Earlier, 117 (was 117): this round: the listing was re-read to place the first difference; the
-// Earlier, 117: the listing was re-read to place the first difference; the
-// member count is still read into ESI and pushed where retail keeps it in EAX, and the count
-// homes, the delayed count loads and the membership flag reloads remain. Still BLOCKED-BY
-// 0x63d00 and 0x2b642e, whose files belong to other lanes.
-// Round 131 (lane 5, fast): both counts as if/else assignments 117 (same code); those friend-first 124;
-// zero defaults then conditional counts 245 (839 bytes); friend-first with the clan count renamed to sort
-// after it 124 (homes unchanged: the clan count keeps ebp-4, the friend count ebp-8 and ESI, so names do
-// not place these spill homes); the player xuid first in the clan-presence compare alone 183 (838 bytes).
-// Retail reads the friend count first into ebp-4 and reloads it into ESI after 0x18ff47; that slot later
-// holds the clan-presence cursor. Original body restored.
-// Round 25 (lane 17, fast): friend count first with the clan count named member_count 124 (friend count
-// still [ebp-8] and in ESI at once); counts zeroed then set by two ifs 242 (839 bytes); counts as if/else
-// arms 117 (same code); inverted ternaries `!pool ? 0 : count` 121; friend-first if/else arms 124.
-// Earlier score 117 (was 117): this round: the listing was re-read to place the first difference; the
-// Round 326: accepted-work/whole-function task-handle snapshots with original counts 220/220,
-// friend-first counts 239/227, counts after user copy 229/229, both count forms 239/229.
-// Complete original body restored; count homes, early retention and membership reloads remain.
-// Round 301: equality consumer/provider/both inline 117/195/195; force-inline
-// 117/297/297; ordinary inline with friend-first counts / symmetric equality roles
-// 200/192. All provider metadata and complete body restored.
-// Round 61 (m3 lane 11, fast; aligned in brackets, base [47]): retail's xuid argument roles without the flags lead: (clan, friend) in the merge loop 219 (841 bytes) [69]; (friend, presence)
-// in the friend walk 122 [51]; (player, presence) in the clan walk 183 (838) [39]; the last two 188 (838) [43]; all three 159 (844) [65], with the friend count first 160 (844) [67].
-// 0x63d00 is not address-taken in retail's tables (only unaligned byte hits), so nothing but its build flags pins the convention. BLOCKED-BY 0x63d00 stands.
-// Round 145 (m3 lane 5, fast, with 0x63d00 inline; aligned = difflib count, 41 on the old 117 form, 31 on this
-// one): the friend count read first (retail reads the lower global first) 200 [27]; that with retail's merge roles
-// (clan, friend) 198 [25]; plus the friend walk's (friend, presence) 197 [24]; plus the clan walk's (player,
-// presence) 197 [22] (853 B each; roles from retail's ECX/EDX setup). Left on that form: the friend count homed
-// in ESI from its read where retail reloads it after 0x18ff47, and flags20 in a register across 0x1a32fc/0x1a32ae.
-// Round 207 (lane 3, fast): `i` and both counts (friend first) declared ahead of the presence/user
-// buffers 124; friend-first counts declared then assigned as statements 124; the user and both presence
-// buffers declared after the counts 117 (same code); the clan count read after the 0x18ff47 call 124;
-// the merged state as one chained assignment, friend store first, 122. BLOCKED-BY 0x63d00 stands.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {
@@ -1535,8 +1417,8 @@ void friends_lists_update_presence()
 		XONLINE_PRESENCE friend_presences[101];
 		XONLINE_PRESENCE clan_presences[121];
 		XONLINE_USER user;
-		long clan_count = g_global_4acf62.field_8_2 ? g_global_4acf62.field_8_2->actual_count : 0;
 		long friend_count = g_global_4acf62.field_4_4 ? g_global_4acf62.field_4_4->actual_count : 0;
+		long clan_count = g_global_4acf62.field_8_2 ? g_global_4acf62.field_8_2->actual_count : 0;
 		long i;
 
 		function_18ff47(g_global_4acf62.controller_index, (dword *)&user);
@@ -1548,7 +1430,7 @@ void friends_lists_update_presence()
 		{
 			for (long j = 0; j < clan_count; j++)
 			{
-				if (xuid_equal(&friend_presences[i].xuid, &clan_presences[j].xuid, false))
+				if (xuid_equal(&clan_presences[j].xuid, &friend_presences[i].xuid, false))
 				{
 					DWORD state = friend_presences[i].dwUserState | clan_presences[j].dwUserState;
 
@@ -1575,7 +1457,7 @@ void friends_lists_update_presence()
 						friend_->flags20 |= 1;
 					for (long j = 0; j < friend_count; j++)
 					{
-						if (xuid_equal(&friend_presences[j].xuid, &friend_->xuid, false))
+						if (xuid_equal(&friend_->xuid, &friend_presences[j].xuid, false))
 						{
 							friend_->flags20 |= friend_presences[j].dwUserState & 0xffffff20;
 							if ((friend_->flags20 & 0x30) && !players_list_contains(&friend_->xuid))
@@ -1605,7 +1487,7 @@ void friends_lists_update_presence()
 					for (long j = 0; j < clan_count; j++)
 					{
 
-						if (xuid_equal(&clan_presences[j].xuid, &player->xuid, false))
+						if (xuid_equal(&player->xuid, &clan_presences[j].xuid, false))
 						{
 							player->flags20 |= clan_presences[j].dwUserState;
 							player->session_id = clan_presences[j].SessionID;

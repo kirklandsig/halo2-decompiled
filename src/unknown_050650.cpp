@@ -504,6 +504,17 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
+// Walk b4H (11-06, fast 303): statement-by-statement against retail 0x296e60-0x2973ec found no behaviour difference. Checked: pitch axis
+// (-j, i, 0) and the 1e-4 magnitude test (0x296ec2) with the g_4687ac fallback (0x296f0c); hoisted yaw/pitch ranges (0x296f32-0x296f66); yaw drawn first, pitch
+// second, kept unrounded on the x87 stack into fsin (0x297006); sine/cosine rounded (fstp dword 0x297047/0x29704d); pitch rotation about the axis, then yaw
+// about g_4687b0 (0x2970f5-0x2971d0); ray = candidate * 3.0 (0x45dbd4), flags 0x10800001, ids NONE (0x2971e3-0x297206), word NONE at +0x24 (0x29720b); hit test
+// `fraction > best` at result+4 (0x29723a); success normalizes the candidate (0x2972a2-0x297334); exit tail `!clear && best > 0.0` (0x297336-0x29734c).
+// Plain-form tries: drop `clear`, tail `!result && best_fraction > 0.f` 361 (1446 B, demotes matched 0x297660 to 10); `else clear = true;` 372 (1455 B). Kept `clear = true`
+// at the loop top: retail's `mov al, 1` (0x296f8f) sets it there on every attempt, and only this form matches 0x297660.
+// MiniMax E (11-06): score 303 (was 303): no new form lowered it. Retail puts the first 4-byte
+// temporary (the length, the integer and the sine) at the frame bottom where ours puts it above the
+// result byte, so the axis and result homes sit four lower, and ours is twelve bytes longer than
+// retail (1435 against 1423).
 // score 303 (was 322): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
 // homes sit 4 lower; the two rotations keep the candidate in registers in retail (ours spills it between them).
@@ -681,13 +692,36 @@ struct s_collision_result_buffer_1697c0
 // AC530: Plain native-array normalization publication, short/long/word/dword indices, explicit/compound
 // scaling: 650/305/650/305/650/305/650/305 (fast control 303). Short/word forms outline; full-width forms
 // retain 1435 bytes but regress. Original helper and body restored; scratch/axis/result homes remain.
+// Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
+// results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
+// contract or gain; original magnitude return, all consumers and complete sampler restored.
 // M389: Root/absolute-value float-library boundaries, singly/together, 307/298/303;
 // widened rounded-root/root-producer/reciprocal receivers 546/546/651;
 // float root/absolute with double reciprocal 651/651. NOT kept: five-point best
 // is below eight and length grows; double forms outline. Original helper/body restored.
+// DL265: Complete rotation value/const-value/receiver pointer/const-pointer/reference/const-reference/
+// output-pointer/output-reference protocols: 431/431/303/303/303/303/303/303. NOT kept: no exact native
+// transport; original shared producer and body restored; root/axis/result scratch homes remain.
 // Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
 // results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
 // contract or gain; original magnitude return, all consumers and complete sampler restored.
+// DL270: Complete normalized-vector returns with pointer/value inputs, optional
+// real length/Boolean success outputs, ordinary/forced expansion:
+// 634/551/642/573/458/458/475/475. NOT kept: all regress and move length away;
+// four forms lose the matched caller (39/39/4/4). Original helper and sampler restored.
+// F395: Collision-ray component loops, long/short/word/dword direct products 338/337/337/338;
+// native candidate copy then in-place loops 376/362/362/376. NOT kept: all regress and
+// enlarge the frame to 0xb0; copy forms also demote matched caller 0x297660 to 1.
+// Original full body restored; native frame-bottom scratch and candidate transport remain.
+// M398: Immutable rounded magnitude/reciprocal/paired angular results, subsets
+// 1/2/3/4/5/6/7, then complete immutable rotation products: 303/303/303/303/303/303/303/303.
+// NOT kept: no native scratch/home recovery; original producers and entire body restored.
+// M402: Existing inline header normalization at axis/candidate/fallback, seven subsets,
+// then complete graph with observed axis length: 307/303/299/307/305/299/305/410. NOT kept:
+// four-point best is below eight; axis forms recover early homes but grow. Original body restored.
+// N390: Explicit absolute-magnitude real/immutable-real producers, success/early-failure exits,
+// 307/303/307/303; double/immutable-double producers 360/360/360/360. NOT kept:
+// no exact lifetime recovery; original normalizer and sampler restored, native scratch/axis homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -771,6 +805,10 @@ bool function_1ffbd0(long actor_index, long weapon_index, short barrel_index,
 	void *unknown0, void *unknown1, void *unknown2, void *unknown3);
 bool __stdcall function_1ffe00(long actor_index, long object_index);
 
+// MiniMax E (11-06): score 257 (was 257): no new form lowered it. The result and point-valid byte
+// homes are still swapped (ours writes the flag byte at esp+0x12, retail at esp+0x13), the three
+// vector components reach the stack homes in the order eax/edx/ecx where retail uses eax/ecx/edx, and
+// retail's class lookup block sits before our copy of the direction where ours follows it.
 // score 257 (was 257): frame 0x8c agrees; the result/point-valid byte homes, the direction chain's layout predecessor
 // (retail: case 2's remembered-prop 0x1e3b00 tail, which case 1's copy cross-jumps into) and the weapon path's registers differ.
 // Earlier at 276 (was 276): frame 0x8c agrees; result/point-valid byte roles, native point copies and shared case tails differ.
@@ -967,14 +1005,44 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 253/253/265/267; before the read-only query 279/279/296/296 (calibrated fast control 258).
 // NOT kept: best gain five is below eight; predicate/observation forms need equality. Original
 // reference observations and complete body restored; Boolean homes and shared-tail predecessor remain.
-// M389: Both native normalization-return scalar receivers, local real/const-real/double/const-double
-// 258/258/327/327; shared/test-owned real/const-real/double/const-double 258/258/327/327.
-// NOT kept: one-use scalar/result residence did not match; double forms grow to 1480/1444.
-// Original comparison producers, calls and complete body restored (fast control 258; full 257).
 // P345: Movement/attention/object admission-produced return results, subsets
 // 1/2/4/3/5/6/7 then separate false defaults: 378/335/335/369/369/323/358/356
 // (reduced control 341; full 257). NOT kept: extra SETG/SETNE result stores absent from
 // retail; original body restored; byte homes and direction-tail predecessor remain.
+// M389: Both native normalization-return scalar receivers, local real/const-real/double/const-double
+// 258/258/327/327; shared/test-owned real/const-real/double/const-double 258/258/327/327.
+// NOT kept: one-use scalar/result residence did not match; double forms grow to 1480/1444.
+// Original comparison producers, calls and complete body restored (fast control 258; full 257).
+// DH374: Structured switch-failure breaks at case 0/2/1/5/6/default, both reference cases, then all failures:
+// 258/258/258/258/258/258/258/258 (fast control 258; full 257).
+// NOT kept: no byte match or eligible gain. Original single-exit decoder, case transfers,
+// point/result/presence producers and full body restored; byte homes and remembered-tail predecessor remain.
+// P345: Movement/attention/object admission-produced return results, subsets
+// 1/2/4/3/5/6/7 then separate false defaults: 378/335/335/369/369/323/358/356
+// (reduced control 341; full 257). NOT kept: extra SETG/SETNE result stores absent from
+// retail; original body restored; byte homes and direction-tail predecessor remain.
+// AC553: Existing actor/object getters forced/private-inline/external-inline, eight
+// expansion/linkage pairs: 258 each (fast control 258; full 257). NOT kept: no
+// native allocation change; original getter contracts and complete body restored.
+// DL269: Shared post-dispatch origin selection and normalization, phase/entry/mutable
+// origin pointer or native origin workspace, success-owned then guarded publication:
+// 311/311/311/286/311/311/311/286 (fast control 258; full 257).
+// NOT kept: every form regresses and shortens the body; original decoder restored.
+// DH377: Successful dispatch breaks in cases 3/5/6/all three/1/2/both reference cases/all five:
+// eight at 258 (fast control 258; full 257). NOT kept: identical code, no match or gain.
+// Original success transfers and complete decoder restored; result/presence homes and shared-tail predecessor remain.
+// DH383: Whole-decoder success default with false produced by every rejected dispatch,
+// bool/byte/short/long, original comparison results 389/380/375/372; failure-only normalization
+// 267/280/300/301. NOT kept: every full-graph lifetime regresses against calibrated 258 (full 257);
+// original result/presence, all calls, cases and entire decoder restored.
+// b5B (11-06) statement-by-statement walk against retail 0x2967b0-0x296d38, no source change: all seven
+// cases, the jump-table order, every offset (0x5d0/0x5ec/0x26c/0x84/0x539/0x53a/0x50c+0x3c, 0x338/0x33c/0x340,
+// 0x358/0x370, 0x18, 0x22c position), the signed short state tests (0x24: <1 / >2), the (1 << type) & 3 test on
+// [object+0xaa] with the player_index [+0x13c] != NONE test, the 1ffbd0 argument list, comiss > 0.0 (jbe fails),
+// the magnitude < 1.0 test (fld const; fcompi; jbe skips), and the optional outputs match retail; no float is
+// rounded through fst/fstp, point - origin / point - position are subss in x, y, z order as in retail. No
+// behaviour difference found. Only the point_valid/result stack homes (esp+0xa/0xb swapped) and the cross-jumped
+// cafc0 blocks differ. Declaring point_valid first 341, separate initialisers 343/341 (fast control 341): dropped.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1157,6 +1225,19 @@ done:
 	return result;
 }
 
+// MiniMax D (11-06): no new form, no lower score (9); five more spellings of the shared lookup (a data
+// base and a masked slot local in either order, a byte offset local, the slot first, the current one)
+// compile to the same code, so retail's offset in EAX and its `lea esi, [eax + edx]` are not
+// steerable from the source; the reduced image also leaves our body one byte short.
+// MiniMax E (11-07): score 9 (was 9): forms tried, none lower (the masked byte offset in a local, the
+// data base in a local and the inline byte-pointer product with the literal size all compile to the same
+// code); the prologue still builds the offset in ESI and adds the base where retail keeps it in EAX and
+// forms the actor with a lea; retail's matched sibling 0x297a50 uses the same getter and compiles the
+// same way as ours (the chain in ESI and an add), so what differs here is the allocation in this one
+// function, not the spelling of the lookup.
+// MiniMax E (11-06): score 9 (was 9): no new form tried this round; the prologue still builds the
+// actor offset in ESI and adds the base where retail builds it in EAX and forms the actor with a lea,
+// and ours ends a byte short with a trailing int3; two of the nine are reduced-image artifacts.
 // score 9 (was 9): this round: the full build scores 9 as well (the permuter's full-image baseline),
 // so the reduced image does not distort this one; the lookup's spelling does not change the code
 // (see below), and the prologue's register choice is not steerable from the source.
@@ -1568,6 +1649,14 @@ struct s_actor_looking_turn_request
 	vector3f forward;
 };
 
+// b2J (11-06) statement walk against retail 0x298370..0x298b3e (align.py 548 fast, 442 full): every block, offset,
+// condition direction, callee, argument order (0x2980d0 looking/bounds flags, 0x2967b0 type pointers +0x420/+0x434/+0x688 and the movement temp, 0x10f630 first=ESI,
+// 0x11cc90 aiming/forward), constant (-1, 0.70710677, 0.34906584, 1.0, 2.5) and flag home agrees with the source; no behaviour difference
+// found. Remaining differences are the inlined 0x1fdd90 and register/frame layout only.
+// MiniMax E (11-06): score 442 (was 442): no new form lowered it. The frame is 0xcc against retail's
+// 0xc8 and ours is four bytes shorter (2016 against 2020); retail keeps the actor index in ESI and
+// spills the slot offset to [esp+0x30] where ours keeps the index in EDI and the offset in ESI.
+// MiniMax H (11-04): no new form, no lower score; retail calls 0x1fdd90 at +0x198 where our build expands it inline, and marking it noinline gives 590 and is not a permitted form; the frame stays 0xcc against retail's 0xc8 and the actor table is held in a register.
 // score 442 (was 442): frame 0xcc versus retail 0xc8, early getter scheduling, vector homes and branch layout differ.
 // Tried the out-of-line predicate declaration 546 fast; horizontal aggregate copies 562 fast; initial native setters 546 fast;
 // explicit looking success/fallback stores 532 fast, 527 plain (three-point gain, restored); target point or selected vector
@@ -1654,6 +1743,17 @@ struct s_actor_looking_turn_request
 // looking_valid declared with valid at the block top 442; the marker workspace at the block top 442; case 0's
 // movement request at the block top 442; the turn request at the turn block's top 442 (all same code). Retail
 // never inlines 0x1fdd90 anywhere (its byte pattern occurs only at 0x1fdd90), so BLOCKED-BY 0x1fdd90 stands.
+// Y606: Real vector arrays, initial plain long/int/short/dword loops 564/564/568/564;
+// CRT copy/move 564/527, components 541, both initial/final 564, final alone 548
+// (fast control 548; full 442). NOT kept: CRT move rolls calls absent from retail
+// and loses the input register; other forms regress or tie. Original type/body restored.
+// Y608: Whole-lifecycle forward/aiming/looking member references, seven subsets,
+// 548/548/540/548/540/540/540 fast; complete set with reference-vector member 526
+// (control 548, full 442). NOT kept: no exact out-of-line predicate/forward-address
+// residence; member-address lifetimes are unproven. Original complete body restored.
+// DH379: Terminal attention presence/absence bool/byte/short/long, after the output getter:
+// 548/548/548/548/548/548/548/548 fast, against its unchanged reduced control. NOT kept: no exact
+// attention result or frame/pool recovery; original field test and complete body restored.
 // @retail 0x298370
 void function_298370(long actor_index)
 {

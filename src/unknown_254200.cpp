@@ -135,6 +135,8 @@ void function_254200(void)
 
 #undef program_words_254200
 
+// MiniMax I (11-06): no new form, no lower score; the 16777215 constant through a named local keeps 4.
+// MiniMax C (11-05): no new form, no lower score; the only difference left is the order of the two loads after the buffer reservation in the second and third vertex records, where retail loads the 16777215 constant before it reloads the spilled y+h and we reload first; the permuter tried 173 forms in 1803 s and none beat 4.
 // MiniMax G (11-04): the point's x and y taken through parallel pointers 341 (the point copy is
 // retail's shape); the permuter did not reach a variant on this loaded machine, so it was stopped:
 // no lower score.
@@ -201,7 +203,7 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 	}
 }
 
-// score 2 (was 18): the texture-coordinate sums are computed at the first vertex and reused for
+// score 2 (was 2): the texture-coordinate sums are computed at the first vertex and reused for
 // the other three, and the colour is read through a pointer with the alpha as a byte; what is left
 // is that after the second reservation retail reloads the lower coordinate before the 16777215
 // constant (0x254490 has the same swap, in the same evaluation-order direction). The last quad's
@@ -410,6 +412,27 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // K148: second-texture lower product commuted/division 2/2; second texture C entry 375;
 // both coordinate references 2; point value copy 161; whole-object pointer 18; third-lower/
 // fourth-upper products commuted 2/2. NOT kept: no equality; original two-reload body restored.
+// Round 150 (m3 lane 6, fast): the reload order follows how many real values the body has, not their source order.
+// Diagnostic extra code flips it to retail's: 3 pairs of float products or integer products ahead of Begin, 5 stores of
+// different float constants, 8 of one constant, 12 integer copies (later in the body 12 stores); never integer immediates,
+// dead locals, no-op inline helper calls or empty `do {} while (false)` blocks (16 of them). One or three extra reads of the
+// lower coordinate or the constant do not flip it, so it is no reference weight. Every natural form 2, none flips: the state
+// setter calls (kept, they were 0x222d0's body by hand), the existing color helper, member position entries, C Begin, a
+// getter body with an index, all combinations; `inline` on the 0x137550 definition with direct calls 2 (retail inlines it
+// here; its file is /Ob1) with its prologue unchanged. The direct call without that 577, and 0x254490 324 through the helper.
+// Lead, the inline budget: with no inline-depth pragmas and the nine setter calls 440 (2388 bytes): ours keeps the 4f calls of
+// vertices 3 and 4 and one later setter inline. One more setter ahead of Begin 441 (2287 bytes) then gives retail's whole call
+// sequence but for 0x1392a9, which inlines: aligned 16, namely that setter, this reload pair and 0x1392a9. Two more 760 (1941 bytes)
+// move every vertex out. Local helpers don't spend the budget (`inline` instead of forceinline on the two lookup helpers, the
+// full getter body, the color helper, the inline 0x137550 getter: 440 each), so a consumer that emits no code is still missing.
+// A 600 s permuter run on this form, 45 tries, best 2.
+// Round 171 (lane 4, fast): the blend-state and texture-stage arguments by enum name 2 (same code, kept); the alpha
+// constant through D3DCOLOR_ARGB 2 (same code, kept); the reference casts dropped from the first texture-stage calls 465
+// (2236 bytes; 0x254200 loses its match); the bitmap getter as if/else 524; the render-target getter as a ternary 2.
+// Round 78 (lane 10, fast): the alpha byte without the (long) step 2 (same code); the inline_depth pair around
+// the second SRCBLEND/DESTBLEND setters dropped 436 (2262 bytes, the setters inline); the size as a 42 default
+// overridden by `if (g_4ba04c > 1)` 94 (2258 bytes); the point pointers declared after the 0x1cf50 call 2 (same
+// code); the guard as one condition with an `else if (g_51ec9a)` arm 2 (same code).
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
@@ -419,20 +442,13 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 	{
 		if (function_12360(local_0, 0.f) && function_12360(local_1, 0.f))
 		{
-			g_4b8448 = 0x901;
-			D3DDevice_SetRenderState(D3DRS_CULLMODE, 0x901);
-			g_4b8308 = 0x10101;
-			D3DDevice_SetRenderState(D3DRS_COLORWRITEENABLE, 0x10101);
-			g_4b82e8 = 1;
-			D3DDevice_SetRenderState(D3DRS_ALPHABLENDENABLE, 1);
-			g_4b8324 = 0x8006;
-			D3DDevice_SetRenderState(D3DRS_BLENDOP, 0x8006);
-			g_4b82ec = 0;
-			D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
-			g_4b82e0 = 0x207;
-			D3DDevice_SetRenderState(D3DRS_ZFUNC, 0x207);
-			g_4b8450 = 0;
-			D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
+			function_0222d0(D3DRS_CULLMODE, 0x901);
+			function_0222d0(D3DRS_COLORWRITEENABLE, 0x10101);
+			function_0222d0(D3DRS_ALPHABLENDENABLE, 1);
+			function_0222d0(D3DRS_BLENDOP, 0x8006);
+			function_0222d0(D3DRS_ALPHATESTENABLE, 0);
+			function_0222d0(D3DRS_ZFUNC, 0x207);
+			function_0222d0(D3DRS_ZBIAS, 0);
 			function_14390(0, (s_type_7ba8e9 *)local_0, 0.f);
 			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ADDRESSU, 4);
 			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ADDRESSV, 4);
@@ -445,10 +461,8 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_MAXMIPLEVEL, 0);
 			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_COLORSIGN, 0);
 			D3DDevice::SetTextureStageState(0, (D3DTEXTURESTAGESTATETYPE const &)D3DTSS_ALPHAKILL, 0);
-			g_4b82f4 = 1;
-			D3DDevice_SetRenderState(D3DRS_SRCBLEND, 1);
-			g_4b82f8 = 0x302;
-			D3DDevice_SetRenderState(D3DRS_DESTBLEND, 0x302);
+			function_0222d0(D3DRS_SRCBLEND, 1);
+			function_0222d0(D3DRS_DESTBLEND, 0x302);
 			function_1cc30(0xc);
 			function_1c710(g_51f0f0);
 			memset(&g_484f68, 0, sizeof(g_484f68));
@@ -478,8 +492,8 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			#pragma inline_depth()
 			function_14390(0, (s_type_7ba8e9 *)local_1, 0.f);
 #pragma inline_depth(0)
-			function_0222d0((D3DRENDERSTATETYPE)0x3e, 0);
-			function_0222d0((D3DRENDERSTATETYPE)0x3f, 0x302);
+			function_0222d0(D3DRS_SRCBLEND, 0);
+			function_0222d0(D3DRS_DESTBLEND, 0x302);
 #pragma inline_depth()
 			memset(&g_484f68, 0, sizeof(g_484f68));
 			g_484f68.PSCombinerCount = 1;
@@ -502,11 +516,11 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			D3DDevice_End();
 			function_14bc0((short)g_4858b8, 0, true);
 			function_14f60(0, 0x1d);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)0, 3);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)1, 3);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)3, 2);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)4, 2);
-			function_0224f0(0, (D3DTEXTURESTAGESTATETYPE)5, 1);
+			function_0224f0(0, D3DTSS_ADDRESSU, 3);
+			function_0224f0(0, D3DTSS_ADDRESSV, 3);
+			function_0224f0(0, D3DTSS_MAGFILTER, 2);
+			function_0224f0(0, D3DTSS_MINFILTER, 2);
+			function_0224f0(0, D3DTSS_MIPFILTER, 1);
 			#pragma inline_depth()
 			D3DDevice_SetTextureStageState(0, D3DTSS_BORDERCOLOR, 0);
 			#pragma inline_depth(0)
@@ -515,11 +529,11 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			function_0224f0(0, D3DTSS_MAXMIPLEVEL, 0);
 			function_0224f0(0, D3DTSS_COLORSIGN, 0);
 			function_0224f0(0, D3DTSS_ALPHAKILL, 0);
-			function_0222d0((D3DRENDERSTATETYPE)0x3e, 1);
-			function_0222d0((D3DRENDERSTATETYPE)0x3f, 0x303);
+			function_0222d0(D3DRS_SRCBLEND, 1);
+			function_0222d0(D3DRS_DESTBLEND, 0x303);
 			byte local_6 = (byte)(long)(function_1392a9(g_4b9ed8) * 255.f);
 			memset(&g_484f68, 0, sizeof(g_484f68));
-			g_484f68.PSConstant0[0] = (((((dword)local_6 << 8) | local_6) << 8 | local_6) << 8) | local_6;
+			g_484f68.PSConstant0[0] = D3DCOLOR_ARGB(local_6, local_6, local_6, local_6);
 			g_484f68.PSCombinerCount = 1;
 			g_484f68.PSTextureModes = 1;
 			g_484f68.PSRGBInputs[0] = 0x8010000;

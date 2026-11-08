@@ -495,7 +495,6 @@ void __stdcall function_44040(long cell, short mask)
 }
 #pragma inline_depth()
 
-extern byte *g_4858c4;
 long g_485a2c, g_485a64, g_485a68;
 
 // @retail 0x34060
@@ -739,10 +738,10 @@ void *function_44940(short index, bool instance)
 	return *(byte **)(structure + 0x13c) + definition_index * 0xc8;
 }
 
-__declspec(noinline) void *function_449e0(short index, bool load, bool instance);
+__declspec(noinline) void *function_449e0(short index, bool instance, bool load);
 
 // @retail 0x449e0
-void *function_449e0(short index, bool load, bool instance)
+void *function_449e0(short index, bool instance, bool load)
 {
 	bool const *instance_reference = &instance;
 	s_44940_entry *entry = &g_4ba138[index];
@@ -1302,7 +1301,7 @@ struct s_render_reset_state;
 struct s_shader_cache;
 struct s_coefficient_layout;
 struct s_lighting_record;
-bool __stdcall function_23690(s_coefficient_layout const *layout, short order, long object_index,
+bool __stdcall function_23690(s_coefficient_layout const *layout, long order, long object_index,
     s_137801 const *vertices, long count, byte const *indices, long tag);
 bool function_3d480(long object_index, long count, transform4x3f const *matrices, transform4x3f *out);
 void function_3dd10(long object_index, bool force);
@@ -1318,6 +1317,9 @@ struct s_batch_cache_4b5d0
 
 struct s_133f70;
 
+// MiniMax I (11-06): no new form, no lower score; the tail stays blocked by 0x23690 in src/unknown_023540.cpp, so the reduced image cannot inline it and the fast count depends on what the check pulls in.
+// MiniMax A (11-05): no new form, no lower score; the call to 0x4bcc0 already carries its six stack
+// arguments in retail's order and with retail's values, so what is left is the frame size and the entry/result homes.
 // MiniMax h (11-04): no lower score; the 0x4bcc0 call takes the distance from the third stack slot where retail takes it from the second, and that slot layout follows the unmatched callers in src/unknown_133790.cpp.
 // score 175 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
 // Round 22 (lane G, machine 3; no code change kept): retail's byte home and its split record base
@@ -1476,6 +1478,12 @@ struct s_133f70;
 // [esp + 0x218]`); order declared long in both declarations 175 (caller `movsx eax`, still passed in EAX,
 // 0x23690 484); header via the existing object_header_get 175; initial level declared first 177; failure
 // count declared after the 0x4bcc0 call 370; a named active-flag pointer for the call and test 175.
+// Y608: Actual compacted source/tag/handle output-slot references, seven subsets,
+// then all with the writable count-slot reference: eight 175s at 1309/1309.
+// NOT kept: no equality; first distance setup and cache/coefficient homes remain.
+// Round 394: initial-level/fallback/builder/success/reuse/level-change result-home names
+// individually 175/175/175/175/175/175; both complete byte-result naming orders 175/175.
+// Original names and complete body restored; distance/cache staging and coefficient transport remain.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

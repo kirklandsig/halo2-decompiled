@@ -401,6 +401,21 @@ static inline real interpolate_linear(real a, real b, real t)
 // the frame recomputed 192 (654 bytes). A dispose test at the join ahead of (or after) the restart test, with the arms' break kept 1/1;
 // the arms' break replaced by `if (!dispose) { restart...; switch }` with `if (dispose) break;` at the join, or `dispose || restart`
 // in either order, on one arm or both 1 each: the thread passes both tests.
+// Round 151 (m3 lane 5, fast): restart written through `&restart` in a forceinline helper at all three sites, expression,
+// if/else, plain inline, by reference 1 each (the address folds away); that helper reading its pointer parameter through its
+// address, expression 186 (zero materialised, jump still threaded), if/else 1.
+// Round 93 (m3 lane 16, fast): the break as `restart && type == 0` (diagnostic) 146 (662 bytes), but the plain-frame
+// path then jumps to the restart test as retail: ours threads it because restart is known false on the back edge as
+// well as at entry. Flags read from the field at each use in the loop 207; the update in `if (!restart) { ... } else
+// break;` 1; the equality boundary tested first 234 (676 bytes); dispose false at its declaration with both resets
+// dropped 1; a byte restart 1; a 600 s permuter run (72 tries) none below 1.
+// Round 69 (m3 lane 13, fast): restart uninitialised at the top and cleared in the active block just before the loop
+// 16 (the clear schedules into the timing setup; the plain path still skips the test), cleared first in that block 19;
+// the frame store as an else-if of the restart test 1; the break as `restart != dispose` 1; restart and dispose in one
+// declaration 1; the break as `restart > 0`, `>= 1`, `!(restart <= 0)`, `> false` or `0 < restart` 87 each (659 bytes,
+// `ja` for `jne`): with those the plain-frame path does reach the restart test as retail's does, so our skip comes from
+// the `!= 0` test's implied value on the back edge together with the false start. Diagnostic (reverted at once): a
+// volatile restart 215 (652 bytes).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

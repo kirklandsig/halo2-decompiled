@@ -1017,6 +1017,19 @@ struct s_string_buffer
 // the negated chain holding the `== 9` arm, a row pointer in that arm, 81 (505); an explicit zeroing else arm 114 (504);
 // a `!= 9` empty arm with the loads in the else 50 (481); the negated chain with a goto past the loads 50 (481).
 // Compile-only, all 9 in line: multi-return, flag and switch inline predicates, gotos in and out of the arm.
+// Round 55 (m3 lane 2): only 0x1a391f and 0x257320 share the shape (`cmp; jcc back; jmp back` after RET), both from a test threaded
+// around by an earlier test of the same value, which suggests a second, correlated `mode` test. Plain: three-arm flag 50 (481 bytes,
+// aligned 5 against the range's 6), default-false flag 50, default-true with the chain negated 50, empty chain arm 50, long flag 50,
+// `!flag && == 9` 50, a separate `if (== 9)` 99 (491). Fast (unchanged source 34): value1 zeroed in an else arm 65, with value2 too 93
+// (482), the arms negated or swapped 65/65/65/93; each arm with its own score1 format call, or the else arm formatting 0, 99 (483),
+// one combined test with its own format calls 100 (483), the `== 9` arm and else sharing a call 84 (502). All leave 9 in line.
+// `__assume` (fast) at the head or tail of either arm, on the mode or the row, or in a flag form, nine placements 65 each; on the flag itself 100 (485).
+// Round 71 (lane 14, plain; compile-only reproduces this layout at 0.7 s per form): the values loaded under one chain of all seven
+// modes with 2 first, then `if (== 2)` time else `%d`, 96 (471 bytes); a switch with a separate identical arm per case 90 (475,
+// dec/je chain); a switch with case 2 and the six cases falling into the `%d` default 102 (475); the `== 9` else-if arm after a
+// chain whose 7/8 tests are a range 50 (481); the `== 9` arm's loads through byte offsets (to keep the arms apart) 50 (481).
+// Compile-only, all 9 in line: the `== 9` arm's loads reversed, through pointer arithmetic, `(long)(dword)` casts or a row
+// pointer; a separate-arm switch in descending order; a 1/3/4 + 7/8/9 two-arm switch; a 1/3/4/7/8 + 9 switch; speed preference.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

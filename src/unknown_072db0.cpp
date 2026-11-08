@@ -1209,6 +1209,7 @@ void function_7e100(long current, const s_member_quality_collection *collection,
 long function_1931a0(long count, s_surface_description *variant);
 
 #pragma inline_depth(0)
+// MiniMax B (11-05): no new form, no lower score (6); the elapsed-store forms (a named local for the difference, the start read inlined, a named local for the clock read) match on the reduced image and stay at 6 in the full build; all six differences follow from 0x7e210's full-image convention (ours reads the session from the stack, retail passes it in EAX), which also orders the elapsed store after the stack cleanup and shifts the later calls; 0x7e210 has three call sites and sits in src/unknown_07a9a0.cpp, which is not this lane's file.
 // score 6 (was 6): BLOCKED-BY 0x7e210: everything else matches. Still differ: the
 // elapsed store is ordered after the stack cleanup and the 0x7e210 call pushes the
 // session (retail passes it in EAX); the one-byte-shorter push shifts the 0x7e100 call
@@ -1242,6 +1243,11 @@ long function_1931a0(long count, s_surface_description *variant);
 // helper force-inline 856 (2828 bytes). Diagnostic in a scratch copy of 0x192e60's file (not kept): the getter's
 // element pointer computed first gives the session EAX while still inlined, this function matches, but 0x192e60 31,
 // 0x63220 102, 0x73ca0 148. More source in the getter with the same bytes, or `inline` on it, changes nothing.
+// Round 155 (m3 lane 6, fast control 8 with 0x7e210 766): the elapsed time with the start field read after the clock
+// call 78 (528 bytes); the 0x7e210 result named before its test 8. In 0x7e210 (this function / 0x7e210): the capacity
+// read before the summary 8/785; the variant looked up on the accessor with the index read again after 8/867 (2844
+// bytes); the result flag declared after the admission test 8/766. Retail's 0x7e210 calls 0x192e60 at its top and
+// has 0x192e60's body inline in the player loop (one 0x1934f0 call there), so the two sites in one caller differ.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {
@@ -1559,13 +1565,6 @@ static __forceinline void query_restore_pending()
             else if (*state == 5) *state = 4;
         }
 }
-static inline bool query_variant_available(long index)
-{
-    long result = false;
-    if (g_47d8f4.count && (g_47d8f4.flags & 2))
-        result = function_1934f0(&g_551ae8[index]);
-    return result;
-}
 
 #pragma optimize("g", off)
 static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *arg_0)
@@ -1575,9 +1574,21 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
     return local_0;
 }
 #pragma optimize("", on)
+// MiniMax E (11-05): no new form, no lower score.
 // MiniMax H (11-04): the logon-status test written as (status - 1 == 0) reaches retail's
 // `dec eax` and its exact 2862 bytes but scores 729; not kept, the original body is restored.
-// score 709 (was 709): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
+// score 703 (was 709; 2910 bytes): Frame 0xc0 agrees; initial cursor base/home, slot and later homes remain.
+// w14D (fast, callers 0x641a0/0x8df50 and the file's matched functions stay MATCH): walked statement by
+// statement against retail: no logic difference found (fields, conditions, callees, arguments, loop and
+// poll shapes all agree). Retail inlines the existing getter 0x192e60 (pointer range check at 0x74be0,
+// 0x74dba, 0x750de, then `test esi, esi`) and the existing 0x749b0 (clamp + store, 0x751c6-0x7520d; it is
+// not in the calls column), so the file's written-out query_variant_available() and clamp-and-store are
+// now calls of those: getter at the three sites 768, 0x749b0 alone (group index loop) 730 (pointer
+// loop 744), both 703. Not kept: a `record_properties` local for the six property initializers rolls
+// the loop as retail (2814 bytes, aligned hunks 143 -> 103) but grows the frame to 0xc8 (771).
+// Identity as a local XUID (type-5 arm copies it, the scan compares against it) 752 (2926 bytes).
+// Not tried: a call of function_75870() in place of query_time_now(): retail inlines the clock at every
+// use, but the fast image cannot show cross-file inlining.
 // Earlier: Frame 0xc0 agrees; initial cursor base/home, slot and request/completion homes remain.
 // frame 0xc0 agrees; native completion-group cursor retained;
 // initial cursor base/home, slot expansion and request/completion homes still differ.
@@ -1765,6 +1776,11 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M369: Existing availability boundary receives the actual descriptor by pointer/reference,
 // ordinary/forced inline and long/bool truth: 709/719/709/719/709/719/709/719.
 // NOT kept: all tie or regress; original ordinal helper, all three calls and whole body restored.
+// Round 129 (m3 lane 7, fast; aligned/masked control 344/215; a match still needs /arch:SSE for the slot's cmovne, a flag decision): `failed` set in the incomplete arm, without the
+// `failed || received != 6` line, as one store after the inner test 703 (2862 B), in each inner arm 728 (2894 B), first in each arm 728, with `received != 6` tested first and the store
+// in each arm 702 (2862 B, aligned 344: a gain of 7, under the keep threshold, not kept). On 702: retail's poll order (state store before the restore) 702, the failure counter's test
+// swapped 702, poll field order 702, delay ternary reversed 702, the last read time in a named local read ahead of the clock 703, `added < 4` first in the loop test 714 and with that local 715,
+// count and properties pointer swapped 730 (2846 B), the write poll as `state < 0 || state > 1` first 703, that with `added < 4` first 715.
 // M377: Complete availability/provider truth, direct initialization then test-produced
 // true, bool/byte/short/long results: 719/719/719/719/719/719/719/719.
 // NOT kept: all regress; original producer, three callers and full body restored.
@@ -1791,6 +1807,20 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // write-side struct 703. Keepable-only climb from the body below: failed arm 703, then none lower; with retail's poll order 702
 // [523], online_logon_connected() 793, delay ternary 703, reversed state test 703, swapped failure counter 703.
 // Diagnostic, reverted at once: `word volatile count` 731/733/718 (retail's reload appears, `team` then takes EBX).
+// M377: Complete availability/provider truth, direct initialization then test-produced
+// true, bool/byte/short/long results: 719/719/719/719/719/719/719/719.
+// NOT kept: all regress; original producer, three callers and full body restored.
+// M379: Complete identity member production identifier/flags first at producer/group/function
+// scope, mutable/readonly native-member aggregate initialization: 744 each. NOT kept: all regress;
+// original packed-object snapshot and body restored; cursor/slot and later homes remain.
+// M382: Complementary initial admission then team decisions, bool/byte/short/long:
+// 709/709/709/709/710/710/779/759. NOT kept: no native cursor/slot repair or byte match; original
+// positive decisions, snapshots, helpers, task/builder roles and complete body restored.
+// M384: Complete identity/property cache-refresh changed/current result, bool/byte/short/long:
+// 709/709/709/709/709/709/709/709. NOT kept: no equality for one-use result residence;
+// original full body restored; initial cursor/slot and request/completion homes remain.
+// Round 74 (m3 lane 10, fast, callers 0x641a0 and 0x8df50 checked): on the note's 702 form rebuilt (`received != 6` first, `failed = true` in each state arm, 2862 bytes, a gain of 7, not kept): bound limits through a
+// `long const *` local 702; `value` as `= 0; if (type)` 703; write poll `state == 0 || state == 1` 718 (2878); `long failed` 719 (2878); properties_used declared first 702; `now` read first 702.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
@@ -1822,9 +1852,10 @@ void function_074aa0(void)
                     }
                     for (long i = 0; i < 16; i++)
                     {
-                        if (query_variant_available(i))
+                        s_surface_description *variant = function_192e60(i);
+                        if (variant)
                         {
-                            if ((g_551ae8[i].type != 5 || team) && !values->players[i].state)
+                            if ((variant->type != 5 || team) && !values->players[i].state)
                                 values->players[i].state = 1;
                         }
                         else
@@ -1852,22 +1883,23 @@ void function_074aa0(void)
                 for (long i = 0; i < 16 && added < 4; i++)
                 {
                     s_search_player_values *player = &g_509454[group].players[i];
+                    s_surface_description *variant;
                     if ((player->state == 1 ||
                         (player->state == 4 && now - player->time >= g_network_configuration.valuec74)) &&
-                        query_variant_available(i))
+                        (variant = function_192e60(i)) != NULL)
                     {
-                        const byte *identity = (const byte *)&g_509454[group] + (g_551ae8[i].type == 5 ? 0x10 : 4);
+                        const byte *identity = (const byte *)&g_509454[group] + (variant->type == 5 ? 0x10 : 4);
                         s_cache_property_record *candidate = g_50c474 + records_used;
-                        if (g_551ae8[i].type == 5)
+                        if (variant->type == 5)
                             for (candidate = g_50c474; candidate < g_50c474 + records_used; candidate++)
                                 if (!memcmp(candidate->identity, identity, 12) &&
-                                    candidate->type == g_551ae8[i].field_8)
+                                    candidate->type == variant->field_8)
                                     break;
                         if (candidate == g_50c474 + records_used)
                         {
                             s_cache_property_record *record = &g_50c474[records_used];
                             memcpy(record->identity, identity, 12);
-                            record->type = g_551ae8[i].field_8;
+                            record->type = variant->field_8;
                             record->count = 6;
                             record->properties = &g_50cbf8[properties_used];
                             records_used++;
@@ -1919,35 +1951,30 @@ void function_074aa0(void)
                 if (online_stats_read_result(g_50c46c, (XONLINE_STAT_SPEC *)g_50c474,
                     (word)g_50c470, g_50e9fc, sizeof(g_50e9fc)))
                 {
-                    for (s_search_value_group *completed_values = g_509454; completed_values < g_509454 + 5; ++completed_values)
+                    for (long group = 0; group < 5; group++)
                     {
+                        s_search_value_group *completed_values = &g_509454[group];
                         for (long i = 0; i < 16; i++)
                         {
                             s_search_player_values *player = &completed_values->players[i];
                             if (player->state != 2 && player->state != 5) continue;
-                            if (!query_variant_available(i)) { player->state = 1; continue; }
+                            s_surface_description *variant = function_192e60(i);
+                            if (!variant) { player->state = 1; continue; }
                             long received = 0;
                             for (long record_index = 0; record_index < g_50c470; record_index++)
                             {
                                 s_cache_property_record *record = &g_50c474[record_index];
                                 const byte *identity = (const byte *)completed_values +
-                                    (g_551ae8[i].type == 5 ? 0x10 : 4);
-                                if (!memcmp(identity, record->identity, 12) && record->type == g_551ae8[i].field_8)
+                                    (variant->type == 5 ? 0x10 : 4);
+                                if (!memcmp(identity, record->identity, 12) && record->type == variant->field_8)
                                     for (dword property_index = 0; property_index < (dword)record->count; property_index++)
                                     {
                                         s_cache_property *property = &record->properties[property_index];
                                         long value = property->type ? property->unknown08 : 0;
                                         long index;
                                         if (function_75790(record->type, &index))
-                                        {
-                                            long field = *(word *)&property->unknown00 - 1;
-                                            long bounded = value;
-                                            if (bounded < g_46722c[field][0]) bounded = g_46722c[field][0];
-                                            else if (bounded > g_46722c[field][1]) bounded = g_46722c[field][1];
-                                            s_search_value *destination = &completed_values->players[index].values[field];
-                                            if (!destination->valid || destination->value != bounded)
-                                            { destination->value = bounded; destination->valid = true; }
-                                        }
+                                            function_749b0(group, index,
+                                                *(word *)&property->unknown00 - 1, value);
                                         received++;
                                     }
                             }

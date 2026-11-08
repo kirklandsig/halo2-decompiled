@@ -477,6 +477,11 @@ void __stdcall function_508d0(void *payload_data)
 	g_46713c = true;
 }
 
+// MiniMax D (11-05): no new form, no lower score; retail's self-aligned 0x1474 frame and its sole
+// caller at 0x508d0 (still a stub) keep this function out of reach.
+// MiniMax E (11-06): no new form, no lower score; retail's flag is its second parameter (CL) and it
+// pops six stack arguments, so retail's declaration has nine parameters against our seven; the frame
+// stays 0x1490 against retail's aligned 0x1474.
 // score 626 (was 626): frame 0x1490 versus aligned 0x1474; mode stack home versus CL remains.
 // Earlier 638 from 693: ESP realignment and mode convention still differ; native pair results improve length.
 // ESP realignment and mode convention still differ; native pair results improve length.

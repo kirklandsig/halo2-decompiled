@@ -456,6 +456,8 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// MiniMax E (11-05): no new form, no lower score; the second fabs inlined into the fmod call
+// gives 86 and a separate blend seed variable compiles the same as the reused one (84); both reverted.
 // MiniMax H (11-04): the permuter was stopped before it reported any variant (no output in 240 s
 // under the shared load); no lower score.
 // Round 30 (lane D): the permuter found no better form (82 tries, best 84, the baseline). On this body
@@ -465,6 +467,7 @@ void function_3dd10(long object_index, bool force);
 // 8 bytes short and every later branch target shifts. Original body kept.
 // MiniMax R (11-01): no new form, no lower score; the inverse before the eligible test 208 and the
 // constant order at the block entry stay as they are.
+// MiniMax G (11-06): the inverse moved into the found branch 132; no lower score.
 // score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator

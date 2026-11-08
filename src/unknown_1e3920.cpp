@@ -539,7 +539,7 @@ real normalize2d(point2f *vector);
 real function_267370(long object_index);
 
 
-// score 20 (was 98): First +0x140: plane x-product operands, parent-selection carriers
+// score 20 (was 20): First +0x140: plane x-product operands, parent-selection carriers
 // and cross-product registers remain; frame 0x90 and length 1724 agree. Signed zone
 // byte and NONE sentinel recover immediate zone compares, EDI table and later ECX resets
 // (plain 20). Existing marker and every call/value unchanged.
@@ -721,6 +721,15 @@ real function_267370(long object_index);
 // DL262: Signed zone byte 20 plain; const cluster/plane receivers isolated, then signed
 // combinations and const BSP receiver: 20/98/98/20/20/98/20/20.
 // Keep only the native byte/sentinel declaration; all optional const receivers restored.
+// DL264: Existing staged cross scalar inputs/setter/returned receiver,
+// combinations then immutable inputs: 83/24/20/87/83/24/87/87.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
+// B449: Existing cross producer with whole-vector field/aggregate/setter/const construction,
+// each with aggregate/library publication: 135/135/135/135/135/135/135/135.
+// NOT kept: aggregate staging has no byte match; every shared helper and target body restored.
+// Round 69 (m3 lane 14, fast with 0x1e2a90): the first cross reading up as the field expression 22 (its k products turn
+// b-loaded: the second product as retail, the first away); no up local at all 22; no left local 20, `vector3f *const` up/left
+// 20, the second cross with field expressions 20 (same code each).
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1071,6 +1080,13 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 
 // score 253 (was 253): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
 // substitution loop and the unit arm's placement (retail puts it after the mode-2 case) remain.
+// b5C (fast, 253): statement-by-statement walk against retail 0x1e0850 found no logic difference: every field, offset,
+// condition direction, callee/argument order (1e04a0's primary tag in EAX, grenade `(ebx - 1)` sign-extended on the
+// data path and `(word)cx - 1` on the squad path), the cos/sin products (fstp dword at 0x1e0a2c/0x1e0a37/0x1e0a42, same
+// term order) and the failure exits (0x1e0cfc: unit first, else perception) agree. Kept: the actor and object reads through
+// s_actor_view fields and ai_object_get (existing helpers, no new include; 253 either way, callers/callees unchanged).
+// Tried: character_definition_get for the tag reads (needs character_tag_accessors.h, 253 same); `for (;;)` with the top
+// break (253, same code). Remaining difference is only register/layout as above.
 // Earlier: Frame 0x118 agrees; sentinel EDI/ESI, squad/substitution homes and success layout remain.
 // Earlier 345 (was 364): frame 0x11c versus 0x118; sentinel and success blocks differ.
 // frame 0x118 agrees; entry sentinel, squad and substitution/result homes differ.
@@ -1239,6 +1255,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // DH356: Common Boolean query-default chains in both directions, probability zero
 // before/after, inner/outer query storage: eight at 253. Original body restored;
 // sentinel EDI/ESI, squad/query homes and rotated substitution head remain.
+// DL264: Matched alternate/ordinary creation and cleanup inline
+// contracts, seven subsets then all with the target inline: 253/253/253/253/253/253/253/253.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
 // Y589: Actual creation-payload/equipment-selection/actor-object last-use scopes,
 // seven subsets then all with immutable settings view: eight at 253. NOT kept:
 // sentinel/squad/query homes unchanged; original complete body restored.
@@ -1251,6 +1270,15 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // original guards, producer scope, sentinel defaults and entire body restored.
 // P333: Complete initial substitution admission, allowed/blocked in bool/byte/short/long:
 // eight 389s at 1307/1272. NOT kept: entry/query homes and extent regress; full body restored.
+// P349: Complete return/cleanup/settings/squad same-size lexical home orders:
+// 253/253/253/253/253/253/253/253. NOT kept: no byte equality; original executable source restored.
+// DH374: Successor-NONE result owned by while condition, bool/byte/signed-char/short/word/int/long/dword:
+// 253/253/253/253/253/253/253/253 (fast control 253; full 253).
+// NOT kept: no byte match or eligible gain. Original dynamic successor test, replacement result, query
+// defaults, refreshes, cleanup and full body restored; sentinel ESI and squad/query homes remain.
+// B452: Actual tag/squad/placement input layouts, seven subsets then all with immutable
+// squad/placement bindings: eight at 253. NOT kept: sentinel and query homes unchanged;
+// original input observations, outputs and complete body restored at the native frame/extent.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1314,8 +1342,8 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 			}
 			if (actor_index != NONE)
 			{
-				byte *actor = (byte *)actor_get(actor_index);
-				if (data[0x1c] & 1) *(short *)(actor + 0x86) = 0;
+				s_actor_view *actor = actor_get(actor_index);
+				if (data[0x1c] & 1) actor->unknown086 = 0;
 				if (*(real *)(data + 0x38) > 0.0f)
 				{
 					point3f position;
@@ -1326,53 +1354,53 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 					direction.k = (real)sin(*(real *)(data + 0x18));
 					function_1f34b0(actor_index, &position, &direction, *(real *)(data + 0x38), NONE);
 				}
-				if (*(long *)(actor + 0x18) != NONE)
+				if (actor->unknown018 != NONE)
 				{
 					byte request[0x20];
 					switch (*(short *)(data + 0x3e))
 					{
 					case 2:
 					{
-						byte *movement = (byte *)function_1e4a50(*(long *)(actor + 0x54));
+						byte *movement = (byte *)function_1e4a50(actor->unknown054);
 						if (movement && (*movement & 0x20))
 						{
 							*(long *)request = 0x2c;
 							request[4] = true;
-							function_e6900(*(long *)(actor + 0x18), (s_unit_request *)request);
+							function_e6900(actor->unknown018, (s_unit_request *)request);
 						}
 						break;
 					}
 					case 1:
 					{
 						vector3f forward;
-						function_b9fc0(*(long *)(actor + 0x18), &forward, NULL);
+						function_b9fc0(actor->unknown018, &forward, NULL);
 						forward.k = 0.0f;
 						if (function_30bf0(&forward) > 0.0f)
 						{
 							*(long *)request = 0x22;
-							function_b9dd0(*(long *)(actor + 0x18), (point3f *)(request + 4));
+							function_b9dd0(actor->unknown018, (point3f *)(request + 4));
 							*(real *)(request + 0x10) = forward.i * -1.0f;
 							*(real *)(request + 0x14) = forward.j * -1.0f;
 							request[0x18] = true;
-							function_e6900(*(long *)(actor + 0x18), (s_unit_request *)request);
+							function_e6900(actor->unknown018, (s_unit_request *)request);
 						}
 						break;
 					}
 					}
 				}
-				if (*(long *)(actor + 0x18) != NONE)
+				if (actor->unknown018 != NONE)
 				{
-					byte *object = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x18) & 0xffff) * 12 + 8);
-					long weapon = function_cbd50(*(long *)(actor + 0x18), (char)object[0x212]);
+					s_ai_object *object = ai_object_get(actor->unknown018);
+					long weapon = function_cbd50(actor->unknown018, object->current_weapon);
 					if (weapon != NONE)
 					{
-						byte *weapon_object = *(byte **)(g_4e0300->data + (weapon & 0xffff) * 12 + 8);
-						byte *local_67e06b_3 = g_4e3b44[*(long *)weapon_object & 0xffff].bytes;
-						if (*(long *)(local_67e06b_3 + 0x2f4) != NONE) actor[0x22a] = true;
+						s_ai_object *weapon_object = ai_object_get(weapon);
+						byte *local_67e06b_3 = g_4e3b44[weapon_object->definition_index & 0xffff].bytes;
+						if (*(long *)(local_67e06b_3 + 0x2f4) != NONE) actor->unknown22a = true;
 					}
 				}
-				if (*(long *)(actor + 0x18) != NONE && (data[0x1c] & 0x10))
-					function_b9c60(*(long *)(actor + 0x18), true);
+				if (actor->unknown018 != NONE && (data[0x1c] & 0x10))
+					function_b9c60(actor->unknown018, true);
 				function_a7b30(unit_index);
 			}
 			else
@@ -1517,6 +1545,10 @@ void function_1e3b60(long actor_index);
 // (457); plain unqualified word maximum re-measured 26 (429 at 1616 bytes); the current-target test as one named
 // bool 26 (438); the list head read through the held actor pointer 26 (442, 1616 bytes); the sample/update
 // flags declared before the prior state 26 (412, same code).
+// Round 69 (m3 lane 14, fast, all in 0x262ba0, which loads the actor into EBX at entry but hands EBX to a loop byte flag and
+// re-reads the actor from its stack home 12 times): `maximum` as a plain word 26 (429 at 1616 bytes); sample/update declared
+// at function scope 26 (412); the 0x2641c0 result in its own bool 26 (412); old_state short 26 (413); the actor pointer
+// declared then assigned 26 (412).
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
@@ -1828,6 +1860,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 	return slot != NONE ? unit->weapons[slot] : NONE;
 }
 
+// MiniMax H (11-06): retail keeps the actor in ESI and the object pool global in EDI across the callees and
+// re-reads the pool's data at every lookup, ours keeps the actor in EDI and re-reads the pool global itself;
+// the difference rides on the callee being opaque to LTCG, and that callee (0x1e53e0) is in another file.
+// MiniMax H (11-06): the pool pointer as a local, declared before or after the actor, gives retail's shape of
+// a held pool pointer, but the pool lands in ESI, the actor stays on the stack and the frame grows to 0x18, 283;
+// the score stays 251.
 // score 251 (was 251): Frame 0x14 and the actor index in EBX agree; the actor, options and object-pool registers
 // rotate (ours actor EDI, options ESI, pool never held; retail actor ESI, options EBP, pool global in EDI) and scalar homes remain.
 // Earlier: Frame 0x14 and actor ESI agree; the probability and delay clamps now match
@@ -1993,6 +2031,19 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P335: Standard min/max probability/increased/delay producers, seven subsets and
 // complete graph with final maximum consumer: 322/325/275/354/323/323/346/395. NOT kept: all regress;
 // original clamps, field observations, includes and complete body restored. Actor/options/pool homes remain.
+// B449: Repeated unit-handle/fraction-bound/round-bound field addresses, seven subsets
+// then complete readonly actor receiver: 361/251/361/251/361/251/361/361.
+// NOT kept: no exact field-receiver repair; all original per-use observations, queries and body restored.
+// P350: Shared real clamp at probability/delay/both, ordinary/inline, then forced single sites:
+// 256/284/286/256/284/286/256/284. NOT kept: regressions; original per-use clamps and body restored.
+// Y602: Readonly equipment/grenade settings and fixed unit receivers, then fixed settings pointers:
+// 251/251/251/251/251/251/251/251.
+// NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
+// b5E (11-06): statement-by-statement walk against retail 0x1e2a90, no behaviour difference found: ranges,
+// clamp bounds (0.1/0.6, 0.8/1.3), the 4.0 and 3.0 constants, the x87 fraction (random*(hi-lo)+lo rounded to float at
+// fstp 0x1e2e48), the (hi+1-lo)*random>>16 rounds, the 0.5 halving, store targets (unit+0x1f5 low byte, +0x23e) and
+// condition directions all agree. Raw offsets replaced by existing fields (s_ai_object flags134/unknown23c,
+// s_ai_globals unknown340): 251 (same code). Remaining difference is pool/actor/options residency only.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
@@ -2000,8 +2051,8 @@ void function_1e2a90(long actor_index)
 	byte *weapon_options = (byte *)function_1e5240(actor_index);
 	if (actor->unknown084 == 4 && actor->unknown086 >= 3 && actor->unknown018 != NONE)
 	{
-		byte *unit = (byte *)ai_object_get(actor->unknown018);
-		if ((unit[0x134] & 1) && *(signed char *)(unit + 0x1f5) > 0 &&
+		s_ai_object *unit = ai_object_get(actor->unknown018);
+		if ((unit->flags134 & 1) && *(signed char *)((byte *)unit + 0x1f5) > 0 &&
 			(function_cbd50(actor->unknown018, ai_object_get(actor->unknown018)->current_weapon) != NONE ||
 			function_cbd50(actor->unknown018, *((signed char *)ai_object_get(actor->unknown018) + 0x213)) != NONE))
 		{
@@ -2033,22 +2084,22 @@ void function_1e2a90(long actor_index)
 					delay = function_259d0(&g_4e7408->unknown0, NULL, 0, 0.8f, 1.3f);
 				long ticks = function_1469f0(delay);
 				function_c6f80(actor->unknown018, (short)ticks, 0x210000);
-				unit[0x1f5] = (byte)ticks;
+				((byte *)unit)[0x1f5] = (byte)ticks;
 			}
 		}
 	}
 	if (actor->unknown018 != NONE)
 	{
-		byte *unit = (byte *)ai_object_get(actor->unknown018);
+		s_ai_object *unit = ai_object_get(actor->unknown018);
 		byte *grenade_options = (byte *)character_grenade_settings_get(actor->unknown054,
-			*(signed char *)(unit + 0x23c));
+			unit->unknown23c);
 		long weapons[2];
 		weapons[0] = equipment_current_weapon_r21(actor->unknown018);
 		weapons[1] = equipment_secondary_weapon_r21(actor->unknown018);
 		if (!(g_4e6948->state == 1 && g_4f55e5) &&
-			(!*((byte *)g_4f55d0 + 0x340) || (grenade_options &&
+			(!g_4f55d0->unknown340 || (grenade_options &&
 			*(real *)(grenade_options + 0x38) > function_x82e52f(&g_4e7408->unknown0, NULL, 0))))
-			*(short *)(unit + 0x23e) = 0;
+			*(short *)((byte *)unit + 0x23e) = 0;
 		if (weapon_options)
 		{
 			short i = 0;

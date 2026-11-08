@@ -181,8 +181,25 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax R (11-07): no new form, no lower score; the user flags still load into eax where retail loads them
+// into the dying user pointer register ecx. This round: reading the flags once into a named dword, so the
+// pointer is used only for that load, is byte-identical to the baseline, so the register choice does not come
+// from the number of loads; the reduced image still leaves the 0x6cd50 call and two globals unresolved.
+// MiniMax C (11-06): no new form, no lower score; the user flags still load into eax where retail
+// loads them into the dying user pointer register ecx, and the block layout is the same in both
+// builds, so every other difference the reduced image reports is a global address, a call target
+// or a branch displacement; the permuter on this function was killed at its time limit and wrote
+// nothing, so it searched nothing.
+// MiniMax G (11-05, r3): no new form, no lower score; the flags still load into eax where retail
+// loads them into the dying pointer register ecx.
+// MiniMax G (11-05, r2): no new form, no lower score; the flags in a named local, the flags read
+// through a pointer to the field and the precomputed user pointer still load the flags into eax.
+// MiniMax G (11-05): no new form, no lower score; the user flags are still loaded into eax where
+// retail loads them into the dying user-pointer register ecx.
+// MiniMax B (11-05): no new form, no lower score.
 // MiniMax I (11-01): the user flags are still loaded into eax where retail loads them into the dying user pointer register ecx; a conditional-expression user pointer (both polarities, with and without a record cursor), the flags and the pointer in function-scope locals and the mask test first all leave the code as it was.
 // MiniMax A (11-03): no new form, no lower score.
+// MiniMax G (11-04): no new form, no lower score.
 // score 14 (was 14): this round: compiling the file without whole-program optimisation (/GL- in the
 // file's flags) drops the register calling convention retail's code uses, so every function in the
 // file stops matching; the flags in a named local and the two tests split into two ifs stay

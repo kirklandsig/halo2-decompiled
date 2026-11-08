@@ -2,6 +2,8 @@
 #include "unknown_044e90.h"
 #include "normalize3d.h"
 
+plane3f *function_1428b0(transform4x3f const *matrix, plane3f const *plane, plane3f *out);
+
 struct s_visibility_bound_record
 {
     point3f center;
@@ -10,14 +12,14 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
-// MiniMax S (11-01): the entry address and the flags load keep the first difference at +0x10; no lower score.
-// score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
+// score 476 (was 406; fast, 1700 B, aligned ratio 0.675 -> 0.727): the plane transform is a call to function_1428b0, retail's inlined
+// body, which also stores 0 into the distance for a zero scale (behaviour fix, b2L walk 11-06). Entry/table and stack homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
 // Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
 // Storage headers are at 0xb0/0x10bc/0x20c8/0x40d4 versus retail 0xb0/0x10c0/0x20d0/0x40e0.
 // Input plane homes are 0x2c/0x30/0x34/0x38 versus 0x34/0x38/0x3c/0x40; normal registers,
 // inverse-scale reuse, distance division and capacity-release scheduling also differ.
-// Scale-zero distance handling may differ semantically; it remains unchanged pending a behavior fix.
+// (Scale-zero distance handling is now retail's, through function_1428b0.)
 // plain plane for 2649; native view ranges 438; plane copy blocks 438; center point setter 438; views read
 // before entry 442; entry bitfield 441
 // Round 310: long bound index 438; explicit plane query 438; visibility-word pointer 438;
@@ -272,6 +274,25 @@ struct s_visibility_bound_record
 // Y582: Actual fallback sphere-query return in bool/byte/word/long, success publication
 // or failed-query continue: 406 each. NOT kept: one-use results miss equality; original
 // call, direct test, input observations and full body restored; entry/table/plane homes remain.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 406 [357]): part loop: named word-mask pointer 406; containment flag
+// set in the arm 406 [356]; both 406; `inline` on 0x142a60 407, on 0x165010 406, on 0x45a80 and 0x458d0 406. Plane transformed in
+// place with one store at the join and retail's zero-scale store 476 (1700) [278]; flags at each use with a (bool) bit test 474
+// (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
+// chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
+// movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
+// Round 129 (m3 lane 7, fast, 393 confirmed plain; aligned/masked = difflib counts, control 274/98; the score is positional, so forms were chosen on those first). NOT kept, 393 (1762 B, 208/65; restored, the gain needs the `visible` move, a field read moved ahead of calls): retail's plane block (zero scale
+// stores 0 through the tail shared with the division, normals copied then scaled, one store at the join with `0.0f - d`; this also fixes the zero-scale value difference earlier notes left open), flags read at each use and the (bool) bit test
+// (retail's `shr ecx, 0xc; test cl, 1`), the table local read before the tag test (retail's ESI, two uses), a structure local in the else arm (retail's read ahead of the test), a state local for the views and active reads, sign-mask capacity
+// tests, chained counts/capacities in retail's store order, and `visible` read before the node loop (retail reads it there; the matrix calls write only their output). Removing any from 393: visible 451, state 454, structure form 449, capacity tests 487,
+// chained lists 451, bit test 456, plane block 498; retail's arm order, explicit query fields, a word pointer and direct field forms change nothing here 393 (restored).
+// Match path, none of it keepable alone: 0x458d0/0x45a80's index as `long` (retail's calls push `movsx eax, word [ebp + 8]`; both stay matched with plain `(short)index`, no address-of; call arms then come out exactly as retail with the pushes
+// un-hoisted; 0x45560 182 -> 183, its body untouched), and the part components as scalars in place with a named scale in place of vector3f_scale: 377 (1763 B, 153/44). The existing geometry helper (short overload moved to a header) gives retail's
+// else arm at retail's 1742 B, 425 (152/39), entry-pointer overload 448 (124/35; 0x458d0 falls to 138 in that image). Retail re-reads entry->tag at the bottom where ours reuses EAX from the first read (the copy `mov ecx, eax`); a short read there
+// (a steering cast, diagnostic) frees EAX: 428 (127/33), with the state local 417 (112/30). Left then: count test `xor; cmp` for `test` and `mov; test` on active (zero register live from the list counts), query-data arms (written as if/else the bool
+// test threads away, 427, 117/37; one shared address-taken bool for parts and containment 427, a parts helper 417/427, `do {} while (false)` around it 417/427), lea entry, the plane cursor base at .k (ours .j; store orders move it but never to .k).
+// On the kept 393: negated distance named before the stores 393, list pointers second/first/third/fourth 394, outputs declared i/k/j 393, normals scaled in place 393, visible after the object index 393, scaled copies declared k/i/j 406.
+// With `visible` left after the node loop, 64 combinations of state local, structure/section with and without the (bool) bit, chained lists, capacity tests and table local: best 411 (1760 B), then 435-440, none under 406; all restored. Behaviour difference still open:
+// (fixed in the b2L walk: see the note above @retail.)
 // Y585: Initialized containment false at unseen/bound-index/bound/transform/local-point/
 // scaled-point/first-center/completed-center boundaries: 406/406/406/406/406/417/417/417.
 // NOT kept: no eligible gain; original producer and full body restored; entry/table and plane/query homes remain.
@@ -287,9 +308,34 @@ struct s_visibility_bound_record
 // (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
 // chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
 // movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
+// M3 lane 10 r73 (fast; aligned/masked in brackets, control 406 [357/254]): retail's `lea ebx, [eax + table]` reads as a repeated sum, so the tag read
+// through the array expression 467 (1768) [351/251], the flags through it 448 (1742) [346/242], both 467 [351/251] (the read folds instead); the entry as
+// `table + index`, through a long index and through a const reference to the index 406 each (same code); the plane copy as two statements 406 (same code).
 // T61: Ordered parts-mode result, preset-false and exhaustive outcomes in bool/byte/short/long:
 // 411/411/450/450 and 408/408/413/446. NOT kept: test-produced flags miss equality;
 // original conjunction and full body restored. Entry/table and plane/query homes remain.
+// MiniMax E (11-04): entry flags read per branch 442, the same with a shifted instance flag 444, the tag table read once at the top 455, an int index local 406, the entry address as an explicit stride and with named offset and index locals 406, the permuter's best 403 (that variant swaps call arguments); no lower score.
+// MiniMax S (11-01): the entry address and the flags load keep the first difference at +0x10; no lower score.
+// M3 lane 16 r91 (fast; aligned unmatched in brackets, control 406 [286]): retail builds the four lists in the order
+// second, first, third, fourth (the reverse of its releases) and releases them on a sign-bit test (`js`) after reading all
+// four capacities. Counts and capacities as two chained assignments 407 [284]; the four list starts in retail's order 405
+// [284] (one point, not kept); the same through a four-caller inline list-start helper 405 (same code); with the plane
+// query declared ahead of the lists 407; the starts in retail's order with the tag table read once at the top 454 (1728 B)
+// [263]; with `!(capacity & 0x80000000)` release tests 482 (1776 B: the release block and the init's `mov esi, ecx`
+// copies become retail's, but the plane loop's registers turn over) [264]; that plus the table local 462 (1792 B) [277].
+// M3 lane 12 r93 (fast, 0x44720/0x458d0/0x45a80 match, 0x45560 182): the entry as `g_4ba138 + entry_index` 406
+// (same code); the tag test's arms swapped (NONE arm first) 450 (1748 bytes); the geometry query count named and
+// used for both tests 406; the tag in a named local for the test and the definition 406; the bottom arm's object
+// index read before its tag 406. Retail's bottom arm reads the tag again, then the visibility word pointer, with
+// the table still in ESI from entry.
+// b2L walk (11-06, against retail statement by statement): entry/tag/section/geometry reads, query-count and parts test, list setup
+// (frame offsets 0xb0/0x10c0/0x20d0/0x40e0, capacities), the call and release order, the node loop (unsigned /0x34, 0x142a60 args),
+// the part loop (bound stride 0x14, scale test, centre rows, 0x165010 args, flag stores) all agree. One behaviour difference found
+// and fixed: for a zero transform scale retail stores 0 into the plane distance (0x450e3 jnp -> 0x45129 stores xmm0 = xorps zero);
+// the old body left it unchanged. The plane block is retail's 0x1428b0 inlined (same instructions), so it calls function_1428b0
+// (in place; 0x1428b0 and 0x17e670 unchanged). Tried with the call: whole-plane store 478, normal vector copy 478, d first 476,
+// views declared before the entry 487, tag table in a local 485. Remaining: retail spills views [esp+0x2c] and entry [esp+0x30]
+// and loads the table into ESI up front; ours keeps them in registers (42 bytes smaller).
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
@@ -350,31 +396,11 @@ void __stdcall function_44e90(short entry_index, short section_index)
                 {
                     plane3f p = *source;
                     if (transform)
-                    {
-                        real n_i = p.i, n_k = p.k, n_j = p.j;
-                        if (0.0f != transform->scale)
-                        {
-                            p.d -= transform->position.x * n_i + transform->position.z * n_k + transform->position.y * n_j;
-                            if (transform->scale != 1.0f)
-                                p.d /= transform->scale;
-                        }
-                        if (transform->scale != 1.0f)
-                        {
-                            real inverse = 1.0f / transform->scale;
-                            n_i *= inverse; n_j *= inverse; n_k *= inverse;
-                        }
-                        planes[j].i = transform->forward.k * n_k + transform->forward.j * n_j + transform->forward.i * n_i;
-                        planes[j].j = transform->left.k * n_k + transform->left.j * n_j + transform->left.i * n_i;
-                        planes[j].k = transform->up.k * n_k + transform->up.j * n_j + transform->up.i * n_i;
-                    }
-                    else
-                    {
-                        planes[j].i = p.i;
-                        planes[j].j = p.j;
-                        planes[j].k = p.k;
-                    }
-                    p.d = -p.d;
-                    planes[j].d = p.d;
+                        function_1428b0(transform, &p, &p);
+                    planes[j].i = p.i;
+                    planes[j].j = p.j;
+                    planes[j].k = p.k;
+                    planes[j].d = -p.d;
 
                     ++source;
                     ++j;

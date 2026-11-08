@@ -318,6 +318,27 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax A (11-06): no new form, no lower score; retail's frame is 0x14 with the pool in two stack homes
+// (one for the scan, one for the element), the index home a third, the datum index in EDI and the object
+// pool re-read from the global at each use, while ours has a frame of 0xc with the pool forwarded into
+// EDI, the object pool hoisted into EBP and the datum index in EBX; the element's fourth dword is read
+// after the datum's short in ours and before it in retail. The fast check builds a reduced image in which
+// the two globals are unresolved, so every load of them counts as a difference and the fast score
+// overstates the real gap.
+// MiniMax A (11-06): no new form, no lower score; retail's frame is 0x14 with the pool in two stack homes and the
+// object pool read again at each use, ours keeps the pool in EDI and the object pool in EBP across the loop; a
+// second pool home needs a second pool value at the call, and the spellings of that give 155 (the global at the
+// call), 157 (the global for the scan) and 163 (a pool local), all worse.
+// MiniMax H (11-06): no new form, no lower score; retail's frame is still 0x14 with the pool copied to a
+// prologue home and a second home for the element and the datum index in a register, ours is 0xc with the pool
+// forwarded into edi for both reads; every form that gives the pool a second home leaves the frame at 0x10 and
+// scores 155 or more, so the body stands.
+// MiniMax S (11-05): no new form, no lower score: retail's datum scan is inlined with a frame of 0x14, the pool copied
+// to a prologue home and a second pool home for the element, while ours calls the scan out of line with a frame of
+// 0xc and forwards the pool into edi; no source form tried this round changes the frame or the pool homes.
+// MiniMax H (11-05): no new form, no lower score; the frame is still 0xc against retail's 0x14, the pool is
+// still forwarded into EDI for both reads where retail keeps it on the stack, and the flag register is still
+// blocked by 0xf0fd0.
 // MiniMax H (11-04): no new form, no lower score; retail's frame is four bytes taller and it reads the pool from the iterator's home and from a second stack copy where ours forwards the pool into edi for both, and the earlier rounds of forms all leave 122.
 // MiniMax B (11-03): no new form, no lower score.
 // score 122 (was 122): frame 0xc against retail's 0x14; retail reads the pool from the iterator's home for
@@ -494,6 +515,14 @@ extern "C" void _ReadWriteBarrier(void);
 // iterator set from the global 163 (481 bytes); without the barrier 161 (479 bytes); release through the pool
 // local 126; `pool = iterator.data` after the iterator's assignments, element only 122. Retail's frame reads as
 // a four-field datum iterator at +4 plus a prologue-set pool copy at +0 read only for the element.
+// Round 55 (m3 lane 2, fast, register-masked aligned count in brackets, 122 is [32]): retail's frame +0 fits the hoisted pool of the
+// shared step spilled for lack of a register, so the real gap is pressure: its datum value stays materialized (`xor ebp, ebp` ... `test
+// ebp, ebp`) where every form here threads it. data_iterator_next_inlined with/without the barrier 162 [25]/152 [26]; four-field
+// iterator with/without 162 [25]/152 [26]; no barrier alone 161 [29]; function_badc0 without the barrier (plain) 152 [26]; the lookup
+// in the body as one test, an assigned unit, a default-first unit or a ternary 152 [26] each; an out-parameter lookup, a staged cast and
+// const references to the result 152 [26] each; `__assume` after the lookup, three facts, 161 [29], with the shared step 152 [26]. The
+// barrier moved into the lookup 149 [28], with the shared step 153 [24], four-field 153 [24] (branch shape right; still frame 0x10
+// and g_4e0300 in a register).
 // @retail 0x1fb510
 void function_1fb510(void)
 {

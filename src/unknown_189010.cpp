@@ -149,6 +149,25 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax B (11-06): no new form, no lower score; retail reads the audible byte from the request and
+// builds the priority and the flag word before it copies the request, this build copies the request first
+// and takes the byte from the copy, and retail still calls 0x221810 where this link expands it.
+// MiniMax C (11-06): no new form, no lower score; this link still inlines 0x221810 so the state flags are forwarded across the call where retail reloads them (0x221810 lives in src/unknown_221490.cpp).
+// MiniMax E (11-06): score 110 (was 110): no new form lowered it. The location copy after the flags
+// (retail's header order) with the priority before or after the flags gives 140/150 and the flags as
+// ternaries 160; the priority read from the request alone is 109 at 472 bytes, a gain of one, dropped
+// by the review rule, so the original body stays. Still different: retail builds the flag word in EAX
+// with the source loaded before the tag lookup and ours in EDX, retail's object and platform bits use
+// the or/and complement form and ours only or, retail homes the sound pointer at [esp+4] where ours
+// keeps it in EBP, and retail copies the location after the flags where ours copies it first.
+// MiniMax D (11-04): no lower score. With the source in a local declared before the sound lookup our
+// load order is retail's (the tag table's base, the source, then the lookup) and the priority comes from
+// the request byte, but the link still gives EAX to the source and EDX to the tag table's base where retail
+// gives EAX to the base and EDX to the source, so the flag word is built in EDX; that form scores 135 at
+// 486 bytes, and 149 at 499 bytes with retail's set-or-clear object and platform bits. With the sound
+// lookup written first the base keeps EAX, but then the source's load lands after the lookup. The priority
+// read from the request alone is 109 at 472 bytes, and the permuter's best form (the 0x400 bit set after
+// the variant stores) is 109 as well; both gains are too small to keep. Body restored to the original.
 // MiniMax G (11-04): the priority read from the request and stored before the location copy 106 (a gain of
 // four, dropped by the review rule); the end test split into the 0x100 and the 0x800 masks, or written as a
 // shift, 106; the class test as nested ifs 106; the class lookup nested under the sound-flag test 160 (446
@@ -297,6 +316,18 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // Round 106 (plain): nested class condition, bool/long end-update results, previous value20/value24/both and
 // disjoint source mask 110 each; word +0xa 132 (478), marker-size local 131 (470), location-flags local 111 (474).
 // Original body restored.
+// Round 154 (m3 lane 6, fast with its 8 matched callers): the class lookup as a shared header helper (if/else,
+// named locals, both) 110 (same code); header = NULL then if 131; tag test as == NONE 152; class test through a
+// named bool / inverted / nested 110; flag as a ternary OR 136; retail's header order alone 163. The lookup's inline
+// cost is not lexical (named locals change nothing) and the file already has /Ob1; retail inlines 0x221810 at hot
+// sites (0x20b660's loop), so here it needs a colder site than one `if`. Body unchanged.
+// M399: Existing post-playback class input read-only, immutable variant binding/completed-time producer,
+// seven nonempty subsets 110 each; all with immutable tag-index formal 110. NOT kept: every form ties.
+// Original whole body restored; early source/header work, first query expansion and playback register homes remain.
+// M401: Playback definition/declaration/sole call reordered together to (tag, state), default/stdcall/cdecl/fastcall,
+// then the same four with inline metadata: 110/110/134/110/110/110/134/110.
+// NOT kept: native EAX state/stack tag setup is not recovered; all interface, provider and caller changes restored.
+// Frame 0xa8 agrees; early header work, first class-query expansion and playback homes remain.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -753,6 +784,14 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // 0xfcdd0, 0x184440 (67 sources), 0x1201a0, 0xfd410 or 0x17bbd0 (57) it matches; with any member of the large call cycle
 // (0xfc330, 0x10c880, 0x17a8a0, 0x188180, 0xfcea0, 0x1765e0, 0x247470 ...; 533+ sources) the swap appears, so 0xfcdd0 and
 // 0x184440 no longer bring it. Direct calls of 0x1895f0: retail 10, ours the same 10 plus the stand-in.
+// Round 152 (m3 lane 6, fast with 0x188180): this function placed before 0x1895f0 / before 0x189fe0 in the file 2/2 (source
+// order inside the file does not move it); the forward compressed after the velocity and location copies 20; the maximum
+// distance looked up just before the along test 197 (676 bytes); the length test arms swapped (`== 0.0f` first) 127 (661
+// bytes). Lead: retail's `pop esi; mov al, 1` is what a scheduler gives when the call is taken to define EAX; the 0x1895f0
+// result reaches callers through 0x189400 -> 0x189210 -> 0xc5890 (0x188180 and 0xc58f0 drop it).
+// Round 155 (m3 lane 6, fast with 0x188180): the play call through a void inline wrapper 35; the result flag as a long
+// 169 (657 bytes); the player unit lookup as a ternary 157 (658 bytes); the forward normalized before the position sums
+// 27; the camera-active exit as an enclosing test with the other exit kept 2.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

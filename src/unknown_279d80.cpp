@@ -2000,6 +2000,15 @@ void function_27dd10(void)
 // weight, interpolate_real, no scale local) 2 each, so arms folded away do not count; saved frame state as dword or long, fraction
 // first 2, next index first 6; apply index named in both arms 2; counters pre-incremented or += 1 2; the group end with the compare reversed 8;
 // a named table pointer for the outputs 2.
+// Round 67 (m3 lane 14, fast; 0x281b60 moves with it): in function_288572 the inner bound as an if-clamp
+// after `arg_5 + 8` 208 (0x281b60 241, 0x288570 401), as `local_3 = arg_7; if (arg_5 + 8 < local_3) ...` 5
+// (`jge` for retail's `jg`, the reload pair unchanged; 0x281b60 64); the outer for as a while 2; the
+// output selection as if/else 2; in function_288573 the blend-1 rotation weight named 2.
+// Round 140 (lane 8, fast with the four matched walk users): the wrapper's count local renamed
+// `node_count` or `count` 2/2 and the walk's bit-flags local renamed 2 (the reload pair is not a name
+// tie); the bit flags as int 2; the count parameter `long const` 2 (0x281b60 2 throughout). The two
+// reloads sit on the bit-set path only (the bit-clear path joins at the bound load), after the blend-1
+// asm that clobbers EBX; blend 3 (0x285750, matched) applies through C code and the EAX-only multiply.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2112,6 +2121,13 @@ void function_2818e0(void)
 // Round 143: real sign lanes with negative zero 245 (1685 bytes, all controls regressed); the sign mask renamed 2;
 // prefix / += / assignment counter updates 2 each; register flags 2; register count 2; a const group bound 2.
 // All restored; the count/flags reload pair and frame 0x34 remain.
+// Lane 11 round 70 (fast): a ternary lvalue counter update 2; a counter pointer by ternary at the increment 2 or at the helper's top 2 (0x288570 120 in
+// all three); the bit flags shifted by an explicit assignment 2; the bit test as `(flags & 1) == 1` 2 (0x288570 3, 0x289580 78). Here and in 0x2bdc70
+// ours reloads the later-declared variable first, retail the earlier-declared one.
+// Round 154 (m3 lane 5, fast with 0x27dff0, which has the same pair): in function_288571 the counter resets before the
+// node-count read 6 (both); the resets in reverse order 2; in function_288572 the flags byte read and the cursor stepped
+// as separate statements 2; the outer group loop as `while` 2; the later passes' clamp tested count-first 2 (both
+// functions identical in each but the first).
 // @retail 0x281b60
 void function_281b60(void)
 {

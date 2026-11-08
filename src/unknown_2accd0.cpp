@@ -610,6 +610,17 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax D (11-07): score 34 (was 34): no new form and no lower score; dropping the named total still gives
+// retail's head (the sum in EDX, the task pointer in EAX) but the dispatch then hoists body_size into ESI where
+// retail reuses the switch register ECX, so the signature position is a one-byte-shorter add and every later
+// branch shifts by one byte; the signature case made the switch default with that total scores 177.
+// MiniMax E (11-06): no new form, no lower score.
+// The head's total needs a fresh register (retail EDX): dropping the named total fixes it
+// (the sum then lands in EDX) but reorders the header case's loads and scores 88; two size
+// locals with the total from them score 91, the position declared first scores 34 with the
+// scratch getter's stores in retail's order, the position computed first scores 158, and a
+// function-scope position scores 34. Left: the hoisted body_size in ESI (retail ECX), the
+// body pointer in ECX (retail EDX) and the size/position pair swapped between ESI and EDI.
 // MiniMax b (11-04): no new form, no lower score; the entry total still lands in EAX (retail EDX) and the body's size/position still in ESI/EDI (retail EDI/ESI); an unnamed total fixes the head but reorders the header case's loads and scores 88, and the state store moved ahead of the total scores 232; the permuter's 188 annealed tries found nothing below 34, and the scratch clamp reading g_4fa0c8.size directly scores 159.
 // score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
@@ -883,10 +894,55 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // P327: API-returned file/signing handles, original/mutable/const producer pairs
 // excluding both original: 34/34/34/161/161/34/161/161. NOT kept: ties or larger
 // 689-byte bodies; original API publications, field observations and full body restored.
+// Round 212 (m3 lane 3; compile-only exact here, real --fast where given, aligned in brackets, base [23]): no total local with the signature
+// seek through a new inline (file, position) helper 28 fast (687) [17]; the same code from no total local plus a one-use `HANDLE file` in the
+// signature case 17 compile-only (one-use local, not kept); that file local used for the ReadFile too 195 (682) [53]; plus the clamp through
+// the record's field 153 fast (689) [3]: only retail's dispatch hoist and `lea esi, [ecx + edx]` are then left (the signature sum still
+// coalesces body_size into ESI). On that form: the seek helper with a long or const-reference parameter, forceinline, an internal copy, or
+// named/cast parts for the sum 148-149 compile-only (no change); a body-size local in the body case 152 [7] (sums turn header first and the
+// compare flips); with an offset local too 152 [7]; one multi-definition body-size local across both cases 152 [7]; the body test as
+// `body_size > body_offset` 152 [9]; the sum repeated in the equality through named parts 171 [45]; `dword const &position` 171 [43], in the
+// helper 148 [4]; a shared signature-offset helper at the entry and the signature case 118 [47]. No total local alone 68 [57]; the signature
+// position declared after or between the buffers 68 [57].
+// Round 212, later (real --fast): no total local plus a one-use `HANDLE file` 28 [17]; plus a named remaining in the clamp, direct arm's size first and
+// the flipped body test 29 [18]; the same with the seek helper and a file local 29 [18]; no total cast, the clamp re-reading the record's size twice, seek helper 28 [17].
+// Grid of 143 compile-only forms over these: lowest positional 17, lowest aligned 4 at 148. Not kept: each needs a new one-caller helper or a one-use local.
 // DH370: Actual successful-read transfer-count equality producers, header/body/signature
 // subsets 1/2/4/3/5/6/7 and all complementary incompleteness: eight at 34.
 // NOT kept: no exact comparison-result form; original body, getter, API boundaries
 // and cleanup restored. Entry total and seek/size carriers remain.
+// F403: Actual completed-offset/cancellation/signing-flags producer subsets 1/2/4/3/5/6/7,
+// then positive admission on the complete graph: 126/161/161/82/82/161/82/223. NOT kept: all regress;
+// original scalar producers, observations, getter, API tuples and complete body restored.
+// Fresh total and independent extent/seek/transfer carriers remain.
+// Round 57 (m3 lane 15, fast; brackets aligned with registers kept, stack masked; base [23]): cross of total, signature
+// sum and clamp (36 forms): no total local, helper at the signature only, `MIN(g_4fa0c8.size, remaining)` with a buffer_size local 153 (689) [4], left: the signature
+// sum coalesces body_size into ESI, so its load is not head-merged with the body case; the same with the original clamp 28 (687) [17] (one-caller helper, not kept); field
+// clamp alone 161 [12]; two-site helper 155 [31], with remaining 151 [27], with the field clamp 152 [23]; helper at the signature with the field clamp 156 [7]. On
+// the [4] form: sum repeated with named parts 175, by field 217; named body local in the equality 214, in the sum 175; two-statement position 175; `default:` for the
+// case 156; flipped body test 157; named position with `__assume(position >= body_size)` 175; `__assume` on the state, file or body size at the dispatch, the
+// signature or the body case 153/156.
+// AC553: Existing unsigned-total and real-denominator lexical identities, four
+// independent names each: 34/34/34/34/34/34/34/34. NOT kept: no native fresh-register
+// or size/seek allocation change; original scalar names and complete body restored.
+// DL269: Shared scratch task/buffer/size reference interfaces, subsets 1..7: 34 each;
+// all with ordinary inline 174 (fast/full control 34). NOT kept: no gain or equality.
+// Original helper, all three uses and callback restored; total/seek/size homes remain.
+// DL271: Standard-library capacity minimum, shared/separate capacity and direct/named
+// remaining expressions, both native bound directions: eight at 207, 717/719 bytes.
+// NOT kept: no equality; original macro, capacity output, total/seek homes and body restored.
+// Round 76 (m3 lane 10; fast, a compile-only harness in brackets, base [27]): a two-caller inline read-at-position
+// helper (seek, read, byte-count test) for the body and signature cases 212 (691 bytes); no total local with the
+// position on the left of each seek compare 89; the signature seek and read as nested ifs 34; a const signature
+// position 34; the body pointer as `&body[offset]` 34. Harness only, all [27] (same code): the signature position
+// declared after the buffers, `body != NULL`, a const total or total_size; the position on the compare's left [28];
+// on the no-total base [82] each of those, the byte count declared later, the total summed body first, sizeof first
+// or through a dword cast; the signature sum written in both the seek and its compare [96] (it reloads after the call).
+// Retail's body_size temporary shares ECX with the body arm's remaining count, so the signature sum cannot fold into it.
+// Round 57 (m3 lane 2, fast; 0x2adb10 matched throughout): the matched sibling's clamp (a `buffer_size` local, `size =
+// MIN(remaining, buffer_size)`) 161 (691 bytes), with the total and the signature position written body first 161; the signature
+// position written body first alone 34 (same code); the direct arm's size before its buffer with `MIN(remaining, size)` 35; the
+// body case's file handle in a two-use local 168 (695 bytes).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

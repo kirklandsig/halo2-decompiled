@@ -37,27 +37,32 @@ struct s_geometry_visibility_list
 	long count;
 };
 
-PRIVATE __forceinline byte *visible_entry_geometry(s_44940_entry *entry)
+/* the geometry of an entry, as one result; entry_flags is the entry's first word,
+   which every caller has already read */
+PRIVATE __forceinline byte *visible_entry_geometry(s_44940_entry *entry, dword entry_flags)
 {
+	byte *data;
 	if (entry->tag != NONE)
 	{
 		byte *definition = g_4e3b44[entry->tag & 0xffff].bytes;
 		byte *sections = *(byte **)(definition + 0x28);
-		return *(byte **)(sections + ((entry->flags >> 9) & 0x1ff) * 0x5c + 0x34);
-	}
-	byte *structure = (byte *)g_4e0348;
-	byte *data;
-	if (!((byte)(entry->unknown00 >> 12) & 1))
-	{
-		byte *section = *(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0;
-		data = *(byte **)(section + 0x50);
+		data = *(byte **)(sections + ((entry->flags >> 9) & 0x1ff) * 0x5c + 0x34);
 	}
 	else
 	{
-		byte *instances = *(byte **)(structure + 0x144);
-		short index = *(short *)(instances + ((entry->flags >> 18) & 0x7ff) * 0x58 + 0x34);
-		byte *section = *(byte **)(structure + 0x13c) + index * 0xc8;
-		data = *(byte **)(section + 0x50);
+		byte *structure = (byte *)g_4e0348;
+		if (!((byte)(entry_flags >> 12) & 1))
+		{
+			byte *section = *(byte **)(structure + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0;
+			data = *(byte **)(section + 0x50);
+		}
+		else
+		{
+			byte *instances = *(byte **)(structure + 0x144);
+			short index = *(short *)(instances + ((entry->flags >> 18) & 0x7ff) * 0x58 + 0x34);
+			byte *section = *(byte **)(structure + 0x13c) + index * 0xc8;
+			data = *(byte **)(section + 0x50);
+		}
 	}
 	return data;
 }
@@ -161,6 +166,7 @@ void function_44720(void)
         ++index;
     }
 }
+/* draws the visible parts of the entries a selection mask and level pick */
 // MiniMax R (11-01): retail builds the flag it passes to 0x41040 at the call site out of the
 // fourth argument's slot (`cmp dword ptr [esp+0x60], 0x1f` / `setne cl`), so the flag is that
 // argument, not the level; writing it that way reproduces those bytes and the 0x40 frame but
@@ -269,13 +275,6 @@ void function_44720(void)
 // Round 330: Native entry level/transform/both 107/107/107; complete geometry field
 // views with live level 135; with native level/transform/both 107/107/107; all views
 // with live level 135. Original entry type, selector and body restored; frame and reloads remain.
-// Round 19 (lane 17, fast with 0x44720/0x45560/0x458d0/0x44e90/0x44690): BLOCKED-BY 0x41040 and
-// 0x45ce0 (todo, outside this machine's files): the inner loop's call setup and the hoisting around it
-// follow those callees. Level at the call re-measured 135 (487 bytes); with the entry as `g_4ba138 +
-// (short)index` 135 (same code). Diagnostics (mixed entry/global reads): level at the call with the
-// transform read as `g_4ba138[(short)index].flags & 0xf` 136 (503 bytes); the cached byte with that
-// transform read 147 (508); level at the call, that transform and the lookup given the indexed entry
-// 157 (515).
 // Lane 18 round 36 (fast): level at the call re-measured 135 (487 bytes); on it `geometry` declared at the
 // loop-body top 135 (same code), a `short` loop index 137 (503 bytes, frame still 0x44), the material index read
 // from the table at each use 135 (same code), `material` declared before the weight 136. 0x41040 (300) and
@@ -284,6 +283,12 @@ void function_44720(void)
 // selected material as `NONE` then `if (force || ...)` 136 (486 B); the parts under `if (geometry)` on the
 // current form 107 (same code); level at the call with that if/else selection 137 (485 B); the geometry lookup
 // with one exit and the structure global read per arm 132 (488 B, 0x45560 239). Original body restored.
+// Y608: Actual flags/selection/detail-array field lvalues, seven subsets,
+// 125/107/107/125/125/107/125; complete identities with call-use level 133/486 bytes.
+// NOT kept: no exact frame/geometry graph; original whole body and shared selector restored.
+// Round 394: complementary omit-level bool/byte/short/long at entry
+// 133/133/138/138; before the outer loop 150/150/143/144. Original restored.
+// Retail compares +0x60 after the first mask push, so that operand still reads level.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
@@ -292,17 +297,17 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
     long begin = !group ? 0 : (word)g_4c0b78.previous;
     for (long index = begin; index < end; ++index)
     {
+        dword entry_flags = g_4ba138[(short)index].unknown00;
         s_44940_entry *entry = &g_4ba138[(short)index];
-        if (!((entry->unknown00 & selection_mask) & 0x1fffff) ||
-            ((entry->flags >> 4) & 0x1f) != level || !(entry->unknown00 & 1) || entry->unknown10[0xa] <= 0) continue;
-        bool use_level = level != 31;
+        if (!((entry_flags & selection_mask) & 0x1fffff) ||
+            ((entry->flags >> 4) & 0x1f) != level || !(entry_flags & 1) || entry->unknown10[0xa] <= 0) continue;
         byte weight = g_4c0b78.weights[index];
         long transform_index = entry->flags & 0xf;
         byte material_index = g_4c0b78.material_indices[(short)index];
         long material = NONE;
         if (material_index != 0xff)
             material = g_4c0b78.materials[material_index];
-        byte *geometry = visible_entry_geometry(entry);
+        byte *geometry = visible_entry_geometry(&g_4ba138[(short)index], entry_flags);
         if (!geometry) continue;
         if ((*(byte **)(entry->unknown10))[0x76] == 0xff)
         {
@@ -316,11 +321,16 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
             {
                 long selected = force || (entry->unknown00 & 0x8000) ? material : NONE;
                 function_41040((short)index, part, group, weight, (s_render_part_context *)context,
-                    selected, use_level, and_mask, or_mask);
+                    selected, level != 31, and_mask, or_mask);
             }
         }
     }
 }
+/* marks the parts of an entry within a sphere: through the entry's tree when
+   it has one, otherwise by testing each part's bounding sphere, moving the
+   center into the part's node first */
+// Round 154 (m3 lane 6): the `bound[0x10] != NONE` test is retail's own (movzx of the node byte, then cmp ecx, -1;
+// a byte never equals NONE but the compiler keeps the compare); without it 0x45560 scores 79.
 // score 182 (was 182): Frame 0x1094 agrees; entry/index spill and center/query/bound homes remain.
 // Round 50 (lane 14) reached a byte match, reverted at review: a named two-member local struct
 // (center + the tree pointer, copied in and out, never passed by address) only groups locals, a
@@ -547,7 +557,6 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // tree at the call, named bit 93; without the byte test 106. Not kept: the 12 form rests on the flag and one-use copies, which need a match.
 // P289: Native complete geometry/part/bound fields on the positive-count graph,
 // seven subsets and read-only geometry: 182/182/182/182/182/182/182/182. Original body and representations
-// restored; entry/index spill and center/query/bound homes remain.
 // P296: Existing two-use release helper by mutable/const header reference, with bit/sign guards
 // and masked/native element extents: 182/182/209/209/208/208/224/224. Original helper,
 // call inputs and complete body restored; entry spill and center/query/bound homes remain.
@@ -571,6 +580,12 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // AC530: Bound-only ordered intersection/separation results in byte/char/short/long, keeping
 // both original marking sites: eight 182s. NOT kept: no equality or gain; original comparison
 // and full body restored. Entry/index spill and center/query/bound homes remain.
+// Lane 4 r165 (held, coordinator): MATCH with a second, single-exit forceinline copy of visible_entry_geometry
+// used only here (one result through both arms; this file's other caller and 03f2b0.cpp's copy return early),
+// plus the entry index widened to long, the tree as a one-use reference, the center copied through a
+// query_center local and the node byte also compared with NONE (retail's own movzx/cmp -1). Not kept: a
+// same-behaviour twin of an existing helper picked for one caller (noinline/twin ruling). Patch
+// build/held/lane4-r165-45560-twin.patch. The lead: retail inlines a single-exit shape here.
 // J255: Genuine displacement-array producers with long/dword/short/word ordinals,
 // native/shared squared-length consumers: 184/184/257/257, 182/182/257/257.
 // NOT kept: ties/regressions; narrow loops also enlarge the frame and extent. Original
@@ -588,28 +603,53 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P342: Actual provider-node and table-base matrix record lvalues, mutable/read-only alone and all four
 // pairs: 182/182/182/182/182/182/182/182. NOT kept: no equality; original matrix receivers and whole
 // body restored. Entry/index spill and center/query/bound homes remain.
+// AC551: Shared selector entry by mutable/const reference; readonly result with pointer/mutable-
+// ref/const-ref input; ordinary inline with pointer/mutable-ref/const-ref input:
+// 182/182/182/182/182/341/341/341. NOT kept: no qualifying supported improvement; complete
+// executable source restored. Entry/index spill and center/query/bound homes remain. Ordinary
+// inline also raises the other selector user 107 to 280.
+// DL268: Actual query type alignment/SIMD-backed scalar view, SIMD set/setr fills, then the four
+// with a separate persistent center: 182/182/236/237/191/191/236/237. NOT kept: ties or
+// nonnative frame/length regressions; original record, full body and shared selector restored.
+// DL270: Native common geometry field-address selection, mutable/readonly entry
+// pointer/reference and mutable/readonly field-location contracts, eight 222s.
+// NOT kept: target regresses and shared user 107 -> 137; original selector/body restored.
+// M396: Immutable bitmap/bound-point/displacement producer subsets 1/2/4/3/5/6/7,
+// then complete immutable value/receiver graph: eight at 182. NOT kept: no entry/index
+// spill or center/query/bound home repair; original complete body restored.
+// M402: Actual upstream tag/BSP/instance section record producers, seven subsets,
+// then complete read-only selector graph: eight at 182. NOT kept: no entry/index
+// spill or center/query/bound home repair; original shared selector and full body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
-    __declspec(align(16)) s_visibility_sphere_query query;
-    s_44940_entry *entry = &g_4ba138[entry_index];
-    byte *geometry = visible_entry_geometry(entry);
-    query.center = *center;
+    long index = entry_index;
+    byte *geometry = visible_entry_geometry(&g_4ba138[index], g_4ba138[index].unknown00);
+    s_44940_entry *entry = &g_4ba138[index];
+    point3f point = *center;
     if (geometry)
     {
         if (*(long *)(geometry + 0x30) > 0)
         {
             __declspec(align(16)) s_visibility_query_storage<512> first, second;
-            first.list.indices = first.indices;
-            first.list.count = second.list.count = 0;
-            first.list.capacity = second.list.capacity = (long)0x80000200;
+            s_visibility_sphere_query query;
             second.list.indices = second.indices;
-            query.center.x = center->x;
-            query.center.y = center->y;
-            query.center.z = center->z;
+            second.list.count = 0;
+            second.list.capacity = (long)0x80000200;
+            first.list.indices = first.indices;
+            first.list.count = 0;
+            first.list.capacity = (long)0x80000200;
+            point3f query_center;
+            query_center.x = center->x;
+            query_center.y = center->y;
+            query_center.z = center->z;
+            void *const &tree = *(byte **)(geometry + 0x2c);
+            query.center.x = query_center.x;
+            query.center.y = query_center.y;
+            query.center.z = query_center.z;
             query.radius = radius;
-            function_2ddbd0(*(void **)(geometry + 0x2c), &query, &first.list, &second.list);
-            function_458d0(entry_index, true, (s_geometry_visibility_list *)&second.list,
+            function_2ddbd0(tree, &query, &first.list, &second.list);
+            function_458d0((short)index, true, (s_geometry_visibility_list *)&second.list,
                 (s_geometry_visibility_list *)&first.list);
             release_visibility_list(&first.list);
             release_visibility_list(&second.list);
@@ -618,51 +658,45 @@ void function_45560(short entry_index, point3f const *center, real radius)
         {
             dword *visible = *(dword **)(entry->unknown10 + 4);
             long cached_node = NONE;
-            transform4x3f transform;
             for (long i = 0; i < *(long *)(geometry + 8); ++i)
             {
-                dword bit = 1 << (i & 31);
-                if (!(visible[i >> 5] & bit))
+                if (!(visible[i >> 5] & (1 << (i & 31))))
                 {
-                    word bound_index = *(word *)(*(byte **)(geometry + 0xc) + i * 8 + 4);
-                    if (bound_index == 0xffff)
+                    byte *element = *(byte **)(geometry + 0xc) + i * 8;
+                    bool intersects = true;
+                    if (*(word *)(element + 4) != 0xffff)
                     {
-                        entry->unknown00 |= 1;
-                        visible[i >> 5] |= bit;
-                    }
-                    else
-                    {
-                        byte *bound = *(byte **)(geometry + 0x14) + bound_index * 20;
+                        byte *bound = *(byte **)(geometry + 0x14) + *(word *)(element + 4) * 20;
                         point3f position = *(point3f *)bound;
-                        if (entry->tag != NONE)
+                        long tag = entry->tag;
+                        if (tag != NONE)
                         {
                             long object_index = **(long **)entry->unknown10;
-                            if (object_index != NONE)
+                            /* retail's own code compares the node byte with NONE (`movzx; cmp ecx, -1; je`) */
+                            if (object_index != NONE && bound[0x10] != NONE && bound[0x10] != cached_node)
                             {
-                                long node = bound[0x10];
-                                if (node != cached_node)
+                                long count = 0;
+                                transform4x3f *nodes = function_b8c00(object_index, &count);
+                                if (count)
                                 {
-                                    long count = 0;
-                                    transform4x3f *nodes = function_b8c00(object_index, &count);
-                                    if (count > 0)
-                                    {
-                                        byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
-                                        function_142a60(&nodes[node], (transform4x3f *)(*(byte **)(tag + 0x4c) + node * 0x60 + 0x28), &transform);
-                                        function_142700(&transform, center, &query.center);
-                                        cached_node = node;
-                                    }
+                                    transform4x3f transform;
+                                    byte *definition = g_4e3b44[tag & 0xffff].bytes;
+                                    function_142a60(&nodes[bound[0x10]], (transform4x3f *)(*(byte **)(definition + 0x4c) + bound[0x10] * 0x60 + 0x28), &transform);
+                                    function_142700(&transform, center, &point);
+                                    cached_node = bound[0x10];
                                 }
                             }
                         }
-                        real dx = query.center.x - position.x;
-                        real dy = query.center.y - position.y;
-                        real dz = query.center.z - position.z;
                         real combined_radius = *(real *)(bound + 0xc) + radius;
-                        if (combined_radius * combined_radius >= dz * dz + dy * dy + dx * dx)
-                        {
-                            entry->unknown00 |= 1;
-                            visible[i >> 5] |= bit;
-                        }
+                        real dx = point.x - position.x;
+                        real dy = point.y - position.y;
+                        real dz = point.z - position.z;
+                        intersects = dx * dx + dy * dy + dz * dz <= combined_radius * combined_radius;
+                    }
+                    if (intersects)
+                    {
+                        entry->unknown00 |= 1;
+                        visible[i >> 5] |= 1 << (i & 31);
                     }
                 }
             }

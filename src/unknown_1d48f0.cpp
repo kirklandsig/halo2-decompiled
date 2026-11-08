@@ -43,6 +43,22 @@ const dword g_455978[81] = {
  0x0, 0x3f3504f3, 0xbf3504f3, 0x0, 0xbf3504f3, 0xbf3504f3, 0x3f13cd3a, 0x3f13cd3a, 0xbf13cd3a,
  0x3f13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0xbf13cd3a, 0x3f13cd3a, 0xbf13cd3a
 };
+// Statement walk (b4L, 11-06) against retail 0x1d48f0-0x1d5110: every field, offset, condition direction, callee,
+// argument order and add order agrees (bounds 0x1d4948-0x1d4a8c, local_1/local_2 0x1d4a9f-0x1d4b26, rigid body and
+// shape 0x1d4b4b-0x1d4c09, release of the info objects 0x1d4c10-0x1d4c39, ray 0x1d4e61-0x1d4ee7 with `&& !local_0`
+// at 0x1d4ee9, copies into the 1d43d0 input 0x1d4ef5-0x1d4fde, location/cluster test 0x1d5007-0x1d501c, release
+// order 0x1d503e-0x1d50de); no behaviour difference found. The only differences in shape: (1) retail has ONE
+// planar-length test (fst dword + fabs at 0x1d4cc1-0x1d4d01, `ja` straight to the loop end), ours has two: the
+// one inside normalize2d_fast and the explicit `fabs(local_16) < 0.0001f` (the second reads the rounded float,
+// retail's only test reads the unrounded x87 value; the table's planar lengths are 0 or >= 0.7, so no change in
+// behaviour). The explicit test and the `1.0f / local_16` that scales the zero k term are the hand-written leftovers
+// of the helper. Dropping the explicit test 321 (2076 B; loop head then equals retail's), and also with
+// `radial_height = 0.0f` 339. (2) retail copies the table entry as three dwords (0x1d4c97-0x1d4cb9) and its k is
+// `0 * (1 / length) * arg_6` (0x1d4d03, 0x1d4d1d): the radial is a vector3f with k cleared (planar normaliser of
+// 0x29b2e0), not a vector2f. With the existing normalize_inline on that copy (`k = 0.0f; if (normalize_inline(&v)
+// == 0.0f) continue;`, scaled by arg_6) 308 (2078 B), with 0x29b2e0's helper copied in 306; neither kept (higher than
+// 298, no behaviour change). All other differences are register/stack homes and the 0x11bed0/0x279740 inlining.
+// MiniMax C (11-05): no new form, no lower score; ours is 2123 bytes against retail's 2083.
 // MiniMax A (11-04): no new form, no lower score; the optional-state homes sit four bytes low (retail +0x30/+0x40, ours
 // +0x2c/+0x3c) and retail hoists the bounds' zero component above the centre loads.
 // score 298 (was 298): aligned frame 0x1d4 agrees; optional bounds/exclusion homes and selective helper expansion remain.
@@ -276,6 +292,13 @@ const dword g_455978[81] = {
 // returns 365/333/298/306; complete named squared parts give the same four scores.
 // Plain two-component array scaling 298, with zero-result return 365. NOT kept:
 // no target gain; all but the 306 form also raise other shared users. Header restored.
+// M401: Complete lower/upper/translation output defaults, subsets 1/2/4/3/5/6/7,
+// then complete CRT defaults: 508/508/298/298/508/508/298/620.
+// NOT kept: ties or regressions; original setters, output lifetimes and whole body restored.
+// Frame 0x1d4 agrees; optional-state homes and selective location/release expansion remain.
+// N393: Excluded handle/radius/magnitude eight-byte storage, seven subsets
+// 548/576/593/376/562/587/607; all with unsigned handle 607. NOT kept: unmatched,
+// larger storage forms; full body restored. Optional homes and selective expansion remain.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

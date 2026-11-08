@@ -664,6 +664,17 @@ void function_1a6d80(void)
 // or the whole tail in a helper returning the list, 6 each; output parameters char/byte with short/word/unsigned short 6 each;
 // the call result stored last 6 (count pointer EDX and valid pointer ECX as retail, stores reversed); the list returned from a
 // second table read 59 (126 bytes). Retail's registers need the count pointer loaded before the valid store.
+// Round 67 (m3 lane 14, fast): a const copy of the count pointer, of the valid pointer, or of both at the
+// top 6/6/6 (same code); the count stored through a read of its own parameter's address 6; the call
+// result compared `!= false` 15 (106 bytes); the permuter (600 s, 65 tries) nothing below 6. Reading: ours
+// gives the count pointer EAX, free once the valid store has used AL, so its load waits for that store;
+// retail's EDX choice means EAX was taken (the return value) when the count pointer was allocated.
+// Round 140 (lane 8, fast): `__stdcall` on the definition 6; the two output parameters renamed so the
+// count pointer sorts first or last 6/6 (no name tie); the valid store embedded in the count store
+// (`*count = (*valid = ..., node_count)`) 6; reference output parameters, the three callers passing the
+// locals, 6; the count read first and the node list as `g_4f0a60 + index` 6 (all same code). A
+// compile-only build (no LTCG: the callee's count in EDI, fastcall arguments) gives retail's tail (valid
+// ECX, count EDX, both loaded before the stores), so the tie follows the LTCG convention around 0x1a71f0.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
@@ -1157,7 +1168,7 @@ point3f *function_b9dd0(long object_index, point3f *result);
 void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
 bool function_e4050(long object_index);
 bool function_109e00(long object_index, vector3f *velocity, bool definition_flag_required);
-void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity);
+void havok_component_rigid_body_point_velocity_get(vector3f *velocity, long rigid_body_index, s_havok_component *component, point3f const *point);
 
 PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, vector3f *arg_2)
 {
@@ -1166,48 +1177,6 @@ PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, ve
     arg_2->k = arg_0->k * arg_1;
 }
 
-// score 2 (was 2): the returned point is copied from EAX before the body load;
-// retail loads the body and then copies the point from ESI. The frame and projection agree.
-// Sampling name 18; vector names 18; vectors declared first 18; const unit 18;
-// saved body count 124; workspace memcpy 18; indexed output 23; const component 18.
-// Support handle 18; nullable component 110; body read first 30;
-// valid body interval 85; entry workspace 18; unit-scope workspace 18;
-// const support 18; unsigned object handle 18. Position query noinline 18;
-// returned point with body index 2; reassigned point pointer 128; output pointer 18;
-// file-scope workspace 18; direct body reads 121; support lookup noinline 18;
-// returned point with output pointer 2; target noinline with returned point 2.
-// const support 18; unsigned object handle 18.
-// Round 109: ordinary scale inline 18; scale pointer result 18; three scale formal orders 18;
-// scale input reference 18; point-query noinline 18; velocity-query noinline 18.
-// Round 277: unit before type 5; eligibility phases, separate support/component guards 2 each;
-// exhaustive clamp 2; body-first clamp 9; body-home names and read-only body values 2 each.
-// Round 127: validated query index 99; sampled-point result 128; both 136;
-// enclosing point lifetime 128; branch-local last body 2; last body with query index 99;
-// named validation 2; validation with query index 99.
-// Later: const point 18; returned reference 128;
-// address of returned point/direct body 2/2; clamped body 99; early normal 2; workspace fields 5;
-// samples name 2; early normal with const point/direct body 18/18.
-// Round 88: BLOCKED-BY 0x1d0a20 (its parameter order: with velocity before point, retail's
-// `mov ecx, esi` follows; its file is held this round). Statement point query with the
-// address 18; point pointer local 18; body re-read at the call 2; statement query plus body
-// re-read 18; velocity pointer local 2.
-// Round 103: the existing component getter and rigid-body count in place of the hand-written lookup 2 (kept,
-// same code); the clamp compare operands swapped 3; the object handle read through its own address for the
-// point query 2; the clamp as matched 0x182020's if/else 2; a named component index 2. Still BLOCKED-BY
-// 0x1d0a20 (its definition file and the held src/impacts.cpp calls).
-// Round 116: the statement point query (re-measured, 18 at 467 bytes) loads the body index first as retail
-// does and leaves one difference, `lea ecx, [esp+0x20]` for retail's `mov ecx, esi` (VC rematerialises the
-// frame address; retail keeps it in ESI across 0xb9dd0). On that: a point pointer at the top of the support
-// block 18; a velocity pointer local 18; the point cast to const 18; the nested query's result in a point
-// declared before the clamp 128; the statement query before the body index read 97. Still BLOCKED-BY
-// 0x1d0a20 (src/impacts.cpp is held this round too).
-// Round 86 (KIMI2): entry/scoped multi-use object handle 2/2; body declaration before support 2;
-// clamp declaration first 2; returned point dereference/re-address 2; support/component role names 2;
-// header/unit role names 2; all four role names 2. Original body restored.
-// M3 lane 4 r157 (fast): the clamped value as the call's body argument 99 (491 bytes); the body index read
-// before the component lookup 14; the last valid index in a local 94 (464 bytes); the clamp as if/else-if 2;
-// the clamp testing the upper bound first 124 (461 bytes); permuter 600 s, 66 tries, none below 2. Still BLOCKED-BY
-// 0x1d0a20 (its file is held).
 // @retail 0x1a68a0
 void function_1a68a0(long object_index, vector3f *velocity)
 {
@@ -1231,7 +1200,8 @@ void function_1a68a0(long object_index, vector3f *velocity)
 					long clamped = body_index < 0 ? 0 : body_index > component->rigid_bodies.size - 1 ? component->rigid_bodies.size - 1 : body_index;
 					if (clamped == body_index)
 					{
-						havok_component_rigid_body_point_velocity_get(body_index, component, function_b9dd0(object_index, &local_3.field_c), &local_3.field_18);
+						function_b9dd0(object_index, &local_3.field_c);
+						havok_component_rigid_body_point_velocity_get(&local_3.field_18, body_index, component, &local_3.field_c);
 					}
 				}
 			}

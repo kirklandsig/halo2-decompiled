@@ -311,6 +311,19 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// MiniMax R (11-06/07): the samples' memcpy form (2; H 11-04, C 11-06) again, not kept; a memcpy copy of the entry's data offset 3
+// (also a field's bits read through its address), every plain spelling of the sum 8, the offset through the
+// array expression 23, a short cast of the offset 17.
+// MiniMax C (11-06): no new form, no lower score; copying the samples' address into a dword with memcpy
+// and passing the scale straight to the callee scores 2, and copying the entry's data offset instead scores 3,
+// but both read a field's bits through its address and are not kept; passing the scale straight to the callee
+// gives retail's lea ecx and its late object index but loads the scale last (8), and the sum still loads the
+// entry offset into EDX as the add's destination in every spelling (the source order, the offset cast to
+// unsigned, int or size_t, the samples as an integer, the offset as a pointer and both as dwords all give the
+// same bytes); keeping the scale's volatile read and passing the scale as well loads the scale twice; a union
+// overlay of the samples' pointer and its address, the index form (&samples[data_offset]) and the sum with
+// both operands cast to size_t all score 8, so the original body is restored.
+// MiniMax H (11-04): no new form, no lower score; the tail still loads the entry offset into EDX and the samples into ESI where retail loads the samples into EDX and the offset into the dying EDI, and the object index still loads into ECX before the pushes; every spelling of the sum gives the same bytes (7).
 // MiniMax D (11-01): no new form, no lower score; the sample sum still puts the entry offset in EDX and the
 // samples in ESI where retail has the samples in EDX and the offset in the dying EDI, the object index still
 // loads before the pushes, and the permuter's 1806 tries never beat 7.
@@ -326,6 +339,8 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // (7), and passing the scale itself gives retail's lea ecx and its late object index but loads the scale
 // last (8). A named local for the curve set's address gives the same bytes (7). The permuter ran past its
 // 900-second budget on a loaded machine and was stopped by the harness's background limit; it wrote nothing.
+// MiniMax E (11-05): no new form, no lower score; the seven differences stay the sample base against the
+// entry's data offset, the object index load and the curve pointer setup; passing the scale directly gives 8.
 // score 7 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched
@@ -548,6 +563,13 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
+// MiniMax E (11-06): score 246 (was 264): the type cases now run 0, 2, 3 as retail does, with the type test
+// falling through to case 3; case 3 keeps its own failure byte and calls the position routine only when
+// flag1 is clear; the audibility byte is declared at the audibility call. Not kept (coordinator): case 0's listener
+// as a one-use local read before the 0x1000 flag store (244; 246 without it). Still different: our frame is 0x84 against retail's 0x80, so every stack home is
+// off by four; retail merges the audibility byte into the 4-bit field where ours assigns it; retail's clear
+// path sets the flag byte with `or byte ptr [edi], 2` where ours folds it into a word store.
+// MiniMax C (11-04): no new form, no lower score: the flag-0 mask is the same literal 1 as the type tests and the shift, so the compiler hoists it into EBX and the frame stays 0x84 (a unique mask value folds to `test byte ptr [esi+4], imm`); a byte flags field with byte or word bitfield views, the mask spelled byte, unsigned, long, short, true or character, `== 0`, `!= 0` and `% 2`, the type test as a switch, and the audibility form that reproduces retail's neg/sbb/inc store all score 265 or worse.
 // score 264 (was 264): frame 0x84 versus 0x80: our build keeps the constant 1 in EBX from the datum flag test
 // (`test bl, al`, the type tests, the shift, b8d30's `push ebx`) and leaves a dead store of it in a stack slot,
 // so the object pointer goes to ECX; retail tests with immediates and loads `mov bl, 1` only after the b8d30
@@ -681,6 +703,32 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // 311/311/311/264; raw word with the first three 311/311/311; byte owning
 // declaration plus direct bit-zero admission 311. NOT kept: no equality or
 // gain; original datum layout and body restored, native one-spill/failure byte remain.
+// Round 154 (m3 lane 6, fast with 0x188790 exact): `inline` on 0x188790's definition gives retail's 0x80 frame, xmm0
+// re-zeroed after the calls and the object in EBX but scores 301; on it case 3's failure as `bool failed = true` set
+// from the call only when flag1 is clear 162, audible declared right before 0x18d4f0 134, the object index named
+// before it 125, the top field as `sound->type == 0 ? sound->owner : g_444ae0` 91, cases in order 0, 2, 3 40, the
+// flags cleared by memset 22, a long listener named ahead of the 0x1000 flag 20 (aligned 15). Without the `inline`
+// and the match-only forms (ternary, case order, memset, audible placement kept) 287. NOT kept: the 20 rests on a
+// compiler hint on another function and on match-only forms; the chain is held as build/held/l6-1106-18cbc0-inline-chain.patch.
+// AC555: Effect-provider char/byte/signed-char returns with original Boolean
+// and native failure receivers, eight forms 264 each; provider stays exact. NOT
+// kept: no gain; original declarations/body restored; one-spill/failure byte remain.
+// Y604: Existing clear pointer/reference input and complete location result,
+// ignored/rebound at both actual calls: 264/264/264/264/264/264/264/264.
+// NOT kept: no equality; complete clear ownership leaves the early constant-one
+// spill, frame and failure-byte differences. Original helper/body restored.
+// N396: Selected owner-word memcpy/memmove through conditional/branch/selected-source/negative
+// sources: 264/307/280/324/264/307/267/310. NOT kept: no equality or gain; original owner transfer
+// and body restored, constant-one spill and native failure-byte store remain.
+// b5F (11-06) statement walk against retail 0x18cbc0-0x18cfc4, no logic or precision difference found: every field, offset, test
+// direction, callee and argument matches (flag0 0x18cdab, type 1 owner/NONE selects 0x18cdb5/0x18cecd, object-type mask 0x400
+// 0x18cddf, field tests 0x134/0x138/0x13c/0x140 are > 0 and 0x144 is < 0 at 0x18ce14-0x18ce86, comiss only, no rounding steps;
+// case 0 cluster/leaf/bsp stores 0x18cd88-0x18cda7; case 2 impact stride 0xa0 at 0x18cd2f; case 3 effect stride 0x190 and velocity at +0x30
+// at 0x18cc83; audible merge 0x18cf7b-0x18cf9f; flag5 -> 0x400 at 0x18cfac). Spelled the case-0 location stores through
+// s_location's leaf_index/cluster_index/bsp_index (same bytes, 246) and dropped the (short) cast on the cluster store (246).
+// Tried: flags |= 0x1000 or unknown0c |= 1 in place of the byte-wide or 249 (word or); the case-3 failure as a block-local
+// without the true default (call path only, size 1029 as retail) 285 (loses the failure byte retail stores at 0x18cc60 on the
+// call path only); cluster as short 250. Not matched: frame 0x84/0x80, the constant 1 in EBX, case 2's `or byte [edi], 2` (ours folds to a word store).
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {
@@ -691,11 +739,32 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 	location->unknown02 = 0;
 	switch (sound->type)
 	{
+	case 0:
+	{
+		long cluster = sound->type == 0 ? sound->cluster : NONE;
+		if (cluster != NONE)
+		{
+			location->spatial.location.cluster_index = cluster;
+			location->spatial.location.leaf_index = NONE;
+			location->spatial.location.bsp_index = sound->type == 0 ? sound->listener : NONE;
+			((byte *)&location->flags)[1] |= 0x10;
+		}
+		break;
+	}
+	case 2:
+		location->audible = 1;
+		if (!TEST_FIELD_BIT(sound->flag1))
+			impact_sound_location_get((s_impact *)((byte *)g_51ebfc->data + (sound->owner & 0xffff) * 0xa0),
+				(s_impact_sound_location *)&location->spatial, &location->scale);
+		else loop_location_clear(location);
+		return;
 	case 3:
 		{
 			location->audible = 1;
 			vector3f forward;
-			bool failed = TEST_FIELD_BIT(sound->flag1) || !function_17b2d0(sound->owner, &location->spatial.position, &forward, &location->scale);
+			bool failed = true;
+			if (!TEST_FIELD_BIT(sound->flag1))
+				failed = !function_17b2d0(sound->owner, &location->spatial.position, &forward, &location->scale);
 			if (!failed)
 			{
 				location->spatial.compressed_forward = vector3d_compress(&forward);
@@ -705,25 +774,6 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 			else loop_location_clear(location);
 			return;
 		}
-	case 2:
-		location->audible = 1;
-		if (!TEST_FIELD_BIT(sound->flag1))
-			impact_sound_location_get((s_impact *)((byte *)g_51ebfc->data + (sound->owner & 0xffff) * 0xa0),
-				(s_impact_sound_location *)&location->spatial, &location->scale);
-		else loop_location_clear(location);
-		return;
-	case 0:
-	{
-		long cluster = sound->type == 0 ? sound->cluster : NONE;
-		if (cluster != NONE)
-		{
-			*(short *)((byte *)&location->spatial.location + 4) = (short)cluster;
-			*(long *)&location->spatial.location = NONE;
-			*(short *)((byte *)&location->spatial.location + 6) = sound->type == 0 ? sound->listener : NONE;
-			((byte *)&location->flags)[1] |= 0x10;
-		}
-		break;
-	}
 	}
 	if (!(sound->flags & 1))
 	{
@@ -744,7 +794,6 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 	else location->scale = sound->scale;
 	if (sound->type == 1)
 	{
-		char audible = 1;
 		long marker_name = 0;
 		if (sound->marker != NONE) marker_name = function_b8c40(sound->owner, sound->marker);
 		s_object_marker marker;
@@ -753,6 +802,7 @@ void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 		location->spatial.compressed_forward = vector3d_compress(&marker.matrix.forward);
 		function_ba1d0(loop_location_object_index(sound), &location->spatial.velocity, NULL);
 		object_get_root_location(loop_location_object_index(sound), &location->spatial.location);
+		char audible = 1;
 		function_18d4f0(loop_location_object_index(sound), &audible, NULL);
 		location->audible = audible;
 		if ((*definition & 8) && !location->audible)

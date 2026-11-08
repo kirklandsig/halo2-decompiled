@@ -365,6 +365,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
+// MiniMax D (11-05): no new form, no lower score.
+// MiniMax S (11-06): no new form, no lower score: retail still loads the random-state pointer before the time multiply and keeps the old direction in registers, ours spills the old direction to the stack and frames 0x28 against retail's 0x20.
+// MiniMax G (11-06): no new form, no lower score: the frame is 0x28 against retail's 0x20 because retail loads
+// the random-state pointer before the seed read, so our locals sit eight bytes higher (esp+0x28 and esp+0x2c
+// against retail's esp+0x18 and esp+0x20).
 // score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // Earlier (round 28 reached 104, not kept: its gain needs the rotation's cross product as scalar terms, which is
 // cross3f's body written inline and is kept only with a match; with cross3f the round's other changes give 163).
@@ -562,6 +567,14 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // producers, then complete wave accumulation: 117 each; complete wave/strength
 // accumulation 118. NOT kept: no equality or gain; original expression graph restored.
 // Frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// Round 69 (lane 11, fast, compile-only screens exact for the tail): the tail alone is solved: `cos((real)(time * 0.001)) *
+// cos(time * 0.0006f) + sin((real)(time * 0.005))`, times `cos(time * 0.0001f)`, gives retail's x87 sequence op for op (the
+// first cast is retail's fxch pair and its cosine order, the sine cast its two fst stores). It adds 12 bytes that the rotation must
+// give back: on the current rotation 171 (892 bytes), the first cast alone 164 (888), the sine cast alone 164 (888). With it,
+// cross3f on the global 158 (880), projection before cross3f 163 (880); scalar cross on the global (kept only with a match) with
+// dot3f 147 (884), `old_k`, `old_j` read before the axis 151 (880, aligned 49), read after the axis 148 (880, aligned 47). Those
+// captures give retail's early xmm5/xmm4 loads and the store-and-reload of cross k; still open: retail adds the global's i term
+// last with its load late, every direct read adds it first; capturing i as well ranks it last but loads it early and spills.
 // J254: Existing record/tag/limiter declaration contracts, force subsets 1/2/4/3/5/6/7 and ordinary
 // acquisition with inline limiter: 117/117/604/117/604/604/604/117. NOT kept: force-limiter forms
 // grow to 1247/880 and lose matched 0x3db00. All provider bodies, definitions/declarations and
@@ -584,10 +597,21 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the complete old snapshot; staged-cross/projection-first/projection-accumulator masks 0..7:
 // 159/159/157/157/159/159/157/157. NOT kept: unmatched mixed observations; original complete body restored.
 // Frame 0x28/0x20 and seed/time/direction/cross homes remain.
+// Round 56 (m3 lane 15; one-link harness: entry calling 0x118140 plus src/unknown_030290.cpp, exact, 2 s a form). Recipe, kept only with a match since it writes
+// out dot3f and cross3f: sine, cosine, axis; `real axis_i = axis.i; real old_k = g.k; real old_j = g.j;`; the dot in stages `p = axis.k*old_k; p += axis.j*old_j; p += g.i*axis_i;
+// p *= 1 - cosine`; scalar cross j, k, i and rows; tail `(cosf(time*0.001)*cosf(time*0.0006f) + sinf(time*0.005)) * cosf(time*0.0001f)`: 103 (885 B, masked 25: frame, spills, dot and
+// tail are retail's). With `short ticks = field_2_3;`, the draw, then the time 96 (885 B, first difference +0x35); `long ticks` and a separate draw statement, harness, 159 (882 B, aligned 28).
+// Left: `axis.k*g.i` and `axis.j*g.i` load g.i first where retail copies the axis, `sine*cross_j/k` reloads, the opening's RNG/time schedule. Source operand order, cross statement order,
+// staged cross or rows, sine/cosine placed later, pointer or reference reads of the global and a rotation helper taking (vector, axis, sine, cosine) do not change them (about 6,500 forms).
+// Fast: the float tail alone on this body 171 (892 B); dot3f with a scalar cross 104 (880 B); `short ticks` alone 110. NOT kept: helper bodies written out, one-use local under 8.
 // T59: Consumed direction/axis/cross workspaces through the existing scaler on the retained
 // mixed-row/split-wave graph, subsets 1/2/4/3/5/6/7 and all with staged cross:
 // 172/181/164/182/180/187/174/174. NOT kept: frames and extents miss retail; original
 // complete captures, shared products, row trees, observations and body restored.
+// Round 59 (m3 lane 15, fast, base 117; the build already returns with a plain ret and takes wind in EBX): one seed pointer local for the
+// three draws 136; the gust value and direction globals (0x55ecd0/0x55ecd4, only used here) as one struct 117 (same code); sinf/cosf for the
+// angle 117; no `old` copy, cross/dot/rows on the global into a `rotated` local stored back 161 (885 B); the axis draw before sine/cosine 117;
+// the frame-count and initialized-flag globals (0x55e710/0x55e714) as one struct 117 (same code).
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

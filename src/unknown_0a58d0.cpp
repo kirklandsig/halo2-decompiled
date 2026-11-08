@@ -329,6 +329,16 @@ struct s_z_state_world
 // 11 (same code); the inactive record as an early return of the result 30 (137 bytes). Compile-only, every one of 17
 // forms keeps the database in ECX (pointer reuse of one world variable, a database local, an entity index, record
 // reference, active local, object local, char/byte/bitfield active byte, unsigned type and identifier).
+// Round 136 (compile-only through a thiscall copy that pins the index in ECX; it builds our head exactly, database in
+// ECX): forceinline entity, object and state-test getters, singly and all three 11-equivalent (database ECX); a header
+// pointer, an entity index, an `(identifier + 0)` index, a late result default, a definition local, the definitions
+// before the type: database ECX; the record by pointer addition with the byte from the array (either order), a bool
+// active from the array: `add eax, ecx` and the offsets folded (14-equivalent); the world local with the index pinned in
+// ECX: database still ECX (so the LTCG world local's ECX is the database's own preference, not the index's).
+// Round 77 (lane 10, fast): one world local at entry named world, aaworld or zzworld 18/18/18 (names are no
+// tie-break); the world local before `result` 18; the definitions local before the active test 22; the type
+// read inline in the table index 13; the record bound by reference 11. 0xa99f0, whose index arrives in EAX,
+// shows the same single cause: retail gives the database the dying world register EDX, ours the free ECX.
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {
@@ -351,6 +361,14 @@ bool function_a9820(long *block, long index)
 	return result;
 }
 
+// MiniMax C (11-06): no new form, no lower score; the database pointer still loads into ECX where retail reuses the dying world register EDX, so the active byte cannot fold into the scaled record address.
+// MiniMax S (11-05): no new form, no lower score: the database pointer is still loaded into ECX where retail reuses
+// the dead world register, so the active byte is still read through the materialised record address; the active byte
+// read from the database array with the record pointer taken in the branch 14, the same with a state local 11 and
+// with a world local 21 all leave the record address folded into the index instead of materialised.
+// MiniMax H (11-05): no new form, no lower score; a database local with the byte read from the array, the byte
+// read through a computed offset and the record taken inside the branch all give 14, and retail's EDX database
+// with its folded byte load cannot be reproduced from the source.
 // MiniMax B (11-04): no new form, no lower score: the database pointer is still loaded into ECX where retail
 // loads it into EDX, and the active byte is still read through the materialised record address; an active
 // byte in a local read before the record pointer 14, a database local with the byte read from the array 14,
@@ -395,6 +413,15 @@ bool function_a9820(long *block, long index)
 // machine is busy with other lanes' builds. Round 89 (with 0xa9820): the world global read at each use
 // builds the same code; one world local for both reads 18 in every spelling (see 0xa9820).
 // Round 60 (with 0xa9820): the records inside a nested table struct at 0x2098 11.
+// MiniMax B (11-06): no new form, no lower score (a world local with a database local 21, a database local
+// 14, the record index in a local 14, a world local with the record pointer 14); retail folds the active
+// byte into the array address and takes the record address only after the test, ours takes the record
+// address first and reads the byte through it.
+// MiniMax D (11-06): no new form, no lower score (11): the database pointer is still loaded into ECX where retail
+// reuses the dying world register EDX, so the active byte is still read through the materialised record address;
+// this round a database local read early or late, a world local for the state test, a world local with a database
+// local, the active byte read from the array element with the record pointer taken before or after the test, and
+// the record pointer by pointer addition give 11, 11, 11, 11, 14, 14 and 11.
 // @retail 0xa99f0
 void function_a99f0(long index, long *block)
 {

@@ -433,7 +433,7 @@ struct s_collision_result_1697c0;
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
 	s_path_trace_result *trace);
-long function_26d100(vector3f const *up, long *location, s_collision_result_1697c0 *collision, point3f const *point);
+long function_26d100(vector3f const *up, point3f const *point, long *location, s_collision_result_1697c0 *collision);
 
 struct s_record_pathfinding_view
 {
@@ -725,9 +725,62 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 275 each; ijk/kji with native radius CRT capture 276/276. NOT kept: frame/length
 // regress and no exact boundary. Original helper, radius reference and full body restored;
 // radius schedule, ring SSE conversion and rotation spill remain.
+// Round 129 (m3 lane 7, fast, control 90; aligned/masked = difflib counts, control 58/37). On the 96 form (63/20): the helper reading vector-> directly in place, no
+// component copies, 96 (same code; correct without copies because j and k cross terms are taken before the i row stores). What the named ring phase costs is the top block
+// (helper alone 100 keeps retail's `mov edx, [ebp + ecx + 0x34]; add ebp, ecx` and the movss radius copy, phase alone 143, phase with the helper 96, phase after the distance 96);
+// sector read first 263 (the sector then stores at once and the loop head padding goes, 1074 B), through its own record lookup before/after the radius 260/255, object pointer
+// local first with sector before/after radius 263/96, radius before the record 108, ring value named and shared 90 (x87 fild stays). Dot order: retail's (j + i) + k follows
+// component scalars declared k, i, j ahead of the dot, with scalar cross terms 143 (retail's dot loads, but the cross subtrahends sink and j spills, frame 0xdc); with the vector
+// cross those declarations change nothing 96; dot terms written k,i,j or j,i,k or swapped sides 96 each (same code), accumulated from k or j 213/218 (1083 B); cross before the dot
+// 98 (i in xmm4 as retail; (k + j) + i stays), j then k or k then j cross 96/105. The rotation written in the caller, not a helper, 233/243/232/240 (copy-first products).
 // N382: Native record/origin/entry object references, seven ownership subsets, then all
 // with outer ring phase: 90/90/90/90/90/90/90/143. NOT kept: no equality or gain;
 // original complete body restored. Radius schedule, ring conversion and rotation spill remain.
+// Round 138 (m3 lane 8, fast unless marked; control 90): `(real)(x * 1.f)` phase steps (diagnostic) 90/215/215 at depth 1/2/3, so no
+// phase lead here; extra parameters on inline no-ops at seven sites compile the same (compile-only). Ring value and phase named, the
+// angle adding the phase 143 (1088); sector read first 235, with the radius reference 109; the rotation with j/k cross terms named 90
+// (same code), as a cross vector read without component copies 100 (1081), that with the named ring 96 (1090, the known 96 form, plain
+// 96); a full cross vector 100, with the ring 149; dot written out 90, with the ring 142; components copied before an inline dot 145;
+// the planar dot2d plus k term 96 (canonicalised like dot3f); a point-along helper at the trace point 96, at both point rows 113 (1086);
+// the structure pointer read before the rotation 72 only together with the staged dot below, alone 166 (1096). On the 96 form the
+// dot staged as `j*j + i*i; += k*k; *= 1 - cos` 72, plain 72 (1090, masked 20: retail's (j + i) + k and its rotation rows; left are the
+// sector read before `add ebp, ecx`, the radius copied through EDX, the spoke counter's store and the 0x2104b0 argument setup). That
+// writes out dot3f and splits a sum, so it is not kept; a natural source for retail's dot order is still open.
+// M3 lane 11 r71 (fast, control 90 at 1085 bytes). Retail's rows subtract axis cross vector, with j and k ahead of
+// the rows and i in its row: three named cross terms 100 (1087), with the ring phase 149 (1090), dot after the cross
+// 231/251; j and k only 100 (1081), with the phase 96 (1090). On that 96, whose ring block and rotation are retail's
+// sequence apart from register names: sector first 263 (1074), plain radius 222, plain radius with sector first 271,
+// reference declared first 96, radius before the record 108, object pointer 263, const phase 96, ring counters
+// swapped 96, double term on the plain local 96, ring term on it 96, named double at function scope 96 (222 without
+// the reference), const local 96.
+// Bisect, without the cross: phase after the distance 143, its operands swapped 143, ring product swapped 143, sum
+// swapped 143, named double 142, phase from a named `(real)ring` 143. The phase in any position keeps `cvtsi2ss` and
+// copies the radius through an integer register with the sector read late; a named `(real)ring` with no phase keeps
+// `fild` and retail's XMM0 radius (90). The two never appeared together, and dead pointer chains of 1-8 links at
+// three sites change neither (96). On the 96: trace.distance at each use 89 at retail's 1089 bytes (one point, and
+// retail keeps the distance in a register, not kept), with direct sin/cos 228, direct sin/cos alone 230, along after
+// the copies 96, scalar cross terms 143, with the trace form 148, angle written twice 96. On the 89: rotation reading
+// `vector->` with no copies 89, three cross terms that way 142, a copy of the vector 263, written-out dot 89, dot
+// arguments swapped 89.
+// Round 133 (m3 lane 7, fast; aligned = difflib count, control 93): the two rings as a plain `for (long ring = 0; ring < 2;
+// ring++)` 266 (1057 bytes, frame 0xd4: no countdown, so retail's countdown is real); in the rotation helper the component
+// copies before the dot 90 (same code), the rows' first two terms swapped 90 (same code); the direction copied after the
+// sine and cosine 101 (aligned 114); the pathfinding pointer as a ternary 217 (aligned 101). Body unchanged at 90.
+// MiniMax B (11-06) round 2: no new form, no lower score (90); the ring value read into a float
+// local inside the ring block and used for the distance gives the same code (90), the same local
+// also used for the angle gives the same code (90), the angle's ring term named on its own gives
+// the same code (90), the distance with the ring's float product widened by an inner cast gives
+// the same code (90), the distance written with the ring and the radius both cast to double
+// scores 266, and the float local used for the distance and the angle together scores 259; the
+// ring is still converted with `fild` where retail converts it to float, keeps that float in a
+// stack slot and reloads it as double: the compiler folds the float local back into the integer
+// conversion, so the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (90); the ring value is still converted to
+// double with `fild` where retail converts it to float, keeps that float in a stack slot and
+// reloads it as double, and the rotation block still uses a different register set from retail's
+// (retail keeps the three components in registers, ours spills one); naming the ring value
+// once for both the distance and the angle scores 259 and the distance term written with the
+// inner cast scores 259, so the body is unchanged.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
@@ -777,7 +830,7 @@ long function_26d570(long object_index)
 					structure = (s_record_pathfinding_view *)g_4e0348;
 					if (structure->count > 0)
 						saved_pathfinding = structure->pathfinding;
-					entry->owner = function_26d100(g_4687b0, (long *)&entry->location, (s_collision_result_1697c0 *)&collision, &world);
+					entry->owner = function_26d100(g_4687b0, &world, (long *)&entry->location, (s_collision_result_1697c0 *)&collision);
 					point.x = g_4687b0->i * 0.1f + collision.point.x;
 					point.y = g_4687b0->j * 0.1f + collision.point.y;
 					point.z = g_4687b0->k * 0.1f + collision.point.z;

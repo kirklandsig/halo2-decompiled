@@ -374,7 +374,11 @@ struct s_1aa0d0
 	bool field_16;
 	bool field_17;
 	bool field_18;
-	byte field_19[0x2c - 0x19];
+	byte field_19;
+	short field_1a;
+	point2f field_1c;
+	real field_24;
+	real field_28;
 	bool field_2c;
 	bool field_2d;
 	bool field_2e;
@@ -411,6 +415,9 @@ extern point2f *g_468778;
 
 // MiniMax H (11-04): no new form, no lower score; the four orders of the entry declarations (the actor first, the actor and its slot first, the actor second and the slot before the actor) give 413, 413, 375 and 413 against 375.
 // score 375 (was 375): Frame 0x40 agrees; early actor/settings/prop carriers and prediction homes remain.
+// b2G walk (r719): every block, field offset, constant and call argument checked against retail 0x1aa0d0-0x1aa6da; no logic or
+// precision difference found (float sums in retail's k,j,i order, 0x24590 called, 0x2b400/0x30bf0 results as retail); the 20 matched callees and
+// the file's matched siblings still match. What remains is allocation and scheduling only.
 // Lane 6 r85: retail returns constants (`mov al, 1` / `xor al, al`, every push at entry, the early tests
 // jumping to the false exit); `if (...) return true; ... return false;` without the result byte gives that
 // 440 (frame 0x3c); with the actor looked up before the settings call 413 (retail's 0x40 frame and hoisted
@@ -606,6 +613,13 @@ extern point2f *g_468778;
 // order, `comiss` against the memory zero after the normalize, and the request's word/dword store order. On that base the slot as the parameter itself 422/1532 (60), the
 // prop at function scope 397/1560 (73). Same code, no change: slot declared first or middle, all six dot term orders, dot operands swapped, renamed locals (three sets).
 // One-link harness not faithful here (control 442 at 1580 bytes).
+// AC560: Proven metadata/returned state/view record references, seven subsets, then facing
+// reference: 375/375/375/375/375/375/375/375. NOT kept: no byte equality; early actor/settings/prop homes remain.
+// Original receivers, early distance, result, observations and full body restored.
+// Round 90 (m3 lane 16, fast, on the 375 form): the prop pointer uninitialised and cleared in the prop-less arm 399
+// (1558 bytes); the slot pointer declared first 375 (same code); the prop lookup before the clock 380; a velocity
+// pointer for the magnitude call and the eight prediction reads 397 (1576 bytes); the request direction stored
+// through its pointer 375 (same code). Aligned by sequence, 263 rows differ.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -763,16 +777,12 @@ struct s_1aab50
 	real field_2c;
 };
 
-struct s_1aab51
-{
-	byte field_0[0x1c];
-	point2f field_1c;
-	real field_24;
-	real field_28;
-};
-
 static __forceinline long real_to_long(real value);
 
+// b2G walk (r719): every block, field offset, constant and call argument (including 0xfa1a0's 3 register + 11 stack arguments, whose
+// first output is the reused speed local) checked against retail 0x1aab50-0x1ab2bd; no logic or precision difference found. The written-out
+// object-speed root now uses length_sq3f (same code, 382); magnitude3d would be a call (481, 1887 bytes) where retail inlines the x87 body;
+// dot3f sums i,j,k where retail sums k,j,i, so it is not used. What remains is allocation and scheduling only.
 // score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // Round 53 (lane 11, fast): value fix kept: the trajectory call's origin is the actor's position and its
@@ -1002,6 +1012,13 @@ static __forceinline long real_to_long(real value);
 // F385: Existing vector-union component-array observations in target velocity, facing
 // and working vectors, seven subsets, then actual position arrays: eight at 382.
 // NOT kept: byte-neutral homes/exit diagnostic; original complete body and query aliases restored.
+// AC560: Returned actor/state/view record references, seven subsets, then complete facing
+// reference: 382/382/382/382/382/382/382/382. NOT kept: no byte equality; early rejection and magnitude/query
+// homes remain. Original receivers, query aliases, arithmetic and full body restored.
+// Round 90 (m3 lane 16, fast): the query vector and scalars declared in reverse order 382 (same code); the else arm as
+// `return false;` 509; the result declared before the slot view 382 (same code); the prediction scale written rate first
+// 382 (same code); the entry tests as `f13 || f14` and `else if (f2d)` false arms ahead of the body 382 (same code).
+// Aligned by sequence, 160 rows differ: the false exit placed last shifts everything up to retail's place for it.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
@@ -1059,7 +1076,7 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 			}
 			else
 			{
-				real local_12 = (real)sqrt(local_8->field_1c.i * local_8->field_1c.i + local_8->field_1c.j * local_8->field_1c.j + local_8->field_1c.k * local_8->field_1c.k);
+				real local_12 = (real)sqrt(length_sq3f(&local_8->field_1c));
 				vector3f const *object_velocity = &ai_object_get(local_1->unknown018)->velocity;
 				real local_14 = 0.0f;
 				if (local_12 > 0.0f)
@@ -1099,11 +1116,10 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 								if (normalize2d((point2f *)&local_22) == 0.0f)
 									local_22 = *g_4687a8;
 							}
-							s_1aab51 *local_24 = (s_1aab51 *)local_0;
-							local_24->field_24 = local_20;
+							local_0->field_24 = local_20;
 							local_0->field_18 = true;
-							local_24->field_1c = *(point2f *)&local_22;
-							local_24->field_28 = local_19;
+							local_0->field_1c = *(point2f *)&local_22;
+							local_0->field_28 = local_19;
 						}
 					}
 				}
@@ -1156,7 +1172,7 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 		{
 			if (local_0->field_17)
 			{
-				if ((real)*(short *)((byte *)local_0 + 0x1a) * g_510c54->rate > 0.5f)
+				if ((real)local_0->field_1a * g_510c54->rate > 0.5f)
 					local_0->field_14 = true;
 			}
 			else

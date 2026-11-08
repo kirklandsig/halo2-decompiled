@@ -1379,6 +1379,8 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
+// MiniMax A (11-05): no new form, no lower score; our frame stays 0x28 against retail's 0x2c, so the look
+// outputs stay at -0xc/-8 instead of retail's -0x2c/-0x28.
 // score 218 (was 218): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
 // Earlier at 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
 // Round 25 (lane I, fast): the two locals whose homes are swapped (`unit` and `mode`, ours
@@ -1732,6 +1734,13 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC527: Shared idle-animation selection as long/dword/int/unsigned-int, at consumption
 // or iteration scope: eight at 220 fast (control 220, full 218). NOT kept: selected-result
 // residence unmatched; original draws, counters, setter paths and complete body restored.
+// Lane 9 r87 (fast; aligned counts by sequence alignment, base 218/104): the overlay play written per arm with its constants 376/95
+// (2191 bytes; `mode` then outweighs `unit` and both take retail's homes), with the active preset 377/83 (2195), plus callback and
+// movzx 377/83; positive zoomed/scoped alone, plain else 385/61 (2198), with the rest 376/49 (2202 bytes). Retail's own bytes show the
+// `else if (zoomed)` test under `(zoomed || scoped)` (`cmp byte [ebp - 2], 0; je` past the play), so it is real, but it stays out
+// without a match. Look locals' addresses taken 220/104 (reciprocal still shared); look value and clamp in separate statements 223;
+// aiming velocity through a pointer 542/114; `mode` declared first, assigned later 220. Positional stays above 218 until the look
+// block's bytes agree, because every form shifts what follows it.
 // AC535: Peer processing/final activation-resource phases gated by one entry result,
 // positive/complementary bool/byte/short/long: 542/542/573/571/542/542/573/571 fast
 // (control 220, full 218). NOT kept: frame 0x28 and native unit/mode/look/save gaps
@@ -1749,6 +1758,35 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // tail consumer, bool/byte/short/long: eight at 220 fast (control 220, full 218).
 // NOT kept: one-use outcomes unmatched; frame, unit/mode/look homes and late restores
 // remain. Original final gate, smoothing tuples, observations and complete body restored.
+// Round 64 (m3 lane 14, fast control 220, full 218; masked aligned 112, 578 instructions on both sides): the channel byte's `long` copy
+// under the update test 412 (2195, aligned 110; shift only); callback `== 0 ? right : left` 220 (aligned 111); both 412 (109); the channel name read once
+// 399 (2189, 112); the rate as `if (scoped) 1 else if (zoomed) pin` 407 (2187, 117), with the name read once 409 (2183, 117); the overlay play written per arm 376
+// (2191, aligned 103). Retail's logic decoded: zoomed = speed > 0.1; scoped = zoomed && query; both cleared on the second query; scoped cleared
+// when the overlay lookup fails; the play's `else if (zoomed)` under `if (zoomed || scoped)` is retail's own implied test (`cmp [ebp-2], 0; je`).
+// Still BLOCKED by the stand-in (round 98) for ESI/EDI; no byte match is reachable without it, so no match-only form can stay. Body unchanged.
+// Round 76 (m3 lane 1, fast control 220, full 218; aligned 116): look outputs declared first in the unit block 220; declared at
+// their PIN assignments 220; the aiming velocity as a named pointer for its three uses 233 (2190 B, aligned 118; the pointer takes
+// unit's home, unit/mode homes unchanged); a const unit pointer 220; a const look pointer 220. Retail's movzx flag test is not
+// followed by any use of EAX (the next instruction reloads it), so no two-use local is behind it. Body unchanged.
+// Round 132 (m3 lane 7, fast, control 220): the look values declared where they are computed 220, as
+// `real const` there 220, declared first in the block 220 (all same code: their homes stay -0xc/-8);
+// the look pointer, flags and weapon counter declared at first use 220; the pitch as `y * (-1 / rate)`
+// 221; divide then clamp in separate statements 223 (a repeat of lane 9 r87's form). Retail's look
+// slots -0x2c/-0x28 are never address-taken (no lea of them), yet retail reloads g_510c54 after each
+// look store; still BLOCKED by the stand-in (round 98) for the ESI/EDI save after the unit test.
+// AC552: Existing object/definition getter forced expansion and outlined magnitude inline,
+// subsets 1/2/4/3/5/6/7, then outlined tick-provider inline: eight at 220 fast
+// (control 220, full 218). NOT kept: no gain; original helper declarations and complete body restored.
+// AC556: Consistent triple-validity char/signed-char/byte return contracts with
+// bool/byte/short activity carriers: 218/218/218/415/415/415/414/414
+// (unchanged complete-file fast control 218, full 218). NOT kept: query provider loses
+// its match; original return declarations, activity domain and entire body restored.
+// AC558: Complete primary-weapon override admission/rejection result in
+// bool/byte/short/long: eight at 220 (unchanged fast 220, full 218). NOT kept:
+// one-consumer truth unmatched; original early gate and complete body restored.
+// M398: Original clamped-yaw/clamped-pitch/late-magnitude zero defaults, masks
+// 1/2/3/4/5/6/7, then complete activity/zoom/scope defaults: eight at 220 fast (control 220, full 218).
+// NOT kept: no frame/look-home gain; original producers, all five smoothing tuples and body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

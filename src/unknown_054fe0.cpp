@@ -1702,6 +1702,19 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// Walk vs retail 0x64d70-0x65278 (b3G, 11-06, statement by statement): no behaviour difference found. Checked: state/value18/live
+// range guards; get_values_4d08 outputs (map, map_variant, map_data) and the pre-call name pointer; memset 0x714; header
+// words; type/local/mode; wcsncpy(.., 0x1f) + name[31]; id/key behind `state && flag24` (retail's per-destination null
+// tests are the inlined getter's, equal in effect); identity from member_index; full-session vs open-slot branch and the
+// mode 0/1/2 stores (0x98/0x94, 0x9a/0x96, 0x9a); variant 2/1; state; game_type/map/option/map_variant/teams;
+// statistics gate (+0x1120, state 2, state 3); player loop (mask, stride 0x13c, sort fields, i != NONE && i >= 0 &&
+// i < high_water, +0xc0 team, 0xff); sort; copy-out strides; team scores/mask. No float code.
+// New evidence on the cmovne (b3G, fast): `// @flags /O2 /Ob1 /arch:SSE /Gr` on this file leaves the other 58 functions
+// in it MATCH (fast) and turns `short state = 0; if (g_527330.initialized) state = (short)g_527330.state;` into
+// retail's `xor esi,esi / test al,al / cmovne esi, [0x527334]` (the `?:` form still compiles to neg/sbb/and). 64d70
+// then scores 353 (positional: the prologue and membership homes remain), so it is not kept here; the flag line is
+// outside this function's edit scope, so it is for the coordinator to full-check.
+// MiniMax I (11-05, run 37): no new form, no lower score (339); retail's cmovne needs /arch:SSE, which this file's flags do not set, and retail's inlined 0x5a680 is out of line here.
 // MiniMax R (11-01): no new form; the retail prologue shape (global pointer then field at 0x741c,
 // then the 2/8 range tests) is not reachable from this body without the inlined membership helper.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
@@ -1775,6 +1788,11 @@ struct s_summary_player_sort_entry
 // Round 66 (m3 lane 1, fast): name pointer read after get_values_4d08 356 (1291 bytes); memset before
 // get_values_4d08 339 (same code); `statistics` declared at its test 372; team_mask beside the player count 375;
 // get_values, memset, then the name pointer 356 (1291 bytes).
+// Round 55 (m3 lane 2, fast; [n] = register-masked aligned count, 339 is [101]): diagnostics with a file-level view of the fields from
+// +0x4c: type pointer, early member index, view pointer for the name, identity, counts, mask and players 353 [93] (frame 0xa9c: the
+// pointers fold into the session register, the same code at every subset); with the existing key getter 396 [80] (1323 bytes, frame
+// 0xaa0, only the member index gains a home); both pointers from inline getters 396 [80], as const references to their results 396
+// [82], without the key getter 353 [95]. Retail's two pointers survive where every spelling folds; a form must first stop that.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

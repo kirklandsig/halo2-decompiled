@@ -47,7 +47,11 @@ PRIVATE __forceinline void function_2922b2(point3f const *arg_0, vector3f const 
 }
 PRIVATE __forceinline real function_2922b3(real arg_0, real arg_1, real arg_2)
 {
-	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
+	if (arg_1 > arg_0)
+		arg_0 = arg_1;
+	else if (arg_0 > arg_2)
+		arg_0 = arg_2;
+	return arg_0;
 }
 PRIVATE __forceinline real function_2922b4(real arg_0, real arg_1, real arg_2, real *arg_3)
 {
@@ -70,7 +74,19 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 618 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
+// MiniMax S (11-06): The frame size agrees but the homes do not: the success byte sits at frame+0x13 where
+// retail keeps it at frame+0x17, the float at frame+0x10 against frame+0x18, the four-flag array at
+// frame+0x24 against frame+0x1c and the copied vector at frame+0x4c against frame+0x40, and the first
+// comparison branches the other way round.
+// score 592 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x13 instead of +0x17.
+// W14L: full statement walk against retail (0x2922b0-0x292df3; args 0x120..0x134 after the pushes): fields +0x14/+0x30/+0x48,
+// tests, callees (0x1e5450, 0x30bf0 x3, 0x1697c0 with its six stack args), both cross/fallback chains, the four points,
+// ray loop, per-ray clamps and signs, both rotations and the arg_6 tails agree; no behaviour difference found. Constants
+// checked from the XBE (0.1, 0.7, 0.3, pi/180, pi/2, FLT_MAX). Remaining: stack-slot order (success at +0x0b, minimum at
+// +0x10, hit bytes at +0x14), retail's (1/range)*minimum computed twice, field_14 re-read per point, dot-sum order in the
+// rotations, inactive exit placed last. Tried (fast): active-if with one `return local_0` 629 (success in BL again);
+// range local before the test 603; non-const tag record 592; PIN_126660 for the clamp 626 (with a local 618), cross3f_staged
+// 678, cross3f 690 (vector_products.h): the cross helpers are not kept; the PIN form is a separate commit.
 // Frame 0x108 agrees; success/input/minimum/hit homes differ from +0x31.
 // Earlier: the true initializer uses BL, saving EBX early.
 // Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
@@ -340,6 +356,16 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH352: Complete lateral/forward/up product parts across all three basis-reconstruction
 // rows, subsets 1/2/4/3/5/6/7 then immutable full parts: 635/635/635/624/624/624/624/624.
 // Original sum trees, scalar producers, helpers and in-place snapshots restored.
+// Round 63 (m3 lane 14, fast): the clamp helper in place on its input (retail's `movaps xmm1, xmm0; jmp; comiss xmm1, xmm3;
+// jbe; movaps xmm1, xmm3`) 592 (kept, 2831 B, aligned 227 -> 216). Lead, aligned rather than positional: the body nested under
+// `if (field_48 > 0)` with `return true;` last 679 (2839 B); the range read before the test 666 (2828 B); read first inside
+// the body 657 (2828 B, retail's opening exact through the hit clear and the range store, aligned 215), with the clamp 656 (204);
+// the staged k, j, i cross (the cross3f_staged form, memory products nearly all retail's) on that 652 (2836 B, 206), with the
+// clamp 651 (2838 B, 195); direct cross stores 664 (2822 B); on the old body the staged cross 672, direct 689, staged with
+// the clamp 678. On 592: inverse range named for both products 604 (2818 B; retail multiplies (1/range) * minimum twice, the
+// second in place on the inverse); the root's input named and clamped by an if 607, named in the ternary 592; the angle limit
+// defaulted then overwritten 689; the ray rows k, j, i 684; `x = x - f()` for the third root 592. Still short: rows 3 and 4
+// negate the half-width separately (ours shares it), and the rotation and basis-return rows schedule differently.
 // DH360: Collision record plus material-reset lifetime at success/object/settings/input/minimum/clearance/guard/basis boundaries,
 // eight forms 647/647/646/632/632/632/631/628. NOT kept: all regress and shrink to 2815/2886;
 // original late reset, complete frame, helper inputs and in-place snapshots restored.
@@ -362,6 +388,17 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // bool/byte/short/long, eight at 630 (2813/2886). NOT kept: all regress and
 // shorten away from retail; original root helper and complete body restored. Frame
 // 0x108, success/input/minimum/hit homes and inactive-exit/rotation scheduling remain.
+// AC557: Native root quotient producer, optional remaining/clamped scalar stages,
+// mutable/immutable complete families: eight at 607 (2817/2886). NOT kept:
+// all regress and shorten farther from retail; original helper and body restored.
+// AC559: Whole active-range admission/rejection, bool/byte/short/long: eight at 687
+// (2830/2886). NOT kept: all regress; original live guard, complete helpers and
+// in-place snapshots restored. Success/input/minimum/hit homes and inactive exit remain.
+// J259: Full root/sine/cosine return storage, separate/paired/all and immutable all: 689/706/698/690/682/701/683/683.
+// NOT kept: no eligible native repair; opening executable source restored. Native frame 0x108 is lost; original real helpers and every in-place capture restored; success/input/minimum/hit homes and inactive exit remain.
+// M400: Complete original input/basis/origin/distance/ray/root/rotation-cross/projection defaults
+// 603/677/637/665/671/592/592/598. NOT kept: none improves; original
+// producers and all in-place snapshots restored; result/input/minimum/hit homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

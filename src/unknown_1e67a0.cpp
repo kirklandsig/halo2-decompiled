@@ -4,6 +4,8 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
+#include "vector_products.h"
+#include "reciprocal_normalize.h"
 
 struct s_shape_contact;
 struct s_shape_side;
@@ -571,21 +573,9 @@ real magnitude3d(vector3f const *v);
 bool g_46fcc4 = true;
 bool g_51e9bc;
 
-/* the approximate reciprocal square root, read from and written to memory */
-PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
-{
- real inverse;
- __asm
- {
-  rsqrtss xmm0, squared
-  movss inverse, xmm0
- }
- return inverse;
-}
-
-// MiniMax G (11-04): no new form; the fast check cannot score this function (its callees fall outside
-// the reduced image, so the diff misaligns from the first instruction), so it stands at 132.
-// score 132 (was 132): 1.0 sits in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
+// score 49 (was 118): MiniMax C (11-07): the projection holds the dot and the negation moves to the scaled add's
+// argument; the dot's term order and the jitter block's register allocation still differ.
+// Before 11-07 (118, was 132): the first 79 lines and the frame agree; projection order and x-operands, the velocity row schedule and the jitter spills (retail spills y and the z on/off value into the limits' slots, ours x and the z on/off into parameter homes) remain. Earlier: 1.0 sat in xmm4 (retail xmm3) through the body; retail keeps the jitter bits in eax
 // (tests al/ah) and tests the on/off bits 1, 2, 4 before the sign bits 8, 16, 32, spilling the z on/off factor and
 // y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
 // 1020 bytes; aligned difference 129 against this body's 154); on/off first in a jitter vector 163 (1048 bytes,
@@ -766,6 +756,16 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // DH347: Last-consumer input/factor/acceleration, sampled-scale and direction/projection
 // scopes, seven subsets then complete scopes with descriptive limit naming: eight at 132.
 // Original body restored; frame 0x28 agrees, unity/limit/direction ownership and jitter homes remain.
+// Round 134 (m3 lane 8, fast, 0x24590 listed; al = aligned raw/masked/masked+stack, base 154/85/65). Kept: plain long with if-form
+// on/off and sign values, plain limits and the existing dot3f, vector3f_add_scaled and vector3f_add 129 (1087 bytes, first 118 lines
+// exact), plus the pointer normalise shared with the particle code 118 (1077 bytes, al 110/35/32). Tried: retail-order ternary jitter 233
+// (1020, al 129/60/54); the normalise summed k, i, j 128; limits through vector3f_assign 187 (1064) and a component-product inline 156
+// (1077); all three value kinds in the if form 163 (1098); on/off only 148 (1090); scale values in the if form 136/140; products added
+// straight 167-203; on/off, x/y/z declared in any order, or x as the on/off variable 57/59; velocity pointer local 145-169 (1027-1048);
+// scalar limits 95-200; bit-value inline for the values 90-198; body identity chains (diagnostic) 112-137. NOT kept, a new one-caller
+// inline: dot and scaled add in an inline taking velocity/direction pointers 66 (1077, written rows 61), with the dot terms named 57
+// (1078), with a statement dot 59 (1079), with a statement dot and a separate result pointer 52 (1079, al 65/23/20: 188 lines exact but
+// for the i term's x-operand; only the jitter block's spills and products left). A match should start from that 52 form.
 // DL263: Ordinary native sample with reused on/sign/half three-bit groups, seven subsets then
 // complete immutable groups: 161/156/158/150/149/153/150/150. NOT kept: no eligible native keeper;
 // original sample qualifier and complete body restored. Unity/limit/direction registers and jitter
@@ -773,6 +773,33 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // N371: Complete movement/direction/limits/jitter workspace lexical orders, eight
 // forms 132/132/132/132/132/132/132/132. NOT kept: unmatched allocation-only forms; original
 // body restored; unity/limit/direction ownership and jitter spill homes remain.
+// MiniMax G (11-04): no new form; the fast check cannot score this function (its callees fall outside
+// the reduced image, so the diff misaligns from the first instruction), so it stands at 132.
+// Lane 13 round 66 (fast, 0x24590 listed; aligned in brackets, control 118 [110]): velocity.i as `limits.i *
+// control.i` 118 (same code); the projection dot written out as i, k, j 122 [107] (1081 bytes), as k, j, i 122 (the
+// same code: without /Op the sum is reordered); `dot3f(&direction, &state->velocity)` 118 (same code); the jitter
+// offsets as `(x * 0.2f) * limits.i` 113 [107] (retail's 0.2-first products, but limits.j/k then reassociate as
+// definition * factor * scale, new first difference at +0x123; five points, restored); on it each offset added
+// straight into the velocity 196 (1046 bytes).
+// Y603: Complete indexed velocity product/copy producers, original/direct projection argument:
+// 114/227/237/218/51/226/238/222. NOT kept: 114 gains only four; 51 grows from native 1077 to 1078 bytes.
+// Original body restored; projection ownership and native jitter factor spills remain.
+// DH377: Direct dot at the existing scaled-add argument 57 (1078 bytes); complete dot then negation 112.
+// Existing vector scale, direct/named projection 140/131; particle scale, named/direct 131/140;
+// separate correction, named/direct 133/137. Initial velocity setter/complete row products 152/122.
+// On the direct-dot lead, native jitter scale/limit stages 65/45/67/56, then output
+// declaration/setter 45/65 (best 1081 bytes).
+// NOT kept: closer forms move away from retail's 1077 bytes; the native-length 112 gains only six.
+// Original body restored at 118; initial i-row ownership, projection operands and jitter factor homes remain.
+// DH380: Destination-owned control copy then limit modulation via assignment/memcpy/setter/rows,
+// original then direct shared projection: 230/228/242/112/227/225/247/56. NOT kept: intermediate
+// output transfers require equality; original products, observations, projection and complete body restored.
+// N395: Complete limit-owned destination assignment/memcpy/setter/coordinate modulation,
+// original/direct projection: 238/237/238/237/198/201/112/56. NOT kept: coordinate form
+// gains six; direct form grows away from 1077 bytes; all transfer forms require equality.
+// Original complete body restored; projection ownership and jitter spill homes remain.
+// N397: Confined whole on/sign/weight scalar identities on the native-extent body 118/118/118/118/118/118/118/118.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -809,38 +836,37 @@ void function_1e6360(s_biped_physics_output *output, real rate, long object_inde
   movement.j *= scale;
   movement.k *= scale;
   vector3f direction = movement;
-  real length_squared = direction.i * direction.i + direction.j * direction.j + direction.k * direction.k;
-  if (length_squared != 0.0f)
-  {
-   real inverse = inverse_sqrt_1e6360(length_squared);
-   direction.i *= inverse;
-   direction.j *= inverse;
-   direction.k *= inverse;
-  }
-  real projection = 0.0f - (state->velocity.k * direction.k + state->velocity.j * direction.j + state->velocity.i * direction.i);
-  state->velocity.i += projection * direction.i;
-  state->velocity.j += projection * direction.j;
-  state->velocity.k += projection * direction.k;
-  state->velocity.i += movement.i;
-  state->velocity.j += movement.j;
-  state->velocity.k += movement.k;
+  normalize_particle_direction_2b(&direction);
+  real projection = dot3f(&state->velocity, &direction);
+  vector3f_add_scaled(&state->velocity, &direction, 0.0f - projection, &state->velocity);
+  vector3f_add(&state->velocity, &movement, &state->velocity);
  }
  if (g_51e9bc)
  {
-  volatile long bits = g_510c54->game_time * *(long *)((byte *)state + 0x18);
-  real x = ((bits & 8) ? 1.0f : -1.0f) * ((bits & 1) ? 1.0f : 0.0f);
-  real y = ((bits & 16) ? 1.0f : -1.0f) * ((bits & 2) ? 1.0f : 0.0f);
-  real z = ((bits & 32) ? 1.0f : -1.0f) * ((bits & 4) ? 1.0f : 0.0f);
-  x *= (bits & 64) ? 1.0f : 0.5f;
-  y *= (bits & 128) ? 1.0f : 0.5f;
-  z *= (bits & 256) ? 1.0f : 0.5f;
+  long bits = g_510c54->game_time * *(long *)((byte *)state + 0x18);
+  real on_x = 1.0f;
+  if (!(bits & 1)) on_x = 0.0f;
+  real on_y = 1.0f;
+  if (!(bits & 2)) on_y = 0.0f;
+  real on_z = 1.0f;
+  if (!(bits & 4)) on_z = 0.0f;
+  real sign_x = 1.0f;
+  if (!(bits & 8)) sign_x = -1.0f;
+  real x = sign_x * on_x;
+  real sign_y = 1.0f;
+  if (!(bits & 16)) sign_y = -1.0f;
+  real y = sign_y * on_y;
+  real sign_z = 1.0f;
+  if (!(bits & 32)) sign_z = -1.0f;
+  real z = sign_z * on_z;
+  x = ((bits & 64) ? 1.0f : 0.5f) * x;
+  y = ((bits & 128) ? 1.0f : 0.5f) * y;
+  z = ((bits & 256) ? 1.0f : 0.5f) * z;
   vector3f offset;
   offset.i = x * 0.2f * limits.i;
   offset.j = y * 0.2f * limits.j;
   offset.k = z * 0.2f * limits.k;
-  state->velocity.i += offset.i;
-  state->velocity.j += offset.j;
-  state->velocity.k += offset.k;
+  vector3f_add(&state->velocity, &offset, &state->velocity);
  }
 }
 
@@ -883,6 +909,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// MiniMax S (11-07): no new form, no lower score; the crosses declared apart, declared at first use or
+// declared at the top of the body give 114, the two cross calls swapped give 124 and the goal copy by
+// components gives 120, so the body stays; the rotation products, the side-dot order and the exit copies differ.
+// MiniMax R (11-05): no new form, no lower score; writing the two turn-block crosses out with retail's
+// differing third terms gives 140 at retail length (the rotation block is re-generated), so the body stays.
 // score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
 // pointer in ECX and the output pointer in EDI, then the object index, the definition, the value
@@ -1145,6 +1176,11 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // P341: Existing native component getter/support input, pointer/reference and mutable/read-only, shifted
 // word/native bitfield: 114/114/114/114/114/114/114/114. NOT kept: no native rotation-product or
 // side/output allocation recovery; original raw input, include set and complete body restored.
+// Round 64 (m3 lane 14, fast with 0x24590, 0x1cd6c0, 0x1ecf50 listed; masked aligned 55 at 114): the goal copy by components 120
+// (aligned 51; direct [edi+N] stores, retail keeps ECX), the rotated copy by components 169 (aligned 129, forwards the products),
+// both with the preset flag 176; memcpy for either or both exits 114 (identical to the struct copy); dead reads ahead of the turn test
+// 8/15/20/30/45 112/144/150/140/140, ahead of the crosses 8/15/30 112/145/140 (the axis loads first in all of them). Retail's exits load
+// all three dwords into ESI/EDX/EAX before any store; no copy form gives three registers. Body unchanged.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
@@ -1224,16 +1260,19 @@ void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animat
 
 struct s_shape_state;
 struct s_direction_rotation_input;
-void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up, vector3f *forward);
+void function_1f1460(s_shape_state const *ground, vector3f *up, vector3f *forward, byte const *state);
 void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks);
 void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input *input);
 
+/* parameter order from retail's call setups, which load the register
+   arguments last to first after pushing forward: 0xe3c90 and 0x118700 load
+   output (EAX), up (ECX), then physics (EDX); 0xdd360 loads up before output */
 // @retail 0x1e5af0
-void function_1e5af0(void *physics, s_biped_physics_output *output, vector3f const *up, vector3f const *forward)
+void function_1e5af0(void *physics, vector3f const *forward, vector3f const *up, s_biped_physics_output *output)
 {
  switch (*(byte *)physics)
  {
- case 1: function_1f1460((byte *)output, (s_shape_state *)((byte *)physics + 0x10), (vector3f *)up, (vector3f *)forward); break;
+ case 1: function_1f1460((s_shape_state *)((byte *)physics + 0x10), (vector3f *)up, (vector3f *)forward, (byte *)output); break;
  case 2: function_1faa20((vector3f *)up, (byte *)output, (vector3f *)forward, (long *)((byte *)physics + 0x10)); break;
  case 3: function_1ecf50((vector3f *)forward, (vector3f *)up, (s_direction_rotation_input *)output); break;
  case 4: break;

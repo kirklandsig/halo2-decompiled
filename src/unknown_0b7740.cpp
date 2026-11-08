@@ -906,19 +906,21 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 
 
 /* samples and overlays an object's node orientations and rebuilds its matrices, when it has any */
-// score 309 (was 342): enabled from the draft, 810 bytes against 856, first difference +0x4. Retail reads the object through the header at each early test, keeps
-// the matrices result and the matrices passed on as two values, and holds the sample flag in a stack byte. Forms: the draft with one result and a volatile sample flag
-// 303 (not kept: no new volatile), with a plain flag 342; two results and the object read after the early tests 309, with the loop's increment before the flag test
-// and no for-increment (not kept: a hand-placed increment) 295.
+// score 291 (was 309): 830 bytes against 856, first difference +0x2. Walked statement by statement against retail on 2026-11-06: no behaviour
+// difference found (every field offset, test direction, callee, argument order and the two loops agree). Still differs: retail reads the object through the
+// header at each early test and again at the bit-29 test (it does not reuse its object register there), keeps the matrices result and the matrices passed on
+// as two values, holds the sample flag in a stack byte, and has four separate epilogues; our frame is 4 bytes larger. Forms: the sample loop as
+// `node < count && !sample` (no break) 291; the draft's break form 303; both early returns in one `||` test 303 (from 309); the node-mask test through
+// bit_vector_test 291 (same as the written-out test, 291). Tried: sample flag volatile 264 (not kept: no new volatile); the early tests through an `object`
+// local 295; `result` declared after the early returns 289 (not kept: retail stores it before the first early return); the bit-30 flag read into a local before
+// the mask copy 291.
 // @retail 0xbd610
 transform4x3f const *__stdcall function_bd610(long object_index, byte const *nodes,
 	transform4x3f const *input_matrices)
 {
 	s_object_transform_header *header = &((s_object_transform_header *)g_4e0300->data)[object_index & 0xffff];
 	transform4x3f const *result = input_matrices;
-	if (*(short *)((byte *)header->object + 0x112) == NONE)
-		return result;
-	if (object_index != NONE && ((byte *)header->object)[0xb3] > 0)
+	if (*(short *)((byte *)header->object + 0x112) == NONE || (object_index != NONE && ((byte *)header->object)[0xb3] > 0))
 		return result;
 	byte *object = (byte *)header->object;
 	byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
@@ -941,13 +943,11 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 		(!((1 << definition[0]) & 1) || !((byte *)header->object)[0x34b]))
 	{
 		long render_node_count = *(long *)(render_model + 0x1c);
-		for (long node = 0; node < render_node_count; ++node)
+		for (long node = 0; node < render_node_count && !sample; ++node)
 		{
 			byte index = nodes[node];
 			if (index != 0xff && function_0bfe60((dword const *)(model + 0xc4), index))
 				sample = true;
-			if (sample)
-				break;
 		}
 		if (sample)
 		{
@@ -976,7 +976,7 @@ transform4x3f const *__stdcall function_bd610(long object_index, byte const *nod
 	{
 		for (long node = 1; node < node_count; ++node)
 		{
-			if (mask[node >> 5] & (1 << (node & 31)))
+			if (bit_vector_test(mask, node))
 			{
 				byte *render_node = *(byte **)(render_model + 0x4c) + node * 0x60;
 				function_1421f0(&matrices[node], &orientations[node]);
@@ -1277,6 +1277,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // The data field through a `byte *const *` pointer to it 44; the parent header by pointer addition 44; the parent
 // object by byte offset 44 (all same code); parent object, matrix and mirrored flag as conditional initialisations
 // 44 (1396); a parent header pointer with its object read at each use, mirrored first, 42 (1392: `lea` of the header).
+// Round 87 (m3 lane 16, fast, on the count > 0 guard diagnostic, 44 at 1390): `__assume` in the no-model arm (index != NONE at the
+// top or the end, parent object != NULL, pool != NULL before or in the arm, data != NULL) 389 each (1399 bytes: any `__assume` unfolds
+// the entry's flag store, the no-model block stays the same); three parent lookups 20 (1399), two 20 (1399); a forceinline lookup taking
+// the index as `long const &`, one/two lookups 44/44, a plain inline one, two lookups 44. Original body restored.
 // Round 110: split parent base, a one-use parent-node local, pool[0]/dereferenced-pool member spellings,
 // parent object/index role names, a function-scope parent object and a parent-node array pointer 97 each
 // (same code). NOT kept: no gain; the one-use forms require a byte match. Opening body restored.
@@ -1300,6 +1304,17 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // ESI, `mov eax, esi`, `[ecx + 0x44]`, and g_4e0300 still in ECX. After the call instead 402 (1408). So retail's index stays live past
 // the lookup and ECX is never overwritten; what keeps it live with no code is the lead. Sibling 0xb7740 holds its pool
 // in EBX and re-reads data after real stores through the object, which this path doesn't have.
+// M3 lane 9 r88 (fast, on the count > 0 guard diagnostic, 44 at 1390, aligned+stack 5, unless noted): `stored` cleared through an inline out-parameter helper 97 without the guard and 44 with it (promoted after inlining: no kill of the
+// data field); a repeated `if (parent_index != NONE)` with a lookup in each 44; ternaries 50 (1402); two/three lookups in one test 20 (1399: the index takes ECX, so the pool reloads into EDX); the no-model arm first in source
+// 315 (1372), with the guard 314, with the guard and two lookups 297. Retail's copy of the index means it stays live past the lookup; every spelling here lets it die in place.
+// M3 lane 14 r68 (fast, on the count > 0 guard diagnostic, 44 at 1390): parent node index named before the lookup 44;
+// parent/mirrored defaults in an else arm 45 (1391); the masked parent index named 44; declarations index, mirrored,
+// parent 46; without the guard, the no-model parent through slot_handler.h's object_get/object_node_matrix 97 (same
+// code). The guard byte pattern (`test; jle; mov reg, 1; cmp; jle`) occurs nowhere else in retail.
+// Round 57 (m3 lane 2, fast, on the 97 base): masked nodes skipped by `continue` 97 (same code); the no-model parent index
+// declared before the defaults 97, with the mirrored flag read first 97 (same code); the no-model 0xbdc40 call written in both
+// arms of the parent test 405 (1406 bytes); the render node count bound to a `long const &` for the default test and the
+// loop bound 97 (same code).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

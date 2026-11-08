@@ -1156,6 +1156,22 @@ void function_2118c0(void)
 // char with `<`, `!=`, `<=` tests 150; word/byte/char row stepped by 8 beside b 130, long 150; short/word row from `b * 8` 166 (764
 // bytes), char/byte 166 (767); short/word from a cast `b << 3` 163 (782), char/byte 166 (767); wrapped indices through a long array
 // or pointers 181 (755 bytes)/114.
+// Round 151 (m3 lane 5, fast): this body is 0x212100 inlined with b = 1.0f: a call with `inline` on a forward declaration is
+// exactly 777 bytes and 0x212100 stays matched, but 150 (all rows reduce); plain declaration 437 (495), forceinline 150. On the
+// inlined call: all rows from `long row = b << 3` 162 (767), wrapped rows only 123 (790); `long row = b * 8` 150 either way;
+// wrapped rows from `short row = b * 8` 157; sums cast to short or word 179/179 (808).
+// Round 93 (m3 lane 16, fast): `b * 8` rows with the wrapped rows read inside the component loop 150; the wrapped
+// indices declared in the band loop with `b * 8` rows 180 (755 bytes, hoisted and fully reduced); `b * 8` for the
+// wrapped rows with `(b << 3) + k` for p1 and out 150; every row through a `vector3f (*band)[8]` pointer 248 (847
+// bytes); `word` per-row indices from `long row = b * 8` 161 (787 bytes: retail's `add esi, 8` row and unreduced rows,
+// plus three movzx). Diagnostics: `b * 8` alone 150 (five pointer IVs), a short row stepped by 8 beside b 130.
+// Round 58 (m3 lane 2, fast; compile-only screen agrees): the interpolation pass with its own loop variables 10 (same
+// code); the wrapped indices as `long` holding the word value 170 (761 bytes); a short row stepped by 8 beside b with
+// the row sums cast to word 148 (779); the wrapped indices in a word array filled by a four-step loop 174 (792); the
+// wrapped indices computed at the head of the m loop 155 (780). Diagnostics (screen only): a wrapped index read from
+// a global gives retail's `add esi, 8` row with that row unreduced, so the rows stay unreduced only when VC cannot
+// treat the index as invariant; taking the indices' addresses (`(void)&w`, a pointer array) or a second global
+// symbol for some rows still reduces every row.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2578,6 +2594,15 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // bytes), the same z, x, y locals with the helper's differences in x, y, z order 432. Unused-local probes
 // (diagnostic): 3 or 8 extra symbols in the function move only case 7's fold (32) or nothing (3), others 333;
 // in the helper nothing.
+// Round 67 (m3 lane 14, fast): the helper `__forceinline` 3 (same code) or plain `static` 416 (1916
+// bytes, not inlined); its first two squares as one `dz * dz + dy * dy` 7 (dz scheduled first, the
+// square registers swapped); its differences in one declaration 3; the outer x, y, z written where the
+// cases use them 366.
+// Round 140 (lane 8, fast): cases 8 and 9 comparing the z difference written out 3; the selector read
+// before the two point lookups 3; the helper taking the points by const reference 3; the helper's
+// differences `real const` 3; the outer x, y, z `real const` 3 (all same code; the outer locals written
+// at each use, rechecked, 366). No XMM value is live across the point lookups, so nothing holds XMM1
+// back: in ours the z load is hoisted above the y load and subtract, in retail it follows them.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2870,6 +2895,20 @@ void function_20fda0(long arg_0);
 // 49 (144 bytes) or between the team read and the call 48 (145 bytes; both keep the loads ahead of the call and
 // cost 0x114e80 13); permuter (600 s, 46 tries): nothing valid below 19 (its 16 reads the team as a dword).
 // The team field passed straight to the call without the long local 20.
+// Round 67 (m3 lane 14, fast): the owner as `local_1 * 0x7dc + (byte *)g_4f939c` 19, the node as
+// `(arg_1 & 0xffff) * 0x54 + g_4f9398->data` 19, both 19, the owner as `&((byte *)g_4f939c)[...]` 19, the
+// flag read as `*(bool *)(local_3 + 0x41)` 19, the pool read into a local after the owner 19 (all same
+// code). Reading: retail's owner base takes EAX (loaded after the MOVSX), the pool EDX and the node offset
+// ECX, so the node add must come before the flag byte load into CL; ours gives the owner base EDX, the
+// pool ECX and the offset EAX, which lets the flag load fold the add.
+// Round 140 (lane 8, fast): the call folded into the owner with a short team local (0x20f2d0's form) 19;
+// the node expression written at each use 50 (150 bytes: the 0x20d570 argument registers become retail's,
+// but the data pointer is reloaded); the owner from a one-line inline team-to-queue helper 19; the owner
+// as a `byte *` queue cast at the calls 19; the two global declarations swapped 19 (all same code).
+// Compile-only screens (their listing agrees with the real one): 97 combinations of the team and side
+// local types, the owner before or after the node, a local, typed or at-each-use node and the arm order,
+// and all 45 orders of the side, offset, pool, queue base, owner, data and node statements after the
+// call: none moves the base EDX / pool ECX / offset EAX assignment; nor do /O1, /Ox, /G6, /G7 or /Op.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

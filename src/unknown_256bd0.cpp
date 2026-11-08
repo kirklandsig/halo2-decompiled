@@ -62,8 +62,11 @@ struct s_object_flags_256bd0
 	word unknown0 : 6;
 	word bit6 : 1;
 };
-// MiniMax B (11-04): no new form, no lower score (the two-exit and early-return spellings of the timer test give 278 and 184).
-// score 178 (was 178): the activity test is the loop's condition, so the frame is 0x110 and the
+// score 85 (was 85; 178 before the coordinator fast check 11-05): the returned global is kept in a 32-bit local, the late exit
+// returns g_470c40 directly, the loop distance is retail's distance block (vector3d_from_points3d + length_sq3f)
+// and the definition's index is a named local used at all three places. Not kept (31 with both): g_470c44
+// declared `extern int` for retail's dword load (retail stores it as a short, fe ff 00 00: a type pun) and the
+// marker's object index read into a one-use local. The frame is 0x110.
 // activity byte is re-read at every pass as retail does; the first block's register homes differ.
 // Round 112: split active/null-entry loop and an initialized entry 178 each; actor/status
 // declarations swapped 184; native object-header getter at the definition lookup, final flag
@@ -255,11 +258,37 @@ struct s_object_flags_256bd0
 // block exactly (aligned 55 -> 48) but flips the operand order of the inlined 0x11cc90 dot before the loop, 183;
 // with delta declared beside the minimum 183; with actor_get for both actor lookups 183; with dot3f(&delta, &delta)
 // for length_sq3f 183.
+// MiniMax I (11-05): the iterator loop's activity test is the last difference: retail re-reads
+// g_4f55d0->active at its loop head, ours hoists it out of the loop because LTCG knows the callee
+// writes no global. The flag in the step helper, the flag at the head of an explicit loop and
+// /GL- for this file (420) all leave the score at 31.
+// MiniMax I (11-05): the definition's index is read into a named local and used at all three
+// places, which gives retail's registers for the g_4e3b44 lookups and the spawn call 31 (was 55);
+// what still differs is the iterator loop's padding and the zeroing of the entry pointer, and the
+// function is three bytes longer than retail's.
+// MiniMax I (11-05): the entry load is now retail's dword load at 0x470c44 and the loop distance
+// is the header helpers vector3d_from_points3d and length_sq3f, which is retail's distance block
+// 55 (was 78); what still differs is the inlined 0x11cc90 dot's register order, the g_4e3b44
+// lookup's registers, the iterator's global load and the spawn call's argument registers.
+// MiniMax I (11-05): the late exit returns the second global directly and the marker's object
+// index is read into a named local, which frees the phi and shifts the body to retail's
+// registers 78 (was 93).
+// MiniMax I (11-05): the returned global held in a 32-bit local frees EAX inside the body as
+// retail does, so the marker lookup and the position copies use retail's registers 93 (was 178).
+// MiniMax B (11-04): no new form, no lower score (the two-exit and early-return spellings of the timer test give 278 and 184).
+// Lane 13 round 66 (fast; aligned in brackets, control 85 [55]): `short result = g_470c44;` (the matched 0x2570b0
+// gets retail's `mov eax, dword ptr` that way) 183 [55]; with it the marker call's object index read into a local
+// first 31 [4] (the same 31 as the type-punned global, the global now a plain short; only the loop's activity test
+// is left, so this pair should match once the loop re-reads the byte; a one-use local, restored); on that the
+// activity test inside the step helper 166 [77] (the byte hoists into a stack slot, frame +4); the unit index named
+// for the marker call and the unit lookup 186 [105]; `short result` with one exit (`result = g_470c40`) 183 (same code);
+// on the 31 pair, the activity byte passed into the step helper as a `bool active` argument (matched 0x268510's
+// form) 167 [78] (still hoisted into a stack slot).
 // @retail 0x256bd0
 short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 {
 	byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
-	short result = g_470c44;
+	int result = g_470c44;
 	short *timer = (short *)slot->unknownc;
 	--*timer;
 	if (*timer <= 0)
@@ -286,14 +315,15 @@ short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 		placement.field2e = 1;
 		byte *unit = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x18) & 0xffff) * 12 + 8);
 		byte *definition = g_4e3b44[*(long *)unit & 0xffff].bytes;
-		if (*(long *)(definition + 0x30c) != NONE)
+		long definition_index = *(long *)(definition + 0x30c);
+		if (definition_index != NONE)
 		{
-			long variant = *(long *)(g_4e3b44[*(long *)(definition + 0x30c) & 0xffff].bytes + 0x18);
+			long variant = *(long *)(g_4e3b44[definition_index & 0xffff].bytes + 0x18);
 			if (variant != NONE)
 			{
 				long object_index = NONE;
 				long selected = NONE;
-				byte *flags = (byte *)function_1e4990(*(long *)(definition + 0x30c));
+				byte *flags = (byte *)function_1e4990(definition_index);
 				if (flags && (flags[0] & 1))
 				{
 					real minimum = 25.0f;
@@ -302,7 +332,9 @@ short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 					byte *entry;
 					while (g_4f55d0->active && (entry = perception_iterator_next_256bd0(&iterator)) != NULL)
 					{
-						real distance = distance_sq3f((point3f const *)(entry + 8), &position);
+						vector3f delta;
+						vector3d_from_points3d((point3f const *)(entry + 8), &position, &delta);
+						real distance = length_sq3f(&delta);
 						if (minimum > distance)
 						{
 							minimum = distance;
@@ -310,11 +342,11 @@ short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 						}
 					}
 					if (selected != NONE)
-						object_index = function_28dbd0(selected, *(long *)(definition + 0x30c), variant, (s_28dab2 const *)&placement, false);
+						object_index = function_28dbd0(selected, definition_index, variant, (s_28dab2 const *)&placement, false);
 				}
 				if (selected == NONE)
 				{
-					long spawned = function_1e0850(*(long *)(definition + 0x30c), *(long *)(actor + 0x30), (s_203780 const *)&placement, false);
+					long spawned = function_1e0850(definition_index, *(long *)(actor + 0x30), (s_203780 const *)&placement, false);
 					if (spawned != NONE)
 					{
 						byte *other = g_4f55f0->data + (spawned & 0xffff) * 0x888;
@@ -347,7 +379,7 @@ short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 			flags->bit6 = true;
 			function_b7360(*(long *)(actor + 0x18));
 		}
-		result = g_470c40;
+		return g_470c40;
 	}
 	return result;
 }

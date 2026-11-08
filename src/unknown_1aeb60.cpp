@@ -49,7 +49,7 @@ struct s_prop_datum_0f
 
 bool function_1f8660(long index);
 void function_1f86a0(long index);
-bool function_1f4f40(long actor_index, vector3f const *facing, short unknown, s_type_c3b527 const *point, bool face_prop);
+bool function_1f4f40(long actor_index, short unknown, s_type_c3b527 const *point, bool face_prop, vector3f const *facing);
 short __stdcall function_1aec30(long actor_index, short level, bool active);
 bool __stdcall function_1af810(long actor_index, s_slot *slot);
 void __stdcall function_1afb30(long actor_index, s_slot *slot);
@@ -319,131 +319,6 @@ bool function_1af530(long actor_index, long *b, long *a)
 static __forceinline long real_to_long(real value);
 short *function_e70b0(short *value, long unit_index);
 
-// MiniMax G (11-04): no new form, no lower score; the actor index still takes ECX and the actor
-// data EDX, where retail keeps the index in EDX and the actor data in ECX, and the exchange
-// still runs through the timer, prop, random and final argument setup.
-// score 49 (was 49): frame agrees; ECX and EDX are swapped through the whole body (retail: index EDX,
-// actor ECX), down to the final call's argument setup. Existing state query
-// ordinary/inline/forced 138 each; query with long timer 143; timer/mode 143; mode 137; readonly actor
-// 138; readonly records 138.
-// Earlier:
-// retail also keeps the random scale and the range as two fmuls. Slot view first 79; one actor
-// pointer for the last test 138; marker local in the last block 80; `--timer == 0` 79; prop index
-// local 79.
-// Native countdown/mode/both 134/80/138; shared range 49; its native countdown/mode/both 127/64/129; unit
-// reference 49; short/early short countdown 49/123; actor reference and read-only node/unit/actor/all
-// views 49 each; final guard 49; direct shared product/conversion 49/49; shared low-half index with
-// pointer/reference 127/127. Timer test combined as in 0x1b7c70 49; `--state->ticks <= 0` 49;
-// slot cast declared first 49; constant first in the time test 49; timer record by pointer
-// addition 49 (the same code each time).
-// Nested prop/clock/tick names singly, in all pairs and together 49 each; early uninitialized tick declaration 49.
-// Actor getter boundary 49; getter observations at timer/prop/both 117/115/140;
-// unit/timer-unit/prop-unit/all phases 120/117/117/132; all computed receiver forms rejected.
-// Slot data block through slot->unknownc 49; existing unit action-state helper call 49 and existing prop
-// getter 49 (both kept: they replace hand-written copies, same code); nested final actor-state test 49;
-// named random delay 49.
-// Round 404: Native slot data block, then countdown/mode/elapsed combinations and entry cast order, all
-// eight 49 at 443/443. Data block canonicalizes unchanged; complete original body and type restored.
-// Actor/index and final-call allocation remain.
-// Round 7 (lane 15): random scale times the tick rate 49; `(real)` tick rate 49; action local at function
-// scope 49; slot cast before the actor 49 (identical code each time); a permuter run ended at its
-// 2400 s timeout with no result (its full-image baseline takes most of that).
-// Round 114: final mode test as a call to the existing 0x1f86f0 138 (kept out of line); through the
-// existing actor pointer 132; nested timer test 49; nested final test 49; named action value 49;
-// a 26-try permuter run found nothing below 49.
-// Round 38 (lane 9): the final mode test as a call to the existing 0x1f86f0 with an `inline` or
-// `__forceinline` declaration here 138/138 (LTCG still keeps it out of line; its file was off limits);
-// `now` read before the node/prop lookups 97; `action` declared at the top 49; `10.0f <` elapsed test 49.
-// Round 100: actor declared first and assigned after the slot cast 49; const actor pointer 49; a named
-// char for the byte flag tested and passed to 0x1f4f40 53. Diagnostics: without the 0x1f86a0 call or
-// without actor_index in 0x1fb7e0's ECX argument the index still takes ECX (135/128), so neither use
-// decides the tie.
-// Round 16: every instruction is retail's except the ECX/EDX roles (the actor pointer and its
-// reloads, and so every temporary beside it); dropping the index from the 0x1f86a0, 0x1fb7e0 or
-// 0x1f4f40 call, or the final mode read through `actor`, leaves the index in ECX. The final mode
-// read as a raw indexed field 49; the action query through a fresh actor lookup 120; the timer
-// test as `== 0` 49; the ticks test as `< 1` 108; the timer guard as `>= 1` 126.
-// Round 10 (lane 13): the final test as a call to the existing 0x1f86f0 with `inline` on its definition
-// (inlined as in retail, its other callers unchanged) 49 (the same code); with the slot cast first 49;
-// with the action state read after the call 49; the time read before the lookups 97; the node getter
-// at both uses 54. Retail's coloring looks as if ECX were taken at entry (index EDX, data ECX).
-// Round 99 (lane 6): the tick store through the existing 0x1aefc0 helper (fistp into a short) 49
-// (identical code); `rate * elapsed` 49; slot cast first with the actor assigned separately 49; a
-// unit-index local for the action-state read 49; the prop stamp before the event call 133.
-// Round 3 (lane 17): the actor looked up at each use in the timer test 152 (465 bytes); a named elapsed
-// tick count in the prop test 49; the elapsed seconds named 49; a named object index for the event
-// call 49; node and prop declared at function scope 49.
-// Round 7 (m3 lane 2): matched 0x1aeb60/0x1af0a0 here give the index ECX and the data EDX as ours does;
-// the index copied into a local 49; the prop index named for its test and lookup 49; the index read once
-// through its address 49; `2 == ...` for the final mode test 49; `state->timer == 0` 49.
-// Round 11 (m3 lane 2): the two final tests and the action query as one condition (action declared
-// first) 49; the prop time product in a named elapsed value 49; the timer's zero test nested over
-// the actor flag test 49; `if (--state->ticks < 1)` 108 (445 bytes); the final mode read through a
-// second named actor lookup 49. Retail: 8 matched functions load an actor index into EDX with the
-// data base in ECX (0x1a80e0, 0x1b5aa0, 0x258660, ...), 15 into ECX (0x1aeb60, 0x1a93c0, ...); no
-// frame or prologue feature separates the two groups.
-// Round 132 (an LTCG env link with 0xe70b0's object reproduces it): with 0xe70b0 left out of line the
-// first 97 instructions are retail's (index EDX, actor data ECX), so the swap follows the inlined
-// action-state read. At the call: its result in a pointer local 110 (437 bytes); called alone and the
-// local compared 49; `7 !=` 49; the unit index in a local 49; `state->unknown34 != 0` 49.
-// Round 110 (fast): the final block as a guard return 49; the action query's out value tested in place of
-// the returned pointer 49; `7 != ...` 49; `0 < state->timer` 49 (the same code each time). Diagnostic, not
-// kept: the actor address written offset first (`(index & 0xffff) * size + data`) 49, so the operand order
-// of the address expression does not decide the ECX/EDX tie either.
-// Round 98 (lane 8; LTCG env link with the ballast and 0xe70b0's object, equal to the full listing):
-// the swap comes from the LTCG-inlined 0xe70b0 action query. Linked without 0xe70b0's object (the
-// query stays an external fastcall call) the same source gives retail's roles (index EDX, actor ECX,
-// temporaries EDX) for the first 97 rows; 0xe70b0 written with a unit local, or the query spelled out
-// in place (diagnostics), keep the swap. Trials: `(short)state->unknown34` 49; `short action = 0;`
-// 49; the timer block as one `> 0 && !--timer && ...` condition 49 (identical code each time); the
-// query result in a named `short const *` 105 aligned 49 (436 bytes); re-measured in the env: the
-// query called, then `action != 7` 49, slot cast before the actor 49 (identical code).
-// Round 24 (lane 14): every differing row is ours with the scratch registers rotated (ECX/EDX at the
-// entry, EAX/EDX and ECX/EAX in the later blocks), as if retail's allocation started one register
-// further on. The definition moved after 0x1afcf0 in this file 49 (fast and plain; other functions
-// unchanged); the existing typed actor_datum_get for the first lookup 49, for both lookups 49; the
-// delay product written random times ticks 49 (the same code each time).
-// Round 101 (lane 8; exact LTCG harness, 42 = 49): BLOCKED-BY 0xe70b0's inlined shape (its file is
-// another lane's this round). 0xe70b0 bodies tried in the harness only: an actions-pointer local 49, a
-// result-pointer local 105 (436 bytes), a header-pointer local 54; here `if (--state->ticks <= 0)` 49
-// (same code), a named object index for the event call 49.
-// Round 181 (lane 3): the rotation reaches the final call: retail keeps the 0x34 byte in DL and
-// loads ECX (the facing argument) before pushing it, ours keeps it in CL and pushes it first, so the
-// byte's colour and the actor's (ECX in retail) are one decision. The definition moved to the top of
-// the file 49; the action state read into a short value local 49; the random range given file and
-// line as 0x1bf0f0 does 49; a `__forceinline` declaration of 0xe70b0 here 49; an explicit short
-// conversion of the byte argument 49 (identical code each time).
-// Round 30 (lane 14, fast): `if (--state->ticks <= 0)` 49; the game time read between the node and prop
-// lookups 96; `if (!--state->timer && ...)` inside the timer guard 49; the action query tested before the
-// mode test (diagnostic: the index still takes ECX) 118; the prop looked up at each use 153 (468 bytes).
-// Round 55 (fast): `now` declared at function scope 49; `long const now` with a named `real const elapsed`
-// and `10.0f < elapsed` 49; the final mode read through the entry actor pointer 132 (423 bytes);
-// `state->ticks -= 1;` 49; the unit index through a `long const &` 49.
-// Round 132 (lane 6, fast with 0xe70b0 in the image): the actor pointer renamed to sort after the
-// index 49; the timer read once into a short local and stored back 49; the final guard named as a
-// bool 49; the slot view and that timer local read before the actor lookup 123 (index still ECX); a
-// plain `inline` declaration of 0xe70b0 here 49. In every block retail's scratch registers sit one
-// allocation on from ours, as if one more temporary came first.
-// Round 287: Parameter-index/slot/both, inline-output/index-output/slot-output/all lexical
-// identities 49/49/49/49/49/49/49; all three alternate identities 49. Original names and body
-// restored; actor/index ECX/EDX and final setup remain.
-// Round 334: four-byte frame and 443-byte extent agree; first +2 exchanges
-// actor/index ECX and EDX and changes final setup. One complete clock receiver,
-// original/native slot data block, entry/timed-block declaration and mutable/const
-// view combinations, all eight 124 at 443 bytes. The shared receiver makes the EBP
-// save unconditional. Original data view, global observations and full body restored.
-// Round 59 (m3 lane 10, fast): every flagged line follows from one decision, the actor pointer in ECX
-// (retail) or EDX. The slot data block alone 49 (same code; retail forms no data pointer here); the getter
-// as typed `+` / named data / named offset / named index / assigned later / const actor 49 each; 0x227 read
-// twice 49; prop index twice 49; 0x18 twice 130 (423 bytes, 0xe70b0 out of line); a copy of the index at each
-// of four uses 49 each; an actor copy 49. Getter read directly with the local at 0x227 / 0x229 / the prop test
-// / the prop lookup / 0x18: 117 / 117 / 49 / 49 / 120; pairs 117, 117, 117, 118, 117, 117, 117, 49, 120, 120;
-// all five 117.
-// Round 61 (m3 lane 11, fast): all 43 aligned rows are still one decision, index EDX / actor ECX (retail) or the reverse. The slot typed as the parameter with a table cast 49;
-// the timer test's `!timer` nested 49; a prop index local used twice 49; the final mode test nested 49; `ticks = ticks - 1` with the rate cast written 49 (same code each). BLOCKED-BY 0xe70b0 stands.
-// Round 145 (m3 lane 6, fast): ticks decremented through a short local stored back 111 (446 bytes); the timer
-// expiry as a named bool 49; `short action = NONE;` 49; elapsed ticks as a named long 49; the node's object
-// index named before the prop lookup 49. BLOCKED-BY 0xe70b0 (avoid-listed file this round).
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {
@@ -477,7 +352,7 @@ void __stdcall function_1afb30(long actor_index, s_slot *slot)
 		short action;
 		if (*function_e70b0(&action, actor->unknown018) != 7)
 		{
-			function_1f4f40(actor_index, &state->facing, state->unknown34, &state->point, true);
+			function_1f4f40(actor_index, state->unknown34, &state->point, true, &state->facing);
 			state->unknown17 = true;
 		}
 	}
@@ -661,6 +536,15 @@ struct s_1af5c6
 // header read written in the test 20; the header flag in a byte local 20; the resolved index as if/else 20; a named hit product with the distance
 // first 20; the ray vector in the call's argument list 20; the hit fraction in a local after the test, or declared at the top, 19; with one category
 // result as well 106 (601 bytes); the distance compared as `local_14 < 1.0f`, as in 0x1c8df0, 20; the distance declared before the second vector 20.
+// Round 216 (m3 lane 3, plain): the existing ai_object_get/object_header_get for the two header lookups 20 (same code);
+// the ignore index declared first 20 (same code); the ray in a fresh scoped vector, as the inlined query's own local,
+// 28 (frame changes, first difference +0x2); the distance declared with the other locals 20; the object index read
+// from the prop node at each use after 0x2640c0 20. Left: retail's tail is 0x1c8df0 inlined with constant arguments
+// (only this call site; LTCG keeps ours out of line), so the mask temp (EAX, retail ECX), the early ignore-index load
+// and the distance's slot follow that inlined body's temporaries.
+// Round 71 (lane 14, plain): the ignore index chosen without the assignment inside the condition, as a nested if/else
+// (kept: identical code), as NONE then two ifs, or as a ternary with a NONE fallback test, 20 each; the object index first
+// with the actor field taken when the header flag is clear and the field is set 29; the header flag tested as a bool 20.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {
@@ -681,7 +565,13 @@ long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 	function_2640c0(local_19, (s_object_motion_view *)&local_7);
 	local_19 = local_1->object_index;
 	local_3 = &((s_1af5c2 *)g_4e0300->data)[local_19 & 0xffff];
-	if (local_3->field_3 != 0 || (local_8 = ((s_1af5c3 *)local_4)->field_14) == NONE)
+	if (local_3->field_3 == 0)
+	{
+		local_8 = ((s_1af5c3 *)local_4)->field_14;
+		if (local_8 == NONE)
+			local_8 = local_19;
+	}
+	else
 		local_8 = local_19;
 	local_8 = function_baf40(local_8);
 	if ((short)arg_3 == 0)

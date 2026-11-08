@@ -74,8 +74,11 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
+// MiniMax I (11-05): no new form, no lower score. Retail's null-datum `je` jumps to the function's
+// end (offset 0x920 of 2345) where ours jumps to a near block, and the child, text and layout stack
+// homes still differ (retail's suffix at -0x258 and its message at -0x458, ours at -0x2cc and -0x4cc).
 // MiniMax H (11-04): declaration-order and scope moves compile identically; no lower score.
-// score 330 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
+// score 316 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // Lane 18 r37 (fast): received text preset then overridden 662 (2347 B); the text id as dword 330;
 // text set to NONE only at the top of the online block 330 (same code); set_text inside the online block
 // under `if (text == NONE)` 539 (2350 B); the invitation bit chosen by if/else after a `continue` 330
@@ -205,18 +208,56 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // the > 1 icon as one call with `invitations + (received ? 18 : 7)` 383 (2357 bytes); the status visibility
 // as `(empty || self) ? false : true` 330 (same code); a short invitation count 339 (2338 bytes); voice
 // availability as `player != NONE && ...` 631 (2325 bytes). Homes still BLOCKED-BY 0x230134 as noted.
+// Round 138 (m3 lane 8; plain 316 at 2342 bytes): the sibling screens' string-buffer record with an inline `load` calling
+// 0x230134 on its member (0x2b6db1's idiom) for the suffix 316 fast and plain (kept, with the display name and message too, same
+// code): retail's re-derived suffix `lea` after the loads now appear at most sites; the message or display name alone 330. On it:
+// buffers renamed so the four 0x200-byte buffers sort in retail's frame order, ascending or descending, 316 (names move no slot);
+// the append shared after each value04 switch 613 (2208 bytes), the default's two loads as one with a `can_join ?` id 675
+// (2193), the first switch alone shared 552. Left (masked 18): title/display_name and suffix/layout homes swapped (retail weighs
+// title over display_name and suffix over layout), the value04 cases' loads merged at the IL level (ours `mov ecx, id; jmp`, retail
+// `lea esi; mov ecx, id; jmp`), the loop's >> 10 arm, the received arm's ebx clear and threading, and the !online host.
+// Round 400: zero-session library clear/const/online/status/entry workspace
+// 505/330/331/368/712; complete zero-reject/admit/reject results 375/330/330.
+// NOT kept: no byte match or qualifying gain; original workspace and body restored.
+// F402: Existing active-player producer, positive/failure early returns, default/
+// failure-first/nested results, output-owned and reused admissions,
+// 330/330/597/330/330/330/377/604. NOT kept: no exact or qualifying result;
+// original complete body and existing helper restored.
+// Three-way suffix selectors: native 2,3,default; alternatives 2,default,3 and
+// 3,default,2. All eight non-native order pairs 330, still 2334/2345 bytes.
+// NOT kept: no native case-layout recovery; original complete cases restored.
+// Walk b3J (11-06, vs retail 0x2b2ed4-0x2b37fa, block by block): no logic difference found. Checked: the five
+// find_child calls (6/0 name, 6/1 status, 8/3 invite, 8/5 session, 8/4 voice) and their slots; the empty-row
+// text ids (0x2b2f4b-0x2b2f82) and the 16 cleared flags; the identity copy (dword[28] = XONLINE_USER, ends
+// exactly at ebp+0x18); the item loop (count > 0 guard, cmovne null test, flags >> 12 friends / >> 10 players,
+// flags |= 0x200, ++invitations); bits 4/5/10/11/0/1/7/0x200/0x100; has_user -> player id, voice (0x53b40,
+// 0x53b90, 0x53850 with (local, player)), the inlined active-player lookup (0x59330 before 0x19acc6),
+// joinable via 0x19abe4; `allowed`; all text arms and their ids/order (0x2b31f1-0x2b366f, incl. the
+// is-this-title/known/strlen arms, state 1-6 suffix switch, can_join = session id != 0 && datum+0x20 & 8 &&
+// !active); the invite icon chain (28/17, n+18/n+7, 1, 18, 6, 2, 7); session icons 29/19/0; voice icons 3/5/4;
+// the final layout (80440, 80de0, 2b01a2 with -1 for empty rows or player+0x56, 16-byte copy, flags 2|1,
+// value4 = 0, 22f042). Remaining differences are only the stack homes, the out-of-line shift arm and the
+// join order. Not kept: `other = entry ? entry : NULL` in the item loop 618 (2338 B; retail's cmovne is
+// matched by the plain `other = NULL; if (entry) other = entry;` form). Score-only forms left as found:
+// `value6e = (...) ? true : false` (plain `!empty && !self` 442). No shared helper, include or double local added.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)
 {
     if (!datum) return;
+    /* a string buffer the screen's strings load into */
+    struct s_string_buffer
+    {
+        word text[0x100];
+        void load(c_widget *screen, long handle) { screen->function_230134(handle, text); }
+    };
     c_class_1a2c81 *name = item->find_child(6, 0, false);
     c_text_widget_45a5e0 *status = (c_text_widget_45a5e0 *)item->find_child(6, 1, false);
     c_class_1a2c81 *invite = item->find_child(8, 3, false);
     c_class_1a2c81 *session = item->find_child(8, 5, false);
     c_class_1a2c81 *voice = item->find_child(8, 4, false);
-    word display_name[256];
-    display_name[0] = 0;
+    s_string_buffer display_name;
+    display_name.text[0] = 0;
     long invitations = 0;
     bool online, voice_enabled, pending, outgoing;
     bool player_pending, player_outgoing, received, sent, declined;
@@ -226,11 +267,11 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     {
         s_friend_request request;
         if (friends)
-            ((c_widget *)list->get_screen())->function_230134(0x1600029e, display_name);
+            display_name.load((c_widget *)list->get_screen(), 0x1600029e);
         else if (friend_request_get(&request))
-            ((c_widget *)list->get_screen())->function_230134(0x180002a2, display_name);
+            display_name.load((c_widget *)list->get_screen(), 0x180002a2);
         else
-            ((c_widget *)list->get_screen())->function_230134(0xb0002e7, display_name);
+            display_name.load((c_widget *)list->get_screen(), 0xb0002e7);
         online = false;
         voice_enabled = false;
         pending = false;
@@ -272,7 +313,7 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
                 }
             }
         }
-        function_08cc20((s_name_buffer *)display_name, (wchar_t *)((byte *)datum + 0x3c));
+        function_08cc20((s_name_buffer *)display_name.text, (wchar_t *)((byte *)datum + 0x3c));
         pending = (bool)((flags >> 4) & 1);
         outgoing = (bool)((flags >> 5) & 1);
         player_pending = (bool)((flags >> 10) & 1);
@@ -292,11 +333,11 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
         sent = allowed && (flags & 0x200);
         declined = allowed && (flags & 0x100);
     }
-    if (name) name->function_22f52e()->set_text(display_name);
+    if (name) name->function_22f52e()->set_text(display_name.text);
     if (status)
     {
-        word message[256];
-        message[0] = 0;
+        s_string_buffer message;
+        message.text[0] = 0;
         status->value6e = (!empty && !self) ? true : false;
         long text = NONE;
         if (pending && friends) text = 0x16000266;
@@ -312,8 +353,9 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
         else if (!online) text = 0x700024e;
         else
         {
-            word title[256], suffix[256];
-            title[0] = suffix[0] = 0;
+            word title[256];
+            s_string_buffer suffix;
+            title[0] = suffix.text[0] = 0;
             XONLINE_FRIEND friend_;
             friend_get_online_friend(datum, &friend_);
             online_friend_get_title_name(&friend_, (wchar_t *)title, 256);
@@ -324,131 +366,131 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
                 XNKID zero = {0};
                 bool can_join = memcmp(&friend_.sessionID, &zero, sizeof(zero)) != 0 &&
                     (*(dword *)((byte *)datum + 0x20) & 8) && !active;
-                if (joinable) ((c_widget *)list->get_screen())->function_230134(0x18000250, message);
-                else if (active) ((c_widget *)list->get_screen())->function_230134(0x14000251, message);
-                else if (in_session) ((c_widget *)list->get_screen())->function_230134(0x13000252, message);
+                if (joinable) message.load((c_widget *)list->get_screen(), 0x18000250);
+                else if (active) message.load((c_widget *)list->get_screen(), 0x14000251);
+                else if (in_session) message.load((c_widget *)list->get_screen(), 0x13000252);
                 else if (presence.state == 1)
                 {
                     if (presence.value04)
                     {
-                        ((c_widget *)list->get_screen())->function_230134(0x11000253, message);
+                        message.load((c_widget *)list->get_screen(), 0x11000253);
                         switch (presence.value04)
                         {
                         case 2:
-                            ((c_widget *)list->get_screen())->function_230134(0x12000255, suffix);
-                            unicode_string_append(message, suffix, 256);
-                            message[255] = 0;
+                            suffix.load((c_widget *)list->get_screen(), 0x12000255);
+                            unicode_string_append(message.text, suffix.text, 256);
+                            message.text[255] = 0;
                             break;
                         case 3:
-                            ((c_widget *)list->get_screen())->function_230134(0xd000254, suffix);
-                            unicode_string_append(message, suffix, 256);
-                            message[255] = 0;
+                            suffix.load((c_widget *)list->get_screen(), 0xd000254);
+                            unicode_string_append(message.text, suffix.text, 256);
+                            message.text[255] = 0;
                             break;
                         default:
-                            if (!can_join) ((c_widget *)list->get_screen())->function_230134(0x13000257, suffix);
-                            else ((c_widget *)list->get_screen())->function_230134(0xf000256, suffix);
-                            unicode_string_append(message, suffix, 256);
-                            message[255] = 0;
+                            if (!can_join) suffix.load((c_widget *)list->get_screen(), 0x13000257);
+                            else suffix.load((c_widget *)list->get_screen(), 0xf000256);
+                            unicode_string_append(message.text, suffix.text, 256);
+                            message.text[255] = 0;
                             break;
                         }
                     }
                     else
                     {
-                        ((c_widget *)list->get_screen())->function_230134(0xe000258, message);
-                        ((c_widget *)list->get_screen())->function_230134(0x13000257, suffix);
-                        unicode_string_append(message, suffix, 256);
-                        message[255] = 0;
+                        message.load((c_widget *)list->get_screen(), 0xe000258);
+                        suffix.load((c_widget *)list->get_screen(), 0x13000257);
+                        unicode_string_append(message.text, suffix.text, 256);
+                        message.text[255] = 0;
                     }
                 }
                 else if (presence.state == 5)
                 {
-                    ((c_widget *)list->get_screen())->function_230134(0x17000259, message);
-                    ((c_widget *)list->get_screen())->function_230134(0x13000257, suffix);
-                    unicode_string_append(message, suffix, 256);
-                    message[255] = 0;
+                    message.load((c_widget *)list->get_screen(), 0x17000259);
+                    suffix.load((c_widget *)list->get_screen(), 0x13000257);
+                    unicode_string_append(message.text, suffix.text, 256);
+                    message.text[255] = 0;
                 }
                 else if (presence.value08 == 1)
                 {
-                    ((c_widget *)list->get_screen())->function_230134(0x1900025a, message);
+                    message.load((c_widget *)list->get_screen(), 0x1900025a);
                     switch (presence.value04)
                     {
                     case 2:
-                        ((c_widget *)list->get_screen())->function_230134(0x12000255, suffix);
-                        unicode_string_append(message, suffix, 256);
-                        message[255] = 0;
+                        suffix.load((c_widget *)list->get_screen(), 0x12000255);
+                        unicode_string_append(message.text, suffix.text, 256);
+                        message.text[255] = 0;
                         break;
                     case 3:
-                        ((c_widget *)list->get_screen())->function_230134(0xd000254, suffix);
-                        unicode_string_append(message, suffix, 256);
-                        message[255] = 0;
+                        suffix.load((c_widget *)list->get_screen(), 0xd000254);
+                        unicode_string_append(message.text, suffix.text, 256);
+                        message.text[255] = 0;
                         break;
                     default:
-                        if (can_join) ((c_widget *)list->get_screen())->function_230134(0xf000256, suffix);
-                        else ((c_widget *)list->get_screen())->function_230134(0x13000257, suffix);
-                        unicode_string_append(message, suffix, 256);
-                        message[255] = 0;
+                        if (can_join) suffix.load((c_widget *)list->get_screen(), 0xf000256);
+                        else suffix.load((c_widget *)list->get_screen(), 0x13000257);
+                        unicode_string_append(message.text, suffix.text, 256);
+                        message.text[255] = 0;
                         break;
                     }
                 }
                 else if (presence.value08 == 2 || presence.value08 == 3)
                 {
-                    ((c_widget *)list->get_screen())->function_230134(0x1500025b, message);
-                    ((c_widget *)list->get_screen())->function_230134(0x13000257, suffix);
-                    unicode_string_append(message, suffix, 256);
-                    message[255] = 0;
+                    message.load((c_widget *)list->get_screen(), 0x1500025b);
+                    suffix.load((c_widget *)list->get_screen(), 0x13000257);
+                    unicode_string_append(message.text, suffix.text, 256);
+                    message.text[255] = 0;
                 }
-                else ((c_widget *)list->get_screen())->function_230134(0xe00024f, message);
+                else message.load((c_widget *)list->get_screen(), 0xe00024f);
             }
             else if (known && (long)function_217b70(title) > 0)
             {
-                ((c_widget *)list->get_screen())->function_230134(0x1400025c, suffix);
-                function_1630e0(message, suffix, title);
+                suffix.load((c_widget *)list->get_screen(), 0x1400025c);
+                function_1630e0(message.text, suffix.text, title);
                 switch (presence.state)
                 {
                 case 1:
-                    ((c_widget *)list->get_screen())->function_230134(0x1200025e, suffix);
-                    unicode_string_append(message, suffix, 256);
-                    message[255] = 0;
+                    suffix.load((c_widget *)list->get_screen(), 0x1200025e);
+                    unicode_string_append(message.text, suffix.text, 256);
+                    message.text[255] = 0;
                     break;
                 case 2:
-                    ((c_widget *)list->get_screen())->function_230134(0x1600025f, suffix);
-                    unicode_string_append(message, suffix, 256);
-                    message[255] = 0;
+                    suffix.load((c_widget *)list->get_screen(), 0x1600025f);
+                    unicode_string_append(message.text, suffix.text, 256);
+                    message.text[255] = 0;
                     break;
                 case 3:
-                    ((c_widget *)list->get_screen())->function_230134(0x11000260, suffix);
-                    unicode_string_append(message, suffix, 256);
-                    message[255] = 0;
+                    suffix.load((c_widget *)list->get_screen(), 0x11000260);
+                    unicode_string_append(message.text, suffix.text, 256);
+                    message.text[255] = 0;
                     break;
                 case 4:
-                    ((c_widget *)list->get_screen())->function_230134(0x1e000261, suffix);
-                    unicode_string_append(message, suffix, 256);
-                    message[255] = 0;
+                    suffix.load((c_widget *)list->get_screen(), 0x1e000261);
+                    unicode_string_append(message.text, suffix.text, 256);
+                    message.text[255] = 0;
                     break;
                 case 5:
-                    ((c_widget *)list->get_screen())->function_230134(0x14000262, suffix);
-                    unicode_string_append(message, suffix, 256);
-                    message[255] = 0;
+                    suffix.load((c_widget *)list->get_screen(), 0x14000262);
+                    unicode_string_append(message.text, suffix.text, 256);
+                    message.text[255] = 0;
                     break;
                 case 6:
-                    ((c_widget *)list->get_screen())->function_230134(0x1b000263, suffix);
-                    unicode_string_append(message, suffix, 256);
-                    message[255] = 0;
+                    suffix.load((c_widget *)list->get_screen(), 0x1b000263);
+                    unicode_string_append(message.text, suffix.text, 256);
+                    message.text[255] = 0;
                     break;
                 }
             }
             else if ((long)function_217b70(title) > 0)
             {
                 if ((bool)((*(dword *)((byte *)datum + 0x20) >> 2) & 1))
-                    ((c_widget *)list->get_screen())->function_230134(0x1500025d, suffix);
+                    suffix.load((c_widget *)list->get_screen(), 0x1500025d);
                 else
-                    ((c_widget *)list->get_screen())->function_230134(0x1400025c, suffix);
-                function_1630e0(message, suffix, title);
+                    suffix.load((c_widget *)list->get_screen(), 0x1400025c);
+                function_1630e0(message.text, suffix.text, title);
             }
             else text = 0xe00024f;
         }
         if (text != NONE) status->function_253b1a(text);
-        else status->function_22f52e()->set_text(message);
+        else status->function_22f52e()->set_text(message.text);
     }
     if (invite)
     {

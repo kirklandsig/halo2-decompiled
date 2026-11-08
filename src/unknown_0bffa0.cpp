@@ -1152,11 +1152,36 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // plane point) 315 (2826 bytes); one `offset` local for the plane offset, has_plane, depth and scale 486 (2807 bytes);
 // `orthogonal = has_plane = false` 292; half extents as `width * 0.5f * scale` 290 (same code); the centre point declared
 // at the cone arm's top 290 (same code). Retail stores the plane distance through the plane's own pointer ([ecx + 0xc]).
+// M3 lane 12 r90 (fast, base 290, masked 126): the projection's sum rows grouped, forward (j + i) + k, k + (j + i), (i + j) + k 561/561/561 (2815); left (i + k) + j, j + (i + k) 562/562;
+// up (i + k) + j, j + (k + i) 561/561; forward and left 600; all three 554/554. The half extents with the scale inline twice 580, width read first 580, extents read then scaled 600, with the bounds after the
+// points 600. Bounds stored after the points in x0, y0, x1, y1 order 290 (masked 119), the edges computed x0, y0, x1, y1 290 (masked 123), both 290 (masked 115); depth operands swapped 290. Diagnostics (identity chains
+// in the helper, reverted): on the matrix 1-7 links 585/580/585/580/585/580/585, on the point 484/479/484/479/484/479/484.
 // Round 148 (m3 lane 5, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0; aligned 199): a one-caller normalize scaling as `inverse * i`, `j * inverse`, `k * inverse` (retail's
 // product shapes) with dot3f 290, length_sq3f 290, the sum i, j, k 290, k, j, i 290 (same code each: product operands re-sort); with double products 463 (2817 bytes). Dead locals +13..+20
 // at the loop top 470/470/466/466/466/467/467/472 (diagnostic). After the normalize retail reads left.j and left.k before up.*, and up.* before left.i; ours reads up.* first.
 // Directions as `real [6][3]` 290; the 0x11f5f0 count as a constant 4 600 (2777 bytes). Lead, gains too small to keep: `entry` declared before `bounds` 288 (aligned 198); in the cone arm
 // `entry = entries; memset(entry, 0, sizeof(*entry));` 290 but aligned 181: the loop tail after 0x141590 becomes retail's (entry reloaded into ECX, the cursors' slots); both 288, aligned 180.
+// Round 56 (m3 lane 15, plain; masked = aligned diff with stack offsets and registers masked, 137 here): rows in stages (forward j, i, k; left i, k, j; up k, i, j) as retail's sum trees,
+// x first 573 (2801 B, masked 167), y first 571 (2803 B, masked 174); plain rows with y stored first 299 at retail's 2840 B (masked 154); the reference as a ternary 643 (2797 B), as if/else
+// 574 (2822 B). Harness with the 0x11f5f0, 0x141590, 0x163db0 files and the ballast is not exact (414 for 290): source term order is canonicalised (same code in five orders).
+// Round 59 (m3 lane 15, fast, base 290): the plane normal copied before the plane point 560 (2817 B); the projection's matrix scale in a named local
+// for its test and divide 521 (2809 B); the cone reciprocal from `entry->plane_offset` 562 (2815 B); chained flag stores 290 (same code); the cone depth
+// summed from `entry->plane_offset` 291; at the first difference (+0x33, retail's memset `lea edi` inside the bounds copy) `memset(&entries[i], ..)`
+// before the entry pointer 628 (2821 B). Retail divides for the cone scale after the centre projection, with 1.0 in XMM6 (ours XMM4).
+// Statement walk against retail (f1E, base r709, 2840 bytes): no logic or structure difference. Checked: count 6/1 and the
+// `i < *count` reload (0xc1da5-0xc1dc1, 0xc287e); entry stride 0x1bc and memset (0xc1e1c); the eight vertices (0xc1eb0-0xc1f57),
+// six faces (0xc1f67-0xc1fcf) and six directions (0xc1fd6-0xc206f); depth = radius, orthogonal/has_plane cleared (0xc1ea9,
+// 0xc2078, 0xc207b); up = -direction, reference g_4687a8 or g_4687ac for i == 1 or 3 (0xc20bc-0xc20e2); left = up x reference
+// and forward = left x up (0xc20e2-0xc213c, 0xc21b0-0xc21fb); normalize skipped for |len| < 1e-4 (0xc216e-0xc2172); four
+// projections through faces[i][0..3] (-1 / z, scale test against 1.0) into points[0..3], count 4, 0x11f5f0 (0xc2577); cone arm:
+// count 1, forward = shape->left, left = frame->up, up = -frame->forward, orthogonal = (kind == 1), has_plane = offset > 0,
+// plane n = frame->forward and d = n . (origin + offset * forward), depth = far_distance + offset, centre projection, half
+// extents = size * (1 / offset) * 0.5, corners x0y0 x1y0 x1y1 x0y1, bounds x0 x1 y0 y1 (0xc258f-0xc2820); tail flags,
+// 0x141590 (matrix -> ecx, inverse -> eax), 0x163db0 (0xc282a-0xc285f). The only differences are rounding-level:
+// retail sums the length as (i*i + k*k) + j*j (ours (j*j + i*i) + k*k), and the projection rows as forward (j, i, k),
+// left (i, k, j), up (k, i, j) (ours forward (k, i, j), left (j, k, i), up (j, i, k)); everything else left is
+// operand folding and register colours. Callers 0x31c80 (184) and 0x32350 (448) and callees unchanged by this note.
+// Permuter, 30 minutes (11-06): 277 only with the sphere radius read through a volatile pointer and word casts. Not kept.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
@@ -1340,6 +1365,14 @@ bool __stdcall function_16a8e0(long flags, point3f const *point, real radius, lo
 void function_11bed0(s_location *location, point3f const *point);
 point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *point, point3f *out);
 
+// score 2 (was 2): exact in the reduced (--fast) image; in the full image the two reloads after the
+// marker call (light_index from its stack home into EBP, the definition spill into EBX) come out in
+// the other order, a scheduling tie that the contents of other files flip. Round 76 (m3 lane 10):
+// the light and definition through typed record fields 234 fast (1032 bytes: the weapon-marker byte
+// test becomes a dword shift-and-test); the same with that test written in the if 156 (1007 bytes);
+// the one-use weapon-marker bool removed alone 156 (1007); the marker declared in the else arm 8
+// fast (the forward load moves ahead of the position copy); the parameter-address local declared
+// before the marker 2 plain (the same tie).
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {

@@ -513,6 +513,7 @@ bool function_1cb920(void *data, long mode)
 void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type, bool urgent,
 	bool other);
 
+// MiniMax C (11-06): no new form, no lower score.
 // MiniMax H (11-04): no new form, no lower score; the two animation lookups' graph stays in ebx in retail and in ebp in ours, and its final mov al is not normalised there, both of which come from the inlined graph helpers rather than from the form of this body.
 // MiniMax D (run 37): no new form, no lower score; the permuter (15 minutes, --fast) spent all of
 // its time on the first build and never reached a search, and the forms of the earlier rounds leave
@@ -687,6 +688,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // DL259: Primary success enters the sole request/return completion,
 // byte/bool/char/signed-char/short/word/int/long: 348/478/348/348/545/545/496/496.
 // NOT kept: no native graph/base or return-byte repair; original complete body restored.
+// J257: Two-use permission payload at entry/after primary and in native cold failure, with canonical Boolean return controls:
+// 642/640/640/640/545/544/632/632/587/642/478. NOT kept: all eleven regress; cold flag payload and canonical Boolean result fail to recover native graph/base ownership; Boolean graphs increase extent. Matched callers regress in 5 trials, up to 8 losses.
+// Original executable source restored; allocation gaps remain.
 // Y591: Status after found publication/primary query on the twelve-byte expansion,
 // each byte/bool/short/long: 392/520/570/523/397/525/574/527. NOT kept: no native graph/base
 // repair; original status lifetime, queries, request expansion and body restored.
@@ -701,6 +705,29 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // B446: Late completed lookup truth, request guard and sole return, bool/byte/char/
 // signed-char/short/word/int/long: 645/640/640/640/629/629/615/615. NOT kept: changed result lifetimes
 // disturb the agreeing lookup prefix and native request homes; original complete body restored.
+// AC554: Complete fallback INPUT-name record via native/readonly initialization, assignment,
+// library copy, field/readonly-field initialization and entry declaration with assignment/copy:
+// 498/498/498/498/560/560/498/498. NOT kept: no exact record-ownership repair; original body restored.
+// DL267: Complete sorted-block declaration, then actual graph/mode/class block receivers, subsets 1/2/4/3/5/6/7, then all with Boolean success: 348/348/348/348/348/348/348/348/478.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL272: Repeated fallback input names in original same-role formals, seven subsets then all with Boolean success; native graph-base/reload homes and byte normalization remain. Scores 348/357/355/357/355/357/357/482.
+// NOT kept: no byte match or eligible native repair; original executable source restored.
+// DL274: Two-use permission mask after resolution/after found publication, dword/byte/word/long: 639/639/515/515/509/509/639/639.
+// NOT kept: native graph/base reload and byte normalization remain; no eligible byte match or native repair.
+// Original complete executable source restored.
+// DH382: Saved graph receivers for paired animation queries/fallback queries/separate
+// query phases/complete lookup phase, byte then Boolean status: 348/348/348/348/478/478/478/478.
+// NOT kept: aliases give no native graph-base/reload repair, Boolean status lengthens;
+// original entire body and byte return producer restored.
+// b3F (11-06) statement walk against retail, no behaviour difference found: through +0x1de the bytes are identical
+// (graph from [this+0x68] & 0xffff, names_resolve, *found = *names, primary lookup, the flags & 2 set 0x400000c retry
+// with found->set, the flags & 4 five-step default-name chain with its found-field stores); the request tail is
+// the same opcode sequence with the same immediates (mode 0x14, class 0x14, type 0x34 sorted-array lookups, urgent
+// loop only, five default groups, then the inheritance loop with count [+0x4c], array [+0x50] stride 0x20, index
+// [+4]); only register homes differ. Retail's final `mov al, [esp+0x13]` is not normalised (0x1ccac3), which is a
+// bool-typed success; `bool success` reproduces that tail but scores 478 (graph in EBP, &mode_count recomputed per
+// group instead of retail's EBX copy), so `byte` stays. Retail also splits the roles: main graph in EBP with
+// &mode_count in EBX for the first five groups, then graph in EBX and &mode_count in EBP in the inheritance loop.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

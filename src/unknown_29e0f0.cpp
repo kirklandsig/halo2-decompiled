@@ -58,7 +58,8 @@ PRIVATE __forceinline real function_29e2ea(point3f const *arg_0, point3f const *
     real local_0 = arg_1->x - arg_0->x;
     real local_1 = arg_1->y - arg_0->y;
     real local_2 = arg_1->z - arg_0->z;
-    return local_1 * local_1 + (local_0 * local_0 + local_2 * local_2);
+    /* retail adds (y*y + z*z) first, then x*x (0x29e316-0x29e32c) */
+    return local_0 * local_0 + (local_1 * local_1 + local_2 * local_2);
 }
 PRIVATE __forceinline void function_29e64d(s_29e0f8 *arg_0, point3f const *arg_1)
 {
@@ -77,7 +78,21 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 390 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// MiniMax C (11-05): no new form, no lower score; retail's three selected-index homes are at [esp+0x44], [esp+0x28] and [esp+0x24] where ours are at [esp+0x40], [esp+0xc] and [esp+0x20]; retail holds the node pointer in ebx and the group table in ebp where we hold them the other way round, and loading the group table before the node pointer scores 397.
+// score 391 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// Round 64 (fast; masked aligned count in brackets, base 390 [182]): NOT kept, scratch recipe reaching 155 [11] at retail's 1596 bytes with every stack
+// slot right (aligned 428 -> 22): (1) group as `long`, tested on the field read and copied after: `if (bit_vector_test(visited_groups, entry.field_0))
+// continue; long local_15 = entry.field_0;`, set through bit_vector_set: 398 [161] (read beside a local copy, match-only; without it the rest stays 435-461);
+// (2) endpoint and start `short`; record index set before the pass loop and after each step; output through `&out[count]` with a separate cursor and the
+// record pointer before the loop: 313 [67] (428 -> 87); (3) group bitmap by memset 225, found flag declared before the endpoint, `else result = false` on
+// the sentinel test: 190 [45] at 1596 (the else is a redundant store unless retail's `mov byte [esp+0x13], 0` counts as evidence); (4) output pointer named per
+// pass so it is computed before the point: 192 [39]; (5) x87 sums: scalars canonicalise (declaration order, written order, 4 identity locals: same code), but a
+// vector local through vector3d_from_points3d keeps the written order, reversed in the code; retail's sites are written (i,j,k) at the pass start, (k,i,j) at
+// the visited point, (j,k,i) twice at the pair: 159 [15] (needs per-site expressions); (6) squared distance helper as declared x, y, z with
+// `x*x + (y*y + z*z)` 155 [11]. Left then: the third distance loads arg_0 into ESI, where retail keeps arg_3 in ESI from the range test to the call, arg_0
+// in EDX, `mov ecx, esi; mov esi, edx` (one line, shifts all that follows); `mov [esp+0x80], al` for the flag; the step's EAX; `movsx edx, ax` ahead of the
+// record base. Same code at (a): arg_3 or arg_0 copied to a local, the range test as a helper, repeated subtests, helper arguments reversed. Other forms:
+// named total split 426 (1612 bytes). Each of (1)-(6) raises the score alone or is match-only, so nothing is kept without a match.
 // Round 27: the instruction order follows retail closely, but the locals sit in different frame
 // slots, the group pointer is in EBP where retail keeps EBX and retail parks the group index in the
 // incoming s_reference slot at 0x80; no form found this round.
@@ -301,6 +316,18 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH352: Read-only initial-root/membership-root/membership-group descriptor pointees,
 // seven subsets then the read-only current group: eight at 390. Original pointer
 // declarations and body restored; selected-default/root/bitmap/endpoint homes remain.
+// Round 134 (m3 lane 8, fast; al = aligned raw/masked/masked+stack, base 428/207/182). Rebuilt: memset group bitmap, bit_vector_test/set,
+// the group read in the bit test and then into a long local, short selected point, else-false 425 (1604, frame 0x68, al 221/148/107); output
+// loop with a cursor stepped against the unchanged start 428 (1605, al 205/150/91); the record index set before the pass loop and after each
+// step 197 (1596, frame 0x64, first diff +0x13a, the group spilled to arg_2's home as retail, al 65/47/47); (point, record) output helper order
+// 199 (al 57/41/41); scan sum plain or as k, j, i statements 190 (al 48/37/37, first 197 lines exact), y, x, z locals 194; the found flag
+// declared before the pass's point copy 188 (al 46/35/35). NOT kept: the field read beside the local needs a match. Left on 188: the per-call
+// x87 orders (retail z,y,x then y,x,z then x,z,y, ours z,y,x throughout; identity chains in the body or helper, a vector local, a named sum
+// and length_sq3f 188, a from-points inline 185, do not move them), arg_3 kept in ESI with arg_0 in EDX to the 0x29de20 call, AL stored as
+// the found flag (a named short status stored as a byte folds to 1), the latch's `add eax, ebp`, the selected record's load order, the output
+// loop's entry jump. On that form: group local before the test 437 (1561), short 400, joined 437, link pointer 437; field at every use, direct
+// or through a link pointer, 491/474 (1657/1641). The natural pieces on this body: step 425 (1608), plus memset 431, bit helpers 446,
+// else-false 439, short selected point 435 (1564), memset+helpers+else-false 462, with the short point 412 (1599); all but the step 437.
 // DH359: Whole-operation failed outcome bool/byte/short/long, cleared after output
 // 408/408/432/431; at output entry 410/410/432/431. NOT kept: no byte match;
 // original result, selected homes, roots, bitmaps, helpers and complete body restored.
@@ -316,6 +343,38 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH368: Standard coordinate-range squared/length delta and output-copy boundaries,
 // seven subsets then the complete graph with native float root: 437/507/435/555/443/501/537/537.
 // NOT kept: all regress and miss native homes/extent; original metrics, copies and whole body restored.
+// Round 75 (m3 lane 10, fast with 0x29e730 and the three callees; control 390, difflib-aligned 287): retail keeps the
+// group record in EBP and the loop bound in EDI for the whole group loop, ours puts the record in EDI (the mask
+// temporary clobbers it, hence the reload stub ahead of the loop head) and the bound in EBX. Outer index `long` 458
+// (1561 bytes, aligned 272); the link table read after the marker call 392; the group bitmap declared before the
+// marker position 405; the record pointer formed after the marker call 417; the outer bound in a short local 422.
+// M3 lane 11 r72 (fast, control 390, masked 181): the round-64 recipe rebuilt as a control, 155 at 1596 bytes (masked 11); left on it: arg_3 stays
+// in ESI from the range test to the 0x29de20 call in retail (`mov ecx, esi; mov esi, edx`, arg_0 in EDX for the third distance) where ours reloads
+// arg_3 into ECX and gives arg_0 ESI, the found flag stored from AL (retail loads local_29 into EDX, keeping the call's AX = 1), the step's EAX and
+// the output loop's record-base order. On this body: squared distance `x*x + (y*y + z*z)` 391 (masked 177); found flag declared first in the pass
+// 390 (same code); `short local_29` 446 (1563 bytes, frame changes at +0x2, masked 159); with `short local_2` too 431 (1577, masked 195); a group
+// entry pointer for both the group and start fields 390 (same code).
+// AC556: Selected-sentinel pair chains and six complete chains on the retained
+// long-terminal/output-cursor graph: eight at 390, 1596 bytes. Earlier chain trials
+// used the former short terminal. NOT kept: default homes and root roles unchanged;
+// original initializers, helpers, traversals and full body restored.
+// M403: Existing shared distance at pass-start/visited-anchor/paired-candidate,
+// seven subsets then shared squared metric: 401/390/404/401/415/404/415/415. NOT kept:
+// no gain; original helpers and full body restored, native selected/root/bitmap homes remain.
+// DH378: Single-exit failure ownership for complete root/reference, reference bound, provider and compatibility
+// guards, then root count/pointer/count-in-pointer/reference-in-root guards: 390 each in eight forms.
+// NOT kept: all canonicalize at 1596 bytes; original full body, guards, sole return and helpers restored.
+// DH380: Actual incoming origin/record/output pointer bindings made immutable, seven subsets,
+// then all with the packed-reference binding: 390/390/390/390/390/390/390/390. NOT kept: no native
+// selected/default/root-home recovery; original parameter bindings, helpers and full body restored.
+// b2M (11-06) statement-by-statement walk against retail 0x29e0f0..0x29e729: every test, bound, field offset, stride, callee,
+// argument and exit agrees with the source. One behaviour fix: the SSE squared distance (0x29e2f0-0x29e32c) adds
+// (z*z + y*y) + x*x, so the helper is x*x + (y*y + z*z); the old y*y + (x*x + z*z) rounded the sum differently (390 -> 391).
+// Float rounding points agree: fstp dword at 0x29e400/0x29e4a8 (pass-start and visited length), 0x29e51f (second pair length,
+// reloaded), 0x29e54d (total); the first pair length stays unrounded on the x87 stack. The x87 square sums canonicalise
+// whatever the written order (three per-site orders tried, same code), so the per-site x87 association stays 390-level.
+// Width only, no behaviour: retail compares the nearest point as a word (0x29e60c, 0x29e680, 0x29e687): short local_2 392;
+// local_29 as short/word/long 447/447/436 (1563/1579 bytes), unsigned char 391; indices stay below 32 (one-word visited bitmap).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

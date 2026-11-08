@@ -292,7 +292,7 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // retail loads the actor pool, the pool's data and then the origin, where
 // ours loads the origin first and the pool after it, and the loop's object lookup scales the
 // index into EDX in retail and into EAX here.
-// score 28 (was 38): the entry compares the actor index with an immediate -1
+// Earlier note, 28 from 38: the entry compares the actor index with an immediate -1
 // and the origin copy takes ebp as its temporary, as retail does. What is left
 // is the order of the first loads: ours reads the origin pointer (g_468788)
 // before the actor pool, retail reads the pool, the pool's data and then the
@@ -414,6 +414,19 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 // vector3f_add for the sum 28 (all four the same code). The origin copy ahead
 // of the pool read again 99 (the copy takes esi and the pool add folds into
 // memory).
+// Round 213 (m3 lane 3, fast with 0x1e3b60 and 0x28f890): actor through actor_get ahead of the copy 38; scaled index in a local ahead of the copy 30;
+// origin named between the pool and the masked index 30; a centre pointer with a plain assignment 41 (391 bytes); the pool base plus an offset local used
+// twice 98 (399); the base reused for the actor pointer 28 (same code); the record pointer declared ahead of the lookup 28 (same code). Probes (reverted):
+// a store to a new field ahead of the copy 109, ahead of the update 110, at the end 41, in the creature loop 84, one more product at the end 118: none flips the
+// loop's lookup to retail's `lea edx, [ecx + ecx*2]` with the pool in ECX. Matched functions hold both lookup shapes with the same inline.
+// Round 75 (m3 lane 11, fast with 0x1e3b60 and 0x28f890): the record is a swarm (g_5044c8): the body on swarm.h's
+// swarm record, swarm_get, the creature data record and its named fields (position, creature count, first creature,
+// next creature) 28 (same code); on it: the count cleared in the caller right after the copy 29; the swarm addressed
+// as a typed array element in place of swarm_get 28 (same code); the first creature read in the caller before the
+// copy and passed to the centre update 30; the averaging step in the caller after the centre update 28. Reading:
+// every difference is one scratch register on from retail (origin before pool data in the prologue, pool before
+// index in the loop, the reload and the sign extension), the round-robin pattern seen in 0x5c720, so the cause is
+// likely one allocation more or less before the prologue's actor block, not any one statement's form.
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

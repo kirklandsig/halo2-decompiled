@@ -257,6 +257,21 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // Round 34 (lane 17, fast): occupant declared at the loop top 3; team compare written actor-first 4;
 // occupant test as `== NONE` with the team arm in the else 49; last_object_index stored before the
 // object test 8; result declared after the count 52 (366 bytes). Restored.
+// Round 169 (lane 4, fast): occupant renamed 3; `continue` closing the occupant arm with the reservation
+// test unnested 3; the reservation result in a named bool 3; `continue` when reserved, c8200 test after 3;
+// the bit11 skip as `continue` (a repeat) 3; the loop as `while` with the increment at its end 3; a 600 s
+// fast annealing permuter run: 25 tries, its reduced image scores the original 112, none below 3. Restored.
+// Round 85 (fast, 0xc8200 matched): 0xc8200's parameter orders again, at its definition, declaration and
+// all five calls: (unit, seat, object) 3 (0x11ade0, 0x1b8eb0 lost), (object, unit, seat) 2 (0x11b0c0 lost;
+// the unit load then moves ahead of the object load), (object, seat, unit) 3 (0x11b0c0 lost), (seat, unit, object) 4,
+// (seat, object, unit) 4; last_object_index as the 0xc8200 object argument 69, as all three calls' 128
+// (358 bytes); the definition read at the test without its local 84; object or occupant at function scope 3/3.
+// Round 172 (m3 lane 4, fast): (object, seat, unit) again (definition, declaration, five calls): the
+// seat-pointer reload then takes EAX as retail but the unit load moves from last to second, 3 (0x11b0c0
+// lost, its unit/object moves swapped); `long i` 127 (361 bytes); a fresh actor lookup at the 0xc8200 call
+// 135 (399 bytes); `last_object_index != seats[i].object_index` 4; the seat's object index named at the
+// loop top for the object test, the store, 0xc8f60 and 0x1b8d80 3 (same code); `dword last_object_index` 3;
+// `object->unknown3b4 != 0` 3. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -368,6 +383,13 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax R (11-06): no lower score (8); the exclusive bound 11, the same with the count in a local 11, the index declared before the seat pointer 11, both together 11 and the inclusive bound with a local count 26 all move the count to EBP and the index to ESI; a long count local with the index declared before the seat pointer is 11 as well, and a short count makes the compiler compare in 16 bits and rewrites the loop.
+// MiniMax E (11-06): no new form, no lower score.
+// Exclusive bound with the index declared before the seat pointer 11, the same
+// with the count in a local 11, a widened int copy of the index 11, an
+// exclusive while loop 11 and a neq bound 12: every exclusive bound moves the
+// count to EBP and the index to ESI, so retail's ESI count and EBP index stay
+// out of reach while the inclusive bound keeps them and loses the cmp/jl.
 // score 8 (was 11): native 0x2c frame and 541-byte length; first +0x79.
 // Count and index now occupy ESI/EBP as retail; the inclusive last-index bound
 // decrements the count and uses js/jle instead of native cmp/jle and cmp/jl.
@@ -385,6 +407,15 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 // exclusive conditional/failure-first publication 11/11; exclusive bound with
 // seat_index/selected_seat/target_state names 11/11/11; complete direct tag
 // reads at every use 27. All at 541 bytes; original complete body restored.
+// MiniMax E (11-04, not kept, m3 review: the 8 -> 6 rests on a seat-count test
+// that repeats the loop's own bound, a redundant compare kept only with a byte
+// match; main's loop restored): with that test the count and the index occupy
+// ESI/EBP as retail and the loop test is cmp/jl; retail keeps the index's zero in
+// EBP for that test and for the selected pointer's NULL store, ours materialises
+// a second zero in EAX for both. The index declared before the test 6; the same
+// with the count in a local 11, the test as count != 0 6, a
+// while loop 6, a seats local 25, a pointer loop 139, the index inside the
+// loop 135, the test as i < count 11.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -618,6 +649,23 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 34 (lane 17, fast): an early return for a busy actor with the barrier 14 (209 bytes); the
 // state declared inside the NONE block 6; the flags block's stores 0x41c first 6; flags read into a
 // byte before the barrier 38; the busy field in a named long 6. Without the barrier (re-measured) 44.
+// Round 169 (lane 4, fast): without the barrier the only change is the 0x26c test loaded into ECX ahead of the
+// add (208 bytes), so the slot load is the one cause. The flags test inverted with its arms swapped 38; the slot
+// read through its address, then the barrier, then the actor 44; the flags through a seat-selection pointer at
+// slot+0x1c formed at the top (0x1ba5c0's view), no barrier, 44; the 0x86 arm with its own final store and
+// return 14; the 0x86 test inverted (`< 7` arm first) 22; a 600 s fast annealing permuter run (its reduced image
+// scores the original 6): 53 tries, none below 6.
+// Round 85 (fast; a compile-only screen reproduces this function exactly): slot used in both successors of the
+// NONE test (diagnostic, an extra store in an else) 52 (240 bytes), the load is still not hoisted, unlike
+// 0x1b22e0 where the use sits in a join block; the existing seat-selection view for the flags test 6; the point
+// copied field by field 33; the flags byte read into a local inside the NONE block 6; the 0x450 store written in
+// every arm 6; the early return for a busy actor 14 (repeat). Screened only: an `idle` bool tested in each arm,
+// the NONE test repeated in an && chain, flags tested before the NONE test: none loads the slot at entry.
+// Round 94 (lane 16, fast): `__assume(state != NULL)` after the state with the barrier 6, without it 44; `__assume(actor
+// != NULL)` in place of the barrier 44; the state after the actor with `__assume(state != NULL)` in place of the barrier
+// 44; a point pointer at the top with the barrier 6. Diagnostics: a real slot read in the join block after the outer if
+// loads the slot in the entry block, but after the 0x26c compare (just before the jne), with or without the barrier
+// (retail loads it before the mask); an extra read inside the flags arm does not; an `__assume` at the join does not.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1321,10 +1369,16 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax C (11-06): no new form, no lower score; the frame is still 0x10 against retail's 0x14,
+// retail still spills the 0x20 mask byte to F+3 and keeps the loop entry in EBX (home F+4, reloaded
+// after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still
+// takes the object-header data in the prologue and reads the flags once above the slot-flag test;
+// the mask read once before the loop scores 136, so the mask is read per iteration as it was.
 // score 134 (was 134): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
 // F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
 // and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
 // object-header data in the prologue and reads the flags once above the slot-flag test.
+// MiniMax G (11-05): the element index, the flags and the same-object result read as wider or narrower types give 134/134/244/248/253, and the mask as a bool 241; retail's EBX entry and spilled mask byte against our BL mask and memory entry, and the frame 0x10 against 0x14, stay unmatched; retail loads the object-table global at +0x06 where ours loads it at +0x0f, and its decline block falls through into the loop latch where ours jumps to a latch at the end of the body, but the header lookup written out is the same code, a nested actor_get gives 230 and an explicit continue in the decline path is the same code; no new form, no lower score.
 // Before round 62: the frame 0x14 agrees; retail takes the object-header data before scaling
 // the actor (actor index in EDX, ours ECX), keeps the loop entry in EBX (spilled at F+4), spills the
 // 0x20 mask byte to F+3 and re-reads the flags for the 0x40 test; ours keeps the entry in memory
@@ -1545,14 +1599,35 @@ void function_1f86a0(long actor_index);
 // AC527: Post-search reservation observation as bool/byte/short/long, native member/full-slot
 // payload pairs, eight at 134. NOT kept: one-use result residence unmatched; original types,
 // observation, raw mask, root short circuit and complete body restored; mask/entry homes remain.
+// AC547: Existing root/iterator/accept-decline/all ordinary-inline declaration
+// policies, native member payload first in each pair: eight at 134. NOT kept:
+// no frame/mask/entry recovery; original declarations, payload and body restored.
+// AC549: Selected handle absent throughout search, conditional/exhaustive/default
+// post-search producers, then conditional with direct fallback; native member/full-slot pairs:
+// 134/134/134/134/235/235/233/233. NOT kept: no frame/mask/entry recovery;
+// original handle lifetime, fallback, payload and complete body restored.
 // M3 lane 4 r164 (fast; aligned count in brackets, control 134 [84]): EBX holds the joint index after the loop in both builds, and in
 // the loop the byte mask (only BL can hold it across the calls) takes it where retail gives it to the entry. Positive predicate 134
 // [83]; the element looked up again through the entry in the predicate 254 (874 B), in the root compare 243 (862 B), in both 254; the
 // predicate re-lookup with the positive predicate 250 (874 B), with both 250. Volatile mask (diagnostic, reverted) 254 (879 B): frame
 // 0x14 and the mask at +0x13, but the flags read is then shared and BL holds it, so retail's spilled mask is not a volatile's shape.
+// Round 150 (m3 lane 5, fast; m = masked aligned, control m29): mask as byte, bool, long const ref 134, 241 (863), 248 (873); positive predicate 134 m24; on it same as const ref 134,
+// element or index const ref 134, same inside a do-while(false) 246 (872) m20 (frame 0x14, same at +0x13), nested if or named roots 245 m29, roots through a ternary 250 m37, for-form
+// iterator 134 m24; flags local ahead of the slot test 141, with positive 142 m25. No mask local, positive: 240 (864) m18 (masked byte at +0x13 as retail, but the flags byte takes BL
+// for `test bl, 0x40`); the 0x40 test through a word, dword, short read 138, 135, 138, a slot-offset byte 230 m21 (the masked value takes BL), a shift or bool conversion 240.
+// Diagnostics, reverted: one more read of the entry or the mask 263, 254 (mask keeps BL); a compiler barrier after the two root calls on the mask form 134, no mask 230 m26, volatile
+// mask 247 m17: that last gives retail's EBX entry with `mov ebx, eax` for the first root, so the difference is which byte value holds BL. 0xbaf40's memory summary as a cause is
+// untested, its file was held this round.
 // T58: Actual iterator aggregate/reference-tuple/value/library construction, native member/full-slot payload pairs:
 // 134/134/259/259/256/256/256/256. NOT kept: no eligible match or gain; complete original source restored.
 // Mask spill, EBX entry and actor/root homes remain.
+// N398: Actual slot/state/header/byte callback reference formals, each with indexed member/full-slot payload 134/134/134/134/134/134/134/134.
+// NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Round 92 (m3 lane 16, fast): `same` as a ternary with a false arm 223; the entry as a pointer to const 134; the mask
+// as a byte cast of the masked flags 134; the decline ternary negated with its arms swapped 231 (862 B); `specified != 0`
+// in `same` 134. Register-blind aligned difference 49 of 247: the prologue object-table load, the loop (decline path with
+// its own next-entry call, mask spill, EBX entry) and the default arm (flags re-read after the object-index store and the
+// 0x20 load hoisted above the slot-bool test) are three separate blocks.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

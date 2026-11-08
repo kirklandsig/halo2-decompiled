@@ -101,6 +101,11 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // Round 115: explicit cached exit 10; branch-local cache pointer 10; helper result in result/named bool 10/10;
 // separate read result 10; named cached predicate 10; result before the copy 46; result from done 10.
 // NOT kept: no gain; the one-use result forms were exact-only and the original body is restored.
+// Round 65 (m3 lane 14, fast): a built flag read after a join 10 (same code, threaded early); an inline path helper with its own bool
+// result 68 (257 bytes, not inlined); `if (!helper) {}` around the build 10; empty tests between the build and the read 10/10; the read's
+// path as `(const char *)&local + 0x44` 10; `succeeded` as byte 10 (0x2161d0 18, lost); `state` as dword 10; `progress` through a long
+// field 10. `done` as byte or char does not compile (the async call takes bool *). Retail evidence: 0x121570's third append reloads with
+// `lea esi` only after a real join, while its second keeps ESI, so retail's `lea edx` needs a join these forms fold away.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

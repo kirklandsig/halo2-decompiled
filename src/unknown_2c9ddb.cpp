@@ -55,6 +55,8 @@ c_class_1473c9 *__stdcall function_2baae7(s_screen_parameters *parameters);
 c_class_1473c9 *__stdcall function_2bb31d(s_screen_parameters *parameters);
 extern long g_55c154;
 
+// MiniMax A (11-05): no new form, no lower score; the second half's redundant selected re-read dropped 150, and retail's two 0x212bc0 call sites and its out-of-line 0x13fac0 copy still need another lane's file.
+// MiniMax H (11-04): no new form, no lower score; the two 0x212bc0 arms with a copy in each (174) and the selection read as a long after the call (77) are worse than the one call site with the classification spill, and retail's out-of-line 0x13fac0 copy is inlined into our build, which lives in another lane's file.
 // MiniMax R (11-01): no new form, no lower score; the permuter (900 s) found only 60, so the creation
 // classification spill and the expanded string copy remain.
 // MiniMax G (11-04): no new form, no lower score; the creation classification spill and the
@@ -166,10 +168,63 @@ extern long g_55c154;
 // scoped variant 174. Compile-only (/O1 /Oi /Gr): every two-arm shape (either order, nested, no else, a mode
 // variable with one 0x238c69 call, one copy, fewer constant-1 uses) hoists the constant 1 into EBX and moves
 // `this` out of EBX; the one-load body with a second load call or per-branch copies does not.
+// Round 55 (m3 lane 15, fast): cause of the two-arm flip found. `this` and the hoisted constants (1, then &g_54e4a0) must survive `rep movs`, so
+// they fight for EBX; retail hoists neither. One extra `this` read in the block after the NONE test (diagnostic only, `flag_c = true;` or a
+// user_flags read) gives `this` EBX, entry ESI, saved EDI, the 0x250 frame and retail's whole two-arm layout (173 with the probe, frame still
+// unbiased and &g_54e4a0 hoisted in EAX); the same read deeper, at the first half's top or the second half's, does nothing. Retail evidence
+// for `function_238c69(long controller, long mode, long type, word *name, long maximum_count)`: 0x2ba9f4 and this function load ECX after the
+// 0x216a50 call, as the sibling 0x238c21 declares it. That order keeps 0x238c69 and 0x2ba9f4 matched and gives retail's `push eax; push 7; mov eax,
+// [controller]` tail: one load 76 (574 bytes), two arms 167 (590), with a named destination and/or a named count (0x13fac0 out of line as retail) 183
+// (575) each, with the copy written through variant_bytes 183. Not kept (each rises above 61). Two arms: if/else instead of the first half's return 174;
+// `if (*item != NONE)` around the body 174, both 174; a failure call in each failing arm or in two (tail-merged) 174/174/174;
+// top test nested or as `!flag_a || !bit` or `selected == NONE || ...` with an empty arm 174 each; `memcpy` for the copies (the sibling 0x2c4e9c's form)
+// 174, one load 61; the bit test through a one-bit field with TEST_FIELD_BIT 174 (one load 61), bare in the `&&` 184. Diagnostics, not kept: dropping
+// either `saved` store 164-166, all shifts 160, all &g_54e4a0 uses 256 (`this` ESI, no spill). Next: why retail does not hoist &g_54e4a0.
+// Round 55, second pass: the id and variant stores through a same-file forceinline helper at all three sites, two arms 174; that with the 0x238c69 order and both named locals 183.
 // T62: complete sole exit and target inline metadata 61/61; conditional load-call
 // result direct/named 178/178, short-circuit result direct/named 110/110; complete
 // exit with conditional/short-circuit load 178/110. NOT kept: no gain; load-result
 // graphs lose the biased frame. Classification spill and copy expansion remain.
+// Round 153 (m3 lane 5, fast with 0x13fac0/0x212bc0/0x238c69): the game type read once into a local at the function top on
+// the one-load body 178 (575 B), the controller index read once at the top 188 (559 B); on the two load arms: game type at
+// the top 177 (589 B), controller index at the top 172 (580 B), both 174 (575 B). Compile-only screen (32 two-arm forms:
+// store order, assignment or memcpy copy, named count, arm order, entry field or local selection): every two-arm form takes
+// the unbiased frame with `this` in ESI or EDI; none gives retail's `lea ebp, [esp - 0x70]` with `this` in EBX.
+// DH384: byte-array record publication, first/creation/both: memmove 139/143/157,
+// memcpy 61/61/61; bounded loaded-name memcpy/memmove input 99/104. NOT kept:
+// no gain; name snapshots lose the biased frame, even at retail length.
+// Round 394: actual selected/saved/source-index eight-byte homes 177/74/61;
+// selected+saved/selected+source/saved+source/all 182/187/104/193; all unsigned 193.
+// Original narrow values and complete body restored; classification spill/copy expansion remain.
+// MiniMax E (11-06): no lower score this round; the body is unchanged. Retail's second half
+// holds two load call sites (the default arm inline, the selected arm out of line at +0x1e3),
+// each with its own 0x54e49c store and its own 0x4c-byte copy into 0x54e4a0, and one shared
+// 0x238c69 request call that both arms reach with the mode (5 or 7), the file type, the name
+// and the count pushed as values. Forms measured (fast): the load index chosen by an if 77 and
+// by the inverse test 81, the index chosen by a bool plus a conditional 62, one load with a
+// shared request call 90, one load with a named destination, a named count and a shared
+// request call 104 (546 bytes), two loads feeding one request call 92, two loads with one copy
+// and one request call 178, the screen parameters local moved to the top 92. The cause of the
+// gap is now isolated: every form with a second load call site flips the frame to `mov ebp, esp`
+// with `sub esp, 0x254` and moves `this` out of EBX, so retail's biased 0x250 frame and the
+// instruction-identical first half cannot be kept at the same time as retail's two call sites.
+// Still different: our link expands the name copy in place where retail calls 0x13fac0, our
+// copy's destination address is hoisted into EAX where retail uses the immediate 0x54e4a0, and
+// the default/existing choice is spilled to a byte slot where retail branches on the selected
+// index itself. The permuter was started for 300 s and the harness stopped it before it
+// printed a result.
+// MiniMax D (11-06): no lower score this round; the body is unchanged. Retail's second half
+// holds two load call sites, the default arm inline and the selected arm out of line at
+// +0x1e3, each with its own 0x54e49c store, its own 0x4c-byte copy into 0x54e4a0 and its own
+// 0x216a50 call, and one shared 0x238c69 request call with the mode and the file type as
+// values sunk into the two arms. Forms that split that half score worse: two load calls 174,
+// one load with a per-arm copy and two request calls 167, one load with a per-arm copy and a
+// mode/type pair feeding one request call 176, two loads feeding one request call 103; each
+// of them reads its arguments at [ebp + 0x8] and its locals at [ebp - 0x150] instead of
+// retail's [ebp + 0x78] and [ebp - 0xe0], and leaves `this` out of EBX. A named count keeps
+// the copy out of line with retail's edi/ecx/esi call but scores 88. Still different: our
+// link expands the copy in place where retail calls 0x13fac0, and the default/existing
+// classification is spilled to a byte slot where retail tests the selected index directly.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
@@ -365,7 +420,7 @@ void c_class_2c9e69::select_last_variant()
 }
 
 /* shows the item's variant name */
-// score 23 (was 23): nonempty receiver is reloaded after the name call instead of retained in EBX;
+// score 13 (was 13): nonempty receiver is reloaded after the name call instead of retained in EBX;
 // branch name workspace before receiver, immutable receiver, receiver names 36/36/36; common completion 36;
 // completion with immutable receiver or receiver before name 36/36; ordinary pointer with scoped/common completion 36/36.
 // nonempty text receiver tested in stack home then reloaded; retail holds EBX;
@@ -409,6 +464,13 @@ void c_class_2c9e69::select_last_variant()
 // Round 61 (fast): the name arm through an inline helper taking the text 96 (120 bytes, stays out of line), through a forceinline
 // helper 36 (154 bytes), both arms through forceinline helpers 36; the variant named once with a nested `else { if (text) }` 43 (150 bytes);
 // the interface result named 36; a name pointer local 36; name-arm copy only re-measured 13 (159 bytes). Existing 0x253af2 adds a compare retail lacks here.
+// Round 89 (fast): plain text with an early return for the absent datum 36 (154 bytes); the parameter slot holding the text, with a copy of the old value for the lookups, 49 (154), with the
+// datum and first lookup through the parameter 49; plain text with the name buffer at function scope 36; plain text with the variant read once through the masked subscript 43 (150); a const
+// reference to a cast rvalue for the name arm 36, in both arms 36, the text itself a const reference with a plain name copy 36 (all hoisted into EDI). The name lookup before the text test
+// (not retail's order) moves the name arm to ECX 28 (155), the text test around the variant test 48 (146). Round 41's name-arm copy stays the best: the empty arm tests the stack home and the name arm takes EDI for EBX.
+// M3 lane 11 r76 (fast): the name-arm copy declared after the icon lookup and assigned in the arm 13; assigned in
+// its test 13; the icon declared before the text and assigned after it 13; the copy declared first in the function
+// 13, with the name buffer there too 13 (all the same code: symbol order does not move the name arm's EDI).
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {

@@ -183,6 +183,23 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // NOT kept: no exact or eligible gain; original flag store, arithmetic and loop restored.
 // Round 146 (fast): the flag through a byte or char cast 4/4; half-step row accumulated in a local 4, in local_3 198 (1004 bytes);
 // half product named per row 4.
+// Round 151 (fast 182, the rest a harness whose head block is the real build's): flag and rows after a named `i*i + k*k` partial, then
+// `sqrt(j*j + partial)`, 182 (1002 bytes): the whole x87/SSE schedule is retail's with the flag early, but a named partial stays on the x87 stack
+// (`fadd st(1)` for `faddp`, then `fstp; fstp st(0); fld`). Same stack with the flag first, as double, `+=`, `= j*j + partial`, `= partial + j*j`, on the
+// length local itself, const, register, in a block, through a second named total. Partial with rows then flag 200 (harness), rows, partial, flag 102;
+// `k*k` named alone 188, `k*k` then `+= i*i` 193; an unused partial 88 (same code); the flag as memset of one byte, or a one-byte struct copy, 88 (same code);
+// 107 cast shapes of the square sum: best 88 (same code as the base). The open question is a temporary, not a named local, split around the flag.
+// Round 93 (m3 lane 16, fast): the scaled-direction pointer declared beside `facing` 4; a short component counter
+// 243 (960 bytes, not unrolled); local_3 and unit declared after the flag store 4; the degenerate arm first 4;
+// the scaled output written through the field without the pointer 21.
+// Round 69 (m3 lane 13, fast): each row as a sum then `-=` the offset in the loop 195 (1001 bytes); the rows before the
+// copy and the flag 56 (992 bytes); the rows read through real arrays over the three vectors 4; the copy after the flag 4;
+// the loop as `component <= 2` with the increment in the body 4; the rows written out by field 192 (1001 bytes: the
+// subss/faddp interleave is retail's, but the flag store sinks below the rows and the half and rows take other XMM
+// registers), with the scale first, 0.5f on the left, the flag after the rows or the rows k, j, i 192 each. Reading:
+// with the loop the flag store stays ahead of the rows' loads (an ordering edge that delays them a slot), with the rows
+// written out it has none and sinks; retail keeps it early without the delay. Also: each row written through a pointer
+// to its component 4; position read through a const reference declared before the loop 4.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

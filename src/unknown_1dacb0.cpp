@@ -1083,6 +1083,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 	return result;
 }
 
+// MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
+// iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
+// at frame+0x00, iterator_mode at frame+0x04 and iterator_weapon_class in the reused argument slot; our
+// result shorts therefore land at frame+0x08 instead of frame+0x0c and the tail compares out of step.
 // score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // result/output homes and initial ECX/EDX differ;
 // frame 0x2c agrees; class/NONE registers, result/output/candidate homes and later zero carrier remain.
@@ -1223,6 +1227,14 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // seven subsets 1011/902/1007/828/1011/902/1007; complete graph with plain inheritance while 1007.
 // Several shared users regress; every helper and original body restored. Return/output/candidate
 // homes, class/NONE roles and persistent zero carrier remain.
+// w14A (r718 base, fast 828/828): statement walk of both twins against retail, block by block. Their retail bodies are identical
+// but for the named-animation array at entry+4 (0x1db170) versus the overlay array at entry+0xc (0x1dbc80). Iterator setup and
+// zero stores, per-pass candidate reset to NONE, the 8-byte lookup keyed by `set`, the NULL-entry break, found-id loop exit, the three
+// optional output stores, the NONE test, 0x1dd9d0, both resource requests (first keyed by the arguments, second by the iterator's
+// outputs) with five kinds each in retail's order, and the inheritance loops all agree: no behaviour difference. All remaining
+// instruction differences are register homes/scheduling, the EBP zero (about 736 shifted lines) and epilogue layout: retail returns
+// through four epilogues (early NONE class 0x1dbc6b, no result 0x1dbc47, empty second inheritance loop 0x1dbc57, loop end), ours
+// through one (part of the 2807 against 2825 byte gap). No source change kept.
 // Round 520: actual named-table pointer/reference before/after candidate construction,
 // original/native iterator: 828/828/828/828/826/826/826/826.
 // Field receivers do not match; two-count initialization gains rejected. Body restored.
@@ -1268,6 +1280,22 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // N371: Actual selector/output-pointer/search-key formal lexical families, seven
 // subsets then complete result/local roles: 828/828/828/828/828/828/828/828. NOT kept: unmatched
 // parameter-home forms; original body restored; class/NONE, result/output/candidate homes and zero remain.
+// M3 lane 8 r135 (fast; raw/register-masked/stack-masked aligned, base 580/234/76): the siblings' form again 755 (297/525/57, 2825
+// bytes), through the mode's address 755; on it the candidate at the block top or after the entry pointer 1028 (2856 bytes), the
+// iterator outputs renamed either way 755 (same homes), type first 755, the result set before the search test 1005, a direct result
+// with a default 1021 (206/151/86, 2841 bytes). Retail's late zero is a temp in EBP from the first kinds lookup on; ours keeps
+// a parameter in EBP over that block and re-reads it (retail reads it from the stack), so the zero stays immediates. Flag form: match-only.
+// DL274: Six native stack-formal home reads individually, mode/class pair, then all six: 828/828/828/828/828/828/828/828.
+// NOT kept: native class/NONE, candidate/output/result homes and late zero remain; no eligible byte match or native repair.
+// Original complete executable source restored.
+// M3 lane 12 r93 (fast): the second request's keys copied into named locals first 828 (identical: the copies coalesce);
+// `if (result.index == NONE) return result;` with the calls unguarded 1012 (2839 bytes); the inheritance loop as a while
+// with `long i = 0;` above the kinds request 1011 (0x1dbc80 1011, loses 0x1dc8c0 to 474: the zero is stored at the top);
+// the inherited graph named in the loop 828; the siblings' iterator store order 828; the search, outputs and requests in
+// one `while (true)` with a found `continue` and a closing break 828 (same code). Diagnostics: the second request dropped
+// 2235 (no zero register even then); 1dd9d0 and both requests inside the loop's found pass (outputs after the loop) 991 at
+// 2825 bytes with retail's `xor ebp, ebp; cmp eax, ebp` zero and `mov [i], ebp` stores; the outputs after the requests,
+// outside the loop, 1009 without it. Our build makes the EBP zero only for request code inside the search loop.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1328,6 +1356,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 	return result;
 }
 
+// MiniMax S (11-06): Measured from the frame base, retail keeps iterator_weapon_type at frame+0x04,
+// iterator_weapon_class at frame+0x00 and iterator_mode at frame+0x08, while ours keeps iterator_weapon_type
+// at frame+0x00, iterator_mode at frame+0x04 and iterator_weapon_class in the reused argument slot; our
+// result shorts therefore land at frame+0x08 instead of frame+0x0c and the tail compares out of step.
 // score 828 (was 828): Frame 0x2c agrees; class/NONE, result/output/candidate homes and later zero carrier remain.
 // result/output homes and initial ECX/EDX differ;
 // original mode/class/type via iterator 837/991/837; mode assigned only
@@ -1499,6 +1531,25 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // N361: Existing iterator/sorted-lookup/registration/resource inline call visibility, four
 // individuals, three iterator pairs and all four: 828 each. Original declarations and full body
 // restored. NOT kept: no result/candidate/output home or class/NONE/zero-carrier recovery.
+// Lane 9 r87 (fast; masked = registers and stack homes masked, sequence aligned; base 828, masked 48): the siblings' body (`if
+// (weapon_class != NONE)`, iterator stores graph/step/entries then keys, first iterate before `while (!found && entry)`, `found` or
+// re-iterate in the else arm) 755 at 2825 bytes, masked 36, then the three outputs and the result as one record `{ long mode, weapon_class,
+// weapon_type; c_type_709360 result; }` 732: the candidate and the mode-table temp then take the dead home, and the first 255 lines are
+// byte-identical to retail. Not kept, a flag set in a test and grouped storage need a match. Outputs alone as a record, in either member
+// order, or an array 755 (the result takes the dead home instead); the record with the members reversed 738. The one structural cause
+// left is the zero: retail's `xor ebp, ebp; cmp eax, ebp` from the fifth type request on, ours `test` and immediates. On the 732 form:
+// the real 0x1ddd00 with `inline` on it alone 3273 (558 bytes, out of line), on all three 732 (same code, all three still match);
+// `bool other = false` as a local 825 (2809). Diagnostics: only the second request kept, or the output stores removed, and the zero
+// appears in that request (`xor ebp, ebp` plus five `cmp reg, ebp`); only the first request kept, no zero; requests swapped 964 (2873);
+// no 0x1dd9d0 call 978, no loop 1019. Also on the old body: a while with a break 998 (2839 bytes); early `return result` for a NONE id 828.
+// w14A (r718 base, fast 828/828): statement walk of both twins against retail, block by block. Their retail bodies are identical
+// but for the named-animation array at entry+4 (0x1db170) versus the overlay array at entry+0xc (0x1dbc80). Iterator setup and
+// zero stores, per-pass candidate reset to NONE, the 8-byte lookup keyed by `set`, the NULL-entry break, found-id loop exit, the three
+// optional output stores, the NONE test, 0x1dd9d0, both resource requests (first keyed by the arguments, second by the iterator's
+// outputs) with five kinds each in retail's order, and the inheritance loops all agree: no behaviour difference. All remaining
+// instruction differences are register homes/scheduling, the EBP zero (about 736 shifted lines) and epilogue layout: retail returns
+// through four epilogues (early NONE class 0x1dbc6b, no result 0x1dbc47, empty second inheritance loop 0x1dbc57, loop end), ours
+// through one (part of the 2807 against 2825 byte gap). No source change kept.
 // DL261: Actual iterator/sorted-search/registration definitions and every declaration inline, seven subsets then explicit iterator expansion: 828/828/828/828/828/828/828/1265.
 // NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
 // DL263: Const complete value-return interface with original producer, explicit return copy,
@@ -1506,6 +1557,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // direct result producer: 828/828/1011/932/978/979/828/977. NOT kept: no exact return-contract
 // keeper; original interface and complete body restored. Frame 0x2c agrees; class/NONE,
 // output/candidate homes and late zero remain.
+// Round 65 (m3 lane 14, fast, on the siblings' body plus record, 732 at 2825, masked 55; without the record 755, masked 57): `this` named
+// for both requests 732; the found keys named for the second request 732; the first request from the iterator's stored keys 1019 (2875);
+// the requests guarded on the found flag 1019 (2841); the keys through a local table 732. Retail keeps `this` in EBX and the found mode in
+// EBP through the second request; ours gives EBX the +0x34 table pointer and EBP `this`, and no zero register forms.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -353,8 +353,8 @@ short function_1b1100(long actor_index, s_slot_7e *state, s_slot_target_list *li
 
 /* whether the actor stands on the right side of its formation position */
 // @retail 0x1b1970
-bool function_1b1970(long actor_index, short mode, vector2f const *forward,
-	vector2f const *left, short index)
+bool function_1b1970(long actor_index, short index, short mode, vector2f const *forward,
+	vector2f const *left)
 {
 	bool result = false;
 
@@ -395,7 +395,25 @@ bool function_1b1970(long actor_index, short mode, vector2f const *forward,
 	return result;
 }
 
-// score 12 (was 12): the index is read zero-extended and tested as a short, as retail's
+// MiniMax E (11-07): no new form, no lower score; the 0x1b0e40 call still sets the origin in EBX first and
+// the forward address after the mode push, retail sets the point, then the forward, then the origin; the
+// callee 0x1b0e40 matches retail byte for byte, so the argument registers are fixed (the point in ECX, the
+// index in EDX, the origin in EBX, the forward in EDI, the mode and the left on the stack) and only the
+// order of the three address computations is left; naming the three addresses in locals (the point, the
+// forward and the origin) before the call keeps our order, and a permuter run (39 tries) found nothing
+// better than 3.
+// score 3 (was 12): only the 0x1b0e40 call's register setup differs: ours sets EBX (origin) before ECX
+// (point) and EDI (forward), retail sets ECX, EDI, pushes the mode, then EBX. Round 155 (m3 lane 6): 0x1b1970's
+// parameters as (actor_index, index, mode, forward, left) (retail's one call sets CX, then EDI, then EAX: the
+// last-to-first setup of that order), with the >= 7 block reading the fields at the call and no locals, 12 -> 3
+// (the block is retail's: xor/mov index, the list reloaded into EBX at the join, the mode read into CX after the
+// test). The reorder alone with the old locals 12. Also tried (fast): the left vector through an inline
+// perpendicular helper 12; forward and left through an inline basis helper taking the leader 17; the 0x1b0e40
+// call through an inline wrapper taking the slot state and the list 12; a single exit wrapped in the leader
+// test 12. On the 3 body: the point declared at the inactive-state block top 3; left declared before forward 3;
+// the leader test and the call joined with && 3; forward/left declared before the state and leader 3; the dot
+// product operands swapped 3.
+// Earlier at 12: the index is read zero-extended and tested as a short, as retail's
 // xor/mov ax/cmp ax,0xffff does, and it keeps the list reloaded into EBX. Before that:
 // the 0x1b0e40 call sets the origin first (retail last), and in
 // the >= 7 block retail reads the index as a word (xor widening) and the mode late
@@ -446,6 +464,11 @@ bool function_1b1970(long actor_index, short mode, vector2f const *forward,
 // Round 210, field read at each use (the form that matched 0x18c3b0), mode at the call, no index local: `(word)` argument
 // 66; plain argument 66; a named slot pointer inside the block 66; a `(word)` test 66 (retail's `xor eax, eax; mov ax` read
 // and call setup, but the list is still read from the stack after the join).
+// Round 152 (m3 lane 6, fast): on the current body (movzx index; mode local read before the test into BX) a `short index`
+// local 79 (757 bytes: xor/mov index and the list kept in EBX, but the inlined dot product swaps its mulss operands);
+// short index with the mode at the call 66 (no EBX reload at the join; the two flag stores share `mov al, 1`); the field
+// read at the test and the call with the mode local 70 (758 bytes); `long index` sign-extended 12 (movsx, same shape); the
+// store as a ternary 75 (748 bytes); index declared before the mode 12.
 // @retail 0x1b1a90
 void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -500,11 +523,8 @@ void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_lis
 		}
 		if (actor->unknown086 >= 7)
 		{
-			short mode = list->mode;
-			long index = (word)state->position_index;
-
-			if ((short)index != NONE)
-				actor->unknown488 = function_1b1970(actor_index, mode, &forward, &left, index);
+			if (state->position_index != NONE)
+				actor->unknown488 = function_1b1970(actor_index, state->position_index, list->mode, &forward, &left);
 			else
 				actor->unknown488 = false;
 			actor->unknown41c = 3;

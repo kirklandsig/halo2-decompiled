@@ -8,6 +8,7 @@
 #include "unknown_0259d0.h"
 #include "globals.h"
 #include "normalize3d.h"
+#include "vector_products.h"
 #include <math.h>
 
 struct s_player_control_camera
@@ -126,7 +127,24 @@ byte g_51ec12;
 real g_470a24 = 1.f;
 extern byte g_51ec11;
 
-// score 89 (was 89): frame 0x4c agrees; zero XMM3 (retail XMM1), normalize_inline's i-first squared length and
+// MiniMax B (11-06) round 2: 0x23d260 matches retail byte for byte. The yaw cosine and sine read into
+// two float locals and the movement.k component assigned last take the score from 7 to 5, the else arm's
+// speed read into a local of its own takes it to 2, and the projection's k product taken from a local
+// holding axis.k takes it to 0. The k product now loads axis.k into the register and multiplies by the up
+// component, the movement.k load lands after the fcos, and the position rows multiply the speed into the
+// component, all as retail has them. Not kept: the projection's three terms in any other order (199 to
+// 207), the k product's operands swapped (the same code), the k term through a local of its own (168),
+// the projection as one expression (197), the yaw cosine and sine as double locals, the speed read as a
+// plain global (the same code), and the axis.k local used by cross i or cross j as well (74 and 83).
+// MiniMax B (11-06): no new form, no lower score (7); the three differences the earlier round
+// lists remain (the projection's k term loads the other operand first, the rotated i multiply
+// comes before the subss that ends cross k, and the movement.k load lands ahead of the first
+// fld), moving the movement.k assignment between or after the other two components scores 162,
+// the six orders of the projection's three terms score 199 to 207 (15 for j-i-k), and the two
+// operand orders inside the roll block give the same code; the body is unchanged.
+// score 7 (was 89): frame 0x4c, length and all but the roll block's three spots agree. Left: axis.k * v.k loads v.k first (retail
+// axis.k); `mulss` of rotated i ahead of the `subss` that ends cross k; movement.k's load ahead of the first `fld` (retail after `fcos`).
+// Earlier: frame 0x4c agrees; zero XMM3 (retail XMM1), normalize_inline's i-first squared length and
 // the side/up/roll SSE colouring differ. Kept: both cameras share one state type and the forward vector comes from
 // this file's direction helper, which puts the side.i copy and the movement x87 block where retail has them.
 // Earlier side-vector assignment orders (k/j/i, j/i/k, i/j/k, j/k/i) and a
@@ -484,6 +502,24 @@ extern byte g_51ec11;
 // pointer chains 1-8 ahead of v 191-341; all 36 orders of the projection's and the cross's statements, best 51 (i,j,k first; the rest 74-245). Left on 51: the up rows' product order (retail A, B, C, D of
 // fj*si, fk*si, fk*sj, sj*fi before any subtraction) and three operand pairs in the roll block. Not kept: the staged rows are one-use locals, match only. Kept nothing on the current body: speed local 274, movement.k
 // first 237, both 117, forward pointer 248, forward pointer and speed 248, normalize3d with speed and movement.k 263.
+// Round 166 (m3 lane 4, fast, 0x23d790/0x23d030 stay matched): normalize3d, the forward pointer and cross3f_staged(&side, forward,
+// &command->up) 178 (1329); with movement.k assigned first 39 (1327); the else arm's speed local on that 182; rows written out in place of
+// the helper 51. On 39: axis declared before v 20 (1326); axis as the forward pointer 43; an up pointer 245; the roll block as a helper
+// taking sine and cosine, either order, 235 (1312). On 20: operands swapped in the source, each and all, 20 (rank decides, not
+// spelling); projection order j,i,k 20, others 207-209; a direct field read at one product 20-182; sine and cosine inside the block after
+// the pointers 7 (kept); between them 27 (1327). On 7: cross orders j,i,k and j,k,i 7, others 49; with projection j,i,k 15/55; rotated rows
+// j,i,k 21, k,j,i 209; `1 - cosine` named 168; the projection one expression 58, split 58/169, k term named 168; rotated i or j as one
+// expression 7 (same code), k or all 23; yaw sine and cosine as double locals 168-174; movement.k second or last 162; dot3f either order 197; a
+// helper taking the angle in six orders 175-189; axis as the forward pointer 48; the pointer declared at the function top 7, before the
+// direction call 269; cosine before sine 24; projection or cross declared early 7; side's stores before its zero 7; up rows written out,
+// declaration and store orders 46-273; cross3f 263. No permuter run: a full check takes more than 15 minutes here.
+// F404: Uniform axial/cosine/sine product stages in every roll row, masks
+// 1/2/4/3/5/6/7 then complete const: 169/35/19/332/335/339/185/185. NOT kept: no exact product-stage form.
+// Original arithmetic trees, interleaved row publications and full body restored; roll/movement scheduling remains.
+// B451: Complete roll scalar axis/up/both inputs on the seven-difference graph
+// 238/114/308; native up/axis snapshots 385/272; existing direct/staged roll tangent
+// 61/61; one reused movement-yaw observation 172. NOT kept: all regress, snapshots
+// miss equality. Original complete body restored; three scheduling spots remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
@@ -502,26 +538,26 @@ void __stdcall function_23d260(void *state, void *input, void *output)
 	}
 	command->timer = 0.3f;
 	orbit_direction_23d790(camera, &command->forward);
+	vector3f *forward = &command->forward;
 	vector3f side;
 	side.k = 0.f;
-	side.i = command->forward.j;
-	side.j = -command->forward.i;
-	if (normalize_inline(&side) == 0.f)
+	side.i = forward->j;
+	side.j = -forward->i;
+	if (normalize3d(&side) == 0.f)
 	{
 		side.i = 1.f;
 		side.j = side.k = 0.f;
 	}
-	command->up.k = command->forward.j * side.i - side.j * command->forward.i;
-	command->up.j = side.k * command->forward.i - command->forward.k * side.i;
-	command->up.i = command->forward.k * side.j - command->forward.j * side.k;
-	real sine = (real)sin(camera->roll);
-	real cosine = (real)cos(camera->roll);
+	cross3f_staged(&side, forward, &command->up);
 	{
-		vector3f *v = &command->up;
 		vector3f const *axis = &command->forward;
+		vector3f *v = &command->up;
+		real sine = (real)sin(camera->roll);
+		real cosine = (real)cos(camera->roll);
+		real axis_k = axis->k;
 		real projection = axis->i * v->i;
 		projection += axis->j * v->j;
-		projection += axis->k * v->k;
+		projection += axis_k * v->k;
 		projection *= 1.f - cosine;
 		real cross_i = axis->k * v->j - v->k * axis->j;
 		real cross_j = axis->i * v->k - axis->k * v->i;
@@ -540,8 +576,10 @@ void __stdcall function_23d260(void *state, void *input, void *output)
 		v->k = rotated_k;
 	}
 	vector3f movement;
-	movement.i = (real)(cos(camera->yaw) * *(real *)((byte *)input + 0x18) - sin(camera->yaw) * *(real *)((byte *)input + 0x1c));
-	movement.j = (real)(sin(camera->yaw) * *(real *)((byte *)input + 0x18) + cos(camera->yaw) * *(real *)((byte *)input + 0x1c));
+	real yaw_cosine = (real)cos(camera->yaw);
+	real yaw_sine = (real)sin(camera->yaw);
+	movement.i = (real)(yaw_cosine * *(real *)((byte *)input + 0x18) - yaw_sine * *(real *)((byte *)input + 0x1c));
+	movement.j = (real)(yaw_sine * *(real *)((byte *)input + 0x18) + yaw_cosine * *(real *)((byte *)input + 0x1c));
 	movement.k = *(real *)((byte *)input + 0x20);
 	point3f position;
 	if (g_470a28 != NONE)
@@ -581,9 +619,10 @@ void __stdcall function_23d260(void *state, void *input, void *output)
 	}
 	else
 	{
-		position.x = g_470a24 * movement.i + camera->position.x;
-		position.y = g_470a24 * movement.j + camera->position.y;
-		position.z = g_470a24 * movement.k + camera->position.z;
+		real speed = g_470a24;
+		position.x = speed * movement.i + camera->position.x;
+		position.y = speed * movement.j + camera->position.y;
+		position.z = speed * movement.k + camera->position.z;
 	}
 	camera->position = position;
 	command->position = position;

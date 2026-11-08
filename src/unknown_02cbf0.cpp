@@ -32,7 +32,7 @@ extern byte g_509410, g_509411;
 
 void *function_44940(short index, bool instance);
 long function_2d000(long object_tag, long tag, long index);
-__declspec(noinline) void *function_449e0(short index, bool load, bool instance);
+__declspec(noinline) void *function_449e0(short index, bool instance, bool load);
 
 /* retail inlines 0x16ae0's body at the first two uses in 0x2cbf0 */
 static __forceinline long floor_to_long_inline(real value)
@@ -49,10 +49,14 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
-// score 15 (was 15): left: the first word's OR order (retail ORs flags and category before the
-// kept top bits), the kind-word block (retail shifts the kind in eax, copies it to esi and stores the
-// word after the loader's argument setup, just before the call) and the pool register set before the
-// bit-count test. The intensity spill agrees in this baseline. Earlier rounds' notes follow.
+// MiniMax R (11-07): no new form, no lower score (10); the first word's terms in retail's order, split into two
+// statements or swapped, the kind word built from the call's result, the kept bits in a named local and the mask
+// written as ~0x1fffffff are byte-identical; the kind word's operands swapped puts the shift in the result
+// register as retail has it but moves the tag load into ECX (79); either packed word as one expression 79/288.
+// MiniMax I (11-05, run 37): no new form, no lower score (10); the first word's OR order, the kind shift and the pool register set still differ.
+// score 10 (was 15): left: the first word's OR order (retail ORs flags and category before the
+// kept top bits), the kind shift (retail `shl eax, 0x1d; mov esi, eax`, ours `mov esi, eax; shl esi, 0x1d`)
+// and the pool register set before the bit-count test. Round 149 below. Earlier rounds' notes follow.
 // Earlier at 17 (was 17): this round's source permuter over the body found no better form (22 tries in
 // 310s, best 17 on the reduced image and on the full image, equal to the baseline, no confirming
 // build), so the body is unchanged.
@@ -231,9 +235,40 @@ static __forceinline long floor_to_long_inline(real value)
 // direct packed store and field instance bit 79; sequenced store-and-add condition 77; const bit count 15;
 // pool-typed state local 15; global-array first-word read plus second-word kept bits last 16 (same as the
 // global read alone). Original body restored; the intensity spill agrees in this baseline.
+// Round 149 (m3 lane 5, fast unless marked): category declared between key and material matched 0x133f70. Retail's setup
+// at the 0x449e0 call (load, instance push, index) gives its order (index, instance, load): alone 15; with the word
+// stored first and both arguments inline 10 (kept, plain 10). On the 15 form: long-typed low terms, casts or local x7
+// 15 each; named first-word parts, seven subsets, 15 each; low terms added or the high term xored 12/12 (retail's order,
+// wrong opcode), both added 17; flags' second use removed 30; flags copied at the top 15.
+// On the 10 form: inline arguments with the store after the call 15; no word local, one expression, mask tests on the field or
+// the local 79/79/79/79; load named after/before the store 76/79; shift assign long/dword 79/79; call in the shift 10; shifted
+// copy 10; named shifted or 79; word read first 79; or kind first 79; reassigned kind 10; multiply, named multiply, copy then
+// shift 10/10/10; local bitfield 79; kept named first 79; 0x1332b0's parameters swapped 10 (diagnostic). Pool:
+// `s_bit_vector_pool *pool = (s_bit_vector_pool *)g_4c0b78.state;` before the clear 7, retail's `mov edx, esi` above the
+// `jbe` (a one-use local: needs a match, not kept); before bits/after bits/before the section call 25/25/10; read in the call 26.
+// On that 7 form (the one-expression word's OR takes the old word into esi, retail's three-address OR keeps it in ecx):
+// first word or both reads as `*(dword *)entry`, `[0]`, `entry[0]`, `(*entry)`, byte offset, `*&`, const or long cast with
+// the one-expression word 79 each, that word alone 79; entry declared at the top or after the index 7/7, with one expression 79;
+// `entry +=` 7, with one expression 79; byte-offset entry 7; short index local 7; NULL-initialised entry 7; compiled-out
+// join after the kind, the shift, the or or the store 7 each, around the one-expression word 79 each; first-word stores word,tag,key
+// 27, tag,word,key 286, key,tag,word 11, key,word,tag 286, word,key,tag 27; object/mode/context/all three before the word
+// 280/288/280/289; second word before it/first 274/162; object, mode, context subsets after the second word
+// 270/267/269/268/279/268/270; old word through the array 8 (first word right, second word flipped, `lea`), with the second word's kept bits
+// last 8, also the second word's read 369 (1131 bytes), on the one-expression word 77, both 77; that with store subsets after the
+// second word 268/267/267/268/278/268/270. Dead identity pointers 1-8: 7 each; first word through one/two to eight identity
+// pointers 7/11 (flips only the second word, diagnostic); second word through one to four 7/279/279/279, with the array read 8/278/278/278.
+// On the 10 form: a local bitfield view for the first word (selection then category, or reversed) 14/14 (the second word's order flips too), for
+// the kind 79, both 83; low word built in two steps 10; kept bits named, the word's or as an assignment 79.
+// AC555: Owning combined low-29 payload/section-selector fields, subsets
+// 1/2/4/3/5/6/7, 10 each; all with final kind-field store 79. NOT kept: no
+// equality or gain; original header/body restored; OR/shift/pool schedules remain.
+// Y604: Actual declared record bitfields for initial/geometry/final packed words,
+// seven subsets then reversed initial field stores: 14/14/10/79/83/83/79/14.
+// NOT kept: no equality; the real declaration does not recover native OR/shift/pool
+// scheduling. Original record declaration, packed expressions and body restored.
 // @retail 0x2cbf0
-short function_2cbf0(long geometry, long category, short instance, dword flags,
-    long tag, dword key, long material, byte *object, short mask, byte mode,
+short function_2cbf0(long geometry, short instance, dword flags,
+    long tag, dword key, long category, long material, byte *object, short mask, byte mode,
     void *context, long object_index, real intensity, long group, long group_type,
     bool outside, bool whole, bool first_component, real first_opacity,
     real second_opacity, real depth, word level, point3f const *position, real radius)
@@ -327,9 +362,8 @@ short function_2cbf0(long geometry, long category, short instance, dword flags,
         long kind = function_2d000(object_tag, entry->tag, (entry->flags >> 18) & 0x7ff);
         dword kind_word = (dword)kind << 29;
         kind_word |= entry->unknown00 & 0x1fffffff;
-        bool load = entry->tag == NONE;
-        void *added = function_449e0((short)index, load, (bool)((kind_word >> 12) & 1));
         entry->unknown00 = kind_word;
+        void *added = function_449e0((short)index, (bool)((kind_word >> 12) & 1), entry->tag == NONE);
         if (added)
         {
             s_2cb30_state *state = g_4c0b78.state;

@@ -3,6 +3,7 @@
 #include "async.h"
 #include "unknown_122870.h"
 #include <string.h>
+#include "map_file_path.h"
 
 struct s_cache_copy_request
 {
@@ -70,7 +71,6 @@ void file_ref_clock_time(FILETIME *time);
 dword __stdcall checksum_buffer_mmx(void const *buffer, dword buffer_size);
 bool cache_copy_complete(char const *map_name);
 long map_location_get(char const *map_name);
-void map_file_path_get(char const *map_name, char *path);
 long cache_file_slot_from_type(long type);
 long cache_file_choose_slot(short type, dword size);
 void cache_copy_buffer_resize(long size);
@@ -82,7 +82,10 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // MiniMax B (11-04): no new form, no lower score (the state 11 clamp as an in-place if, a min-clamp and a named-limit ternary all keep the same register rotation).
 // MiniMax B (11-03): no new form, no lower score.
 // MiniMax S (11-01): the state 11 clamp keeps the completed value in EDX and the limit in ECX; no lower score.
-// score 37 (was 37): Frame 0x110 and retail length agree; request-copy order, file-handle
+// score 30 (was 37): state 0 is byte-exact. Left: states 7 and 9 are one rotation step of the scratch registers off (a probe load in state 7 fixes state 7's handle
+// and shifts state 9; a second in state 8 or ahead of state 9's file pointer fixes state 9), state 11's clamp registers rotate the same way, state 16 sets the state
+// ahead of the header clear, and state 19's slot store sinks (the one-struct lead below, still BLOCKED-BY g_55bd04/g_55bd08 in src/unknown_12be90.cpp).
+// Earlier (37, was 37): Frame 0x110 and retail length agree; request-copy order, file-handle
 // and completed/limit registers, and state 16/19 store scheduling still differ.
 // Round 115: chunk-first, slot/chunk-first and remaining/slot/chunk declarations 141 each;
 // state 17 between copy and clear 37, before the copy 89; named state-7 write options 500;
@@ -288,6 +291,12 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // Round 140: release-first with the handle read from the cleared slot 43; split slot declarations first/after
 // chunk 37/37; unsigned split slot 37; call-first with const priority/reordered entry declarations 432/432;
 // state 16 result read from success 37; state 7 split file-pointer declaration/assignment 144.
+// Round 87 (m3 lane 16): the BLOCKED-BY 0x214db0 above is resolved. Retail re-forms 0x55bf28 in state 0 because 0x214db0 takes the map name as `this`: 0x214db0 as a member
+// of a map name struct with the path call first 30, where the free function stays 432, `inline` on its definition 432, a separate noinline declaration with an inline
+// definition 432, and `this` as the path buffer (s_map_file_path::get out of line) 434 and seven callers lost at 2 to 4 each. 0xbfe80/0xbfed0 as s_bit_vector members are
+// the same case. On the 30 base (fast): state 9 handle local 296; state 13 handle local 213; state 7 handle local 249 (1724 bytes); state 7 header pointer 30; with a handle
+// local 249 (1724); `s_file_handle(file->file)` 249 (1724); a `void const *` cast of the header 30; the file through a reference 30; a named flags object 30; memset size
+// 0x800 30; slot store after the memset 30, just before the call 518 (1732); state 8 count named 30, as a ternary 30, as `!(!=)` 30. Probes (diagnostics, restored at once).
 // @retail 0x2141f0
 bool function_2141f0(void)
 {
@@ -302,8 +311,8 @@ bool function_2141f0(void)
 			!cache_copy_complete(g_55be24[1].map_name) &&
 			map_location_get(g_55be24[1].map_name) != 3)
 		{
+			((s_map_name const *)g_55be24[1].map_name)->map_file_path_get(g_55bd21);
 			g_55be24[0] = g_55be24[1];
-			map_file_path_get(g_55be24[0].map_name, g_55bd21);
 			state = 1;
 		}
 		memset(&g_55be24[1], 0, sizeof(g_55be24[1]));

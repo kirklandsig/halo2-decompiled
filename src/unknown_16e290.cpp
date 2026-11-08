@@ -1567,9 +1567,27 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax A (11-06, run 52), not kept (87, same score): the clip plane's three products summed in
+// retail's order, the i term first and the j term last, give retail's multiply and add sequence
+// instruction for instruction (its only other effect was 0x13d80 61 -> 60, under the keep bar); what is left is the register form of the clip block, where
+// retail keeps the cluster reference in al and materialises the cluster address, while ours keeps it
+// in cl and folds the address into the load.
 
+// MiniMax G (11-05): no new form, no lower score. The clip block still loads the cluster
+// reference with a folded address where retail materialises it (mov edi,[esi+0xa0]; add
+// eax,edi; mov al,[eax+0x70]), so the block is one instruction short and the code after the
+// clipping call stays shifted. Tried: the false-first narrow default with the else chain
+// removed 105; that plus a plane-value accumulator in retail's order 105 (the plane block and
+// the reference index then match retail exactly, only the address and the base register
+// differ); the cluster through the existing prediction_cluster_get helper 115 (the address
+// materialises, but the index compare becomes 32-bit and the clusters base folds into the
+// add); the same helper with the short index 124 (its NULL check returns); the cluster
+// through a pointer local, a pointer-arithmetic local and an explicit 0xb0 multiply 105 each
+// (all fold the address).
 // MiniMax R (11-01): the first cross-product carriers still differ; a permuter run over this
 // function was killed before it printed, so no new form was found.
+// MiniMax E (11-04): no new form, no lower score; the clip test still adds the plane terms
+// i*x, k*z, j*y where retail adds j*y, k*z, i*x (an accumulator in retail's order gives 87 too).
 // score 87 (was 87): this round found no gain - the frame is 0x9c against retail's 0x98, retail copies both
 // vectors whole while we copy them scalar by scalar, and the 0x171d00 narrow convention is set in
 // another file.
@@ -1711,6 +1729,11 @@ struct s_camera_clip_reference_16ebf0
 // 203, with forward/up pointer locals 203/206; a typed observer view (position/forward/up/flags
 // fields) 120 (identical code) in every pointer form; position through the pointer at each subset
 // of its four uses (copy, call, interpolation, store-back): only the interpolation decides, 119/220.
+// MiniMax C (11-06): no new form, no lower score - the frame now agrees at 0x98 bytes on both sides; what
+// is left in the first block is the cross product's register plan, retail loads forward.y into xmm1 right
+// after the forward copy and up.z into xmm0 late, ours loads up.z into xmm1 right after the up copy and
+// forward.y into xmm0 late, so the first product's operands are the other way round; the callee 0x171d00's
+// narrow/fraction convention (in another lane's file) still decides the extra spill.
 // N271: signed-byte reference with byte/bool/signed-byte/long truth 112/87/112/115;
 // short/word/long/dword references 95 each. On the 87 graph, staged cross 90, retained basis
 // inputs 87, both 90, both without the inner position alias 90. Keep signed reference and bool

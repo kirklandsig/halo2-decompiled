@@ -22,6 +22,7 @@ The handlers of the unit request table at 0x467564
 #include "bit_vector.h"
 #include "local_players.h"
 #include "game_engine_events.h"
+#include "impacts.h"
 #include <math.h>
 #include <string.h>
 
@@ -199,6 +200,18 @@ PRIVATE inline long unit_action_hand_weapon_get(s_unit_action_unit *unit, long h
 
 	if (index != NONE)
 		weapon_index = unit->weapon_object_indices[index];
+	return weapon_index;
+}
+
+/* the weapon in a unit's hand (0 or 1), the unit looked up through the pool
+   the caller passes */
+PRIVATE inline long unit_action_pool_hand_weapon_get(s_record_pool *objects, long unit_index, long hand)
+{
+	short index = (&((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit->current_weapon_index)[hand];
+	long weapon_index = NONE;
+
+	if (index != NONE)
+		weapon_index = ((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit->weapon_object_indices[index];
 	return weapon_index;
 }
 
@@ -841,7 +854,7 @@ extern vector3f *g_4687b0;
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
 // MiniMax lane A (11-04): no new form, no lower score.
-// score 309 (was 309): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
+// score 288 (was 298): the throw velocity through vector3f_scale (this round); earlier, flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
 // slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
@@ -966,6 +979,32 @@ extern vector3f *g_4687b0;
 // loops, 0x120220's `+=` per component: none closer on either. Retail loads every sum product first
 // (`movss x0, [forward.i]; mulss x0, x1; addss x0, [origin.x]; movaps x3, x0`), as matched 0x137800 and 0xc28b0 do;
 // ours copies the scale. Dead pointer locals (diagnostic) flip only the aim's first product.
+// M3 lane 14 r68 (fast, plain-confirmed 298 at 1673 bytes): retail has one 0xb8540, one 0xa7870 and one 0xd0e60
+// call; the placement failure jumps into the release tail. `if (attach || function_bc1d0(...))` after the
+// `if (!attach)` block, its failure falling into the existing release tail, 309 -> 298 (kept; every integer
+// line of the tail now agrees). Also tried: one `thrown` flag and a single `if (!thrown) b8540` tail 310 (1665,
+// flag form); on 298, the direction copied once from a per-branch source pointer 330 (1644; aligned 221 -> 174),
+// the offset sum as three vector3f_add_scaled phases 312 (frame 0xc0); source pointer + a player-block direction
+// copy + the phases in place in the copy 308 (1662, frame 0xcc, aligned 137; copy and one-use pointer: diagnostic);
+// velocity declared inside the not-attached block 298 (same code); up declared before the throw globals 298 (same code).
+// Lane 15 round 61 (kept, plain): the throw velocity through the existing vector3f_scale(&direction, speed, &velocity)
+// 298 -> 288 (1682 bytes): velocity is then not written field by field before the blend, whose velocity products
+// load first as in retail. Also tried (fast): the release point (the final 0xcafc0 point for 0xbc1d0) as its own
+// local apart from the throw origin (retail homes them at [esp+0x24], shared with normal, and [esp+0x54]) 309 (frame
+// 0xd8: at the else-if scope it cannot share); on 288: the blend through vector3f_scale + vector3f_add_scaled 316
+// (1655), `real inverse` in the blend 293 (1678), the normal through cross3f 288 (same code), up read through
+// g_4687b0 at each use 288 (same code), left through cross3f 292.
+// b5R (r725 walk, no change, 288): every block checked against retail, no behaviour or precision difference
+// found: projectile/type/clear and flag-17 save-restore 0xe7952-0xe79c6; seat test and marker name 0xe79cf-0xe7a29;
+// 0xa76b0 branch 0xe7a3a-0xe7a7b; cancelled test 0xe7aa6; attach skip 0xe7ab1; unknown12c center 0xe7ab9-0xe7af6;
+// override test (both non-null) 0xe7afb-0xe7b2a; unknown13c guard 0xe7b49; left/normal crosses, `== 0.0f` fallback
+// (0x45dbd8 is 0.0) and the ((dir*fwd + origin) + left*lo) + normal*uo sum 0xe7b75-0xe7d0b; velocity scale 0xe7d57;
+// spread (signed-byte counts, divss, comiss 1.0, 0x259d0 rounded by fstp dword 0xe7deb, 1-ratio once) 0xe7d92-0xe7e79;
+// parent add, projectile subtraction, 0xfa820, release point, 0xbc1d0 0xe7e7c-0xe7f2a; attach marker 0xe7f34-0xe7f9e.
+// Remaining differences are stack slots (retail shares one slot among center, normal, parent velocity and the release
+// point, direction at [esp+0x48]) and SSE schedule. Retail copies the direction once after the branches (both leave
+// eax at the source, dword loads at 0xe7b44-0xe7b50): a `vector3f const *source` chosen per branch and
+// `vector3f direction = *source` after them gives 323 (1652 bytes), the compiler copies per branch again (diagnostic).
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1071,11 +1110,7 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 					spread = false;
 				}
 
-				real speed = *(real *)(local_98b918 + 0x1b0);
-
-				velocity.i = speed * direction.i;
-				velocity.j = direction.j * speed;
-				velocity.k = direction.k * speed;
+				vector3f_scale(&direction, *(real *)(local_98b918 + 0x1b0), &velocity);
 			}
 
 			if (spread && actions->grenade_throw_maximum > 0)
@@ -1106,27 +1141,23 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 			velocity.k -= projectile->linear_velocity.k;
 			function_fa820(projectile_index, &velocity);
 			function_cafc0(unit_index, &origin);
-			if (!function_bc1d0(projectile_index, &origin, unit_index))
-			{
-				function_b8540(projectile_index);
-				function_d0e60(unit_index, 0, 0);
-				actions->grenade_state = 3;
-				return;
-			}
 		}
 
-		function_a7870(projectile_index);
-		if (attach)
+		if (attach || function_bc1d0(projectile_index, &origin, unit_index))
 		{
-			s_object_marker marker;
+			function_a7870(projectile_index);
+			if (attach)
+			{
+				s_object_marker marker;
 
-			function_b8d30(unit->parent_object_index, marker_name, &marker, 1, false);
-			bit_vector_set((dword *)((byte *)UNIT_ACTION_UNIT_GET(projectile_index) + 0x12c), 10, true);
-			function_fd560(projectile_index, unit->parent_object_index, marker.node_index, &marker.matrix.position, NULL);
+				function_b8d30(unit->parent_object_index, marker_name, &marker, 1, false);
+				bit_vector_set((dword *)((byte *)UNIT_ACTION_UNIT_GET(projectile_index) + 0x12c), 10, true);
+				function_fd560(projectile_index, unit->parent_object_index, marker.node_index, &marker.matrix.position, NULL);
+			}
+			function_d0e60(unit_index, 0, 0);
+			actions->grenade_state = 3;
+			return;
 		}
-		function_d0e60(unit_index, 0, 0);
-		actions->grenade_state = 3;
-		return;
 	}
 	function_b8540(projectile_index);
 	function_d0e60(unit_index, 0, 0);
@@ -1175,6 +1206,16 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 }
 
 /* starts throwing a grenade (type 22) */
+// MiniMax H (11-07): no new form, no lower score (19); the three unit lookups still read the
+// table with the other base and index order (`[ecx + edi + 8]` against retail's
+// `[edi + ecx + 8]`), the success block still stores the flag byte and the result in the other
+// order (ours pops edi and esi, then ORs and stores the result, then sets the flag byte; retail
+// sets the flag byte, stores the result and pops last), and the failure branches still reach the
+// exit copy at a different distance (the permuter managed one try in 308.8 s, best 19, baseline 19,
+// no confirming build).
+// MiniMax D (11-06, run 49): no new form, no lower score (19); the three unit lookups still read the table with the other base and index order (`[ecx + edi + 8]` against retail's `[edi + ecx + 8]`) and the tail still stores the flag byte after the OR.
+// MiniMax H (11-04): no new form, no lower score (19); the earlier rounds' forms still leave the
+// three unit lookups data-first and the exit block with its own copy, so the body stands.
 // MiniMax E (11-01): 16 with the unit's ordinal masked once into a local and the table entry read
 // through it as a raw address cast (`*(s_unit_action_unit **)(g_4e0300->data + ordinal * 12 + 8)`) in all
 // three lookups, so they use retail's address operand order, and the result stored before the action's
@@ -1447,10 +1488,20 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
+// MiniMax A (11-06, run 52): no new form, no lower score (95) - retail loads the pool after the
+// prologue pushes, keeps the hand in cl and reloads the unit through a copy of the data register.
+// MiniMax D (11-05): no new form, no lower score; retail loads the pool global after the prologue
+// pushes and keeps the hand in cl, ours loads the pool first and keeps the hand in al.
 // MiniMax G (11-04): no new form, no lower score; retail loads the pool data and the unit twice with
 // a stack spill between the two loads, ours keeps one load, so the index form, the reload of the pool
 // data and the register allocation differ.
-// score 95 (was 95): frame 0x18 agrees; entry table/hand homes and second unit load remain.
+// score 95 (was 95): frame 0x18 agrees; entry table/hand homes and second unit load remain. Round 220 lead (m3 lane 3):
+// the other hand's slot and weapon read through `s_record_pool *objects = g_4e0300;` declared first (0xd1540's per-hand
+// pool copy, which matched 0xe8de0/0xe9190/0xfff40 this round) with a long hand gives retail's second unit load through a
+// copy of the data register and retail's length: 8 at 604 bytes (fast and plain), not kept (0xcbd50's body written out,
+// a pool copy beside the global: kept only on a match). Left on it: the copy goes to EDI where retail spills the hand
+// first and copies into ECX, the other slot's address is base-first (retail index-first), and retail hoists the
+// animate reload above the 0x14/0x15 branch. See the round 220 forms at the end of this note.
 // Earlier (148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
 // Numeric primary/shared unit/both 195; direct hand and its combinations 200; conditional state
 // with direct hand 148, alone 192; scan fallback exit 148 (kept), with direct hand 203, numeric
@@ -1562,6 +1613,18 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // M367: Optional ready-query completion/fallback result bool/byte/short/long:
 // 95/95/95/95/95/95/95/95. NOT kept: one-use result producers do not match.
 // Original terminal returns and complete body restored; early hand spill and second unit load remain.
+// M395: Actual two-slot pointer scan, equality/ordered ends with long/short/char/int selected slots:
+// 103/103/204/204/187/187/103/103. NOT kept: no exact native-shape candidate; native early hand/table setup and second unit load remain.
+// Original complete body restored.
+// Y598: Actual late state/tag/selected-weapon lexical identities, seven subsets
+// and complete entry-uninitialized storage: 95/95/95/95/95/95/95/95. NOT kept:
+// no exact home repair; original body restored; early hand spill and second unit load remain.
+// Round 220 (fast; on the pool-copy form above): short hand 157 (606 B), long hand 8; hand declared first 27, between
+// the pool copy and the unit 27; the pool copy after the unit 8; a named pointer for the other unit 198 (590 B); the
+// type as `primary ? 0x14 : 0x15` 27, as an if/else 27 (neg/sbb); the other slot through `(&...->weapon_slots[0])[...]`
+// 8; the NONE default declared before the other slot read 182 (620 B); the unit through the pool copy and the other
+// hand through the global 198; 0xcbd50 with the slot argument through the pool copy 198; the unit through
+// UNIT_ACTION_HEADER_GET 8; permuter (13 tries in 631 s) no gain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1726,6 +1789,15 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax H (11-07): no new form, no lower score (11); the entry block still holds the same
+// instructions in another order: retail reads the object pool global, the pool data and the type,
+// computes the unit and the actions pointer and only then does `cmp ecx, 8; sete bl`, ours reads
+// the type first and compares it before the pool data is read (the permuter managed two tries in
+// 306.5 s, best 11, baseline 11, no confirming build).
+// MiniMax D (11-06, run 49): no new form, no lower score (11); the entry block still compares the type with 8 first, retail loads the object pool, the unit header and the type, computes the unit and the actions pointer, and only then makes that comparison.
+// MiniMax H (11-04, run 33): no new form, no lower score (11); the permuter managed one try in
+// 326.9 s (best 11, baseline 11, no confirming build), and the entry block keeps the same eleven
+// instructions in another order.
 // MiniMax A (11-04): no new form, no lower score (11). What still differs: the entry block's
 // order. Retail loads the object-pool global, then the unit header, then the type argument,
 // computes the unit and the actions pointer, and only then does `cmp ecx, 8; sete bl`; ours
@@ -1772,7 +1844,7 @@ bool function_cd660(long unit_index);
 void function_101740(long weapon_index, long other_index);
 void function_ce920(long unit_index, long slot_index, long mode, bool flag);
 s_object *function_badc0(long object_index, dword type_mask);
-void __stdcall function_191f3a(long definition_index, long value);
+void __stdcall function_191f3a(long value, long definition_index);
 
 /* a player's short at +0x28 (the players data, 0x21c bytes each) */
 PRIVATE inline short unit_action_player_value28_get(long player_index)
@@ -1780,102 +1852,22 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 	return *(short *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x28);
 }
 
-/* drops the weapon in a hand (types 9 and 19) */
-// MiniMax G (11-04): no new form, no lower score; retail reloads the pool data and the unit after the
-// stored flag and reads the hand's slot byte from the reloaded unit, ours keeps the first unit, so
-// the pool reload, the second slot read and the weapon/mode homes differ.
-// score 138 (was 138): frame and entry homes agree through +0x34; pool reload, weapon/result
-// and mode/flag homes remain. Numeric-hand lookup selected/other/both 142/141/142;
-// both with success admission 138, persistent result 154, common primary mode 171,
-// full player value 145, persistent result/full player value 157.
-// Round 116: retail reads the pool data again for the hand getter in the same block as the slot
-// read (no store between), homes the weapon in the dead unit_index argument slot (NONE stored
-// first) and mode in a local (ours the reverse), hoists the false result into AL before the weapon
-// test and forms the other hand with setne. The player value through unit_get_player_index (kept,
-// 138, retail inlines that function), with a long value 143 (retail's movsx/cmp tail); a single
-// false result with either 174/171; mode and flag declared first 138 (same code); the other hand
-// as `!hand` 141, as `primary != false` 136.
-// Round 58: the weapon getter before the slot read 173 (520 bytes); `if (primary) { mode = cd660 ? 2 : 0;
-// flag = ...; } else { mode = 3; flag = primary; }` 168 (506 bytes; the weapon then takes the dead unit_index
-// home and mode a local as retail, but mode becomes neg/sbb/and with one store), the same with an if/else
-// for the mode 168, the original arm order with the cd660 test nested and one flag store 169 (505 bytes):
-// the homes follow the reference counts, and with retail's three mode stores ours keeps the weapon in a
-// register first (retail stores NONE and the getter's value straight to memory); one unit pointer for the
-// slot and the first getter 167 (515 bytes). An unused pool data read at the top changes nothing here
-// (harness), unlike 0xe9190.
-// Round 187: a pool local for the hand getter's lookup (function top, after the hand, after the slot
-// read) 167 each (517 bytes: ours then shares one lookup and keeps the request in EBP); for the slot
-// read's lookup instead 167.
-// Round 46 (lane 13): the hand weapon through the existing 0xcbd50 with the slot read as its argument 157
-// (527 B); weapon_index renamed to sort before mode 138 (same code: the homes do not follow names here);
-// `result = false;` right after the getter with one `return result` 171 (517 B: the NONE path is no longer
-// jump-threaded, as in retail, but the weapon takes EBP and the pool is not kept); `if (weapon_index == NONE)
-// return false;` 142 (524 B); a typed request struct for the byte at +4 138 (same code).
-// Round 324: lexical weapon/mode/slot home subsets 1-7, then all with the Boolean
-// flag named by its animation role, 138 each. Complete original body restored;
-// same-block pool reload and weapon/mode homes remain.
-// M291: Direct bool/long eligibility results with native long/short hand and long/short/char slot domains:
-// 165/158/172/151/150/155/151/144. Original executable body restored.
-// M306: Native mode defaults zero/three crossed with bool/long flag storage and a twice-used tail player acquisition: 160/180/152/173/159/179/149/169. All restored.
-// M313: Full primary/selected mode scope/plain interruption-table subsets, all with short slot; original body restored;
-// fast 157/138/157/323/334/323/334/334.
-// Round 535: all-hand unit snapshot, duplicate-weapon scratch scope and short hand,
-// seven subsets, then all with full player value: 167/138/134/167/165/134/165/167. Original body
-// restored; same-block pool reload and weapon/mode homes remain.
-// Short hand alone 134 gains four above 30 and is below the retention gate.
-// Round 537: shared hand-getter result first/valid arms/invalid arms/conditional
-// 138/138/138/138; each with caller success result 171/134/134/134. Helper and
-// complete body restored; 134 gains four and shortens to 526/538, below the keep gate.
-// All helper forms raise other users, including 0xe8510; none is eligible to keep.
-// M317: Native bounded mode char/byte/short/word, each with long/Boolean hand on the original branch-only
-// graph: 146/154/146/154/137/145/137/145.
-// Same-block pool reload and selected-weapon/mode homes remain. Original executable body restored.
-// M326: Native char/byte/short/word primary-request classification 133/133/158/158;
-// complementary hand-first production 140/140/156/156. NOT kept: the five-point
-// gains above 30 and unmatched width-only forms. Original body restored at 138;
-// same-block pool reload and selected-weapon/mode homes remain.
-// P279: Existing hand-array selected-slot/shared-getter/both forms 138/138/138;
-// complete array graph with short slot / Boolean hand / both / forced accessor / all:
-// 136/146/143/138/143. NOT kept: best 136, gain 2 below the gate. Original body and helper
-// restored; frame 0xc, same-block pool reload and weapon/mode homes remain. All shared users unchanged.
-// Round 78 (m3 lane 16, fast): hand as `primary ? 0 : 1` 138, as `primary == false` 138, each arm's flag
-// stored before its mode 138, the secondary arm's flag as the constant false 138 (same code each); the
-// other hand's getter given `!hand` re-measured 141. Retail's first lookup addresses [index + data + 8] (ours
-// [data + index + 8]) and re-reads the pool data for the hand getter.
-// Round 81 (m3 lane 16, fast): the player index read once into a local for its test and the value getter 162
-// (512 bytes); flag declared before mode 138; the definition compare sides swapped 138; the slot read through
-// UNIT_ACTION_HEADER_GET 138 (same code each); the weapon through the char-index unit_action_weapon_get(unit,
-// !primary) 132 (542 bytes; gain of 6, not kept). Retail reloads only the pool's data field (the pool pointer
-// and the scaled index stay CSE'd) for each hand lookup, as in 0xe9190.
-// M335: Primary/selected-hand/paired-weapon scalar identities, subsets 1/2/4/3/5/6/7,
-// then all with the animation-flag identity: 138/138/138/138/138/138/138/138. Original complete body restored;
-// same-block pool reload and selected-weapon/mode homes remain.
-// AC505: Actual duplicate-type admission bool/byte/short/long result
-// 138/138/138/138; guarded complete outcomes 140/140/141/143.
-// NOT kept: no gain or byte match; original predicates, mode/flag, body and calls restored.
-// N363: Uninitialized completion result assigned by success/failure leaves, bool/byte/short/long
-// at entry 138/143/148/146, after hand observations 138/143/148/146. Original body restored;
-// NOT kept: unmatched result storage. Pool reload and selected-weapon/mode homes remain.
-// AC514: Existing native unit/weapon-view slot/selected/paired acquisition subsets
-// 1/2/4/3/5/6/7, then all with native short slot: 137/138/138/137/137/138/137/135.
-// NOT kept: unmatched alias/width forms; original complete body and include set restored.
-// Frame 0xc agrees; same-block pool reload and selected-weapon/mode homes remain.
-// M367: True-default single-exit completion bool/byte/short/long, before entry
-// lookups 132/157/164/166; after selected lookup 150/167/171/173. NOT kept:
-// 132 gains six above 30 and grows to 539/538 bytes; other forms regress.
-// Original body restored; same-block pool reload and weapon/mode homes remain.
-// DH343: Signed slot/hand domains char-long/long-char/char-char/short-long/short-char/
-// char-short/short-short/char-word: 144/146/146/136/143/134/131/134. NOT kept: short slot/hand 131
-// gains seven below the gate. Original body restored; pool reload and weapon/mode homes remain.
+/* drops the weapon in a hand (types 9 and 19); the slot and each hand are
+   read through their own copy of the object pool, so each looks the unit up
+   again, as retail does */
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
+	s_record_pool *objects = g_4e0300;
+	s_record_pool *weapon_objects = g_4e0300;
+	s_record_pool *other_objects = g_4e0300;
 	bool primary = request->type == 9;
 	long hand = !primary;
-	long slot = (&UNIT_ACTION_UNIT_GET(unit_index)->current_weapon_index)[hand];
-	long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), hand);
+	long slot = (&((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit->current_weapon_index)[hand];
+	long weapon_index = unit_action_pool_hand_weapon_get(weapon_objects, unit_index, hand);
 	long mode;
 	bool flag;
+	bool result = false;
 
 	if (weapon_index != NONE)
 	{
@@ -1895,12 +1887,12 @@ bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 			flag = !*((bool *)request + 4);
 		}
 
-		long other_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), primary);
+		long other_index = unit_action_pool_hand_weapon_get(other_objects, unit_index, primary != false);
 
 		if (other_index != NONE &&
 			UNIT_ACTION_UNIT_GET(weapon_index)->definition_index == UNIT_ACTION_UNIT_GET(other_index)->definition_index)
 		{
-			function_101740(weapon_index, other_index);
+			function_101740(other_index, weapon_index);
 		}
 		function_e69c0(unit_index, 8);
 		function_e69c0(unit_index, 0x12);
@@ -1914,14 +1906,14 @@ bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 
 		if (unit_get_player_index(unit_index) != NONE)
 		{
-			short value = unit_action_player_value28_get(unit_get_player_index(unit_index));
+			long value = unit_action_player_value28_get(unit_get_player_index(unit_index));
 
 			if (value != NONE)
-				function_191f3a(UNIT_ACTION_UNIT_GET(weapon_index)->definition_index, value);
+				function_191f3a(value, UNIT_ACTION_UNIT_GET(weapon_index)->definition_index);
 		}
-		return true;
+		result = true;
 	}
-	return false;
+	return result;
 }
 
 /* the request to pick up a weapon (type 20) */
@@ -1994,106 +1986,22 @@ done:
 }
 
 /* gives a unit's weapon to a player's unit, taking the player's weapon
-   in exchange (type 21) */
-// MiniMax G (11-04): no new form, no lower score; retail reloads the pool data for the second unit
-// lookup after storing the unit pointer into the dead argument slot, ours keeps the first pool load,
-// so the reload, the unit/weapon allocation and the result byte's home differ.
-// score 97 (was 97): frame 0x24 versus 0x20 (given in a stack byte, retail BL); unit/weapon allocation and
-// the inline unknown13c exit differ (retail hoists `xor al, al` and jumps into the epilogue tail).
-// Earlier: score 100 (was 127): frame 0x24 versus 0x20; unit/weapon allocation and transfer-call convention differ.
-// Both ordinal-hand reads 122; result first 118; entry drop workspace/live request/single receiver 122 each;
-// long results 127; early admission return 100 (plain, kept); failed-give arm first 145.
-// Round 58 (107 at the start): 0x1ca260 takes the weapon second and the player index third (EDX, its third
-// parameter, from its body and retail's call): a value fix, 97 (kept). On it: the nested admission 122 (314
-// bytes; aligned it is retail's code except that the unit pointer takes EBP, retail unit_index, and the first
-// getter reuses it where retail reloads the pool data); one 0x1ca260 call with a `taken` ternary 131; `taken`
-// as one `&&` 114; `return false` with given declared in the block 110; the drop request at the top 97 (same
-// code). Harness: 128 nested forms (declaration orders, a player index local, drop at the top, getter order,
-// `taken` as one expression, an actor local), a pool pointer local and the header read for the unit or the
-// getter keep the unit in EBP. Locate-only: an unused read of g_4e0300->data at the top gives retail's reload
-// and unit_index in EBP (harness signature-aligned 22 against 64), as 0xe5040's unused header does.
-// Round 69 (lane 12, fast): both weapon lookups through the existing header getter unit_get_current_weapon 97 (same
-// code); a function-top pool local (`objects = g_4e0300`) for all three lookups 100; for the weapon and other-weapon
-// lookups with the unit by the macro 125 (339 bytes), and that with the nested single exit 85 (retail length, the
-// prologue and everything after the lookups retail's: only retail's second reload of the pool data for the other
-// weapon is missing; not kept, it mixes the global with its local copy); on that the other lookup by the macro 122
-// (314), the weapon by the macro 118 (318), the unit through the local and the weapon by the macro 100, the unit and
-// weapon through the local 118 (318); the local declared in the block or the player index read at the top 85 each;
-// every lookup through the local with the nested exit 123 (314). A throwaway inline helper with its own pool copy
-// (diagnostic) 122: its copy is propagated and all lookups merge.
-// Round 114 (m3 lane 7, fast): a single-exit `result = false` at the top with `given` declared in the weapon block
-// and `result = given;` at its end 121 (314 bytes: frame 0x20, retail's hoisted `xor al, al` and given in BL with
-// `mov al, bl` exits, but the unit stays in ESI and the second lookup reuses it, so unit_index never gets EBP); on
-// it the unit through a header pointer local 121, `return given;` inside the block 107 (328, loses the hoist), the
-// weapon lookup through `unit` 121. Diagnostic (not kept): an unused header local on that form 87 (336: retail's
-// data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
-// player unit 96, inside the weapon block 121, with the player index read in place 87.
-// DH274: Guarded empty-weapon/failed-transfer exits without a persistent given result, crossed with direct/shared pool observations and original/captured player input, 124/132/125/132; positive success exits on the same four graphs 122/124/123/126. All restored; frame/result and unit/weapon homes remain.
-// F321: complementary give result in bool/byte/word/long storage, each with
-// original or complementary take-result ownership: 129/129/141/143/140/140/150/150.
-// Original executable body restored; frame/result and pool/weapon homes remain.
-// M306: Persistent result set by the transfer test: original admission with actor-first/taken-first and early/late success assignment 98/106/115/121; nested admission 123/126/116/117. All restored.
-// Own-unit fields at every use: early admission/direct pool with live/captured request
-// 129/125, coherent pool capture 135/129; nested admission/direct pool 143/118,
-// coherent pool capture 158/109. Original pointer, observations and body restored.
-// P267: existing hand accessor empty-slot guard and test-owned result, char/short/long
-// slot storage: 114/108/119 and 114/108/119; short forms with drop scope ending at its call 108/108.
-// Original shared accessor, request workspace, result graph and complete body restored.
-// Round 373: Post-transfer notification owner captured once, bool/byte/short/long
-// give results with original/compound take result: 97/122/129/130/114/135/141/142. Original observations,
-// result ownership and whole body restored; frame/result and pooled roots remain.
-// Round 535: independent received-index result and native mutable received index, each
-// with bool/byte/short/long give-result storage: 132/123/115/117/128/115/105/105. Original body
-// restored; frame, give-result byte and pool/weapon homes remain.
-// M317: Actual admission/weapon predicates owning the returned transfer result, bool/byte/short/long with
-// early/nested admission: 121/118/142/112/156/138/153/131.
-// Frame/result, pool reloads and unit/weapon homes remain. Original executable body restored.
-// M326: Actual player-unit/drop producer phase ends after the first give call, bool/byte/short/long
-// give results, request ending there or at its own call: 97/122/129/130/97/122/129/130.
-// Boolean forms tie; wider carriers lengthen. Original body restored; frame/result and pool homes remain.
-// P279: Original result graph with direct player field / forced existing hand accessor /
-// native drop-request call scope, subsets 1/2/4/3/5/6/7: 97/97/97/97/97/97/97; native byte
-// argument store 97. All sixteen shared-accessor users and notification control stay at
-// calibrated scores. Original helper and body restored; frame/result and pool/weapon homes remain.
-// Round 78 (m3 lane 16, fast): the unit read through a header local 97 (same code); nested admission re-measured
-// 122, with the header local 122; own-unit fields at each use 129 (345 bytes); the player unit read at the top
-// 109; the own weapon getter before the player unit read 102. Retail keeps unit_index in EBP and spills the
-// unit into the dead unit_index home; every form keeps the unit in ESI and reuses it for the first getter.
-// M335: Native receiver/offered/returned scalar identities, subsets 1/2/4/3/5/6/7,
-// then all with the give-result identity: 97/97/97/97/97/97/97/97. Original complete body restored;
-// frame/result-byte and pooled unit/weapon homes remain.
-// AC505: Reverse-transfer result byte/short/word/long with false default
-// 97/107/107/105; complete branch-owned outcomes 105/113/113/111.
-// NOT kept: no gain or byte match; original give/take results, body and calls restored.
-// Round 81 (m3 lane 16, fast): the own weapon through the char-index unit_action_weapon_get 100, both weapons
-// through it 103; the player index read at its one use (no local) 97, an actor index local for the 12c test
-// and calls 97, `given` declared first 97 (same code each).
-// AC514: Existing native unit/weapon-view admission/offered/received getter subsets
-// 1/2/4/3/5/6/7, then all with nested admission: 97/97/97/97/97/97/97/122.
-// NOT kept: unmatched receiver/alias forms; original getter boundaries, include set,
-// transfer results and complete body restored. Frame/result and pool/weapon homes remain.
-// Y570: Receiver/request formal-home reads, first/every use separately and
-// all four paired forms, 97 each. NOT kept: no byte match; all home reads
-// removed and original body restored. Frame/result and pooled roots remain.
-// N360: First-transfer call initializes actual arm-owned result, mutable/immutable bool/byte/short/long:
-// 116/116/137/137/121/121/116/116. NOT kept: unmatched source/result-storage forms; original executable source restored.
-// Frame 0x24/0x20, result byte and pool/unit/weapon homes remain.
-// N363: All failure edges join the sole persistent-result exit, admission plus empty-weapon/
-// rollback/missing-recipient masks 0..7: 122 each at 314 bytes. Original body and exits restored;
-// NOT kept: unmatched exit forms. Frame, result byte and pool/unit/weapon homes remain.
+   in exchange (type 21); each weapon is read through its own copy of the
+   object pool */
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
+	s_record_pool *objects = g_4e0300;
+	s_record_pool *other_objects = g_4e0300;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	long player_index = *(long *)((byte *)request + 4);
 	bool given = false;
 
-	if (unit->unknown13c != NONE)
-		return given;
+	if (unit->unknown13c == NONE)
 	{
 		long player_unit_index = *(long *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x2c);
-		long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), 0);
-		long other_weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(player_unit_index), 0);
+		long weapon_index = unit_action_pool_hand_weapon_get(objects, unit_index, 0);
+		long other_weapon_index = unit_action_pool_hand_weapon_get(other_objects, player_unit_index, 0);
 
 		if (weapon_index != NONE)
 		{
@@ -2446,7 +2354,8 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
-// score 235 (was 235): Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
+// MiniMax R (11-06): no new form, no lower score (235); the frame agrees and the pool, index, type, name and completion-byte homes of the note below are unchanged.
+// score 234 (was 235): Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
 // Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
@@ -2541,6 +2450,22 @@ __forceinline char unit_action_round(real value)
 // the weapon or actions, weapon getter written out, first_person_name at four positions, crossed with pool and
 // macro lookups: none gives the flag in dl with the pool in ebp and NONE in ebx. is_biped/result stay 0x12/0x13
 // against retail's 0x13/0x12 with up to two more result reads (diagnostic).
+// M3 lane 14 r68 (fast, on round 187's single-exit form, 110 at 1188 bytes, register-blind 14; match-only):
+// lunge speed read from the field at both uses (retail divides from memory) 357 (1142: the allocation flips),
+// through a melee-globals pointer read twice 357; first_person_name after actions 110; `real seconds =
+// frame_count * 0.033333335f;` times the field 107 (retail's product order); on 107 the lunge target read at each
+// use 161, read inside the `>= 1.0f` test with the NONE/0xbae20 test nested and target_index in both failure
+// arms 105 (retail's jb before the field load; regblind 10). On the 235 body: seconds + nested lunge read 233.
+// Lane 15 round 61 (fast; plain listing identical): first_person_name = NONE declared first, before the unit, 312
+// (1191 bytes; aligned 142 -> 117, the NONE register and the weapon's NONE default become retail's); is_biped
+// computed after the declarations 235, result declared before the weapon getter 235, the switch on
+// actions->melee_name with no local 235 (same code each); the channel declared with the top locals 301.
+// b5Q walk (11-06, fast): every block checked against retail 0xe9a20-0xe9ec1 (entry/hand getter, the 0x1b bit and the melee_name
+// switch, mode 2 and mode 1 selection, the e9780 fallbacks, the damage/end/total ticks, the lunge arm, the 0x7f/0xff tail):
+// fields, offsets, constants (1.0, 0.0, 0.9, 2.0, 1/30), condition directions, callees and arguments agree. One precision fix:
+// the total ticks are (frame_count * 0.033333335f) rounded to float, then * the field (retail 0xe9d61-0xe9d6d: cvtsi2ss,
+// mulss k, cvtsi2ss field, mulss); the single expression compiled as (field * frames) * k (235 -> 234). Left (no
+// behaviour difference): register homes, the result byte at [esp+0x12] vs duplicated returns, the divide from memory.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2697,7 +2622,9 @@ play:
 			actions->melee_end_ticks = (char)function_1469f0(end_frame * 0.033333335f);
 		else
 			actions->melee_end_ticks = NONE;
-		actions->melee_ticks = unit_action_round(frame_count * 0.033333335f * (real)g_510c54->field_2_3);
+		real seconds = frame_count * 0.033333335f;
+
+		actions->melee_ticks = unit_action_round(seconds * (real)g_510c54->field_2_3);
 	}
 	else
 	{
@@ -4095,13 +4022,22 @@ bool __stdcall function_ec2d0(long unit_index, s_unit_request *request)
 
 void function_e5750(long unit_index);
 
+// MiniMax H (11-07): no new form, no lower score (52); function_e5750 still expands here (95
+// bytes) where retail calls it out of line (67 bytes), and that callee is in this file and
+// matches, so the expansion cannot be turned off.
+// MiniMax D (11-06, run 49): no new form, no lower score (52); function_e5750 still expands here (95 bytes) where retail calls it out of line (67 bytes); that callee is in this file and matches, so it cannot be changed.
+// MiniMax H (11-04): no new form, no lower score (52); the inlined callee is still the whole
+// difference and the noinline spelling is not allowed.
 // MiniMax A (11-04): no new form, no lower score (52). What still differs: our build inlines
 // function_e5750 here (95 bytes) where retail calls it out of line (67 bytes). The callee is in
 // this file and matches, as do its other callers 0xec9a0 and 0xe5930; only this call site differs.
 // BLOCKED-BY 0xe5750's inlining: __declspec(noinline) on its declaration is banned.
 // MiniMax E (11-01): no new form, no lower score; a plain check confirms the full
 // build inlines 0xe5750 here too (the unit read before the call: 72, 110 bytes).
-// score 52 (was 72): unit lookup is at use; the final helper remains expanded (95/67).
+// score 52 (was 72): unit lookup is at use; the final helper remains expanded (95/67). Round 220 (m3 lane 3, fast):
+// the type test as the mask bit `(1 << type) & 1` 62 (102 B, not folded, still inlined); the type through the existing
+// unit_weapon_view_get header getter 52; the lookup through a pool copy declared first 72; the unit view pointer read
+// before the call 72; diagnostic, the pointer before the call and a one-case switch 72 (still inlined).
 // Early guard, comparison local, byte/long/short type, const pointer and header lookup
 // all 72; direct post-call unit lookup 52.
 // Lane 16 r31: the unit pointer read before the 0xec0d0 call matches with __declspec(noinline) on
@@ -4204,7 +4140,19 @@ extern vector3f *g_4687bc;
 /* a raised weapon's point (type 41 update): when its time is up, it
    shoves the target in front of the unit, with damage and an impact
    effect */
-// score 45 (was 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
+// MiniMax H (11-04): no new form, no lower score (45); the first difference is the two-byte branch
+// offset at +0x5c, where our block is longer, and the 0x188180 call setup after it is blocked by
+// that callee's parameter order in another file.
+// MiniMax R (11-06): no new form, no lower score (45); the g_54e898 copy is a dword load here and a word load in retail, which also moves the exit block two bytes; retail's 0x1eb020 writes a dword into the material slot and it is read back as a dword, ours takes a short * and reads it back sign-extended, and that width is set in another file.
+// score 31 (was 45): the material local as the global material type (c_type_47f957, constructed from g_54e898
+// as 0x277b80 does) gives retail's word copy, so every branch target now agrees; left are the copy's schedule (retail
+// loads into CX early and stores it just before the 0x0b67a0 call, ours stores at once from DX), the rigid body's
+// data/offset registers in its address add, and the 0x188180 call setup (BLOCKED-BY 0x188180: retail pushes the
+// material as the 2-byte type by value, held behind 0x1883e0's declarations). Round 220 (m3 lane 3, fast): material
+// type 31 (kept); constructed after the component lookup 33; short rigid body index 46 (1099 B); rigid body fields at
+// each use 35; component and index declared first, assigned after the material 31; rigid body through
+// `rigid_bodies.data + index` 31.
+// Earlier: score 45 (was 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
 // data and offset registers swap in its address add, and the 0x188180 call setup differs
 // (BLOCKED-BY 0x188180: ours takes the effect value in ecx and forward in edx; retail passes the point
 // in eax, forward in ecx and pushes the short material slot raw).
@@ -4316,7 +4264,7 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 
 							if (effect_tag_index != NONE)
 							{
-								short material_index = g_54e898;
+								c_type_47f957 material_index(g_54e898);
 								s_havok_component *component = havok_component_get(root->havok_component_index);
 								long rigid_body_index = function_0b67a0((s_small_index const *)component);
 
@@ -4336,12 +4284,12 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 											impulse.i = shove.i * -1.0f;
 											impulse.j = shove.j * -1.0f;
 											impulse.k = shove.k * -1.0f;
-											function_1eb020(effect_tag_index, node_index, &material_index);
+											function_1eb020(effect_tag_index, node_index, &material_index.m_index);
 											strength = target_definition[0x1a];
 											if (strength > definition[0x1a])
 												strength = definition[0x1a];
 											function_188180(&unit_center, &impulse, *(long *)(definition + 0x58), unit_index, 0xb, strength,
-												material_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
+												material_index.m_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
 										}
 									}
 								}
@@ -5097,6 +5045,15 @@ void function_edfa0(long unit_index, point2f const *facing)
 }
 
 /* faces a unit along its aiming direction */
+// MiniMax H (11-07): no new form, no lower score (13); the y product still folds into the dying
+// inverse register, retail stores x first and then loads y into another register to multiply it by
+// the inverse. The compound assignment and a scaled temporary both compile to the same fold (13),
+// and putting the two products inside the `length > 0` block gives 17 (the multiply keeps xmm1 and
+// the block layout changes).
+// MiniMax D (11-06, run 49): no new form, no lower score (13); the y product still folds into the dying inverse register, retail stores x first and then loads y into another register to multiply it by the inverse.
+// MiniMax H (11-04): no new form, no lower score (13); the y product still folds into the dying
+// inverse register. The compound assignment on the local, the two products in the other order and
+// the products through a pointer to the local all compile to the same folded multiply.
 // MiniMax E (11-01): no new form, no lower score; the same helper without the zeroed
 // length (26) and the symmetric operand order (13) keep the commuted multiply.
 // score 13 (was 24): retail stores x before it loads y (`movss xmm2, y; mulss xmm2, xmm0`); ours
@@ -5383,22 +5340,6 @@ long function_1039a0(long object_index, long tag_index, long effect_index, real 
 short first_person_weapon_animation_ticks(long weapon_index, long animation_name, short type);
 bool function_1058b0(long weapon_index, long state, bool force);
 
-// MiniMax A (11-04): no new form, no lower score (54 reduced / 54 full; the full build no longer
-// adds the 12 bytes of the inlined 0xc9d00, so the earlier note's 70 is stale). What still differs:
-// the first difference is inside the inlined body of function_1058b0, which lives in
-// src/weapons.cpp. Retail keeps the object-pool data pointer in EDX and copies it (`mov ecx, edx`)
-// where ours keeps it in ECX, so retail's copy is two bytes longer there; at the tail retail
-// reads `mov ecx,[esp+0x18]; mov eax,[ecx+0x144]` and we read `mov eax,[esp+0x18]; mov eax,[eax+0x144]`.
-// BLOCKED-BY 0xc9d00/0x1058b0.
-// MiniMax E (11-01): no new form, no lower score; the reduced image scores 54 where the
-// full build gives 70.
-// score 70 (was 70): the first difference is inside the body of function_1058b0,
-// which is inlined here but lives in src/weapons.cpp, so the object lookup and
-// the tag table are read through different registers than retail. The 12 extra bytes are the
-// inlined 0xc9d00 (contributor code) loading and spilling the second hand's weapon index, which
-// retail's inlined copy drops: BLOCKED-BY 0xc9d00. Tried at the 0xc9d00 call in 0x1058b0: the
-// owner index in a local 70; result set first 70; a fresh weapon pointer 70; the two tests
-// swapped 73; here, the rest under the state change's result 70.
 // @retail 0xfff40
 void __stdcall function_fff40(long weapon_index, bool silent, bool immediate)
 {

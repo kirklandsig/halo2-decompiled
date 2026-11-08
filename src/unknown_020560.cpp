@@ -88,6 +88,13 @@ PRIVATE __forceinline long texture_floor(real value)
 // Round 67: bitmap declared at loop-body scope ahead of the NONE test 14, with the bias too 18, both at the top
 // of the body 21; a loop-scope copy of a pending mask 38; a for loop clearing the bit in its increment with
 // the NONE test as `continue` 4. Diagnostic: one to eight unused locals at entry leave EDX (symbol count not it).
+// Round 132 (m3 lane 7, fast): the call's short arguments without casts 4; the level truncated in the
+// clamp statement 4; an explicit return after the loop 4; the level test as `level < entry level` 4;
+// bitmap's zero as the else arm of the magnitude test 90 (399 bytes). Lead: lane 8 r114 found VC's
+// scratch choice a round robin (one extra early temp rotates every later block, 0x5c720); the EDX here
+// may be one hidden allocation off retail rather than a property of the clear.
+// Round 155 (m3 lane 5, fast): the floor's asm split after cvttss2si 4; floor parameter `real const` 4; one-line asm
+// statements 4; adjusted bias as a ternary 65 (399 bytes). Permuter (600 s, 41 variants) found nothing below 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -865,6 +872,12 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
+// MiniMax D (11-05): no new form, no lower score; the argument slots agree with retail's (the source
+// pointer in the first stack slot, the order byte in the fifth), so the whole difference is the frame,
+// 0x18 against retail's 0x2c.
+// MiniMax E (11-06): no lower score; retail takes the position pointer as its third parameter (EDX)
+// and pops six stack arguments, so retail's declaration has nine parameters against our seven; the
+// call sites are in another file and the parameter order may not change, so this cannot be reached here.
 // score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
 // Earlier: Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
@@ -1021,6 +1034,18 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the 587 forms lose the matched fraction provider and move away from native extent.
 // Query/frame/fraction homes remain; pointer-to-ordinal quotient also consumes EDX.
 // Original provider contract and target body restored; prior ordinal-loop forms not repeated.
+// M3 lane 4 r165 (fast, 0x24550's source in the image; count/aligned/bytes): index scans through distance_sq3f with (position, sample)
+// 503/a306/2084, (sample, position) in scan 1 473/a276/2084, in both 457/a225/2070 (round 130's form, a reload mix), in scan 2 only
+// 487/a255/2070; entries read at each use everywhere 577/a207/2094: delta orders kij and kji 609/a212/2062, jik and jki 608/a206/2062, ikj
+// 578/a210/2094; nearest declared first 576/a207; length_sq3f 654/a287/2033, with dot3f written out 652/a277, with dot3f swapped 654/a287;
+// vector3d_from_points3d with a written-out length 652/a277; offset written out with length_sq3f or written out 583/a350/2085, with
+// distance_sq3f 761/a375/2289; scalars 583/a350/2085, with distance_sq3f 760/a339/2286. Const references bound to temporaries (the form
+// that matched 0x45560): samples 577/a207 (same code as at each use), first 476/a254/2052, both 610/a221/2062, samples with jik/kij
+// 608/a206, 609/a212, at-each-use first 610/a221, with jik 579/a221/2094. Nearest indexed at each use with no first pointer 610/a379/2156,
+// kij 610/a382, jik 610/a379, delta through vector3d_from_points3d 657/a302/2018, first kept beside it 598/a395/2162, kij 599/a395. Scan 2
+// reading offset as above with 1 to 7 dead locals at the top 577/a207 each (no numbering effect). Retail's two vector homes come from two
+// spills (offset.x +0x24, stored each pass, about 28 B of the length gap; delta.k +0x38); ours spills delta.j and k, or nothing with
+// length_sq3f (delta in xmm3-5 where retail colours xmm5-7). Its `lea ebp, [eax + ecx]` keeps the scaled index in a scratch register.
 // J255: Coordinate-range subtraction at nearest/anchor/opposite producers, seven
 // standard transform subsets 876/598/1237/912/1533/1362/1554; direct loops throughout 1471.
 // NOT kept: all regress and shorten away from 2122 bytes. Original scalar/vector
@@ -1039,10 +1064,39 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // M380: Actual offset/delta aggregate initializers at nearest/anchor/opposite,
 // seven subsets then immutable full vectors: 547 each at 2122 bytes. NOT kept: native
 // frame/query/search homes remain; original scalar producers and complete body restored.
+// Round 151 (fast; body restored): the index body re-measured: entries direct everywhere 576 (2094 bytes), samples local read after scan 1 459 (2070); a mix, kept only on a match; the local
+// used by scan 2 is what gives retail's head and nearest in EDI (ldd/ddl 576; lld/dll/dld 459). On the direct body: `count >= 1` 532 (2096; no shared zero, but `cmp ebx, 1; jl` where retail has
+// `test ebx, ebx; jle`: not kept), with `opposite` declared first 527 (2091), other_distance first 543, `source->entries + nearest` 532, delta or first at the top 532, a plain second pointer with
+// `opposite != NONE` 533 (2089), length_sq3f(&offset) 610; nearest at function top 575, at the arm 575, after closest 577; one shared index 576; `1 == count` 576. Offset fields written j, k, i 779
+// (2335; frame 0x2c, but the subtractions no longer share with the distance), jki/opposite first 772, kji 779. A cross-file difference (function_28e774) for delta, offset or both 459 (same code).
+// Retail's frame: opposite +0x10, nearest +0x14, pass counter +0x18, samples +0x20, offset home +0x24 (x spilled before each `jb`), delta home +0x30 (k spilled at +0x38).
 // T60: Actual source/query/direction object-reference contracts, seven subsets and
 // all with the existing copier sample reference: eight at 547/2122. NOT kept:
 // native query register, vector/ordinal homes and frame 0x2c are not recovered.
 // Original interfaces, both caller sites, copier and complete body restored.
+// Round 75 (m3 lane 10, fast with 0x24550/0x22750/0x22c30/0x146020/0x23690; [difflib-aligned]): index scans reading
+// `source->entries[i]` at each use with scalar offsets 639 [406] (2057 B), the scan-2 offset as a vector3f 639; round
+// 130's mix (scan 1 through distance_sq3f, a samples local after it) 457 [225] (2070 B; scan 1 byte for byte retail's,
+// nearest in EDI), its consistent direct form 577 [207] (2094 B): VC reuses the remainder loop's `source->entries` load
+// for `first` and the second scan, so that register costs `nearest` its EDI in scan 1 (hence the shared zero and the
+// memory nearest); retail reloads the field after scan 1. On the mix: scan 2 as y, z, x scalars with the kji
+// projection and distance 551 [280] (119 bytes short), the vector offset with a kji distance 549 [267], with length_sq3f 549,
+// with delta assigned k, i, j as well 549 [271] (all 2005 B: the distance no longer shares the subtractions).
+// Y602: Coordinate/reduction/minimum scalar lexical identities, then immutable original-site scratch:
+// 547/547/547/547/547/547/547/547.
+// NOT kept: no byte match or qualifying native-shape repair; original complete body and helpers restored.
+// Y607: Existing scalar coordinate scratch shared across both searches, x/y/z subsets
+// then all with shared candidate distance: 547/547/547/547/547/547/547/547. NOT kept: shared
+// lifetime forms do not match. Original complete body restored; native frame/query/ordinal/fraction homes remain.
+// M403: Native sample position/coefficient-triplet/direction readonly members,
+// seven subsets then readonly table input: eight at 547/2122. NOT kept: native
+// frame/query/vector/ordinal/fraction homes unchanged; original record and body restored.
+// N391: Nearest/opposite cutoffs and paired candidate distances in double, seven subsets:
+// 593/630/706/648/692/716/714; all plus projection 820. NOT kept: all regress;
+// original scalar domains, expressions and full body restored. Native vector/query homes remain.
+// N393: Native nearest/anchor/opposite coordinate-difference double residency, seven
+// subsets 648/640/730/645/731/665/753; all plus projection 753. NOT kept: larger,
+// unmatched storage domains; original scalar graph restored. Frame/query/vector homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

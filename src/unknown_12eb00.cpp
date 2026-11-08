@@ -134,6 +134,14 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // accumulator or all three addresses as `&((byte *)base)[offset]` 11/11; the blend products weight-first, entry term
 // first 11; the output record initialised `output + result` 11. Diagnostic: the previous-index store at the end of the
 // block beside the increment 109 (1178 bytes; the result moves to 0x2c).
+// Round 152 (m3 lane 6, fast): the previous-index store at the block top / after the memset / after the inverse 99/99/99
+// (homes unchanged); with the copy also at the block top 112 (1194 bytes); `continue` when the sum is not positive 11, with
+// `continue` for a missing or empty entry as well 11 (same code); the clusters parameter first (definition and the 0x12efb0
+// call) 11. Diagnostics: no final read of the result moves it to 0x2c and the cluster cursor to retail's 0x18 (306); no
+// previous-index store 110. A 600 s permuter run reached 10 only through a volatile weight read and casts (not applied).
+// Round 155 (m3 lane 6, fast): the palette index in a named `signed char` local for the test and the lookup 219; the output
+// record copied by memcpy (real build) 11; the blend's `1.0f - product` named before the copy 99 (1208 bytes); the palette
+// entry lookup as an if/else assignment 29; the lookup helper with two returns and no result local 73.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

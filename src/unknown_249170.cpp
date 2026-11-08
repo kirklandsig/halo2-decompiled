@@ -179,6 +179,14 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // the sine is defined 2; a cosine local after velocity.j with both position products from the locals 24. With
 // either zero store removed (diagnostic) the xorps still fills the fld -> fsin slot.
 // Case 1's azimuth as one product of a direct function_x82e52f draw 510.
+// Lane 13 round 66 (fast): retail leaves the slot after the first fld empty in cases 1 and 4 (both after the radius
+// call, its result live in XMM0) and fills it in cases 6 and 9. `velocity.i = position.x = 0.f` between velocity.j and
+// velocity.k 4; retail's store order (velocity.i, position.x, velocity.j, position.y from the sine, velocity.k,
+// position.z) 2; `azimuth = azimuth * 6.2831855f` 2; `azimuth = 6.2831855f * azimuth` 2; the sine and velocity stores
+// in an inner block 2 (all four the same code).
+// Round 97 (m3 lane 12, fast): case 1's position through particle_scale_position 505; the tail's squared speed through
+// the existing length_sq3f on the velocity pointer 2, then on &particle->velocity with the pointer local dropped 2 (same
+// code, kept); on that, the normalization or the speed scale through particle_scale_vector 42/16.
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {
@@ -363,8 +371,7 @@ void function_249170(real const *values, s_particle_spawn_state *particle, s_par
 	}
 	default: __assume(0);
 	}
-	vector3f *velocity = &particle->velocity;
-	real speed_squared = velocity->i * velocity->i + velocity->j * velocity->j + velocity->k * velocity->k;
+	real speed_squared = length_sq3f(&particle->velocity);
 	if (speed_squared != 0.f)
 	{
 		real inverse_speed = particle_inverse_sqrt(speed_squared);

@@ -175,6 +175,10 @@ void __stdcall function_2562c0(long actor_index, s_slot *slot)
 // last return 97 (far jb, no preload), with global returns 97; started arm falling to a character-block be8, goto onto the last return 97 (be8 inline), `return result` at the jb 84
 // (352 bytes, jae), flat search with goto failed 84, no result local 97; a label reached only by the jump after the search returns 84, at character level past the be8 return 70, with
 // be8 returned in the arm 70, global returns with that label 105 (366 bytes). Every preload form takes the nearby epilogue; every far jb lands on the reload and loses the preload.
+// Round 169 (lane 4, fast), on the 70 form (re-measured 70, 335 bytes): the slot data through unknownc 70; a const
+// result 70; `!(>=)` returning result with an else returning g_470be8 70; the comparison written duration-first
+// (`duration <= product`, same comiss/jb) 70; the expiry test in a named bool 70. The `<` form with an else (75, 347
+// bytes) also jumps to the nearby be8 epilogue: its length comes from a separate movss of the duration.
 // @retail 0x256300
 short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 {

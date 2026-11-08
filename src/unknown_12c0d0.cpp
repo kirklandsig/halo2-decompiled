@@ -873,6 +873,15 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // struct 2; the local's address passed to an inner forceinline holding the store and the rdtsc 2, a two-long array passed that
 // way through a volatile long pointer 2. Harness, prologue only: non-volatile through that inner forceinline by pointer or by
 // reference 144 (the stores vanish).
+// Round 131 (lane 7, fast unless noted): the reader as a plain local in its own file, inlined at link time 93 (plain check; the stores
+// vanish); file-local readers with one volatile half of a struct, low or high, 76/76; two separate volatile longs, either order 12/12; a
+// volatile __int64 declared then assigned 2; a union stored through a plain member with a volatile member beside it, three shapes 93;
+// the same union stored through its volatile member 2; `type` as the second, third, fourth or last parameter at the definition, the
+// declarations and the calls 2 each (last also 0x1dc40 2); a forwarding helper for the reader, inline or forced inline, or storing through a pointer
+// 2 each. Retail keeps every reader's two stores against the rdtsc at all 18 sites.
+// Round 219 (lane 3, fast over all 183 functions of the reader header's includers): the barrier intrinsic inside the shared reader after
+// its zero store 2 (nothing anywhere moves), before it 2 (0x80e10 13, 0x862e0 19, but 0x6a8a0 3 and 0x199740 4); the pump loop as
+// `while (result == 0)` 2; an explicit `default: break;` 2; the pump counter initialised at its declaration 28.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
@@ -980,6 +989,16 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax B (11-06): no new form, no lower score; the last three instructions are the whole difference:
+// retail masks the level address in the dying bitmap base and stores it from there, this build loads it
+// into EDX and masks it there; a permuter run over the function was stopped before it reported a variant.
+// MiniMax C (11-06): no new form, no lower score; the masked level address is still loaded into EDX where retail reuses the dead bitmap register ESI.
+// MiniMax D (11-06): no new form, no lower score: the masked level address is still loaded into EDX where retail reuses the dead base register; this round the element type (long, int, unsigned int, void pointer, dword pointer), a copy of the bitmap in a local used for the load, a function-scope local for the address, a store through a dword pointer to the field, the mask as a complement, an unsigned literal or the operands reversed, and reorderings of the local declarations in the two branches all leave the same three instructions (3) or make the code worse (110, 44, 158, 100).
+// MiniMax S (11-05): no new form, no lower score: the frame, the reduction branch, the format bits and the two
+// stores all agree with retail; only the last three instructions differ, where the masked level address is loaded
+// into EDX and retail reuses the base register that dies with that load.
+// MiniMax H (11-05): no new form, no lower score; the three header stores reordered (lock before data) change
+// the code (5) and the masked level address is still loaded into EDX where retail reuses the dead base register.
 // MiniMax R (11-01, third round): no new form, no lower score. The masked level address is still
 // loaded into EDX where retail reuses the base register, which is dead after that load. This
 // round: a permuter run over the function (17 tries, annealed, full image and reduced image)

@@ -3,6 +3,8 @@
 #include "slot_handler.h"
 #include "object_default_placement.h"
 #include "unknown_293070.h"
+#include "normalize3d.h"
+#include "vector_products.h"
 #include <math.h>
 // @flags /O2 /arch:SSE /Gr
 
@@ -81,18 +83,6 @@ struct s_294384
     s_295600_state field_18;
 };
 
-PRIVATE __forceinline s_294384 *function_2943dd(s_slot_object_view *arg_0)
-{
-    return *(long *)((byte *)arg_0 + 0x134) == 1
-        ? (s_294384 *)((byte *)arg_0 + *(short *)((byte *)arg_0 + 0x13a)) : NULL;
-}
-PRIVATE __forceinline void function_2945bd(point3f const *arg_0,
-    point3f const *arg_1, vector3f *arg_2)
-{
-    arg_2->i = arg_1->x - arg_0->x;
-    arg_2->j = arg_1->y - arg_0->y;
-    arg_2->k = arg_1->z - arg_0->z;
-}
 PRIVATE __forceinline void function_294669(vector3f *arg_0, real arg_1,
     vector3f const *arg_2)
 {
@@ -100,16 +90,11 @@ PRIVATE __forceinline void function_294669(vector3f *arg_0, real arg_1,
     arg_0->j += arg_2->j * arg_1;
     arg_0->k += arg_2->k * arg_1;
 }
-PRIVATE __forceinline real function_294988(vector3f const *arg_0,
-    vector3f const *arg_1)
-{
-    return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_0->i * arg_1->i;
-}
 PRIVATE __forceinline void function_2949aa(s_294384 *arg_0, vector3f const *arg_1)
 {
-    if (function_294988(&arg_0->field_18.current, arg_1) < 0.0f)
+    if (dot3f(&arg_0->field_18.current, arg_1) < 0.0f)
         arg_0->field_18.current = *(vector3f *)g_468788;
-    if (function_294988(&arg_0->field_18.previous, arg_1) < 0.0f)
+    if (dot3f(&arg_0->field_18.previous, arg_1) < 0.0f)
         arg_0->field_18.previous = *(vector3f *)g_468788;
 }
 PRIVATE __forceinline void function_294b56(vector3f *arg_0, vector3f *arg_1,
@@ -121,27 +106,51 @@ PRIVATE __forceinline void function_294b56(vector3f *arg_0, vector3f *arg_1,
     *arg_2 += *arg_3;
 }
 
-PRIVATE __forceinline void function_2950bd(transform4x3f const *arg_0,
-    vector3f const *arg_1, vector3f *arg_2)
-{
-    real local_0 = arg_1->i;
-    real local_1 = arg_1->j;
-    real local_2 = arg_1->k;
-    arg_2->i = arg_0->up.i * local_2 + arg_0->left.i * local_1 + arg_0->forward.i * local_0;
-    arg_2->j = arg_0->up.j * local_2 + arg_0->left.j * local_1 + arg_0->forward.j * local_0;
-    arg_2->k = arg_0->up.k * local_2 + arg_0->left.k * local_1 + arg_0->forward.k * local_0;
-}
-PRIVATE __forceinline void function_295027(long arg_0, vector3f *arg_1)
-{
-    s_slot_object_view *local_0 = object_get(arg_0);
-    if (local_0->parent_index == NONE)
-        *arg_1 = local_0->forward;
-    else
-        function_2950bd(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node),
-            &local_0->forward, arg_1);
-}
+__forceinline void object_get_forward(long object_index, vector3f *forward);
 
-// score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
+// MiniMax H (11-06): no new form, no lower score; retail's dead store of zero to the speed vector's i
+// (0x29454d, one of three consecutive stores into the slots 0x88/0x8c/0x90) is still missing, and the value
+// retail reads at 0x294a1e for the 0x294050 argument list comes from the slot 0x84 after one push, not from
+// the stored one; in the scaled-centre block ours reloads the scalar into xmm0 where retail reuses the value it
+// already holds, so ours is one instruction longer there and every later slot offset stays off.
+// score 446 (was 523): entry and registers now retail's (first difference +0x72, masked aligned 25 lines; fast check 465 at 3712 bytes, full build 446). Left: retail's
+// dead store of zero to the speed vector's i (0x294552, overwritten at 0x294feb) is missing, 9 bytes, so the walk head gets
+// a pad and every later line is two off; the walk's position and offset vector take each other's homes (position at 0x94,
+// retail shares 0x20 with the post-walk vector); the character and shortest-distance slots are swapped (0x6c/0x74);
+// x-operand forms at five products and the scaled centre (retail loads y and z first). The dead store stays gone in every
+// plain-field form tried (compile-only, stores counted; vector3f_assign in the real build too): chain 7 of 8, vector3f_assign 7, vector3f_scale by zero 7, pointer
+// or reference at either store 7, array index 7, memcpy at init/final copy 7, dead reads 7, 256
+// extra locals 7, the later store through a cast/index/assign/memcpy 7 or fewer; a struct with unused extra members 7. Round 64 forms, real build (fast
+// control 465, plain 446): temp vector for the two-arm copy 713 (3716 bytes); the walk with `while (next != NONE)` and the
+// step inside 768 (3717 bytes, worse); the maximum as a ternary or if/else 591 (3709 bytes); object_get_forward 922
+// (stays out of line, 3517 bytes); vector3f_assign for the zeros 706 (plain, 3719 bytes); offset or position
+// declared at the walk's block or at function scope and the post-walk vector declared early, same code in all
+// combinations (scopes don't move homes under LTCG); component-wise closest-point copy 743; the sum through vector3f_add
+// 728; vector3f_add_scaled for the walk's terms 720/720/720; for every add 714 (3716 bytes); the reciprocal passed
+// straight to vector3f_scale 463 fast (3716 bytes); scaling into a separate point 465 fast; a private pointer helper with
+// either x operand order, same code; named y and z before the block 664; the sum copied first 741; the centre by named
+// components 657; a chain of k identity pointers at the centre 714/721/731/466/449/720/463/465 (period 8, not kept).
+// Lead, not kept (a struct that groups locals counts only with a match): the speed vector, the walk's offset and the value passed to 0x294050 as one
+// three-member local struct bring the dead store and the position's shared home back together: plain 274 at 3717 bytes, masked 29, frame 0xc0
+// (a struct over 16 bytes joins the request record's slot; retail keeps 0xdc). The store survives only in an aggregate over 16 bytes: speed + offset (24
+// bytes) 294 fast, frame 0xc4; speed + that value (16 bytes) 733, store still gone. Offset + that value (16 bytes) 725 fast at 3716, frame 0xdc and the
+// position's home right; one-member wrappers 465 (no effect); the speed vector or offset as real[3] 720/463; array + pair 478. So both puzzles are aggregate
+// membership and size, not scopes or names: find the real record over 16 bytes that holds the speed vector and still leaves frame 0xdc.
+// Earlier first line: score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
+// MiniMax B (11-04): no new form, no lower score.
+// Statement walk against retail (f1B, 2026-11-05; every block from 0x294380 to the ret at 0x295201): no behaviour difference
+// found. Entry (pool +0x44 with 40-byte records, definition +0x84 via the record's short at +2, object table +0x44, flock
+// member = +0x13a when the +0x134 state is 1, parent at +0x14 tested against -1 then the member), the walk (head-tested
+// iterator, self skipped by datum pointer, cos(+0x50) test on the normalised offset dot forward, +0x34/dist/zero tests,
+// +0x40/+0x38/+0x44 terms into the +0x54 and +0x60 vectors, position sum, nearest else-arm with the 3.4e38 start), the
+// 0x295600/0x293d30/0x294050/0x0b75a0/0x0b9fc0 calls (argument order and register/stack split read from the push sequence),
+// the five 3.0 clamps (0x294814 and the four 0x294b56 inlines), the +0x5c/+0x60/+0x64 centre block (its scaled centre is not stored back in retail, dead in ours too), the
+// +0x58/+0x34*0.5 blend, the waypoint block (+0x14/+0x18, 16-byte records, radius defaulting to 1.0), the maximum with
+// local_18, the 0.7 (0x45dd1c) hysteresis on +0xd, the inlined forward getter and the 0x30-byte request copy to +0x13c all
+// agree with the source, and the constants (0.5, 1.0, 3.0, 0.7, 3.4e38) read from the XBE agree. A multiset comparison of
+// instruction text (registers kept) leaves only: the walk's two vector homes (0x94/0x20 swapped), the 0x6c/0x74 pair, x-operand
+// order at five products, the missing dead store, and ESI/ECX choices; nothing is a logic, offset or condition difference.
+// Earlier first line, after MiniMax B: score 523 (was 523): Frame 0xdc agrees; early ESI ownership and neighbor/steering homes differ.
 // Earlier score 523 (was 581): frame 0xdc agrees; since round 67 the neighbour walk is the shared inline member
 // step (retail's head-tested loop) and 0x118fe0 stays out of line as in retail. Left: retail keeps the
 // walk's position at 0x20 sharing its slot with the post-walk vector (ours shares the offset vector,
@@ -161,18 +170,37 @@ PRIVATE __forceinline void function_295027(long arg_0, vector3f *arg_1)
 // all seven nonempty combinations, then alternate complete home ranking 521/521/521/521/521/521/521/521.
 // Reduced preview is 521/3707 versus full 523/3706; every trial ties that preview.
 // Original body and helpers restored; Frame 0xdc agrees; early ESI ownership and neighbor/steering homes remain.
+// Round 65 (m3 lane 14, fast, control 465): the private copy of the forward getter replaced by the existing object_get_forward with a
+// `__forceinline` declaration here 465 (same code, kept; plain 446); the speed vector as a local union with a real[3] 465 (vector3f is
+// already a union); the three-member struct re-measured 293 (3718, frame 0xc0, store back, masked 39); with the request declared first 293;
+// with the value read after the request's init 374 (3734, frame still 0xc0: the struct overlaps the request even then); with the request's
+// +0xc copy after the +0x24 call 293.
+// Permuter, 30 minutes (11-06): full image 348 from 442, only with a flag set inside a test and a temporary pointer.
+// Lead: the pointer alone (`vector3f *tmp0 = &local_19;` passed to vector3f_scale) gives 400 fast from 465, at the
+// same size and frame and without the dead store at 0x294552; the same form's declaration moves and statement orders
+// give 453 without it. How local_19 reaches vector3f_scale sways the whole function's registers, so vector3f_scale's
+// own form may be the place to look. Not kept (an alias with no other use).
+// Round 135 (m3 lane 7, plain checks with 0x293b30, which stays matched; masked aligned difference 70 lines on 446):
+// the object pointer and the nearest distance renamed (object / shortest_distance, the object sorting first) 446, same
+// homes (names do not order these slots); the walk position declared as a vector3f (casts at its three uses) 446, it still
+// takes 0x94; the nearest distance declared first (constant initializer) 516 (scheduling from +0xf, homes unchanged); the
+// centre scaled through the existing scale_particle_vector_2b (retail's s*x, y*s, z*s operand pattern) 446, same code (the
+// operand order canonicalises; retail's early y/z loads are scheduling). Lead, not kept (a gain of 4): the request's speed
+// vector stored before its forward vector 442 (aligned 68: the tail stores then interleave exactly as retail); with that, the
+// nearest fallback's add through vector3f_add_scaled 442 (same code). Matched callees 0x293d30/0x294050/0x295600 take (direction, strength)
+// as separate pointers, so no real record for the speed/offset aggregate exists among them.
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
     s_294380 *local_0 = &((s_294380 *)g_51ecb4->data)[arg_0 & 0xffff];
     s_294382 *local_1 = &((s_294383 *)g_4e0350)->field_354[local_0->field_2];
     s_slot_object_view *local_2 = object_get(arg_1);
-    s_294384 *local_3 = function_2943dd(local_2);
+    s_294384 *local_3 = (s_294384 *)flock_object_get_member((s_flock_object *)local_2);
     if (local_2->parent_index != NONE || !local_3) return;
     point3f local_4;
     real local_5 = 0.0f;
     /* arg_1 reread from its stack slot: keeps arg_0 arriving in eax, as retail */
-    function_b9dd0(*(long const volatile *)&arg_1, &local_4);
+    function_b9dd0(arg_1, &local_4);
     vector3f local_6 = *g_4687a4;
     bool local_7 = !TEST_FIELD_BIT((*(dword *)(g_4e3b44[local_2->tag_index & 0xffff].bytes + 0xd4) >> 4) & 1);
     real local_8 = local_1->field_34 * 0.5f;
@@ -180,17 +208,17 @@ void function_294380(long arg_0, long arg_1)
     real local_10 = 3.402823466e38f;
     point3f local_11;
     real local_12 = local_1->field_54;
+    short local_15 = 0;
     vector3f local_13 = *g_4687a4;
     vector3f local_14 = *g_4687a4;
-    short local_15 = 0;
     real local_16 = 0.0f;
     real local_17 = 0.0f;
     real local_18 = 0.0f;
     vector3f local_19;
-    local_19.i = local_2->forward.i * local_1->field_3c;
-    local_19.j = local_2->forward.j * local_1->field_3c;
-    local_19.k = local_2->forward.k * local_1->field_3c;
-    local_6.i = local_6.j = local_6.k = 0.0f;
+    vector3f_scale(&local_2->forward, local_1->field_3c, &local_19);
+    local_6.i = 0.0f;
+    local_6.j = 0.0f;
+    local_6.k = 0.0f;
     if (local_1->field_34 > 0.0f)
     {
         s_flock_member_iterator local_20;
@@ -204,9 +232,9 @@ void function_294380(long arg_0, long arg_1)
             point3f local_24;
             function_b9dd0(local_20.object_index, &local_24);
             vector3f local_25;
-            function_2945bd(&local_4, &local_24, &local_25);
+            vector3d_from_points3d(&local_4, &local_24, &local_25);
             real local_26 = function_30bf0(&local_25);
-            if (function_294988(&local_25, &local_2->forward) > (real)cos(local_1->field_50))
+            if (dot3f(&local_25, &local_2->forward) > (real)cos(local_1->field_50))
             {
                 if (local_1->field_34 > local_26 && local_26 > 0.0f)
                 {
@@ -250,9 +278,7 @@ void function_294380(long arg_0, long arg_1)
     }
     else
     {
-        local_19.i += local_30.i;
-        local_19.j += local_30.j;
-        local_19.k += local_30.k;
+        vector3f_add(&local_30, &local_19, &local_19);
     }
     bool local_32 = false;
     function_293d30((s_scenario_flock *)local_1, &local_4, &local_31, &local_30, local_7, &local_32);
@@ -283,9 +309,8 @@ void function_294380(long arg_0, long arg_1)
                     real local_33 = 3.0f - local_5;
                     local_16 = local_1->field_5c * local_33;
                     real local_34 = 1.0f / local_15;
-                    local_30.i = local_9.x * local_34 - local_4.x;
-                    local_30.j = local_9.y * local_34 - local_4.y;
-                    local_30.k = local_9.z * local_34 - local_4.z;
+                    vector3f_scale((vector3f *)&local_9, local_34, (vector3f *)&local_9);
+                    vector3d_from_points3d(&local_4, &local_9, &local_30);
                     real local_35 = function_30bf0(&local_30);
                     if (local_35 > local_1->field_60)
                     {
@@ -302,7 +327,7 @@ void function_294380(long arg_0, long arg_1)
     }
     else if (3.402823466e38f > local_10)
     {
-        function_2945bd(&local_4, &local_11, &local_30);
+        vector3d_from_points3d(&local_4, &local_11, &local_30);
         function_30bf0(&local_30);
         function_294669(&local_19, local_1->field_5c, &local_30);
         local_12 = local_1->field_58;
@@ -311,11 +336,12 @@ void function_294380(long arg_0, long arg_1)
     if (local_3->field_4 >= 0 && local_3->field_4 < local_1->field_14)
     {
         s_294381 *local_36 = &local_1->field_18[local_3->field_4];
-        function_2945bd(&local_4, &local_36->field_0, &local_30);
+        vector3d_from_points3d(&local_4, &local_36->field_0, &local_30);
         real local_37 = function_30bf0(&local_30);
         if (local_37 > 0.0f)
         {
-            real local_38 = local_36->field_c > 0.0f ? local_36->field_c : 1.0f;
+            real local_38 = 1.0f;
+            if (local_36->field_c > 0.0f) local_38 = local_36->field_c;
             if (local_38 > local_37) local_3->field_c = true;
             else
             {
@@ -335,7 +361,7 @@ void function_294380(long arg_0, long arg_1)
     else
     {
         local_6 = *g_4687a4;
-        function_295027(arg_1, &local_19);
+        object_get_forward(arg_1, &local_19);
         local_3->field_d = false;
     }
     s_orientation_request_118f90 local_39;

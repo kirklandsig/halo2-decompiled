@@ -92,6 +92,15 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax B (11-06): no new form, no lower score; retail loads the object table after the prologue pushes
+// and keeps the unit index in EDI, the unit in EBP and NONE in EBX, this build loads the table before the
+// pushes and keeps them in ESI, EDI and EBP; the user index is a 32-bit value in EBX in retail, a 16-bit
+// store in BP here.
+// MiniMax C (11-06): no new form, no lower score; the unit pointer is still fetched once and merged across the two 0xbadc0 calls where retail re-reads the table base (blocked by 0xbadc0's memory summary in src/unknown_0bad50.cpp).
+// MiniMax G (11-06): no new form, no lower score; still blocked by 0xbadc0, whose body is in a file
+// outside this lane: retail re-fetches the unit after the two calls (the index times twelve kept in esi)
+// where ours reuses the entry fetch, because our link knows the callee writes no memory, so every later
+// register home shifts. The frameless entry and the carriers stand as they are.
 // MiniMax H (11-04): no new form, no lower score; retail re-fetches the unit after the two 0xbadc0 calls (the index times twelve kept in esi) where ours reuses the entry fetch, and 0xbadc0's memory effects are unknown, so the frameless entry and the carriers stand as they are.
 // score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
 // Earlier 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail re-fetches the unit after
@@ -223,6 +232,24 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // player/sound early returns 116/113; all three early 102; weapon flag if/else 114; default-first
 // sound 107; forceinline current-weapon helper 110. NOT kept: 97 combines edits whose parts alone
 // do not both gain, without a byte match; original producers, sound control and ordinal restored.
+// Round 55 (m3 lane 15; fast, and a one-file LTCG harness with the ballast object and the files of 0xbadc0, 0x100f70, 0x1896c0, exact at 107/362 bytes):
+// on the plain 0xbadc0, in the real build: long user index with the flag declared after the weapon flag, weapon flag written `== NONE ? false : call`, sound helper
+// with an early return 128 (348 bytes); the same with the ternary as it stands 127; that helper alone 110 (359); the long index and late flag with the `== NONE`
+// ternary alone 126 (350); the helper as one conditional expression 110 (359); the `== NONE` ternary and early-return helper 111 (359). In the harness only, with
+// a scratch 0xbadc0 holding `long probe_local; long *probe_pointer = &probe_local; *probe_pointer = 0;` (a pointer to a whole local, a banned form, so not kept and
+// not in src): the current body 134, the long index and late flag 47, plus the `== NONE` ternary 42, plus the early-return helper or the one-expression
+// helper 2 at retail's 376 bytes (left: the 0x100f70 argument register and the harness's jump address); the else-arm helper 32, the sound index as one ternary
+// 42. A store in this function instead 129 (folded before CSE). So the blocker is only 0xbadc0's memory summary, BLOCKED-BY 0xbadc0.
+// M3 lane 4 r170 (fast; 0x103b10 matched each time): the existing out-of-line 0x14de90 for the player index 107; the existing
+// 0xcbd50 for the weapon lookup 107; both 107; `__assume(unit != NULL)` after the first fetch 107; both helpers and the assume 107
+// (identical code: the second unit fetch stays merged into the entry fetch). Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp).
+// M399: Immutable existing unit pointer/weapon handle/query result, seven nonempty subsets 107 each;
+// all with existing slot-helper read-only unit input 107. NOT kept: every form ties; original entire file restored.
+// Frameless entry, merged post-query unit fetch and late prior-state home remain.
+// M401: Ordinary private player/slot/sound producers, subsets 1/2/3/4/5/6/7,
+// then ordinary slot/sound with forced player expansion: 107/107/107/162/162/162/162/162.
+// NOT kept: ties or shorter nonnative expansion; original producers and body restored.
+// Frameless entry, post-query unit fetch and late prior-state carrier remain.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

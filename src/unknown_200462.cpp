@@ -145,6 +145,14 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // height helpers 85 (846 bytes); the delay's seconds through a force-inline ticks helper 14 (same code); the corners through a force-inline
 // (quad, x, y, half width, half height) helper or a (quad, center pointer, ...) helper 14/14 (same code); the two x steps through a force-inline
 // (position, half width, pulse) helper 14 (same code); named advance with/without the bounds-record pointer 53/55.
+// Round 92 (m3 lane 12, fast): any `__assume` anywhere (float bounds on the pulse, half extents, x, y or a named advance; integer and pointer
+// forms) 73 at 848 bytes, with the bounds-record pointer 71: the first loop's base moves and XMM3/XMM4 stay. Named first advance with a raw final
+// product, before/after the half height 14/14; half height after the first x step 20, with the bounds-record pointer 18 (the advance takes XMM3, the
+// order is lost); named advance before that step 20; a copy of the half height 14; the final product named after the first draw setup 14.
+// Round 96 (m3 lane 12, fast, all on the bounds-record pointer, re-measured 12): both x steps as `x = x + product` 12; named advance
+// used by both steps 53 (the draw block reschedules and the pulse query moves); the 0.5 factor as a named const 12; the default
+// rectangle declared before the bitmap index 12. The advance product still takes XMM4 and the half-height copy XMM3. Without the
+// pointer: the converted width/height first in each half extent 14 (same code).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

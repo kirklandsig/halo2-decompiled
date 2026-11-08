@@ -888,6 +888,22 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax A (11-06): no new form, no lower score; the whole difference is the colouring of the two values
+// the callee 0xac050 takes: retail loads the selected identity pointer into EAX and the requested rank
+// into ECX, ours keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the
+// call, which also costs two bytes and shifts every later jump; the trial of a local copy of the rank
+// (`long requested = rank;` used in the four places of the block) compiles to exactly the same bytes, so
+// the copy is propagated and the parameter stays promoted.
+// MiniMax A (11-06): no new form, no lower score; retail loads the selected identity pointer into EAX and the
+// requested rank into ECX, ours keeps the pointer in ECX and the rank in EAX and inserts a copy before the
+// removal call; the rank's store is what gives the rank EAX, and dropping that store or storing a constant
+// instead changes the behaviour.
+// MiniMax H (11-06): no new form, no lower score; the whole difference is still the register colouring of the
+// two values the matched callee 0xac050 takes: retail loads the selected identity pointer into eax and the
+// requested rank into ecx so the callee needs no copy, ours keeps the pointer in ecx and the rank in eax and
+// inserts a move before the call, which shifts every later jump; removing the rank's store and storing a
+// constant instead gain one point each, below the eight-point gate.
+// MiniMax D (run 46): no new form, no lower score.
 // score 90 (was 90): the difference is purely the register colouring of the two
 // values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
 // eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
@@ -1101,11 +1117,38 @@ bool __stdcall function_2399da(long controller_index)
 // B425: Complementary member/permission states singly/both as bool and byte, then
 // both short/long: 93/122/124/93/122/124/166/155. NOT kept: no exact match; original flags and body
 // restored. Selected identity/rank homes and the extra removal move remain.
+// M3 lane 4 r165 (fast with 0xac050/0xac360/0x2399da; 90/a12/434 B each, same code): const references bound to temporaries (the form that matched
+// 0x45560) on the identity (getter result), the requested rank (`(long)` conversion), own rank (`(long)` conversion), all seven subsets;
+// the requested rank bound straight to the parameter; the permission test and the identity test as `bool const &` values. Colouring
+// model: the rank value and the identity tie on four uses, the deref temp shares the rank's register, so retail colours the identity first.
 // Round 211 (m3 lane 3, fast with 0xac050/0xac360/0x2399da, aligned 12, register-blind 2): probes, all reverted: one or two
 // extra identity tests (real code) ahead of the dispatch 108/172 (441/452 bytes), one in the remove arm 105 (443 bytes): the
 // identity stays in ECX whatever its use count. `long requested = rank` at the dispatch 90, an identity local at the dispatch
 // or ahead of its test 90/90 (same code). No removal call 104 (417 bytes): the identity then loads into EAX as retail's, so
 // the rank's overlap with its long range is what gives the rank EAX, not a tie on uses.
+// Round 150 (m3 lane 6, harness exact at 90, aligned 13, masked 3): lead: the rank's store is what gives the rank EAX. The store removed
+// 94 (429 bytes, aligned 8, masked 5) or storing a constant 92 (aligned 10, masked 7) puts the identity in EAX as retail, with the rank then
+// read from memory; without the rank-3 test 157 or the over-rank test 120 the identity stays out of EAX. Retail also stores right before the
+// call, after the pushes. Store shapes: forceinline wrapper taking the rank 90, the rank first in it 90, inside the last or first argument 90/90,
+// before the rank-3 test 89, ahead of the dispatch 90, through argument pointers 90, through a properties pointer 90. Dead volatile global loads
+// at three places (a rotation test, diagnostic) keep the identity in ECX: no missing rotation step. 130 combinations (own rank local or field, identity
+// test spelling, permission spelling, task index preset, chain/over-rank first/nested dispatch, store order, nested or guard returns) 89-96 with no
+// identity in EAX.
+// Round 217 (m3 lane 3, fast with 0xac050/0xac360/0x2399da, base 90 at 434 B, masked aligned 5): a `team_xuid` pointer used by both the removal and the set-rank call 90; `have_member` as one direct comparison 90 (same code);
+// the copy arm nested as `if (!have_member) { if (!may_change) deny; copy }` 114 (433 B); the rank-3 test inverted with the set-rank call in its then arm 92; `if (task_index == NONE) return;` ahead of the progress call 90. Identity ECX/rank EAX and the removal move remain.
+// Round 152 (m3 lane 6, fast with 0xac050/0xac360/0x2399da): the rank stored before the rank-3 test (the test reading the
+// stored field) combined with `own_rank >= rank` 89, with the permission test as a named bool 89, with the task index preset
+// to NONE 89, with a removal-arm identity local 89, with own rank read ahead of the identity test 89: the identity stays in
+// ECX and the rank in EAX in every combination (a gain of 1, under the keep bar).
+// M397: Complete selection/member/membership output-buffer defaults, masks 1/2/4/3/5/6/7,
+// then all aggregate-initialized at entry: 174/158/123/193/196/181/212/234. NOT kept: added
+// stores and no exact or eligible gain; original buffers and full body restored.
+// DH381: Validated selected-pointer producers on original/dedicated results, eight forms
+// 159/163/163/159/97/98/98/97; native-register completion follow-ups 97/97/90/90.
+// NOT kept: extra null-result/re-test or original rank conflict; original complete body restored.
+// N396: Signed eight-byte requested/own/task residency, seven subsets then late requested producer:
+// 198/195/243/126/208/207/253/198. NOT kept: native narrow domains and extent regress;
+// original body restored, selected identity/rank registers and extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

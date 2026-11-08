@@ -94,6 +94,17 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax B (11-06) round 2: no new form, no lower score (211); the uv set declared before the
+// tint, the two uv sets declared one on each side of the tint and the tint declared at the top
+// of the function all give the same code (211), so the tint's home cannot be moved that way: ours
+// keeps the tint at +0x60 and the second uv set's bounds at +0x50 where retail has the tint at
+// +0x50 and those bounds at +0x60; the body is unchanged.
+// MiniMax B (11-06): no new form, no lower score (211); the tint's home stays exchanged with the
+// second UV set (ours +0x60/+0x50, retail +0x50/+0x60), and the blend's XMM5 residence, the
+// extents, the reciprocals and the aspect homes all follow from that swap; hoisting the two UV
+// declarations above the tint, swapping them, computing the packed colour after them, taking
+// the clamp pointer from the whole tint and putting the tint in an inner block all give the
+// same code or a worse score (236).
 // MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
 // score 211 (was 223): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
@@ -409,6 +420,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // M375: Native secondary encoded-UV library transfers, object/array/bounds/encoder-result,
 // memcpy then memmove: 211/211/211/211/366/366/366/366. NOT kept: no byte match or native home repair;
 // original whole callback, encoder result contract and all alias-safe input captures restored.
+// DL264: Matched scalar/RGB property producer inline/forced contracts,
+// independent and complete pairs: 211/211/211/1257/742/1257/742/1541.
+// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
 // AC533: Requested-sequence clamp result, conditional/complete/lower-default/upper-default,
 // original/positive-produced count: 218/218/288/218/223/223/288/223. NOT kept: all regress;
 // tint/secondary-UV homes and blend join remain. Original whole body restored.
@@ -427,6 +441,20 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // N373: Actual tint/input RGB subobject pointer/reference ownership, eight ordered forms
 // 211/211/211/211/211/211/211/211. NOT kept: no equality; original complete color object, callback,
 // clamp, input observations and alias-safe UV captures restored. Tint/secondary-UV homes remain.
+// DH374: Paired primary/secondary aspect outcomes, positive/complementary bool/byte/short/long:
+// 211/211/211/211/211/211/211/211 (fast control 211; full 211).
+// NOT kept: no byte match or eligible gain. Original direct aspect decisions, all interpolation trees, alias-
+// safe UV captures and complete callback restored; tint/secondary-UV homes and persistent blend remain.
+// AC560: Selected-sequence availability at its original guard, positive/complementary
+// bool/byte/short/long: 211/211/211/211/211/211/211/211. NOT kept: one-use outcomes do not match; original
+// callback and alias-safe UV captures restored. Tint/secondary-UV and blend homes remain.
+// Round 91 (m3 lane 9, fast): the tint renamed to sort first or last 211/211, the second UV set renamed 211 and
+// the tint declared after the UV sets at the top 211 (same code: the tint/second-UV homes ignore names and
+// declaration order; diagnostics adding tint or second-UV reads do not move them either); the first set's
+// extents and reciprocals before the second's 211, the second set's y extent first 211 (same code);
+// remaining_blend named before the first aspect test 258 (1972 bytes); the inverse sums as one expression each
+// 319 (1957 bytes, the frame moves). Retail keeps the blend in XMM5 from the frame block through a join that
+// reloads it on the other paths (+0x46f..+0x47c), so its aspect block holds ax/ay/bx/by/1/bx/1/by in registers.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
