@@ -610,7 +610,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // in a slot of its own at +0x3c where ours keeps the vertex pointer. Declaring v before the u step,
 // with retail's statement order kept, and moving the state width out of the inner scope both give
 // the same code and the same 250.
-// score 265 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// Earlier (265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Earlier: Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
 // dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing
 // normalize2d_fast, and case 0's second point takes XMM0-2 as retail; the first point's z/x/y and the half width take
@@ -923,6 +923,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // scaling, an offset vector); then case 0 differs only by retail's first.y spill and two movaps, but the frame drops to 0xa4 and the
 // positional score rises to 410-435 (masked aligned 30 -> 47). About 1,500 harness forms over case 0/1-2/4 statement orders, offset
 // forms, length orders and case 0's normal block: best positional 245, best aligned 90; no frame 0xac without the rejected u/v vector.
+// T64: Texture-word/current-state-dword/state-array input owners, singles/pairs/all and
+// all with readonly state/endpoints: eight 250s. NOT kept: native flag/receiver observations
+// canonicalize without the extra frame slot or first-edge Y/half-width homes; full body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
