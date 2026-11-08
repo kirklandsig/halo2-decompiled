@@ -194,6 +194,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // P368: On the sole-result graph, interval/rate/window home identities, seven subsets,
 // then all with the elapsed-tick home named: 356/356/356/356/356/356/356/356. NOT kept:
 // no native home recovery or byte match; original names and complete body restored.
+// P370: Complete host-first/callback-first rate producers, branch/expression, independently or
+// jointly selected limits: 422/422/417/417/422/422/417/417 at 1384/1380 bytes. NOT kept: all
+// regress and grow from native length; original rate, limits and complete body restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

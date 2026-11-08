@@ -5665,6 +5665,9 @@ void __stdcall function_d6bc0(long object_index);
 // signed-byte/short/word 98/97/97; conditional long/byte/short/word 98/98/98/82. Keep only
 // original-long branch scope: no default XOR, native ECX dispatch, frame 0x18 and 869-byte length.
 // Zero-kind comparison order, initial stores, cached index/case test and removal reload remain.
+// P370: Complete zero-first modifier with one shared dispatch, branch/conditional producer,
+// signed-byte/short/int/long kind: 77/86/82/82/77/86/82/82. NOT kept: all regress and
+// grow beyond native 869 bytes; original admitted-scope modifier and complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

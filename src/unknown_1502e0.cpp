@@ -2286,6 +2286,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // then complete graph with transferred-weapon getter: 120/209/120/209/120/209/209/209.
 // NOT kept: no native ingress/extent recovery; final header forms shrink away to 714/721 bytes.
 // Original getters, ordinal, every call and complete body restored.
+// P370: Existing actual player/object getters, eight paired force-inline/automatic-inline
+// contracts: 120 each, 723/721 bytes, first +0x27. NOT kept: no ingress/extent recovery;
+// original annotations, helper bodies and complete target restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

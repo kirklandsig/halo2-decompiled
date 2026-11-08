@@ -2139,6 +2139,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // P367: Independent live approach/facing/acceptance scalar-home identities, seven
 // subsets and complete threshold identity: eight 168s. NOT kept: no native SIMD
 // or player-iterator home equality; complete original body and names restored.
+// P370: Uniform k/j-pair, i-term and complete accumulation boundaries in all three dots,
+// masks 1..7 and immutable complete parts: 168/174/168/168/168/168/168/168. NOT kept:
+// no SIMD/iterator recovery or byte match; original expressions and complete body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
