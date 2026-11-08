@@ -1245,6 +1245,10 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // an explicit success goto 19; a computed active value with the result before its store 19 (NOT kept: one-use
 // local, no match); direct success return true/result 264/264 (948 B); an addressed result read 19 (same code);
 // a one-iteration do/break scope 646 (1266 B, frame 0x84). Original body restored.
+// Round 359: byte result 152; signed-byte result 152; short result 285; long result 285; read-
+// only request 19; marker field at each use 19; separate object and weapon rejections 19; seat
+// eligibility assigned directly 203. NOT kept: no qualifying byte match or gain; original body
+// restored.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -1816,6 +1820,10 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // force-inlined switch-finished action 82.
 // Round 187: a function-top pool local (`s_record_pool *objects = g_4e0300;`) for the lookup 11 (same
 // entry order); with a unit pointer from it 90.
+// Round 359: read-only actions 11; byte selector 76; signed-byte selector 76; short selector 97;
+// opposite hand decision 76; primary set from equality 87; signed action displacement 90; full-
+// width active result after primary 11. NOT kept: no qualifying byte match or gain; original
+// body restored.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -5070,6 +5078,10 @@ void function_edfa0(long unit_index, point2f const *facing)
 // Round 143: y saved after the x store / a scaled-y local / mixed union array-field accesses 13 each;
 // magnitude2d with manual scaling 13; both product locals 13; a length-squared local 13; scalar entry
 // x/y 13; a scaled point copy 31 (NOT kept: frame 0x10 versus 0xc and a one-use aggregate). Restored.
+// Round 359: short-vector rejection return 13; positive admission before scaling 17; combined
+// complete admission 17; staged squared-length sum 13; read-only length 13; read-only inverse
+// 13; existing ordinary normalizer 108; positive-first nested admission 21. NOT kept: no
+// qualifying byte match or gain; original body restored.
 // @retail 0xedff0
 void function_edff0(long unit_index)
 {
