@@ -106,6 +106,12 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // path as `(const char *)&local + 0x44` 10; `succeeded` as byte 10 (0x2161d0 18, lost); `state` as dword 10; `progress` through a long
 // field 10. `done` as byte or char does not compile (the async call takes bool *). Retail evidence: 0x121570's third append reloads with
 // `lea esi` only after a real join, while its second keeps ESI, so retail's `lea edx` needs a join these forms fold away.
+// Round 95 (m3 lane 16, fast): the record's two clears as its constructor (retail's location record type has that
+// constructor) 10; task stores done/state/succeeded/progress 12, done/succeeded/progress/state 12, done/progress/succeeded/state 13
+// (the stores keep source order, `pop esi` is always hoisted); the shared location type re-measured 10. Diagnostics: the path in
+// its own two-field local 10; a `_ReadWriteBarrier()` between the build and the read 10 (the reuse is register tracking, not a memory
+// CSE: what unifies the inlined helper's path register with the read's address is still open); the cached index as `short` 117
+// (309 bytes).
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {
