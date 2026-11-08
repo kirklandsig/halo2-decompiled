@@ -609,6 +609,9 @@ real function_30bf0(vector3f *vector);
 // home identities, seven subsets and complete squared-distance identity: eight 84.
 // NOT kept: identical code; original body restored. Native scalar homes, range ingress
 // and the two cross-product operand schedules remain.
+// T69: Actual range-entry byte-mask/byte-bitfield receiver, mutable/readonly settings,
+// each with mutable/readonly actor input: eight 84 on the native SIMD/indexed-seat graph.
+// NOT kept: no native range ingress or scalar-home recovery; original types and full body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
