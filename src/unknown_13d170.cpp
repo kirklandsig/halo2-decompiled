@@ -475,6 +475,9 @@ struct s_physical_block_iterator
 // P367: Case-zero repeated candidate/best timestamp values, singly and in both
 // declaration orders, mutable/const: eight 209s. NOT kept: no native policy
 // placement or result equality; original field observations and body restored.
+// P369: Actual candidate-age/selected-age/replacement-result identities, subsets 1/2/4/3/5/6/7 and immutable ages:
+// eight 209. NOT kept: no native clamp-register or policy-placement repair; original whole body restored, frame
+// 0x1054 retained.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

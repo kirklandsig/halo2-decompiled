@@ -1619,6 +1619,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // material/airborne/animation homes remain.
 // Behaviour fix (11-08, from P366's finding): retail 0xdd022..0xdd03f passes the case-6 target position as
 // 0x1e6850's first point (stack, stored to +0xc0) and the velocity as its second (ECX, +0xcc); ours had them swapped.
+// P369: Existing settings-record member read, ordinary/forced inline, const/mutable receiver and value/reference
+// return: 464/588/464/588 twice. Value results recover frame 0xfc but grow to 2832/2828; references retain frame
+// 0xf8. NOT kept: unmatched single-caller helper and nonnative extent; complete original header/body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {

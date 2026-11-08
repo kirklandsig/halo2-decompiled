@@ -618,6 +618,9 @@ real function_30bf0(vector3f *vector);
 // plus radius-failure exits 356. NOT kept: all regress and several shorten away from native; original long
 // result, call tuples and complete body restored. Result/range/projection homes and both cross-product
 // schedules remain.
+// P369: Complete native delta/clipped-point aggregate and existing plane-normal CRT transfer boundaries, masks
+// 1/2/4/3/5/6/7, then immutable clipped point: eight 84. NOT kept: no scalar-home, range-ingress or product repair;
+// original motion helper, native copies and full body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

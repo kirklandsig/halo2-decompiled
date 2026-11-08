@@ -546,6 +546,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // beside `up` 65.
 // P360: Existing default selector complete valid/invalid comparison result in bool/byte/short/long: 61/61/61/61/61/61/61/61.
 // NOT kept: no exact native source recovery; original complete body restored; early physics spill, transform-base production, dot/cross schedule and failure tail remain.
+// P369: Actual rotation-subobject pointer/reference ownership before validity, inverse workspace, after inverse and
+// after composition: 124/55/54/48 twice. NOT kept: no exact native axis/dot shape; late subobject bases still feed
+// derived axis addresses. Original whole body restored; frame 0x48, definition spill and failure tail remain. Early
+// pointer/reference forms lose 0xb7060 (0 -> 11); all restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

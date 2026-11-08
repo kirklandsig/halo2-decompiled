@@ -2983,6 +2983,10 @@ real g_47ff30 = 2.5f;
 // shares native-distinct query/axis homes; other leads miss the gain gate.
 // Actual query-scope ending on this graph 699. Original three transforms,
 // independent outputs, common torque scale and complete body restored.
+// P369: Coherent mass-field reads at every use 696, native frame 0xfc and 3244 bytes, first +0x66; NOT kept: gain
+// three. Existing full force/torque/normalization scale boundaries, masks 1/2/4/3/5/6/7 and nested torque output:
+// 699/699/699/699/699/699/699/701. Coherent mass with force/torque/both scale calls 709/709/719; response/query/all
+// axis-output identities each 696. All restored; original 699, frame 0x100 and 3229 bytes retained.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
