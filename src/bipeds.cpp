@@ -3245,6 +3245,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // producers: 535/535/535/535; each with mass query before the position lookup 576/576/576/576.
 // NOT kept: four-point leads miss the margin; reordered forms regress. Original complete body,
 // numeric trees, bounds, state/fallback values and call tuples restored; frame/result homes remain.
+// P374: Plain pretested mass/farthest/push scans, seven subsets then independent ordinals:
+// 539/539/539/539/539/539/539/539. NOT kept: no gain; original complete for-loop body restored.
+// Native frame/result-byte and point/scalar homes remain; all bounds and input values preserved.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3999,6 +4002,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // P363: Current scalar-input pivot rows through two-term/first-term/projection/complete accumulators,
 // ordinary then forced inline: 354/353/354/353/354/353/354/353. NOT kept: one-point leads
 // miss the margin and native matrix/origin homes; original helper and complete body restored.
+// P374: Complete parallel impact products, placement shifts and root-origin shifts,
+// seven subsets then immutable full expression parts: 354/354/354/354/354/354/354/354. NOT kept: no gain;
+// original complete body restored; matrix/origin/distance homes remain displaced.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4826,6 +4832,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // final nonzero-length return 79; both input snapshots through memcpy 79.
 // NOT kept: memmove fallback gains only six; transfer/allocation forms miss equality.
 // Original complete body restored; first rotation i operands and final cross j reload remain.
+// P374: Independent angular memmove/setter/aggregate/memcpy producers on the shared rotation graph,
+// then complete rotation scopes: 204/239/217/79/146/212/225/130. NOT kept: no exact input/lifetime repair;
+// original complete body restored, native frame and first rotation operand gap preserved.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
