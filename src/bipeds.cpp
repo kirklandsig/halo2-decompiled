@@ -1609,6 +1609,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // without the accessor 608 (plain); the grab header declared at its assignment 588; the spread call inline in its
 // product 588; the walking globals pointer read at its use 566 (2816 bytes: the pre-call load retail has is lost,
 // aligned 308 -> 313, not kept); `turning` written inline in the call 588.
+// P364: Existing moved result owned by the contact-query return before its branch,
+// bool/char/signed-char/byte/short/word/long/dword: 589/589/589/589/588/588/583/583.
+// NOT kept: best gains five; native success publication follows distance calculation.
+// Original whole body restored; frame 0xf8 versus 0xfc and scalar/argument homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -5767,6 +5771,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // DH354: Native branch-produced early still, original direct exits and entry-bit graph;
 // bool/char/signed-char/byte/short/word/int/long: 660/667/667/667/674/674/677/677. NOT kept: no match.
 // Body restored; truth-byte, tag/state/animation homes and completion expansion remain.
+// P364: Existing flag-test producer at entry/tag/crouch/grab/movement/body/sleep/complete
+// consumer boundaries: 594/594/594/594/594/594/594/594. NOT kept: no native frame/home repair or exact
+// equality; fast control 594, full 588. Original whole body and shared helper restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

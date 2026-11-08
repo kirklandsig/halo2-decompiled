@@ -2974,6 +2974,9 @@ real g_47ff30 = 2.5f;
 // and the existing in-place scale, no extra vector or one-use scale local. Retail 0xf2f4c..0xf2f83
 // finishes all three errors before applying their common gain; source trees and game calls agree.
 // Plain whole-program check confirms 699; all other measurements and baseline matches survive.
+// P364: Complete directional energy/mass producers, mutable/const immediate/phased
+// squares and four accumulator boundaries: 697/697/697/697/699/721/698/699. NOT kept: no native
+// frame/producer equality; best gains two. Original full body restored, including the retained torque scale.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

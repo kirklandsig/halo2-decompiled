@@ -611,6 +611,9 @@ real function_30bf0(vector3f *vector);
 // home identities, seven subsets and complete squared-distance identity: eight 84.
 // NOT kept: identical code; original body restored. Native scalar homes, range ingress
 // and the two cross-product operand schedules remain.
+// P364: Escaping plane-distance field/scalar accumulation boundaries, preserving
+// the original y+z+x tree: 96/154/150/86/154/96/84/84. NOT kept: native scalar homes/producer
+// equality absent; original complete body restored, shared helpers unchanged.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

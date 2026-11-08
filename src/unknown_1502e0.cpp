@@ -2273,6 +2273,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // final ordinal 255/255/255/255; real-header byte displacement 242/242/242/242.
 // NOT kept: extent-to-ordinal division survives, growing code to 755/750 against 721;
 // original body restored. Native header-offset, pool and parent ownership remain.
+// P364: Native header byte extent with the original handle passed to the existing
+// masked getter, long/const-long/dword/const-dword after/before the unit getter:
+// 209/209/209/209/119/119/119/119. NOT kept: the one-use extent lives across calls and requires
+// equality; best gains one and shortens away. Original ordinal, getters and whole body restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
