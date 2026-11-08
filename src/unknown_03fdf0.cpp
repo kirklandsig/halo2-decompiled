@@ -512,6 +512,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // first. first split from the chain (`first = previous; current = first;`) 158 (492 bytes); the entry test as an early continue 2;
 // the copy's source pointer named before the copy and stepped as the loop cursor 163 (490 bytes); selection declared ahead of
 // first 2; a named block index for the six block reads 55.
+// Round 72 (m3 lane 14, fast): material as one ternary at its declaration 76; material index and material declared
+// before weight and shape 104; shape, material, then weight 23; weight declared after the geometry call 32; material
+// reused for the chosen value 155 (481 bytes). Compile-only (no dead mode home, material in a register there) keeps first
+// and the cursor temporary in one slot for every loop-body, memcpy-source, type and scope spelling; only the explicit
+// cursor or explicit index (both start above the guard) split them. Re-measured: local renames 2.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
