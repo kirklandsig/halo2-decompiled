@@ -1622,6 +1622,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P369: Existing settings-record member read, ordinary/forced inline, const/mutable receiver and value/reference
 // return: 464/588/464/588 twice. Value results recover frame 0xfc but grow to 2832/2828; references retain frame
 // 0xf8. NOT kept: unmatched single-caller helper and nonnative extent; complete original header/body restored.
+// P371: Complete complementary movement outcome in bool/char/signed-char/byte/short/word/long/dword:
+// 585/585/585/585/590/590/588/588. NOT kept: best gains three, wider forms grow
+// to 2832/2828 bytes, and frame stays 0xf8/0xfc; original complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -5792,6 +5795,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // header/all graphs: eight fast 594s (control 594, full 588). Direct result initialization
 // after the name store, mutable/const on this entry graph: 651/651, 2301/2190 bytes. NOT kept:
 // neutral contracts or regressing result transfer; original target, header and providers restored.
+// P371: Complete complementary still-query result, bool/char/signed-char/byte/short/word/long/dword:
+// 685/685/685/685/685/685/677/677; fast control 594, full 588. NOT kept: no native truth-byte/home recovery;
+// all regress; original result, early/final returns and complete body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

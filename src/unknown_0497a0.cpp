@@ -935,6 +935,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // 606/306/304/274; each with transition width after its color loop
 // 564/418/415/386. NOT kept: no native frame/scalar equality; statement-
 // lifetime forms regress. Original texture/width sequence and body restored.
+// P371: Complete complementary normal request in bool/char/signed-char/byte/short/word/long/dword:
+// 567/567/567/567/592/592/596/596, 2576/2596 bytes. NOT kept: regressions and
+// nonnative frame/spill allocation; original per-case observations and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

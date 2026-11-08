@@ -478,6 +478,9 @@ struct s_physical_block_iterator
 // P369: Actual candidate-age/selected-age/replacement-result identities, subsets 1/2/4/3/5/6/7 and immutable ages:
 // eight 209. NOT kept: no native clamp-register or policy-placement repair; original whole body restored, frame
 // 0x1054 retained.
+// P371: Existing paired-age bare declarations at entry/ring/selected-record/outer-scan/
+// candidate-scan/iteration/size-admission/policy-admission: eight 209s. NOT kept:
+// no native clamp-register or policy-placement repair; original complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
