@@ -602,6 +602,13 @@ real function_30bf0(vector3f *vector);
 // at +0x34, retail the result at +0x08, the range at +0x30, the delta at +0x3c..0x44 and the
 // cursor at +0x48), the range still loads into XMM2 where retail uses XMM0, and the two
 // cross-product products still take their operands in the exchanged order; the body is unchanged.
+// T63: Shared cross-product complete products, scoped/unscoped mutable/const,
+// component results mutable/const, successive subtraction and uniform positive products:
+// 154/154/154/154/84/84/150/150. NOT kept: ties/regressions; shared header and full body restored.
+// T65: On the current ordinary-result/indexed-seat graph, semantic result/range/fraction
+// home identities, seven subsets and complete squared-distance identity: eight 84.
+// NOT kept: identical code; original body restored. Native scalar homes, range ingress
+// and the two cross-product operand schedules remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -2111,6 +2118,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // still loads into ECX where retail uses EAX (which makes our loop head one byte longer and
 // puts every later line one off), and the normalized direction is still folded instead of
 // being kept in XMM1..XMM3 across the three dots; the body is unchanged.
+// T63: Existing iterator start/advance/state-query inline contracts, seven subsets
+// then all with target inline metadata: eight 168; exact query stays matched.
+// NOT kept: no equality or gain; original body and all declaration metadata restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
