@@ -153,67 +153,6 @@ c_button_widget_45d5d0::c_button_widget_45d5d0(short valuef8, word user_flags) :
 {
 }
 
-// score 2 (was 2): only the loop's shared tail differs: retail copies the widget to ESI and tests ESI, ours
-// tests EAX before the copy (`test eax, eax; mov esi, eax`).
-// Before round 9, score 12 (was 20): only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
-// and joins the loop's `mov esi, eax; test esi, esi` tail; ours finds it straight into ESI (push first).
-// Forms with the old candidate copied at the loop head (all 20 unless given): entry/repeated/both field
-// walks; entry helper only 43; shared edge cursor; earlier entry edge lifetime; widget edge iteration;
-// nested eligibility; separate eligibility inline 46, noinline 20; focus inline/noinline; success break;
-// entry origin result 45; focus after search 49; complete eligibility; both wrapped helpers 54; helper
-// search for 45; helper cursor while 45; edge-field walk 47; common-return edge walk 44; scoped edge
-// iterator 45; ordinary inline helper 54; helper selection-first search 42; owner snapshot and tail
-// update; step helper shared return 40; same-parameter cursor 28; assigned-result links and predicate 21;
-// link for walks; repeated-step helper 49; search for 43; eligibility loop 43; selected result; rejection
-// continue; local names; entry scope 43; separate entry/step results with for-walks or cursor walks 44;
-// goto-walk wrapped helper for the entry, step in place 42 (92 bytes); one candidate for both scans;
-// original head with for-walks 20; out-pointer step helper 20; single-exit forceinline next-or-first helper
-// for entry and step 44 (96 bytes), plain inline 74 (61); widget local at the loop top 28; head test
-// with a do-while 28; forceinline eligibility helper 20.
-// The ternary step (`widget = next ? next : first sibling`) keeps the body as retail: 12; the same through a
-// next-or-first ternary helper 12.
-// Round 9: the shared next_wrapped (screen_widgets.h, a single-exit `result` set in an if/else) at the
-// entry and the step 2 (the same form took 0x22ebc3/0x22ec1b 12 -> 2).
-// Round 39: a done flag in the condition (`!done && widget`) 34 (90 bytes, unrotated); the step folded into the
-// condition from `this` 66 (69 bytes); the eligibility inverted with the step first 2; `for` with a `continue`
-// per failed test 2; the eligibility as a named bool 2. Harness: an early-return next-or-first helper at both 12
-// (retail's tail, entry coalesced into ESI); next_wrapped entry with that step 37 (98 bytes).
-// Round 62: condition assignment/declaration 2/2; candidate-updated declaration 28 (96 bytes); for assignment 2;
-// implicit/reversed assignment 2/2; assignment with shared focus exit 39 (100); declaration with shared focus exit
-// 49 (102). Opening body restored.
-// Lane 13 r48 (fast, both twins, 2 each, the same code): the search as a guarded do-while with the step
-// assigned in its condition (`while ((widget = widget->next_wrapped()) != NULL)`); a `goto found` single exit
-// after the while loop; a guarded do-while with the step at the bottom; a `for` loop with the step in its
-// header and `goto found`; `widget` declared before a `for` that assigns it. Loop syntax never reaches the copy:
-// retail tests ESI after the merged phi copy (copies in the predecessors, merged after scheduling), ours
-// schedules the test ahead of the copy inside one block.
-// Round 30 (lane 17, fast, both twins): a compile-only build gives the same test-then-copy tail, so it is decided
-// before LTCG; only an if/else in the loop assigning `widget` in each arm gives retail's copy-then-test. With that
-// step: the same if/else at the entry 12 (entry value loaded straight into ESI); `widget = this` first 12; a ternary
-// entry 12; `widget = next` then the walk when NULL 43 (92 bytes); next_wrapped at the entry 37 (98, own entry test).
-// Round 84 (fast, both twins; about 1,950 compile-only forms): the test reads the walk's result whenever the copy and the test share a block; retail's
-// copy-then-test needs a test block with two predecessors. `bool found = false; while (!found && widget)` with the focus in the arm 34 (90 bytes) or
-// after the loop 34 gives retail's copy-then-test and the entry in EAX/EDX, with every instruction retail's, but the test block stays on top (entry
-// falls in, the step jumps back); a multi-return inline predicate as the condition 34; `bool searching = true; while (searching && widget)` 34;
-// the widget downcast to the button class 2; a head copy with the test on the source 2. Compile-only: two distinct inlinees, out-parameter, reference,
-// struct-field or iterator forms, `register`, no-code statements between copy and test, a hand-rotated `&&` condition and a `goto` into a do-while
-// never give both retail's tail and its layout. A walk variable that takes ESI at entry keeps the first load in EAX but moves the walk into ESI.
-// Round 109: explicit null tests in either operand order 2; direct-initialized widget 2; explicit else step 2;
-// multi-use current-widget local 2; two-phase type/enabled traversal 74 (131 bytes); scoped for with explicit null test 2;
-// nested eligibility with the current shared helper 2. Opening body restored.
-// Lane 11 round 70 (fast, both twins): `for (;;)` with a head return 2; an entry return, then a do-while 2; a named self for the walk and focus 2; an
-// early-return free helper with the walk in place at both ends 12; that helper into a `first` local copied to the widget 37 (98 bytes); the eligibility operands swapped 7. Compile-only: of the
-// optimization options only /Ob0 gives the copy-then-test tail (real calls). Retail keeps no out-of-line copy of the walk.
-// Round 77 (m3 lane 1, fast, both twins): the wrapped helpers defined out of the header as forceinline members in
-// unknown_19b516.cpp, inlined here across files 2; helper entry, an in-place if/else step and a `for (;;)` head
-// return 37 (98 bytes); `(c_class_1a2c81 *)(dword)` round trips at entry and step 2; a `register` walk variable 2;
-// the entry as `next ? next : next_wrapped()` 44 (96). Retail has no `test eax, eax; mov esi, eax` anywhere.
-// Round 98 (m3 lane 12, fast, all four walkers): the wrapped helpers walking one `result = this` in place 52 (98 bytes; the
-// button pair 54, 104); the walk started at `this`, stepped once before the loop 2; the helpers as `result = link`, walked in
-// place when NULL 42 (90; 44, 96); the walk helpers as const members 2; an entry guard with a search loop that returns when the
-// step is NULL and the focus after it 32 (84; the button pair 2, the same code). Compile-only: an in-place if/else step gives
-// the copy-then-test tail, but every in-place entry then lets the compiler drop the entry test (the widget is known non-NULL)
-// or load it straight into ESI, and a helper entry keeps its own test.
 // @retail 0x2c8f56
 void c_button_widget_45d5d0::v8()
 {
@@ -230,66 +169,6 @@ void c_button_widget_45d5d0::v8()
 	}
 }
 
-// score 2 (was 2): only the loop's shared tail differs: retail copies the widget to ESI and tests ESI, ours
-// tests EAX before the copy (`test eax, eax; mov esi, eax`).
-// Before round 9, score 12 (was 20): only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
-// and joins the loop's `mov esi, eax; test esi, esi` tail; ours finds it straight into ESI (push first).
-// Forms with the old candidate copied at the loop head (all 20 unless given): entry/repeated/both field
-// walks; entry helper only 43; shared edge cursor; earlier entry edge lifetime; widget edge iteration;
-// nested eligibility; separate eligibility inline 46, noinline 20; focus inline/noinline; success break;
-// entry origin result 45; focus after search 49; complete eligibility; both wrapped helpers 54; helper
-// search for 45; helper cursor while 45; edge-field walk 47; common-return edge walk 44; scoped edge
-// iterator 45; ordinary inline helper 54; helper selection-first search 42; owner snapshot and tail
-// update; step helper shared return 40; same-parameter cursor 28; assigned-result links and predicate 21;
-// link for walks; repeated-step helper 49; search for 43; eligibility loop 43; selected result; rejection
-// continue; local names; entry scope 43; separate entry/step results with for-walks or cursor walks 44;
-// goto-walk wrapped helper for the entry, step in place 42 (92 bytes); one candidate for both scans;
-// original head with the step in its own result copied to the candidate 44; out-pointer step helper 20; single-exit forceinline previous-or-last helper
-// for entry and step 44 (96 bytes), plain inline 74 (61); widget local at the loop top 28; head test
-// with a do-while 28; forceinline eligibility helper 20.
-// The ternary step (`widget = previous ? previous : last sibling`) keeps the body as retail: 12; the same through
-// a previous-or-last ternary helper 12.
-// Round 9: the shared previous_wrapped (screen_widgets.h, a single-exit `result` set in an if/else) at the
-// entry and the step 2 (the same form took 0x22ebc3/0x22ec1b 12 -> 2).
-// Round 39: a done flag in the condition (`!done && widget`) 34 (90 bytes, unrotated); the step folded into the
-// condition from `this` 66 (69 bytes); the eligibility inverted with the step first 2; `for` with a `continue`
-// per failed test 2; the eligibility as a named bool 2. Harness: an early-return previous-or-last helper at both 12
-// (retail's tail, entry coalesced into ESI); previous_wrapped entry with that step 37 (98 bytes).
-// Lane 13 r48 (fast, both twins, 2 each, the same code): the search as a guarded do-while with the step
-// assigned in its condition (`while ((widget = widget->previous_wrapped()) != NULL)`); a `goto found` single exit
-// after the while loop; a guarded do-while with the step at the bottom; a `for` loop with the step in its
-// header and `goto found`; `widget` declared before a `for` that assigns it. Loop syntax never reaches the copy:
-// retail tests ESI after the merged phi copy (copies in the predecessors, merged after scheduling), ours
-// schedules the test ahead of the copy inside one block.
-// Round 66: full for-loop 2; split widget declaration 2; scoped for with the step in its body 2;
-// step computed before eligibility 40 (100 bytes); function-scope step result 2; direct previous/last-sibling
-// branches through a field snapshot 37 (98); explicit this at entry 2; qualified step call 2. Body restored.
-// Round 30 (lane 17, fast, both twins): a compile-only build gives the same test-then-copy tail, so it is decided
-// before LTCG; only an if/else in the loop assigning `widget` in each arm gives retail's copy-then-test. With that
-// step: the same if/else at the entry 12 (entry value loaded straight into ESI); `widget = this` first 12; a ternary
-// entry 12; `widget = previous` then the walk when NULL 43 (92 bytes); previous_wrapped at the entry 37 (98).
-// Round 84 (fast, both twins; about 1,950 compile-only forms): the test reads the walk's result whenever the copy and the test share a block; retail's
-// copy-then-test needs a test block with two predecessors. `bool found = false; while (!found && widget)` with the focus in the arm 34 (90 bytes) or
-// after the loop 34 gives retail's copy-then-test and the entry in EAX/EDX, with every instruction retail's, but the test block stays on top (entry
-// falls in, the step jumps back); a multi-return inline predicate as the condition 34; `bool searching = true; while (searching && widget)` 34;
-// the widget downcast to the button class 2; a head copy with the test on the source 2. Compile-only: two distinct inlinees, out-parameter, reference,
-// struct-field or iterator forms, `register`, no-code statements between copy and test, a hand-rotated `&&` condition and a `goto` into a do-while
-// never give both retail's tail and its layout. A walk variable that takes ESI at entry keeps the first load in EAX but moves the walk into ESI.
-// Round 110: direct-previous/wrapped-step hybrids 37 each; focus break 2; selected-widget break 2;
-// qualified entry, predicate and focus calls 2 each; direct step with continue 37 (98 bytes). Opening body restored.
-// Lane 11 round 70 (fast, both twins): `for (;;)` with a head return 2; an entry return, then a do-while 2; a named self for the walk and focus 2; an
-// early-return free helper with the walk in place at both ends 12; that helper into a `first` local copied to the widget 37 (98 bytes); the eligibility operands swapped 7. Compile-only: of the
-// optimization options only /Ob0 gives the copy-then-test tail (real calls). Retail keeps no out-of-line copy of the walk.
-// Round 77 (m3 lane 1, fast, both twins): the wrapped helpers defined out of the header as forceinline members in
-// unknown_19b516.cpp, inlined here across files 2; helper entry, an in-place if/else step and a `for (;;)` head
-// return 37 (98 bytes); `(c_class_1a2c81 *)(dword)` round trips at entry and step 2; a `register` walk variable 2;
-// the entry as `previous ? previous : previous_wrapped()` 44 (96). Retail has no `test eax, eax; mov esi, eax` anywhere.
-// Round 98 (m3 lane 12, fast, all four walkers): the wrapped helpers walking one `result = this` in place 52 (98 bytes; the
-// button pair 54, 104); the walk started at `this`, stepped once before the loop 2; the helpers as `result = link`, walked in
-// place when NULL 42 (90; 44, 96); the walk helpers as const members 2; an entry guard with a search loop that returns when the
-// step is NULL and the focus after it 32 (84; the button pair 2, the same code). Compile-only: an in-place if/else step gives
-// the copy-then-test tail, but every in-place entry then lets the compiler drop the entry test (the widget is known non-NULL)
-// or load it straight into ESI, and a helper entry keeps its own test.
 // @retail 0x2c8fb4
 void c_button_widget_45d5d0::v9()
 {

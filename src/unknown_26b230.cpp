@@ -1839,6 +1839,7 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
+// MiniMax I (11-09): no new form, no lower score; retail still hoists the walk's pool into EBX and keeps the selection on the stack where ours keeps the pool in memory and the selection in EDI, and the declaration-order reshapes that would move those homes are not applied.
 // MiniMax I (11-06): the walk's reload is what shifts the rest of the listing: the shared helper takes
 // the iterator by pointer, so the pool is re-read from its field into ecx at every step, where retail
 // keeps the pool in ebx across the scan and reloads it after the bit scan clobbers ebx; three extra

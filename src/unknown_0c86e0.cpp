@@ -92,6 +92,8 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax R (11-09): no new form, no lower score; the entry's second unit fetch is still merged into the
+// first, because the lookup callee that decides it lives in another file.
 // MiniMax D (11-08): score 107 (was 107): retail re-fetches the unit pointer and both pool globals after
 // the two 0xbadc0 calls; our link knows that callee writes no memory and keeps the entry fetch, so the
 // register plan and the length differ from the first byte.
