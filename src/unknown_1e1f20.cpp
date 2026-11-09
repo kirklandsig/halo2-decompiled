@@ -592,6 +592,7 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax I (11-09): no new form, no lower score; the body has retail's shape but the allocation differs from the first instruction: retail loads the actor table into EAX and keeps the scaled actor index in EBX with the actor pointer in EBP, ours loads the table into ECX and keeps the index in EAX; the memory walk's helper 0x26ed40 is another lane's file: BLOCKED-BY 0x26ed40 (src/unknown_26e370.cpp).
 // MiniMax S (11-09): two more forms for the memory-entry walk: the type test through the cached actor
 // with every other field read through a fresh actor_get gives 344, and the whole walk through the
 // cached actor gives 308, against the unchanged 236. Both put the entry pointer in EBX as retail has
