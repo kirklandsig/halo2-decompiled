@@ -130,60 +130,12 @@ void __stdcall function_2562c0(long actor_index, s_slot *slot)
 }
 
 #pragma inline_depth(0)
-// score 19 (was 19): retail loads the pointer into ecx and the byte into dl, ours uses eax and cl; retail
-// compares the two floats with comiss against memory where ours compares registers. Ours is
-// padded with five int3s.
-// A `short result = g_470bec;` at the top of the character block returned by all three
-// success paths gives retail's ecx/dl and dword preload, and `timer * rate >= duration`
-// returning g_470be8 gives retail's comiss; the started success then jumps into the nearby
-// g_470be8 epilogue instead of the final one, so the code is 12 bytes short (70). Also
-// tried: that form with `<` 75 or `!(<)` 75, with an early `if (!character)` return 75; the
-// plain `>=` test without the local 97. Round 89: the 70 form's started success jumps into the
-// g_470be8 epilogue, so its jb is short and the loop head loses its pad; one final `return result`
-// (found path result/global; started failure return or assignment) 97/97/125 (load sunk into the
-// return); result in the started path and one not-started return 97/97/19/19; started failure falling
-// to the outer return 78/60/84; on the 70 form: early !character return 70, outer returns merged 91,
-// result declared before the character call 74 or at the top 97, a final extra return 70.
-// Lane 10 round 42: `!(a >= b)` is the form that tests with jb (comiss sets CF for less or unordered),
-// `a < b` swaps the operands to use ja. The preload needs result returned on three paths (the 70 form);
-// with two uses the load sinks: started success only 97, success and found 97, success and after-loop 97,
-// found and one final block return 97. Started failure assigning result 125 (result spilled); started
-// failure falling to one shared return of g_470be8 111 (edi pushed before the guards), or to the
-// !character return with `!(>=)` 84 (the success gets its own epilogue); the started success falling to
-// a final block return after the else 70 (the jb still joins the nearby g_470be8 epilogue).
-// Round 68: slot data through unknownc 19; started and exhausted-search success sharing one return 19;
-// that with a plain result-bearing for loop 19; handler-view actor 19; one outer failure return 29;
-// state arms reversed 86; found flag with all success paths sharing one return 19; that with slot data 19.
-// Original state type, actor view, comparison and body restored.
-// Round 116: the 70 form differs from retail only in the started success's jb, which takes the epilogue copy
-// after the g_470be8 block (short jb) where retail takes the one after the after-loop g_470bec load (long jb;
-// the loop-head pad then follows). On the result preload: g_470be8 assigned in the started arm with one
-// return 125; that with g_470bec returns in the search arm 137; the started success returning result before
-// a final return 70; the after-loop reassigning result before a final return 130; flat early returns with
-// and without else 70/70, with g_470bec returns 89; `!(>=)` returning result 70; the be8 assignment with one
-// started return 113; the search arm first with and without else 84/84 (retail length; the started arm is
-// then laid out last and its jb reaches the after-loop epilogue); the started arm falling out to the outer
-// g_470be8 return 91, to a character-block g_470be8 return 84 (jae, be8 laid out last).
-// Round 199: the started arm as `return timer * rate < duration ? g_470bec : g_470be8;` 50 (362 bytes: cmovbe, so
-// retail's select is branchy); on the 70 form: result declared then assigned on its own line 70; the search loop
-// ending on `break` with `if (!object) state->started = true;` 70; the started byte in a bool local 70; `<` returning
-// result with an else returning g_470be8 75 (retail length, ja); `<` on a named elapsed product 75.
-// Round 51 (fast): a compiled-out `do {} while (false);` at the started arm's end, the search arm's end, the character block's end, the outer block's end or after the if/else,
-// on the 70 form 70, on a joined result reassigned in the search arm 71 (334 bytes), on global returns in the search arm 97, on one result with a be8 assignment 137 (374 bytes);
-// a long result on the 70 form 67 (347 bytes, movsx preload, near jb), joined 67 (354, far jb, spilled); on the 70 form, `!(>=)` returning result first 70, `<` with a goto onto the
-// search arm's return 19 (this body's code); `!(>=)` with a goto past the reassignment 71, with a compiled-out statement at the label 71, label in the search arm 71; goto onto the
-// last return 97 (far jb, no preload), with global returns 97; started arm falling to a character-block be8, goto onto the last return 97 (be8 inline), `return result` at the jb 84
-// (352 bytes, jae), flat search with goto failed 84, no result local 97; a label reached only by the jump after the search returns 84, at character level past the be8 return 70, with
-// be8 returned in the arm 70, global returns with that label 105 (366 bytes). Every preload form takes the nearby epilogue; every far jb lands on the reload and loses the preload.
-// Round 169 (lane 4, fast), on the 70 form (re-measured 70, 335 bytes): the slot data through unknownc 70; a const
-// result 70; `!(>=)` returning result with an else returning g_470be8 70; the comparison written duration-first
-// (`duration <= product`, same comiss/jb) 70; the expiry test in a named bool 70. The `<` form with an else (75, 347
-// bytes) also jumps to the nearby be8 epilogue: its length comes from a separate movss of the duration.
 // @retail 0x256300
 short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 {
 	s_actor_view *actor = ((s_actor_view *)(g_4f55f0->data + (actor_index & 0xffff) * sizeof(s_actor_view)));
 	s_slot_76_state *state = (s_slot_76_state *)slot;
+	short result;
 
 	if (actor->prop_index != NONE && ((s_handler_actor_view *)actor)->perception_index != NONE)
 	{
@@ -191,14 +143,14 @@ short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 
 		if (character)
 		{
+			result = g_470bec;
 			if (state->started)
 			{
 				state->timer++;
-				if (!(state->timer * g_510c54->rate < character->duration))
+				if (state->timer * g_510c54->rate >= character->duration)
 				{
-					return g_470be8;
+					result = g_470be8;
 				}
-				return g_470bec;
 			}
 			else
 			{
@@ -223,20 +175,27 @@ short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 						local_4 += local_1 * local_1;
 						if (range > (real)sqrt(local_4))
 						{
-							return g_470bec;
+							break;
 						}
 					}
 				}
 
-				state->started = true;
-				return g_470bec;
+				if (!object)
+				{
+					state->started = true;
+				}
 			}
 		}
-
-		return g_470be8;
+		else
+		{
+			result = g_470be8;
+		}
 	}
-
-	return g_470be8;
+	else
+	{
+		result = g_470be8;
+	}
+	return result;
 }
 #pragma inline_depth(255)
 

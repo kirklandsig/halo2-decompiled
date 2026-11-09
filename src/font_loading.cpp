@@ -745,6 +745,7 @@ static inline word font_character_pixel(long alpha, long color)
 // original loops/helper/body restored. Alpha widening, literal assembly and run-two reuse remain.
 // N398: Scoped existing pixel macro with word/numeric result, byte/numeric parity, byte/long ordinary alpha 165/218/224/236/132/136/226/234.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// MiniMax E (11-08): no new form, no lower score: retail widens the alpha parity with a 32-bit xor and masks it with 1, ours narrows it to sixteen bits and shifts the byte count instead.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

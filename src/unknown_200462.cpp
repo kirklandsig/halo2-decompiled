@@ -153,6 +153,11 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // used by both steps 53 (the draw block reschedules and the pulse query moves); the 0.5 factor as a named const 12; the default
 // rectangle declared before the bitmap index 12. The advance product still takes XMM4 and the half-height copy XMM3. Without the
 // pointer: the converted width/height first in each half extent 14 (same code).
+// Round 96 (m3 lane 16, fast control 14): the bitmap entry pointer read at each use 120 (852 bytes); the
+// sequence index read at each use 14; the default rectangle set field by field 14; half height computed before
+// half width 26; the draw pass's sequence through the existing bitmap-sequence type with the first sprite's
+// bounds as `sprites->bounds` / `sprites[0].bounds` 14/14 (the copy source stays ADD). The two XMM3/XMM4
+// values are the advance product (then the new x, in place) and the half-height copy (then y + half height).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

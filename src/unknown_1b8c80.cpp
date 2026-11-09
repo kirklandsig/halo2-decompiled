@@ -393,6 +393,7 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax I (11-08): no new form, no lower score (8); the exclusive bound with the count in a local, the index declared before the seat pointer and the reversed comparison all give 11 or 12 with the count in EBP and the index in ESI.
 // MiniMax R (11-06): no lower score (8); the exclusive bound 11, the same with the count in a local 11, the index declared before the seat pointer 11, both together 11 and the inclusive bound with a local count 26 all move the count to EBP and the index to ESI; a long count local with the index declared before the seat pointer is 11 as well, and a short count makes the compiler compare in 16 bits and rewrites the loop.
 // MiniMax E (11-06): no new form, no lower score.
 // Exclusive bound with the index declared before the seat pointer 11, the same
@@ -1379,6 +1380,7 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax I (11-08): no new form, no lower score (134).
 // MiniMax C (11-06): no new form, no lower score; the frame is still 0x10 against retail's 0x14,
 // retail still spills the 0x20 mask byte to F+3 and keeps the loop entry in EBX (home F+4, reloaded
 // after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still

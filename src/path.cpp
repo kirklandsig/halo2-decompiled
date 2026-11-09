@@ -368,6 +368,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
+// MiniMax D (11-08): no new form, no lower score (286); our frame is 0xe8 against retail's 0xe4, and in the scan
+// retail keeps the link index in a register (ECX) and multiplies it by 0x44 while ours reloads it from a stack slot
+// each time, so the two sides' frame slots sit four bytes apart; the first loop's block count and the scan's flags
+// still differ.
 // MiniMax R (11-06): forms tried, none lower (286; the permuter's best was 281 in the full image, below the eight-point gate and using a pointer to a local); the frame is 0xe8 here and 0xe4 in retail, and every frame slot differs between the two sides.
 // score 286 (was 286): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
 // M3 lane 2 r47: the projection through the existing dot3f(&offset, &edge_vector) 286 plain (kept, 1389 bytes: retail's k, j, i
