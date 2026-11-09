@@ -923,7 +923,7 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
-// MiniMax D (11-08): score 153 (was 153): the difference starts at the selection loop's unit index - the
+// MiniMax D (11-08): the difference starts at the selection loop's unit index - the
 // unit pointer, the chosen weapon, the age and the NONE home are kept in different registers and at different
 // stack offsets than retail.
 // MiniMax B (11-06): no new form, no lower score; the first 0x11c bytes agree with retail and the rest is
@@ -1013,6 +1013,10 @@ struct s_tail_transfer_traits
 // P393: Selected-traits availability at the unit join, positive/complementary
 // bool/byte/short/long: 153/153/153/153/153/153/153/153. NOT kept: unmatched one-use outcomes; native
 // traits/unit/NONE homes and no-seat pool reloads remain. Original complete body restored.
+// T78: Per-pass first/exclusion truths, conditional/default/primary-seeded excluded handles,
+// slot admission/rejection predicates and conditional first-pass admission: 150/150/188/185/185/153/153/202.
+// NOT kept: no eligible match; best three points is below the gain gate. Original complete
+// body restored; selected-traits/unit/NONE homes and native no-seat reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {

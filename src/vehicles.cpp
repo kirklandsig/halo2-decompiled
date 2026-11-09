@@ -657,6 +657,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // speed/helper/both then immutable both: 225/129/126/127/225/309/225/309. NOT kept:
 // one-use results do not match; paired doubles grow to 1150/1144. Original helper and full
 // body restored; entry velocity registers, early unity and later SSE/x87 homes remain.
+// T78: Final retained-magnitude admission at its post-approach producer,
+// bool/byte/short/long positive then complementary: 156/156/161/160/156/156/161/160.
+// NOT kept: every one-use result regresses and grows to 1153..1157/1144. Original
+// complete body restored; entry velocity/unity and later SSE/x87 homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -5094,6 +5098,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // descending, Boolean/scalar/vector/ratio first, then stable simple/bypass first:
 // eight at 749, 2974/2974 bytes. NOT kept: no entry-definition or SIMD recovery;
 // original complete dispatch and body restored.
+// T78: Case-owned preliminary square/chain results, mutable/immutable, averaged turning,
+// paired square+chain, all three and immutable all: 749/749/749/749/749/749/749/749.
+// NOT kept: no gain or native entry-definition/SIMD recovery. Original complete body
+// restored; frame 0x18 agrees, zero/result/unity residence remains.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5733,6 +5741,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // nonnegative-strafe/turn first, same-sign admission and inner conditionals:
 // 1097/1088/1097/1088/1087/1087/1117/1097. NOT kept: ties/regressions;
 // every frame stays 0xf8 versus 0xd8. Original bank flow and full body restored.
+// T78: Final spin prior-state/difference/selected-change ownership, seven subsets,
+// then branch-owned differences: 1104/1076/1087/1104/1104/1076/1104/1087. NOT kept: the 1076
+// forms shorten to 5088/5094 while frame stays 0xf8/0xd8; other forms tie or regress.
+// Original complete feedback and body restored; handle/matrix/vector homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
