@@ -223,7 +223,7 @@ void function_1e3b00(long arg_0, long arg_1, point3f const *arg_2,
     void const *arg_3, void const *arg_4, point3f *arg_5);
 long function_baf40(long arg_0);
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
-    void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
+    point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 
 // @retail 0x1b0400
 bool function_1b0400(long arg_0, s_follow_search_state *arg_1)

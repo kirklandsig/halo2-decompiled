@@ -118,6 +118,11 @@ void function_14bac0()
 	s_record_pool_iterator *iterator_reference = &iterator;
 	players_pending_creation_process(iterator_reference);
 }
+// MiniMax I (11-08): no new form, no lower score (222): the frame is still 0x50 against retail's 0x3c, and
+// the exchanged player/scenario spills, the point/recipient overlap and the readiness homes still differ.
+// Retail keeps three point-sized slots (the offset, the marker point and the capsule centre share one, the
+// translated position and the destination share another, the alternate a third); ours gives the centre a
+// slot of its own at +0x44 and puts the alternate at +0x38 where retail has it at +0x3c.
 // score 222 (was 222): Frame 0x50 versus 0x3c, exchanged player/scenario spills, point/recipient overlap and readiness homes remain.
 // Round 64 (fast; masked aligned count in brackets, base 222 [87]; ranks by structure where the positional score hides it): stamp through
 // `index`/`stamp` locals and the relocation point used directly 244 [78]; on that: second loop on a block-local datum iterator through

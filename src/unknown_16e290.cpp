@@ -1567,6 +1567,7 @@ struct s_camera_clip_reference_16ebf0
 	plane3f plane;
 	byte field_14[4];
 };
+// MiniMax R (11-09): no new form, no lower score (87); the cross block gives retail's up.k to xmm0 and forward.j to xmm1 where ours gives them the other way round, though the three products agree; the cross written out as three component assignments scores 186 and was restored.
 // MiniMax A (11-06, run 52), not kept (87, same score): the clip plane's three products summed in
 // retail's order, the i term first and the j term last, give retail's multiply and add sequence
 // instruction for instruction (its only other effect was 0x13d80 61 -> 60, under the keep bar); what is left is the register form of the clip block, where

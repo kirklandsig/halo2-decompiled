@@ -243,6 +243,12 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // declared bare and set before the count test 121; the collision sentinel stored after `result = 2` 123; the direction
 // seed declared bare then assigned 121; the blend computed in the 0x131c20 call 121; loop index and entry renamed 121.
 // Diagnostic: `strength +=` in the first-light block as well 141, the post-call add stays load-first.
+// Round 96 (m3 lane 16, fast control 30; colour first re-measured 121 at 828 bytes, only the post-call add and the
+// ECX/EDI pair differ): colour first with the power bound through a const reference before the first-light test
+// (assign, test, divide, add) 121, through a const pointer 121; the reference with strength first 134 (829 bytes);
+// no entry local (the light's entry field read at each use) colour first / strength first 178/193 (834 bytes);
+// an entry local per arm, colour first, 178 (831 bytes). Compile-only (no LTCG) keeps the strength on the stack
+// here, so it does not model this add.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {
@@ -1890,6 +1896,11 @@ dword function_015cd0(long index, dword entry);
 // Round 72 (m3 lane 14, fast): the conversion buffer as the 0x74-byte bitmap type (`s_type_7ba8e9 converted;`) 4;
 // the redundant `result = 1` after 0x12360 dropped 73 (299 bytes: its `mov edi, 1` goes); bitmap_index as long 4;
 // bitmap declared at the function top 4; the flag test as `(flags >> 1) & 1` 4.
+// Round 79 (m3 lane 11, fast): the texture field read into a named local before its test 4; the flag test as a named
+// bool 82 (310 bytes); the conversion result as a named bool 4; the palette conversion as a ternary assignment 4; the
+// zero colour as one chained assignment 4; (re-measured) UV filled by field stores 4. Permuter
+// (600 s, 63 variants, --fast --anneal) best 4. A one-file LTCG link with the callee files does not give this body's
+// convention (ret 0x18), so link-level screens need more files here.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
