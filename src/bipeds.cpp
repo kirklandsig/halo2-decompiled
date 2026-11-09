@@ -1064,6 +1064,9 @@ extern long *g_51e9cc;
 // Lane 1 round 79 (fast): every +0x348 write through the s_biped_flags_348 bitfields 42 (same code); with the bit-0
 // result as `field_0 = result.flags & 1` 71; case 4's entry+0xc surface named for its test and store 147 (1481 bytes);
 // `physics` declared at its assignment 42; `velocity.k = velocity.k - height_change` 42.
+// P383: Complete fallback-owner admission in bool/char/signed-char/byte/short/word/long/dword:
+// 42/42/42/42/42/42/42/42. NOT kept: no native lookup-receiver retention or equality; original direct
+// admission and whole body restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1641,6 +1644,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P381: Complete complementary airborne outcome in bool/char/signed-char/byte/short/word/long/dword:
 // 599/599/599/599/631/631/626/626. NOT kept: narrow frame 0xf4, wider 0xf8 versus native 0xfc;
 // gravity/material/airborne homes remain. Original state result, both consumers and full body restored.
+// P383: Actual turning comparison in char/signed-char/byte/short/word/int/long/dword storage:
+// 600/600/600/630/630/630/630/630. NOT kept: no native frame equality; every form shortens to 2808 versus
+// 2828 bytes. Original predicate and whole body restored; early gravity/material/airborne/animation homes
+// remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3623,6 +3630,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // weapon after the 0xe5d50 call through unit_get_current_weapon 610 (retail's movsx dx sequence, aligned 188); both
 // 612 (aligned 176); with the flight rate passed directly 622 (aligned 167). All lengthen to 2738-2744 bytes and the
 // positional count rises; they wait on the early misalignment (result byte, flight slot, wall-turn products).
+// P383: Complete overshoot/within-turn admission in bool/byte/short/long (reduced control 605; full 561):
+// 603/603/603/603/603/603/603/603. NOT kept: two-point gains below gate and no native result/flight-home
+// equality; original direct geometric test, helper graph and whole body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

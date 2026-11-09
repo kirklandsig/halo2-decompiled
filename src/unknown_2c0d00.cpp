@@ -1635,6 +1635,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Scores 400/400/400/400/400/400/400/400. NOT kept: all tie 400 at 1752/1746; no exact flag-result form
 // or native frame recovery.
 // Original complete body restored.
+// P383: Complete complementary candidate-missing outcomes in bool/char/signed-
+// char/byte/short/word/long/dword: 400/400/400/400/471/471/460/460. NOT kept: no native frame/edge/count-
+// home equality; original forward scan, reverse avoidance scan and whole body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
