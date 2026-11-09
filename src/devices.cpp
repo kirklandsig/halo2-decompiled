@@ -1479,6 +1479,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Round 58 (m3 lane 2, fast): the factor as the literal `0.033333335f` (as 0x0a76b0's file writes it) 2, written first 2;
 // the first call's time as integer `0` 2; the frame position named before the product 2; `(real)(frame / 30.0)` 5.
 // Diagnostic: 1 to 12 dead locals at the top (symbol count) 2 each, so the fstp slot is not a numbering tie.
+// Round 174 (m3 lane 4, fast): the first call reading the channel's animation id directly with the local named after it
+// 337 (1634 bytes); the time computed after the first sample call 20; the render model held as a pointer and cast at
+// each call 2; the time as `frame_position / 30.0f` 2; a const render model 2. LTCG harness (this file with the files of
+// the sampling, transform and object callees; not exact, but it shows the same swap): only the first call's render model
+// replaced by a constant (diagnostic, wrong value) puts the fstp after `push edi`, so the render model load's timing
+// sets it; a volatile render model (diagnostic), the time given to the first call, a label between the samples move nothing.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

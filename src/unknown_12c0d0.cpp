@@ -886,6 +886,10 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // the loop unnested 94 (300 bytes, four callers lose); each case storing the pump bound first 2, the attempts
 // first 4; the attempts declaration ahead of the reader 12. BLOCKED-BY the shared reader's form
 // (include/unknown_080e10.h): only the reader's zero stores move, and no body statement reaches them.
+// Round 174 (m3 lane 4, fast; an LTCG harness of this file with xbox_texture_cache_update.cpp, not exact elsewhere, shows the
+// same prologue): the attempts declared right after start 5; the pump counter declared right after start 2. Reader forms in
+// a harness copy only (the header untouched): a plain local with `__noop(&local)` 144 (the stores vanish, as plain does),
+// a volatile local declared then assigned 2-equivalent, a volatile long pair initialised `{ 0, 0 }` 2-equivalent.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
