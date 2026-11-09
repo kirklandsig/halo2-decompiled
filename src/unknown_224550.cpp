@@ -94,6 +94,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax R (11-09): no new form, no lower score (211); the tint's home is still exchanged with the second UV set's bounds and the blend still leaves XMM5 in the aspect block, and no spelling of the declaration order moved either this round.
 // MiniMax B (11-06) round 2: no new form, no lower score (211); the uv set declared before the
 // tint, the two uv sets declared one on each side of the tint and the tint declared at the top
 // of the function all give the same code (211), so the tint's home cannot be moved that way: ours
