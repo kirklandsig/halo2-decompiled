@@ -402,6 +402,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // the top 266 (same code); out of place through it 253 (1141).
 // N398: Current aggregate helper static-inline/static/external-inline/external-forceinline, void then output-pointer result 206/206/206/206/206/206/206/206.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// T72: Helper-local scaled defaults as native initialization/assignment, library copy,
+// existing setter, indexed for/while, component cursors and array aggregate:
+// 330/330/330/252/255/255/333/206. NOT kept: no native frame/coefficient recovery;
+// original aggregate, input-before-output helper and complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

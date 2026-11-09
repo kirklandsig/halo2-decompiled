@@ -3274,6 +3274,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // P378: Full flag/query/body-selection-to-normalization impulse-success ownership in
 // bool/byte/char/signed-char/short/word/int/long: 539/539/539/539/539/539/539/539. NOT kept:
 // no native result/frame repair. Original complete body and all original outcomes restored.
+// T71: Sole-return completion label, admission-owned
+// bool/byte/char/signed-char/short/word/int/long results: 510/535/535/535/504/504/520/520. NOT
+// kept: frame 0x4c recovers, but all take EAX input/plain ret and ordinary result homes instead
+// of native stack input/ret 4 and argument-home byte. Original complete body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4044,6 +4048,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // child-world/origin/parent-position homes: 354/354/354/354/356/354/389/357.
 // NOT kept: no native matrix/origin/alias-copy home repair; original independent
 // output, every prior vector value and complete body restored.
+// T73: Consumed selected parent-pivot and child-world/placement outputs, alone/both,
+// complete placement setters and forced existing pivot expansion: 391/356/398/391/358/398/391/398.
+// NOT kept: every form regresses; parent reuse grows frame to 0x130 versus native 0x12c.
+// Original independent outputs, input captures, helper annotation and complete body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4883,6 +4891,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P381: Complete final normalized/degenerate outcomes in bool/byte/int/long,
 // positive then complementary: 79/79/79/79/79/79/79/79. NOT kept: no native
 // first-rotation/final-cross operand repair; original direct final test and whole body restored.
+// T73: Consumed rotated-up/rotation-axis side-cross outputs, ordinary/staged final crosses,
+// then complete final-up publication through either consumed workspace:
+// 92/201/144/79/186/200/254/285. NOT kept: tie/regressions; native first-rotation and final-cross
+// memory operands remain. Original shared rotation, independent outputs and full body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -5865,6 +5877,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // complete declared timer-byte receivers: 707/707/707/707/707/707/707/707. NOT kept: no native
 // truth-byte/tag/state/animation-home equality; one-use admissions require equality; original complete body
 // restored.
+// T71: Native-entry tag/state/animation lexical-home subsets and complete motion roles: eight
+// 594s (unchanged reduced control 594, full 588). NOT kept: native home/truth-byte repair
+// absent; original names and whole body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
