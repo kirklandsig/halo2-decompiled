@@ -217,6 +217,7 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 	return *(byte const *const *)(block + 4) + index * size;
 }
 
+// MiniMax D (11-09): no new form, no lower score (117); the tag declared unsigned long gives the same code as the unsigned-short cast, and the tag masked inside the subscript gives 152 with the base global in ecx.
 // MiniMax R (11-09): the masked tag held in a local or in a short local gives 152 because the base global moves from
 // edi into ecx, and the index masked inside the subscript or cast to an unsigned short gives 117 with the same code.
 // MiniMax R (11-08): no new form, no lower score (117); the fallback lookup's masked tag index still takes a
