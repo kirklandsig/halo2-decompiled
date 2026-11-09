@@ -5448,8 +5448,9 @@ void function_159880(void)
 
 void __stdcall function_d6bc0(long object_index);
 
-// score 112 (was 144): retail's frame and homes (timer spilled at +0x20, `entries` reloaded at each use); left are the index tests
-// (`cmp ebx, -1` for retail's field compare), d6bc0's argument and the schedule block's layout (872/869 B, case 1's value bool).
+// score 60 (was 97): native frame 0x18 and 869-byte length; initial scenario/rate stores, cached index test,
+// case-1 CL versus AL, modifier admission order and removal index reload remain. Earlier at 112: timer at +0x20
+// and entry-base reloads agreed, 872/869 bytes; scheduling materialized the case-1 Boolean.
 // Match-only recipe, score 7 at retail's length: replace `bool schedule = true; if (index != NONE)` and case 1 below with
 // `bool schedule; if (index == NONE) schedule = true; else { schedule = false; switch ... case 1: if (bit) schedule = true; break;
 // case 0: if (mask && bits) schedule = true; else { ...; schedule = d > 1.0f; } break; }`, the modifier switch written out in each
@@ -5651,6 +5652,32 @@ void __stdcall function_d6bc0(long object_index);
 // bool/byte/char/signed-char/short/word/int/long: 112/112/112/112/133/133/130/130.
 // NOT kept: ties/regressions; original complete body restored. Native frame/timer agree;
 // initial scalar stores, scheduling branch ownership and entry observations remain.
+// P363: Complete zero-timer scheduling rejection with real continues: original countdown, switch case 1/0 first
+// 97/97, mode-if 1/0 first 102/126; countdown owning both zero/expiry samples 97/97/102/126.
+// Kept the original-case-order switch and original countdown, 112 -> 97 plain/full, 869/869 bytes. No scheduling
+// flag, new local, arithmetic or call-tuple change; rejected zero timers skip the expiry guard.
+// P366: Native scheduling/removal entry observations 152/104, both 147; separate reset/expiry index scopes
+// with scheduling field and cached/direct removal 93/147; complete direct index observations 147;
+// scoped/native-observation metadata home names 93/147. NOT kept: the four-point scope gain is below margin,
+// all other forms regress. Original complete body restored; native frame/length agree, index observation and
+// scalar schedules remain.
+// P368: Modifier exists only for admitted kinds 0..7; native long branch producer 60 plain,
+// signed-byte/short/word 98/97/97; conditional long/byte/short/word 98/98/98/82. Keep only
+// original-long branch scope: no default XOR, native ECX dispatch, frame 0x18 and 869-byte length.
+// Zero-kind comparison order, initial stores, cached index/case test and removal reload remain.
+// P370: Complete zero-first modifier with one shared dispatch, branch/conditional producer,
+// signed-byte/short/int/long kind: 77/86/82/82/77/86/82/82. NOT kept: all regress and
+// grow beyond native 869 bytes; original admitted-scope modifier and complete body restored.
+// P372: Actual scheduling-mode selector in short/word/long/dword, declared at the switch
+// or bare at iteration entry, observed at the original switch: 60/61/60/60 twice.
+// NOT kept: no exact native selector/index recovery; complete original body restored.
+// Native frame/length agree; initial stores, cached index and case-byte/dispatch layout remain.
+// P375: On the admitted-long-modifier graph, complete scheduling rejection reaching the native countdown
+// guard, bool/byte/char/signed-char/short/word/int/long: 109/109/109/109/132/132/129/129. NOT kept: no byte match;
+// rejection-state transport regresses and grows from native length. Original complete body restored.
+// P377: Pure eligibility boundary returning bool/byte/char/signed-char/short/word/long/dword,
+// separate from delay production: 60/60/60/60/60/60/60/60. NOT kept: unchanged native index/byte-branch differences;
+// the single-caller helper is disallowed. Original complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
@@ -5695,15 +5722,15 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
         }
         if (entries[i].value04 == 0)
         {
-            bool schedule = true;
             if (index != NONE)
             {
                 switch (*(short *)(placement + 0x12))
                 {
                 case 1:
-                    schedule = TEST_FIELD_BIT(object->flag10a_bit2);
+                    if (!TEST_FIELD_BIT(object->flag10a_bit2)) continue;
                     break;
                 case 0:
+                {
                     if (!(((1 << object->type) & 0x1c) && (TEST_FIELD_BIT(object->flag12c_bit0) || TEST_FIELD_BIT(object->flag12c_bit1))))
                     {
                         vector3f displacement;
@@ -5711,29 +5738,28 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
                         real distance_squared = displacement.k * displacement.k;
                         distance_squared += displacement.j * displacement.j;
                         distance_squared += displacement.i * displacement.i;
-                        schedule = distance_squared > 1.0f;
+                        if (!(distance_squared > 1.0f)) continue;
                     }
                     break;
-                default:
-                    schedule = false;
-                    break;
+                }
+                default: continue;
                 }
             }
-            if (schedule)
+            long delay = function_15ac50(i);
+            signed char kind = *(signed char *)(placement + 0x14);
+            if (kind >= 0 && kind <= 7)
             {
-                long delay = function_15ac50(i);
-                long modifier = 0;
-                signed char kind = *(signed char *)(placement + 0x14);
+                long modifier;
                 if (kind == 0) modifier = *(signed char *)((byte *)g_4e6948 + 0x211);
-                else if (kind >= 1 && kind <= 7) modifier = *(signed char *)((byte *)g_4e6948 + 0x208);
+                else modifier = *(signed char *)((byte *)g_4e6948 + 0x208);
                 switch (modifier)
                 {
                 case 1: delay = NONE; break;
                 case 2: delay >>= 1; break;
                 case 3: delay <<= 1; break;
                 }
-                entries[i].value04 = (short)delay;
             }
+            entries[i].value04 = (short)delay;
         }
         short countdown = entries[i].value04;
         if (countdown > 0)
