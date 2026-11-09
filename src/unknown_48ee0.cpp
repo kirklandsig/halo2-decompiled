@@ -18,6 +18,7 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// MiniMax R (11-09): no new form, no lower score (174); the mode bit still loads the flags into edx where retail uses eax and the size stays in a register across the rounding calls where retail reloads it; retail passes the state in ecx and the matrix in ebx, the order src/unknown_0350e0.cpp already declares, so the definition's own parameter names stay as they are.
 // MiniMax H (11-07): no new form, no lower score; the extent, the width limit and the size sit one slot lower than retail's, which reuses the distance's and the extent's slots for the two limits, and the mode flag still loads the flags into edx where retail uses eax; the mode block moved after the sizing block, the flags written without the bool cast, the flags compared with one, the mode as a ternary chain and the flags in a named local all leave the flags in edx, and the moved block changes the convention and scores 245.
 // MiniMax I (11-06): the flags and mode placements were tried again and the original body restored;
 // the permuter produced no variant and the mode flag still loads the flags into edx where retail

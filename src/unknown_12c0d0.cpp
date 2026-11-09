@@ -997,6 +997,9 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax D (11-08): score 3 (was 3): the masked level address is still loaded into edx where retail reuses
+// the base register that dies with that load; the reduction branch, the format bits and the three header
+// stores agree with retail.
 // MiniMax B (11-06): no new form, no lower score; the last three instructions are the whole difference:
 // retail masks the level address in the dying bitmap base and stores it from there, this build loads it
 // into EDX and masks it there; a permuter run over the function was stopped before it reported a variant.

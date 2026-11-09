@@ -563,6 +563,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
+// MiniMax C (11-09): no new form, no lower score (45); the first cross product still takes its two temporaries in the other pair of registers (ours xmm1/xmm2, retail xmm2/xmm1) and retail keeps the k term in xmm4 with a movaps where this build reloads it from memory.
 // MiniMax C (11-06): no new form, no lower score.
 // MiniMax R (11-04): no new form, no lower score.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp

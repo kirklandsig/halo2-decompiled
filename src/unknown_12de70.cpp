@@ -570,6 +570,12 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // for the pointer 51 (edi/ebp swap). Diagnostics: with no release in the loop the tail still loads EDX and copies it to ECX, so
 // the tail copy is the tail's own; the swap follows the number of `cache_block->block` reads (the tail's block local plus the
 // loop read at each use and the tail's pointer base read through the cache block gives no swap, 38, but reloads the base).
+// Round 80 (m3 lane 10, fast): round 89's 18 form rebuilt: once the loop's block load lands in EDX the tail is exact with no other change, so the
+// tail's copy follows the loop. The release's block re-read with the address in a local first 27; the test re-reading the block field with the loop
+// local kept for the argument 27; diagnostics: the block read before the wait 71 (not retail's order), the count store written in both arms of the
+// linked test 18 (266 bytes: the stores merge after the test and the arm reloads the block into ESI). Retail's loop looks like two loads of the block
+// field with the second turned into `mov esi, edx` after allocation, as our tail does with `mov ecx, edx`: the loop and the tail trade which pair
+// is CSE'd. The release address named before the linked test (not in the arm) 27.
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

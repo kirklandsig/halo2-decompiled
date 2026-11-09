@@ -618,6 +618,10 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // that body is retail's but for two places: the folded `add eax, [esp+0x18]` (one instruction short, which shifts the
 // rest) and the first engine test's EAX/ECX swap. On that plain body: the first test through game_engine_get() 85; the
 // notify through a force-inline helper taking the bit (diagnostic, this caller only) 85; a `long const` field 85.
+// Round 73 (lane 14, fast): the dirty test held in a bool before the store 86 (270 bytes); plain field with the engine
+// globals in a local at the top for the dirty test 24 (field at entry, engine load at the top), with the engine peer read
+// before the store 25; plain field with only the peer read before the store 85 (folded); the volatile field with the peer
+// read before the store 14.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)

@@ -336,6 +336,7 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// MiniMax C (11-09): no new form, no lower score (93); the location query is still expanded here and the packed datum walk is still missing.
 // MiniMax S (11-06): no new form, no lower score: retail still packs the iterator handle as an index and a datum in one word and scans its bit vector in 32-bit words; ours keeps the two in separate values, and the location query's call boundary still differs (its owner is outside this lane).
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // Round 28 (lane G): what still differs is the location call itself: retail calls 0x11bed0 out of
@@ -1511,6 +1512,9 @@ struct s_looping_detail_request
 // with `lea esp, [esp]`, which also says retail's player block has a lower static frequency. Every retail site that inlines
 // 0x14dde0 (0x11b350, 0x13c250, 0x15c150, 0x225730) has the call at conditional depth 0-1; every one that calls it (0x125b40
 // 4, 0x1df3e0 3, 0x219ed0 3) at 3 or more; ours is at 2 (else, count test).
+// P384: Complete detached-source admission in bool/byte/char/signed-char/short/word/int/long:
+// 110/110/110/110/110/110/110/110. NOT kept: no equality or first-player call recovery.
+// Original source observation, direct attached test, both complete request arms and body restored; detail/offset transport remains.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

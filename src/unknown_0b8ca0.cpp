@@ -267,6 +267,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // word 4; the component index field as dword 4. Matched 0xbc470 makes this exact lookup index-first from
 // the same call-argument form, and the data-first sites with one data use (0xbc5e0, 0x1c35f0) keep the
 // component in a multi-use local, so retail's ECX data points to a second use of the component here.
+// Round 137 (lane 7, fast; a one-file LTCG harness reproduces 4): a second real use of the component gives retail's
+// data-first lookup (pool in EDX, data in ECX before the mask): a NULL test of it 42 (204 bytes), a test of its object field
+// 46 (209 bytes), both diagnostics; uses that leave no code do not (harness: an empty inline taking it 4, a dead field read 4,
+// a self-compare 4, cleared after the call 4). A `* const` component local 4; a `long const` index local in the arm 4; a
+// reference to the component 4.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -667,6 +672,9 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax D (11-08): score 230 (was 230): ours has an unaligned 0xac frame where retail realigns to eight
+// bytes with a 0xb4 frame, so the register homes and the block layout differ from the first byte; the
+// realignment is decided by the whole-program view of the callers.
 // score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // MiniMax b (11-06): no new form, no lower score; the angle's x87 sequence is retail's byte for byte
@@ -1822,6 +1830,9 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax I (11-08): no new form, no lower score (285): the shared epilogue at retail's 0xb987a and the
+// marker pointer retail inlines (that other file is /Ob1, so LTCG keeps our call) still leave the first
+// difference at +0x76.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60

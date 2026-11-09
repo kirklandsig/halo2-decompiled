@@ -323,6 +323,9 @@ struct s_pending_message_storage : s_pending_message_header
 // count 14; the pump count zeroed before start 105 (286 bytes); a _ReadWriteBarrier() after start 17 (0x18f260 82). Matched 0x1241b0 packs
 // the pump count into the first time stamp's slot as ours does here (its start stays in registers); matched 0x8c790 keeps start in EDI:EBP
 // and gives both time stamps one slot. A 600 s permuter run on the body (47 tries) found none below 14.
+// Round 142 (m3 lane 8, fast, on a copy of the helper in this file, header untouched; the copy reproduces 14): slot names
+// for the same-size ordering rule: pump count sorting before the capacity 14, sorting last 14; time-stamp local sorting
+// last 14, first 14; start sorting first 14. All five give identical stack offsets.
 // @retail 0x80e10
 bool function_80e10(s_pending_message_storage *request, void **output, long *size)
 {

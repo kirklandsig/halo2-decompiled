@@ -63,6 +63,7 @@ short *function_e70b0(short *value, long unit_index);
 long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax I (11-08): no new form, no lower score (13); the reference copied into a named local gives 16 with the table base in ESI instead of EDX, the barrier at five positions 94, and the action helper's result unused 13 (the same code).
 // MiniMax C (11-06): no new form, no lower score; the slot reference still loads into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index in ECX where retail scales it into EDX.
 // MiniMax I (11-06): no new form, no lower score; the slot reference still loads into EDX after the actor's index arithmetic where retail loads it into ECX before it, and the inlined action lookup still scales the index in ECX where retail scales it into EDX; this round the reference copied into a named local after the actor's lookup (99) and before it (100) both move the load but grow the body, and the permuter (420 s) found no candidate.
 // MiniMax G (11-05): no new form, no lower score; copying the slot reference into a long or into a
