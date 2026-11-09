@@ -984,6 +984,10 @@ bool c_projectile_type::v8(long a, long b)
 // read through the parameter's address with flags copied after or before the call 12/12 (the loads merge before
 // allocation); an object header local 12; object and flags declared, then assigned 12. Retail's code in this file
 // never zero-extends with a reg-reg movzx, only `and r, 0xffff`.
+// Round 158 (fast), all with the full-width mask: the object local named `device` 12; the mask on a second read of
+// the field through an indexed long view 12; the field read directly at the NONE test and the mask 12 (re-measured);
+// the group index read into a local at entry 50; flags declared before the lookup with the call's mask from `b` 12;
+// the object through the existing inline object_get 12.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {
