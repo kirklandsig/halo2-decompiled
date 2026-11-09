@@ -628,6 +628,9 @@ real function_30bf0(vector3f *vector);
 // P375: Existing safe staged cross with first/second/both inputs as complete twice-used scalar
 // captures, mutable/const, then both native/aggregate vector snapshots: 166/162/165/166/162/165/387/165. NOT kept: no native
 // scalar-home/product equality; shared header and complete original body restored.
+// T69: Actual range-entry byte-mask/byte-bitfield receiver, mutable/readonly settings,
+// each with mutable/readonly actor input: eight 84 on the native SIMD/indexed-seat graph.
+// NOT kept: no native range ingress or scalar-home recovery; original types and full body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

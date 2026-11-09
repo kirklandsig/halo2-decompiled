@@ -803,6 +803,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // P361: Complete actor-query success/rejection admission results in bool/byte/short/long at the original producer:
 // 219/219/219/219/219/219/219/219. NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // Early root EBX/actor EAX ingress and paired projection scheduling remain.
+// T68: Individual local names on the native paired-projection graph: both edges,
+// parent/origin projection, fraction, inverse length, facing and marker position:
+// 219/219/219/219/219/219/219/219. NOT kept: no exact ownership/home repair. Original executable body restored.
+// Early root/actor retention and paired projection ownership remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

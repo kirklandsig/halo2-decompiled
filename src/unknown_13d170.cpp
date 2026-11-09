@@ -184,7 +184,7 @@ struct s_physical_block_iterator
 // our body is 15 bytes longer (1228 against 1213), the first divergent branch being the jump to retail's 0x13d679.
 // MiniMax G (11-05): swapping the offset and previous declarations is the same code (347); retail keeps the offset in EBX and the current in EDI, ours the other way round, and the four-byte frame difference and the segment-arm layout stay unmatched; no new form, no lower score.
 // MiniMax S (11-01): the result/limit declaration swap reaches retail's frame but scores worse; no lower score.
-// score 209 (was 347): frame 0x1054 now as retail (the deletion walk's struct holds the never-touched dword at esp+0x54); page-offset/ring-tail allocation and policy blocks differ.
+// score 209 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but
 // ours moves the else arm past the scan; retail also uses the page offset (EBX) as its zero from
 // the limit clamp on, so EBX is pushed first. Candidate stores offset before time 370; busy as
@@ -484,6 +484,9 @@ struct s_physical_block_iterator
 // P373: Existing policy-result bare declaration at function/admission/record/outer-scan/
 // outer-iteration/inner-scan/inner-iteration/size-admission boundaries: eight 209s. NOT kept:
 // policy-placement/clamp homes unchanged; original whole body and false producer restored.
+// T69: Entry-matching policy replacement signed char/byte/short/long results
+// 209/209/212/211; retention-complement bool/byte/short/long 212/212/222/222.
+// NOT kept: ties/regressions; original policy result, case bodies and complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

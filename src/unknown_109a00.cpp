@@ -554,6 +554,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // body admission and previous-state transfer: eight 56. NOT kept: no native early spill,
 // axis/dot or failure-tail repair. Original complete body restored; all six exact controls
 // including the caller survive; frame 0x48 and 925-byte extent agree.
+// T68: Individual local names on the native transform graph: physics, selected body,
+// search latch, both ordinals, inverse, relative transform and up axis:
+// 56/56/56/56/56/56/56/56. NOT kept: no exact ownership/home repair. Original executable body restored.
+// Early definition register/spill, projection and failure tails remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
