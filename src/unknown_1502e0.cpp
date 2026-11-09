@@ -1234,6 +1234,10 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 // P393: Attachment admission before the paired clear traversal, positive/complementary
 // bool/byte/short/long: 254/254/254/254/254/254/254/254. NOT kept: one-use outcomes remain unmatched;
 // pool/player carriers and lazy tag-table acquisition remain. Original whole body restored.
+// T77: Live unit-index field references mutable/read-only and pointer before pool acquisition
+// 303/303/303; first-loop-only references 254/254; real weapon/paired-slot array references
+// 254/254; paired selected-slot field references 280. NOT kept: no native pool/player/tag
+// ownership equality; original lookups, observations and complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1527,6 +1531,9 @@ void function_150820(dword *bits, bool local_only)
 // and the weapon read through the global, no unit pointer 43; a unit_index local for the test, the lookup and the 0xcd7b0
 // argument with player->unit_index after the call 43; the weapon index as `slot != NONE ? unit->weapons[slot] : NONE` 43; the
 // hand declared after the unit lookup 70 (207 bytes).
+// T77: Live unit-index field mutable/read-only references and field pointer, entry/guarded
+// lifetimes 73/73/73/73/73; real held-slot/weapon array references and selected-weapon field
+// reference 43/43/70. NOT kept: no native saved-role equality; original body restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
