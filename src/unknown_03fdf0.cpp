@@ -9,6 +9,7 @@
 #include "globals.h"
 #include "index_cache_storage.h"
 #include "unknown_0494b0.h"
+#include "selected_source_pass.h"
 #include <string.h>
 #include <xtl.h>
 
@@ -132,7 +133,7 @@ extern byte g_485a75, g_485a76, g_4858bc;
 extern long g_485898, g_4858b8;
 extern real g_485adc, g_485ae0;
 extern vector3f g_485950;
-extern byte g_4ba022;
+extern bool g_4ba022;
 byte g_4ba018;
 
 __declspec(noinline) void *function_449e0(short index, bool instance, bool load);
@@ -686,6 +687,9 @@ void function_402b0(long cache_index, long mode)
 // Diagnostic: the passes as an inlined copy of 0x44370 with a const mode table 282 (895 bytes: stack
 // byte, pass-11 re-store and the 0x496f0 call as retail; only the dead g_485898 loads and frame
 // 0x88 missing); the same copy on the real writable table 782 (1389 bytes).
+// r136 lane 7 (plain): the four passes through draw_light_source_pass (moved into include/selected_source_pass.h,
+// with the stipple cull and case 11's `enabled = true`) 157 at 946/946 bytes (LCS-aligned 63 -> 20; the passes then
+// equal retail, but ours keeps the constant 1 in EBX where retail uses immediates); not kept (positional rise).
 // @retail 0x404b0
 bool function_404b0(long mode)
 {
@@ -766,7 +770,11 @@ bool function_404b0(long mode)
     return true;
 }
 
-// score 193 (was 193): BLOCKED-BY 0x44370. Frame 0x48 and geometry agree. Round 81 (fast; aligned
+// score 85 (was 193): r136 lane 7: the passes go through the shared pass helper (include/selected_source_pass.h, moved
+// there from src/unknown_0350e0.cpp unchanged), which follows 0x44370's body for a constant mode (gate by mode,
+// the two 0x15680 calls for the cull, late `case 3: case 16: enabled = true;`). With the cull test in a one-use `bool
+// stipple_enabled` (76; kept only with a match, coordinator 11-08): 1215/1215 bytes, every inlined pass equal to retail's except the 0x14b60 call (flags pushed, retail passes them in eax): BLOCKED-BY 0x14b60.
+// Earlier 193 (was 193): BLOCKED-BY 0x44370. Frame 0x48 and geometry agree. Round 81 (fast; aligned
 // count 24, so the 21 missing bytes cause most of the 193): the entry byte test as `<= 0` 192 (retail's
 // `jbe`); the selections or the geometry flag without their bool casts 193/193 (same code); pass 8 as
 // `selected = bit; if (selected) selected = g_4ba022;` 176 (aligned 16, not kept: a flag set inside a
@@ -871,72 +879,15 @@ bool function_3fdf0(long mode, bool single_pass)
             }
         }
     }
-    bool selected;
     if (single_pass)
-    {
-        selected = (bool)((g_4c1a48[0].flags >> 16) & 1);
-        if (selected)
-        {
-            g_467130 = 16; g_467134 = 0; g_467138 = &g_4c1a48[0];
-            g_4858b4 = g_4858b8;
-            function_14bc0((short)g_4858b8, 0, true); function_15680(0);
-        }
-        else g_467130 = 0;
-        function_15370(0);
-        if (selected) { function_44550(); function_445d0(); }
-    }
+        draw_selected_source_pass(0, 16, false, false, g_4858b8, false);
     else
     {
-        selected = (bool)((g_4c1a48[0].flags >> 1) & 1);
-        if (selected)
-        {
-            g_467130 = 1; g_467134 = 0; g_467138 = &g_4c1a48[0]; g_4858b4 = 1;
-            function_14bc0(1, 0, true);
-            if (!g_485a75 && !g_485a76) function_14b60(1, 0, 0.0f, 0);
-            bool stipple_enabled = g_485898 < 4 || g_485898 > 7;
-            function_15680(stipple_enabled);
-        }
-        else g_467130 = 0;
-        function_15370(1);
-        if (selected) { function_44550(); function_445d0(); }
-        selected = (bool)((g_4c1a48[0].flags >> 3) & 1);
-        if (selected)
-        {
-            g_467130 = 3; g_467134 = 0; g_467138 = &g_4c1a48[0]; g_4858b4 = g_4858b8;
-            function_14bc0((short)g_4858b8, 0, true);
-            bool stipple_enabled = g_485898 < 4 || g_485898 > 7;
-            function_15680(stipple_enabled);
-        }
-        else g_467130 = 0;
-        function_15370(1);
-        if (selected) { function_44550(); function_445d0(); }
-        selected = (bool)((g_4c1a48[0].flags >> 8) & 1) && g_4ba022;
-        if (selected)
-        {
-            g_467130 = 8; g_467134 = 0; g_467138 = &g_4c1a48[0]; g_4858b4 = g_4858b8;
-            function_14bc0((short)g_4858b8, 0, true); function_15680(0);
-        }
-        else g_467130 = 0;
-        function_15370(0);
-        if (selected) { function_44550(); function_445d0(); }
-        selected = (bool)((g_4c1a48[0].flags >> 20) & 1);
-        if (selected)
-        {
-            g_467130 = 20; g_467134 = 0; g_467138 = &g_4c1a48[0]; g_4858b4 = g_4858b8;
-            function_14bc0((short)g_4858b8, 0, true); function_15680(0);
-        }
-        else g_467130 = 0;
-        function_15370(0);
-        if (selected) { function_44550(); function_445d0(); }
-        selected = (bool)((g_4c1a48[0].flags >> 7) & 1);
-        if (selected)
-        {
-            g_467130 = 7; g_467134 = 0; g_467138 = &g_4c1a48[0]; g_4858b4 = g_4858b8;
-            function_14bc0((short)g_4858b8, 0, true); function_15680(0);
-        }
-        else g_467130 = 0;
-        function_15370(0);
-        if (selected) { function_44550(); function_445d0(); }
+        draw_selected_source_pass(0, 1, true, true, 1, false);
+        draw_selected_source_pass(0, 3, true, true, g_4858b8, false);
+        draw_selected_source_pass(0, 8, false, false, g_4858b8, false);
+        draw_selected_source_pass(0, 20, false, false, g_4858b8, false);
+        draw_selected_source_pass(0, 7, false, false, g_4858b8, false);
         if (function_44370(2)) { function_44550(); function_445d0(); }
     }
     g_4c1a48[0].flags = g_4c1a48[0].unknown10;

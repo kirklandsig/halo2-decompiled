@@ -3295,7 +3295,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 000edf10,69,game,speed,a16 pad,,,000eda70 0010f630 0010f720,src/unknown_0a76b0.cpp,matched
 000edf60,53,game,speed,a16 pad,,,000eda70,src/unknown_0a76b0.cpp,matched
 000edfa0,76,game,speed,a16 pad,,,,src/unknown_0a76b0.cpp,matched
-000edff0,154,game,speed,a16 pad,,,000edfa0,src/unknown_0a76b0.cpp,todo
+000edff0,154,game,speed,a16 pad,,,000edfa0,src/unknown_0a76b0.cpp,matched
 000ee090,973,game,speed,a16 pad,,,00030bf0 000b75a0 000b77d0 000b8840 000b9a50 000ba160 000e5690 0010f430 0011d820 00141f60 001420f0,src/unknown_0a76b0.cpp,matched
 000ee460,542,game,speed,a16 pad,,,000b75a0 000bd020 0010f430 00142a60,src/unknown_0a76b0.cpp,matched
 000ee680,359,game,speed,a16 pad,,,000e68c0 00168896,src/unknown_0a76b0.cpp,matched
@@ -3798,7 +3798,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0011bb40,169,game,unknown,a16,,,000bb950,src/garbage.cpp,matched
 0011bbf0,237,game,speed,a16 pad,,,0020a9a0,src/crates.cpp,matched
 0011bce0,121,game,speed,a16 pad,,,001d24a0,src/crates.cpp,matched
-0011bd60,92,game,speed,a16 pad,,,001d3550,src/unknown_0b9fc0.cpp,todo
+0011bd60,92,game,speed,a16 pad,,,001d3550,src/unknown_0b9fc0.cpp,matched
 0011bdc0,88,game,speed,a16 pad,,,,src/unknown_11bdc0.cpp,matched
 0011be20,28,game,speed,a16 pad,,,00211cc0,src/unknown_11be40.cpp,matched
 0011be40,8,game,speed,a16 pad,,,,src/unknown_11be40.cpp,matched

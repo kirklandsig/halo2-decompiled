@@ -542,6 +542,10 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // the unit tests as `0.0001f > fabs(...)` 13; the clamp as `dot < -1.0f` / `1.0f < dot` 60 (1105 bytes); the priority
 // store after the duration and timer stores 35. Re-measured listed forms: forward j before i 25, cosine before sine 33.
 // BLOCKED-BY 0x170d70: the rows follow the shared rotate_vector_170d70 text in its file, src/unknown_170d70.cpp (held).
+// P362: Existing planar dot/cross and forward point-setter subsets 1/2/4/3/5/6/7
+// 23/13/15/21/31/21/27; both planar helpers with the vector setter 27. NOT kept:
+// no byte equality or gain. Original body and includes restored; held rotation helper
+// untouched. Native j/k input-load and sum ownership remain.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -631,6 +635,8 @@ s_object *function_badc0(long index, dword mask);
 point3f *function_b9dd0(long index, point3f *point);
 void function_caf60(long index, point3f *point);
 __declspec(noinline) s_player_state *function_16f3a0(long index);
+bool function_14ddc0(long local_player_index);
+long function_14de70(long local_player_index);
 long function_189fe0(s_sound_request const *request, long tag_index);
 void rumble_player_play_effect(long player_index, long definition_index, long effect_index, real scale);
 void function_225df0(long tag_index, long entry_index);
@@ -698,6 +704,11 @@ struct s_player_axes_153d10
 // origin and target swapped or split 5/5; state dropped, axes from the call 11; axes at the top of the block 5; the pointers after delta 5; relative before cross 5; owner index named 9; slot fields by array 5.
 // Round 94 (lane 16, plain): forward/up as const references 2; cross as an aggregate initializer 2; relative as an aggregate
 // initializer 2; a const axes view pointer 2; const axis pointers (`vector3f const *const`) 2.
+// Round 98 (m3 lane 12, plain): the local player tests and lookups through the existing 0x14ddc0/0x14de70 at both
+// sites 2 (the same code: LTCG inlines both; kept in place of the hand copies), at the first site only 2, the second only 2,
+// 0x14de70 only 2, 0x14ddc0 only 2. Compile-only (exact here): 1-12 unused locals at the top, before the axes pointer or
+// before delta leave the cross block unchanged; 1-4 redundant parens in any cross row or in delta all shift the six
+// products together with period 4 (3 puts this product right and the up.k-against-forward.j one wrong).
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {
@@ -706,9 +717,9 @@ void __stdcall function_153d10(long user_index, long tag_index, void *owner, voi
         return;
     s_camera_effect_tag_153d10 *definition = (s_camera_effect_tag_153d10 *)g_4e3b44[tag_index & 0xffff].bytes;
     s_speed_slot *slot = &g_510c5c->slots[local_index];
-    if (local_player_present(local_index))
+    if (function_14ddc0(local_index))
     {
-        long player_index = g_4e8c20->entries[local_index];
+        long player_index = function_14de70(local_index);
         long unit_index = *(long *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x2c);
         if (unit_index != NONE)
         {
@@ -786,9 +797,9 @@ void __stdcall function_153d10(long user_index, long tag_index, void *owner, voi
             return;
         }
         long unit_index;
-        if (local_player_present(local_index))
+        if (function_14ddc0(local_index))
         {
-            long player = g_4e8c20->entries[local_index];
+            long player = function_14de70(local_index);
             unit_index = *(long *)(g_4e8c24->data + (player & 0xffff) * 0x21c + 0x2c);
         }
         else
