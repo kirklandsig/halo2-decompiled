@@ -3439,6 +3439,10 @@ bool g_55e6bc;
 // the output into a row base (ESI) and an advancing cursor (EDX); ours uses one cursor in ECX, the
 // counter in EDX, and multiplies the near plane in a register where retail folds the global into
 // the multiply.
+// MiniMax E (11-09): no new form, no lower score (87); the order around the bounds check still differs:
+// retail multiplies the near plane before it reads the buffer's begin and end and writes the three shared
+// render globals (the near plane, the far plane and the flag word) after the check, where ours multiplies
+// after the compare and writes them before it.
 // @retail 0x12d50
 void function_12d50(bool scaled, real const *projection, real *output)
 {
@@ -6200,6 +6204,10 @@ void function_22850(void);
 // the override carried in two locals and the pair stored again at the end: 182 against 202,
 // but the first stores are always overwritten (a no-op form), so not kept without a match.
 // The locals alone score 218 (fast). Retail does compare the current depth with zero here.
+// MiniMax E (11-09): no new form, no lower score (153); retail divides 1.0f by the gamma's high word once and
+// multiplies that inverse into the low and the high word (and by 16777215.0f), while our build divides the
+// 16777215.0f constant by the high word and multiplies that into the two words, so the two bounds come out of
+// a different association.
 // @retail 0x12a50
 void function_12a50(s_frame_parameters_12a50 const *parameters)
 {
@@ -7043,6 +7051,10 @@ real scenario_ramp_evaluate_current(long index);
 // score 139 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
 // frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
 // frame pointer in the prologue, so every stack slot sits four bytes off.
+// MiniMax E (11-09): no new form, no lower score (139); retail calls 0x137a0 for the ramp's value where our
+// build expands it into the float arithmetic, and the ramp's three results sit in different frame slots
+// (retail's esp+0xc, esp+0x6c and esp+0x10 against our esp+0x10, esp+0x14 and esp+0x74), so the difference
+// is not only the four-byte frame offset.
 // @retail 0x13870
 void __stdcall function_13870(bool finish, bool blur)
 {
@@ -8751,6 +8763,10 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // as the second and third arguments), the device result tested directly with the failure
 // path writing the flag, and the palette result in a local of its own: 167 against 171;
 // under the keep bar, body restored.
+// MiniMax E (11-09): no new form, no lower score (171); retail hands the two offsets over as sign-extended
+// 16-bit values (movsx ecx,cx and movsx edx,ax after the two movs, with the width left in EAX as well) where
+// ours passes the two constants as dwords; the callee's declaration, which decides that, is in another file
+// this lane may not edit.
 // @retail 0x12560
 void function_12560()
 {

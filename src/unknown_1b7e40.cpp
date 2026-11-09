@@ -278,6 +278,12 @@ bool function_25d9b0(long prop_index);
 // M400: Original velocity/iterator defaults via aggregates or CRT, at original phases/entry,
 // separately/together: 95/90/163/211/231/187/187/230. NOT kept: all regress;
 // original twelve-byte workspace producers, busy test and all exits restored.
+// MiniMax E (11-09): no new form, no lower score (49); the instruction sequence matches retail's up to the
+// last block, and what is left is its layout and the form of the final choice: retail tests the 0x25d9b0 result
+// and branches to an epilogue of its own that returns the priority in AX (pop edi; mov ax,si), where our build
+// computes the choice as a mask (neg al; sbb eax,eax; not eax; and eax,esi) and returns it in EAX, and our
+// shared "return 0" exit sits after the priority block where retail's sits before it, so our body is six bytes
+// longer (557 against 551); the inverted test, a local for the result and an extra return all give the same 49.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -522,6 +528,10 @@ evaluate:
 // 88/88/92/92 in both (earlier single-result lowering, confirmations only).
 // Actual status/prop-index eight-byte homes: status signed/unsigned 83/83, index
 // signed/unsigned 92/92, four joint domains 106 each. Original body restored.
+// MiniMax E (11-09): no new form, no lower score (73); our build saves esi and edi in the prologue and tests the
+// seat's count after the saves, while retail tests it before any save and keeps esi as a scratch register (it
+// pushes esi only after the count check and does not push edi at the top), so every instruction after the
+// prologue is shifted; retail also calls 0x25d740 out of line where our build inlines it.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

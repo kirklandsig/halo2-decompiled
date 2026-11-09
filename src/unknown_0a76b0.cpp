@@ -1836,6 +1836,10 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // opposite hand decision 76; primary set from equality 87; signed action displacement 90; full-
 // width active result after primary 11. NOT kept: no qualifying byte match or gain; original
 // body restored.
+// MiniMax E (11-09): no new form, no lower score (11); the type's flag is read much later (test bl,bl and
+// sete cl after the tag lookup), so retail can leave the compare at the end of the entry block, while ours
+// hoists it (cmp ecx,8 and sete bl) in front of the index arithmetic and reads the item table after the
+// object index; the rest of the function matches instruction for instruction.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -4070,6 +4074,11 @@ void function_e5750(long unit_index);
 // with an early return 72, a bool local before the call 83; after the call an early return 52, `!type` 52.
 // Round 146: definition below the final helper, post-call pointer/const pointer/header/byte/bool locals,
 // zero-path return and single-exit goto all 52; original restored.
+// MiniMax E (11-09): no new form, no lower score (52); retail reads the item table through the global before
+// the 0xec0d0 call and keeps the unit pointer in EDI, where ours reads the table after the call and keeps the
+// pointer in ESI, because our build expands the matched 0xe5750 into the call (95 bytes against retail's 67);
+// 0xe5750 is finished contributor code and the only form that kept it out of line was a noinline declaration,
+// which is no longer allowed.
 // @retail 0xec330
 void __stdcall function_ec330(long unit_index, long type)
 {
