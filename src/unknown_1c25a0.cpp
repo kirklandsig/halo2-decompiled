@@ -858,6 +858,10 @@ void function_1c54b0(char const *variants, long object_index)
 // the whole per-island body as a plain inline helper is not inlined here 286/288 (45-47 bytes), four call forms with either flag order.
 // Round 219 (lane 3, fast): the flag as char before/after the call 4/18; as long, int or dword 79 in either order; a long `kept` step (1,
 // cleared on discard, added to the index) 36 in either order.
+// Round 173 (m3 lane 4, fast): the island re-read from the world in the discard call's argument, flag after/before the call 18/4
+// (same code as the island local); with the flag after the call: the entity index declared at function scope 18, the island
+// index declared in the for statement 18, count and flag declared ahead of the island and entity count 18. Diagnostic: with the
+// flag after the call the tail is retail's from the call on; only the entity count/cursor ebx/ebp swap and the reload pair remain.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {

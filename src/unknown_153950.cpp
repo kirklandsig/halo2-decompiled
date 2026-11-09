@@ -542,6 +542,10 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // the unit tests as `0.0001f > fabs(...)` 13; the clamp as `dot < -1.0f` / `1.0f < dot` 60 (1105 bytes); the priority
 // store after the duration and timer stores 35. Re-measured listed forms: forward j before i 25, cosine before sine 33.
 // BLOCKED-BY 0x170d70: the rows follow the shared rotate_vector_170d70 text in its file, src/unknown_170d70.cpp (held).
+// P362: Existing planar dot/cross and forward point-setter subsets 1/2/4/3/5/6/7
+// 23/13/15/21/31/21/27; both planar helpers with the vector setter 27. NOT kept:
+// no byte equality or gain. Original body and includes restored; held rotation helper
+// untouched. Native j/k input-load and sum ownership remain.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

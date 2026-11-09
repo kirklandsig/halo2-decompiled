@@ -71,7 +71,7 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 }
 
 // MiniMax R (11-06): no new form, no lower score (371); the frame is 0x38 here and 0x34 in retail, and this takes a frame pointer where retail keeps the connection in EDI.
-// score 371 (was 393): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
+// score 356 (was 371): frame 0x38 versus 0x34 (local_18 still has a stack home, retail EBP); observer/channel/result
 // and counter homes remain.
 // MiniMax I (11-01): 374 with the has-host and packet flags as words (score-picked, see below), the record as
 // observer + index*0x528 with the 0xa8 folded into the field offsets, the search through the channel array and
@@ -183,6 +183,31 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // payload `local_29 - 45` as a named local for its test and store 427 [203] (1385 bytes; retail forms it early, `lea ebp, [ecx - 0x2d]`);
 // the snapshot and reset as `*(__int64 *)&g_4e6398` (unknown_12b070.cpp's view) 426 [229] (1340 bytes). Retail keeps the result byte in
 // arg_1's dead slot and the rounding temp in arg_3's ([esp+0x48], [esp+0x50]), fistp straight into local_13's home.
+// T64: Explicit high/low integer-value producers through SDK/existing counter unions,
+// snapshot only or snapshot/reset and both component orders: 424/424/425/425/424/425/424/425.
+// Frame reaches 0x34 but result/budget/observer homes regress. NOT kept: unmatched native-value
+// union/copy forms; original bit composition, all thresholds, outputs and body restored.
+// P365: Sole logical-result exit on the current tail, positive scope bool/byte/char/long
+// 356/429/429/430; negative scope 400/429/429/443. Keep only the original-bool
+// positive scope, plain 356 at 1374/1369 bytes; native three epilogues remain.
+// No call, input, arithmetic or output change. Wider/negative forms restored.
+// P368: On the sole-result graph, interval/rate/window home identities, seven subsets,
+// then all with the elapsed-tick home named: 356/356/356/356/356/356/356/356. NOT kept:
+// no native home recovery or byte match; original names and complete body restored.
+// P370: Complete host-first/callback-first rate producers, branch/expression, independently or
+// jointly selected limits: 422/422/417/417/422/422/417/417 at 1384/1380 bytes. NOT kept: all
+// regress and grow from native length; original rate, limits and complete body restored.
+// P372: Reciprocal-limit ownership, immutable/mutable/earlier bare storage,
+// disjoint clamp arms, full conditional, conditional with reciprocal, carried candidate,
+// successive reciprocal division: 399/399/399/421/356/399/399/399.
+// NOT kept: ties/regressions; original complete body restored. Native frame 0x34,
+// observer EDI, bandwidth EBP and counter/result homes remain unrecovered.
+// P375: Entry constant-default lifetimes for selected capacities/pacing/payload-output, masks 1..7,
+// then complete defaults with returned Boolean first: 429/488/463/350/424/499/505/506. NOT kept: 350 reaches native
+// 1369 bytes but gains only six; no native sentinel/home match. All original defaults and body restored.
+// P377: Whole packet-scale branch/negative-chain/callback-first/expression producers,
+// then each with its actual scaled-payload node: 356/363/413/363/356/363/413/363. NOT kept: no native observer/budget/frame
+// equality; complete original scale, rounder, counter and result graph restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
@@ -355,9 +380,9 @@ bool s_network_observer::connection_v05(long arg_1,
 		*arg_8 = local_30;
 		*arg_5 = arg_4;
 		*arg_6 = local_7;
-		return local_2;
 	}
-	return false;
+	else
+		local_2 = false;
 done:
 	return local_2;
 }
