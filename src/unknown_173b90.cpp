@@ -1400,6 +1400,8 @@ bool function_17afd0(long effect_index, long value);
 
 // MiniMax I (11-08): no new form, no lower score (47).
 // MiniMax C (11-06): no new form, no lower score; the availability flag is still computed with neg/sbb/inc where retail clears BL before the view test and sets it with a branch, and retail still re-reads the view global after the 0x17afd0 call.
+// MiniMax S (11-09): the availability set by a branch that turns it true scores 135, the same branch with its
+// initialisation moved after the view load 131, and the same-value ternary 47 (the same code); the base's 47 stands.
 // score 47 (was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
 // availability clear/result and the post-attachment view refresh remain.
 // availability clear/production and the post-attachment view observation remain.
@@ -1650,6 +1652,10 @@ bool function_17afd0(long effect_index, long value);
 // success 142 (510); that reload mix with availability false right after the view read and set on success 138 (510)
 // [70]; the reload mix with one-expression availability 113 (498) [51]. Every branchy availability keeps NONE in
 // EBX past the view and owner tests, where retail coalesces the owner with NONE in EBP.
+// P394: Post-attachment external-view suppression at its actual else-arm producer,
+// positive/complementary byte/short/long/dword results: 47/47/47/47/47/47/47/47.
+// NOT kept: one-use suppression results require equality; original admission and body restored.
+// Availability clearing/production and post-attachment view observation remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

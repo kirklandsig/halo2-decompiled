@@ -786,6 +786,7 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax D (11-09): no new form, no lower score (43); reading the unit index before the player pointer gives 43 (was 44) but leaves the carriers as they were - retail holds the datum address in EDI and the unit index in EBX, we hold them the other way round - so it is not kept.
 // MiniMax C (11-09): no new form, no lower score (43); retail's walk presets its root to NONE and
 // starts the walk at the unit, so the unit carrier takes EBX and the datum address EDI, the other
 // way round from ours, and the walk itself is still the out-of-line 0xbaf80.

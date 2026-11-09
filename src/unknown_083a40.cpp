@@ -758,6 +758,10 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // `(&watcher->players)->players[i].key` 294; the swap order above 32 (re-measured), with the else-branch calls
 // through `&watcher->players` 32; `slot`/`occupied` at the else branch's top 28 (same code); the second loop's
 // `update` declared `= NULL` 28 (same code).
+// Round 175 (fast with 0x69260/0x84e90/0x84c90): the swap's update as `updates + ++*count - 1` 28, with the occupied
+// update the same way 28 (both same code); the occupied key through a const reference to `collection->players[i]` 41;
+// the swap's update through a block-scoped pointer 28 (same code); the occupied key as
+// `watcher->players.players[i].key` 294 (1064 bytes).
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

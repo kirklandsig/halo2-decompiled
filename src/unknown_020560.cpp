@@ -101,6 +101,12 @@ PRIVATE __forceinline long texture_floor(real value)
 // the entry's level used for the test and the store 4. Caution: the compile-only harness is not faithful here
 // (non-LTCG /Gr passes the bitmap to 0x143c0 in EDX, so EDX is natural there; LTCG passes it in ECX), so its
 // screens of the bitmap block say nothing; retail 0x143c0 itself clobbers EDX.
+// Round 79 (m3 lane 11, fast): the NONE test as an early clear plus `continue` 107; the global bias at +0x2c read
+// into a local before the loop 126 (414 bytes); 0x143c0's two size stores through a short pointer (callee form;
+// 0x143c0 still matches) 4; the bit computed at the loop top and cleared at the end 108 (398 bytes); bitmap as dword 4. Diagnostic
+// (reverted): a probe load stored to a global in the latch takes ECX and the clear keeps EDX, so EAX is held off
+// at the latch rather than one rotation step behind. A one-file LTCG link with 0x143c0's file reproduces EDX but
+// not 0x143c0's register convention.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

@@ -981,6 +981,11 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // Round 98 (m3 lane 12, fast, 0x194260 checked each time): a barrier after the reader's rdtsc 94 (259 bytes; 0x194260 92);
 // the allocator returning early when there are no pages 3; a barrier after the allocator's start read 6 (0x194260 4); the
 // elapsed time from a `now` local 3; the reader defined after the allocator, declared before it 3.
+// Round 158 (compile-only, which reproduces the order): the zero stores through a forceinline clearing helper taking
+// `volatile __int64 *` drop them (an 80-line listing); `file` declared first with the result after it 3; the result
+// declared bare and set false after the allocation (into a register, frame 0x10, a 72-line listing); the allocator's
+// start read before its null result 3; a volatile LARGE_INTEGER zeroed through QuadPart 3; (fast) the allocator returning
+// the allocation from inside a `while (true)` 105 (232 bytes; 0x194260 120), the low zero store still hoisted.
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {
