@@ -267,6 +267,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // word 4; the component index field as dword 4. Matched 0xbc470 makes this exact lookup index-first from
 // the same call-argument form, and the data-first sites with one data use (0xbc5e0, 0x1c35f0) keep the
 // component in a multi-use local, so retail's ECX data points to a second use of the component here.
+// Round 137 (lane 7, fast; a one-file LTCG harness reproduces 4): a second real use of the component gives retail's
+// data-first lookup (pool in EDX, data in ECX before the mask): a NULL test of it 42 (204 bytes), a test of its object field
+// 46 (209 bytes), both diagnostics; uses that leave no code do not (harness: an empty inline taking it 4, a dead field read 4,
+// a self-compare 4, cleared after the call 4). A `* const` component local 4; a `long const` index local in the arm 4; a
+// reference to the component 4.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
