@@ -342,6 +342,10 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 // 900-second budget on a loaded machine and was stopped by the harness's background limit; it wrote nothing.
 // MiniMax E (11-05): no new form, no lower score; the seven differences stay the sample base against the
 // entry's data offset, the object index load and the curve pointer setup; passing the scale directly gives 8.
+// MiniMax S (11-09): the 2-diff memcpy form still differs only in the two loads' registers (retail keeps the
+// sample base in EDX and the offset in EDI, ours the other way round); a round trip of the base through a dword
+// folds back to the pointer form at 7, and the index form, a pointer local and an unsigned index leave the offset
+// in the add's destination, at 7 or 8.
 // score 7 (was 7): sample-base and offset registers plus object call setup remain; readonly data
 // input 7; readonly entry input 7; native count identity 7; output count lifetime 52; existing
 // scale storage lifetime 7; input pointer home names 7; existing scale home names 7; inline matched

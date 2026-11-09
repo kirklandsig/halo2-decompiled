@@ -439,6 +439,17 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // (656), over a count local with an index copy 51; compile-only, the bool helper with a named caller result, `== false`,
 // braces, a `goto next` arm, BOOL or swapped parameters all keep bool CL, count EAX, list EDX. A helper returning the
 // new count (0 when full) 52.
+// Round 175 (one-file LTCG harness with the caller's and callees' files; it reads 2 above the real count for the two
+// unresolved XDK calls; the numbers below have those 2 taken off): in the bool-append family one dummy global load/store right after the
+// append call makes every register outside the append block retail's, so that family's rotation is one step off there;
+// the append block itself stays bool CL / count EAX / list EDX (retail AL / ESI copied to EAX / ECX) in every spelling
+// with that probe (index copy, nested index helper, room and index helpers, count local, preset-false result, copy
+// before `count++`, slot pointer, member function). Without the probe: a non-inline bool append in saved_game_storage.cpp
+// that LTCG inlines, with an aggregate assignment 55 (656 bytes), with a false preset and `count < 4096` 52 (654), with an
+// early `return false` 52 (654); the pointer helper's body as such a cross-module function 20 (same code); a bool helper
+// taking the slot from `&entries[count++]` with memcpy 32, with an aggregate assignment 32. No existing function appends to
+// the location table. A `room` flag set in the found block and tested in the do/while condition 159 (668 bytes), with
+// an index copy and memcpy 175 (671): the flag lives in BL and a stack byte.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

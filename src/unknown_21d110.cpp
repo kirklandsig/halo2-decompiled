@@ -479,6 +479,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // mutable/immutable: original/nested admission 160 each; sequential failure 164 each;
 // combined admission 160 each. NOT kept: starter remains outlined; its new input
 // stack home is absent from the retail call graph despite frame four and no caller losses.
+// MiniMax S (11-09): no new form, no lower score; retail still takes the first argument in EAX and
+// keeps it in EBX with a four-byte frame, while ours reserves eight bytes and pushes ESI and EDI, so
+// the prologue and every later use of the two arguments still differ; the request convention cannot
+// change here without the eight matched callers in other lanes' files.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

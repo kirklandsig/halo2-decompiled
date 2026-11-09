@@ -308,6 +308,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // successor share EDX); the table-first successor with the result, `break` and `index = next` at the end 60 (137 bytes);
 // `continue` filters with the table-first successor 54 (hoisted; successor copied to ECX); diagnostic: the `continue`
 // body as a guarded do-while 43 (main's code exactly, no hoist: the hoist with `continue` needs the top-tested loop).
+// P390: Nullable-copy admission in positive/complementary bool/byte/short/long:
+// 43/43/43/43/43/43/43/43. No exact early-save, independent successor, mask or failure-exit recovery;
+// original nullable copy restored. NOT kept: no qualifying exact/native-shape gain; original complete
+// body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -921,6 +925,10 @@ void function_1537f0(s_profile_record *record);
 // walk stepped beside a count-up index 53 (same code). Retail's frame (0xa0, 8-aligned, identity +0x10, a 4-aligned
 // record at +0x1c, 4 bytes free at the top) is exactly one 0x9c-byte object {qword, dword, 0x90-byte record}; no
 // existing type has that layout, so the identity still folds.
+// P387: Whole identity-record standard fill/fill_n/uninitialized-fill/uninitialized-fill_n,
+// per-visit then outer raw storage: 110/110/116/108 twice. NOT kept: native identity homes
+// still fold or move into a larger frame; 295-300 bytes versus 258. Both original initializers,
+// per-visit fills, pointer walk and complete body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1533,6 +1541,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // below 6; on it the plain forward loop 53 (upper back in EAX, index EBP, two leas), `position--` before `upper--` 10, the
 // copy arms tested as `!downward` 340, the count path assigning upper first 8. Left on the 6 form: the cursor's start
 // (`&g[lower + 1]`) is computed before the loop guard, where retail forms it after the guard from the index in EAX.
+// P387: Complete entry transfers at the actual player/metadata boundary, forward/reverse/both
+// native payload then library suffix 446/435/503, both library subranges 446/435/503,
+// both metadata-first native/library payloads 374/374. NOT kept: all regress to 1222-1270
+// bytes versus 1171; original capacity, full-record copies, repairs and complete tail restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

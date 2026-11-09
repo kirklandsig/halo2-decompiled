@@ -1154,6 +1154,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// MiniMax D (11-09): no new form, no lower score (33); the query-size and write-count homes are still exchanged (ours size at [esp + 0x28], write count at [esp + 0x24], retail the other way round) and the write call still builds its flags zero in EAX where retail builds it in ECX with the handle already in EAX.
 // MiniMax R (11-09): the two out parameters sit in each other's homes, the size at [esp + 0x28] where retail keeps
 // it at [esp + 0x24] and the bytes written the other way round; declaring the bytes written local beside, before
 // or above the size local, and the size local above the loop body, all give 33 with the same code.
@@ -1566,6 +1567,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P384: Complete complementary one-time cleanup state, byte/char/signed-char/short/word/int/long/dword:
 // 36/36/36/154/154/252/252/252. NOT kept: all regress; original cleanup producer, every asynchronous
 // operation/wait/output, failure-only count and complete body restored. Query/count homes and write/header joins remain.
+// P397: Actual asynchronous size/resize/write outputs with local qualifiers,
+// seven subsets then all at function scope: 33/33/104/33/104/104/104/104.
+// NOT kept: the asynchronous-output exception requires equality; query/count
+// homes and write/header joins remain. Every trial qualifier and complete body restored.
 // @retail 0x213970
 void function_213970(void)
 {
