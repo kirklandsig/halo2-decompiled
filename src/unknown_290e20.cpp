@@ -488,6 +488,9 @@ struct s_ai_scene_assignment
 // the actor index, so the store-block load order is not the register choice. Stores in field order (actor, score,
 // name, variant) 12; the last-role flag computed after the switch 47, with the direct maximum 86 (350 B); the
 // pre-increment leaf test on the int copy 12; the actor index and a long role named in the found arm 12.
+// Round 80 (m3 lane 10, fast): the direct maximum (no int copy) 59 (350 bytes, control); on it a forceinline helper filling the role's four fields
+// with a short role 59, with a long role 59; that helper on the int-copy form 12, with a long role 12 (348 bytes, same code); the compares on the
+// short parameter with the int copy only for the recursion 58 (351 bytes).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

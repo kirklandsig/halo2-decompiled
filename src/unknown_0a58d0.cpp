@@ -366,6 +366,9 @@ bool function_a9820(long *block, long index)
 	return result;
 }
 
+// MiniMax D (11-08): score 11 (was 11): retail loads the database into the world register that dies at that
+// load and folds the active byte into the scaled address (mov cl, byte ptr [eax+edx+0x20b2]); ours loads the
+// database into a fresh register and reads the byte from the materialised record address.
 // MiniMax C (11-06): no new form, no lower score; the database pointer still loads into ECX where retail reuses the dying world register EDX, so the active byte cannot fold into the scaled record address.
 // MiniMax S (11-05): no new form, no lower score: the database pointer is still loaded into ECX where retail reuses
 // the dead world register, so the active byte is still read through the materialised record address; the active byte

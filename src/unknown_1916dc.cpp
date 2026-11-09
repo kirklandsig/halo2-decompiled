@@ -70,7 +70,7 @@ void __stdcall function_191e51(long definition_index, long player_index)
 
 /* shows the item's message for a count of it */
 // @retail 0x191ec4
-void __stdcall function_191ec4(long definition_index, long player_index, short count)
+void __stdcall function_191ec4(long player_index, long definition_index, short count)
 {
 	if (player_index != NONE)
 	{

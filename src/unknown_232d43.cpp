@@ -1030,6 +1030,11 @@ struct s_string_buffer
 // chain whose 7/8 tests are a range 50 (481); the `== 9` arm's loads through byte offsets (to keep the arms apart) 50 (481).
 // Compile-only, all 9 in line: the `== 9` arm's loads reversed, through pointer arithmetic, `(long)(dword)` casts or a row
 // pointer; a separate-arm switch in descending order; a 1/3/4 + 7/8/9 two-arm switch; a 1/3/4/7/8 + 9 switch; speed preference.
+// Round 142 (m3 lane 8, plain): compile-only builds do not reproduce the after-return blocks of matched 0x257320/0x1a391f
+// (LTCG threading of a repeated identical test), so compile-only screens cannot show this layout. The 2 test first in a
+// seven-mode chain with the loads, then `if (== 2)` time else `%d` 94 (472 bytes); the six-mode chain written twice
+// (value1, value2) 104 (517); one named bool for the chain tested twice 50 (481, merged); a 1/3/4/7/8/9 switch holding the
+// loads 100; the 9 test through an inline multi-return predicate 50 (481).
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {
