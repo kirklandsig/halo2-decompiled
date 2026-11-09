@@ -1182,6 +1182,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // left (i, k, j), up (k, i, j) (ours forward (k, i, j), left (j, k, i), up (j, i, k)); everything else left is
 // operand folding and register colours. Callers 0x31c80 (184) and 0x32350 (448) and callees unchanged by this note.
 // Permuter, 30 minutes (11-06): 277 only with the sphere radius read through a volatile pointer and word casts. Not kept.
+// Round 97 (m3 lane 9, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0; aligned in brackets, base [273]): the four sphere projections as a
+// corner loop 528 (2810 bytes) [405]; a direction pointer for the negate 290 (same code); the sphere test in a bool 479 (2814) [293]; a
+// matrix pointer set after the memset and passed to 0x141590 479 (2814) [293]; a points pointer for the cone corners 479 (2814) [288];
+// the orthogonal test with the kind cast to short 599 (2778); the cone width and height read into named locals 576 (2800); the far
+// distance in a named local 580 (2796); the sphere point count in a short local 575 (2801). As before, any added local moves the
+// projection rows and the length; none below 290. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

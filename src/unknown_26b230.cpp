@@ -2026,6 +2026,13 @@ void function_269250(long clump_index, long actor_index);
 // selection in EDI with a reload at the loop top, and the found block placed after the loop body); on it a `byte` activity
 // snapshot 126, the group declared in the while condition 126, a `dword` selection 126, the score declared at the top of the
 // walk body 126, the candidate index named before the score call 126 (all the same code).
+// Round 97 (m3 lane 9, fast; this body 89 fast, 87 plain; aligned in brackets, this body [58]): in-arm compare re-measured 126 (480
+// bytes) [60]: every instruction left is the selection cached in EDI across the walk (ours) against the walk's pool cached in EBX
+// with the selection read from its slot at each use, also after the post-loop calls (retail). On the in-arm form, all 126 [60] and
+// the same code: the score call and compare in an inline helper taking best and the selection by pointer; that helper with the team
+// test inside and both by reference; an unsigned selection; the activity flag read from the global in the walk call; `best < score`
+// with the selection stored first and best declared first. In-arm with the iterator's datum index re-measured 128 [108]. Body
+// unchanged.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

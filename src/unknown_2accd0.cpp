@@ -949,6 +949,15 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // MIN(remaining, buffer_size)`) 161 (691 bytes), with the total and the signature position written body first 161; the signature
 // position written body first alone 34 (same code); the direct arm's size before its buffer with `MIN(remaining, size)` 35; the
 // body case's file handle in a two-use local 168 (695 bytes).
+// Round 97 (m3 lane 9, fast; 0x2adb10 matched throughout; aligned counts in brackets): the in-place total with a new (file, position)
+// seek helper at the signature seek re-measured 28 [17]; on it: the direct arm's size before its buffer 28 (same code); size declared
+// before the buffer 28 (same code); the body test as `body_size > body_offset` 157 (689 bytes); the helper at the body seek too 155 (689);
+// the scratch clamp through the record's size field 153 (689) [4: only the signature sum is left, ours `mov esi, [body_size]` and
+// `add esi, edx`, retail `mov ecx` head-merged with the body case and `lea esi, [ecx + edx]`]. On that [4] form, all 153 [4] (same
+// code): the signature sum as the total minus the signature size (the constants fold before the add is formed); the helper's parameters
+// as (position, file); the sum written body first; the helper plain inline; a three-parameter helper adding (start, offset) inside.
+// Retail's sum keeps the body size in its own temporary, as if it were read again after the sum; no form found that keeps it apart.
+// Nothing kept (one-caller helper; the field clamp reads the field beside a local copy).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
