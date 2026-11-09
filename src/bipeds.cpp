@@ -3257,6 +3257,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // P376: Direction projection via products/accumulator/two-term prefix/const products, each plain/uniform row parts:
 // 539/539/539/539/539/539/539/539. NOT kept: no native frame/result equality.
 // Original complete body, projection association, observations and scan bounds restored.
+// T71: Sole-return completion label, admission-owned
+// bool/byte/char/signed-char/short/word/int/long results: 510/535/535/535/504/504/520/520. NOT
+// kept: frame 0x4c recovers, but all take EAX input/plain ret and ordinary result homes instead
+// of native stack input/ret 4 and argument-home byte. Original complete body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -5828,6 +5832,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // P375: Complete retained forward/up/physics-mode field addresses, masks 1..7, then complete entry
 // address lifetimes: 603/640/645/594/603/640/645/627. NOT kept: no native home/producer match; all original direct
 // field observations, copies, helper boundaries and complete body restored.
+// T71: Native-entry tag/state/animation lexical-home subsets and complete motion roles: eight
+// 594s (unchanged reduced control 594, full 588). NOT kept: native home/truth-byte repair
+// absent; original names and whole body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

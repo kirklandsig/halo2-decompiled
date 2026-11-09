@@ -5678,6 +5678,9 @@ void __stdcall function_d6bc0(long object_index);
 // P377: Pure eligibility boundary returning bool/byte/char/signed-char/short/word/long/dword,
 // separate from delay production: 60/60/60/60/60/60/60/60. NOT kept: unchanged native index/byte-branch differences;
 // the single-caller helper is disallowed. Original complete body restored.
+// T71: Native-frame/admitted-modifier rate/scenario/preset lexical homes, seven subsets and
+// complete ordinal roles: eight 60s, 869/869 bytes. NOT kept: no initial-store or case-byte
+// repair; original names and complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

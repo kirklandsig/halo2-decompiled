@@ -1627,6 +1627,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // T69: Opposite-orientation value before center selection in bool/byte/short/long
 // 435/454/401/402; after center selection before the first tangent 456/455/457/456.
 // NOT kept: all regress; original phases/storage and full body restored. Frame/edge/count homes remain.
+// T71: Current output-setter graph edge/selection/output lifetime regions, seven subsets and
+// complete role names: 481/481/478/400/481/481/478/478. NOT kept: ties/regressions and no
+// native frame repair; original full body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
