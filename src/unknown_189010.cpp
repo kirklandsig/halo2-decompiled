@@ -793,6 +793,12 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // Round 155 (m3 lane 6, fast with 0x188180): the play call through a void inline wrapper 35; the result flag as a long
 // 169 (657 bytes); the player unit lookup as a ternary 157 (658 bytes); the forward normalized before the position sums
 // 27; the camera-active exit as an enclosing test with the other exit kept 2.
+// Round 138 (m3 lane 7, fast with 0x188180 = plain 2): no retail caller of 0xc5890 reads its result (0xc50a0,
+// 0xc5740 drop it), so 0x1895f0's value is not consumed along 0x189400 -> 0x189210 -> 0xc5890 in retail either;
+// the only caller of this function is the unmatched 0xf8eb0. Forms: the zero-length arm with the projection
+// cleared before the perpendicular copy 2; the projection cleared by one chained assignment 15 (first +0xcf);
+// `0.0 - sqrt(...)` for the negated distance 2; the duplicate 0x1895f0 declaration above this function dropped 2;
+// the along test as two nested ifs 2. All restored.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {
