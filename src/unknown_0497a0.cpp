@@ -944,6 +944,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // P373: Ordinary pretested channel counters for initial/next/blend color walks, seven subsets,
 // all with the tint walk: eight 250s, 2592/2596 bytes. NOT kept: frame 0xa8/0xac
 // and scalar homes unchanged; original color traversals and complete body restored.
+// T72: Complete computed first/second/both edge scalars, then existing output setters
+// for first/second/both scalar graphs: 252/250/252/252/250/252/252/252. NOT kept:
+// no native frame or edge-spill recovery; original complete body and helpers restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

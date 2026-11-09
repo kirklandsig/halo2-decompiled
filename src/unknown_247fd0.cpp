@@ -223,7 +223,8 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
-// score 334 (was 356): frame 0xb0 and 1652 bytes agree; entry EBP is retail's now; effect/velocity/tag lookups keep retail's unfolded `add eax, edx`, blend and scaled position stay in memory, and the child loop rotates.
+// score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
+// gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // Earlier first line: score 356 (was 356): frame 0xb0, 1643 bytes against 1652. Left: retail saves EBP at entry and
 // shares one epilogue (ours saves it after the early exits); retail keeps the blend in XMM2-4
 // across the first 0x143070 call (here it goes through the grouped local's memory); retail's
@@ -527,6 +528,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // T70: Actual flag word/bit-field extraction, staged/direct Boolean producers on native-entry graph:
 // 334/334/334/334/344/334/334/334. NOT kept: no exact address/DL/flag-home recovery; original field observations,
 // inherited qualifier, random stream, geometry, helpers and complete body restored.
+// T72: Native-entry gate/settings/sample lexical home subsets 1/2/4/3/5/6/7,
+// then all plus the raw-flag name: eight 334s. NOT kept: native DL/gate/descriptor
+// homes and separate address add remain; all original names and the whole body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
