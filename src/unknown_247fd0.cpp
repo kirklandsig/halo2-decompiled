@@ -223,6 +223,7 @@ public:
 void placement_set(s_placement *arg_0, vector3f const *arg_1, point3f const *arg_2, vector3f const *arg_3, c_placement_value arg_4);
 void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_3, long arg_4, dword arg_1, long arg_0);
 
+// MiniMax E (11-09): no new form, no lower score (334).
 // score 334 (was 356): frame 0xb0, 1652 bytes and entry EBP agree; effect addressing still folds,
 // gate/settings homes and DL differ, blend values escape and child-descriptor allocation rotates.
 // Earlier first line: score 356 (was 356): frame 0xb0, 1643 bytes against 1652. Left: retail saves EBP at entry and

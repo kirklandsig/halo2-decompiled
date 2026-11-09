@@ -70,6 +70,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax E (11-09): no new form, no lower score (356).
 // score 356 (was 356): r136 lane 7: a compile-only copy reproduces this build's register skeleton exactly; screened
 // there, then built: `sinf(angle)` 357, `cosf(angle)` 357, matrix entries in retail's computation order (forward.i,
 // forward.j, left.i, left.j, forward.k, up.i, up.k, left.k, up.j) 381 (1750 bytes), caller-computed sine/cosine with
@@ -1812,6 +1813,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // 189; both labels on one goto 192; result declared at the y test with `return 0.0f` 285 (904); explicit double atan2
 // arguments 189; `/ pi` 189. The result stays coalesced with the xmm0 zero.
 // R221 also: the case 3 offset through the existing vector3d_from_points3d 189; the case 4 offset that way 189.
+// Round 64 (lane 15, fast): result split into `(real)atan2(y, x)` then `* scale * (1/pi)` 193; y and x initialised
+// to 0.0f 193; `atan2 * (scale * (1/pi))` 190 (one product where retail has two fmuls); a ternary return 296 (908
+// bytes); `scale * atan2 * (1/pi)` 193.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -1875,17 +1879,26 @@ void __stdcall function_480a0(point3f const *point, real width, real height, rea
 
 PRIVATE inline real clamp_2e9e0(real value)
 {
-    return value < 0.0f ? 0.0f : value > 1.0f ? 1.0f : value;
+    real result = value;
+    if (value < 0.0f) result = 0.0f;
+    else if (value > 1.0f) result = 1.0f;
+    return result;
 }
 
 real game_time_get_seconds();
 
+// score 492 (was 507): every D3D call here in the D3DDevice:: member form (retail inlines the vertex push-buffer
+// write, 0x2f17c-0x2f1ba; only the member form inlines it) and clamp_2e9e0 as an initialised single-exit result:
+// retail length, EBX definition and EBP NONE as retail. Frame 0x90 versus 0x94, the 12-byte output homes (ours
+// direction below position, retail position below direction) and the loop's xmm5/xmm6 constants remain.
+// MiniMax H (11-06): 507 (was 507): no new form, no lower score.
+// MiniMax E (11-09): no new form, no lower score (507).
 // MiniMax H (11-06): score 507 (was 507): no new form, no lower score.
 // The argument order into function_480a0, the field offsets, the constants and the loop shape all agree with
 // retail; what is left is the frame (0x90 against retail's 0x94), the sentinel register (we keep the -1 in
 // ebx and retail keeps it in ebp, so the saved-register layout differs) and the stack homes of the sentinel
 // and of the definition pointer.
-// score 507 (was 507): Frame 0x90 versus 0x94, output homes and definition/NONE registers remain.
+// Earlier 507 (was 507): Frame 0x90 versus 0x94, output homes and definition/NONE registers remain.
 // MiniMax R (11-01): no new form, no lower score.
 // Earlier (507 (was 508, 594 originally)): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
 // (x_scale * size, y_scale * size, cosine, sine) (0x2f209-0x2f247: edx=sine and [0x2c]=cosine pushed as args 4 and 5, the
@@ -1993,6 +2006,13 @@ real game_time_get_seconds();
 // attenuation/time/admitted/angle/curve phases, then separate default assignment:
 // 522/516/544/528/536/536/536/522. NOT kept: no exact output-storage graph. Original color record,
 // producers, APIs and full body restored; frame/output/definition/NONE homes remain.
+// Round 64 (lane 15, fast unless marked plain): member vertex call alone 512 (2285 bytes); all D3D calls as members
+// 512; all members with clamp_2e9e0 as an initialised result 492 plain (kept), as a completed-branch result 494; the
+// initialised clamp alone 567 (2240 bytes). `real attenuation = 1.0f;` declared before `reflected` (retail stores its
+// 1.0 right after the delta): with the members 464 plain (2310 bytes, aligned 439 -> 336; not kept, a moved
+// declaration), with the C-style calls 530, on the kept form 549; on the 464 form: attenuation before the delta 564,
+// beside `animated` at the top 564, `animated` after the delta 472, after the forward dot 472, both after the delta
+// 564; `reflected` assigned j, i, k 512; `!(visibility > 0.0f)` 463.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2106,17 +2126,17 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
                         if (!g_4c19c0)
                         {
                             g_4b8438 = 2;
-                            D3DDevice_SetRenderState(D3DRS_ZENABLE, 2);
+                            D3DDevice::SetRenderState(D3DRS_ZENABLE, 2);
                             g_4c19c0 = true;
                         }
                     }
                     else if (g_4c19c0)
                     {
                         g_4b8438 = 0;
-                        D3DDevice_SetRenderState(D3DRS_ZENABLE, 0);
+                        D3DDevice::SetRenderState(D3DRS_ZENABLE, 0);
                         g_4c19c0 = false;
                     }
-                    D3DDevice_SetVertexData2f(8, clamp_2e9e0(1.0f - *(real *)(entry + 0x20)), 0.0f);
+                    D3DDevice::SetVertexData2f(8, clamp_2e9e0(1.0f - *(real *)(entry + 0x20)), 0.0f);
                     real sine = angle == 0.0f ? 0.0f : (real)sin((double)angle);
                     real cosine = angle == 0.0f ? 1.0f : (real)cos((double)angle);
                     function_480a0(&point, x_scale * size, y_scale * size, cosine, sine,
@@ -2438,6 +2458,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax E (11-09): no new form, no lower score (170); the float trigonometry (fabsf, acosf, sinf, cosf) compiles to the same bytes as the double calls, so the trigonometry is not what differs.
 // score 170 (was 170): r136 lane 7 (fast with 0x24590/0x30bf0 in the image): ours keeps a double copy of the dot
 // (`fst qword`) for acos where retail re-reads the float; `acos((double)dot)` 170, `fabs((double)dot)` 170,
 // `acos(dot) * step` 170, `acosf(dot) * step` with `fabsf(dot)` 170, `(real)acos(dot) * step` 170.
@@ -2780,6 +2801,14 @@ s_cached_input_list g_5234e8[4];
 // 109 (gain under the bar, not kept); a streaming output pointer (`++result` per accepted light) 113; the index test
 // and the query/capacity test as nested ifs 113; as `continue` guards 113; the 109 form with `&g_5234e8[view]` at
 // both calls 118 (556 bytes); the 109 form with a once-read `list` local 133.
+// Round 64 (lane 15): `check.py --fast` with the callee chain (0x31590 0x3e9c0 0x31520 0xc17f0 0xc3140 0x155760
+// 0xc19f0 0xc1a80 0xc1930 0xc1980 0xbaf80 0x4a7c0 0x33400 0x31c80 0xc35a0 0x404b0) plus 0x241620 (whose file holds the
+// helper 0xc17f0 inlines) reproduces the full build (113); the default fast image does not (146). On it: list read
+// once 132; with `&g_5234e8[view]` at both calls and `!(depth >= 0.0f)` 129; streaming cursor 113, with the list 133;
+// object read before the definition 113; `!(depth >= 0.0f)` 111 (also with the cursor/object forms); `&g_5234e8[view]`
+// forms 118-120; every once-read list combination 129-133. A one-file LTCG copy of this file with its callees' files
+// gives the same allocation (109 there); retail's EBX index/EDI object/EBP cursor appeared only when 0x3e9c0 was
+// built with another convention, so the remaining permutation follows callee register usage.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2883,6 +2912,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// MiniMax E (11-09): no new form, no lower score (317); retail's empty-entry exit jumps three bytes further into the function than ours (retail +0x4cf, ours +0x4cc).
 // score 317 (was 317): r136 lane 7: names and declaration order do not move the first/i slots here (compile-only
 // screen); `first` declared after `found` 358; decay entry pointer before the `initial` pointer 377 (1343 bytes);
 // decay without the `initial` pointer 417 (1259 bytes); growth `entry->initial += entry->elapsed;` 317; an
@@ -2995,6 +3025,8 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // R221 (lane 3; whole-file harness, exact 317): loop 1 through an entry pointer 375 (1342); `i < last` in loop 1 321;
 // a `count` local for the entry tests 370 (1338); `requested` declared first 319; `first == 0` for the found flag 436.
 // R221 also: the clamp compare written `state->count < limit` 319.
+// Round 64 (lane 15, fast): an index declared in each loop 317; `last` declared before `first` 318; `requested` and
+// the clamp before `first`/`last` 416 (1305 bytes); swap helper `__forceinline` 317, clamp helper 317, both 317.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3118,12 +3150,17 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// score 486 (was 486): frame 0x60 versus 0x38; retail keeps one 12-byte home for the previous camera position and
+// each element's old position, reads the delta from the stored view position, and copies the scaled projection
+// inputs into fresh registers in both arms; those forms lower the aligned count but shorten the body (below).
+// MiniMax H (11-06): 486 (was 486): no new form, no lower score.
+// MiniMax E (11-09): no new form, no lower score (486).
 // MiniMax H (11-06): score 486 (was 486): no new form, no lower score.
 // The frame is the main difference: retail's is 0x38 against our 0x60. Retail keeps the entry pointer in
 // edx and the object pointer in ebx and reads the three velocity components back from memory before both
 // square roots, while we push four registers, keep the velocity in registers and spill the results through
 // the stack. The rest of the loop and the two square roots agree.
-// score 486 (was 517): frame 0x60 versus 0x38; retail reads the added velocity back from memory for both square
+// Earlier 486 (was 517): frame 0x60 versus 0x38; retail reads the added velocity back from memory for both square
 // roots (ours spills its registers), and the projection results are copied through the stack.
 // Earlier at 517: frame 0x60 versus 0x38; stored velocity reads and loop homes differ.
 // MiniMax R (11-01): no new form, no lower score.
@@ -3235,6 +3272,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // N390: Declared native cycle-byte/shared-dword flags, cycle bool/byte/schar/short/word/int/long/dword,
 // 490/490/490/497/497/493/493/493. NOT kept: all regress; original state observations,
 // type set and complete body restored; native frame, velocity reloads and projection/loop homes remain.
+// Round 64 (lane 15, fast): `previous` reused for each element's old position 535 (1985 bytes, frame 0x58, aligned
+// 485 -> 428); the cycle bit read from the field (other bits from `flags`) 490, with the shared `previous` 533; dz/dy/dx
+// from the stored view position 513 (2004 bytes, aligned 421), with the shared `previous` 513; projection scaling
+// `x = g_48568c[0] * x` 486, also in the position transform 486, with the stored-position delta 513.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3650,6 +3691,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // bool active = false;` plain 176 (765): the full build drops both zero stores and keeps frame 0x18 (the one-file harness
 // keeps them: 159, frame 0x1c). Harness: that with kind not volatile 231; first fade read per use 179; alpha before
 // kind 160; the 0x10a flag through a word bit-field view 176 (retail's mov al/shr al,2/test dl,al), with the getter 166.
+// Round 64 (lane 15, fast): temporal clamp as two separate ifs 177; `result` left true and `if (alpha <= 0.0f) result =
+// false;` after the clamp 198 (743 bytes), with two ifs 198; `result = false` in the lower arm and the test only in
+// the interior arm 178; the final fade read through `header->object` without reassigning `object` 177. Retail threads
+// the alpha test into each clamp arm and keeps the final getter's two zero stores (frame 0x1c).
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

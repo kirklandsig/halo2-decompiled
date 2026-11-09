@@ -367,6 +367,7 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
+// MiniMax E (11-09): no new form, no lower score (188).
 // MiniMax E (11-06): score 188 (was 188): no new form lowered it. The byte locals sit two bytes lower
 // than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at
 // esp+0x14 with a jump table where ours tests the mode with branches, and ours is twenty bytes

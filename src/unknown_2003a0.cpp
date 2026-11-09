@@ -3344,6 +3344,8 @@ long function_203780(long arg_0, short arg_1, short arg_2, bool arg_3);
 long function_201010(long arg_0, short arg_1, short arg_2, short *arg_3);
 void function_2011f0(long arg_0);
 
+// MiniMax I (11-09): no new form, no lower score (318); retail's third parameter is a dword where our declaration has
+// a short (the declaration is used by other files), and the row, seat and chain homes still differ.
 // MiniMax B (11-07): no new form, no lower score (318); retail reads the index as a dword and masks it with AND
 // where ours keeps a zero-extended word: the masked products 377, a squad pointer local 354 (1328 bytes, retail's
 // length), both together 359 and the unmasked calls 378 are all worse, and each drops the frame to 0x130.

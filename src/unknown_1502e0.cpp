@@ -1124,6 +1124,7 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 	return ((s_player_weapon_definition *)tags[weapon->definition_index & 0xffff].bytes)->flags;
 }
 
+// MiniMax E (11-09): no new form, no lower score (254); taking the tag table straight from the global in every loop reaches retail's 1006 bytes but scores 275, and hoisting the copy to the declaration keeps the same 254 with the same code.
 // MiniMax H (11-06): the permuter's best form (246) needs a volatile cast, hand-written helper bodies and a
 // player expression that reads differently, so only its legal part was kept and it gives 284; the tag table
 // declared without an initializer and the first loop's stores written through byte pointers both give 254,
