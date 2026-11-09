@@ -2498,6 +2498,8 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax R (11-09): no new form, no lower score; the set index is still narrowed to a short for the
+// 0x219070 call and the delayed start still stores the flag byte before the start time.
 // MiniMax D (11-08): score 17 (was 17): the set index is sign-extended for the 0x219070 call and that call
 // passes its second argument on the stack where retail keeps it in a register (both follow the callee's own
 // declaration, which lives in another file), and the delayed start stores the flag byte before the start time.
@@ -2858,6 +2860,17 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax R (11-09): no new form, no lower score; the result still lives in a stack byte where retail keeps
+// it in al, and the frame is still twelve bytes against retail's eight.
+// MiniMax D (11-08): score 96 (was 96): retail returns from two places - the failure block clears the result
+// byte and returns, the commit block returns true - while ours shares one return through a stack byte, and the
+// argument roles differ (retail keeps the index in ecx, ours in eax).
+// MiniMax H (11-07): no new form, no lower score (96); retail narrows the first parameter to a word
+// and scales it by nine where ours narrows a later parameter and scales that one, the result still
+// lives in a stack byte in ours and in al in retail, and the frame is 0xc against retail's eight
+// bytes.
+// MiniMax R (11-06): no new form, no lower score (96).
+// MiniMax D (11-06, run 49): no new form, no lower score (96); retail still keeps the result in al (set at the entry, cleared through bl on the failure path and set again after the commit) with an eight-byte frame, ours keeps it in a stack byte with a twelve-byte frame, and retail's failure block still follows the success path.
 // score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
 // through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
 // keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path

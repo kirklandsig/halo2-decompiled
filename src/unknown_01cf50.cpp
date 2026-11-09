@@ -287,6 +287,8 @@ void __stdcall function_15ec0(long index)
 __declspec(noinline) bool function_015b10(long index, D3DPalette **out);
 const long g_43e8e8[4] = { 32, 64, 128, 256 };
 
+// MiniMax R (11-09): no new form, no lower score; the copy count still rides in edi and the allocation
+// callee's out pointer is still in esi, and that callee is in another file.
 // MiniMax H (11-05): no new form, no lower score; the allocation callee takes its out pointer in
 // ESI here and in EBX in retail and 0x15b10 is in src/unknown_0158f0.cpp, so the frame stays one
 // push deeper and the copy count rides in EDI; retail keeps the size in ebp across the copy and
@@ -395,6 +397,11 @@ bool function_0159b0(long edge, short format, long levels, long usage_index,
 	D3DCubeTexture **out);
 bool function_015a60(short format, long width, long height, long depth,
 	long levels, long usage_index, D3DVolumeTexture **out);
+// MiniMax R (11-09): no new form, no lower score; the width still lives in di where retail keeps it in
+// bx, and the height is still stored as a dword where retail stores a word. This round: the linear flag
+// and the depth byte swapped in the declaration order score 72 again, and the permuter's best of 69
+// swaps the height and the depth between two callees, which the callees' own order forbids, so it is
+// dropped and the body stands.
 // MiniMax A (11-06, run 52), not kept (72 -> 70, under the keep bar) - the texture slot is cleared and handed over through
 // the bitmap itself and the mipmap limit is named; the mipmap call now hands the callee the height
 // and the depth in the order the callee reads them, so the depth byte reaches the call in eax and
@@ -2550,6 +2557,8 @@ struct s_render_transform_record
 	transform4x3f const *transform;
 };
 
+// MiniMax R (11-09): no new form, no lower score; the transform table's lookup is still inlined here and
+// called out of line in retail, and the helper's inline-ness is set in another file.
 // MiniMax D (11-06): no new form, no lower score; retail calls the transform table's lookup out of line
 // (0x1d6b0) where we inline it, and the helper's inline-ness is set in src/unknown_023540.cpp, so the call
 // cannot be made from this file; this round the lookup through a handle local and through a byte pointer
@@ -3222,6 +3231,8 @@ bool function_128c0(s_128c0_settings const *settings)
     }
     return result;
 }
+// MiniMax R (11-09): no new form, no lower score; the flag is still set in a register where retail sets it
+// in the frame, and the locked rectangle's frame slots stay four bytes lower.
 // MiniMax A (11-06, run 52), not kept (62 -> 60, under the keep bar) - the destination column is now recomputed for each
 // column from the screen address as retail does and the rectangle's fields are read off the
 // rectangle itself; what is left is the frame slots of the locked rectangle, retail's in-memory OR
@@ -3595,6 +3606,8 @@ void function_1eb00()
     g_4b6298 = 0;
     g_4b6294 = true;
 }
+// MiniMax R (11-09): no new form, no lower score; the width quotient is still divided into xmm3 where
+// retail divides into xmm2 and multiplies into xmm0.
 // MiniMax A (11-06, run 52): no new form, no lower score (79) - retail copies the first five constants
 // into its own locals in a different order.
 
@@ -5360,6 +5373,9 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
     function_16b10((s_render_reset_state *)g_485b48);
     g_485a78[0] = g_485a78[1] = NONE;
 }
+// MiniMax R (11-09): no new form, no lower score; the second argument still arrives in eax where retail
+// takes it in ecx, and the arguments behind it still sit one stack slot lower. This round: the permuter
+// ran out of time without reporting a form, so nothing was tried from it.
 // MiniMax A (11-06, run 52): no new form, no lower score (62) - the two address-taken parameters are
 // dropped (the same code), and retail keeps the first argument in ecx where ours reads it from the
 // stack.
@@ -5601,6 +5617,8 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
     function_4ede0(tag, context, first, second, third, handle, material);
 }
 
+// MiniMax R (11-09): no new form, no lower score; the tag read through an eight-byte stride gives 54 with
+// the volatile and 117 without it, the same as the body, so the tag's spill stays.
 // MiniMax G (11-06): no new form, no lower score: the score still rests on the load-bearing volatile tag
 // local; without it the compiler rebuilds the body (117), computing the block before the tag gives 111 and
 // the two-element tag table gives 115, so the body is unchanged.
@@ -5858,6 +5876,8 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
     rectangle->bottom += dy;
 }
 
+// MiniMax R (11-09): no new form, no lower score; the clip rectangle and the bitmap pointer still swap their
+// frame slots, the bitmap at [esp+0x10] here against [esp+0x1c] in retail.
 // MiniMax D (11-06): no new form, no lower score; the two rectangles sit four bytes higher in the frame than
 // retail's (the clip at [esp+0x10] and the bounds at [esp+0x18] against retail's [esp+0xc] and [esp+0x14])
 // and the bitmap pointer shares the clip's slot instead of being spilled at [esp+0x1c], because our clamp
