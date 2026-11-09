@@ -1638,6 +1638,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // direct range/endpoints/pointer-result/ordinal-result consumption:
 // 190/187/206/194/224/228/224/242. NOT kept: no exact native frame/home recovery;
 // original complete body, observations, helper and call graph restored.
+// P399: Actual equipped/companion/object member-array references, subsets 1-7, then complete array-base bindings:
+// 96/95/96/95/96/95/96/96. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
