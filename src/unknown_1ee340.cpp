@@ -211,6 +211,7 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax C (11-09): no new form, no lower score (192); the point-in-polygon query's call setup still differs (BLOCKED-BY src/unknown_239b80.cpp).
 // MiniMax I (11-05): no new form, no lower score. The header normalize_inline for the normal gives 193
 // and the header cross3f_staged for the cross gives the same code; retail's normal length sums k, j, i
 // (with the components scaled inv*i, j*inv, k*inv) and neither header helper has that order. The rest
