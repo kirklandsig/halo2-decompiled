@@ -1129,10 +1129,10 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 }
 
 /* damages one object of the radius (and its children and siblings): the geometry to it, then the damage */
-// MiniMax E (11-09): no new form, no lower score (38); the permuter tried 20 forms and found nothing below 38, and putting the normal's store before the direction's update in each near-block row gives 288.
-// MiniMax R (11-06): forms tried, none lower (38 grouped negations, 40 with the node stores first, 41 one negation per row, 286-288 negated in place, 304 inlined, 38 with the near block's and the else arm's sums the operands the other way round); the near block still folds the normal into the k row where retail folds the destination, and the else arm still folds the destination in its i and k rows.
 // score 38 (was 91): 1535 bytes and every register agree but in the negate block's schedule and its k row, and the else arm's k row
 // (`movss xmm0, [ebx + 8]; addss xmm0, [edi + 8]`, retail the other way).
+// MiniMax E (11-09): no new form, no lower score (38); the permuter tried 20 forms and found nothing below 38, and putting the normal's store before the direction's update in each near-block row gives 288.
+// MiniMax R (11-06): forms tried, none lower (38 grouped negations, 40 with the node stores first, 41 one negation per row, 286-288 negated in place, 304 inlined, 38 with the near block's and the else arm's sums the operands the other way round); the near block still folds the normal into the k row where retail folds the destination, and the else arm still folds the destination in its i and k rows.
 // Earlier 92 (was 286): frame 0x54 agrees, 1537 bytes against 1535, 82 instructions from the top agree. Left: zero in xmm0
 // and scale in xmm1 where retail has them the other way (most of it), 0xd74b0's parameter (`mov edx, edi`, BLOCKED-BY
 // 0xd74b0), the order of the negate block's stores, the last add of the else arm, and the flag on the cone-outside path
@@ -1219,6 +1219,11 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // rotate); with that copy through the pointers 355; declared at the top and assigned in the node branch 38 (same code).
 // Diagnostics, reverted: no direction reads in the cone dot, another source for the NONE copy, or no node updates in
 // the near block all leave the else arm's i/k rows as they are, so no single later read sets them.
+// Round 81 (m3 lane 10, fast with 0xd6c80 and the matched callees): each row as `surface_normal.i = 0.0f -
+// surface_normal.i; node_direction->i += surface_normal.i;` 286 (the zero register flips); the negated names as
+// unary minus 38 (same code); the else arm reading `data->direction.i` 46; `node_direction` declared first in the
+// node branch 369 (1547 bytes); the near block's stores in retail's emitted order (normal i, node i, node j,
+// normal j, normal k, node k) 288.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {

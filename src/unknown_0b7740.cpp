@@ -10,6 +10,7 @@
 
 // @flags /O2 /Ob1 /arch:SSE /Gr
 #include "object_masks_storage.h"
+#include "slot_handler.h"
 #include "sample_mask_storage.h"
 #include "matrices_storage.h"
 #include "orientations_storage.h"
@@ -1104,9 +1105,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 bool function_a98b0(long index, vector3f *position);
 bool function_a9940(long index, vector3f *up, vector3f *forward);
 
-// score 97 (was 97): retail is 11 bytes longer. Left: retail tests the node count for > 0 before
+// score 87 (was 97): retail is 2 bytes longer. Left: retail tests the node count for > 0 before
 // the node loop from 1 (no loop-head pad), and in the no-model branch keeps the object table pointer
-// in ecx and re-reads its data pointer (parent index in esi) where ours reuses edi. Round 19: the
+// in ecx and re-reads only its data pointer (parent index in esi); ours now re-reads both there (round
+// 81: the parent looked up through the existing object_get/object_node_matrix accessors, once for the
+// matrix and once for the mirrored flag, as the render branch does after 0xb8bd0; before that ours
+// reused edi, at 97 and 11 bytes short). Round 19: the
 // sample-mask helpers 0xbfe80/0xbfed0 written as members of s_bit_vector (as is_empty is) give
 // retail's ESI re-set after 0xbfed0, 234 -> 97 (kept).
 // Before round 19 (at 234): retail sets the sample-mask
@@ -1315,6 +1319,16 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // declared before the defaults 97, with the mirrored flag read first 97 (same code); the no-model 0xbdc40 call written in both
 // arms of the parent test 405 (1406 bytes); the render node count bound to a `long const &` for the default test and the
 // loop bound 97 (same code).
+// Round 81 (m3 lane 10, fast with this file and 0xbfe20/0xbfe80/0xbfed0/0xbff10/0xb8bd0/0xbdc40/0xbdb60, on 97
+// unless noted): the no-model parent matrix by array indexing 97 (same code); a named masked parent index 97
+// (same code); the render node count through a `long const *` to its field for the default test and the
+// loop 97 (same code); the no-model parent through 0xb8bd0 with a fresh flag lookup 100 (1378 bytes, stays a
+// call); the parent object local for the matrix with a fresh lookup for the flag 87 (1392 bytes; a mix, not
+// kept); the lookup written out at each of its three uses 87 (1392 bytes); object_node_matrix(object_get())
+// and object_get() for the flag 87 (1392 bytes, kept, plain-confirmed). On 87: the render branch's flag
+// through object_get 87 (same code, kept: drops a one-use local); the current object through object_get 87;
+// the no-model flag before the matrix 88; the parent index read at each use 87; the index declared before
+// the defaults 87.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
@@ -1362,8 +1376,7 @@ void __stdcall function_bd090(long object_index)
         if (parent_index != NONE)
         {
             parent = function_b8bd0(parent_index, *(signed char *)(object + 0x18));
-            byte *local_be682a_3 = (byte *)((s_object_transform_header *)g_4e0300->data)[parent_index & 0xffff].object;
-            parent_mirrored = (bool)((*(dword *)(local_be682a_3 + 4) >> 10) & 1);
+            parent_mirrored = (bool)((*(dword *)((byte *)object_get(parent_index) + 4) >> 10) & 1);
         }
         if (!((bool)((*(dword *)(current + 4) >> 29) & 1))
             && (!((1 << definition[0]) & 1) || !current[0x34b]))
@@ -1438,9 +1451,8 @@ void __stdcall function_bd090(long object_index)
         long parent_index = *(long *)(object + 0x14);
         if (parent_index != NONE)
         {
-            byte *local_be682a_3 = (byte *)((s_object_transform_header *)g_4e0300->data)[parent_index & 0xffff].object;
-            parent = (transform4x3f *)(local_be682a_3 + *(short *)(local_be682a_3 + 0x116)) + *(signed char *)(object + 0x18);
-            parent_mirrored = (bool)((*(dword *)(local_be682a_3 + 4) >> 10) & 1);
+            parent = object_node_matrix(object_get(parent_index), *(signed char *)(object + 0x18));
+            parent_mirrored = (bool)((*(dword *)((byte *)object_get(parent_index) + 4) >> 10) & 1);
         }
         function_bdc40((point3f *)(object + 0x64), (vector3f *)(object + 0x70), (vector3f *)(object + 0x7c),
             *(real *)(object + 0xa0), (bool)((*(dword *)(object + 4) >> 10) & 1), parent, parent_mirrored, matrices);
