@@ -488,6 +488,8 @@ bool sound_driver_voice_create_buffer(
 	return result;
 }
 
+// MiniMax R (11-08): no new form, no lower score (71); the two flag bytes still take the opposite roles of
+// retail's, and the EAX and ECX roles for the voice offset are still swapped.
 // MiniMax I (11-06): no new form, no lower score; the two flag bytes still take the opposite roles of retail's (retail copies the flags byte into BL and keeps the play bit in the stack byte, ours keeps the play bit in BL and the 3D bit in the stack byte), and the EAX and ECX roles for the voice offset are still swapped; this round the play bit written as (flags >> 1) & 1, the 3D bit through a byte cast and the two declarations in both orders score 71, 71, 71 and 182, and the 24 statement orders of the voice, count and flag block score 68 at best, a gain of three that the keep rule drops on a function still above 30, so the original body stands.
 // score 71 (was 71): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
 // and the failure exit agree. Still differs: the 3D bool sits in a stack byte and the play bool in BL where

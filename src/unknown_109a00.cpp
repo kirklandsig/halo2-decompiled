@@ -558,6 +558,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // search latch, both ordinals, inverse, relative transform and up axis:
 // 56/56/56/56/56/56/56/56. NOT kept: no exact ownership/home repair. Original executable body restored.
 // Early definition register/spill, projection and failure tails remain.
+// T70: Actual default-body output starts from the signed byte, then invalid flat/nested guards
+// correct it; char/short/int/long 249/235/252/252/249/237/252/252. NOT kept: result allocation regresses;
+// original selector, physics observations, geometry, helpers and complete body restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

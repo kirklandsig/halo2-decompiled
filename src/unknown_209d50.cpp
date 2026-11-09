@@ -107,6 +107,12 @@ static inline void *function_xc5914d(long thread_index, short size)
 // local and the result cleared first in the evaluated block 74 (280); no volatile with the result set in an else
 // arm 90 (277); the allocator bumping the frame size directly 12 (same code), that with no volatile and the result
 // cleared first 83 (277).
+// Round 80 (m3 lane 10, fast): the only difference is `mov eax, [esp + 0x10]` (the volatile reload, 4 bytes) for retail's `mov eax, ebx` (2).
+// Without the volatile, sixteen statement orders (the frame reference before or after each allocation crossed with the result copy after each
+// allocation or after the initialisation block): the copy's place never matters (it coalesces with the pointer); the frame reference first or
+// after the first allocation 95 (266 bytes), after the second 98 (264), after the third 68 (280: the pressure spill moves to the argument-index
+// pointer); the result as a long integer 95; the frame reference after the allocations with `return NULL` in the arm and `return arguments` at
+// the end 90 (290).
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

@@ -923,6 +923,9 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
+// MiniMax D (11-08): score 153 (was 153): the difference starts at the selection loop's unit index - the
+// unit pointer, the chosen weapon, the age and the NONE home are kept in different registers and at different
+// stack offsets than retail.
 // MiniMax B (11-06): no new form, no lower score; the first 0x11c bytes agree with retail and the rest is
 // allocation: retail puts the unit index in EAX and NONE in EDI and reloads the object table from the
 // global for the seat test, this build keeps the unit index in EBP, NONE in EDX and the table in ESI.
@@ -1002,6 +1005,11 @@ struct s_tail_transfer_traits
 // Round 73 (m3 lane 11, fast): unit_index read before the identifier scan 193; `!memcmp(...)` without the
 // difference local 240 (804 bytes); `traits[alternate]` 196 (809 bytes); primary/secondary/other declared before
 // the unit_index read 159; selection arms swapped 153.
+// Round 78 (m3 lane 11, fast): the main unit lookup through a pool copy `objects`, the no-seat lookups on the global 157 (831
+// bytes; retail's `shl ecx, 2` offset and the first no-seat reload appear); the first no-seat lookup through the copy instead
+// 157; main+second, first+second, all three, main+first through copies 171 each (843 bytes). Still: retail keeps primary in EDI
+// (its NONE preset shares the NONE constant's register, its home the selection counter's slot) where ours keeps it on the
+// stack, and the unit index in EBP where ours uses EAX.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1207,6 +1215,18 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 // shared and the frame grows to 0x1c), with the mode clears chained 295, with the held value in a named local for the store and
 // the flag test 295. Diagnostics: that form with the arrays' addresses taken 288
 // (1009 bytes), the original with them taken 301 (1020 bytes), held stored through an element pointer 287: none redoes the lookups.
+// Round 78 (m3 lane 11, fast): per-lookup pool copies (held_objects / pending_objects, as 0xe8de0 reads its hands) declared
+// first with the named current/next pointers 303 (1020 bytes; the held, pending and flag lookups each reload pool->data from
+// EDI as retail, but the player spills and the frame grows to 0x1c), declared after `pool` 303, written in place 303, the entry
+// unit through the global 303, one copy for pending only 303; the copies with held/pending as ternaries 285 (1006 bytes, frame
+// 0x18, pool in EDI; the player lands in EBX, the tag table is hoisted into EBP), with `tags = g_4e3b44` at the loop top or
+// before the flag test 285/285, with the tags before the test and if/else stores 291; the ternaries alone 292; the copies with
+// a NONE store then a guarded store 279 (aligned rows 148 against 227: retail's reloads, but held and pending share one
+// unit_index read where retail re-reads [ebp+0x2c], and the loop top is still padded); the existing 0xcbd50 for held with a
+// pending copy and if/else, ternary or 0xcbd50 pending 309/305/293; the copies with 0xcbd50 for both 276 (1010 bytes, four
+// lookups per iteration); player pointer copies per lookup 279 (same code); the player re-derived per lookup through
+// tail_player_get with the NONE store, with ternaries, alone 289/306/297; a file helper taking the pool and the player 642
+// (647 bytes).
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1277,6 +1297,17 @@ void function_1509e0(long player_index, long weapon_index, bool *modes)
 
 #include "unit_requests.h"
 
+/* asks a unit to pick up a weapon (request 0x14) */
+static __forceinline bool unit_pickup_request(long unit_index, long weapon_index, short mode)
+{
+	s_unit_request request;
+	memset(&request, 0, sizeof(request));
+	request.type = 0x14;
+	*(long *)request.arguments = weapon_index;
+	*(short *)(request.arguments + 4) = mode;
+	return function_e6900(unit_index, &request);
+}
+
 void function_a90e0(long first, long second);
 void function_a9030(long index, short slot);
 void function_a8f80(long index, short slot);
@@ -1340,6 +1371,10 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // Round 359: byte result 44; signed-byte result 44; short result 60; long result 57; dispatch
 // outcome accumulated 17; dispatch test sets success 67; weapon snapshot in valid-slot scope 17;
 // unavailability result 67. NOT kept: no qualifying byte match or gain; original body restored.
+// Round 78 (m3 lane 11, fast): a pool copy `s_record_pool *objects = g_4e0300;` declared first for the unit lookup 17; the
+// player read at each use (no player local) 46 (the player index moves to EDX); the unit lookup written in place at both reads
+// 17; the slot read in place through the pool copy and the weapon read through the global 17; the player at each use plus the
+// pool copy 46.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1386,6 +1421,9 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax D (11-08): score 43 (was 43): the saved roles are exchanged - retail keeps the player record in esi
+// and the hand in edi, ours keeps the player in edi and the hand in esi, and the unit index stays in ecx where
+// retail reuses esi.
 // MiniMax B (11-06): no new form, no lower score; the player pointer and the hand still swap ESI and EDI
 // and the hand's comparison result still lands in DL where retail's lands in AL, and the unit index is in
 // ECX where retail keeps it in EDX.
@@ -1478,6 +1516,10 @@ void function_150820(dword *bits, bool local_only)
 // Round 96 (m3 lane 12, fast): hand as short 81 (217 bytes), as char 89 (197 bytes); hand computed at entry before the player
 // lookup 86 (200 bytes); modes declared ahead of the slot test 43 (same code). Diagnostics: `!primary` in place of the hand at the
 // modes test 43 (CSE'd, same code), at the a8f80 call 89.
+// Round 78 (m3 lane 11, fast): a pool copy declared first for the unit lookup 43; the slot read in place through the pool copy
+// and the weapon read through the global, no unit pointer 43; a unit_index local for the test, the lookup and the 0xcd7b0
+// argument with player->unit_index after the call 43; the weapon index as `slot != NONE ? unit->weapons[slot] : NONE` 43; the
+// hand declared after the unit lookup 70 (207 bytes).
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1542,15 +1584,8 @@ bool function_151940(long player_index, s_target_candidate *candidate, bool prim
 				function_a8f10(player->unit_index, weapon_index, mode);
 				result = true;
 			}
-			else
-			{
-				s_unit_request request;
-				memset(&request, 0, sizeof(request));
-				request.type = 0x14;
-				*(long *)request.arguments = weapon_index;
-				*(short *)(request.arguments + 4) = mode;
-				if (function_e6900(player->unit_index, &request)) result = true;
-			}
+			else if (unit_pickup_request(player->unit_index, weapon_index, mode))
+				result = true;
 		}
 	}
  done:
@@ -2178,131 +2213,17 @@ bool __stdcall function_ffc60(long weapon_index, long other_index, long unit_ind
 bool __stdcall function_ccba0(long unit_index, long grenade_index);
 long function_ccb80(long unit_index);
 void function_15e8e0(long object_index, long player_index);
-void __stdcall function_191ec4(long definition_index, long player_index, short count);
+void __stdcall function_191ec4(long player_index, long definition_index, short count);
 void __stdcall function_191e51(long definition_index, long player_index);
 
-// MiniMax G (11-06), not kept at review (main's vector3d_from_points3d form, lane 12 r96, also scores 120): score 120
-// (was 130) with the three differences declared x, y, z and the squared
-// distance written with the grouping (z*z + x*x) + y*y, which stops the compiler from reassociating the
-// sum. The whole float block now matches retail instruction for instruction: xmm0 takes x, xmm1 y, xmm2 z,
-// the squares are formed as z*z in xmm4, x*x in xmm2 and y*y in xmm0, and they are added z*z + x*x first and
-// y*y last. Earlier in this round the three declaration orders without the grouping all scored 130, and the
-// byte-offset forms of the two object lookups (retail's lea and shl) widened the difference: 214 for the
-// object, 153 for the unit, 203 for both. The lookup order with the object first scores 164 and the flag
-// types bool, char and byte all score 120, so none of them is kept.
-// score 120 (was 130): frame 0x28 and the distance block agree; EBP retains an ordinal rather than retail's
-// byte extent, while unit/pool/parent ownership and later call setup still differ.
-// Retained forms: object_slot is masked once for the object lookup and final type read;
-// the parent index is read at use rather than through a local.
-// Earlier 202: Frame 0x28 agrees; player data uses ECX versus EDX,
-// the object uses EBP versus ESI and the scaled header offset spills instead of staying in EBP.
-// Earlier: the prologue's registers differ: retail keeps the player base in ebx
-// and the object index*12 in ebp, ours gives ebp to the player and spills the index; the
-// argument convention of the callee 0xccba0 (src/unit_object_type.cpp) decides this. Logic walked against retail: no
-// behaviour difference found. Retail re-reads [ebx+0x2c] at 0x150ec0 and g_4e0300->data at 0x150e90 (edx still holds
-// g_4e0300) where ours reuses edx/ecx, which costs ours the ebp register. Tried: a local unit_index (202), the 0x14c compare
-// through a second tail_player_get (238), g_4e0300 in a local (242), an explicit object offset kept in a local (202),
-// the parent test without the bool (227).
-// AC500: Native unit/object field views and existing complete difference producer, masks 1-7,
-// 202/202/202/203/203/203/203; complete graph with byte header kind 203. Original real layouts,
-// fields, helper use and complete body restored; frame agrees, early lookup ownership and offset spill remain.
-// AC502: Positive unit/parent/owner/radius/all admissions and independent final eligibility
-// 202 each; common notification alone/with complete admissions 232/232 (688 bytes).
-// Original body restored; entry player/header-offset ownership and spill remain.
-// Round 51 (m3 lane 15): rounds scoped in the loop body 202 (modes still takes the object_index argument home;
-// retail shares rounds' slot); parent retest through parent_index 227; weapon_index declared in the loop 202; final
-// dispatch as if/else with one notification 232; offsets declared z, x, y 203.
-// Y557: Native signed-short scan as for/while 242/202; counter live from
-// entry 263/225; iteration-owned weapon 242/202; both lifetimes 263/225.
-// Original do-loop, counter position and weapon lifetime restored. Frame 0x28
-// agrees; player-data ownership and the EBP header-offset spill remain.
-// Entry-scope rounds/mode/request output subsets 1/2/4/3/5/6/7:
-// 202/202/204/202/204/204/204; all with role-based output names 204.
-// Original declarations, producers and body restored; player-data/header-offset
-// ownership and the shared rounds/mode output home remain.
-// B397: Complete four-slot transfer admission in bool/byte/short/long, then
-// rejection complement 202/202/202/202/202/202/202/202. Original call/rounds/loop graph restored;
-// player-data ownership and the scaled header-offset spill remain.
-// F371: Per-iteration current-slot int/short/signed-byte carriers 202/226/217;
-// cyclic slot int/dword/short/word/byte carriers 202/202/219/219/219.
-// NOT kept: no native width/allocation recovery or byte match; original
-// full-width slot arithmetic, short scan and complete body restored.
-// Y567: Existing complete object getter for unit/pickup/transferred weapon,
-// seven subsets, then complete shared object/header acquisition: 202/202/202/202/202/202/202/202.
-// Original helper uses and body restored; player/header-offset homes remain.
-// J252: Existing notification/completion/transfer inline contracts: 202/202/202/202/202/202/202/202/202.
-// NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
-// P328: Saved parent rejection and complete branch-owned parent admission in
-// bool/byte/short/long: 202/202/211/210/231/231/211/211. Original body restored;
-// native frame agrees, player/header-offset ownership and rounds/mode homes remain.
-// Y597: Complete single void exit, parent-admission bool/byte/short/long,
-// direct/complete named squared-distance and radius nodes: 202/202/211/210/202/202/211/210.
-// NOT kept: no gain; all original exits, observations and complete body restored.
-// F380: Complete distance/transfer/pickup workspace endings, seven subsets and all plus
-// parent validation: eight 202. NOT kept: ties; original declarations, observations,
-// signed scan, request clear, callback tuples and complete body restored.
-// P330: Persistent transfer completion controls notification and loop termination,
-// bool/byte/short/long expression producers 292/292/276/275, guarded producers
-// 284/284/261/258. NOT kept: no match, larger frame/extent; original break and full body restored.
-// N374: Complete sole-exit graph with actual squared-distance/radius/parallel-square
-// producer masks 0..7: 202/202/202/202/202/202/202/202. Original returns,
-// arithmetic and full body restored; NOT kept: no byte match or native
-// player/header-offset recovery. Native frame 0x28 remains.
-// Y597: Complete single void exit, parent-admission bool/byte/short/long,
-// direct/complete named squared-distance and radius nodes: 202/202/211/210/202/202/211/210.
-// NOT kept: no gain; all original exits, observations and complete body restored.
-// Round 73 (m3 lane 11, fast): object_slot as word, cast or masked 145/145 (714 bytes; EBP then holds retail's
-// scaled offset but movzx replaces mov/and); declaration orders slot-unit-object 144, slot-object-unit 163, slot at
-// entry 248, slot before the unit test 244; the shared `object_index & 0xffff` form 209 (714 bytes; retail's EBP
-// offset, but the unit load sinks below the object's, data stays in ECX and parent_ok takes DL where retail keeps
-// g_4e0300 in EDX and parent_ok in CL); parent_ok declared at entry 239; byte parent_type 135.
-// Round 96 (m3 lane 12): the distance through vector3d_from_points3d with the sum written j, i, k as matched 0x151780 and 0x152df0
-// have it 120 kept (the distance block is now retail's); the old named y, x, z declared x,y,z/x,z,y/z,y,x/y,z,x 130/132/132/132, its
-// sum in the five other orders 130 each; the helper with length_sq3f/dot3f 130/130; x,y through vector2d_from_points2d plus z 131/132;
-// radius before the helper 138. On the kept form: parent_ok declared first 121 (aligned 47 against 53: the unit load moves ahead of
-// the object's as retail), object_slot first 136, dword object_slot 120, byte parent_type 125, the flag set in an if 159, the lookup
-// through object_index with object_slot kept for the type read only, after or before it 209/205; the shared `object_index & 0xffff`
-// form 209, with parent_ok first 197: entry code then retail's but for g_4e0300 in ECX (EBP holds retail's index*12); the parent block
-// keeps data in ECX instead of reloading it through g_4e0300 in EDX, so it is one instruction short and everything after it shifts.
-// P360: Read-only unit/object/player input roles, seven subsets, then complete graph with read-only pickup query: 120/120/120/120/120/120/120/120.
-// NOT kept: no exact native source recovery; original complete body restored; native unit-first ingress, pool/parent ownership and scaled header offset remain.
-// T63: Plain four-slot scan with empty/failed/both rejection continues or actual
-// transfer result, original/iteration weapon lifetime: eight 164, 752/721 bytes.
-// NOT kept: all regress; original full body restored, header offset/lookup homes remain.
-// T65: Actual header byte extent in long/dword, mutable/immutable, with the existing getter:
-// final ordinal 255/255/255/255; real-header byte displacement 242/242/242/242.
-// NOT kept: extent-to-ordinal division survives, growing code to 755/750 against 721;
-// original body restored. Native header-offset, pool and parent ownership remain.
-// P364: Native header byte extent with the original handle passed to the existing
-// masked getter, long/const-long/dword/const-dword after/before the unit getter:
-// 209/209/209/209/119/119/119/119. NOT kept: the one-use extent lives across calls and requires
-// equality; best gains one and shortens away. Original ordinal, getters and whole body restored.
-// P366: Counted notification formals (player, definition, count) 104, with singular reorder 104; singular
-// alone 120; counted (player, count, definition) alone/with singular 114/114; initial-only pool receiver
-// mutable/immutable/scoped 120/120/136. NOT kept: 0x191ec4's parameter order (player, definition, count)
-// gives 104 at 722/721 bytes with 0x191ec4 and 0x9ffa0 still exact, but a declaration's parameter order is
-// not changed for a lower score (reported for a match only). Native pool/parent/header-offset ownership remains.
-// P368: Existing shared parent/final header and ingress object APIs, seven subsets,
-// then complete graph with transferred-weapon getter: 120/209/120/209/120/209/209/209.
-// NOT kept: no native ingress/extent recovery; final header forms shrink away to 714/721 bytes.
-// Original getters, ordinal, every call and complete body restored.
-// P370: Existing actual player/object getters, eight paired force-inline/automatic-inline
-// contracts: 120 each, 723/721 bytes, first +0x27. NOT kept: no ingress/extent recovery;
-// original annotations, helper bodies and complete target restored.
-// P373: Existing header ordinal, unit/object/player receivers and held/current/slot
-// lexical identities, singly then together: eight 120s, 723/721 bytes. NOT kept:
-// native ingress/retained extent unchanged; original complete body and names restored.
-// P377: Actual inventory/selection/unit-index field receivers, seven subsets then
-// complete immutable pointers: 120/120/120/120/120/120/120/120. NOT kept: no native pool/header-extent equality;
-// original entire body, direct field observations and every getter restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
+    s_record_pool *objects = g_4e0300;
     s_tail_player *player = tail_player_get(player_index);
     if (player->unit_index == NONE) return;
-    byte *unit = (byte *)tail_object_get(g_4e0300, player->unit_index);
-    long object_slot = object_index & 0xffff;
-    byte *object = (byte *)tail_object_get(g_4e0300, object_slot);
+    byte *unit = (byte *)tail_object_get(objects, player->unit_index);
+    byte *object = (byte *)tail_object_get(objects, object_index);
     bool parent_ok = false;
     if (*(long *)(object + 0x14) != NONE)
     {
@@ -2327,7 +2248,7 @@ void __stdcall function_150e30(long player_index, long object_index)
         if (weapon_index != NONE && function_ffc60(weapon_index, object_index, player->unit_index, player->local_index, &rounds))
         {
             if (rounds > 0)
-                function_191ec4(*(long *)tail_object_get(g_4e0300, weapon_index), player->local_index, rounds);
+                function_191ec4(player->local_index, *(long *)tail_object_get(g_4e0300, weapon_index), rounds);
             break;
         }
         ++i;
@@ -2336,33 +2257,24 @@ void __stdcall function_150e30(long player_index, long object_index)
     if (pickup)
     {
         byte *definition = g_4e3b44[*(long *)pickup & 0xffff].bytes;
-        short kind = *(short *)(definition + 0x12c);
-        if (kind == 6)
+        if (*(short *)(definition + 0x12c) == 6)
         {
             if (function_ccba0(player->unit_index, object_index))
                 function_191e51(*(long *)pickup, player->local_index);
         }
-        else if (kind != 0 && function_ccb80(player->unit_index) == NONE && !function_138880())
+        else if (*(short *)(definition + 0x12c) != 0 && function_ccb80(player->unit_index) == NONE && !function_138880())
             function_151ea0(player_index, object_index);
     }
-    byte type = ((s_tail_object_header *)g_4e0300->data)[object_slot].type;
+    byte type = ((s_tail_object_header *)g_4e0300->data)[object_index & 0xffff].type;
     if ((1 << type) & 4)
     {
         bool modes[4];
         if (function_cd7b0(player->unit_index, object_index, modes) && modes[0] && function_150dd0(player_index))
         {
             if (function_138880())
-            {
                 function_a8f10(player->unit_index, object_index, 3);
-                function_15e8e0(object_index, player_index);
-                return;
-            }
-            s_unit_request request;
-            memset(&request, 0, sizeof(request));
-            request.type = 0x14;
-            *(long *)request.arguments = object_index;
-            *(short *)(request.arguments + 4) = 3;
-            function_e6900(player->unit_index, &request);
+            else
+                unit_pickup_request(player->unit_index, object_index, 3);
         }
     }
     function_15e8e0(object_index, player_index);

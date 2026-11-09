@@ -862,6 +862,10 @@ void function_1c54b0(char const *variants, long object_index)
 // (same code as the island local); with the flag after the call: the entity index declared at function scope 18, the island
 // index declared in the for statement 18, count and flag declared ahead of the island and entity count 18. Diagnostic: with the
 // flag after the call the tail is retail's from the call on; only the entity count/cursor ebx/ebp swap and the reload pair remain.
+// Round 137 (lane 7, fast; a one-file LTCG harness reproduces 4 and 18 exactly): with the flag after the call, the step as
+// `removed ? 0 : 1` 18, as `removed == false` 18, as `island_index = island_index + !removed` 18; count declared before the
+// entity count 18; the flag address-taken (harness only) 18, set through a force-inline discard helper taking its address
+// (harness only) 18. The ternary step with the flag before the call 4 (same code).
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -983,6 +987,8 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // 15, 0x1c35f0 40, 0x1c3770 21, 0x1c39c0 41, 0xf0fd0 27). Added to that: 0xb8890 declared before 0x1c3770 in
 // src/unknown_278f00.cpp 1 (nothing lost, 0x1c4040 plain again, 17); 0x146bf0 first in src/unknown_0b7b40.cpp 1 (0x278f00
 // lost 185); both 1; 0x1c2a10 declared first in src/unknown_1c2690.cpp no change. BLOCKED-BY 0x1c4040 (its convention).
+// Round 137 (lane 7, fast): `0x34e < g_47f050` 1; the call's result compared `== false` 1; attempt reset before the force
+// flag is set 3; `g_47f050 >= 0x34f` 5; the force step nested in a plain else 1.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1206,6 +1212,9 @@ struct s_1c4040
 // first in src/unknown_278f00.cpp 34 (still DL, 0x1d1540 custom 215, 15 lost); plus 0x2266a0 before 0x278f00 in
 // src/unknown_1d1260.cpp 17; plus 0x146bf0 before 0x278f00 here 17; plus 0x1c51c0 defined after this function 17. Every
 // path from 0x1d1260 or 0x1d1540 to 0x146bf0 passes 0xb7b40 or 0x2902b0 (both disabled): BLOCKED-BY 0xb7b40.
+// Round 137 (lane 7, fast): `long i` declared first 8; the result byte cleared before the island-array store 101 (538 bytes);
+// the selected-object store before the priority store 10; a `* const` world pointer 8; the array choice as an inverted
+// ternary 9.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
@@ -1650,6 +1659,9 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // (same code, fast); `local_0 = ++i` as the for increment 1; `local_0 = i = 0` with i declared before the for 1; a volatile
 // copy of i saved just around the impulse call 100 (fast). Retail's +0x30 slot is a register spill of i (the entry test
 // uses the constant, the store follows it), as if LTCG believed 0x1d1160 clobbers EBX; no source store reproduces that.
+// Round 137 (lane 7, fast): the selected index stored before the count 5; the mirror declared then assigned 0 3; the index
+// declared at the top of the component block 3; the rigid-body count initialised at its declaration 3; the mirror stored in the
+// for statement's increment clause (`++i` at the end of the body) 3.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)
