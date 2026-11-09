@@ -947,6 +947,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // T72: Complete computed first/second/both edge scalars, then existing output setters
 // for first/second/both scalar graphs: 252/250/252/252/250/252/252/252. NOT kept:
 // no native frame or edge-spill recovery; original complete body and helpers restored.
+// P389: Complete first/second edge publications through native/standard copy/backward
+// range transfers, eight nonoriginal pairs:
+// 598/598/733/750/745/769/735/729. NOT kept: no exact native frame/home recovery;
+// original complete body, observations, helper and call graph restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

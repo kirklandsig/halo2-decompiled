@@ -1664,6 +1664,10 @@ done:
 // 33 (index back in DI; scenario EBX, type ESI, definition ECX); a screen of scenario local/global x type
 // local/re-read x definition local/table at each use x palette local/at the call x size short/long: palette
 // local 33 in all sixteen (236 bytes), palette at the call 17 with the scenario local and 25 with the global (237).
+// Round 81 (m3 lane 1, fast with 0x29fd40/0x2a12f0): palette added at the call with a long size and the placement
+// offset read inline 26 (scenario moves to ECX, index to SI); the type and definition locals renamed to sort the
+// other way 17 (same code); the definition bound as a const reference to its table entry 17 (same code); a named
+// datum with the palette added at the call 17; palette and size declared ahead of the definition 17.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1830,6 +1834,9 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax I (11-08): no new form, no lower score (285): the shared epilogue at retail's 0xb987a and the
+// marker pointer retail inlines (that other file is /Ob1, so LTCG keeps our call) still leave the first
+// difference at +0x76.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60

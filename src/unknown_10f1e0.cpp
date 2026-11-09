@@ -1433,6 +1433,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // query that clears the flag on a positive value (330) lose too, though the latter reaches setle; no
 // new form, no lower score.
 // MiniMax R (10-31): no new form, no lower score.
+// MiniMax I (11-08): no new form, no lower score (164): retail keeps the pool pointer in EAX and its data
+// in EBP, re-reads the unit pointer for both depletion queries and writes the first depletion with setle;
+// ours keeps the unit in EAX and builds the result with a branch.
 // score 164 (was 164): this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
 // the unit through that offset for both depletion queries, and it writes the first depletion with setle;
 // the byte-offset entry with re-derived queries gives 325 and the if-form depletion gives 330.

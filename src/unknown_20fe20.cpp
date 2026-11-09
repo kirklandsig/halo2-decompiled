@@ -2614,6 +2614,12 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // the outer z, x, y locals ahead of it, plain 432 (1940 bytes, copies before the squares); (fast) the helper defined below the
 // function 3 (same code); the sum started from the y square (`sum = dy * dy; sum = dz * dz + sum;`) 7 (z then fully first); the y
 // square added on the left 3 (same code as `+=`).
+// Round 158 (compile-only screens of the block; fast where given): the helper's differences as a local vector3f in every
+// definition and term order, one-expression and staged (108 forms: one-expression sums give retail's sequential pairs but
+// XMM1-3 in definition order, staged sums hoist the first square's load); two-term first or last statements and both
+// parenthesizations in every order (144, none); the outer locals ahead of the helper in every order (72, XMM0 joins); the
+// existing vector3d_from_points3d with the parenthesized sums of the matched 0x210970/0x210a30, outer locals before or after
+// (168, XMM1-3 always x, y, z); (fast) vector3d_from_points3d + length_sq3f 345 (the delta vector moves the layout).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,

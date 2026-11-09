@@ -1248,6 +1248,10 @@ long function_1931a0(long count, s_surface_description *variant);
 // read before the summary 8/785; the variant looked up on the accessor with the index read again after 8/867 (2844
 // bytes); the result flag declared after the admission test 8/766. Retail's 0x7e210 calls 0x192e60 at its top and
 // has 0x192e60's body inline in the player loop (one 0x1934f0 call there), so the two sites in one caller differ.
+// Round 96 (m3 lane 16, fast control 8 / plain 6, still BLOCKED-BY 0x7e210): in 0x7e210, the player loop's written-out
+// variant lookup replaced by the existing 0x192e60 call 8 (0x7e210 766 -> 857, 2772 bytes: the loop call stays out of
+// line, the top one inlines); its result flag declared first 8 (766), declared last and set after the clear 8 (766).
+// Here: the ratings buffer declared at the top 8; an early return when 0x7e210 fails 8. All restored.
 // @retail 0x73530
 void function_73530(c_helper_a *helper, void *description)
 {

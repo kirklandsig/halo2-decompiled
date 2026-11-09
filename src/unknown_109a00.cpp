@@ -306,6 +306,7 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
+// MiniMax C (11-09): no new form, no lower score (56); the definition's early spill, the axis base and the failure tail still differ.
 // MiniMax B (11-06): no new form, no lower score (56); a named physics slot index 58, the swapped count comparison 56, both 58 and the widened default body 251.
 // MiniMax I (11-05, run 37): no new form, no lower score (56); the transform-base lea, the dot's product order and the failure stores' placement still differ.
 // MiniMax A (11-04, run 41): no new form, no lower score (112); the entry registers are still reversed (retail
@@ -561,6 +562,14 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // T70: Actual default-body output starts from the signed byte, then invalid flat/nested guards
 // correct it; char/short/int/long 249/235/252/252/249/237/252/252. NOT kept: result allocation regresses;
 // original selector, physics observations, geometry, helpers and complete body restored.
+// P388: Actual object-model/physics named fields and retained physics-handle
+// receiver graph, seven subsets and complete read-only views: 56/56/275/56/275/275/275/275.
+// NOT kept: no exact native early spill/axis/failure-tail recovery; original
+// record layouts, observations, complete body and call tuples restored.
+// P398: Actual motion/component/tag-instance reference owners, seven subsets,
+// then read-only tag slot: 56/56/58/56/58/58/58/58; all at 925 bytes.
+// NOT kept: no native spill/axis/failure-tail repair or exact ownership-form match.
+// Original complete body and contracts restored; all six exact controls survive.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

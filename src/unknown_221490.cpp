@@ -988,6 +988,10 @@ extern "C" void _ReadWriteBarrier(void);
 // Compile-only: deleting any other block keeps decibels ECX; a zero in a callee-saved register (an explicit nine-value
 // initializer, a nine-dword loop) gives retail's later registers; memset wrappers, RtlZeroMemory/RtlFillMemory keep ours.
 // Real build: the explicit nine-value initializer 211 (638 bytes: LTCG drops every zero store).
+// Round 175 (fast): the volume helper with `volume = -6400` first and the conversion under `gain != 0.0f` 137 (689
+// bytes, 0x220fd0 builds 199 in the reduced image), the same without both barriers 134; a named float product in the
+// helper (`real decibels = log10(gain) * 2000.0f; volume = (long)decibels;`) 21 (same code), without both barriers 28;
+// `real const decibels` as the parameter 21 (same code); a 600 s permuter run (66 tries) none below 21.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

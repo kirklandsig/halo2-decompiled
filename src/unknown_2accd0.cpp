@@ -610,6 +610,11 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	*size = g_4fa0c8.size;
 }
 
+// MiniMax I (11-09): NOT kept: 28 (was 34) with the entry total inline for the float conversion plus a one-use
+// HANDLE local for SetFilePointer only (the sum then lands in EDX, task pointer in EAX, as retail has it); a one-use
+// local is kept only with a match, and the same local used by ReadFile too scores 203. The dispatch still hoists
+// body_size into ESI where retail reuses the switch register ECX, and the signature position still folds into ESI
+// where retail has `lea esi, [ecx + edx]`.
 // MiniMax S (11-08): no new form, no lower score (34); the entry total still lands in EAX where retail has it in EDX with the task pointer in EAX, the dispatch still hoists body_size into ESI where retail reuses the switch register ECX, and the signature position still folds into ESI where retail has `lea esi, [ecx + edx]`.
 // MiniMax D (11-07): score 34 (was 34): no new form and no lower score; dropping the named total still gives
 // retail's head (the sum in EDX, the task pointer in EAX) but the dispatch then hoists body_size into ESI where

@@ -131,6 +131,9 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // (retail's common tail) instead of breaking out of the edge loop; the held 34 form's gotos again (a goto main's
 // body does not have is kept only with a byte match). On that form the first-edge flag at function scope before
 // the success flag stays at 106.
+// MiniMax D (11-09): no new form, no lower score; the count test branches the other way
+// (retail jumps to the far block when the count is positive) and the body is twelve bytes
+// shorter than retail's 1605.
 // score 244 (was 410): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
@@ -421,6 +424,10 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // point1.x product no longer folds into the normal's register), with a vector-first dot 304, declared at function scope 304. The
 // slot layout (normal 0x40, line 0x34-0x3f, previous sector 0x30) says retail's line is one 12-byte aggregate; what is left on it
 // is the fold and the XMM1-3 roles (retail offset, normal j, normal i). Body restored at 244.
+// P388: Real published blocked state owns overshoot/no-hit/accepted outcomes,
+// seven groups then truth before point publication: 410/386/243/563/437/385/574/354.
+// NOT kept: no exact byte, home or progress-tail recovery; original result owner,
+// every publication, point/query call and full traversal restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

@@ -1323,6 +1323,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // P382: Complete complementary lookup-failure outcomes in bool/char/signed-char/byte/
 // short/word/long/dword: 196 each reduced (control 196; full 153). NOT kept:
 // no exact delayed-save or late-handler repair; original classifiers and all call tuples restored.
+// P390: Query-first primary priorities QSDCP/QSCDP/QSCPD/QPDSC/QPDCS/QPCDS/QPCSD/QCDSP:
+// 200/208/206/197/204/208/206/204 reduced, control 196, full 153. Original case interiors and late
+// classifier restored; early ESI/late expansion remain. NOT kept: no qualifying exact/native-shape
+// gain; original complete body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
