@@ -857,6 +857,11 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // P386: Default offset / velocity / both via memcpy or std::copy; both memmove; complete std::copy forward:
 // 45/45/45/197/192/238/249/259. NOT kept: ties or regressions; no exact native transfer result.
 // Right i/j carriers, forward.k reuse and angle store bases remain; original body/includes restored.
+// P398: Existing first-cross/difference complete scalar source ownership,
+// prior-up/forward/difference subsets then immutable complete inputs:
+// 49/226/223/226/222/220/70/70.
+// NOT kept: all regress; no exact input-copy match. Original shared providers and body restored;
+// right i/j carriers, forward.k reuse and ordinary-angle store bases remain.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

@@ -3063,6 +3063,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // at for-owned then pre-threshold zero lifetimes: 50/72/55/72/58/75/63/75. NOT kept:
 // no first-event index or actor-loop padding repair; wider graphs grow to 581/578 bytes.
 // All original wrapped induction, queries, actor steps and the complete body restored.
+// P398: Actual actor-step completion pointer/Boolean ownership, condition declaration,
+// assigned while condition, for-owned result and explicit initial/next observation:
+// 50/50/103/103/50/50/103/103. NOT kept: unmatched one-use/condition-assignment forms;
+// explicit next-result lifetimes grow to 620 bytes. Original complete body restored;
+// first-event index reload and shifted actor-loop alignment remain.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

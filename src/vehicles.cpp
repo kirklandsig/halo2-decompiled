@@ -4030,6 +4030,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // cosine-first/sine-first and consumed-axis graphs: 235/181/204/249/273/246/261/284.
 // NOT kept: all regress and add nonnative materialization; original whole body,
 // real precision and shared helpers restored. Projection/cross/trig homes remain.
+// P398: Complete dot first/second and scale scalar-input ownership, seven subsets,
+// then immutable complete inputs: 179/179/175/169/169/179/165/165.
+// NOT kept: all regress and lengthen; unmatched input copies require equality.
+// Original shared projection providers and entire body restored; projection/cross/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

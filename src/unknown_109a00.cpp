@@ -566,6 +566,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // receiver graph, seven subsets and complete read-only views: 56/56/275/56/275/275/275/275.
 // NOT kept: no exact native early spill/axis/failure-tail recovery; original
 // record layouts, observations, complete body and call tuples restored.
+// P398: Actual motion/component/tag-instance reference owners, seven subsets,
+// then read-only tag slot: 56/56/58/56/58/58/58/58; all at 925 bytes.
+// NOT kept: no native spill/axis/failure-tail repair or exact ownership-form match.
+// Original complete body and contracts restored; all six exact controls survive.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
