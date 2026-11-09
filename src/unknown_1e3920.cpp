@@ -539,7 +539,10 @@ real normalize2d(point2f *vector);
 real function_267370(long object_index);
 
 
-// score 20 (was 20): First +0x140: plane x-product operands, parent-selection carriers
+// score 14 (was 20): round 96 kept the resolved-carrier local (selection and root kept apart) with no `up`
+// local, kept together (plain 14; either alone 22, neither 20): the carrier block is retail's; left are the plane x product (retail loads
+// point.x, plane.i as the memory operand) and cross-product operand ties. Earlier at 20:
+// First +0x140: plane x-product operands, parent-selection carriers
 // and cross-product registers remain; frame 0x90 and length 1724 agree. Signed zone
 // byte and NONE sentinel recover immediate zone compares, EDI table and later ECX resets
 // (plain 20). Existing marker and every call/value unchanged.
@@ -730,6 +733,18 @@ real function_267370(long object_index);
 // Round 69 (m3 lane 14, fast with 0x1e2a90): the first cross reading up as the field expression 22 (its k products turn
 // b-loaded: the second product as retail, the first away); no up local at all 22; no left local 20, `vector3f *const` up/left
 // 20, the second cross with field expressions 20 (same code each).
+// Round 96 (fast with 0x1e2a90; the cross ties follow local numbering): on the split, no `left` 16, neither
+// local 20, left before up 20, resolved as a ternary 302 (1728 B), root before the resolved copy 304 (1726 B), a
+// named forward output pointer 12; no `up` plus the forward pointer 2 (only the plane x product left; a one-use
+// pointer, match-only, not kept); no `left` plus the forward pointer 14. On the 2 form: location pointer 4, point
+// before the sample call 2, zone result in a bool 4, point at block top / function scope / first local / after
+// type / after object / after parent 2 each, sample pointer 4. Zone header (0x11c120/0x25ccd0 still match): the
+// existing plane_distance_to_point 6 (0x127400 554 -> 559); i,j,k and j,k,i written orders 2 (same code).
+// Compile-only (reproduces the plane block): dot3f either way, `< d`, x-first, parenthesised sums, point through
+// a pointer local, vector/real-array point, a zone-index output, the marker position passed directly: plane.i is
+// loaded in every form (even with point.x in a register). On the kept 14 body: mode read at each use 18, parent
+// definition inline 14, held index read at each use 18, left before the up copy 14, left at block top 24, held
+// object read at each use 74. Retail's other inlined copy at 0x16ebf0 loads plane.i too.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -763,11 +778,12 @@ void function_1e3b60(long actor_index)
 			*(byte *)(object + 0xaa) == 1 ? actor->unit_index : NONE;
 		if (carrier != NONE)
 		{
+			long resolved = carrier;
 			long root = function_baf40(carrier);
 			if (((s_moving_object_header *)g_4e0300->data)[root & 0xffff].type == 1)
-				carrier = root;
-			byte *carrier_object = (byte *)moving_object_get(carrier);
-			actor->unknown26c = carrier;
+				resolved = root;
+			byte *carrier_object = (byte *)moving_object_get(resolved);
+			actor->unknown26c = resolved;
 			if (*(long *)(carrier_object + 0x248) == actor->unit_index)
 			{
 				byte *definition = g_4e3b44[*(long *)carrier_object & 0xffff].bytes;
@@ -859,12 +875,11 @@ void function_1e3b60(long actor_index)
 		}
 		else
 			*(vector3f *)(actor_bytes + 0x29c) = *(vector3f *)(object + 0x168);
-		vector3f *up = (vector3f *)(actor_bytes + 0x2a8);
-		*up = *(vector3f *)(object + 0x18c);
+		*(vector3f *)(actor_bytes + 0x2a8) = *(vector3f *)(object + 0x18c);
 		vector3f *left = (vector3f *)(actor_bytes + 0x2b4);
-		cross3f_staged(g_4687b0, up, left);
+		cross3f_staged(g_4687b0, (vector3f *)(actor_bytes + 0x2a8), left);
 		function_30bf0(left);
-		cross3f_staged(up, left, (vector3f *)(actor_bytes + 0x2c0));
+		cross3f_staged((vector3f *)(actor_bytes + 0x2a8), left, (vector3f *)(actor_bytes + 0x2c0));
 		*(long *)(actor_bytes + 0x2d0) = *(long *)(object + 0xec);
 		*(long *)(actor_bytes + 0x2d4) = *(long *)(object + 0xf0);
 		*(long *)(actor_bytes + 0x2d8) = *(long *)(object + 0x100);
