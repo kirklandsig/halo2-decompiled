@@ -330,6 +330,13 @@ void c_window_channel::v9()
 // to the new request for the load and set_next 3; `screen` as a const pointer 3; the id as `&request.id[0]` 3;
 // base parameters storage with field_c cleared after the type clear 5. The builder is a leaf, so v10 can't be
 // compiled ahead of it in LTCG's walk; the reload is not a walk-order effect.
+// Round 174 (m3 lane 4; one-file LTCG harness of this file with screen_parameters.cpp and the ballast, exact at 3): the
+// builder's arguments read into named locals as v9 does 3 (fast 3); the constant on the left of the type test 3; the
+// message as `(s_message *)(&new_request + 0)` 3; the load through `this->request.load` 3. Mechanism (diagnostic, not
+// keepable): building through an inline method's `this` (the round 26 form) gives 0 in the harness, a forced-inline
+// free helper taking the request pointer gives 3; VC copy-propagates a pointer parameter back to `&new_request` (so ECX
+// is reused after the call) but not an inlined method's `this`. BLOCKED by the no-wrapper rule unless an existing
+// member function of the request turns up whose body calls the builder on `this`.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

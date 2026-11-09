@@ -649,6 +649,12 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // Lane 15 round 62 (fast): definition_type stored without the `(byte)` cast 3; voice_index declared before the
 // system reload 3; the inner bound assembled from the count bytes 122 (607 bytes); the voice index advanced right
 // after the first store 3; stream_reset stored as 0 3.
+// Round 174 (m3 lane 4; one-file LTCG harness of this file with its eight callees' files and the ballast, exact at 3): the
+// pool reset through the existing 0x16b790 34 (fast 34); the counts table at file scope 3, at file scope without const 3;
+// the voice as `g_4e6378 + voice_index++` 3; a two-use count reference for the sum and the bound 3. Diagnostics (wrong
+// values): the bound as a constant 70, read from an extern array 64, the sound index stored as 0 3, the type stored last
+// 11, the voice index not advanced 62; `inc esi` stays right after `inc edi` in every one, so neither the table's aliasing
+// nor the first stores' operands place it.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
