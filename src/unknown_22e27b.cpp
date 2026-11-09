@@ -416,6 +416,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // `ja` for `jne`): with those the plain-frame path does reach the restart test as retail's does, so our skip comes from
 // the `!= 0` test's implied value on the back edge together with the false start. Diagnostic (reverted at once): a
 // volatile restart 215 (652 bytes).
+// Round 59 (m3 lane 2, fast): code-free boundaries ahead of the threaded test: `__assume(this != NULL)` before the
+// restart test 1, at the loop-body top 1; `__assume(animation.target != NULL)` before the test 89 (659 bytes); an
+// else arm on the plain path holding `__assume(frame >= 0)` 1; the break as `restart != 0` 1; `__assume(!dispose)`
+// before the restart test 1.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
