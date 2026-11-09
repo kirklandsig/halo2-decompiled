@@ -314,7 +314,6 @@ short actor_behavior_find_level(long owner_index, short type);
 bool function_1e1e50(long actor_index, vector3f *direction)
 {
 	const long *index_reference = &actor_index;
-	vector3f *const *direction_reference = &direction;
 	s_actor_moving *actor = (s_actor_moving *)(g_4f55f0->data + (*index_reference & 0xffff) * sizeof(s_actor_moving));
 	bool result = false;
 	if (actor->prop_index != NONE)
@@ -322,9 +321,8 @@ bool function_1e1e50(long actor_index, vector3f *direction)
 		s_type_f95cd3 *view = function_25d700(actor->prop_index);
 		if (view && *(short *)view > 6 && actor_behavior_find_level(*index_reference, 14) != NONE && actor->unknown722 > 0)
 		{
-			**direction_reference = *(vector3f *)((byte *)actor + 0x758);
-			vector3f *value = *direction_reference;
-			result = value->i * value->i + value->j * value->j + value->k * value->k > 0.0f;
+			*direction = *(vector3f *)((byte *)actor + 0x758);
+			result = direction->i * direction->i + direction->j * direction->j + direction->k * direction->k > 0.0f;
 		}
 	}
 	return result;

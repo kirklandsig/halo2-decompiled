@@ -627,6 +627,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // with `inline` on 0xbb780's definition 77; the long result with that inline helper 49; the helper's value named first 77; a header
 // reference for the test 77; early bool with the in/out value copied to a local after the creation call 75 (176 bytes, aligned 35,
 // masked 27: a one-use copy, not kept).
+// P383: Post-attachment notification admission in bool/byte/short/long, positive/complementary:
+// 49/49/49/49/49/49/49/49. NOT kept: no native false-BL/independent-lookup equality; original workspace
+// observation, validity result and whole body restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

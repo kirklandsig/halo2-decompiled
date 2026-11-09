@@ -49,6 +49,15 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
+// MiniMax D (11-08): no new form, no lower score (10); retail ORs the first word's terms as (category | flags) | entry
+// bits where ours does (category | entry bits) | flags, retail shifts the kind in the call result's register and then
+// copies it (`shl eax, 0x1d; mov esi, eax`) where ours copies first and shifts in ESI, and retail copies the pool
+// argument above the bit-count test where ours copies it inside the branch; the six orders of the OR chain's terms,
+// six parenthesizations, three temp-local forms, eleven kind-word forms and three pool-call forms are all
+// byte-identical. Reading the pool's global a second time before the clear hoists the copy like retail and scores 7,
+// but that needs a local read once (not kept); reading the global in the call instead scores 26. On 11-09 the call
+// folded into the shift, the call's result in a dword local and the `|=` written as an assignment with `|` were
+// rebuilt and all three keep the copy-then-shift schedule and the score of 10.
 // MiniMax R (11-07): no new form, no lower score (10); the first word's terms in retail's order, split into two
 // statements or swapped, the kind word built from the call's result, the kept bits in a named local and the mask
 // written as ~0x1fffffff are byte-identical; the kind word's operands swapped puts the shift in the result

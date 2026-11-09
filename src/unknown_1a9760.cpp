@@ -9,7 +9,7 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
     real arg_3, bool *arg_4, s_path_trace_result *arg_5);
 
 #pragma inline_depth(0)
-// score 4 (was 85): only the x87 faddp/fsqrt schedule against the first two subss rows remains (retail subss, faddp; ours faddp, subss). Earlier summary: frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
+// score 4 (was 4): only the x87 faddp/fsqrt schedule against the first two subss rows remains (retail subss, faddp; ours faddp, subss). Earlier summary: frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
 // the final dot's k-before-j product remain (the tail's load/store schedule is retail's since round 67).
 // Earlier (104): half/offset XMM allocation and x87/SSE projection scheduling remain.
 // Earlier (104, was 104): the frame 0x3c still agrees; the half and offset XMM allocation
@@ -200,6 +200,12 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // with the loop the flag store stays ahead of the rows' loads (an ordering edge that delays them a slot), with the rows
 // written out it has none and sinks; retail keeps it early without the delay. Also: each row written through a pointer
 // to its component 4; position read through a const reference declared before the loop 4.
+// Round 157 (m3 lane 6; LTCG harness of this file with its four callees' files, equal to the full listing for the first
+// 143 instructions): without the flag store the block's x87/SSE order is retail's; retail keeps the store at slot 31 and
+// still issues the second faddp after the first row's subss, so some other node differs. Square sum through
+// `local_2.n[]` 4; the flag through the record's lookup written again 142 (harness head; fast 237, 1006 bytes); a named half step per row 4;
+// the direction copy as a component loop 122 (harness head); squares accumulated in a component loop 44 (999 bytes,
+// fast); the flag ahead of the copy 4; rows through a per-row element pointer 4.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
