@@ -294,6 +294,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // (133 bytes); `index = next` right after the successor read, before the iterator store, with early returns 52;
 // `while (index != NONE && !result)` with the successor and `else index = next` 54 (both callers lose); the entry as
 // `g_4cf98c + index` with a successor and early returns 49. Re-measured: successor with early returns 49.
+// P382: Complementary terminal no-player result in bool/char/signed-char/byte/short/word/
+// long/dword: 51/51/51/51/60/60/58/58. NOT kept: 133-137 bytes move away from native 127,
+// the result occupies EBX and AL mask/index/successor ownership still differs; wide forms lose both
+// callers. Original complete body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -894,6 +898,11 @@ void function_1537f0(s_profile_record *record);
 // Round 133 (m3 lane 7, fast): index loop with every field through `g_4cf98c[i]` and the 8-byte tail kept 77 (238 bytes:
 // retail's `cmp edx, end; jl` exit, identity still folded); on it identity `= { 0 }` 77, the record initialized before the
 // identity 77, an entry pointer after the record initializer 78 (238); a short index 53 (the countdown returns).
+// P380: Identity retained across the loop edge and reset on each visit, before/after metadata,
+// library/aggregate entry zero and per-visit/outer source; four later traversal-entry initializations.
+// Scores 87/87/87/87/87/87/87/87/87/87/87/87. NOT kept: all twelve score 87 at 273/258; native frame
+// 0xa0 recovers, but identity/source slots, countdown and initial zero placement still differ.
+// Original complete body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1482,6 +1491,11 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // cursor 8 (round 141's form; the stores stay match-only); per-pass `from = &g[i]` on it 55; the flag left uninitialized
 // and set in every arm, the equal case included 382; no initializer, the flag cleared at the top of the removed block and
 // set only in the `<` arm 391 (1162 bytes). Original body restored.
+// P380: Removal availability after both unlink calls, shared by range admission and final count
+// publication, positive/complementary bool/byte/word/long outcomes.
+// Scores 382/382/394/396/382/382/394/396. NOT kept: all regress to 382/394/396 at 1173-1180 versus
+// native 1171; frame 0xc persists but direct ordinal tests and count/upper/index homes do not recover.
+// Original complete body restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

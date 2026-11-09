@@ -5709,6 +5709,9 @@ void __stdcall function_d6bc0(long object_index);
 // the index and a cross-block `entries` CSE takes EDI, where retail keeps the timer in EDI and reloads `entries` at each use.
 // A grid on that field-test form: object, index, placement at function scope and a tail-only index local, each with and without
 // scenario first: 172 with scenario first, 174 without, in every combination; scopes do not move it.
+// P379: Admitted-scope zero-or-positive kind admission, signed-byte/short/int/long, then nested upper/lower
+// admission: 68/71/69/69/103/98/103/103. NOT kept: no native admission/byte/index equality; all original
+// dispatch, timer observations and complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

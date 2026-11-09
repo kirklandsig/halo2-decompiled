@@ -2167,6 +2167,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // P377: Actual unit-velocity/actor-position/view-strength field receivers, seven
 // subsets then complete immutable pointers: 168/168/168/168/168/168/168/168. NOT kept: no native iterator/pool/SIMD
 // equality; original complete body, field observations and helpers restored.
+// P380: First-walk result as native node/typed datum, walk-only or bare entry lifetime, while-return or
+// for-cursor advancement on the retained shared-iterator and early-zero graph.
+// Scores 168/753/168/753/168/753/168/753. NOT kept: while forms tie 168/2880; for forms regress to
+// 753/2923, versus native 2880; early index, iterator and SIMD homes stay different.
+// Original complete body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

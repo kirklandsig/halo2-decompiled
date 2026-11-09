@@ -3005,6 +3005,10 @@ real g_47ff30 = 2.5f;
 // three. Existing full force/torque/normalization scale boundaries, masks 1/2/4/3/5/6/7 and nested torque output:
 // 699/699/699/699/699/699/699/701. Coherent mass with force/torque/both scale calls 709/709/719; response/query/all
 // axis-output identities each 696. All restored; original 699, frame 0x100 and 3229 bytes retained.
+// P381: Complete selected-bank branch/conditional-arm/expression/slip-default results,
+// original magnitudes then existing magnitude calls: 722/722/722/690/722/722/722/690.
+// NOT kept: 690 reaches native length but keeps frame 0x100/0xfc and adds a slip
+// publication before the selection, unlike retail's carried control bank. Original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
