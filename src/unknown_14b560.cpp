@@ -1135,6 +1135,10 @@ bool function_14ed80(void)
 // declared and set to NONE after the remap 63 (151 bytes, 0x14f0f0 lost); the bound-test form with `globals` declared
 // between first and third and assigned after the player 53 (declaration order does not break the first/third tie).
 // Retail's two callers (0x14f0f0, 0x14f2e0) never read EAX after the call, so the void return stands.
+// Round 142 (m3 lane 8, fast; direct global reads mixed with the local): clamp direct, local declared before the bound
+// test 54; element through the global, clamp and bound test through the local 53; local before the bound test used there
+// only 53; local in the clamp arm only 53; bound test direct with the outputs declared after the local 10 (first EDX as
+// retail, third ESI, globals EDI).
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {

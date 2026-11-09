@@ -974,6 +974,9 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // index with k first 19. The ESI save still lands after the table add in each.
 // Round 173 (m3 lane 4, fast): double-precision `(real)(cos(a) * cos(b))` trig 6; the up vector read into a local first 6;
 // the products as compound `*=` statements 6; components in i, k, j order 14; in k, j, i order 19.
+// Round 142 (m3 lane 8, fast): the angles through one `real const *` to the yaw field 6; named component products stored
+// after 6; normal named, position after the components as a pointer to const 6; table + `(long)index` 6; a `T &` flag
+// with named component products and the position inline 6. Compile-only with /G5, /G6, /G7 or no /arch:SSE: same schedule.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {
