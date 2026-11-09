@@ -838,6 +838,14 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // datum-iterator form of matched 0x1406b0 (prediction from `iterator.datum`) 14; a `predictions` pool local for the iterator and
 // the allocation 14; the iterator in its own block 14; `return true` in an explicit else 14. Diagnostics: the header call's font read through
 // its address 14; without the header call 87 (the mask still takes EBP: it is allocated after the parameter in every form).
+// Round 175 (one-file LTCG harness with 0x13eeb0's and 0x16b840's files, exact at 14): the flags as a `static const`
+// aggregate 15; the datum-iterator walk with the character compared first 17. Diagnostics: plain long parameters 86 (LTCG
+// passes the character in EBX, the font stays on the stack, the mask EBP); plain long parameters with the function's
+// address taken keep the declared convention: fastcall 76, `__stdcall` 14 (the font still EBX); a forced-inline copy of
+// the scan with the mask as `2 <<` or `0x80000000u >>` 14/14. So neither the convention nor the mask's constant decides
+// it: the allocator colours the font before the mask, retail the mask first (bits ESI and count EDI in both).
+// Round 175: the iterator as an aggregate initializer `{ g_54d578, NONE, NONE }` 14; the allocation inside a `for (;;)`
+// search when the walk ends, `break` on a match, 14 (harness); a 600 s permuter run (75 tries) none below 14.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {
