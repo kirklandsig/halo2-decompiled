@@ -1253,6 +1253,7 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// MiniMax C (11-09): no new form, no lower score (94).
 // MiniMax H (11-07): no new form, no lower score (94); the fade block still holds the running
 // difference in another register (ours xmm2, retail xmm3) and still divides by the fade-in time in
 // the other form (ours multiplies by its reciprocal).
