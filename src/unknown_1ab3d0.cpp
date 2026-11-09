@@ -177,6 +177,13 @@ static __forceinline long real_to_long(real value);
 // Round 219 (lane 3, fast): the helper's last step through vector3d_from_points3d 39 (round 100's state/direction EAX/ECX tie returns, the
 // facing's i still loads first), with dot3f either argument order 39/39; the helper's sums written position + velocity * scale 2. Permuter
 // (`--fast --anneal`, 600 s): 63 tries, best 2.
+// Round 156 (m3 lane 6): the projection bound to `real const &` 20 (fast); the then-branch through scaled_difference3f 2
+// (fast); the k term's direction read through slot_state 50 (472 bytes, fast); the slot or the actor index read through
+// its own address 4/4 (sum order only; LTCG harness of this file with the 0x25d690, 0x30bf0, 0x1e5450 and 0x1469f0 files
+// and the ballast reproduces 2). CL-only (our dot exactly): facing copied to a local vector, a `real const *` view of
+// the direction, the partial sum parenthesised, `+ 0.0f`, `a < -b`, the direction initialised from the helper all load
+// the facing first; so do probes where the helper never stores dir.i (a fresh load), in either written order. Harness
+// flags (diagnostic): /Ob1, /Oi, /Ox, /G6 keep 2.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

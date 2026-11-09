@@ -2291,6 +2291,10 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // object's store goes); `for (object = next; object; object = next)` as in 0x3d380 8; a named object copy of
 // the grouped member as in 0x15aad0 8; the iterator's object index read before the old-index test 8 (the
 // load stays after the release); index declared at function scope 8.
+// Round 72 (m3 lane 14, fast): the entry field read at each use (bounds test on the field, index read inside) 38
+// (192 bytes); a pre-read `while (local.object)` with the next read at the body end 8; the two tail stores swapped 9;
+// `NONE != entries[index].index` 8; the release's lookup after its mode test 37 (195 bytes; 0x15b1e0 12). Re-measured:
+// the release's lookup through engine_object_get 9 (also 0x162060, which the reduced image builds at 5 either way).
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
@@ -5640,6 +5644,13 @@ void __stdcall function_d6bc0(long object_index);
 // Kept form's spellings: the modifier switch in each kind arm 129 (877 B) [11, 11], one switch with the zero in an else arm 134 [13, 13],
 // with an initializer 132 [12, 16]; d6bc0 given index on those 121/125/110 (872 B) [12, 19]. On that scenario read ahead of the rate is
 // retail's store order but gains only 2: main's order kept, 112 (872 B) [12, 20]. Short modifier 128 (877 B) [13, 17], short kind 185 (869 B) [17, 52].
+// T63: On the native-frame/signed-byte-kind graph, timer address at scheduling/index/
+// entry/placement/eligibility, separate scheduling-expiry pointers, scheduling-only/expiry-only:
+// 170/233/229/229/233/112/112/112. NOT kept: ties/regressions; original complete body restored.
+// T65: Complete branch-owned scheduling without an entry initializer,
+// bool/byte/char/signed-char/short/word/int/long: 112/112/112/112/133/133/130/130.
+// NOT kept: ties/regressions; original complete body restored. Native frame/timer agree;
+// initial scalar stores, scheduling branch ownership and entry observations remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
