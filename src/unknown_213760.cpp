@@ -1154,6 +1154,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
+// MiniMax R (11-09): the two out parameters sit in each other's homes, the size at [esp + 0x28] where retail keeps
+// it at [esp + 0x24] and the bytes written the other way round; declaring the bytes written local beside, before
+// or above the size local, and the size local above the loop body, all give 33 with the same code.
+// MiniMax R (11-08): no new form, no lower score (33); the write call still builds its flags zero in EAX where
+// retail builds it in ECX with the handle already in EAX, and the slot-range test still compares against an
+// immediate 1 where retail holds it in ESI.
 // MiniMax D (11-07): score 33 (was 33): no new form and no lower score; the write call's flags zero still takes
 // EAX where retail builds it in ECX with the handle already in EAX (ours loads the handle after the zero and
 // reloads it), the checksum compare still takes EDX where retail takes EAX, and the slot-range test still
