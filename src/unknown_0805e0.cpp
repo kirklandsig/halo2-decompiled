@@ -54,6 +54,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
    with a name; iterator starts at the first entry and ends at NONE */
 // MiniMax D (run 46): early returns with a successor local and the index stepped at the loop end 49,
 // the successor read through the table 53; no lower score.
+// MiniMax C (11-08): forms tried, none lower: early returns 52, early returns with the successor in
+// a local 49, the successor in a local with the result flag 51, the loop turned into a do/while 51
+// (base 43).
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
@@ -670,6 +673,7 @@ void function_1537f0(s_profile_record *record);
 // 53 (same code), it still folds into registers and the frame stays 0x98.
 // MiniMax E (11-05): no new form, no lower score; splitting the source record's 8-byte field into two
 // dwords to make it 4-aligned leaves the record at +0x18 and the frame at 0x98, and an index loop gives 78.
+// MiniMax C (11-08): no new form, no lower score.
 // score 53 (was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
 // 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
