@@ -746,6 +746,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // P392: Complete pre-copy count-prune outcomes, admission then rejection in bool/byte/short/long:
 // 67/67/67/67/67/67/67/67. NOT kept: no candidate-first query or extent repair; one-use predicates require
 // equality. Original complete body restored.
+// P401: Selected-solution receivers shared separately by the less/equal/cost query pairs,
+// seven nonempty subsets then scoped demand: 87/115/132/114/132/130/130/131.
+// NOT kept: no candidate-first query graph; frame stays 0x2694 but extents grow.
+// Original selection, four spread queries, costs, party calls and whole body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

@@ -2162,6 +2162,11 @@ bool function_1e11b0(long actor_index, bool active);
 // the same domains sourced from the initialized iterator full handle: four 65s at
 // 199 bytes, losing both matched callers. NOT kept: native EBP handle/receiver spill
 // and return mask remain; original real record, parameter store and whole body restored.
+// P401: Complete loop admission/exhaustion carried by bool/byte/short/long in the
+// ordinary for predicate: eight 81s at 214 bytes. Full-width value argument alone/with
+// word flag publication and full mask 64/65, both lose the two matched callers.
+// NOT kept: no native EBP handle/receiver spill or common loop head; original
+// scalar parameter, every interface, direct condition and complete body restored.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
