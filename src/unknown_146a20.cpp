@@ -61,7 +61,8 @@ bool g_47f05b;
 // MiniMax D (11-06): no new form, no lower score (34); retail's base vtable store (0x453760) and its
 // derived vtable (0x4576a4) come from the shared constructors in include/unknown_146a20.h, which this lane may
 // not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
-// score 34 (was 34): MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
+// score 34 (was 34): frameless prefix agrees; intermediate vtable store and successful-arm backing reload remain.
+// Earlier: MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax b (11-04): no new form, no lower score; the abstract allocator's base vtable store is still dropped (it comes from the header's inline constructor) and the pool placement still reloads g_479888 at the join.
 // Earlier at 34: unchanged that round: retail still stores the abstract allocator's vtable at
 // the object before the two following stores (our build drops that store, which comes from the
@@ -330,6 +331,16 @@ bool g_47f05b;
 // the refcount 1 as a member initializer 35. Diagnostic only: the abstract constructor storing the refcount again 15
 // (143 bytes: the duplicate +4 store survives where retail stores the vtable, so plain dead-store removal keeps it and
 // the vtable store goes in a separate pass; 0x146b80 24, 0x22c3e0 202).
+// P360: Nonthrowing abstract/fixed-base/fixed-derived constructor contracts, seven subsets, then the reference-count constructor contract: 34/34/34/34/34/34/34/34.
+// NOT kept: no exact native source recovery; original complete body restored; intermediate vtable store and successful-arm backing reload remain.
+// P368: Inactive-sentinel default followed by active-prefix zero in the existing four-word pass,
+// long/int/short/signed-char, forward 34/34/43/54; reverse 33/33/43/54. NOT kept:
+// no exact, nonregressing shared form; original header, constructor pass and target restored.
+// Intermediate vtable store and successful-arm backing reload remain.
+// P372: Four-word contents carried through the real array loop, long/int/short/signed-char
+// ordinals: forward 34/34/54/54, reverse 33/33/54/54. NOT kept: no qualifying gain;
+// reverse full-width forms lose two exact users, narrow forms also regress users.
+// Entire shared constructor/header and original body restored; base-vtable/arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {
