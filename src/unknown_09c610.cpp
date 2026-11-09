@@ -361,7 +361,7 @@ struct s_object;
 s_object *function_badc0(long arg_0, dword arg_1);
 void __stdcall function_191fab(long arg_0, long arg_1);
 void __stdcall function_191e51(long arg_0, long arg_1);
-void __stdcall function_191ec4(long arg_0, long arg_1, short arg_2);
+void __stdcall function_191ec4(long player_index, long definition_index, short count);
 void function_f8160(long arg_0);
 long function_1896c0(real arg_0, long arg_1);
 void player_speed_request_14ea20(long arg_0);
@@ -408,7 +408,7 @@ bool c_unit_pickup_event_definition::v11(long arg_0, long const *arg_1, long arg
                         }
                         else
                             function_f8160(*(long const *)(local_4 + 4));
-                        function_191ec4(*(long const *)(local_4 + 4), local_3, *(short const *)(local_4 + 8));
+                        function_191ec4(local_3, *(long const *)(local_4 + 4), *(short const *)(local_4 + 8));
                         break;
                     }
                     case 3:
