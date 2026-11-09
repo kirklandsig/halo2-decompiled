@@ -434,6 +434,11 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // Round 77 (lane 10, fast): the copy as `if (slot) memcpy else break` 20; a bool helper over the pointer
 // helper returning `slot != NULL` 20 (the bool threads into the NULL test); `&entries[count]; count++;` 20;
 // `list->entries + list->count++` 20; a count local with `count + 1` stored before the address 49.
+// Round 79 (fast): the pointer helper's result assigned in both arms 20 (same code); bool helpers preset true and
+// cleared when full 54 (654 bytes), assigned in both arms 54 (654), on `count < 4096` with the copy before `count++` 57
+// (656), over a count local with an index copy 51; compile-only, the bool helper with a named caller result, `== false`,
+// braces, a `goto next` arm, BOOL or swapped parameters all keep bool CL, count EAX, list EDX. A helper returning the
+// new count (0 when full) 52.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

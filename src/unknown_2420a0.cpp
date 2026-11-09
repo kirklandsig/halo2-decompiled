@@ -1566,6 +1566,11 @@ void function_2422d0(long slot)
 // declarations as result, arrays, count, i 7; count before result 9; i before result and count 7; the scalars
 // before the arrays 7; the table filled by `memset(..., 0xff, ...)` 7. Diagnostics: either second-loop call removed
 // 63/67 (the whole allocation moves).
+// Round 156 (m3 lane 6, fast): a per-iteration pool local (`objects = g_4e0300`) with the direct lookup 7; a named
+// masked index for the lookup 7; 30 random combinations of declaration order, function-scope index, getter/direct/pool
+// lookup, short slot, the three reject-arm orders and the inverted test 7 (12), 9 (14), 11 (4); the table initialised
+// by an initializer list 94; separate loop variables for the first and third loops and a named element in the second,
+// all seven combinations 7. 0xb8540 is still a stub here (retail calls the real function).
 // @retail 0x2423f0
 bool function_2423f0()
 {

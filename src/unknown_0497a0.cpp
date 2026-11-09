@@ -610,7 +610,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // in a slot of its own at +0x3c where ours keeps the vertex pointer. Declaring v before the u step,
 // with retail's statement order kept, and moving the state width out of the inner scope both give
 // the same code and the same 250.
-// score 265 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// Earlier (265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
 // Earlier: Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
 // dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing
 // normalize2d_fast, and case 0's second point takes XMM0-2 as retail; the first point's z/x/y and the half width take
@@ -923,6 +923,24 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // scaling, an offset vector); then case 0 differs only by retail's first.y spill and two movaps, but the frame drops to 0xa4 and the
 // positional score rises to 410-435 (masked aligned 30 -> 47). About 1,500 harness forms over case 0/1-2/4 statement orders, offset
 // forms, length orders and case 0's normal block: best positional 245, best aligned 90; no frame 0xac without the rejected u/v vector.
+// T64: Texture-word/current-state-dword/state-array input owners, singles/pairs/all and
+// all with readonly state/endpoints: eight 250s. NOT kept: native flag/receiver observations
+// canonicalize without the extra frame slot or first-edge Y/half-width homes; full body restored.
+// P365: Existing norm-dimension/squared-length producers at vertical/side/normal sites,
+// masks 1/2/4/3/5/6/7: 250/368/250/368/250/368/368; planar normalizer retaining
+// third-component scaling 485 (frame 0xac, 2628 bytes). NOT kept: no equality; the camera
+// side sum changes association. Unscaled-third-component diagnostic 426 excluded.
+// Original roots, scaling, geometry, helpers and complete body restored.
+// P367: Next-iteration U after UV/geometry/position/opacity consumers
+// 606/306/304/274; each with transition width after its color loop
+// 564/418/415/386. NOT kept: no native frame/scalar equality; statement-
+// lifetime forms regress. Original texture/width sequence and body restored.
+// P371: Complete complementary normal request in bool/char/signed-char/byte/short/word/long/dword:
+// 567/567/567/567/592/592/596/596, 2576/2596 bytes. NOT kept: regressions and
+// nonnative frame/spill allocation; original per-case observations and complete body restored.
+// P373: Ordinary pretested channel counters for initial/next/blend color walks, seven subsets,
+// all with the tint walk: eight 250s, 2592/2596 bytes. NOT kept: frame 0xa8/0xac
+// and scalar homes unchanged; original color traversals and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

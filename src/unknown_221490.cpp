@@ -977,6 +977,15 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 94 (lane 16, fast): without both barriers (control 28): the globals read at each use 28; the voice pointer assigned
 // after the memset 29; one volume local for the first two volumes and the pinned room 28. The volume helper with early
 // returns 184 (699 bytes; 0x220fd0 204); the voice as a reference 21.
+// Round 79 (fast; compile-only reproduces our registers): with no memset, or a memset of one dword (an immediate store,
+// no zero register), every scratch register is retail's; a load-and-store temporary added anywhere, unused locals, and
+// the zero register's placement change nothing, so the memset's zero is the one free register choice ahead of the
+// decibels load. Without barriers: the room clamp as an if/else-if stored to both fields 96 (672 bytes); a named loss
+// 131 (669); named obstruction/occlusion gains 91 (677); the voice from the global, `globals` after it 28; one `volume`
+// local for both direct values 28; `parameters = DSI3DL2BUFFER();` 195 (684); memset ahead of globals/voice 29.
+// Compile-only: deleting any other block keeps decibels ECX; a zero in a callee-saved register (an explicit nine-value
+// initializer, a nine-dword loop) gives retail's later registers; memset wrappers, RtlZeroMemory/RtlFillMemory keep ours.
+// Real build: the explicit nine-value initializer 211 (638 bytes: LTCG drops every zero store).
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

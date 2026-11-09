@@ -972,6 +972,8 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Round 154 (m3 lane 5, fast): the flag as a `T &` reference with dot reads 6; the call's result kept in a local 6; the table
 // pointer in a local indexed at each use 34 (91 bytes); the vector and the call in their own block 6; the element as table +
 // index with k first 19. The ESI save still lands after the table add in each.
+// Round 173 (m3 lane 4, fast): double-precision `(real)(cos(a) * cos(b))` trig 6; the up vector read into a local first 6;
+// the products as compound `*=` statements 6; components in i, k, j order 14; in k, j, i order 19.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {
