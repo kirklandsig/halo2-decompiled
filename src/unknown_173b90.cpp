@@ -472,6 +472,11 @@ real function_3eb70(void);
 typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_particle_value_cache *, point3f const *, vector3f const *, real, color4f const *, void *);
 
 
+// MiniMax I (11-08): no new form, no lower score (42): row i still sums the up product before the forward
+// one, the offset's zero store still comes before the list test, the two 1.0 stores are still swapped, and
+// after each property call ours still reloads the particle before the emitter definition. The two in-place
+// rotations go through the shared forceinline helper in include/matrix_transform.h, whose product order
+// this file cannot change.
 // score 42 (was 42): both in-place rotations go through the shared rotate helper (it copies the
 // input when the output is the input), which gives retail's j and k rows. Left: row i sums the up
 // product before the forward one (retail forward first, loading forward.i into a register); the
