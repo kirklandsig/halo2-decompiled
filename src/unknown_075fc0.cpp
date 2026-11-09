@@ -221,6 +221,7 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // T73: Complete derived callback-send branch/default/conditional/negative/complementary producers:
 // 408/419/399/397/408/419/419/415. NOT kept: no native observer/rate/frame repair;
 // original providers, later forcing, bit-correct counters, limits and sole-result body restored.
+// MiniMax E (11-09): no new form, no lower score: retail keeps the packet-availability result in bl and publishes the host state in a separate byte, ours keeps the host in bl and spills the packet state.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
