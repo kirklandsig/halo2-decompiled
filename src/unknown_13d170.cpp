@@ -487,6 +487,11 @@ struct s_physical_block_iterator
 // T69: Entry-matching policy replacement signed char/byte/short/long results
 // 209/209/212/211; retention-complement bool/byte/short/long 212/212/222/222.
 // NOT kept: ties/regressions; original policy result, case bodies and complete body restored.
+// P380: Natural nonempty-first first/predecessor/successor list-publication arms, seven branch subsets
+// and complete topology with its actual predecessor outcome.
+// Scores 210/212/213/215/215/215/215/215. NOT kept: no byte match; retained frame agrees but policy
+// cases and weighted-age homes remain, and no publication form shortens toward native length; some grow.
+// Original complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
