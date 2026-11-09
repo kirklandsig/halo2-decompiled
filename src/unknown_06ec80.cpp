@@ -88,6 +88,10 @@ union s_6ec80
 // Round 173 (m3 lane 4, fast), all with the mask scoped in the guard: `while (++local_15 < 16)` 225; a word mask 224;
 // the bit or-ed through a ternary 240 (974 bytes); the bit named in the loop body 109; the data and mask tests as two
 // ifs 228 (977 bytes).
+// Round 59 (m3 lane 2, fast), all with the mask scoped in the guard (alone 225: NONE EDI and zero ECX from the entry,
+// local_2 in memory, players in EBX): players declared first 225, players declared last 225, local_2 declared last
+// 225, the counter declared at the top and zeroed in the guard 225, counter then mask at the guard top 227, the two
+// flags declared true flag first 227, a short counter 247 (981 bytes).
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
