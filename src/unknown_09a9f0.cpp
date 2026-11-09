@@ -630,6 +630,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // P383: Post-attachment notification admission in bool/byte/short/long, positive/complementary:
 // 49/49/49/49/49/49/49/49. NOT kept: no native false-BL/independent-lookup equality; original workspace
 // observation, validity result and whole body restored.
+// MiniMax S (11-09): no new form, no lower score; retail still keeps the false result in BL and
+// re-reads the last argument from its stack slot, while ours promotes that argument into EBP and
+// returns the result through EAX, which also shifts the frame by four bytes.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
