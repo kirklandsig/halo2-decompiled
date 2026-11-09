@@ -926,6 +926,27 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // T64: Texture-word/current-state-dword/state-array input owners, singles/pairs/all and
 // all with readonly state/endpoints: eight 250s. NOT kept: native flag/receiver observations
 // canonicalize without the extra frame slot or first-edge Y/half-width homes; full body restored.
+// T70: Real backing flag views on current paired geometry, texture/state/point/pairs/all/endpoint
+// 629/591/250/676/626/591/665/676. NOT kept: no exact native ingress or missing frame-word repair;
+// original flag words, observations, geometry, helpers and complete body restored.
+// P365: Existing norm-dimension/squared-length producers at vertical/side/normal sites,
+// masks 1/2/4/3/5/6/7: 250/368/250/368/250/368/368; planar normalizer retaining
+// third-component scaling 485 (frame 0xac, 2628 bytes). NOT kept: no equality; the camera
+// side sum changes association. Unscaled-third-component diagnostic 426 excluded.
+// Original roots, scaling, geometry, helpers and complete body restored.
+// P367: Next-iteration U after UV/geometry/position/opacity consumers
+// 606/306/304/274; each with transition width after its color loop
+// 564/418/415/386. NOT kept: no native frame/scalar equality; statement-
+// lifetime forms regress. Original texture/width sequence and body restored.
+// P371: Complete complementary normal request in bool/char/signed-char/byte/short/word/long/dword:
+// 567/567/567/567/592/592/596/596, 2576/2596 bytes. NOT kept: regressions and
+// nonnative frame/spill allocation; original per-case observations and complete body restored.
+// P373: Ordinary pretested channel counters for initial/next/blend color walks, seven subsets,
+// all with the tint walk: eight 250s, 2592/2596 bytes. NOT kept: frame 0xa8/0xac
+// and scalar homes unchanged; original color traversals and complete body restored.
+// T72: Complete computed first/second/both edge scalars, then existing output setters
+// for first/second/both scalar graphs: 252/250/252/252/250/252/252/252. NOT kept:
+// no native frame or edge-spill recovery; original complete body and helpers restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

@@ -169,6 +169,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // preserved. NOT kept: no native frame/equality recovery; original two helpers/body restored.
 // F396: Complete parallel rotation products, up/left/forward subsets then immutable complete terms: 356/353/360/356/359/355/356/356.
 // NOT kept: best gain three is below the keep threshold; native frame and concurrent x87 inputs remain. Original complete body and helpers restored.
+// R221 (lane 3; whole-file harness, exact 356): builder with a sine*axis vector 358 (1773); plus a shared inverse*k
+// 358; rows stored in pair order 391 (1747); the src/unknown_153950.cpp builder's staged scalars with one matrix copy
+// 450 (1847), stored per field 358.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1370,6 +1373,9 @@ long function_baf80(long object_index);
 // Round 111: initial definition as `long *` 12; parent definition as `long *` 12; parent definition inlined 12;
 // parent slot as dword/long from the narrowed handle 12/12; a shared tag-table local 12; settings as a real
 // array 12; the read-only object/definition chain const 12; the parent slot masked again in its array subscript 12.
+// P362: Parent narrowed in place 22; shared definition receiver 12; initial/parent/both
+// load-chain scopes 12/12/12; single void exit 12; explicit limit tests 12; both model
+// handles immutable 12. NOT kept: no byte equality or gain; original body restored.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
@@ -1696,10 +1702,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
 
+// score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // MiniMax R (11-06): no new form, no lower score (193).
 // MiniMax D (11-06, run 49): no new form, no lower score (193); retail still keeps the result in its own stack slot (0.0f at the entry, filled by the atan2 tail, one shared `movss xmm0, [result]` at the end, frame 0x18) where ours keeps the zero in xmm0, returns early on each path and reuses the scale slot for the x87 result (frame 0x14).
 // MiniMax R (11-01): no new form, no lower score: the five-way switch still evaluates the cross products in our order and allocates the XMM registers differently.
-// score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // Retail keeps `result` in its own stack slot (stored 0.0f at entry, fstp'd into by the atan2
 // tail, one shared `movss xmm0, [result]` at the end, frame 0x18); ours keeps the zero in xmm0,
 // returns early on each path and reuses the scale slot for the x87 result (frame 0x14).
@@ -1802,6 +1808,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // and ordinary/forced perpendicular expansion: 193/193/193/193; cdecl counterparts
 // 194/194/194/194. NOT kept: default forms tie, cdecl raises caller to 509;
 // original signature, call, helper and body restored. Independent result home remains.
+// R221 (lane 3; whole-file harness 189 for the real 193, same bytes): goto to one `done:` exit from case 0 and default
+// 189; both labels on one goto 192; result declared at the y test with `return 0.0f` 285 (904); explicit double atan2
+// arguments 189; `/ pi` 189. The result stays coalesced with the xmm0 zero.
+// R221 also: the case 3 offset through the existing vector3d_from_points3d 189; the case 4 offset that way 189.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2375,110 +2385,6 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
     return (real)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
-// score 27 (was 40): frame 0xc and delayed saves agree; final count comparison now folds after fstp.
-// The second normalized component still loads before multiplying; length is 966 versus 965.
-// Earlier at 40: no `double` locals any more (any double local made LTCG save all four registers at entry;
-// retail saves them lazily inside the two count guards), the random globals are read at each use (loaded after
-// the second guard as retail does), motion[6] is the existing range helper function_259d0 and the length block
-// is the existing normalize3d. Still different: retail folds `cmp ebp, [ebx]` right after the last fstp (ours
-// splits it: mov edx, [ebx]), and the scale of motion[1] is `movaps xmm6, xmm0; mulss xmm6, [edx + 4]` where
-// ours loads it first. Round 55: real upper/lower 223, real fraction 57, real length 179, all three 210;
-// with those, normalize3d 55, random globals at each use 45, the entry fraction without its local 40
-// (x82e52f local / swapped product 40/40), range helper for the entry fraction 160; unused-local probes
-// before normalize3d (1..8) move nothing; then normalize_inline 48, motion pointer before entry 47, motion[2]
-// product operands swapped 40.
-// Earlier: frame 0xc agrees; delayed register saves and the split final count comparison remain.
-// Earlier at 202: the random fraction is (real)random * (1/65535) as before; motion[2] is stored
-// the random fraction is (real)random * (1/65535) as before; motion[2] is stored
-// first and the length is then built from the stored motion[] values, so the just-stored z stays on the
-// x87 stack unrounded (retail's `fst [edx+8]`) with no temp; the length is a double kept for fabs, with the
-// float copy (`magnitude`) used by the divide and `fabs((real)length)` so the 0.0001 constant stays a float
-// (retail: sqrt result moved into z's slot, `fst` to the float temp); the six -1..1 samples are `real`
-// (sample + sample - 1.0f), which gives retail's dword `fsub`; the entry+0xc fraction is evaluated before its
-// range, as retail does. What still differs: retail pushes ebx/ebp and esi/edi lazily inside the two count
-// guards (we push all four at the top; both frames are 0xc; ours also loads the random globals and the
-// count above the second guard); `motion[1] = inverse * motion[1]` order (same code); the loop test reads the
-// count into edx instead of comparing against [ebx].
-// Tried: explicit `if (count > 0)` guard around the loop (257), count read once before the loop (116),
-// double length without the float copy (172/106), assignment of the length inside the fabs (178),
-// `(real)fabs(length)` (106), samples as doubles with a float constant (does not change the fsub).
-// Round 280: loop-local/random-at-every-use 57/57; plain while 57; repeated count
-// receiver alone/with loop random/while/both 57 each; outer empty-state exit with
-// loop random and count receiver 300. Exact-only receiver forms restored with the
-// full original body; lazy saves and the post-fstp memory compare remain.
-// Round 447: existing in-place scale, six distinct sample roles and motion-before-record cursor declarations, subsets 1..7: 57/57/57/64/64/64/64; six sample roles at entry 57. Original body restored; lazy saves and the split final count comparison remain.
-// Round 322: Native entry/motion cursor walks and plain final-three-component sample loop, seven
-// subsets, then full graph with normalization scratch scope: 276/276/157/294/274/274/291/291.
-// Original bases, samples and complete body restored; frame 0xc agrees, delayed saves and post-fstp
-// count compare remain.
-// Round 307: native external state/group/entry layouts, all seven subsets, 57 each;
-// Round 307: all three with native motion records 57. Original raw receivers, body and external types
-// Round 307: restored; delayed register saves and the split post-fstp count comparison remain.
-// P267: coherent range-field observations/range lifetime/normalization lifetime,
-// subsets 1/2/4/3/5/6/7: 237/57/57/237/237/57/237; all with entry-fraction scope 237.
-// Direct-range forms reach retail length but regress; original ranges, scopes and complete body restored.
-// Round 369: existing unit-random producer/entry cursor declarations/entry scalar
-// workspaces, subsets 1/2/4/3/5/6/7: 63/57/57/63/63/57/63; all with full scalar
-// role names 63. Original draws, declarations and complete body restored; lazy saves
-// and the post-fstp count comparison remain.
-// N325: Complete range/normalization/extent validation-result producers, seven subsets,
-// 62/57/57/62/62/57/62; all with outer admission result 62. Original tests and
-// complete body restored; frame agrees, lazy saves and the post-fstp count compare remain.
-// Round 535: complete squared-norm parts, uniform centered sample producer and independent
-// entry-reset order, seven subsets: 57 each; all with magnitude in its consuming scope 57.
-// Original body restored; delayed saves and the post-fstp count comparison remain.
-// P279: Existing target inline / random-helper ordinary inline / nominal real-return contracts,
-// subsets 1/2/4/3/5/6/7: 57/57/63/57/63/63/63; ordinary static random helper 57.
-// Both other body users preserve their calibrated scores. Original declarations, helper and body
-// restored; frame 0xc, delayed saves and the split post-fstp count comparison remain.
-// Round 64 (fast): only motion[1]'s product and the count compare differ (their 3 bytes are the length gap). Motion record
-// struct 40; group struct 40; both 40; while loop 40; normalize_inline 48; `*(long *)group > i` 40; motion[7] from
-// motion[1] 137; pointer local to motion[1] 40; byte-offset stores of motion[0]/motion[2] 40; vector3f view pointer 40.
-// M360: Explicit entry/motion/both byte displacements 55/57/45; entry/motion/both
-// declared before the group 55/57/45; both at entry 78; both stepped at derivation 253.
-// Original body restored; second normalized product and post-fstp count fold remain.
-// P311: Complete independent normalization receiver, native/library/component captures with native/library publication:
-// P311: 322/322/322/322/307/307; native/library capture with full component publication 311/311.
-// P311: NOT kept: all regress and grow beyond retail. Original in-place helper and body restored; product fold and final count split remain.
-// M368: Existing normalizer/scale/dot force-inline contracts, seven subsets,
-// then all with the target forced inline: 40/40/40/40/40/40/40/40.
-// NOT kept: no target gain; the last form loses the exact caller. All contracts
-// restored; second-product memory fold and post-fstp count comparison remain.
-// AC517: Shared normalization valid-arm/small-length returns and separate result 40/40/40;
-// twice-used bool/byte/short/long admission and short-length classification 40/40/40/40/40.
-// Original shared helper restored; second-component product fold and post-fstp count split remain.
-// AC521: Initial three-direction sample loop in long/int/short/byte, without/with the final-three
-// loop: 66/66/66/66/288/386/288/386. Full-width folds component two but spills/reloads Z; narrow loops roll.
-// NOT kept: all regress; original samples, live x87 norm chain, loop count and complete body restored.
-// F368: Existing scale complete scalar input/products/setter/native input/index loop/native-input loop/scalar-input setter/native output: 40/40/40/340/16/340/40/340. Plain loop 16 at 967/965; NOT kept: shared users worsen and 25 matches are lost. Shared header restored; final count split remains.
-// P315: Native ordinal/group/record/motion lexical ownership, seven independent/paired/full sets, then full parameter-role names: 40/40/40/40/40/40/40/40.
-// P315: NOT kept: no byte match or supported gain; original full body restored.
-// Y578: Existing range producer at initial-direction/signed-extent/signed-motion families,
-// subsets 1/2/4/3/5/6/7 then all with entry range: 45/40/27/45/32/27/32/147.
-// Keep signed-motion family alone: plain 27, native fstp/compare fold, unchanged samples and 0xc frame.
-// N364: Shared component scaler reverse int/long/short/signed-byte and forward
-// word/byte/unsigned-long/unsigned-int loops: 20/20/348/348/348/348/16/16.
-// NOT kept: no byte equality; reverse order differs from native i/j/k, narrow loops
-// roll, and unsigned-domain source selection adds no supported shared repair.
-// Original shared header and full body restored; post-fstp count split remains.
-// DL264: Existing scaler component-array input/output references, unrolled
-// then forward traversal, and pointer input/output forms: 27/27/27/0/0/0/27/0.
-// NOT kept: no eligible native repair with preserved shared users; original executable source restored.
-// M385: Complete shared scale compound accumulators, factor/input ownership, phased/interleaved
-// producers and existing setter publication: 27/27/27/27/27/27/27/27. NOT kept: no product-fold
-// repair or byte equality; original shared scaler restored, native frame and final count fold preserved.
-// M387: Shared scale array traversal on the recovered final-sample graph: forward long/int/dword/uint
-// 0/0/0/0; reverse predecrement 273/273/348/348. Forward plain 0 at 965/965, NOT kept:
-// shared users worsen and 25 matches are lost. Original shared scaler restored; middle product fold remains.
-// Round 171 (lane 4, fast; header restored): normalize3d scaling in place with a component loop, `*=` or `= s *`,
-// 27/27 (only the scaler's separate input and output pointers give the fold); three compound statements 27; the
-// reciprocal named before the scale call 27; the length test inverted 27. Diagnostic: 9/16/30 dead locals ahead of
-// the sampling 27 each (symbol count does not move it).
-// Round 94 (lane 9, fast): the j fill stored as a vector3f field (diagnostic) 27; a vector3f pointer for the three
-// fills and normalize3d 142 (965 bytes: the k product turns scale-first in place, j unchanged); diagnostic grid of
-// that pointer per fill: only j and k both through it give retail's j form (141, k then differs); a typed 0x20-byte
-// record (direction, second vector, range, last) 27; the record pointer as `real *` plus `i * 8` 27;
-// normalize3d on `&motion[0]` 27; normalize3d on the re-derived record address 256 (970 bytes).
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2502,7 +2408,10 @@ bool function_39a80(byte *state)
             motion[0] = (real)(random_unit_fraction(g_4e7408) * *(real *)(state + 0x30));
             motion[1] = (real)(random_unit_fraction(g_4e7408) * *(real *)(state + 0x34));
             motion[2] = (real)(random_unit_fraction(g_4e7408) * *(real *)(state + 0x38));
-            normalize3d((vector3f *)motion);
+            real length = (real)sqrt(length_sq3f((vector3f const *)motion));
+            if (!(fabs(length) < 0.0001f))
+                for (long component = 0; component < 3; ++component)
+                    motion[component] *= 1.0f / length;
             *(real *)(entry + 0xc) = (real)(random_unit_fraction(g_4e7408) *
                 (*(real *)(state + 0x28) - *(real *)(state + 0x24)) + *(real *)(state + 0x24));
             motion[7] = 0.0f;
@@ -2653,6 +2562,12 @@ real magnitude3d(vector3f const *v);
 // B453: Standard lower/upper clamp boundaries at current/target roots: lower current/target, upper
 // current/target, both current/target, lower both, both complete: 328/288/305/280/247/325/316/311. NOT
 // kept: no byte match; original complete body restored. Raw-length and promoted-dot homes remain.
+// R221 (lane 3; harness with the magnitude3d and function_30bf0 files linked, exact 170/1045): `real cosine = dot;`
+// used by acos (or by fabs) 170 (1037): retail's float reload for _CIacos with no double copy, frame 0x34; plus a copy
+// of the angle for sin or cos 166 (1039): retail's fld/fsin/fstp/fld/fcos order, every slot 4 low because the raw
+// current length shares a's slot (retail +0xc); on that, a named raw length 266, `a = PIN(a, ..)` 269, if/else clamps
+// 269/266; a named raw length alone 251, with only the dot copy 267. The copies are one-use (a byte match needed).
+// A same-file noinline normalize copy in place of function_30bf0 moves the raw length to +0xc (168, 1051 bytes).
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3077,6 +2992,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // +0x33 but still regresses. Every form regresses; all controls preserved and original types restored.
 // NOT kept: no eligible native repair; opening executable source restored. Native state/prefix and ordinal
 // homes plus the decay-copy base remain unresolved.
+// R221 (lane 3; whole-file harness, exact 317): loop 1 through an entry pointer 375 (1342); `i < last` in loop 1 321;
+// a `count` local for the entry tests 370 (1338); `requested` declared first 319; `first == 0` for the found flag 436.
+// R221 also: the clamp compare written `state->count < limit` 319.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3728,6 +3646,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // F397: Branch-owned first/opacity bytes and shared native position, seven subsets,
 // then query-entry region output: 177/177/177/177/177/177/177/177. NOT kept: all tie;
 // original output scopes and body restored. Native frame/fade scratch homes remain.
+// R221 (lane 3): final fade through existing function_c6b90(index, 0x11000088, &fade, &active) after `real fade = 0.0f;
+// bool active = false;` plain 176 (765): the full build drops both zero stores and keeps frame 0x18 (the one-file harness
+// keeps them: 159, frame 0x1c). Harness: that with kind not volatile 231; first fade read per use 179; alpha before
+// kind 160; the 0x10a flag through a word bit-field view 176 (retail's mov al/shr al,2/test dl,al), with the getter 166.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

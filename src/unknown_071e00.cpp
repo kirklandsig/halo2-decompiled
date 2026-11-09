@@ -120,88 +120,6 @@ bool __stdcall function_71d70(c_session_state_matchmaking *arg_0)
 }
 #pragma inline_depth(255)
 
-// score 15 (was 15): only the order of the players-match block and the timeout test differs:
-// retail lays out [search][players match][timeout: jle tail; jmp search], ours
-// [search][timeout: jle tail; jmp search][players match]. Retail's two search-block copies are
-// cross-jumped after layout; VC merges them before layout (block last) whenever the timeout
-// copy is the last arm before the shared return, so the match arm is written last here.
-// Tried: a search flag set on both paths (37); if/else with the goto into the else (37);
-// the search block written out twice, with local_0 = true (37), return true (65) or one of
-// each (90); returns in the players-match branch and a goto to the end (41); a
-// do/while (false) with breaks (37); state == 0 and inline state helpers (37).
-// Round 34, the search block written in both arms (state == 0 first, then players-match, then timeout):
-// first copy `return true`, timeout copy `local_0 = true` and players-match `return true` 74 (aligned 16:
-// retail's block order exactly, but the timeout copy ends `mov bl, 1; ...; mov al, bl` instead of
-// `mov al, 1`, so the copies are not cross-jumped); with the players-match arm setting the result 85; the
-// first copy setting it 90/85; all three `return true` 65 (copies merged, search block last); the
-// timeout copy with a byte-offset search pointer or flag 65/65; `local_0 = true; return local_0;` in
-// one copy 65/65, in both 34 (178 bytes, copies merged); a dead `local_0 = true` before either
-// `return true` 65/65.
-// Unhandled-result bool/char/short/word/dword 83/83/89/89/86; genuine success
-// char/short/word carriers 66/54/54. Round 96: two copies in the original arm order 37
-// (merged), with the result set before/between the calls 95/74; the state test as a switch
-// 54 (range compare, default last; copies kept apart); a named bool for the state test 55
-// (copies apart, the 71e00 arm last); the state test inverted 37; an extra return in the
-// state arm 38/44; an inline search helper at both sites 20 (the timeout site keeps a call),
-// forced inline 37; the players-match test `== false` 15; no volatile store 75.
-// Round 45: timeout/first flag `!= false` 15/15 and `== true` 35/37; a named flag
-// in the timeout/first copy 15/15; a search receiver local in the timeout/first copy 15/15.
-// Round 17: natural arm order (state 0, match, timeout) 37; with the state test as a named bool 55
-// (session arms as retail, the 71e00 arm last); a plain inline search helper at both sites 20
-// (second site a call); one search copy behind `!state || timeout` 55; a search flag from `!state`
-// set by the timeout test 40.
-// Round 10: the timeout arm a goto into the first search block 37 (block laid out after the timeout
-// test); retail's arm order (state, match, timeout) 37; with a named state bool 55 (session arms
-// exactly retail's, 71e00 arm last); with the 71e00 arm first under a named bool or `!=` chain 37/37;
-// the state test inverted inside the session arm 37; the result set before the timeout or first
-// copy's calls 95/115; an early return for type != 9 72; a new inline search helper at the timeout
-// site only, the first site only or both 20/37/20 (inlined copies merge before layout).
-// Round 16 (lane 2), retail's arm order (state 0, players match, timeout) with the timeout copy made
-// different in source: its session argument named first 37; its search pointer named first 37; the
-// timeout read into a named elapsed value inside an else arm 37; the players-match result named in
-// the else arm 37; its flag tested `!= 0` 37 (all merged before layout, 176 bytes).
-// Round 33 (lane 2, fast), arms in retail's order (state 0, players match, timeout), each arm ending
-// `local_0 = true` (set) or `return true` (ret): set/ret/ret 85 (223 bytes), set/set/ret 90 (225 bytes),
-// ret/set/ret 34 (merged, search block last); one search block after a nonzero-state guard that returns
-// early for a match or no timeout, with `return local_0` 54 (189 bytes), with `return false` and `return true`
-// not listable (the checker found no section for its symbol). A compile-only screen shows every form whose
-// two search copies are identical lays the merged block out last (goto into the first copy, state test
-// inverted, nested or not); only the timeout arm placed before the match arm keeps the first copy's place.
-// Also (fast): the state test inverted with the search copy in its else and the timeout nested under
-// `!players_match` 37; a goto from the timeout arm to a label in the first copy, all arms setting the
-// result, 37 (both 176 bytes).
-// Round 29 (lane 18, fast; compile-only harness reproduces the layout and the post-layout cross-jump): in
-// retail's arm order the copies stay apart only when their code differs, so no form reaches retail's
-// [search][match][timeout; jmp search]: the timeout copy's mode call on a re-read owner session 66 (227 bytes),
-// on a re-read local_1 session 136 (229), the first copy's re-read 136; the timeout copy setting the result
-// before the mode call 74 (227; `mov bl, 1` then `mov al, bl`); the result taken from the timeout test and the
-// copy without its own store 112 (250); an empty `<=` arm with the copy in its else 37 (merged, 176 bytes).
-// Round 127: a positive players-match arm with a final false assignment 12 (183 bytes;
-// NOT kept: only three points gained and the length moves away), with a final goto done 37;
-// a false assignment with goto done 12 (the same 183-byte form); the actual timeout result 16 (186);
-// a `<=` false arm 45 (183); a final return of local_0 or
-// false 43/43 (187); an outer-type false return 65 (200); an invalid-state direct return 74 (186).
-// Original body restored.
-// Round 66 (m3 lane 11; compile-only harness reproduces ours and the layout): in retail arm order every
-// result form (all set/return mixes, four nestings), a single-exit goto done on any arm, the range test
-// inverted, an early type return and code-identical spellings of the timeout copy (char, byte-offset or
-// `!= 0` flag, braces, `7L`) merge the copies before layout; only an extra session load keeps them apart.
-// Real (fast): timeout copy in a nested else 37; goto done after it 37; nonzero-state arm first, match or
-// !match first, 37/37; byte-offset search pointer in the timeout copy 37 (all 176 bytes).
-// Round 149 (m3 lane 5, fast), retail's arm order: only `do {} while (false)` as a final else arm keeps the copies apart with no
-// result store, 74 (227 bytes): the timeout copy then shares a second tail with its false edge (`mov bl, 1 ... mov al, bl`);
-// in the timeout else after its if 74, after the whole chain 37, in a `<=` arm 37; set/return grid with it in the final else
-// sss/ssr/srs/srr/rss/rsr/rrs/rrr 74/90/41/85/85/34/74/65, with `local_0 = false` there 12/112/49/109/101/56/90/65 (12 at 183 bytes:
-// retail's order, a separate `xor al, al` tail). Inside the first or timeout copy, four positions each, 37 each; final else
-// `;`, `while (false) {}`, `for (; false;) {}`, `if (false) {}`, `(void)0;`, empty, `__noop()`, `if (local_0)`, zero-range for, dead local store
-// (diagnostic), a label, `while (local_0) break` 37 each; nested do-while, do with break 74/74; after the inner match/timeout chain,
-// in both inner levels 85/85; named players_match `if (m)`, `if (!m && timeout)` or nested 37/37; after the first copy 37; the false
-// edge out of the block by `return local_0`/`return false`/goto to one exit 56/56/43, without the do-while 56/-/37; first-copy
-// form with a false return for the timeout 56, positive-guard form 54.
-// Round 67 (m3 lane 13; compile-only harness, then fast): retail's arm order with the players-match test `!= false`,
-// the timeout test as `!(... <= ...)` or with its sides swapped, or the result declared after the session locals,
-// 37 each (copies merged, search block last); players match as an early `return true` guard inside the nonzero-state
-// arm 41 (182 bytes, merged); the `!match` arm returning `local_0` early on no timeout, match arm last, T before M again.
 // @retail 0x712d0
 bool function_712d0(c_session_state_matchmaking *arg_0)
 {
@@ -211,8 +129,7 @@ bool function_712d0(c_session_state_matchmaking *arg_0)
 	c_class_58d20 *local_3 = local_1->session_b;
 	if (local_2->type == 9)
 	{
-		long local_4 = local_2->state;
-		if (local_4 == 5 || local_4 == 6 || local_4 == 7 || local_4 == 8)
+		if (local_2->function_058d20())
 		{
 			if (!local_3->state)
 			{
@@ -222,28 +139,22 @@ bool function_712d0(c_session_state_matchmaking *arg_0)
 				network_session_set_mode(local_2, 7);
 				local_0 = true;
 			}
-			else if (!network_session_players_match(local_2, local_3))
-			{
-				if (function_75890(arg_0->unknown970) > g_network_configuration.value190)
-				{
-					if (arg_0->flag97c)
-						session_search_mark_session((s_session_search *)&arg_0->flag97c,
-							(const s_search_session *)((byte *)arg_0 + 0xa20));
-					network_session_set_mode(local_2, 7);
-					local_0 = true;
-				}
-			}
-			else
+			else if (network_session_players_match(local_2, local_3))
 			{
 				network_session_set_mode(local_2, 13);
 				local_0 = true;
 			}
+			else if (function_75890(arg_0->unknown970) > g_network_configuration.value190)
+			{
+				if (arg_0->flag97c)
+					session_search_mark_session((s_session_search *)&arg_0->flag97c,
+						(const s_search_session *)((byte *)arg_0 + 0xa20));
+				network_session_set_mode(local_2, 7);
+				local_0 = true;
+			}
 		}
 		else
-		{
-			volatile long local_5 = local_4;
 			function_71e00(arg_0);
-		}
 	}
 	return local_0;
 }

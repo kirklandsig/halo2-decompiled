@@ -649,6 +649,12 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // Lane 15 round 62 (fast): definition_type stored without the `(byte)` cast 3; voice_index declared before the
 // system reload 3; the inner bound assembled from the count bytes 122 (607 bytes); the voice index advanced right
 // after the first store 3; stream_reset stored as 0 3.
+// Round 174 (m3 lane 4; one-file LTCG harness of this file with its eight callees' files and the ballast, exact at 3): the
+// pool reset through the existing 0x16b790 34 (fast 34); the counts table at file scope 3, at file scope without const 3;
+// the voice as `g_4e6378 + voice_index++` 3; a two-use count reference for the sum and the bound 3. Diagnostics (wrong
+// values): the bound as a constant 70, read from an extern array 64, the sound index stored as 0 3, the type stored last
+// 11, the voice index not advanced 62; `inc esi` stays right after `inc edi` in every one, so neither the table's aliasing
+// nor the first stores' operands place it.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1422,6 +1428,9 @@ long function_2197f0(real gain);
 // 153 (669); the product still takes fade_out before the reciprocal in all three. The inverse local declared before
 // the fade-out test 154 (665: the reciprocal is then hoisted above that test), with a ternary clamp 177, with the
 // clamp's test as a division 184.
+// T69: Twice-used attack reciprocal before elapsed/hold, inside hold/attack,
+// mutable then immutable per phase: 183/183/183/183/186/186/154/154.
+// NOT kept: all regress and shorten away from retail; original reciprocal phase and full body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2476,6 +2485,9 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 /* starts a sound from a play state: a new sound with the state's location,
    gain, pitch and source, at a pitch range and permutation; NONE if it would
    be too quiet or none is free */
+// MiniMax D (11-08): score 17 (was 17): the set index is sign-extended for the 0x219070 call and that call
+// passes its second argument on the stack where retail keeps it in a register (both follow the callee's own
+// declaration, which lives in another file), and the delayed start stores the flag byte before the start time.
 // MiniMax H (11-07): no new form, no lower score (17); the sound set index is still narrowed to a
 // short here (`movsx ebp, ax`) where retail keeps the full value (`mov ebp, eax`), because the
 // callee 0x219070 only reads the low half of that parameter, and the tail still stores the flag
@@ -2833,6 +2845,9 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// MiniMax D (11-08): score 96 (was 96): retail returns from two places - the failure block clears the result
+// byte and returns, the commit block returns true - while ours shares one return through a stack byte, and the
+// argument roles differ (retail keeps the index in ecx, ours in eax).
 // MiniMax H (11-07): no new form, no lower score (96); retail narrows the first parameter to a word
 // and scales it by nine where ours narrows a later parameter and scales that one, the result still
 // lives in a stack byte in ours and in al in retail, and the frame is 0xc against retail's eight

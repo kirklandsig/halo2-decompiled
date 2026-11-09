@@ -1571,6 +1571,9 @@ void function_2422d0(long slot)
 // lookup, short slot, the three reject-arm orders and the inverted test 7 (12), 9 (14), 11 (4); the table initialised
 // by an initializer list 94; separate loop variables for the first and third loops and a named element in the second,
 // all seven combinations 7. 0xb8540 is still a stub here (retail calls the real function).
+// Round 80 (m3 lane 1, fast with 0x2447f0): a const object target 7; a function-scope team base pointer for the
+// index reads 82; the table test written `NONE == ...` 7; a named second-loop element with the rejected store
+// before the result store 9; a function-scope slot local 7.
 // @retail 0x2423f0
 bool function_2423f0()
 {

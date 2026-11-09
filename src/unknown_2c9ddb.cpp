@@ -196,6 +196,7 @@ extern long g_55c154;
 // Round 394: actual selected/saved/source-index eight-byte homes 177/74/61;
 // selected+saved/selected+source/saved+source/all 182/187/104/193; all unsigned 193.
 // Original narrow values and complete body restored; classification spill/copy expansion remain.
+// MiniMax S (11-08): no new form, no lower score (61); every form with a second load call site still flips the frame to `mov ebp, esp` and moves `this` out of EBX, the link still expands the name copy in place where retail calls 0x13fac0, and the default/existing choice is still spilled to a byte slot.
 // MiniMax E (11-06): no lower score this round; the body is unchanged. Retail's second half
 // holds two load call sites (the default arm inline, the selected arm out of line at +0x1e3),
 // each with its own 0x54e49c store and its own 0x4c-byte copy into 0x54e4a0, and one shared
@@ -471,6 +472,10 @@ void c_class_2c9e69::select_last_variant()
 // M3 lane 11 r76 (fast): the name-arm copy declared after the icon lookup and assigned in the arm 13; assigned in
 // its test 13; the icon declared before the text and assigned after it 13; the copy declared first in the function
 // 13, with the name buffer there too 13 (all the same code: symbol order does not move the name arm's EDI).
+// Round 80 (m3 lane 10, fast): `else if (text)` for the name arm with plain text 36 (154 bytes), with the volatile text read directly 31, with an
+// `else if (c_class_1a2c81 *name_text = text)` declaration 13 (same code); a plain copy only in the empty arm (the name arm reading the volatile text
+// directly) 23 at 157 bytes (the empty arm then exact, `mov edi; test edi`; the name arm compares the home and reloads into ECX after the name
+// call); both copies declared before the variant test 36 (155 bytes: the name copy still takes EDI, the empty copy ECX then moved to EDI).
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {

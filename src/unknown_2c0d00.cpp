@@ -1615,6 +1615,32 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // T63: Sector/avoidance/conversion inline call contracts, seven subsets and all with
 // target inline metadata: eight 400. NOT kept: no equality or gain; every original
 // body, declaration and call restored. Frame 0x114/0x10c and zero/edge/count homes remain.
+// P361: Existing point-setter return retained at all later point reads through mutable/readonly/fixed pointers, references and outer pointer declarations:
+// 400/400/400/400/400/400/400/400. NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Frame 0x114/0x10c, edge/orientation residence, zero/count and metadata homes remain.
+// P374: Inclusive final-ordinal outer/scan/terminal consumers, seven long-bound subsets
+// then complete short bound: 499/516/484/521/485/502/460/467. NOT kept: all regress; original
+// whole body restored; native frame, persistent zero/count and edge/orientation homes remain.
+// P376: Scan-end scope before reverse candidate, short/long for/while, original/ended avoidance-output scope:
+// 400/456/400/456/400/456/400/456. NOT kept: ties/regressions; frame 0x114 versus 0x10c persists.
+// Original signed scans and whole body restored; zero/count/edge/orientation homes remain.
+// P378: Output-capacity ownership of complete conversion/distance continuation, positive/equality/
+// terminal/complementary gates with short/long emitted ordinals: 400/495/400/495/400/495/400/495.
+// NOT kept: ties/regressions; frame 0x114 versus 0x10c and edge/orientation spills remain.
+// T69: Opposite-orientation value before center selection in bool/byte/short/long
+// 435/454/401/402; after center selection before the first tangent 456/455/457/456.
+// NOT kept: all regress; original phases/storage and full body restored. Frame/edge/count homes remain.
+// P380: Actual corner-attempt completion owns shared fallback admission, positive/complementary
+// bool/byte/short/long outcomes with a successful attempt break.
+// Scores 400/400/400/400/400/400/400/400. NOT kept: all tie 400 at 1752/1746; no exact flag-result form
+// or native frame recovery.
+// Original complete body restored.
+// P383: Complete complementary candidate-missing outcomes in bool/char/signed-
+// char/byte/short/word/long/dword: 400/400/400/400/471/471/460/460. NOT kept: no native frame/edge/count-
+// home equality; original forward scan, reverse avoidance scan and whole body restored.
+// T71: Current output-setter graph edge/selection/output lifetime regions, seven subsets and
+// complete role names: 481/481/478/400/481/481/478/478. NOT kept: ties/regressions and no
+// native frame repair; original full body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
