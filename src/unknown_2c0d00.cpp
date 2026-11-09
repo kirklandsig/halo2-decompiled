@@ -1612,6 +1612,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // throughout); `!side` passed and flipped in place 434 (1715); the second edge store at the scan hit 433 (diagnostic);
 // endpoint declared after next_step 463; the start fallback written in both arms of an if/else (retail has two
 // copies) 452.
+// T63: Sector/avoidance/conversion inline call contracts, seven subsets and all with
+// target inline metadata: eight 400. NOT kept: no equality or gain; every original
+// body, declaration and call restored. Frame 0x114/0x10c and zero/edge/count homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

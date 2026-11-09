@@ -694,7 +694,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00056ae0,133,game,speed,a16 pad,,,,src/network_voice.cpp,matched
 00056b70,86,game,speed,a16 pad,,,00056f60 00057080 00057360 000577d0 00057960,src/network_voice.cpp,matched
 00056bd0,131,game,speed,a16 pad,,,00054df0 00054e60 00056dd0 000589e0,src/network_voice.cpp,matched
-00056c60,368,game,speed,a16 pad,,,00053de0 00054b40,src/network_voice.cpp,todo
+00056c60,368,game,speed,a16 pad,,,00053de0 00054b40,src/network_voice.cpp,matched
 00056dd0,22,game,unknown,a16,,,,src/network_voice.cpp,matched
 00056df0,358,game,speed,a16 pad,,,00054d20 00054df0 00055130 00057a80 00057c20 00057d60 00057eb0,src/network_voice.cpp,matched
 00056f60,276,game,speed,a16 pad,,,00053850 00053de0 00054d20 00054df0 00057270 000574e0 000589e0,src/unknown_0574e0.cpp,matched
@@ -711,7 +711,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00057b60,192,game,speed,a16 pad,,,00053de0,src/network_voice.cpp,matched
 00057c20,307,game,unknown,a16,,,00053d40 00053d90 00053de0 000589e0 00192950,src/network_voice.cpp,matched
 00057d60,332,game,speed,a16 pad,,,00054c20 00054d00 00054d20 00054f90,src/network_voice.cpp,matched
-00057eb0,1287,game,speed,a16 pad,,,000583c0 00058590 00332e34 00332e58,src/network_voice.cpp,todo
+00057eb0,1287,game,speed,a16 pad,,,000583c0 00058590 00332e34 00332e58,src/network_voice.cpp,matched
 000583c0,461,game,speed,a16 pad,,,00053de0 00054d20 00332e34 00332e58,src/network_voice.cpp,matched
 00058590,339,game,speed,a16 pad,,,00054df0 00054e60 00055250 000586f0 000caf90 00332e58,src/network_voice.cpp,matched
 000586f0,737,game,speed,a16 pad,,,00030bf0 00054e60 00142700 00192d40,src/unknown_0574e0.cpp,matched
@@ -3798,7 +3798,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 0011bb40,169,game,unknown,a16,,,000bb950,src/garbage.cpp,matched
 0011bbf0,237,game,speed,a16 pad,,,0020a9a0,src/crates.cpp,matched
 0011bce0,121,game,speed,a16 pad,,,001d24a0,src/crates.cpp,matched
-0011bd60,92,game,speed,a16 pad,,,001d3550,src/unknown_0b9fc0.cpp,todo
+0011bd60,92,game,speed,a16 pad,,,001d3550,src/unknown_0b9fc0.cpp,matched
 0011bdc0,88,game,speed,a16 pad,,,,src/unknown_11bdc0.cpp,matched
 0011be20,28,game,speed,a16 pad,,,00211cc0,src/unknown_11be40.cpp,matched
 0011be40,8,game,speed,a16 pad,,,,src/unknown_11be40.cpp,matched
@@ -5175,7 +5175,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00174220,498,game,speed,a16 pad,,,0003eb20 00155760 0016bc00 00174420 001751d0 0017afd0,src/unknown_173b90.cpp,todo
 00174420,1380,game,speed,a16 pad,,,0001e4e0 0003eb20 00040e30 00137bd0 00165010 00174420 001751d0 00181800 00249bb0,src/unknown_173b90.cpp,todo
 00174990,157,game,speed,a16 pad,,,00174180 00174a30 0017af80,src/unknown_173b90.cpp,matched
-00174a30,1355,game,speed,a16 pad,,,00030bf0 0011d000 00137bd0 00174180 00174a30 00175100 001751d0 00175270 001753a0 001753f0 00175a80 00248750,src/unknown_173b90.cpp,todo
+00174a30,1355,game,speed,a16 pad,,,00030bf0 0011d000 00137bd0 00174180 00174a30 00175100 001751d0 00175270 001753a0 001753f0 00175a80 00248750,src/unknown_173b90.cpp,matched
 00174f80,225,game,speed,a16 pad,,,00025ca0 00137bd0 0016e210 001751d0 003f71d0,src/unknown_173b90.cpp,matched
 00175070,130,game,speed,a16 pad,,,,src/unknown_173b90.cpp,matched
 00175100,128,game,speed,a16 pad,,,,src/unknown_173b90.cpp,matched
@@ -7358,7 +7358,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00204390,182,game,speed,a16 pad,,,001e13f0,src/unknown_2003a0.cpp,matched
 00204450,1266,game,speed,a16 pad,,,000b9dd0 00210ac0 002628f0,src/unknown_2003a0.cpp,matched
 00204950,453,game,speed,a16 pad,,,001df560 00204ec0 00205010 002104b0,src/unknown_2003a0.cpp,matched
-00204b20,376,game,speed,a16 pad,,,001df560 00204950,src/unknown_2003a0.cpp,near
+00204b20,376,game,speed,a16 pad,,,001df560 00204950,src/unknown_2003a0.cpp,matched
 00204ca0,140,game,speed,a16 pad,,,001e3400 00204b20 0026def0,src/unknown_2003a0.cpp,matched
 00204d30,64,game,speed,a16 pad,,,,src/squads.cpp,matched
 00204d70,59,game,unknown,a16,,,,src/squads.cpp,matched

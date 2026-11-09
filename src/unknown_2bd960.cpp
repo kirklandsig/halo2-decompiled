@@ -676,6 +676,10 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // adds, mul, float forms, a call and a memset do not, nor dead or folded divisions, nor up to 32 named copies; 400 random no-extra-code forms gave no same-code flip.
 // Round 154 (plain): `(short)(11 + index)` 2; `if (NONE != index)` 2; `if (4 <= count)` 2; the final count read once into a
 // named local for both tests 2 (same code); loop bound `half > i` 2. The hill/index reload pair is unchanged in each.
+// Round 98 (m3 lane 12, plain): the count assigned in its test 2; a `long const` total of 32 for the step products 2;
+// half as a `long const` at its assignment 2; the two step quotients as named end/start values 2; the even count as
+// `count / 2 * 2` 51. Compile-only (reproduces the pair): a loop from 1 to half moves the registers; the steps through a
+// `long *` for the array 63 lines against 71; a short marker-group local and an ids local keep the pair.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {
