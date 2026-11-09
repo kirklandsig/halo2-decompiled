@@ -52,7 +52,7 @@ struct c_aggregate : c_child
 };
 
 
-// MiniMax D (11-08): score 31 (was 31): the frame is 0x8024 against retail's 0x8020 and the two output
+// MiniMax D (11-08): the frame is 0x8024 against retail's 0x8020 and the two output
 // slots differ - retail keeps the address-taken block count at +0x10 shared with the loop spills and the
 // allocator output at +0x1c, ours gives the count +0x1c and the allocator output +0x20; the byte-exact form
 // needs this file built without whole-program optimisation, which would cost three matched siblings.
@@ -365,6 +365,10 @@ struct c_aggregate : c_child
 // P382: Complementary completed-collection dispatch admission in bool/char/signed-char/
 // byte/short/word/long/dword: 31 each. NOT kept: frame remains 0x8024 versus 0x8020,
 // escaped output and low loop homes unchanged; original independent outputs and body restored.
+// P390: Individual collection-receiver presence before the separate error gate,
+// positive/complementary bool/byte/short/long: 31/31/31/31/31/31/31/31. Original independent escaped
+// outputs restored; native frame and low loop homes remain unresolved. NOT kept: no qualifying
+// exact/native-shape gain; original complete body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

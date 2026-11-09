@@ -193,7 +193,7 @@ struct s_physical_block_iterator
 // our body is 15 bytes longer (1228 against 1213), the first divergent branch being the jump to retail's 0x13d679.
 // MiniMax G (11-05): swapping the offset and previous declarations is the same code (347); retail keeps the offset in EBX and the current in EDI, ours the other way round, and the four-byte frame difference and the segment-arm layout stay unmatched; no new form, no lower score.
 // MiniMax S (11-01): the result/limit declaration swap reaches retail's frame but scores worse; no lower score.
-// score 209 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
+// score 201 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but
 // ours moves the else arm past the scan; retail also uses the page offset (EBX) as its zero from
 // the limit clamp on, so EBX is pushed first. Candidate stores offset before time 370; busy as
@@ -501,6 +501,15 @@ struct s_physical_block_iterator
 // Scores 210/212/213/215/215/215/215/215. NOT kept: no byte match; retained frame agrees but policy
 // cases and weighted-age homes remain, and no publication form shortens toward native length; some grow.
 // Original complete body restored.
+// P387: Both age clamps through a standard explicit ordering-comparator maximum,
+// declaration/sequential/paired/product producers with zero second/first:
+// 439/439/456/456/422/422/411/411. NOT kept: every provider graph regresses, loses
+// the native frame and grows to 1265-1311/1213 bytes. Original macro, policies,
+// observations, ring scan, record copy and complete body restored.
+// P397: Equality-first conditional/complete policy arms and earlier-time-first
+// conditional/complete arms: 284/284/201/201; with one complete selection outcome:
+// 227/227/222/222. NOT kept: no native case-placement or age-mask carrier repair;
+// complete outcomes move extent away from retail. Original whole body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -630,6 +630,12 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // P383: Post-attachment notification admission in bool/byte/short/long, positive/complementary:
 // 49/49/49/49/49/49/49/49. NOT kept: no native false-BL/independent-lookup equality; original workspace
 // observation, validity result and whole body restored.
+// P392: Consistent twice-used incoming virtual options, e/f/both long then const-long, both int/const-int:
+// 49/49/49/49/49/49/49/49. NOT kept: no native false-BL/temporary-EBP/independent-lookup equality.
+// Original formal reads, virtual tuples and complete body restored.
+// MiniMax S (11-09): no new form, no lower score; retail still keeps the false result in BL and
+// re-reads the last argument from its stack slot, while ours promotes that argument into EBP and
+// returns the result through EAX, which also shifts the frame by four bytes.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -984,6 +990,10 @@ bool c_projectile_type::v8(long a, long b)
 // read through the parameter's address with flags copied after or before the call 12/12 (the loads merge before
 // allocation); an object header local 12; object and flags declared, then assigned 12. Retail's code in this file
 // never zero-extends with a reg-reg movzx, only `and r, 0xffff`.
+// Round 158 (fast), all with the full-width mask: the object local named `device` 12; the mask on a second read of
+// the field through an indexed long view 12; the field read directly at the NONE test and the mask 12 (re-measured);
+// the group index read into a local at entry 50; flags declared before the lookup with the call's mask from `b` 12;
+// the object through the existing inline object_get 12.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

@@ -82,6 +82,8 @@ bool function_25d9b0(long prop_index);
 // where retail branches to a last `return priority` and falls into the shared `xor eax, eax` exit,
 // and the fallback still tests the prop index where retail tests the node.
 // MiniMax B (11-04): no new form, no lower score.
+// MiniMax S (11-09): no new form, no lower score (49); the fallback still ends in retail's shared zero exit and
+// the busy test still becomes a numeric select, so the block order and the two epilogues stand.
 // score 49 (was 49): frame and actor/node homes agree; busy selection and zero/success epilogues differ.
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
@@ -354,6 +356,8 @@ evaluate:
 // MiniMax R (11-01): no lower score; reading the slot's expected index into a local before the actor lookup
 // and the file's /Ob1 setting both leave it at 73 (0x25d740 is still inlined here); calling the view getter
 // twice (76) does not hold it out of line either.
+// MiniMax S (11-09): no new form, no lower score (73); the call to function_25d740 is still expanded at this
+// site, so the prologue still differs from retail's sunk ESI/EDI saves.
 // score 73 (was 73): retail calls function_25d740 out of line and sinks the ESI/EDI saves; our
 // build inlines it, so the prologue differs at +0x13. This round: reading the slot's expected
 // index into a local before the actor lookup, the reversed compare, a named actor local and the

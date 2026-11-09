@@ -479,6 +479,9 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // Round 72 (m3 lane 14, fast): first typed dword 10; next typed dword 10; next declared in a `for` header with the
 // successor read in the body 64 (1517 bytes); nearest declared at function scope 10; the particle-change clear as
 // `&= ~0xf80f` 10.
+// Round 60 (m3 lane 2, fast): the system block storing the validity before the system 12; the three cache
+// pointers cleared by one chained assignment 12; first as `long const` 10; definition as a const pointer 10; the
+// attraction test as `0.0f < attraction_radius` 10 (the 10s the same code).
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {

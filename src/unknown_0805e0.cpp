@@ -301,6 +301,17 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // long/dword: 51/51/51/51/60/60/58/58. NOT kept: 133-137 bytes move away from native 127,
 // the result occupies EBX and AL mask/index/successor ownership still differs; wide forms lose both
 // callers. Original complete body restored.
+// Round 81 (m3 lane 1, fast with 0x1a303b/0x2b393c): the successor read through the table before the entry, early
+// returns, `index = next` at the loop end 53 (134 bytes); that with `continue` filters (index stepped before them) 51
+// (top-tested, no hoist); `continue` filters on the current body with the result and `break` 57 (the mask is hoisted into
+// AL and false remade at the exit as retail, but the loop stays top-tested, `mov al, 3` in the prologue, index and
+// successor share EDX); the table-first successor with the result, `break` and `index = next` at the end 60 (137 bytes);
+// `continue` filters with the table-first successor 54 (hoisted; successor copied to ECX); diagnostic: the `continue`
+// body as a guarded do-while 43 (main's code exactly, no hoist: the hoist with `continue` needs the top-tested loop).
+// P390: Nullable-copy admission in positive/complementary bool/byte/short/long:
+// 43/43/43/43/43/43/43/43. No exact early-save, independent successor, mask or failure-exit recovery;
+// original nullable copy restored. NOT kept: no qualifying exact/native-shape gain; original complete
+// body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -907,6 +918,17 @@ void function_1537f0(s_profile_record *record);
 // Scores 87/87/87/87/87/87/87/87/87/87/87/87. NOT kept: all twelve score 87 at 273/258; native frame
 // 0xa0 recovers, but identity/source slots, countdown and initial zero placement still differ.
 // Original complete body restored.
+// Round 81 (m3 lane 1, fast with 0x7f8b0): an index loop with an XDK XUID identity zeroed by memset 78 (238 bytes);
+// the record initialized before a plain dword[3] identity on the pointer walk 53 (same code); an index loop through
+// `g_4cf98c[i]` with the link stores in retail's order 77 (238); an index loop with an entry pointer, both locals
+// declared before their initializers, the links in retail's order and flags/time as two stores 80 (236); the pointer
+// walk stepped beside a count-up index 53 (same code). Retail's frame (0xa0, 8-aligned, identity +0x10, a 4-aligned
+// record at +0x1c, 4 bytes free at the top) is exactly one 0x9c-byte object {qword, dword, 0x90-byte record}; no
+// existing type has that layout, so the identity still folds.
+// P387: Whole identity-record standard fill/fill_n/uninitialized-fill/uninitialized-fill_n,
+// per-visit then outer raw storage: 110/110/116/108 twice. NOT kept: native identity homes
+// still fold or move into a larger frame; 295-300 bytes versus 258. Both original initializers,
+// per-visit fills, pointer walk and complete body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1513,6 +1535,16 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // Scores 382/382/394/396/382/382/394/396. NOT kept: all regress to 382/394/396 at 1173-1180 versus
 // native 1171; frame 0xc persists but direct ordinal tests and count/upper/index homes do not recover.
 // Original complete body restored.
+// Round 81 (m3 lane 1, fast with 0x80490/0x80330): round 141's form rebuilt (plain admission, `function_7fd10(g_4cf980)`,
+// `removed > position ? position : removed` lower, explicit `downward = false` in the `>` arm and the count path, the flag
+// set first in the `<` arm, a stepped forward cursor) 6 again, match-only; a 1,500 s permuter run on it, 177 tries, none
+// below 6; on it the plain forward loop 53 (upper back in EAX, index EBP, two leas), `position--` before `upper--` 10, the
+// copy arms tested as `!downward` 340, the count path assigning upper first 8. Left on the 6 form: the cursor's start
+// (`&g[lower + 1]`) is computed before the loop guard, where retail forms it after the guard from the index in EAX.
+// P387: Complete entry transfers at the actual player/metadata boundary, forward/reverse/both
+// native payload then library suffix 446/435/503, both library subranges 446/435/503,
+// both metadata-first native/library payloads 374/374. NOT kept: all regress to 1222-1270
+// bytes versus 1171; original capacity, full-record copies, repairs and complete tail restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

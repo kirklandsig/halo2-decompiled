@@ -1892,6 +1892,7 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // NOT kept: ties/regressions; original private producer and full body restored. Return byte,
 // release-byte RMW/tail and contact/event homes remain.
 // MiniMax E (11-08): no new form, no lower score: the return byte sits at esp+0xe here and at esp+0xf in retail, and retail clears the release flag with a read-modify-write that we split into a load and a store.
+// MiniMax E (11-09): no new form, no lower score: the return byte sits at esp+0xe here and at esp+0xf in retail, and retail clears the release flag with a read-modify-write that we split into a load and a store.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
