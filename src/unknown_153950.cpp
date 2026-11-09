@@ -406,6 +406,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax C (11-09): no new form, no lower score (13); the j and k rows of the shared rotation still add the cosine term first (BLOCKED-BY src/unknown_170d70.cpp).
 // MiniMax E (11-06): score 13 (was 13): no new form lowered it. The only difference left is in the
 // j and k rows of the inlined rotation: retail adds vector * cosine to projection * axis while ours
 // adds the projection term first, and the fix belongs to the shared rotate_vector_170d70 helper in

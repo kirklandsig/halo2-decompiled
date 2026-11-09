@@ -131,6 +131,9 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // (retail's common tail) instead of breaking out of the edge loop; the held 34 form's gotos again (a goto main's
 // body does not have is kept only with a byte match). On that form the first-edge flag at function scope before
 // the success flag stays at 106.
+// MiniMax D (11-09): no new form, no lower score; the count test branches the other way
+// (retail jumps to the far block when the count is positive) and the body is twelve bytes
+// shorter than retail's 1605.
 // score 244 (was 410): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.

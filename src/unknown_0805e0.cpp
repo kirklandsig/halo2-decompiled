@@ -1193,6 +1193,19 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 }
 #pragma inline_depth(8)
 
+// MiniMax E (11-09): no new form, no lower score: the plain removed local with the index read into EDX (54)
+// is a regression, so its body is restored and the score is back to 49. What still differs: the admission
+// prefix still tests the count through a `cache_full` flag where retail tests it directly, the upper bound
+// still sits in EAX where retail keeps it in ECX, and the forward copy still takes its index in EBP where
+// retail uses EAX, with retail's product and its single lea ahead of the upper reload where ours has two leas.
+// Measured this round: the plain removed local (the count tested directly, the removed index loaded into EDX
+// and copied to ESI) reproduces retail's first 65 bytes exactly, and with the lower bound spelled as retail's
+// comparison the first difference moves to the upper bound's register (our EAX, retail's ECX) - 366, and 54
+// with the two downward stores retail itself has, so the plain admission is no better than the flag form.
+// The min spelling of the lower bound alone is 47, two points, below what this round keeps; a count local, a
+// nested removed/count test, the upper bound stored first and the two downward stores without the min
+// spelling all score worse. The only form below 41 is the one MiniMax C measured at 38, which needs the
+// no-op downward stores, so it is not kept here either.
 // MiniMax B (11-07): no new form, no lower score (49); the admission prefix still tests the count through a
 // `cache_full` flag and the upper bound still sits in EAX instead of retail's ECX; the plain-entry admission
 // reaches retail's first 76 bytes but scores 53, and the min spelling alone 47 (a two-point gain, dropped).

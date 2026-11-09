@@ -134,6 +134,10 @@ struct s_9cca0
 // first vector's x before the location's second dword and sinks the second vector's y below the test, retail
 // stores the location dword first and sinks the first vector's z. Another lead: the build's stand-in callers pass
 // 0x184440 and the location setter pointers read from a volatile buffer, which retail's image has no equivalent of.
+// Round 71 (m3 lane 13, fast): all 48 orders of the two location dwords, the two vector copies and marker/tag on the
+// block-scoped record: best 10 (location 1, location 2, first vector, second vector, marker, tag), then 12, 12, 13, 14,
+// 15; that form without the named input pointer 10 (same code); one whole-record memset 75 (173 bytes); the first
+// vector by component with its k after the second copy 57 (movss, 209 bytes); the memsets swapped 17.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

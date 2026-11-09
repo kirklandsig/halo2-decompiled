@@ -58,6 +58,7 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
+// MiniMax C (11-09): no new form, no lower score (34); the abstract allocator's base vtable store is still elided (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax D (11-06): no new form, no lower score (34); retail's base vtable store (0x453760) and its
 // derived vtable (0x4576a4) come from the shared constructors in include/unknown_146a20.h, which this lane may
 // not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
