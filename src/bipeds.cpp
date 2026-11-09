@@ -935,6 +935,23 @@ extern long *g_51e9cc;
 /* the biped's physics callback: its crouch, kill volumes, its character
    physics move, and the ground (structure, instanced geometry or object)
    its contact rests on */
+// MiniMax S (11-09): 0xdd990 score 10 (was 17): every +0x348 flag write goes through the existing word_flags_set.
+// Not kept (coordinator 11-09): case 5's surface flag array in a one-use pointer, so the flag test keeps its own
+// register instead of taking the index's (9; a one-use pointer is match-only).
+// Still differs in three places: the crouch sum loads the biped's own crouch and adds the spilled change (retail
+// loads the change and adds the field), case 5 still stores unknown35c before the surface flag test (retail tests
+// first), and case 4's stores are ordered differently.
+// MiniMax S (11-09): no new form, no lower score (17); still differs in four places: the crouch sum loads the
+// biped's own crouch into the register and adds the spilled change (retail loads the change and adds the field),
+// the crouch store sits after the flags clear (retail before it), case 5 stores unknown35c before the surface flag
+// test (retail tests the flag first) and the 0x10 flag or is scheduled after the three unknown380 loads (retail
+// before them); case 4's stores are ordered differently as well.
+// MiniMax S (11-08): 0xdd990 score 17 (was 42): the case 4 lookup's address is carried in one pointer value, used by
+// both the initialize call and the 0x1efd80 call, the same spelling 0x14a8e0 uses; retail keeps that address in a
+// register and our build rematerialised it, which cost the two extra bytes. The length now agrees with retail's 1481.
+// Still differs: the crouch sum loads the field first (retail loads the spilled crouch change), the crouch store sits
+// after the flags clear (retail before it), case 5 stores unknown35c before the surface flag test, case 4's stores are
+// ordered differently and the 0x10 or is scheduled after the unknown380 loads.
 // MiniMax R (11-06): no new form, no lower score (42); the flag store still sits after the three loads and the crouch add still folds the field instead of the spilled operand; the crouch sum's two operands the other way round changes no code at all, and the flag clear ahead of the crouch store gives 49.
 // score 42 (was 42): Frame 0xb8 agrees; lookup-address rematerialization adds two bytes;
 // crouch operands and contact/flag publication schedules remain.
@@ -1084,7 +1101,7 @@ void __stdcall function_dd990(long arg_159e6d)
 		function_e30c0(arg_159e6d);
 		if (!(*((byte *)root + 0xc1) & 1) && function_1ec500(arg_159e6d))
 		{
-			biped->flags_348 |= 0x8000;
+			word_flags_set(&biped->flags_348, 15, true);
 			if (*((byte *)g_4e6948 + 0xc) != 4)
 			{
 				s_type_1e6529 data;
@@ -1118,11 +1135,11 @@ void __stdcall function_dd990(long arg_159e6d)
 			}
 		}
 		biped->crouch = PIN(crouch_change + biped->crouch, 0.0f, 1.0f);
-		biped->flags_348 &= ~0x800;
+		word_flags_set(&biped->flags_348, 11, false);
 		physics = function_e4680(arg_159e6d);
 		if (havok_component_any_rigid_body_active(component) || physics || !(TEST_FIELD_BIT((biped->flags_c0 >> 6) & 1)))
 		{
-			biped->flags_348 &= ~0x1000;
+			word_flags_set(&biped->flags_348, 12, false);
 			function_b9dd0(arg_159e6d, &biped->unknown368);
 			if (!(TEST_FIELD_BIT((biped->flags_c0 >> 8) & 1)))
 			{
@@ -1194,10 +1211,11 @@ void __stdcall function_dd990(long arg_159e6d)
 								long permutation = (char)(*(byte **)(region + 0xc))[(surface >> 5 & 0xff) * 8 + 5];
 								dword position = (((char)region[4] << 8) | (permutation & 0xff)) << 16;
 								s_lookup lookup;
+								s_lookup *lookup_pointer = &lookup;
 
-								if (lookup.initialize(object_index))
+								if (lookup_pointer->initialize(object_index))
 								{
-									byte *bsp = (byte *)function_1efd80((s_table_holder *)&lookup, position);
+									byte *bsp = (byte *)function_1efd80((s_table_holder *)lookup_pointer, position);
 
 									if (!BIPED_SURFACE_FLAG(bsp, *(long *)(entry + 0xc)))
 									{
@@ -1241,22 +1259,15 @@ void __stdcall function_dd990(long arg_159e6d)
 					biped->unknown380 = *(point3f *)(entry + 0x1c);
 					biped->unknown374 = *(vector3f *)(entry + 0x28);
 					function_1201a0(&biped->unknown374, g_4687b0);
-					biped->flags_348 |= 0x1000;
+					word_flags_set(&biped->flags_348, 12, true);
 					biped->unknown368 = biped->unknown380;
 				}
 				function_e2fa0(arg_159e6d, result.unknown0c, *(byte **)((byte *)component + 0x70) + 0xc);
-				if (result.flags & 1)
-				{
-					biped->flags_348 |= 1;
-				}
-				else
-				{
-					biped->flags_348 &= ~1;
-				}
+				word_flags_set(&biped->flags_348, 0, (result.flags & 1) != 0);
 			}
 		}
 	}
-	biped->flags_348 &= ~0x80;
+	word_flags_set(&biped->flags_348, 7, false);
 }
 
 struct s_type_94656b;
@@ -1309,6 +1320,11 @@ PRIVATE __forceinline void biped_eye_raise(long arg_159e6d, s_biped *self, byte 
 	vector3f direction;
 	s_biped_collision collision;
 
+	{
+		point3f scratch;
+
+		real_point3d_set(&scratch, eye->x, eye->y, eye->z);
+	}
 	eye->z += ((1.0f - crouch) * *(real *)(self_definition + 0x218) + *(real *)(self_definition + 0x21c) * crouch) *
 		self->scale;
 	head = *eye;
@@ -2076,6 +2092,11 @@ void function_dfd70(long arg_159e6d)
 }
 
 /* a point on a biped (biped_eye_point) */
+// MiniMax S (11-08): 0xdef60 matches byte for byte (1041 bytes, score 0). The raise takes one more local filled
+// through the existing real_point3d_set ahead of the back scale, and the first-ray start's y product then takes
+// retail's load-first form (back.j loaded, then the scale) instead of copying the scale first; the x and z
+// products were already load-first. 0xde9d0, 0xcb500 and 0x1e3b00 still match, 0xdc5c0 588 -> 585, and 0xdd990
+// (42) and 0xe01d0 (605) are unchanged.
 // score 7 (was 7): 1040 bytes against 1041; only the first-ray start's y product differs: ours copies the scale
 // first (`movaps xmm1, xmm0; mulss xmm1, [back.j]`), retail loads back.j first (the x and z products agree).
 // MiniMax R (11-06): the mode 3 arm as the then branch of `mode == 3` puts retail's block layout in place (233 -> 104):
@@ -3499,6 +3520,12 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
+// MiniMax S (11-09): no new form, no lower score (605 in the reduced build); retail keeps the biped
+// index in EBP and the definition pointer in ECX with a home at +0x18, ours keeps the definition in
+// EBP and the index in EBX with a home at +0x1c, and retail's changed-result byte sits at +0x11
+// against our +0x12, so retail's frame is 0x78 and ours is 0x7c. Retail's remaining byte homes need
+// the special flag to live in memory, which is the form review rejects; a named index at the top
+// measures 603 and the same name used at the tail 635, the special flag as a bool 649.
 // MiniMax R (11-06): no new form, no lower score (605 in the reduced build); the frame is 0x7c here and 0x78 in retail, and the definition pointer is held in EBP here and in memory in retail.
 // score 561 (was 561): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // Earlier: 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
