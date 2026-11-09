@@ -232,6 +232,11 @@ bool function_270130(s_object_marker const *marker, point3f const *position, rea
 // Round 16: dot3f alignment 26; a forward-vector pointer 26; a short cast at the call 20; the
 // flags field typed short 20; a long loop ordinal 827. With 0x26fbf0's flags as word (diagnostic,
 // restored) this is 4, and with dot3f for the alignment too 2 (only the j product's operands).
+// Round 138 (m3 lane 7, fast with 0x26fbf0/0x1be410/0x270130): ours already returns with `ret 0xc` as retail
+// (point in EBX, actor in EAX); the first difference is still the flags argument (`movzx` for retail's
+// `xor edx, edx; mov dx`), still BLOCKED-BY 0x26fbf0. Diagnostics, restored: 0x26fbf0's flags `word` 4 again
+// (0x26fbf0 and 0x1be410 still match; left: the alignment's i and k products computed in the other order);
+// on that, the k product written first 4 (same code). The other caller, 0x2c0d60, passes `(word)` flags too.
 // @retail 0x26fc80
 bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point)
 {
