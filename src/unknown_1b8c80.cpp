@@ -272,6 +272,12 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // 135 (399 bytes); `last_object_index != seats[i].object_index` 4; the seat's object index named at the
 // loop top for the object test, the store, 0xc8f60 and 0x1b8d80 3 (same code); `dword last_object_index` 3;
 // `object->unknown3b4 != 0` 3. Restored.
+// Round 156 (m3 lane 6): the seat index named in the unoccupied arm for both calls 78 (fast); the seat's object index
+// named there 74 (fast). LTCG one-file harness (this file, units.cpp, unit_object_type.cpp, unknown_1c9830.cpp and the
+// ballast reproduce 3): 45 combinations of declaration order, flags-pointer placement, `long i`, `(&seats[i])->`
+// arguments, a unit local and else-if/nested/else forms best 3 (declaration-order shuffles 5-107); 0xc8200's result in
+// a named bool 3; the seat's object index named at the loop top for every use including 0xc8200 69. Probes: a constant
+// unit or seat argument still reloads the seat pointer into ECX.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
