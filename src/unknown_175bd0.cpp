@@ -2074,6 +2074,8 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // frame), with spawn stores unknown, location, scale 162; on that form the system or the definition read once through
 // its own address 165/165; colours read early with both queries in the call's argument list 183 (568 B), at the top
 // 192.
+// MiniMax C (11-09): score 128 (was 128): the early colour home is still missing and the frame is
+// 0x40 against retail's 0x44. Untouched this round.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2488,6 +2490,9 @@ event_done:
 // `if (effect && ...)` second test 130, aligned 52 (the head reload then matches; the index is cached for
 // 0xbaf80 instead); root index at function scope 197; tail reading the field 197; a named head index reused
 // by the tail 197.
+// MiniMax C (11-09): score 63 (was 63): the object index stays cached across 0xbadc0, where retail
+// reloads it, and the head's load is folded into the datum address where retail forms the pointer
+// first; 0xbadc0 and 0xbaf80 live in another file, so the reload cannot be forced here.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -3331,6 +3336,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // 25), with the spawn cursor and a long mode 120; the location declared in the while condition 93 (same code).
 // Diagnostic only: without the particle system argument of the loop's 0x248c60 call the system takes ESI and the
 // next index EDI as in retail, so the system's loop use sets the swap.
+// MiniMax C (11-09): score 93 (was 93): the system pointer and the next index swap ESI and EDI
+// (retail keeps the system in ESI and the next index in EDI), retail's frame is 0x54 against our
+// 0x4c and it spills the definition pointer early. Untouched this round.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

@@ -1280,6 +1280,21 @@ done:
 // Further forms: direct decoder result 42; low-mode rejection 38, with direct result 45;
 // path-first reset 21, with direct result 45; nested independent guards 9; native mode
 // snapshot 9; uniform getter observations 58. Original reset path and call values restored.
+// MiniMax C (11-09): score 9 (was 9): retail's prologue is one byte longer than ours (its `lea esi,
+// [eax + edx]` against our `add esi, edx`), so our code is 113 bytes and retail's 114. Eight more
+// getter spellings all compile to our code and score 9: an unsigned offset local, the byte-pointer
+// product `(data + (index & 0xffff) * sizeof(view))`, an array-pointer subscript, the same product
+// with the base added last, an unsigned index local, the array-address form, a signed literal
+// product and a masked slot local. MSVC keeps the scaled index in the pointer register, so the
+// `imul` never lands in EAX as retail has it.
+// MiniMax C (11-09): score 9 (was 9): only the prologue differs: retail builds the actor offset
+// in EAX (`mov eax, ecx`, `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`,
+// ours builds the offset in ESI and adds the base. A byte subscript, a typed subscript and an
+// offset local all compile to the same code (9), so the register choice is not steerable here.
+// MiniMax C (11-09): score 9 (was 9): the byte-pointer product spelled with a masked slot local
+// (`(s_actor_looking_view *)(g_4f55f0->data + actor_slot * sizeof(s_actor_looking_view))`)
+// compiles to the same code as the shared getter (9): MSVC keeps the scaled index in the pointer
+// register, so the `imul` never lands in EAX as retail has it. Original body restored.
 // @retail 0x296580
 void function_296580(long actor_index)
 {

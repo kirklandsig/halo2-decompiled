@@ -2517,6 +2517,9 @@ static __forceinline long player_round_ticks(real value)
 // (2626 bytes: our LTCG keeps 0x1520f0 a call and still expands the first 0x151b80); with 0x1520f0's volatile dropped 812
 // (0x1520f0 then 13); only the 0x80 site's clear through it 770; the 0x80 site as a result chain 701; the six player flag
 // sets as byte stores at +2 719 (2746 bytes).
+// MiniMax C (11-09): score 701 (was 701): the frame is still 0x4c against retail's 0x74 (retail keeps
+// two separate request homes and calls 0x151b80 and 0xccd20 out of line, ours has one request home
+// and LTCG expands those calls). Untouched this round.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {

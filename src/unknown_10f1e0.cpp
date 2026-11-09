@@ -601,6 +601,16 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // two-use local 11; a do/while on `found` with the pair block under `if (found)` 2. Every callee under the loop's calls
 // is matched C (0x142a60 under 0x1d90e0 is naked asm in our source); the re-read and the back-edge order
 // both look like retail's compiler assuming the calls may write the iterator and the table, which our LTCG rules out.
+// MiniMax C (11-09): score 2 (was 2): only the back edge's two reloads still differ (retail
+// reloads the state before the tag table). The state's register copy would have to come before
+// the table's load in the entry schedule; reading the graph index into a local ahead of the
+// table lookup leaves the order as it is (2), and moving the loop's statements ahead of the
+// stores breaks the body (107).
+// MiniMax C (11-09): score 2 (was 37): the visited-bit test is retail's mask test (the existing
+// bit_vector_test) in its own nested if, and the pair's target name is a two-use local that is
+// re-read from the iterator just before the second lookup; the visited word's fused OR and both
+// lookup setups now match retail; only the back edge's reload order differs (retail reloads the
+// state before the tag table).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -637,15 +647,21 @@ void __stdcall function_113980(long object_index, long target_index, bool altern
 				}
 				if (!found)
 					break;
-				if (iterator->b != NONE && iterator->b && iterator->a != NONE && iterator->a)
+				long target_name = iterator->b;
+				if (target_name != NONE && target_name && iterator->a != NONE && iterator->a)
 				{
-					if (function_b8d30(object_index, iterator->a, &marker, 1, false) &&
-						!((visited[marker.node_index >> 5] >> (marker.node_index & 31)) & 1) &&
-						function_b8d30(target_index, iterator->b, &target, 1, false))
+					if (function_b8d30(object_index, iterator->a, &marker, 1, false))
 					{
-						function_1d90e0(*(long *)(model + 4), marker.node_index, nodes, &marker.node_matrix,
-							&target.matrix, weight, node_count);
-						bit_vector_set(visited, marker.node_index, true);
+						if (!bit_vector_test(visited, marker.node_index))
+						{
+							target_name = iterator->b;
+							if (function_b8d30(target_index, target_name, &target, 1, false))
+							{
+								function_1d90e0(*(long *)(model + 4), marker.node_index, nodes, &marker.node_matrix,
+									&target.matrix, weight, node_count);
+								bit_vector_set(visited, marker.node_index, true);
+							}
+						}
 					}
 				}
 			}
@@ -3614,6 +3630,17 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // again). The state looked up before control and definition 55; definition declared before control 52; control declared
 // after state 52; the action short declared before the two flags 44; the force flag declared before the result 44;
 // the `type < 3` test after the state test 84; the set passed directly with no selected-set local 120.
+// MiniMax C (11-09): score 44 (was 44): the reduced image's 0xe70b0 writes its two-byte result
+// through the pointer it is handed in EAX, so the word at +0x14 is that result's home and the
+// action short we still declare keeps a two-byte home at +0x10 that nothing reads; retail has no
+// such home, which is the whole frame difference (0x3c against 0x38). Dropping the dereference
+// (207), merging the two play calls into one ternary (75) and hoisting the query's call out of
+// the test (60) all keep the frame at 0x3c; the short's home needs 0xe70b0's file, which is not
+// in this round's list.
+// MiniMax C (11-09): score 44 (was 44): the frame is 0x3c against retail's 0x38: retail packs
+// the action short beside the two flag bytes (the two-byte value 0xe70b0 returns) and clears the
+// two flags before the lookup's branch; the short's own home needs 0xe70b0's file, which is not
+// in this round's list.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)
