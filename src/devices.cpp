@@ -900,6 +900,7 @@ struct s_device_machine_view
 // store, 124 (al 8). A compile-only screen (no /GL) shows the base table or pointer in ESI for every word or dword
 // load of the flags, even with the machine test removed; only a byte load (lane S) or two loads merged at a join
 // leave EAX.
+// MiniMax E (11-08): no new form, no lower score: retail loads the group's flags as a word and tests bit 1 then bit 2, ours loads a byte and masks it with 3, and testing the word without the mask scores 120.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1306,6 +1307,7 @@ bool function_108530(long device_index, long name)
 // 0x14, but the target is the promoted parameter, in xmm5 from entry, with a `push ecx` frame; callers 26/28); the
 // distance computed first with delta copied from it 123; no cruise-time local 121. A compile-only screen of this body
 // and four clamp-order variants uses all eight xmm registers before the first fld; retail uses seven there.
+// MiniMax E (11-08): no new form, no lower score: the clamp chain keeps its value in xmm7 here and in xmm5 in retail, and the second clamp uses xmm2 here and xmm7 in retail.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

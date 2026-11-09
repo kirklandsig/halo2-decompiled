@@ -742,6 +742,7 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // P382: Producer-owned pre-copy party incompatibility in bool/char/signed-char/byte/
 // short/word/long/dword: 67 each. NOT kept: reference-first query pairs and extra receiver
 // move remain at 514/512 bytes; original flag admission, candidate lifetime and full body restored.
+// MiniMax E (11-08): no new form, no lower score: the ebx save around the calls is reversed (retail reloads it after the call) and the compare's operands are swapped.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -1169,6 +1170,7 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // P382: Positive terminal balance result in char/signed-char/byte/short/word/int/long/
 // dword: 47/47/47/64/64/61/61/61. NOT kept: all lengthen to 195-205 versus 190,
 // count-register exchange and first +0x14 remain; original Boolean result and full body restored.
+// MiniMax E (11-08): no new form, no lower score: the player count is tested in edx here and in eax in retail, and which register holds it is fixed by the caller's parameter order.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
