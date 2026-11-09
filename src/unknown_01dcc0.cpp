@@ -253,6 +253,10 @@ long g_55e6c0;
 // bytes, packing instructions retail's); on it the height term first in the OR 29 and as its own first statement 29
 // (VC canonicalises both: pitch in ECX first, height in EDX); a named clamped local set by if/else-if 166 (497 bytes).
 // Retail loads the count first (EDX) for the clamp compare, hoisted above the kind store, and the height after it (EAX).
+// Round 142 (m3 lane 8, fast, all on the round-51 signed pitch/packed lead, itself re-measured 29 at 484 bytes): zero arm
+// as its own store, upper clamp a ternary in the else arm 33 (485); clamp through a named level-count copy 29; busy test
+// negated with the work arm first 29; width term first in the OR 29; one merged count zeroed, set and capped under
+// `count >= 0` 43.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

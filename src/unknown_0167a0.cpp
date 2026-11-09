@@ -244,6 +244,11 @@ PRIVATE inline byte const *material_parameters(long tag)
 // loads right after the entry lea); that with `second + (packed & 0x1ff)` 5; that with the chain lookup folded into
 // the pass expression 5; the reference form with the swapped sum 5 (+0x19e); the tables field bound through a
 // reference with the direct entry store 6. Original body restored.
+// Round 96 (m3 lane 16, fast control 5; earlier forms re-measured and combined, no new form found): direct entry
+// store with the word read back from the field 5 (`second` loads right after the entry lea, retail after the two
+// table loads); combined with the pass through a reference 5, with the chain index read from the published entry 5;
+// the reference form with the pass through a reference 5, with `third + (next & 0x1ff)` 5. Diagnostic (not kept):
+// `second` read once through its address in the direct form, in the restore block or at the top, 5/5. Restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

@@ -208,6 +208,16 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // P377: Whole packet-scale branch/negative-chain/callback-first/expression producers,
 // then each with its actual scaled-payload node: 356/363/413/363/356/363/413/363. NOT kept: no native observer/budget/frame
 // equality; complete original scale, rounder, counter and result graph restored.
+// P379: Complete complementary host-query result in bool/byte/char/signed-char/short/word/int/long, all
+// original consumers inverted consistently: 425/425/425/425/374/374/417/417. NOT kept: no native
+// host-byte/observer/budget/frame equality; original result, counter compositions, outputs and whole body
+// restored.
+// P381: Complete complementary packet-query result in bool/byte/char/signed-char/short/word/int/long:
+// 426/426/426/426/425/425/426/426. NOT kept: all regress and lengthen; native
+// packet BL, observer EDI, bandwidth EBP and frame 0x34 remain. Original query result and full body restored.
+// P384: Complete complementary captured channel-active state, bool/byte/char/signed-char/short/word/int/long:
+// 442/442/442/442/442/442/443/443. NOT kept: all regress and grow; native observer/bandwidth/frame homes remain.
+// Original active-state observation, all consumers, counter expressions and complete body restored.
 // T73: Complete derived callback-send branch/default/conditional/negative/complementary producers:
 // 408/419/399/397/408/419/419/415. NOT kept: no native observer/rate/frame repair;
 // original providers, later forcing, bit-correct counters, limits and sole-result body restored.

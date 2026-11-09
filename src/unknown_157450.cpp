@@ -729,6 +729,12 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // compares the present teams as a dword against the zero-extended mask (`movzx eax, cx; cmp esi, eax`), so the
 // word compare is not retail's; without the local 24, without the cast 77, and the flag test as an early
 // `continue` alone stays at 32.
+// Round 96 (m3 lane 9, fast; aligned counts in brackets, dword base [17]): word mask base 77 [15]: our word mask stays in memory
+// (`movzx ecx, word [esp+0x18]` folded into the compare, a second dword load for the OR) where retail reloads it once into ECX
+// ahead of the first jne, a split register variable like old_playing's EBX reload in both builds. On the word mask with main's
+// volatile present: the playing store, plus index24, plus the mask store through function_xaee93d() 77/77/77 [15] (identical
+// code); `*team_mask |= (word)present_teams` 130 (375 B); `old_team_mask != present_teams` 77; the OR as `(word)present_teams |
+// old_team_mask` 77. A `long` mask 32 (same code as dword). Original body restored.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2688,11 +2694,11 @@ void function_15b980(bool skip_event)
 void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics, long field, long delta, bool by_team);
 
+// score 44 (was 44): frame 0x10 agrees; BLOCKED-BY 0x1967d0 and the 0x1e9df0 call's setup, as the older lines below describe.
 // MiniMax D (11-06): no new form, no lower score (44); retail sets up the 0x1e9df0 arguments after the
 // zero and the NONE (or ecx,0xffffffff / xor eax,eax / mov edx,ebx) and reloads g_4e6948 through EAX
 // instead of holding it in EBX, which also rotates the per-case delta registers; both come from the
 // callees' file (0x1e9df0 in src/unknown_1e9700.cpp, 0x1967d0 elsewhere), so the blockers stand.
-// score 44 (was 44): frame 0x10 agrees; BLOCKED-BY 0x1967d0 and the 0x1e9df0 call's setup, as the older lines below describe.
 // MiniMax C (11-06): no new form, no lower score; the blockers stand — 0x1e9df0's register-argument
 // setup lives in src/unknown_1e9700.cpp and retail's reload of g_4e6948 after the 0x1967d0 calls
 // lives in src/unknown_1967d0.cpp, both off limits this round.
@@ -2744,6 +2750,9 @@ void function_1e9ce0(long player_index, long counter, s_statborg *statistics, lo
 // statistics named by a second getter at the call 109 (385 B); mode read ahead of the 0x1e9df0 call 88 (369 B). Aligned [3, 13]:
 // options read through the getter in the final test's first read 44, both reads 44, the mode switch 44 (same code); the score-to-win test
 // ahead of the score test 45. both blockers stand; 0x1967d0's and 0x1e9df0's files were off limits this round.
+// Round 96 (m3 lane 9, fast; aligned [11]): `team == iterator.player->team` 45 [12]; case 2 as `current >= score` 46 [13];
+// case 1 as `current < score` 46 [13]; the minimum as `-0x7fffffff - 1` 44; `score_to_win <= score` in the final test 44 [13].
+// Both blockers stand (src/unknown_1e9700.cpp and src/unknown_1967d0.cpp were off limits this round).
 // @retail 0x15b650
 void __stdcall function_15b650(long team, long delta)
 {
@@ -4800,6 +4809,12 @@ bool function_158eb0()
 // forceinline accessor 5; the flag, call and halving in a forceinline rank helper taking the index 5
 // (the register choice survives inlining in every form); the iterator declared first 5; an options
 // pointer local at function scope 27 (147 bytes). Original body restored.
+// Round 96 (m3 lane 9, fast): diagnostic probe (one dword global load and store, reverted): anywhere ahead of the call's
+// arguments, at entry or in the loop body, it gives retail's exact setup (`mov edx, [esp+0x18]` / `xor ecx, ecx` / `setne cl` /
+// `mov eax, ecx`); after the loop it moves nothing. So the swap is one temporary-rotation step: retail has one more expression
+// temporary ahead of the index load. Chained `iterator.index = iterator.absolute_index = NONE` 5; next() given `&iterator.player`
+// 5; the iterator set through its record-pool view 5; `flag != false` 5; the raw rank named and halved in the test 5.
+// Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {
@@ -5448,8 +5463,10 @@ void function_159880(void)
 
 void __stdcall function_d6bc0(long object_index);
 
-// score 60 (was 97): native frame 0x18 and 869-byte length; initial scenario/rate stores, cached index test,
-// case-1 CL versus AL, modifier admission order and removal index reload remain. Earlier at 112: timer at +0x20
+// score 52 (was 60): native frame 0x18 and 869-byte length; initial scenario/rate stores, cached index test,
+// case-1 CL versus AL (the same cause as the index test) and removal index reload remain; the kind admission order
+// (kind == 0 first, then 1..7, one tail-merged dispatch) now agrees through the switch in each kind arm. Earlier at 60
+// (was 97): case-1 CL versus AL, modifier admission order and removal index reload remained. Earlier at 112: timer at +0x20
 // and entry-base reloads agreed, 872/869 bytes; scheduling materialized the case-1 Boolean.
 // Match-only recipe, score 7 at retail's length: replace `bool schedule = true; if (index != NONE)` and case 1 below with
 // `bool schedule; if (index == NONE) schedule = true; else { schedule = false; switch ... case 1: if (bit) schedule = true; break;
@@ -5678,6 +5695,23 @@ void __stdcall function_d6bc0(long object_index);
 // P377: Pure eligibility boundary returning bool/byte/char/signed-char/short/word/long/dword,
 // separate from delay production: 60/60/60/60/60/60/60/60. NOT kept: unchanged native index/byte-branch differences;
 // the single-caller helper is disallowed. Original complete body restored.
+// Round 96 (m3 lane 9, fast; aligned counts in brackets): the modifier switch in each kind arm, 60 -> 52 (869 B) [11], kept. On
+// main's continue form: scenario read ahead of the rate 58; the tail reading the field at each use (test, 0x158ff0, 0xd6bc0) with
+// the loop-top local kept for the first block and schedule test 37 (872 B), with the per-arm switch 31 (873 B) [5], plus scenario
+// first 29 (873 B) [4: the index test and case 1 only; the extra bytes are near jumps, because a failed schedule `continue`s
+// where retail falls into the countdown block, which the flag form gives]: not kept, a hand-reload mix (the schedule test still
+// reads the loop-top local after the first block's calls); 0xd6bc0 given the field alone 37 (872 B), same mix; tail field with
+// the per-arm switch but 0xd6bc0 on the local 206 (879 B); the field at every use 170 (862 B), with scenario first and the per-arm
+// switch 167 (863 B); the local up to the first call and the field after it everywhere 169 (863 B). The 7 recipe rebuilt on this
+// body (flag form, per-arm switch, 0xd6bc0 given the field, scenario first) gives 7 [1, 4] again. On it the schedule test on the
+// field 172 (858 B) [39], no index local at all 172, the index as a `long const &` to the field 172 (forwarded), the tail reading
+// the field 172; with the field test case 1 takes retail's AL, so only one allocation choice is left: our timer shares EBX with
+// the index and a cross-block `entries` CSE takes EDI, where retail keeps the timer in EDI and reloads `entries` at each use.
+// A grid on that field-test form: object, index, placement at function scope and a tail-only index local, each with and without
+// scenario first: 172 with scenario first, 174 without, in every combination; scopes do not move it.
+// P379: Admitted-scope zero-or-positive kind admission, signed-byte/short/int/long, then nested upper/lower
+// admission: 68/71/69/69/103/98/103/103. NOT kept: no native admission/byte/index equality; all original
+// dispatch, timer observations and complete body restored.
 // T71: Native-frame/admitted-modifier rate/scenario/preset lexical homes, seven subsets and
 // complete ordinal roles: eight 60s, 869/869 bytes. NOT kept: no initial-store or case-byte
 // repair; original names and complete body restored.
@@ -5753,12 +5787,18 @@ void __stdcall function_15ae70(s_netgame_entry_state *entries)
             }
             long delay = function_15ac50(i);
             signed char kind = *(signed char *)(placement + 0x14);
-            if (kind >= 0 && kind <= 7)
+            if (kind == 0)
             {
-                long modifier;
-                if (kind == 0) modifier = *(signed char *)((byte *)g_4e6948 + 0x211);
-                else modifier = *(signed char *)((byte *)g_4e6948 + 0x208);
-                switch (modifier)
+                switch (*(signed char *)((byte *)g_4e6948 + 0x211))
+                {
+                case 1: delay = NONE; break;
+                case 2: delay >>= 1; break;
+                case 3: delay <<= 1; break;
+                }
+            }
+            else if (kind >= 1 && kind <= 7)
+            {
+                switch (*(signed char *)((byte *)g_4e6948 + 0x208))
                 {
                 case 1: delay = NONE; break;
                 case 2: delay >>= 1; break;

@@ -1433,6 +1433,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // query that clears the flag on a positive value (330) lose too, though the latter reaches setle; no
 // new form, no lower score.
 // MiniMax R (10-31): no new form, no lower score.
+// MiniMax I (11-08): no new form, no lower score (164): retail keeps the pool pointer in EAX and its data
+// in EBP, re-reads the unit pointer for both depletion queries and writes the first depletion with setle;
+// ours keeps the unit in EAX and builds the result with a branch.
 // score 164 (was 164): this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
 // the unit through that offset for both depletion queries, and it writes the first depletion with setle;
 // the byte-offset entry with re-derived queries gives 325 and the if-form depletion gives 330.
@@ -2611,6 +2614,11 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // for the memset 105 (272 bytes, temporary plus copy); the default arm's NONE stores chained 16 (same code); the index
 // from an if/else on entry_index with extra copied as an aggregate 16; the request cleared before the 0x114520 query 83
 // (254 bytes); the extra filled before the common fields 85 (228 bytes).
+// Round 99 (m3 lane 12, fast): a short priority parameter with a separate `long definition_index = NONE` out
+// value (the out value would then reuse the priority's home, as retail's early priority load suggests) 46 (LTCG then
+// passes the priority and entry in registers, frame 0x38); the sound index stored after the extra block 71 (223 bytes);
+// the submit call written in both extra arms 48 (238 bytes); the 0x114520 test as `== true` 18; the entry-first
+// forwarding function defined above this one 16 (same code).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

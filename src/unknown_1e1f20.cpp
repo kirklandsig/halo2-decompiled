@@ -592,6 +592,18 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// MiniMax S (11-09): two more forms for the memory-entry walk: the type test through the cached actor
+// with every other field read through a fresh actor_get gives 344, and the whole walk through the
+// cached actor gives 308, against the unchanged 236. Both put the entry pointer in EBX as retail has
+// it, but they fold the byte offset into that pointer and lose retail's offset in EDX with the count
+// in a stack slot, so the body stays.
+// MiniMax S (11-09): the actor view is the cached local for the fields retail reads through EBP (0x7c,
+// the prop-list clear, 0x3f4, 7, 0x1c, 0x18 and 0x54) and the prop entry is reached through one pointer;
+// the frame is 0x20 and the score is 236 (was 281). Still differs: the prologue loads the actor pool into
+// EAX and keeps the byte offset in EBX (retail ECX and EAX), the memory-entry walk keeps its count in
+// EBX and folds the entry pointer into the offset (retail a pointer in EBX, the offset in EDX and the
+// count in a stack slot), and the prop entry address is folded into the load instead of being
+// materialised before it.
 // MiniMax H (11-07): no new form, no lower score; the prologue still differs (retail loads the actor pool into ecx and the byte offset into eax, ours into eax and ebx, with a frame of 0x1c against 0x20) and the memory walk with it: retail walks an entry pointer in ebx with the byte offset in edx, the count in a stack slot and the actor re-derived inside the body, and it reads the slot field twice, while ours keeps the count in ebx, the offset in esi and the slot in a local.
 // MiniMax I (11-06): the actor view inlined at every use (310) and a local copy of the actor
 // index (same code) were tried; the memory loop as a countdown, with the slot read twice and with
@@ -811,21 +823,21 @@ void __stdcall function_1e1a00(long actor_index, long value)
 		function_203fb0(actor_index);
 	else
 		function_203ed0(actor_index, (byte)value != 0);
-	if (actor_get(actor_index)->unknown07c != NONE)
-		function_2694d0(actor_get(actor_index)->unknown07c, actor_index);
+	if (actor->unknown07c != NONE)
+		function_2694d0(actor->unknown07c, actor_index);
 	long prop_index = actor_get(actor_index)->first_prop_index;
 	while (prop_index != NONE)
 	{
 		long current = prop_index;
-		long prop_offset = (current & 0xffff) * 0x3c;
-		prop_index = *(long *)((g_502418->data + prop_offset) + 0x2c);
+		byte *prop_entry = g_502418->data + (current & 0xffff) * 0x3c;
+		prop_index = *(long *)(prop_entry + 0x2c);
 		function_1e2150(actor_index, current);
-		long view_index = *(long *)((g_502418->data + prop_offset) + 0x14);
+		long view_index = *(long *)(prop_entry + 0x14);
 		if (view_index != NONE)
 			record_pool_release(g_502414, view_index);
 		record_pool_release(g_502418, current);
 	}
-	actor_get(actor_index)->first_prop_index = NONE;
+	actor->first_prop_index = NONE;
 	s_record_pool_iterator prop_iterator;
 	byte *prop;
 	prop_iterator.data = g_50241c;
@@ -844,20 +856,20 @@ void __stdcall function_1e1a00(long actor_index, long value)
 			function_1e1740(iterator.actor_index, actor_index);
 	}
 	function_2628f0(actor_index, g_470fa0);
-	if (*(long *)((byte *)actor_get(actor_index) + 0x3f4) != NONE)
+	if (*(long *)((byte *)actor + 0x3f4) != NONE)
 		function_26dc20(actor_index);
-	if (actor_get(actor_index)->unknown007)
+	if (actor->unknown007)
 	{
-		if (*(long *)((byte *)actor_get(actor_index) + 0x1c) != NONE)
+		if (*(long *)((byte *)actor + 0x1c) != NONE)
 			swarm_leader_detach(actor_index);
 	}
 	else
 	{
-		if (actor_get(actor_index)->unknown018 != NONE)
+		if (actor->unknown018 != NONE)
 		{
-			byte *unit = (byte *)ai_object_get(actor_get(actor_index)->unknown018);
+			byte *unit = (byte *)ai_object_get(actor->unknown018);
 			if (*(byte *)(unit + 0xaa) == 0)
-				*(long *)(unit + 0x3d8) = actor_get(actor_index)->unknown054;
+				*(long *)(unit + 0x3d8) = actor->unknown054;
 		}
 		function_1e1250(actor_index);
 	}

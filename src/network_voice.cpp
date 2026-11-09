@@ -1442,6 +1442,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // offsets as retail, but biased +0x17c; 0x54990 1); the channel reached by index for both reads 120 (a second IV for
 // the values, 0x54990 6); the pointer stepped in the for statement 94; flag first with the per-iteration element
 // pointer 109 (0x54990 1); the element pointer with a named value 106 (0x54990 1).
+// Round 71 (m3 lane 13, fast with 0x54990): the has-player result named before its test 94, total typed dword 94, the
+// contribution parenthesised `total += (value * size + 2)` 94 (still one lea), unsigned 13u/11u 94 (all four the same
+// code); the loop test `i != 16` 287 (154 bytes, not unrolled). Re-measured: the flag declared first 111 (channels moves
+// to EBP and the stack, 0x54990 1; the flag still takes BL).
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1633,6 +1637,13 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // block 196 (482 bytes). Grid on that form (6 orders of capacity/size/written x per-arm first-byte stores x bit
 // placement x direct NONE returns, 48 builds): best 127 (capacity, size, written); written-first orders 124 but
 // 0x56380 lost (136); direct NONE returns 156 (0x56380 73).
+// Round 71 (m3 lane 13, fast with 0x56380; our build is already `ret 0xc`): `result = NONE` set before the has-player
+// test and `result = 0` after the clamp 129 (445 bytes; result a variable in EAX as retail, but the player moves to EDX
+// and the cursor to the stack, 0x56380 13); direct NONE returns with `return length;` ending the capacity block 171, with
+// the player bit declared first 170 (0x56380 73 each: result becomes a real variable in ESI or memory, queue takes EAX,
+// the player EBP and goes on the stack); has-player test first with `else if (active) result = NONE` 147 (threads to
+// the same code, block order differs); kept declared before the capacity test and assigned inside it 127 (same code as
+// the mask declared inside).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -1877,6 +1888,10 @@ static inline dword voice_get_player_mask_inlined(void);
 // values written through a pointer stepped in the for statement 85 (same code); `(active & bit) != 0` 85 (same code);
 // the inner removal as `mask ^= 1 << j` 87. Diagnostic, re-measured on the exact harness: plain availability in 0x53b90 with `inline` on 0x53bb0 43, but 0x53a20 84 (lost); retail
 // inlines the first query and calls 0x53bb0 in both 0x53a20 and 0x54890, so the second query is BLOCKED-BY 0x53bb0.
+// Round 71 (m3 lane 13, fast): `inline` on 0x53bb0 with a repeated `player != NONE` ahead of its call in 0x53a20 102
+// (0x53a20 keeps the call and stays matched: a folding test ahead of the call stops the inlining there), but a repeated
+// mask test or `i < 16` ahead of it in 0x54890 does not (83/97); `~local & players` 85 (same code); the active mask as a
+// ternary on voice_available() 120; `mask = remote; mask &= ~muted;` 85 (same code).
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3489,8 +3504,8 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // original/independent cursor graphs: 139/166/137/169/164/159/140/150.
 // Two-count word-kind lead remains below the keep floor; original body restored.
 // AC484: Native byte/word/short/dword count-clamp returns 174/138/150/156;
-// with independent cursor 159/166/150/159. Every form raises the matched parser
-// score; NOT kept: shared-user regressions, and the best target gain is only one.
+// with independent cursor 159/166/150/159. Every form raises the matched parser's
+// count; NOT kept: shared-user regressions, and the best target gain is only one.
 // Original clamp, live count observations, cursor and full body restored.
 // Round 540: One in-function local-delivery phase, conditional/test-produced query result
 // and repeated/shared payload receiver: 193/191/193/191; independent packet cursor
@@ -3589,6 +3604,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // the count 159 (479 bytes); `(members >> member) & 1` on the indexed form 162; the packet-kind test ahead of the
 // NONE member test 138 (1 lower, retail tests the member first; not kept); consumed advanced before the size 139.
 // Re-measured: consumed, size, stride 152 (476 bytes); route at function scope 139; NONE and kind tests split 139.
+// Round 71 (m3 lane 13, fast with 0x564c0): on the packet-cursor form (164, member in EBP) the packet-kind test ahead of
+// the member call 145, the plain arm as `else if (packet[0] < 2) {...} else return NONE;` 164, both 145; without the
+// cursor the plain-arm form 139 (same code) and both 150. The member keeps EBP in every form.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

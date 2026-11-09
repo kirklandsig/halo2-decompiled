@@ -163,6 +163,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 #define request_weapon(player, slot, headers) \
  function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
+// MiniMax S (11-09): still differs in the inlined table lookup: retail keeps the table in ecx and the null result
+// in eax, ours keeps the table in eax and the null result in ecx; the two are the same code with those two
+// registers exchanged, and the getter's early-return and declaration-order spellings give the same code.
 // MiniMax H (11-05): no new form, no lower score; the 0x1e8d50 getter form still gives 165 and the case 4
 // rotation is still allocator-bound (retail keeps the parent in ESI, ours in ECX), and 0xd0590's order is its own file.
 // Round 30 (lane D): the permuter's best variant scores 601 against its own 608 baseline (seven points,

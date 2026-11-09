@@ -468,6 +468,9 @@ void function_3dd10(long object_index, bool force);
 // MiniMax R (11-01): no new form, no lower score; the inverse before the eligible test 208 and the
 // constant order at the block entry stay as they are.
 // MiniMax G (11-06): the inverse moved into the found branch 132; no lower score.
+// MiniMax I (11-08): no new form, no lower score (84): the first scan's signed `<` (which unrolls by
+// four), the blend's stack slot, the inverse subtraction in the blend block and the 1.0/0.0 load order
+// still differ, and every counter, bound and accumulator spelling keeps the unroll.
 // score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator

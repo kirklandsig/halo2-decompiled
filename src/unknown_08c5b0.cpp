@@ -164,6 +164,11 @@ static inline long bungienet_user_voice_setting(short kind)
 // 11 or more); `switch (kind)` with `case 0:` sharing the default and a plain read 5 (29 instructions, `movsx; dec` for
 // the kind), with the volatile read 30. CL-only: 0x8c790's identical `kind == 1` stays unfolded only beside its
 // 0x80e14 call (nonzero arguments keep the unfold; removing the call folds its compare as well).
+// Round 157 (m3 lane 6, harness): the controller and the setting take EAX and ECX first, then whichever of the request
+// and the kind comes next takes EAX; retail allocated the kind first. Raw byte-offset reads as in 0x8c790, plain 29 (the
+// compare folds); a seeded selector with a plain read 24; `available && kind == 1` 15 (fast 16); the volatile read with the index
+// read after the selector 23; a plain read with a caller-side `kind != 1` test around the selector 4 (fast 4; the unfolded load
+// without the volatile read, same pair; a repeated test, not kept).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

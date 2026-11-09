@@ -62,6 +62,7 @@ struct s_object_flags_256bd0
 	word unknown0 : 6;
 	word bit6 : 1;
 };
+// MiniMax D (11-09), not kept by the coordinator: `short result`, the marker's object index in a one-use local and the activity test split out of the while condition (fast 31) measured 304 against main's 303 in the merge's full check; the one-use local stays match-only.
 // score 85 (was 85; 178 before the coordinator fast check 11-05): the returned global is kept in a 32-bit local, the late exit
 // returns g_470c40 directly, the loop distance is retail's distance block (vector3d_from_points3d + length_sq3f)
 // and the definition's index is a named local used at all three places. Not kept (31 with both): g_470c44
