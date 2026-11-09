@@ -900,6 +900,7 @@ struct s_device_machine_view
 // store, 124 (al 8). A compile-only screen (no /GL) shows the base table or pointer in ESI for every word or dword
 // load of the flags, even with the machine test removed; only a byte load (lane S) or two loads merged at a join
 // leave EAX.
+// MiniMax E (11-08): no new form, no lower score: retail loads the group's flags as a word and tests bit 1 then bit 2, ours loads a byte and masks it with 3, and testing the word without the mask scores 120.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1306,6 +1307,7 @@ bool function_108530(long device_index, long name)
 // 0x14, but the target is the promoted parameter, in xmm5 from entry, with a `push ecx` frame; callers 26/28); the
 // distance computed first with delta copied from it 123; no cruise-time local 121. A compile-only screen of this body
 // and four clamp-order variants uses all eight xmm registers before the first fld; retail uses seven there.
+// MiniMax E (11-08): no new form, no lower score: the clamp chain keeps its value in xmm7 here and in xmm5 in retail, and the second clamp uses xmm2 here and xmm7 in retail.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1479,6 +1481,12 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // Round 58 (m3 lane 2, fast): the factor as the literal `0.033333335f` (as 0x0a76b0's file writes it) 2, written first 2;
 // the first call's time as integer `0` 2; the frame position named before the product 2; `(real)(frame / 30.0)` 5.
 // Diagnostic: 1 to 12 dead locals at the top (symbol count) 2 each, so the fstp slot is not a numbering tie.
+// Round 174 (m3 lane 4, fast): the first call reading the channel's animation id directly with the local named after it
+// 337 (1634 bytes); the time computed after the first sample call 20; the render model held as a pointer and cast at
+// each call 2; the time as `frame_position / 30.0f` 2; a const render model 2. LTCG harness (this file with the files of
+// the sampling, transform and object callees; not exact, but it shows the same swap): only the first call's render model
+// replaced by a constant (diagnostic, wrong value) puts the fstp after `push edi`, so the render model load's timing
+// sets it; a volatile render model (diagnostic), the time given to the first call, a label between the samples move nothing.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {

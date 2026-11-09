@@ -493,6 +493,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// MiniMax D (11-08): no new form, no lower score (219); retail keeps the first argument in EBX and reads the stack
+// argument into EAX at the entry, ours uses EAX for the actor and ECX for the stack argument, and the switch's case
+// bodies and the counter's register home still differ.
 // MiniMax I (11-06): no new form, no lower score; the case-5 direction negated while it is copied from the vertex gives 379 and 391 against 219.
 // MiniMax H (11-05): no new form, no lower score; the projection sum's order ((j + k) + i in retail,
 // (k + j) + i here) comes from the shared dot3f in include/unknown_0259d0.h, and the entry still loads
@@ -800,6 +803,13 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 5/16/2, 5/2/16, 2/16/5, 61/5/2, 5/61/2, 5/2/61, 2/5/61:
 // 377/329/377/354/219/329/377/377. NOT kept: ties/regressions; original full body restored.
 // Early root/actor ingress and paired projection ownership remain.
+// P361: Complete actor-query success/rejection admission results in bool/byte/short/long at the original producer:
+// 219/219/219/219/219/219/219/219. NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Early root EBX/actor EAX ingress and paired projection scheduling remain.
+// T68: Individual local names on the native paired-projection graph: both edges,
+// parent/origin projection, fraction, inverse length, facing and marker position:
+// 219/219/219/219/219/219/219/219. NOT kept: no exact ownership/home repair. Original executable body restored.
+// Early root/actor retention and paired projection ownership remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

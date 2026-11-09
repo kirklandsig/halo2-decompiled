@@ -804,6 +804,15 @@ bool g_51e9bc;
 // 57/56/57; complete coefficient magnitudes with separate rows/setter or consumed-limit rows/setter
 // 54/61/61/55; coordinate-local magnitude/product stages 54. NOT kept: all regress;
 // original body restored. Projection j/k ownership and native jitter spill homes remain.
+// P361: Existing shared dot producer with all component-product locals, six declaration orders and mutable/immutable initializers:
+// 56/56/56/56/56/56/56/56. NOT kept: no byte equality or eligible native-shape gain; original shared helper and complete body restored.
+// Projection j/k ownership and native jitter spill-home reuse remain.
+// P370: Existing dot/scaled-add/add inline-boundary masks 1..7 and automatic dot: eight at 49,
+// 1078/1077 bytes, first +0x261. NOT kept: ties; original helpers and complete body restored.
+// T68: Existing on-x/on-y/on-z/sign-x/sign-y/sign-z defaults, y/z pair and all six
+// initialized at entry, then after movement processing before the jitter gate:
+// 234/236/237/248/263/259/247/301/53/56/59/72/107/96/59/133. NOT kept: no exact ownership/home repair. Original executable body restored.
+// Projection j/k ownership and native jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1185,6 +1194,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // both with the preset flag 176; memcpy for either or both exits 114 (identical to the struct copy); dead reads ahead of the turn test
 // 8/15/20/30/45 112/144/150/140/140, ahead of the crosses 8/15/30 112/145/140 (the axis loads first in all of them). Retail's exits load
 // all three dwords into ESI/EDX/EAX before any store; no copy form gives three registers. Body unchanged.
+// T72: Existing side-cross pointer/reference output and ignored pointer/reference results,
+// reference-output consumed results and all-reference input/output contracts:
+// 114/114/114/114/114/150/114/114. NOT kept: no native rotation/side/output equality;
+// original private helper, both invocations and complete body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

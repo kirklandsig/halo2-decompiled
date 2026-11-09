@@ -602,6 +602,8 @@ real function_30bf0(vector3f *vector);
 // at +0x34, retail the result at +0x08, the range at +0x30, the delta at +0x3c..0x44 and the
 // cursor at +0x48), the range still loads into XMM2 where retail uses XMM0, and the two
 // cross-product products still take their operands in the exchanged order; the body is unchanged.
+// P360: Complete outer/scaled radius rejection results in bool/byte/short/long: 152/152/152/152/152/152/152/152.
+// NOT kept: no exact native source recovery; original complete body restored; result/range/projection homes and two basis product schedules remain.
 // T63: Shared cross-product complete products, scoped/unscoped mutable/const,
 // component results mutable/const, successive subtraction and uniform positive products:
 // 154/154/154/154/84/84/150/150. NOT kept: ties/regressions; shared header and full body restored.
@@ -609,6 +611,26 @@ real function_30bf0(vector3f *vector);
 // home identities, seven subsets and complete squared-distance identity: eight 84.
 // NOT kept: identical code; original body restored. Native scalar homes, range ingress
 // and the two cross-product operand schedules remain.
+// P364: Escaping plane-distance field/scalar accumulation boundaries, preserving
+// the original y+z+x tree: 96/154/150/86/154/96/84/84. NOT kept: native scalar homes/producer
+// equality absent; original complete body restored, shared helpers unchanged.
+// P366: Resolved 3/2/1 result-leaf exit subsets 1/2/3/4/5/6/7 score 149/143/180/136/180/174/356; all leaves
+// plus radius-failure exits 356. NOT kept: all regress and several shorten away from native; original long
+// result, call tuples and complete body restored. Result/range/projection homes and both cross-product
+// schedules remain.
+// P369: Complete native delta/clipped-point aggregate and existing plane-normal CRT transfer boundaries, masks
+// 1/2/4/3/5/6/7, then immutable clipped point: eight 84. NOT kept: no scalar-home, range-ingress or product repair;
+// original motion helper, native copies and full body restored.
+// P372: Indexed-seat occupant/player/both eligibility continues: 84/84/84; ordinary
+// forward while with step after final index use, no/occupant/player/both continues:
+// four 161; both continues with separately declared short ordinal 84. NOT kept:
+// ties/regressions; original full body restored. Scalar homes and basis products remain.
+// P375: Existing safe staged cross with first/second/both inputs as complete twice-used scalar
+// captures, mutable/const, then both native/aggregate vector snapshots: 166/162/165/166/162/165/387/165. NOT kept: no native
+// scalar-home/product equality; shared header and complete original body restored.
+// T69: Actual range-entry byte-mask/byte-bitfield receiver, mutable/readonly settings,
+// each with mutable/readonly actor input: eight 84 on the native SIMD/indexed-seat graph.
+// NOT kept: no native range ingress or scalar-home recovery; original types and full body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1309,7 +1331,9 @@ PRIVATE __forceinline long round_tick_count(real ticks)
 
 long function_146650(void);
 
-// score 14 (was 14): the only difference left is the order of three 12-byte stack homes: retail stacks
+// score 7 (was 14): the five 12-byte homes now agree; only the argument setup at the three 0x267a80 calls
+// differs: retail sets ECX (the NULL distance, `xor ecx, ecx`) before the local-address lea of EDI (and of EDX
+// in the projected call), ours sets ECX last. Earlier note, from before the homes agreed: retail stacks
 // movement, offset, ahead, target_direction and direction upward from esp+0x34, ours movement, offset,
 // direction, ahead and target_direction, and the lea/xor order at the three 0x267a80 calls follows it.
 // The direction and ahead homes are swapped: retail stacks movement, offset,
@@ -1402,10 +1426,17 @@ long function_146650(void);
 // Real (fast): `active = state->unknown63; if (!active)` (code differs) not built; ahead as a vector3f 14; the
 // player lookup as nested ifs 14; offset declared before `active` 18; movement declared ahead of its test 14;
 // target_direction declared at the function's top 14.
+// Round 99 (m3 lane 12): the homes were weighted by the direction pointer escaping: 0x267840 passes it to
+// 0x1e1e50, which read its own direction parameter through its address; with 0x1e1e50 writing `*direction`
+// directly (still matched) the homes are retail's, 14 -> 7 (plain). A compile-only screen showed it: the
+// homes follow whether 0x267840's two outgoing uses expose the pointer. Then (fast): 0x267a80's parameters
+// reordered everywhere to (direction, position, distance, point, unknown) 167 (0x267a80 loses its match);
+// actor_index read directly instead of through its address 7 (same code, kept); diagnostics only: the NULL
+// distance through a local 7, direction as one-element storage behind a pointer 7, 0x267a80 defined after
+// this function 7 (no change in the ECX order). Retail's other caller 0x25f290 sets ECX last, as ours does.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
-	long const *actor_reference = &actor_index;
 	s_actor_view *actor = actor_get(actor_index);
 	byte *data = (byte *)actor;
 	*(real *)(data + 0x3d4) = 0.0f;
@@ -1458,7 +1489,7 @@ void function_267c50(long actor_index)
 		if (actor->unknown086 > 5)
 		{
 			s_iterator iterator;
-			function_26be00(*actor_reference, &iterator);
+			function_26be00(actor_index, &iterator);
 			s_prop_datum *node;
 			while ((node = (s_prop_datum *)function_26be30(&iterator)) != NULL)
 			{
@@ -1468,7 +1499,7 @@ void function_267c50(long actor_index)
 					(prop_get(node->prop_index)->unknown25 || state->unknown3c == NONE))
 				{
 					vector3f direction;
-					if (function_267840(*actor_reference, iterator.index, &direction))
+					if (function_267840(actor_index, iterator.index, &direction))
 					{
 						bool active = false;
 						vector3f offset = {0.0f, 0.0f, 0.0f};
@@ -1524,7 +1555,7 @@ void function_267c50(long actor_index)
 		}
 		if (moving_toward)
 		{
-			function_262800(*actor_reference, *(s_reference *)(data + 0x418), true);
+			function_262800(actor_index, *(s_reference *)(data + 0x418), true);
 			function_1f86a0(actor_index);
 			*(short *)(data + 0x3e2) = (short)round_tick_count((real)g_510c54->field_2_3);
 		}
@@ -2121,6 +2152,26 @@ real function_2683f0(long actor_index, long node_index, short type)
 // T63: Existing iterator start/advance/state-query inline contracts, seven subsets
 // then all with target inline metadata: eight 168; exact query stays matched.
 // NOT kept: no equality or gain; original body and all declaration metadata restored.
+// P365: Three direction scalars captured after the absolute dot and before relative normalization,
+// six declaration orders plus two immutable orders: eight 168. NOT kept: no native SIMD
+// producer equality or gain; complete original body and helpers restored.
+// P367: Independent live approach/facing/acceptance scalar-home identities, seven
+// subsets and complete threshold identity: eight 168s. NOT kept: no native SIMD
+// or player-iterator home equality; complete original body and names restored.
+// P370: Uniform k/j-pair, i-term and complete accumulation boundaries in all three dots,
+// masks 1..7 and immutable complete parts: 168/174/168/168/168/168/168/168. NOT kept:
+// no SIMD/iterator recovery or byte match; original expressions and complete body restored.
+// P373: Actual facing-excess/closeness/retention-span arithmetic parts, seven subsets,
+// complete immutable parts: eight 168s, 2880/2880 bytes, first +0x5c. NOT kept:
+// no SIMD/iterator/policy equality; original complete body and helpers restored.
+// P377: Actual unit-velocity/actor-position/view-strength field receivers, seven
+// subsets then complete immutable pointers: 168/168/168/168/168/168/168/168. NOT kept: no native iterator/pool/SIMD
+// equality; original complete body, field observations and helpers restored.
+// P380: First-walk result as native node/typed datum, walk-only or bare entry lifetime, while-return or
+// for-cursor advancement on the retained shared-iterator and early-zero graph.
+// Scores 168/753/168/753/168/753/168/753. NOT kept: while forms tie 168/2880; for forms regress to
+// 753/2923, versus native 2880; early index, iterator and SIMD homes stay different.
+// Original complete body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

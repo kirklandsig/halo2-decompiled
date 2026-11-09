@@ -1373,6 +1373,9 @@ long function_baf80(long object_index);
 // Round 111: initial definition as `long *` 12; parent definition as `long *` 12; parent definition inlined 12;
 // parent slot as dword/long from the narrowed handle 12/12; a shared tag-table local 12; settings as a real
 // array 12; the read-only object/definition chain const 12; the parent slot masked again in its array subscript 12.
+// P362: Parent narrowed in place 22; shared definition receiver 12; initial/parent/both
+// load-chain scopes 12/12/12; single void exit 12; explicit limit tests 12; both model
+// handles immutable 12. NOT kept: no byte equality or gain; original body restored.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {

@@ -522,6 +522,11 @@ s_1a8a10 g_4453c0[] =
 // Round 90 (m3 lane 16, fast): both sums with the y product first 17 (same code); the best index, identifier and
 // score declared in reverse order 77; the sums written straight into the four-value array 21; the second sum as the
 // existing dot_product2d (kept out of line by inline_depth(0)) 77; the copy declared before the array 17 (same code).
+// Round 99 (m3 lane 12, fast): the rotated point declared at the function's top 17 and the value array declared
+// before the first switch 17 (same code); the identical case 2 and 3 arms merged under one label 139 (540 bytes); the
+// first sum as `i * y - j * x` 86 (a repeat of the listed subtraction form); the unrotated cases copying the point as
+// an aggregate 128 (548 bytes). Diagnostic: the rotated point's address stored to a global after the last call 137
+// (504 bytes: the point then stays in registers and the j re-read still does not appear).
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
