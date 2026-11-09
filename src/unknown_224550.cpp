@@ -459,6 +459,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // T71: Fixed-four indexed tint clamp, int/long/unsigned-int/dword, plain while then direct
 // do/while: 211/211/211/211/512/512/512/512. NOT kept: ties/regressions; original clamp, full
 // body and alias-safe encoder captures restored.
+// P393: Seed-color admission at the original tint boundary, positive/complementary
+// bool/byte/short/long: 211/211/211/211/211/211/211/211. NOT kept: unmatched one-use outcomes; tint/secondary-UV
+// homes and continuous blend residence remain. Original body and all alias-safe UV captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

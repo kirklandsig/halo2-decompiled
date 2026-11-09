@@ -1641,6 +1641,12 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // T71: Current output-setter graph edge/selection/output lifetime regions, seven subsets and
 // complete role names: 481/481/478/400/481/481/478/478. NOT kept: ties/regressions and no
 // native frame repair; original full body restored.
+// P392: Complete bitwise corner-query admission, both original results retained, success/failure in
+// bool/byte/short/long: 477/477/477/477/488/488/502/499. NOT kept: no native frame/edge/orientation
+// equality; one-use outcomes require a match. Original two-query admission and whole body restored.
+// MiniMax S (11-09): no new form, no lower score; the frame is still eight bytes larger than retail's
+// (0x114 against 0x10c) and the first locals sit at higher offsets, so every stack slot and the
+// register choices in the two loops still differ; no form tried recovers retail's frame.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

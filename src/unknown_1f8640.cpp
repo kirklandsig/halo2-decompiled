@@ -367,6 +367,7 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
+// MiniMax E (11-09): no new form, no lower score (188).
 // MiniMax E (11-06): score 188 (was 188): no new form lowered it. The byte locals sit two bytes lower
 // than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at
 // esp+0x14 with a jump table where ours tests the mode with branches, and ours is twenty bytes
@@ -676,6 +677,9 @@ struct s_1f8a70_actor
 // 234567/765432/236745/456723/452367/672345/674523/325476:
 // 369/371/377/385/369/388/387/397. NOT kept: no native dispatch/home equality;
 // original switch, all case bodies, two results and complete body restored.
+// P393: Both route root-override admissions, positive/complementary bool/byte/short/long:
+// 188/188/188/188/188/188/188/188. NOT kept: one-use outcomes do not match; unit/result +0x12,
+// route dispatch and late memory result remain. Original complete two-result body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
