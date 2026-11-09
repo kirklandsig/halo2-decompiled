@@ -1331,7 +1331,9 @@ PRIVATE __forceinline long round_tick_count(real ticks)
 
 long function_146650(void);
 
-// score 14 (was 14): the only difference left is the order of three 12-byte stack homes: retail stacks
+// score 7 (was 14): the five 12-byte homes now agree; only the argument setup at the three 0x267a80 calls
+// differs: retail sets ECX (the NULL distance, `xor ecx, ecx`) before the local-address lea of EDI (and of EDX
+// in the projected call), ours sets ECX last. Earlier note, from before the homes agreed: retail stacks
 // movement, offset, ahead, target_direction and direction upward from esp+0x34, ours movement, offset,
 // direction, ahead and target_direction, and the lea/xor order at the three 0x267a80 calls follows it.
 // The direction and ahead homes are swapped: retail stacks movement, offset,
@@ -1424,10 +1426,17 @@ long function_146650(void);
 // Real (fast): `active = state->unknown63; if (!active)` (code differs) not built; ahead as a vector3f 14; the
 // player lookup as nested ifs 14; offset declared before `active` 18; movement declared ahead of its test 14;
 // target_direction declared at the function's top 14.
+// Round 99 (m3 lane 12): the homes were weighted by the direction pointer escaping: 0x267840 passes it to
+// 0x1e1e50, which read its own direction parameter through its address; with 0x1e1e50 writing `*direction`
+// directly (still matched) the homes are retail's, 14 -> 7 (plain). A compile-only screen showed it: the
+// homes follow whether 0x267840's two outgoing uses expose the pointer. Then (fast): 0x267a80's parameters
+// reordered everywhere to (direction, position, distance, point, unknown) 167 (0x267a80 loses its match);
+// actor_index read directly instead of through its address 7 (same code, kept); diagnostics only: the NULL
+// distance through a local 7, direction as one-element storage behind a pointer 7, 0x267a80 defined after
+// this function 7 (no change in the ECX order). Retail's other caller 0x25f290 sets ECX last, as ours does.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
-	long const *actor_reference = &actor_index;
 	s_actor_view *actor = actor_get(actor_index);
 	byte *data = (byte *)actor;
 	*(real *)(data + 0x3d4) = 0.0f;
@@ -1480,7 +1489,7 @@ void function_267c50(long actor_index)
 		if (actor->unknown086 > 5)
 		{
 			s_iterator iterator;
-			function_26be00(*actor_reference, &iterator);
+			function_26be00(actor_index, &iterator);
 			s_prop_datum *node;
 			while ((node = (s_prop_datum *)function_26be30(&iterator)) != NULL)
 			{
@@ -1490,7 +1499,7 @@ void function_267c50(long actor_index)
 					(prop_get(node->prop_index)->unknown25 || state->unknown3c == NONE))
 				{
 					vector3f direction;
-					if (function_267840(*actor_reference, iterator.index, &direction))
+					if (function_267840(actor_index, iterator.index, &direction))
 					{
 						bool active = false;
 						vector3f offset = {0.0f, 0.0f, 0.0f};
@@ -1546,7 +1555,7 @@ void function_267c50(long actor_index)
 		}
 		if (moving_toward)
 		{
-			function_262800(*actor_reference, *(s_reference *)(data + 0x418), true);
+			function_262800(actor_index, *(s_reference *)(data + 0x418), true);
 			function_1f86a0(actor_index);
 			*(short *)(data + 0x3e2) = (short)round_tick_count((real)g_510c54->field_2_3);
 		}
