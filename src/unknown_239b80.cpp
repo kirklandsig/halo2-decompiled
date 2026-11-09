@@ -122,6 +122,10 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // declared in the `for` header 5 (same code). A compile-only screen (1232 loop forms x 0-7 probe locals; not
 // faithful here, it passes the parameters in ECX/EDX) puts the two pointers at d=3 against retail with 2-4 probes,
 // but the real build does not follow it. Probe locals anywhere rotate only the second intersection's products.
+// Round 60 (m3 lane 2, fast): `!sides[current]`/`!sides[previous]` tests 5 (same code); the helper's capacity as long
+// 5 (same code); the no-negative exit copying and returning the count parameter 178 (699 bytes); the classification
+// loop bounded by the count parameter 7; positive/negative declared before the count copy 5 (same code); result
+// declared at the top beside the buffers 177 (680 bytes).
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
