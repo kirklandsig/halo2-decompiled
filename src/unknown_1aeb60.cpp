@@ -545,6 +545,10 @@ struct s_1af5c6
 // Round 71 (lane 14, plain): the ignore index chosen without the assignment inside the condition, as a nested if/else
 // (kept: identical code), as NONE then two ifs, or as a ternary with a NONE fallback test, 20 each; the object index first
 // with the actor field taken when the header flag is clear and the field is set 29; the header flag tested as a bool 20.
+// Round 73 (lane 14, plain): 0x1c8df0's noinline dropped with a __forceinline declaration here and the tail as the call
+// (diagnostic) 82 (589 bytes: inlined here, but matched 0x1b2770 then inlines it too, 656); the ignore index named before
+// the tail 20 (same code); the mask as a ternary on the flag 40; the miss and distance tests as 0x1c8df0's short category
+// with one exit 109 (603 bytes); the first element read straight into local_4 and the second lookup in its own pointer 20.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

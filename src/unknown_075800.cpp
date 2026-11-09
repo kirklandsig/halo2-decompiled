@@ -967,6 +967,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // MiniMax A (11-04, run 41): no new form, no lower score (196 in the 16-address set, 153 in the wider one);
 // the switch's cases still take their arguments in registers other than retail's (it pushes edi where ours
 // pushes esi), so the callee conventions decide this one.
+// MiniMax C (11-08): no new form, no lower score.
 // score 153 (was 153): native input roles agree; delayed ESI save and late classifier differ (464/444 bytes).
 // Earlier: retail takes the type in EAX, the message in ECX (kept in EBX), this in EDX and
 // MiniMax lane E (11-01): no new form, no lower score; retail's parameter order is (message_type,
@@ -1319,6 +1320,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // MiniMax D (11-06): no new form, no lower score: the message parameter is in esi here and in edi in
 // retail, and the switch saves the other register before the jump table; the connection index in each
 // case block (196) and the two switches merged into one (213) leave the same choice.
+// P382: Complete complementary lookup-failure outcomes in bool/char/signed-char/byte/
+// short/word/long/dword: 196 each reduced (control 196; full 153). NOT kept:
+// no exact delayed-save or late-handler repair; original classifiers and all call tuples restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

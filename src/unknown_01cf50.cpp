@@ -300,6 +300,7 @@ const long g_43e8e8[4] = { 32, 64, 128, 256 };
 // scores 76 (was 62); no lower score.
 // MiniMax E (11-01): the copy count read before the allocation reaches retail's 178 bytes;
 // the earlier round dropped this form on the difference count alone (62 against 58).
+// MiniMax C (11-08): no new form, no lower score.
 // score 58 (was 77): the allocation callee takes its out pointer in ESI here and in EBX in
 // retail, so the frame is one push deeper and the copy count rides in EDI.
 // @retail 0x1d3f0
@@ -413,6 +414,7 @@ bool function_015a60(short format, long width, long height, long depth,
 // the original body stands - the width still lives in di where retail keeps it in bx.
 // score 72 (was 72): this round found no gain - the texture pointer is taken from a local again, and the
 // first 16-bit height store and the width and texture register lifetimes still differ.
+// MiniMax C (11-08): no new form, no lower score.
 // score 72 (was 68): the texture pointer is taken from a local again and the flags are read
 // in the test itself: the four points the bitmap's own address won are under the keep bar,
 // so the body of the earlier round is restored.
@@ -2330,6 +2332,7 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // MiniMax D (11-06): no new form, no lower score: the scratch argument's local at function scope
 // (11) and the count in a local or read from the global all keep the subtraction after the sorter's
 // last push, and the permuter run on this function reached its time limit without a measured variant.
+// MiniMax E (11-08): no new form, no lower score: retail takes the count's subtraction before the sorter's last push and adds 0x84 after the block copy, ours does both the other way round.
 // @retail 0x1e370
 void function_1e370(void)
 {
@@ -2380,6 +2383,7 @@ void function_1e370(void)
 // MiniMax D (11-06): no new form, no lower score: the payload copy before the delta (33), the records
 // pointer in a local in the allocator (17) and the address-taken parameters left out (8) all keep the
 // pool's base in edi.
+// MiniMax E (11-08): no new form, no lower score: the record pool's base is held in edi here and in ebp in retail, and copying the payload after the callback's store makes it worse (57).
 // @retail 0x1e4e0
 bool function_1e4e0(point3f const *position, t_1e4e0_callback callback, void const *data, long size)
 {
@@ -2562,6 +2566,7 @@ struct s_render_transform_record
 // score 51 (was 51): this round found no gain - retail calls table_entry_data out of line for the
 // transform table and we inline it, which also makes our body eleven bytes longer; that helper's
 // inline-ness is decided in src/unknown_023540.cpp.
+// MiniMax C (11-08): no new form, no lower score.
 // score 51 (was 51): retail calls table_entry_data out of line for the transform table, and we
 // inline it there, which also makes our body eleven bytes longer than retail's; the inline-ness of
 // that helper is set in src/unknown_023540.cpp, so it cannot be changed from this file.
@@ -2642,6 +2647,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // the function (a per-function compiler setting, not kept); its body without the pragma (ternary maximum, the
 // divisor and reciprocal as locals, no volatile, the enabled branch first) is 47. Body back to its earlier form.
 // MiniMax D (11-06): no new form, no lower score.
+// MiniMax E (11-08): no new form, no lower score: the maximum's compare has its operands swapped and the divisor makes a round trip through the stack here, while retail keeps it in a register.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
@@ -2733,6 +2739,7 @@ struct s_queued_material_payload
 // ecx in retail; the count's use before the mode's test (9), the address-taken statements reordered
 // (8) and the count read from the global all keep it in eax, and the choice belongs to the callee
 // 0x4b220 in this file.
+// MiniMax E (11-08): no new form, no lower score: the count reaches the 0x4b220 call in eax here and in ecx in retail, and the callee's declaration fixes that register.
 // @retail 0x35b00
 void __stdcall function_35b00(void *payload)
 {
@@ -2893,6 +2900,7 @@ struct s_429a0_payload
 // MiniMax D (11-06): no new form, no lower score: retail folds the record base into the payload
 // pointer one store earlier than we do, and the address the record's callback holds is a build
 // address that the comparison cannot map.
+// MiniMax E (11-08): no new form, no lower score: retail folds the record base into the payload pointer one store earlier than we do, and the callback's address is a build address the comparison cannot map.
 // @retail 0x429a0
 void function_429a0(byte type, long a, long b, long c, point3f const *position,
     point3f const *endpoint, vector3f const *first, vector3f const *second, real opacity)
@@ -3231,6 +3239,7 @@ bool function_128c0(s_128c0_settings const *settings)
 // score 62 (was 62): this round found no gain - our frame slots for the locked rectangle sit four bytes
 // lower than retail's, and retail builds each row from a running pointer while we recompute it from
 // the row base.
+// MiniMax C (11-08): no new form, no lower score.
 // score 62 (was 62): our frame slots for the locked rectangle sit four bytes lower than retail's,
 // so the surface pointer and the LockRect arguments are stored at other offsets; we hold pBits in a
 // register and set the flag there, where retail sets it in memory and keeps the pointer in the frame;
@@ -3291,6 +3300,7 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // MiniMax D (11-06): no new form, no lower score: the callee at 0x15a60 takes its first argument
 // before the third one is cleared, and that callee is defined in src/unknown_0158f0.cpp, so its
 // parameter order is reported here rather than changed.
+// MiniMax E (11-08): no new form, no lower score: the 0x15a60 call's registers are set ecx then eax here and eax then ecx in retail, and the callee's body in another file fixes that order.
 // @retail 0x1d0e0
 bool function_1d0e0()
 {
@@ -3534,6 +3544,7 @@ bool function_14600()
 // height pair, ours loads the height pair first; the conversions of the two
 // differences into EDX and EAX now agree
 // MiniMax D (11-06): no new form, no lower score.
+// MiniMax E (11-08): no new form, no lower score: retail keeps the width quotient in xmm2 and the scaled value in xmm3, ours uses xmm4 and xmm0 for the same two, so the constants land in other stack slots.
 // @retail 0x1eb00
 void function_1eb00()
 {
@@ -3591,6 +3602,7 @@ void function_1eb00()
 // tables and caches that this project does not have.
 // score 79 (was 79): this round found no gain - retail's body builds four shader programs from tables and
 // caches that this project does not have, so the difference is a knowledge difference, not a local form.
+// MiniMax C (11-08): no new form, no lower score.
 // score 79 (was 79): the ratio of the two counters is computed with the other operand order:
 // ours divides into xmm3 and multiplies xmm4, retail divides into xmm2 and multiplies xmm0.
 // @retail 0x36580
@@ -5059,6 +5071,7 @@ void function_1bd50(void *state);
 // push before the branch.
 // MiniMax D (11-06): no new form, no lower score: the fallback's load is a masked dword load where
 // retail widens a word with an xor, because g_4858b8 is a long in this file.
+// MiniMax E (11-08): no new form, no lower score: retail widens the fallback's word with an xor and hands it over in ecx, ours masks the dword and keeps the branch.
 // @retail 0x1c0d0
 void function_1c0d0(long tag, long stage)
 {
@@ -5352,6 +5365,9 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
 // score 62 (was 62): this round found no gain - the second argument arrives in eax where retail takes it in
 // ecx, and the arguments behind it sit one stack slot lower; the callers are in other files, so the
 // calling convention cannot be changed from here.
+// MiniMax C (11-08): forms tried, none lower: the second argument through a local 62, the entry
+// pointer through the table 62, the offset named after the selected tag 91, the entry built from the
+// slot 91 (base 62).
 // score 62 (was 62): the second argument arrives in eax where retail takes it in ecx, and the
 // arguments behind it sit one stack slot lower than retail's; the callers of this function are
 // in other files, so the calling convention cannot be changed from here.
@@ -5580,6 +5596,7 @@ void __stdcall function_4efa0(long tag, long context, long first, long second,
 // MiniMax G (11-06): no new form, no lower score: the score still rests on the load-bearing volatile tag
 // local; without it the compiler rebuilds the body (117), computing the block before the tag gives 111 and
 // the two-element tag table gives 115, so the body is unchanged.
+// MiniMax C (11-08): no new form, no lower score.
 // score 54 (was 54): this round found no gain - the score rests on the volatile tag local; without it the
 // compiler rebuilds the body (117), computing the block before the tag gives 111 and the two-element tag
 // table gives 115, so the body is unchanged.
@@ -5855,6 +5872,7 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
 // MiniMax G (11-06): no new form, no lower score: a `long` for the left edge gives retail's frame slots
 // and its branchy clamps but grows the frame to 0xb0 (177), and reordering the helper's fields gives
 // 76 and 161, so the body is unchanged.
+// MiniMax C (11-08): no new form, no lower score.
 // score 60 (was 75): the two rectangles sit four bytes higher in the frame than retail's and the
 // bitmap pointer shares the clip's slot instead of being spilled; the clip branch clamps the left
 // edge with a conditional set instead of retail's branch.
@@ -7088,6 +7106,9 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax D (11-08): no new form, no lower score (310, measured on the full image); our loop still strength-reduces
+// group * 0x98 into a second counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894 and the zero for
+// both counters lives in EBP; a short group removes the slot and keeps the imul but scores 390 here.
 // MiniMax B (11-07): no new form, no lower score (310); the group stride is still strength-reduced into a second
 // counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894, the zero for the counters lives in EBP
 // and every local above that slot sits 4 bytes higher; writing the two count tests as equality tests (retail

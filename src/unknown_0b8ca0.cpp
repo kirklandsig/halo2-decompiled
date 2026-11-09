@@ -672,6 +672,9 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax D (11-08): score 230 (was 230): ours has an unaligned 0xac frame where retail realigns to eight
+// bytes with a 0xb4 frame, so the register homes and the block layout differ from the first byte; the
+// realignment is decided by the whole-program view of the callers.
 // score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // MiniMax b (11-06): no new form, no lower score; the angle's x87 sequence is retail's byte for byte
@@ -1827,6 +1830,9 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax I (11-08): no new form, no lower score (285): the shared epilogue at retail's 0xb987a and the
+// marker pointer retail inlines (that other file is /Ob1, so LTCG keeps our call) still leave the first
+// difference at +0x76.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60

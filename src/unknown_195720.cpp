@@ -72,6 +72,10 @@ bool function_1946f0(s_bitstream *stream)
 // spelling flips the masked-byte LEA; only a data local read before the index flips the clear LEA (and keeps the data in
 // a register). Real (fast): size-first compare 4; char-typed masked byte 2; data local at the mode block's top 49; data
 // local in the mask block 35; counter stores after the index 17.
+// Round 142 (m3 lane 8, fast): the pop as a separate decrement then the read 2; the read from `count - 1` with the decrement
+// after 62; a named popped checkpoint index 2; the mask without the byte cast 2; the subscript through `(dword)byte_index` 2.
+// Compile-only, both LEAs data-first: embedded index assignment in the bound test, a byte mask local in a block,
+// `*(byte_index + stream->data)`, `saved % 8` named before the index.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

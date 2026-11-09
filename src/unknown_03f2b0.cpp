@@ -1317,6 +1317,9 @@ struct s_batch_cache_4b5d0
 
 struct s_133f70;
 
+// MiniMax D (11-08): no new form, no lower score (93, measured on the full image); the call to 0x4bcc0 loads the
+// distance parameter into EAX above the force push where ours loads it into ECX below it, and the 0x4c190 call's
+// flag and tag arguments swap ECX and EDX the same way; the two calls' argument registers still differ.
 // MiniMax I (11-06): no new form, no lower score; the tail stays blocked by 0x23690 in src/unknown_023540.cpp, so the reduced image cannot inline it and the fast count depends on what the check pulls in.
 // MiniMax A (11-05): no new form, no lower score; the call to 0x4bcc0 already carries its six stack
 // arguments in retail's order and with retail's values, so what is left is the frame size and the entry/result homes.
