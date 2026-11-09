@@ -471,6 +471,10 @@ void c_class_2c9e69::select_last_variant()
 // M3 lane 11 r76 (fast): the name-arm copy declared after the icon lookup and assigned in the arm 13; assigned in
 // its test 13; the icon declared before the text and assigned after it 13; the copy declared first in the function
 // 13, with the name buffer there too 13 (all the same code: symbol order does not move the name arm's EDI).
+// Round 80 (m3 lane 10, fast): `else if (text)` for the name arm with plain text 36 (154 bytes), with the volatile text read directly 31, with an
+// `else if (c_class_1a2c81 *name_text = text)` declaration 13 (same code); a plain copy only in the empty arm (the name arm reading the volatile text
+// directly) 23 at 157 bytes (the empty arm then exact, `mov edi; test edi`; the name arm compares the home and reloads into ECX after the name
+// call); both copies declared before the variant test 36 (155 bytes: the name copy still takes EDI, the empty copy ECX then moved to EDI).
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {
