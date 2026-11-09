@@ -518,6 +518,9 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // Round 71 (lane 14, fast with 0x110ab0 listed, which reproduces 15): the unknown225 test in its own nested if 15; the
 // prop-state NONE test nested under the range test as a separate if 15; the ticks read after the 0x18 call 80; the two
 // state/flag tests through an inline predicate 113 (391 bytes); the 0x18 call's result in a named local 78 (417 bytes).
+// Round 79 (fast, plain 15 at the start): the game-time pointer named at its first use 91 (415 bytes: NONE EBP and
+// result EBX as retail, the pointer EDI and ticks EBP), with the ticks read after the 0x18 call 81, for the ticks only
+// 15; the unit index read ahead of the node lookup 97 (415 bytes); a named prop index for its test and the lookup 15.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

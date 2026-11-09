@@ -2603,6 +2603,11 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // differences `real const` 3; the outer x, y, z `real const` 3 (all same code; the outer locals written
 // at each use, rechecked, 366). No XMM value is live across the point lookups, so nothing holds XMM1
 // back: in ours the z load is hoisted above the y load and subtract, in retail it follows them.
+// Round 95 (m3 lane 16): the existing out-of-line distance_sq3f (0x24550) in place of the helper, plain 25 (LTCG inlines it in
+// the full build: x scheduled first, XMM1-3 in x, y, z order; the fast image calls it, 443); the existing devices.cpp helper with
+// the outer z, x, y locals ahead of it, plain 432 (1940 bytes, copies before the squares); (fast) the helper defined below the
+// function 3 (same code); the sum started from the y square (`sum = dy * dy; sum = dz * dz + sum;`) 7 (z then fully first); the y
+// square added on the left 3 (same code as `+=`).
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2909,6 +2914,10 @@ void function_20fda0(long arg_0);
 // local types, the owner before or after the node, a local, typed or at-each-use node and the arm order,
 // and all 45 orders of the side, offset, pool, queue base, owner, data and node statements after the
 // call: none moves the base EDX / pool ECX / offset EAX assignment; nor do /O1, /Ox, /G6, /G7 or /Op.
+// Round 95 (m3 lane 16, fast): an `arg_1 == NONE` early return 19; the object lookup through an offset local (0xa1f70's
+// idiom) 19; the team read inside the call's argument 20; the node as `&data[(arg_1 & 0xffff) * 0x54]` 19; a node offset local
+// 19; every local declared at the top, assigned in place 19. Diagnostic: 1-8 unused locals ahead of the lookup 19 each (retail's
+// EAX/EDX/ECX is ours rotated by one; no numbering tie).
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {
