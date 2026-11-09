@@ -1624,6 +1624,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // P376: Scan-end scope before reverse candidate, short/long for/while, original/ended avoidance-output scope:
 // 400/456/400/456/400/456/400/456. NOT kept: ties/regressions; frame 0x114 versus 0x10c persists.
 // Original signed scans and whole body restored; zero/count/edge/orientation homes remain.
+// P378: Output-capacity ownership of complete conversion/distance continuation, positive/equality/
+// terminal/complementary gates with short/long emitted ordinals: 400/495/400/495/400/495/400/495.
+// NOT kept: ties/regressions; frame 0x114 versus 0x10c and edge/orientation spills remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

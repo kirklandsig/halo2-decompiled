@@ -3257,6 +3257,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // P376: Direction projection via products/accumulator/two-term prefix/const products, each plain/uniform row parts:
 // 539/539/539/539/539/539/539/539. NOT kept: no native frame/result equality.
 // Original complete body, projection association, observations and scan bounds restored.
+// P378: Full flag/query/body-selection-to-normalization impulse-success ownership in
+// bool/byte/char/signed-char/short/word/int/long: 539/539/539/539/539/539/539/539. NOT kept:
+// no native result/frame repair. Original complete body and all original outcomes restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4017,6 +4020,9 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // P376: Selected parent/child/both point values; both setter/memcpy/memmove/const; final child value:
 // 371/383/403/386/403/407/403/366. NOT kept: regressions, native matrix/origin/pivot homes differ.
 // Original selected addresses, scalar-input helper and complete body restored.
+// P378: One parent/root clearance owner at entry/component/position/matrix boundaries,
+// mutable/readonly: 463/463/463/463/463/463/433/433. NOT kept: all regress and shorten away
+// from native; early owners also lose both exact callers. Original full body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4850,6 +4856,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P376: Shared-rotation forward value owning rotation/rotation+normalization, aggregate/setter/memcpy/memmove:
 // 246/207/246/245/250/250/250/245. NOT kept: regressions, no native operand/home equality.
 // Original full body restored; first rotation and final-cross memory operands remain.
+// P378: Reconstructed-up output in consumed up/side workspaces, aggregate/setter/memcpy/memmove
+// publication before the field normalizer: 252/154/252/273/255/130/255/273. NOT kept: no exact
+// output-home repair; all extents grow beyond native. Original complete shared-rotation body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
