@@ -212,6 +212,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // original consumers inverted consistently: 425/425/425/425/374/374/417/417. NOT kept: no native
 // host-byte/observer/budget/frame equality; original result, counter compositions, outputs and whole body
 // restored.
+// P381: Complete complementary packet-query result in bool/byte/char/signed-char/short/word/int/long:
+// 426/426/426/426/425/425/426/426. NOT kept: all regress and lengthen; native
+// packet BL, observer EDI, bandwidth EBP and frame 0x34 remain. Original query result and full body restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

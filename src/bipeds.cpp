@@ -1638,6 +1638,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // facing/speed/boost/turning/dispatch: 620/616/602/585/571/559/559/576. NOT kept: first seven recover frame
 // 0xfc but grow to 2832/2828 bytes; final 576 keeps frame 0xf8/0xfc and stores zero before dispatch rather
 // than inside case 6. All original constants, gravity observations and whole body restored.
+// P381: Complete complementary airborne outcome in bool/char/signed-char/byte/short/word/long/dword:
+// 599/599/599/599/631/631/626/626. NOT kept: narrow frame 0xf4, wider 0xf8 versus native 0xfc;
+// gravity/material/airborne homes remain. Original state result, both consumers and full body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4027,6 +4030,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // P378: One parent/root clearance owner at entry/component/position/matrix boundaries,
 // mutable/readonly: 463/463/463/463/463/463/433/433. NOT kept: all regress and shorten away
 // from native; early owners also lose both exact callers. Original full body restored.
+// P381: Terminal rotated output in consumed back/direction/delta/placed/world-pivot/
+// child-world/origin/parent-position homes: 354/354/354/354/356/354/389/357.
+// NOT kept: no native matrix/origin/alias-copy home repair; original independent
+// output, every prior vector value and complete body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4863,6 +4870,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P378: Reconstructed-up output in consumed up/side workspaces, aggregate/setter/memcpy/memmove
 // publication before the field normalizer: 252/154/252/273/255/130/255/273. NOT kept: no exact
 // output-home repair; all extents grow beyond native. Original complete shared-rotation body restored.
+// P381: Complete final normalized/degenerate outcomes in bool/byte/int/long,
+// positive then complementary: 79/79/79/79/79/79/79/79. NOT kept: no native
+// first-rotation/final-cross operand repair; original direct final test and whole body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
