@@ -532,6 +532,7 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 
 /* direct turn control: the input turned into the frame of the velocity,
    the angle it asks the vehicle to turn, and whether it's reversing */
+// MiniMax R (11-09): the input rotation before the forward copy with the entry magnitude after the velocity copy is 122 (four points, under the bar) and the permuter's thirty tries found no variant, so the original body is kept at 126.
 // MiniMax R (11-06): no new form, no lower score (126); the frame agrees and only the SSE colouring and x87 operand orders of the note below are left.
 // score 126 (was 126): frame, length and layout now retail's; left: SSE register colouring (the 1.0 constant in
 // xmm2 against retail's xmm3, the normalized forward/heading in other registers), the velocity copy's eax/ecx, two
@@ -4487,6 +4488,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
+// MiniMax R (11-09), at 176: the override search with a NULL found pointer and the Havok world read into a local give 151; the compression clamp spelled out as a store then if/else-if (the PIN macro's ternary expands to the opposite comparison) gives 141 at retail's 1361 bytes; left: the world loaded into EAX then moved to ESI, the fallback's zero held across 0x168f40 and the block layout.
 // MiniMax R (11-06): no new form, no lower score (176); the frame agrees and the permutation and flag-store order of the note below are unchanged.
 // score 176 (was 176): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
 // scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
@@ -4723,19 +4725,21 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 				real rest;
 				real value;
 				long override_count = *(long *)(definition + 0x2f0);
-				byte *override;
+				byte *override = NULL;
 				long i;
 
 				for (i = 0; i < override_count; i++)
 				{
-					override = *(byte **)(definition + 0x2f4) + i * 0x4c;
-					if (*(long *)(override + 0x44) == iterator.unknown04 && *(long *)(override + 0x48) != NONE)
+					byte *entry = *(byte **)(definition + 0x2f4) + i * 0x4c;
+
+					if (*(long *)(entry + 0x44) == iterator.unknown04 && *(long *)(entry + 0x48) != NONE)
 					{
+						override = entry;
 						break;
 					}
 				}
 
-				if (i < override_count && (char)((byte const *)permutations)[*(long *)(override + 0x48) * 8 + 1] >=
+				if (override && (char)((byte const *)permutations)[*(long *)(override + 0x48) * 8 + 1] >=
 					*(short *)(override + 0x42))
 				{
 					offset = iterator.unknown14;
@@ -4770,16 +4774,34 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 					}
 					else
 					{
-						if (vehicle->havok_component_index != NONE &&
-							TEST_FIELD_BIT(havok_component_get(vehicle->havok_component_index)->flag5) &&
-							havok_component_get(vehicle->havok_component_index)->unknown9c &&
-							function_182800(&ray, NONE,
-								(void *)havok_component_get(vehicle->havok_component_index)->unknown9c))
+						void *world = NULL;
+						s_havok_component *component;
+
+						if (vehicle->havok_component_index != NONE)
+						{
+							component = havok_component_get(vehicle->havok_component_index);
+
+							if (TEST_FIELD_BIT(component->flag5))
+							{
+								world = (void *)component->unknown9c;
+							}
+						}
+
+						if (world && function_182800(&ray, NONE, world))
 						{
 							real compression = ray.t * length - rest;
 							real travel = length - rest;
 
-							value = PIN(1.0f - compression / travel, 0.0f, 1.0f);
+							value = 1.0f - compression / travel;
+
+							if (value < 0.0f)
+							{
+								value = 0.0f;
+							}
+							else if (value > 1.0f)
+							{
+								value = 1.0f;
+							}
 						}
 						else
 						{
@@ -4910,6 +4932,7 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
+// MiniMax R (11-09): no new form, no lower score (749); the definition pointer kept in a local unifies the branches and regresses to 1027, and retail's four-push prologue and per-site 1.0 load are not reachable from the source.
 // MiniMax R (11-06): no new form, no lower score (749); the frame and the length agree, and the SSE zero register is xmm4 here and xmm2 in retail.
 // score 749 (was 765): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain.
 // Earlier at 817 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
