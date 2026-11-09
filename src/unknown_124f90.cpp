@@ -1422,6 +1422,9 @@ long function_2197f0(real gain);
 // 153 (669); the product still takes fade_out before the reciprocal in all three. The inverse local declared before
 // the fade-out test 154 (665: the reciprocal is then hoisted above that test), with a ternary clamp 177, with the
 // clamp's test as a division 184.
+// T69: Twice-used attack reciprocal before elapsed/hold, inside hold/attack,
+// mutable then immutable per phase: 183/183/183/183/186/186/154/154.
+// NOT kept: all regress and shorten away from retail; original reciprocal phase and full body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

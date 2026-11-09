@@ -208,6 +208,12 @@ c_button_widget_45d5d0::c_button_widget_45d5d0(short valuef8, word user_flags) :
 // unknown_19b516.cpp, inlined here across files 2; helper entry, an in-place if/else step and a `for (;;)` head
 // return 37 (98 bytes); `(c_class_1a2c81 *)(dword)` round trips at entry and step 2; a `register` walk variable 2;
 // the entry as `next ? next : next_wrapped()` 44 (96). Retail has no `test eax, eax; mov esi, eax` anywhere.
+// Round 98 (m3 lane 12, fast, all four walkers): the wrapped helpers walking one `result = this` in place 52 (98 bytes; the
+// button pair 54, 104); the walk started at `this`, stepped once before the loop 2; the helpers as `result = link`, walked in
+// place when NULL 42 (90; 44, 96); the walk helpers as const members 2; an entry guard with a search loop that returns when the
+// step is NULL and the focus after it 32 (84; the button pair 2, the same code). Compile-only: an in-place if/else step gives
+// the copy-then-test tail, but every in-place entry then lets the compiler drop the entry test (the widget is known non-NULL)
+// or load it straight into ESI, and a helper entry keeps its own test.
 // @retail 0x2c8f56
 void c_button_widget_45d5d0::v8()
 {
@@ -278,6 +284,12 @@ void c_button_widget_45d5d0::v8()
 // unknown_19b516.cpp, inlined here across files 2; helper entry, an in-place if/else step and a `for (;;)` head
 // return 37 (98 bytes); `(c_class_1a2c81 *)(dword)` round trips at entry and step 2; a `register` walk variable 2;
 // the entry as `previous ? previous : previous_wrapped()` 44 (96). Retail has no `test eax, eax; mov esi, eax` anywhere.
+// Round 98 (m3 lane 12, fast, all four walkers): the wrapped helpers walking one `result = this` in place 52 (98 bytes; the
+// button pair 54, 104); the walk started at `this`, stepped once before the loop 2; the helpers as `result = link`, walked in
+// place when NULL 42 (90; 44, 96); the walk helpers as const members 2; an entry guard with a search loop that returns when the
+// step is NULL and the focus after it 32 (84; the button pair 2, the same code). Compile-only: an in-place if/else step gives
+// the copy-then-test tail, but every in-place entry then lets the compiler drop the entry test (the widget is known non-NULL)
+// or load it straight into ESI, and a helper entry keeps its own test.
 // @retail 0x2c8fb4
 void c_button_widget_45d5d0::v9()
 {
