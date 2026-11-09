@@ -124,6 +124,7 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point[2] = matrix->forward.k * *x + matrix->left.k * *y + matrix->position.z;
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
+// MiniMax I (11-09): no new form, no lower score; the plain check gives 46 while the fast image cannot measure this body, and the only source lever left is the corner helper's parameter order, which measures 40 but changes a declaration, so it is reported rather than applied.
 // MiniMax A (11-06, run 52): no new form, no lower score (46) - retail keeps the axis in ax and the
 // flag in cl, ours sign-extends the axis into ecx and puts the flag in al.
 
