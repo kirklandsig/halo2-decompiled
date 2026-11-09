@@ -1273,6 +1273,24 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax R (11-09): no lower score (94): the order of the three statements in the block - the identity flag,
+// the total and the channel pointer - was measured again: the flag, the pointer and the total (93), the total,
+// the pointer and the flag (94), the pointer, the flag and the total (99), the pointer, the total and the flag
+// (99), the total, the flag and the pointer (108) and the flag, the total and the pointer (111, which also
+// loses the matched caller 0x54990). What still differs is the register split - the identity flag sits in bl
+// where retail keeps it in al, so retail's loop takes the channel mask in ebx and the membership result in cl
+// while ours takes the mask in eax and the result in al. The one point better order is inside the margin
+// this lane keeps, so the original order stays.
+// MiniMax R (11-09): no lower score (94): the arithmetic shapes - the value, the contribution, the multiplier and
+// the constant in a named local, the two separate adds and the constant first - all compile to the same bytes; the
+// four groups of four channels with the channel reached by index (109) or by a per-group cursor (107) and the flat
+// masked index (194) move the group base into the shape retail has, but they drop the matched caller 0x54990 to 1.
+// MiniMax R (11-09): no lower score (94): the forms tried - the identity flag at function scope, first or last
+// among the declarations, typed char or const bool, the comparison with the operands swapped, the membership test
+// written out instead of through the shared helper, the channel reached by index and the value and the contribution
+// named - all leave the flag in bl where retail keeps it in al, and the forms that do move it put the channels
+// pointer on the stack and lose the matched caller 0x54990; retail's group base with fixed displacements and a
+// 0x5c0 stride stays out of reach because the pointer walk is what the callers pin.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
 // into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
@@ -1499,7 +1517,34 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 	queue->count = kept;
 }
 
-// score 134 (was 134): the retained mask is a plain local and the pre-loop statements run capacity,
+// MiniMax R (11-09): no lower score (60): what still differs is the register split - the player bit sits
+// in EBX and the entry size in EBP where retail keeps the bit in EBP and the size in EBX, the kept mask
+// is computed in EAX where retail computes it in EBX, and retail loads the queue's mask word after the
+// bit is built while ours hoists that load into EAX before the frame is set up. The forms measured this
+// round give the same code or are worse: the entry size declared in the outer scope and assigned later
+// (60), the kept mask declared in the outer scope (60), the player bit at signed width (60), the entry
+// size at int width (60), the written count at int width (60) and the player bit variable removed with
+// the entry test using the shift (60), while the entry size computed in the outer scope (158), the
+// capacity decremented before the size and the kept mask (136), the membership test with the channel's
+// mask field (154), the membership test with the queue's mask word (154) and the entry size at word
+// width (145, which also loses 0x56380) are worse.
+// MiniMax R (11-09): no lower score (60): the statement orders and the size forms measured again - the size
+// after the kept mask (60), the size as a times expression (60), the capacity comparison swapped (60), the
+// written count as a dword (60) and the bit moved past the membership test (60) give the same code, while the
+// size in the capacity test (160), the kept mask as a word (81), the size after the capacity (143), the kept
+// mask after the capacity (136), the size from a ternary (147) or from a bool expression (146) and the
+// membership test written with the queue's mask (154) are all worse.
+// MiniMax R (11-09): score 60 (was 134): the clamp is two bounds tests on the player (so retail's
+// `test edi, edi` appears) and the pre-loop statements run entry size, kept, capacity, written, with
+// the entry size as `11 + 2 * include_mask`. Still differs: the player bit is in EBX and the entry size
+// in EBP where retail keeps them in EBP and EBX, the kept mask is computed in EAX instead of EBX, the
+// capacity is decremented through a register instead of in place (so the capacity-fail exit keeps its
+// own `xor eax, eax` epilogue) and the loop head has an extra jump; the code is 460 bytes against 449.
+// score 60 (was 134): the retained mask is a plain local and the pre-loop statements run entry size,
+// kept, capacity, written: the clamp test now agrees with retail. Still differs: the player bit and
+// the entry size sit in EBX and EBP where retail has EBP and EBX, the kept mask is computed in EAX,
+// the capacity is decremented through a register and the capacity-fail exit gets its own
+// `xor eax, eax` epilogue; the code is 460 bytes against 449.
 // size, written, mask: the bit (EBP), size (EBX), count (ECX), the frame order i/written/kept/size/bit
 // and the single mask read at the end now agree with retail. Still differs: EAX's zero is reused for
 // `written = 0` and the PIN test (retail `test edi, edi`, immediate store), so the capacity-fail exit
@@ -1655,15 +1700,19 @@ long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *outpu
 			result = NONE;
 		else
 		{
-			long clamped = player < 0 ? 0 : player > 15 ? 15 : player;
+			long clamped = player;
+			if (player < 0)
+				clamped = 0;
+			else if (player > 15)
+				clamped = 15;
 			if (clamped != player)
 				result = NONE;
 			else
 			{
-				capacity -= 2;
-				long entry_size = include_mask ? 13 : 11;
-				long written = 0;
+				long entry_size = 11 + 2 * include_mask;
 				dword kept = (1 << queue->count) - 1;
+				capacity -= 2;
+				long written = 0;
 				if (capacity >= entry_size)
 				{
 					for (long i = 0; i < queue->count; i++)
@@ -1783,6 +1832,15 @@ static inline bool voice_mode_is_passive(void)
 
 static inline dword voice_get_player_mask_inlined(void);
 
+// MiniMax R (11-09): no lower score (85): the second port-flag query marked `inline` was measured again and
+// confirms the recorded result - 0x55990 goes to 102 while the matched callers 0x54890 and 0x53a20 are lost
+// (83 and 84), and 0x53b90 and 0x53bb0 keep matching either way.
+// MiniMax R (11-09): no new form measured this round (85): the second availability byte still loads lazily where
+// retail loads both before the muted test, and the remote mask still reloads against retail's esi.
+// MiniMax R (11-09): no lower score (85): the second availability byte still loads lazily where retail loads both
+// before the muted test, and the second port-flag query is still called out of line; the form that inlines the
+// first query and reaches retail's eager byte pair loses the matched callers 0x54890 and 0x53a20, and the session
+// getters this needs live outside this file.
 // score 85 (was 85): the second availability byte loads lazily (retail loads both before the muted test and keeps
 // remote in esi) and the second port-flag query is called out of line (retail inlines it here only); frame and bit
 // spill agree. Earlier at 94: frame 0x14 vs 0x18, bit spill and flag-query boundary differed;
@@ -3398,6 +3456,14 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
  return count;
 }
 
+// MiniMax R (11-09): no lower score (139): the base and the offset kept apart, with the packet pointer never
+// formed, compiles to the same bytes as the indexed form (139), so the gap is not the address form: retail holds
+// the channel in ebp from the entry and spills the member word, ours holds the member in ebp and reloads the
+// channel; the cursor advanced on its own (164), without the size local (159), the member moved before the calls
+// (161 and 170) and the member in the loop scope (164) are all worse.
+// MiniMax R (11-09): no lower score (139): with the packet cursor advanced on its own the code reaches retail's
+// cursor in edi but the member word takes ebp over the channel (164), and naming the channel, the member or the
+// size does not change that; the indexed form stays the better of the two (139).
 // score 139 (was 139): channel/cursor/count registers and route homes differ;
 // MiniMax E (11-07): no new form, no lower score; the channel and the cursor homes follow the earlier
 // rounds' forms, none of which reaches retail's channel in ebp with the cursor in edi.
