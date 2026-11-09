@@ -680,6 +680,9 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // half as a `long const` at its assignment 2; the two step quotients as named end/start values 2; the even count as
 // `count / 2 * 2` 51. Compile-only (reproduces the pair): a loop from 1 to half moves the registers; the steps through a
 // `long *` for the array 63 lines against 71; a short marker-group local and an ids local keep the pair.
+// Round 158 (m3 lane 5, plain): the step as `(i * 32 + 32) / half - i * 32 / half` 2; `count = count - (count & 1)`
+// 2; the polygon parity as `hill->count % 2 == 0` 31 (174 bytes); half declared in the loop's init beside i 2; the id
+// count as `sizeof(hill->ids) / sizeof(hill->ids[0])` 2 (the hill/index reload pair unchanged in each).
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {
