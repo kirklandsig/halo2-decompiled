@@ -74,8 +74,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// score 106 (was 106): no frame; enable observations and maximum/register homes differ.
 // MiniMax H (11-04): no new form, no lower score; the enable reloads and the maximum homes still differ.
-// score 106 (was 107): no frame; enable observations and maximum/register homes differ.
+// Earlier 106 (was 107): no frame; enable observations and maximum/register homes differ.
 // Lane 12 r78: MATCH (fast, plain and full check, lost []) with two changes together, not kept by the coordinator:
 // (1) the enable byte and the input counters declared as one struct symbol in globals.h (retail's record at 0x510cb0
 // reaches 0x51e8d4, so the region is one object); the padding of that trial struct overlaps the separately defined
@@ -150,6 +151,15 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // (retail's `inc word ptr [eax+edx+0x16]; lea edi` shape, but the player/kind homes swap); that with the index taken
 // before the classification call 115; row declared first and assigned after the increment 111. On 106: the
 // increment form 110; the team field read at each use 108; the team read once before the test 113.
+// Round 79 (m3 lane 11, fast): the enable reloads are an escape: retail re-reads g_510ca0 after the store through
+// `statistics` because g_510ca0 shares one object with 0x510cb0, whose address retail pushes (0x1962f6 and four more
+// sites); retail never takes 0x510ca0's own address. A one-file LTCG link adds exactly that reload once &g_510ca0 is
+// stored anywhere. Diagnostic only (a file-scope pointer to g_510ca0, reverted): 74 at 434 bytes. The real form is one
+// object from 0x510ca0 with g_510ca1/ca2/ca4/ca8/cb0/cb1/cb2 as members, but held src/unknown_1967d0.cpp declares
+// g_510ca4/g_510ca8 itself, defines g_510cb2 and takes &g_510cb0: BLOCKED-BY 0x196960/0x1968b0 (their file).
+// Forms on main's body: old maximum as one nested ternary initialiser 109; the counter as long 109; the player clamp as a ternary
+// in the store 100 (427 bytes, a cmp/mov/jg clamp unlike retail's); team maximum as one nested ternary 109; the team
+// test and setter call on `consecutive` in place of the counter re-read 110.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -216,10 +226,11 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// score 353 (was 353): victim_team/killer/damage_code slots rotated, history cursor biased +4 (the earlier note below).
 // MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
 // kept, the original body is restored.
 // MiniMax S (11-06): the record walk is anchored at the field with the most source-level reads, ties going to the lowest offset: reading the timestamp twice moves the selection walk onto retail's 0x2f0 base (373) and reading the assist player index at each use moves that walk onto retail's 0x2fc base (390), both loops together 390; every such form drops a frame word (0x4c against 0x50) and the base spill, so the original body stays.
-// score 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
+// Earlier 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
 // rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
 // Byte selection index 421; signed-byte teams 487; explicit append phases 421; selected/fallback result
@@ -426,6 +437,12 @@ struct s_object_damage_view
 // N398: Native post-root shared object-header raw/typed/readonly tables, then related-player observations at every use 353/353/353/353/357/357/357/357.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // MiniMax R (11-05): the team-consideration result is a true default cleared by the query, 344 (was 353); not kept: a test-set flag, match only.
+// Round 79 (m3 lane 11, fast): `s_damage_record *record = &object->history[selected]` in the killer block, declared before or
+// after the damage code read, 454/454 (1583 bytes): victim_team and damage_code take retail's +0x18/+0x1c and the record
+// is retail's `lea [sel+0x2f]; shl 4; add`, but `selected` moves to a parameter home, the pool pointer takes EDI (retail
+// ESI) and the frame grows to 0x54. On it: `selected` declared first 464; `if (killer != NONE) { if (killer ==
+// reported_player) ... } else if (reported valid)` 438 (1567); that with the consideration flag as a true default cleared
+// by the test 433 (match-only flag form; diagnostic). No form reaches below 353.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -618,6 +635,10 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // that body is retail's but for two places: the folded `add eax, [esp+0x18]` (one instruction short, which shifts the
 // rest) and the first engine test's EAX/ECX swap. On that plain body: the first test through game_engine_get() 85; the
 // notify through a force-inline helper taking the bit (diagnostic, this caller only) 85; a `long const` field 85.
+// Round 73 (lane 14, fast): the dirty test held in a bool before the store 86 (270 bytes); plain field with the engine
+// globals in a local at the top for the dirty test 24 (field at entry, engine load at the top), with the engine peer read
+// before the store 25; plain field with only the peer read before the store 85 (folded); the volatile field with the peer
+// read before the store 14.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)
@@ -1002,44 +1023,6 @@ D3DTexture *function_3bcb0(s_bitmap_data *bitmap);
 void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordinates,
 	long bitmap_index, long sequence, long color);
 
-// score 2 (was 2): the two words are read in the other order: retail loads the
-// global into CX before it reads the word of the record into AX.
-// Right offset right after its inset 197; bounds copied to a local first 302; the
-// rectangles as short_rectangle2d 2; top inset after the other offsets 123; piece
-// declared before inner 2.
-// Round 41 (lane 10): inset and offset in one expression per edge 207 (1162 bytes);
-// top offset before bottom 2; bounds read directly without the `input` alias 2 (kept);
-// both screen offsets read into named locals first 44; horizontal edges inset and
-// offset before the vertical ones 52. The compile-only harness gives retail's load
-// order for the current source, so the swap comes from link-time scheduling.
-// Round 72 (lane 9, fast): the window offset through a file-local forceinline helper with short
-// dx/dy (left, right, top, bottom) 2, (left, right, bottom, top) 2, (top, left, bottom, right) 19,
-// with long dx/dy 16; `8 + bounds->left` / `8 + bounds->top` 2; fields copied then inset in place
-// 298 (1135 bytes); the subtractions as `+ -8` 2.
-// Round 82: existing alternate predicate 2; existing player lookup 2; member copies with
-// adjacent insets 2; aggregate coordinates at the original place / between right and bottom
-// insets 2/2; reversed bottom addend 2; shared rectangle alias 2; aggregate inner 133 (1163
-// bytes); typed input field pointer / direct indexed view 2/2. Member copies before a separate
-// inset pass reproduced 298 (1135 bytes).
-// Round 43 (m3 lane 2, fast): `inner` declared at function scope 2; insets in field order (top,
-// left, bottom, right) 133 (1163 bytes); top offset before bottom 2 (re-measured); bottom inset after
-// the horizontal offsets 39; four scalar short edges copied into the piece 238 (1129 bytes, frame
-// 0x64); each edge inset then offset as two statements 207 (1162 bytes); insets left, right, top,
-// bottom 20 (top/right registers swap as well).
-// Round 53 (m3 lane 15, fast): the four offset statements in all 23 other orders 2 to 49 (left, right,
-// top, bottom 2); the four insets in all 23 other orders 20 to 170; the window shorts of the camera
-// storage as one rectangle member 2; inner and piece declared together with piece assigned 2; the
-// coordinates or the points declared at the top of the block 2/2. Unused-local probes (1 to 16) at
-// the top leave it at 2, so the load order is no numbering tie.
-// Lane 9 r89 (fast): window x offset as a named short before each inset statement 41, after the insets 38; window y before the bottom inset 44; both 44; address-cast reads
-// 2; pointer to the window pair at the top or before the bottom inset 2/2; `-8 + field` for bottom and right 2/2; whole-record copy first 218; a data pointer to the field or storage (diagnostic) 2/2.
-// Round 155 (m3 lane 5, fast with 0x1e6fe0): coordinates as an initialiser 2; zeros stored before the ones 27; coordinates
-// filled before the piece copy 2; non-const bounds (with 0x1e6fe0's cast) 2; insets read through a const reference 2.
-// Compile-only gives retail's pair with or without the camera storage's address taken in this file.
-// Round 141 (m3 lane 8, fast): coordinates filled after the first piece call 36 (same pair, the constants
-// move); colour read after the alternate selection 314 (1171 bytes); bitmap pointers read inside the calls
-// 285 (1148 bytes); bottom inset and offset in one expression 49; inner as an aggregate initialiser 133
-// (1163 bytes). Compile-only (non-LTCG) loads the global before the bottom word with the current source.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {
@@ -1334,6 +1317,9 @@ void function_1e6fe0(long local_player_index)
   function_1fa50(&limits, (word const *)text, NULL, NULL, 0, 1.0f, 0, NULL);
 }
 
+/* Each corner is written through a point pointer. 0x1e9140 depends on this: with the
+   corners written as indexed stores, link-time code generation reorders its first loads
+   (the window offset is read after the bottom edge, against retail). */
 // @retail 0x1e90b0
 void function_1e90b0(const s_request_screen_bounds *bounds, point2f *points, long first)
 {
@@ -1341,12 +1327,16 @@ void function_1e90b0(const s_request_screen_bounds *bounds, point2f *points, lon
 	real right = (real)bounds->right;
 	real top = (real)bounds->top;
 	real bottom = (real)bounds->bottom;
-	points[first % 4].x = left;
-	points[first % 4].y = top;
-	points[(first + 1) % 4].x = right;
-	points[(first + 1) % 4].y = top;
-	points[(first + 2) % 4].x = right;
-	points[(first + 2) % 4].y = bottom;
-	points[(first + 3) % 4].x = left;
-	points[(first + 3) % 4].y = bottom;
+	point2f *point = &points[first % 4];
+	point->x = left;
+	point->y = top;
+	point = &points[(first + 1) % 4];
+	point->x = right;
+	point->y = top;
+	point = &points[(first + 2) % 4];
+	point->x = right;
+	point->y = bottom;
+	point = &points[(first + 3) % 4];
+	point->x = left;
+	point->y = bottom;
 }

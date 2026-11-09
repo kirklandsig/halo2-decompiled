@@ -62,7 +62,7 @@ short __stdcall function_1be0f0(long actor_index, s_slot *slot, bool active)
 
 point3f *function_b9dd0(long object_index, point3f *result);
 short __stdcall function_1c8df0(short type, short team, point3f const *point, long object_index,
-	void const *origin, long count, bool unknown, bool unknown2, bool unknown3, long *arg_9);
+	point3f const *origin, long count, bool unknown, bool unknown2, bool unknown3, long *arg_9);
 
 // @retail 0x1be120
 bool __stdcall function_1be120(long actor_index, s_slot *slot)

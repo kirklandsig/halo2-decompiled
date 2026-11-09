@@ -113,7 +113,7 @@ void function_22fba9(c_class_1473c9 *screen)
 }
 
 /* the widgets of the current pane: bitmaps, groups, texts and models */
-// score 23 (was 66): the text loop's offset reset is mov where retail has and, the model loop's
+// score 23 (was 23): the text loop's offset reset is mov where retail has and, the model loop's
 // the other way, and the model loop copies the screen to eax before reading its animation type
 // (retail uses esi, the call's register argument, directly; both copy it in the text loop).
 // Tried: the text definition as pointer arithmetic, the text loop as a while, a model
@@ -147,6 +147,9 @@ void function_22fba9(c_class_1473c9 *screen)
 // value0a store reset the offset with `mov` and the text loop (none) with `and`; ours swaps the text and model loops.
 // Round 94 (lane 16, fast): text, model or block-18 element as pointer plus index 23/23/23; `bool const animating` 23;
 // a const pane pointer 23.
+// Round 73 (lane 14, fast): the text loop as `if (!text) continue;` then the animation test 23; that with the model loop
+// as `if (!model) continue;` 23; the block-18 inner counter declared with i at the top 23; the model call through a base
+// pointer declared in the loop 23; the text call assigned inside its test 23 (all the same code).
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {

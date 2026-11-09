@@ -521,6 +521,11 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // Round 79 (fast, plain 15 at the start): the game-time pointer named at its first use 91 (415 bytes: NONE EBP and
 // result EBX as retail, the pointer EDI and ticks EBP), with the ticks read after the 0x18 call 81, for the ticks only
 // 15; the unit index read ahead of the node lookup 97 (415 bytes); a named prop index for its test and the lookup 15.
+// Round 175 (fast with 0x110ab0): the cooldown field read at each use (no `local_5`) 15 (same code); the node state
+// read into a named short for its two range tests 15 (same code), into a long 41; a 600 s permuter run (seed 175, 54
+// tries) none below 15. Diagnostics: comparing the 0x3c state or field_6 with -2 instead of NONE 103/103; the ticks from
+// another global (no game-time pointer kept) 79 with NONE still EBX and the result moved to EDI, so NONE is coloured
+// ahead of the result whether or not the game-time pointer exists (retail colours the result first: EBX, NONE EBP).
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

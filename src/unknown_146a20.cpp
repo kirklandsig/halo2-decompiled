@@ -58,6 +58,7 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
+// MiniMax C (11-09): no new form, no lower score (34); the abstract allocator's base vtable store is still elided (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax D (11-06): no new form, no lower score (34); retail's base vtable store (0x453760) and its
 // derived vtable (0x4576a4) come from the shared constructors in include/unknown_146a20.h, which this lane may
 // not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
@@ -350,6 +351,15 @@ bool g_47f05b;
 // T70: Explicit abstract-parent lifetime start, explicit count parent, count/member initializer
 // boundaries: eight 34s; all 57 marked shared users unchanged. NOT kept: no intermediate-vtable
 // or successful-arm reload repair. Original complete shared header and executable body restored.
+// P388: Nonuniform four-word constructor range from automatic/static constant
+// values via memcpy/copy/backward/uninitialized copy: 61/56/46/56/60/56/69/56.
+// NOT kept: no exact intermediate-vtable/arm-reload recovery and shared-user
+// regressions; complete original header, constructor chain and body restored.
+// P398: Actual four-word constructor cursor, forward/reverse conditional 48/56;
+// forward-prefix/sentinel-reverse-prefix 54/54; exhaustive forward/reverse arms 48/56;
+// forward zero-default/reverse sentinel-default overrides 43/43.
+// NOT kept: all regress, several outline the constructor, and both exact constructor peers lose.
+// Original complete shared constructor and initializer restored; intermediate vtable/arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {
