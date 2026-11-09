@@ -1562,6 +1562,10 @@ void function_1e3b60(long actor_index);
 // re-reads the actor from its stack home 12 times): `maximum` as a plain word 26 (429 at 1616 bytes); sample/update declared
 // at function scope 26 (412); the 0x2641c0 result in its own bool 26 (412); old_state short 26 (413); the actor pointer
 // declared then assigned 26 (412).
+// Round 143 (m3 lane 8, fast with 0x262ba0, which reads 412 as control): 0x2641c0's noinline declaration dropped, so
+// 0x262ba0 inlines it as retail does: 26 (0x262ba0 497 at 1688 bytes; 0x264210 inlines it too and loses its match; its
+// five other callers stay matched); on that, 0x262ba0's update flag as long 26 (495), sample/update at function scope 26
+// (497), maximum a plain word 26 (497), sampled_one as long 26 (496). The actor stays a stack argument in every form.
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
