@@ -2333,6 +2333,7 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // (11) and the count in a local or read from the global all keep the subtraction after the sorter's
 // last push, and the permuter run on this function reached its time limit without a measured variant.
 // MiniMax E (11-08): no new form, no lower score: retail takes the count's subtraction before the sorter's last push and adds 0x84 after the block copy, ours does both the other way round.
+// MiniMax E (11-09): no new form, no lower score: retail takes the count's subtraction before the sorter's last push and adds 0x84 after the second rep movsd, ours does both the other way round; the stipple block lies inside the XDK inline.
 // @retail 0x1e370
 void function_1e370(void)
 {
@@ -2384,6 +2385,7 @@ void function_1e370(void)
 // pointer in a local in the allocator (17) and the address-taken parameters left out (8) all keep the
 // pool's base in edi.
 // MiniMax E (11-08): no new form, no lower score: the record pool's base is held in edi here and in ebp in retail, and copying the payload after the callback's store makes it worse (57).
+// MiniMax E (11-09): no new form, no lower score: the record pool's base is held in edi here and in ebp in retail, and the copy's count then needs a register of its own.
 // @retail 0x1e4e0
 bool function_1e4e0(point3f const *position, t_1e4e0_callback callback, void const *data, long size)
 {
@@ -2648,6 +2650,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 // divisor and reciprocal as locals, no volatile, the enabled branch first) is 47. Body back to its earlier form.
 // MiniMax D (11-06): no new form, no lower score.
 // MiniMax E (11-08): no new form, no lower score: the maximum's compare has its operands swapped and the divisor makes a round trip through the stack here, while retail keeps it in a register.
+// MiniMax E (11-09): no new form, no lower score: the maximum's compare has its operands swapped and the divisor makes a round trip through the stack here, while retail keeps it in a register.
 // @retail 0x25ca0
 void function_25ca0(bool enabled)
 {
@@ -2740,6 +2743,7 @@ struct s_queued_material_payload
 // (8) and the count read from the global all keep it in eax, and the choice belongs to the callee
 // 0x4b220 in this file.
 // MiniMax E (11-08): no new form, no lower score: the count reaches the 0x4b220 call in eax here and in ecx in retail, and the callee's declaration fixes that register.
+// MiniMax E (11-09): no new form, no lower score: the count reaches the 0x4b220 call in eax here and in ecx in retail, and the callee's own declaration picks that register home.
 // @retail 0x35b00
 void __stdcall function_35b00(void *payload)
 {
@@ -2901,6 +2905,7 @@ struct s_429a0_payload
 // pointer one store earlier than we do, and the address the record's callback holds is a build
 // address that the comparison cannot map.
 // MiniMax E (11-08): no new form, no lower score: retail folds the record base into the payload pointer one store earlier than we do, and the callback's address is a build address the comparison cannot map.
+// MiniMax E (11-09): no new form, no lower score: retail folds the record base into eax one store earlier than we do, and the callback's address is a build address the comparison cannot map.
 // @retail 0x429a0
 void function_429a0(byte type, long a, long b, long c, point3f const *position,
     point3f const *endpoint, vector3f const *first, vector3f const *second, real opacity)
@@ -3301,6 +3306,7 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // before the third one is cleared, and that callee is defined in src/unknown_0158f0.cpp, so its
 // parameter order is reported here rather than changed.
 // MiniMax E (11-08): no new form, no lower score: the 0x15a60 call's registers are set ecx then eax here and eax then ecx in retail, and the callee's body in another file fixes that order.
+// MiniMax E (11-09): no new form, no lower score: the 0x15a60 call's registers are set ecx then eax here and eax then ecx in retail, and the callee's parameter order lives in another file.
 // @retail 0x1d0e0
 bool function_1d0e0()
 {
@@ -3545,6 +3551,7 @@ bool function_14600()
 // differences into EDX and EAX now agree
 // MiniMax D (11-06): no new form, no lower score.
 // MiniMax E (11-08): no new form, no lower score: retail keeps the width quotient in xmm2 and the scaled value in xmm3, ours uses xmm4 and xmm0 for the same two, so the constants land in other stack slots.
+// MiniMax E (11-09): no new form, no lower score: retail keeps the width quotient in xmm2 and the scaled value in xmm3, ours uses xmm4 and xmm0 for the same two, so the constants land in other stack slots.
 // @retail 0x1eb00
 void function_1eb00()
 {
@@ -5072,6 +5079,7 @@ void function_1bd50(void *state);
 // MiniMax D (11-06): no new form, no lower score: the fallback's load is a masked dword load where
 // retail widens a word with an xor, because g_4858b8 is a long in this file.
 // MiniMax E (11-08): no new form, no lower score: retail widens the fallback's word with an xor and hands it over in ecx, ours masks the dword and keeps the branch.
+// MiniMax E (11-09): no new form, no lower score: retail loads the fallback as a word and widens it with an xor, ours loads the long global g_4858b8 and masks it; the global's declared type is not mine to change.
 // @retail 0x1c0d0
 void function_1c0d0(long tag, long stage)
 {

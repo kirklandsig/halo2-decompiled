@@ -619,6 +619,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // P396: Complete sine/cosine/projection double receivers, seven subsets then immutable all:
 // 231/220/218/220/218/218/218/218. NOT kept: nonexact precision forms shrink to 804-818/880 bytes;
 // original float coefficients, full captures, shared products, draws and whole body restored.
+// MiniMax E (11-09): no new form, no lower score: our frame is eight bytes larger (sub esp, 0x28 against retail's 0x20) and the global load sits before the push edi.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
