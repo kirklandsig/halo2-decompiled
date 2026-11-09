@@ -667,6 +667,9 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax D (11-08): score 230 (was 230): ours has an unaligned 0xac frame where retail realigns to eight
+// bytes with a 0xb4 frame, so the register homes and the block layout differ from the first byte; the
+// realignment is decided by the whole-program view of the callers.
 // score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // MiniMax b (11-06): no new form, no lower score; the angle's x87 sequence is retail's byte for byte

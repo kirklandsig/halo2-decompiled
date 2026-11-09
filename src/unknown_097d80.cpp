@@ -52,6 +52,10 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax D (11-08): score 31 (was 31): the frame is 0x8024 against retail's 0x8020 and the two output
+// slots differ - retail keeps the address-taken block count at +0x10 shared with the loop spills and the
+// allocator output at +0x1c, ours gives the count +0x1c and the allocator output +0x20; the byte-exact form
+// needs this file built without whole-program optimisation, which would cost three matched siblings.
 // MiniMax B (11-04b): no new form, no lower score; the frame stays 0x8024 against retail's 0x8020 because the produced count keeps a slot of its own, and the two loop temps stay swapped; moving the produced count out of the loop scores 42/90.
 // MiniMax E (11-05): no new form, no lower score; the body is still byte-exact only with the file's /GL-
 // flag, which costs 0x97f60, 0x97fe0 and 0x980d0 their matches, and the LTCG frame keeps its extra slot.

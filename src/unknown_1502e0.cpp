@@ -923,6 +923,9 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
+// MiniMax D (11-08): score 153 (was 153): the difference starts at the selection loop's unit index - the
+// unit pointer, the chosen weapon, the age and the NONE home are kept in different registers and at different
+// stack offsets than retail.
 // MiniMax B (11-06): no new form, no lower score; the first 0x11c bytes agree with retail and the rest is
 // allocation: retail puts the unit index in EAX and NONE in EDI and reloads the object table from the
 // global for the seat test, this build keeps the unit index in EBP, NONE in EDX and the table in ESI.
@@ -1386,6 +1389,9 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// MiniMax D (11-08): score 43 (was 43): the saved roles are exchanged - retail keeps the player record in esi
+// and the hand in edi, ours keeps the player in edi and the hand in esi, and the unit index stays in ecx where
+// retail reuses esi.
 // MiniMax B (11-06): no new form, no lower score; the player pointer and the hand still swap ESI and EDI
 // and the hand's comparison result still lands in DL where retail's lands in AL, and the unit index is in
 // ECX where retail keeps it in EDX.
