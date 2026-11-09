@@ -258,6 +258,7 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
+// MiniMax S (11-08): no new form, no lower score (32); the one-copy form that reproduces retail's head and dispatch still hoists the twice-used buffer address into EBX, whose prologue save shifts every later row, while the form without that hoist keeps the early EDI save, the tag in EDX and the selector in ECX.
 // MiniMax E (11-06): no new form, no lower score (32). Retail's head (the raw variant getter with the
 // &g_54e4a0 fallback at the call site, the tag read into ESI, the selector in EAX, the EDI save in the
 // dispatch) reproduces retail's prologue row for row, but our build hoists the twice-used buffer address

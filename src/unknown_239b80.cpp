@@ -301,6 +301,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax S (11-08): no new form, no lower score (170); the frame is 0x18 against retail's 0x14, and the count and departure homes, the scan bound, the equality test and the compaction still differ.
 // MiniMax G (11-06): a bool departure flag 248, the angle zeroed before the lowest scan 207, both together 204, the
 // hull counter merged into the pass counter as a while loop with the increment at the top 272, and a 16-bit copy of
 // the count as the scan bound 170 (the same code); no lower score.
@@ -682,6 +683,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax S (11-08): no new form, no lower score (129); retail keeps the previous side in memory and this build keeps it in CL across the back edge, and the prior-side byte and SIMD homes differ.
 // MiniMax G (11-06): no new form, no lower score; retail's count parameter is a dword (mov ecx, [ebp + 8]; movsx edi, cx;
 // test cx, cx, and mov ebx, [ebp + 8] for the returned count) where this declaration takes a short, retail keeps the current
 // side at [esp + 0xc] and the previous side at [esp + 0xd] where this build keeps the previous side in CL.

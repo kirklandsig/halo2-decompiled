@@ -233,6 +233,10 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// MiniMax D (11-08): no new form, no lower score (171); retail builds the segment address in EDX and keeps it at
+// +0x14 and the loop's previous values at +0x5c, ours borrows EDI with the segment at +0x1c and the previous values
+// at +0x50; the segment as a base pointer plus an index, as a named index and as an if/else all give the same
+// code, and the base-then-add form (which puts the segment in EDX) scores 281.
 // MiniMax I (11-06): no new form, no lower score; the stiffness product with the operands swapped keeps 171 and the node position read into its three components gives 220.
 // MiniMax A (11-05): no new form, no lower score; the segment selected before the node 279 (as before),
 // and our segment base takes EDI with the segment pointer in ECX where retail keeps both in EDX, the

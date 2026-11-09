@@ -69,6 +69,7 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax I (11-08): no new form, no lower score (49); the busy-true path falling through to the shared zero exit gives 65 with the actor and node registers swapped.
 // MiniMax R (11-07, run 38): no new form, no lower score (49); the busy test still becomes a numeric select
 // where retail branches to a last `return priority` and falls into the shared `xor eax, eax` exit, and the
 // fallback still tests the prop index where retail tests the node, so the block order and the two epilogues
@@ -339,6 +340,7 @@ evaluate:
 	return 0;
 }
 
+// MiniMax I (11-08): no new form, no lower score (73); still BLOCKED-BY function_25d740's inline-ness.
 // MiniMax R (11-07, run 38): no new form, no lower score (73); still BLOCKED-BY function_25d740's inline-ness,
 // which is set in src/unknown_25d690.cpp: retail calls it out of line and sinks the ESI/EDI saves, while our
 // build inlines it at this site, so the prologue differs at +0x13.
