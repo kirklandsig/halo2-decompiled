@@ -201,6 +201,7 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax D (11-09): no new form, no lower score (32); the permuter run was killed with no candidate.
 // MiniMax R (11-09): the squares written out by hand in the three orders give 29 with the same code, and the store order whose
 // operations match retail's still shuffles the registers against it, so the difference stays inside the inlined length helper.
 // MiniMax R (11-08): the deltas assigned i, j, k 79, i, k, j 55, j, k, i 52, k, j, i 72 and k, i, j 30; the delta

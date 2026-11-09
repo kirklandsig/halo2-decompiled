@@ -815,6 +815,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // parent/origin projection, fraction, inverse length, facing and marker position:
 // 219/219/219/219/219/219/219/219. NOT kept: no exact ownership/home repair. Original executable body restored.
 // Early root/actor retention and paired projection ownership remain.
+// P394: Paired-edge clamp admission before reciprocal/fraction, wide-edge/midpoint truth
+// in bool/byte/short/long: 367/367/371/369/367/367/371/369. NOT kept: no byte equality; original
+// comparison, geometry, result and whole body restored. Early root/actor ingress remains.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
