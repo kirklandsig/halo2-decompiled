@@ -754,6 +754,14 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // Round 172 (m3 lane 4, fast): the would-block arm setting the result before the position 10; the buffer declared
 // before the result 10; `sent <= -1` 23; `-2 == sent` 10; `result = sent >= 0` tested in place of `sent < 0` 74;
 // the send count passed without its `(short)` cast 10.
+// Round 156 (m3 lane 6, fast): `break` exits, `return true` in the sentinel arm and the completion under `if (result)`
+// 44 (208 bytes); `while (true)` with the completion stores and `break` inside 113 (271 bytes); success nested in
+// `if (b6320(...))` with `if (!result) return result;` 64; one shared false return (goto) with direct other returns 64
+// (the false exit folds); the success nested under the b6320 test with an `else goto` 10 (same code). CL-only screens
+// give today's code for the restore placed after the shared return, `bool result = false` initialised and `while (!done)`; a
+// one-chunk inline step returning a status is longer. Probe: with the sentinel miss as the only false exit the return
+// block still carries the BL copy (conditional false edges sink their copy into it), so the restore copy can only be
+// laid out last if the false exits reach the return through a block of their own.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

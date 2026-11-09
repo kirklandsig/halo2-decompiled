@@ -833,6 +833,11 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // existing data_find_index scan 14, over a scan with the bit test either way round 14/14 (diagnostics, the
 // scan's shape is not the tie); the flags set field by field 71; the iterator and prediction declared ahead
 // of the flags 14; one exit with `result = true` first, a break and allocation only when not found 73 (187).
+// Round 95 (m3 lane 16, fast): the font read as `.field_0` at all three uses 14; the character compared first 17; the search
+// pointer declared in the while condition 14; a const search pointer with a separate pointer for the new prediction 14; the
+// datum-iterator form of matched 0x1406b0 (prediction from `iterator.datum`) 14; a `predictions` pool local for the iterator and
+// the allocation 14; the iterator in its own block 14; `return true` in an explicit else 14. Diagnostics: the header call's font read through
+// its address 14; without the header call 87 (the mask still takes EBP: it is allocated after the parameter in every form).
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

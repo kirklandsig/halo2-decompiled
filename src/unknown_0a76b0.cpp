@@ -1245,6 +1245,10 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // an explicit success goto 19; a computed active value with the result before its store 19 (NOT kept: one-use
 // local, no match); direct success return true/result 264/264 (948 B); an addressed result read 19 (same code);
 // a one-iteration do/break scope 646 (1266 B, frame 0x84). Original body restored.
+// Round 359: byte result 152; signed-byte result 152; short result 285; long result 285; read-
+// only request 19; marker field at each use 19; separate object and weapon rejections 19; seat
+// eligibility assigned directly 203. NOT kept: no qualifying byte match or gain; original body
+// restored.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
@@ -1816,6 +1820,10 @@ bool __stdcall function_e8b20(long unit_index, long type)
 // force-inlined switch-finished action 82.
 // Round 187: a function-top pool local (`s_record_pool *objects = g_4e0300;`) for the lookup 11 (same
 // entry order); with a unit pointer from it 90.
+// Round 359: read-only actions 11; byte selector 76; signed-byte selector 76; short selector 97;
+// opposite hand decision 76; primary set from equality 87; signed action displacement 90; full-
+// width active result after primary 11. NOT kept: no qualifying byte match or gain; original
+// body restored.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -5044,52 +5052,36 @@ void function_edfa0(long unit_index, point2f const *facing)
 	}
 }
 
+/* v scaled by s into result (v and result may be the same point): the planar
+   counterpart of vector3f_scale */
+PRIVATE inline point2f *planar_scale(point2f const *v, real s, point2f *result)
+{
+	result->x = s * v->x;
+	result->y = s * v->y;
+	return result;
+}
+
+/* scales v to unit length and returns its old length, or 0 for a vector too
+   short to normalize: the planar counterpart of normalize3d */
+PRIVATE inline real planar_normalize(point2f *v)
+{
+	real m = (real)sqrt(v->x * v->x + v->y * v->y);
+	if (!(fabs(m) < 0.0001f))
+		planar_scale(v, 1.f / m, v);
+	else
+		m = 0.f;
+	return m;
+}
+
 /* faces a unit along its aiming direction */
-// MiniMax H (11-07): no new form, no lower score (13); the y product still folds into the dying
-// inverse register, retail stores x first and then loads y into another register to multiply it by
-// the inverse. The compound assignment and a scaled temporary both compile to the same fold (13),
-// and putting the two products inside the `length > 0` block gives 17 (the multiply keeps xmm1 and
-// the block layout changes).
-// MiniMax D (11-06, run 49): no new form, no lower score (13); the y product still folds into the dying inverse register, retail stores x first and then loads y into another register to multiply it by the inverse.
-// MiniMax H (11-04): no new form, no lower score (13); the y product still folds into the dying
-// inverse register. The compound assignment on the local, the two products in the other order and
-// the products through a pointer to the local all compile to the same folded multiply.
-// MiniMax E (11-01): no new form, no lower score; the same helper without the zeroed
-// length (26) and the symmetric operand order (13) keep the commuted multiply.
-// score 13 (was 24): retail stores x before it loads y (`movss xmm2, y; mulss xmm2, xmm0`); ours
-// multiplies y into the inverse's register and stores both after. Tried: the products as `*=` or
-// in any operand order 13; normalize2d_fast 13; `else length = 0.0f;` before the test, either arm
-// first 13; a vector2f local 13; the normalisation as a helper inlined from another file 13; the
-// local filled by one point2f copy 19 (x87 squares swap); `= { x, y }` 13; y copied first 21;
-// `inverse` declared at the top 13; each coordinate divided by the length 13; the matched
-// 0x2c1d90 shape (pointer helper, `else magnitude = 0`, test on its result) 13.
-// Round 85: retail loads y only after storing x (an ordered, unfolded load: matched functions with this
-// sequence used volatile casts or real pointer aliasing); every plain shape compiles to the same code here:
-// a `real *` array helper 13; separate in/out pointer helper 13; element pointer local 13; pointer helper
-// with `*=` 13; one point2f copy 19 (as before); y first, `*=`, division by the length all code-identical.
-// Round 143: y saved after the x store / a scaled-y local / mixed union array-field accesses 13 each;
-// magnitude2d with manual scaling 13; both product locals 13; a length-squared local 13; scalar entry
-// x/y 13; a scaled point copy 31 (NOT kept: frame 0x10 versus 0xc and a one-use aggregate). Restored.
 // @retail 0xedff0
 void function_edff0(long unit_index)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	point2f facing;
+	point2f facing = *(point2f const *)&unit->field_xe66477;
 
-	facing.x = unit->field_xe66477.i;
-	facing.y = unit->field_xe66477.j;
-
-	real length = (real)sqrt(facing.y * facing.y + facing.x * facing.x);
-
-	if (!(0.0001f > (real)fabs(length)))
-	{
-		real inverse = 1.0f / length;
-
-		facing.x = inverse * facing.x;
-		facing.y = facing.y * inverse;
-		if (length > 0.0f)
-			function_edfa0(unit_index, &facing);
-	}
+	if (planar_normalize(&facing) > 0.0f)
+		function_edfa0(unit_index, &facing);
 }
 
 void function_b8840(long unit_index);

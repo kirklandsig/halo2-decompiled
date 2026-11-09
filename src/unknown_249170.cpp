@@ -187,6 +187,10 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // Round 97 (m3 lane 12, fast): case 1's position through particle_scale_position 505; the tail's squared speed through
 // the existing length_sq3f on the velocity pointer 2, then on &particle->velocity with the pointer local dropped 2 (same
 // code, kept); on that, the normalization or the speed scale through particle_scale_vector 42/16.
+// Round 72 (m3 lane 14, fast): case 1 with `radius * velocity.j` for position.y 2, `radius * velocity.k` for position.z 2,
+// a const radius 2, azimuth initialised to zero before the draw 2, radius declared at the case top and assigned after the
+// draw 2 (all the same code). Retail's case 1 has no jump into its block after the fsin (checked), so the swap is the
+// block scheduler's own choice.
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {

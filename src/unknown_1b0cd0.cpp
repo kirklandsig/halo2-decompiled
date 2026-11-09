@@ -469,6 +469,9 @@ bool function_1b1970(long actor_index, short index, short mode, vector2f const *
 // short index with the mode at the call 66 (no EBX reload at the join; the two flag stores share `mov al, 1`); the field
 // read at the test and the call with the mode local 70 (758 bytes); `long index` sign-extended 12 (movsx, same shape); the
 // store as a ternary 75 (748 bytes); index declared before the mode 12.
+// P361: Existing actor/leader/slot input-receiver lexical identities, seven subsets then complete formal-input names:
+// 3/3/3/3/3/3/3/3. NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// Origin/point/forward address preparation at the 0x1b0e40 call remains; frame and all later code agree.
 // @retail 0x1b1a90
 void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

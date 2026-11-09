@@ -116,6 +116,12 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // pointer at the loop top 20 (with side + current-point 20); current-point pointer at the loop top 30, with side 32;
 // the else-arm current-point pointer without side 28; classification point pointer 9 (with side + current-point 8);
 // one index variable for both loops 196 (199 instructions).
+// Round 72 (m3 lane 14, fast): current- and previous-point pointers at the loop top for both intersections and the
+// copy 28; that with a side local 16 (output loaded before the constants, current*4/current*8 homes swapped, first
+// intersection x product unchanged); side and previous-side locals 119 (701 bytes), with both pointers 119; previous
+// declared in the `for` header 5 (same code). A compile-only screen (1232 loop forms x 0-7 probe locals; not
+// faithful here, it passes the parameters in ECX/EDX) puts the two pointers at d=3 against retail with 2-4 probes,
+// but the real build does not follow it. Probe locals anywhere rotate only the second intersection's products.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
