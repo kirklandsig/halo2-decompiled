@@ -935,7 +935,10 @@ extern long *g_51e9cc;
 /* the biped's physics callback: its crouch, kill volumes, its character
    physics move, and the ground (structure, instanced geometry or object)
    its contact rests on */
-// MiniMax S (11-09): 0xdd990 score 10 (was 17): every +0x348 flag write goes through the existing word_flags_set.
+// score 10 (was 10): what still differs: the crouch sum loads the biped's crouch and adds the spilled change (retail
+// loads the change and adds the field), case 5 stores unknown35c before the surface flag test (retail tests first),
+// case 4 stores 0x364 before reading entry+0xc for 0x354 (retail reads it first). Notes below, oldest last.
+// MiniMax S (11-09): 0xdd990 at 10 (was 17): every +0x348 flag write goes through the existing word_flags_set.
 // Not kept (coordinator 11-09): case 5's surface flag array in a one-use pointer, so the flag test keeps its own
 // register instead of taking the index's (9; a one-use pointer is match-only).
 // Still differs in three places: the crouch sum loads the biped's own crouch and adds the spilled change (retail
@@ -946,14 +949,14 @@ extern long *g_51e9cc;
 // the crouch store sits after the flags clear (retail before it), case 5 stores unknown35c before the surface flag
 // test (retail tests the flag first) and the 0x10 flag or is scheduled after the three unknown380 loads (retail
 // before them); case 4's stores are ordered differently as well.
-// MiniMax S (11-08): 0xdd990 score 17 (was 42): the case 4 lookup's address is carried in one pointer value, used by
+// MiniMax S (11-08): 0xdd990 at 17 (was 42): the case 4 lookup's address is carried in one pointer value, used by
 // both the initialize call and the 0x1efd80 call, the same spelling 0x14a8e0 uses; retail keeps that address in a
 // register and our build rematerialised it, which cost the two extra bytes. The length now agrees with retail's 1481.
 // Still differs: the crouch sum loads the field first (retail loads the spilled crouch change), the crouch store sits
 // after the flags clear (retail before it), case 5 stores unknown35c before the surface flag test, case 4's stores are
 // ordered differently and the 0x10 or is scheduled after the unknown380 loads.
 // MiniMax R (11-06): no new form, no lower score (42); the flag store still sits after the three loads and the crouch add still folds the field instead of the spilled operand; the crouch sum's two operands the other way round changes no code at all, and the flag clear ahead of the crouch store gives 49.
-// score 42 (was 42): Frame 0xb8 agrees; lookup-address rematerialization adds two bytes;
+// Earlier note (at 42 then): Frame 0xb8 agrees; lookup-address rematerialization adds two bytes;
 // crouch operands and contact/flag publication schedules remain.
 // Earlier: walked against retail block by block (calls, argument order, offsets, constants, conditions,
 // case bodies): the only behaviour difference was the final flags bit-7 clear, which retail also runs when the
@@ -1085,6 +1088,15 @@ extern long *g_51e9cc;
 // P383: Complete fallback-owner admission in bool/char/signed-char/byte/short/word/long/dword:
 // 42/42/42/42/42/42/42/42. NOT kept: no native lookup-receiver retention or equality; original direct
 // admission and whole body restored.
+// Round 81 (m3 lane 1, fast): case 5's surface flag in a bool ahead of the 0x35c store 210 (1487 bytes); case 5's
+// 0x35c store in both arms of the flag test 7; that with case 4's 0x354 store ahead of 0x364 2 (only the crouch-add
+// operand pair left; both forms are exact-only, so not kept). On that 2: the velocity push (0xb7740, 0x1c4b00, the speed
+// test and its three calls) as a force-inline helper 2, the whole height-change block as a force-inline helper 2, the
+// velocity declared at the component scope 2, the speed sum declared with the block's locals 2, the summed crouch in a
+// block local 2. Retail inlines 0xb77d0 here while its 16 other retail callers keep it out of line, so it cannot be
+// made inline; the crouch pair is the blocker. More probes on the 2-form: no clamp (diagnostic) still field first;
+// `crouch_change * 1.0f` 2; crouch_change declared last in the block 2, or at function scope before the biped 2; a
+// helper shaped like 0xb77d0 (NULL angular argument and its `||` test, one-expression sums) 4 (the sum comes out i, j, k).
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
