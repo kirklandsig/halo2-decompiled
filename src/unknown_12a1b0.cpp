@@ -336,6 +336,7 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// MiniMax C (11-09): no new form, no lower score (93); the location query is still expanded here and the packed datum walk is still missing.
 // MiniMax S (11-06): no new form, no lower score: retail still packs the iterator handle as an index and a datum in one word and scans its bit vector in 32-bit words; ours keeps the two in separate values, and the location query's call boundary still differs (its owner is outside this lane).
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
 // Round 28 (lane G): what still differs is the location call itself: retail calls 0x11bed0 out of
