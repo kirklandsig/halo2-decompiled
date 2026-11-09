@@ -112,6 +112,11 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // its own two-field local 10; a `_ReadWriteBarrier()` between the build and the read 10 (the reuse is register tracking, not a memory
 // CSE: what unifies the inlined helper's path register with the read's address is still open); the cached index as `short` 117
 // (309 bytes).
+// Round 158 (fast, 0x2161d0 checked): 0x122810 made an out-of-line member of a 256-character string (diagnostic, its
+// definition and 0x216d70's call changed) 10, `mov edx, esi` stays; the build arm setting `result = true` with the read
+// under a later `if (result)` 10 (threaded early); the location arm as a forceinline helper 90 (0x2161d0 33); the location
+// and path local as a named file-scope record 10, with the read as its inline member 10; result set before the task stores
+// re-measured 20; permuter 600 s (35 tries) none better.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

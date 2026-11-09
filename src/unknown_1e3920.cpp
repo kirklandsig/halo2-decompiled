@@ -743,6 +743,13 @@ real function_267370(long object_index);
 // loaded in every form (even with point.x in a register). On the kept 14 body: mode read at each use 18, parent
 // definition inline 14, held index read at each use 18, left before the up copy 14, left at block top 24, held
 // object read at each use 74. Retail's other inlined copy at 0x16ebf0 loads plane.i too.
+// P395: Native left/up/forward cross-field reference subsets on the resolved-carrier graph
+// 14/12/12/2/2/12/12; left field direct at all uses 20. NOT kept: two-count forms use a
+// single-use forward output reference and miss equality; original cross receivers and whole body restored.
+// P397: Guarded complete scalar point/plane input producers, mutable/immutable,
+// singly and together, then complete distance receivers: eight 386 (1732/1724 bytes).
+// NOT kept: shared predicate users regress (11c120 62, 25ccd0 184); no exact plane
+// or cross-input recovery. Entire shared predicate and target body restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {

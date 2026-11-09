@@ -314,6 +314,11 @@ void __stdcall function_124750(dword flags)
 
 void function_125a90(long value);
 
+// MiniMax R (11-09): no new form, no lower score; the special arm and the kind arm still swap their block
+// order, and the record address still goes to esi where retail multiplies into eax and lea's it.
+// This round: the element as an array subscript 36, the type test inverted 36, the special arm nested with
+// an explicit else 89, the re-test without the short cast 46 (it gives retail's shared jump target and
+// `cmp eax, 0x26`), the kind arm written as a branch 87; the block order still decides the score.
 // MiniMax lane G (11-04): no new form, no lower score; two separate type cases give retail's chain
 // (je to the special arm, jne to the kind arm) with 0x221810 out of line, but the pool pointer moves
 // to edi and the score is 83; the named `||` gives the same chain and the a/b slots but inlines 0x221810.

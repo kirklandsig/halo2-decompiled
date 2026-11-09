@@ -134,6 +134,11 @@ c_2d8ab0 *g_47f044;
 // release for 7; world declaration at entry 7; group-entry scope 7;
 // release-index pointer 10.
 // group-table ternary reversed 11; entity list local 7; index local 7; both locals 7.
+// MiniMax S (11-09): no new form, no lower score; the group loop still loads the entity list into
+// EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still
+// uses EDX and EAX where retail uses EAX and ECX; the entity list and the index through named locals
+// and the index read before the element all compile to the same 507 bytes and leave the same seven
+// differences.
 // @retail 0x1c3d30
 void function_1c3d30()
 {

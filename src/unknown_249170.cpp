@@ -191,6 +191,10 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // a const radius 2, azimuth initialised to zero before the draw 2, radius declared at the case top and assigned after the
 // draw 2 (all the same code). Retail's case 1 has no jump into its block after the fsin (checked), so the swap is the
 // block scheduler's own choice.
+// Round 60 (m3 lane 2, fast): `default: __assume(0);` first in the switch 2 (same code); the lifetime clamp as
+// `lifetime < 0.01f ? 0.01f : lifetime` 4 (case 1 unchanged); the shape in a named local before the switch 24 (2352
+// bytes); the lifetime local declared then assigned 2 (same code); case 1's cosine named after the velocity.j store with
+// the position products still from the fields 24 (2352 bytes).
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {
