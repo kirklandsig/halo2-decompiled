@@ -513,6 +513,9 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // for admission and inherited velocity:
 // 421/421/426/429/421/421/426/429. NOT kept: no exact ownership/home repair. Original executable body restored.
 // Early address/flag home and blend/getter allocation remain.
+// T70: Actual flag word/bit-field extraction, staged/direct Boolean producers on native-entry graph:
+// 334/334/334/334/344/334/334/334. NOT kept: no exact address/DL/flag-home recovery; original field observations,
+// inherited qualifier, random stream, geometry, helpers and complete body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

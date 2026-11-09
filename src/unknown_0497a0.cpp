@@ -926,6 +926,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // T64: Texture-word/current-state-dword/state-array input owners, singles/pairs/all and
 // all with readonly state/endpoints: eight 250s. NOT kept: native flag/receiver observations
 // canonicalize without the extra frame slot or first-edge Y/half-width homes; full body restored.
+// T70: Real backing flag views on current paired geometry, texture/state/point/pairs/all/endpoint
+// 629/591/250/676/626/591/665/676. NOT kept: no exact native ingress or missing frame-word repair;
+// original flag words, observations, geometry, helpers and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
