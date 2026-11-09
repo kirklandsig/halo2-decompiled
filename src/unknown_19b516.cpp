@@ -180,6 +180,12 @@ void c_widget::v15(c_widget *widget)
 // `if (!next) result = first_sibling(); else result = next;` 2; as `if (!next) return first_sibling();
 // return next;` 2 (0x2c8f56 12); first_sibling as an empty-body for loop 2, as a guarded do-while 2.
 // Header restored. A compile-only build keeps `test eax, eax; mov esi, eax` in every helper form.
+// Round 98 (m3 lane 12, fast, all four walkers): the wrapped helpers walking one `result = this` in place 52 (98 bytes; the
+// button pair 54, 104); the walk started at `this`, stepped once before the loop 2; the helpers as `result = link`, walked in
+// place when NULL 42 (90; 44, 96); the walk helpers as const members 2; an entry guard with a search loop that returns when the
+// step is NULL and the focus after it 32 (84; the button pair 2, the same code). Compile-only: an in-place if/else step gives
+// the copy-then-test tail, but every in-place entry then lets the compiler drop the entry test (the widget is known non-NULL)
+// or load it straight into ESI, and a helper entry keeps its own test.
 // @retail 0x22ebc3
 void c_widget::v16()
 {
