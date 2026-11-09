@@ -2611,6 +2611,11 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // for the memset 105 (272 bytes, temporary plus copy); the default arm's NONE stores chained 16 (same code); the index
 // from an if/else on entry_index with extra copied as an aggregate 16; the request cleared before the 0x114520 query 83
 // (254 bytes); the extra filled before the common fields 85 (228 bytes).
+// Round 99 (m3 lane 12, fast): a short priority parameter with a separate `long definition_index = NONE` out
+// value (the out value would then reuse the priority's home, as retail's early priority load suggests) 46 (LTCG then
+// passes the priority and entry in registers, frame 0x38); the sound index stored after the extra block 71 (223 bytes);
+// the submit call written in both extra arms 48 (238 bytes); the 0x114520 test as `== true` 18; the entry-first
+// forwarding function defined above this one 16 (same code).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
