@@ -233,6 +233,10 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// MiniMax D (11-08): no new form, no lower score (171); retail builds the segment address in EDX and keeps it at
+// +0x14 and the loop's previous values at +0x5c, ours borrows EDI with the segment at +0x1c and the previous values
+// at +0x50; the segment as a base pointer plus an index, as a named index and as an if/else all give the same
+// code, and the base-then-add form (which puts the segment in EDX) scores 281.
 // MiniMax I (11-06): no new form, no lower score; the stiffness product with the operands swapped keeps 171 and the node position read into its three components gives 220.
 // MiniMax A (11-05): no new form, no lower score; the segment selected before the node 279 (as before),
 // and our segment base takes EDI with the segment pointer in ECX where retail keeps both in EDX, the
@@ -531,6 +535,9 @@ void __stdcall function_1160c0(real dt)
 // row i, offset-first products) 171; with cross i named too 171; in 0x170d70's order (cross i, projection, cross j, k) 171;
 // the cosine complement named 171 (all same code); `segment = &segments[i]` then reassigned for the last node 284 (1358 bytes);
 // the fixed/time-step guard as two nested ifs 171; the node index declared ahead of its loop 171 (same code).
+// P394: Actual terminal-segment decision before reciprocal/node acquisition, terminal/interior
+// bool/byte/short/long results: 171/171/171/171/171/171/171/171. NOT kept: no byte equality; original
+// direct selection and complete body restored. Segment EDX and mirrored scalar/vector homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -701,6 +701,10 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // corner 2 from corner 1 90 (289); corner 2 from corner 1 and corner 3 from corner 0 93 (291). Compile-only: the
 // sum's operand order is canonicalised (both orders give the same code), and removing or adding float work after
 // the corner block (the scales, a texture coordinate) leaves its colours, so they are decided inside the block.
+// Round 158 (m3 lane 5, fast): read-backs from earlier corners on the kept form: corner 1's y from corner 0's
+// 89 (279 bytes), corner 3's x from corner 0's 86 (280), both 93 (274), corner 3 from corners 0 and 2 88 (279),
+// corner 2's x from corner 1's 87 (281); retail reloads the bounds after every corner store, so each read-back
+// shortens the body.
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {

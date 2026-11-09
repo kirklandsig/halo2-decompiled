@@ -102,6 +102,8 @@ long __stdcall function_2cb5b0(byte *destination, long *destination_size, byte c
 // volatile high 13; a reference to the plain local 116 (stores lost); a dead asm read of it 116 (diagnostic; stores lost). Compile-only:
 // block-scope volatile low and high, a volatile union, a two-dword array and a 64-bit integer for rdtsc keep the hoist; a volatile double
 // stores through x87; a constructor or a store through a pointer helper loses the stores; no SDK header has a reader.
+// Round 96 (m3 lane 9, fast): the decompressed size through a named local 3; `if (!function_2cb5b0(...))` 3; the allocator's
+// result in a `long` before the pool cast 3; `return result != false;` 105; `0 == function_2cb5b0(...)` 3. Original body restored.
 // @retail 0x199740
 bool __stdcall function_199740(byte *buffer, long size, byte *destination, long *decompressed_size)
 {

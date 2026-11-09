@@ -24,7 +24,7 @@ real magnitude3d(vector3f const *v);
 extern vector3f *g_4687bc;
 
 __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4,
- long arg_0, void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
+ long arg_0, point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 
 // MiniMax lane C (run 36, 10-31, later pass): no lower score; the fast check has to name both
 // lane files, otherwise the reduced build holds another object set (362 instead of 5), and the add
@@ -33,7 +33,9 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // MiniMax lane C (run 36, 10-31): applied the lane-E score-5 body (short category, bool clear
 // state, one bool probe result with `category = 1` on a hit, mode-1 rows reading the centre through
 // a named copy of the cast parameter) to the current parameter order.
-// score 26 (was 170; review of run 36): short category, the clear state as a bool, and one bool probe
+// score 20 (was 26): round 96 typed the origin parameter `point3f const *` everywhere and read it directly (no
+// renaming copy): only the mode-1 positive x row is left (retail adds the centre x as the memory operand, ours
+// loads it first; 1176 bytes). Earlier note, at 26 (was 170; review of run 36): short category, the clear state as a bool, and one bool probe
 // result with `category = 1` on a hit (function_16a040 returns bool, so category gets the same value) are
 // kept. The run's 5 also read the mode-1 rows through a second pointer to arg_1 (`centre`, the same value
 // as local_3): a duplicate local, not kept without a match. At 5 only the mode-1 positive point's x and z
@@ -190,14 +192,26 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // (38; its arg_7 compare is loaded early) and takes 0x25f7b0 4 -> 12; six more such orders screened
 // with the fast check break 0x1b0400 (18-38). Only the current order reproduces every retail call
 // setup. All restored.
+// Round 96 (m3 lane 16, fast with 0x1e55d0, plain-confirmed 20): retail's five call sites push arg_9 .. arg_1
+// and set up EBX (arg_0), ESI (arg_4), CX (arg_3), DX (arg_2) last to first, so the order stays. On the 20 body:
+// side vector k component first 28; both quarter points declared once for both modes 43; side vector declared at
+// block top 20; spacing declared before the points 20; spacing at function top 20; clear state at function top 20.
+// P395: Complete quarter/triple/both setters on the typed-origin graph 20/20/26;
+// complete quarter/triple/both aggregates 20/20/20; quarter/triple native component loops 86/104.
+// NOT kept: no x-row scheduling repair; original point producers and full body restored.
+// P397: Complete reused scaled-side scalars, aggregate vectors and field vectors on
+// the typed-origin graph, quarter/endpoint/both producers and immutable scalars:
+// 35/29/44/35/29/44/44/44. Per-row product birth at its first positive consumer,
+// quarter/endpoint/both/immutable-both: 20/20/20/20. NOT kept: all tie or regress;
+// per-row forms recover the original homes but miss the native positive x add.
+// Original complete body, signature and all probe tuples restored.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
- void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)
+ point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)
 {
  short category;
  real local_1;
  long local_2 = NONE;
- point3f const *local_3 = (point3f const *)arg_1;
  if (arg_9)
   *arg_9 = NONE;
  if (arg_2 != NONE && arg_3 != NONE && !(char)function_11c010(arg_2, arg_3))
@@ -217,8 +231,8 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
   bool local_7;
   {
    vector3f local_5;
-   vector3d_from_points3d(local_3, arg_4, &local_5);
-   if (!function_1697c0(local_4, local_3, &local_5, arg_0, NONE, &local_6))
+   vector3d_from_points3d(arg_1, arg_4, &local_5);
+   if (!function_1697c0(local_4, arg_1, &local_5, arg_0, NONE, &local_6))
     local_7 = true;
    else
    {
@@ -230,8 +244,8 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
   if ((short)arg_5 != 0)
   {
    vector3f local_8;
-   local_8.i = local_3->y - arg_4->y;
-   local_8.j = arg_4->x - local_3->x;
+   local_8.i = arg_1->y - arg_4->y;
+   local_8.j = arg_4->x - arg_1->x;
    local_8.k = 0.0f;
    if (function_30bf0(&local_8) == 0.0f)
     local_8 = *g_4687a8;
@@ -242,12 +256,12 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
     point3f local_9;
     point3f local_10;
     real const spacing = 0.25f;
-    local_9.x = local_3->x + local_8.i * spacing;
-    local_9.y = local_3->y + local_8.j * spacing;
-    local_9.z = local_3->z + local_8.k * spacing;
-    local_10.x = local_3->x - local_8.i * spacing;
-    local_10.y = local_3->y - local_8.j * spacing;
-    local_10.z = local_3->z - local_8.k * spacing;
+    local_9.x = arg_1->x + local_8.i * spacing;
+    local_9.y = arg_1->y + local_8.j * spacing;
+    local_9.z = arg_1->z + local_8.k * spacing;
+    local_10.x = arg_1->x - local_8.i * spacing;
+    local_10.y = arg_1->y - local_8.j * spacing;
+    local_10.z = arg_1->z - local_8.k * spacing;
     if (local_7)
     {
      hit = function_16a040(local_4, &local_9, arg_4, arg_0, NONE, &local_6);
@@ -280,11 +294,11 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
     local_11.x = arg_4->x + g_4687bc->i * 0.1f;
     local_11.y = arg_4->y + g_4687bc->j * 0.1f;
     local_11.z = arg_4->z + g_4687bc->k * 0.1f;
-    hit = function_16a040(local_4, &local_9, local_3, arg_0, NONE, &local_6);
+    hit = function_16a040(local_4, &local_9, arg_1, arg_0, NONE, &local_6);
     if (!hit)
-     hit = function_16a040(local_4, &local_10, local_3, arg_0, NONE, &local_6);
+     hit = function_16a040(local_4, &local_10, arg_1, arg_0, NONE, &local_6);
     if (!hit)
-     hit = function_16a040(local_4, &local_11, local_3, arg_0, NONE, &local_6);
+     hit = function_16a040(local_4, &local_11, arg_1, arg_0, NONE, &local_6);
     if (hit)
     {
      local_2 = local_6.field_40;
@@ -304,7 +318,7 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
   else
   {
    vector3f local_13;
-   vector3d_from_points3d(local_3, arg_4, &local_13);
+   vector3d_from_points3d(arg_1, arg_4, &local_13);
    real local_12 = magnitude3d(&local_13);
    if (local_12 < 1.0f)
     category = 4;
@@ -320,7 +334,7 @@ local_14:
  if (arg_9 && !arg_8 && category >= 1)
  {
   vector3f local_15;
-  vector3d_from_points3d(local_3, arg_4, &local_15);
+  vector3d_from_points3d(arg_1, arg_4, &local_15);
   if ((1.0f - local_1) * magnitude3d(&local_15) < 4.0f)
    *arg_9 = local_2;
  }

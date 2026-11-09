@@ -278,6 +278,10 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // arguments, a unit local and else-if/nested/else forms best 3 (declaration-order shuffles 5-107); 0xc8200's result in
 // a named bool 3; the seat's object index named at the loop top for every use including 0xc8200 69. Probes: a constant
 // unit or seat argument still reloads the seat pointer into ECX.
+// Round 157 (m3 lane 6, harness): our reload of the spilled `&seats[i]` returns to its home register ECX; retail's goes to
+// EAX with the seat-index load between. A seat pointer at the loop top for the 0xc8200 arguments 69 (fast 73 at 380 bytes; the
+// pointer takes EBP, frame 0x310), for every use 84; a reference for every use 84; the pointer for both unoccupied-arm calls 82; the
+// 0xc8200 test nested under the 0x1b8d80 test 3 (fast 3); a short seat index local for both unoccupied-arm calls 70.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -389,6 +393,7 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// MiniMax I (11-08): no new form, no lower score (8); the exclusive bound with the count in a local, the index declared before the seat pointer and the reversed comparison all give 11 or 12 with the count in EBP and the index in ESI.
 // MiniMax R (11-06): no lower score (8); the exclusive bound 11, the same with the count in a local 11, the index declared before the seat pointer 11, both together 11 and the inclusive bound with a local count 26 all move the count to EBP and the index to ESI; a long count local with the index declared before the seat pointer is 11 as well, and a short count makes the compiler compare in 16 bits and rewrites the loop.
 // MiniMax E (11-06): no new form, no lower score.
 // Exclusive bound with the index declared before the seat pointer 11, the same
@@ -672,6 +677,9 @@ extern "C" void _ReadWriteBarrier(void);
 // 44; a point pointer at the top with the barrier 6. Diagnostics: a real slot read in the join block after the outer if
 // loads the slot in the entry block, but after the 0x26c compare (just before the jne), with or without the barrier
 // (retail loads it before the mask); an extra read inside the flags arm does not; an `__assume` at the join does not.
+// Round 60 (m3 lane 2, fast): `s_slot_4c *const state` 6; the slot parameter `s_slot *const` 6, without the barrier
+// 44; the flags test as `(state->flags & 4) != 0` 6; the point copied through a const reference in the arm 6 (all 6s
+// the same code). `register` on the slot parameter does not build (the generated cast rejects it).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1375,6 +1383,7 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
+// MiniMax I (11-08): no new form, no lower score (134).
 // MiniMax C (11-06): no new form, no lower score; the frame is still 0x10 against retail's 0x14,
 // retail still spills the 0x20 mask byte to F+3 and keeps the loop entry in EBX (home F+4, reloaded
 // after the root calls) where ours keeps the mask in BL and the entry in memory, and retail still

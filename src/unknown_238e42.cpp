@@ -888,6 +888,8 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax I (11-09): no new form, no lower score; the whole difference is still the colouring of the two values the callee 0xac050 takes, which needs that callee's parameter order changed in src/online_teams.cpp, a file this lane may not edit.
+// MiniMax S (11-08): no new form, no lower score (90); the difference is still the colouring of the two values the callee 0xac050 takes: retail loads the selected identity pointer into EAX and the requested rank into ECX, ours keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the call, which costs two bytes and shifts every later jump.
 // MiniMax A (11-06): no new form, no lower score; the whole difference is the colouring of the two values
 // the callee 0xac050 takes: retail loads the selected identity pointer into EAX and the requested rank
 // into ECX, ours keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the

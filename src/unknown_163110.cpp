@@ -616,6 +616,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 	return success;
 }
 
+// MiniMax S (11-09): the plane-0 product with the two operands of the i term written the other way
+// round changes no code at all (115), so the coefficient's register is not chosen by the operand
+// order of that product.
+// MiniMax S (11-09): still differs at the first plane: retail reads all three of view->vector_e4's components
+// before the forward vector's copy (e4.i into xmm4), ours reads e4.j and e4.k there and reads e4.i only at its
+// own product, which exchanges the xmm3 and xmm4 roles for the rest of the function.
 // MiniMax I (11-06): no new form, no lower score; the view vector copied into a local for the first plane's dot product gives 463 and 452 against 115.
 // MiniMax A (11-05): no new form, no lower score; the plane-0 term still loads `vector_e4.i` after the
 // forward copy and keeps the zero in xmm3 where retail has it in xmm4.

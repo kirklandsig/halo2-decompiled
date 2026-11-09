@@ -52,6 +52,10 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax D (11-08): the frame is 0x8024 against retail's 0x8020 and the two output
+// slots differ - retail keeps the address-taken block count at +0x10 shared with the loop spills and the
+// allocator output at +0x1c, ours gives the count +0x1c and the allocator output +0x20; the byte-exact form
+// needs this file built without whole-program optimisation, which would cost three matched siblings.
 // MiniMax B (11-04b): no new form, no lower score; the frame stays 0x8024 against retail's 0x8020 because the produced count keeps a slot of its own, and the two loop temps stay swapped; moving the produced count out of the loop scores 42/90.
 // MiniMax E (11-05): no new form, no lower score; the body is still byte-exact only with the file's /GL-
 // flag, which costs 0x97f60, 0x97fe0 and 0x980d0 their matches, and the LTCG frame keeps its extra slot.
@@ -358,6 +362,13 @@ struct c_aggregate : c_child
 // Round 135 (m3 lane 7, fast; siblings stay matched): `register long produced` 31 (same code); the call's result in a
 // status local stored into error after the total 32; the dispatch gate named as a bool 31 (same code); the dispatch bound
 // tested with `!=` 32; produced's block written as a one-pass `do ... while (false)` region 31 (frame 0x8024 in each).
+// P382: Complementary completed-collection dispatch admission in bool/char/signed-char/
+// byte/short/word/long/dword: 31 each. NOT kept: frame remains 0x8024 versus 0x8020,
+// escaped output and low loop homes unchanged; original independent outputs and body restored.
+// P390: Individual collection-receiver presence before the separate error gate,
+// positive/complementary bool/byte/short/long: 31/31/31/31/31/31/31/31. Original independent escaped
+// outputs restored; native frame and low loop homes remain unresolved. NOT kept: no qualifying
+// exact/native-shape gain; original complete body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

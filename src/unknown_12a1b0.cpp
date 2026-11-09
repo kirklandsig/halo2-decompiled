@@ -336,8 +336,10 @@ void looping_sound_controllers_synchronize(bool initial_playback)
 
 void function_11bed0(s_location *location, point3f const *point);
 
+// MiniMax C (11-09): no new form, no lower score (93); the location query is still expanded here and the packed datum walk is still missing.
 // MiniMax S (11-06): no new form, no lower score: retail still packs the iterator handle as an index and a datum in one word and scans its bit vector in 32-bit words; ours keeps the two in separate values, and the location query's call boundary still differs (its owner is outside this lane).
 // score 93 (was 93): Called location-query boundary and native datum/element homes remain; restore the complete opening executable body.
+// MiniMax S (11-06): no new form, no lower score: retail still packs the iterator handle as an index and a datum in one word and scans its bit vector in 32-bit words; ours keeps the two in separate values, and the location query's call boundary still differs (its owner is outside this lane).
 // Round 28 (lane G): what still differs is the location call itself: retail calls 0x11bed0 out of
 // line here and our build inlines it, and the datum and element register homes follow from that;
 // the loop body is retail's otherwise. The only forms that keep the call out of line are the
@@ -394,6 +396,12 @@ void function_11bed0(s_location *location, point3f const *point);
 // datum_get_inlined 191 [76] (300 bytes); with a named source pointer 160 [51]; as a plain `for` with the advance in
 // its header 161 [53]; on LOOPING_SOUNDS without a pool local 161 [53]; the native iterator as a `while` with the
 // advance at the bottom 93 (same code). 0x11bed0 stays expanded in every form.
+// Round 222 (m3 lane 3, fast): retail's walk is the real next-datum function (0x16bbc0) at both sites, inlined, with its
+// 0x16bc00 call inlined only at the latch; our build keeps 0x16bbc0 out of line: both sites through record_pool_next_used as
+// a `for` or a `while` 139/139 (155 bytes); it first and the inline latch 118 (249 bytes); next_sound_datum first and it at
+// the latch 116 (179 bytes); the native iterator with both steps through record_pool_iterator_step 145 (151 bytes). 0x11bed0
+// stays inlined in all five. Lead: 0x16bbc0 and 0x16bc00 sit in an /Ob1 file our LTCG never inlines from, 0x11bed0 in an
+// /O2 file it always inlines from, the reverse of retail (build flags are the user's decision).
 // @retail 0x21a100
 void looping_sound_update_locations(void)
 {
@@ -1258,6 +1266,9 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // Round 79 (fast, `ret 8` in both builds): the next helper reading the index into a local and storing it once 64 (205
 // bytes; 0x21bd00 54); the body reading `iterator.index` with no index local 24; the state through this file's
 // track_sound_get view 24, as a named view pointer 24, `long index = NONE;` at the function top 24 (all same code).
+// Round 222 (m3 lane 3, fast with the same list): the state test moved into the call as `state == 2 ? index : NONE` 24; a
+// 32-form screen of iterator or index declared first x no element local or a named element local x `if` block or early-return
+// guard x macro or track-view lookup x `index` or `iterator.index` at the lookup and the call: 24 in all 32 (same code).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -1304,8 +1315,12 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
+// MiniMax I (11-09): no new form, no lower score (110); retail calls the first-player query out of line where our
+// build expands it, and retail's audible arm keeps the offset in a stack temporary that is copied into the request
+// after the 0x21bfb0 call (that form scores 127-130, worse than the kept 110).
 // MiniMax S (11-06): no new form, no lower score: the source copy is still scheduled differently from retail's and the first-player query is still expanded instead of called; the frame and the entry copy agree.
 // score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
+// MiniMax S (11-06): no new form, no lower score: the source copy is still scheduled differently from retail's and the first-player query is still expanded instead of called; the frame and the entry copy agree.
 // instead of retail's temporary/copy, and the first-player query still expands.
 // Lane 14 r57 (plain): the audible arm through a local offset copied into the request after the 0x21bfb0 call
 // (retail's [esp+0x10] temporary; the arm is then retail's but for detail held in EDI) 130 at 534 bytes, with the
@@ -1511,6 +1526,13 @@ struct s_looping_detail_request
 // with `lea esp, [esp]`, which also says retail's player block has a lower static frequency. Every retail site that inlines
 // 0x14dde0 (0x11b350, 0x13c250, 0x15c150, 0x225730) has the call at conditional depth 0-1; every one that calls it (0x125b40
 // 4, 0x1df3e0 3, 0x219ed0 3) at 3 or more; ours is at 2 (else, count test).
+// P384: Complete detached-source admission in bool/byte/char/signed-char/short/word/int/long:
+// 110/110/110/110/110/110/110/110. NOT kept: no equality or first-player call recovery.
+// Original source observation, direct attached test, both complete request arms and body restored; detail/offset transport remains.
+// Round 222 (m3 lane 3, fast with 0x21b0e0): a 32-form screen of five forms alone and together: the skip loop as
+// `for (; skip > 0; --skip)` 110 (same code); the query before the draw 112; the audible offset through a temporary copied
+// after the 0x21bfb0 call 134; `result = true` first in each arm 151; a short count 110 (same code); best combination 110.
+// The query stays inlined in every form.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1632,7 +1654,7 @@ short function_128a60(long sound_index, short count, short const *voice_indices)
 inline dword looping_sound_get_permutations(s_looping_playback_definition *playback, s_type_5ef569 *sound, looping_sound_definition *definition, long track_index, short arg_58ecd0, bool clear);
 inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_definition *definition, s_looping_playback_definition *playback, long track_index, short arg_58ecd0, dword permutations, short permutation);
 
-// score 35 (was 50): the get path is retail's since 0x21cb90's shared-state test is two bit tests; left:
+// score 35 (was 35): the get path is retail's since 0x21cb90's shared-state test is two bit tests; left:
 // the set path reads the track index inside its arm (`add eax, 7`) where retail reads it before the
 // flag test (`lea [x + x*4 + 0x23]`), retail extends the previous permutation (`movsx eax, ax`), retail
 // spills the definition before the result byte, and the 0x2194c0 arm's `push ebx`/`lea edx` order
@@ -1706,6 +1728,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // path exactly, 0x21cbe0 still a match); with it, the inline 0x21cc30 previous (as a direct argument) and the moved
 // result 2 (only the 0x2194c0 arm left); 0x2194c0's parameters as (ref, value) everywhere on top: a byte match here
 // and in 0x21cb90. A named set pointer in 0x21cb90's fallback arm 2 (same code).
+// Round 222 (m3 lane 3, fast, re-measured on 35): `bool result = false` right after or just before the flag store 33/33
+// (two points, restored); `long previous` 101 (618 bytes: retail's movsx, the inlined set path still 2 bytes long), with the
+// moved result 99/99; the result declared just before the channel test or after the set-chunk call 177/177 (574 bytes).
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {

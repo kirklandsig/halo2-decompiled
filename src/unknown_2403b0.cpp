@@ -34,6 +34,11 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 	return !(table->flags[team] & 1);
 }
 
+// MiniMax D (11-09): no new form, no lower score (86); the unit lookup still loads the pool data pointer before the index multiply where retail multiplies first, the two expression forms tried (the address sum the other way round, a named slot local) both leave 86, and the permuter run was killed with no candidate.
+// MiniMax C (11-09): no new form, no lower score (86): retail keeps the pool data pointer in ecx across
+// the two calls and reloads the global after them, ours spills it to the stack and reloads it from
+// there; for the reload to survive the calls one of the two callees has to have a write in its
+// side-effect summary, which is in another lane's file, so it cannot be forced from here.
 // MiniMax S (11-06): no new form, no lower score (86): the disassembly of both callees shows they only read
 // memory, so retail's pool reload needs one of them to write, which is src/unknown_0cbd50.cpp and
 // src/unknown_101280.cpp, outside this lane; the permuter (900 s) was stopped with no result.

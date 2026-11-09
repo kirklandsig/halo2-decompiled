@@ -2143,6 +2143,8 @@ bool function_1e11b0(long actor_index, bool active);
 // without the current store 72/72 (216 B); address read at the +0x34 store 13; flag before stamp 15; both calls in the
 // depth pair 13; dead read of next or current, a named copy of next (diagnostics) 13 each; squad assigned apart from its
 // declaration, iterator at function scope, address local late or const, dword parameter 13 each. Rank never moves the swap.
+// MiniMax R (11-08): no new form, no lower score (64); the squad and the loop index still swap roles against
+// retail's EBP/EBX, and the return is still narrowed to a byte.
 // MiniMax C (11-05): no new form, no lower score: the squad and loop index still swap roles here, the
 // argument is still not materialised in a register and the return is still narrowed to a byte.
 // Round 76 (m3 lane 1, fast; on the 13 form, index EBX/next EBP against retail's EBP/EBX): the +0x34 store
@@ -2156,6 +2158,10 @@ bool function_1e11b0(long actor_index, bool active);
 // assigned from the return expression 18 (the return becomes `shr eax, 7; and al, 1`); a `long const &` to the
 // index at every use 13; const squad pointer and const actor index 13; the first lookup as `squad_get((word)...)`
 // 69 (205 B); the +0x7e comparison with its operands swapped 23. None kept; the current body restored.
+// P387: Actual actor publication field as long/int/dword/unsigned-int: four 64s;
+// the same domains sourced from the initialized iterator full handle: four 65s at
+// 199 bytes, losing both matched callers. NOT kept: native EBP handle/receiver spill
+// and return mask remain; original real record, parameter store and whole body restored.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2887,6 +2893,12 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// MiniMax R (11-09): five more forms around that call all give 50 with the same code: the call without the short cast
+// on the choice, the test and the call without the casts, a local copy of the squad before the call, before the pair
+// of calls, and the squad copied at the top of the function and used for every call.
+// MiniMax R (11-08): the lock byte compared with zero instead of masked scores 12 and keeps the index in EBP, but that
+// byte is a bitmask (the same field is tested with 0x10 and with bit one elsewhere), so the masked test stays (50); the
+// first 0x1fb8a0 call still reloads the index from its home where retail keeps it in EBP.
 // MiniMax H (11-07): no new form, no lower score (50); the first call still reloads the squad
 // index from its stack home where retail keeps it in EBP (`mov eax, ebp`), which shifts the later
 // jump targets. A copy of the parameter in a local (plain, unsigned, or scoped to the block) is
@@ -3047,6 +3059,15 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // Round 151 (m3 lane 5, fast): a forceinline flag-and-definition predicate in both first-half tests, ternary or result
 // form 50/50; the whole lock test as one forceinline predicate 50; the follow-up test with an empty then-arm 50; the
 // follow-up passed the unnarrowed long 50. 0x290e20 (24) differs only in ordering, with the same registers.
+// P387: Trigger ordinal with complete signed-sixteen-bit normalization, word/long/dword/int
+// at for-owned then pre-threshold zero lifetimes: 50/72/55/72/58/75/63/75. NOT kept:
+// no first-event index or actor-loop padding repair; wider graphs grow to 581/578 bytes.
+// All original wrapped induction, queries, actor steps and the complete body restored.
+// P398: Actual actor-step completion pointer/Boolean ownership, condition declaration,
+// assigned while condition, for-owned result and explicit initial/next observation:
+// 50/50/103/103/50/50/103/103. NOT kept: unmatched one-use/condition-assignment forms;
+// explicit next-result lifetimes grow to 620 bytes. Original complete body restored;
+// first-event index reload and shifted actor-loop alignment remain.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3323,6 +3344,8 @@ long function_203780(long arg_0, short arg_1, short arg_2, bool arg_3);
 long function_201010(long arg_0, short arg_1, short arg_2, short *arg_3);
 void function_2011f0(long arg_0);
 
+// MiniMax I (11-09): no new form, no lower score (318); retail's third parameter is a dword where our declaration has
+// a short (the declaration is used by other files), and the row, seat and chain homes still differ.
 // MiniMax B (11-07): no new form, no lower score (318); retail reads the index as a dword and masks it with AND
 // where ours keeps a zero-extended word: the masked products 377, a squad pointer local 354 (1328 bytes, retail's
 // length), both together 359 and the unmasked calls 378 are all worse, and each drops the frame to 0x130.
@@ -3537,6 +3560,9 @@ void function_2011f0(long arg_0);
 // address before the range test 269/266 (1312 B); a named range bool 221/229. Lead: the entry pointer set NULL then from
 // the range test with `if (entry)` 257/255 (both orders) gives retail's loop-top row reload and retail's row/seat
 // slots, but the row takes EBP/arg_2 EBX and the NULL test stays; the arg_2 test moved first on it 326.
+// P384: Persistent complementary missing-reuse state, byte/char/signed-char/short/word/int/long/dword:
+// 318/318/318/357/357/357/357/357. NOT kept: no exact transport repair; original requests, sticky success,
+// creation/final-return consumers, narrowed inputs and complete body restored. Native input/seat/chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

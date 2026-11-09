@@ -135,6 +135,7 @@ void function_254200(void)
 
 #undef program_words_254200
 
+// MiniMax E (11-09): no new form, no lower score (4).
 // MiniMax I (11-06): no new form, no lower score; the 16777215 constant through a named local keeps 4.
 // MiniMax C (11-05): no new form, no lower score; the only difference left is the order of the two loads after the buffer reservation in the second and third vertex records, where retail loads the 16777215 constant before it reloads the spilled y+h and we reload first; the permuter tried 173 forms in 1803 s and none beat 4.
 // MiniMax G (11-04): the point's x and y taken through parallel pointers 341 (the point copy is
@@ -433,6 +434,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the second SRCBLEND/DESTBLEND setters dropped 436 (2262 bytes, the setters inline); the size as a 42 default
 // overridden by `if (g_4ba04c > 1)` 94 (2258 bytes); the point pointers declared after the 0x1cf50 call 2 (same
 // code); the guard as one condition with an `else if (g_51ec9a)` arm 2 (same code).
+// Round 59 (m3 lane 2, fast): code-neutral forms alone and in every combination: the size as an if/else, the alpha
+// byte without the (long) step, the alpha packed by hand instead of D3DCOLOR_ARGB, AB/AC/BC/ABC 2 each; the scale
+// parameter renamed (two names) 2/2; the depth constants through D3DZ_MAX_D24S8 2; the alpha product as
+// `255.f * ...` 2; the bitmap pointers declared const 2. The two reloads stay swapped.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
