@@ -630,6 +630,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // P383: Post-attachment notification admission in bool/byte/short/long, positive/complementary:
 // 49/49/49/49/49/49/49/49. NOT kept: no native false-BL/independent-lookup equality; original workspace
 // observation, validity result and whole body restored.
+// P392: Consistent twice-used incoming virtual options, e/f/both long then const-long, both int/const-int:
+// 49/49/49/49/49/49/49/49. NOT kept: no native false-BL/temporary-EBP/independent-lookup equality.
+// Original formal reads, virtual tuples and complete body restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

@@ -301,6 +301,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // long/dword: 51/51/51/51/60/60/58/58. NOT kept: 133-137 bytes move away from native 127,
 // the result occupies EBX and AL mask/index/successor ownership still differs; wide forms lose both
 // callers. Original complete body restored.
+// P390: Nullable-copy admission in positive/complementary bool/byte/short/long:
+// 43/43/43/43/43/43/43/43. No exact early-save, independent successor, mask or failure-exit recovery;
+// original nullable copy restored. NOT kept: no qualifying exact/native-shape gain; original complete
+// body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -907,6 +911,10 @@ void function_1537f0(s_profile_record *record);
 // Scores 87/87/87/87/87/87/87/87/87/87/87/87. NOT kept: all twelve score 87 at 273/258; native frame
 // 0xa0 recovers, but identity/source slots, countdown and initial zero placement still differ.
 // Original complete body restored.
+// P387: Whole identity-record standard fill/fill_n/uninitialized-fill/uninitialized-fill_n,
+// per-visit then outer raw storage: 110/110/116/108 twice. NOT kept: native identity homes
+// still fold or move into a larger frame; 295-300 bytes versus 258. Both original initializers,
+// per-visit fills, pointer walk and complete body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1513,6 +1521,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // Scores 382/382/394/396/382/382/394/396. NOT kept: all regress to 382/394/396 at 1173-1180 versus
 // native 1171; frame 0xc persists but direct ordinal tests and count/upper/index homes do not recover.
 // Original complete body restored.
+// P387: Complete entry transfers at the actual player/metadata boundary, forward/reverse/both
+// native payload then library suffix 446/435/503, both library subranges 446/435/503,
+// both metadata-first native/library payloads 374/374. NOT kept: all regress to 1222-1270
+// bytes versus 1171; original capacity, full-record copies, repairs and complete tail restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

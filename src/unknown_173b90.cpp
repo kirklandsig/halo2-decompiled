@@ -1650,6 +1650,10 @@ bool function_17afd0(long effect_index, long value);
 // success 142 (510); that reload mix with availability false right after the view read and set on success 138 (510)
 // [70]; the reload mix with one-expression availability 113 (498) [51]. Every branchy availability keeps NONE in
 // EBX past the view and owner tests, where retail coalesces the owner with NONE in EBP.
+// P394: Post-attachment external-view suppression at its actual else-arm producer,
+// positive/complementary byte/short/long/dword results: 47/47/47/47/47/47/47/47.
+// NOT kept: one-use suppression results require equality; original admission and body restored.
+// Availability clearing/production and post-attachment view observation remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

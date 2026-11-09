@@ -525,6 +525,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // `__forceinline` on this body 170 (same code); the retail-shaped body with `goto finished` exits 265 (759, as lane 13 r58), with
 // a long departure 242 (as lane 9 r27); this body with a short hull count 242 (795, 0x239d50 then 80); `hull_count = pass + 1`
 // stored before the index 210.
+// P385: Candidate geometric-admission outcome bool/byte/short/long, positive then complementary:
+// 170/170/170/170/170/170/170/170. NOT kept: no exact frame/count/departure or compaction repair;
+// original magnitude, ranking, loops, copy and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

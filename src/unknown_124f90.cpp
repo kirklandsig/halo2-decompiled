@@ -1431,6 +1431,9 @@ long function_2197f0(real gain);
 // T69: Twice-used attack reciprocal before elapsed/hold, inside hold/attack,
 // mutable then immutable per phase: 183/183/183/183/186/186/154/154.
 // NOT kept: all regress and shorten away from retail; original reciprocal phase and full body restored.
+// P392: Complete composite/simple overlap admission, positive/complementary bool/byte/short/long:
+// 94/94/94/94/94/94/94/94. NOT kept: no native elapsed/reciprocal/gain-load equality; one-use outcomes
+// require a match. Original comparisons, floating groups and whole body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

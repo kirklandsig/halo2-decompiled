@@ -562,6 +562,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // T70: Actual default-body output starts from the signed byte, then invalid flat/nested guards
 // correct it; char/short/int/long 249/235/252/252/249/237/252/252. NOT kept: result allocation regresses;
 // original selector, physics observations, geometry, helpers and complete body restored.
+// P388: Actual object-model/physics named fields and retained physics-handle
+// receiver graph, seven subsets and complete read-only views: 56/56/275/56/275/275/275/275.
+// NOT kept: no exact native early spill/axis/failure-tail recovery; original
+// record layouts, observations, complete body and call tuples restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

@@ -1434,6 +1434,9 @@ long function_146650(void);
 // actor_index read directly instead of through its address 7 (same code, kept); diagnostics only: the NULL
 // distance through a local 7, direction as one-element storage behind a pointer 7, 0x267a80 defined after
 // this function 7 (no change in the ECX order). Retail's other caller 0x25f290 sets ECX last, as ours does.
+// P395: Activity default after offset/after query/before direction/before state 11/52/16/46;
+// corrected-home offset memset/chained zero/query-only output 71/11/275; activity default at state test 29.
+// NOT kept: no exact setup repair; original complete body restored.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {

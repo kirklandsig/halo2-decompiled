@@ -531,6 +531,10 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // T72: Native-entry gate/settings/sample lexical home subsets 1/2/4/3/5/6/7,
 // then all plus the raw-flag name: eight 334s. NOT kept: native DL/gate/descriptor
 // homes and separate address add remain; all original names and the whole body restored.
+// P392: Ordinary admission storage on the retained native-entry-save graph,
+// bool/byte/short/word/int/long/dword/signed-char: 395/395/395/395/395/395/395/395. NOT kept: no native
+// effect-address/gate-home equality. Original inherited local qualifier, random stream, geometry and
+// complete body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
