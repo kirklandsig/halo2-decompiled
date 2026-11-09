@@ -1365,6 +1365,9 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// MiniMax S (11-09): no new form, no lower score (46); the NONE outputs are still materialised with
+// `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the zero/flag store schedule
+// still differs.
 // MiniMax I (11-08): no new form, no lower score (46): the two NONE outputs are materialised with
 // `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the tail's zero and flag stores are
 // scheduled with the byte clear first where retail zeroes the dword first. A full-build comparison puts

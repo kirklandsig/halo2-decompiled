@@ -49,6 +49,13 @@ static __forceinline long floor_to_long_inline(real value)
 	}
 }
 
+// MiniMax S (11-09): no new form, no lower score (10); the six orders of the first word's OR terms are
+// canonicalised by the compiler into one schedule, so the order cannot be steered from the source; the
+// fifteen kind-word spellings tried this round (the shift on the call's result, on a long local, a
+// multiplication by 0x20000000, a two-use temporary, a fresh expression) all keep the copy-then-shift
+// schedule and the score of 10, and the pool argument copied from a local keeps the copy inside the
+// branch; reading the pool's global a second time before the clear hoists the copy like retail and
+// scores 7, but that reads a global twice and was not kept.
 // MiniMax D (11-08): no new form, no lower score (10); retail ORs the first word's terms as (category | flags) | entry
 // bits where ours does (category | entry bits) | flags, retail shifts the kind in the call result's register and then
 // copies it (`shl eax, 0x1d; mov esi, eax`) where ours copies first and shifts in ESI, and retail copies the pool

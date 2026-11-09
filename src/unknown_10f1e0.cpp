@@ -1422,6 +1422,8 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax S (11-09): no new form, no lower score (164); retail keeps index*12 as a value and re-reads
+// the unit through that offset for both depletion queries, and writes the first depletion with setle.
 // MiniMax H (11-06): the index masked in a local of its own gives 322, the unit pointer dropped in favour of
 // the macro at every use gives 344 and the volatile cast on the argument read dropped gives 271; the slot
 // argument taken from the unit local gives 164, the same code as retail's re-derived read.
