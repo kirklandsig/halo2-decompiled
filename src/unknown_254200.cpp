@@ -433,6 +433,10 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // the second SRCBLEND/DESTBLEND setters dropped 436 (2262 bytes, the setters inline); the size as a 42 default
 // overridden by `if (g_4ba04c > 1)` 94 (2258 bytes); the point pointers declared after the 0x1cf50 call 2 (same
 // code); the guard as one condition with an `else if (g_51ec9a)` arm 2 (same code).
+// Round 59 (m3 lane 2, fast): code-neutral forms alone and in every combination: the size as an if/else, the alpha
+// byte without the (long) step, the alpha packed by hand instead of D3DCOLOR_ARGB, AB/AC/BC/ABC 2 each; the scale
+// parameter renamed (two names) 2/2; the depth constants through D3DZ_MAX_D24S8 2; the alpha product as
+// `255.f * ...` 2; the bitmap pointers declared const 2. The two reloads stay swapped.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

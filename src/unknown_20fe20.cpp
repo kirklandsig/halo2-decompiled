@@ -1172,6 +1172,12 @@ void function_2118c0(void)
 // a global gives retail's `add esi, 8` row with that row unreduced, so the rows stay unreduced only when VC cannot
 // treat the index as invariant; taking the indices' addresses (`(void)&w`, a pointer array) or a second global
 // symbol for some rows still reduces every row.
+// Round 59 (m3 lane 2, fast; compile-only screen agrees): the five pointers declared p0..p3 33; p1 and out from the row
+// local 175 (745 bytes); the wrapped indices in the band loop 174 (756); in a word array 10 (same code); previous at
+// the k level 18. Screen only: the indices as a long/dword/word/short array with `b << 3` or `b * 8` rows (all
+// scalarized, none better); 120 combinations of row expression, index type, index level, p1/out index and pointer
+// order, none below the current form. Also: `short i` 262 (670 bytes, components no longer unrolled); `long k` 133
+// (753 bytes); `long m` 75; `word m` 10; b declared at each pass's loop head 10.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

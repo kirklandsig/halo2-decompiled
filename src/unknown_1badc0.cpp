@@ -12,6 +12,9 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
+// MiniMax S (11-09): still differs in the order of the components: retail forms d3.x, local_6.x, d1.x, d1.y, d3.y
+// and local_6.y before the products, ours forms d1.y first and the two d3 components last; the two numerator terms
+// swapped give the same code.
 // MiniMax D (11-07): score 180 (was 180): no new form and no lower score; the opening copies, the SSE
 // scheduling and the query-success join still differ, and the earlier rounds' best form (47) needs the
 // difference helpers written out by hand, so there is no keepable form here; the opening stays blocked by

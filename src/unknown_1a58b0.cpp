@@ -678,6 +678,13 @@ void function_1a6d80(void)
 // Round 173 (m3 lane 4, fast): a prototype of this function ahead of 0x1a71f0's definition 6; 0x1a71f0 defined after this
 // function (prototype in its place) 6; a `long` node count cast to short at the call and the store 10; a const node count 6;
 // the node count declared first and assigned after the node list 6 (all 6s the same code).
+// Round 137 (lane 7, fast; a one-file LTCG harness of this file reproduces 6): 0x1a71f0's parameters as (id, list, count)
+// 6, as (id, count, list) 6 (0x1a71f0 stays matched; no retail evidence); a count-pointer copy taken after the call before
+// the valid store 6; `count[0]` 6; a force-inline output setter taking (valid, count, result, count value) 6. Harness
+// reading: the first-loaded output pointer takes EDX and the second ECX, and the count pointer takes EAX once the result
+// is stored; with the call result kept live past both stores (diagnostic) valid EDX, count ECX 19 (110 bytes). Retail's
+// valid ECX / count EDX with the valid store first needs the count pointer loaded first; every copy or reference of the
+// parameter is folded back to its use (6).
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {

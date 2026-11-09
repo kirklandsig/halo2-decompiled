@@ -134,6 +134,10 @@ struct s_9cca0
 // first vector's x before the location's second dword and sinks the second vector's y below the test, retail
 // stores the location dword first and sinks the first vector's z. Another lead: the build's stand-in callers pass
 // 0x184440 and the location setter pointers read from a volatile buffer, which retail's image has no equivalent of.
+// Round 71 (m3 lane 13, fast): all 48 orders of the two location dwords, the two vector copies and marker/tag on the
+// block-scoped record: best 10 (location 1, location 2, first vector, second vector, marker, tag), then 12, 12, 13, 14,
+// 15; that form without the named input pointer 10 (same code); one whole-record memset 75 (173 bytes); the first
+// vector by component with its k after the second copy 57 (movss, 209 bytes); the memsets swapped 17.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -361,7 +365,7 @@ struct s_object;
 s_object *function_badc0(long arg_0, dword arg_1);
 void __stdcall function_191fab(long arg_0, long arg_1);
 void __stdcall function_191e51(long arg_0, long arg_1);
-void __stdcall function_191ec4(long arg_0, long arg_1, short arg_2);
+void __stdcall function_191ec4(long player_index, long definition_index, short count);
 void function_f8160(long arg_0);
 long function_1896c0(real arg_0, long arg_1);
 void player_speed_request_14ea20(long arg_0);
@@ -408,7 +412,7 @@ bool c_unit_pickup_event_definition::v11(long arg_0, long const *arg_1, long arg
                         }
                         else
                             function_f8160(*(long const *)(local_4 + 4));
-                        function_191ec4(*(long const *)(local_4 + 4), local_3, *(short const *)(local_4 + 8));
+                        function_191ec4(local_3, *(long const *)(local_4 + 4), *(short const *)(local_4 + 8));
                         break;
                     }
                     case 3:

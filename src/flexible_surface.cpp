@@ -612,6 +612,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // three draws 136; the gust value and direction globals (0x55ecd0/0x55ecd4, only used here) as one struct 117 (same code); sinf/cosf for the
 // angle 117; no `old` copy, cross/dot/rows on the global into a `rotated` local stored back 161 (885 B); the axis draw before sine/cosine 117;
 // the frame-count and initialized-flag globals (0x55e710/0x55e714) as one struct 117 (same code).
+// P384: Complete normalization admission, bool/byte/short/long positive then complementary:
+// 117/117/117/117/117/117/117/117. NOT kept: no equality or native old/cross home recovery.
+// Original direct unordered-safe test, true-only initialization store and complete body restored; frame 0x28/0x20 remains.
+// MiniMax E (11-08): no new form, no lower score: our frame is eight bytes larger (sub esp, 0x28 against retail's 0x20) and the global load sits before the push edi.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

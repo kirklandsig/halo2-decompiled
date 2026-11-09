@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax C (11-09): no new form, no lower score (43); retail's walk presets its root to NONE and
+// starts the walk at the unit, so the unit carrier takes EBX and the datum address EDI, the other
+// way round from ours, and the walk itself is still the out-of-line 0xbaf80.
 // MiniMax H (11-07): no new form, no lower score (43); the datum address is still computed in EBX
 // where retail computes it in EDI and the two are used the other way round, and the root walk is
 // still the out-of-line 0xbaf80, whose source sits in src/unknown_0bad50.cpp.
@@ -1361,6 +1364,13 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// MiniMax I (11-08): no new form, no lower score (46): the two NONE outputs are materialised with
+// `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the tail's zero and flag stores are
+// scheduled with the byte clear first where retail zeroes the dword first. A full-build comparison puts
+// these two sites as the only differences from retail (the two bytes of the constant form are the whole
+// length difference), and one-file models show that both are this context's scheduler choice: in
+// isolation the sentinel comes out as `or eax, 0xffffffff` and the byte clear comes first whatever order
+// the statements are written in. Fixing one site alone is a three-point gain, under the keep threshold.
 // score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
 // uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
 // zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
@@ -2902,6 +2912,14 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax C (11-09): no new form, no lower score (103); the busy block is instruction for
+// instruction retail's, and the second loop's failure test already has retail's shape (the first
+// call's failure jumps straight to the flag store), so what is left all follows from the globals
+// pointer's register: retail loads g_4e8c20 into esi at the head and reloads it after the busy
+// check and again before the final store, ours carries it in edi to the end of the function and
+// reloads it only at the join after the failure store. Our build keeps the pointer across the
+// calls, so the callees it calls are summarised as never writing that global, and those callees
+// are in other lanes' files.
 // MiniMax H (11-07): no new form, no lower score; the globals pointer and the iterator's index
 // array still swap registers, and the two globals are still read in the other order, so the
 // reduced image still scores 193.

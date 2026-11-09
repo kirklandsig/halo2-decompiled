@@ -1722,7 +1722,7 @@ void function_1e3b00(long object_index, long mode, point3f const *reference,
 	void const *unknown0, void const *unknown1, point3f *position);
 short __stdcall function_272af0(s_match_globals *arg_0, point3f const *arg_1);
 short __stdcall function_1c8df0(short arg_3, short arg_2, point3f const *arg_4, long arg_0,
-	void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
+	point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 real normalize2d(point2f *v);
 
 /* the whole result 0x1697c0 fills: 0x5c bytes, where the shared view stops
@@ -1737,6 +1737,14 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
+// MiniMax C (11-09): no new form, no lower score (4): the full build's diff is only the collision
+// flag's byte home, ours at +0x13 where retail has +0x10; the rest of the frame agrees slot for
+// slot (the type slot at +0x14, the dwords at +0x18 to +0x3c, +0x48 and the word at +0x58), and the
+// else branch, the call and the epilogue are instruction for instruction retail's. MSVC gives the
+// first byte local of a frame group the group's top byte, so retail's source must declare three
+// byte locals before the flag; dead ones are dropped before the frame is laid out, as three dead
+// chars and three chars loaded from memory both leave the home at +0x13. The permuter was stopped
+// by its time limit without a result.
 // MiniMax S (11-06): no new form, no lower score (4): the collision flag's byte home stays at +0x13 for char, uchar, byte, const bool, ternary and duplicated-flag spellings; naming the guard comparison, the range comparison or the flag moves the flag into a register (261 each), and so do nested ifs for the guard with an early return (244) and with the else block duplicated (753). The permuter (600 s) found nothing below 4.
 // MiniMax H (11-04): no new form, no lower score: the collision flag's byte home stays at +0x13 even when its
 // declaration moves to the function top (it keeps the top byte of the first four byte pack, so retail must

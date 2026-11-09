@@ -1249,6 +1249,11 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 // only request 19; marker field at each use 19; separate object and weapon rejections 19; seat
 // eligibility assigned directly 203. NOT kept: no qualifying byte match or gain; original body
 // restored.
+// Round 78 (m3 lane 11, fast): the entry lookup through a pool copy `objects` declared first 16 (all three self lookups become
+// retail's index-first `[edi + ecx + 8]`; not kept: a 3-point gain with a one-use copy); all three through that copy 19; one
+// copy per lookup 16; the later two through the copy 17; on the 16 form `result = true` before the active-bit store 16, before
+// function_a8c10 18, the notice block ending in `return result` 42 (958 bytes). Left: retail's success path falls into the
+// shared exit and the notice block carries its own copy; ours pops edi/esi inside the success path, which then carries it.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {

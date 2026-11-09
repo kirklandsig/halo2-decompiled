@@ -56,6 +56,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // The rotation's cross terms and rows written with the axis component first, which is retail's order, score
 // 176 on the restored body, and the permuter reached no variant on this loaded machine.
 // MiniMax C (11-05): no new form, no lower score; the XY vector before the second copy scores 174 and the single-exit normalizer 180/182, both under the eight-point bar, and the permuter reached no variant on this loaded machine.
+// MiniMax D (11-09): no new form, no lower score; the length the normalizer stores sits four
+// bytes higher in the frame than retail's (ours +0x10, retail +0xc), and the unity constant and
+// the scaled components then get different registers.
 // score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // Frame 0x2c agrees at 1711/1706 bytes; unity XMM5/XMM4, root +0x10/yaw +0xc and rotation product/register homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with

@@ -1271,6 +1271,13 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // Round 58 (m3 lane 2, fast): the masks declared (and zeroed) in reverse order 5; declared bare and assigned zero in
 // reverse order before the call 5; the item output declared ahead of the masks 1; an indexed first loop with the masks in
 // reverse order 122 (375 bytes); the success byte declared after the setup call 19.
+// Round 157 (m3 lane 6; one-file LTCG harness entered through 0x1393f3, exact here). Loop forms (first, second, third):
+// F for form, S guarded do-while, I/J indexed over the field/a named count, X offset and count in the for header, D index
+// and offset in the header, E stepped element pointer, T count first then guarded do-while, G guarded indexed for, H
+// guarded for form, K guarded X, W while with count and offset first. XSS 1 (same code); FXX 7; JXX/JFF/JWW/JFX 6 (loop 1
+// exact, both later loops zero EBX before their guards; fast JXX 6); JSX/JXS/JHX 3 (fast JSX 3); JSS 106 (fast 118, 375 bytes), JTT 105, JHH 106, JGG 51, JKK 72, JTX 106,
+// JGX 49 (two guarded later loops compare with the kept zero, so it stays in EBX through loop 1 and the offsets spill);
+// ISS/IXX/ISX/IXS 87, DSS/DXX/JDD 88, JII 88, JJJ 106, JEE 102.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
