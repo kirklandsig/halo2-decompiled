@@ -366,6 +366,8 @@ bool function_a9820(long *block, long index)
 	return result;
 }
 
+// MiniMax R (11-09): no new form, no lower score; the active byte is still read through the materialised
+// record address, and the permuter's 133 tries on this function kept the body.
 // MiniMax D (11-08): score 11 (was 11): retail loads the database into the world register that dies at that
 // load and folds the active byte into the scaled address (mov cl, byte ptr [eax+edx+0x20b2]); ours loads the
 // database into a fresh register and reads the byte from the materialised record address.
