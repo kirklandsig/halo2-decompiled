@@ -341,6 +341,10 @@ bool g_47f05b;
 // ordinals: forward 34/34/54/54, reverse 33/33/54/54. NOT kept: no qualifying gain;
 // reverse full-width forms lose two exact users, narrow forms also regress users.
 // Entire shared constructor/header and original body restored; base-vtable/arm reload remain.
+// T68: Starting/next reference-count captures before backing read/reset/fixed/
+// pool construction:
+// 36/36/36/28/39/39/39/26. NOT kept: early one-use counter observations require equality. Original executable body restored.
+// Intermediate vtable store and successful-arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {
