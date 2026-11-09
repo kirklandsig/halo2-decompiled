@@ -434,6 +434,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // before the actor lookup, ours reads the argument from the stack and pushes after it.
 // MiniMax B (11-04): no new form, no lower score.
 // MiniMax S (11-06): no new form, no lower score.
+// MiniMax D (11-09): no new form, no lower score; the frame is four bytes larger than retail's
+// (0xa4 against 0xa0), retail takes the actor index in EAX where ours loads it from the stack,
+// and the body is 1620 bytes against retail's 1616.
 // score 412 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
 // index in EAX where ours loads the argument from the stack. The body is 1620 bytes
 // against retail's 1616.
