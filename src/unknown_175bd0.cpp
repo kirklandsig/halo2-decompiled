@@ -2064,6 +2064,16 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // location_point_in_zone_inline 165 (556 B; the zone block is then retail's: base in EDI, add unfolded; left are the entry's
 // colour/system registers, frame 0x40/0x44 and the definition not held in EDI across the back edge); that with both colours
 // early and `multiplied()` as the argument 181 (572 B, frame 0x44, the loop laid out with a jump to its test).
+// Round 80 (m3 lane 1; one-file LTCG harness with the link ballast, exact here: 128; aligned counts by difflib with
+// addresses and frame offsets masked, 68 for this body): all 119 other parameter orders of 0x175a80 128-184, none
+// lower; a random search of 120 combinations of colour read point (call/top/before or after the spawn stores/query
+// block), multiplied and tint named or in the argument list, the six spawn store orders, zone helper and declaration
+// order: best 125 (unknown, scale, location with the spawn declared first; gain 3); the existing
+// location_point_in_zone_inline in place of the file-local copy 165 but aligned 35 (the whole loop then matches retail
+// but the definition reload at the loop top; left are the entry's system register, the early colour reads and the
+// frame), with spawn stores unknown, location, scale 162; on that form the system or the definition read once through
+// its own address 165/165; colours read early with both queries in the call's argument list 183 (568 B), at the top
+// 192.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2471,6 +2481,13 @@ event_done:
 // Round 155 (m3 lane 5, fast): root index as 0x1794a0's first argument re-measured 197 (585 B); empty first arm 198
 // (571 B); `!(index == NONE || valid)` 63; `NONE != effect->object_index` 63; deletion arm `return true;` with a plain
 // second if 198 (572 B). Retail's reload at the join after 0xbadc0 still needs 0xbadc0 seen as writing memory.
+// Round 80 (m3 lane 1, fast; aligned counts by difflib with addresses and frame offsets masked, 41 for the
+// current body): retail also reloads the index after 0xbaf80 for 0x1794a0's second argument, so 0xbaf80 needs
+// the same (BLOCKED-BY 0xbadc0, 0xbaf80). The root index as 0x1794a0's first argument (a value correction)
+// 197, aligned 41 (585 B; only the cached index and the scratch rotation it causes differ); that with a plain
+// `if (effect && ...)` second test 130, aligned 52 (the head reload then matches; the index is cached for
+// 0xbaf80 instead); root index at function scope 197; tail reading the field 197; a named head index reused
+// by the tail 197.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -2754,7 +2771,16 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 	}
 }
 
-// score 23 (was 30): Frame 0x100, length and prologue agree; the decal call's register arguments (BLOCKED-BY
+// score 23 (2 held; was 30): with the held change below only the decal call's two register arguments remain,
+// BLOCKED-BY 0x17e670 (contributor): its
+// body takes the source in ECX and the point in EDX in retail, ours the other way round. Round 80 (m3 lane 1): the
+// round 117 lead applied, 0x189060 as (object, value, position, direction, scale, tag) at its definition, every
+// declaration and all nine calls (each retail caller evaluates the scale before the position/direction register
+// setup) 29 alone, with the detached record filled position, compression, velocity, location (every other
+// 0x1895f0 caller's order) 2 (all 0x189060 callers unchanged). HELD by the coordinator 11-09, not on main: the
+// reorder edits the call in 0xbf600, a contributor's finished function (src/unknown_0b9fc0.cpp), so it waits for
+// that owner's OK (BLOCKED-BY 0xbf600 call). Both changes go in together or not at all.
+// Earlier 23 (was 30): Frame 0x100, length and prologue agree; the decal call's register arguments (BLOCKED-BY
 // 0x17e670) and the sound arms' scratch registers remain. Earlier 30: the attached light call's register arguments
 // (computed before its pushes, retail after: ours forms forward with add ecx, retail with lea edx and keeps the
 // location pointer live), fixed by 0xc0350's order in round 117. Round 85: `effect` declared before `up` gives retail's EAX up (38 -> 30, kept);
@@ -3297,6 +3323,14 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // spawn cursor + long mode re-measured 89 (337 B, the loop then retail's); on it: system/next/definition locals const 89,
 // colours read before the cursor 90, type object declared at the top of the block 89, mode as dword 89, the cursor copied
 // to a named index 89, the matrix declared before the loop 89. The system EDI / next index ESI entry swap remains.
+// Round 80 (m3 lane 1; a one-file LTCG harness with the link ballast reproduces 93 here, 128 for 0x178c80 and 17 for
+// 0x175a80): all 119 other parameter orders of 0x175a80 (definition, declaration, three calls) 93-98, none lower; a
+// random search of 136 combinations of lookup order, next-index read point, word/long/per-call mode, colour read
+// point, multiplied argument/named, cursor local/spawn record, node flag point and block/early-return test: best 96
+// (every per-call-mode form turns 0x176f60 to 25); the tint query in the colour call's argument list 120 (0x176f60
+// 25), with the spawn cursor and a long mode 120; the location declared in the while condition 93 (same code).
+// Diagnostic only: without the particle system argument of the loop's 0x248c60 call the system takes ESI and the
+// next index EDI as in retail, so the system's loop use sets the swap.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3596,6 +3630,16 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // forward order 74, with the house scale 278; the lens flare limit as `continue` 74. Compile-only: the reference, the
 // separate copies and a cast copy of position keep y in place; only a by-name position.y (the listed read, or a
 // self-assignment) gives retail's copy: retail keeps the loaded x and y and scales into fresh registers, z in place.
+// Round 80 (m3 lane 1, fast with 0x179fb0, 0x17a380, 0x176bb0; aligned counts by difflib with addresses and frame
+// offsets masked: 8 for this body, 4 for the house scale form, which is the y copy alone): on the house scale form,
+// the mode as one ternary 270; the up copy after the colour and scale default 286; forward and up transformed from
+// the location matrix with copies in an else arm (as 0x179fb0) 357; a NULL-initialised location cursor 270; the
+// forward normal transformed before the point 298. Only 0x179880 transforms its point copy in place.
+// MiniMax I (11-08): the scale default is declared before the colour copy, which puts the scale default store
+// ahead of the colour-component store as retail does; with the scale block and the point transform's y copy
+// already in place the function now matches byte for byte.
+// score 0 (was 74): the scale block, the point transform's y copy and the colour-component store against the scale
+// default store now all agree with retail (MiniMax I, 11-08).
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
@@ -3620,14 +3664,17 @@ void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 				point3f position = location->matrix.position;
 				vector3f forward = location->matrix.forward;
 				vector3f up = location->matrix.up;
+				real scale = 1.0f;
 				color3f color = *(color3f *)&g_4686cc->red;
-				real scale = (part->a_scales & 0x20) ? effect->scale_a : 1.0f;
+				if (part->a_scales & 0x20)
+					scale = effect->scale_a;
 				if (part->b_scales & 0x20)
-					scale *= effect->scale_b;
+					scale = effect->scale_b * scale;
 				if (location->node_index != NONE)
 				{
 					transform4x3f matrix;
 					function_17aec0(location->node_index, effect, &matrix);
+					(void)position.y;
 					effect_matrix_transform_point(&matrix, &position, &position);
 					effect_matrix_transform_normal_179880(&matrix, &forward, &forward);
 					effect_matrix_transform_normal_179880(&matrix, &up, &up);

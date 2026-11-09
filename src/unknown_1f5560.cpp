@@ -833,6 +833,8 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax R (11-09): the annealed permuter over 900 s ends at 134, its best being the two flag stores swapped, a gain of one that the review threshold drops, and the volatile globals pointer and the placed point store it also made give 135 on their own; the score stands at 135.
+// MiniMax R (11-08): no new form, no lower score (135); the threshold, the request point copy, the direct request return, the result's type and the retry spelling all score 135 or worse, and only the trajectory result compared against zero reaches 120, which is a redundant compare kept only with a byte match.
 // MiniMax R (11-06): no new form, no lower score (135).
 // MiniMax G (11-04), not kept (coordinator): 59 with the trajectory result compared against zero
 // (`fa1a0(...) != 0` on a bool call; retail has no setne, it only moves the result to DL, so the
@@ -1307,6 +1309,7 @@ done:
 real function_50650(real cosine);
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+// MiniMax C (11-09): no new form, no lower score (137); the body differs only by the actor/object pointer pair (ours actor ESI / object EDI, retail actor EDI / object ESI), so the prologue is one byte shorter and every later row pairs with the wrong row.
 // Round 16: retail passes the object index in EAX and the actor index in ECX, ours passes the
 // actor index in ECX and keeps the object index elsewhere; retail computes the masked actor
 // offset before the pool load and holds the actor in EDI.
@@ -1634,6 +1637,7 @@ PRIVATE inline real movement_normalize2d(point2f *v)
     return 0.0f;
 }
 
+// MiniMax C (11-09): no new form, no lower score (238); retail materialises the side flag only at the comparison (store 1, ja, store 0) while this build stores 1 at the top and keeps the flag live from there.
 // MiniMax G (11-06): no new form, no lower score; retail keeps the normalizer length in the dead target
 // argument slot at [esp+0x54] and the radius at [esp+0x14], this build uses fresh local slots, and retail's
 // zero register is XMM1 where this build uses XMM2.

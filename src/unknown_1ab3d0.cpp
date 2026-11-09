@@ -184,6 +184,13 @@ static __forceinline long real_to_long(real value);
 // the direction, the partial sum parenthesised, `+ 0.0f`, `a < -b`, the direction initialised from the helper all load
 // the facing first; so do probes where the helper never stores dir.i (a fresh load), in either written order. Harness
 // flags (diagnostic): /Ob1, /Oi, /Ox, /G6 keep 2.
+// Round 174 (m3 lane 4; LTCG harness as round 156's, exact at 2): a `real const &` to the facing's i declared before the slot
+// pointer 6 (fast 6; j term first), before the helper call 6; a `real const *` to it at either place 6/6; a const reference to
+// the whole facing before the slot pointer 2, before the helper 6; the i and j terms through the existing dot_product2d with
+// the k term added, all eight argument and term orders 6 (fast 6 for k + 2d(direction, facing)); the facing's i named as a
+// value before the slot pointer 95 (475 bytes; the direction's i then loads first, but the facing's i sits in xmm4), before
+// the helper 27; the direction's j and facing's i named after the helper 2. Diagnostics (wrong values): a later read of the
+// facing's i or j, or of the direction's i or j, only reorders the sum; the facing operand stays the loaded one.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {
