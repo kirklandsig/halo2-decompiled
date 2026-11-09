@@ -278,6 +278,10 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // arguments, a unit local and else-if/nested/else forms best 3 (declaration-order shuffles 5-107); 0xc8200's result in
 // a named bool 3; the seat's object index named at the loop top for every use including 0xc8200 69. Probes: a constant
 // unit or seat argument still reloads the seat pointer into ECX.
+// Round 157 (m3 lane 6, harness): our reload of the spilled `&seats[i]` returns to its home register ECX; retail's goes to
+// EAX with the seat-index load between. A seat pointer at the loop top for the 0xc8200 arguments 69 (fast 73 at 380 bytes; the
+// pointer takes EBP, frame 0x310), for every use 84; a reference for every use 84; the pointer for both unoccupied-arm calls 82; the
+// 0xc8200 test nested under the 0x1b8d80 test 3 (fast 3); a short seat index local for both unoccupied-arm calls 70.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
