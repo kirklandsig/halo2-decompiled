@@ -1557,6 +1557,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // scopes set these two homes); `resized` declared beside the size local 33; the write length and its check spelled
 // with sizeof of the header 33 (same code); the count zeroed before `if (resized)` in place of the else arm 85.
 // MiniMax D (11-06): no new form, no lower score.
+// P384: Complete complementary one-time cleanup state, byte/char/signed-char/short/word/int/long/dword:
+// 36/36/36/154/154/252/252/252. NOT kept: all regress; original cleanup producer, every asynchronous
+// operation/wait/output, failure-only count and complete body restored. Query/count homes and write/header joins remain.
 // @retail 0x213970
 void function_213970(void)
 {

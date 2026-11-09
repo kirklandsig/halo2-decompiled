@@ -3537,6 +3537,9 @@ void function_2011f0(long arg_0);
 // address before the range test 269/266 (1312 B); a named range bool 221/229. Lead: the entry pointer set NULL then from
 // the range test with `if (entry)` 257/255 (both orders) gives retail's loop-top row reload and retail's row/seat
 // slots, but the row takes EBP/arg_2 EBX and the NULL test stays; the arg_2 test moved first on it 326.
+// P384: Persistent complementary missing-reuse state, byte/char/signed-char/short/word/int/long/dword:
+// 318/318/318/357/357/357/357/357. NOT kept: no exact transport repair; original requests, sticky success,
+// creation/final-return consumers, narrowed inputs and complete body restored. Native input/seat/chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
