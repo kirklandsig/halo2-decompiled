@@ -208,6 +208,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // P377: Whole packet-scale branch/negative-chain/callback-first/expression producers,
 // then each with its actual scaled-payload node: 356/363/413/363/356/363/413/363. NOT kept: no native observer/budget/frame
 // equality; complete original scale, rounder, counter and result graph restored.
+// P379: Complete complementary host-query result in bool/byte/char/signed-char/short/word/int/long, all
+// original consumers inverted consistently: 425/425/425/425/374/374/417/417. NOT kept: no native
+// host-byte/observer/budget/frame equality; original result, counter compositions, outputs and whole body
+// restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

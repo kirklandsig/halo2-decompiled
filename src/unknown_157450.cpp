@@ -5678,6 +5678,9 @@ void __stdcall function_d6bc0(long object_index);
 // P377: Pure eligibility boundary returning bool/byte/char/signed-char/short/word/long/dword,
 // separate from delay production: 60/60/60/60/60/60/60/60. NOT kept: unchanged native index/byte-branch differences;
 // the single-caller helper is disallowed. Original complete body restored.
+// P379: Admitted-scope zero-or-positive kind admission, signed-byte/short/int/long, then nested upper/lower
+// admission: 68/71/69/69/103/98/103/103. NOT kept: no native admission/byte/index equality; all original
+// dispatch, timer observations and complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

@@ -2295,6 +2295,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // P377: Actual inventory/selection/unit-index field receivers, seven subsets then
 // complete immutable pointers: 120/120/120/120/120/120/120/120. NOT kept: no native pool/header-extent equality;
 // original entire body, direct field observations and every getter restored.
+// P379: Final mode-query outcome direct/complement in bool/byte/short/long at its original producer:
+// 120/120/120/120/120/120/120/120. NOT kept: no native ingress/header-extent equality; one-use call results
+// require equality; all getters, scan, notifications and full body restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

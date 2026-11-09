@@ -1634,6 +1634,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P377: Native initialization bit-result producers for motion/animation/paired movement
 // flags, seven subsets then complete immutable results: 584/591/557/599/583/587/557/557. NOT kept: one-use inputs
 // require equality; original complete body, gravity observation and all shared helpers restored.
+// P379: Case-6 zero-distance default at function entry, before/after position, before
+// facing/speed/boost/turning/dispatch: 620/616/602/585/571/559/559/576. NOT kept: first seven recover frame
+// 0xfc but grow to 2832/2828 bytes; final 576 keeps frame 0xf8/0xfc and stores zero before dispatch rather
+// than inside case 6. All original constants, gravity observations and whole body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -5837,6 +5841,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // P375: Complete retained forward/up/physics-mode field addresses, masks 1..7, then complete entry
 // address lifetimes: 603/640/645/594/603/640/645/627. NOT kept: no native home/producer match; all original direct
 // field observations, copies, helper boundaries and complete body restored.
+// P379: Fast control 594/full 588; idle-tick admission bool/byte/short/long, original timer pointer then
+// complete declared timer-byte receivers: 707/707/707/707/707/707/707/707. NOT kept: no native
+// truth-byte/tag/state/animation-home equality; one-use admissions require equality; original complete body
+// restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
