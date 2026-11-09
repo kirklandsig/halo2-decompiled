@@ -70,6 +70,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax E (11-09): no new form, no lower score (356).
 // score 356 (was 356): r136 lane 7: a compile-only copy reproduces this build's register skeleton exactly; screened
 // there, then built: `sinf(angle)` 357, `cosf(angle)` 357, matrix entries in retail's computation order (forward.i,
 // forward.j, left.i, left.j, forward.k, up.i, up.k, left.k, up.j) 381 (1750 bytes), caller-computed sine/cosine with
@@ -1891,6 +1892,8 @@ real game_time_get_seconds();
 // retail length, EBX definition and EBP NONE as retail. Frame 0x90 versus 0x94, the 12-byte output homes (ours
 // direction below position, retail position below direction) and the loop's xmm5/xmm6 constants remain.
 // MiniMax H (11-06): 507 (was 507): no new form, no lower score.
+// MiniMax E (11-09): no new form, no lower score (507).
+// MiniMax H (11-06): score 507 (was 507): no new form, no lower score.
 // The argument order into function_480a0, the field offsets, the constants and the loop shape all agree with
 // retail; what is left is the frame (0x90 against retail's 0x94), the sentinel register (we keep the -1 in
 // ebx and retail keeps it in ebp, so the saved-register layout differs) and the stack homes of the sentinel
@@ -2455,6 +2458,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
+// MiniMax E (11-09): no new form, no lower score (170); the float trigonometry (fabsf, acosf, sinf, cosf) compiles to the same bytes as the double calls, so the trigonometry is not what differs.
 // score 170 (was 170): r136 lane 7 (fast with 0x24590/0x30bf0 in the image): ours keeps a double copy of the dot
 // (`fst qword`) for acos where retail re-reads the float; `acos((double)dot)` 170, `fabs((double)dot)` 170,
 // `acos(dot) * step` 170, `acosf(dot) * step` with `fabsf(dot)` 170, `(real)acos(dot) * step` 170.
@@ -2908,6 +2912,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// MiniMax E (11-09): no new form, no lower score (317); retail's empty-entry exit jumps three bytes further into the function than ours (retail +0x4cf, ours +0x4cc).
 // score 317 (was 317): r136 lane 7: names and declaration order do not move the first/i slots here (compile-only
 // screen); `first` declared after `found` 358; decay entry pointer before the `initial` pointer 377 (1343 bytes);
 // decay without the `initial` pointer 417 (1259 bytes); growth `entry->initial += entry->elapsed;` 317; an
@@ -3149,6 +3154,8 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // each element's old position, reads the delta from the stored view position, and copies the scaled projection
 // inputs into fresh registers in both arms; those forms lower the aligned count but shorten the body (below).
 // MiniMax H (11-06): 486 (was 486): no new form, no lower score.
+// MiniMax E (11-09): no new form, no lower score (486).
+// MiniMax H (11-06): score 486 (was 486): no new form, no lower score.
 // The frame is the main difference: retail's is 0x38 against our 0x60. Retail keeps the entry pointer in
 // edx and the object pointer in ebx and reads the three velocity components back from memory before both
 // square roots, while we push four registers, keep the velocity in registers and spill the results through
