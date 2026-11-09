@@ -817,6 +817,10 @@ bool g_51e9bc;
 // jitter/function declarations and post-movement/entry constant defaults: 56/111/95/125/111/111/139/265.
 // NOT kept: one-use factor storage requires equality; all regress. Original body restored.
 // Projection j/k ownership and consumed-limit jitter spill homes remain.
+// P402: Shared dot complete raw first/second/both input scalars, mutable then immutable, coordinate-paired
+// inputs and separate assignments:
+// 56/56/51/56/56/51/51/51. NOT kept: raw one-use input storage is unmatched; original shared producer and
+// complete body restored. Projection j/k ownership and native jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
