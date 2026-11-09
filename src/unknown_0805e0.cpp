@@ -294,6 +294,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // (133 bytes); `index = next` right after the successor read, before the iterator store, with early returns 52;
 // `while (index != NONE && !result)` with the successor and `else index = next` 54 (both callers lose); the entry as
 // `g_4cf98c + index` with a successor and early returns 49. Re-measured: successor with early returns 49.
+// P382: Complementary terminal no-player result in bool/char/signed-char/byte/short/word/
+// long/dword: 51/51/51/51/60/60/58/58. NOT kept: 133-137 bytes move away from native 127,
+// the result occupies EBX and AL mask/index/successor ownership still differs; wide forms lose both
+// callers. Original complete body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

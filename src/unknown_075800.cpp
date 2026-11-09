@@ -1319,6 +1319,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // MiniMax D (11-06): no new form, no lower score: the message parameter is in esi here and in edi in
 // retail, and the switch saves the other register before the jump table; the connection index in each
 // case block (196) and the two switches merged into one (213) leave the same choice.
+// P382: Complete complementary lookup-failure outcomes in bool/char/signed-char/byte/
+// short/word/long/dword: 196 each reduced (control 196; full 153). NOT kept:
+// no exact delayed-save or late-handler repair; original classifiers and all call tuples restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

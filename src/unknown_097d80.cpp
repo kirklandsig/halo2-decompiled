@@ -358,6 +358,9 @@ struct c_aggregate : c_child
 // Round 135 (m3 lane 7, fast; siblings stay matched): `register long produced` 31 (same code); the call's result in a
 // status local stored into error after the total 32; the dispatch gate named as a bool 31 (same code); the dispatch bound
 // tested with `!=` 32; produced's block written as a one-pass `do ... while (false)` region 31 (frame 0x8024 in each).
+// P382: Complementary completed-collection dispatch admission in bool/char/signed-char/
+// byte/short/word/long/dword: 31 each. NOT kept: frame remains 0x8024 versus 0x8020,
+// escaped output and low loop homes unchanged; original independent outputs and body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
