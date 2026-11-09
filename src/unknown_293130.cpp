@@ -305,6 +305,10 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // vector as references 30 (same code); the z flag read before the member pointer 315; the angle read right
 // after the member pointer 278 (1420 bytes); the random count passed straight instead of through its one-use
 // local 30 (same code, kept).
+// Round 99 (m3 lane 12, fast): the creation record declared where it is first used 35; the tag flag read after the
+// record setup call 282; the two record stores after the range draw 63; the member arms inverted (no member first) 77;
+// the two accumulators declared in the other order 32. Diagnostic: the 0xb7b40 stub letting the record escape (our stub
+// ignores it, retail's body uses it) 30, identical listing, so the record's escape does not order the rotation.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

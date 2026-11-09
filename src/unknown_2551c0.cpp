@@ -499,6 +499,15 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 	return local_0;
 }
 
+// MiniMax C (11-09): no new form, no lower score (89): compared with retail instruction by instruction,
+// the frame homes of both vectors and of the two lengths agree, and what is left is the schedule:
+// retail loads the object table global into ecx before the three pushes and does the object lookup
+// before either vector is copied, ours loads the global in the middle of the first copy and looks
+// the object up inside it; retail copies the first vector in the order i, j, k where ours copies i,
+// k, j, and the second vector is i, k, j in both, retail only storing its i after the first
+// vector's k has been zeroed; retail's argument to 0x110ab0 goes in eax where ours uses ecx.
+// Moving the object lookup ahead of the two vector copies was tried again and gives 94, so it is
+// reverted.
 // MiniMax S (11-06): no new form, no lower score (89): the source permuter (one run stopped, one 420 s
 // with 37 tries) found nothing below 89; the 0x110ab0 argument register, the object-plus-radius operand
 // order and the length and projection homes still differ.

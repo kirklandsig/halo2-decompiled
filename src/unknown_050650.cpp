@@ -1225,6 +1225,7 @@ done:
 	return result;
 }
 
+// MiniMax C (11-08): forms tried, none lower: the byte offset in a local 9, the masked slot in a local 9, the getter written out 9, the base in a local 9; the permuter was killed at its time limit before it searched anything.
 // MiniMax D (11-06): no new form, no lower score (9); five more spellings of the shared lookup (a data
 // base and a masked slot local in either order, a byte offset local, the slot first, the current one)
 // compile to the same code, so retail's offset in EAX and its `lea esi, [eax + edx]` are not
@@ -1522,6 +1523,10 @@ struct s_actor_looking_structure_view
 // products, an order the plain field reads have not given.
 // Source forms (fast): fraction declared before the copy and set after the rotate 136 (927 bytes); `best_score < score` 23; the clamp as
 // `score < 0.6f` 23; the angle named before the copy 33; the selected test as `dot < 0.7f` 23.
+// Round 99 (m3 lane 12, fast): both 0x26c590 calls through its real signature instead of the header's
+// compatibility overload 39 (first call only 39, loop call only 23, same code); the candidate copy as memcpy
+// 82; sinf/cosf in the angle helper 145 (928 bytes). Diagnostics: the candidate not passed to 0x26c590 43, nor
+// to 0x2105b0 74 (axis j still loaded after the copy, so the candidate's escape is not what orders it).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

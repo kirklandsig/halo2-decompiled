@@ -395,83 +395,6 @@ bool function_1b1970(long actor_index, short index, short mode, vector2f const *
 	return result;
 }
 
-// MiniMax E (11-07): no new form, no lower score; the 0x1b0e40 call still sets the origin in EBX first and
-// the forward address after the mode push, retail sets the point, then the forward, then the origin; the
-// callee 0x1b0e40 matches retail byte for byte, so the argument registers are fixed (the point in ECX, the
-// index in EDX, the origin in EBX, the forward in EDI, the mode and the left on the stack) and only the
-// order of the three address computations is left; naming the three addresses in locals (the point, the
-// forward and the origin) before the call keeps our order, and a permuter run (39 tries) found nothing
-// better than 3.
-// score 3 (was 12): only the 0x1b0e40 call's register setup differs: ours sets EBX (origin) before ECX
-// (point) and EDI (forward), retail sets ECX, EDI, pushes the mode, then EBX. Round 155 (m3 lane 6): 0x1b1970's
-// parameters as (actor_index, index, mode, forward, left) (retail's one call sets CX, then EDI, then EAX: the
-// last-to-first setup of that order), with the >= 7 block reading the fields at the call and no locals, 12 -> 3
-// (the block is retail's: xor/mov index, the list reloaded into EBX at the join, the mode read into CX after the
-// test). The reorder alone with the old locals 12. Also tried (fast): the left vector through an inline
-// perpendicular helper 12; forward and left through an inline basis helper taking the leader 17; the 0x1b0e40
-// call through an inline wrapper taking the slot state and the list 12; a single exit wrapped in the leader
-// test 12. On the 3 body: the point declared at the inactive-state block top 3; left declared before forward 3;
-// the leader test and the call joined with && 3; forward/left declared before the state and leader 3; the dot
-// product operands swapped 3.
-// Earlier at 12: the index is read zero-extended and tested as a short, as retail's
-// xor/mov ax/cmp ax,0xffff does, and it keeps the list reloaded into EBX. Before that:
-// the 0x1b0e40 call sets the origin first (retail last), and in
-// the >= 7 block retail reads the index as a word (xor widening) and the mode late
-// through the list in ebx; index and mode read in the call 66; short index with the
-// mode in the call 66; short index before the mode local 79, after it 79; short index
-// with the mode local inside the branch 42; short index and a bool result stored once 95.
-// origin/forward setup and native index/mode arguments differ;
-// origin pointer 19; origin reference 19; external index reference 79.
-// external mode reference 46; no target vector setter 65; native index type 19.
-// alias analysis 19; size preference 321; external field pair 78.
-// A `short index` gives retail's xor/`cmp ax` read, but then the list is no longer
-// reloaded into EBX after the 0x1b0e40 block (66); retail reloads it there and reads
-// the mode through EBX. Tried: word index with 0xffff 66, with the mode local inside 42;
-// word mode local inside 42; mode assigned inside 42; long index of the word 53; the
-// NONE case first 44 (short index) / 26 (current form); the >= 7 block as a
-// __forceinline helper 19-70.
-// The slot's data block as its own struct read through slot->unknownc, at the
-// state line or the top 12 (no change, alone or with the forms below); long index
-// with the mode local after it 19; short index with a result local set in both
-// arms 48. The 0x1b0e40 setup order is unchanged by an origin local, a const
-// origin cast, a mode or index local at the call.
-// Round 53: slot data view scoped to the active branch 12; current index with the mode in
-// the valid block 26; whole-slot state scoped to the active branch 12; facing address before
-// the dot test 18; facing address before the active branch 155; leader declaration split 12;
-// basis declarations before the leader 12; state declaration split from its cast 12.
-// Opening body restored.
-// Round 41 (lane 10): the existing 0x1f86f0 test for the mode-2 check 208 (711 bytes); current
-// index with the mode read at the call 54; short index with the mode at the call as a ternary
-// 37; that form with `short index` declared at the top 66, with the point declared at the
-// top of the active branch 66. With a short index and the mode at the call the >= 7 block is
-// retail's except that the list is read from the stack (no EBX reload at the join) and the two
-// closing flag stores share `mov al, 1`.
-// Round 48: the index as `& 0xffff` 12, as a dword 12; the origin through a second actor_get of the
-// leader 149 (780 bytes); the point declared with forward/left 12; the 0x1b0e40 result named 12.
-// Round 75 (fast): a bool result stored once on the current index 80 (746 bytes); the result as
-// `index != NONE && call` 70 (757); the point at function scope 12; the mode local at the top of the
-// list branch 138 (759); the point as a point2f 30 (frame moves). Retail's other 0x1b0e40 callers set
-// its register arguments in differing orders (0x1b13b0: ECX, EDI, EBX), so no parameter order is implied.
-// Round 100: origin or output first-component addresses 12/12, both 12; no slot local 28; slot local
-// at entry 12; forward basis pointer at the declarations or after initialization 12/12; direct slot
-// reads with the forward pointer 12. Opening body restored.
-// Round 210 (fast; the two sites are independent: the 0x1b0e40 setup, and the list kept in EBX for the >= 7 block): a
-// target-list copy local in the >= 7 block 78; the mode local at the top of the list branch with a short index 80 (757
-// bytes). 0x1b0e40's parameters with the stack pair last, definition and all four calls: (origin, forward, point, index)
-// 36 (0x1b13b0 3); (index, point, forward, origin) 12 (0x1b0e40 8, 0x1b1100 27, 0x1b13b0 5); (point, forward, origin,
-// index) 36 (0x1b0e40 8, 0x1b1100 27, 0x1b13b0 7); (index, forward, origin, point) 12 (0x1b0e40 8, 0x1b1100 27, 0x1b13b0
-// 4); (index, origin, point, forward) 11 (0x1b13b0 2): matched 0x1b13b0 fixes the declared order.
-// Round 210, field read at each use (the form that matched 0x18c3b0), mode at the call, no index local: `(word)` argument
-// 66; plain argument 66; a named slot pointer inside the block 66; a `(word)` test 66 (retail's `xor eax, eax; mov ax` read
-// and call setup, but the list is still read from the stack after the join).
-// Round 152 (m3 lane 6, fast): on the current body (movzx index; mode local read before the test into BX) a `short index`
-// local 79 (757 bytes: xor/mov index and the list kept in EBX, but the inlined dot product swaps its mulss operands);
-// short index with the mode at the call 66 (no EBX reload at the join; the two flag stores share `mov al, 1`); the field
-// read at the test and the call with the mode local 70 (758 bytes); `long index` sign-extended 12 (movsx, same shape); the
-// store as a ternary 75 (748 bytes); index declared before the mode 12.
-// P361: Existing actor/leader/slot input-receiver lexical identities, seven subsets then complete formal-input names:
-// 3/3/3/3/3/3/3/3. NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
-// Origin/point/forward address preparation at the 0x1b0e40 call remains; frame and all later code agree.
 // @retail 0x1b1a90
 void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -482,6 +405,7 @@ void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_lis
 
 	s_slot_7e *state = (s_slot_7e *)slot;
 	s_actor_view *leader = actor_get(list->entries[0].actor_index);
+	point2f const *origin = (point2f const *)&leader->position;
 	vector2f forward;
 	vector2f left;
 
@@ -500,7 +424,7 @@ void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_lis
 			{
 				point3f point;
 
-				if (function_1b0e40(state->position_index, (point2f *)&leader->position, &forward, (point2f *)&point,
+				if (function_1b0e40(state->position_index, origin, &forward, (point2f *)&point,
 					list->mode, &left))
 				{
 					point2f direction;

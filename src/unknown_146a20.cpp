@@ -61,7 +61,9 @@ bool g_47f05b;
 // MiniMax D (11-06): no new form, no lower score (34); retail's base vtable store (0x453760) and its
 // derived vtable (0x4576a4) come from the shared constructors in include/unknown_146a20.h, which this lane may
 // not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
-// score 34 (was 34): frameless prefix agrees; intermediate vtable store and successful-arm backing reload remain.
+// score 34 (was 34): frameless entry agrees; intermediate vtable store and successful-arm backing reload remain.
+// Earlier at 34: MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
+// frameless prefix agrees; intermediate vtable store and successful-arm backing reload remain.
 // Earlier: MiniMax D (11-05): no new form, no lower score (34); the abstract allocator's base vtable store comes from the shared constructor in include/unknown_146a20.h, which I may not edit, so the gap stays (BLOCKED-BY include/unknown_146a20.h).
 // MiniMax b (11-04): no new form, no lower score; the abstract allocator's base vtable store is still dropped (it comes from the header's inline constructor) and the pool placement still reloads g_479888 at the join.
 // Earlier at 34: unchanged that round: retail still stores the abstract allocator's vtable at
@@ -345,6 +347,9 @@ bool g_47f05b;
 // pool construction:
 // 36/36/36/28/39/39/39/26. NOT kept: early one-use counter observations require equality. Original executable body restored.
 // Intermediate vtable store and successful-arm reload remain.
+// T70: Explicit abstract-parent lifetime start, explicit count parent, count/member initializer
+// boundaries: eight 34s; all 57 marked shared users unchanged. NOT kept: no intermediate-vtable
+// or successful-arm reload repair. Original complete shared header and executable body restored.
 // @retail 0x146a20
 void function_146a20(void)
 {

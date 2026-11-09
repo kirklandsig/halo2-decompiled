@@ -833,6 +833,8 @@ bool function_1f8100(long actor_index, point3f const *origin, point3f const *tar
 
 real normalize2d(point2f *v);
 
+// MiniMax R (11-09): the annealed permuter over 900 s ends at 134, its best being the two flag stores swapped, a gain of one that the review threshold drops, and the volatile globals pointer and the placed point store it also made give 135 on their own; the score stands at 135.
+// MiniMax R (11-08): no new form, no lower score (135); the threshold, the request point copy, the direct request return, the result's type and the retry spelling all score 135 or worse, and only the trajectory result compared against zero reaches 120, which is a redundant compare kept only with a byte match.
 // MiniMax R (11-06): no new form, no lower score (135).
 // MiniMax G (11-04), not kept (coordinator): 59 with the trajectory result compared against zero
 // (`fa1a0(...) != 0` on a bool call; retail has no setne, it only moves the result to DL, so the

@@ -455,6 +455,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // remaining_blend named before the first aspect test 258 (1972 bytes); the inverse sums as one expression each
 // 319 (1957 bytes, the frame moves). Retail keeps the blend in XMM5 from the frame block through a join that
 // reloads it on the other paths (+0x46f..+0x47c), so its aspect block holds ax/ay/bx/by/1/bx/1/by in registers.
+// T71: Fixed-four indexed tint clamp, int/long/unsigned-int/dword, plain while then direct
+// do/while: 211/211/211/211/512/512/512/512. NOT kept: ties/regressions; original clamp, full
+// body and alias-safe encoder captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

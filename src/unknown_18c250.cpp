@@ -311,6 +311,7 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// MiniMax I (11-08): no new form, no lower score (7); the sum spelled with the samples pointer first gives the same bytes.
 // MiniMax R (11-06/07): the samples' memcpy form (2; H 11-04, C 11-06) again, not kept; a memcpy copy of the entry's data offset 3
 // (also a field's bits read through its address), every plain spelling of the sum 8, the offset through the
 // array expression 23, a short cast of the offset 17.

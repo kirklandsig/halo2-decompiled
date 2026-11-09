@@ -786,6 +786,9 @@ struct s_tag_instance_view
 long function_baf40(long object_index);
 bool function_e4050(long object_index);
 
+// MiniMax C (11-09): no new form, no lower score (43); retail's walk presets its root to NONE and
+// starts the walk at the unit, so the unit carrier takes EBX and the datum address EDI, the other
+// way round from ours, and the walk itself is still the out-of-line 0xbaf80.
 // MiniMax H (11-07): no new form, no lower score (43); the datum address is still computed in EBX
 // where retail computes it in EDI and the two are used the other way round, and the root walk is
 // still the out-of-line 0xbaf80, whose source sits in src/unknown_0bad50.cpp.
@@ -1135,6 +1138,10 @@ bool function_14ed80(void)
 // declared and set to NONE after the remap 63 (151 bytes, 0x14f0f0 lost); the bound-test form with `globals` declared
 // between first and third and assigned after the player 53 (declaration order does not break the first/third tie).
 // Retail's two callers (0x14f0f0, 0x14f2e0) never read EAX after the call, so the void return stands.
+// Round 142 (m3 lane 8, fast; direct global reads mixed with the local): clamp direct, local declared before the bound
+// test 54; element through the global, clamp and bound test through the local 53; local before the bound test used there
+// only 53; local in the clamp arm only 53; bound test direct with the outputs declared after the local 10 (first EDX as
+// retail, third ESI, globals EDI).
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -2898,6 +2905,14 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
+// MiniMax C (11-09): no new form, no lower score (103); the busy block is instruction for
+// instruction retail's, and the second loop's failure test already has retail's shape (the first
+// call's failure jumps straight to the flag store), so what is left all follows from the globals
+// pointer's register: retail loads g_4e8c20 into esi at the head and reloads it after the busy
+// check and again before the final store, ours carries it in edi to the end of the function and
+// reloads it only at the join after the failure store. Our build keeps the pointer across the
+// calls, so the callees it calls are summarised as never writing that global, and those callees
+// are in other lanes' files.
 // MiniMax H (11-07): no new form, no lower score; the globals pointer and the iterator's index
 // array still swap registers, and the two globals are still read in the other order, so the
 // reduced image still scores 193.
