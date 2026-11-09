@@ -174,6 +174,11 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 // as vertices_raw + n, an x local, surfaces[surface_index], surface_index set
 // first 6; w stored by member index 38; offset local 68; separate x/y/z
 // stores 10/106; point struct copy 120; __m128 vertex pointer 6.
+// MiniMax S (11-09): no new form, no lower score; the entry still loads the index before the radius
+// constant and the loop still forms the vertex address before its x store; this round the x store
+// through the array element as a long copy (119), through the point3f view of that element (119) and
+// the helper called on the array element (38) are all worse, and writing the three components
+// separately (112) turns the y and z stores into long copies.
 // @retail 0x1edd00
 c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, long index,
 	long user_data, const transform4x3f *matrix) : radius_shape_2de750(0.01f)
@@ -211,6 +216,7 @@ c_vertex_shape::c_vertex_shape(s_shape_source *source, byte type, long data, lon
 short function_120850(const vector3f *vector);
 bool function_23a220(const point2f *point, short count, const point2f *points, real epsilon);
 
+// MiniMax C (11-09): no new form, no lower score (192); the point-in-polygon query's call setup still differs (BLOCKED-BY src/unknown_239b80.cpp).
 // MiniMax I (11-05): no new form, no lower score. The header normalize_inline for the normal gives 193
 // and the header cross3f_staged for the cross gives the same code; retail's normal length sums k, j, i
 // (with the components scaled inv*i, j*inv, k*inv) and neither header helper has that order. The rest

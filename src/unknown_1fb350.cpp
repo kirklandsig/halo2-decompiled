@@ -318,6 +318,7 @@ void function_f0fd0(long vehicle_index, bool set);
    unit's flags and are deleted */
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// MiniMax R (11-09): no new form, no lower score (122); retail keeps the pool in two stack homes and the datum index in a register, ours keeps the pool in edi and lifts g_4e0300 into ebp at the entry.
 // MiniMax A (11-06): no new form, no lower score; retail's frame is 0x14 with the pool in two stack homes
 // (one for the scan, one for the element), the index home a third, the datum index in EDI and the object
 // pool re-read from the global at each use, while ours has a frame of 0xc with the pool forwarded into

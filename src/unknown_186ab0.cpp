@@ -150,6 +150,9 @@ void __stdcall function_187510(long arg_0, real arg_1, real arg_2);
 void player_action_initialize(s_player_action *arg_0);
 
 #pragma inline_depth(0)
+// MiniMax S (11-09): still differs in the first count test: retail sign-extends the counted byte and tests the
+// whole word, ours keeps the byte test; the inlined count read keeps our [edx + edi] against retail's
+// [edi + edx], and the body is 29 bytes short of retail's.
 // MiniMax E (11-05): no new form, no lower score.
 // MiniMax B (11-04): no new form, no lower score.
 // MiniMax S (11-06): no new form, no lower score.

@@ -196,6 +196,15 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // and set up EBX (arg_0), ESI (arg_4), CX (arg_3), DX (arg_2) last to first, so the order stays. On the 20 body:
 // side vector k component first 28; both quarter points declared once for both modes 43; side vector declared at
 // block top 20; spacing declared before the points 20; spacing at function top 20; clear state at function top 20.
+// P395: Complete quarter/triple/both setters on the typed-origin graph 20/20/26;
+// complete quarter/triple/both aggregates 20/20/20; quarter/triple native component loops 86/104.
+// NOT kept: no x-row scheduling repair; original point producers and full body restored.
+// P397: Complete reused scaled-side scalars, aggregate vectors and field vectors on
+// the typed-origin graph, quarter/endpoint/both producers and immutable scalars:
+// 35/29/44/35/29/44/44/44. Per-row product birth at its first positive consumer,
+// quarter/endpoint/both/immutable-both: 20/20/20/20. NOT kept: all tie or regress;
+// per-row forms recover the original homes but miss the native positive x add.
+// Original complete body, signature and all probe tuples restored.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)

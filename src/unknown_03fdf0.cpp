@@ -518,6 +518,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // reused for the chosen value 155 (481 bytes). Compile-only (no dead mode home, material in a register there) keeps first
 // and the cursor temporary in one slot for every loop-body, memcpy-source, type and scope spelling; only the explicit
 // cursor or explicit index (both start above the guard) split them. Re-measured: local renames 2.
+// Round 222 (m3 lane 3, fast with 0x404b0): `current = first + count` 157 (492 bytes); `long first; current = first =
+// previous;` 158 (492 bytes); `dword first` 2; first and current each reading previous 2; the copy size as
+// `sizeof(s_44940_entry) * count` 2 (same code each).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

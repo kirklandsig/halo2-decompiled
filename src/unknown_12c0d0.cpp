@@ -997,6 +997,7 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax I (11-09): no new form, no lower score; the masked level address is still loaded into EDX where retail reuses the dead bitmap register, and this round the element reached by pointer arithmetic and the same element reached through a dword index into the header view compile byte-identically to the baseline.
 // MiniMax D (11-08): score 3 (was 3): the masked level address is still loaded into edx where retail reuses
 // the base register that dies with that load; the reduction branch, the format bits and the three header
 // stores agree with retail.
