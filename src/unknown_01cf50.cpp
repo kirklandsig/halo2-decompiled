@@ -7098,6 +7098,9 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax D (11-08): no new form, no lower score (310, measured on the full image); our loop still strength-reduces
+// group * 0x98 into a second counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894 and the zero for
+// both counters lives in EBP; a short group removes the slot and keeps the imul but scores 390 here.
 // MiniMax B (11-07): no new form, no lower score (310); the group stride is still strength-reduced into a second
 // counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894, the zero for the counters lives in EBP
 // and every local above that slot sits 4 bytes higher; writing the two count tests as equality tests (retail
