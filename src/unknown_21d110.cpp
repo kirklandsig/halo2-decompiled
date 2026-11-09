@@ -313,6 +313,10 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
+// score 181 (was 181): this round: no new form and no lower score; retail still takes the first
+// argument in EAX and keeps it in EBX with a four-byte frame, while ours reserves eight bytes and
+// pushes ESI and EDI, and the request convention cannot change here without the eight matched callers
+// in other lanes' files.
 // MiniMax b (11-06): no new form, no lower score; retail takes the state pointer in EAX and the tag on
 // the stack and reads the tag late, ours takes the tag in EAX and the state on the stack and reads the
 // tag at the entry, and retail inlines the start sequence (0x126c30, 0x126ec0, 0x126000) at both the

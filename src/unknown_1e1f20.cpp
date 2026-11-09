@@ -592,6 +592,10 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
+// score 236 (was 236): this round: no new form and no lower score; the prologue still loads the actor
+// pool into EAX and keeps the byte offset in EBX where retail uses ECX and EAX, the memory-entry walk
+// still keeps its count in EBX and folds the entry pointer into the offset, and the body is 22 bytes
+// short of retail's 980.
 // MiniMax S (11-09): two more forms for the memory-entry walk: the type test through the cached actor
 // with every other field read through a fresh actor_get gives 344, and the whole walk through the
 // cached actor gives 308, against the unchanged 236. Both put the entry pointer in EBX as retail has
