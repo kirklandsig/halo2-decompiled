@@ -2849,7 +2849,9 @@ real g_47ff30 = 2.5f;
 // instructions against the 711 of the body, and its variants swap call arguments, so the file was restored; the column
 // alignment puts the first differences at the frame (0x100 against 0xfc), the top slot
 // (esp+0x108 against esp+0x104) and the first float home (esp+0x20 against esp+0x34).
-// score 713 (was 730): Native mutable turn multiplier restored; frame 0x100 versus retail 0xfc;
+// score 699 (was 713): Complete angular error in the torque output, then the existing in-place scale;
+// frame 0x100 versus retail 0xfc, 3229/3244 bytes; scalar/vector/transform homes remain.
+// Earlier at 713 (was 730): Native mutable turn multiplier restored; frame 0x100 versus retail 0xfc;
 // scalar/vector homes and force/trig scheduling still differ; 3223 bytes (retail 3244).
 // Earlier (730, was 676): frame 0x100, 3219/3244 bytes.
 // Walked against retail 0xf2360-0xf3009 statement by statement (v1D, 2026-11-06): the arithmetic, offsets, conditions, callees
@@ -2983,6 +2985,26 @@ real g_47ff30 = 2.5f;
 // Current-matrix identity/declaration/both 713/713/713; complete force/torque/up setters
 // 712/713/731; force+torque 712. NOT kept: one-point leads or nonnative storage;
 // only the actual data-object read remains, with every original call and math tree.
+// P361: Angular rate part / lower bound / both 713/720/711; complete error alone / with rate /
+// with bound / with both 713/713/720/713. NOT kept: the two-point combined lead is below the gain gate.
+// Complete error before common scale: extra vector / direct torque products / existing scale /
+// scale-expression argument 699/699/699/699. Kept only the last, with the actual torque output
+// and the existing in-place scale, no extra vector or one-use scale local. Retail 0xf2f4c..0xf2f83
+// finishes all three errors before applying their common gain; source trees and game calls agree.
+// Plain whole-program check confirms 699; all other measurements and baseline matches survive.
+// P364: Complete directional energy/mass producers, mutable/const immediate/phased
+// squares and four accumulator boundaries: 697/697/697/697/699/721/698/699. NOT kept: no native
+// frame/producer equality; best gains two. Original full body restored, including the retained torque scale.
+// P367: Discarded angular-output workspace reused for up/left/bank axis/rotation
+// axis/force/torque/desired-left/current-left: 744/699/699/684/699/693/696/696.
+// NOT kept: 684 reaches native length but grows frame to 0x10c versus 0xfc and
+// shares native-distinct query/axis homes; other leads miss the gain gate.
+// Actual query-scope ending on this graph 699. Original three transforms,
+// independent outputs, common torque scale and complete body restored.
+// P369: Coherent mass-field reads at every use 696, native frame 0xfc and 3244 bytes, first +0x66; NOT kept: gain
+// three. Existing full force/torque/normalization scale boundaries, masks 1/2/4/3/5/6/7 and nested torque output:
+// 699/699/699/699/699/699/699/701. Coherent mass with force/torque/both scale calls 709/709/719; response/query/all
+// axis-output identities each 696. All restored; original 699, frame 0x100 and 3229 bytes retained.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3180,11 +3202,11 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 
 	real rate = PIN(rotation_angle * maximum_turn_rate * 0.95492965f, 0.0f - maximum_turn_rate, maximum_turn_rate);
 	vector3f torque;
-	real torque_scale = angular_scale * state->unknown6c;
 
-	torque.i = (rotation_axis.i * rate - vehicle->angular_velocity.i) * torque_scale;
-	torque.j = (rotation_axis.j * rate - vehicle->angular_velocity.j) * torque_scale;
-	torque.k = (rotation_axis.k * rate - vehicle->angular_velocity.k) * torque_scale;
+	torque.i = rotation_axis.i * rate - vehicle->angular_velocity.i;
+	torque.j = rotation_axis.j * rate - vehicle->angular_velocity.j;
+	torque.k = rotation_axis.k * rate - vehicle->angular_velocity.k;
+	vector3f_scale(&torque, angular_scale * state->unknown6c, &torque);
 	force.i *= mass;
 	force.j *= mass;
 	force.k *= mass;
