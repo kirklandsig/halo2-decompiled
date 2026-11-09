@@ -1834,6 +1834,10 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax C (11-09): no new form, no lower score (285): retail reaches one shared epilogue at 0xb987a from the
+// ancestry-loop match, the !allowed test and the later branch, ours duplicates it, so the first difference is
+// still the jump target at +0x76; retail also inlines function_b8bd0's marker pointer, and that file is /Ob1
+// and outside this lane, so LTCG keeps our call.
 // MiniMax I (11-08): no new form, no lower score (285): the shared epilogue at retail's 0xb987a and the
 // marker pointer retail inlines (that other file is /Ob1, so LTCG keeps our call) still leave the first
 // difference at +0x76.
