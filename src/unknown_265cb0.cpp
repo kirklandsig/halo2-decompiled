@@ -1448,6 +1448,9 @@ long function_146650(void);
 // unknown) everywhere (retail's second call sets up last-to-first under that order; 0x267a80 still matches).
 // Held, not committed: it also moves the arguments on two call lines in 0x25f290 (contributor-finished,
 // src/unknown_25fc30.cpp; its bytes unchanged, score 253), which needs that owner's OK.
+// P395: Activity default after offset/after query/before direction/before state 11/52/16/46;
+// corrected-home offset memset/chained zero/query-only output 71/11/275; activity default at state test 29.
+// NOT kept: no exact setup repair; original complete body restored.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {

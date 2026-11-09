@@ -1566,6 +1566,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // P384: Complete complementary one-time cleanup state, byte/char/signed-char/short/word/int/long/dword:
 // 36/36/36/154/154/252/252/252. NOT kept: all regress; original cleanup producer, every asynchronous
 // operation/wait/output, failure-only count and complete body restored. Query/count homes and write/header joins remain.
+// P397: Actual asynchronous size/resize/write outputs with local qualifiers,
+// seven subsets then all at function scope: 33/33/104/33/104/104/104/104.
+// NOT kept: the asynchronous-output exception requires equality; query/count
+// homes and write/header joins remain. Every trial qualifier and complete body restored.
 // @retail 0x213970
 void function_213970(void)
 {

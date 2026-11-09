@@ -462,6 +462,13 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // `0.0f < n[axis]` 46 (same code); a `vector3f *normal` for the copy, dot, axis call and side test 91 (re-measured: lane 13's
 // 258 was on the unfaithful image); a `plane3f *plane` with a position-first dot 63; the plane pointer for every plane use 91;
 // the distance as dot3f(position, &matrix->up) 209 (986 bytes).
+// P385: Progressive per-edge eligibility bool/byte/short/long, positive then complementary:
+// 48/48/48/48/48/48/48/48. NOT kept: no exact live-plane store, selector or product-memory repair;
+// original ordered edge predicate, four-use corner helper and complete body restored.
+// P397: Native float dot/paired squared-edge/reciprocal receivers, seven subsets
+// with the complete graph immutable, then immutable dot alone:
+// 48/52/48/50/52/50/48/48. NOT kept: no live-plane, first-selector or product-side
+// equality; immutable dot differs earlier at +0x67. Original complete body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

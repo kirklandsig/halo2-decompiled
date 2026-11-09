@@ -1634,6 +1634,10 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // 8; the NONE default declared before the other slot read 182 (620 B); the unit through the pool copy and the other
 // hand through the global 198; 0xcbd50 with the slot argument through the pool copy 198; the unit through
 // UNIT_ACTION_HEADER_GET 8; permuter (13 tries in 631 s) no gain.
+// P389: Real equipped-array first-match search through standard find/search_n,
+// direct range/endpoints/pointer-result/ordinal-result consumption:
+// 190/187/206/194/224/228/224/242. NOT kept: no exact native frame/home recovery;
+// original complete body, observations, helper and call graph restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {

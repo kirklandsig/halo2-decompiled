@@ -1441,6 +1441,9 @@ long function_2197f0(real gain);
 // * inverse`, `inverse * fade_out * (elapsed - hold)` 94 each (identical); `gain +=` in the first arm 94 (identical);
 // a `real fade_out` local for the test, sum and product 98, with `gain +=` 98; on the division form `gain +=` 125, the
 // fade_out local 128/128 (678, aligned 68).
+// P392: Complete composite/simple overlap admission, positive/complementary bool/byte/short/long:
+// 94/94/94/94/94/94/94/94. NOT kept: no native elapsed/reciprocal/gain-load equality; one-use outcomes
+// require a match. Original comparisons, floating groups and whole body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

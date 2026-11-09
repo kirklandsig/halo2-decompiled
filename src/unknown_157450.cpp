@@ -5721,6 +5721,13 @@ void __stdcall function_d6bc0(long object_index);
 // T73: Actual eight-kind switch with one shared modifier dispatch, zero/positive group first,
 // signed-byte/byte/short/long selectors: 97/97/97/97/98/98/98/98, all native 869 bytes.
 // NOT kept: no native admission/index repair; original admitted modifier and full body restored.
+// P389: Complete positive scheduling admission from a once-observed if/else mode,
+// bool/byte/char/signed-char/short/word/int/long on the per-kind modifier graph:
+// 168/168/168/168/182/182/186/186. NOT kept: no exact native frame/home recovery;
+// original complete body, observations, helper and call graph restored.
+// P391: Abandonable initialization phase reaching the shared countdown, mode 1/0 first,
+// short/word/int/long selectors: 57/57/51/51/94/94/95/95. NOT kept: no exact match;
+// best gains one and every extent shortens away from 869. Original full body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

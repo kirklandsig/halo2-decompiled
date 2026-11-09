@@ -1010,6 +1010,9 @@ struct s_tail_transfer_traits
 // 157; main+second, first+second, all three, main+first through copies 171 each (843 bytes). Still: retail keeps primary in EDI
 // (its NONE preset shares the NONE constant's register, its home the selection counter's slot) where ours keeps it on the
 // stack, and the unit index in EBP where ours uses EAX.
+// P393: Selected-traits availability at the unit join, positive/complementary
+// bool/byte/short/long: 153/153/153/153/153/153/153/153. NOT kept: unmatched one-use outcomes; native
+// traits/unit/NONE homes and no-seat pool reloads remain. Original complete body restored.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1228,6 +1231,9 @@ static __forceinline dword player_weapon_flags(s_tag_instance *tags, long weapon
 // lookups per iteration); player pointer copies per lookup 279 (same code); the player re-derived per lookup through
 // tail_player_get with the NONE store, with ternaries, alone 289/306/297; a file helper taking the pool and the player 642
 // (647 bytes).
+// P393: Attachment admission before the paired clear traversal, positive/complementary
+// bool/byte/short/long: 254/254/254/254/254/254/254/254. NOT kept: one-use outcomes remain unmatched;
+// pool/player carriers and lazy tag-table acquisition remain. Original whole body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

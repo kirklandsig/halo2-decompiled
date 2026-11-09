@@ -677,6 +677,9 @@ struct s_1f8a70_actor
 // 234567/765432/236745/456723/452367/672345/674523/325476:
 // 369/371/377/385/369/388/387/397. NOT kept: no native dispatch/home equality;
 // original switch, all case bodies, two results and complete body restored.
+// P393: Both route root-override admissions, positive/complementary bool/byte/short/long:
+// 188/188/188/188/188/188/188/188. NOT kept: one-use outcomes do not match; unit/result +0x12,
+// route dispatch and late memory result remain. Original complete two-result body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

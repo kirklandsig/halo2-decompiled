@@ -630,6 +630,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // P383: Post-attachment notification admission in bool/byte/short/long, positive/complementary:
 // 49/49/49/49/49/49/49/49. NOT kept: no native false-BL/independent-lookup equality; original workspace
 // observation, validity result and whole body restored.
+// P392: Consistent twice-used incoming virtual options, e/f/both long then const-long, both int/const-int:
+// 49/49/49/49/49/49/49/49. NOT kept: no native false-BL/temporary-EBP/independent-lookup equality.
+// Original formal reads, virtual tuples and complete body restored.
 // MiniMax S (11-09): no new form, no lower score; retail still keeps the false result in BL and
 // re-reads the last argument from its stack slot, while ours promotes that argument into EBP and
 // returns the result through EAX, which also shifts the frame by four bytes.
