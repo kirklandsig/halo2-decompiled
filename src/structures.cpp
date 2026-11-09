@@ -891,6 +891,7 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // Round 210 (fast, diagnostic, reverted): 0x11e800 declared (p, a, b, c, u, v) still gives 0 (0x11e800 126, 0x14ac60
 // 172); all four differences are its argument registers. BLOCKED-BY 0x11e800 (contributor).
 // Round 216 (m3 lane 3): baseline listing still differs only in 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
+// Round 96 (m3 lane 9): baseline listing still differs only in 0x11e800's four argument registers; BLOCKED-BY 0x11e800 (contributor).
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
