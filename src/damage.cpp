@@ -1210,6 +1210,11 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // 38/38/40/192; corresponding named far sums: 40/40/40/192.
 // NOT kept: publication/scheduling diagnostics do not match the native near block.
 // Original sums, negations, stores and whole body restored; near-block extent remains.
+// Round 157 (m3 lane 5): `node_direction` defined at the top beside `direction` 354 (aligned 62 against 13: the else
+// arm's i row flips to retail's, but the NONE copy loses its `lea edx, [ebp + 0x48]` and the tail's scratch registers
+// rotate); with that copy through the pointers 355; declared at the top and assigned in the node branch 38 (same code).
+// Diagnostics, reverted: no direction reads in the cone dot, another source for the NONE copy, or no node updates in
+// the near block all leave the else arm's i/k rows as they are, so no single later read sets them.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1921,6 +1926,11 @@ long function_1e4a10(long index);
 // retail's); the category test passed directly 189 (874 bytes); the stun ticks through slot_handler.h's real_to_long
 // 7 (also with `seconds` named, 7); the actor through actor_get 8 (same code); 18 combinations of those with the
 // inverse as an if/else 7 or 8 each.
+// Round 157 (m3 lane 5): the permuter (15 tries in 600 s, best 8); the stun ticks through slot_handler.h's real_to_long
+// 7 (after function_d5bc0 the order becomes zero, inverse, maximum, 1.0f); every asm rounding block of the file's
+// non-contributor functions through real_to_long 7, or through one shared seconds-to-ticks inline helper 7 (d5de0
+// 400 -> 393, the rest unchanged); not kept (one point). `shield_damage *= multiplier` 8 (same code); the side effect 3
+// and in-radius test as one named bool used at both places 231 (895 bytes).
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2058,6 +2068,9 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 // bool/byte/short/long storage 234/234/240/241; with entry-initialized shared
 // ordinal 243/243/251/252. Wider decisions reach 958 bytes but leave frame
 // 0x1c versus 0x20 and wrong ordinal/destruction ownership. Original body restored.
+// Round 157 (m3 lane 5): 103 in every walk that frees 0xd9d60; aligned 45: the 0xda110/0xd9d60 call setups and a
+// one-step eax/ecx/edx rotation in the delay block and the destroyed-mask store that follows the extra push at each
+// 0xda110 call; the two asm roundings through real_to_long 100.
 // @retail 0xdaaa0
 void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	real damage, s_damage_region_accumulator *accumulator)
@@ -2438,6 +2451,11 @@ void function_176330(point3f const *point, s_effect_marker *markers);
 // before the position and forward copies as well 4: only the 0x176ad0 register-argument setup is left
 // (retail ECX, EDX, EDI, ESI; its only caller, so 0x176ad0's own parameter order). In the real build: both
 // forms 70 (0xdae60 75, 0xdaaa0 231), the name first alone 69. BLOCKED-BY 0xb8540.
+// Round 157 (m3 lane 5), full checks now that 0xd6800 carries `standard`: the four disabled bodies enabled 8 (28
+// matched lost, 0xd6bc0/0x11a320 kept), 0xb7430 + 0xb7b40 + 0x2902b0 8 (240 lost), 0xb7b40 alone 69 (6 lost),
+// 0x2902b0 alone 8 (22 lost), 0xb7b40 + 0x2902b0 8 (240 lost), lane 17's 0xd6a70 prototype above 0xc98a0's in
+// unit_object_type.cpp 8 (9 lost, 0xd6800 among them: 0xd6a70 inlines once it leaves the walk's stack). Still
+// BLOCKED-BY 0xb8540.
 // @retail 0xd9d60
 void function_d9d60(long marker_name, long object_index, bool at_marker, long effect_index,
 	s_damage_owner const *owner)
@@ -4229,6 +4247,8 @@ void function_db670(long object_index, long vehicle_index)
 // P346: Actual marker-placement bit as enabled/disabled bool/byte/short/long call inputs:
 // 28/28/28/28/28/28/28/28. NOT kept: no native callee transport or EDI-save recovery;
 // original body, owner initialization, parameter order and every callee interface restored.
+// Round 157 (m3 lane 5): in every walk that gives 0xd9d60 its retail convention (see its note) this function is 42;
+// the remaining differences are only the 0xd9d60 and 0xda110 call setups.
 // @retail 0xdb760
 void function_db760(long region_index, long object_index, long permutation_index, long mode)
 {
@@ -4935,6 +4955,9 @@ struct s_damage_object_creation
 // subsets 1/2/4/3/5/6/7, then all with component-record identity:
 // 156/156/156/156/156/156/156/156 (fast control 156).
 // NOT kept: no exact identity-form match; original complete body restored.
+// Round 157 (m3 lane 5): the mask's zero declared, or assigned, just before the first node loop 170/170 (aligned 107
+// against 25: object_index loses ESI to the datum offset); the piece loop as `!= 0` 156 (aligned 24, retail's bottom
+// jne), with a dword mask 156; the tag test in the loop condition, retail's guard order, 188 (776 bytes).
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
