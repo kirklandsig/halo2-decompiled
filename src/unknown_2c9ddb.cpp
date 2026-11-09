@@ -196,6 +196,7 @@ extern long g_55c154;
 // Round 394: actual selected/saved/source-index eight-byte homes 177/74/61;
 // selected+saved/selected+source/saved+source/all 182/187/104/193; all unsigned 193.
 // Original narrow values and complete body restored; classification spill/copy expansion remain.
+// MiniMax S (11-08): no new form, no lower score (61); every form with a second load call site still flips the frame to `mov ebp, esp` and moves `this` out of EBX, the link still expands the name copy in place where retail calls 0x13fac0, and the default/existing choice is still spilled to a byte slot.
 // MiniMax E (11-06): no lower score this round; the body is unchanged. Retail's second half
 // holds two load call sites (the default arm inline, the selected arm out of line at +0x1e3),
 // each with its own 0x54e49c store and its own 0x4c-byte copy into 0x54e4a0, and one shared
