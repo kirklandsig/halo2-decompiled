@@ -2402,10 +2402,10 @@ va,size,owner,style,evidence,name,object,calls,source,status
 000a9640,134,game,speed,a16 pad,,,000a9820 000a99f0,src/unknown_0a58d0.cpp,matched
 000a96d0,146,game,speed,a16 pad,,,000a9820 000a99f0,src/unknown_0a58d0.cpp,matched
 000a9770,166,game,speed,a16 pad,,,000a9820 000a99f0,src/unknown_0a58d0.cpp,matched
-000a9820,135,game,speed,a16 pad,,,,src/unknown_0a58d0.cpp,todo
+000a9820,135,game,speed,a16 pad,,,,src/unknown_0a58d0.cpp,matched
 000a98b0,143,game,speed,a16 pad,,,000a9820,src/unknown_0a58d0.cpp,matched
 000a9940,163,game,speed,a16 pad,,,000a9820,src/unknown_0a58d0.cpp,matched
-000a99f0,120,game,speed,a16 pad,,,,src/unknown_0a58d0.cpp,todo
+000a99f0,120,game,speed,a16 pad,,,,src/unknown_0a58d0.cpp,matched
 000a9a70,200,game,speed,a16 pad,,,,src/unknown_0a58d0.cpp,matched
 000a9b40,930,game,speed,a16 pad,,,0011d790 00141e10 00141f60,src/unknown_0a58d0.cpp,matched
 000a9ef0,41,game,speed,a16 pad,,,,src/unknown_0a9ef0_deleting.cpp,matched
