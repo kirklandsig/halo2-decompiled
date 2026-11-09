@@ -108,6 +108,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
+// MiniMax S (11-09): still differs in the count loop: retail tests the count with a signed compare and then
+// widens it without sign, ours keeps the count sign-extended; retail also reads arg-5 before the prologue's
+// pushes and holds arg-3 in ecx, ours reads arg-5 into ecx after the pushes. The count's spelling was permuted
+// for 600 s and nothing came below the current score.
 // MiniMax E (11-05): no new form, no lower score; a named local for the guard's struct pointer
 // scores 287 (the load moves ahead of the callee-saved pushes and the frame shrinks to 2663 bytes),
 // so it is reverted.

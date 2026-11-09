@@ -92,6 +92,9 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// MiniMax D (11-08): score 107 (was 107): retail re-fetches the unit pointer and both pool globals after
+// the two 0xbadc0 calls; our link knows that callee writes no memory and keeps the entry fetch, so the
+// register plan and the length differ from the first byte.
 // MiniMax B (11-06): no new form, no lower score; retail loads the object table after the prologue pushes
 // and keeps the unit index in EDI, the unit in EBP and NONE in EBX, this build loads the table before the
 // pushes and keeps them in ESI, EDI and EBP; the user index is a 32-bit value in EBX in retail, a 16-bit

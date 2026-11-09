@@ -179,6 +179,15 @@ struct s_physical_block_iterator
 	s_record_pool_iterator iterator;
 };
 
+// MiniMax E (11-09): 209 -> 201 (1214 bytes against retail's 1213): the second age is now spelled
+// MAX(0, physical->time - best.time), which for the unsigned difference is the same value as the
+// clamped one, so our mask for it and the multiply that follows it go away. What still differs: the
+// first age's difference rides in EDX where retail keeps it in EAX, ours keeps no mask for the second
+// age where retail's does, our two products are made in the other order, and the switch's two case
+// blocks sit at the end of our function where retail has them in place between the default arm and the
+// merge. Measured this round: the mask for the second age restored is 209, the reversed comparison and
+// the mask-free first age are 225, and a local for the clock, for the candidate's time and for the
+// best's time all stay at 201.
 // MiniMax G (11-06): no new form, no lower score: the first differing code is the MAX() clamp in the comparison
 // block, where ours keeps the clamped value in ECX and the sign mask in EAX and retail the other way round, and
 // our body is 15 bytes longer (1228 against 1213), the first divergent branch being the jump to retail's 0x13d679.
@@ -487,6 +496,11 @@ struct s_physical_block_iterator
 // T69: Entry-matching policy replacement signed char/byte/short/long results
 // 209/209/212/211; retention-complement bool/byte/short/long 212/212/222/222.
 // NOT kept: ties/regressions; original policy result, case bodies and complete body restored.
+// P380: Natural nonempty-first first/predecessor/successor list-publication arms, seven branch subsets
+// and complete topology with its actual predecessor outcome.
+// Scores 210/212/213/215/215/215/215/215. NOT kept: no byte match; retained frame agrees but policy
+// cases and weighted-age homes remain, and no publication form shortens toward native length; some grow.
+// Original complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
@@ -583,7 +597,7 @@ long __stdcall function_13d370(s_physical_object *physical, long size, long type
 						default:
 							{
 								dword age = MAX(physical->time - candidate->time, 0);
-								dword best_age = MAX(physical->time - best.time, 0);
+								dword best_age = MAX(0, physical->time - best.time);
 								better = (long)(best.pages * age) > (long)(candidate->pages * best_age);
 							}
 							break;

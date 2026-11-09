@@ -243,6 +243,12 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // declared bare and set before the count test 121; the collision sentinel stored after `result = 2` 123; the direction
 // seed declared bare then assigned 121; the blend computed in the 0x131c20 call 121; loop index and entry renamed 121.
 // Diagnostic: `strength +=` in the first-light block as well 141, the post-call add stays load-first.
+// Round 96 (m3 lane 16, fast control 30; colour first re-measured 121 at 828 bytes, only the post-call add and the
+// ECX/EDI pair differ): colour first with the power bound through a const reference before the first-light test
+// (assign, test, divide, add) 121, through a const pointer 121; the reference with strength first 134 (829 bytes);
+// no entry local (the light's entry field read at each use) colour first / strength first 178/193 (834 bytes);
+// an entry local per arm, colour first, 178 (831 bytes). Compile-only (no LTCG) keeps the strength on the stack
+// here, so it does not model this add.
 // @retail 0xd1a30
 long __stdcall function_d1a30(long ignore_object_index, point3f const *point, s_sky_surface_record *record)
 {

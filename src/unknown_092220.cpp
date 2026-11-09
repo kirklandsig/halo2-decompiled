@@ -222,6 +222,9 @@ static __forceinline long function_925c2()
 // into ecx; a named local for the flags, the record's field read directly, the flags read through
 // an index cast, the two tests in the other order, the two tests split apart and a signed local
 // all leave the code as it was.
+// MiniMax C (11-08): forms tried, none lower: the flags in a local 14, the flags non-const 14, the
+// two tests split 14, the mask first 15, the flags unsigned 14, the kind as a switch 116; the
+// permuter's 55 tries kept the baseline 14.
 // score 14 (was 14): the user flags are loaded into eax in ours and into ecx in retail.
 // The block layout is the same in both builds (the branch that finds no user jumps to the
 // shared load with ecx zero), so only the register the flags are loaded into differs.

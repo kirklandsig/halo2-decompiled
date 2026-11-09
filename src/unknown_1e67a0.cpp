@@ -1194,6 +1194,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // both with the preset flag 176; memcpy for either or both exits 114 (identical to the struct copy); dead reads ahead of the turn test
 // 8/15/20/30/45 112/144/150/140/140, ahead of the crosses 8/15/30 112/145/140 (the axis loads first in all of them). Retail's exits load
 // all three dwords into ESI/EDX/EAX before any store; no copy form gives three registers. Body unchanged.
+// T72: Existing side-cross pointer/reference output and ignored pointer/reference results,
+// reference-output consumed results and all-reference input/output contracts:
+// 114/114/114/114/114/150/114/114. NOT kept: no native rotation/side/output equality;
+// original private helper, both invocations and complete body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

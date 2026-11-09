@@ -3635,6 +3635,11 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // the mode as one ternary 270; the up copy after the colour and scale default 286; forward and up transformed from
 // the location matrix with copies in an else arm (as 0x179fb0) 357; a NULL-initialised location cursor 270; the
 // forward normal transformed before the point 298. Only 0x179880 transforms its point copy in place.
+// MiniMax I (11-08): the scale default is declared before the colour copy, which puts the scale default store
+// ahead of the colour-component store as retail does; with the scale block and the point transform's y copy
+// already in place the function now matches byte for byte.
+// score 0 (was 74): the scale block, the point transform's y copy and the colour-component store against the scale
+// default store now all agree with retail (MiniMax I, 11-08).
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
@@ -3659,14 +3664,17 @@ void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 				point3f position = location->matrix.position;
 				vector3f forward = location->matrix.forward;
 				vector3f up = location->matrix.up;
+				real scale = 1.0f;
 				color3f color = *(color3f *)&g_4686cc->red;
-				real scale = (part->a_scales & 0x20) ? effect->scale_a : 1.0f;
+				if (part->a_scales & 0x20)
+					scale = effect->scale_a;
 				if (part->b_scales & 0x20)
-					scale *= effect->scale_b;
+					scale = effect->scale_b * scale;
 				if (location->node_index != NONE)
 				{
 					transform4x3f matrix;
 					function_17aec0(location->node_index, effect, &matrix);
+					(void)position.y;
 					effect_matrix_transform_point(&matrix, &position, &position);
 					effect_matrix_transform_normal_179880(&matrix, &forward, &forward);
 					effect_matrix_transform_normal_179880(&matrix, &up, &up);
