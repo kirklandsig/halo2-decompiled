@@ -1177,6 +1177,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // P391: Limit-based acceptance (nonnegative maximum and excess within it), both test
 // priorities with bool/byte/short/long results: 53/69/82/78/53/69/82/78. NOT kept:
 // all lengthen to 197-217/190; original clamp, Boolean result and full body restored.
+// P400: Repeated live input-cell reference/pointer with inclusive/strict branch and
+// inclusive/complementary selection maxima: 34/35/34/34/34/35/34/34. NOT kept:
+// no exact count/fill/clamp allocation repair; native 0x48 frame and 190-byte extent
+// remain. Original complete body, direct input reads and scalar maximum restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
