@@ -1305,6 +1305,9 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
+// MiniMax I (11-09): no new form, no lower score (110); retail calls the first-player query out of line where our
+// build expands it, and retail's audible arm keeps the offset in a stack temporary that is copied into the request
+// after the 0x21bfb0 call (that form scores 127-130, worse than the kept 110).
 // MiniMax S (11-06): no new form, no lower score: the source copy is still scheduled differently from retail's and the first-player query is still expanded instead of called; the frame and the entry copy agree.
 // score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
 // instead of retail's temporary/copy, and the first-player query still expands.

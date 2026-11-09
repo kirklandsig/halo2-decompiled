@@ -1798,6 +1798,9 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax I (11-09): no new form, no lower score (11); the entry block keeps the same eleven instructions in
+// another order (retail reads the object pool, the pool data and the type, and only then compares the type with 8),
+// and a copy of the type parameter in a local changes nothing.
 // MiniMax H (11-07): no new form, no lower score (11); the entry block still holds the same
 // instructions in another order: retail reads the object pool global, the pool data and the type,
 // computes the unit and the actions pointer and only then does `cmp ecx, 8; sete bl`, ours reads
@@ -4035,6 +4038,8 @@ bool __stdcall function_ec2d0(long unit_index, s_unit_request *request)
 
 void function_e5750(long unit_index);
 
+// MiniMax I (11-09): no new form, no lower score (52); function_e5750 still expands here (95 bytes) where retail
+// calls it out of line (67 bytes), and the unit pointer is still read after the 0xec0d0 call where retail reads it before.
 // MiniMax H (11-07): no new form, no lower score (52); function_e5750 still expands here (95
 // bytes) where retail calls it out of line (67 bytes), and that callee is in this file and
 // matches, so the expansion cannot be turned off.
