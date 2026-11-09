@@ -979,6 +979,9 @@ PRIVATE inline long damage_object_root(long object_index)
 
 /* damages everything in the damage's radius; returns the first player unit
    hit, else the last object hit */
+// MiniMax D (11-09): no new form, no lower score; retail's player scan keeps the ordinal in [esp + 0x34] and tests
+// the pool's used-bit word at [g_4e8c24 + 0x48 + (index >> 5) * 4] itself, and its frame is 0x1b4 against our
+// 0x1a4, so its definition and objects array sit where ours do not.
 // MiniMax G (11-06): matches only when the three object lookups call 0x175d70's file-local noinline copy of
 // 0xbadc0 (object_get_175d70) from here, which keeps them out of line as retail has them; held under the
 // noinline ruling (an existing noinline copy called from another file is the same steer), patch kept. The rest
@@ -1764,6 +1767,9 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 /* destroys a damage region: picks the permutations whose chance and body
    threshold allow it, and destroys each now or schedules it after its
    delay */
+// MiniMax D (11-09): no new form, no lower score; the first difference (+0x4d) is only the `jle` target, five bytes
+// past retail's, because the tail is five bytes longer from the 0xd9d60/0xda110 call setup (retail passes the index
+// in eax and the flag in al, ours on the stack).
 // MiniMax G (11-04): no new form, no lower score; the two call setups still follow 0xd9d60's convention.
 // MiniMax E (11-06): no new form, no lower score; the two call setups still follow the conventions their
 // own unmatched bodies decide, so this stays behind 0xd9d60 and 0xda110.
@@ -2032,6 +2038,9 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// MiniMax D (11-09): no new form, no lower score; the first difference (+0x39) is only the two early exits, whose
+// branch targets land five bytes after retail's because the tail is five bytes longer (retail passes 0xda110's index
+// in eax and 0xd9d60's flag in al, ours on the stack), so the head follows the tail.
 // score 100 (was 110): the pending field is a real bitfield, 3 bits of permutation and 13 of ticks, which gives
 // retail's byte xor and `or` forms in the delay block. Left: the setup of the 0xda110 and 0xd9d60 calls (their
 // conventions, BLOCKED-BY 0xd9d60's walk, see 0xdae60; one instruction more at each call, so every later line is off)
@@ -4881,6 +4890,10 @@ struct s_damage_object_creation
 // MiniMax G (11-06): no new form, no lower score kept; the mask's zero is stored before the mask block,
 // where retail stores it in the node loop's preheader; storing it inside the block gives retail's store and
 // nop but a different frame layout (170). Retail's guard order and its do-while search each cost four bytes.
+// MiniMax D (11-09): no lower score kept; the detached mask's zero declared inside the mask block after the model
+// lookup reaches retail's store and its loop-alignment nop but reallocates the whole frame (170), the zero assigned
+// inside the block 170, an explicit `node_count > 0` guard 156, the zero declared after the states call but outside
+// the block 154 by a declaration move only.
 // score 156 (was 174): frame 0x13e0, 808 bytes and the first 69 instructions agree (handle in ESI, offset and detached
 // mask in memory). Left: the mask's zero is stored ahead of the states call (retail: at the first node loop), the piece
 // loop's guard order and bottom test, the search's entry test, and the scratch registers of the last two lookups.
