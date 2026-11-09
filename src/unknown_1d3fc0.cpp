@@ -30,6 +30,8 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
+// MiniMax R (11-08): no new form, no lower score (110); the shapes that reach 2 need an existing helper's body
+// written out by hand, so the axis block still multiplies up's i first where retail multiplies forward's i first.
 // MiniMax D (11-06): no new form, no lower score; the helper's scale order k, i, j 115 and the k product with the
 // reciprocal first 110 (the same code); the axis block's dot product still multiplies up's i first where retail
 // multiplies forward's i first, and no shared helper computes that product order.
