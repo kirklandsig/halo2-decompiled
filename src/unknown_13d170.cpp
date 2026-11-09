@@ -469,6 +469,21 @@ struct s_physical_block_iterator
 // sequential/paired once-produced ages [373, 373]; zero-first stages [225, 225];
 // zero-default/explicit positive-zero/zero-test results [260, 209, 222]. NOT kept: no byte match;
 // original macro, field observations, policy, ring, deletion and linking restored.
+// P365: Complete selected-candidate scalar publications in eight field schedules: eight 359
+// at 1217/1213 bytes, first +1. NOT kept: no native policy/copy equality; original
+// record assignment, arithmetic, entry/frame and complete body restored.
+// P367: Case-zero repeated candidate/best timestamp values, singly and in both
+// declaration orders, mutable/const: eight 209s. NOT kept: no native policy
+// placement or result equality; original field observations and body restored.
+// P369: Actual candidate-age/selected-age/replacement-result identities, subsets 1/2/4/3/5/6/7 and immutable ages:
+// eight 209. NOT kept: no native clamp-register or policy-placement repair; original whole body restored, frame
+// 0x1054 retained.
+// P371: Existing paired-age bare declarations at entry/ring/selected-record/outer-scan/
+// candidate-scan/iteration/size-admission/policy-admission: eight 209s. NOT kept:
+// no native clamp-register or policy-placement repair; original complete body restored.
+// P373: Existing policy-result bare declaration at function/admission/record/outer-scan/
+// outer-iteration/inner-scan/inner-iteration/size-admission boundaries: eight 209s. NOT kept:
+// policy-placement/clamp homes unchanged; original whole body and false producer restored.
 // T69: Entry-matching policy replacement signed char/byte/short/long results
 // 209/209/212/211; retention-complement bool/byte/short/long 212/212/222/222.
 // NOT kept: ties/regressions; original policy result, case bodies and complete body restored.

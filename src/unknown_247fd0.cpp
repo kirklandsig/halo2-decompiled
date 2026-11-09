@@ -509,6 +509,17 @@ void function_246e60(s_particle_impact const *arg_2, s_object_246eb0 const *arg_
 // singles/effect pair/particle pair/all: seven 334s; all with named offset producers 338.
 // NOT kept: separate native address adds and scalar homes are not recovered; complete
 // original typed lookups, geometry, random stream, qualifier and body restored.
+// P365: Real position/direction/both matrix-output workspaces, field/native then shared
+// setter publication, then one sequential workspace in both forms:
+// 386/384/401/386/386/430/399/415 (1681-1729 bytes). NOT kept: native calls use
+// in-place outputs; frame and length move away. Original complete body restored.
+// P367: Complete contact-normal value for both offset/direction consumers,
+// producer/contact/geometry/entry declarations and two vector-home names:
+// eight 366s, frame 0xbc and 1665/1652 bytes. NOT kept: record-copy and frame
+// shape miss native 0xb0; original normal pointer and complete body restored.
+// P371: Raw effect-flag input in char/signed-char/short/unsigned-short/int/unsigned-int/long/unsigned-long:
+// eight 334s on the native entry-save graph. NOT kept: folded address and gate/sample/
+// descriptor homes remain; original byte carrier, inherited Boolean store and full body restored.
 // T68: Actual effect-presence/absence snapshots in bool/byte/short/long, reused
 // for admission and inherited velocity:
 // 421/421/426/429/421/421/426/429. NOT kept: no exact ownership/home repair. Original executable body restored.

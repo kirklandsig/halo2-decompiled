@@ -2190,10 +2190,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // byte-offset forms of the two object lookups (retail's lea and shl) widened the difference: 214 for the
 // object, 153 for the unit, 203 for both. The lookup order with the object first scores 164 and the flag
 // types bool, char and byte all score 120, so none of them is kept.
-// score 120 (was 130): the object index is masked once into a local (object_slot) used by both the object
-// lookup and its type, so the scaled header offset stays in a register across the calls as retail's EBP does;
-// the parent index is read in place instead of through a local, which leaves the object pointer in ESI and the
-// parent index in EAX as retail has them. The player lookup and the object header setup now match retail.
+// score 120 (was 130): frame 0x28 and the distance block agree; EBP retains an ordinal rather than retail's
+// byte extent, while unit/pool/parent ownership and later call setup still differ.
+// Retained forms: object_slot is masked once for the object lookup and final type read;
+// the parent index is read at use rather than through a local.
 // Earlier 202: Frame 0x28 agrees; player data uses ECX versus EDX,
 // the object uses EBP versus ESI and the scaled header offset spills instead of staying in EBP.
 // Earlier: the prologue's registers differ: retail keeps the player base in ebx
@@ -2264,6 +2264,8 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // through object_index with object_slot kept for the type read only, after or before it 209/205; the shared `object_index & 0xffff`
 // form 209, with parent_ok first 197: entry code then retail's but for g_4e0300 in ECX (EBP holds retail's index*12); the parent block
 // keeps data in ECX instead of reloading it through g_4e0300 in EDX, so it is one instruction short and everything after it shifts.
+// P360: Read-only unit/object/player input roles, seven subsets, then complete graph with read-only pickup query: 120/120/120/120/120/120/120/120.
+// NOT kept: no exact native source recovery; original complete body restored; native unit-first ingress, pool/parent ownership and scaled header offset remain.
 // T63: Plain four-slot scan with empty/failed/both rejection continues or actual
 // transfer result, original/iteration weapon lifetime: eight 164, 752/721 bytes.
 // NOT kept: all regress; original full body restored, header offset/lookup homes remain.
@@ -2271,6 +2273,28 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // final ordinal 255/255/255/255; real-header byte displacement 242/242/242/242.
 // NOT kept: extent-to-ordinal division survives, growing code to 755/750 against 721;
 // original body restored. Native header-offset, pool and parent ownership remain.
+// P364: Native header byte extent with the original handle passed to the existing
+// masked getter, long/const-long/dword/const-dword after/before the unit getter:
+// 209/209/209/209/119/119/119/119. NOT kept: the one-use extent lives across calls and requires
+// equality; best gains one and shortens away. Original ordinal, getters and whole body restored.
+// P366: Counted notification formals (player, definition, count) 104, with singular reorder 104; singular
+// alone 120; counted (player, count, definition) alone/with singular 114/114; initial-only pool receiver
+// mutable/immutable/scoped 120/120/136. NOT kept: 0x191ec4's parameter order (player, definition, count)
+// gives 104 at 722/721 bytes with 0x191ec4 and 0x9ffa0 still exact, but a declaration's parameter order is
+// not changed for a lower score (reported for a match only). Native pool/parent/header-offset ownership remains.
+// P368: Existing shared parent/final header and ingress object APIs, seven subsets,
+// then complete graph with transferred-weapon getter: 120/209/120/209/120/209/209/209.
+// NOT kept: no native ingress/extent recovery; final header forms shrink away to 714/721 bytes.
+// Original getters, ordinal, every call and complete body restored.
+// P370: Existing actual player/object getters, eight paired force-inline/automatic-inline
+// contracts: 120 each, 723/721 bytes, first +0x27. NOT kept: no ingress/extent recovery;
+// original annotations, helper bodies and complete target restored.
+// P373: Existing header ordinal, unit/object/player receivers and held/current/slot
+// lexical identities, singly then together: eight 120s, 723/721 bytes. NOT kept:
+// native ingress/retained extent unchanged; original complete body and names restored.
+// P377: Actual inventory/selection/unit-index field receivers, seven subsets then
+// complete immutable pointers: 120/120/120/120/120/120/120/120. NOT kept: no native pool/header-extent equality;
+// original entire body, direct field observations and every getter restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
