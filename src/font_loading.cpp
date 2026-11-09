@@ -747,6 +747,10 @@ static inline word font_character_pixel(long alpha, long color)
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
 // MiniMax E (11-08): no new form, no lower score: retail widens the alpha parity with a 32-bit xor and masks it with 1, ours narrows it to sixteen bits and shifts the byte count instead.
 // MiniMax E (11-09): no new form, no lower score: retail widens the alpha's parity with a 32-bit xor and adds the constant 2 through ebx, ours narrows the parity to sixteen bits and folds the constant; five helper forms and the switch reorder all scored worse.
+// T76: Remaining/source/output formals own their cursors, seven subsets then
+// complete consumed-span for ownership: 103/180/87/182/101/180/182/181.
+// NOT kept: all regress; most also lose the native frame or incoming roles.
+// Original copies, word helper and decoder restored; parity/literal/two-run gaps remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

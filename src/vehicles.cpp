@@ -5090,6 +5090,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P396: Explicit normalization admission, bool/byte/short/long positive and complementary:
 // 749/749/749/749/749/749/749/749. NOT kept: no exact tested gate or native entry-definition/
 // SIMD recovery; original bypasses, switch, observations and complete body restored.
+// T76: Complete cases on the table/direct-active graph: numeric ascending/
+// descending, Boolean/scalar/vector/ratio first, then stable simple/bypass first:
+// eight at 749, 2974/2974 bytes. NOT kept: no entry-definition or SIMD recovery;
+// original complete dispatch and body restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5725,6 +5729,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P396: Complete lateral-flip outcome producers, false-default/complete/nested/failure-first,
 // bool then long: 1064/1087/1101/1086/1098/1097/1101/1070. NOT kept: tested flags do not match; 1064/1070 grow
 // to 5104/5094 bytes and the one-point lead is below gate. Original whole body restored.
+// T76: Complete bank result: strafe/turn seeds, nested conditional, sum default,
+// nonnegative-strafe/turn first, same-sign admission and inner conditionals:
+// 1097/1088/1097/1088/1087/1087/1117/1097. NOT kept: ties/regressions;
+// every frame stays 0xf8 versus 0xd8. Original bank flow and full body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
