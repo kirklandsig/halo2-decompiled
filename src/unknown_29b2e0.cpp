@@ -56,6 +56,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // The rotation's cross terms and rows written with the axis component first, which is retail's order, score
 // 176 on the restored body, and the permuter reached no variant on this loaded machine.
 // MiniMax C (11-05): no new form, no lower score; the XY vector before the second copy scores 174 and the single-exit normalizer 180/182, both under the eight-point bar, and the permuter reached no variant on this loaded machine.
+// MiniMax D (11-09): no new form, no lower score; the length the normalizer stores sits four
+// bytes higher in the frame than retail's (ours +0x10, retail +0xc), and the unity constant and
+// the scaled components then get different registers.
 // score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain (r83 lead: single-exit normalizer + early XY vector 169).
 // Frame 0x2c agrees at 1711/1706 bytes; unity XMM5/XMM4, root +0x10/yaw +0xc and rotation product/register homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
@@ -401,6 +404,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // (1690), j 187 (1694), k 183, i+j 181 [244, 128], i+k 193, j+k 183; rows written k,j,i 199 (1683), j,k,i 198 (1687), k,i,j 256 (1675). On
 // SE + XY: limit updates as ternaries 169 (same code); named turn products 278 (1716); named low bounds 277 (1716); rate limits as ternaries
 // 242 (1715); else-arm zeros reversed 172; pitch computed in its target local 173.
+// P388: Complete vector cosine/projection/sine-cross parts through existing
+// shared producers on the in-place graph, seven subsets then shared publication:
+// 234/247/257/265/282/254/262/265. NOT kept: no exact unity/root/yaw/rotation homes;
+// original numeric contract, alias-safe scalar results and full body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

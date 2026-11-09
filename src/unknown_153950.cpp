@@ -406,6 +406,7 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 	slot->flags |= 1;
 }
 
+// MiniMax C (11-09): no new form, no lower score (13); the j and k rows of the shared rotation still add the cosine term first (BLOCKED-BY src/unknown_170d70.cpp).
 // MiniMax E (11-06): score 13 (was 13): no new form lowered it. The only difference left is in the
 // j and k rows of the inlined rotation: retail adds vector * cosine to projection * axis while ours
 // adds the projection term first, and the fix belongs to the shared rotate_vector_170d70 helper in
@@ -709,6 +710,11 @@ struct s_player_axes_153d10
 // 0x14de70 only 2, 0x14ddc0 only 2. Compile-only (exact here): 1-12 unused locals at the top, before the axes pointer or
 // before delta leave the cross block unchanged; 1-4 redundant parens in any cross row or in delta all shift the six
 // products together with period 4 (3 puts this product right and the up.k-against-forward.j one wrong).
+// Round 60 (m3 lane 2, plain): the unit-index reads through the existing player datum type 2, the object header read
+// through the existing header type 2, both 2 (all the same code); `state != NULL` 2 (same code); named forward/up fields
+// in the player state and a named 0x8c vector in the speed slot (globals.h), the cross and slot stores through them
+// without the axes view 4 (this product right, the k row's forward.i x up.j and the j row's forward.k x up.i flipped).
+// Untried on that named-field form: the axis pointers dropped or declared after the cross.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

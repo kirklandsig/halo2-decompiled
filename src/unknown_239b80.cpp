@@ -122,6 +122,10 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // declared in the `for` header 5 (same code). A compile-only screen (1232 loop forms x 0-7 probe locals; not
 // faithful here, it passes the parameters in ECX/EDX) puts the two pointers at d=3 against retail with 2-4 probes,
 // but the real build does not follow it. Probe locals anywhere rotate only the second intersection's products.
+// Round 60 (m3 lane 2, fast): `!sides[current]`/`!sides[previous]` tests 5 (same code); the helper's capacity as long
+// 5 (same code); the no-negative exit copying and returning the count parameter 178 (699 bytes); the classification
+// loop bounded by the count parameter 7; positive/negative declared before the count copy 5 (same code); result
+// declared at the top beside the buffers 177 (680 bytes).
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -301,6 +305,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
+// MiniMax S (11-08): no new form, no lower score (170); the frame is 0x18 against retail's 0x14, and the count and departure homes, the scan bound, the equality test and the compaction still differ.
 // MiniMax G (11-06): a bool departure flag 248, the angle zeroed before the lowest scan 207, both together 204, the
 // hull counter merged into the pass counter as a while loop with the increment at the top 272, and a 16-bit copy of
 // the count as the scan bound 170 (the same code); no lower score.
@@ -524,6 +529,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // `__forceinline` on this body 170 (same code); the retail-shaped body with `goto finished` exits 265 (759, as lane 13 r58), with
 // a long departure 242 (as lane 9 r27); this body with a short hull count 242 (795, 0x239d50 then 80); `hull_count = pass + 1`
 // stored before the index 210.
+// P385: Candidate geometric-admission outcome bool/byte/short/long, positive then complementary:
+// 170/170/170/170/170/170/170/170. NOT kept: no exact frame/count/departure or compaction repair;
+// original magnitude, ranking, loops, copy and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -682,6 +690,7 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 	return fabs((double)a->x - b->x) < epsilon && fabs((double)a->y - b->y) < epsilon;
 }
 
+// MiniMax S (11-08): no new form, no lower score (129); retail keeps the previous side in memory and this build keeps it in CL across the back edge, and the prior-side byte and SIMD homes differ.
 // MiniMax G (11-06): no new form, no lower score; retail's count parameter is a dword (mov ecx, [ebp + 8]; movsx edi, cx;
 // test cx, cx, and mov ebx, [ebp + 8] for the returned count) where this declaration takes a short, retail keeps the current
 // side at [esp + 0xc] and the previous side at [esp + 0xd] where this build keeps the previous side in CL.

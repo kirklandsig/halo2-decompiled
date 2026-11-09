@@ -649,6 +649,8 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // (no branch NULL stores) 197 (713 bytes); the section declared first, before the point copy 172 (same code); the byte
 // result cleared before the type branches 197 (742 bytes); the surface test written as one plane comparison (no
 // surface local) 201; the 0x16e1b0 call moved after the vertex fetches 282 (774 bytes). Body restored.
+// MiniMax E (11-08): no new form, no lower score: our frame's store slots are shifted (we store to esp+0x30 where retail stores to esp+0x34) and we do not push ebx first.
+// MiniMax E (11-09): no new form, no lower score: our frame's store slots are shifted (we store to esp+0x30 where retail stores to esp+0x34) and we do not push ebx first.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -891,6 +893,7 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // Round 210 (fast, diagnostic, reverted): 0x11e800 declared (p, a, b, c, u, v) still gives 0 (0x11e800 126, 0x14ac60
 // 172); all four differences are its argument registers. BLOCKED-BY 0x11e800 (contributor).
 // Round 216 (m3 lane 3): baseline listing still differs only in 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
+// Round 96 (m3 lane 9): baseline listing still differs only in 0x11e800's four argument registers; BLOCKED-BY 0x11e800 (contributor).
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)

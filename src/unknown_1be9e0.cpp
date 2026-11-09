@@ -192,6 +192,15 @@ static __forceinline long real_to_long(real value);
 // Round 94 (lane 16, fast): participants as accepted plus the joint's count 24; count test `<= 1` 28 (444 bytes); the
 // participant status in a short local for both tests 24; node test `<= 0` 119; participant pointer stepped with the
 // counter 26.
+// Round 73 (lane 14, fast): one exit with a g_46fbe4 default at the top and g_46fbe8 assigned for the countdown,
+// pause and count success 142 (445 bytes, default loaded at entry), with an else-if count test 142; no default, both
+// values assigned in every arm and else 90 (461 bytes); a g_46fbe8 default returned by the countdown, pause and count
+// success with the failures falling to the node-level g_46fbe4 132 (460 bytes), declared at the top of the node block
+// 106 (frame 0x10); the g_46fbe8 default with g_46fbe4 assigned on every failure 130 (444 bytes); the g_46fbe8 default
+// read only by one final return, all failures returning g_46fbe4, 24 (same code: the default is rematerialised at the
+// end); with the countdown expiry and node failure assigning g_46fbe4, count failure returning it, 134 (frame 0x10),
+// the outer else assigning too 148, the pause returning the default 134; countdown expiry returning and count failure
+// assigning g_46fbe4 129 (457 bytes, frame 0x10). A default with a second definition is spilled here.
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {

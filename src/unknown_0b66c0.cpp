@@ -420,6 +420,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // caller); the length named first, then the source, re-measured 21 [match] (walk ECX/count EDX, retail EDX/ECX), with its compare
 // reversed 21 [match]; the copy's end named before the scan 40 [83] (96 bytes); the original compare reversed 40 [match]; the
 // `start +=` ahead of the clamp 36 [6].
+// Round 138 (m3 lane 7, fast with 0xb5f10/0xb61d0, both still matched in each): a 600 s permuter run on this body
+// (78 variants, full and reduced image both 21) found nothing below 21; `result = true` before the copy call 27
+// (101 bytes); the two sign tests as separate nested ifs 21; `count + start` in the compare 21; the early source
+// pointer `const` 21 (all three the same code). In retail AL holds the false result through the scan, so only ECX
+// and EDX are free for it: retail colours the counter first (ECX), ours the walk.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
@@ -762,6 +767,16 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // one-chunk inline step returning a status is longer. Probe: with the sentinel miss as the only false exit the return
 // block still carries the BL copy (conditional false edges sink their copy into it), so the restore copy can only be
 // laid out last if the false exits reach the return through a block of their own.
+// Round 174 (m3 lane 4; one-file LTCG harness of this file with the 0xb6320 and 0xb5000 files, exact at 10): a `done` flag
+// with `do ... while (result && !done)` and the completion inside the success arm 10 (fast 10, the same code), as a head-
+// tested `while` 74 (232 bytes), with the would-block arm `return true` 44, or `result = true; return result` 44; success
+// nested under the 0xb6320 test with `else if (sent == -2)` and `if (!result) break;` plus a guarded completion 44 (fast 44),
+// with `if (!result) return result;` 64; the would-block `return true` with the success return written after the stores 64,
+// with every false exit `return result` 64, with the success result set after the partial update 50; `if (sent != -2) goto`
+// with an `else` around the restore 10; the restore as a labelled block after the shared return (diagnostic) 10. Layout
+// finding: a direct `return true` in the would-block arm puts the restore last (retail's place) but the success result then
+// shares BL with the false one (the loop test loses EBX); a real statement in the not-would-block arm (diagnostic redundant
+// `result = false`) puts that arm right after the sentinel test (retail's place for the BL exit) but folds it to `xor al, al`.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

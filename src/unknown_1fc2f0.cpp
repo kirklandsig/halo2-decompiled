@@ -201,6 +201,14 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// MiniMax D (11-09): no new form, no lower score (32); the permuter run was killed with no candidate.
+// MiniMax R (11-09): the squares written out by hand in the three orders give 29 with the same code, and the store order whose
+// operations match retail's still shuffles the registers against it, so the difference stays inside the inlined length helper.
+// MiniMax R (11-08): the deltas assigned i, j, k 79, i, k, j 55, j, k, i 52, k, j, i 72 and k, i, j 30; the delta
+// copied i, k, j and then subtracted k, i, j 29 (366 bytes; not kept: an order picked by score, reverted by the coordinator 11-09), the other thirty-five copy and subtract orders 32 to
+// 79; the tick stage written out per component with the deltas i, j, k 55, and the prediction written out per component
+// in j, i, k 63 (369 bytes). What still differs: retail stores the velocity i, j, k, takes the squares j, k, i and sums
+// them as (k + j) + i, while here the stores and the squares run j, i, k and the sum is (j + k) + i.
 // MiniMax H (11-06): no new form, no lower score; the first difference is at +0x59, retail converting the ticks
 // into xmm3 (the register the rate arrived in) where ours converts them into xmm4, and retail's tick products
 // run j, i, k while its deltas run i, j, k; here the chain order follows the first delta's component and the

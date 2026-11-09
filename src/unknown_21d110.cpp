@@ -479,6 +479,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // mutable/immutable: original/nested admission 160 each; sequential failure 164 each;
 // combined admission 160 each. NOT kept: starter remains outlined; its new input
 // stack home is absent from the retail call graph despite frame four and no caller losses.
+// MiniMax S (11-09): no new form, no lower score; retail still takes the first argument in EAX and
+// keeps it in EBX with a four-byte frame, while ours reserves eight bytes and pushes ESI and EDI, so
+// the prologue and every later use of the two arguments still differ; the request convention cannot
+// change here without the eight matched callers in other lanes' files.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
@@ -1017,6 +1021,10 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // Round 93 (m3 lane 16, plain): the looping record's flags as a word (bit 4 of a word field) 30; a short loop index 167
 // (807 bytes); the flag as `!!(flags & 0x10)` 30; the flag without the bool cast 30; a const entry pointer 30. No
 // existing {long, bool} record type in the sound code to hold the pair.
+// Round 80 (m3 lane 10): plain re-measurements of forms earlier scored only as --fast previews (--fast still builds this at 153 against
+// the plain 30, so those previews were not real scores): the bool declared before repeat_state 30 (fast 67); both initialised 61 at 825 bytes
+// (fast 92); a byte flag 162 at 836 bytes (fast 140); repeat_state assigned before the flag in the looping arm 191 (fast 192); the pair declared
+// before the location 30 (pair at the top, fast 58).
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

@@ -2396,6 +2396,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax E (11-09): no new form, no lower score (140); retail loads the byte at esp+0x6c after the branch on the byte at esp+0x68, ours hoists that load above the store into the global.
 // MiniMax E (11-06): score 140 (was 140): no new form lowered it. The inlined corner rotation still
 // expands with the opposite operand order and stores its results in different homes than retail, and
 // the byte local at esp+0x6c is read in AL where ours reads CL.
@@ -2882,6 +2883,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax E (11-09): no new form, no lower score (211); the first difference is the two early exits, whose targets are one byte apart - retail's reaches one byte further into the function than ours.
 // MiniMax E (11-06): score 211 (was 211): no new form lowered it. The inlined corner rotation still
 // multiplies the two vectors in the opposite order and folds the constant as a memory operand where
 // ours keeps it in a register, so the result homes and the x87 rows differ.
@@ -3344,14 +3346,14 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 }
 #pragma inline_depth(255)
 
-// MiniMax G (11-06): no new form, no lower score; tried the input word as a multiply, the span
-// scaled first, the input named after the clear and the shift written at both stores.
 // score 9 (was 19): retail length; the blend sites now call 0x222d0 as retail. Left: the input
 // word's shift, folded into EBX before the clear where retail copies EBX to EAX and shifts it
 // after the clear; the two gain sites, where ours loads the 1.0f constant before the reload; the two small
 // selectors (retail loads small into CL first and computes input before the alpha selector) and the
 // constant/inverse-span reloads after mode zero and one's depth-bias write (retail reloads the span
 // first). Modes one to three's quantizer inputs now take clip's home as retail (round 132 below).
+// MiniMax G (11-06): no new form, no lower score; tried the input word as a multiply, the span
+// scaled first, the input named after the clear and the shift written at both stores.
 // Round 137: one function-scope value for every quantizer, with the quantizer a macro, puts modes
 // one to three's inputs in clip's home as retail 19 (a block-scope value 31; the inline helper with a
 // by-value parameter keeps a separate symbol per expansion); whole/alpha/fraction/input 18 (aligned 20).
@@ -3585,6 +3587,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // local 939 (first difference +0x5b), plus the alpha word the same way 939; the shifted local const 9; `input` as
 // dword 9; `alpha_input` as dword 9. Retail shifts a copy of input in EAX after the clear; ours shifts EBX in place
 // and the scheduler lifts that shift above the clear.
+// Round 59 (m3 lane 2, fast): retail reloads the pair after modes zero and one's ZBIAS write in descending register
+// order (xmm5, xmm3 span, xmm2 1.0f). No shifted local with `((dword)input << 24)` at both stores 939 (aligned 15);
+// dword input with the shift at both stores 939; the shifted word from the selector itself, no input local 976 (4840
+// bytes); mode one's colours declared separately 9; mode zero's extra-texture test at its two uses 905 (4816 bytes);
+// the whole/fraction clamp as two statements, whole first 9 (same code), fraction first 11.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

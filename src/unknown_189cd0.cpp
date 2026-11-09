@@ -113,6 +113,11 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // reads 90; the playback result named for the test, the dispatch and the slot 65 (526 bytes: the merged sound index
 // drops to EAX in the request arm), that with plain late reads 57 (521 bytes, first difference at +0xd1: the late
 // object keeps ESI, the named result EDI); plain late reads with the audible value named before the call 90.
+// Round 73 (lane 14, plain): the sound index declared first in the function 21; the early object local declared at the
+// top 21; the sound index first with plain late reads 90 (523 bytes, the request arm's sound index takes EDI); no
+// reference, an early plain copy for the test and marker calls with plain late reads 116 (531 bytes), that copy declared
+// at the top 116. 0x109220 takes the object in EBX and 0x189340 in ESI, so retail's EBX load plus ESI copy is a colouring
+// order between the late object and the sound index.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

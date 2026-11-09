@@ -2014,6 +2014,10 @@ void function_27dd10(void)
 // bytes, the file's walk users all regress); the interpolation's translation through orientation_vector_blend
 // 2 (13 matched walk users regress); the destination-mask test and the inheritance map test through
 // BIT_VECTOR_TEST 2/2; the bit flags declared at the walk's top ahead of a count copy 2 (0x288570 120).
+// Round 60 (m3 lane 2, fast over all 78 functions of the file, 0x281b60 2 throughout): in function_288572 the output
+// pointer as an array element address 2; the empty-group test as `!local_2` 2; the bit-flags selection as an if/else-if
+// chain 2; the destination lookup and mask test as nested ifs 2; the destination index initialised to NONE 2 (all the
+// same code).
 // @retail 0x27dff0
 void function_27dff0(void)
 {

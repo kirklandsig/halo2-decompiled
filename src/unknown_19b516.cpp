@@ -186,6 +186,8 @@ void c_widget::v15(c_widget *widget)
 // step is NULL and the focus after it 32 (84; the button pair 2, the same code). Compile-only: an in-place if/else step gives
 // the copy-then-test tail, but every in-place entry then lets the compiler drop the entry test (the widget is known non-NULL)
 // or load it straight into ESI, and a helper entry keeps its own test.
+// Round 158 (m3 lane 5, fast): a for loop with `widget != NULL` 2; the eligibility test negated with the step in
+// the then-arm 2; `while (widget != NULL)` 2; `this->` on the focus call 2; the widget declared, then assigned 2.
 // @retail 0x22ebc3
 void c_widget::v16()
 {
@@ -294,6 +296,13 @@ void c_widget::v16()
 // out-of-line copy of the previous-or-last walk (its only instances are inside 0x22ec1b and 0x2c8fb4), so the
 // copy-then-test head does not come from an LTCG-inlined call; a plain compile of this file does not reproduce
 // the callees' register conventions, so screens need the one-file LTCG link.
+// Round 157 (m3 lane 6; one-file LTCG harness with 0x22e37f's file and a derived widget that emits the vtable, exact
+// here): retail keeps the widget phi in ESI at the test (each predecessor's copy cross-jumped into the block), ours tests
+// the helper result in EAX and copies to ESI only on the body edge. A done flag with the focus inside, `while (!done &&
+// widget)` 27 (aligned 8, head on top; fast 32 at 84 bytes), `while (widget && !done)` 45, with the step unconditional 44; a found flag with
+// the focus after the loop 27 (fast 32 at 84 bytes), `while (widget && !found)` 47, under `if (widget)` 28; a head-copied candidate 2; a
+// block-scoped copy at the body's top 2; `while ((widget = widget->previous_wrapped()) != NULL)` from this 39; a for
+// loop with break after the focus 2.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

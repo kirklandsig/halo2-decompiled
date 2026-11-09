@@ -367,6 +367,7 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
+// MiniMax E (11-09): no new form, no lower score (188).
 // MiniMax E (11-06): score 188 (was 188): no new form lowered it. The byte locals sit two bytes lower
 // than retail's (ours at esp+0x10 where retail has esp+0x12), retail switches on the word at
 // esp+0x14 with a jump table where ours tests the mode with branches, and ours is twenty bytes
@@ -672,6 +673,13 @@ struct s_1f8a70_actor
 // case 5's `route_mode = 1` store as retail does, but the join still follows case 7; on that, case 7 ahead of case 6
 // 304 (masked 136), the default label first 327 (same code), the route admission through an if/else `valid` flag 327
 // (same code). Left: the join after case 5, then the result byte's +0x12 home and the failure block's memory result.
+// T72: Complete six-destination conditional chains, one captured selection, branch orders
+// 234567/765432/236745/456723/452367/672345/674523/325476:
+// 369/371/377/385/369/388/387/397. NOT kept: no native dispatch/home equality;
+// original switch, all case bodies, two results and complete body restored.
+// P393: Both route root-override admissions, positive/complementary bool/byte/short/long:
+// 188/188/188/188/188/188/188/188. NOT kept: one-use outcomes do not match; unit/result +0x12,
+// route dispatch and late memory result remain. Original complete two-result body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

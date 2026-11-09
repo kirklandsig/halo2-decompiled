@@ -128,6 +128,11 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // per-arm z with an arm-scoped scale local and x, y re-read in the arm 23; per-arm z with a function-scope scale
 // local and x re-read 24 (zero/z right, product and copy order off); the caller with a named face index and the
 // coordinates named y first 9.
+// Round 157 (m3 lane 6; r156 LTCG harness, which counts one above the real check): on the x, y, z-read transform with the
+// scale read at each use (37) the zero takes XMM2 because it outranks z and the step constant in allocation; stores
+// i, k, j or k first put the zero and the step at the top but swapped (zero XMM2, step XMM3, z XMM3; fast 29 for i, k, j, as round 60). On that transform
+// (harness counts): a step local 56 (64 instructions), with stores i, k, j 48 (fast 60, 254 bytes); `k = 0.f * (2.f / 63.f)` 38 (folds);
+// products named before the stores 56; casts named, k stored first, then the products 49.
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {
