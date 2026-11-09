@@ -181,6 +181,9 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax R (11-09): no new form, no lower score; the register the user flags load into is the only
+// difference left, and every form of the test I tried leaves them in eax. This round: returning NONE
+// at the bad-flags test instead of jumping to the end scores 98, so the body stands.
 // MiniMax R (11-07): no new form, no lower score; the user flags still load into eax where retail loads them
 // into the dying user pointer register ecx. This round: reading the flags once into a named dword, so the
 // pointer is used only for that load, is byte-identical to the baseline, so the register choice does not come

@@ -653,6 +653,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // Round 95 (lane 9), at 126: a tick-length getter for dt 126 (identical); the input magnitude written out at both
 // sites in 0xf1cd0's by-name order 321 (1102 bytes: VC CSEs the two sites), at the entry only 128, grouped
 // t + (s + k) 313, k + (t + s) 303, (t + k) + s 321.
+// P391: Absolute speed/helper magnitude results in real/double at their original roots,
+// speed/helper/both then immutable both: 225/129/126/127/225/309/225/309. NOT kept:
+// one-use results do not match; paired doubles grow to 1150/1144. Original helper and full
+// body restored; entry velocity registers, early unity and later SSE/x87 homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3381,6 +3385,12 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // NOT kept: no eligible native frame/velocity/force-home recovery; original complete body restored.
 // Permuter, 30 minutes (11-06): 913 from 976 (fast), only with both atan2 calls' arguments swapped (a behaviour change) and
 // a volatile heading_side. Not kept.
+// P386: Final contact results seeded / complete / conditional, both test orders, then twice-used gaps:
+// 1012/1000/1000/1019/1005/1005/1000/1010. NOT kept: ties or regressions; joined/reordered nonmatching stores rejected.
+// Native frame 0x74 and velocity/output homes remain; original complete body restored.
+// P396: Independent forward/side acceleration selections, complete conditional/braking-first
+// single/paired/mixed producers: 1001/1000/1001/1093/1093/1001/1093/1093. NOT kept: ties or regressions;
+// native frame/velocity/force homes remain. Original entire body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4016,6 +4026,14 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // default case's x87 forward rotation then retail's; match-only); that with the default case's own up rotation and
 // left cross 253; the aggregate copy with dot3f(&facing->forward, &facing->up) 145; the aggregate copy with the
 // default case's own rotation (real angle) 320.
+// P388: Actual forward/up output accumulation through existing scale/add producers,
+// cosine-first/sine-first and consumed-axis graphs: 235/181/204/249/273/246/261/284.
+// NOT kept: all regress and add nonnative materialization; original whole body,
+// real precision and shared helpers restored. Projection/cross/trig homes remain.
+// P398: Complete dot first/second and scale scalar-input ownership, seven subsets,
+// then immutable complete inputs: 179/179/175/169/169/179/165/165.
+// NOT kept: all regress and lengthen; unmatched input copies require equality.
+// Original shared projection providers and entire body restored; projection/cross/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4693,6 +4711,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // 188-191 on the world form (VC holds one 0.0f in XMM7 across 0x168f40 for reach, the node-else store and the
 // fallback); that select through a function pointer to 0x168f40 (diagnostic) is retail's exactly: BLOCKED-BY
 // 0x168f40 (its register summary; no retail caller keeps an XMM value across it). The 0x390 store in both arms 223.
+// P391: Per-record match/rejection results at the original search test in bool/byte/short/long:
+// 176/176/176/176/176/176/176/176. NOT kept: one-use decisions do not match; original
+// loop, found-index retest, field observations and complete body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -5063,6 +5084,12 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Original complete body restored.
 // Permuter, 30 minutes (11-06): 609 from 749, only with a volatile `forced`, function_f78b0's (value, limit) arguments
 // swapped at every call (a behaviour change) and vehicle_larger's operands swapped. Not kept.
+// P386: Gear-admission ready/excluded results, each bool/byte/short/long:
+// 749/749/749/749/749/749/749/749. NOT kept: no exact one-use decision result; original
+// guard, all observations and complete body restored. Entry definition and SSE homes remain.
+// P396: Explicit normalization admission, bool/byte/short/long positive and complementary:
+// 749/749/749/749/749/749/749/749. NOT kept: no exact tested gate or native entry-definition/
+// SIMD recovery; original bypasses, switch, observations and complete body restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5692,6 +5719,12 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // Left on the lead: the vector order (retail velocity, acceleration, target+drift, facing, angular velocity +
 // strafe acceleration + rotation, strafe velocity; ours groups drift with the strafe velocity) and the vehicle
 // index in EDI (retail ESI).
+// P386: Manual-first / forward-limit / reverse-limit throttle results, seven subsets then full conditional:
+// 1087/1087/1087/1087/1087/1087/1087/1087. NOT kept: all tie 1087 with frame 0xf8; no native-frame gain.
+// Native frame 0xd8 and handle/matrix homes remain; original complete body restored.
+// P396: Complete lateral-flip outcome producers, false-default/complete/nested/failure-first,
+// bool then long: 1064/1087/1101/1086/1098/1097/1101/1070. NOT kept: tested flags do not match; 1064/1070 grow
+// to 5104/5094 bytes and the one-point lead is below gate. Original whole body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

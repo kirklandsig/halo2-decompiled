@@ -677,6 +677,9 @@ extern "C" void _ReadWriteBarrier(void);
 // 44; a point pointer at the top with the barrier 6. Diagnostics: a real slot read in the join block after the outer if
 // loads the slot in the entry block, but after the 0x26c compare (just before the jne), with or without the barrier
 // (retail loads it before the mask); an extra read inside the flags arm does not; an `__assume` at the join does not.
+// Round 60 (m3 lane 2, fast): `s_slot_4c *const state` 6; the slot parameter `s_slot *const` 6, without the barrier
+// 44; the flags test as `(state->flags & 4) != 0` 6; the point copied through a const reference in the arm 6 (all 6s
+// the same code). `register` on the slot parameter does not build (the generated cast rejects it).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
