@@ -2849,8 +2849,10 @@ real g_47ff30 = 2.5f;
 // instructions against the 711 of the body, and its variants swap call arguments, so the file was restored; the column
 // alignment puts the first differences at the frame (0x100 against 0xfc), the top slot
 // (esp+0x108 against esp+0x104) and the first float home (esp+0x20 against esp+0x34).
-// score 699 (was 713): Complete angular error in the torque output, then the existing in-place scale;
-// frame 0x100 versus retail 0xfc, 3229/3244 bytes; scalar/vector/transform homes remain.
+// score 682 (was 699): Complete projected-speed running sums recover retail length 3244;
+// frame 0x100 versus retail 0xfc; scalar/vector/transform homes and force scheduling remain.
+// Earlier at 699 (was 713): complete angular error in the torque output, then the existing in-place scale;
+// 3229/3244 bytes, frame 0x100 versus retail 0xfc.
 // Earlier at 713 (was 730): Native mutable turn multiplier restored; frame 0x100 versus retail 0xfc;
 // scalar/vector homes and force/trig scheduling still differ; 3223 bytes (retail 3244).
 // Earlier (730, was 676): frame 0x100, 3219/3244 bytes.
@@ -3005,6 +3007,10 @@ real g_47ff30 = 2.5f;
 // three. Existing full force/torque/normalization scale boundaries, masks 1/2/4/3/5/6/7 and nested torque output:
 // 699/699/699/699/699/699/699/701. Coherent mass with force/torque/both scale calls 709/709/719; response/query/all
 // axis-output identities each 696. All restored; original 699, frame 0x100 and 3229 bytes retained.
+// T73: Complete projection product parts, mutable/const immediate/phased 700/700/700/700;
+// existing-result running sums 682 plain, kept; parts plus sums 702; bare and phased sums 682/682.
+// Only the minimal complete running sums remain: native up-speed has successive additions and stores;
+// original operands, sum trees, observations and calls fixed. Exact length 3244, original frame 0x100.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3087,9 +3093,15 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 
 	cross3f(&up, facing, &left);
 
-	real forward_speed = linear_velocity.j * facing->j + linear_velocity.i * facing->i + facing->k * linear_velocity.k;
-	real up_speed = linear_velocity.k * up.k + linear_velocity.j * up.j + linear_velocity.i * up.i;
-	real left_speed = linear_velocity.k * left.k + linear_velocity.j * left.j + linear_velocity.i * left.i;
+	real forward_speed = linear_velocity.j * facing->j;
+	forward_speed += linear_velocity.i * facing->i;
+	forward_speed += facing->k * linear_velocity.k;
+	real up_speed = linear_velocity.k * up.k;
+	up_speed += linear_velocity.j * up.j;
+	up_speed += linear_velocity.i * up.i;
+	real left_speed = linear_velocity.k * left.k;
+	left_speed += linear_velocity.j * left.j;
+	left_speed += linear_velocity.i * left.i;
 	real left_force = (vehicle->turn - left_speed) * left_mass * acceleration_scale * state->unknown6c;
 	real up_force = (vehicle->unknown370 - up_speed) * up_mass * acceleration_scale * state->unknown6c;
 	real forward_force = (speed - forward_speed) * forward_mass * acceleration_scale * state->unknown6c;

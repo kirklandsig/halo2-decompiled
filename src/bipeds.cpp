@@ -4021,6 +4021,10 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // P376: Selected parent/child/both point values; both setter/memcpy/memmove/const; final child value:
 // 371/383/403/386/403/407/403/366. NOT kept: regressions, native matrix/origin/pivot homes differ.
 // Original selected addresses, scalar-input helper and complete body restored.
+// T73: Consumed selected parent-pivot and child-world/placement outputs, alone/both,
+// complete placement setters and forced existing pivot expansion: 391/356/398/391/358/398/391/398.
+// NOT kept: every form regresses; parent reuse grows frame to 0x130 versus native 0x12c.
+// Original independent outputs, input captures, helper annotation and complete body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4854,6 +4858,10 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P376: Shared-rotation forward value owning rotation/rotation+normalization, aggregate/setter/memcpy/memmove:
 // 246/207/246/245/250/250/250/245. NOT kept: regressions, no native operand/home equality.
 // Original full body restored; first rotation and final-cross memory operands remain.
+// T73: Consumed rotated-up/rotation-axis side-cross outputs, ordinary/staged final crosses,
+// then complete final-up publication through either consumed workspace:
+// 92/201/144/79/186/200/254/285. NOT kept: tie/regressions; native first-rotation and final-cross
+// memory operands remain. Original shared rotation, independent outputs and full body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

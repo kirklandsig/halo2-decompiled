@@ -5681,6 +5681,9 @@ void __stdcall function_d6bc0(long object_index);
 // T71: Native-frame/admitted-modifier rate/scenario/preset lexical homes, seven subsets and
 // complete ordinal roles: eight 60s, 869/869 bytes. NOT kept: no initial-store or case-byte
 // repair; original names and complete body restored.
+// T73: Actual eight-kind switch with one shared modifier dispatch, zero/positive group first,
+// signed-byte/byte/short/long selectors: 97/97/97/97/98/98/98/98, all native 869 bytes.
+// NOT kept: no native admission/index repair; original admitted modifier and full body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
