@@ -184,7 +184,7 @@ struct s_physical_block_iterator
 // our body is 15 bytes longer (1228 against 1213), the first divergent branch being the jump to retail's 0x13d679.
 // MiniMax G (11-05): swapping the offset and previous declarations is the same code (347); retail keeps the offset in EBX and the current in EDI, ours the other way round, and the four-byte frame difference and the segment-arm layout stay unmatched; no new form, no lower score.
 // MiniMax S (11-01): the result/limit declaration swap reaches retail's frame but scores worse; no lower score.
-// score 209 (was 347): frame 0x1054 now as retail (the deletion walk's struct holds the never-touched dword at esp+0x54); page-offset/ring-tail allocation and policy blocks differ.
+// score 209 (was 347): frame 0x1054 and entry/ring roles agree; weighted-age mask registers, detached policy cases and final linking differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but
 // ours moves the else arm past the scan; retail also uses the page offset (EBX) as its zero from
 // the limit clamp on, so EBX is pushed first. Candidate stores offset before time 370; busy as
@@ -465,6 +465,28 @@ struct s_physical_block_iterator
 // and the insertion in two stages, the first test repeated after the arms: `if (best.previous == NONE) { if (physical->first == NONE) { entry->previous = NONE; physical->last = result; } else { element pointer ahead of entry->previous = NONE; element->previous = result; } } else { long next = element(best.previous)->next; if (next == NONE) {...} else {...} } if (best.previous == NONE) { entry->next = physical->first; physical->first = result; } else { before; entry->next = before->next; before->next = result; }`. The repeat is what sinks retail's after arm past the ret (without it the arm stays in line, 125 with offset at the top, x 45 m 24); written `!= NONE` 125 (m 58-60); direct first element 124 (m 19), `long first` 122 (m 16); offset at the top with that two-stage form 125 (x 27 m 10: only the entry's early zero and the walk differ).
 // Left on the recipe: EBX and EDI swapped for the scan's maximum and bit and for result and NONE (`or edi, -1; cmp eax, edi` where retail has `cmp eax, -1` and `or ebx, -1` later), and the walk (retail's data base in EBX, `movsx ecx, [eax + ebx]` ahead of the add, `add ebx, edi` and a separate best.offset load copied from EDI for the second compare). No inner `return result`: with one, 353 (this was the block on round 215's lead). Offset: declared at the top 125, between the clamp and the limit test 244, first in the block 258, ahead of head 113, ahead of tail, current or previous 93, declared at the top and assigned there 93.
 // On the recipe: block declarations best/iterator/oldest_time/segment/next_tail/i/candidate moved 93 each; overlap test with a start, end, block offset or block end local, sum swapped, inverted 93; reversed compare 93 (x 39); local iterator step with the salt read first 170 (x 79), with an offset local 387 (1216); result declared first 389 (1238), `long allocated` 93, in the test 93; `long oldest = result` 93 (same code). Dead volatile load probes (diagnostic, reverted): walk body 55 (1214), after the walk 81, insertion 97, at `if (have_best)` 98. Zero diagnostics on the 125 form (wrong values, reverted): head from pages 98 (x 31, m 20, retail's entry exactly), tail 127, candidate pages 384 (1191), gap time 347, second clamp 289 (1225), offset 327, `type < 1` 267, both limit zeros 305 (1224).
+// T64: Native default-clamp producer boundaries on the entry-matching graph: zero-first maximum 225;
+// sequential/paired once-produced ages [373, 373]; zero-first stages [225, 225];
+// zero-default/explicit positive-zero/zero-test results [260, 209, 222]. NOT kept: no byte match;
+// original macro, field observations, policy, ring, deletion and linking restored.
+// P365: Complete selected-candidate scalar publications in eight field schedules: eight 359
+// at 1217/1213 bytes, first +1. NOT kept: no native policy/copy equality; original
+// record assignment, arithmetic, entry/frame and complete body restored.
+// P367: Case-zero repeated candidate/best timestamp values, singly and in both
+// declaration orders, mutable/const: eight 209s. NOT kept: no native policy
+// placement or result equality; original field observations and body restored.
+// P369: Actual candidate-age/selected-age/replacement-result identities, subsets 1/2/4/3/5/6/7 and immutable ages:
+// eight 209. NOT kept: no native clamp-register or policy-placement repair; original whole body restored, frame
+// 0x1054 retained.
+// P371: Existing paired-age bare declarations at entry/ring/selected-record/outer-scan/
+// candidate-scan/iteration/size-admission/policy-admission: eight 209s. NOT kept:
+// no native clamp-register or policy-placement repair; original complete body restored.
+// P373: Existing policy-result bare declaration at function/admission/record/outer-scan/
+// outer-iteration/inner-scan/inner-iteration/size-admission boundaries: eight 209s. NOT kept:
+// policy-placement/clamp homes unchanged; original whole body and false producer restored.
+// T69: Entry-matching policy replacement signed char/byte/short/long results
+// 209/209/212/211; retention-complement bool/byte/short/long 212/212/222/222.
+// NOT kept: ties/regressions; original policy result, case bodies and complete body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
