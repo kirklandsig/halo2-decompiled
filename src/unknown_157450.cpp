@@ -2301,6 +2301,9 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // (192 bytes); a pre-read `while (local.object)` with the next read at the body end 8; the two tail stores swapped 9;
 // `NONE != entries[index].index` 8; the release's lookup after its mode test 37 (195 bytes; 0x15b1e0 12). Re-measured:
 // the release's lookup through engine_object_get 9 (also 0x162060, which the reduced image builds at 5 either way).
+// Round 222 (m3 lane 3, fast with 0x15b1e0 and 0x15ace0): a 32-form screen of index at function or loop scope x
+// `NONE != ...` or `... != NONE` x the old index in a named local or read at each use x an entry element pointer or
+// `entries[index]` at each use x the bounds test negated with the clear arm first or not: 8 in all 32.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
@@ -5718,6 +5721,13 @@ void __stdcall function_d6bc0(long object_index);
 // T73: Actual eight-kind switch with one shared modifier dispatch, zero/positive group first,
 // signed-byte/byte/short/long selectors: 97/97/97/97/98/98/98/98, all native 869 bytes.
 // NOT kept: no native admission/index repair; original admitted modifier and full body restored.
+// P389: Complete positive scheduling admission from a once-observed if/else mode,
+// bool/byte/char/signed-char/short/word/int/long on the per-kind modifier graph:
+// 168/168/168/168/182/182/186/186. NOT kept: no exact native frame/home recovery;
+// original complete body, observations, helper and call graph restored.
+// P391: Abandonable initialization phase reaching the shared countdown, mode 1/0 first,
+// short/word/int/long selectors: 57/57/51/51/94/94/95/95. NOT kept: no exact match;
+// best gains one and every extent shortens away from 869. Original full body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

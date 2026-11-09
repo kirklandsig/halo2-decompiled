@@ -1664,6 +1664,10 @@ done:
 // 33 (index back in DI; scenario EBX, type ESI, definition ECX); a screen of scenario local/global x type
 // local/re-read x definition local/table at each use x palette local/at the call x size short/long: palette
 // local 33 in all sixteen (236 bytes), palette at the call 17 with the scenario local and 25 with the global (237).
+// Round 81 (m3 lane 1, fast with 0x29fd40/0x2a12f0): palette added at the call with a long size and the placement
+// offset read inline 26 (scenario moves to ECX, index to SI); the type and definition locals renamed to sort the
+// other way 17 (same code); the definition bound as a const reference to its table entry 17 (same code); a named
+// datum with the palette added at the call 17; palette and size declared ahead of the definition 17.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {

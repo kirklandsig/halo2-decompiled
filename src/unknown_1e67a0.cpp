@@ -813,6 +813,10 @@ bool g_51e9bc;
 // initialized at entry, then after movement processing before the jitter gate:
 // 234/236/237/248/263/259/247/301/53/56/59/72/107/96/59/133. NOT kept: no exact ownership/home repair. Original executable body restored.
 // Projection j/k ownership and native jitter spill homes remain.
+// P394: Complete half-weight producers, coordinate/grouped expressions, coordinate/grouped defaults,
+// jitter/function declarations and post-movement/entry constant defaults: 56/111/95/125/111/111/139/265.
+// NOT kept: one-use factor storage requires equality; all regress. Original body restored.
+// Projection j/k ownership and consumed-limit jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
