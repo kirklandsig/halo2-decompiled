@@ -158,6 +158,12 @@ static inline long bungienet_user_voice_setting(short kind)
 // (0x8c5b0 stays matched): the plain kind read as the selector's argument 30 (95 bytes), the volatile read in
 // the call 23; the setter taking the request 30/23 (plain/volatile); the kind and index read first, then the
 // setter 4 (same code). Original body restored.
+// Round 156 (m3 lane 6): the selector writing through an out parameter 4 (fast; with a plain read 32); `bool result =
+// true` declared first 4 (fast). LTCG one-file harness (this file, unknown_190001.cpp and the ballast reproduce 4): 45
+// combinations of volatile/plain/cast kind read, five selector shapes, read order and compare sides best 4 (plain reads
+// 11 or more); `switch (kind)` with `case 0:` sharing the default and a plain read 5 (29 instructions, `movsx; dec` for
+// the kind), with the volatile read 30. CL-only: 0x8c790's identical `kind == 1` stays unfolded only beside its
+// 0x80e14 call (nonzero arguments keep the unfold; removing the call folds its compare as well).
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

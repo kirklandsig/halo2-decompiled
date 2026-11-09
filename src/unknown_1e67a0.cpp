@@ -800,6 +800,19 @@ bool g_51e9bc;
 // Original complete body restored; projection ownership and jitter spill homes remain.
 // N397: Confined whole on/sign/weight scalar identities on the native-extent body 118/118/118/118/118/118/118/118.
 // NOT kept: no byte equality or eligible native-shape gain; original complete body restored.
+// T65: On the 49-point native-prefix graph, consumed-limit rows/setter and separate output setter
+// 57/56/57; complete coefficient magnitudes with separate rows/setter or consumed-limit rows/setter
+// 54/61/61/55; coordinate-local magnitude/product stages 54. NOT kept: all regress;
+// original body restored. Projection j/k ownership and native jitter spill homes remain.
+// P361: Existing shared dot producer with all component-product locals, six declaration orders and mutable/immutable initializers:
+// 56/56/56/56/56/56/56/56. NOT kept: no byte equality or eligible native-shape gain; original shared helper and complete body restored.
+// Projection j/k ownership and native jitter spill-home reuse remain.
+// P370: Existing dot/scaled-add/add inline-boundary masks 1..7 and automatic dot: eight at 49,
+// 1078/1077 bytes, first +0x261. NOT kept: ties; original helpers and complete body restored.
+// T68: Existing on-x/on-y/on-z/sign-x/sign-y/sign-z defaults, y/z pair and all six
+// initialized at entry, then after movement processing before the jitter gate:
+// 234/236/237/248/263/259/247/301/53/56/59/72/107/96/59/133. NOT kept: no exact ownership/home repair. Original executable body restored.
+// Projection j/k ownership and native jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
