@@ -2158,6 +2158,10 @@ bool function_1e11b0(long actor_index, bool active);
 // assigned from the return expression 18 (the return becomes `shr eax, 7; and al, 1`); a `long const &` to the
 // index at every use 13; const squad pointer and const actor index 13; the first lookup as `squad_get((word)...)`
 // 69 (205 B); the +0x7e comparison with its operands swapped 23. None kept; the current body restored.
+// P387: Actual actor publication field as long/int/dword/unsigned-int: four 64s;
+// the same domains sourced from the initialized iterator full handle: four 65s at
+// 199 bytes, losing both matched callers. NOT kept: native EBP handle/receiver spill
+// and return mask remain; original real record, parameter store and whole body restored.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -3055,6 +3059,15 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // Round 151 (m3 lane 5, fast): a forceinline flag-and-definition predicate in both first-half tests, ternary or result
 // form 50/50; the whole lock test as one forceinline predicate 50; the follow-up test with an empty then-arm 50; the
 // follow-up passed the unnarrowed long 50. 0x290e20 (24) differs only in ordering, with the same registers.
+// P387: Trigger ordinal with complete signed-sixteen-bit normalization, word/long/dword/int
+// at for-owned then pre-threshold zero lifetimes: 50/72/55/72/58/75/63/75. NOT kept:
+// no first-event index or actor-loop padding repair; wider graphs grow to 581/578 bytes.
+// All original wrapped induction, queries, actor steps and the complete body restored.
+// P398: Actual actor-step completion pointer/Boolean ownership, condition declaration,
+// assigned while condition, for-owned result and explicit initial/next observation:
+// 50/50/103/103/50/50/103/103. NOT kept: unmatched one-use/condition-assignment forms;
+// explicit next-result lifetimes grow to 620 bytes. Original complete body restored;
+// first-event index reload and shifted actor-loop alignment remain.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3331,6 +3344,8 @@ long function_203780(long arg_0, short arg_1, short arg_2, bool arg_3);
 long function_201010(long arg_0, short arg_1, short arg_2, short *arg_3);
 void function_2011f0(long arg_0);
 
+// MiniMax I (11-09): no new form, no lower score (318); retail's third parameter is a dword where our declaration has
+// a short (the declaration is used by other files), and the row, seat and chain homes still differ.
 // MiniMax B (11-07): no new form, no lower score (318); retail reads the index as a dword and masks it with AND
 // where ours keeps a zero-extended word: the masked products 377, a squad pointer local 354 (1328 bytes, retail's
 // length), both together 359 and the unmasked calls 378 are all worse, and each drops the frame to 0x130.

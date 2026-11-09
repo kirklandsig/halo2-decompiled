@@ -404,6 +404,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // (1690), j 187 (1694), k 183, i+j 181 [244, 128], i+k 193, j+k 183; rows written k,j,i 199 (1683), j,k,i 198 (1687), k,i,j 256 (1675). On
 // SE + XY: limit updates as ternaries 169 (same code); named turn products 278 (1716); named low bounds 277 (1716); rate limits as ternaries
 // 242 (1715); else-arm zeros reversed 172; pitch computed in its target local 173.
+// P388: Complete vector cosine/projection/sine-cross parts through existing
+// shared producers on the in-place graph, seven subsets then shared publication:
+// 234/247/257/265/282/254/262/265. NOT kept: no exact unity/root/yaw/rotation homes;
+// original numeric contract, alias-safe scalar results and full body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

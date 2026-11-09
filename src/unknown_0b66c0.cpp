@@ -420,6 +420,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // caller); the length named first, then the source, re-measured 21 [match] (walk ECX/count EDX, retail EDX/ECX), with its compare
 // reversed 21 [match]; the copy's end named before the scan 40 [83] (96 bytes); the original compare reversed 40 [match]; the
 // `start +=` ahead of the clamp 36 [6].
+// Round 138 (m3 lane 7, fast with 0xb5f10/0xb61d0, both still matched in each): a 600 s permuter run on this body
+// (78 variants, full and reduced image both 21) found nothing below 21; `result = true` before the copy call 27
+// (101 bytes); the two sign tests as separate nested ifs 21; `count + start` in the compare 21; the early source
+// pointer `const` 21 (all three the same code). In retail AL holds the false result through the scan, so only ECX
+// and EDX are free for it: retail colours the counter first (ECX), ours the walk.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

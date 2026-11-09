@@ -186,6 +186,8 @@ void c_widget::v15(c_widget *widget)
 // step is NULL and the focus after it 32 (84; the button pair 2, the same code). Compile-only: an in-place if/else step gives
 // the copy-then-test tail, but every in-place entry then lets the compiler drop the entry test (the widget is known non-NULL)
 // or load it straight into ESI, and a helper entry keeps its own test.
+// Round 158 (m3 lane 5, fast): a for loop with `widget != NULL` 2; the eligibility test negated with the step in
+// the then-arm 2; `while (widget != NULL)` 2; `this->` on the focus call 2; the widget declared, then assigned 2.
 // @retail 0x22ebc3
 void c_widget::v16()
 {

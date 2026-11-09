@@ -1896,6 +1896,11 @@ dword function_015cd0(long index, dword entry);
 // Round 72 (m3 lane 14, fast): the conversion buffer as the 0x74-byte bitmap type (`s_type_7ba8e9 converted;`) 4;
 // the redundant `result = 1` after 0x12360 dropped 73 (299 bytes: its `mov edi, 1` goes); bitmap_index as long 4;
 // bitmap declared at the function top 4; the flag test as `(flags >> 1) & 1` 4.
+// Round 79 (m3 lane 11, fast): the texture field read into a named local before its test 4; the flag test as a named
+// bool 82 (310 bytes); the conversion result as a named bool 4; the palette conversion as a ternary assignment 4; the
+// zero colour as one chained assignment 4; (re-measured) UV filled by field stores 4. Permuter
+// (600 s, 63 variants, --fast --anneal) best 4. A one-file LTCG link with the callee files does not give this body's
+// convention (ret 0x18), so link-level screens need more files here.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
