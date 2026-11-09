@@ -675,6 +675,9 @@ void function_1a6d80(void)
 // locals, 6; the count read first and the node list as `g_4f0a60 + index` 6 (all same code). A
 // compile-only build (no LTCG: the callee's count in EDI, fastcall arguments) gives retail's tail (valid
 // ECX, count EDX, both loaded before the stores), so the tie follows the LTCG convention around 0x1a71f0.
+// Round 173 (m3 lane 4, fast): a prototype of this function ahead of 0x1a71f0's definition 6; 0x1a71f0 defined after this
+// function (prototype in its place) 6; a `long` node count cast to short at the call and the store 10; a const node count 6;
+// the node count declared first and assigned after the node list 6 (all 6s the same code).
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
