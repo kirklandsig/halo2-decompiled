@@ -459,6 +459,13 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
+// MiniMax D (11-09): no new form, no lower score; retail keeps the ring value as a float in a
+// stack slot and reloads it as a double for the radius product where ours converts the counter
+// directly, and retail's two global loads use swapped registers.
+// MiniMax D (11-09) second pass: naming the ring as a float and computing the phase before the
+// distance reproduces retail's cvtsi2ss, store, fld, mulss, fmul sequence, but the extra stack
+// slot makes the frame 0xdc and copies the radius through an integer register, so it scores 234
+// against the 90 body, which is kept.
 // score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
 // it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
 // rotation's component spill, cross scheduling and register allocation remain.

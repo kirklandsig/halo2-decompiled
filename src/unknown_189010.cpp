@@ -149,6 +149,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax I (11-08): no new form, no lower score (110).
 // MiniMax B (11-06): no new form, no lower score; retail reads the audible byte from the request and
 // builds the priority and the flag word before it copies the request, this build copies the request first
 // and takes the byte from the copy, and retail still calls 0x221810 where this link expands it.
@@ -176,6 +177,8 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // MiniMax A (11-03): no new form, no lower score: the priority and the flags are still formed after the
 // location copy, and our link still expands the first 0x221810 call.
 // MiniMax S (11-01): no new form, no lower score; the priority and the flags are still formed after the location copy, and our link still expands the first 0x221810 call, so the state flags are forwarded across it where retail reloads them.
+// MiniMax S (11-09): no new form, no lower score (110); the priority and the flags still form after the location
+// copy, and the first 0x221810 call is still expanded by our link.
 // score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
 // 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
 // tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
@@ -792,6 +795,12 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // Round 155 (m3 lane 6, fast with 0x188180): the play call through a void inline wrapper 35; the result flag as a long
 // 169 (657 bytes); the player unit lookup as a ternary 157 (658 bytes); the forward normalized before the position sums
 // 27; the camera-active exit as an enclosing test with the other exit kept 2.
+// Round 138 (m3 lane 7, fast with 0x188180 = plain 2): no retail caller of 0xc5890 reads its result (0xc50a0,
+// 0xc5740 drop it), so 0x1895f0's value is not consumed along 0x189400 -> 0x189210 -> 0xc5890 in retail either;
+// the only caller of this function is the unmatched 0xf8eb0. Forms: the zero-length arm with the projection
+// cleared before the perpendicular copy 2; the projection cleared by one chained assignment 15 (first +0xcf);
+// `0.0 - sqrt(...)` for the negated distance 2; the duplicate 0x1895f0 declaration above this function dropped 2;
+// the along test as two nested ifs 2. All restored.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

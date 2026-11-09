@@ -142,6 +142,8 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // Round 155 (m3 lane 6, fast): the palette index in a named `signed char` local for the test and the lookup 219; the output
 // record copied by memcpy (real build) 11; the blend's `1.0f - product` named before the copy 99 (1208 bytes); the palette
 // entry lookup as an if/else assignment 29; the lookup helper with two returns and no result local 73.
+// Round 80 (m3 lane 10, fast; ours ends `ret 8` like retail): a reference to the cluster element for the index read and the previous-index store
+// 11; `0.0f < sum` 11; a pointer to the palette source entry 11; the accumulation product weight-first 11; the entry test as nested ifs 11.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {

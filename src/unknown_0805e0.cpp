@@ -54,6 +54,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
    with a name; iterator starts at the first entry and ends at NONE */
 // MiniMax D (run 46): early returns with a successor local and the index stepped at the loop end 49,
 // the successor read through the table 53; no lower score.
+// MiniMax C (11-08): forms tried, none lower: early returns 52, early returns with the successor in
+// a local 49, the successor in a local with the result flag 51, the loop turned into a do/while 51
+// (base 43).
 // score 43 (was 43): early ESI save, EBX successor, mask hoist and loop exit differ;
 // retail lets the entry pointer reuse the index register (imul esi, esi) and keeps the
 // successor apart in EBX (back-edge mov esi, ebx), which leaves AL free for the & 3 mask;
@@ -294,6 +297,21 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // (133 bytes); `index = next` right after the successor read, before the iterator store, with early returns 52;
 // `while (index != NONE && !result)` with the successor and `else index = next` 54 (both callers lose); the entry as
 // `g_4cf98c + index` with a successor and early returns 49. Re-measured: successor with early returns 49.
+// P382: Complementary terminal no-player result in bool/char/signed-char/byte/short/word/
+// long/dword: 51/51/51/51/60/60/58/58. NOT kept: 133-137 bytes move away from native 127,
+// the result occupies EBX and AL mask/index/successor ownership still differs; wide forms lose both
+// callers. Original complete body restored.
+// Round 81 (m3 lane 1, fast with 0x1a303b/0x2b393c): the successor read through the table before the entry, early
+// returns, `index = next` at the loop end 53 (134 bytes); that with `continue` filters (index stepped before them) 51
+// (top-tested, no hoist); `continue` filters on the current body with the result and `break` 57 (the mask is hoisted into
+// AL and false remade at the exit as retail, but the loop stays top-tested, `mov al, 3` in the prologue, index and
+// successor share EDX); the table-first successor with the result, `break` and `index = next` at the end 60 (137 bytes);
+// `continue` filters with the table-first successor 54 (hoisted; successor copied to ECX); diagnostic: the `continue`
+// body as a guarded do-while 43 (main's code exactly, no hoist: the hoist with `continue` needs the top-tested loop).
+// P390: Nullable-copy admission in positive/complementary bool/byte/short/long:
+// 43/43/43/43/43/43/43/43. No exact early-save, independent successor, mask or failure-exit recovery;
+// original nullable copy restored. NOT kept: no qualifying exact/native-shape gain; original complete
+// body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -666,6 +684,7 @@ void function_1537f0(s_profile_record *record);
 // 53 (same code), it still folds into registers and the frame stays 0x98.
 // MiniMax E (11-05): no new form, no lower score; splitting the source record's 8-byte field into two
 // dwords to make it 4-aligned leaves the record at +0x18 and the frame at 0x98, and an index loop gives 78.
+// MiniMax C (11-08): no new form, no lower score.
 // score 53 (was 53): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
 // +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
 // 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
@@ -894,6 +913,22 @@ void function_1537f0(s_profile_record *record);
 // Round 133 (m3 lane 7, fast): index loop with every field through `g_4cf98c[i]` and the 8-byte tail kept 77 (238 bytes:
 // retail's `cmp edx, end; jl` exit, identity still folded); on it identity `= { 0 }` 77, the record initialized before the
 // identity 77, an entry pointer after the record initializer 78 (238); a short index 53 (the countdown returns).
+// P380: Identity retained across the loop edge and reset on each visit, before/after metadata,
+// library/aggregate entry zero and per-visit/outer source; four later traversal-entry initializations.
+// Scores 87/87/87/87/87/87/87/87/87/87/87/87. NOT kept: all twelve score 87 at 273/258; native frame
+// 0xa0 recovers, but identity/source slots, countdown and initial zero placement still differ.
+// Original complete body restored.
+// Round 81 (m3 lane 1, fast with 0x7f8b0): an index loop with an XDK XUID identity zeroed by memset 78 (238 bytes);
+// the record initialized before a plain dword[3] identity on the pointer walk 53 (same code); an index loop through
+// `g_4cf98c[i]` with the link stores in retail's order 77 (238); an index loop with an entry pointer, both locals
+// declared before their initializers, the links in retail's order and flags/time as two stores 80 (236); the pointer
+// walk stepped beside a count-up index 53 (same code). Retail's frame (0xa0, 8-aligned, identity +0x10, a 4-aligned
+// record at +0x1c, 4 bytes free at the top) is exactly one 0x9c-byte object {qword, dword, 0x90-byte record}; no
+// existing type has that layout, so the identity still folds.
+// P387: Whole identity-record standard fill/fill_n/uninitialized-fill/uninitialized-fill_n,
+// per-visit then outer raw storage: 110/110/116/108 twice. NOT kept: native identity homes
+// still fold or move into a larger frame; 295-300 bytes versus 258. Both original initializers,
+// per-visit fills, pointer walk and complete body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1180,6 +1215,19 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 }
 #pragma inline_depth(8)
 
+// MiniMax E (11-09): no new form, no lower score: the plain removed local with the index read into EDX (54)
+// is a regression, so its body is restored and the score is back to 49. What still differs: the admission
+// prefix still tests the count through a `cache_full` flag where retail tests it directly, the upper bound
+// still sits in EAX where retail keeps it in ECX, and the forward copy still takes its index in EBP where
+// retail uses EAX, with retail's product and its single lea ahead of the upper reload where ours has two leas.
+// Measured this round: the plain removed local (the count tested directly, the removed index loaded into EDX
+// and copied to ESI) reproduces retail's first 65 bytes exactly, and with the lower bound spelled as retail's
+// comparison the first difference moves to the upper bound's register (our EAX, retail's ECX) - 366, and 54
+// with the two downward stores retail itself has, so the plain admission is no better than the flag form.
+// The min spelling of the lower bound alone is 47, two points, below what this round keeps; a count local, a
+// nested removed/count test, the upper bound stored first and the two downward stores without the min
+// spelling all score worse. The only form below 41 is the one MiniMax C measured at 38, which needs the
+// no-op downward stores, so it is not kept here either.
 // MiniMax B (11-07): no new form, no lower score (49); the admission prefix still tests the count through a
 // `cache_full` flag and the upper bound still sits in EAX instead of retail's ECX; the plain-entry admission
 // reaches retail's first 76 bytes but scores 53, and the min spelling alone 47 (a two-point gain, dropped).
@@ -1482,6 +1530,21 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // cursor 8 (round 141's form; the stores stay match-only); per-pass `from = &g[i]` on it 55; the flag left uninitialized
 // and set in every arm, the equal case included 382; no initializer, the flag cleared at the top of the removed block and
 // set only in the `<` arm 391 (1162 bytes). Original body restored.
+// P380: Removal availability after both unlink calls, shared by range admission and final count
+// publication, positive/complementary bool/byte/word/long outcomes.
+// Scores 382/382/394/396/382/382/394/396. NOT kept: all regress to 382/394/396 at 1173-1180 versus
+// native 1171; frame 0xc persists but direct ordinal tests and count/upper/index homes do not recover.
+// Original complete body restored.
+// Round 81 (m3 lane 1, fast with 0x80490/0x80330): round 141's form rebuilt (plain admission, `function_7fd10(g_4cf980)`,
+// `removed > position ? position : removed` lower, explicit `downward = false` in the `>` arm and the count path, the flag
+// set first in the `<` arm, a stepped forward cursor) 6 again, match-only; a 1,500 s permuter run on it, 177 tries, none
+// below 6; on it the plain forward loop 53 (upper back in EAX, index EBP, two leas), `position--` before `upper--` 10, the
+// copy arms tested as `!downward` 340, the count path assigning upper first 8. Left on the 6 form: the cursor's start
+// (`&g[lower + 1]`) is computed before the loop guard, where retail forms it after the guard from the index in EAX.
+// P387: Complete entry transfers at the actual player/metadata boundary, forward/reverse/both
+// native payload then library suffix 446/435/503, both library subranges 446/435/503,
+// both metadata-first native/library payloads 374/374. NOT kept: all regress to 1222-1270
+// bytes versus 1171; original capacity, full-record copies, repairs and complete tail restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

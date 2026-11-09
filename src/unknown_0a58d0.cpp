@@ -285,75 +285,16 @@ struct s_z_state_world
 	long state;
 };
 
-// score 11 (was 11): this round: the fast check reads 11 at 120/120 bytes again and no new form was
-// tried; the difference is still the database pointer in ECX where retail keeps it in EDX and the
-// active byte folded as `mov cl, [eax + edx + 0x20b2]`.
-// Earlier: reading the active byte from the array element with the database
-// read early still folds the byte as retail does (`mov cl, [eax + edx + 0x20b2]`) and keeps the
-// database in EDX, but the database load is hoisted above the object lookup and the record address
-// comes out as `add eax, edx` with the 0x20ac folded into every field offset (19). Taking the record
-// pointer before the active test does not change that (19). A named world pointer moves the world to
-// ECX and the state to EDX (21). Still the database pointer in ECX where retail keeps it in EDX.
-// Earlier: the entity pointer is materialised in EAX and the record is read through it;
-// retail folds the address into the load itself.
-// The fold is the scheduler's rewrite of `lea; mov cl, [eax+6]`; ours can't do it because the
-// database pointer is in ecx (retail edx) and the active byte goes to cl. Tried: inline active
-// test, record getter or dispatch helper 11; world local in the inner block 11; state through the
-// re-read 11; database local 11; active read before the pointer (72 spellings) 14-21; renames 11;
-// a 600 s permuter run, none below 11. Round 89: the world global read at each use (no local, no
-// address cast) builds the same code; with one world local for both reads ours is retail with ecx and
-// edx swapped (world and database in ecx), 18 in every spelling: state local, identifier declared
-// first, object local, database and index locals, state-test helper, unsigned identifier, entity
-// table types; database read from the global in the state block 11 (sunk past the test).
-// Round 60: the records inside a nested table struct at 0x2098 11; the record by pointer addition
-// 11; the active test and the dispatch joined in one condition 13; an object pointer local for the
-// identifier read 11; the size and data read into named locals before the dispatch 35 (the callers'
-// convention flips: 0xa9640, 0xa96d0, 0xa9770, 0xa98b0, 0xa9940 and 0xa9570 lose their match).
-// Round 71, fast: one world local 18 (world ECX, index EDX; the callers lose 1 to 20, and 0xa99f0 with it 18);
-// the world local first 18; `index &= 0xffff` with it 18; a named masked header index 18; a headers local 18.
-// A database local with the record first and the byte through the array 21 (138 bytes), the byte first into a
-// flag 21; two global reads with the record first 14 (138), the byte first 14 (138); a named entity index with
-// the byte first 21, the record first 21; `entities + i` 21; a byte-offset record pointer from the database 21;
-// an entities pointer local 34; an offset local with byte casts 45/45 (143); the offset local with global reads
-// 21/21. Every form with the byte before the record shares `add eax, db` and folds the field offsets.
-// This round: two world pointers at entry/inner scope/as const/as references/with the shared world
-// view 11 each; a state pointer with the direct database read 11; bitwise accepted-state test 60
-// (145 bytes); reversed formals with one world local 18 (all six matched callers regress). Original
-// body, signature and call sites restored.
-// Round 156 (fast): the active byte in a char local 11; the entity pointer declared before the identifier test 11;
-// the result assigned straight from the call 55 (122 bytes); a state local 11; a named masked entity index with
-// pointer addition 11.
-// Round 67 (fast): the type read before the active test 15 (the byte folds, but in DL with the database in ECX, and the
-// index arrives in EDX: callers 0xa9570/0xa9640/0xa96d0/0xa9770 1, 0xa98b0 14, 0xa9940 20); the identifier assigned in its
-// test 11; the state test as an early return of the result 41 (137 bytes); the formals reversed (all six calls with them)
-// 11 (same code); the inactive record as an early return of the result 30 (137 bytes). Compile-only, every one of 17
-// forms keeps the database in ECX (pointer reuse of one world variable, a database local, an entity index, record
-// reference, active local, object local, char/byte/bitfield active byte, unsigned type and identifier).
-// Round 136 (compile-only through a thiscall copy that pins the index in ECX; it builds our head exactly, database in
-// ECX): forceinline entity, object and state-test getters, singly and all three 11-equivalent (database ECX); a header
-// pointer, an entity index, an `(identifier + 0)` index, a late result default, a definition local, the definitions
-// before the type: database ECX; the record by pointer addition with the byte from the array (either order), a bool
-// active from the array: `add eax, ecx` and the offsets folded (14-equivalent); the world local with the index pinned in
-// ECX: database still ECX (so the LTCG world local's ECX is the database's own preference, not the index's).
-// Round 77 (lane 10, fast): one world local at entry named world, aaworld or zzworld 18/18/18 (names are no
-// tie-break); the world local before `result` 18; the definitions local before the active test 22; the type
-// read inline in the table index 13; the record bound by reference 11. 0xa99f0, whose index arrives in EAX,
-// shows the same single cause: retail gives the database the dying world register EDX, ours the free ECX.
-// Round 95 (m3 lane 16, fast): the entity pointer, the type, the definitions pointer, the identifier and all four declared at
-// the top of the function and assigned in place 11/11/11/11/11 (declaration order is no tie-break either); the database read
-// into a local at the top of the state block with a `_ReadWriteBarrier()` after it 37 (the database takes EDX and the active byte
-// folds as retail's, but the load stays ahead of the lookup and the index convention flips); the entity as the array then
-// `+= identifier & 0x3ff` 11; the identifier masked in place 11; `(dword)identifier & 0x3ff` 11.
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {
 	bool result = false;
 	if (((s_z_state_world *)g_4cf77c)->state == 4 || ((s_z_state_world *)g_4cf77c)->state == 5)
 	{
-		long identifier = ((s_object_header *)g_4e0300->data)[index & 0xffff].object->field_d4;
-		if (identifier != NONE)
+		s_object_view *object = ((s_object_header *)g_4e0300->data)[index & 0xffff].object;
+		if (object->field_d4 != NONE)
 		{
-			s_z_entity_record *entity = &((s_z_state_world *)g_4cf77c)->database->entities[identifier & 0x3ff];
+			s_z_entity_record *entity = &((s_z_state_world *)g_4cf77c)->database->entities[object->field_d4 & 0x3ff];
 			if (entity->active)
 			{
 				long type = entity->type;
@@ -366,76 +307,15 @@ bool function_a9820(long *block, long index)
 	return result;
 }
 
-// MiniMax C (11-06): no new form, no lower score; the database pointer still loads into ECX where retail reuses the dying world register EDX, so the active byte cannot fold into the scaled record address.
-// MiniMax S (11-05): no new form, no lower score: the database pointer is still loaded into ECX where retail reuses
-// the dead world register, so the active byte is still read through the materialised record address; the active byte
-// read from the database array with the record pointer taken in the branch 14, the same with a state local 11 and
-// with a world local 21 all leave the record address folded into the index instead of materialised.
-// MiniMax H (11-05): no new form, no lower score; a database local with the byte read from the array, the byte
-// read through a computed offset and the record taken inside the branch all give 14, and retail's EDX database
-// with its folded byte load cannot be reproduced from the source.
-// MiniMax B (11-04): no new form, no lower score: the database pointer is still loaded into ECX where retail
-// loads it into EDX, and the active byte is still read through the materialised record address; an active
-// byte in a local read before the record pointer 14, a database local with the byte read from the array 14,
-// the byte read from the array with the record taken inside the branch 14, the record pointer read before the
-// byte 14, and a world local used for both reads 18 (the database is then overwritten in place, but in ECX
-// with the world).
-// MiniMax I (11-01): the database pointer is still loaded into ECX where retail loads it into EDX, so the active byte is still read through the materialised record address; a world local in the inner block, a database local, a record reference, the record fields without any pointer and the active test read from the array element all leave the code as it was.
-// MiniMax A (11-03): no new form, no lower score.
-// score 11 (was 11): this round: the database as a byte pointer with the active byte read from the
-// array 14; the record address as an integer 11; a named world pointer 21; the database read
-// before the state test 11; the database as a long address 14; the database local with the record
-// read from a second global read 14; the state in a named local 11 (same code). Still the database
-// pointer in ECX where retail keeps it in EDX.
-// This round, again: the active byte read from the array element with the record taken inside the
-// branch 14 (123 bytes, the address is materialised before the byte); the record pointer, the type
-// and the definitions each split from their initialiser 11 (the permuter's two candidates); the
-// world local used for the database only 11 (same code); the state local with a world local 11
-// (same code); the identifier read before the state test 22; the world local used for both reads 18
-// (the database is then updated in place, but in ECX with the world). A permuter run produced no
-// variant below 11. Still the database pointer in ECX where retail keeps it in EDX.
-// MiniMax G (10-31): the database pointer is still loaded into ECX where retail loads
-// it into EDX, and the active byte is still read through the materialised record address instead
-// of the array; a database local with the byte read from the array, the same with the record
-// address taken inside the test, a world local, the record read without any pointer at all, the
-// modulo and mask index forms and the database read before the state test all score 14 or worse.
-// Earlier: the database pointer takes ECX where retail keeps it in EDX, and ours takes the
-// record address before the active test and reads the byte through it (`lea eax, [eax + ecx + 0x20ac]`,
-// `mov cl, byte ptr [eax + 6]`), while retail reads the byte from the array and takes the address after.
-// Early definitions 31; direct dispatch 13; const record 11; record reference 11; separate index mask 11;
-// short type 22; definitions first 13; definition local 13; function-scope database 11; function-scope type 11.
-// Signed accepted-state range 12; state/all rejection guards 11/11; database reference/const
-// receivers 11/11; complete payload inputs 11; native active byte with nested/rejection guards 11/11.
-// This round: the head (world in EDX, state in ECX) only comes out that way when the world pointer is
-// read from the global again, but then the database load keeps ECX; reading the database from the world
-// pointer itself moves the world to ECX and the state to EDX. Only the early-database form puts the
-// database in EDX, and it then folds the active byte as retail does (`mov cl, [eax + edx + 0x20b2]`),
-// but it loads the database before the state check, which moves the world to EAX and the index to ECX,
-// and the record address becomes `add eax, edx` with the array offset folded into every field.
-// Shapes tried: world read once 18; database local 18; re-read of the global 11; state read from the
-// global 11; array form of the active byte 14/21; const world 18; void world 18; named database 11/18.
-// The permuter could not finish a run here: it builds the whole program for its baseline and the
-// machine is busy with other lanes' builds. Round 89 (with 0xa9820): the world global read at each use
-// builds the same code; one world local for both reads 18 in every spelling (see 0xa9820).
-// Round 60 (with 0xa9820): the records inside a nested table struct at 0x2098 11.
-// MiniMax B (11-06): no new form, no lower score (a world local with a database local 21, a database local
-// 14, the record index in a local 14, a world local with the record pointer 14); retail folds the active
-// byte into the array address and takes the record address only after the test, ours takes the record
-// address first and reads the byte through it.
-// MiniMax D (11-06): no new form, no lower score (11): the database pointer is still loaded into ECX where retail
-// reuses the dying world register EDX, so the active byte is still read through the materialised record address;
-// this round a database local read early or late, a world local for the state test, a world local with a database
-// local, the active byte read from the array element with the record pointer taken before or after the test, and
-// the record pointer by pointer addition give 11, 11, 11, 11, 14, 14 and 11.
 // @retail 0xa99f0
 void function_a99f0(long index, long *block)
 {
 	if (((s_z_state_world *)g_4cf77c)->state == 4 || ((s_z_state_world *)g_4cf77c)->state == 5)
 	{
-		long identifier = ((s_object_header *)g_4e0300->data)[index & 0xffff].object->field_d4;
-		if (identifier != NONE)
+		s_object_view *object = ((s_object_header *)g_4e0300->data)[index & 0xffff].object;
+		if (object->field_d4 != NONE)
 		{
-			s_z_entity_record *entity = &((s_z_state_world *)g_4cf77c)->database->entities[identifier & 0x3ff];
+			s_z_entity_record *entity = &((s_z_state_world *)g_4cf77c)->database->entities[object->field_d4 & 0x3ff];
 			if (entity->active)
 			{
 				long type = entity->type;

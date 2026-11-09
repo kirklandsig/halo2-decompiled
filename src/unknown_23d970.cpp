@@ -563,6 +563,7 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 	return result;
 }
 
+// MiniMax C (11-09): no new form, no lower score (45); the first cross product still takes its two temporaries in the other pair of registers (ours xmm1/xmm2, retail xmm2/xmm1) and retail keeps the k term in xmm4 with a movaps where this build reloads it from memory.
 // MiniMax C (11-06): no new form, no lower score.
 // MiniMax R (11-04): no new form, no lower score.
 // score 45 (was 45): the second product through the existing staged helper of src/unknown_1f03e0.cpp
@@ -853,6 +854,14 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // both products 223 (1272 bytes), with the else-arm forward pointer too 223; an up pointer for the second product and its
 // normalize 45 (same code), with the else-arm forward pointer 47 (1264 bytes); the else-arm forward pointer with direction
 // declared before previous_up 43 (as the pointer alone).
+// P386: Default offset / velocity / both via memcpy or std::copy; both memmove; complete std::copy forward:
+// 45/45/45/197/192/238/249/259. NOT kept: ties or regressions; no exact native transfer result.
+// Right i/j carriers, forward.k reuse and angle store bases remain; original body/includes restored.
+// P398: Existing first-cross/difference complete scalar source ownership,
+// prior-up/forward/difference subsets then immutable complete inputs:
+// 49/226/223/226/222/220/70/70.
+// NOT kept: all regress; no exact input-copy match. Original shared providers and body restored;
+// right i/j carriers, forward.k reuse and ordinary-angle store bases remain.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

@@ -58,6 +58,10 @@ PRIVATE byte *update_object_0a6430(long index)
 // through the header form or folded; a named short level; the count declared after the object.
 // Round 79 (fast): one function-scope object pointer for the 0x40/0x100/0x200 blocks 16, for 0x100/0x200 only 16;
 // the existing header getter object_get for the 0x100 lookup, the 0x200 lookup or all three 16/16/16 (all same code).
+// Round 81 (m3 lane 1, fast with 0xa03d0/0xa3ae0): the tag table read once into a local for both 0x200 lookups 50
+// (550 bytes); a dword count 16 (same code); the 0x200 block's state byte read into a local ahead of the lookups 35 (550
+// bytes; the pool still loads first); the 0x100 call's states pointer formed from the address parameter 16; a dword model
+// index 16.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

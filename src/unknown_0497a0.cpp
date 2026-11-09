@@ -926,6 +926,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // T64: Texture-word/current-state-dword/state-array input owners, singles/pairs/all and
 // all with readonly state/endpoints: eight 250s. NOT kept: native flag/receiver observations
 // canonicalize without the extra frame slot or first-edge Y/half-width homes; full body restored.
+// T70: Real backing flag views on current paired geometry, texture/state/point/pairs/all/endpoint
+// 629/591/250/676/626/591/665/676. NOT kept: no exact native ingress or missing frame-word repair;
+// original flag words, observations, geometry, helpers and complete body restored.
 // P365: Existing norm-dimension/squared-length producers at vertical/side/normal sites,
 // masks 1/2/4/3/5/6/7: 250/368/250/368/250/368/368; planar normalizer retaining
 // third-component scaling 485 (frame 0xac, 2628 bytes). NOT kept: no equality; the camera
@@ -941,6 +944,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // P373: Ordinary pretested channel counters for initial/next/blend color walks, seven subsets,
 // all with the tint walk: eight 250s, 2592/2596 bytes. NOT kept: frame 0xa8/0xac
 // and scalar homes unchanged; original color traversals and complete body restored.
+// T72: Complete computed first/second/both edge scalars, then existing output setters
+// for first/second/both scalar graphs: 252/250/252/252/250/252/252/252. NOT kept:
+// no native frame or edge-spill recovery; original complete body and helpers restored.
+// P389: Complete first/second edge publications through native/standard copy/backward
+// range transfers, eight nonoriginal pairs:
+// 598/598/733/750/745/769/735/729. NOT kept: no exact native frame/home recovery;
+// original complete body, observations, helper and call graph restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

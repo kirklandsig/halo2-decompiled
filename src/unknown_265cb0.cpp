@@ -631,6 +631,16 @@ real function_30bf0(vector3f *vector);
 // T69: Actual range-entry byte-mask/byte-bitfield receiver, mutable/readonly settings,
 // each with mutable/readonly actor input: eight 84 on the native SIMD/indexed-seat graph.
 // NOT kept: no native range ingress or scalar-home recovery; original types and full body restored.
+// Round 138 (m3 lane 7, fast with 0x263740/0x25c9d0 = plain 84): retail loads the range into XMM0 at entry and
+// reloads it at the join after the endpoint block on every path (all its failure jumps land on the reload);
+// ours loads it into XMM2 and the endpoint-NULL/unknown007 exits jump past the reload (+0x1d7 for +0x1d1). The
+// 2 extra bytes are the two seat-loop cross products (ours `movss` from memory then `mulss` by the register).
+// Frame map, ours/retail: amount+count 0/c (retail amount+squared distance), result 4/0, range 8/20, scale c/10,
+// facing primary 10/8, facing secondary 20/4, cursor 24/38, delta 38/3c, a/b 44,48/48,4c, squared distance 4c/c.
+// Diagnostics: `(void)&range` 84 (same code); the join's range read through its address 150 (1312 B, entry still
+// XMM2). Forms: the endpoint test as nested ifs 84 (same code); the squared distance through dot3f 84 (same
+// code); scale declared with the range at the settings-block top 212 (1312 B). A compile-only /FAs screen does
+// not give our LTCG frame here (fastcall entry), so it cannot rank these homes.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1331,7 +1341,9 @@ PRIVATE __forceinline long round_tick_count(real ticks)
 
 long function_146650(void);
 
-// score 14 (was 14): the only difference left is the order of three 12-byte stack homes: retail stacks
+// score 7 (was 14): the five 12-byte homes now agree; only the argument setup at the three 0x267a80 calls
+// differs: retail sets ECX (the NULL distance, `xor ecx, ecx`) before the local-address lea of EDI (and of EDX
+// in the projected call), ours sets ECX last. Earlier note, from before the homes agreed: retail stacks
 // movement, offset, ahead, target_direction and direction upward from esp+0x34, ours movement, offset,
 // direction, ahead and target_direction, and the lea/xor order at the three 0x267a80 calls follows it.
 // The direction and ahead homes are swapped: retail stacks movement, offset,
@@ -1424,10 +1436,24 @@ long function_146650(void);
 // Real (fast): `active = state->unknown63; if (!active)` (code differs) not built; ahead as a vector3f 14; the
 // player lookup as nested ifs 14; offset declared before `active` 18; movement declared ahead of its test 14;
 // target_direction declared at the function's top 14.
+// Round 99 (m3 lane 12): the homes were weighted by the direction pointer escaping: 0x267840 passes it to
+// 0x1e1e50, which read its own direction parameter through its address; with 0x1e1e50 writing `*direction`
+// directly (still matched) the homes are retail's, 14 -> 7 (plain). A compile-only screen showed it: the
+// homes follow whether 0x267840's two outgoing uses expose the pointer. Then (fast): 0x267a80's parameters
+// reordered everywhere to (direction, position, distance, point, unknown) 167 (0x267a80 loses its match);
+// actor_index read directly instead of through its address 7 (same code, kept); diagnostics only: the NULL
+// distance through a local 7, direction as one-element storage behind a pointer 7, 0x267a80 defined after
+// this function 7 (no change in the ECX order). Retail's other caller 0x25f290 sets ECX last, as ours does.
+// Lane 7 r138 (11-09): MATCH, held: 0x267a80's parameters reordered to (point, direction, position, distance,
+// unknown) everywhere (retail's second call sets up last-to-first under that order; 0x267a80 still matches).
+// Held, not committed: it also moves the arguments on two call lines in 0x25f290 (contributor-finished,
+// src/unknown_25fc30.cpp; its bytes unchanged, score 253), which needs that owner's OK.
+// P395: Activity default after offset/after query/before direction/before state 11/52/16/46;
+// corrected-home offset memset/chained zero/query-only output 71/11/275; activity default at state test 29.
+// NOT kept: no exact setup repair; original complete body restored.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
-	long const *actor_reference = &actor_index;
 	s_actor_view *actor = actor_get(actor_index);
 	byte *data = (byte *)actor;
 	*(real *)(data + 0x3d4) = 0.0f;
@@ -1480,7 +1506,7 @@ void function_267c50(long actor_index)
 		if (actor->unknown086 > 5)
 		{
 			s_iterator iterator;
-			function_26be00(*actor_reference, &iterator);
+			function_26be00(actor_index, &iterator);
 			s_prop_datum *node;
 			while ((node = (s_prop_datum *)function_26be30(&iterator)) != NULL)
 			{
@@ -1490,7 +1516,7 @@ void function_267c50(long actor_index)
 					(prop_get(node->prop_index)->unknown25 || state->unknown3c == NONE))
 				{
 					vector3f direction;
-					if (function_267840(*actor_reference, iterator.index, &direction))
+					if (function_267840(actor_index, iterator.index, &direction))
 					{
 						bool active = false;
 						vector3f offset = {0.0f, 0.0f, 0.0f};
@@ -1546,7 +1572,7 @@ void function_267c50(long actor_index)
 		}
 		if (moving_toward)
 		{
-			function_262800(*actor_reference, *(s_reference *)(data + 0x418), true);
+			function_262800(actor_index, *(s_reference *)(data + 0x418), true);
 			function_1f86a0(actor_index);
 			*(short *)(data + 0x3e2) = (short)round_tick_count((real)g_510c54->field_2_3);
 		}
@@ -2158,6 +2184,22 @@ real function_2683f0(long actor_index, long node_index, short type)
 // P377: Actual unit-velocity/actor-position/view-strength field receivers, seven
 // subsets then complete immutable pointers: 168/168/168/168/168/168/168/168. NOT kept: no native iterator/pool/SIMD
 // equality; original complete body, field observations and helpers restored.
+// P380: First-walk result as native node/typed datum, walk-only or bare entry lifetime, while-return or
+// for-cursor advancement on the retained shared-iterator and early-zero graph.
+// Scores 168/753/168/753/168/753/168/753. NOT kept: while forms tie 168/2880; for forms regress to
+// 753/2923, versus native 2880; early index, iterator and SIMD homes stay different.
+// Original complete body restored.
+// Round 138 (m3 lane 7, fast with 0x25d810, every 0x26be00 and ai_player_get user listed): 0x26be00's
+// file is open to machine 3 (its owner prints ours). Retail's inlined iterator start puts the reloaded
+// table base first (`[ecx + eax + 0x58]`, as in 0x1e23c0) and 0x25d770 the offset first, both matched here,
+// so the order follows the context: 0x26be00's sum written offset-first 168 (same code, its eight matched
+// inliners unchanged); the memset straight after the actor lookup 186 (first +0x31); the other actor as
+// `other = NULL; if (...) other = actor_get(...)` 382. Round 65's recipe re-measured: both searches through
+// ai_player_get/ai_player_index_get + `inline` on 0x1c8180 + a __forceinline object_get_forward declaration
+// 383 at 2880 (all 16 users of those helpers still match; every search line retail's, one line late behind
+// the iterator's table pointer in ECX, a 1-byte longer load, so the loop-top pad is `jmp` + `lea ecx, [ecx]`
+// for retail's `lea ebx, [ebx]`); the same with a __forceinline ai_player_get declaration here in place of
+// the ai.cpp `inline` 643 (2839 B, the call stays). All restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

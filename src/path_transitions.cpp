@@ -232,6 +232,11 @@ bool function_270130(s_object_marker const *marker, point3f const *position, rea
 // Round 16: dot3f alignment 26; a forward-vector pointer 26; a short cast at the call 20; the
 // flags field typed short 20; a long loop ordinal 827. With 0x26fbf0's flags as word (diagnostic,
 // restored) this is 4, and with dot3f for the alignment too 2 (only the j product's operands).
+// Round 138 (m3 lane 7, fast with 0x26fbf0/0x1be410/0x270130): ours already returns with `ret 0xc` as retail
+// (point in EBX, actor in EAX); the first difference is still the flags argument (`movzx` for retail's
+// `xor edx, edx; mov dx`), still BLOCKED-BY 0x26fbf0. Diagnostics, restored: 0x26fbf0's flags `word` 4 again
+// (0x26fbf0 and 0x1be410 still match; left: the alignment's i and k products computed in the other order);
+// on that, the k product written first 4 (same code). The other caller, 0x2c0d60, passes `(word)` flags too.
 // @retail 0x26fc80
 bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point)
 {
@@ -493,6 +498,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
+// MiniMax D (11-08): no new form, no lower score (219); retail keeps the first argument in EBX and reads the stack
+// argument into EAX at the entry, ours uses EAX for the actor and ECX for the stack argument, and the switch's case
+// bodies and the counter's register home still differ.
 // MiniMax I (11-06): no new form, no lower score; the case-5 direction negated while it is copied from the vertex gives 379 and 391 against 219.
 // MiniMax H (11-05): no new form, no lower score; the projection sum's order ((j + k) + i in retail,
 // (k + j) + i here) comes from the shared dot3f in include/unknown_0259d0.h, and the entry still loads
@@ -807,6 +815,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // parent/origin projection, fraction, inverse length, facing and marker position:
 // 219/219/219/219/219/219/219/219. NOT kept: no exact ownership/home repair. Original executable body restored.
 // Early root/actor retention and paired projection ownership remain.
+// P394: Paired-edge clamp admission before reciprocal/fraction, wide-edge/midpoint truth
+// in bool/byte/short/long: 367/367/371/369/367/367/371/369. NOT kept: no byte equality; original
+// comparison, geometry, result and whole body restored. Early root/actor ingress remains.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

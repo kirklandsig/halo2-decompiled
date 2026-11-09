@@ -267,6 +267,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // word 4; the component index field as dword 4. Matched 0xbc470 makes this exact lookup index-first from
 // the same call-argument form, and the data-first sites with one data use (0xbc5e0, 0x1c35f0) keep the
 // component in a multi-use local, so retail's ECX data points to a second use of the component here.
+// Round 137 (lane 7, fast; a one-file LTCG harness reproduces 4): a second real use of the component gives retail's
+// data-first lookup (pool in EDX, data in ECX before the mask): a NULL test of it 42 (204 bytes), a test of its object field
+// 46 (209 bytes), both diagnostics; uses that leave no code do not (harness: an empty inline taking it 4, a dead field read 4,
+// a self-compare 4, cleared after the call 4). A `* const` component local 4; a `long const` index local in the arm 4; a
+// reference to the component 4.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -667,6 +672,9 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax D (11-08): score 230 (was 230): ours has an unaligned 0xac frame where retail realigns to eight
+// bytes with a 0xb4 frame, so the register homes and the block layout differ from the first byte; the
+// realignment is decided by the whole-program view of the callers.
 // score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // MiniMax b (11-06): no new form, no lower score; the angle's x87 sequence is retail's byte for byte
@@ -1656,6 +1664,10 @@ done:
 // 33 (index back in DI; scenario EBX, type ESI, definition ECX); a screen of scenario local/global x type
 // local/re-read x definition local/table at each use x palette local/at the call x size short/long: palette
 // local 33 in all sixteen (236 bytes), palette at the call 17 with the scenario local and 25 with the global (237).
+// Round 81 (m3 lane 1, fast with 0x29fd40/0x2a12f0): palette added at the call with a long size and the placement
+// offset read inline 26 (scenario moves to ECX, index to SI); the type and definition locals renamed to sort the
+// other way 17 (same code); the definition bound as a const reference to its table entry 17 (same code); a named
+// datum with the palette added at the call 17; palette and size declared ahead of the definition 17.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1822,6 +1834,9 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax I (11-08): no new form, no lower score (285): the shared epilogue at retail's 0xb987a and the
+// marker pointer retail inlines (that other file is /Ob1, so LTCG keeps our call) still leave the first
+// difference at +0x76.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60
