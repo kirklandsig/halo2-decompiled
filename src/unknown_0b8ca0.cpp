@@ -1830,6 +1830,9 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
+// MiniMax I (11-08): no new form, no lower score (285): the shared epilogue at retail's 0xb987a and the
+// marker pointer retail inlines (that other file is /Ob1, so LTCG keeps our call) still leave the first
+// difference at +0x76.
 // score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
 // match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
 // jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60

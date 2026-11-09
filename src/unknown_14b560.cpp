@@ -1364,6 +1364,13 @@ static inline s_players_globals *players_globals_14f2e0()
 
 /* gives a player its unit (the unit kept for it, the unit waiting to be
    reused, or a new unit at a starting location) and resets its spawn state */
+// MiniMax I (11-08): no new form, no lower score (46): the two NONE outputs are materialised with
+// `mov eax, 0xffffffff` where retail uses `or eax, 0xffffffff`, and the tail's zero and flag stores are
+// scheduled with the byte clear first where retail zeroes the dword first. A full-build comparison puts
+// these two sites as the only differences from retail (the two bytes of the constant form are the whole
+// length difference), and one-file models show that both are this context's scheduler choice: in
+// isolation the sentinel comes out as `or eax, 0xffffffff` and the byte clear comes first whatever order
+// the statements are written in. Fixing one site alone is a three-point gain, under the keep threshold.
 // score 46 (was 46): the NONE outputs are materialised with `mov eax, 0xffffffff` where retail
 // uses `or eax, 0xffffffff` (two bytes shorter, so every later stack address differs), and the
 // zero/flag store schedule differs; the success BL agrees. Round 29 (lane G): with the two
