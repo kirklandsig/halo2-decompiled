@@ -2633,7 +2633,7 @@ void function_dfdb0(long arg_159e6d, long *surface, long *location, point3f *poi
 }
 
 bool __stdcall function_c5460(long object_index, long ignore_index, point3f const *position, point3f *result,
-	long a5, real radius, bool a7);
+	real a5, real radius, bool a7);
 
 /* drops the biped out of a vehicle: level and upright, at a clear spot
    by the vehicle (or anywhere clear) */
@@ -2831,6 +2831,18 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // +0x349 at both exits 103 (274 bytes: the word clear narrows by itself as retail's, the byte-view clears split into
 // load, and, store around the pops); the getter at the test and again at the call, no body local, 80 (261 bytes);
 // the first count test through its own lookup as well 126 (288 bytes, the input leaves EBX). All restored.
+// M3 lane 5 r167 (fast). Located: the count read at the call as `(char)BIPED_GET(arg_159e6d)->unknown3aa` keeps
+// retail's reload from ESI (the lookup folds into ESI, the field load does not; read through `biped` it folds into a
+// register, 82); 68 on the base, re-measured. With the rate written as 0.0f (diagnostic) the entry is retail's through
+// the body test (no EBP, base added into ECX first), so the extra EBP comes from the rate pointer: ours evaluates the
+// rate after the count is pinned in EAX, retail before it. Left there: the header getter loads the size into a register
+// (push/pop of EBP around it) where retail compares from memory, 0x9fff hoisted into EDI, the split `or` of +0x134. New
+// forms: the success arm falling into one shared final clear with the +0x134 flag in both else arms 90 (273 bytes); a
+// char body with a short ternary, the second-lookup count and 0x1d5120's count before its result pointer 76 (255 bytes,
+// size compared from memory as retail, but the select is threaded); a named rate on the getter base 97 (re-measure of
+// round 96's 97), on the char-body base 79; the call in its own if under the body test on the getter base 92 (same code); the rate through an inline
+// helper on the getter base 92 (same code, diagnostic). The mask spelled 0x9fff at the second clear 63 (same code).
+// A named rate inside the body test, the call nested under it, 91 (EBP still taken).
 // M3 lane 13 r74 (fast): the three clears as two word-bitfield clears each (flags_348_bits field_d/field_e) 63 (same
 // code: they merge into one hoisted 0x9fff); byte test of +0x3aa, the header getter into a short and the count re-read
 // through a second lookup 80 (261 bytes: the argument stays in EBX, but the Havok base and body count load early into
@@ -4068,6 +4080,7 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // MiniMax B (11-07): no new form, no lower score (354); our origin, distance and matrix homes are 0x44, 0x34 and
 // 0x60 against retail's 0x40, 0x4c and 0x50, while every home from 0x94 up agrees.
 // MiniMax C (11-07): round 53: no new form, no lower score; the transform's matrix, origin and distance homes stay where the earlier rounds left them.
+// score 371 (was 354): MiniMax D (11-05): no new form, no lower score; our origin, distance and matrix homes are 0x44, 0x34
 // Earlier 354 (was 354): MiniMax D (11-05): no new form, no lower score; our origin, distance and matrix homes are 0x44, 0x34
 // and 0x60 against retail's 0x40, 0x4c and 0x50, while every home from 0x94 up agrees.
 // Earlier at 368: NOT kept (lane 1 r62): the pivot pair as two ternaries on the same property test gave 351
@@ -4249,6 +4262,14 @@ PRIVATE inline void biped_matrix_transform(transform4x3f const *matrix, point3f 
 // through vector3d_from_points3d 331, both 331 (same code). On the kept body, the no-parent arm as a shift local with
 // origin overwritten 364 (1935), as a lowered copy of the point with the shift through vector3d_from_points3d 373
 // (1929), as a lowered copy with the differences in place 369 (1933). All restored.
+// M3 lane 5 r167 (fast with 0xe1b60/0xe23e0, both stay matched; base now 371 at 1931, aligned 229, masked 156): the two
+// properties declared at function scope 371, the matrix declared before the origin 371, the collision at function scope
+// 371 (M372's entry collision re-measured), the distance declared at its computation 371, back at the top of the parent
+// block 371, the target declared at its copy 371, rotated_pivot and the rotation matrix at the top of the parent block
+// 371/371 (the rotation one may repeat round 588's earlier rotation declaration), the collision call joined to the limit test with `&&` 371, the move test
+// split into two nested ifs 371 (all the same code: scopes and declaration order move no slot). The limit computed
+// before the distance (undoing round 192's order) 357 at 1935 bytes, but aligned 230 and masked 157: a length effect,
+// and a moved declaration, so not kept. All restored.
 // M3 lane 13 r74 (fast with 0xe1b60/0xe23e0): parent pivot as one conditional on the property and the child by a
 // pointer test on it 376 (1947 bytes, masked aligned 224 -> 207); `limit <= distance` 370 (1944); distance declared
 // at its assignment 354, the compare as `parent_body_index == property_a` 354, the pivot pointers declared with
@@ -5126,6 +5147,14 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // the normalize 83; the first cross alone 79 (same code); the normalize alone 79 (same code); the first rotation and the
 // first cross 84 (876), plus the staged cross 89 (874), plus the normalize instead 84 (876); the first rotation and the
 // normalize 63 (892). All restored.
+// M3 lane 5 r167 (fast with 0x1ecf50/0x30bf0; base 79 at 894, masked aligned 13): the angle as `angle =
+// normalize3d(&axis); angle *= g_510c54->rate;` 79 (same code); a named `speed` for the length 153 (877 bytes, the listed
+// speed local re-measured); a const pointer to the angular velocity for the axis copy 208 (880 bytes); that with the forward
+// pointer declared first 178 (897 bytes); a const pointer to the old up for its copy 79 (same code); a pointer to the new up
+// for the length test and the reset 79 (same code); re-measured: one up pointer for the copy, the staged cross, the test and
+// the reset 225 (913 bytes). The
+// lever left is the per-site operand state inside rotate_direction (src/unknown_1eb8a0.cpp), which was on this
+// round's Avoid list, so no helper-side form was tried. All restored.
 // M3 lane 13 r74 (fast with 0x1ecf50/0x30bf0): `angle = normalize3d(&axis); angle *= rate;` 79 (same code); the final
 // test as `!function_30bf0(&biped->up)` 79 (same code); the axis copied componentwise 217 (912 bytes); `forward`
 // through a second biped lookup 79 (same code); the up copy through a second lookup 246 (909 bytes: redone after the

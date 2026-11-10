@@ -1861,6 +1861,7 @@ void function_269250(long clump_index, long actor_index);
 // selection's copy in edi.
 // MiniMax E (11-07): no new form, no lower score; the walk's pool load stays in memory and the
 // selection stays in edi where retail hoists the pool into ebx and keeps the selection on the stack.
+// score 87 (was 87; round 103 unchanged): retail hoists the walk's pool load into ebx and keeps the selection
 // MiniMax B (11-03): no new form, no lower score.
 // Earlier: retained frame pointer 187; depth zero 304; selected-result reuse 134; team snapshot 133;
 // size preference 338; double candidate/both scores 157/158; activity while 160; role-based scalar
@@ -2060,6 +2061,12 @@ void function_269250(long clump_index, long actor_index);
 // walk as a `for` with the actor declared in it 87; the creation arm ending in `continue` when nothing is created 87; the
 // selected arm ending in `continue` when the selection is the current clump 87; both continues 87 (the last four the same
 // code). Body unchanged.
+// Round 103 (m3 lane 16, fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x26ae30/0x268c90/0x268510, all matched): the
+// in-arm compare re-measured 126 (480 bytes; register-masked aligned 23 against this body's 25); on it the score as `real const` 126 and
+// the team test as `actor->unknown024 == group->team` 126 (both the same code), the score test as `if (score <= best) continue;` 128;
+// on this body the score set in an else arm (`else score = best;`) 128 (484 bytes) and the swapped team test 87 (same code). Retail keeps
+// the walk's pool field cached in EBX across the score call, so it treats the walk as not escaping; ours re-reads it from the frame at
+// each use. The compile-only /Gr harness promotes both walk fields to registers (frame 0x2c), so it does not model this body.
 // Lane 12 r105 (fast with 0x268840/0x269580/0x269250/0x2694d0/0x268bb0/0x268510/0x268c90/0x26ae30, all matched): the in-arm
 // compare with the selection stored first re-measured 126 (480 B; the post-loop is retail's but for the selection in EDI); without
 // the callees in the reduced build 0x269580's arguments swap, as round 107 found. Diagnostics (an existing helper written out, not
