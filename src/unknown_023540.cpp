@@ -3053,6 +3053,16 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // ours keeps 240 in xmm1 for both vertical bounds (a copy), retail loads it into xmm7 after bounds[0]'s
 // store and adds the second 240 from memory, because its zero for the scale tests already holds xmm1
 // (the compare is hoisted into the bounds); that one instruction shifts the whole vertex tail (~100).
+// Round 85 (m3 lane 10, fast, base 211; exact aligned count in brackets, base 55, with every stack home already retail's): horizontal bounds then the half height
+// and vertical bounds 211 [55]; the first zero test between the horizontal and vertical bounds 217 [82], both tests there 230 [94], the first before all bounds
+// 232 [85], after the horizontal bounds with the half height after it 231 [102]; `half_height + 240.0f` 211 [55]; the zero defaults as ternary assignments 211
+// [55]; `0.0f == scale` 211 [57], `!scale` 211 [55]; bounds stored 1, 0, 3, 2 224 [69], 0, 1, 3, 2 211 [56]; named scaled width/height halved at each bound 247
+// (2027 bytes); the bounds as four scalars 408 (1994 bytes), with the zero tests first 401 (1999); the second angle's cosine and sine in their own locals 210
+// [53] (round 132's form again; under the bar). The corner helper with the products' sides swapped, `0.5f * (1.0f + scale * ...)`, `scale * (...)` first or
+// the second sum's terms swapped 211 each (same code); with named rotated x/y locals 346 (1910 bytes). The first zero comparison held in a bool across the
+// vertical bounds 240 (2031 bytes), both 264 (2041), the bool before all bounds 256, after bounds[2] 236, used before bounds[3] 240. Left: retail starts the
+// first zero comparison right after bounds[1]'s store, so its zero holds xmm1, 240 is loaded into xmm7 and subtracted in place and the second 240 is a memory
+// operand (ours copies it, one instruction more); in the first corner set retail schedules coordinate 7 ahead of 1, 6 and 2 where ours runs 1, 2, 6, 7.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

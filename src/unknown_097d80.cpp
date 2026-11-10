@@ -373,6 +373,11 @@ struct c_aggregate : c_child
 // count-field reference subsets: 78/78/78/78/78/78/78/78. Native 0x8020 frame returns
 // by removing a cleanup spill, but callback output stays separate and low homes differ;
 // all shorten to 359/373. NOT kept: no gain or byte match; original full body restored.
+// Round 85 (m3 lane 10, fast; siblings stay matched): an empty exception specification on the child's v5 and v6 31; v5's
+// request parameter as `void const *` 31; the cleanup item test as an early `continue` 31; this function moved to the
+// end of the file 31; the three aggregate functions moved below the handle-table functions 31 (frame 0x8024 in each, same
+// code). Diagnostic, removed at once: `#pragma optimize("a", on)` around the body 31 (frame 0x8024: even the no-aliasing
+// setting keeps the escaped output apart under LTCG). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
