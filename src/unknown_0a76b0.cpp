@@ -1504,7 +1504,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // MiniMax G (11-04): no new form, no lower score; retail loads the pool data and the unit twice with
 // a stack spill between the two loads, ours keeps one load, so the index form, the reload of the pool
 // data and the register allocation differ.
-// score 95 (was 95): frame 0x18 agrees; entry table/hand homes and second unit load remain. Round 220 lead (m3 lane 3):
+// MiniMax D (11-09): the animate test written in both arms of the primary test, on the pool-copy form, matches retail byte for byte.
+// score 0 (was 95): matches retail: the companion weapon read through the pool copy, the other hand's slot as its own local, and the animate test in both arms of the primary test. Round 220 lead (m3 lane 3):
 // the other hand's slot and weapon read through `s_record_pool *objects = g_4e0300;` declared first (0xd1540's per-hand
 // pool copy, which matched 0xe8de0/0xe9190/0xfff40 this round) with a long hand gives retail's second unit load through a
 // copy of the data register and retail's length: 8 at 604 bytes (fast and plain), not kept (0xcbd50's body written out,
@@ -1643,9 +1644,14 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
+	s_record_pool *objects = g_4e0300;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	short hand = !primary;
-	long other_weapon_index = function_cbd50(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->weapon_slots[primary != false]);
+	long hand = !primary;
+	long primary_index = primary != false;
+	short other_slot = ((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit->weapon_slots[primary_index];
+	long other_weapon_index = NONE;
+	if (other_slot != NONE)
+		other_weapon_index = ((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit->weapon_object_indices[other_slot];
 	long has_other;
 	bool is_vehicle;
 
@@ -1695,11 +1701,17 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 			if (!silent)
 			{
 				long type = 0x14;
-				if (!primary)
+				if (primary)
+				{
+					if (animate)
+						type = 0x16;
+				}
+				else
+				{
 					type = 0x15;
-
-				if (animate)
-					type = 0x16;
+					if (animate)
+						type = 0x16;
+				}
 				function_ee7f0(unit_index, type);
 			}
 			function_c86e0(unit_index, 0);
