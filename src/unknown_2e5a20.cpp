@@ -47,6 +47,15 @@ char const *__cdecl function_2e6220(long type);
 // Expands alternate shape types before replacing the selected handler rows.
 // Diagnostics describe this recursive pair; the record keeps the original
 // registration pair. Resolve the four names in retail call order.
+// score 166 (was unwritten; 174 with the alternate tests nested under a joint test, 166 as if/else-if):
+// frame 0x410 versus 0x424; the type, row and
+// text-call values use other registers and stack slots. Buffer extent 174;
+// ordered text locals 159; separate level 175; both bounds 171; first bound
+// 156; second bound 169; row/column names 171; array indexing 171; direct
+// alternate fields 171; early bounds 195; record stores reordered 171;
+// separate maps 171; record pointer 171; direct record fields 175; direct
+// arguments with both bounds 178, first bound 189, separate level 189;
+// branch bounds 141, with direct arguments 189. Text locals were reverted.
 // @retail 0x2e5a90
 void s_1c3a40::function_2e5a90(handlers_2e5d50 const *handlers, long first_type, long second_type,
 	long first_type_again, long second_type_again, long level)

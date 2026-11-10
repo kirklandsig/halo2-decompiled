@@ -123,6 +123,7 @@ def test_closest_search_against_retail(solver_images,precision,real_tetrahedron)
     entry=address(symbols,'class_3048a0::function_3048a0'); pen=address(symbols,'function_30a6b0')
     tetra=address(symbols,'function_303540'); zero=address(symbols,'g_4801e0')
     visited=set()
+    tetrahedron_results=set()
     for seed in range(320):
         rng,data,put=base_case(seed+10000)
         initial=[(1,1),(1,2),(2,1),(1,3),(3,1),(2,2)][seed%6]
@@ -148,9 +149,15 @@ def test_closest_search_against_retail(solver_images,precision,real_tetrahedron)
         output=returned_features(rng,seed)
         results=[]; traces=[]
         for uc,start,pen_at,tetra_at,zero_at,is_retail in [(retail,0x3048a0,0x30a6b0,0x303540,0x4801e0,True),(compiled,entry,pen,tetra,zero,False)]:
-            uc.mem_write(HEAP,bytes(data)); uc.mem_write(zero_at,bytes(16)); trace=[]
+            uc.mem_write(HEAP,bytes(data)); uc.mem_write(zero_at,bytes(16)); trace=[]; tetrahedron_return=[None]
             def hook(machine,pc,size,user):
                 if is_retail: visited.add(pc)
+                if real_tetrahedron and pc == tetrahedron_return[0]:
+                    value = machine.reg_read(UC_X86_REG_EAX)
+                    value = value if value < 0x80000000 else value - 0x100000000
+                    trace.append(('tetra_result', value))
+                    if is_retail: tetrahedron_results.add(value)
+                    tetrahedron_return[0] = None
                 sp=machine.reg_read(UC_X86_REG_ESP)
                 if pc==VERTICES:
                     ids,count,out=words(machine,sp+4,3)
@@ -172,6 +179,7 @@ def test_closest_search_against_retail(solver_images,precision,real_tetrahedron)
                     else: corners,point,sign=words(machine,sp+4,3)
                     trace.append(('tetra',point,corners,sign))
                     if not real_tetrahedron: return_from(machine,-1 if seed%3==0 else seed%4,0)
+                    else: tetrahedron_return[0] = words(machine,sp,1)[0]
             handle=uc.hook_add(UC_HOOK_CODE,hook)
             try: results.append(execute(uc,start,[FIRST,SECOND,TRANSFORM,STATE,RESULT],precision))
             finally: uc.hook_del(handle)
@@ -181,3 +189,5 @@ def test_closest_search_against_retail(solver_images,precision,real_tetrahedron)
     # Both edge/triangle orders, tetrahedron orders, and support-query orders.
     required={0x3049ae,0x3049cc,0x304aa1,0x304c12,0x304e0f,0x3051ff,0x3053ef,0x30550a,0x305515}
     assert required <= visited, [hex(pc) for pc in required-visited]
+    if real_tetrahedron:
+        assert -1 in tetrahedron_results and any(value >= 0 for value in tetrahedron_results), tetrahedron_results
