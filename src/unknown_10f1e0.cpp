@@ -405,12 +405,17 @@ bool function_1d9320(s_1d9240 *slot);
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
 
+// score 2 (was 2): only the back edge's two reloads differ (retail reloads the state, then the tag table; ours the
+// other way round). The entry's node count and the arms' graph now come from the existing state members (same
+// code). The pair's target name is still re-read into its local before the second lookup; round 163's lead below
+// replaces that with an inline wrapper (build/r163/113980-wrapper.patch, 2, needs a ruling: a new helper called
+// from this function only). The stacked notes below are in the order they were written.
 // MiniMax b (11-06): 2 with the pair's target name as a two-use local, re-read from the iterator just before the
 // second lookup, and the mask test (bit_vector_test) in nested ifs; not kept: the re-read is a no-op that only
 // steers registers (without it 49; without the local, or the local only in the test, 42). On that form the
 // permuter tried 40 further bodies with no lower score; a graph-index local (2), the mode and weapon reads above
 // the graph lookup (98) and the graph lookup above the two arms (143) do not help.
-// score 37 (was 37): frame 0x104 agrees. Retail tests the visited bit with a mask and still ORs
+// Earlier 37 (was 37): frame 0x104 agrees. Retail tests the visited bit with a mask and still ORs
 // it into memory after computing the word address; with the shift-form test ours gets that update
 // but not the test, and with a mask test (the existing bit_vector_test) the update becomes
 // load/OR/store and two call setups change registers (42, 545 bytes). The back-edge reloads of
@@ -601,25 +606,41 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // two-use local 11; a do/while on `found` with the pair block under `if (found)` 2. Every callee under the loop's calls
 // is matched C (0x142a60 under 0x1d90e0 is naked asm in our source); the re-read and the back-edge order
 // both look like retail's compiler assuming the calls may write the iterator and the table, which our LTCG rules out.
-// MiniMax C (11-09): score 2 (was 2): only the back edge's two reloads still differ (retail
+// MiniMax C (11-09): 2 (was 2): only the back edge's two reloads still differ (retail
 // reloads the state before the tag table). The state's register copy would have to come before
 // the table's load in the entry schedule; reading the graph index into a local ahead of the
 // table lookup leaves the order as it is (2), and moving the loop's statements ahead of the
 // stores breaks the body (107).
-// MiniMax C (11-09): score 2 (was 37): the visited-bit test is retail's mask test (the existing
+// MiniMax C (11-09): 2 (was 37): the visited-bit test is retail's mask test (the existing
 // bit_vector_test) in its own nested if, and the pair's target name is a two-use local that is
 // re-read from the iterator just before the second lookup; the visited word's fused OR and both
 // lookup setups now match retail; only the back edge's reload order differs (retail reloads the
 // state before the tag table).
+// Round 163 (m3 lane 5, fast, plain for the kept form): pair names read from the iterator at each use with the
+// nested tests and no local 42 (545 bytes: the second lookup loads the target object into ECX ahead of the pushes);
+// both lookups through the inline wrapper object_marker_get_first (the query with count 1 and no flag) with the
+// names read at each use 2 (539 bytes), so the same-value re-read is gone; on it the three inner tests joined with
+// `&&` 2 and all seven in one condition 2 (same code: the mask test needs no nested if of its own); the entry's node
+// count through the existing `state->node_count() != 0` 2 (same code: inlined at the test, called for the clear,
+// as retail); the arms' graph through the existing `state->graph_get()` 2 (same code), arm-scoped graph locals 2;
+// the two member calls alone on the re-read body 2 (fast and plain, 0x113ba0, 0x113c60, 0x1cbe90, 0x1cbce0 MATCH):
+// kept, the wrapper form is not (a full check of it: 11833 matched, nothing lost);
+// do/while (true) 2; an inline iteration-step function under `if (!step) break;` or `while (step)` 190 (495 bytes:
+// kept out of line, called at the top and bottom of the rotated loop), forced inline (diagnostic) 2 with the for
+// loop's code; the step written in a for loop's initialiser and increment (diagnostic, forced inline) 218 (602
+// bytes: the two copies do not merge); the iterator setup shared ahead of `if (alternate)` 164 (499 bytes).
+// Diagnostics for the pair: a neutral `if` with a body right after the break test leaves it (101, own lines); the
+// same `if` at the loop's end moves both reloads into its head block in retail's order (122), so the order is not
+// a fixed rank of the two values. Retail's order is the order the loop head uses them. A 600 s permuter run on the
+// new form: 63 tries, best 2 (its baseline build took 1024 s).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
 {
 	if (object_index != NONE && target_index != NONE && weight > 0.0f)
 	{
-		s_graph_tag *graph = GRAPH_GET(state->graph_tag_index);
-		long initial_node_count = graph ? (long)(short)graph->node_count : 0;
-		if (graph && initial_node_count != 0)
+		s_graph_tag *graph;
+		if (state->node_count() != 0)
 		{
 			s_unit_animation_object *unit = UNIT_ANIMATION_OBJECT(object_index);
 			s_unit_animation_definition *definition = (s_unit_animation_definition *)TAG_BYTES(unit->definition_index);
@@ -633,14 +654,14 @@ void __stdcall function_113980(long object_index, long target_index, bool altern
 				bool found;
 				if (alternate)
 				{
-					graph = GRAPH_GET(state->graph_tag_index);
+					graph = state->graph_get();
 					iterator->mode = state->unknown70;
 					iterator->weapon_class = state->unknown74;
 					found = function_1dcfa0(graph, iterator);
 				}
 				else
 				{
-					graph = GRAPH_GET(state->graph_tag_index);
+					graph = state->graph_get();
 					iterator->mode = state->unknown70;
 					iterator->weapon_class = state->unknown74;
 					found = function_1dcf20(graph, iterator);
@@ -1618,6 +1639,22 @@ long function_cbd50(long unit_index, short weapon_index);
 // splits depleted (memory home for the initial false, BL from the first query on) because EAX (pool) and EDX (index*12)
 // stay live for the second query's fresh data load, which none of these forms reproduce. On the headers-at-entry form:
 // the controlling read before the overlay and name reads 325; the second weapon object through the pool macro 325.
+// Round 163 (m3 lane 5, fast): a headers local in the controlling block for both weapon-object reads with if-form
+// depletion and a bool result 341 (1269 bytes, frame 4, all three flags in memory, overlay keeps EBX); if-form
+// depletion with a bool result and the macro reads, flags declared in the six orders result/depleted/interruptible
+// 361, r/i/d 362, i/d/r 363, d/i/r 362, d/r/i 361, i/r/d 363 (1241 to 1243 bytes, frame 4). Retail has the unit in
+// ECX up to the three flag stores and derives it again right after them (`mov ecx, ebp; mov ecx, [ecx + edx + 8]`),
+// so the re-derivation is not register pressure; the data pointer is copied from EBP there and re-read from the pool
+// for the second query. The seven scores above re-measure rounds 141 and 209. New, the queries through inline
+// functions with by-value parameters (0x113980's lead): the unit lookup as an inline function at both slot reads 164
+// (same code); the weapon count as an inline function of the weapon index 164 (same code); a slot wrapper
+// `(unit_index, slot offset)` doing its own unit lookup and the 0xcbd50 call 363 (1317 bytes), with the count
+// function 363; slot wrapper with if-form depletion and a bool result 342 (1268 bytes, frame 8), plus the count
+// function 342; count function alone with if-form and bool 361 (1243, frame 4); slot wrapper, count function,
+// if-form and byte result 316 (1291, frame 8). In the wrapper forms 0xcbd50 stays out of line, and that call
+// between the queries gives retail's second-query shape (the data re-read from the pool, the unit through the
+// kept index*12, overlay spilled at +0x14): retail's second query looks like one compiled after a memory kill
+// that the first query does not see.
 // M3 lane 13 r72 (fast; brackets: aligned count with registers and stack offsets masked, control 164 [33]). Retail's
 // second query reloads the pool's data through the pool pointer kept in EAX from entry and re-reads the unit, while
 // both weapon-object reads use the entry's data in EBP; the first query copies EBP. Re-measured with the if-form
@@ -2651,6 +2688,14 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // passes the priority and entry in registers, frame 0x38); the sound index stored after the extra block 71 (223 bytes);
 // the submit call written in both extra arms 48 (238 bytes); the 0x114520 test as `== true` 18; the entry-first
 // forwarding function defined above this one 16 (same code).
+// Round 163 (m3 lane 5, fast): the default fill wrapped in `do { } while (false)` 16 (same code); in a one-trip
+// counted loop 16 (same code, the loop is gone before allocation); the fallback lookup joined with `||` around the
+// whole body with one `return false` 16 (same code); request priority declared first re-measured 16 (its load only
+// follows its register's push); request priority captured after the fallback block re-measured 85 (252 bytes).
+// Diagnostic: the default fill inside a real loop on a run-time count 62 (256 bytes), roles unchanged, so the loop
+// depth of the constant's uses does not raise its rank. Plain: the siblings' request idiom (0x1147e0, 0x114710:
+// the three extra defaults stored unconditionally after the sound index) followed by `if (extra) memcpy` 73 (221
+// bytes: the defaults stay unconditional, roles unchanged).
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
