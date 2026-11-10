@@ -3310,6 +3310,16 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // 485 -> 428); the cycle bit read from the field (other bits from `flags`) 490, with the shared `previous` 533; dz/dy/dx
 // from the stored view position 513 (2004 bytes, aligned 421), with the shared `previous` 513; projection scaling
 // `x = g_48568c[0] * x` 486, also in the position transform 486, with the stored-position delta 513.
+// Lane 5 r164 (fast; aligned/register-masked LCS counts of 353/187 for the 486 body in brackets): `previous` reused for
+// each element's previous position with the delta read back from the stored view position 513 (2004 bytes [332/201]); with
+// the projection helper writing a point2f through an output pointer 531 (1986 bytes, frame 0x44, both projections now stay
+// in registers as retail [322/196]); on that, the phase compare reading the field before the load 526 [327/205], a `for`
+// loop 532 [329/203], no velocity pointer (every access and helper argument spelled from state) 534 (1982 bytes [287/177]),
+// that with the speed test through existing magnitude3d 550 (stays a call). Diagnostic only: the speed test read through a
+// second pointer formed as state + i * 12 + 0x24 makes the first root load the stored velocity as retail (no spill), and
+// with normalize/scale on it the frame is retail's 0x38 [292/164] but 1945 bytes: retail also re-reads the velocity after
+// each normalize and scale store, as if each inline helper reached it through its own parameter. The 12 bytes left on 0x44
+// are the three velocity spills; retail keeps view in EBX and state in EDX from the first instruction (ours the reverse).
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3600,8 +3610,11 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// score 62 (was 177): only the frame differs, 0x18 versus 0x1c: retail's final fade is the getter 0xc6b90 inlined, which
+// keeps its two dead output stores (`active = false`, then `fade = 0.0f`, a float slot at +0xc); the full build drops them
+// (BLOCKED-BY 0xc6b90), so every offset from 0x1c up is 4 short. Earlier first line: frame 0x18 versus 0x1c; initial
+// alpha/kind and final fade scratch homes remain.
 // MiniMax C (11-09): no new form, no lower score (177).
-// score 177 (was 177): frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
 // r136 lane 7 (fast): final fade through existing function_c6b90 (property 0x11000088, outputs zeroed) with kind not
 // volatile 207 (789 bytes, frame 0x1c), with the volatile kind 237 (807 bytes; aligned 73 -> 59, the fade inside
 // `kind == 0` is still read once where retail re-reads the field per use), with alpha before kind 205, kind not
@@ -3730,6 +3743,23 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // false;` after the clamp 198 (743 bytes), with two ifs 198; `result = false` in the lower arm and the test only in
 // the interior arm 178; the final fade read through `header->object` without reassigning `object` 177. Retail threads
 // the alpha test into each clamp arm and keeps the final getter's two zero stores (frame 0x1c).
+// Lane 5 r164 (plain unless marked): the final fade through 0xc6b90 after zeroed outputs is 176 plain but 159 fast because
+// the reduced image leaves weapons.cpp out: with 0xff5f0 (the getter's default-path callee) in the image, even with its body
+// reduced to `return false;`, both zero stores go and the frame stays 0x18, so the getter's own body decides it
+// (BLOCKED-BY 0xc6b90, unmatched). That with kind not volatile 242 (fast 231). The 0x10a flag through a file-scope word
+// bit-field view (the idiom of the unit and biped files) 176: retail's `mov al; shr al,2; test dl,al` exactly; with the first
+// fade read at each use through a re-fetched object pointer (`PIN(field, 0, 1) == field`, then `alpha *= 1 - field`) 172 (775
+// bytes; flag test through first fade is retail's sequence, only the shared false block sits elsewhere); on 172: the getter
+// route 173 fast (171 without weapons.cpp), the alpha test false-arm first 172 (false block moves inline), one false arm for
+// both tests 172 (same code), kind not volatile 230, case 0 reading the field directly 170 (byte compares, a mixed read).
+// The per-use first fade without the view 185. On 170: the later kind test reading the field 173, alpha declared ahead of
+// kind 211, case 2 through header->object 178, the getter route 171; `if (alpha <= 0.0f) result = false; else` 152 (151 on
+// 172; NaN goes the other way from retail's jbe, so not retail's test; alone 183); `result = false` initialised with the
+// else arms gone 200. Kept, 62: the 10a bit through the existing s_object_flags_10a (now in globals.h), the first fade read
+// at each use (main's named fade/clamped on the kept body 147), `result = alpha > 0.0f; if (result && kind == 0)` (172 at
+// 773 bytes with kind still volatile), and kind no longer volatile (230 on 172 before the result form). Without the view
+// 175. The getter route on 62, `active` cleared first: fast MATCH, plain 70 (build/r164/0x3d7f0-getter-fastmatch.patch in
+// the m3-lane5 worktree); the weapon getter's tail as `*active = *value > 0.0f` still 70.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -3738,7 +3768,7 @@ bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_spec
     byte **object_slot = &header->object;
     byte *object = *object_slot;
     byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
-    volatile long kind = *(signed char *)(object + 0xaa); // kept in memory as retail does, see the note above
+    long kind = *(signed char *)(object + 0xaa);
     real alpha = 0.0f;
     if (!(object[6] & 1))
     {
@@ -3763,30 +3793,23 @@ bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_spec
             break;
         }
         }
-        if (alpha > 0.0f)
-        {
-            result = true;
-            if (kind == 0)
-            {
-                if ((bool)(((dword)object[0x10a] >> 2) & 1))
-                {
-                    real elapsed = (g_510c54->game_time - *(long *)(object + 0xbc)) * g_510c54->rate - 2.0f;
-                    alpha = 1.0f - elapsed;
-                    if (alpha < 0.0f) alpha = 0.0f;
-                    else if (alpha > 1.0f) alpha = 1.0f;
-                    result = alpha > 0.0f;
-                }
-                real fade = *(real *)(((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff].object + 0x2b0);
-                real clamped = fade < 0.0f ? 0.0f : fade > 1.0f ? 1.0f : fade;
-                if (clamped == fade)
-                    alpha *= 1.0f - fade;
-            }
-        }
-        else
-            result = false;
     }
-    else
-        result = false;
+    result = alpha > 0.0f;
+    if (result && kind == 0)
+    {
+        if (TEST_FIELD_BIT(((s_object_flags_10a *)object)->bit2))
+        {
+            real elapsed = (g_510c54->game_time - *(long *)(object + 0xbc)) * g_510c54->rate - 2.0f;
+            alpha = 1.0f - elapsed;
+            if (alpha < 0.0f) alpha = 0.0f;
+            else if (alpha > 1.0f) alpha = 1.0f;
+            result = alpha > 0.0f;
+        }
+        // the fade is read from the object at each use, as retail does
+        if (PIN(*(real *)(((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff].object + 0x2b0), 0.0f, 1.0f) ==
+            *(real *)(((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff].object + 0x2b0))
+            alpha *= 1.0f - *(real *)(((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff].object + 0x2b0);
+    }
     if (!result && *(long *)(object + 0x14) != NONE)
         result = function_3d7f0(function_baf80(object_index), &alpha, out_special);
     header = &((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff];
