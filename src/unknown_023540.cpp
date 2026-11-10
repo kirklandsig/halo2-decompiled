@@ -2542,6 +2542,17 @@ dword __cdecl function_131fc0(real alpha);
 // declaration order: with height declared first 144, with width renamed 146); that with the
 // unconditional defaults 162; source coordinates divided by width/height in each call 158 (1721).
 // 0x3a5c0's macro fix has no counterpart here (no file-local helper in the body).
+// Round 159 (lane 5, fast with 0x144f0/0x3a5c0/0x2a2f0/0x29b00; both builds end `ret 0x34`). Reading of the tail: retail
+// builds both default rectangles before either test (source at 0x18, destination at 0x28), tests the source first, and on each
+// default path writes the selected address into the parameter's own home as well as its register (`lea ecx; mov [home], ecx;
+// mov ebx, ecx`); it also reads preserve_alpha again after the 0x131fc0 call where ours keeps it in CL across the call, and
+// multiplies the stored reciprocal by the coordinate (reciprocal first). Unconditional defaults with the parameters assigned
+// 156 (1717 bytes, no home writes); the two bounds as one by-value pair or as two one-pointer wrappers 156/156 (same code:
+// small by-value aggregates are split into scalars); the first seven arguments, all thirteen, or the first four as one
+// by-value parameter block 178/176/170 (1725/1729/1729 bytes but frame 0x18: the defaults then overlap the block, aligned
+// rows 140-142 against 109); `inline` on the definitions of 0x131fc0 and 0x131f40 181 (1741 bytes; preserve_alpha then sits
+// in BL from before the call, and 0x3a5c0 goes 9 -> 226); unconditional defaults selected into two new pointer locals, each
+// after its copy or both copies first, 160/158 (1713). None kept.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,

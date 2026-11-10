@@ -2074,6 +2074,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // frame), with spawn stores unknown, location, scale 162; on that form the system or the definition read once through
 // its own address 165/165; colours read early with both queries in the call's argument list 183 (568 B), at the top
 // 192.
+// Round 160 (m3 lane 5, fast with 0x177040/0x178eb0/0x179020/0x176f60/0x178bc0): early colours re-measured 178 (572 B); on them the
+// system passed through a volatile read of its parameter (diagnostic, not kept) 137 (556 B: the system in ESI reloaded from its slot
+// for the call and colour B in EDI as retail; colour A takes EBX, so the tint spills, and the location index loses its slot home),
+// with colour B read first 138, with the tint declared above the colours 137; a forceinline colour helper shared with 0x177040 178
+// (0x177040 93; same code as written out); the system through one plain read of its address 178 (folds away).
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3331,6 +3336,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // 25), with the spawn cursor and a long mode 120; the location declared in the while condition 93 (same code).
 // Diagnostic only: without the particle system argument of the loop's 0x248c60 call the system takes ESI and the
 // next index EDI as in retail, so the system's loop use sets the swap.
+// Round 160 (m3 lane 5, fast with 0x176f60/0x178bc0, which match unless given): mode per call re-measured 108 (0x176f60 25; frame 0x54,
+// effect index EAX, system index ECX, definition EBX); with the effect index read once through its address 127 (352 bytes, 0x176f60 18:
+// the effect index returns to the stack but the system index moves to ECX). A forceinline colour helper shared with 0x178c80 (colours,
+// type query, tint, `multiplied()` as the argument) 93 (same code); in it colour B first 92 (0x178c80 178); both queries in the argument
+// list 120 (325 bytes, 0x176f60 25); both queries named 105 (346 bytes).
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

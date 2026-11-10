@@ -949,6 +949,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // MIN(remaining, buffer_size)`) 161 (691 bytes), with the total and the signature position written body first 161; the signature
 // position written body first alone 34 (same code); the direct arm's size before its buffer with `MIN(remaining, size)` 35; the
 // body case's file handle in a two-use local 168 (695 bytes).
+// Round 160 (m3 lane 5, fast; 0x2adb10 matched throughout), each on the no-total-local form (88 alone): `bytes` declared in the
+// `!unknown1` block 88; both signature buffers declared at the top of that block 177 (688 bytes); the body case as an early out on
+// `body_offset >= body_size` 122; the buffer arms swapped 93; the scratch clamp as an explicit if on the field difference 88. The
+// matched sibling's signature seek is `mov edi, [header]; add edi, [body]` (coalesced) where this retail sums two temporaries with `lea`.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
