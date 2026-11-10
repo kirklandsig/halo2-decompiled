@@ -228,6 +228,20 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // single/paired/mixed forms: 401/415/420/401/415/420/420/420. NOT kept: no native observer/rate/result recovery;
 // original early defaults, field observations, counters and complete body restored.
 // MiniMax E (11-09): no new form, no lower score: retail keeps the packet-availability result in bl and publishes the host state in a separate byte, ours keeps the host in bl and spills the packet state.
+// M3 lane 14 r74 (fast, base 356; difflib-aligned count / register-masked aligned count after each score, base 195/157): the snapshot as a copy
+// into the existing counter view 431 (1341 bytes) 172/136; the channel's counter field declared as that view, the reset as a copy of the counter and
+// the difference from its low half 419 (1356) 179/130; both 429 (1330) 209/162; the reliable-bytes test as `if (a && b) local_6 = ...; else local_2 =
+// false;` 402 (1369) 195/157; the second threshold as `if (local_6 < 48) goto done;` 413 205/166; both 408 (1369) 207/165; the two NONE locals ahead of
+// the search 358 (1377) 194/155; every field through channels[local_0] (no pointer local) 431 (1387) 198/134, with the reliable-bytes else 429 (1384)
+// 198/132, with the counter field view 408 (1374) 181/119, with view and snapshot 421 (1351) 124/77, with view, snapshot and the reliable-bytes else
+// 368 (1348) 122/75: frame 0x34, `this` in EDI, retail's plain 8-byte snapshot and low-then-high reset, the best aligned form, but 21 bytes short
+// and above the base, so not kept. On that form: second threshold direct 417 (1359) 165/115; the payload `local_29 - 45` named for its test and store
+// 429 (1347) 154/93, with the direct threshold 406 (1348) 158/96, plus the NONE locals first 392 (1354) 159/99; view + else + NONE locals first on the
+// index form 415 (1377) 177/117. Diagnostics (a flag set in its test, match-only): has-host as `= false; if (...) { ...; = true; }` alone 402 (1376)
+// 192/161, with the NONE locals first 418, on the 368 form 403 (1357) 121/75, with the else and NONE locals 416 (1358) 120/74, with payload and direct
+// threshold 396 (1356) 155/96. Left on the 368 form: retail keeps NONE in ESI and the index in EBP (ours the reverse), forms the channel base right
+// after the connection, zeroes the has-host byte before its call, keeps the reliable payload in EBP ahead of the quotient test with local_6 in memory,
+// and tests 0x75910's result as a byte (`test al, al`; BLOCKED-BY 0x75910: its definition returns long and sits in a held file).
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
