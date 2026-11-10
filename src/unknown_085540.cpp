@@ -951,12 +951,21 @@ bool function_862e0(c_simulation_view *view)
  return result;
 }
 
-// MATCH (252/252 bytes) with the B24 encoder experiment.
-// Depends on function_685f0's argument order and register allocation.
 
 bool function_685f0(long capacity, byte *destination, void *block, long *size);
 
-// The encoder signature preserves retail's ecx capacity and edx destination.
+// score 1 (was 2): 0x685f0 is now declared (capacity, destination, block, size), the order
+// retail's loads imply (register arguments load from the last to the first, and retail sets edx
+// before ecx), so the two loads come in retail's order and only the register differs: the
+// destination goes in eax, retail's in edx. With the standard marker on 0x685f0 this function
+// matches (see its note). BLOCKED-BY 0x685f0.
+// Earlier, score 2 (was 2): the constant 0xffff is loaded before the address of the buffer; retail loads
+// the address first. The registers that carry the destination and the capacity are the
+// callee's choice, and function_685f0 in src/unknown_067e10.cpp is three instructions
+// off retail. BLOCKED-BY 0x685f0 (round 14: it takes the destination in eax, retail's
+// in edx; its body is contributor code).
+// Round 59: unchanged; the callee still reads the destination from eax (`mov edi, eax`, retail
+// `mov edi, edx`) and this is its only caller, so no caller form was retried.
 // @retail 0x869a0
 bool function_869a0(c_simulation_view *view, void *block)
 {
