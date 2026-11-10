@@ -1,4 +1,4 @@
-// @flags /O2 /Ob1 /GL- /GX
+// @flags /O2 /GL-
 #include "contact_constraint_315510.h"
 #include <stddef.h>
 

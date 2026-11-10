@@ -102,11 +102,11 @@ static __forceinline solver_projection_31c940 linear_velocity(solver_linear_row_
 }
 
 static __forceinline void apply_angular(float const &impulse, solver_angular_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b, float *result)
+	solver_velocity_31c940 *a, solver_velocity_31c940 *const &b, float *result)
 {
 	// Keep the x87 impulse for accumulation; only the SIMD copy rounds here.
 	float rounded_impulse;
-	float volatile &rounded_store = rounded_impulse;
+	float &rounded_store = rounded_impulse;
 	rounded_store = impulse;
 	__m128 scalar = _mm_load_ss(&rounded_impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
@@ -123,10 +123,9 @@ static __forceinline void apply_angular(float const &impulse, solver_angular_row
 static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b, float *result)
 {
-	// SSE consumes a rounded float while result accumulation retains the x87
-	// value. Passing the impulse by reference would round both paths early.
+	// Keep accumulation wider than the float copy consumed by SIMD.
 	float rounded_impulse;
-	float volatile &store = rounded_impulse;
+	float &store = rounded_impulse;
 	store = impulse;
 	__m128 scalar = _mm_load_ss(&rounded_impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
@@ -152,7 +151,7 @@ static __forceinline void apply_circular_linear(float impulse, solver_linear_row
 	work[2] = a->inverse_inertia;
 	// SIMD consumes a rounded float; accumulation retains the x87 impulse.
 	float rounded_impulse;
-	float volatile &store = rounded_impulse;
+	float &store = rounded_impulse;
 	store = impulse;
 	work[4] = row->linear;
 	work[1] = _mm_load_ss(&rounded_impulse);
@@ -187,14 +186,14 @@ static __forceinline void apply_circular_linear(float impulse, solver_linear_row
 }
 
 
-static __forceinline void apply_linear_spilled(float const volatile &source, solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b, float *result)
+static __forceinline void apply_linear_spilled(float const &source, solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, solver_velocity_31c940 *const &b, float *result)
 {
 	// These normal-pair impulses have already been spilled to float. Load that
 	// value for accumulation and copy its bits into the SIMD scalar.
 	float impulse = source;
 	union { unsigned long bits; float value; } rounded;
-	rounded.bits = *(unsigned long const volatile *)&source;
+	rounded.bits = *(unsigned long const *)&source;
 	__m128 work_a, work_b, work_c, work_d, work_e;
 	work_c=a->inverse_inertia;
 	work_b=_mm_set_ss(rounded.value);
@@ -232,14 +231,14 @@ static __forceinline void apply_linear_spilled(float const volatile &source, sol
 // The first positive row retains its unshifted linear cursor while angular
 // axes use the coupled-pair cursor. Keep this update separate from the second
 // positive row so both existing cursor representations survive optimization.
-static __forceinline void apply_first_normal_positive_impulse(float const volatile &source, solver_linear_row_31e7b0 const *row,__m128 const *angular_axes,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b, float *result)
+static __forceinline void apply_first_normal_positive_impulse(float const &source, solver_linear_row_31e7b0 const *row,__m128 const *angular_axes,
+	solver_velocity_31c940 *a, solver_velocity_31c940 *const &b, float *result)
 {
 	// These normal-pair impulses have already been spilled to float. Load that
 	// value for accumulation and copy its bits into the SIMD scalar.
 	float impulse = source;
 	union { unsigned long bits; float value; } rounded;
-	rounded.bits = *(unsigned long const volatile *)&source;
+	rounded.bits = *(unsigned long const *)&source;
 	__m128 scalar = _mm_set_ss(rounded.value);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 	__m128 inverse_b = b->inverse_inertia;
@@ -261,12 +260,11 @@ static __forceinline void apply_first_normal_positive_impulse(float const volati
 
 // The first pair reloads B for inertia, then captures each update receiver.
 static __forceinline void apply_first_normal_fallback(float impulse, solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b, float *result)
+	solver_velocity_31c940 *a, solver_velocity_31c940 *const &b, float *result)
 {
-	// SSE consumes a rounded float while result accumulation retains the x87
-	// value. Passing the impulse by reference would round both paths early.
+	// Keep accumulation wider than the float copy consumed by SIMD.
 	float rounded_impulse;
-	float volatile &store = rounded_impulse;
+	float &store = rounded_impulse;
 	store = impulse;
 	__m128 scalar = _mm_load_ss(&rounded_impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
@@ -295,17 +293,17 @@ static __forceinline float &operation_float(unsigned char *op, long offset)
 
 // Retail reloads the step pointer at these scalar reads. Return references so
 // the x87 consumers retain their existing precision and evaluation boundaries.
-static __forceinline float const &load_error_scale(solver_step_31c940 * const volatile &step)
+static __forceinline float const &load_error_scale(solver_step_31c940 * const &step)
 {
 	return step->error_scale;
 }
 
-static __forceinline float const &load_velocity_scale(solver_step_31c940 * const volatile &step)
+static __forceinline float const &load_velocity_scale(solver_step_31c940 * const &step)
 {
 	return step->velocity_scale;
 }
 
-static __forceinline float const &load_friction_scale(solver_step_31c940 * const volatile &step)
+static __forceinline float const &load_friction_scale(solver_step_31c940 * const &step)
 {
 	return step->friction_scale;
 }
@@ -347,12 +345,11 @@ static __forceinline float project_spin_angular_velocity(solver_angular_row_31e7
 	return sum_three_31c940(_mm_add_ps(_mm_mul_ps(_mm_load_ps((float const *)&(a->angular)), row->a), _mm_mul_ps(angular_b, row->b))).value;
 }
 
-static __forceinline void apply_spin_linear(float impulse, solver_linear_row_31e7b0 const *row,
+static __forceinline void apply_spin_linear(double impulse, solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, __m128 &linear_velocity_b, __m128 &angular_velocity_b,
-	__m128 const *const volatile &inverse_b_pointer, float *result)
+	__m128 const *const &inverse_b_pointer, float *result)
 {
-	// SSE consumes a rounded float while result accumulation retains the x87
-	// value. Passing the impulse by reference would round both paths early.
+	// Keep accumulation wider than the float copy consumed by SIMD.
 	float rounded_impulse = impulse;
 	__m128 input_a = _mm_set_ss(rounded_impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(input_a, input_a, 0), a->inverse_inertia);
@@ -383,23 +380,23 @@ static __forceinline void apply_spin_linear(float impulse, solver_linear_row_31e
 // Their separate uses keep retail's cursor bias over the same row storage.
 static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, unsigned char *op,
 	__m128 *axis, __m128 *first_axis, solver_velocity_31c940 *a,
-	solver_velocity_31c940 *const volatile &b, float *result)
+	solver_velocity_31c940 *const &b, float *result)
 {
 	solver_step_31c940 *parameters = step;
 	float target_a = axis[-5].m128_f32[3];
 	solver_projection_31c940 projected_a = project_first_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 5)), a, b, *first_axis);
 	// Give the first error its float home before projecting the second row.
-	volatile float error_a = target_a * parameters->error_scale
+	float error_a = target_a * parameters->error_scale
 		- projected_a.value * parameters->velocity_scale;
 	solver_projection_31c940 projected_b = project_second_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 2)), a, b);
 	float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 		- projected_b.value * parameters->velocity_scale;
-	float const volatile &mass_a_source = axis[-3].m128_f32[3];
-	volatile float impulse_a = mass_a_source * error_a + error_b * operation_float(op, 4);
+	float const &mass_a_source = axis[-3].m128_f32[3];
+	float impulse_a = mass_a_source * error_a + error_b * operation_float(op, 4);
 	// Capture the second mass before its coupled product.
-	float const volatile &mass_b_source = axis[0].m128_f32[3];
+	float const &mass_b_source = axis[0].m128_f32[3];
 	float mass_b = mass_b_source;
-	volatile float impulse_b = mass_b * error_b + error_a * operation_float(op, 4);
+	float impulse_b = mass_b * error_b + error_a * operation_float(op, 4);
 	// A rejected second-row candidate joins the same first-row fallback as a failed
 	// positive pair. Keep the positive pair before the second-row fallback.
 	do
@@ -430,10 +427,9 @@ static __forceinline void apply_second_pair_fallback(float impulse,
 	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a, __m128 &linear_velocity_b,
 	__m128 &angular_velocity_b, __m128 const &inverse_b, __m128 const &axis_linear, float *result)
 {
-	// SSE consumes a rounded float while result accumulation retains the x87
-	// value. Passing the impulse by reference would round both paths early.
+	// Keep accumulation wider than the float copy consumed by SIMD.
 	float rounded_impulse;
-	float volatile &store = rounded_impulse;
+	float &store = rounded_impulse;
 	store = impulse;
 	__m128 scalar = _mm_load_ss(&rounded_impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
@@ -454,13 +450,13 @@ static __forceinline void apply_second_pair_fallback(float impulse,
 // Read the stored float for x87 consumers; SIMD transfers can copy its bits.
 static __forceinline float load_stored_impulse(float const &value)
 {
-	float const volatile &stored=value;
+	float const &stored=value;
 	return stored;
 }
 
 static __forceinline void apply_second_pair_first_impulse(float const &source,
 	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a, __m128 &linear_velocity_b,
-	__m128 *const volatile &angular_b_pointer, __m128 const &inverse_b, __m128 const &axis_linear,
+	__m128 *const &angular_b_pointer, __m128 const &inverse_b, __m128 const &axis_linear,
 	float *result)
 {
 	// These normal-pair impulses have already been spilled to float. Load that
@@ -491,7 +487,7 @@ static __forceinline void apply_second_pair_first_impulse(float const &source,
 
 static __forceinline void apply_second_pair_second_impulse(float const &source,
 	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a, __m128 &linear_velocity_b,
-	__m128 *const volatile &angular_b_pointer, __m128 const &inverse_b, float *result)
+	__m128 *const &angular_b_pointer, __m128 const &inverse_b, float *result)
 {
 	// These normal-pair impulses have already been spilled to float. Load that
 	// value for accumulation and copy its bits into the SIMD scalar.
@@ -501,7 +497,7 @@ static __forceinline void apply_second_pair_second_impulse(float const &source,
 		unsigned long bits;
 		float value;
 	} rounded;
-	rounded.bits = *(unsigned long const volatile *)&source;
+	rounded.bits = *(unsigned long const *)&source;
 	__m128 scalar = _mm_set_ss(rounded.value);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
@@ -548,12 +544,12 @@ static __forceinline solver_projection_31c940 project_second_pair_second_row(sol
 }
 
 static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &step,
-	unsigned char *op, __m128 *terms, solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b,
+	unsigned char *op, __m128 *terms, solver_velocity_31c940 *a, solver_velocity_31c940 *const &b,
 	float *result)
 {
 	solver_velocity_31c940 *body_b = b;
 	__m128 *linear_b_pointer = &body_b->linear;
-	__m128 *volatile angular_b_pointer = &body_b->angular;
+	__m128 *angular_b_pointer = &body_b->angular;
 	__m128 first_linear_axis = terms[0];
 	float target_a = terms[0].m128_f32[3];
 	// Complete both SIMD projections before the coupled x87 errors.
@@ -563,16 +559,16 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 		a, *linear_b_pointer, *angular_b_pointer, terms[3]);
 	solver_step_31c940 *parameters = step;
 	// Retail spills the first error and both coupled impulses to 32-bit storage.
-	volatile float error_a = target_a * parameters->error_scale
+	float error_a = target_a * parameters->error_scale
 		- projected_a.value * parameters->velocity_scale;
 	float error_b = terms[3].m128_f32[3] * parameters->error_scale
 		- projected_b.value * parameters->velocity_scale;
-	float const volatile &mass_a_source = terms[2].m128_f32[3];
+	float const &mass_a_source = terms[2].m128_f32[3];
 	float mass_a = mass_a_source;
 	float impulse_a = second_pair_first_candidate(mass_a, (float const &)error_a,
 		error_b, operation_float(op, 4));
 	// Capture the second mass before its coupled product.
-	float const volatile &mass_b_source = terms[5].m128_f32[3];
+	float const &mass_b_source = terms[5].m128_f32[3];
 	float mass_b = mass_b_source;
 	float impulse_b = second_pair_second_candidate(mass_b, error_b,
 		(float const &)error_a, operation_float(op, 4));
@@ -624,10 +620,10 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 // Retain the coefficient and B inertia addresses across consecutive rows.
 // Native scalar locals keep the projection between SSE and x87 without a copy.
 static __forceinline void solve_linear_friction(float target, float const &limit,
-	float const *const volatile &friction_scale_pointer,
+	float const *const &friction_scale_pointer,
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a,
-	__m128 &angular_b, __m128 &linear_b, __m128 const *const volatile &inverse_b_pointer,
-	solver_step_31c940 *const volatile &step, float *result)
+	__m128 &angular_b, __m128 &linear_b, __m128 const *const &inverse_b_pointer,
+	solver_step_31c940 *const &step, float *result)
 {
 	// Keep the angular products and reuse their work vectors for projection.
 	__m128 work_a = _mm_load_ps((float const *)&(a->angular));
@@ -684,7 +680,7 @@ static __forceinline float select_angular_limit(double velocity, float const &ta
 	float error = (target - lower) * gain - velocity;
 	if (error > 0.0f)
 	{
-		float const volatile &positive_error = error;
+		float const &positive_error = error;
 		active = true;
 		float impulse = positive_error * mass;
 		scalar = _mm_set_ss(impulse);
@@ -729,9 +725,9 @@ static __forceinline void update_angular_values(float impulse,
 // form both angular contributions before updating A.
 static __forceinline void solve_linear_error_kernel(float target, float mass,
 	__m128 const &axis_a, __m128 const &axis_b, __m128 const &axis_linear,
-	__m128 &angular_a, __m128 *const volatile &angular_b_pointer, __m128 &linear_a, float *linear_b,
+	__m128 &angular_a, __m128 *const &angular_b_pointer, __m128 &linear_a, float *linear_b,
 	__m128 const &inverse_a, __m128 inverse_b,
-	solver_step_31c940 *const volatile &step, float *result)
+	solver_step_31c940 *const &step, float *result)
 {
 	// Retain the projection contributions before reducing their sum.
 	__m128 work_a = linear_a;
@@ -752,7 +748,7 @@ static __forceinline void solve_linear_error_kernel(float target, float mass,
 	// Give the rounded SIMD input a scalar object; keep the extended impulse
 	// live for result accumulation. Retail reads this copy directly with MOVSS.
 	solver_scalar_31c940 rounded;
-	float volatile &store_rounded = rounded.value;
+	float &store_rounded = rounded.value;
 	store_rounded = impulse;
 	__m128 scalar = _mm_load_ss(&rounded.value);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a);
@@ -775,9 +771,9 @@ static __forceinline void solve_linear_error_kernel(float target, float mass,
 // across consecutive rows. Keep B's inertia pointer through the clamp and read
 // its value when forming the update. Only the SIMD copy rounds to float.
 static __forceinline void solve_angular_friction_kernel(float target, float const &limit,
-	float const *const volatile &friction_scale_pointer,
-	solver_angular_row_31e7b0 *row, solver_step_31c940 *const volatile &step,
-	solver_velocity_31c940 *a, __m128 &velocity_b, __m128 const *const volatile &inverse_b_pointer, float *result)
+	float const *const &friction_scale_pointer,
+	solver_angular_row_31e7b0 *row, solver_step_31c940 *const &step,
+	solver_velocity_31c940 *a, __m128 &velocity_b, __m128 const *const &inverse_b_pointer, float *result)
 {
 	__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(velocity_b, row->b));
 	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
@@ -809,8 +805,8 @@ static __forceinline void solve_angular_friction_kernel(float target, float cons
 // both axes before either angular write; only the SIMD impulse rounds here.
 static __forceinline void solve_bounded_angular(float mass, float target,
 	solver_angular_row_31e7b0 *row, solver_velocity_31c940 *a,
-	float *velocity_b, __m128 const *const volatile &inverse_b_pointer,
-	float const &upper, float const &lower, solver_step_31c940 *const volatile &step, float *result)
+	float *velocity_b, __m128 const *const &inverse_b_pointer,
+	float const &upper, float const &lower, solver_step_31c940 *const &step, float *result)
 {
 	__m128 axis_a = row->a, axis_b = row->b;
 	__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, axis_a), _mm_mul_ps(_mm_load_ps(velocity_b), axis_b));
@@ -849,8 +845,8 @@ static __forceinline void solve_bounded_angular(float mass, float target,
 // Preserve the captured linear axis through projection and update. The angular
 // axes reload after the linear stores, as required when rows overlap bodies.
 static __forceinline void solve_unilateral_linear(float target,
-	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b,
-	__m128 &linear_b, __m128 &angular_b, solver_step_31c940 *const volatile &step, float *result)
+	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a, solver_velocity_31c940 *const &b,
+	__m128 &linear_b, __m128 &angular_b, solver_step_31c940 *const &step, float *result)
 {
 	__m128 axis_linear = row->linear;
 	__m128 relative = _mm_sub_ps(a->linear, linear_b);
@@ -974,7 +970,7 @@ static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *r
 	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
 	float projected;
 	_mm_store_ss(&projected, xyz);
-	row->b.m128_f32[3]=row->b.m128_f32[3]-((float const volatile &)projected);
+	row->b.m128_f32[3]=row->b.m128_f32[3]-((float const &)projected);
 }
 
 // Solver state stays together through the iterations. Result publication then
@@ -983,7 +979,7 @@ union solver_phase_state_31c940
 {
 	struct
 	{
-		solver_velocity_31c940 *volatile a_home;
+		solver_velocity_31c940 *a_home;
 		float saved_velocity;
 		long iteration;
 		float saved_error;
@@ -994,21 +990,21 @@ union solver_phase_state_31c940
 	struct
 	{
 		long stride;
-		volatile int kind;
+		int kind;
 	} writing;
 };
 
-static __forceinline float const &capture_writeback_time(solver_step_31c940 *const volatile &step)
+static __forceinline float const &capture_writeback_time(solver_step_31c940 *const &step)
 {
 	return step->inverse_time;
 }
 // Solving and publication use this pointer storage in separate phases.
 union solver_pointer_phase_31c940
 {
-	solver_velocity_31c940 *volatile body_b;
-	float const *volatile inverse_time;
+	solver_velocity_31c940 *body_b;
+	float const *inverse_time;
 };
-// Main solver reconstruction; the ordinary checker determines its current score.
+// Review cleanup: ordinary score 2397 (was 1675); no volatile or goto tuning.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -1031,18 +1027,18 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		__m128 *terms;
 		solver_velocity_31c940 *a;
 
-		solver_velocity_31c940 *volatile &b = pointer_phase.body_b;
+		solver_velocity_31c940 *&b = pointer_phase.body_b;
 		float *result = impulses;
-		goto read_header;
-		for (;;)
+		solver_header_31c940 *initial_header = (solver_header_31c940 *)op;
+		a = initial_header->a; state.solving.a_home = a; b = initial_header->b;
+		terms = initial_header->terms;
+		op += sizeof(*initial_header);
+		while (*(signed char *)op != 0)
 		{
 			__m128 *normal_axes = terms + 5;
-					primary_axes_ready:
 			switch (*(signed char *)op)
 			{
-			case 0: goto iteration_solved;
 			case 1:
-			read_header:
 			{
 				solver_header_31c940 *header = (solver_header_31c940 *)op;
 				a = header->a; state.solving.a_home = a; b = header->b;
@@ -1060,13 +1056,12 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					terms += 6; normal_axes += 6; result += 2; op += 8;
 
 				}
-				if (*op != 3) goto primary_axes_ready;
+				if (*op != 3) continue;
 				{
 					solve_second_contact_pair(step, op, terms, a, b, result);
 					terms += 6; normal_axes += 6; result += 2; op += 8;
 
 				}
-				if (*op == 8) goto contact_friction;
 				break;
 			}
 			// A single unilateral linear row.
@@ -1074,7 +1069,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				solver_velocity_31c940 *body_b = b;
 				__m128 *linear_b_pointer = &body_b->linear;
-				__m128 *volatile angular_b_pointer = &body_b->angular;
+				__m128 *angular_b_pointer = &body_b->angular;
 				do
 				{
 					solve_unilateral_linear(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], ((solver_linear_row_31e7b0 *)terms), a, b,
@@ -1086,11 +1081,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			}
 			// Two tangential rows and a spinning row share one friction limit.
 			case 8:
-			contact_friction:
 			{
 				solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)(((solver_linear_row_31e7b0 *)terms) + 2);
 				solver_velocity_31c940 *body_b = b;
-				__m128 *volatile linear_b_pointer = &body_b->linear;
+				__m128 *linear_b_pointer = &body_b->linear;
 				__m128 *angular_b_pointer = &body_b->angular;
 				float spin_mass = spin->a.m128_f32[3], spin_target = spin->b.m128_f32[3];
 				solver_scalar_31c940 projected_a;
@@ -1099,39 +1093,39 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_projection_31c940 projected_b = sum_three_projection(project_second_spin_vector(
 					((solver_linear_row_31e7b0 *)terms) + 1, a, *linear_b_pointer, *angular_b_pointer));
 				// Round the initial spin before the coupled tangential calculation.
-				volatile float initial_spin = (spin_target * load_friction_scale(step) - project_spin_angular_velocity(spin, a, *angular_b_pointer) * load_velocity_scale(step)) * spin_mass;
+				solver_projection_31c940 initial_spin(_mm_set_ss((spin_target * load_friction_scale(step) - project_spin_angular_velocity(spin, a, *angular_b_pointer) * load_velocity_scale(step)) * spin_mass));
 				// Observe each target before multiplying by the current step scale.
-				float captured_target_a = (float const volatile &)((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3];
+				float captured_target_a = (float const &)((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3];
 				float error_a = captured_target_a * load_friction_scale(step) - projected_a.value * load_velocity_scale(step);
-				float captured_target_b = (float const volatile &)((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
+				float captured_target_b = (float const &)((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3];
 				float error_b = captured_target_b * load_friction_scale(step) - projected_b.value * load_velocity_scale(step);
-				float impulse_a = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3] * error_a + error_b * operation_float(op, 8);
-				float impulse_b = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3] * error_b + error_a * operation_float(op, 8);
+				// Keep the norm, ratio and limited impulses wider until their stores.
+				// SIMD consumption below has its own explicit float conversion.
+				double impulse_a = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3] * error_a + error_b * operation_float(op, 8);
+				double impulse_b = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3] * error_b + error_a * operation_float(op, 8);
 				// Reload after the tangential impulses to retain spin-squared first
 				// in the x87 norm accumulation.
-				float impulse_spin = initial_spin;
-				float norm = impulse_spin * impulse_spin + impulse_b * impulse_b + impulse_a * impulse_a;
+				double impulse_spin = initial_spin.value;
+				double norm = impulse_spin * impulse_spin + impulse_b * impulse_b + impulse_a * impulse_a;
 				state.solving.spin_limit = operation_float(op, 12);
 				if (norm > state.solving.spin_limit * state.solving.spin_limit)
 				{
-					float factor = state.solving.spin_limit / sqrtf(norm);
+					double factor = state.solving.spin_limit / sqrt(norm);
 					impulse_a *= factor; impulse_b *= factor; impulse_spin *= factor;
 					((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3] *= factor;
 					((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] *= factor;
 					spin->b.m128_f32[3] *= factor;
 				}
 				// Scale and round spin before either linear update can change ((solver_linear_row_31e7b0 *)terms) storage.
-				volatile float rounded_spin = impulse_spin * operation_float(op, 20);
-				__m128 const *volatile inverse_b_pointer = &b->inverse_inertia;
+				solver_projection_31c940 rounded_spin(_mm_set_ss(impulse_spin * operation_float(op, 20)));
+				__m128 const *inverse_b_pointer = &b->inverse_inertia;
 				apply_spin_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a,
 					*linear_b_pointer, *angular_b_pointer, inverse_b_pointer, result);
 				apply_spin_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a,
 					*linear_b_pointer, *angular_b_pointer, inverse_b_pointer, result + 1);
-				apply_angular((float)rounded_spin, spin, a, b, result + 2);
+				apply_angular(rounded_spin.value, spin, a, b, result + 2);
 				terms += 8; result += 3;
-				unsigned char next_kind = op[24];
 				op += 24;
-				if (next_kind == 1) goto read_header;
 				break;
 			}
 			// Two tangential rows share a circular friction limit.
@@ -1151,15 +1145,15 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				// Round the circular limit to its float home before comparison and
 				// division; the reads can then use that home directly.
 				float maximum_squared;
-				float volatile &maximum_store = maximum_squared;
+				float &maximum_store = maximum_squared;
 				maximum_store = maximum * maximum;
 				// Capture each mass before its coupled product. These product locals
 				// retain the extended x87 value until addition to the diagonal term.
-				float const volatile &mass_a_source = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3];
+				float const &mass_a_source = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3];
 				float mass_a = mass_a_source;
 				float coupled_a = error_b * operation_float(op, 8);
 				float impulse_a = mass_a * error_a + coupled_a;
-				float const volatile &mass_b_source = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3];
+				float const &mass_b_source = ((solver_linear_row_31e7b0 *)terms)[1].b.m128_f32[3];
 				float mass_b = mass_b_source;
 				float coupled_b = error_a * operation_float(op, 8);
 				float impulse_b = mass_b * error_b + coupled_b;
@@ -1176,18 +1170,16 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				apply_circular_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a, b, result);
 				apply_circular_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a, b, result + 1);
 				terms += 6; result += 2;
-				unsigned char next_kind = op[20];
 				op += 20;
-				if (next_kind == 1) goto read_header;
 				break;
 			}
 			// Angular friction with a scalar limit.
 			case 9:
 			{
 				solver_velocity_31c940 *body_b = b;
-				float const *volatile friction_scale_pointer = &step->friction_scale;
+				float const *friction_scale_pointer = &step->friction_scale;
 				__m128 *velocity_b_pointer = &body_b->angular;
-				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
+				__m128 const *inverse_b_pointer = &body_b->inverse_inertia;
 				do
 				{
 					state.solving.angular_limit = operation_float(op, 4);
@@ -1234,11 +1226,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 4:
 			{
 				solver_velocity_31c940 *body_b = b;
-				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
+				__m128 const *inverse_b_pointer = &body_b->inverse_inertia;
 				float *velocity_b_pointer = (float *)&body_b->angular;
 				do
 				{
-					float const volatile &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
+					float const &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
 					float mass = mass_source;
 					float target = ((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3];
 					solve_bounded_angular(mass, target, ((solver_angular_row_31e7b0 *)terms), a, velocity_b_pointer, inverse_b_pointer,
@@ -1252,12 +1244,12 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 12:
 			{
 				solver_velocity_31c940 *body_b = b;
-				__m128 *volatile velocity_b_pointer = &body_b->angular;
-				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
+				__m128 *velocity_b_pointer = &body_b->angular;
+				__m128 const *inverse_b_pointer = &body_b->inverse_inertia;
 				__m128 *velocity_a_pointer = &a->angular;
 				do
 				{
-					float const volatile &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
+					float const &mass_source = ((solver_angular_row_31e7b0 *)terms)->a.m128_f32[3];
 					float mass = mass_source;
 					float target = ((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3];
 					__m128 axis_a = ((solver_angular_row_31e7b0 *)terms)->a;
@@ -1282,9 +1274,9 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 13:
 			{
 				solver_velocity_31c940 *body_b = b;
-				float *volatile linear_b_pointer = (float *)&body_b->linear;
-				__m128 *volatile angular_b_pointer = &body_b->angular;
-				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
+				float *linear_b_pointer = (float *)&body_b->linear;
+				__m128 *angular_b_pointer = &body_b->angular;
+				__m128 const *inverse_b_pointer = &body_b->inverse_inertia;
 				__m128 *linear_a_pointer = &a->linear;
 				do
 				{
@@ -1299,11 +1291,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			// Linear friction with a scalar limit.
 			case 6:
 			{
-				float const *volatile friction_scale_pointer = &step->friction_scale;
+				float const *friction_scale_pointer = &step->friction_scale;
 				solver_velocity_31c940 *body_b = b;
-				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
-				__m128 *volatile linear_b_pointer = &body_b->linear;
-				__m128 *volatile angular_b_pointer = &body_b->angular;
+				__m128 const *inverse_b_pointer = &body_b->inverse_inertia;
+				__m128 *linear_b_pointer = &body_b->linear;
+				__m128 *angular_b_pointer = &body_b->angular;
 				do
 				{
 					state.solving.linear_limit = operation_float(op, 4);
@@ -1320,7 +1312,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_velocity_31c940 *body_b = b;
 				// Retain the linear field address across both bound updates.
 				float *linear_b_pointer = (float *)&body_b->linear;
-				__m128 *volatile angular_b_pointer = &body_b->angular;
+				__m128 *angular_b_pointer = &body_b->angular;
 				do
 				{
 					solver_linear_row_31e7b0 const *row = (solver_linear_row_31e7b0 const *)terms;
@@ -1356,7 +1348,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				{
 					solver_velocity_31c940 *body_b = b;
 					// Capture the mass before projection, retaining its x87 value.
-					float const volatile &mass_source = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
+					float const &mass_source = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
 					float mass = mass_source;
 					__m128 *linear_b_pointer = &body_b->linear;
 					__m128 *angular_b_pointer = &body_b->angular;
@@ -1395,7 +1387,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			}
 			case 15:
 			{
-				solver_step_31c940 *parameters = ((solver_step_31c940 *const volatile &)step);
+				solver_step_31c940 *parameters = ((solver_step_31c940 *const &)step);
 				state.solving.saved_velocity = parameters->velocity_scale;
 				state.solving.saved_error = parameters->error_scale;
 				parameters->velocity_scale = operation_float(op, 8);
@@ -1415,17 +1407,15 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			}
 		}
 
-	iteration_solved:
 		// Save the first iteration's velocities, then accumulate later ones.
 		// Retail consumes consecutive kind-2 bodies before checking the sentinel.
 		solver_velocity_31c940 *body = bodies;
 		if (state.solving.iteration == 0)
 		{
-			for (;;)
+			while ((signed char)body->kind != 3)
 			{
 				switch ((signed char)body->kind)
 				{
-				case 3: goto bodies_done_0;
 				case 2:
 					do
 					{
@@ -1436,15 +1426,13 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					break;
 				}
 			}
-			bodies_done_0:;
 		}
 		else
 		{
-			for (;;)
+			while ((signed char)body->kind != 3)
 			{
 				switch ((signed char)body->kind)
 				{
-				case 3: goto bodies_done_1;
 				case 2:
 					do
 					{
@@ -1455,7 +1443,6 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					break;
 				}
 			}
-			bodies_done_1:;
 		}
 		// The third operation byte classifies the residual row layout.
 		{
@@ -1466,16 +1453,15 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		// this pass writes the remaining errors back into the row stream.
 		result = impulses;
 		signed char residual_kind;
-		goto residual_header;
-		for (;;)
+		solver_header_31c940 *first_residual_header = (solver_header_31c940 *)op;
+		a = first_residual_header->a; b = first_residual_header->b;
+		terms = first_residual_header->terms; op += 24;
+		while ((signed char)op[2] != 0)
 		{
 			residual_kind = (signed char)op[2];
-		residual_dispatch:
 			switch (residual_kind)
 			{
-			case 0: goto iteration_done;
 			case 1:
-			residual_header:
 			{
 				solver_header_31c940 *header = (solver_header_31c940 *)op;
 				a = header->a; b = header->b; terms = header->terms; op += 24;
@@ -1487,7 +1473,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				update_residual_pair(terms, result, a, b); op += op[1];
 				// Redispatch the classification already read for this pair.
 				residual_kind = (signed char)op[2];
-				if (residual_kind != 5) goto residual_dispatch;
+				if (residual_kind != 5) continue;
 				update_residual_pair(terms, result, a, b); op += op[1];
 				if (op[2] != 6) break;
 			}
@@ -1502,7 +1488,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					op += op[1];
 				}
 				// The header opcode takes precedence over its classification byte.
-				if (*op == 1) goto residual_header;
+				if (*op == 1)
+				{
+					solver_header_31c940 *header = (solver_header_31c940 *)op;
+					a = header->a; b = header->b; terms = header->terms; op += 24;
+				}
 				break;
 			}
 			case 3:
@@ -1531,7 +1521,6 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			}
 		}
 		}
-	iteration_done:;
 	}
 
 	// Publish impulses and remaining error using each header's destination and
@@ -1540,7 +1529,12 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 	unsigned char *op = operations;
 	__m128 *terms;
 	unsigned char *destination;
-	goto read_results_header;
+	solver_header_31c940 *first_output_header = (solver_header_31c940 *)op;
+	long captured_stride = first_output_header->result_stride;
+	terms = first_output_header->terms;
+	destination = first_output_header->results;
+	state.writing.stride = captured_stride;
+	op += 24;
 	for (;;)
 	{
 		// Retain the dispatch value while publishing its home for repeated rows.
@@ -1549,7 +1543,6 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		switch (current_kind)
 		{
 		case 1:
-		read_results_header:
 		{
 			solver_header_31c940 *header = (solver_header_31c940 *)op;
 			// Capture all header fields before updating the phase state.
@@ -1566,7 +1559,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			// Keep each stride read in retail order and retain the coefficient
 			// address through both outputs, which may overlap the input buffers.
 			float first_impulse = result[0];
-			long const volatile &stride_source = state.writing.stride;
+			long const &stride_source = state.writing.stride;
 			long first_stride = stride_source;
 			*(float *)destination = first_impulse;
 			float const &inverse_time = capture_writeback_time(step);
@@ -1574,7 +1567,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			destination += first_stride;
 			float *next_result = result + 1;
 			*(float *)destination = *next_result;
-			long const volatile &stride_again = state.writing.stride;
+			long const &stride_again = state.writing.stride;
 			long second_stride = stride_again;
 			*(float *)(destination + 4) = row[1].linear.m128_f32[3] * inverse_time;
 			destination += second_stride;
@@ -1584,7 +1577,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		case 2: case 5: case 6: case 11: case 13:
 		{
 			// Keep the coefficient address across the cursor calls.
-			float const *volatile &inverse_time_pointer = pointer_phase.inverse_time;
+			float const *&inverse_time_pointer = pointer_phase.inverse_time;
 			inverse_time_pointer = &step->inverse_time;
 			do
 			{
@@ -1598,7 +1591,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		}
 		case 4: case 9: case 10: case 12:
 		{
-			float const *volatile inverse_time_pointer = &step->inverse_time;
+			float const *inverse_time_pointer = &step->inverse_time;
 			do
 			{
 				*(float *)destination = *result;
@@ -1613,11 +1606,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		{
 			unsigned char *friction_result = *(unsigned char **)(op + 4);
 			// Earlier output may replace this word; read it after each store.
-			long const volatile &friction_stride = *(long const volatile *)(op + 16);
+			long const &friction_stride = *(long const *)(op + 16);
 			solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 			*(float *)friction_result = result[0];
 			*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
-			float const *volatile inverse_time_pointer = &step->inverse_time;
+			float const *inverse_time_pointer = &step->inverse_time;
 			friction_result += friction_stride;
 			*(float *)friction_result = result[1];
 			*(float *)(friction_result + 4) = row[1].linear.m128_f32[3] * *inverse_time_pointer;
@@ -1628,11 +1621,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		{
 			unsigned char *friction_result = *(unsigned char **)(op + 4);
 			// Earlier output may replace this word; read it after each store.
-			long const volatile &friction_stride = *(long const volatile *)(op + 16);
+			long const &friction_stride = *(long const *)(op + 16);
 			solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 			*(float *)friction_result = result[0];
 			*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
-			float const *volatile &inverse_time_pointer = pointer_phase.inverse_time;
+			float const *&inverse_time_pointer = pointer_phase.inverse_time;
 			inverse_time_pointer = &step->inverse_time;
 			destination = 0;
 			friction_result += friction_stride;

@@ -8,7 +8,7 @@ char g_415448[64];
 // Advance the running mixer in place and expose that same value to the sum.
 // The salt reference preserves the retail signed-byte load order.
 static __forceinline unsigned long &advance_hash_state(unsigned long &state,
-	char const volatile &salted, char const &supplied)
+	char const &salted, char const &supplied)
 {
 	state *= 2;
 	state ^= (salted + supplied) * 0x1010101UL;
@@ -46,7 +46,7 @@ unsigned long __cdecl function_31c540(char const *text)
 		for (long j = 0; j < i; ++j)
 		{
 			// Retail keeps the running sum in memory during this mixing loop.
-			*(volatile unsigned long *)&hash += advance_hash_state(state, salt[j], input[j]);
+			hash += advance_hash_state(state, salt[j], input[j]);
 		}
 	}
 	return hash;

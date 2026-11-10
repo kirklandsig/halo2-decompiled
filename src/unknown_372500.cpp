@@ -3,10 +3,13 @@
 
 // Volatile output accesses preserve the retail order of scalar matrix and
 // padding stores; ordinary stores let the compiler clear padding early.
+// score 32 (first implementation): arithmetic and size match; padding stores
+// are scheduled early. Row pointers, integer padding stores and a row setter
+// also score 32. Direct field stores retained.
 // @retail 0x372500
 void rotation_372500::function_372500(__m128 const *quaternion)
 {
-	volatile __m128 *output = column;
+	__m128 *output = column;
 	float const *q = quaternion->m128_f32;
 	float x2 = q[0] + q[0];
 	float y2 = q[1] + q[1];

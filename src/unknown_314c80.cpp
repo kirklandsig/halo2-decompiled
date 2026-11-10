@@ -1,4 +1,4 @@
-// @flags /O2 /GL- /GX
+// @flags /O2 /GL-
 #include "constraint_helpers_314090.h"
 #include <new>
 

@@ -53,6 +53,12 @@ void lane_a_constraint::event_2(hkEntity *entity)
 	if (owner) ((lane_b_constraint_owner *)owner)->slot1(this);
 }
 // Entity unlinking precedes the shared registry-reference teardown.
+// score 1 (was 1): base call target differs; per-body void, entity,
+// reference and base pointer captures 35 each; if-declarations 35 each.
+// base destructor call target differs; field references 1/1, const field
+// references 1/1, field pointers 1/1, scoped field references 1/1.
+// guard/unlink captures with post-call field reads: void, entity, reference
+// and base pointers 1 each, in sequential and condition scopes 1 each.
 // @retail 0x31b9e0
 lane_a_constraint::~lane_a_constraint()
 {

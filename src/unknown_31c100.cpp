@@ -35,6 +35,7 @@ static __forceinline class_3193c0 *motion_31c100(void const *entity)
 	return motion;
 }
 
+// Review cleanup score 316: unmatched volatile/goto tuning removed.
 // @retail 0x31c100
 void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *world_info,
 	void *simulation, void *islands, long island_count, long field_58, long field_5c)
@@ -44,10 +45,10 @@ void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *
 	{
 		char *term_limit;
 		char *overflow;
-		char *volatile base;
+		char *base;
 		solver_output_31e7b0 output;
 		char *allocated;
-		char *volatile results;
+		char *results;
 	} workspace;
 
 	workspace_sizes_31c100 *sizes = (workspace_sizes_31c100 *)simulation;
@@ -61,7 +62,6 @@ void __cdecl function_31c100(void *step_10, void *step_20, void *step_50, void *
 	workspace.base = initial;
 	char *terms;
 	char *operations;
-reset_workspace:
 	terms = workspace.base + sizes->body_bytes + 0x90;
 	workspace.term_limit = terms + sizes->term_bytes;
 	workspace.results = workspace.term_limit;
@@ -78,7 +78,9 @@ reset_workspace:
 			workspace.allocated = (char *)stack_allocate_30d740((allocation_size + 15) & ~15);
 			end = workspace.allocated + allocation_size;
 			workspace.base = workspace.allocated;
-			goto reset_workspace;
+			terms = workspace.base + sizes->body_bytes + 0x90;
+			workspace.term_limit = terms + sizes->term_bytes;
+			workspace.results = workspace.term_limit;
 		}
 		else if (workspace.term_limit >= end)
 		{
