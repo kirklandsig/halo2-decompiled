@@ -655,6 +655,12 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // globals in a local at the top for the dirty test 24 (field at entry, engine load at the top), with the engine peer read
 // before the store 25; plain field with only the peer read before the store 85 (folded); the volatile field with the peer
 // read before the store 14.
+// Round 143 (m3 lane 7, fast; the two volatiles cannot carry a match, so volatile-free scores too):
+// volatile-free control 85; volatile-free with the engine globals pointer named at the top 32 (the field
+// load is retail's, the delta movsx is hoisted into EDX, the engine load sits at the top), with the volatile
+// delta 24, named at the join 85; a named field copy for the entry and the team call 80 volatile-free, 85
+// with the volatile delta, for the entry only 85; the delta read through its own address with the top
+// engine local 32, alone 85, at the join 85; a 600 s permuter run, 59 tries, none below 13.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)
