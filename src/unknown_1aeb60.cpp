@@ -317,7 +317,13 @@ bool function_1af530(long actor_index, long *b, long *a)
 }
 
 static __forceinline long real_to_long(real value);
-short *function_e70b0(short *value, long unit_index);
+/* a unit action state, returned by value through the caller's temporary */
+struct s_unit_action_state
+{
+	short value;
+	s_unit_action_state(short state) : value(state) {}
+};
+s_unit_action_state function_e70b0(long unit_index);
 
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
@@ -349,8 +355,7 @@ void __stdcall function_1afb30(long actor_index, s_slot *slot)
 	}
 	if (state->unknown16 && !state->unknown17 && state->unknown34 && actor_get(actor_index)->unknown504 == 2)
 	{
-		short action;
-		if (*function_e70b0(&action, actor->unknown018) != 7)
+		if (function_e70b0(actor->unknown018).value != 7)
 		{
 			function_1f4f40(actor_index, state->unknown34, &state->point, true, &state->facing);
 			state->unknown17 = true;

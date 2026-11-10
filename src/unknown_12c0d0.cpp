@@ -890,6 +890,11 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // same prologue): the attempts declared right after start 5; the pump counter declared right after start 2. Reader forms in
 // a harness copy only (the header untouched): a plain local with `__noop(&local)` 144 (the stores vanish, as plain does),
 // a volatile local declared then assigned 2-equivalent, a volatile long pair initialised `{ 0, 0 }` 2-equivalent.
+// Round 162 (m3 lane 5, fast; reader forms in a file-local copy, not kept): the rdtsc as two inline opcode bytes 2; two separate
+// volatile longs 12 (they share one slot, frame 0x10, both stores still above `push edi`); the volatile local initialised from
+// a defaulted parameter 2, from a `long` zero local 2; a local object with a volatile member zeroed by its constructor 93 (stores
+// vanish); the result stored from eax/edx inside the asm block 129 (322 bytes). At 0x199740, 0x6a8a0 and 0x80e10 ours lifts only
+// the low store, by one or two instructions; retail keeps the source order at each.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
@@ -1008,6 +1013,9 @@ struct s_bitmap_texture_view
 // the same element reached through a dword index into the header view compile byte-identically
 // to the baseline; the masked level address is still loaded into edx where retail reuses the
 // dead bitmap register.
+// MiniMax D (11-09): no new form, no lower score (3); the last three instructions are still the whole
+// difference: retail masks the level address in the base register that dies with that load, this build
+// loads it into EDX and masks it there.
 // MiniMax I (11-09): no new form, no lower score; the masked level address is still loaded into EDX where retail reuses the dead bitmap register, and this round the element reached by pointer arithmetic and the same element reached through a dword index into the header view compile byte-identically to the baseline.
 // MiniMax D (11-08): score 3 (was 3): the masked level address is still loaded into edx where retail reuses
 // the base register that dies with that load; the reduction branch, the format bits and the three header

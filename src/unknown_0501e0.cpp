@@ -30,6 +30,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
+// score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
+// the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
+// raw offsets before the test) and the coefficients folded into the products.
 // MiniMax D (11-08): no new form, no lower score (206); our frame is 0x20 against retail's 0x14, the transform helper
 // folds the coefficients into the products and keeps the second view's width in a register where retail keeps the
 // first view's coefficients in registers and the second view's offsets in the frame, and the sum tree is still
@@ -37,9 +40,7 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // of the transform sum's terms all give 206 and the six parenthesized trees give 213 or 245, so the tree is the
 // compiler's reassociation and not the source's.
 // MiniMax I (11-06): no new form, no lower score; the offsets differenced inside the transform helper give 304 and 321 against 206.
-// score 206 (was 206): frame 0x20 versus 0x14 (the second offset vector keeps its own home, retail shares it with
-// the orthographic segment and keeps right.i in xmm7 for both views), the scale applied in place (retail copies the
-// raw offsets before the test) and the coefficients folded into the products. Earlier 221: first transform
+// Earlier 221: first transform
 // sum/product order and register numbering (retail: forward*depth +
 // up*height first, coefficients loaded into registers, right.i kept in xmm7 for both views), frame 0x18 versus
 // 0x14 (retail spills the blend scale at [esp] where it is computed). Earlier: transform term order
@@ -412,6 +413,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // existing setter, indexed for/while, component cursors and array aggregate:
 // 330/330/330/252/255/255/333/206. NOT kept: no native frame/coefficient recovery;
 // original aggregate, input-before-output helper and complete body restored.
+// Round 84 (m3 lane 10, fast), at 206: the second offset vector reused for the orthographic segment on this body
+// 261 (1136 bytes, frame 0x2c); the blend weights defined second-first (local_5 then local_4, declaration and else
+// arm) 247 (1136 bytes, the rows still sum the first point's term first); the else arm's weights as
+// `local_4 = local_5 = 1.f` 206 (same code); the orthographic dot as dot3f(&local_10, &g_4b9dac) 206 (same code); one
+// counter for both offset loops 207 (1141 bytes).
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

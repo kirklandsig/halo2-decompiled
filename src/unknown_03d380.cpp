@@ -495,6 +495,21 @@ void function_125a90(long value);
 // test 51 (same code). Diagnostics, reverted: the kind arm reading a table instead of calling 98, and a call added to
 // the special arm 98: the kind arm stays first in both, so the order does not follow which arm holds a call.
 // Still BLOCKED-BY 0x221810 (retail never inlines it; its file is another lane's this round).
+// Round 65 (m3 lane 15, fast; base 36, all 415 bytes unless noted): retail's kind arm is threaded (its exits jump
+// straight to the removal or the keep store) and only its special arm holds a value (`sete`), with the order special
+// arm, removal, kind arm, keep store. With the kind arm as `if (f(type)[0x4c] == 1) remove = false;` under the bit
+// test and the special arm on the long type as `remove = false; if (type == 0x26) remove = !a;` 51, as if/else 51, as
+// `type == 0x26 && !a` 88, as a ternary 51; those four special arms with the kind arm as a value 88 (417), 88 (417),
+// 46, 88 (417). The 51 forms hold retail's instructions (16-bit pair, 32-bit re-test, sete arm, threaded kind arm)
+// but lay them out kind arm, keep store, special arm, removal. To move that: the kind arm as the `then` of a negated
+// `&&` 51; `if (type != 0x26) remove = false; else remove = !a;` 51; `remove = !a; if (type != 0x26) remove = false;`
+// 51; `if (type != 0x26 || a) remove = false;` 88; both arms as if/else constants with the kind tests joined by `||`
+// 46; the kind bit test split out as `remove = true` 88 (417). A two-case switch on the short type (compares widen to
+// 32 bits, same layout) with those special arms 89, 89, 92, and with both arms as values 86. An else-if chain
+// (0x20 keeps, else 0x26 `remove = !a`, else the kind arm as a value or as the `if`) 87, 87: retail's order, special
+// arm first, but 0x20 jumps to the keep store where retail sends it to the re-test; the special arm written out under
+// each of the two tests 89 (417, the copies are not merged). `if (0x20 || 0x26) remove = !a;` as a probe 87: every
+// `||` form sends both tests to the special arm and lays the kind arm first, whatever the arm holds. Body unchanged.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

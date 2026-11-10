@@ -1259,6 +1259,13 @@ bool function_68670(byte *source, long size, void *block);
 // helpers without it 122, with the used update first 133; one helper with the used update first 27; two helpers with
 // `long next = (start + count) % size;` as one initialiser MATCH (the patch uses this, the smallest form that
 // matches); one helper with that initialiser 133. Both the helper pair and the named remainder are needed.
+// Round 65 (m3 lane 15): HELD (needs the owner's OK), build/r65/held-865d0.patch: MATCH, fast and plain (0x68670 still
+// matches and no other function of the two files changes) with round 217's read split (a position-read helper, then an
+// advance helper that names the remainder ahead of the used update) and 0x68670's parameters declared block, source,
+// size at its definition in src/unknown_067e10.cpp (a contributor body), its declaration and its one call here: retail
+// sets EAX to the payload before ESI to the block. On the split form the other orders: source, block, size 2; size,
+// source, block 2; main's order 2. The advance with the named remainder inside the one read helper 133 (558 bytes).
+// Body, helper and 0x68670 put back to main (24).
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

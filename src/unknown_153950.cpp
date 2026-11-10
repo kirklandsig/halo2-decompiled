@@ -412,6 +412,9 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // the projection term first, with the helper in src/unknown_170d70.cpp.
 // MiniMax E (11-09): no new form, no lower score (13); the j and k rows of the shared
 // rotation still add the projection term first, and the helper is in src/unknown_170d70.cpp.
+// MiniMax D (11-09): no new form, no lower score (13); the j and k rows of the inlined rotation still add
+// the cosine term first where retail adds the projection term, and that rotation's text lives in the
+// shared helper in another file this lane may not edit.
 // MiniMax C (11-09): no new form, no lower score (13); the j and k rows of the shared rotation still add the cosine term first (BLOCKED-BY src/unknown_170d70.cpp).
 // MiniMax E (11-06): score 13 (was 13): no new form lowered it. The only difference left is in the
 // j and k rows of the inlined rotation: retail adds vector * cosine to projection * axis while ours

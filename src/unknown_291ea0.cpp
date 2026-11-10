@@ -127,6 +127,9 @@ inline void dialogue_name_override(long *name, long value)
 // it 124 (468 bytes); the one-use unit_index local dropped 9 and default_name declared before the globals tag
 // pointer 9 (same code each). Diagnostics: one variant override in place of two 56 (451 bytes) and a cut-down
 // default block leave the elements/pool registers where they are.
+// Round 160 (m3 lane 6, fast): a 600 s permuter run (59 tries) none below 9; the unit's dialogue state through a
+// force-inline getter taking the unit index 9; the globals-tag pointer declared at function scope 9; the override
+// helper as __forceinline 9; the actor through the byte-offset actor getter 9; the scenario global read at each use 16.
 // @retail 0x291ea0
 bool function_291ea0(long arg_80f1d4, long actor_index, long script_index, real *duration)
 {

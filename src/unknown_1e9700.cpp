@@ -140,6 +140,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // value between the enable gates 110; separate player/team inner results 109/109; two-call by-value
 // accessor 107; player record copy 71 (434 bytes), read-only copy 71, with the team-mode helper 78.
 // NOT kept: the one-use record copy spills through the code slot, absent in retail; original body restored.
+// MiniMax C (11-10): no new form, no lower score (106); retail still keeps the old maximum in ECX with the enable byte in AL and reads the 15-bit counter with the 16-bit idiom (xor eax, eax; mov ax, [mem]) while ours keeps them in EAX and DL with a zero-extend, and the enable reload stays blocked by src/unknown_1967d0.cpp.
 // MiniMax C (11-05): no new form, no lower score: the enable reload, the maximum homes and the word
 // schedule still differ here.
 // Round 74 (m3 lane 11, fast and plain): the team test through the existing function_x340af0() in the condition 106
