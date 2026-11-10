@@ -158,6 +158,10 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // half width 26; the draw pass's sequence through the existing bitmap-sequence type with the first sprite's
 // bounds as `sprites->bounds` / `sprites[0].bounds` 14/14 (the copy source stays ADD). The two XMM3/XMM4
 // values are the advance product (then the new x, in place) and the half-height copy (then y + half height).
+// Round 64 (m3 lane 2, fast): permuter on this body (600 s, 50 tries) best 14; the corner array declared at the top
+// of the draw loop 14; only the first step's product as pulse * half width 14; the draw arm as `if (bitmap_index !=
+// NONE) { ... }` in place of `continue` 14; one sprite index variable for both passes 14 (all same code); the
+// bounds-record pointer with that positive arm 12 (the pointer's own gain; XMM3/XMM4 unchanged, not kept).
 // @retail 0x200462
 void function_200462(long arg_0)
 {

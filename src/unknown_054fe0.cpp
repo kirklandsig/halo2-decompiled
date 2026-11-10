@@ -1702,6 +1702,7 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax D (11-10): no new form, no lower score (339).
 // Walk vs retail 0x64d70-0x65278 (b3G, 11-06, statement by statement): no behaviour difference found. Checked: state/value18/live
 // range guards; get_values_4d08 outputs (map, map_variant, map_data) and the pre-call name pointer; memset 0x714; header
 // words; type/local/mode; wcsncpy(.., 0x1f) + name[31]; id/key behind `state && flag24` (retail's per-destination null
