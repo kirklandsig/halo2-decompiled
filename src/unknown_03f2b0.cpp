@@ -1324,7 +1324,8 @@ struct s_133f70;
 // MiniMax A (11-05): no new form, no lower score; the call to 0x4bcc0 already carries its six stack
 // arguments in retail's order and with retail's values, so what is left is the frame size and the entry/result homes.
 // MiniMax h (11-04): no lower score; the 0x4bcc0 call takes the distance from the third stack slot where retail takes it from the second, and that slot layout follows the unmatched callers in src/unknown_133790.cpp.
-// score 175 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain.
+// score 93 (was 175): frame 0x33f8 agrees; distance staging, nullable-entry/cache adds and result homes remain (the 93 is the
+// round 82 baseline of this body; the scores listed below were measured on earlier bodies).
 // Round 22 (lane G, machine 3; no code change kept): retail's byte home and its split record base
 // (add eax, ecx; lea ebx, [eax + 0xbc]/[eax + 0x44]) are reachable in the source but our compiler folds the
 // field offset into the load or into one lea, so the instruction count and the encoded sizes change and the
@@ -1487,6 +1488,14 @@ struct s_133f70;
 // Round 394: initial-level/fallback/builder/success/reuse/level-change result-home names
 // individually 175/175/175/175/175/175; both complete byte-result naming orders 175/175.
 // Original names and complete body restored; distance/cache staging and coefficient transport remain.
+// Round 82 (m3 lane 1, fast = plain 93 on this body, sequence-aligned 58 of 382): left are the distance loaded into EAX
+// ahead of the force push (ours ECX after it, and the scratch registers stay one step off down to the type store), the
+// dead entry lea in the 0x4ed284 test, the previous level's byte home (retail `mov byte`, `cmp byte ..., 0xff`, `movsx
+// ax`), the two-step record adds at +0xbc and +0x44, and the 0x4c190 call's tag and object registers. A signed-char
+// previous level 322 (aligned 56; the byte forms come, the record + 0xbc add folds and the count is out of step); that
+// with a signed-char levels pointer at record + 0xbc, indexed by the mode 328 (aligned 60); with a named record
+// pointer first 328 (same code); the 0x4ed284 test nested with a named entry pointer 93 (same code, no dead lea);
+// both 328. Body unchanged.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
