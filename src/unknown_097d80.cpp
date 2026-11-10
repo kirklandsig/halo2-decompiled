@@ -52,6 +52,12 @@ struct c_aggregate : c_child
 };
 
 
+// MiniMax S (11-10): no new form, no lower score (31); the frame is still 0x8024 against retail's
+// 0x8020: retail packs the loop-2 cursor and the loop-3 count into the address-taken produced slot
+// (frame +0x00) while ours keeps a slot of its own for the produced count, and the two temporary slots
+// stay swapped. Hoisting the produced count out of the loop measures 42 and a table local for the
+// children measures 126, so both are reverted; the body is byte exact only in a /GL- build of this
+// file, which costs 0x97f60, 0x97fe0 and 0x980d0 their matches.
 // MiniMax D (11-08): the frame is 0x8024 against retail's 0x8020 and the two output
 // slots differ - retail keeps the address-taken block count at +0x10 shared with the loop spills and the
 // allocator output at +0x1c, ours gives the count +0x1c and the allocator output +0x20; the byte-exact form
