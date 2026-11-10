@@ -2038,6 +2038,12 @@ void function_269250(long clump_index, long actor_index);
 // test inside and both by reference; an unsigned selection; the activity flag read from the global in the walk call; `best < score`
 // with the selection stored first and best declared first. In-arm with the iterator's datum index re-measured 128 [108]. Body
 // unchanged.
+// Round 66 (m3 lane 15, fast; this body 87 plain, in-arm 126 at 480 bytes): retail loads the selection from its slot at every use after the loop too, where both
+// callee-saved registers are free, so it is never a register candidate there. On the in-arm form: the selection, score and best as members of one local record 126; the
+// selection and best as members with a plain score 126; the selection alone in a one-member record 126 (all the same code: members of a local record are still given
+// registers here); the score call and compare in an inline function returning whether the best improved, the selection assigned by the caller, in one test with the team
+// or nested 126/126 (same code). Permuter on the in-arm form (600 s, 39 tries): best 108 in the full image, only with the creation arm first and the created index
+// declared short, which truncates a datum index (not a real form); nothing else below 126.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

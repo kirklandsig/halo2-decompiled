@@ -962,6 +962,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // as (position, file); the sum written body first; the helper plain inline; a three-parameter helper adding (start, offset) inside.
 // Retail's sum keeps the body size in its own temporary, as if it were read again after the sum; no form found that keeps it apart.
 // Nothing kept (one-caller helper; the field clamp reads the field beside a local copy).
+// Round 66 (m3 lane 15, fast; 0x2adb10 matched throughout): the dispatch hoist is a merge of two identical loads into a callee-saved register (ours ESI): with no
+// total local, the record's size field in the clamp and the body test flipped both cases start `mov ecx, [body_size]` and nothing is hoisted, so retail's ECX there was
+// allocated before the scratch rotation. The parameter record's size fields as `unsigned int` (all three, body only, header only) 34 each (same code); one inline size
+// function (body + header + a trailer argument, sizeof at the entry and 0 at the signature) 34, with no total local 88, with the field clamp 175/159 (same code as
+// without it: the zero folds before the sum is formed); an inline (file, start, offset) seek for the signature case with no total local and the field clamp 153 (689
+// bytes), summed offset first 153, at the body case too 154, on the plain body 178 (688), with no total local 154; a seek with an unused third (limit) argument given
+// the body size 153; that limit tested in the seek (`position >= limit &&`) 217 (693), the same test written in the case 216 (692), on the plain body 220 (693): even
+// with the body size read twice the sum is `mov esi, [header]; add esi, eax`, so a second reference alone does not give retail's `lea esi, [ecx + edx]`.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

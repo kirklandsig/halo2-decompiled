@@ -652,6 +652,13 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 0x25c230 and 0x265680 stay matched: the lead narrows to keeping it out of 0x264210 alone. On that inlined form: update
 // as long 495, sample/update at function scope 497, maximum a plain word 497, sampled_one as long 496; the actor stays a
 // stack argument (0x1e34e0 26) in all of them. All restored.
+// Round 66 (m3 lane 15, fast with 0x1e34e0 26, 0x263210 231, 0x264330/0x264210/0x2641c0 matched throughout): retail's inlined 0x2641c0 copies its 0x38 bytes with
+// `rep movsd`, which takes ESI and EDI inside the loop, and 0x2640c0 takes its output in EDI, so retail keeps the node index and the next index in stack slots
+// (0x14/0x18, reloaded before each use), the three flags in stack bytes (0x11/0x12/0x13), the prior state as a word at 0x2c, the actor pointer at 0x20 and the actor's
+// pool offset at 0x28 (shared with the inlined body), with only the actor index in EBX and the node in EBP. Retail's maximum is a 32-bit slot set from a zero-extended
+// word and compared as 16 bits. The maximum without its qualifier: long 428 (1616 bytes), dword 428, short 429, long with the compare reversed 428; long or dword with
+// a short prior state 433 / 433 (1620 bytes). The qualifier stays (412). Still BLOCKED-BY 0x2641c0 (its noinline declaration is in src/unknown_265cb0.cpp, another
+// lane's file this round).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
