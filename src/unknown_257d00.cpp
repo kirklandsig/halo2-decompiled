@@ -1921,6 +1921,14 @@ void function_b7360(long object_index);
 // (0x258dc5 and 0x258e15 are reached from both the 15/16/17 and the 1/19 call sites; ours duplicates them) and ends
 // on the failure block; case 13's flag OR is load/or/store (retail `or byte ptr [ecx+0x10a]`). Tried this walk:
 // `bool success;` with `case 11: default: return 2;` 471 (1832, worse); `case 11: return 2;` with the initializer 301.
+// M3 lane 10 r89 (fast; positional, stack-masked/register-masked aligned 158/107): the `#pragma inline_depth(2)`
+// that wrapped this function removed, 301 (same code; not kept: a compiler-setting change with no gain); the 1/19 point arm as an explicit else 301;
+// its destination as the address of field_8 301; case 0 as `success = true; break;` 301 (same code); case 4's range
+// as `local_6 < 4` 480 (1828 bytes); case 5's as `local_16 <= 2` 480 (1828). Re-measured: local_1 through the
+// existing cs_get 301 (same code); the 1/19 point read through a re-derived datum, `cs_get(arg_3)->unknown28`
+// (round 75's 483-506), 480 now at 1848 bytes, 146/76 (the reference is reloaded as in retail, but the scaled cs
+// index then stays live in ESI from the entry). The wait block as a two-site helper is round 27's 513 form. Retail reloads the reference after 0x25ab50 at
+// this site and at case 5, where 0x25a380 and 0x1b13b0 keep it across the same call, so the cause is in this caller.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

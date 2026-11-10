@@ -547,6 +547,17 @@ void __stdcall function_1160c0(real dt)
 // M3 lane 11 r81 (fast): delta, axis or vertical as three statements instead of an aggregate initializer 171 each, delta and axis
 // together 171, the node as `record->nodes + i` 171 (all same code); diagnostic: target rows written without vector3f_add_scaled
 // (previous no longer address-taken) 177 with the homes unchanged.
+// M3 lane 10 r89 (fast, 0x116750/0x73360 still matched; fast agrees with plain at 171): the segments base in a
+// named pointer local re-measured 172 (round 154's 174); cosine computed before sine re-measured 172 (round 132's
+// 179); the existing normalize3d for the axis re-measured 178
+// (0x73360 kept its match on the fast image); dot3f for the projection re-measured 171 (same code); the x row's
+// first product as `axis.i * along` 171 (same code); the cosine product first in each rotation row 171 (same code);
+// the blend rows as `predicted.x * stiffness + (1.f - stiffness) * target.x` 171 (same code); each cross term
+// negated and added (`+ (axis.j * offset.k - axis.k * offset.j) * sine`) 209; the length test's arms inverted
+// (`if (!(.0001f > fabs(length)))` scales, else zero) 171; a 600 s permuter run (66 tries) none below 171. Retail's
+// rotation evaluates the written expressions but schedules the y and z cross terms right after the dot, before
+// the x row, loading all six axis/offset components into registers first (and reading offset k from memory twice
+// more later); ours reads its offset k from memory at the dot and at two later products.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
