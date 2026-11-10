@@ -315,6 +315,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
+// this round: no new form and no lower score; retail still takes the first
+// argument in EAX and keeps it in EBX with a four-byte frame, while ours reserves eight bytes and
+// pushes ESI and EDI, and the request convention cannot change here without the eight matched callers
+// in other lanes' files.
 // MiniMax b (11-06): no new form, no lower score; retail takes the state pointer in EAX and the tag on
 // the stack and reads the tag late, ours takes the tag in EAX and the state on the stack and reads the
 // tag at the entry, and retail inlines the start sequence (0x126c30, 0x126ec0, 0x126000) at both the
