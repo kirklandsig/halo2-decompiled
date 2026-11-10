@@ -108,12 +108,14 @@ PRIVATE __forceinline void function_294b56(vector3f *arg_0, vector3f *arg_1,
 
 __forceinline void object_get_forward(long object_index, vector3f *forward);
 
+// score 252 (was 252): three slot pairs swapped against retail (walk position/offset, record spill/centroid sum, object
+// spill/nearest distance), see below.
 // MiniMax H (11-06): no new form, no lower score; retail's dead store of zero to the speed vector's i
 // (0x29454d, one of three consecutive stores into the slots 0x88/0x8c/0x90) is still missing, and the value
 // retail reads at 0x294a1e for the 0x294050 argument list comes from the slot 0x84 after one push, not from
 // the stored one; in the scaled-centre block ours reloads the scalar into xmm0 where retail reuses the value it
 // already holds, so ours is one instruction longer there and every later slot offset stays off.
-// score 252 (was 446): the walk's self test is an if-block around the body and the centroid is scaled into its own point; that
+// Earlier, score 252 (was 446): the walk's self test is an if-block around the body and the centroid is scaled into its own point; that
 // brings back retail's dead store of zero to the speed vector's i and retail's walk head (no pad), and the length is retail's 3716.
 // Left (masked aligned 25): three slot pairs swapped against retail (record spill/centroid sum, object spill/nearest distance,
 // walk position/offset), the local_13 copy against the 3.4e38 store, load folding at the walk's alignment i term and both
@@ -220,6 +222,15 @@ __forceinline void object_get_forward(long object_index, vector3f *forward);
 // the nearest distance declared first 334 fast (slots unchanged); the offset declared before the position 280 fast (same code);
 // the centroid scaled in place through scale_particle_vector_2b 462 fast, copied then scaled 785 fast (3766). Diagnostic on 252
 // (plain, not kept): three extra reads of the sum put the record spill at 0x80 as retail but move the object spill to 0x78 (470, 3734).
+// Round 142 (m3 lane 7, fast; control 280 at 3717, aligned 104): diagnostic, the walk's position as a reference to the
+// post-walk vector (one variable for both) 525 at 3716, aligned 78: the walk block then matches, position at 0x20
+// sharing the post-walk vector's slot as retail, so retail's position (not the offset) shares that slot; the sum adds
+// then load the position first. Not kept (a reference that only renames). The offset in a nested block to the end of
+// the walk body 280 (same code); the sum scaled in place by vector3f_scale and the vector taken to it 462 (aligned
+// 101), with the reciprocal written into the call 466; the centroid, nearest-fallback and waypoint steps each with
+// their own block-local vector instead of the shared one 755/756/755 (3737-3738 B), all three 764 (3734 B): retail
+// reuses one vector. Re-measured (Round 64 lists it): the position, the offset or both declared at the walk body's top
+// 280 each (same code).
 // @retail 0x294380
 void function_294380(long arg_0, long arg_1)
 {
