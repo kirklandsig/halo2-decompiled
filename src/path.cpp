@@ -701,6 +701,23 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // bool/byte/short/long results: 282/282/282/282/282/282/282/282. NOT kept: four-point leads are below eight,
 // and one-use outcomes require equality. Original distance test and full body restored.
 // Extra link-cursor frame word and flag homes remain.
+// Round 163 (m3 lane 5, fast): lane 11 r71's flag recipe rebuilt on the current file 2 (1388 bytes), not kept (the
+// two test-set flags need a byte match). Retail's last pair is in the order the loop head uses the values (j, then
+// steps), as 0x113980's is (state, then tag table); ours is the reverse in both. On the 2: the step's point pointer
+// declared at the loop head ahead of the edge index 74 (the steps reload moves to the loop head); a `&steps[j]`
+// pointer at the loop head with the point taken from it 178; the previous point chosen at the loop head 332 (1389);
+// link admission without the flag, the copy written in both admitting arms 352 (1407 bytes: the copies do not
+// merge, frame 0xe8); link admission as one direct condition re-measured 322 (frame 0xe8); the link test as a
+// plain inline predicate with a single-exit result, called in the condition, 2 (same code as the flag: with lane
+// 11's inline surface test the body then holds no flag, but both are new helpers with one caller). Body restored.
+// M3 lane 13 r72 (fast; 0x270930 kept; both builds return with `ret 0x24`, the frame is 0xe8 against 0xe4). Lane 11
+// r71's flag form rebuilt from the r63 held patch with both conversions nested and the pointer fill: 2 again (the same
+// reload pair). Its indexed fill with the long bound (`i < initialize_count`) 263. On the 2: an inline node getter for
+// the three node lookups 2 (same code; with it the plain clamp was not measured); the link test as an inline predicate
+// with a result variable called in the `if` 12 (moves the projection's xmm3/xmm4 homes, pair unchanged), with direct
+// returns 321; both with the surface test as a second inline predicate 130/337; `edge_index != NONE &&` ahead of the
+// range test 182 (1397 bytes), as `if (edge_index == NONE) continue;` 182; `if (node_index == NONE) break;` at the
+// traversal's end 2 (same code). NOT kept: none matches and the flag form is match-only; body below unchanged.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -1062,6 +1079,7 @@ bool function_2715a0(byte *buffer)
 	return result;
 }
 
+// MiniMax D (11-10): no new form, no lower score (486).
 // MiniMax R (11-06): no new form, no lower score (486); the frame agrees and EBP is pushed here where retail keeps it as the state pointer.
 // score 486 (was 486): State/node/link registers, scalar homes and heap-helper expansion differ.
 // Earlier field-bit mask forms 501 (from 533).

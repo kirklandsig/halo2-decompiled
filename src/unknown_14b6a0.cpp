@@ -531,6 +531,21 @@ void function_14bac0()
 // the global 259/258. On the kept body a slot local alone (`long slot = root & 0xffff;`) gives retail's in-loop reload and indexed compare: 247 (1032,
 // frame 0x50) [111, 70]; with the relocation point used directly 244 (1048, 0x44) [107, 66], with the block-local datum iterator 248 (1036) [123, 81],
 // with both 242 (1036, 0x44) [122, 81], with a marker base pointer 223 (1036, 0x50) [93, 104]. Body unchanged.
+// M3 lane 13 r72 (fast; brackets: aligned count with registers and stack offsets masked, base 222 [60]). Retail's three
+// aggregate slots are 12, 16 and 16 bytes: +0x20 relocation point and destination; +0x2c offset, both probe points,
+// centre and the second 16-byte iterator; +0x3c first iterator and alternate; height and radius sit at +0x1c/+0x18.
+// The structural form of rounds 20/112 (relocation point used directly, unit read from the player at both calls,
+// second scan on a 16-byte iterator through 0x6b380, centre/height/radius in their own block) re-measured 259 [40]
+// (1048 B, frame 0x48); without the centre block 259; second iterator at the second block's top 259. New on it:
+// first iterator at the request block's top 259; second iterator at the request block's top 259 (same code: scopes
+// do not move these homes); the visit stamp read into a local 259 (same code); with the readiness flags declared
+// destination first 254 [38]; plus the alternate assigned member by member with the 1.0 in the z expression 258
+// [42]; plus the flag stores moved to the other side of their point copies 254 (same code); plus the two accepted
+// points declared alternate first 254 (same code); plus the offset through vector3d_from_points3d and the alternate
+// probed in place (no probe point) 265 (1032 B); plus the destination probed in place 263 (1032 B) [59]. Frame 0x48
+// in every form. Left besides the frame: the offset subtracted per component as it is loaded, the stamp copied for
+// its store, both marker addresses formed with two adds, and the tail scan's `inc eax; js` entry with its found
+// block after the return. NOT kept: body below unchanged.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
