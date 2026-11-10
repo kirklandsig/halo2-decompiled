@@ -369,6 +369,10 @@ struct c_aggregate : c_child
 // positive/complementary bool/byte/short/long: 31/31/31/31/31/31/31/31. Original independent escaped
 // outputs restored; native frame and low loop homes remain unresolved. NOT kept: no qualifying
 // exact/native-shape gain; original complete body restored.
+// P400: Actual cleanup items array reference/pointer, with block reference and live
+// count-field reference subsets: 78/78/78/78/78/78/78/78. Native 0x8020 frame returns
+// by removing a cleanup spill, but callback output stays separate and low homes differ;
+// all shorten to 359/373. NOT kept: no gain or byte match; original full body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

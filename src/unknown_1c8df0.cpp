@@ -211,6 +211,8 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // mode-2 x row then loads first), callers unchanged; arg_1, arg_5, arg_6 right after arg_3 or after arg_2 22/22 with 0x25f7b0 12; arg_1, arg_5
 // first (three) 22, callers unchanged; arg_1, arg_5, arg_6 among the first four (five) 22 with 0x25f7b0 12. No order with arg_4 ahead of arg_8
 // folds the mode-1 x row; all restored.
+// P399: Complete origin/endpoint/side/positive/opposite/all component arrays, complete quarter/endpoint array construction:
+// 20/20/20/20/20/20/20/20. NOT kept: no byte equality or native home repair; original complete body restored.
 // @retail 0x1c8df0
 short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, long arg_0,
  point3f const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9)
