@@ -3460,6 +3460,9 @@ bool g_55e6bc;
 // the inlined call and keeps the global in a register of its own; the six near-plane spellings
 // tried this round all score 87, and the matrix loop's row base, cursor and counter still sit in
 // different registers from retail's.
+// MiniMax D (11-09): no new form, no lower score (87); retail still sums the three products of each
+// output row in the source order while this build sums them rotated with one operand swapped, and retail
+// still loads the far plane before the near-plane multiply while this build multiplies first.
 // MiniMax A (11-06, run 52): no new form, no lower score (87) - retail sums the three products in
 // source order and pops esi after the matrix loop, ours sums them rotated and pops esi early.
 
@@ -6263,6 +6266,10 @@ void function_22850(void);
 // as two dwords and ours goes through x87 because the global is a double in include/timed_effect.h,
 // and retail uploads the gamma ramp into the device's own ramp buffers where ours calls
 // D3DDevice_SetGammaRamp; copying the timestamp dword-wise through a byte copy scores 173.
+// MiniMax D (11-09): no new form, no lower score (153); the timestamp still reaches the global through
+// x87 here and through two dword stores in retail, because the shared global is a double in a header this
+// lane may not edit, and the gamma ramp still goes out through D3DDevice_SetGammaRamp instead of retail's
+// inline upload into the device's own ramp buffers.
 // MiniMax A (11-06, run 52): no new form, no lower score (153) - retail copies the timestamp into the
 // global as two dwords and uploads the gamma ramp into the device's own ramp buffer; three separate
 // channel stores in retail's red/green/blue order (and 255.0f) score the same 153, not kept, and a
@@ -7123,6 +7130,10 @@ real scenario_ramp_evaluate_current(long index);
 // pointer saved around the grid block and ours is 0x5c with the frame pointer saved in the prologue,
 // so every stack slot sits eight bytes off; the state local, the entry offset, the entry count and
 // the declaration order were tried this round and all leave the frame at 0x5c.
+// MiniMax D (11-09): no new form, no lower score (139); the frame is still 0x5c bytes here with the frame
+// pointer saved in the prologue, while retail's frame is 0x58 bytes and retail saves the frame pointer
+// around the grid block, so every stack slot sits four bytes off; inlining the four grid bounds, dropping
+// the byte-offset variable and moving the state pointer into the blur block all leave the frame at 0x5c.
 // MiniMax A (11-06, run 52): no new form, no lower score (139) - retail's frame is 0x58 bytes with the
 // grid filling it and the frame pointer pushed inside the loop.
 
@@ -7244,6 +7255,17 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
 // score 299 (was 310): fast score; our group index is sign-extended (movsx esi, ax) where retail moves the
 // 32-bit index, the index slot sits at [esp+0x3c] against retail's [esp+0x58], an extra mov edi, edi stands in
 // the loop head, and the body is 3 bytes longer than retail's.
+// MiniMax D (11-10): NOT kept: 298, one below S's 299 already in main (under the 8-point bar): a for loop over
+// an unsigned short counter; the group counter is 16 bits wide and the early exit compares the
+// group count with one; the loop keeps a single counter and recomputes the stride with imul, the frame is
+// 0x1894 as in retail's and the function is 2000 bytes as in retail's. What still differs: retail's early exit
+// loads the count and tests it while this build compares the count in memory with one, so this build's exit is
+// one instruction shorter; retail's loop bottom compares a 32-bit counter where this build widens the 16-bit
+// one, and that counter wraps for counts above 65535 where retail's does not.
+// MiniMax D (11-09): no new form, no lower score (310); the group stride is still strength-reduced into a
+// second counter kept in a stack slot, while retail recomputes the product with imul and keeps one counter,
+// and retail saves the frame pointer around the loop where this build saves it in the prologue, so the
+// frame is 0x1898 against retail's 0x1894 and every local above the counter sits four bytes higher.
 // MiniMax D (11-08): no new form, no lower score (310, measured on the full image); our loop still strength-reduces
 // group * 0x98 into a second counter at [esp+0x40], so the frame is 0x1898 against retail's 0x1894 and the zero for
 // both counters lives in EBP; a short group removes the slot and keeps the imul but scores 390 here.
@@ -8852,6 +8874,10 @@ __declspec(noinline) void function_016a30(real scale, short y, short x);
 // because the callee here takes shorts, and retail passes the palette global itself as the
 // out-parameter where ours reaches the palette through a local; the type-punned call form scores
 // 169 and the palette-through-the-global form scores 184.
+// MiniMax D (11-09): no new form, no lower score (171); the two offsets still reach 0x16a30 in the other
+// order than retail's and the palette is still reached through a different call sequence, and the callee
+// takes short offsets here where retail's took ints, so it is declared in another file this lane may
+// not edit.
 // MiniMax A (11-06, run 52): no new form, no lower score (171) - retail passes the two offsets to
 // 0x16a30 in its own order and reaches the palette through a different call sequence.
 // MiniMax C (11-06): no new form, no lower score - retail still passes the two offsets to 0x16a30 in its

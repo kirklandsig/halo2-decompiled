@@ -77,6 +77,10 @@ c_2d8ab0 *g_47f044;
 // score 7 (was 7): this round: the entity list bound to a const pointer local leaves the same seven
 // differences; the group loop still loads the entity list into EAX and the index into ECX where retail
 // uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX.
+// MiniMax D (11-09): no new form, no lower score (7); the group loop still loads the entity list into EAX
+// and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX
+// and EAX where retail uses EAX and ECX; the permuter was run over the function and reported no variant
+// below the baseline.
 // MiniMax D (11-06): no new form, no lower score; the group loop still loads the entity list into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX; this round the entity list read as a pointer sum into the group entry (`*(field_3c + index)`) compiles to the same 507 bytes and leaves the same seven differences, and so does the group entry used without its named local, so that the select and the element read are one expression.
 // MiniMax I (11-06): no new form, no lower score; the group loop still loads the entity list into EAX and the index into ECX where retail uses ECX and EDX, and the release loop's entry test still uses EDX and EAX where retail uses EAX and ECX; this round the entity list through a named pointer local, the selected element as a const pointer and the release loop's increment fused into its index all compile to the same 507 bytes and leave the same seven differences, and the permuter found no candidate.
 // MiniMax S (11-05): no new form, no lower score: an if/else element select, a split entity list, a hoisted index
