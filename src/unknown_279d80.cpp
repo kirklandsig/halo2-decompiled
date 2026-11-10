@@ -2140,6 +2140,12 @@ void function_2818e0(void)
 // Round 141 (m3 lane 8, fast, the shared-helper trials listed above 0x27dff0): local static sign mask 2; one
 // output array 333 (1681 bytes); vector-blend interpolation 2; BIT_VECTOR_TEST tests 2/2; bit flags ahead of a
 // count copy 2. The multiply asm leaves EBX alone; the EBX reload follows the interpolation's blend asm.
+// Lane 11 round 80 (fast, with 0x27dff0 2 and the matched 0x285750/0x288570/0x289580/0x28aaa0/0x2898b0): function_288573 as a
+// switch on the method 2 (0x288570 120); in function_288572 the output cursor set to the scratch output and overridden by
+// `if (in_place)` 2 (0x288570 3, 0x289580 78), the node admission as a bool refined by a second `if` 357 (1690 bytes), the
+// destination index passed straight to the apply 2 (0x288570 3), the group end as `count < index + 8 ? count : index + 8` 8
+// (all controls 6-8), the interpolation test as one if/else holding the root scale 4 (0x285750 184), the flags shift in the
+// inner for's step 12; component_decompress as a switch 2 (0x288570 120, 0x289580 78). All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {

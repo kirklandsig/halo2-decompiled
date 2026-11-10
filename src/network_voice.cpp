@@ -190,6 +190,14 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 // `result = true` with the engine bound after the guard 42. Retail keeps push ebp at the entry and puts the lea after
 // the je only when the guard edge reloads the stored result; every natural form forwards AL on that edge or copies
 // a `mov al, 1` exit into the success path.
+// Round 98 (m3 lane 16, fast; the je's target is a third difference the count masks: ours skips the reload of the
+// result on the guard edge). On the natural nested body (42, 284 bytes; the result is spilled to retail's slot by
+// itself): an empty `if (!result) { }` before the return 42; an empty else arm on all four tests 42; the result as
+// the one member of a local aggregate 42; the creation joined to the guard with `&&` 42; a dead `&result` in an
+// `if (false)` block 42 (all the same code); the ports loop in an inline helper that sets the result through a
+// bool pointer 166 while it stays a call (195 bytes), 42 force-inlined. Every inlined or dead address is resolved,
+// so the result is a plain value again, the true store folds into a `mov al, 1` exit and the epilogue is copied
+// three times; retail's one epilogue needs the result's load to be opaque on every edge.
 // @retail 0x55810
 bool voice_xhv_create(c_voice_xhv *xhv)
 {

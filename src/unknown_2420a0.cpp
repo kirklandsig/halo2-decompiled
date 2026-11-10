@@ -1574,6 +1574,10 @@ void function_2422d0(long slot)
 // Round 80 (m3 lane 1, fast with 0x2447f0): a const object target 7; a function-scope team base pointer for the
 // index reads 82; the table test written `NONE == ...` 7; a named second-loop element with the rejected store
 // before the result store 9; a function-scope slot local 7.
+// Round 100 (m3 lane 9, fast): the stubbed 0xb8540 replaced by its disabled draft (diagnostic) 7, so the stub is
+// not the cause; one store of the index through a target pointer chosen per arm 100 (300 bytes); a `long const`
+// index 7; the second slot read named and used for the test and the store, with `continue` 7; index and object
+// at function scope with the index reused for the second loop's element 7.
 // @retail 0x2423f0
 bool function_2423f0()
 {

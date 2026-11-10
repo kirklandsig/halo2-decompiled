@@ -4837,6 +4837,11 @@ bool function_158eb0()
 // temporary ahead of the index load. Chained `iterator.index = iterator.absolute_index = NONE` 5; next() given `&iterator.player`
 // 5; the iterator set through its record-pool view 5; `flag != false` 5; the raw rank named and halved in the test 5.
 // Original body restored.
+// Round 98 (m3 lane 16, fast): inline helpers whose parameters could supply the missing rotation step: a typed
+// wrapper around the iterator's next call 5; the iterator's three stores in an inline setter taking its address 5;
+// both 5; the rank call through a forwarding helper taking (mode, index) 5, (bool flag, index) 5, (mode, index,
+// value) 5, (index, flag) with the halving inside 5; the whole test in an inline predicate taking the index 5
+// (the same code in all eight). Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {
@@ -5387,6 +5392,7 @@ void function_36580(void);
 void function_36880(s_short_rectangle const *rectangle, color4f const *color);
 void function_161420(long player_index, real alpha);
 
+// MiniMax C (11-10): no new form, no lower score (2); the player copy (mov edx, ebx) still precedes the x87 argument store (fstp dword ptr [esp]) before the 0x161420 call where retail stores the power first, and a double power expression with a cast to real measures 2; the callee's declaration in src/unknown_1600f0.cpp fixes the argument order.
 // MiniMax D (11-06): no new form, no lower score (2); the only difference is still the order of the
 // player copy (mov edx, ebx) and the x87 argument store (fstp dword ptr [esp]) in front of the
 // 0x161420 call. This round a braced named power local (real and float), the power computed before
