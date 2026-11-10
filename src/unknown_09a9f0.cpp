@@ -231,14 +231,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // reaches retail's shape but scores 77, and reading the header through the entity changes nothing;
 // retail keeps the result in bl and looks the header up twice.
 
-// MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
-// pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
-// scratch register); no lower score.
 // score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
 // EBX and keeps a false result in BL from before the creation call, pushes EBP only around the header
 // test and leaves the table global in EDX, reloading its data and recomputing the index for the
 // object; ours keeps the validity result in EBP and shares one header address between the flag test
 // and the object lookup, so the index arithmetic stays common.
+// MiniMax D (run 46): the early-return body 77, the bool result 69, the bool result with the header
+// pointer in a named local 77 (the header lookups still merge into one ECX entry and EBP becomes a
+// scratch register); no lower score.
 // Retail holds a bool result in BL from before the creation call, saves EBP
 // only around the header test (pushed and popped there) and keeps the table global in EDX, reloading
 // its data and recomputing the index for the object; ours keeps a long result in EBP and shares one
@@ -659,6 +659,15 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // the top for the flag test 72, for the object read 72, one for each 93 (188/188/194 bytes: the copies are read ahead
 // of the creation call and held across it); the value call on the local index 67; the result assigned in every arm
 // (no initializer) 71.
+// m3 lane 10 r87 (fast, 0xa5b10/0xa5b40/0xa5b80/0xbb780/0x108e10 matched throughout; re-measures marked): `bool result`
+// with the existing 0xbb780 for the store and attach, on the local 77, on the entity's field 77 (both re-measures of
+// lane 5 r159), with the header test on the field too 77; the entity store moved into the valid arm with NONE stored in a joint else 66; `bool result` with the
+// store and attach written out 77 (re-measure). Diagnostic only: a second `entity->object_index = object_index;` right after the
+// header test 42 (retail's head with the temporary EBP and the data reload; ours keeps the index product where retail
+// recomputes it). Lead: a memory write between the test and the object read in retail's source. Also new: `bool result`
+// set true in the unflagged arm (NONE stored in the flagged arm) and the store and attach under `if (result)` 72 (the
+// flagged path threads to the exit as retail, but the result is spilled to a stack byte and the header address stays
+// shared), with 0xbb780 72, with the arms swapped 72, that with a long result 77 (188 bytes).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

@@ -134,7 +134,7 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // MiniMax D (11-09): no new form, no lower score; the count test branches the other way
 // (retail jumps to the far block when the count is positive) and the body is twelve bytes
 // shorter than retail's 1605.
-// score 244 (was 410): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
+// score 244 (was 244): the held 34 form (see the coordinator note below) with its two goto exits written as breaks.
 // Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // pathfinding pointer in EBP and the -1 edge seed in EDX where ours keeps them in EBX
@@ -455,6 +455,13 @@ inline bool function_26c380(s_pathfinding_data const *pathfinding, point3f const
 // redundant `success = false;` dropped from the two false-result tails 73 (1609 bytes); `success = result->blocked =
 // true;` in the location tail 121 (1595); the magnitude test as `1e-5 < magnitude` 34 (same code); the planar normal
 // as `{ normal.i, normal.j }` 431.
+// m3 lane 10 r87 (fast with every other function of the file; masked = register/stack-masked aligned count): the held form
+// re-measured 34 (masked 4) and with plane2f 304 (masked 10: slots and magnitude order then retail's, the rotation stays
+// XMM1-3 = normal j, normal i, offset where retail has offset, normal j, normal i, and the in-place `mulss xmm3, [edx]`
+// becomes a load). New: plane2f on this body 306 (1600 bytes); tail C stored blocked, edge, distance with `success =
+// false;` ahead of the point call 244 (same count, no merge), the same in tail A too 347 (1488 bytes, tails merge); the
+// line offset taken from the full normal before the planar copy 382, on the held form 361; the held form with plane2f
+// and that tail C 304 (masked 8).
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
