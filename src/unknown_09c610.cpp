@@ -138,6 +138,12 @@ struct s_9cca0
 // block-scoped record: best 10 (location 1, location 2, first vector, second vector, marker, tag), then 12, 12, 13, 14,
 // 15; that form without the named input pointer 10 (same code); one whole-record memset 75 (173 bytes); the first
 // vector by component with its k after the second copy 57 (movss, 209 bytes); the memsets swapped 17.
+// m3 lane 10 r87 (fast with 0x9c910/0x9f880/0x9ffa0): the input's two vectors through one array pointer (`vectors[1]`,
+// `vectors[0]`) 34 at function scope, 32 block-scoped, 33 block-scoped with the marker before the tag (the input pointer
+// takes a register of its own and the copies lose retail's `lea`); block-scoped with the location pair as one 8-byte
+// memcpy 12 (same code as the two longs), with the marker before the tag 10 (same code as the 10 form). Retail's 0x184440
+// passes `arg_2 + 0x1c` straight to 0x175180 as ours does (same call set), so the escape differs only by summary.
+// Block-scoped with the ten-byte zeroing moved after the vector copies 52 (201 bytes), after the marker 52.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

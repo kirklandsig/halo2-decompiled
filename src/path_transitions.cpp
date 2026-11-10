@@ -237,6 +237,16 @@ bool function_270130(s_object_marker const *marker, point3f const *position, rea
 // `xor edx, edx; mov dx`), still BLOCKED-BY 0x26fbf0. Diagnostics, restored: 0x26fbf0's flags `word` 4 again
 // (0x26fbf0 and 0x1be410 still match; left: the alignment's i and k products computed in the other order);
 // on that, the k product written first 4 (same code). The other caller, 0x2c0d60, passes `(word)` flags too.
+// HELD (needs the owner's OK), m3 lane 10 r89: 0x26fbf0's flags declared `word` (its siblings 0x26f930 and
+// 0x26fe20 already take `word flags`; patch build/r89/held-26fc80.patch, the definition plus the declaration in
+// src/unknown_2c0d00.cpp) gives this function 4 plain, 0x2c0d60 901 -> 888, 0x26fbf0/0x1be410/0x270130 still
+// matched. On that held form (fast): the alignment through dot3f, either argument order, 2 (round 16's 2,
+// re-measured; left: retail loads the global's j first, `movss xmm1, [edi + 4]; mulss xmm1, [ecx]`, ours the
+// marker's); a const forward-vector pointer
+// with the i, k, j sum 2, with i, j, k 2, with the global's operands first 2; with a const marker 2; best before
+// best_distance 4; hand-written sums i/k/j with the i operands swapped 4, i + (k + j) 6, j/i/k 4, i/k/j unswapped 4,
+// k/i/j 4 (round 138's, re-measured), i/j/k 4, k/j/i 4; dot3f with direct `markers[i]` indexing as in 0x26fe90 6. Every hand-written sum
+// computes k first under the word form (i first under `long`), every pointer form loads the marker's j first.
 // @retail 0x26fc80
 bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point)
 {

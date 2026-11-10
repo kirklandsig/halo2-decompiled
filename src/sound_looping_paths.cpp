@@ -160,12 +160,20 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
 // and the choice carriers are as the earlier rounds left them.
 // s1F walk (11-06), at 866: walked against retail block by block, no behaviour difference. Retail accesses the query and choice
+// score 866 (s1F walk 11-06): walked against retail block by block, no behaviour difference. Retail accesses the query and choice
 // counts as dwords (0x18aeef, 0x18af10, 0x18af84, 0x18af81); the `short` copies here narrow them (no observable difference:
 // counts <= 64). As `long` it scores 942, so it is not kept without a match. Frame 0x4e0 agrees; on the long form the choice count
 // and first-loop index stay in memory (retail: ESI/EDI), 3297 bytes (retail 3327). s1F also tried, on that base: grouping
 // {count, items[]} structs for targets+existing 933 (3327 B, frame 0x4e4), existing only 938, plus choices 1024-1025 (3413 B);
 // the three 1.0f defaults as separate statements (retail's store order) 942. Retail evidence for grouped lists: counts at
 // 0x34/0x88/0xec directly below arrays at 0x38/0x8c/0xf0, and the query gains share the existing list's slot at 0xec.
+// MiniMax E (11-05): no new form, no lower score; the entry zero, the target, primary and query-array homes
+// and the choice carriers are as the earlier rounds left them.
+// M3 lane 10 r86 (fast with 0x18bb80, 0x18ab70 MATCH; control 866, aligned 1116, masked 503): retail scales the three gains by a copy
+// of the hoisted global (`movaps xmm0, xmm7`, then two field-first products and the last in place on the copy). The scale named once
+// as a local in that arm 918 (masked 502); the existing in-place vector scale on the three gains, diagnostic only (needs a cast)
+// 917; the 1.0f defaults chained the other way round (retail's store order) 866 (same code), with the named scale 918; that with
+// long query/choice counts and the count read directly 941 (3297 bytes, masked 490), with the vector scale 953 (3281 bytes).
 // Earlier 919 (was 919): count/array homes and choice registers differ in the 0x4e0 frame;
 // count/array homes and choice registers differ in the 0x4e0 frame;
 // Frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice registers remain.

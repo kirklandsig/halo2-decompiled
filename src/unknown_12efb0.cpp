@@ -144,6 +144,7 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // rounds left them, and retail's `mulss scalar, t` product form has no legal spelling here.
 // Earlier at 616: Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
+// Earlier at 616 (was 616): Frame 0x4820, clears and metadata cursor agree; palette and accumulator carriers remain.
 // Earlier: Frame 0x4820 and metadata cursor agree; native palette width and accumulator carriers differ.
 // Frame, clear prefix and metadata cursor agree; palette/cluster carriers and accumulator scheduling remain.
 // Frame 0x4820, clears and metadata cursor agree; cluster-index EDI, palette carriers and helper update scheduling differ.
@@ -467,6 +468,28 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // four-channel helper's weight terms first 714 (masked 173); r g b w i d h m with the late merge weight 732
 // (masked 155); r g w b i d m h 698 (masked 260); the merge helper reading the source weight at each use 732 (same
 // code). Retail keeps 0.0 in xmm7 for the whole loop body (43 uses, no other value), which none of these give.
+// M3 lane 10 r86 (fast with 0x131030, 0x1317a0, 0x130f60, all still MATCH; counts are score, bytes, aligned/masked aligned; control
+// 607, 3832, 487/220). Body unchanged; the closest form is build/r86/lead-12efb0.patch (693, 3820 bytes, 128/28). Match-only lead (it writes the three output
+// helpers and the clamp out by hand). Joint steps, none under 607:
+// weight and remaining last in the three-scalar and merge helpers 732 (3847, 346/167), with a char slot 728 (3843, 355/169); with the clamp
+// written in the three-scalar helper 698 (3821, 291/114), plus char slot and the source index re-read from the byte 670 (retail's 3817 bytes,
+// 280/114), without the merge reorder 696 (3807), without the char slot 691 (3820, 269/111); then a named tag surviving 0x1317a0 670 (286/122),
+// tag-arm range read from the field at each use with a nested ternary clamp 681 (293/117), with the library clamp 681 (295/120), the 0x6c
+// store before the last weighted store 681 (same counts); a named cluster index 681 (294/118; not retail: it re-reads the index after
+// 0x1317a0); a result-first record getter shaped like 0x1318a0 taking the char slot 703 (315/116), taking a `long slot_index` declared in the
+// palette arm 629 (3817 bytes, 292/111; record in EBX as retail), with the source index from that long 635 (3826); on the 629 form without the
+// named cluster index 629 (284/100); the four-channel helper taking r, g, b, a by value, alpha and weight first, clamp written in it 697
+// (3808, 223/74), with the library clamp 703 (3825, 250/101), with the getter taking the char slot or the byte field 712 (3807, 257/78);
+// the three six-field output blocks written in the body 693 (3820, 128/28); on that: the 0x88 pointer declared before the tag test 676
+// (3825, 154/38), also with one joined test 676; one `long` slot 666 (3817, 144/39; -1 in EDI across 0x130f60); slot as field reads only, or a
+// char slot passed to the getter, 705 (3819, 160/32; record in EDI); a one-use inline tag getter 693 (same code); slot read before the three
+// source stores 693 (same code); `long slot_index` declared before those stores, or read from the byte ahead of the test, 669 (3829, 110/38;
+// no -1 register at all); slot_index from a second byte read inside the arm 693 (same code); a `use_default` flag in place of the goto 694
+// (141/39); the result declared ahead of the out index 693 (same code).
+// Left on the 693 form (28 masked): retail copies the 0x130f60 result to EDX (`mov edx, eax` after the slot read, `mov eax, edx` before
+// 0x131030) and takes EAX for -1, ours keeps the result in EAX and -1 in EDX; the -1 register only exists while a register is free, so the
+// result's home is the cause; `movsx ecx, cl` then follows the previous-index compare. Also the second accumulator's red product side, the
+// 0x88 pointer placement, the tag-arm weight store, the second four-channel call's weight position and the 0x6c store.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

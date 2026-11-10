@@ -1342,9 +1342,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
-// score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
 // w14B (11-06): walked against retail statement by statement: no logic difference (field offsets, constants,
 // condition directions, call arguments and the result path all agree). Early return (`if (parameters) {...
 // return true;} return false;`) 566: frame 0x28 and the stack-argument load agree, block still in EDX and query in
@@ -1552,6 +1552,14 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 536; lightmap pin before base 559; both copies 557; four together 570; five 586 (2209 B); five + in-place
 // rotation 586/476; block/type/query in all six orders: 573 on the result form, 586 on the five-piece form
 // (whose four callee-saved homes are retail's exactly reversed).
+// m3 lane 10 r87 (fast with 0xd4080, 0x3db00, 0x3dfe0): re-measured `bool result = false;` first with `result = true;`
+// last 573 (block and query take retail's EBX/EDI homes but arrive in EDX/EAX, record arrives in ESI) and the early
+// `if (parameters) { ... return true; } return false;` 566. Listed forms first measured on the current body: `bool
+// result = false;` declared right before the found test with `result = true;` first in the block 573 (2172 bytes);
+// declared there with `result = true;` last 590 (0x3db00 lost); the first with the normal copied whole 570 (0x3db00
+// lost). New: no result variable and `return parameters != NULL;` 570; that without the `count > 0` wrapper 587;
+// `bool result = false;` first with `return true;` at the end of the found block and `return result;` last 563
+// (masked aligned 281 -> 259, frame 0x28); `if (!parameters) return result;` ahead of the body 565 (2171 bytes).
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

@@ -1156,6 +1156,8 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 }
 // score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
 // checksum register and header-validation joins remain.
+// checksum register and header-validation joins remain. Earlier diagnosis before native handles:
+// the read-call value transport differed. The retained API and handle prefix now agree.
 // MiniMax D (11-09): no new form, no lower score (33); the query-size and write-count homes are still exchanged (ours size at [esp + 0x28], write count at [esp + 0x24], retail the other way round) and the write call still builds its flags zero in EAX where retail builds it in ECX with the handle already in EAX.
 // MiniMax R (11-09): the two out parameters sit in each other's homes, the size at [esp + 0x28] where retail keeps
 // it at [esp + 0x24] and the bytes written the other way round; declaring the bytes written local beside, before
@@ -1588,6 +1590,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // taking the flag by reference 7 (both the same code); the handle as a reference to the element instead of a pointer
 // (`handle.handle`, `handle` passed by value) 7 (same code); `valid` declared at the loop top 7 (same code); a 1200 s
 // permuter run (146 tries) none below 7.
+// M3 lane 10 r88 (fast with 0x213800, 0x213760; base 33): round 53's 7 form rebuilt (`else if (cache_file_header_read(index))` with
+// `valid = true`, the count scoped in the write block and the success set by its own test) reproduces at 7, the write-handle local on it 114
+// (917 bytes). On the 7 form: the handle pointer declared `s_file_handle *const` 7 (same code); the write block as `do { if (!resized) break;
+// ... } while (false);` 7 (same code). Retail loads the write's handle (`mov eax, [ebp]`) ahead of its pushes, so the flags zero takes ECX,
+// and the checksum load takes EAX; both need the scratch steps the earlier rounds located. The note already lists every helper, local, view
+// and spelling form found for them, and none is natural without a match.
 // @retail 0x213970
 void function_213970(void)
 {

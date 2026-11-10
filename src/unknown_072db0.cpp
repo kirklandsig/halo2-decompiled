@@ -1838,6 +1838,12 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // loops 735 (2894 B; aligned 302 -> 289, masked 204 -> 194: the completion select is then retail's
 // branch-and-lea), completion loop only 720, request loop only 733; the opening test through the existing
 // 0x6c7e0 805 (stays a call); the property value written `!type ? 0 : value` 703 (same code).
+// M3 lane 10 r86 (fast with 0x641a0, 0x8df50, 0x749b0, 0x75790, 0x192e60 and every matched caller of 0x1934f0, all MATCH; control 703,
+// aligned 500, masked 330): in the users loop retail re-reads the variant count (`cmp word [count], 0`) after each call of 0x1934f0
+// and counts the loop down in EBX; ours hoists the count into EBX. `inline` on 0x1934f0's definition 703 (same code: its noinline
+// declaration wins); the missing-variant arm first 703 (masked 335); a player pointer for the three state accesses 703 (same code);
+// the team test first 703 (masked 334); a named group pointer in the request-building loop (also the identity base) 737 (2894 bytes,
+// masked 314), with the player pointer 737. The slot helper's cmovne still needs /arch:SSE.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

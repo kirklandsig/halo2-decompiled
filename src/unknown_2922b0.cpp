@@ -414,6 +414,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // declared inside the body 669 (masked 209); the hit flags declared inside the body 687 (216); the origin copy taken
 // first in the body 691 (289). The ray loop as `do { ... } while (++local_17 < 4);` without the countdown 751 (2772
 // bytes, masked 250), on the 656 form 731 (239).
+// M3 lane 10 r86 (fast, control 592, aligned 484, masked 216): retail forms 1/range once and multiplies it by the minimum twice
+// (second product in place on the inverse, the output store sunk below it) and negates the half-width separately for points 3 and 4.
+// Both fractions as `minimum / range` 697 (2822 bytes, one divide shared); only the clamp input or only the output as a divide
+// 679/679 (2845); fourth width as `0.0f - width` 592 (same code); widths as `width * -1.0f` 680 (2844); a second point helper
+// negating the width at each product 678 (2844), with one named negated width 600 (2821); the half-width read once into a named
+// local 688 (2828); the point helper's width as `real const &` 676 (2829); the point helper as plain inline 592 (same code).
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
