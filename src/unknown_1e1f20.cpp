@@ -788,6 +788,9 @@ void swarm_leader_detach(long actor_index);
 // 266/282/282/266/266/282/282; all with bounded short memory ordinal 282
 // (unchanged reduced control 266, full 281). NOT kept: no exact receiver graph;
 // original observations, ordinal, iterators and complete body restored.
+// MiniMax E (11-10): no new form, no lower score: the memory walk is still expanded at this site, so
+// the walk's index keeps the actor offset and the step's size apart where retail keeps them
+// together; that expansion's shape is set in another file, which this lane may not edit.
 // MiniMax E (11-04): no new form, no lower score; the memory walk's pointer walk, its index
 // body, the twice-read slot and the for-loop forms score 285, 370, 286, 288 and 555 against the
 // unchanged 266 (fast; 281 ordinary).

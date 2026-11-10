@@ -237,6 +237,16 @@ bool function_270130(s_object_marker const *marker, point3f const *position, rea
 // `xor edx, edx; mov dx`), still BLOCKED-BY 0x26fbf0. Diagnostics, restored: 0x26fbf0's flags `word` 4 again
 // (0x26fbf0 and 0x1be410 still match; left: the alignment's i and k products computed in the other order);
 // on that, the k product written first 4 (same code). The other caller, 0x2c0d60, passes `(word)` flags too.
+// HELD (needs the owner's OK), m3 lane 10 r89: 0x26fbf0's flags declared `word` (its siblings 0x26f930 and
+// 0x26fe20 already take `word flags`; patch build/r89/held-26fc80.patch, the definition plus the declaration in
+// src/unknown_2c0d00.cpp) gives this function 4 plain, 0x2c0d60 901 -> 888, 0x26fbf0/0x1be410/0x270130 still
+// matched. On that held form (fast): the alignment through dot3f, either argument order, 2 (round 16's 2,
+// re-measured; left: retail loads the global's j first, `movss xmm1, [edi + 4]; mulss xmm1, [ecx]`, ours the
+// marker's); a const forward-vector pointer
+// with the i, k, j sum 2, with i, j, k 2, with the global's operands first 2; with a const marker 2; best before
+// best_distance 4; hand-written sums i/k/j with the i operands swapped 4, i + (k + j) 6, j/i/k 4, i/k/j unswapped 4,
+// k/i/j 4 (round 138's, re-measured), i/j/k 4, k/j/i 4; dot3f with direct `markers[i]` indexing as in 0x26fe90 6. Every hand-written sum
+// computes k first under the word form (i first under `long`), every pointer form loads the marker's j first.
 // @retail 0x26fc80
 bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point)
 {
@@ -843,6 +853,14 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // loads it after the corner tests; the lower positional count comes from the entry being one line shorter, which only
 // re-aligns the later lines (masked 22 -> 37); plain 169 too, with 0x270d90 still 286 but 1390 bytes for 1389. Left as before: every form that loads the actor at entry loads it ahead of
 // `push ebx`, so link-time code generation hands pathfinding over in EDX; retail's load follows `mov ebx, eax`.
+// Round 148 (m3 lane 8, fast with the file's 15 other functions, 0x270d90 and 0x30bf0; aligned/masked = difflib counts on
+// the listing, masked ignores registers and stack offsets, base 54/13). Re-measured: case 5's position declared before its
+// direction 266 (as round 153); with corners a, b, c, d 290 (1284 B, aligned 37, masked 11, as rounds 151/82); on that the
+// function-scope actor bool 364 (1292 B, as lane 17 round 6) and the surface ahead of the start-out alias 290 (same code).
+// New: on that a, b, c, d graph the result as a plain bool 281 (1280 B, aligned 80). On the 219 body, each the same code
+// (219, aligned 54, masked 13): both projections in one expression with no projected/origin locals; the edge vectors
+// declared at function scope; the trace result declared at function scope; case 5's direction declared at function scope;
+// case 1/6 leaving through `break` to the final `return result`.
 // Round 67 (m3 lane 15, fast with 0x270d90/0x270400; aligned/masked = difflib counts with targets / registers masked,
 // base 219 aligned 54 masked 14): retail reloads actor_index from its stack slot in case 2 and uses the entry EAX only
 // in case 5 (compare and 0x270400's register argument); EBX is overwritten inside case 1/6 before any call, so the

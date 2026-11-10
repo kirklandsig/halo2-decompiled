@@ -39,6 +39,7 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 }
 #define PIN(n,floor,ceiling) ((n)<(floor) ? (floor) : ((n)>(ceiling)?(ceiling):(n)))
 
+// score 286 (was 286; 320, 306 and 345 before): frame 0x64 and retail's entry copies agree (1865 bytes against 1863); saved-direction homes, planar operand order and xmm numbers of the floors remain.
 // b3M walk (11-06), every block against retail 0x29ab90..0x29b2d4: entry copies/0x658-0x678 history shift,
 // actor+0x26c test, 3-D magnitude (k,j,i sum, unrounded fabs test), 0x5d0/*arg_7 scale test, 1f9760 call, planar
 // normalizations (j,i sum), 2922b0 call, 30bf0 == 0 fallback, 0x47c branch, floor/ceiling clamps, 29b2e0 call
@@ -53,7 +54,6 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // MiniMax I (11-06): the vector copy order swapped and the magnitude declared early were tried
 // (310, 306); the frame homes of the call result and of the x87 temporary still differ from
 // retail's; no lower score.
-// score 320 (was 306; 345 before): frame 0x64, retail's entry copies and retail's 1863-byte length now agree; saved-direction homes, planar operand order and xmm numbers of the floors remain.
 // Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
 // MiniMax D: the requested direction read through its own address (a stack argument, as
 // retail's) 366, not kept (an address-taken read needs a byte match); the magnitude summed in
@@ -400,6 +400,22 @@ PRIVATE __forceinline real function_29ab91(vector3f arg_0)
 // M402: Ordinary private magnitude/planar/clamp declarations, seven subsets,
 // then complete ordinary graph with planar inline metadata: eight at 306. NOT kept:
 // no settings/magnitude or saved-direction/planar home repair; original helpers/body restored.
+// Round 178 (m3 lane 4, fast then plain; aligned = difflib count with addresses masked, 191 at 320): the history
+// weight read from the settings field at each of its three uses instead of a local 286 (kept, aligned 184; retail
+// still loads it once into xmm6 and re-reads it for 1 - weight). Retail's first planar normalize keeps the scaling
+// path as the fall-through and the zero path after it (the 0x2b400 shape, which is noinline here). Also tried: the
+// 0.05 floor as a MAX ternary 309 (on 286: 275, but aligned 196: retail's code is the in-place if); the 0x47c
+// override read into local_18 and tested `== 0` 318 (on 286: 286, aligned 203); the minimum-step test as
+// `local_17 >= local_18` 271 at 1863 bytes (on 286: 298; retail's own compare is `comiss local_18, local_17; ja`,
+// the existing form, so the gain is a shift); the speed clamp as a ternary 320 (same code); on 286 the history
+// pointer read at each use 286 (aligned 183), the velocity pointer local dropped 286 (aligned 185).
+// Round 180 (m3 lane 4, fast; aligned/masked = difflib counts with addresses / also stack offsets masked, 184/107
+// at 286): field_50 written as the first factor of the 0x1f9e70 product 286 (same code; retail reads +0x50 before
+// the call into a stack temp); local_20 as the planar copy `*(vector2f const *)&local_27` 310 at 1864 bytes, but
+// aligned 170 and masked 90 (LEAD: the copy of local_27 and local_20's home are then retail's, local_27.i stays in
+// ESI); local_13 / local_15 as planar copies 286/286 (same code); all three 310. Left: site 1's normalize keeps the
+// zero path as the fall-through and a separate result home (retail stores 0 into the magnitude's own home after
+// the scaling path), the 0x1c/0x20 entry homes and the xmm numbering.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
@@ -488,15 +504,14 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 			local_22.i = (real)(sqrt(fabs((double)local_25)) * local_2->field_6c * local_26 + local_22.i);
 		}
 		vector3f const *history = (vector3f const *)(local_0 + 0x678);
-		real history_weight = local_2->field_64;
 		vector3f local_31;
 		local_31.i = local_6.i + local_22.i;
 		local_31.j = local_6.j + local_22.j;
 		local_31.k = local_6.k + local_22.k;
 		real local_32 = 1.0f - local_2->field_64;
-		local_5.i = local_31.i * local_32 + history->i * history_weight;
-		local_5.j = local_31.j * local_32 + history->j * history_weight;
-		local_5.k = local_31.k * local_32 + history->k * history_weight;
+		local_5.i = local_31.i * local_32 + history->i * local_2->field_64;
+		local_5.j = local_31.j * local_32 + history->j * local_2->field_64;
+		local_5.k = local_31.k * local_32 + history->k * local_2->field_64;
 		local_5.i = PIN(local_5.i, -1.0f, 1.0f);
 		local_5.j = PIN(local_5.j, -1.0f, 1.0f);
 		local_5.k = PIN(local_5.k, -1.0f, 1.0f);

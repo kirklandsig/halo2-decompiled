@@ -888,6 +888,14 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
+// MiniMax D (11-10): no new form, no lower score (90); the identity pointer and the requested rank keep
+// the other way round (ours identity ECX / rank EAX, retail identity EAX / rank ECX), and the identity's
+// two halves follow the pointer into the other register (ours `mov eax, [ecx]`, `or eax, [ecx + 4]`,
+// retail `mov ecx, [eax]`, `or ecx, [eax + 4]`), so ours copies the pointer into EAX before the call to
+// 0xac050, which is the one extra instruction and the two extra bytes; everything else in the function
+// agrees with retail row for row, and the callee's argument order already agrees (0xac050 reads the member
+// pointer from EAX and the controller index and the team pointer from the stack), so only the colouring of
+// the two values differs.
 // MiniMax C (11-09): no new form, no lower score (90): the whole difference is still the colouring of the two
 // values the callee 0xac050 takes: retail loads the selected identity pointer into EAX and the requested rank
 // into ECX, ours keeps the pointer in ECX and the rank in EAX and copies the pointer into EAX before the call;

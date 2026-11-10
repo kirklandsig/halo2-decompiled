@@ -804,12 +804,19 @@ static inline long view_buffer_write(s_ring_buffer *buffer, long count, const vo
  }
  return result;
 }
+static inline void view_buffer_advance(c_simulation_view *view, long count)
+{
+ s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
+ long next = buffer->start + count;
+ next %= buffer->size;
+ buffer->used -= count;
+ buffer->start = next;
+}
 static inline void view_buffer_read(c_simulation_view *view, long count, void *destination)
 {
  s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
  buffer->read_wrapped(buffer->start, count, destination);
- buffer->start = (buffer->start + count) % buffer->size;
- buffer->used -= count;
+ view_buffer_advance(view, count);
 }
 bool function_1995a0(const byte *source, dword source_size, byte *destination, long *compressed_size, dword capacity, long level);
 
@@ -988,7 +995,16 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
-// score 24 (was 24): only case 2's two 0x68670 argument loads and the first read's forwarded start differ on the match-only forms below; BLOCKED-BY 0x68670 for the loads. Lane 12 r78 reached 2 (not kept: the read helper's new offset parameter was found by measuring, with no
+// score 2 (was 2): MiniMax C (11-10): no lower score this round. The two remaining instructions are the
+// order of the argument address computations for 0x68670: this body sets up the block address before the
+// source address, retail the other way. Passing the source as `&payload[0]`, naming it in a local
+// pointer, or casting the block to a byte pointer all leave the order unchanged (2 each), so the
+// difference is the callee's declared parameter order, which lives in a contributor's file. The
+// block as a plain byte array instead of the aligned union is 2 as well, with the same two `lea`s.
+// score 2 (was 24): MiniMax C (11-10): the ring advance is now a helper of its own, so it reads the
+// ring's start from memory again after the wrapped read, as retail does, and the header size is
+// loaded after the start and used stores; only case 2's two 0x68670 argument loads differ now (ours
+// sets up the source address before the block address, retail the other way). Lane 12 r78 reached 2 (not kept: the read helper's new offset parameter was found by measuring, with no
 // retail call to show it, 10-30 rule). That 2 form is retail's code but for case 2, which sets up 0x68670's source before its block (ours after). Only the
 // declared order of that contributor function moves it: (block, source, size) or (block, size, source) gives a byte match in
 // a diagnostic, so BLOCKED-BY 0x68670. This round (fast): the read taking its offset, one `ring` local before the first read and

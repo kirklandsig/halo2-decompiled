@@ -1362,6 +1362,7 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 }
 
 /* fills the list with the session's players, then the empty slots */
+// MiniMax C (11-10): the score is 83 (was 83); the two counts sit in exchanged homes (item_count at ebp-8 where retail has index_count) and the tail rows are filled by a pointer walk where retail fills them with a guarded word store.
 // MiniMax R (11-09): no new form, no lower score (83); the tail fill is still a pointer walk where retail's is a guarded word fill, and the two counts keep the next stack slot round from retail's.
 // MiniMax I (11-06): retail's guarded rep stosd does come from an index loop over the tail
 // (`for (i = index_count; i < 16; i++) indices[i] = NONE;`): the idiom appears, but the write count then
@@ -1538,6 +1539,14 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // (same code; 0x251f8d stays 20); both query maxima as if/else 83 (same code); on that, the three qsort calls written out 119 (435
 // bytes); plus index fills in both branches 174 (418); plus the index fill in branch two only 169 (420). Body restored; the reload of
 // player_count after 0x19a9b4 is still the blocker noted above.
+// Lane 12 r107 (fast; masked aligned count with registers and ebp offsets masked in brackets, 57 at 83): diagnostics (reverted
+// at once): a store through a global pointer added to 0x19a9b4 makes ours reload player_count from its home after the branch-two
+// scan as retail does (player_count then at retail's [ebp-0x10]) 120 [71] (433 B), with both index fills 173 [51] (419 B; mode
+// still moves to the stack), so retail's 0x19a9b4 chain is summarised as writing through a pointer where ours is not (all of
+// 0x596a0's and 0x5a680's direct callers are matched). Forms: the row value chosen into a `short` then one store 128 [72]
+// (422 B); a datum pointer for the three row stores 128 [71]; `continue` on a failed allocation 83 (same code); both scans
+// skipping with `continue` 83 (same code); branch one's maximum as `item_count = count; if (maximum >= count) item_count =
+// maximum;` 85 [58].
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {

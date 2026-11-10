@@ -1980,9 +1980,12 @@ void function_204450(long definition_index, long squad_index)
 bool function_1e11b0(long actor_index, bool active);
 
 #pragma inline_depth(0)
+// MiniMax S (11-10): no new form, no lower score (64); the squad address still stays in EBX where retail keeps it in ESI and the
+// parameter in EBP, the loop is still rotated, and the returned flag is still narrowed to a byte.
 // score 64 (was 64): frame 0xc agrees; the squad address stays in EBX instead of
 // retail's spilled ESI pointer and EBP handle. The common loop head and
 // full-width return mask still differ.
+// Earlier (64, was 64): EBP handle/receiver spill, common loop head and return width remain;
 // Earlier (64): EBP handle/receiver spill, common loop head and return width remain;
 // MiniMax H (11-07): no new form, no lower score (64); the squad address is still kept in EBX
 // where retail keeps the parameter in EBP and the squad address in ESI (spilled into the slot above
@@ -2190,6 +2193,15 @@ bool function_1e11b0(long actor_index, bool active);
 // EBP/EBX; on it: the actor declared in the while condition 13, the parameter renamed 13, the 0x1e11b0 test as
 // `if (...) continue;` 13, its result in a named bool 13 (all same code). Without the address read the index is
 // homed in EBX and LTCG passes it in a register; retail homes it in EBP, which keeps the stack convention.
+// Round 179 (m3 lane 4, fast with 0x202be0, 0x203d70, 0x201ea0, 0x202720 and 0x202a00; on the current body, the
+// function-level depth pragma kept): the squad as `&array[index & 0xffff]` 64 (same code); the squad offset by
+// `(word)squad_index` 64 at retail's 199 bytes, but the index becomes a register argument in EBX (0x203d70 105,
+// 0x201ea0 24); a const parameter 64 (same code); the flag test as a word read with the byte store 64 (same code);
+// the return through a word view `((dword)*(word *)(squad + 2) & 0x80) >> 7` 69 (205 bytes). Diagnostic, match-only
+// form: the `(word)` offset with one read of the index through its address (at the 0x204d30 call, the +0x34 store or
+// the lookup) 69 at 204 bytes, masked 18: the index stays a stack argument in EBX, the squad takes ESI with its spill
+// into the parameter's home and the back-edge reload as retail; left: index EBX/next EBP against EBP/EBX, `movzx`
+// for retail's `and 0xffff`, the rotated loop, the byte flag store and the byte return.
 // Round 68 (m3 lane 15, fast): the 13 form rebuilt (no function-level pragma, squad_get plus a second squad_get in the
 // +0x7e test, the index read once through its address at the 0x204d30 call, 0x203d70's step loop with the statement-level
 // pair, game time before the word flag store, short-view return) 13 at 199 B, 0x203d70/0x201ea0 matched, index EBX/next
@@ -2934,6 +2946,8 @@ short function_290cd0(short arg_0, long arg_1, long arg_2, short *arg_3, short *
 bool function_290e20(short arg_0, long arg_1, long arg_2);
 bool function_1fb8a0(long arg_0, short arg_1);
 
+// MiniMax S (11-10): no new form, no lower score (50); the only difference left is retail's EBP copy of the squad index where ours reloads its
+// home, plus retail's one-byte alignment nop before the loop head at 0x202dd0.
 // score 50 (was 50): frame 0x1c, the trigger flag, the task pointer test and the actor walk agree. Left: the
 // squad index for the first 0x1fb8a0 call (retail `mov eax, ebp`, ours reloads its home, 2 bytes longer),
 // which shifts the later jump targets and drops the actor loop's alignment nop.
@@ -3123,6 +3137,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // through the existing getter 0x203330 (null test, then its bit) 162 (580 B); the lock bit as `!TEST_FIELD_BIT(... & 1)`
 // 50; the bit declared as a one-bit field of the entry (overlaid on the byte view) and tested through the table's
 // entries 50 (same code); the first condition in a named bool tested once 50.
+// Round 179 (m3 lane 4, fast with 0x203bf0, 0x203d70, 0x201ea0, 0x202720 and 0x202a00): the follow-up event as a
+// long passed to 0x290cd0 through a short view 51; a const index parameter 50 (same code); the pending word read as a
+// signed short 68; the count test as `>= 1` 55 (580 bytes); the pending arm's two assignments swapped 50 (same code).
+// The listing is retail's apart from the first follow-up's index load (ours `mov eax, [esp+0x30]`) and the loop pad.
 // Round 68 (m3 lane 15, fast): the pending word read through squad_get(arg_1) 134 (581 B); the follow-up event as a
 // named short for its test and the call 50; `short local_2;` set NONE just before the pending test 50; the trigger
 // definition pointer by if/else with NULL in its own arm 50; the 0x290cd0 definition argument through squad_get(arg_1)

@@ -846,6 +846,11 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // it: the allocator colours the font before the mask, retail the mask first (bits ESI and count EDI in both).
 // Round 175: the iterator as an aggregate initializer `{ g_54d578, NONE, NONE }` 14; the allocation inside a `for (;;)`
 // search when the walk ends, `break` on a match, 14 (harness); a 600 s permuter run (75 tries) none below 14.
+// Round 106 (lane 9, fast): the search test in the while condition with an empty body and the allocation under
+// `if (!prediction)` 14; a font mismatch `continue` before the character test 14; the header result in a pointer
+// local with one `return header != NULL;` exit 79. Retail's matched scans that keep a stack parameter across the
+// loop (0x13d950, 0x1ff7d0, 0x204b20, 0x23f260) also give it EBP and the mask EBX; ours gives the parameter EBX.
+// No untried natural form is left in this note; the caller's declaration sits in another lane's file this round.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

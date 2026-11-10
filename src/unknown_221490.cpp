@@ -820,6 +820,16 @@ bool sound_driver_voice_create_buffer(
 // returns in place of the result local, play first 162 (626 bytes), 3D flag first 146 (619); the result assigned at the end of
 // each arm with no early assignment, 3D flag first 175 (608), play first 111 (628); the count published after the submix
 // block 167 (626). All but the last also lose the caller 0x191420 by one instruction. Body restored.
+// Round 86 (m3 lane 1, fast with 0x191420, which stays matched; aligned/masked in brackets, base 71 [52/14]): the matched
+// sibling 0x220a70's locals. The device read into a local before the first clear and used for both creations 120
+// [71/17]; with the 3D flag defined first 118 [67/15] (frame 0x84). LEAD: the device local inside the first creation
+// block only (one use), 3D flag first: 78 [60/9], retail's frame and `mov bl, cl; shr ecx, 1; and cl, 1` (the 3D flag
+// in BL, play in the stack byte), so a value live into the first creation is what lets the 3D flag win BL; with the
+// count stored as the block's first statement 70 at 619 B [57/6] (left: the count store is scheduled ahead of play's
+// mask and the voice offset takes EAX, the zero ECX, the input mix bin EAX, where retail has ECX/EAX/ECX); on 70: the
+// count as `voice_count++` 70 (same code), the voice as a pointer local 70 (same code), the mix-bin count stored
+// before the pointer 72 (619 B); the count stored after the voice reference 72 (a late `inc esi`), stored before the
+// first block 78. None kept: the one-use device local and the moved count store need a match.
 // Round 67 (m3 lane 15, fast with 0x191420; aligned/masked = difflib counts with targets / registers masked, base 71
 // aligned 54 masked 14): retail's 3D bool dies at its test and play is reloaded into BL there (`mov bl, [esp + 0x13]`),
 // so BL goes to the one-use 3D bool for the short first range and to play for the rest. The count stored before the
@@ -1014,6 +1024,18 @@ extern "C" void _ReadWriteBarrier(void);
 // bytes, 0x220fd0 builds 199 in the reduced image), the same without both barriers 134; a named float product in the
 // helper (`real decibels = log10(gain) * 2000.0f; volume = (long)decibels;`) 21 (same code), without both barriers 28;
 // `real const decibels` as the parameter 21 (same code); a 600 s permuter run (66 tries) none below 21.
+// Round 78 (m3 lane 14, fast; compile-only /O2 /arch:SSE /Gr reproduces every register here, two probe loads at the
+// top, at the memset or after either volume give all of retail's, after the 0x12aff0 call only the later ones; with
+// a 4-byte memset (immediate stores, no zero register) all are retail's, and removing or constant-folding either
+// volume changes nothing, so the zero is the only rotation step ahead of the decibels load): the two buffer calls
+// as the C++ methods 21 (same code); the volume clamp as an inline helper taking the truncated long, without barriers
+// 175 (677 bytes); the voice through an inline getter taking globals and the index 21; decibels as an s_decibels
+// parameter and field (plain; 0x220e00 and 0x220fd0 still match) 21; re-measure between round 75's one- and
+// four-parameter forwarders: the 0x12aff0 call through an inline (decibels, flag) forwarder 21;
+// the filter declared ahead of the buffer parameters, without barriers 28 (same as that control). Compile-only, same
+// registers: forwarders with one, two (with the index) or four parameters, const globals or voice, the buffer
+// parameters declared first, a dword index, the voice from the global or ahead of `globals`, a zero local for the
+// memset, the memset after the first volume.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,
