@@ -531,6 +531,15 @@ void function_14bac0()
 // in every form. Left besides the frame: the offset subtracted per component as it is loaded, the stamp copied for
 // its store, both marker addresses formed with two adds, and the tail scan's `inc eax; js` entry with its found
 // block after the return. NOT kept: body below unchanged.
+// Round 164 (m3 lane 6, fast with the nine callees; masked = aligned count with registers and stack offsets masked, 87 for this
+// body): the tail scan through the existing data_find_index 222 (same code); with the second scan on a block-local
+// s_data_datum_iterator through the out-of-line data_datum_iterator_next, set up data, index, datum_index as matched 0x1bbf40 does,
+// 229 (masked 70); plus the relocation point used directly 238 (1052 bytes, frame 0x44, masked 63); on that the first scan's
+// iterator taking its pool from g_4e8c24 directly 267 (aligned 130; the entry reorders, frame 0x48); the centre, height and
+// radius in their own block 238 (frame 0x40, masked 63: relocation point and destination share, offset, probes and centre share,
+// but the second iterator packs with the first and the alternate stays alone where retail packs the alternate with the first
+// iterator and the second iterator with the probe slot; the height takes the player's dead slot); with the unit re-read from the
+// player at both calls re-measured 259 (frame 0x48, as Round 20). Body unchanged.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

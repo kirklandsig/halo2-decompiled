@@ -1202,6 +1202,10 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // (same code); the first three re-measure listed forms. New on top: has_plane as `0.0f < offset` 290 (same code); the cone
 // corners read back from the bounds fields 290 (same code); the sphere depth stored right after the radius read 310.
 // Body unchanged.
+// Round 164 (m3 lane 6, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): light_projection_point_ab reading the point's
+// components in the other five orders (it is used only here): k, j, i 531 (2815 bytes); j, i, k 479; i, k, j 293; k, i, j 481;
+// j, k, i 532 (the declaration orders listed at 551-571 were on the old y-first base). The read order moves every
+// projection's sum tree, but i, j, k stays best. Body unchanged.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
